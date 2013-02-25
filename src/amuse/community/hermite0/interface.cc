@@ -86,6 +86,7 @@ real dt_param = DT_PARAM;        // control parameter to determine time step siz
 real dt_dia = DT_DIA;                // time interval between diagnostic output
 
 bool x_flag = false;                // set true for serious debugging only!
+bool is_time_reversed_allowed = false;
 
 int nsteps = 0;                        // number of integration time steps completed
 real einit = 0;                        // initial total energy of the system
@@ -121,6 +122,17 @@ int set_dt_dia(double _dt_dia){
     dt_dia = _dt_dia;
     return 0;
 }
+
+int get_is_time_reversed_allowed(int *value){
+    *value = is_time_reversed_allowed ? 1 : 0;
+    return 0;
+}
+int set_is_time_reversed_allowed(int value){
+    is_time_reversed_allowed = value == 1;
+    return 0;
+}
+
+
 int get_dt_param(double *_dt_param)
 {
   *_dt_param = dt_param;
@@ -172,7 +184,7 @@ void write_diagnostics(real epot, ostream& s = cout)
     real total_mass = 0;
     real ekin = 0;                        // kinetic energy
     for (int i = 0; i < n ; i++) {
-	total_mass += mass[i];
+        total_mass += mass[i];
         for (int k = 0; k < NDIM ; k++)
             ekin += 0.5 * mass[i] * vel[i][k] * vel[i][k];
     }
@@ -247,7 +259,7 @@ void write_diagnostics(real epot, ostream& s = cout)
 
 void predict_step(real dt)
 {
-    if (dt <= 0) return;
+    if (!is_time_reversed_allowed && dt <= 0) return;
 
     int n = ident.size();
     for (int i = 0; i < n ; i++)
@@ -404,8 +416,10 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     int istart = 0 + mpi_rank;
     int iend = n ; //(mpi_rank + 1) * npart;
     
-    error = is_stopping_condition_enabled(COLLISION_DETECTION, 
-					  &is_collision_detection_enabled);
+    error = is_stopping_condition_enabled(
+                COLLISION_DETECTION, 
+                &is_collision_detection_enabled
+    );
     for (int i = istart; i < iend ; i+= mpi_size)
       {
         for (int j = i+1; j < n ; j++)             // rji[] is the vector from
@@ -427,8 +441,8 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
                 rv_r2 += rji[k] * vji[k];
               }
             rv_r2 /= r2;
-	    
-	    if(is_collision_detection_enabled) {  
+ 
+            if(is_collision_detection_enabled) {  
               real rsum = radius[i] + radius[j];
               if (r2 <= rsum*rsum) {
                 int stopping_index  = next_index_for_stopping_condition();
@@ -444,7 +458,7 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
                 }
               }
             }
-	   
+        
             
             r2 += eps2;                            // | rji |^2 + eps^2
             real r = sqrt(r2);                     // | rji |
@@ -711,7 +725,18 @@ int evolve_system(real t_end)
 
     get_acc_jerk_pot_coll(&epot, &coll_time);
     
+    bool is_time_reversed = false;
+    
+    if(t_end < t && is_time_reversed_allowed) {
+        is_time_reversed = true;
+    }
+    
     real dt = calculate_step(coll_time);
+    
+    if(is_time_reversed) {
+        dt *= -1;
+    }
+    
     std::cout<<"t"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
     t_wanted = t_end;
     if (!init_flag)
@@ -719,15 +744,25 @@ int evolve_system(real t_end)
         write_diagnostics(epot, *sout);
         t_dia = t + dt_dia;        // next time for diagnostics output
       }
-
-    // Don't flag a collision if no step is to be taken (presumably
-    // just handled?).
+      
     
-    if(end_time_accuracy_factor == 0.0 && t < t_end && t + dt > t_end) {
-        dt = t_end - t;
+    if(end_time_accuracy_factor == 0.0) {
+        if(!is_time_reversed && t < t_end && t + dt > t_end) {
+            dt = t_end - t;
+        } 
+        else if(is_time_reversed && t_end < t  &&  t_end > t + dt ) {
+            dt = t_end - t;
+        }
     }
+   
+    std::cout<<"t0"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
     
-    if (t + dt > t_end + (end_time_accuracy_factor * dt))
+    if (
+        (!is_time_reversed && t + dt > t_end + (end_time_accuracy_factor * dt))
+        ||
+        
+        (is_time_reversed && t_end - (end_time_accuracy_factor * dt) >  t + dt )
+    )
     {
         must_run = 0;
 #ifndef NOMPI
@@ -755,7 +790,11 @@ int evolve_system(real t_end)
     // AMUSE STOPPING CONDITIONS
     
     while (true) {
-        while (t < t_dia && t + dt <= t_end + (end_time_accuracy_factor*dt)) {
+        while (
+            (!is_time_reversed && t < t_dia && t + dt <= t_end + (end_time_accuracy_factor*dt))
+            ||
+            (is_time_reversed && t_end - (end_time_accuracy_factor*dt) < t + dt )
+        ) {
             
             #ifndef NOMPI
             MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
@@ -765,10 +804,20 @@ int evolve_system(real t_end)
 
             dt = calculate_step(coll_time);
             
-            if(end_time_accuracy_factor == 0.0 && t < t_end && t + dt > t_end) {
+            if(is_time_reversed) {
+                dt *= -1;
+            }
+            
+            std::cout<<"t1"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
+            if(
+                (!is_time_reversed && end_time_accuracy_factor == 0.0 && t < t_end && t + dt > t_end)
+                ||
+                (is_time_reversed && end_time_accuracy_factor == 0.0 && t_end < t &&  t_end > t + dt )
+            ) {
                 dt = t_end - t;
             }
             
+            std::cout<<"t2"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
             if (test_mode) {
                 real E = 0.0;
                 nest_err = get_kinetic_energy(&E);
@@ -840,7 +889,11 @@ int evolve_system(real t_end)
           break;
         }
         
-        if (t + dt >= (t_end + (end_time_accuracy_factor*dt))) {
+        if (
+                (!is_time_reversed && t + dt >= t_end + (end_time_accuracy_factor * dt))
+                ||
+                (is_time_reversed && t_end - (end_time_accuracy_factor * dt) >= t + dt )
+        ) {
           break;
         }
     }
@@ -853,6 +906,9 @@ int evolve_system(real t_end)
 #endif
         get_acc_jerk_pot_coll(&epot, &coll_time);
         dt = calculate_step(coll_time);
+        if(is_time_reversed) {
+            dt *= -1;
+        }
         t_evolve = t;
       } else {
         t_evolve = t;
@@ -1223,6 +1279,7 @@ int evolve_model(double t_end)
 int initialize_code()
 {
     begin_time = 0.0;
+    is_time_reversed_allowed = false;
     
 #ifndef NOMPI
     int error = 0;

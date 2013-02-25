@@ -16,12 +16,12 @@ from amuse import datamodel
 class TestMocassinInterface(TestWithMPI):
     
     def test0(self):
-        instance=self.new_instance(MocassinInterface)
+        instance=self.new_instance_of_an_optional_code(MocassinInterface)
         instance.initialize_code()
         instance.stop()
         
     def test1(self):
-        instance=self.new_instance(MocassinInterface)
+        instance=self.new_instance_of_an_optional_code(MocassinInterface)
         instance.initialize_code()
         #instance.redirect_outputs_to("moc-out.txt", "moc-err.txt")
         
@@ -45,7 +45,7 @@ class TestMocassinInterface(TestWithMPI):
         instance.stop()
     
     def test2(self):
-        instance=self.new_instance(MocassinInterface) #, debugger = "ddd")
+        instance=self.new_instance_of_an_optional_code(MocassinInterface) #, debugger = "ddd")
         instance.initialize_code()
         instance.set_symmetricXYZ(True)
         
@@ -97,7 +97,7 @@ class TestMocassinInterface(TestWithMPI):
         
         
     def xtest3(self):
-        instance=self.new_instance(MocassinInterface) #, debugger = "ddd")
+        instance=self.new_instance_of_an_optional_code(MocassinInterface) #, debugger = "ddd")
         #instance.redirect_outputs_to("moc3-out.txt", "moc3-err.txt")
         instance.initialize_code()
         instance.set_symmetricXYZ(True)
@@ -138,7 +138,7 @@ class TestMocassinInterface(TestWithMPI):
 
 
     def test4(self):
-        instance=self.new_instance(MocassinInterface)
+        instance=self.new_instance_of_an_optional_code(MocassinInterface)
         instance.initialize_code()
         instance.setup_mesh(3,3,3,0.95E+19,0.95E+19,0.95E+19)
         instance.setup_abundancies()
@@ -207,7 +207,7 @@ class TestMocassinInterface(TestWithMPI):
 class TestMocassin(TestWithMPI):
     
     def test1(self):
-        instance=self.new_instance(Mocassin)
+        instance=self.new_instance_of_an_optional_code(Mocassin)
         instance.initialize_code()
         
         self.assertEquals(0.0 | units.cm**-3, instance.parameters.constant_hydrogen_density)
@@ -222,7 +222,7 @@ class TestMocassin(TestWithMPI):
         
         
     def test2(self):
-        instance=self.new_instance(Mocassin) #, redirection = "none")
+        instance=self.new_instance_of_an_optional_code(Mocassin) #, redirection = "none")
         instance.initialize_code()
         instance.set_input_directory(instance.get_default_input_directory())
         
@@ -244,7 +244,7 @@ class TestMocassin(TestWithMPI):
         instance.stop()
         
     def test3(self):
-        instance=self.new_instance(Mocassin) #, debugger = "xterm")
+        instance=self.new_instance_of_an_optional_code(Mocassin) #, debugger = "xterm")
         instance.initialize_code()
         instance.set_random_seed(1)
         instance.set_input_directory(instance.get_default_input_directory())

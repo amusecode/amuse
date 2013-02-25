@@ -99,6 +99,42 @@ class HermiteInterface(CodeInterface,
             could not set parameter
         """
         return function
+        
+    @legacy_function
+    def get_is_time_reversed_allowed():
+        """
+        If time reversed is allowed for this code, the code will
+        calculate backwards in time if the endtime given in 
+        evolve_model is less than the system time.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_is_time_reversed_allowed():
+        """
+        If time reversed is allowed for this code, the code will
+        calculate backwards in time if the endtime given in 
+        evolve_model is less than the system time.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool', direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
     
     @legacy_function
     def get_time():
@@ -219,6 +255,14 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
             "time interval between diagnostics output", 
             default_value = 1.0 | nbody_system.time
         )
+        object.add_method_parameter(
+            "get_is_time_reversed_allowed",
+            "set_is_time_reversed_allowed",
+            "is_time_reversed_allowed", 
+            "if True will calculate back in time when evolve_model end time is less than systemtime", 
+            default_value = False
+        )
+        
         object.add_method_parameter(
             "get_begin_time",
             "set_begin_time",

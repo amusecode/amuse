@@ -752,3 +752,41 @@ class TestHermite(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.model_time, 0.1 |nbody_system.time, 5)
        
         instance.stop()
+        
+    def test20(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+    
+        hermite = Hermite(convert_nbody)
+        hermite.initialize_code()
+        hermite.parameters.epsilon_squared = 0.0 | units.AU**2
+        hermite.parameters.end_time_accuracy_factor = 0.0
+        hermite.parameters.is_time_reversed_allowed = True
+        
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
+                
+        hermite.particles.add_particles(stars)
+        
+        hermite.evolve_model(365.0 | units.day)
+        hermite.particles.copy_values_of_all_attributes_to(stars)
+        
+        position_at_start = earth.position.value_in(units.AU)[0]
+        position_after_full_rotation = earth.position.value_in(units.AU)[0]
+        self.assertAlmostRelativeEqual(position_at_start, position_after_full_rotation, 6)
+        
+        hermite.evolve_model(365.0 - (365.0 / 2) | units.day)
+        
+        hermite.particles.copy_values_of_all_attributes_to(stars)
+        position_after_half_a_rotation_backward = earth.position.value_in(units.AU)[0]
+        self.assertAlmostRelativeEqual(-position_at_start, position_after_half_a_rotation_backward, 4)
+                
+        hermite.evolve_model(365.0 | units.day)
+        
+        position_at_start = earth.position.value_in(units.AU)[0]
+        position_after_full_rotation = earth.position.value_in(units.AU)[0]
+        self.assertAlmostRelativeEqual(position_at_start, position_after_full_rotation, 6)
+        
+        hermite.cleanup_code()
+        
+        hermite.stop()
+        
