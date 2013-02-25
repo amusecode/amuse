@@ -75,7 +75,9 @@ fi
 
 if test x$opencl_prefix != x; then
     CL_CFLAGS="-I$opencl_prefix/include"
-    CL_LIBS="-L$opencl_prefix/lib -L$opencl_prefix/lib64"
+    CL_LIBS_TRY="-L$opencl_prefix/lib -L$opencl_prefix/lib64 -L$opencl_prefix/lib/x86_64 -L$opencl_prefix/lib/x86"
+else
+    CL_LIBS_TRY=""
 fi
 
 AC_LANG_PUSH([C])
@@ -113,19 +115,25 @@ CPPFLAGS="$CPPFLAGS $CL_CFLAGS"
 ax_save_LIBS=$LIBS
 LIBS=""
 ax_check_libs="-lOpenCL -lCL"
-for ax_lib in $ax_check_libs; do
-  AS_IF([test X$ax_compiler_ms = Xyes],
-        [ax_try_lib=`echo $ax_lib | $SED -e 's/^-l//' -e 's/$/.lib/'`],
-        [ax_try_lib=$ax_lib])
-  LIBS="$ax_try_lib $CL_LIBS $ax_save_LIBS"
-AC_LINK_IFELSE([AX_CHECK_CL_PROGRAM],
-               [ax_cv_check_cl_libcl=$ax_try_lib; break],
-               [ax_check_cl_nvidia_flags="-L/usr/$ax_check_cl_libdir/nvidia" LIBS="$ax_try_lib $ax_check_cl_nvidia_flags $CL_LIBS $ax_save_LIBS"
-               AC_LINK_IFELSE([AX_CHECK_CL_PROGRAM],
-                              [ax_cv_check_cl_libcl="$ax_try_lib $ax_check_cl_nvidia_flags"; break],
-                              [ax_check_cl_dylib_flag='-dylib_file /System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/libCL.dylib:/System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/libCL.dylib' LIBS="$ax_try_lib $ax_check_cl_dylib_flag $CL_LIBS $ax_save_LIBS"
-                              AC_LINK_IFELSE([AX_CHECK_CL_PROGRAM],
-                                             [ax_cv_check_cl_libcl="$ax_try_lib $ax_check_cl_dylib_flag"; break])])])
+
+for cl_libflags in $CL_LIBS_TRY; do
+    for ax_lib in $ax_check_libs; do
+      AS_IF([test X$ax_compiler_ms = Xyes],
+            [ax_try_lib=`echo $ax_lib | $SED -e 's/^-l//' -e 's/$/.lib/'`],
+            [ax_try_lib=$ax_lib])
+      LIBS="$ax_try_lib $cl_libflags $ax_save_LIBS"
+      AC_LINK_IFELSE([AX_CHECK_CL_PROGRAM],
+                   [ax_cv_check_cl_libcl=$ax_try_lib; break],
+                   [ax_check_cl_nvidia_flags="-L/usr/$ax_check_cl_libdir/nvidia" LIBS="$ax_try_lib $ax_check_cl_nvidia_flags $cl_libflags $ax_save_LIBS"
+                   AC_LINK_IFELSE([AX_CHECK_CL_PROGRAM],
+                                  [ax_cv_check_cl_libcl="$ax_try_lib $ax_check_cl_nvidia_flags"; break],
+                                  [ax_check_cl_dylib_flag='-dylib_file /System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/libCL.dylib:/System/Library/Frameworks/OpenCL.framework/Versions/A/Libraries/libCL.dylib' LIBS="$ax_try_lib $ax_check_cl_dylib_flag $cl_libflags $ax_save_LIBS"
+                                  AC_LINK_IFELSE([AX_CHECK_CL_PROGRAM],
+                                                 [ax_cv_check_cl_libcl="$ax_try_lib $ax_check_cl_dylib_flag"; break])])])
+    done
+    AS_IF([test "X$ax_cv_check_cl_libcl" = Xno],
+      [AC_MSG_WARN([test tes $cl_libflags ])],
+      [break])
 done
 
 AS_IF([test "X$ax_cv_check_cl_libcl" = Xno -a X$no_x = Xyes],
@@ -136,9 +144,10 @@ AS_IF([test "X$ax_cv_check_cl_libcl" = Xno -a X$no_x = Xyes],
 LIBS=$ax_save_LIBS
 CPPFLAGS=$ax_save_CPPFLAGS])
 
+
 AS_IF([test "X$ax_cv_check_cl_libcl" = Xno],
       [have_cl=no; CL_CFLAGS=""; CL_LIBS=""],
-      [have_cl=yes; CL_LIBS="$CL_LIBS $ax_cv_check_cl_libcl"])
+      [have_cl=yes; CL_LIBS="$cl_libflags $ax_cv_check_cl_libcl"])
 AC_LANG_POP([C])
 ], [have_cl=no
 CL_CFLAGS=""
