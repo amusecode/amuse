@@ -368,6 +368,44 @@ class AbstractParticleSet(AbstractSet):
         return result
     
     
+    def copy_to_new_particles(self, keys = None, keys_generator = None, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+        if keys_generator is None:
+            keys_generator = UniqueKeyGenerator
+
+        my_keys = self.get_all_keys_in_store()
+       
+        if not keys is None:
+            if len(keys) != len(my_keys):
+                    raise Exception('not enough new keys given for the copy')
+            else:
+                particle_keys = keys
+        else:
+            particle_keys = keys_generator.next_set_of_keys(len(my_keys))
+                
+        attributes = self.get_attribute_names_defined_in_store()
+        attributes = [x for x in attributes if filter_attributes(self, x)]
+        indices = self.get_all_indices_in_store()
+        values = self.get_values_in_store(indices, attributes)
+        result = self._factory_for_new_collection()()
+        if memento is None:
+            memento = {}
+        
+        converted = []
+        for x in values:
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy(memento, keep_structure, filter_attributes))
+            else:
+                converted.append(x)
+                
+        memento[id(self._original_set())] = result
+        
+        result.add_particles_to_store(particle_keys, attributes, converted)
+        
+        result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+        
+        return result
+    
     def _factory_for_new_collection(self):
         return Particles
 
@@ -1938,12 +1976,52 @@ class ParticlesMaskedSubset(ParticlesSubset):
         memento[id(self._original_set())] = result
         for x in values:
             if isinstance(x, LinkedArray):
-                converted.append(x.copy(memento, keep_structure))
+                converted.append(x.copy(memento, keep_structure, filter_attributes))
             else:
                 converted.append(x)
         result.add_particles_to_store(keys, attributes, converted)
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+        return result
+        
+    
+    
+    def copy_to_new_particles(self, keys = None, keys_generator = None, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+        if keys_generator is None:
+            keys_generator = UniqueKeyGenerator
+
+        my_keys = self.get_all_keys_in_store()
+        my_keys = my_keys[~my_keys.mask] 
+       
+        if not keys is None:
+            if len(keys) != len(my_keys):
+                raise Exception('not enough new keys given for the copy')
+            else:
+                particle_keys = keys
+        else:
+            particle_keys = keys_generator.next_set_of_keys(len(my_keys))
+                
+        attributes = self.get_attribute_names_defined_in_store()
+        attributes = [x for x in attributes if filter_attributes(self, x)]
+        values = self.get_values_in_store(my_keys, attributes)
+        result = Particles()
+        if memento is None:
+            memento = {}
+        
+        converted = []
+        for x in values:
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy(memento, keep_structure, filter_attributes))
+            else:
+                converted.append(x)
+                
+        memento[id(self._original_set())] = result
+        
+        result.add_particles_to_store(particle_keys, attributes, converted)
+        
+        result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+        
         return result
         
     def __str__(self):

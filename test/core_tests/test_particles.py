@@ -168,6 +168,16 @@ class TestParticles(amusetest.TestCase):
         self.assertTrue(hasattr(particles2, 'mass'))
         self.assertFalse(hasattr(particles2, 'r'))
         
+        
+    def test15(self):
+        particles = datamodel.Particles(keys = [10,11])
+        particles.mass = [1,2] | units.kg
+        particles2 = particles.copy_to_new_particles()
+        
+        self.assertAlmostRelativeEquals(particles2.mass, [1,2] | units.kg)
+        self.assertAlmostRelativeEquals(particles2[1].mass, 2 | units.kg)
+        self.assertNotEquals(particles[1].key, particles2[1].key)
+        
 class TestParticle(amusetest.TestCase):
     
     def test1(self):
