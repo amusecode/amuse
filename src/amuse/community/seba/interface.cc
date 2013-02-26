@@ -14,6 +14,7 @@ static double seba_metallicity = 0.02;
 static double seba_time = 0.0;
 static stellar_type start_type = Main_Sequence;
 static binary_type binary_start_type = Detached;
+static bool is_logging_of_evolve_enabled = false;
 
 local void addbinary(
     node *bi, real stellar_time,	// bi is binary CM
@@ -61,14 +62,19 @@ local void addbinary(
 
 
 local real evolve_star_until_next_time(node* bi, const real out_time, const int n_steps) {
-    ofstream starev("starev.data", ios::app|ios::out);
-    bi->get_starbase()->dump(starev, false);  
+    ofstream starev;
+    if(is_logging_of_evolve_enabled) {
+        starev.open("starev.data", ios::app|ios::out);
+        bi->get_starbase()->dump(starev, false);  
+    }
     real current_time = ((star*)bi->get_starbase())->get_current_time();
     real time_step    =  bi->get_starbase()->get_evolve_timestep();
 
     while (out_time>current_time+time_step ) {
         bi->get_starbase()->evolve_element(current_time+time_step);
-        bi->get_starbase()->dump(starev, false);                
+        if(is_logging_of_evolve_enabled) {
+            bi->get_starbase()->dump(starev, false);     
+        }
         current_time = ((star*)bi->get_starbase())->get_current_time();
         time_step    =  bi->get_starbase()->get_evolve_timestep();
         
@@ -77,10 +83,13 @@ local real evolve_star_until_next_time(node* bi, const real out_time, const int 
     
       
     bi->get_starbase()->evolve_element(out_time);
-    bi->get_starbase()->dump(starev, false);
     bi->get_starbase()->dump(cerr, false);
-    print_star(bi->get_starbase(), cerr);
-    starev.close();
+    
+    if(is_logging_of_evolve_enabled) {
+        bi->get_starbase()->dump(starev, false);
+        print_star(bi->get_starbase(), cerr);
+        starev.close();
+    }
     return out_time;
 }
 
@@ -309,6 +318,16 @@ int get_metallicity(double * metallicity){
     return 0;
 }
 
+
+
+int get_is_logging_of_evolve_enabled(int *value){
+    *value = is_logging_of_evolve_enabled ? 1 : 0;
+    return 0;
+}
+int set_is_logging_of_evolve_enabled(int value){
+    is_logging_of_evolve_enabled = value == 1;
+    return 0;
+}
 
 
 

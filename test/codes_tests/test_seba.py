@@ -441,3 +441,9 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.parameters.metallicity , 0.02)
         instance.parameters.metallicity = 0.04
         self.assertAlmostRelativeEquals(instance.parameters.metallicity , 0.04)
+
+    def test6(self):
+        instance = self.new_instance_of_an_optional_code(SeBa)
+        self.assertFalse(instance.parameters.is_logging_of_evolve_enabled)
+        instance.parameters.is_logging_of_evolve_enabled = True
+        self.assertTrue(instance.parameters.is_logging_of_evolve_enabled)

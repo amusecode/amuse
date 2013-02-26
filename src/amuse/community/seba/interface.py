@@ -144,6 +144,41 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             A binary with the given index was not found.
         """
         return function
+        
+    
+    @legacy_function
+    def get_is_logging_of_evolve_enabled():
+        """
+        If True log the star state before and after evolve
+        in starev.data
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_is_logging_of_evolve_enabled():
+        """
+        If True log the star state before and after evolve
+        in starev.data
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool', direction=function.IN)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
 
     def evolve_model(self, time):
         return self.evolve_system(time)
@@ -218,6 +253,14 @@ class SeBa(se.StellarEvolution):
             "metallicity", 
             "Metallicity of all stats", 
             default_value = 0.02
+        )
+        
+        object.add_method_parameter(
+            "get_is_logging_of_evolve_enabled",
+            "set_is_logging_of_evolve_enabled",
+            "is_logging_of_evolve_enabled", 
+            "if True will log star state before and after evolve in starev.data", 
+            default_value = False
         )
         
         
