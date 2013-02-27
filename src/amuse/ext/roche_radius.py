@@ -205,9 +205,9 @@ def print_results(orbit):
     else:
         print "Warning: This is not a circular, corotating orbit, so the eggleton formula is not correct."
 
-    print
-    print "Eggleton Roche radius =", orbit.eggleton_roche_radius()
-    print "Sepinsky Roche radius =", orbit.sepinsky_roche_radius()
+    print "Roche radius for: M=", orbit.mass_1, "m=", orbit.mass_2, "a=", orbit.semimajor_axis, "e=", orbit.eccentricity
+    print "Eggleton Roche radius =", orbit.eggleton_roche_radius().as_quantity_in(orbit.semimajor_axis.unit)
+    print "Sepinsky Roche radius =", orbit.sepinsky_roche_radius().as_quantity_in(orbit.semimajor_axis.unit)
 
 if __name__ == '__main__':
     orbit = create_orbit_from_options()
