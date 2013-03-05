@@ -492,6 +492,11 @@ class Capreole(CommonCode):
             (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
+        object.add_method(
+            'set_parallel_decomposition',
+            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT),
+            (object.ERROR_CODE,)
+        )
         
         object.add_method(
             'set_boundary_state',
@@ -635,14 +640,40 @@ class Capreole(CommonCode):
         )
     
         object.add_caching_parameter(
-            "set_boundary", 
-            "xbound1",
-            "xbound1", 
-            "boundary conditions on first (inner, left) X boundary",
-            "reflective",
+            "set_parallel_decomposition", 
+            "nx",
+            "nproc_x", 
+            "number of processors for the x direction",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_parallel_decomposition", 
+            "ny",
+            "nproc_y", 
+            "number of processors for the y direction",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_parallel_decomposition", 
+            "nz",
+            "nproc_z", 
+            "number of processors for the z direction",
+            0,
         )
         
+        object.add_vector_parameter(
+            "parallel_decomposition",
+            "number of processors for each dimensions",
+            ("nproc_x", "nproc_y", "nproc_z")
+        )
         
+        object.add_caching_parameter(
+             "set_boundary", 
+             "xbound1",
+             "xbound1", 
+             "boundary conditions on first (inner, left) X boundary", 
+             "reflective",
+        )
         object.add_caching_parameter(
             "set_boundary", 
             "xbound2",

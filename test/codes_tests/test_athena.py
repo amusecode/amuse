@@ -1021,7 +1021,7 @@ class TestAthenaInterface(TestWithMPI):
         instance=self.new_instance(AthenaInterface, number_of_workers = 3)
         instance.initialize_code()
         instance.set_auto_decomposition(0)
-        instance.set_parallel(1,3,1)
+        instance.set_parallel_decomposition(1,3,1)
         instance.setup_mesh(5,6,1,5.0,6.0,0)
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.8)
@@ -1059,7 +1059,7 @@ class TestAthenaInterface(TestWithMPI):
         instance=self.new_instance(AthenaInterface, number_of_workers = 3*3)
         instance.initialize_code()
         instance.set_auto_decomposition(0)
-        instance.set_parallel(3,3,1)
+        instance.set_parallel_decomposition(3,3,1)
         instance.setup_mesh(6,6,1,6.0,6.0,0)
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.8)
@@ -1119,7 +1119,7 @@ class TestAthenaInterface(TestWithMPI):
         instance=self.new_instance(AthenaInterface, number_of_workers = 3)
         instance.initialize_code()
         instance.set_auto_decomposition(0)
-        instance.set_parallel(1,1,3)
+        instance.set_parallel_decomposition(1,1,3)
         instance.setup_mesh(5,5,6,5.0,5.0,30.0)
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.8)
@@ -1158,7 +1158,7 @@ class TestAthenaInterface(TestWithMPI):
         instance=self.new_instance(AthenaInterface, number_of_workers = 3)
         instance.initialize_code()
         instance.set_auto_decomposition(0)
-        instance.set_parallel(3,1,1)
+        instance.set_parallel_decomposition(3,1,1)
         instance.setup_mesh(6,5,5,6.0,5.0,5.0)
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.8)
@@ -1197,7 +1197,7 @@ class TestAthenaInterface(TestWithMPI):
         instance=self.new_instance(AthenaInterface, number_of_workers = 9)
         instance.initialize_code()
         instance.set_auto_decomposition(0)
-        instance.set_parallel(3,3,1)
+        instance.set_parallel_decomposition(3,3,1)
         instance.setup_mesh(6,6,5,6.0,6.0,5.0)
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.8)
@@ -1926,7 +1926,7 @@ class TestAthena(TestWithMPI):
     
     def test17(self): 
         instance=self.new_instance(Athena, number_of_workers = 2)
-        instance.set_parallel(1,2,1)
+        instance.set_parallel_decomposition(1,2,1)
         instance.parameters.mesh_size = (10,4,1)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.x_boundary_conditions = ("interface", "outflow")
@@ -1989,7 +1989,7 @@ class TestAthena(TestWithMPI):
     
     def test18(self): 
         instance=self.new_instance(Athena, number_of_workers = 2)
-        instance.set_parallel(2,1,1)
+        instance.set_parallel_decomposition(2,1,1)
         instance.parameters.mesh_size = (4,10,1)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.x_boundary_conditions = ("periodic", "periodic")
@@ -2053,7 +2053,7 @@ class TestAthena(TestWithMPI):
     
     def test19(self): 
         instance=self.new_instance(Athena, number_of_workers = 1)
-        instance.set_parallel(1,1,1)
+        instance.set_parallel_decomposition(1,1,1)
         instance.parameters.mesh_size = (4,5,6)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.x_boundary_conditions = ("periodic", "periodic")
@@ -2116,7 +2116,7 @@ class TestAthena(TestWithMPI):
     
     def test20(self): 
         instance=self.new_instance(Athena, number_of_workers = 4)
-        instance.set_parallel(2,2,1)
+        instance.parameters.parallel_decomposition = (2,2,1)
         instance.parameters.mesh_size = (4,5,6)
         instance.parameters.mesh_length = [1.0, 1.0, 1.0] | generic_unit_system.length
         instance.parameters.x_boundary_conditions = ("periodic", "periodic")

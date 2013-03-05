@@ -732,6 +732,10 @@ class AbstractMessageChannel(OptionalAttributes):
     def must_check_if_worker_is_up_to_date(self):
         return True
     
+    @option(type="int", sections=("channel",))
+    def number_of_workers(self):
+        return 1
+        
     def check_if_worker_is_up_to_date(self, object):
         if not self.must_check_if_worker_is_up_to_date:
             return
@@ -977,9 +981,6 @@ class MpiChannel(AbstractMessageChannel):
     def hostname(self):
         return None
     
-    @option(type="int", sections=("channel",))
-    def number_of_workers(self):
-        return 1
         
     @option(type="int", sections=("channel",))
     def debugger_port(self):
@@ -1284,10 +1285,6 @@ class MultiprocessingMPIChannel(AbstractMessageChannel):
     def hostname(self):
         return None
     
-    @option(type="int")
-    def number_of_workers(self):
-        return 1
-        
     def start(self):
         name_of_dir = "/tmp/amuse_"+os.getenv('USER')
         self.name_of_the_socket, self.server_socket = self._createAServerUNIXSocket(name_of_dir)
@@ -1770,10 +1767,6 @@ class SocketChannel(AbstractMessageChannel):
     @option(sections=("channel",))
     def hostname(self):
         return None
-    
-    @option(type="int", sections=("channel",))
-    def number_of_workers(self):
-        return 1
        
     def stop(self):
         if (self.socket == None):
@@ -2070,10 +2063,6 @@ class IbisChannel(AbstractMessageChannel):
     @option(sections=("channel",))
     def hostname(self):
         return None
-    
-    @option(type="int", sections=("channel",))
-    def number_of_workers(self):
-        return 1
     
     @option(type="int", sections=("channel",))
     def number_of_nodes(self):

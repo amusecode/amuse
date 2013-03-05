@@ -672,14 +672,12 @@ function set_parallel_decomposition(nx, ny, nz) result(ret)
   localdims = 0
   ntotal = 1
   ret = 0
-  if (nx.GT.0) then
-    ntotal = ntotal * nx
-  end if
-  if (ny.GT.0) then
-    ntotal = ntotal * ny
-  end if
-  if (nz.GT.0) then
-    ntotal = ntotal * nz
+  ntotal = ntotal * nx
+  ntotal = ntotal * ny
+  ntotal = ntotal * nz
+  if(ntotal .EQ. 0) then
+    localdims=0
+    call set_dims(dims)
   end if
   if(ntotal .GT. npr) then
     call set_dims(dims)

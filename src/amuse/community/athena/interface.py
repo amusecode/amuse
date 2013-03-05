@@ -267,17 +267,18 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         return 0
         
     
-    def set_parallel(self, nx, ny, nz):
-        self.par_seti("domain1", "AutoWithNProc", "%d", 0, "-")
-        self.par_seti("domain1", "NGrid_x1", "%d", nx, "-")
-        self.par_seti("domain1", "NGrid_x2", "%d", ny, "-")
-        self.par_seti("domain1", "NGrid_x3", "%d", nz, "-")
-        
+    def set_parallel_decomposition(self, nx, ny, nz):
+        if nx == 0 or ny == 0 or nz == 0:
+            self.par_seti("domain1", "AutoWithNProc", "%d", self.channel.number_of_workers, "-")
+        else:
+            self.par_seti("domain1", "AutoWithNProc", "%d", 0, "-")
+            self.par_seti("domain1", "NGrid_x1", "%d", nx, "-")
+            self.par_seti("domain1", "NGrid_x2", "%d", ny, "-")
+            self.par_seti("domain1", "NGrid_x3", "%d", nz, "-")
         return 0
         
     def set_auto_decomposition(self, value):
         self.par_seti("parallel", "auto", "%d", value, "-")
-        
         return 0
         
     @legacy_function    
@@ -1081,6 +1082,33 @@ class Athena(CommonCode):
             ("length_x", "length_y", "length_z")
         )
         
+        object.add_caching_parameter(
+            "set_parallel_decomposition", 
+            "nx",
+            "nproc_x", 
+            "number of processors for the x direction",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_parallel_decomposition", 
+            "ny",
+            "nproc_y", 
+            "number of processors for the y direction",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_parallel_decomposition", 
+            "nz",
+            "nproc_z", 
+            "number of processors for the z direction",
+            0,
+        )
+        
+        object.add_vector_parameter(
+            "parallel_decomposition",
+            "number of processors for each dimensions",
+            ("nproc_x", "nproc_y", "nproc_z")
+        )
         
         object.add_caching_parameter(
             "set_boundary", 

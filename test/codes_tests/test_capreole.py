@@ -562,7 +562,7 @@ class TestCapreoleInterface(TestWithMPI):
         self.assertEquals(nx, 2)
         self.assertEquals(ny, 1)
         self.assertEquals(nz, 2)
-        error = instance.set_parallel_decomposition(0,3,2)
+        error = instance.set_parallel_decomposition(10,3,2)
         self.assertEquals(error, -1)
         
     def test21(self):
