@@ -358,3 +358,26 @@ class TestHuayno(TestWithMPI):
         print sha.hexdigest()
         print "9714521156a4d4befc1e414f75aa650e1f8836ae"
     
+    
+    def test15(self):
+        particles = plummer.new_plummer_model(512)
+        expected_positions = None
+        for mode in ["cpu", "openmp", "opencl"]:
+            try:
+                instance = Huayno(mode=mode, number_of_workers=1)#, debugger="xterm")
+            except:
+                print "Running huayno with mode=", mode, " was unsuccessful."
+            else:
+                print "Running huayno with mode=", mode, "... "
+                
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
+            instance.particles.add_particles(particles)
+            
+            instance.evolve_model(0.2 | nbody_system.time)
+            instance.synchronize_model()
+            if expected_positions is None:
+                expected_positions = instance.particles.position
+            else:
+                self.assertAlmostRelativeEquals(expected_positions, instance.particles.position, 8)
+            instance.stop()

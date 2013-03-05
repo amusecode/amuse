@@ -88,11 +88,10 @@ huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/li
 
 huayno_worker_cl: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
-huayno_worker_cl: LIBS += $(CL_LIBS)
+huayno_worker_cl: LIBS += $(CL_LIBS)  -lstdcl
 huayno_worker_cl: INCLUDE += $(CL_FLAGS)
-
 huayno_worker_cl: __init__.py worker_code.cc worker_code.h $(OPENCL_BUILDDIR)/libhuayno_cl.a $(OPENCL_BUILDDIR)/interface.o 
-	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno.a -o $@ $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno_cl.a -o $@ $(LIBS)
 
 .cc.o: $<
 	$(MPICXX) -I$(SRCDIR)  $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 

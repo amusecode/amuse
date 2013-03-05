@@ -47,7 +47,7 @@ libhuayno.a: $(OBJS)
 	$(AR) $@ $(OBJS)
 	$(RANLIB) $@
 	
-libhuayno_cl.a: $(OBJS) evolve_kern.clh evolve_cl.o 
+libhuayno_cl.a: evolve_kern.clh $(OBJS) evolve_cl.o 
 	$(RM) -f $@
 	$(AR) $@ $(OBJS) evolve_cl.o 
 	$(RANLIB) $@
@@ -56,7 +56,7 @@ libhuayno_cl.a: $(OBJS) evolve_kern.clh evolve_cl.o
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
 
 .c.o: $<
-	$(MPICC) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICC) $(CFLAGS) -I../build_cl $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
 	awk 'BEGIN{print "const char srcstr[]=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@

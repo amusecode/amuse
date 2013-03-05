@@ -1,4 +1,4 @@
-#define CLCONTEXT   stdgpu
+#define CLCONTEXT   stddev
 #define NTHREAD  256
 #define BLOCKSIZE 256
 
