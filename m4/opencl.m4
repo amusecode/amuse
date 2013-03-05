@@ -132,7 +132,7 @@ for cl_libflags in $CL_LIBS_TRY; do
                                                  [ax_cv_check_cl_libcl="$ax_try_lib $ax_check_cl_dylib_flag"; break])])])
     done
     AS_IF([test "X$ax_cv_check_cl_libcl" = Xno],
-      [AC_MSG_WARN([test tes $cl_libflags ])],
+      [],
       [break])
 done
 

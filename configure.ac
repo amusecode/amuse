@@ -71,12 +71,35 @@ AS_IF([test x"$WITH_MPI" != xno],[
 )
 
 AC_LANG(C)
-AX_OPENMP(
-     [HAVE_OPENMP="yes"]
-    ,[HAVE_OPENMP="no"]
+
+AC_ARG_ENABLE(openmp,
+    [AS_HELP_STRING([--enable-openmp], [Turn off OpenMP support, even if it is available in the compilers])],
+    [
+        HAVE_OPENMP="no"
+        OPENMP_CFLAGS=""
+        OPENMP_FCFLAGS=""
+        AS_IF([test "x$enable_openmp" != "xno"], [
+            AX_OPENMP(
+                 [HAVE_OPENMP="yes"]
+                ,[HAVE_OPENMP="no"]
+            )
+            AC_LANG(Fortran)
+            AX_OPENMP()
+            AC_LANG(C)
+        ])
+    ],
+    [
+        AX_OPENMP(
+             [HAVE_OPENMP="yes"]
+            ,[HAVE_OPENMP="no"]
+        )
+        AC_LANG(Fortran)
+        AX_OPENMP()
+        AC_LANG(C)
+    ]
 )
+
 AC_LANG(Fortran)
-AX_OPENMP()
 AX_GFORTRAN_VERSION()
 AX_IFORT_VERSION()
     
