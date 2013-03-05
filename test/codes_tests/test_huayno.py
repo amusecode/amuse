@@ -367,6 +367,7 @@ class TestHuayno(TestWithMPI):
                 instance = Huayno(mode=mode, number_of_workers=1)#, debugger="xterm")
             except:
                 print "Running huayno with mode=", mode, " was unsuccessful."
+                continue
             else:
                 print "Running huayno with mode=", mode, "... "
                 
