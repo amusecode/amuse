@@ -11,7 +11,8 @@ Installation of the prerequisite software
    install-prerequisites-ubuntu
    install-prerequisites-osx
    install-prerequisites-arch
-   install-prerequisites-redhat
+   install-prerequisites-fedora
+   install-prerequisites-centos
    install-prerequisites-suse
 
    

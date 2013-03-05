@@ -1,64 +1,80 @@
-Installing on RedHat (CentOS, Fedora)
-=====================================
 
-Installing on CentOS 6
+
+Installing on Fedora 18
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a minimal CentOS 6 installation.
+In this section we asume a basic install of Fedora 18 installation.
 
-All
----
+
+All in One
+----------
 The prerequisites can be installed with a couple of commands
-on CentOS 6. 
+on Fedora.
 
-To install the prerequisites do (for base-devel select *all* members)::
+For mpich2 do::
+	
+	> sudo yum install make gcc gcc-c++ gcc-gfortran\
+		cmake zlib-devel\
+		mpich2 mpich2-devel\
+		hdf5 hdf5-devel\
+		fftw fftw-devel\
+		gsl gsl-devel\
+		gmp gmp-devel\
+		mpfr mpfr-devel\
+		python-nose numpy numpy-f2py\
+		h5py\
+		python-setuptools python-setuptools-devel\
+		mpi4py-mpich2\
+		python-matplotlib
+    
 
-    > sudo yum install make gcc gcc-c++ gcc-gfortran \
-	cmake zlib-devel\
-	openmpi openmpi-devel \
-	fftw fftw-devel \
-	gsl gsl-devel gmp
+
+.. note::
+    This line will also install `matplotlib`, this package is
+    used for all plotting in AMUSE. If you do not need any plotting
+    you can leave it out.
+
+After installing mpich2, you need to activate it using the 'module'
+command::
+
+	> module load mpi/mpich2-$(uname -i)
+	
+.. note::
+
+    We recommend to put the module activation script
+    in your .bashrc or .cshrc file.
+
+For openmpi do::
+
+	> sudo yum install make gcc gcc-c++ gcc-gfortran\
+		cmake zlib-devel\
+		openmpi openmpi-devel\
+		hdf5 hdf5-devel\
+		fftw fftw-devel\
+		gsl gsl-devel\
+		gmp gmp-devel\
+		mpfr mpfr-devel\
+		python-nose numpy numpy-f2py\
+		h5py\
+		python-setuptools python-setuptools-devel\
+		mpi4py-openmpi\
+		python-matplotlib
 	
 After installing openmpi, you need to activate it using the 'module'
 command::
-    
-    > module load openmpi-$(uname -i)
+
+	> module load mpi/openmpi-$(uname -i)
+
 
 .. note::
 
-    We recommend to put the openmpi module activation script
-    in your .bashrc or .cshrc file.
-
-Install python and dependencies::
-
-    > sudo yum install python-devel \
-	docutils python-nose \
-	numpy numpy-f2py\
-	python-docutils
-
-To install hdf5 and docutils first install an additional rpm forge.
-For documentation see http://wiki.centos.org/AdditionalResources/Repositories/RPMForge
-
-After installing an rpm forge do::
-
-    > sudo yum install hdf5 hdf5-devel
+    On Fedora you can install both mpich2 and openmpi, the module
+    command will keep manage these separate installation, so
+    no conflict will exists. If you change between implementation, you
+    will need to recompile the amuse community codes with::
     
-To install h5py do::
-
-    > sudo easy_install h5py
-    
-Last, you need to install mpi4py with::
-
-    > su -
-    > module load openmpi-$(uname -i)
-    > easy_install mpi4py
-
-.. note::
-    
-    The default CentOS sudo policy resets the environments variables and
-    thereby removes the openmpi settings. So for the last step
-    you cannot use ```sudo easy_install mpi4py``` but must install
-    under root directly.
+	> make clean; make
+	
 
 
 Installing on Fedora 11
