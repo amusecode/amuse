@@ -145,7 +145,7 @@ class TestSimpleMultiples(TestWithMPI):
         print "error:", error
         self.assertTrue(error < 1e-7)
         
-    def test2(self):
+    def xtest2(self):
         converter = nbody_system.nbody_to_si(units.MSun, units.parsec)
         
         code = Hermite(converter)
@@ -182,7 +182,7 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertTrue(error < 1e-4)
         #self.assertAlmostRelativeEquals(multiples_code.multiples_energy_correction - multiples_code.kinetic_energy, -total_energy0, 7)
 
-    def test3(self):
+    def xtest3(self):
         code = Hermite()
         stars = datamodel.Particles()
         binary1 = self.new_binary(
@@ -230,7 +230,7 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertEquals(len(code.particles), 2)
     
 
-    def test4(self):
+    def xtest4(self):
         code = Hermite()
         stars = datamodel.Particles()
         binary1 = self.new_binary(
