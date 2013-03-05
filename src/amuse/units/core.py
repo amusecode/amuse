@@ -26,8 +26,13 @@ class system(object):
         
     @classmethod
     def get(cls, name):
-        return cls.ALL[name]
-        
+        try:
+            return cls.ALL[name]
+        except KeyError as ex:
+            from amuse.units import nbody_system
+            from amuse.units import si
+            return cls.ALL[name]
+            
 
     def __reduce__(self):
         return (get_system_with_name, (self.name,))

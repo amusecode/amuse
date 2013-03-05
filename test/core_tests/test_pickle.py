@@ -14,6 +14,11 @@ from amuse.units.constants import *
 
 from amuse.datamodel import Particles
 
+import subprocess
+import pickle
+import sys
+import os
+
 class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 
     def test1(self):
@@ -84,9 +89,57 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         self.assertTrue(quantity is unpickled_quantity)
         self.assertEqual(str(quantity), str(unpickled_quantity))
     
-    
+    def test8(self):
+        quantity = 1 | nbody_system.time
+        pickled_quantity = pickle.dumps(quantity)
+        print pickled_quantity
+        unpickled_quantity = pickle.loads(pickled_quantity)
+        self.assertEqual(quantity, unpickled_quantity)
+        self.assertEqual(str(quantity), str(unpickled_quantity))
 
-
+    def test9(self):
+        quantity = 1.3 | nbody_system.time
+        with open("test9.pickle", "w") as stream: 
+            pickle.dump(quantity, stream)
+        
+        pythonpath = os.pathsep.join(sys.path)
+        env = os.environ.copy()
+        env['PYTHONPATH'] = pythonpath
+        process = subprocess.Popen([
+                sys.executable,
+                "-c",
+                "import pickle;stream = open('test9.pickle', 'r'); print str(pickle.load(stream));stream.close()"
+            ]
+            , stdout=subprocess.PIPE
+            , stderr=subprocess.PIPE
+            ,env = env
+        )
+        unpickled_quantity_string, error_string = process.communicate()
+        self.assertEqual(process.returncode, 0)        
+        self.assertEqual(str(quantity),unpickled_quantity_string.strip())
+        
+        
+    def test10(self):
+        quantity = 1  | parsec
+        with open("test10.pickle", "w") as stream: 
+            pickle.dump(quantity, stream)
+               
+        pythonpath = os.pathsep.join(sys.path)
+        env = os.environ.copy()
+        env['PYTHONPATH'] = pythonpath
+        process = subprocess.Popen([
+                sys.executable,
+                "-c",
+                "import pickle; stream = open('test10.pickle', 'r'); print str(pickle.load(stream));stream.close()"
+            ]
+            , stdout=subprocess.PIPE
+            , stderr=subprocess.PIPE
+            , env = env
+        )
+        unpickled_quantity_string, error_string = process.communicate()
+        self.assertEqual(process.returncode, 0)        
+        self.assertEqual(str(quantity),unpickled_quantity_string.strip())
+        
 class TestPicklingOfParticleSets(amusetest.TestCase):
 
     def test1(self):
