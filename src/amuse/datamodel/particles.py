@@ -1075,7 +1075,6 @@ class Particles(AbstractParticleSet):
             
     def savepoint(self, timestamp=None, format = 'memory', **attributes):
         if format == 'memory':
-            print type(self)
             instance = type(self)(is_working_copy = False)
             instance._private.attribute_storage = self._private.attribute_storage.copy()
             instance.collection_attributes.timestamp = timestamp
