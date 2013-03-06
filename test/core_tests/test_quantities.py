@@ -297,7 +297,23 @@ class TestQuantities(amusetest.TestCase):
         print type(product_unit)
         self.assertEquals(product_unit , units.AU / units.MSun)
         self.assertEquals(product_unit.local_factor , 1/4.0)
-        
+
+    def test27(self):
+        a=[1.|units.kg,2.|units.kg,3000.| units.g, 4.| (1000*units.g)]
+        b=VectorQuantity.new_from_scalar_quantities(*a)        
+        c=[1.,2.,3.,4.] | units.kg
+        print a[0].unit==a[2].unit
+        self.assertEquals(b,c)
+
+    def test28(self):
+        a=[1.|units.kg,2.|units.kg,3000.| units.m, 4.| (1000*units.g)]
+        try: 
+          b=VectorQuantity.new_from_scalar_quantities(*a)        
+          raise Exception("expect error")
+        except:
+          pass
+
+
         
 class TestAdaptingVectorQuantities(amusetest.TestCase):
 

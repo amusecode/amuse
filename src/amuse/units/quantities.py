@@ -340,12 +340,10 @@ class VectorQuantity(Quantity):
 
     @classmethod
     def new_from_scalar_quantities(cls, *values):
-        unit = None
-        array = []
-        for x in values:
-            if unit is None:
-                unit = x.unit
-            array.append(x.value_in(unit))
+        unit=values[0].unit
+        if filter(lambda x:not x.unit.has_same_base_as(unit),values):
+          raise exceptions.AmuseException("not all values have conforming units")
+        array=map(lambda x: x.value_in(unit),values)
         return cls(array, unit)
 
     def aszeros(self):
