@@ -319,20 +319,31 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
                 list_arguments[index] = quantity
         
         default_argument_found = False
+        missing_attributes = []
         dict_arguments = {}
         for index, x in enumerate(list_arguments):
             if x is not_set_marker:
                 name_of_attribute = self.attribute_names[index]
-                default_argument_found = True
                 if not name_of_attribute in self.optional_attribute_names:
-                    raise exceptions.AmuseException("To add particles to this code you need to specify the {0!r} attribute".format(self.attribute_names[index]))
+                    missing_attributes.append(name_of_attribute)
+                else:
+                    default_argument_found = True
             elif default_argument_found:
                 name_of_attribute = self.attribute_names[index]
                 if not name_of_attribute in self.optional_attribute_names:
                     raise exceptions.AmuseException("Optional before required arguments")
                 dict_arguments[name_of_attribute] = x
                 list_arguments[index] = not_set_marker
-                    
+        
+        if len(missing_attributes) > 0:
+            if len(missing_attributes) == 1:
+                missing_attributes_string = "{0!r} attribute".format(missing_attributes[0])
+            else:
+                missing_attributes_string = "{0!r} and {1!r} attributes".format(", ".join(missing_attributes[:-1]), missing_attributes[-1])
+            raise exceptions.MissingAttributesAmuseException(
+                missing_attributes,
+                "To add particles to this code you need to specify the {0}".format(missing_attributes_string))
+        
         list_arguments = [x for x in list_arguments if not x is not_set_marker]
         return list_arguments, dict_arguments
         

@@ -1,6 +1,6 @@
 from amuse.test import amusetest
 
-from amuse.support.exceptions import AmuseException
+from amuse.support.exceptions import AmuseException, MissingAttributesAmuseException
 
 
 from amuse.support.interface import InCodeComponentImplementation
@@ -1677,6 +1677,16 @@ class TestParticlesWithBinding(amusetest.TestCase):
         channel.copy()
         
         self.assertAlmostRelativeEquals(local_particles.mass , [3.0, 10.0] | units.kg)
+        
+    def test16(self):
+        local_particles = datamodel.Particles(2)
+        interface = self.TestInterface()
+        self.assertRaises(MissingAttributesAmuseException, interface.particles.add_particles, local_particles, 
+            expected_message="To add particles to this code you need to specify the 'mass' attribute")
+        local_particles.mass_squared = [9.0, 16.0] | units.kg**2
+        local_particles.add_calculated_attribute("mass", lambda m2: m2.sqrt(), attributes_names=["mass_squared"])
+        interface.particles.add_particles(local_particles)
+        self.assertAlmostRelativeEquals(interface.particles.mass , [3.0, 4.0] | units.kg)
         
 class TestParticlesWithUnitsConverted(amusetest.TestCase):
     

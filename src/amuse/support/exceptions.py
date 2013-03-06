@@ -28,6 +28,13 @@ class AmuseException(Exception):
     def errorcode(self):
         return self.arguments[-1]
 
+class MissingAttributesAmuseException(AmuseException):
+    
+    def __init__(self, missing_attributes, *arguments):
+        AmuseException.__init__(self, *arguments)
+        self.missing_attributes = missing_attributes
+    
+
 class AmuseWarning(Warning):
     pass
 
