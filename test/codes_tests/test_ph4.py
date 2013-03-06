@@ -1038,4 +1038,26 @@ class TestPH4(TestWithMPI):
         instance.particles.add_particle(particles[1])
         instance.recommit_particles()
         self.assertEquals(instance.particles.index_in_code, [3,4])
-                
+           
+
+    def test26(self):
+        
+        particles = datamodel.Particles(
+            mass=[1,2] | nbody_system.mass,
+            x=[-1,1] | nbody_system.length,
+            y=[ 0,0] | nbody_system.length,
+            z=[ 0,0] | nbody_system.length,
+            vx=[-1,1] | nbody_system.speed,
+            vy=[-1,1] | nbody_system.speed,
+            vz=[-1,1] | nbody_system.speed,
+            id=[3,4]
+        )
+        
+        instance=ph4()
+        
+        instance.particles.add_particles(particles)
+        self.assertEquals(instance.particles.index_in_code, [3,4])
+        instance.commit_particles()
+        print instance.particles[0].potential_in_code
+        self.assertEquals(instance.particles[0].potential(gravitationalConstant=nbody_system.G), -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
+        self.assertEquals(instance.particles[0].potential_in_code, -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))

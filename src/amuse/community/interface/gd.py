@@ -919,6 +919,7 @@ class GravitationalDynamics(common.CommonCode):
         object.add_method('RUN', 'get_mass')
         object.add_method('RUN', 'get_position')
         object.add_method('RUN', 'get_velocity')
+        object.add_method('RUN', 'get_potential')
         object.add_method('RUN', 'get_potential_energy')
         object.add_method('RUN', 'get_kinetic_energy')
         
@@ -1101,6 +1102,15 @@ class GravitationalDynamics(common.CommonCode):
             )
         )
         
+        object.add_method(
+            "get_potential",
+            (
+                object.NO_UNIT,
+            ),
+            (nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+        )
+
+
         object.add_method(
             'get_indices_of_colliding_particles',
             (),

@@ -404,5 +404,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
 
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
+    
+        object.add_getter('particles', 'get_potential', names=('potential_in_code',))
         
         self.stopping_conditions.define_particle_set(object)
