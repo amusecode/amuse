@@ -10,10 +10,10 @@ except ImportError:
         hist = stub
         xlabel = stub
         ylabel = stub
-            
+
     native_plot = FakePlotLibrary()
 
-import numpy    
+import numpy
 try:
     from pynbody.array import SimArray
     from pynbody.snapshot import SimSnap, _new
@@ -35,7 +35,7 @@ class UnitlessArgs(object):
     @classmethod
     def strip(cli, *args, **kwargs):
         if cli.current_plot is native_plot.gca():
-            args = [arg.as_quantity_in(unit) if isinstance(arg, quantities.Quantity) else arg 
+            args = [arg.as_quantity_in(unit) if isinstance(arg, quantities.Quantity) else arg
                 for arg, unit in map(None, args, cli.arg_units)]
         cli.clear()
         cli.current_plot = native_plot.gca()
@@ -48,7 +48,7 @@ class UnitlessArgs(object):
                 cli.stripped_args.append(v)
                 cli.arg_units.append(None)
                 cli.unitnames_of_args.append("")
-        
+
     @classmethod
     def clear(cli):
         cli.stripped_args = []
@@ -115,6 +115,18 @@ def hist(x, bins=10, range=None, normed=False, weights=None, cumulative=False, b
     UnitlessArgs.unitnames_of_args.append("")
     return result
 
+def errorbar(*args, **kwargs):
+    for label in ['yerr', 'xerr']:
+        if label in kwargs:
+            args += (kwargs.pop(label),)
+
+    UnitlessArgs.strip(*args, **kwargs)
+    args = UnitlessArgs.stripped_args
+    result = native_plot.errorbar(*args, **kwargs)
+    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
+    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    return result
+
 def text(x, y, s, **kwargs):
     UnitlessArgs.strip(x,y)
     args = UnitlessArgs.stripped_args
@@ -138,15 +150,15 @@ def smart_length_units_for_vector_quantity(quantity):
             return length_unit
     return units.m
 
-def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1, 
+def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
         gd_particles=None, width=None, view=None):
     """
-    Very simple and fast procedure to make a plot of the hydrodynamics state of 
-    a set of SPH particles. The particles must have the following attributes defined: 
+    Very simple and fast procedure to make a plot of the hydrodynamics state of
+    a set of SPH particles. The particles must have the following attributes defined:
     position, u, h_smooth.
     For a more accurate plotting procedure, see for example:
     examples/applications/christmas_card_2010.py
-    
+
     :argument particles: the SPH particles to be plotted
     :argument u_range: range of internal energy for color scale [umin, umax]
     :argument min_size: minimum size to use for plotting particles, in pixel**2
@@ -159,32 +171,32 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
     h_smooths = particles.h_smooth
     x, y, z = positions.x, positions.y, positions.z
     z, x, y, us, h_smooths = z.sorted_with(x, y, us, h_smooths)
-    
+
     if u_range:
         u_min, u_max = u_range
     else:
         u_min, u_max = min(us), max(us)
     log_u = numpy.log((us / u_min)) / numpy.log((u_max / u_min))
     clipped_log_u = numpy.minimum(numpy.ones_like(log_u), numpy.maximum(numpy.zeros_like(log_u), log_u))
-    
+
     red   = 1.0 - clipped_log_u**4
     blue  = clipped_log_u**4
     green = numpy.minimum(red, blue)
-    
+
     colors = numpy.transpose(numpy.array([red, green, blue]))
     n_pixels = native_plot.gcf().get_dpi() * native_plot.gcf().get_size_inches()
-    
+
     current_axes = native_plot.gca()
     current_axes.set_axis_bgcolor('#101010')
     if width is not None:
         view = width * [-0.5, 0.5, -0.5, 0.5]
-    
+
     if view:
         current_axes.set_aspect("equal", adjustable = "box")
         length_unit = smart_length_units_for_vector_quantity(view)
-        current_axes.set_xlim(view[0].value_in(length_unit), 
+        current_axes.set_xlim(view[0].value_in(length_unit),
             view[1].value_in(length_unit), emit=True, auto=False)
-        current_axes.set_ylim(view[2].value_in(length_unit), 
+        current_axes.set_ylim(view[2].value_in(length_unit),
             view[3].value_in(length_unit), emit=True, auto=False)
         phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((view[1]-view[0])**2 + (view[3]-view[2])**2)
     else:
@@ -193,7 +205,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
         phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((max(x)-min(x))**2 + (max(y)-min(y))**2)
 #~    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2), min_size)
     sizes = min_size
-    
+
     x = x.as_quantity_in(length_unit)
     y = y.as_quantity_in(length_unit)
     scatter(x, y, sizes, colors, edgecolors = "none", alpha = alpha)
@@ -205,7 +217,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
 def convert_particles_to_pynbody_data(particles, length_unit=units.kpc, pynbody_unit="kpc"):
     if not HAS_PYNBODY:
         raise AmuseException("Couldn't find pynbody")
-    
+
     if hasattr(particles, "u"):
         pynbody_data = _new(gas=len(particles))
     else:
@@ -224,7 +236,7 @@ def convert_particles_to_pynbody_data(particles, length_unit=units.kpc, pynbody_
     if hasattr(particles, "h_smooth"):
         pynbody_data['smooth'] = SimArray(particles.h_smooth.value_in(length_unit), pynbody_unit)
     if hasattr(particles, "rho"):
-        pynbody_data['rho'] = SimArray(particles.rho.value_in(units.g / units.cm**3), 
+        pynbody_data['rho'] = SimArray(particles.rho.value_in(units.g / units.cm**3),
             "g cm^-3")
     if hasattr(particles, "u"):
 #        pynbody_data['u'] = SimArray(particles.u.value_in(units.km**2 / units.s**2), "km^2 s^-2")
@@ -245,35 +257,35 @@ def mu(X = None, Y = 0.25, Z = 0.02, x_ion = 0.1):
     return constants.proton_mass / (X*(1.0+x_ion) + Y*(1.0+2.0*x_ion)/4.0 + Z*x_ion/2.0)
 
 def _smart_length_units_for_pynbody_data(length):
-    length_units = [(units.Gpc, "Gpc"), (units.Mpc, "Mpc"), (units.kpc, "kpc"), 
-        (units.parsec, "pc"), (units.AU, "au"), (1.0e9*units.m, "1.0e9 m"), 
+    length_units = [(units.Gpc, "Gpc"), (units.Mpc, "Mpc"), (units.kpc, "kpc"),
+        (units.parsec, "pc"), (units.AU, "au"), (1.0e9*units.m, "1.0e9 m"),
         (1000*units.km, "1000 km"), (units.km, "km")]
     for length_unit, pynbody_unit in length_units:
         if length > (1 | length_unit):
             return length_unit, pynbody_unit
     return units.m, "m"
 
-def pynbody_column_density_plot(particles, width=None, qty='rho', units=None, 
+def pynbody_column_density_plot(particles, width=None, qty='rho', units=None,
         sideon=False, faceon=False, **kwargs):
     if not HAS_PYNBODY:
         raise AmuseException("Couldn't find pynbody")
-    
+
     if width is None:
         width = 2.0 * particles.position.lengths_squared().amax().sqrt()
     length_unit, pynbody_unit = _smart_length_units_for_pynbody_data(width)
     pyndata = convert_particles_to_pynbody_data(particles, length_unit, pynbody_unit)
     UnitlessArgs.strip([1]|length_unit, [1]|length_unit)
-    
+
     if sideon:
         function = pynbody_sph.sideon_image
     elif faceon:
         function = pynbody_sph.faceon_image
     else:
         function = pynbody_sph.image
-    
+
     if units is None and qty == 'rho':
         units = 'm_p cm^-2'
-    
+
     function(pyndata, width=width.value_in(length_unit), qty=qty, units=units, **kwargs)
     UnitlessArgs.current_plot = native_plot.gca()
 
@@ -292,7 +304,7 @@ if __name__ == '__main__':
     xlabel('x')
     ylabel('$M_\odot y$')
     native_plot.legend(loc=2)
-    
+
     x = range(50) | units.Myr
     y1 = quantities.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
     y2 = -(1e43 | units.J) - y1
@@ -302,7 +314,7 @@ if __name__ == '__main__':
     xlabel('t')
     ylabel('E')
     native_plot.legend()
-    
+
     x = range(7) | units.day
     y1 = [0, 4, 2, 3, 2, 5, 1]
     y2 = [3, 0, 2, 2, 3, 0, 4]
@@ -312,7 +324,7 @@ if __name__ == '__main__':
     xlabel('time')
     ylabel('consumption / day')
     native_plot.legend()
-    
+
     y1 = units.N.new_quantity(np.random.normal(0.,1.,100))
     x = (units.g * units.cm * units.s**-2).new_quantity(np.arange(-3.0e5, 3.0e5, 0.1e5))
     y2 = np.exp(-np.arange(-3., 3., 0.1)**2)/np.sqrt(np.pi)
