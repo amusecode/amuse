@@ -507,7 +507,23 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             The code could not set the value.
         """
         return function
-        
+    
+    @legacy_function
+    def get_convective_overshoot_parameter():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('convective_overshoot_parameter', dtype='float64', direction=function.OUT,
+            description="The current value of the convective overshoot parameter.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_convective_overshoot_parameter():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('convective_overshoot_parameter', dtype='float64', direction=function.IN,
+            description="The new value of the convective overshoot parameter.")
+        function.result_type = 'int32'
+        return function
+    
     @legacy_function
     def get_mixing_length_ratio():
         """
@@ -820,6 +836,14 @@ class MESA(StellarEvolution, InternalStellarStructure):
             "max_iter_stop_condition", 
             "The maximum number of iterations of this instance. (Negative means no maximum)",
             default_value = -1111
+        )
+        
+        object.add_method_parameter(
+            "get_convective_overshoot_parameter",
+            "set_convective_overshoot_parameter",
+            "herwig_convective_overshoot_parameter", 
+            "The convective overshoot parameter (Herwig 2000), f=0.016 is argued to be a reasonable value.",
+            default_value = 0.0
         )
         
         object.add_method_parameter(

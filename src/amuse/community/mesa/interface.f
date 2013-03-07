@@ -19,6 +19,14 @@
          double precision :: AMUSE_blocker_wind_efficiency = 0.1d0
          double precision :: AMUSE_de_jager_wind_efficiency = 0.8d0
          double precision :: AMUSE_dutch_wind_efficiency = 0.8d0
+         double precision :: AMUSE_overshoot_f_above_nonburn = 0
+         double precision :: AMUSE_overshoot_f_below_nonburn = 0
+         double precision :: AMUSE_overshoot_f_above_burn_h = 0
+         double precision :: AMUSE_overshoot_f_below_burn_h = 0
+         double precision :: AMUSE_overshoot_f_above_burn_he = 0
+         double precision :: AMUSE_overshoot_f_below_burn_he = 0
+         double precision :: AMUSE_overshoot_f_above_burn_z = 0
+         double precision :: AMUSE_overshoot_f_below_burn_z = 0
          
          double precision, allocatable :: target_times(:)
          integer :: number_of_particles ! Dead or alive...
@@ -173,6 +181,14 @@
       s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
       s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
       s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
+      s% overshoot_f_above_nonburn = AMUSE_overshoot_f_above_nonburn
+      s% overshoot_f_below_nonburn = AMUSE_overshoot_f_below_nonburn
+      s% overshoot_f_above_burn_h = AMUSE_overshoot_f_above_burn_h
+      s% overshoot_f_below_burn_h = AMUSE_overshoot_f_below_burn_h
+      s% overshoot_f_above_burn_he = AMUSE_overshoot_f_above_burn_he
+      s% overshoot_f_below_burn_he = AMUSE_overshoot_f_below_burn_he
+      s% overshoot_f_above_burn_z = AMUSE_overshoot_f_above_burn_z
+      s% overshoot_f_below_burn_z = AMUSE_overshoot_f_below_burn_z
       if (debugging) then
          write (*,*) "Creating new particles with mass: ", s% initial_mass
          write (*,*) "Loading starting model from: ", s% zams_filename
@@ -231,6 +247,14 @@
       s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
       s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
       s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
+      s% overshoot_f_above_nonburn = AMUSE_overshoot_f_above_nonburn
+      s% overshoot_f_below_nonburn = AMUSE_overshoot_f_below_nonburn
+      s% overshoot_f_above_burn_h = AMUSE_overshoot_f_above_burn_h
+      s% overshoot_f_below_burn_h = AMUSE_overshoot_f_below_burn_h
+      s% overshoot_f_above_burn_he = AMUSE_overshoot_f_above_burn_he
+      s% overshoot_f_below_burn_he = AMUSE_overshoot_f_below_burn_he
+      s% overshoot_f_above_burn_z = AMUSE_overshoot_f_above_burn_z
+      s% overshoot_f_below_burn_z = AMUSE_overshoot_f_below_burn_z
       if (debugging) then
          write (*,*) "Creating new pre-main-sequence particles with mass: ", s% initial_mass
       endif
@@ -1604,6 +1628,32 @@
          set_dutch_wind_efficiency = 0
       end function set_dutch_wind_efficiency
 
+! Retrieve the current value of the convective overshoot parameter
+      integer function get_convective_overshoot_parameter(AMUSE_value)
+         use amuse_support, only: AMUSE_overshoot_f_above_nonburn
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         double precision :: check
+         AMUSE_value = AMUSE_overshoot_f_above_nonburn
+         get_convective_overshoot_parameter = 0
+      end function get_convective_overshoot_parameter
+
+! Set the current value of the convective overshoot parameter
+      integer function set_convective_overshoot_parameter(AMUSE_value)
+         use amuse_support
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_overshoot_f_above_nonburn = AMUSE_value
+         AMUSE_overshoot_f_below_nonburn = AMUSE_value
+         AMUSE_overshoot_f_above_burn_h = AMUSE_value
+         AMUSE_overshoot_f_below_burn_h = AMUSE_value
+         AMUSE_overshoot_f_above_burn_he = AMUSE_value
+         AMUSE_overshoot_f_below_burn_he = AMUSE_value
+         AMUSE_overshoot_f_above_burn_z = AMUSE_value
+         AMUSE_overshoot_f_below_burn_z = AMUSE_value
+         set_convective_overshoot_parameter = 0
+      end function set_convective_overshoot_parameter
+
 ! Retrieve the current value of the mixing length ratio
       integer function get_mixing_length_ratio(AMUSE_value)
          use amuse_support, only: AMUSE_mixing_length_ratio
@@ -1728,6 +1778,14 @@
       s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
       s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
       s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
+      s% overshoot_f_above_nonburn = AMUSE_overshoot_f_above_nonburn
+      s% overshoot_f_below_nonburn = AMUSE_overshoot_f_below_nonburn
+      s% overshoot_f_above_burn_h = AMUSE_overshoot_f_above_burn_h
+      s% overshoot_f_below_burn_h = AMUSE_overshoot_f_below_burn_h
+      s% overshoot_f_above_burn_he = AMUSE_overshoot_f_above_burn_he
+      s% overshoot_f_below_burn_he = AMUSE_overshoot_f_below_burn_he
+      s% overshoot_f_above_burn_z = AMUSE_overshoot_f_above_burn_z
+      s% overshoot_f_below_burn_z = AMUSE_overshoot_f_below_burn_z
       
       s% doing_first_model_of_run = .true.
       s% dt = 0
