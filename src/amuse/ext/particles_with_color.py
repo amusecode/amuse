@@ -15,16 +15,6 @@ from amuse.datamodel import ParticlesOverlay
 __all__ = ["new_particles_with_color", "new_particles_with_blackbody_color", "mu", "u_from_T", "T_from_u"]
 
 
-class ParticlesWithColor(ParticlesOverlay):
-    
-    def __init__(self, original_particles, red_function, green_function, blue_function, attributes_names=None):
-        ParticlesOverlay.__init__(self, original_particles)
-        self.add_calculated_attribute("red", red_function, attributes_names=attributes_names)
-        self.add_calculated_attribute("green", green_function, attributes_names=attributes_names)
-        self.add_calculated_attribute("blue", blue_function, attributes_names=attributes_names)
-        self.add_vector_attribute("color", ["red", "green", "blue"])
-    
-
 def new_particles_with_color(original_particles, red_function, green_function, blue_function, attributes_names=None):
     """
     Returns new color particles. These are bound to the 'original_particles' in 
@@ -35,7 +25,11 @@ def new_particles_with_color(original_particles, red_function, green_function, b
     :argument green_function: function that computes green color of a particle
     :argument blue_function: function that computes blue color of a particle
     """
-    return ParticlesWithColor(original_particles, red_function, green_function, blue_function, attributes_names=attributes_names)
+    original_particles.add_calculated_attribute("red", red_function, attributes_names=attributes_names)
+    original_particles.add_calculated_attribute("green", green_function, attributes_names=attributes_names)
+    original_particles.add_calculated_attribute("blue", blue_function, attributes_names=attributes_names)
+    original_particles.add_vector_attribute("color", ["red", "green", "blue"])
+    return original_particles
 
 def mu(X = None, Y = 0.25, Z = 0.02, x_ion = 0.1):
     """

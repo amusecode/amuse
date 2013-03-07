@@ -1196,8 +1196,14 @@ class Particles(AbstractParticleSet):
         self._private.version += 1
         
     def get_values_in_store(self, indices, attributes):
-        return self._private.attribute_storage.get_values_in_store(indices, attributes)
+        if len(set(attributes) - set(self.get_attribute_names_defined_in_store())) == 0:
+            return self._private.attribute_storage.get_values_in_store(indices, attributes)
         
+        missing_attributes = set(attributes) - set(self.get_attribute_names_defined_in_store())
+        defined_attributes = list(set(attributes) - missing_attributes)
+        defined_values = dict(zip(defined_attributes, self._private.attribute_storage.get_values_in_store(indices, defined_attributes)))
+        return [defined_values[attribute] if attribute in defined_values else getattr(self[indices], attribute) for attribute in attributes]
+    
     def get_indices_of_keys(self, keys):
         return self._private.attribute_storage.get_indices_of(keys)
   
