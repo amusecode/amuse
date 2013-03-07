@@ -1196,10 +1196,10 @@ class Particles(AbstractParticleSet):
         self._private.version += 1
         
     def get_values_in_store(self, indices, attributes):
-        if len(set(attributes) - set(self.get_attribute_names_defined_in_store())) == 0:
+        if len(set(attributes) - set(self.get_attribute_names_defined_in_store()) - set(["index_in_code"])) == 0:
             return self._private.attribute_storage.get_values_in_store(indices, attributes)
         
-        missing_attributes = set(attributes) - set(self.get_attribute_names_defined_in_store())
+        missing_attributes = set(attributes) - set(self.get_attribute_names_defined_in_store()) - set(["index_in_code"])
         defined_attributes = list(set(attributes) - missing_attributes)
         defined_values = dict(zip(defined_attributes, self._private.attribute_storage.get_values_in_store(indices, defined_attributes)))
         return [defined_values[attribute] if attribute in defined_values else getattr(self[indices], attribute) for attribute in attributes]
