@@ -892,7 +892,7 @@ FOOTER_CODE_STRING = """
                 request.clear();
                 request.readFrom(channel);
 
-                System.err.println("got message " + request.toContentString());
+                System.err.println("got message " + request.toString());
 
                 reply.clear();
 
@@ -903,9 +903,11 @@ FOOTER_CODE_STRING = """
                 keepRunning = handleCall();
 
                 System.err.println("sending reply message " + reply.toString());
-                System.err.println("sending reply message " + reply.toContentString());
+                //System.err.println("sending reply message " + reply.toContentString());
 
                 reply.writeTo(channel);
+                
+                System.err.println("call handled");
             }
         } catch (IOException e) {
             System.err.println("Error running worker: " + e.getMessage());
