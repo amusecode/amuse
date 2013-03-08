@@ -835,6 +835,14 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
 
             intBytes.asIntBuffer().put(data);
         }
+        
+        // sets all elements of a slice
+        public void setDoubleSlice(int sliceIndex, double[] data) {
+            doubleBytes.position(getCallCount() * sliceIndex * SIZEOF_DOUBLE);
+            doubleBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_DOUBLE);
+
+            doubleBytes.asDoubleBuffer().put(data);
+        }
 
         // sets a single element of a slice
         public void setIntElement(int sliceIndex, int index, int value) {
@@ -952,6 +960,8 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
         elif self.specification.can_handle_array:
             self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
             self.out.indent()
+            
+        self.output_declare_output_variables()
  
         #self.output_copy_inout_variables()
         self.output_function_start()
@@ -969,6 +979,8 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
 #        elif self.specification.can_handle_array:
 #            self.out.dedent()
 #            self.out.lf() + '}'
+
+        self.output_copy_output_variables()
         
         self.output_casestmt_end()
         self.out.dedent()
@@ -996,8 +1008,8 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
         else:
             self.out.n() + 'request.get' + name + 'Slice(' + index + ')[0]'
         
-    def output_var(self, name, index):
-        self.out.n() + 'reply.get' + name + 'Slice(' + index + ')'
+    def output_var(self, name):
+        self.out.n() + name
     
     def output_function_parameters(self):
         self.out.indent()
@@ -1017,12 +1029,28 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                     self.output_var(spec.output_var_name, parameter.output_index)
             elif parameter.direction == LegacyFunctionSpecification.OUT:
-                    self.output_var(spec.output_var_name, parameter.output_index)
+                    self.output_var(parameter.name)
             elif parameter.direction == LegacyFunctionSpecification.LENGTH:
                 self.out.n() + 'count'
     
         self.out.dedent()
         
+    def output_declare_output_variables(self):
+        
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
+            
+            if parameter.direction == LegacyFunctionSpecification.OUT:
+                self.out.lf() + spec.type + '[] ' + parameter.name + ' = new ' +  spec.type + '[count];'
+                
+                
+    def output_copy_output_variables(self):
+        
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
+            
+            if parameter.direction == LegacyFunctionSpecification.OUT:
+                self.out.lf() + 'reply.set' + spec.output_var_name + 'Slice(' + parameter.output_index + ', ' + parameter.name + ');'
         
     def output_copy_inout_variables(self):
         for parameter in self.specification.parameters:
