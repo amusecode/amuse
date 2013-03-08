@@ -86,18 +86,18 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-t",
             "--type",
-            choices=["c","h", "H", "f90", "py"],
+            choices=["c","h", "H", "f90", "py", "java"],
             default="c",
             dest="type",
-            help="TYPE of the code to generate. Can be one of c, h, H, f90 or py. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper (Defaults to c)")
+            help="TYPE of the code to generate. Can be one of c, h, H, f90, py or java. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper <java> will generate java interface or class, depending on mode. (Defaults to c)")
         
         self.parser.add_option(
             "-m",
             "--mode",
-            choices=["mpi","stub", "dir", "sockets"],
+            choices=["mpi","stub", "dir", "sockets", "interface", "class"],
             default="mpi",
             dest="mode",
-            help="MODE of the code to generate. Can be <mpi>, <stub>, <dir> or <socket>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). <dir> will create a directory ann populate it with the files needed to build a code. (Defaults to mpi)")
+            help="MODE of the code to generate. Can be <mpi>, <stub>, <dir>,<sockets>, <interface> or <class>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). <dir> will create a directory ann populate it with the files needed to build a code. (Defaults to mpi)")
         
         self.parser.add_option(
             "-o",
@@ -263,6 +263,8 @@ def make_file(settings):
         ('f90','mpi'): create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass,      
         ('c','stub'): create_c.GenerateACStubStringFromASpecificationClass,    
         ('f90','stub'): create_fortran.GenerateAFortranStubStringFromASpecificationClass,
+        ('java','interface'): create_java.GenerateAJavaInterfaceStringFromASpecificationClass,
+        ('java','class'): create_java.GenerateAJavaSourcecodeStringFromASpecificationClass,
         ('py','sockets'): make_a_socket_python_worker,    
         ('py','mpi'): make_a_mpi_python_worker,    
     }
@@ -319,6 +321,7 @@ if __name__ == '__main__':
     
     from amuse.rfi.tools import create_c
     from amuse.rfi.tools import create_fortran
+    from amuse.rfi.tools import create_java
     from amuse.rfi.tools import create_dir
     from amuse.rfi.tools import create_python_worker
     
