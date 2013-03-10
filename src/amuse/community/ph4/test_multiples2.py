@@ -30,9 +30,15 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     T = gravity.kinetic_energy
     Etop = T + U
     Nmul, Nbin, Emul = gravity.get_total_multiple_energy()
+    tmp1,tmp2,Emul2 = gravity.get_total_multiple_energy2()
     Etot = Etop + Emul
-    Etid = gravity.multiples_energy_correction
-    Ecor = Etot - Etid
+    Eext = gravity.multiples_external_tidal_correction
+    Eint = gravity.multiples_internal_tidal_correction
+    Eerr = gravity.multiples_integration_energy_error
+    Edel = gravity.multiples_external_tidal_correction \
+		+ gravity.multiples_internal_tidal_correction \
+		+ gravity.multiples_integration_energy_error
+    Ecor = Etot - Edel
     if E0 == 0 | nbody_system.energy: E0 = Ecor
     Rvir = -0.5*M*M/U
     Q = -T/U
@@ -49,7 +55,10 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     print pre+"mass=", M.number
     print pre+"Etot=", Etot.number
     print pre+"Etop=", Etop.number
-    print pre+"Etid=", Etid.number
+    print pre+"Eext=", Eext.number
+    print pre+"Eint=", Eint.number
+    print pre+"Eerr=", Eerr.number
+    print pre+"Edel=", Edel.number
     print pre+"Ecor=", Ecor.number
     print pre+"dE/E=", Ecor/E0 - 1
     print pre+"Rvir=", Rvir.number
@@ -61,7 +70,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     cmx,cmy,cmz = dcen
     print pre+"dcpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
     print pre+"Rcore=", rcore.number
-    print pre+"Mcore=", rhocore*rcore.number**3		# fake...
+    print pre+"Mcore=", (rhocore*rcore**3).number	# fake...
     print pre+"Mlagr[9]=",
     for m in mf: print "%.4f" % (m),
     print ''
@@ -73,6 +82,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     print pre+"Nmul=", Nmul
     print pre+"Nbin=", Nbin
     print pre+"Emul= %.5f" % (Emul.number)
+    print pre+"Emul2= %.5f" % (Emul2.number)
     print pre+"Emul/kT= %.5f" % (Emul/kT)
     print pre+"Emul/E= %.5f" % (Emul/Etot)
     print ''
