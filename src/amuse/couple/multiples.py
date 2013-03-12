@@ -19,7 +19,7 @@ from amuse.units.quantities import zero
 #---------------------------------------------------------------------
 #
 # Steve's ToDo list of features to be added/improved in the multiples
-# module (last modified 10 Mar 2013):
+# module (last modified 12 Mar 2013):
 #
 # 1. Should use only perturbers (within ~100 x interaction scale) in
 # computing the tidal energy change, not the entire system.
@@ -27,10 +27,18 @@ from amuse.units.quantities import zero
 # 2. If the gravity module supports it, only perturbers need be
 # synchronized before and reinitialized after the interaction.
 #
-# 3. As an alternative to including near neighbors in the interaction,
-# which may lead to problematic final configurations and large tidal
-# errors, we should explore letting neighbors simply veto the
-# encounter, moving the work back into the gravity module.
+# 3. Including near neighbors in a 2-body interaction is likely to
+# lead to spurious binaries, since the 3- (or more-) body interaction
+# will be followed to completion, when in fact it should be stopped
+# when the neighbor has left the interaction region.  The result is
+# that binaries may form prematurely.  If we want to include
+# neighbors, we should also implement item 4 below, to allow long
+# interactions to be broken into pieces.  Including neighbors in the
+# interaction may also lead to problematic final configurations and
+# large internal/external tidal errors.  As an alternative, we should
+# explore lettingnear neighbors simply veto the encounter, moving the
+# work back into the gravity module until a "clean" 2-body scattering
+# can be identified.
 #
 # 4. If a scattering consists of several long excursions, it should be
 # broken up into pieces, and returned to the gravity code during each
