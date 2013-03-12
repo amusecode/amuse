@@ -88,7 +88,6 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     print ''
 
     sys.stdout.flush()
-
     return Ecor,cpu
 
 SMALLN = None
@@ -389,7 +388,15 @@ def run_ph4(infile = None, outfile = None,
         # Write data to a file.
 
         f = open(outfile, 'w')
+
+        #--------------------------------------------------
+        # Need to save top-level stellar data and parameters.
+        # Need to save multiple data and parameters.
+
         for s in multiples_code.stars: write_star(s, f)
+
+        #--------------------------------------------------
+
         f.close()
         print 'wrote file', outfile
 
