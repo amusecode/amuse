@@ -93,7 +93,7 @@ class Cosmology(object):
   def dadtau(self,a):
     return (self.omegam/a+self.omegar/a**2+self.omegal*a**2+self.omegak)**0.5
 
-  def d2dadtau2(self,a):
+  def d2adtau2(self,a):
     return -1./2.*self.omegam/a**2-self.omegar/a**3+self.omegal*a
   
   def agefromz(self,z):
