@@ -90,6 +90,7 @@ from amuse.units import quantities
 from amuse.units import units
 
 from amuse import datamodel
+
 def potential_energy(system, get_potential):
     parts=system.particles.copy()
     pot=get_potential(parts.radius,parts.x,parts.y,parts.z)
@@ -104,7 +105,8 @@ def kick_system(system, get_gravity, dt):
     channel=parts.new_channel_to(system.particles)
     channel.copy_attributes(["vx","vy","vz"])   
 #    parts.copy_values_of_all_attributes_to(system.particles)
-  
+
+
 class bridge(object):
     def __init__(self,verbose=False,method=None, use_threading=True):
         """
@@ -184,7 +186,7 @@ class bridge(object):
                             
     def get_potential_at_point(self,radius,x,y,z):
         err=0
-        pot=0.*radius
+        pot=quantities.zero
         for x in self.systems:
             _pot,err=x.get_potential_at_point(radius,x,y,z)
             if err != 0: 
@@ -194,9 +196,9 @@ class bridge(object):
         
     def get_gravity_at_point(self,radius,x,y,z):
         err=0
-        ax=0.*radius
-        ay=0.*radius
-        az=0.*radius
+        ax=quantities.zero
+        ay=quantities.zero
+        az=quantities.zero
         for x in self.systems:
             _ax,_ay,_az,err=x.get_gravity_at_point(radius,x,y,z)
             if err != 0: 
@@ -217,7 +219,11 @@ class bridge(object):
             Ep+=x.potential_energy
             if hasattr(x,"particles"):
                 for y in self.partners[x]:
-                    Ep += potential_energy(x,y.get_potential_at_point)
+                    _Ep = potential_energy(x,y.get_potential_at_point)
+                    if hasattr(y,"particles"):
+                      Ep+=_Ep
+                    else:
+                      Ep+=2*_Ep  
         return Ep
     
     @property
