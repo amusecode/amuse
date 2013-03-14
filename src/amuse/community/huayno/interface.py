@@ -1,8 +1,8 @@
 from amuse.community import *
-from amuse.community.interface.gd import GravitationalDynamicsInterface
-from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import GravitationalDynamicsInterface,GravityFieldInterface
+from amuse.community.interface.gd import GravitationalDynamics,GravityFieldCode
 
-class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface):
+class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface,GravityFieldInterface):
     """
     HUAYNO is a code to solve the astrophysical N-body problem. It uses
     recursive Hamiltonian splitting to generate multiple-timestep integrators
@@ -151,7 +151,7 @@ class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
         function.result_type = 'i'
         return function
     
-class Huayno(GravitationalDynamics):
+class Huayno(GravitationalDynamics,GravityFieldCode):
 
     class inttypes(object):
         # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python

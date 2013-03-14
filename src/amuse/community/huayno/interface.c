@@ -423,15 +423,52 @@ int get_indices_of_colliding_particles(int *p1,int*p2)
   return -2;
 }  
 
-int get_gravity_at_point(double x, double y,double z,
-                           double ax, double ay,double az)
+int get_gravity_at_point(double * eps, double * x, double * y, double * z, 
+			 double * ax, double * ay, double * az, int n)
 {
-  return -2;
+  struct sys tmpsys;
+  tmpsys.n=n;
+  tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
+  tmpsys.last=NULL;
+  for(int p=0;p<n;p++)
+  {
+    tmpsys.part[p].pos[0]=x[p];
+    tmpsys.part[p].pos[1]=y[p];
+    tmpsys.part[p].pos[2]=z[p];
+    tmpsys.part[p].vel[0]=0;
+    tmpsys.part[p].vel[1]=0;
+    tmpsys.part[p].vel[2]=0;
+    tmpsys.part[p].radius=eps[p]; /* not used */
+  }
+  kick(0,tmpsys,mainsys,1.);
+  for(int p=0;p<n;p++) 
+  {
+    ax[p]=tmpsys.part[p].vel[0];
+    ay[p]=tmpsys.part[p].vel[1];
+    az[p]=tmpsys.part[p].vel[2];
+  }
+  return 0;
 }
-int get_potential_at_point(double x, double y,double z,
-                           double pot)
+
+int get_potential_at_point(double * eps,
+			   double * x, double * y, double * z, 
+			   double * phi, int n)
 {
-  return -2;
+  struct sys tmpsys;
+  tmpsys.n=n;
+  tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
+  tmpsys.last=NULL;
+  for(int p=0;p<n;p++)
+  {
+    tmpsys.part[p].pos[0]=x[p];
+    tmpsys.part[p].pos[1]=y[p];
+    tmpsys.part[p].pos[2]=z[p];
+    tmpsys.part[p].radius=eps[p]; /* not used */
+    tmpsys.part[p].pot=0;
+  }
+  potential(tmpsys,mainsys);
+  for(int p=0;p<n;p++) phi[p]=tmpsys.part[p].pot;
+  return 0;
 }
 
 int get_evolve_statistics(long int *ttot,long int *ktot,long int *dtot,long int *tstot,long int *kstot,long int *dstot)

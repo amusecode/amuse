@@ -382,3 +382,29 @@ class TestHuayno(TestWithMPI):
             else:
                 self.assertAlmostRelativeEquals(expected_positions, instance.particles.position, 8)
             instance.stop()
+
+    def test16(self):
+        instance = Huayno()
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        particles = datamodel.Particles(2)
+        particles.mass = [1.] | nbody_system.mass
+        particles.radius =  [0.0] | nbody_system.length
+        particles.position = [[0.0,0.0,0.0],[1.0,0.0,0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+        
+        zero = 0.0 | nbody_system.length
+        
+        for x in (0.25, 0.5, 0.75):
+            x0 = x | nbody_system.length
+            potential0 = instance.get_potential_at_point(zero, x0, zero, zero)
+            fx0, fy0, fz0 = instance.get_gravity_at_point(zero, x0, zero, zero)
+            
+            self.assertAlmostEqual(fy0, 0.0 | nbody_system.acceleration,14)
+            self.assertAlmostEqual(fz0, 0.0 | nbody_system.acceleration,14)
+            
+            fx = (-1.0 / (x0**2)+1.0 / (((1.0|nbody_system.length)-x0)**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
+            self.assertAlmostEqual(fx, fx0,14)
+            self.assertAlmostEqual(potential0, -nbody_system.G*(1.|nbody_system.mass)*(1./x0+1./((1.|nbody_system.length)-x0)),14)
+        instance.stop()

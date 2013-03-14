@@ -23,7 +23,6 @@ struct sys zerosys ={ 0, NULL,NULL};
 struct diagnostics global_diag;
 struct diagnostics *diag;
 
-static void potential(struct sys s1, struct sys s2);
 static void report(struct sys s,DOUBLE etime, int inttype);
 
 #ifndef M_SQRT2
@@ -391,7 +390,7 @@ static void potential_cpu(struct sys s1,struct sys s2)
   }
 }
 
-static void potential(struct sys s1, struct sys s2)
+void potential(struct sys s1, struct sys s2)
 {
 #ifdef EVOLVE_OPENCL
   if((ULONG) s1.n*s2.n>CLWORKLIMIT) 

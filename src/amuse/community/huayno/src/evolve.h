@@ -135,6 +135,8 @@ void timestep(int clevel,struct sys s1, struct sys s2,int dir);
 FLOAT timestep_ij(struct particle *i, struct particle *j,int dir);
 FLOAT global_timestep(struct sys s);
 
+void potential(struct sys s1, struct sys s2);
+
 struct sys join(struct sys s1,struct sys s2);
 
 #define SWAP(a,b,c) {c t;t=(a);(a)=(b);(b)=t;}
