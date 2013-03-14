@@ -156,12 +156,15 @@ class bridge(object):
     def evolve_simple_steps(self,tend,timestep):
         while self.time < (tend-timestep/2):
             self._drift_time=self.time
+            self._kick_time=self.time
             self.method(self.kick_systems,self.drift_systems_dt, timestep)
             self.time=self.time+timestep
         return 0    
 
     def evolve_joined_leapfrog(self,tend,timestep):
         first=True
+        self._drift_time=self.time
+        self._kick_time=self.time
         while self.time < (tend-timestep/2):
              if first:      
                  self.kick_systems(timestep/2)
@@ -185,28 +188,22 @@ class bridge(object):
                 if(self.verbose): print ".. done"
                             
     def get_potential_at_point(self,radius,x,y,z):
-        err=0
         pot=quantities.zero
-        for x in self.systems:
-            _pot,err=x.get_potential_at_point(radius,x,y,z)
-            if err != 0: 
-                break
+        for sys in self.systems:
+            _pot=sys.get_potential_at_point(radius,x,y,z)
             pot=pot+_pot
-        return pot,err
+        return pot
         
     def get_gravity_at_point(self,radius,x,y,z):
-        err=0
         ax=quantities.zero
         ay=quantities.zero
         az=quantities.zero
-        for x in self.systems:
-            _ax,_ay,_az,err=x.get_gravity_at_point(radius,x,y,z)
-            if err != 0: 
-                break
+        for sys in self.systems:
+            _ax,_ay,_az=sys.get_gravity_at_point(radius,x,y,z)
             ax=ax+_ax
             ay=ay+_ay
             az=az+_az
-        return ax,ay,az,err
+        return ax,ay,az
 
     @property
     def model_time(self):  
