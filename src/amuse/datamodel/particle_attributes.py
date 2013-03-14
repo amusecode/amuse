@@ -194,6 +194,17 @@ def total_angular_momentum(particles):
     return quantities.VectorQuantity.new_from_scalar_quantities(lx,
         ly, lz)
 
+def moment_of_inertia(particles):
+    """
+    Returns the total moment of inertia (about the Z axis) of the particle
+    set.
+    """
+    m = particles.mass
+    x = particles.x
+    y = particles.y
+
+    return (m * (x**2 + y**2)).sum()
+
 
 def kinetic_energy(particles):
     """
@@ -852,6 +863,7 @@ AbstractParticleSet.add_global_function_attribute("total_mass", total_mass)
 AbstractParticleSet.add_global_function_attribute("total_radius", total_radius)
 AbstractParticleSet.add_global_function_attribute("total_momentum", total_momentum)
 AbstractParticleSet.add_global_function_attribute("total_angular_momentum", total_angular_momentum)
+AbstractParticleSet.add_global_function_attribute("moment_of_inertia", moment_of_inertia)
 
 AbstractParticleSet.add_global_function_attribute("potential_energy_in_field", potential_energy_in_field)
 
