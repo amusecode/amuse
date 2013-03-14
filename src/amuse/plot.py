@@ -150,8 +150,8 @@ def smart_length_units_for_vector_quantity(quantity):
             return length_unit
     return units.m
 
-def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
-        gd_particles=None, width=None, view=None):
+def sph_particles_plot(particles, u_range = None, min_size = 100, max_size = 10000,
+        alpha = 0.1, gd_particles=None, width=None, view=None):
     """
     Very simple and fast procedure to make a plot of the hydrodynamics state of
     a set of SPH particles. The particles must have the following attributes defined:
@@ -162,6 +162,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
     :argument particles: the SPH particles to be plotted
     :argument u_range: range of internal energy for color scale [umin, umax]
     :argument min_size: minimum size to use for plotting particles, in pixel**2
+    :argument max_size: maximum size to use for plotting particles, in pixel**2
     :argument alpha: the opacity of each particle
     :argument gd_particles: non-SPH particles can be indicated with white circles
     :argument view: the (physical) region to plot [xmin, xmax, ymin, ymax]
@@ -203,8 +204,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, alpha = 0.1,
         current_axes.set_aspect("equal", adjustable = "datalim")
         length_unit = smart_length_units_for_vector_quantity(x)
         phys_to_pix2 = n_pixels[0]*n_pixels[1] / ((max(x)-min(x))**2 + (max(y)-min(y))**2)
-#~    sizes = numpy.maximum((h_smooths**2 * phys_to_pix2), min_size)
-    sizes = min_size
+    sizes = numpy.minimum(numpy.maximum((h_smooths**2 * phys_to_pix2), min_size), max_size)
 
     x = x.as_quantity_in(length_unit)
     y = y.as_quantity_in(length_unit)
