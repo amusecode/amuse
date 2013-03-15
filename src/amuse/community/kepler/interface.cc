@@ -354,7 +354,7 @@ static void set_outer_orbit(real m, real M,
 
 int set_random(int seed)
 {
-    cout << "set_random: seed = " << seed << endl;
+    // cout << "set_random: seed = " << seed << endl;
     srandinter(seed, 0);	// kepler built-in
     return 0;
 }
