@@ -352,21 +352,10 @@ static void set_outer_orbit(real m, real M,
     // k->print_all();
 }
 
-static unsigned long local_seed = 0;
-
 int set_random(int seed)
 {
-#if 0
-    if (seed <= 0)
-	srandom(time(NULL));
-    else
-	srandom((unsigned int)seed);	// seems to have no effect; seed is
-					// lost and numbers are still random,
-					// independent of the input seed
-#else
-    srandinter(seed, 0);
-#endif
-    local_seed = random();
+    cout << "set_random: seed = " << seed << endl;
+    srandinter(seed, 0);	// kepler built-in
     return 0;
 }
 
@@ -385,9 +374,6 @@ int make_binary_scattering(real m, real ecc,
 			   double * vy1, double * vy2, double * vy3,
 			   double * vz1, double * vz2, double * vz3)
 {
-    srandom(local_seed);	// seems to work; don't know why (SLWM)
-    local_seed = random();
-
     // Inner orbit (1,2).
 
     *m1 = 1 - m;
