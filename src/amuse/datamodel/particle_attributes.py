@@ -531,7 +531,23 @@ def densitycentre_coreradius_coredens(particles,unit_converter=None,number_of_ne
     
     return [x_core,y_core,z_core],rc,rho
 
-def new_particle_from_cluster_core(particles, unit_converter=None, density_weighting_power=2,cm=None):
+class HopContainer(object):
+    
+    def __init__(self):
+        self.code = None
+    
+    def initialize(self, unit_converter):
+        if self.code is None or self.code.get_name_of_current_state() == "STOPPED":
+            from amuse.community.hop.interface import Hop
+            self.code = Hop(unit_converter)
+        else:
+            if len(self.code.particles) > 0:
+                self.code.particles.remove_particles(self.code.particles)
+            # something might need to be done with the unit_converter...
+        
+
+def new_particle_from_cluster_core(particles, unit_converter=None, density_weighting_power=2,cm=None,
+        stop_hop=True, hop=HopContainer()):
     """
     Uses Hop to find the density centre (core) of a particle distribution
     and stores the properties of this core on a particle:
@@ -546,14 +562,16 @@ def new_particle_from_cluster_core(particles, unit_converter=None, density_weigh
     :argument unit_converter: Required if the particles are in SI units
     :argument density_weighting_power: Particle properties are weighted by density to this power
     """
-    from amuse.community.hop.interface import Hop
-    hop = Hop(unit_converter=unit_converter)
+    if isinstance(hop, HopContainer):
+        hop.initialize(unit_converter)
+        hop = hop.code
     in_hop = hop.particles.add_particles(particles)
     hop.parameters.density_method = 2
     hop.parameters.number_of_neighbors_for_local_density = 7
     hop.calculate_densities()
     density = in_hop.density.copy()
-    hop.stop()
+    if stop_hop:
+        hop.stop()
     
     weights = (density**density_weighting_power).reshape((-1,1))
     # Reshape makes sure that density can be multiplied with vectors, e.g. position

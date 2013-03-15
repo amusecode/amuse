@@ -4,6 +4,7 @@ from amuse.test import amusetest
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
+from amuse.support.interface import ConvertArgumentsException
 
 from amuse.ic.plummer import new_plummer_sphere
 from amuse.datamodel import Particle, Particles
@@ -50,7 +51,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         print "Test new_particle_from_cluster_core - nbody units"
         numpy.random.seed(123)
         plummer = new_plummer_sphere(10000)
-        result = plummer.new_particle_from_cluster_core(density_weighting_power=1)
+        result = plummer.new_particle_from_cluster_core(density_weighting_power=1, stop_hop=False)
         self.assertTrue(isinstance(result, Particle))
         
         # Casertano & Hut (1985, ApJ, 298, 80):  density weighted core radius = 0.6791 * r_plummer
@@ -64,7 +65,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         plummer.vy += (1 - plummer.y / abs(plummer.y).amax()) * (13|nbody_system.speed)
         plummer.position *= 0.1
         plummer.position += [1.0, 2.0, 3.0] | nbody_system.length
-        result = plummer.new_particle_from_cluster_core(density_weighting_power=1)
+        result = plummer.new_particle_from_cluster_core(density_weighting_power=1, stop_hop=True)
         self.assertTrue(isinstance(result, Particle))
         
         self.assertAlmostRelativeEqual(result.radius, 0.06791 * plummer_radius, 2)
@@ -77,7 +78,7 @@ class TestParticlesAttributes(amusetest.TestCase):
         numpy.random.seed(123)
         converter = nbody_system.nbody_to_si(1000.0|units.MSun, 1.0 | units.parsec)
         plummer = new_plummer_sphere(10000, convert_nbody=converter)
-        result = plummer.new_particle_from_cluster_core(unit_converter=converter, density_weighting_power=1)
+        result = plummer.new_particle_from_cluster_core(unit_converter=converter, density_weighting_power=1, stop_hop=False)
         self.assertTrue(isinstance(result, Particle))
         
         # Casertano & Hut (1985, ApJ, 298, 80):  density weighted core radius = 0.6791 * r_plummer
@@ -91,13 +92,38 @@ class TestParticlesAttributes(amusetest.TestCase):
         plummer.vy += (1 - plummer.y / abs(plummer.y).amax()) * (13|units.km / units.s)
         plummer.position *= 0.1
         plummer.position += [1.0, 2.0, 3.0] | units.parsec
-        result = plummer.new_particle_from_cluster_core(unit_converter=converter, density_weighting_power=1)
+        result = plummer.new_particle_from_cluster_core(unit_converter=converter, density_weighting_power=1, stop_hop=True)
         self.assertTrue(isinstance(result, Particle))
         
         self.assertAlmostRelativeEqual(result.radius, 0.06791 * plummer_radius, 2)
         self.assertAlmostEqual(result.position, [1.0, 2.0, 3.0] | units.parsec, 1)
         self.assertAlmostEqual(result.velocity, [42.0, 13.0, 0.0] | units.km / units.s, 1)
         self.assertAlmostRelativeEqual(result.density, 3.55015420914e6 | units.MSun * units.parsec**-3, 4)
+    
+    def test5(self):
+        print "Test new_particle_from_cluster_core - stop_hop or not"
+        converter = nbody_system.nbody_to_si(1.0|units.MSun, 1.0 | units.parsec)
+        plummer = new_plummer_sphere(100, convert_nbody=converter)
+        result = plummer.new_particle_from_cluster_core(unit_converter=converter, stop_hop=False)
+        
+        # Hop wasn't stopped, will use same Hop instance:
+        result = plummer.new_particle_from_cluster_core(unit_converter=converter, stop_hop=False)
+        
+        nbody_plummer = new_plummer_sphere(100)
+        # Hop wasn't stopped, unit_converters don't match:
+        self.assertRaises(AttributeError, nbody_plummer.new_particle_from_cluster_core, 
+            expected_message="Cannot combine units from different systems: m and length")
+        
+        result = plummer.new_particle_from_cluster_core(unit_converter=converter, stop_hop=True)
+        
+        # Hop was stopped, new instance will be made with supplied unit_converter (None in this case):
+        result = nbody_plummer.new_particle_from_cluster_core(stop_hop=False)
+        
+        self.assertRaises(ConvertArgumentsException, plummer.new_particle_from_cluster_core, unit_converter=converter,#,
+            expected_message="error while converting parameter 'mass', error: Cannot express kg in mass, the units do not have the same bases")
+        
+        result = nbody_plummer.new_particle_from_cluster_core(stop_hop=True)
+        result = plummer.new_particle_from_cluster_core(unit_converter=converter, stop_hop=True)
     
 
 

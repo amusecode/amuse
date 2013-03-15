@@ -15,7 +15,7 @@ do_hop()
 
 from amuse.units import generic_unit_system
 from amuse.community import *
-from amuse.community.interface.common import CommonCodeInterface
+from amuse.community.interface.common import CommonCodeInterface, CommonCode
 
 class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     '''
@@ -662,7 +662,7 @@ class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn
         return function
 
 
-class Hop(InCodeComponentImplementation):
+class Hop(CommonCode):
 
     def __init__(self, unit_converter = None, **options):
     
