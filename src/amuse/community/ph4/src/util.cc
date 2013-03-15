@@ -92,14 +92,17 @@ int srandinter(int seed, int iter)
     // on the system clock (resolution 1 second) and the current
     // process ID.
 
+    // cout << "srandinter 1: seed = " << seed << endl;
     if (seed == 0) seed = (int) (time(NULL) + 1000*getpid());
 
     initial_seed = abs(seed);
     n_rand = 0;
 
     randx = -initial_seed;	// randx < 0 ==> initialize ran1 or ran2
+    // cout << "srandinter 2: randx = " << randx << endl;
 
     for (int i = 0; i < iter; i++) randinter(0,1);
+    // cout << "srandinter 3: randx = " << randx << endl;
 
     return initial_seed;   	// to enable the user to verify the value
                            	// of the initialization
@@ -186,8 +189,9 @@ real ran2(int& idum)
 //	       by invoking a standard random number generator.
 
 real randinter(real a, real b) {
-    if (randx <= 0) srandinter(0,0);
+    if (randx == 0) srandinter(0,0);	// srandinter was never called
     n_rand++;
+    // cout << "randinter: randx = " << randx << endl;
     return a + (b-a)*ran2(randx);
 }
 
