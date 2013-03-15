@@ -35,10 +35,10 @@ from amuse.units.quantities import zero
 # neighbors, we should also implement item 4 below, to allow long
 # interactions to be broken into pieces.  Including neighbors in the
 # interaction may also lead to problematic final configurations and
-# large internal/external tidal errors.  As an alternative, we should
-# explore lettingnear neighbors simply veto the encounter, moving the
-# work back into the gravity module until a "clean" 2-body scattering
-# can be identified.
+# large internal/external tidal errors.  As an alternative, we can let
+# near neighbors simply veto the encounter, moving the work back into
+# the gravity module, until a "clean" 2-body scattering can be
+# identified.
 #
 # 4. If a scattering consists of several long excursions, it should be
 # broken up into pieces, and returned to the gravity code during each
@@ -55,7 +55,7 @@ from amuse.units.quantities import zero
 # angular momentum.
 #
 # 6. There is no provision for physical collisions in the smallN code,
-# and no logic in the Multiples module to manage stars with both
+# and no logic in the Multiples module to manage stars having both
 # dynamical and physical radii.
 #
 #---------------------------------------------------------------------
@@ -170,7 +170,8 @@ class Multiples(object):
         # The following tunable parameters govern the multiples logic:
 
         # Size of the top-level encounter, relative to the sum of the
-        # radii of the interacting components.
+        # radii of the interacting components (no veto) or their
+        # separation (veto).
 
         self.initial_scale_factor = 1.0
 
@@ -178,14 +179,15 @@ class Multiples(object):
         # initial separation of the top-level two-body encounter.
         
         self.neighbor_distance_factor = 1.0
+        #self.neighbor_distance_factor = 2.0
 
         # Neighbor veto policy.  True means we allow neighbors to veto
         # a two-body encounter (meaning that don't want to deal with
-        # complex initial many-body configurations) -- NOT YET
-        # IMPLEMENTED.  False means we include neighbors in the
-        # multiple integration.
+        # complex initial many-body configurations).  False means we
+        # include neighbors in the multiple integration.
 
         self.neighbor_veto = False
+        #self.neighbor_veto = True
 
         # Size of the rescaled final system, relative to the initial
         # scale.  Should be 1 + epsilon.
@@ -351,6 +353,24 @@ class Multiples(object):
             print '\ncalling evolve_model to ', end_time
             sys.stdout.flush()
 
+#             if time > 100 | nbody_system.time:
+
+#                 # No neighbors, allow vetos, but none will occur.
+#                 self.neighbor_distance_factor = 0.
+#                 self.neighbor_veto = True
+
+#                 # Veto all multiples treatments.
+#                 self.neighbor_distance_factor = 100.
+#                 self.neighbor_veto = True
+
+#                 self.neighbor_distance_factor = 0.0
+#                 self.neighbor_veto = True
+
+#                 print 'neighbor_distance_factor =', \
+#                     self.neighbor_distance_factor
+#                 print 'neighbor_veto =', \
+#                     self.neighbor_veto
+
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
             if newtime == time:
@@ -362,6 +382,7 @@ class Multiples(object):
 
                 star1 = stopping_condition.particles(0)[0]
                 star2 = stopping_condition.particles(1)[0]
+                ignore = 0
 
                 # Note from Steve, 8/12: We can pick up a lot of
                 # encounters that are then ignored here.  I have
@@ -420,128 +441,142 @@ class Multiples(object):
 
                     # Do the scattering.
 
-                    dE_top_level_scatter, dphi_top, dE_mul, dphi_int, dE_int \
+                    veto, dE_top_level_scatter, dphi_top, dE_mul, \
+                        dphi_int, dE_int \
                         = self.manage_encounter(star1, star2, 
                                                 self._inmemory_particles,
                                                 self.gravity_code.particles,
                                                 self.kepler)
+
+                    if not veto:
+
+                        # Recommit is done automatically and
+                        # reinitializes all particles.  Later we will
+                        # just reinitialize a list if gravity supports
+                        # it. TODO
                     
-                    # Recommit is done automatically and reinitializes
-                    # all particles.  Later we will just reinitialize
-                    # a list if gravity supports it. TODO
+                        self.gravity_code.particles.synchronize_to(
+                            self._inmemory_particles)    # star = gravity_stars
                     
-                    self.gravity_code.particles.synchronize_to(
-                        self._inmemory_particles) # make star = gravity_stars
+                        self.channel_from_code_to_memory.copy_attribute \
+                            ("index_in_code", "id")
                     
-                    self.channel_from_code_to_memory.copy_attribute \
-                        ("index_in_code", "id")
-                    
-                    final_energy = self.get_total_energy(self.gravity_code)
-                    dE_top_level = final_energy - initial_energy
+                        final_energy = self.get_total_energy(self.gravity_code)
+                        dE_top_level = final_energy - initial_energy
 
-                    # Local bookkeeping:
-                    #
-                    #	dE_top_level is the actual energy change in
-                    #	the top-level gravity system due to this
-                    #	encounter
-                    #
-                    #	dE_top_level_scatter is the change in
-                    #	top-level internal energy of the scattering
-                    #	system
-                    #
-                    #	dphi_top is the top-levle tidal error
-                    #	(currently unabsorbed) due to the change in
-                    #	configuration of the scattering system in the
-                    #	top-level tidal field
-                    #
-                    #	dE_mul is the change in stored multiple energy
-                    #	associated with the encounter
-                    #
-                    #	dphi_int is the internal tidal energy error
-                    #	due to internal configuration changes in the
-                    #	scattering system
-                    #
-                    #	dE_int is the integration error in the
-                    #	scattering calculation
-                    #
-                    # We *always* expect
-                    #
-                    #	dE_top_level - dE_top_level_scatter - dphi_top = 0.
-                    #
-                    # If this is not the case, there is an error in
-                    # the internal bookkeeping of manage_encounter().
+                        # Local bookkeeping:
+                        #
+                        #	dE_top_level is the actual energy
+                        #	change in the top-level gravity system
+                        #	due to this encounter
+                        #
+                        #	dE_top_level_scatter is the change in
+                        #	top-level internal energy of the
+                        #	scattering system
+                        #
+                        #	dphi_top is the top-levle tidal error
+                        #	(currently unabsorbed) due to the
+                        #	change in configuration of the
+                        #	scattering system in the top-level
+                        #	tidal field
+                        #
+                        #	dE_mul is the change in stored
+                        #	multiple energy associated with the
+                        #	encounter
+                        #
+                        #	dphi_int is the internal tidal energy
+                        #	error due to internal configuration
+                        #	changes in the scattering system
+                        #
+                        #	dE_int is the integration error in the
+                        #	scattering calculation
+                        #
+                        # We *always* expect
+                        #
+                        #   dE_top_level - dE_top_level_scatter - dphi_top = 0.
+                        #
+                        # If this is not the case, there is an error
+                        # in the internal bookkeeping of
+                        # manage_encounter().
 
-                    if 0:
-                        #print 'top-level initial energy =', initial_energy
-                        #print 'top-level final energy =', final_energy
-                        print 'dE_top_level =', dE_top_level
-                        print 'dE_top_level_scatter =', dE_top_level_scatter
-                        print 'dphi_top =', dphi_top
-                        print 'dphi_int =', dphi_int
-                        print 'dE_int =', dE_int
+                        if 0:
+                            #print 'top-level initial energy =', initial_energy
+                            #print 'top-level final energy =', final_energy
+                            print 'dE_top_level =', dE_top_level
+                            print 'dE_top_level_scatter =', dE_top_level_scatter
+                            print 'dphi_top =', dphi_top
+                            print 'dphi_int =', dphi_int
+                            print 'dE_int =', dE_int
 
-                    print 'net local error =', \
-                        dE_top_level - dE_top_level_scatter - dphi_top
-                    print 'scatter integration error =', dE_int
+                        print 'net local error =', \
+                            dE_top_level - dE_top_level_scatter - dphi_top
+                        print 'scatter integration error =', dE_int
 
-                    # We also expect
-                    #
-                    #	dE_top_level_scatter + dE_mul
-                    #			= dphi_top + dE_int - dphi_int.
-                    #
-                    # Monitor this and keep track of the cumulative
-                    # value of the right-hand side of this equation.
+                        # We also expect
+                        #
+                        #	dE_top_level_scatter + dE_mul
+                        #			= dphi_top + dE_int - dphi_int.
+                        #
+                        # Monitor this and keep track of the
+                        # cumulative value of the right-hand side of
+                        # this equation.
 
-                    print 'dE_mul =', dE_mul
-                    print 'internal local error =', \
-                        dE_top_level + dE_mul - dphi_top
-                    print 'corrected internal local error =', \
-                        dE_top_level + dE_mul - dphi_top + dphi_int - dE_int
+                        print 'dE_mul =', dE_mul
+                        print 'internal local error =', \
+                            dE_top_level + dE_mul - dphi_top
+                        print 'corrected internal local error =', \
+                            dE_top_level + dE_mul - dphi_top + dphi_int - dE_int
 
-                    self.multiples_external_tidal_correction += dphi_top
-                    self.multiples_internal_tidal_correction -= dphi_int
-                    self.multiples_integration_energy_error += dE_int
-                    Nmul, Nbin, Emul = self.get_total_multiple_energy2()
+                        self.multiples_external_tidal_correction += dphi_top
+                        self.multiples_internal_tidal_correction -= dphi_int
+                        self.multiples_integration_energy_error += dE_int
+                        Nmul, Nbin, Emul = self.get_total_multiple_energy2()
 
-                    # Global bookkeeping:
-                    #
-                    # We don't absorb individual tidal or integration
-                    # errors, but instead store their totals in
-                    #
-                    #	    self.multiples_external_tidal_correction,
-                    #	    self.multiples_internal_tidal_correction,
-                    # and
-                    #	    self.multiples_inegration_energy_error.
-                    #
-                    # Then
-                    #
-                    #	E(top-level) + Emul
-                    #		- self.multiples_external_tidal_correction
-                    #		- self.multiples_internal_tidal_correction
-                    #		- self.multiples_integration_energy_error
-                    #
-                    # should be constant.  Any non-conservation
-                    # represents an error in bookkeeping or algorithm
-                    # design.
+                        # Global bookkeeping:
+                        #
+                        # We don't absorb individual tidal or
+                        # integration errors, but instead store their
+                        # totals in
+                        #
+                        #	    self.multiples_external_tidal_correction,
+                        #	    self.multiples_internal_tidal_correction,
+                        # and
+                        #	    self.multiples_inegration_energy_error.
+                        #
+                        # Then
+                        #
+                        #   E(top-level) + Emul
+                        #	    - self.multiples_external_tidal_correction
+                        #	    - self.multiples_internal_tidal_correction
+                        #	    - self.multiples_integration_energy_error
+                        #
+                        # should be constant.  Any non-conservation
+                        # represents an error in bookkeeping or
+                        # algorithm design.
 
-                    print 'total energy (top+mul) =', \
-                        final_energy + Emul
-                    print 'corrected total energy =', \
-                        final_energy + Emul \
-                            - self.multiples_external_tidal_correction \
-                            - self.multiples_internal_tidal_correction \
-                            - self.multiples_integration_energy_error
+                        print 'total energy (top+mul) =', \
+                            final_energy + Emul
+                        print 'corrected total energy =', \
+                            final_energy + Emul \
+                                - self.multiples_external_tidal_correction \
+                                - self.multiples_internal_tidal_correction \
+                                - self.multiples_integration_energy_error
+                        
+                        # Print all multiples currently in the system.
 
-                    # Print all multiples currently in the system.
+                        self.print_multiples()
+                        count_resolve_encounter += 1
 
-                    self.print_multiples()
+                    else:
+                        ignore = 1
 
                     print '~'*60
                     sys.stdout.flush()
-                    count_resolve_encounter += 1
 
                 else:
-                    count_ignore_encounter += 1
+                    ignore = 1
+
+                count_ignore_encounter += ignore
 
         print ''
         print 'Resolved', count_resolve_encounter, 'encounters'
@@ -567,6 +602,8 @@ class Multiples(object):
         # scattering calculation.  Steps below follow those defined in
         # the PDF description.
 
+        # find_binaries(stars, self.gravity_constant) 
+
         #----------------------------------------------------------------
         # 1a. Build a list of stars involved in the scattering.  Start
         # with star1 and star2.
@@ -575,7 +612,7 @@ class Multiples(object):
 
         # 1b. Add neighbors if desired.  Use a simple distance
         # criterion for now -- possibly refine later.  Also consider a
-        # simple neighbor veto.  TODO Start by sorting all stars by
+        # simple neighbor veto.  Start by sorting all stars by
         # distance from the CM.  Later, use neighbors, if supported.
         # TODO
 
@@ -591,13 +628,22 @@ class Multiples(object):
 
         # Sep12 is the separation of the two original components.  It
         # should be slightly less than the sum of their radii, rad12,
-        # but it may be less in unexpected circumstances.
-        # Initial_scale sets the "size" of the interaction and the
-        # scale to which the final products will be rescaled.  Rnnmax
-        # sets the distance inside which we check for neighbors.
+        # but it may be less in unexpected circumstances or if vetoing
+        # is in effect.  Initial_scale sets the "size" of the
+        # interaction and the scale to which the final products will
+        # be rescaled.  Rad12 is also the 90 degree scattering
+        # sistance for the two stars, and hence the natural limit on
+        # binary scale.  Rnnmax sets the distance inside which we
+        # check for neighbors.
 
-        initial_scale = self.initial_scale_factor * rad12
+        if not self.neighbor_veto:
+            initial_scale = self.initial_scale_factor * rad12
+        else:
+            initial_scale = self.initial_scale_factor * sep12
+
         rnnmax = self.neighbor_distance_factor * sep12
+
+        print 'initial_scale =', initial_scale
 
         for i in range(2,len(sorted_distances)):
             star = sorted_stars[i]
@@ -618,9 +664,9 @@ class Multiples(object):
                     sys.stdout.flush()
 		    #initial_scale = sorted_distances[i]    # don't expand!
                 else:
-                    pass				    # veto  TODO
-
-        print 'initial_scale =', initial_scale	# sum of top-level radii
+                    print 'Encounter vetoed by neighbor', star.id, \
+                          'at distance', sorted_distances[i]
+                    return True, 0., 0., 0., 0., 0.
 
         #----------------------------------------------------------------
         # 2a. Calculate the total internal and external potential
@@ -817,7 +863,7 @@ class Multiples(object):
             else:
                 binary_scale = 2*semi	    # (the more conservative choice)
 
-            if binary_scale > initial_scale:
+            if binary_scale > rad12:
 
                 print 'initial top-level:', \
                     comp1.id, '('+str(comp1.radius)+')', \
@@ -1004,7 +1050,7 @@ class Multiples(object):
                     ' distance/scale =', dxminmin/initial_scale
         #-------------------------------------------------------
 
-        return dE_top, dphi_top, dEmul, dphi_int, dE_int
+        return False, dE_top, dphi_top, dEmul, dphi_int, dE_int
 
     def resolve_collision(self,
                           particles,
@@ -1244,6 +1290,21 @@ def find_nn(plist, field, G):
             fminmin = f
 
     return pminmin, fminmin, dxminmin
+
+def find_binaries(particles, G):
+
+    # Search for and print out bound pairs using a numpy-accelerated
+    # N^2 search.
+
+    for p in particles:
+        mu = p.mass*particles.mass/(p.mass+particles.mass)
+        dr = (particles.position - p.position).lengths()
+        dv = (particles.velocity - p.velocity).lengths()
+        E = 0.5*mu*dv*dv - G*p.mass*particles.mass/dr
+        indices = numpy.argsort(E.number)
+        sorted_E = E[indices]
+        Emin = sorted_E[1].number
+        if Emin < -1.e-4: print 'bound', p.id, particles[indices[1]].id, Emin
 
 def potential_energy_in_field(particles, field_particles,
                               smoothing_length_squared = zero,
