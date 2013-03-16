@@ -562,6 +562,7 @@ class KeplerInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = False
+        function.addParameter('seed', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK

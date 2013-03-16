@@ -359,9 +359,10 @@ int set_random(int seed)
     return 0;
 }
 
-int get_random()
+int get_random(int *seed)
 {
-    return getrandinter();
+    *seed = getrandinter();
+    return 0;
 }
 
 // Binary scattering in standard (Hut & Bahcall 1983) units.  Binary
