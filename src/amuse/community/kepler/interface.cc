@@ -359,6 +359,11 @@ int set_random(int seed)
     return 0;
 }
 
+int get_random()
+{
+    return getrandinter();
+}
+
 // Binary scattering in standard (Hut & Bahcall 1983) units.  Binary
 // mass = 1, semimajor axis = 1, t = 0 at pericenter if appropriate.
 

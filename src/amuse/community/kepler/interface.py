@@ -556,6 +556,21 @@ class KeplerInterface(CodeInterface,
         return function
 
     @legacy_function
+    def get_random():
+        """
+        Return the random seed for kepler functions.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            seed was returned
+        -1 - ERROR
+            error occurred"""
+        return function
+
+    @legacy_function
     def make_binary_scattering():
         """
         Return a three-body scattering configuration (much faster than python).
