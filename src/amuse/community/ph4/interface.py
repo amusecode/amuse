@@ -233,8 +233,16 @@ class ph4Interface(CodeInterface,
         )
         function.result_type = 'int32'
         return function
-        
-   
+
+    @legacy_function
+    def recompute_timesteps():
+        """
+        Force recomputation of all timesteos (assume a synchronized system),
+        """
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
+
 
 class ph4(GravitationalDynamics,GravityFieldCode):
 

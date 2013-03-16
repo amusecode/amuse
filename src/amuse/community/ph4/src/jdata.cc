@@ -472,6 +472,42 @@ void jdata::set_initial_timestep()
 	}
 }
 
+void jdata::force_initial_timestep()
+{
+    // Same as set_initial_timestep, but always set the step,
+    // even if it is already set.
+
+    const char *in_function = "jdata::set_initial_timestep";
+    if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+
+    // Assume acc and jerk have already been set.
+
+    for (int j = 0; j < nj; j++) {
+	real a2 = 0, j2 = 0;
+	for (int k = 0; k < 3; k++) {
+	    a2 += pow(acc[j][k], 2);
+	    j2 += pow(jerk[j][k], 2);
+	}
+
+	real firststep;
+	if (eta == 0.0)
+	    firststep = 0.0625;
+	else if (a2 == 0.0 || j2 == 0.0)
+	    firststep = 0.0625 * eta;
+	else
+	    firststep = 0.0625 * eta * sqrt(a2/j2);	// conservative
+    
+	// Force the time step to a power of 2 commensurate with
+	// system_time.
+
+	int exponent;
+	firststep /= 2*frexp(firststep, &exponent);
+	while (fmod(system_time, firststep) != 0) firststep /= 2;
+
+	timestep[j] = firststep;
+    }
+}
+
 real jdata::get_pot(bool reeval)		// default = false
 {
     const char *in_function = "jdata::get_pot";
@@ -662,6 +698,8 @@ void jdata::advance()
     //		scatter the i-list
 
     real tnext = idat->set_list();	// determine next time, make ilist
+
+    PRC(system_time); PRL(tnext);
 
     if (!use_gpu) {
 

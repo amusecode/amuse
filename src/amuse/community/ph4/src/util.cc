@@ -108,6 +108,11 @@ int srandinter(int seed, int iter)
                            	// of the initialization
 }
 
+int getrandinter()
+{
+    return randx;
+}
+
 // From Numerical Recipes, verbatim:
 
 #define IM1 2147483563

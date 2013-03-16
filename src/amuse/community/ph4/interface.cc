@@ -180,6 +180,22 @@ int recommit_particles()
     return 0;
 }
 
+int recompute_timesteps()
+{
+    // Same as recommit_particles(), except that the name isn't
+    // reserved for the state model and we always recompute the time
+    // steps.
+
+    if (!jd->use_gpu)
+	jd->predict_all(jd->system_time, true);	// set pred quantities
+    else
+	jd->initialize_gpu(true);		// reload the GPU
+    id->setup();				// compute acc and jerk
+    jd->force_initial_timestep();
+    s->initialize();				// reconstruct the scheduler
+    return 0;
+}
+
 int cleanup_code()
 {
     // Clean up at the end of the calculation.

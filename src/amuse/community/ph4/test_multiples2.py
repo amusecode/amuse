@@ -415,6 +415,7 @@ def run_ph4(infile = None, outfile = None,
         # Need to save top-level stellar data and parameters.
         # Need to save multiple data and parameters.
 
+        f.write('%.15g\n'%(time.number))
         for s in multiples_code.stars: write_star(s, f)
 
         #--------------------------------------------------
