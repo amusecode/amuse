@@ -699,8 +699,6 @@ void jdata::advance()
 
     real tnext = idat->set_list();	// determine next time, make ilist
 
-    PRC(system_time); PRL(tnext);
-
     if (!use_gpu) {
 
 	// GPU will do this, if present.  Note that this only predicts
