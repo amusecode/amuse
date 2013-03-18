@@ -342,7 +342,7 @@ class Multiples(object):
         stopping_condition.enable()
         
         time = self.gravity_code.model_time
-        print "Evolve model to:", end_time, " starting at time:", time
+        print "Evolve model to", end_time, " starting at", time
         sys.stdout.flush()
 
         count_resolve_encounter = 0
@@ -1304,7 +1304,8 @@ def find_binaries(particles, G):
         indices = numpy.argsort(E.number)
         sorted_E = E[indices]
         Emin = sorted_E[1].number
-        if Emin < -1.e-4: print 'bound', p.id, particles[indices[1]].id, Emin
+        if Emin < -1.e-4 and p.id < particles[indices[1]].id:
+            print 'bound', p.id, particles[indices[1]].id, Emin
 
 def potential_energy_in_field(particles, field_particles,
                               smoothing_length_squared = zero,
