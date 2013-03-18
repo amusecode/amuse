@@ -54,6 +54,7 @@ class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn
         Remove a particle.
         '''
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
           description='index of the particle to be removed')
         function.result_type = 'int32'

@@ -701,10 +701,15 @@ int new_particle(int * index_of_the_particle, double mass, double x, double y, d
 }
 
 int delete_particle(int index_of_the_particle) {
-  if(index_of_the_particle > highest_index) return -1;
-  particlesMap.erase(index_of_the_particle);
-  bHopInit = 1;
-  return 0;
+    ParticlesMapIterator it;
+    it = particlesMap.find(index_of_the_particle);
+    if (it == particlesMap.end()){
+        return -3;
+    }
+    delete it->second;
+    particlesMap.erase(it);
+    bHopInit = 1;
+    return 0;
 }
 
 int get_number_of_particles(int * value) {
