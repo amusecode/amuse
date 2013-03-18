@@ -405,7 +405,12 @@ int commit_parameters()
 
 int get_potential(int id, double *pot)
 {
-  return -2;
+  int p=0;
+  if(id<0 || id > pcounter) return -1;
+  p=pindex[id];
+  if(p < 0 || p>mainsys.n) return -2;
+  *pot=mainsys.part[p].pot;
+  return 0;
 }
 
 int set_acceleration(int id, double ax, double ay, double az)
