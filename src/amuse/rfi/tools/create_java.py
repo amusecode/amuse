@@ -1025,6 +1025,7 @@ FOOTER_CODE_STRING = """
   private void runSockets(int port) {
         try {
             SocketChannel channel = SocketChannel.open(new InetSocketAddress(port));
+            channel.socket().setTcpNoDelay(true);
 
             boolean keepRunning = true;
             while (keepRunning) {

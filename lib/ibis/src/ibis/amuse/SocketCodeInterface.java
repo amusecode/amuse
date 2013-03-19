@@ -199,6 +199,8 @@ public class SocketCodeInterface implements CodeInterface {
             logger.info("process started");
 
             socket = acceptConnection(serverSocket);
+            
+            socket.socket().setTcpNoDelay(true);
 
             logger.info("connection established");
 

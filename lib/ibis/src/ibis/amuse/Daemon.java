@@ -126,9 +126,11 @@ public class Daemon implements RegistryEventHandler {
                 socket = loopbackServer.accept();
                 logger.debug("New connection accepted");
 
+                //turn on no-delay
+                socket.socket().setTcpNoDelay(true);
+                
                 // read string, to make sure we are talking to amuse, and to get
                 // the type of connection
-
                 ByteBuffer magic = ByteBuffer.allocate(TYPE_STRING_LENGTH);
 
                 while (magic.hasRemaining()) {
