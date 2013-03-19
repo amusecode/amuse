@@ -495,7 +495,24 @@ def get_binaries(particles,hardness=10,G = constants.G):
 
     return binaries
 
-def densitycentre_coreradius_coredens(particles,unit_converter=None,number_of_neighbours=7):
+
+class HopContainer(object):
+    
+    def __init__(self):
+        self.code = None
+    
+    def initialize(self, unit_converter):
+        if self.code is None or self.code.get_name_of_current_state() == "STOPPED":
+            from amuse.community.hop.interface import Hop
+            self.code = Hop(unit_converter)
+        else:
+            if len(self.code.particles) > 0:
+                self.code.particles.remove_particles(self.code.particles)
+            # something might need to be done with the unit_converter...
+        
+
+def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_neighbours=7,
+        reuse_hop=False, hop=HopContainer()):
     """
     calculate position of the density centre, coreradius and coredensity
 
@@ -507,9 +524,9 @@ def densitycentre_coreradius_coredens(particles,unit_converter=None,number_of_ne
     >>> print coreradius
     0.404120092331 length
     """
-
-    from amuse.community.hop.interface import Hop
-    hop=Hop(unit_converter=unit_converter)
+    if isinstance(hop, HopContainer):
+        hop.initialize(unit_converter)
+        hop = hop.code
     hop.particles.add_particles(particles)
     hop.parameters.density_method=2
     hop.parameters.number_of_neighbors_for_local_density=number_of_neighbours
@@ -527,27 +544,13 @@ def densitycentre_coreradius_coredens(particles,unit_converter=None,number_of_ne
     z_core=numpy.sum(density*z)/total_density
 
     rc = (density * ((x-x_core)**2+(y-y_core)**2+(z-z_core)**2).sqrt()).sum() / total_density
-    hop.stop()
+    if not reuse_hop:
+        hop.stop()
     
-    return [x_core,y_core,z_core],rc,rho
+    return VectorQuantity.new_from_scalar_quantities(x_core,y_core,z_core), rc, rho
 
-class HopContainer(object):
-    
-    def __init__(self):
-        self.code = None
-    
-    def initialize(self, unit_converter):
-        if self.code is None or self.code.get_name_of_current_state() == "STOPPED":
-            from amuse.community.hop.interface import Hop
-            self.code = Hop(unit_converter)
-        else:
-            if len(self.code.particles) > 0:
-                self.code.particles.remove_particles(self.code.particles)
-            # something might need to be done with the unit_converter...
-        
-
-def new_particle_from_cluster_core(particles, unit_converter=None, density_weighting_power=2,cm=None,
-        stop_hop=True, hop=HopContainer()):
+def new_particle_from_cluster_core(particles, unit_converter=None, density_weighting_power=2, cm=None,
+        reuse_hop=False, hop=HopContainer()):
     """
     Uses Hop to find the density centre (core) of a particle distribution
     and stores the properties of this core on a particle:
@@ -570,7 +573,7 @@ def new_particle_from_cluster_core(particles, unit_converter=None, density_weigh
     hop.parameters.number_of_neighbors_for_local_density = 7
     hop.calculate_densities()
     density = in_hop.density.copy()
-    if stop_hop:
+    if not reuse_hop:
         hop.stop()
     
     weights = (density**density_weighting_power).reshape((-1,1))
@@ -587,8 +590,9 @@ def new_particle_from_cluster_core(particles, unit_converter=None, density_weigh
     result.radius = (weights.flatten() * (particles.position - result.position).lengths()).sum() / total_weight
     return result
 
-def bound_subset(particles,tidal_radius=None,unit_converter=None, density_weighting_power=2,
-                     smoothing_length_squared = zero, G = constants.G,core=None  ):
+def bound_subset(particles, tidal_radius=None, unit_converter=None, density_weighting_power=2,
+        smoothing_length_squared=zero, G=constants.G, core=None,
+        reuse_hop=False, hop=HopContainer()):
     """
     find the particles bound to the cluster. Returns a subset of bound particles.
 
@@ -610,7 +614,7 @@ def bound_subset(particles,tidal_radius=None,unit_converter=None, density_weight
     99
     """
     if core is None:
-      core=particles.cluster_core( unit_converter, density_weighting_power)
+        core = particles.cluster_core(unit_converter, density_weighting_power, reuse_hop=reuse_hop, hop=hop)
     position=particles.position-core.position
     velocity=particles.velocity-core.velocity
     
@@ -626,8 +630,8 @@ def bound_subset(particles,tidal_radius=None,unit_converter=None, density_weight
     bs=numpy.where( (r2 <= boundary_radius2) & (pot+0.5*v2 < zero) )[0]
     return particles[bs]
 
-def mass_segregation_Gini_coefficient(particles,unit_converter=None, density_weighting_power=2,
-                                        core=None):
+def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_weighting_power=2,
+        core=None, reuse_hop=False, hop=HopContainer()):
     """
     Converse & Stahler 2008 Gini coefficient for cluster.
 
@@ -646,7 +650,7 @@ def mass_segregation_Gini_coefficient(particles,unit_converter=None, density_wei
     1.0
     """                   
     if core is None:
-      core=particles.cluster_core( unit_converter, density_weighting_power)
+      core = particles.cluster_core(unit_converter, density_weighting_power, reuse_hop=reuse_hop, hop=hop)
 
     position=particles.position-core.position
 
@@ -662,10 +666,8 @@ def mass_segregation_Gini_coefficient(particles,unit_converter=None, density_wei
     
     return (mfmnf[1:]+mfmnf[:-1]).sum()/2/(len(mf)-1.)
 
-def LagrangianRadii(stars,
-                       cm=None,
-                       mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
-                       unit_converter=None,number_of_neighbours=7):
+def LagrangianRadii(stars, unit_converter=None, mf=[0.01,0.02,0.05,0.1,0.2,0.5,0.75,0.9,1],
+        cm=None, number_of_neighbours=7, reuse_hop=False, hop=HopContainer()):
     """
     Calculate lagrangian radii. Output is radii, mass fraction 
 
@@ -679,8 +681,11 @@ def LagrangianRadii(stars,
     """
     import bisect
     if cm is None:
-        cm,rcore,rhocore=stars.densitycentre_coreradius_coredens(
-                           unit_converter=unit_converter,number_of_neighbours=number_of_neighbours)
+        cm,rcore,rhocore = stars.densitycentre_coreradius_coredens(
+            unit_converter=unit_converter,
+            number_of_neighbours=number_of_neighbours,
+            reuse_hop=reuse_hop, hop=hop
+        )
     cmx,cmy,cmz=cm
     r2=(stars.x-cmx)**2+(stars.y-cmy)**2+(stars.z-cmz)**2
     a=numpy.argsort(r2.number)
