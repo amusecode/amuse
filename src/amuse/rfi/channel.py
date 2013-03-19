@@ -1721,6 +1721,9 @@ class SocketChannel(AbstractMessageChannel):
     
             if self.redirect_stderr_file is None or self.redirect_stderr_file == "none":
                 self.stderr = None
+            elif self.redirect_stderr_file == self.redirect_stdout_file:
+                #stderr same file as stdout, do not open file twice
+                self.stderr = self.stdout
             else:
                 self.stderr = open(self.redirect_stderr_file, "w")
             
@@ -1849,8 +1852,6 @@ class SocketChannel(AbstractMessageChannel):
         
         if message.error:
             logging.getLogger("channel").info("error message!")
-            self.stop()
-            logging.getLogger("channel").info("stopped!")
             raise exceptions.CodeException("Error in code: " + message.strings[0])
 
         return message.to_result(handle_as_array)

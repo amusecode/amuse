@@ -12,7 +12,9 @@ cwd = '{cwd}'
 def main():
 
     os.chdir(code_dir)
-    os.chdir(cwd)
+
+    if cwd:
+        os.chdir(cwd)
 
     arguments = [java, "-cp", classpath, "amuse.code.Worker"]
     arguments = arguments + sys.argv[1:]

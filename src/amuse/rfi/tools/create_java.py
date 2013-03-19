@@ -1031,7 +1031,7 @@ FOOTER_CODE_STRING = """
                 request.clear();
                 request.readFrom(channel);
 
-                System.err.println("got message " + request.toString());
+                //System.err.println("got message " + request.toString());
 
                 reply.clear();
 
@@ -1041,12 +1041,12 @@ FOOTER_CODE_STRING = """
 
                 keepRunning = handleCall();
 
-                System.err.println("sending reply message " + reply.toString());
+                //System.err.println("sending reply message " + reply.toString());
                 //System.err.println("sending reply message " + reply.toContentString());
 
                 reply.writeTo(channel);
                 
-                System.err.println("call handled");
+                //System.err.println("call handled");
             }
         } catch (IOException e) {
             System.err.println("Error running worker: " + e.getMessage());
@@ -1054,14 +1054,13 @@ FOOTER_CODE_STRING = """
     }
 
     public static void main(String[] arguments) throws IOException {
-
-        System.err.println("Java eStars Worker");
-        for (String argument : arguments) {
-            System.err.println("argument: " + argument);
-        }
+        //System.err.println("Java worker");
+        //for (String argument : arguments) {
+        //    System.err.println("argument: " + argument);
+        //}
 
         if (arguments.length == 0) {
-            System.err.println("No arguments to worker. expected a socket port number");
+            System.err.println("No arguments to java worker. expected a socket port number");
             System.exit(1);
         }
 
@@ -1101,12 +1100,15 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
         
         self.output_lines_with_number_of_outputs()
         
-        self.output_declare_variables()
-        self.output_function_start()
-        self.output_function_parameters()
-        self.output_function_end()
-
-        self.output_copy_output_variables()
+        
+        if self.specification.name.startswith("internal__"):
+            self.out.lf() + "//" +  self.specification.name + " ignored"
+        else:
+            self.output_declare_variables()
+            self.output_function_start()
+            self.output_function_parameters()
+            self.output_function_end()
+            self.output_copy_output_variables()
 
         self.out.dedent()
         self.out.lf() + "}"
@@ -1332,7 +1334,8 @@ class GenerateAJavaSourcecodeStringFromASpecificationClass\
         
         self.out.lf() + 'default:'
         self.out.indent()
-        self.out.lf() + 'throw new IOException("unknown function id " + request.getFunctionID());'
+        self.out.lf() + 'System.err.println("unknown function id " + request.getFunctionID());'
+        self.out.lf() + 'reply.setError("unknown function id " + request.getFunctionID());'
         self.out.dedent()
         
         self.out.dedent().lf() + '}'
@@ -1357,8 +1360,8 @@ class GenerateAJavaInterfaceStringFromASpecificationClass\
     
         
     def must_include_interface_function_in_output(self, x):
-        #if x.specification.name.startswith("internal__"):
-        #    return False
+        if x.specification.name.startswith("internal__"):
+            return False
             
         for cls in self.ignore_functions_from_specification_classes:
             if hasattr(cls, x.specification.name):
