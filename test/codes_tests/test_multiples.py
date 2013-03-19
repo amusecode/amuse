@@ -20,7 +20,7 @@ from amuse import datamodel
 from amuse.ic import plummer
 from amuse.couple import multiples
 
-class TestSimpleMultiples(TestWithMPI):
+class _TestSimpleMultiples(TestWithMPI):
     previous = None
     
     def new_smalln(self):

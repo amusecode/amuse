@@ -51,6 +51,6 @@ recursive-include  data/mpiamrvac/output  empty_dir.txt
 recursive-include  data/mmams/output  empty_dir.txt
 recursive-include  data/fi/output  empty_dir.txt
 recursive-include  data/evtwin/output  empty_dir.txt
-recursive-include  data/mesa/output  empty_dir.txt
+recursive-include  data/mesa/output  *.gz empty_dir.txt
 
 prune data/mesa/input/star_data
