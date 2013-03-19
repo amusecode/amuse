@@ -114,8 +114,7 @@ void forsockets_send_string(char *string, int32_t length) {
 void forsockets_init(int32_t port) {
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
-	int flag;
-	int result;
+	int on = 1;
 
 //	fprintf(stderr, "initializing forsockets\n");
 //
@@ -145,12 +144,7 @@ void forsockets_init(int32_t port) {
 
 	}
 	
-	flag = 1;
-    result = setsockopt(socketfd,            /* socket affected */
-                        IPPROTO_TCP,     /* set option at TCP level */
-                        TCP_NODELAY,     /* name of option */
-                        (char *) &flag,  /* the cast is historical cruft */
-                        sizeof(int));    /* length of option value */
+        setsockopt(socketfd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));    
 
 	/*fprintf(stderr, "finished initializing forsockets\n");*/
 }

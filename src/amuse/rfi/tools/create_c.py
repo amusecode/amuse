@@ -35,6 +35,7 @@ HEADER_CODE_STRING = """
 #include <netinet/in.h>
 #include <netdb.h>
 #include <unistd.h>
+#include <netinet/tcp.h>
 """
 
 CONSTANTS_AND_GLOBAL_VARIABLES_STRING = """
@@ -420,6 +421,7 @@ void run_sockets_mpi(int argc, char *argv[], int port) {
   int max_call_count = 10;
   struct sockaddr_in serv_addr;
   struct hostent *server;
+  int on = 1;
   
   mpiIntercom = false;
 
@@ -436,6 +438,9 @@ void run_sockets_mpi(int argc, char *argv[], int port) {
       fprintf(stderr, "cannot open socket\\n");
       exit(1);
     }
+
+    //turn on no-delay option in tcp for huge speed improvement
+    setsockopt (socketfd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
     
     server = gethostbyname("localhost");
     
@@ -599,6 +604,7 @@ void run_sockets(int port) {
   int max_call_count = 10;
   struct sockaddr_in serv_addr;
   struct hostent *server;
+  int on = 1;
   
   mpiIntercom = false;
 
@@ -610,6 +616,9 @@ void run_sockets(int port) {
     fprintf(stderr, "cannot open socket\\n");
     exit(1);
   }
+  
+  //turn on no-delay option in tcp for huge speed improvement
+  setsockopt (socketfd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
     
   server = gethostbyname("localhost");
     
