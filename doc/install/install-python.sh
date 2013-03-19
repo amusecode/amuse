@@ -80,10 +80,11 @@ if [ $UNAME == 'Darwin' ] ; then
 #--enable-framework=${PREFIX}/Framework \
 #--enable-universal-sdk \
 else
-	${SOURCE_DIR}/${APP_DIR}/configure \
+	LDFLAGS=-m32 CFLAGS=-m32 ${SOURCE_DIR}/${APP_DIR}/configure \
 		--prefix=${PREFIX} \
 		--enable-shared \
-        --enable-unicode=ucs4\
+		--whitout-threads \
+		--enable-shared \
 		--program-suffix=.exe ;
 fi
 
