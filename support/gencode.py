@@ -94,10 +94,10 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-m",
             "--mode",
-            choices=["mpi","stub", "dir", "sockets", "interface", "class"],
+            choices=["mpi","stub", "dir", "sockets", "interface", "class", "script"],
             default="mpi",
             dest="mode",
-            help="MODE of the code to generate. Can be <mpi>, <stub>, <dir>,<sockets>, <interface> or <class>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). <dir> will create a directory ann populate it with the files needed to build a code. (Defaults to mpi)")
+            help="MODE of the code to generate. Can be <mpi>, <stub>, <dir>,<sockets>, <interface>, <class> or <script>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). <dir> will create a directory ann populate it with the files needed to build a code. (Defaults to mpi)")
         
         self.parser.add_option(
             "-o",
@@ -265,7 +265,8 @@ def make_file(settings):
         ('f90','stub'): create_fortran.GenerateAFortranStubStringFromASpecificationClass,
         ('java','interface'): create_java.GenerateAJavaInterfaceStringFromASpecificationClass,
         ('java','class'): create_java.GenerateAJavaSourcecodeStringFromASpecificationClass,
-        ('py','sockets'): make_a_socket_python_worker,    
+        ('java','script'): create_java.GenerateAJavaWorkerScript,
+        ('py','sockets'): make_a_socket_python_worker,
         ('py','mpi'): make_a_mpi_python_worker,    
     }
     

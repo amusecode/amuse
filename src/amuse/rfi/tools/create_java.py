@@ -1,12 +1,15 @@
 from amuse.support.core import late
 from amuse.support import exceptions
+from amuse import config
 from amuse.rfi.tools.create_code import GenerateASourcecodeString
 from amuse.rfi.tools.create_code import GenerateASourcecodeStringFromASpecificationClass
 from amuse.rfi.tools.create_code import DTypeSpec
-from amuse.rfi.tools.create_code import dtypes
 from amuse.rfi.tools.create_code import DTypeToSpecDictionary
-from amuse.rfi.tools import create_definition
 from amuse.rfi.core import LegacyFunctionSpecification
+
+import sys
+import os
+import inspect
 
 dtype_to_spec = DTypeToSpecDictionary({
     'int32' : DTypeSpec('Int', 'Int', '', 'int', ''),
@@ -17,7 +20,7 @@ dtype_to_spec = DTypeToSpecDictionary({
     'float64' : DTypeSpec('Double', 'Double',
                     '', 'double', ''),
     'bool' : DTypeSpec('Boolean', 'Boolean',
-                    '', 'Boolean', ''),
+                    '', 'boolean', ''),
     'string' : DTypeSpec('String', 'String',
                     '', 'String', ''),
 })
@@ -28,19 +31,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.DoubleBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
+import java.nio.FloatBuffer;
+import java.nio.DoubleBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 """
 
 AMUSE_MESSAGE_CLASS_CODE_STRING = """
  private static class AmuseMessage {
-        private static final Logger logger = LoggerFactory.getLogger("ibis.amuse.AmuseMessage");
-
         public static final int HEADER_SIZE = 10; // integers
 
         // 4 byte flags field.
@@ -292,9 +292,18 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 stringBytes[0].clear();
                 stringBytes[0].put(bytes);
             } catch (UnsupportedEncodingException e) {
-                logger.error("could not set error", e);
+                System.err.println("could not set error: " + e);
                 stringHeader.put(0, 0);
             }
+        }
+        
+        public void setBoolean(int index, boolean value) {
+            if (value) {
+                booleanBytes.put(index, TRUE_BYTE);
+            } else {
+                booleanBytes.put(index, FALSE_BYTE);
+            }
+
         }
 
         public void addString(String value) {
@@ -323,18 +332,30 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 stringBytes[position].put(bytes);
 
             } catch (UnsupportedEncodingException e) {
-                logger.error("ERROR! UTF-8 not supported by the JVM!");
+                System.err.println("ERROR! UTF-8 not supported by the JVM!");
             }
         }
+        
+        public void setString(int index, String value) {
+            // encode string to UTF-8
+            byte[] bytes;
 
-        // public void addInteger(int value) {
-        // header.put(HEADER_INT_COUNT_INDEX, header.get(HEADER_INT_COUNT_INDEX)
-        // + 1);
-        // ensurePrimitiveCapacity();
-        // intBytes.clear();
-        // intBytes.asIntBuffer().put(header.get(HEADER_INT_COUNT_INDEX),
-        // value);
-        // }
+            try {
+                bytes = value.getBytes("UTF-8");
+
+                // set length of string in header
+                stringHeader.put(index, bytes.length);
+
+                // make sure there is space for the string
+                ensureStringsCapacity();
+
+                stringBytes[index].clear();
+                stringBytes[index].put(bytes);
+
+            } catch (UnsupportedEncodingException e) {
+                System.err.println("ERROR! UTF-8 not supported by the JVM!");
+            }
+        }
 
         public boolean isErrorState() {
             return headerBytes.get(HEADER_ERROR_FLAG) == TRUE_BYTE;
@@ -468,11 +489,9 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
         }
 
         void writeTo(SocketChannel channel) throws IOException {
-            if (logger.isTraceEnabled()) {
-                logger.trace("writing to socket channel: " + this.toContentString());
-            } else if (logger.isDebugEnabled()) {
-                logger.debug("writing to socket channel: " + this);
-            }
+            //System.err.prinln("writing to socket channel: " + this.toContentString());
+            //System.err.prinln("writing to socket channel: " + this);
+            
 
             headerBytes.clear();
             setPrimitiveLimitsFromHeader();
@@ -483,12 +502,12 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
 
             // alternative, debugging version of writing buffers
             // for (ByteBuffer buffer : byteBuffers) {
-            // logger.debug("writing " + buffer + " of length "
+            // //System.err.println("writing " + buffer + " of length "
             // + buffer.remaining());
             // channel.write(buffer);
             //
             // if (buffer.hasRemaining()) {
-            // logger.error("Error! not all bytes written "
+            // System.err.println("Error! not all bytes written "
             // + buffer.remaining());
             // }
             // }
@@ -550,9 +569,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 }
                 byteBuffers = newByteBuffers;
 
-                if (logger.isTraceEnabled()) {
-                    logger.trace("ensurePrimitiveCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
-                }
+                //System.err.println("ensurePrimitiveCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
             }
 
             return buffersUpdated;
@@ -593,9 +610,8 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 }
                 byteBuffers = newByteBuffers;
 
-                if (logger.isTraceEnabled()) {
-                    logger.trace("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
-                }
+                
+                //System.err.println("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
             }
 
             return buffersUpdated;
@@ -604,7 +620,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
         boolean readFrom(SocketChannel channel) throws IOException {
             boolean updatedBuffers = false;
 
-            logger.trace("receiving header from channel");
+            //System.err.println("receiving header from channel");
 
             headerBytes.clear();
 
@@ -613,7 +629,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             // set buffers to byte order specified in buffer
             setByteOrder(getByteOrder());
 
-            logger.trace("reading content for " + this);
+            //System.err.println("reading content for " + this);
 
             if (ensurePrimitiveCapacity()) {
                 updatedBuffers = true;
@@ -623,7 +639,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
 
             setPrimitiveLimitsFromHeader();
 
-            logger.trace("receiving primitives from channel");
+            //System.err.println("receiving primitives from channel");
 
             headerBytes.position(headerBytes.limit());
             // we also request to read the header, but its position is already
@@ -638,14 +654,12 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             // set the limits
             setStringLimitsFromHeader();
 
-            logger.trace("receiving strings from channel");
+            //System.err.println("receiving strings from channel");
 
             // and receive!
             readAll(channel, stringBytes);
 
-            if (logger.isDebugEnabled()) {
-                logger.debug("done receiving message from channel: " + this);
-            }
+            //System.err.println("done receiving message from channel: " + this);
 
             return updatedBuffers;
         }
@@ -816,6 +830,28 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
 
             return result;
         }
+        
+        public long[] getLongSlice(int sliceIndex) {
+            long[] result = new long[getCallCount()];
+            
+            longBytes.position(getCallCount() * sliceIndex * SIZEOF_LONG);
+            longBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_LONG);
+
+            longBytes.asLongBuffer().get(result);
+
+            return result;
+        }
+        
+        public float[] getFloatSlice(int sliceIndex) {
+            float[] result = new float[getCallCount()];
+
+            floatBytes.position(getCallCount() * sliceIndex * SIZEOF_FLOAT);
+            floatBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_FLOAT);
+
+            floatBytes.asFloatBuffer().get(result);
+
+            return result;
+        }
 
         public double[] getDoubleSlice(int sliceIndex) {
             double[] result = new double[getCallCount()];
@@ -827,32 +863,23 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
 
             return result;
         }
+        
+        public boolean[] getBooleanSlice(int sliceIndex) throws IOException {
+            int callCount = getCallCount();
+         
+            boolean[] result = new boolean[callCount];
 
-        // sets all elements of a slice
-        public void setIntSlice(int sliceIndex, int[] data) {
-            intBytes.position(getCallCount() * sliceIndex * SIZEOF_INT);
-            intBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_INT);
-
-            intBytes.asIntBuffer().put(data);
+            int offset = sliceIndex * callCount;
+            
+            for(int i = 0; i < callCount; i++) {
+                result[i] = getBoolean(offset + i);
+            }
+            
+            return result;
         }
         
-        // sets all elements of a slice
-        public void setDoubleSlice(int sliceIndex, double[] data) {
-            doubleBytes.position(getCallCount() * sliceIndex * SIZEOF_DOUBLE);
-            doubleBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_DOUBLE);
-
-            doubleBytes.asDoubleBuffer().put(data);
-        }
-
-        // sets a single element of a slice
-        public void setIntElement(int sliceIndex, int index, int value) {
-            intBytes.position(getCallCount() * sliceIndex * SIZEOF_INT);
-            intBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_INT);
-
-            intBytes.asIntBuffer().put(index, value);
-        }
-        
-         public String[] getStringSlice(int sliceIndex) throws IOException {
+                
+        public String[] getStringSlice(int sliceIndex) throws IOException {
             int callCount = getCallCount();
          
             String[] result = new String[callCount];
@@ -864,6 +891,118 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             }
             
             return result;
+        }
+        
+        // sets all elements of a slice
+        public void setIntSlice(int sliceIndex, int[] data) {
+            intBytes.position(getCallCount() * sliceIndex * SIZEOF_INT);
+            intBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_INT);
+
+            intBytes.asIntBuffer().put(data);
+        }
+        
+        // sets all elements of a slice to a single value
+        public void setIntSlice(int sliceIndex, int value) {
+            intBytes.position(getCallCount() * sliceIndex * SIZEOF_INT);
+            intBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_INT);
+
+            IntBuffer buffer = intBytes.asIntBuffer();
+            
+            while(buffer.hasRemaining()) {
+                buffer.put(value);
+            }
+        }
+
+        // sets all elements of a slice
+        public void setLongSlice(int sliceIndex, long[] data) {
+            longBytes.position(getCallCount() * sliceIndex * SIZEOF_LONG);
+            longBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_LONG);
+
+            longBytes.asLongBuffer().put(data);
+        }
+        
+        // sets all elements of a slice to a single value
+        public void setLongSlice(int sliceIndex, long value) {
+            longBytes.position(getCallCount() * sliceIndex * SIZEOF_LONG);
+            longBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_LONG);
+
+            LongBuffer buffer = longBytes.asLongBuffer();
+            
+            while(buffer.hasRemaining()) {
+                buffer.put(value);
+            }
+        }
+        
+        // sets all elements of a slice
+        public void setFloatSlice(int sliceIndex, float[] data) {
+            floatBytes.position(getCallCount() * sliceIndex * SIZEOF_FLOAT);
+            floatBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_FLOAT);
+
+            floatBytes.asFloatBuffer().put(data);
+        }
+        
+        // sets all elements of a slice to a single value
+        public void setFloatSlice(int sliceIndex, float value) {
+            floatBytes.position(getCallCount() * sliceIndex * SIZEOF_FLOAT);
+            floatBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_FLOAT);
+
+            FloatBuffer buffer = floatBytes.asFloatBuffer();
+            
+            while(buffer.hasRemaining()) {
+                buffer.put(value);
+            }
+        }
+
+        // sets all elements of a slice
+        public void setDoubleSlice(int sliceIndex, double[] data) {
+            doubleBytes.position(getCallCount() * sliceIndex * SIZEOF_DOUBLE);
+            doubleBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_DOUBLE);
+
+            doubleBytes.asDoubleBuffer().put(data);
+        }
+        
+        // sets all elements of a slice to a single value
+        public void setDoubleSlice(int sliceIndex, double value) {
+            doubleBytes.position(getCallCount() * sliceIndex * SIZEOF_DOUBLE);
+            doubleBytes.limit(getCallCount() * (sliceIndex + 1) * SIZEOF_DOUBLE);
+
+            DoubleBuffer buffer = doubleBytes.asDoubleBuffer();
+            
+            while(buffer.hasRemaining()) {
+                buffer.put(value);
+            }
+        }
+
+       // sets all elements of a slice
+       public void setBooleanSlice(int sliceIndex, boolean[] data) {
+           int callCount = getCallCount();
+           for(int i = 0; i < callCount; i++) {
+               setBoolean((callCount * sliceIndex) + i, data[i]);
+            }
+        }
+        
+        // sets all elements of a slice to a single value
+        public void setBooleanSlice(int sliceIndex, boolean value) {
+           int callCount = getCallCount();
+           for(int i = 0; i < callCount; i++) {
+               setBoolean((callCount * sliceIndex) + i, value);
+            }
+        }
+        
+        // sets all elements of a slice
+        public void setStringSlice(int sliceIndex, String[] data) {
+           int callCount = getCallCount();
+           for(int i = 0; i < callCount; i++) {
+               setString((callCount * sliceIndex) + i, data[i]);
+            }
+        }
+        
+        // sets all elements of a slice to a single value
+        public void setStringSlice(int sliceIndex, String value) {
+           int callCount = getCallCount();
+           for(int i = 0; i < callCount; i++) {
+               setString((callCount * sliceIndex) + i, value);
+            }
         }
         
     }
@@ -950,128 +1089,35 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
    
         
     def start(self):
-        
+        #must and can handle array is the same thing in Java codes...
+        if self.specification.can_handle_array:
+            self.specification.must_handle_array = True
+
         self.specification.prepare_output_parameters()
         self.output_casestmt_start()
+        self.out.indent()
+        self.out.lf() + "{"
         self.out.indent()
         
         self.output_lines_with_number_of_outputs()
         
-        if self.specification.must_handle_array:
-            pass
-        elif self.specification.can_handle_array:
-            self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
-            self.out.indent()
-            
-        self.output_declare_output_variables()
- 
-        #self.output_copy_inout_variables()
+        self.output_declare_variables()
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
-        
-#        if self.specification.must_handle_array:
-#            if not self.specification.result_type is None:
-#                spec = self.dtype_to_spec[self.specification.result_type]
-#                self.out.lf() + 'for (int i = 1 ; i < call_count; i++){'
-#                self.out.indent()
-#                self.out.lf() + spec.output_var_name + '[i]' + ' = ' + spec.output_var_name + '[0]' + ';'
-#                self.out.dedent()
-#                self.out.lf() + '}'
-#        elif self.specification.can_handle_array:
-#            self.out.dedent()
-#            self.out.lf() + '}'
 
         self.output_copy_output_variables()
-        
+
+        self.out.dedent()
+        self.out.lf() + "}"
         self.output_casestmt_end()
         self.out.dedent()
         self._result = self.out.string
         
-    
-    def index_string(self, index, must_copy_in_to_out=False):
-        if self.specification.must_handle_array and not must_copy_in_to_out:
-            if index == 0:
-                return '0'
-            else:
-                return '( %d * count)' % index
-        elif self.specification.can_handle_array or (self.specification.must_handle_array and must_copy_in_to_out):
-            if index == 0:
-                return 'i'
-            else:
-                return '( %d * count) + i' % index
-        else:
-            return index
-    
-    
-    def input_var(self, name, index):
-        if self.specification.must_handle_array:
-            self.out.n() + 'request.get' + name + 'Slice(' + index + ')'
-        else:
-            self.out.n() + 'request.get' + name + 'Slice(' + index + ')[0]'
+    def output_casestmt_start(self):
+        self.out + 'case ' + self.specification.id + ':'
         
-    def output_var(self, name):
-        self.out.n() + name
-    
-    def output_function_parameters(self):
-        self.out.indent()
-        
-        first = True
-        
-        for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.datatype]
-            
-            if first:
-                first = False
-            else:
-                self.out + ' ,'
-                
-            if parameter.direction == LegacyFunctionSpecification.IN:
-                    self.input_var(spec.input_var_name, parameter.input_index)
-            if parameter.direction == LegacyFunctionSpecification.INOUT:
-                    self.output_var(spec.output_var_name, parameter.output_index)
-            elif parameter.direction == LegacyFunctionSpecification.OUT:
-                    self.output_var(parameter.name)
-            elif parameter.direction == LegacyFunctionSpecification.LENGTH:
-                self.out.n() + 'count'
-    
-        self.out.dedent()
-        
-    def output_declare_output_variables(self):
-        
-        for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.datatype]
-            
-            if parameter.direction == LegacyFunctionSpecification.OUT:
-                self.out.lf() + spec.type + '[] ' + parameter.name + ' = new ' +  spec.type + '[count];'
-                
-                
-    def output_copy_output_variables(self):
-        
-        for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.datatype]
-            
-            if parameter.direction == LegacyFunctionSpecification.OUT:
-                self.out.lf() + 'reply.set' + spec.output_var_name + 'Slice(' + parameter.output_index + ', ' + parameter.name + ');'
-        
-    def output_copy_inout_variables(self):
-        for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.datatype]
-            
-            if parameter.direction == LegacyFunctionSpecification.INOUT:
-                if self.specification.must_handle_array:
-                    self.out.lf() + 'for (int i = 0 ; i < call_count; i++){'
-                    self.out.indent()
-
-                self.out.n() + spec.output_var_name
-                self.out + '[' + self.index_string(parameter.output_index, must_copy_in_to_out=True) + ']'
-                self.out + ' = '
-                self.out + spec.input_var_name + '[' + self.index_string(parameter.input_index, must_copy_in_to_out=True) + ']' + ';'
-            
-                if self.specification.must_handle_array:
-                    self.out.dedent()
-                    self.out.lf() + '}'
-                                
+              
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
         
@@ -1091,35 +1137,79 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
         
         self.out.lf() + 'reply.ensurePrimitiveCapacity();'
             
-    def output_function_end(self):
-        if len(self.specification.parameters) > 0:
-            self.out.n()
-            
-        if not self.specification.result_type is None:
-            self.out + ')'
-            
-        self.out + ')' + ';'
+    
+    def output_function_parameters(self):
+        self.out.indent()
         
+        first = True
+        
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
+            
+            if first:
+                first = False
+            else:
+                self.out + ', '
+                
+            if parameter.direction == LegacyFunctionSpecification.IN:
+                if self.specification.must_handle_array:
+                    self.out + parameter.name
+                else:
+                    self.out + parameter.name + '[0]'
+            if parameter.direction == LegacyFunctionSpecification.INOUT:
+                    self.out + parameter.name
+            elif parameter.direction == LegacyFunctionSpecification.OUT:
+                    self.out + parameter.name
+            elif parameter.direction == LegacyFunctionSpecification.LENGTH:
+                self.out + 'count'
+    
+        self.out.dedent()
+
+    def output_declare_variables(self):
+        if not self.specification.result_type is None:
+            spec = self.dtype_to_spec[self.specification.result_type]
+            self.out.lf() + spec.type + ' result;'
+        
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
+            
+            if parameter.direction == LegacyFunctionSpecification.IN or parameter.direction == LegacyFunctionSpecification.INOUT :
+                self.out.lf() + spec.type + '[] ' + parameter.name + ' = request.get' + spec.input_var_name + 'Slice(' + parameter.input_index + ');'
+            if parameter.direction == LegacyFunctionSpecification.OUT:
+                self.out.lf() + spec.type + '[] ' + parameter.name + ' = new ' +  spec.type + '[count];'
+
     def output_function_start(self):
         self.out.n() 
         if not self.specification.result_type is None:
-            spec = self.dtype_to_spec[self.specification.result_type]
-            self.out + 'reply.set' + spec.input_var_name + 'Element(' + self.index_string(0) + ', 0, '
+            self.out + 'result = '
             
         self.out + 'code.' + self.specification.name + '('
-        
-    def output_casestmt_start(self):
-        self.out + 'case ' + self.specification.id + ':'
-        
+
+    def output_function_end(self):
+        self.out + ')' + ';'
+                
+    def output_copy_output_variables(self):
+        if not self.specification.result_type is None:
+            spec = self.dtype_to_spec[self.specification.result_type]
+            self.out.lf() + 'reply.set' + spec.output_var_name + 'Slice(0, result);'
+
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
+            
+            if parameter.direction == LegacyFunctionSpecification.OUT or parameter.direction == LegacyFunctionSpecification.INOUT:
+                self.out.lf() + 'reply.set' + spec.output_var_name + 'Slice(' + parameter.output_index + ', ' + parameter.name + ');'
+  
     def output_casestmt_end(self):
         self.out.n() + 'break;'
-        
-        
 
 class GenerateAJavaFunctionDeclarationStringFromAFunctionSpecification(MakeJavaCodeString):
    
         
     def start(self):
+        #must and can handle array is the same thing in Java codes...
+        if self.specification.can_handle_array:
+            self.specification.must_handle_array = True
+             
         self.output_function_parameter_types()
         self.output_function_start()
         self.output_function_parameters()
@@ -1128,8 +1218,14 @@ class GenerateAJavaFunctionDeclarationStringFromAFunctionSpecification(MakeJavaC
         
     def output_function_parameter_types(self):        
         for parameter in self.specification.parameters:
-            if (parameter.is_output()):
-                self.out.lf() + '// parameter "' + parameter.name + '" is an output parameter!' 
+            if (parameter.direction == LegacyFunctionSpecification.IN):
+                self.out.lf() + '// parameter "' + parameter.name + '" is an input parameter'
+            elif (parameter.direction == LegacyFunctionSpecification.OUT):
+                self.out.lf() + '// parameter "' + parameter.name + '" is an output parameter'
+            elif (parameter.direction == LegacyFunctionSpecification.INOUT):
+                self.out.lf() + '// parameter "' + parameter.name + '" is an inout parameter'
+            elif (parameter.direction == LegacyFunctionSpecification.LENGTH):
+                self.out.lf() + '// parameter "' + parameter.name + '" is a length parameter'
             
     def output_function_parameters(self):        
         first = True
@@ -1286,5 +1382,46 @@ class GenerateAJavaInterfaceStringFromASpecificationClass\
         self.out.lf()
         
         self._result = self.out.string
+     
+class GenerateAJavaWorkerScript(GenerateASourcecodeString):
+
+    @late
+    def code_dir(self):
+        return os.getcwd()
+
+    @late
+    def java(self):
+        return config.java.java
+
+    @late
+    def template_dir(self):
+        return os.path.dirname(__file__)
         
+    @late
+    def template_string(self):
+        path = self.template_dir
+        path = os.path.join(path, 'java_code_script.template')
+            
+        with open(path, "r") as f:
+            template_string = f.read()
+        
+        return template_string
+    
+    def script_string(self):
+        return self.template_string.format(
+            executable = sys.executable,
+            code_dir = self.code_dir,
+            java = self.java,
+            classpath = self.specification_class.classpath,
+            cwd = self.specification_class.cwd)
+
+
+    #def code_directory(self):
+        #interface_module = inspect.getmodule(self.specification_class).__name__
+        #return os.path.dirname(inspect.getfile(self.specification_class))
+    
+    def start(self):
+        self.out + self.script_string()
+        
+        self._result = self.out.string
 
