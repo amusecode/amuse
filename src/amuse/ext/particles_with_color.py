@@ -126,10 +126,10 @@ def new_particles_with_blackbody_color(original_particles, **kwargs):
     :argument Z: metal (everything heavier than helium) abundance for T_from_u converter (default: 0.02)
     :argument x_ion: ionisation fraction for T_from_u converter (default: 0.1)
     """
-    if hasattr(original_particles, "temperature"):
+    if "temperature" in original_particles.get_attribute_names_defined_in_store():
         colors = BlackBodyColorFromTemperature(**kwargs)
         attributes_names = ["temperature"]
-    elif hasattr(original_particles, "u"):
+    elif "u" in original_particles.get_attribute_names_defined_in_store():
         colors = BlackBodyColorFromInternalEnergy(**kwargs)
         attributes_names = ["u"]
     else:
