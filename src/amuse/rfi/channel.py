@@ -1197,8 +1197,6 @@ class MpiChannel(AbstractMessageChannel):
         
         if message.error:
                 logging.getLogger("channel").info("error message!")
-                self.stop()
-                logging.getLogger("channel").info("stopped!")
                 raise exceptions.CodeException("Error in code: " + message.strings[0])
 #        if message.tag == -1:
 #            raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
@@ -1210,7 +1208,6 @@ class MpiChannel(AbstractMessageChannel):
         
     def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
         request = ServerSideMPIMessage().nonblocking_receive(self.intercomm)
-        
         def handle_result(function):
             self._is_inuse = False
         
