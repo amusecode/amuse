@@ -2049,8 +2049,10 @@ class ParticlesMaskedSubset(ParticlesSubset):
         
         >>> particles = Particles(keys=[1,2])
         >>> particles[0].child = particles[1]
-        >>> print particles.child
-        [Particle(2, child=None) None]
+        >>> print particles.child[0]
+        Particle(2, child=None)
+        >>> print particles.child[1]
+        None
         """
         keys = numpy.where(self.get_valid_particles_mask(), self._private.keys, [None])
         return str(list(keys))

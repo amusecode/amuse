@@ -1074,7 +1074,6 @@ class GenerateACSourcecodeStringFromASpecificationClass\
         self.out.lf() + 'sprintf(strings_out[0], "unknown function id: %d\\n", header_in[HEADER_FUNCTION_ID]);'
         self.out.lf() + 'fprintf(stderr, "unknown function id: %d\\n", header_in[HEADER_FUNCTION_ID]);'
         self.out.lf() + 'header_out[HEADER_STRING_COUNT] = 1;'
-        self.out.lf() + 'return false;'
         self.out.dedent()
         
         self.out.dedent().lf() + '}'
