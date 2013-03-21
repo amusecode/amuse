@@ -541,7 +541,7 @@ class AbstractSet(object):
     # if we put a grid in a numpy object array we want the
     # grid in a field of that array and not the contents of
     # the grid (i.e. the grid points)
-    __array_interface__ = {'shape':()}
+    __array_interface__ = {'shape':(),'typestr':'|O4'}
     
     __array_struct__ = UndefinedAttribute()
     __array__ = UndefinedAttribute()

@@ -135,7 +135,7 @@ class AbstractParticleSet(AbstractSet):
     # grid in a field of that array and not the contents of
     # the grid (i.e. the grid points)
     # grids have the same trick
-    __array_interface__ = {'shape':()}
+    __array_interface__ = {'shape':(),'typestr':'|O4' }
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
     
@@ -2651,7 +2651,7 @@ class Particle(object):
     # these are defined so that numpy conversion is way faster
     # otherwhise it would go through the __getattr__ function
     # which will slow it down by a factor 3
-    __array_interface__ = {'shape':()}
+    __array_interface__ = {'shape':(),'typestr':'|O4' }
     
     def __len__(self):
         raise AttributeError()
