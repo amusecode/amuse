@@ -24,8 +24,8 @@ def hydro_grid_in_potential_well(mass = 1 | units.MSun, length = 100 | units.AU)
     instance.parameters.length_x = length 
     instance.parameters.length_y = length
     instance.parameters.length_z = length
-    instance.parameters.x_boundary_conditions = ("outflow","outflow")
-    instance.parameters.y_boundary_conditions = ("outflow","outflow")
+    instance.parameters.x_boundary_conditions = ("periodic","periodic")
+    instance.parameters.y_boundary_conditions = ("periodic","periodic")
     instance.parameters.z_boundary_conditions = ("outflow","outflow")
     
     #instance.stopping_conditions.number_of_steps_detection.enable()

@@ -1,8 +1,8 @@
 Installing on Ubuntu
 ====================
 
-Installing on Ubuntu 10.10
---------------------------
+Installing on Ubuntu version > 10.10
+-------------------------------------
 
 In this section we asume a default Ubuntu desktop installation.
 

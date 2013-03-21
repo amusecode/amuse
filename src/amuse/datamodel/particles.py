@@ -1,4 +1,5 @@
 from amuse.support.core import CompositeDictionary
+from amuse.support.core import compare_version_strings
 from amuse.support import exceptions
 from amuse.datamodel.base import *
 from amuse.datamodel.memory_storage import *
@@ -15,6 +16,7 @@ from amuse.units.quantities import AdaptingVectorQuantity
 
 import numpy
 from numpy import ma
+
 
 class AbstractParticleSet(AbstractSet):
     """
@@ -135,7 +137,10 @@ class AbstractParticleSet(AbstractSet):
     # grid in a field of that array and not the contents of
     # the grid (i.e. the grid points)
     # grids have the same trick
-    __array_interface__ = {'shape':(),'typestr':'|O4' }
+    if compare_version_strings(numpy.__version__, '1.7.0') < 0:
+        __array_interface__ = {'shape':() }
+    else:
+        __array_interface__ = {'shape':(),'typestr':'|O4' }
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
     
@@ -2651,7 +2656,10 @@ class Particle(object):
     # these are defined so that numpy conversion is way faster
     # otherwhise it would go through the __getattr__ function
     # which will slow it down by a factor 3
-    __array_interface__ = {'shape':(),'typestr':'|O4' }
+    if compare_version_strings(numpy.__version__, '1.7.0') < 0:
+        __array_interface__ = {'shape':() }
+    else:
+        __array_interface__ = {'shape':(),'typestr':'|O4' }
     
     def __len__(self):
         raise AttributeError()

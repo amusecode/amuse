@@ -11,6 +11,7 @@ GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 SRC=src
 BUILDDIR = build
 PERIODIC_BUILDDIR = build_periodic
+OPENMP_BUILDDIR = build_mp
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -27,7 +28,7 @@ FFTW_LIBS ?= -lfftw3  -lfftw3_threads
 THREADLIB = -L. -lpthread $(BUILDDIR)/libpt.a
 PTHREADLIB = -L. -lpthread $(PERIODIC_BUILDDIR)/libpt.a
 
-OPENMP_FCFLAGS=# -openmp -openmp_report0 
+OPENMP_FCFLAGS ?= -openmp -openmp_report0 
 
 PIC=#-fPIC
 
@@ -58,7 +59,6 @@ endif
 #FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)
 
 
-FFLAGS+= $(OPENMP_FCFLAGS) 
 
 FFLAGS+= -I. -I..
 
@@ -116,6 +116,16 @@ fi_worker_periodic_gl: worker_code-gl.f90 $(PERIODIC_BUILDDIR)/libfi.a interface
 	$(MPIFC) $(FFLAGS) $(SC_FLAGS) worker_code-gl.f90 interface.po -o $@  $(PGLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS)
 
+$(OPENMP_BUILDDIR)/Makefile:
+	-mkdir $(OPENMP_BUILDDIR)
+	ln -s ../src/Makefile $(OPENMP_BUILDDIR)/Makefile
+	
+$(OPENMP_BUILDDIR)/libfi.a: $(OPENMP_BUILDDIR)/Makefile 
+	make -C $(OPENMP_BUILDDIR) amuse_interface FFLAGS="-I./$(OPENMP_BUILDDIR) $(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS) $(OPENMP_FCFLAGS)"
+
+fi_worker_mp: worker_code.f90 $(OPENMP_BUILDDIR)/libfi.a interface.o 
+	$(MPIFC) $(FFLAGS) $(OPENMP_FCFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(OPENMP_BUILDDIR) worker_code.f90 interface.o -o $@ $(OPENMP_BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
+
 worker_code.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 --needs-mpi=false $< FiInterface -o $@
 
@@ -141,4 +151,5 @@ clean:
 	$(RM) -f forsockets.mod
 	$(RM) -Rf $(BUILDDIR)
 	$(RM) -Rf $(PERIODIC_BUILDDIR)
+	$(RM) -Rf $(OPENMP_BUILDDIR)
 
