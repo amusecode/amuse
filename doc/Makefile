@@ -52,7 +52,7 @@ release: amuse_examples latexpdf
 	rm -Rf pdf
 	tar -xvf build/latex/docs-pdf.tar 
 	mv docs-pdf pdf
-	cp -R build/plot_directive .
+#	cp -R build/plot_directive .
 
 
 web: amuse_examples
