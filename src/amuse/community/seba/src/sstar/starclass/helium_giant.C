@@ -195,37 +195,6 @@ real helium_giant::helium_giant_end_time(const real mass, const real mass_tot) {
 
 
 void helium_giant::create_remnant(const real mass, const real mass_tot, const real mc_core) {
-#if 0
-     if (is_binary_component()) 
-       get_binary()->dump("binev.data", false);
-     else
-       dump("binev.data", false);
-
-        stellar_type type = NAS;
-     //if (get_total_mass() >= cnsts.parameters(helium2black_hole)) 
-//           type = Black_Hole;
-
-     if (core_mass >= cnsts.parameters(COcore2black_hole)) 
-       type = Black_Hole;
-     else if(core_mass >= cnsts.parameters(Chandrasekar_mass))
-       type = Neutron_Star;
-     else
-       type = Carbon_Dwarf;
-#endif
-#if 0 //(SPZ+GN: 27 Jul 2000)
-     // (GN+SPZ May  3 1999) core mass > 1.4 or total mass > 2.2 
-        else if(core_mass >= cnsts. //(GN+SPZ May  3 1999) was 1.3 * cnsts
-		             parameters(Chandrasekar_mass) ||
-		get_total_mass() >= cnsts.parameters(helium2neutron_star))
-	  type = Neutron_Star;
-	
-	// else if(get_total_mass()>=
-	//         1.3*cnsts.parameters(kanonical_neutron_star_mass) &&
-	//         relative_mass>=8) 
-	// type = Disintegrated;
-        else
-           type = Carbon_Dwarf;
-#endif // (SPZ+GN: 27 Jul 2000)
 
     stellar_type type;
     real mc_SN = maximum_helium_giant_core_mass(mass);

@@ -670,7 +670,8 @@ void double_star::semi_detached(star* donor,
 //	Donor should lose mass while the accretor should accrete.
 
   if (!stable(donor)) {
-    cerr << "semi_deatched not stable => ::common_envelope" << endl; 
+    cerr << "Spiral-in: Darwin Riemann instability"<<endl;
+    cerr << "semi_detached not stable => ::common_envelope" << endl; 
     
     //    dynamic_mass_transfer();
     // (GN+SilT Mar  2 2011)
@@ -786,33 +787,42 @@ bool  double_star::stable(star* st) {	// default = NULL
 //    if(st->get_total_mass() < 2*cnsts.safety(minimum_mass_step)) {
 //	return false;
 //    }
-
-  real J_star;
-  if(st) {
-    J_star = st->angular_momentum();
-  }
-  else {
-    real J_prim = get_primary()->angular_momentum();
-    real J_sec  = get_secondary()->angular_momentum();
-
-    J_star = Starlab::max(J_prim, J_sec);
-
-  }
-  
-  real J_bin  = angular_momentum();
-  
-  if(REPORT_TRANFER_STABILITY) {
-    PRC(J_star);PRL(J_bin);
-  }
-
-  if (J_star >= J_bin *
-      cnsts.parameters(Darwin_Riemann_instability_factor)) {
-
-    cerr << "Spiral-in: Darwin Riemann instability"<<endl;
     
-    return FALSE;
+  // (SilT: 22 Mar 2013) for high mass ratios the system might not be circularised yet
+  // for a convective envelope, q>42
+  // eccentricity not taken into account in J_orb
+  real pericenter = semi*(1-eccentricity);
+    
+  if((bin_type != Merged && bin_type != Disrupted)          &&    
+    (pericenter<= cnsts.parameters(tidal_circularization_radius)
+      * get_primary()->get_effective_radius()         ||
+    pericenter<= cnsts.parameters(tidal_circularization_radius)
+      * get_secondary()->get_effective_radius())      &&
+    eccentricity<1.) /*safety*/{
+            
+    real J_star;
+    real J_bin  = angular_momentum();
+    if(st) {
+      
+      J_star = st->angular_momentum();
+      }
+    else {
+      
+      real J_prim = get_primary()->angular_momentum();
+      real J_sec  = get_secondary()->angular_momentum();
+      J_star = Starlab::max(J_prim, J_sec);    
+//      PRC(J_prim);PRC(J_sec);PRL(angular_momentum());
+    }
+  
+    if(REPORT_TRANFER_STABILITY) {
+      PRC(J_star);PRL(J_bin);
+    }
+
+    if (J_star >= J_bin * cnsts.parameters(Darwin_Riemann_instability_factor)) {    
+      return FALSE;   
+    }
   }
- 
+    
   return TRUE;
 }
 
@@ -1205,7 +1215,7 @@ void double_star::recursive_binary_evolution(real dt,
       
       star* donor    = get_primary();
       star* accretor = get_secondary();
-      
+            
       // Primary fills Roche-lobe?
       if (rp >= rl_p) {
 	get_primary()->set_spec_type(Rl_filling);
@@ -1231,11 +1241,12 @@ void double_star::recursive_binary_evolution(real dt,
       else
 	get_secondary()->set_spec_type(Rl_filling, false);
 
-	 
+
 //  Determines if we really have to do with a mass
 //  transferring binary.
-      if (rp >= rl_p    ||
-	  rs >= rl_s) {
+  // (GN + SilT: 21 Mar 2013) tidal instability can take place in systems that are still detached
+      if (rp >= rl_p    ||	  rs >= rl_s || !stable() ) {
+//      if (rp >= rl_p    ||	  rs >= rl_s) {
 	if (REPORT_RECURSIVE_EVOLUTION) {
 	  cerr << " (donor, accretor) = (" << donor->get_identity()
 	       << ", " << accretor->get_identity()
@@ -1631,7 +1642,9 @@ void double_star::double_spiral_in() {
        real menv_s = s->get_envelope_mass();
        real mtot_s = mcore_s + menv_s;
 
-       real r_p = p->get_radius();
+       // (SilT: 24 Mar 2013) During a tidal instability r_donor < roche_radius_donor (see double_star::stable())
+//       real r_p = p->get_radius();
+       real r_p = Starlab::min(p->get_radius(), roche_radius(p));
        real r_s = s->get_radius();
 
         //real r_l_p = roche_radius(p);
@@ -1788,15 +1801,16 @@ void double_star::spiral_in(star* larger,
         //             cnsts.parameters(spiral_in_time));
         real m_acc = 0;
         real mtot_s = smaller->get_total_mass() + m_acc;
-	menv_l -= m_acc;
+	    menv_l -= m_acc;
 
-        real r_lobe = roche_radius(larger)/semi;
 
-	real alpha_lambda = cnsts.parameters(common_envelope_efficiency)
+        // (SilT: 24 Mar 2013) During a tidal instability  r_donor < roche_radius_donor (see double_star::stable() )
+    	real r_larger = Starlab::min(roche_radius(larger), larger->get_effective_radius())/semi;
+
+	    real alpha_lambda = cnsts.parameters(common_envelope_efficiency)
 	                  * cnsts.parameters(envelope_binding_energy);
-	real a_spi = semi*(mcore_l/mtot_l)/(1. + (2.*menv_l
-                   / (alpha_lambda *r_lobe*mtot_s)));
-       
+	    real a_spi = semi*(mcore_l/mtot_l)/(1. + (2.*menv_l
+                   / (alpha_lambda *r_larger*mtot_s)));
 
         real rl_l = roche_radius(a_spi, mcore_l, mtot_s);
         real rl_s = roche_radius(a_spi, mtot_s, mcore_l);
@@ -1813,7 +1827,7 @@ void double_star::spiral_in(star* larger,
 	  // core of the larger star or
 	  // its companion (the smaller star) fills its Roche-lobe.
 	  // substituted for: 
-	  // real da = semi*(1 - r_lobe) - smaller->get_effective_radius();
+	  // real da = semi*(1 - r_larger) - smaller->get_effective_radius();
 	  // (SPZ+GN: 1 Oct 1998)
 	  
 	  real sma_larger = lrc / roche_radius(1, larger->get_core_mass(),
@@ -1828,7 +1842,7 @@ void double_star::spiral_in(star* larger,
 
 	  real mass_lost = (mtot_l*mtot_s/(2*sma_post_ce) 
                              - mtot_l*mtot_s/(2*semi))
-			 / (mtot_l/(alpha_lambda*r_lobe*semi) 
+			 / (mtot_l/(alpha_lambda*r_larger*semi) 
                              + mtot_s/(2*sma_post_ce));
 
 	  //real da = semi - sma_post_ce;
@@ -1838,7 +1852,7 @@ void double_star::spiral_in(star* larger,
 	  //           + 2*semi_fr/(mtot_s
 	  //	 *   cnsts.parameters(common_envelope_efficiency)
 	  //         *   cnsts.parameters(envelope_binding_energy)
-	  //	 *   r_lobe));
+	  //	 *   r_larger));
            if (mass_lost>=menv_l) {
               mass_lost = 0.99*menv_l;
            }

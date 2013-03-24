@@ -137,34 +137,6 @@ white_dwarf::white_dwarf(helium_giant & h, stellar_type wd_type) :  single_star(
 	post_constructor();
 
 }
-
-#if 0
-void white_dwarf::adjust_initial_star() {
-
-  if (core_mass<=0) {
-    core_mass = get_total_mass();
-    envelope_mass = 0;
-    if (core_mass>=cnsts.parameters(Chandrasekar_mass)) {
-      envelope_mass = core_mass-0.75;
-      core_mass = 0.75;
-    }
-  }
-        
-  if(relative_age<=0)
-      // nucleair_evolution_time() should not be used anymore
-      // should be relative_age = max(current_time, 0.);
-
-    relative_age = max(current_time, nucleair_evolution_time());
-
-      if (relative_mass>cnsts.parameters(super_giant2neutron_star)) {
-         cerr<<"White_dwarf with high mass!"
-             <<"\n should be turned into a neutron star"
-             <<"\nadopt maximum  WD relative mass"<<endl;
-         relative_mass = cnsts.parameters(super_giant2neutron_star);
-         return;
-      }
-   }
-#endif
       
 void white_dwarf::instantaneous_element() {
 //cerr << "white_dwarf::instantaneous_element"<<endl;
@@ -269,80 +241,6 @@ void white_dwarf::update() {
 }
 
 
-#if 0 
-void white_dwarf::accrete_from_envelope(const real dt) {
-
-     if (envelope_mass>0) {
-       real mdot = cnsts.parameters(white_dwarf_accretion_limit)
-	 * accretion_limit(envelope_mass, dt);
-
-       core_mass += mdot;
-       envelope_mass -= mdot;
-     }
-}
-
-#endif
-
-#if 0
-void white_dwarf::thermo_nucleair_flash(const real dt) {
-
-//cerr<<"void white_dwarf::thermo_nucleair_flash() mass="
-//    << envelope_mass<<" "<<get_core_mass()<<endl;
-//cerr<<" "<<get_total_mass()<<endl;
-
-        real mdot = accretion_limit(envelope_mass, dt);
-        if (is_binary_component() && 
-	    get_binary()->get_bin_type()!=Merged &&
-	    get_binary()->get_bin_type()!=Disrupted) {
-//		Spiral in or dwarf nova
-
-//	  cerr << "Perform binary action"<<endl;
-//	  cerr << "       "<<get_total_mass()<<" a = "
-//                           <<get_binary()->get_semi();
-
-	  if (get_binary()->roche_radius(this)<=1.0) //was 2.5 
-	    common_envelope(mdot);
-	  else 
-	    nova(mdot);
-
-//	  cerr<<" -->"<< get_total_mass()<<" a = "
-//                      << get_binary()->get_semi()<<endl;
-        }
-
-      envelope_mass -= mdot;
-
-}
-
-void white_dwarf::nova(const real mdot) {
-
-     real ecc = mdot/(get_binary()->get_total_mass()-mdot);
-
-     get_binary()->set_semi((1+ecc)*get_binary()->get_semi());
-}
-
-void white_dwarf::common_envelope(const real mdot) {
-   
-     if (is_binary_component() &&
-	 get_binary()->get_semi()>radius) {
-
-       real semi = get_binary()->get_semi();
-       real m_comp = get_companion()->get_total_mass();
-       real r_lobe = get_binary()->roche_radius(this)/semi;
-       real a_spi = semi*((get_total_mass()-mdot)/get_total_mass())
-                  / (1. + (2.*mdot
-	          / (cnsts.parameters(common_envelope_efficiency)
-	          *  cnsts.parameters(envelope_binding_energy)
-		  *  r_lobe*m_comp)));
-       
-       if (a_spi>=radius) 
-	 get_binary()->set_semi(a_spi);
-       else
-	 get_binary()->set_semi(radius);
-     }
-}
-
-#endif
-
 //used by subtrac_mass_from_donor and double_star::perform_mass_transfer
 real white_dwarf::mdot_limit(const real dt){
     real mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
@@ -400,26 +298,6 @@ real white_dwarf::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
 	  core_mass += mdot;
 	  accreted_mass += mdot;
 
-#if 0
-// (GN+SPZ May  3 1999) test helium accretion and steady burning accumulate
-// helium on core of wd. Steady burning between maximum_steady_burning
-// and minimum_steady_burning 
-// (Sienkewicz 1980, described in van den Heuvel et al. 1992) 
-// If this layer becomes more heavy than 0.2 Msun: boom! see evolve_element
-
-	if (is_binary_component() &&
-	    get_companion()->hydrogen_envelope_star() 
-	    && mdot < minimum_steady_burning(dt)) {// normal accretion
-
-	  envelope_mass += mdot;
-	} 
-	else { // helium accretion or steady burning
-
-	  core_mass += mdot;
-	  accreted_mass += mdot;
-	}
-#endif
-
         adjust_accretor_age(mdot);
         //envelope_mass += mdot;
 	relative_mass = max(relative_mass, get_total_mass());
@@ -430,16 +308,6 @@ real white_dwarf::add_mass_to_accretor(real mdot, bool hydrogen, const real dt) 
 
      }
 
-#if 0
-real white_dwarf::accretion_limit(const real mdot, const real dt) {
-
-        real eddington = 1.5e-08*cnsts.parameters(solar_radius)*radius*dt;
-
-        if(mdot>=eddington) return eddington;
-
-        return mdot;
-     }
-#endif
 
 real  white_dwarf::accretion_limit(const real mdot, const real dt) {
     //needed for double_star::zeta and double_star::perform_mass_transfer
@@ -480,116 +348,28 @@ real white_dwarf::retention_efficiency(real dmdt, real M_WD, bool hydrogen) {
 }
 
 
-
 // (Madelon+GN May 16 2011)
 // Retention efficiencies according to Nomoto
+// (SilT Jun 19th 2012) rewritten equations
 real white_dwarf::retention_H(real dmdt, real M_WD) {
 
-  if (dmdt < 1.e-7 || M_WD < 0.6) return 0.;
-
-
-  real logdmdt = log10(dmdt); 
-  real eta = 1.;
+    if (dmdt < 1.e-7 || M_WD < 0.6) return 0.;
  
-  if (M_WD > 1.2) { // interpolate between M_WD 1.2 and 1.4
-
-
-    //First do eta(dmdt, M=1.4)
-    real M_cr = -6.1;
-    real M_st = -6.6;
+    real logdmdt = log10(dmdt); 
+    real eta = 1.;
     
-    real eta_top = 1.;
-    if (logdmdt > M_cr) 
-      eta_top = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
-
-    if (logdmdt < M_st)
-      eta_top = 2.5*logdmdt + 17.5;
-
-    //Now do eta(dmdt, M=1.2)
-    M_cr = -6.2;
-    M_st = -6.7;
-
-    real eta_bottom = 1.;
-    if (logdmdt > M_cr) 
-      eta_bottom = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
-
-    if (logdmdt < M_st)
-      eta_bottom = 3.33*logdmdt + 23.3;
-	 
-    eta = lineair_interpolation(M_WD, 1.2, 1.4, eta_bottom, eta_top);
-
-  } else if (M_WD > 1.0) { // interpolate between M_WD 1.0 and 1.2
-    //first do eta(dmdt, M=1.2)
-    real M_cr = -6.2;
-    real M_st = -6.7;
-
-    real eta_top = 1.;
-    if (logdmdt > M_cr) 
-      eta_top = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
-
-    if (logdmdt < M_st)
-      eta_top = 3.33*logdmdt + 23.3;
-	 
-    //next do eta(dmdt, M=1.0)
-    M_cr = -6.4;
-    M_st = -6.9;
-
-    real eta_bottom = 1.;
-    if (logdmdt > M_cr) 
-      eta_bottom = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
-
-    if (logdmdt < M_st)
-      eta_bottom = 10.*logdmdt + 70.;
-	 
-    eta = lineair_interpolation(M_WD, 1.0, 1.2, eta_bottom, eta_top);
-
-  } else if (M_WD > 0.8) { // interpolate between M_WD 0.8 and 1.0
-    //first do eta(dmdt, M=1.0)
-    real M_cr = -6.4;
-    real M_st = -6.9;
-
-    real eta_top = 1.;
-    if (logdmdt > M_cr) 
-      eta_top = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
-
-    if (logdmdt < M_st)
-      eta_top = 10.*logdmdt + 70.;
-
-    //next do eta(dmdt, M=0.8)
-    M_cr = -6.5;
-    M_st = -7.1;
-
-    real eta_bottom = 1.;
-    if (logdmdt > M_cr) 
-      eta_bottom = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
-
-    eta = lineair_interpolation(M_WD, 0.8, 1.0, eta_bottom, eta_top);
-
-  
-  } else if (M_WD > 0.6) { // interpolate between M_WD 0.6 and 0.8
-    //first do eta(dmdt, M=0.8)
-    real M_cr = -6.5;
-    real M_st = -7.1;
-
-    real eta_top = 1.;
-    if (logdmdt > M_cr) 
-      eta_top = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
-	 
-    //next do eta(dmdt, M=0.6)
-    M_cr = -6.8;
-    M_st = -7.7;
-
-    real eta_bottom = 1.;
-    if (logdmdt > M_cr) 
-      eta_bottom = 4. * pow(10,M_cr) / (3.*pow(10,M_cr) + dmdt);
-	 
-    eta = lineair_interpolation(M_WD, 0.6, 0.8, eta_bottom, eta_top);
-
-  }
-
-  return eta;
-
+    real M_cr_log = log10(7.5e-7 * (M_WD - 0.4));
+    real M_st = 3.1e-7 * (M_WD - 0.54);
+    real M_st_log = log10(M_st);
+    
+    if (logdmdt > M_cr_log) 
+        eta = 4. * pow(10,M_cr_log) / (3.*pow(10,M_cr_log) + dmdt);  
+    if (logdmdt < M_st_log)
+        eta = (logdmdt - 1.e-7) / (M_st_log - 1.e-7);
+      
+    return eta;
 }
+
 
 real white_dwarf::retention_He(real dmdt, real M_WD) {
   
@@ -598,32 +378,12 @@ real white_dwarf::retention_He(real dmdt, real M_WD) {
 
   if (logdmdt > -7.8 && logdmdt < -5.9) 
     eta = -0.175 * pow(logdmdt+5.35,2) + 1.05;
-
   if (logdmdt > -5.9 && logdmdt < -5.0) eta =  1.;
 
   return eta;
-
 }
 
 
-
-#if 0 
-// (GN Mar 30 1999) steady burning limit 
-// (Sienkewicz 1980, described in van den Heuvel et al. 1992)
-real  white_dwarf::maximum_steady_burning(const real dt) {
-
-// Fit to Iben & Tutukov 1989
-  real steady_burning = 4.e-1*pow(get_total_mass(),1.8)*dt;
-  return steady_burning;
-}
-
-real  white_dwarf::minimum_steady_burning(const real dt) {
-
-// Fit to Iben & Tutukov 1989
-  return 1.8e-1*pow(get_total_mass(),2.7)*dt;
-
-}
-#endif
 
 void white_dwarf::adjust_accretor_age(const real mdot,
 				      const bool rejuvenate) {
