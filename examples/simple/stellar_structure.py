@@ -31,7 +31,8 @@ def structure_from_star(mass, age):
         mass = mass_profile,
         temperature = star.get_temperature_profile(),
         pressure = star.get_pressure_profile(),
-        composition = star.get_chemical_abundance_profiles()
+        composition = star.get_chemical_abundance_profiles(),
+        species_names = star.get_names_of_species()
     )
 
 def temperature_density_plot(data, mass, age):
@@ -48,11 +49,11 @@ def temperature_density_plot(data, mass, age):
     ax.legend(plots, labels, loc=3)
     ylabel('Density')
     pyplot.subplot(2, 1, 2)
-    semilogy(data["radius"], data["composition"][0], label = "H")
-    semilogy(data["radius"], data["composition"][1] + data["composition"][2], label = "He")
-    semilogy(data["radius"], data["composition"][3], label = "C")
-    semilogy(data["radius"], data["composition"][4], label = "N")
-    semilogy(data["radius"], data["composition"][5], label = "O")
+    semilogy(data["radius"], data["composition"][0], label = data["species_names"][0])
+    semilogy(data["radius"], data["composition"][1], label = data["species_names"][1])
+    semilogy(data["radius"], data["composition"][2], label = data["species_names"][2])
+    semilogy(data["radius"], data["composition"][3], label = data["species_names"][3])
+    semilogy(data["radius"], data["composition"][4], label = data["species_names"][4])
     pyplot.ylim(0.0, 1.0)
     xlabel('Radius')
     ylabel('Mass fraction')
