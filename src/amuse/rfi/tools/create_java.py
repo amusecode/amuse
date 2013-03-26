@@ -1278,7 +1278,6 @@ class GenerateAJavaSourcecodeStringFromASpecificationClass\
     
     def start(self):
         
-        self.out + 'package amuse.code;'
         self.out.lf()
 
         self.out + IMPORTS_CODE_STRING
@@ -1374,8 +1373,6 @@ class GenerateAJavaInterfaceStringFromASpecificationClass\
         return GenerateAJavaFunctionDeclarationStringFromAFunctionSpecification()
         
     def start(self):  
-        self.out + 'package amuse.code;'
-        self.out.lf().lf()
         self.out + 'public interface CodeInterface {'
         self.out.indent().lf()
             
@@ -1416,8 +1413,8 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
             executable = sys.executable,
             code_dir = self.code_dir,
             java = self.java,
-            classpath = self.specification_class.classpath,
-            cwd = self.specification_class.cwd)
+            classpath = self.specification_class.classpath
+            )
 
 
     #def code_directory(self):

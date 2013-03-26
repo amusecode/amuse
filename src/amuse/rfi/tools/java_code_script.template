@@ -7,16 +7,12 @@ import sys
 code_dir = '{code_dir}'
 java = '{java}'
 classpath = '{classpath}'
-cwd = '{cwd}'
 
 def main():
 
     os.chdir(code_dir)
 
-    if cwd:
-        os.chdir(cwd)
-
-    arguments = [java, "-cp", classpath, "amuse.code.Worker"]
+    arguments = [java, "-cp", classpath, "Worker"]
     arguments = arguments + sys.argv[1:]
 
     subprocess.call(arguments)
