@@ -298,7 +298,7 @@ class TestSeBaInterface(TestWithMPI):
         self.assertEquals(error, 0)
         mass, error = instance.get_mass(1)
         self.assertEquals(error, 0)
-        self.assertAlmostRelativeEqual(mass, 0.91963, 4)
+        self.assertAlmostRelativeEqual(mass, 0.86679, 4)
         mass, error = instance.get_mass(2)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEqual(mass, 0.3, 4)
@@ -416,7 +416,7 @@ class TestSeBa(TestWithMPI):
             379.8877 | units.Myr,
             382.3112 | units.Myr,
             473.4804 | units.Myr,
-            475.9766 | units.Myr,
+            475.4766 | units.Myr,
             476.6182 | units.Myr, 
         )
         for result, expected in zip(results, times):
@@ -427,8 +427,8 @@ class TestSeBa(TestWithMPI):
             3.0000 | units.MSun, 
             2.9983 | units.MSun, 
             2.9741 | units.MSun,
-            0.6711 | units.MSun,
-            0.6711 | units.MSun,
+            0.6710 | units.MSun,
+            0.6596 | units.MSun,
         )
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 2)
