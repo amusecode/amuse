@@ -32,9 +32,35 @@ subroutine postprocessread
   if(input(2).EQ.0) call terror(' input error: need positions')
 
   if(input(3).EQ.0) call terror(' input error: need velocities')
+
+  call activateparts
+ 
+  if(usesph.AND.nsph.GT.0) then
+    veltpos(1:nsph,1:ndim)=vel(1:nsph,1:ndim) ! cosmofac veltpos is pec. vel.
+    call makesphtree
+    if(input(13).EQ.0) then
+      hsmooth(1:nsph)=0. 
+    endif
+    if(hupdatemethod.NE.'mass')then
+      call terror('TBD mass update')
+!   call inithsm ! reimplement
+!   if(input(13).EQ.0.OR.sphinit) then
+!    CALL omp_neighbor('correct') 
+!   endif
+!   if(input(10).EQ.0.OR.sphinit) then
+!    CALL initdens ! inclding symm and no divv
+!   endif    
+!  if(input(24).EQ.0) call veldisp
+    else
+      if(input(10).EQ.0.OR.input(13).EQ.0.OR.input(21).EQ.0.OR. &
+       input(23).EQ.0.OR.sphinit) then
+        call densnhsmooth
+      endif
+    endif 
+  endif
  
   if(input(4).EQ.0.OR.any(epsgrav(1:nbodies).EQ.0)) then
-    call initeps ! stars + collisionless
+    if((.NOT.usesph).OR.input(4).EQ.0.OR.any(epsgrav(nsph+1:nbodies).EQ.0)) call initeps ! stars + collisionless
     if(usesph.and.nsph.gt.0) then
       if(eps_is_h) then  
         if(input(13).EQ.0.OR.any(hsmooth(1:nsph).EQ.0)) then 
@@ -56,8 +82,6 @@ subroutine postprocessread
 
   tvel(1:nbodies)=tnow
 
-  call activateparts
-
   call zeroacc
   call zeropot
   acc(1:nbodies,4)=0.
@@ -73,33 +97,14 @@ subroutine postprocessread
   if(input(35).EQ.0) snentropy(nbodies-nstar+1:nbodies)=0
 
   if(usesph.AND.nsph.GT.0) then
-    veltpos(1:nsph,1:ndim)=vel(1:nsph,1:ndim) ! cosmofac veltpos is pec. vel.
     if(input(14).EQ.0.AND.radiate) then
       call zerofuv
       call fuvflux
     endif
     call makesphtree
-    if(input(13).EQ.0) then
-      hsmooth(1:nsph)=0. 
-    endif
-    if(hupdatemethod.NE.'mass')then
-      call terror('TBD mass update')
-!   call inithsm ! reimplement
-!   if(input(13).EQ.0.OR.sphinit) then
-!    CALL omp_neighbor('correct') 
-!   endif
-!   if(input(10).EQ.0.OR.sphinit) then
-!    CALL initdens ! inclding symm and no divv
-!   endif    
-!  if(input(24).EQ.0) call veldisp
-    else
-      if(input(10).EQ.0.OR.input(13).EQ.0.OR.input(21).EQ.0.OR. &
-       input(23).EQ.0.OR.sphinit) then
-        call densnhsmooth
-      endif
-    endif
-! quick fix:
-    call tree_reduction(root,incells,'sph ') 
+
+! quick fix: (no longer necessary)
+!    call tree_reduction(root,incells,'sph ') 
  
     if(input(20).NE.0) csound(1:nsph)=sqrt(gamma*csound(1:nsph)/rho(1:nsph))
 

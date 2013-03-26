@@ -235,7 +235,7 @@ class TestFiInterface(TestWithMPI):
         
     
     def test8(self):
-        instance=FiInterface()
+        instance=FiInterface(redirection="none")
         instance.initialize_code()
         instance.set_use_hydro(0)
         instance.set_selfgrav(1)
@@ -511,23 +511,23 @@ class TestFi(TestWithMPI):
         gas.h_smooth = 0.0 | nbody_system.length
         
         convert_nbody = nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
-        instance = Fi(convert_nbody)
+        instance = Fi(convert_nbody,redirection="none")
         instance.initialize_code()
-        instance.parameters.timestep = 0.05 | nbody_system.time
+        instance.parameters.timestep = 0.025 | nbody_system.time
         instance.parameters.integrate_entropy_flag = True
         instance.gas_particles.add_particles(gas)
         
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.00 | nbody_system.energy)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -0.50 | nbody_system.energy, 2)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -0.494 | nbody_system.energy, 2)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.05 | nbody_system.energy)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -0.45 | nbody_system.energy, 2)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -0.444 | nbody_system.energy, 2)
         
         instance.evolve_model(10.437 | units.Myr)
         instance.synchronize_model()
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.0566 | nbody_system.energy, 3)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -0.5661 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0628 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -0.45 | nbody_system.energy, 2)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0635 | nbody_system.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -0.444 | nbody_system.energy, 2)
         
         instance.cleanup_code()
         instance.stop()
@@ -542,11 +542,14 @@ class TestFi(TestWithMPI):
         dark.mass = [1.0, 3.0e-6] | units.MSun
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
         dark.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
-        dark.radius = [1.0, 0.01] | units.RSun
+        dark.radius = [10.0, 0.1] | units.RSun
         
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = Fi(convert_nbody)
-        instance.initialize_code()
+        instance.parameters.eps_is_h_flag=False
+        instance.parameters.gas_epsilon=0.4 | units.AU
+        instance.parameters.timestep=0.001 | units.yr
+#        instance.parameters.gadget_cell_opening_constant=0.001
         instance.dm_particles.add_particles(dark)
         instance.gas_particles.add_particles(gas)
         
@@ -554,17 +557,28 @@ class TestFi(TestWithMPI):
         print convert_nbody.to_nbody(instance.potential_energy)
         print convert_nbody.to_nbody(instance.thermal_energy)
         print convert_nbody.to_nbody(instance.total_energy)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.0000 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.3837 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0500 | nbody_system.energy)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -1.3337 | nbody_system.energy, 3)
         
-        instance.evolve_model(1.113988| units.yr)
-        instance.synchronize_model()
-        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.00394 | nbody_system.energy, 2)
-        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.potential_energy), -1.818 | nbody_system.energy, 3)
-        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.402 | nbody_system.energy, 2)
-        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.total_energy),     -1.412 | nbody_system.energy, 3)
+        radius=instance.dm_particles.radius
+        print instance.gas_particles.radius[0:10].in_(units.AU)
+        self.assertEqual(dark[0].radius,radius[0])
+        self.assertEqual(dark[1].radius,radius[1])
+        
+        
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),  
+          convert_nbody.to_nbody(dark.kinetic_energy()), 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.8656 | nbody_system.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0500 | nbody_system.energy,3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -1.8156 | nbody_system.energy, 3)
+        
+        instance.evolve_model(1.| units.yr)
+        print instance.gas_particles.radius[0:10].in_(units.AU)
+
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.02507 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.potential_energy), -2.9630 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.thermal_energy),    1.122 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.total_energy),     -1.8156 | nbody_system.energy, 3)
+
+        print convert_nbody.to_nbody(instance.total_energy)
         
         instance.cleanup_code()
         instance.stop()
@@ -592,31 +606,33 @@ class TestFi(TestWithMPI):
         instance = Fi(convert_nbody)
         instance.initialize_code()
         instance.parameters.verbosity = 0
-        instance.commit_parameters()
+        instance.parameters.timestep=0.05 | units.Myr
+        instance.parameters.eps_is_h_flag=False
+        instance.parameters.gas_epsilon=0.4 | units.kpc
+
         instance.dm_particles.add_particles(dark)
         instance.star_particles.add_particles(star)
         instance.gas_particles.add_particles(gas)
-        
+         
         print convert_nbody.to_nbody(instance.kinetic_energy)
         print convert_nbody.to_nbody(instance.potential_energy)
         print convert_nbody.to_nbody(instance.thermal_energy)
         print convert_nbody.to_nbody(instance.total_energy)
         print convert_nbody.to_nbody( (instance.dm_particles|instance.star_particles|instance.gas_particles).potential_energy(smoothing_length_squared = instance.parameters.epsilon_squared))
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.7204 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.2935 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0500 | nbody_system.energy)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),      0.4768 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.7204 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.potential_energy), -1.3096 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0500 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.total_energy),      0.461 | nbody_system.energy, 3)
         
-        instance.evolve_model(instance.parameters.timestep)
-        instance.synchronize_model()
+        instance.evolve_model(100*instance.parameters.timestep)
         print convert_nbody.to_nbody(instance.kinetic_energy)
         print convert_nbody.to_nbody(instance.potential_energy)
         print convert_nbody.to_nbody(instance.thermal_energy)
         print convert_nbody.to_nbody(instance.total_energy)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.5057 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.281 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.142 | nbody_system.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),      0.3671 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.6825 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.potential_energy), -1.277 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.05526 | nbody_system.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.total_energy),      0.461 | nbody_system.energy, 3)
         
         instance.cleanup_code()
         instance.stop()
