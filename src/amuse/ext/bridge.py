@@ -246,6 +246,15 @@ class bridge(object):
                 arr.append(x.particles)
         return datamodel.ParticlesSuperset(arr)                
 
+    @property
+    def gas_particles(self):
+        arr=[]
+        for x in self.systems:
+            if hasattr(x,"gas_particles"):
+                arr.append(x.gas_particles)
+        return datamodel.ParticlesSuperset(arr)                
+
+
 # 'private' functions
     def drift_systems_dt(self,dt):
         self._drift_time+=dt
