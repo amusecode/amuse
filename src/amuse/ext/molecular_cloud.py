@@ -269,7 +269,6 @@ class constant_density_div_free_power_law_v_ism_cube(object):
         vy=vy*vfac
         vz=vz*vfac
         Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
-        print Ek
 
         internal_energy=numpy.ones_like(x)
       
