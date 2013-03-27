@@ -3,6 +3,12 @@ import numpy
 import math
 from amuse.units.optparse import OptionParser
 from amuse.units import units, constants
+from amuse.support.console import set_printing_strategy
+
+set_printing_strategy("custom", 
+                      preferred_units = [units.MSun, units.RSun, units.Myr], 
+                      precision = 12, prefix = "", separator = " [", 
+		      suffix = "]")
 
 """ Equation 47-52 of Sepinsky """
 
@@ -131,7 +137,7 @@ class Roche_Orbit(object):
         self.eccentricity = 0.0
         self.true_anomaly = 0.0
         self.angular_velocity_ratio = 1.0
-        self.semimajor_axis = 1.0 | units.AU
+        self.semimajor_axis = 1.0 | units.RSun
 
     @property
     def mass_ratio(self):
@@ -155,7 +161,7 @@ class Roche_Orbit(object):
 
     @period.setter
     def period(self, period):
-        self.semimajor_axis = ((period/(2.0 * numpy.pi) * (self.total_mass * constants.G).sqrt())**(2.0/3.0)).as_quantity_in(units.AU)
+        self.semimajor_axis = (period/(2.0 * numpy.pi) * (self.total_mass * constants.G).sqrt())**(2.0/3.0)
 
     def sepinsky_over_eggleton(self):
         return sepinsky_formula(self.mass_ratio, self.A)
@@ -178,7 +184,7 @@ class Roche_Orbit(object):
 
 def new_option_parser():
     parser = OptionParser(description="Calculate the Roche radius for a given orbit.")
-    parser.add_option("-a", dest="semimajor_axis", type="float", default = 1.0, unit=units.AU, help="The orbit semimajor axis [%default %unit]")
+    parser.add_option("-a", dest="semimajor_axis", type="float", default = 1.0, unit=units.RSun, help="The orbit semimajor axis [%default %unit]")
     parser.add_option("-p", dest="period", type="float", default = 0.0, unit=units.day, help="The orbital period, which sets the semimajor axis [%unit]")
     parser.add_option("-e", dest="eccentricity", type="float", default = 0.0, help="The orbit eccentricity [%default]")
     parser.add_option("-M", dest="mass_1", type="float", default = 1.0, unit=units.MSun, help="The mass of the primary (the object that has the Roche lobe) [%default %unit]")
@@ -206,8 +212,8 @@ def print_results(orbit):
         print "Warning: This is not a circular, corotating orbit, so the eggleton formula is not correct."
 
     print "Roche radius for: M=", orbit.mass_1, "m=", orbit.mass_2, "a=", orbit.semimajor_axis, "e=", orbit.eccentricity
-    print "Eggleton Roche radius =", orbit.eggleton_roche_radius().as_quantity_in(orbit.semimajor_axis.unit)
-    print "Sepinsky Roche radius =", orbit.sepinsky_roche_radius().as_quantity_in(orbit.semimajor_axis.unit)
+    print "Eggleton Roche radius =", orbit.eggleton_roche_radius()
+    print "Sepinsky Roche radius =", orbit.sepinsky_roche_radius()
 
 if __name__ == '__main__':
     orbit = create_orbit_from_options()
