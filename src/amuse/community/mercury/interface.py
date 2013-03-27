@@ -98,7 +98,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function.addParameter('id', dtype='int32', direction=function.OUT)
         for x in ['mass','density','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='float64', direction=function.IN)
-        for x,default in zip(['Lx','Ly','Lz','celimit'], [0,0,0,3]):
+        for x,default in zip(['lx','ly','lz','celimit'], [0,0,0,3]):
             function.addParameter(x, dtype='float64', direction=function.IN, default = default)
             
         function.result_type = 'int32'
@@ -113,7 +113,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         for x in ['mass']:
             function.addParameter(x, dtype='d', direction=function.IN)
             
-        for x in ['radius','j2','j4','j6','Lx','Ly','Lz']:
+        for x in ['radius','j2','j4','j6','lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.IN, default = 0)
             
         function.result_type = 'i'
@@ -124,7 +124,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz','lx','ly','lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -134,7 +134,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz','lx','ly','lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -144,7 +144,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','j2','j4','j6','Lx','Ly','Lz']:
+        for x in ['mass','radius','j2','j4','j6','lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -154,7 +154,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','j2','j4','j6','Lx','Ly','Lz']:
+        for x in ['mass','radius','j2','j4','j6','lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -346,7 +346,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['Lx','Ly','Lz']:
+        for x in ['lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -356,7 +356,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['Lx','Ly','Lz']:
+        for x in ['lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -366,7 +366,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['Lx','Ly','Lz']:
+        for x in ['lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -376,7 +376,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['Lx','Ly','Lz']:
+        for x in ['lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function

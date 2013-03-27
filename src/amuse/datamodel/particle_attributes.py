@@ -179,20 +179,12 @@ def total_angular_momentum(particles):
     >>> particles.total_angular_momentum()
     quantity<[0.0, 0.0, 1.5] m**2 * kg * s**-1>
     """
-    m = particles.mass
-    x = particles.x
-    y = particles.y
-    z = particles.z
-    vx = particles.vx
-    vy = particles.vy
-    vz = particles.vz
+#    equivalent to:
+#    lx=(m*(y*vz-z*vy)).sum()
+#    ly=(m*(z*vx-x*vz)).sum()
+#    lz=(m*(x*vy-y*vx)).sum()
+    return (particles.mass.reshape((-1,1)) *particles.position.cross(particles.velocity)).sum(axis=0)
 
-    lx=(m*(y*vz-z*vy)).sum()
-    ly=(m*(z*vx-x*vz)).sum()
-    lz=(m*(x*vy-y*vx)).sum()
-
-    return quantities.VectorQuantity.new_from_scalar_quantities(lx,
-        ly, lz)
 
 def moment_of_inertia(particles):
     """
@@ -893,7 +885,7 @@ AbstractParticleSet.add_global_function_attribute("potential_energy_in_field", p
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
 AbstractParticleSet.add_global_vector_attribute("acceleration", ["ax","ay","az"])
-AbstractParticleSet.add_global_vector_attribute("angularmomentum", ["Lx","Ly","Lz"])
+AbstractParticleSet.add_global_vector_attribute("angular_momentum", ["lx","ly","lz"])
 AbstractParticleSet.add_global_vector_attribute("oblateness", ["j2","j4","j6"])
 
 AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", specific_kinetic_energy, particle_specific_kinetic_energy)

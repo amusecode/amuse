@@ -279,7 +279,7 @@ class TestMercury(TestWithMPI):
         orbiter.density = 1.0|units.g/units.cm**3
         orbiter.position = [1.0,0.0,0.0] | units.AU
         orbiter.velocity = [0.0, 2.0*3.1415926535*1.0/365, 0.0] | units.AUd
-        orbiter.angularmomentum = [1.0,0,0] | units.MSun * units.AU**2/units.day
+        orbiter.angular_momentum = [1.0,0,0] | units.MSun * units.AU**2/units.day
         orbiter.celimit = 0.0 | units.none
         
         centre = datamodel.Particles(1)
@@ -289,7 +289,7 @@ class TestMercury(TestWithMPI):
         centre.j4 = .0|units.AU**4
         centre.j6 = .0|units.AU**6
         
-        centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
+        centre.angular_momentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
 
         return centre, orbiter
 
@@ -307,7 +307,7 @@ class TestMercury(TestWithMPI):
         self.assertEquals(mercury.get_number_of_orbiters(),1)
         self.assertEquals(mercury.orbiters.position, [[1,0,0]] | units.AU)
         self.assertEquals(mercury.orbiters.density, 1.0|units.g/units.cm**3 )
-        self.assertEquals(mercury.orbiters.angularmomentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)
+        self.assertEquals(mercury.orbiters.angular_momentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)
 
         mercury.evolve_model(365.24 | units.day)
 
