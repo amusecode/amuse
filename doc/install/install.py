@@ -21,9 +21,7 @@ def late(function):
             setattr(instance,self.initializer.__name__,value)
             return value
     return LateProperty(function)
-
     
-        
 class InstallPrerequisites(object):
     @late
     def prefix(self):
