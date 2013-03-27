@@ -15,8 +15,6 @@ from amuse.rfi.tools import create_java
 from amuse.rfi import channel
 from amuse.rfi.core import *
 codestring = """
-package amuse.code;
-
 public class Code implements CodeInterface {
   
   // parameter "int_in" is an input parameter
