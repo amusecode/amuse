@@ -31,6 +31,7 @@ class InstallPrerequisites(object):
             return path[:path.index('Framework')]
         else:
             return path[:path.index('bin')-1]
+            
     @late
     def applications(self):
        return [
