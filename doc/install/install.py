@@ -23,6 +23,7 @@ def late(function):
     return LateProperty(function)
     
 class InstallPrerequisites(object):
+    
     @late
     def prefix(self):
         path = os.path.split(sys.executable)[0]
