@@ -11,6 +11,7 @@ from amuse.io import store_v2
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.datamodel import Particles
+from amuse.datamodel import ParticlesOverlay
 from amuse.datamodel import Grid
 from amuse.datamodel import ParticlesSuperset
 
@@ -532,7 +533,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     def test21(self):
         
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test15.hdf5")
+        output_file = os.path.join(test_results_path, "test21.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -552,6 +553,28 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEquals(previous, None)
 
 
+    def test22(self):
+        
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test22.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        stars = Particles(2)
+        stars.x = 1.0  | units.km
+       
+        overlay = ParticlesOverlay(stars)
+        overlay.y = 2.0  | units.km
+
+
+        io.write_set_to_file(overlay, output_file, "hdf5", version = self.store_version())
+       
+        loaded = io.read_set_from_file(output_file, "hdf5", close_file = True, version = self.store_version())
+        
+        self.assertEquals(loaded[0].x,  1.0 | units.km)
+        self.assertEquals(loaded[1].y,  2.0 | units.km)
+        
+        
 class TestStoreHDFV1(_AbstractTestStoreHDF):
     
     def store_factory(self):
@@ -574,7 +597,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
     def get_version_in_store(self, container):
         return container
         
-    def test22(self):
+    def test52(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test22.hdf5")
         if os.path.exists(output_file):
@@ -599,7 +622,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         self.assertEquals(loaded_stars[1].gas, None)
 
         
-    def test23(self):
+    def test53(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test23.hdf5")
         if os.path.exists(output_file):
@@ -621,7 +644,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         self.assertAlmostRelativeEquals(loaded_stars[0].gas[0][2].y,3.0 | units.km)
         self.assertEquals(loaded_stars[1].gas, None)
 
-    def test24(self):
+    def test54(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test23.hdf5")
         if os.path.exists(output_file):
@@ -646,7 +669,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         self.assertAlmostRelativeEquals(loaded_stars[0].gas.y,1.0 | units.km)
         self.assertAlmostRelativeEquals(loaded_stars[1].gas.y,4.0 | units.km)
 
-    def test24(self):
+    def test54(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test24.hdf5")
         if os.path.exists(output_file):
@@ -684,7 +707,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         self.assertAlmostRelativeEquals(gas_copy[1][2].particle.x, 3.0 | units.km)
         
     
-    def test25(self):
+    def test55(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test25.hdf5")
         if os.path.exists(output_file):
@@ -711,7 +734,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         
     
 
-    def test26(self):
+    def test56(self):
         test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test26.hdf5")
         if os.path.exists(output_file):

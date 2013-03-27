@@ -2156,19 +2156,25 @@ class ParticlesOverlay(AbstractParticleSet):
     
         
     def get_values_in_store(self, indices, attributes):
+        
         (
             (attributes_inbase, indices_inbase), 
             (attributes_inoverlay, indices_inoverlay)
         ) = self._split_attributes(attributes)
         
         
-        indices0 = []
-        indices1 = []
-        for i0, i1 in indices:
-            indices0.append(i0)
-            indices1.append(i1)
-        indices0 = numpy.asarray(indices0, dtype='int64')
-        indices1 = numpy.asarray(indices1, dtype='int64')
+        if indices is None:
+            indices0 = self._private.base_set.get_all_indices_in_store()
+            indices1 = self._private.overlay_set.get_all_indices_in_store()
+        else:
+            indices0 = []
+            indices1 = []
+            for i0, i1 in indices:
+                indices0.append(i0)
+                indices1.append(i1)
+            indices0 = numpy.asarray(indices0, dtype='int64')
+            indices1 = numpy.asarray(indices1, dtype='int64')
+            
         result = [None] * len(attributes)
         if len(attributes_inbase) > 0:
             values_inbase = self._private.base_set.get_values_in_store(indices0, attributes_inbase)
@@ -2189,13 +2195,18 @@ class ParticlesOverlay(AbstractParticleSet):
         ) = self._split_attributes_and_values(attributes, values)
         
         
-        indices0 = []
-        indices1 = []
-        for i0, i1 in indices:
-            indices0.append(i0)
-            indices1.append(i1)
-        indices0 = numpy.asarray(indices0, dtype='int64')
-        indices1 = numpy.asarray(indices1, dtype='int64')
+        if indices is None:
+            indices0 = self._private.base_set.get_all_indices_in_store()
+            indices1 = self._private.overlay_set.get_all_indices_in_store()
+        else:
+            indices0 = []
+            indices1 = []
+            for i0, i1 in indices:
+                indices0.append(i0)
+                indices1.append(i1)
+            indices0 = numpy.asarray(indices0, dtype='int64')
+            indices1 = numpy.asarray(indices1, dtype='int64')
+            
         if len(attributes_inbase) > 0:
             self._private.base_set.set_values_in_store(indices0, attributes_inbase, values_inbase)
         if len(attributes_inoverlay) > 0:
