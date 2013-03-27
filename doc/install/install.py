@@ -8,8 +8,8 @@ import shutil
 
 
 IS_ON_OSX = sys.platform == 'darwin'
-PYTHON=sys.executable
-
+PYTHON    = sys.executable
+ 
 def late(function):
     class LateProperty(object):
         def __init__(self, initializer):
