@@ -1282,8 +1282,6 @@ class GenerateAJavaSourcecodeStringFromASpecificationClass\
 
         self.out + IMPORTS_CODE_STRING
         
-        self.output_imports()
-        
         self.out.lf() + 'class Worker {'
         self.out.indent().lf()
         self.out + AMUSE_MESSAGE_CLASS_CODE_STRING
@@ -1299,12 +1297,6 @@ class GenerateAJavaSourcecodeStringFromASpecificationClass\
         
         self._result = self.out.string
         
-    def output_imports(self):
-        if hasattr(self.specification_class, 'imports'):
-            for clazz in self.specification_class.imports:
-                self.out.n() + 'import ' + clazz + ';'
-        self.out.lf()
-    
     def output_code_constants(self):
         for dtype in self.dtype_to_spec.keys():
             dtype_spec = self.dtype_to_spec[dtype]
