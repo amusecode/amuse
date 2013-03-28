@@ -2,8 +2,9 @@
 import numpy
 import math
 from amuse.units.optparse import OptionParser
-from amuse.units import units, constants
+#from amuse.units import units, constants
 from amuse.support.console import set_printing_strategy
+from amuse.lab import *
 
 set_printing_strategy("custom", 
                       preferred_units = [units.MSun, units.RSun, units.Myr], 
@@ -157,7 +158,7 @@ class Roche_Orbit(object):
 
     @property
     def period(self):
-        return (4.0 * numpy.pi**2 * self.semimajor_axis**3 / (constants.G * self.total_mass)).sqrt().as_quantity_in(units.day)
+        return (4.0 * numpy.pi**2 * self.semimajor_axis**3 / (constants.G * self.total_mass)).sqrt()
 
     @period.setter
     def period(self, period):
@@ -174,10 +175,10 @@ class Roche_Orbit(object):
 
             Note that this is not really correct for non-circular orbits.
         """
-        return (self.eggleton_roche_over_separation() * self.separation()).in_(units.RSun)
+        return self.eggleton_roche_over_separation() * self.separation()
 
     def sepinsky_roche_radius(self):
-        return (self.sepinsky_over_eggleton() * self.eggleton_roche_radius()).in_(units.RSun)
+        return self.sepinsky_over_eggleton() * self.eggleton_roche_radius()
 
     def separation(self):
         return separation(self.semimajor_axis, self.eccentricity, self.true_anomaly)
@@ -199,7 +200,7 @@ def create_orbit_from_options():
     orbit = Roche_Orbit()
     orbit.__dict__.update(options.__dict__)
 
-    if options.period > (0 | units.day):
+    if options.period > zero:
         orbit.period = options.period
         print "Using period, resulting semimajor axis is", orbit.semimajor_axis
 
