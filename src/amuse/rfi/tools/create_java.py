@@ -36,11 +36,10 @@ import java.nio.LongBuffer;
 import java.nio.FloatBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
 """
 
 AMUSE_MESSAGE_CLASS_CODE_STRING = """
- private static class AmuseMessage {
+ public static class AmuseMessage {
         public static final int HEADER_SIZE = 10; // integers
 
         // 4 byte flags field.
@@ -74,8 +73,6 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
         public static final int FUNCTION_ID_INIT = 10101010;
         public static final int FUNCTION_ID_STOP = 0;
         public static final int FUNCTION_ID_REDIRECT_OUTPUT = 1141573512;
-
-        private static final long serialVersionUID = 1L;
 
         private static boolean hasRemaining(ByteBuffer... buffers) {
             for (ByteBuffer buffer : buffers) {
