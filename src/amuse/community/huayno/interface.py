@@ -28,6 +28,7 @@ class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
       
     def __init__(self, mode=None, **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_worker(mode), **options) 
+        LiteratureReferencesMixIn.__init__(self)
 
     @legacy_function      
     def get_time():
