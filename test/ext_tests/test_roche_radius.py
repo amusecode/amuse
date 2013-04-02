@@ -28,7 +28,9 @@ class TestRocheRadius(amusetest.TestCase):
         """ Test the Roche_Orbit class """
 
         roche_orbit = Roche_Orbit()
+        roche_orbit.semimajor_axis = 1 | units.AU
 
+        print roche_orbit.eggleton_roche_radius().as_quantity_in(units.RSun)
         self.assertAlmostEquals(roche_orbit.eggleton_roche_radius(), 81.5 | units.RSun, places=2)
         self.assertAlmostEquals(roche_orbit.sepinsky_roche_radius(), 81.32 | units.RSun, places=2)
 

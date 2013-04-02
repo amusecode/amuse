@@ -11,7 +11,7 @@ class TestSolarSystem(TestCase):
         print "Test 1: testing new_solar_system_for_mercury"
         sun, orbiters = new_solar_system_for_mercury()
         
-        expected_attributes = set(["name", "mass", "radius", "j2", "j4", "j6", "Lx", "Ly", "Lz"])
+        expected_attributes = set(["name", "mass", "radius", "j2", "j4", "j6", "angularmomentum"])
         self.assertEqual(set(sun.get_attribute_names_defined_in_store()), expected_attributes)
         
         expected_attributes = set(["name", "mass", "radius", "density", "x", "y", "z", "vx", "vy", "vz", "Lx", "Ly", "Lz", "celimit"])
