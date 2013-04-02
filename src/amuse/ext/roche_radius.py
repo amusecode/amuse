@@ -6,11 +6,6 @@ from amuse.units.optparse import OptionParser
 from amuse.support.console import set_printing_strategy
 from amuse.lab import *
 
-set_printing_strategy("custom", 
-                      preferred_units = [units.MSun, units.RSun, units.Myr], 
-                      precision = 12, prefix = "", separator = " [", 
-		      suffix = "]")
-
 """ Equation 47-52 of Sepinsky """
 
 def low_q_low_A(q, A):
@@ -217,6 +212,12 @@ def print_results(orbit):
     print "Sepinsky Roche radius =", orbit.sepinsky_roche_radius()
 
 if __name__ == '__main__':
+    
+    set_printing_strategy("custom", 
+                    preferred_units = [units.MSun, units.RSun, units.Myr], 
+                    precision = 12, prefix = "", separator = " [", 
+                    suffix = "]")
+
     orbit = create_orbit_from_options()
     print_results(orbit)
 

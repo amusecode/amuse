@@ -688,7 +688,6 @@ class CodeInterface(OptionalAttributes):
     def must_start_worker(self):
         return True
     
-        
     @late
     def channel_factory(self):
         if self.channel_type == 'mpi':
