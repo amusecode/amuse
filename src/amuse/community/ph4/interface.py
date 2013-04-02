@@ -89,6 +89,19 @@ class ph4Interface(CodeInterface,
             particle could not be created"""
         return function
     
+    @legacy_function
+    def get_particle_timestep():
+        """
+        Retrieve the timestep of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the timestep from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('timestep', dtype='float64', unit=nbody_system.time, direction=function.OUT, description = "The current timestep of the particle")
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
+    
     def name_of_the_muse_worker(self, mode):
         if mode == self.MODE_CPU:
             return 'ph4_worker'
@@ -260,6 +273,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
                                        
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
+        object.add_method('RUN', 'get_particle_timestep')
         GravityFieldCode.define_state(self, object)
         
         object.add_method('EDIT', 'set_state')
@@ -277,6 +291,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
         object.add_method('CHANGED', 'get_mass')
         object.add_method('CHANGED', 'get_position')
         object.add_method('CHANGED', 'get_velocity')
+        object.add_method('CHANGED', 'get_particle_timestep')
         
     def define_parameters(self, object):
 
@@ -412,7 +427,8 @@ class ph4(GravitationalDynamics,GravityFieldCode):
 
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
-    
+        
+        object.add_getter('particles', 'get_particle_timestep', names = ('timestep',))
         object.add_getter('particles', 'get_potential', names=('potential_in_code',))
         
         self.stopping_conditions.define_particle_set(object)

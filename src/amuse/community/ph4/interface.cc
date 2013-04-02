@@ -390,6 +390,16 @@ int get_potential(int index_of_the_particle, double * pot)
     return 0;
 }
 
+int get_particle_timestep(int index_of_the_particle, double * timestep)
+{
+    int j = jd->get_inverse_id(index_of_the_particle);
+    if (j < 0) {
+        return -1;
+    }
+    *timestep = jd->timestep[j];
+    return 0;
+}
+
 
 // System-wide operations.
 
