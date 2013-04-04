@@ -479,14 +479,14 @@ class HiGPUs(GravitationalDynamics):
             "new_particle",
             (
                 nbody_system.mass,
-                       nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.speed,
                 nbody_system.speed,
-            nbody_system.speed,
-           ),
+                nbody_system.speed,
+                nbody_system.length,
+            ),
             (
                 object.INDEX,
                 object.ERROR_CODE

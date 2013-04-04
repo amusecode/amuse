@@ -96,7 +96,7 @@ int commit_parameters(){
    return 0;
 }
 
-int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz){
+int new_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double radius){
 	*id = particle_id_counter;
  	dynamics_state state;
 	state.mass = mass;
