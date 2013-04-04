@@ -36,8 +36,6 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT)
         function.addParameter('mass', dtype='float64', direction=function.IN,
             description = "The mass of the particle")
-        function.addParameter('radius', dtype='float64', direction=function.IN,
-            description = "The radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.IN,
             description = "The initial position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.IN,
@@ -50,6 +48,8 @@ class HiGPUsInterface(CodeInterface, GravitationalDynamicsInterface):
             description = "The initial velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN,
             description = "The initial velocity vector of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.IN,
+            description = "The radius of the particle", default = 0)
         function.result_type = 'int32'
         return function
 
