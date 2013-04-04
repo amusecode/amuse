@@ -66,6 +66,6 @@ def plot_track(data):
     pyplot.show()   
     
 if __name__ in ('__main__', '__plot__'):
-    data = simulate_evolution_tracks()
+    data = simulate_evolution_tracks(masses = [0.5, 1.0, 1.25] | units.MSun)
     plot_track(data)
     
