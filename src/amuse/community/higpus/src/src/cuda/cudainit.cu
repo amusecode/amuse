@@ -40,17 +40,17 @@ HostError CudaInit(unsigned int *M, int NGPU, int rank, string gpu_name, const b
 	if(rank == 0)
 		hlog<<"============================================="<<endl;
 
-	if(!setdev){
+    if(!setdev){
 
-      for(int i = 0; i < count; i++){
-
-         if(to_string(properties[i].name) != gpu_name)
-            continue;
-         else{
-            to_use[k] = i;
-            k++;
-         }
-      }
+	for(int i = 0; i < count; i++){
+	    if(gpu_name.length()>0 && to_string(properties[i].name) != gpu_name) { 
+		continue;
+	    } else {
+		to_use[k] = i;
+		k++;
+		if(k >= NGPU) {break;} 
+	    }
+	}
 
    }else{
 
