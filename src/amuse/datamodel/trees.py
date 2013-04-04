@@ -394,6 +394,9 @@ class ChildTreeOnParticle(object):
     def get_children(self):
         return list(self.iter_children())
         
+    def get_children_particles(self):
+        return [x.particle for x in self.iter_children()]
+        
     def __iter__(self):
         return self.iter_children()
         

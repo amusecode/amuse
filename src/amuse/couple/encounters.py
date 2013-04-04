@@ -15,10 +15,9 @@ from amuse.community.kepler.interface import Kepler
 import numpy
 
 class AbstractHandleEncounter(object):
-    """Abstract base class for all strategies to
-    handle encounters.
+    """Abstract base class for all strategies to handle encounters.
     
-    We have different important scales in the encounter:
+    We have different scales in the encounter:
     
     1. Small scale of the interaction. This is the smallest distance
        between any two particles in the encounter. Only binaries
@@ -30,17 +29,18 @@ class AbstractHandleEncounter(object):
        will be used to find neighbour particles to include in the handling
        of the encounter.
     3. Initial sphere radius. This is the radius of the sphere containing
-       all the particles in the interaction. The sphere itself is centered
-       on the center of mass of the particles. This radius is used to
-       scale back (or forward) all particles after the interaction 
-       calculation is done. 
+       all the particles in the interaction (encounter + neighbours).
+       The sphere itself is centered on the center of mass of the particles. 
+       This radius is used to scale back (or forward) all particles 
+       after the interaction calculation is done. 
        
-    After an interaction the following should be True of the root 
-    particles:
+    After an interaction the following should be True of the particles:
     
-    1. The particles are moving apart
+    1. The particles are moving apart.
+    
     2. The particles on the outside are just insisde the initial sphere
-       radius
+       radius.
+       
     3. The distances between all pairs of particles is larger than the 
        small scale of interaction.    
     """
@@ -49,11 +49,16 @@ class AbstractHandleEncounter(object):
     # neighbours_factor * large scale of the interaction
     NEIGHBOURS_FACTOR=1
     
+    # a hard binary is defined as the small scale of the
+    # interaction times this factor
+    HARD_BINARY_FACTOR=1
+    
     def __init__(self, 
         particles_in_encounter, 
         particles_in_field = None, 
         existing_multiples = None, 
         existing_binaries = None,
+        kepler_orbits = None,
         G = constants.G
     ):
         
@@ -88,14 +93,16 @@ class AbstractHandleEncounter(object):
         self.all_singles_in_encounter = Particles()
         self.singles_and_multiples_after_evolve = Particles()
     
-    
+        if kepler_orbits is None:
+            self.kepler_orbits = KeplerOrbits()
+            
     def start(self):
         
         self.determine_scale_of_particles_in_the_encounter()
         
         self.select_neighbours_from_field()
         
-        self.determine_singles_from_particles_in_encounter()
+        self.determine_singles_from_particles_and_neighbours_in_encounter()
         
         self.determine_initial_sphere_of_singles_in_encounter()
         
@@ -113,7 +120,23 @@ class AbstractHandleEncounter(object):
         
         self.determine_multiples_in_the_evolved_state()
         
-    def determine_singles_from_particles_in_encounter(self):
+    def determine_scale_of_particles_in_the_encounter(self):
+        # determine large scale from the distance of the farthest particle to the center of mass
+        center_of_mass = self.particles_in_encounter.center_of_mass()
+        distances = (self.particles_in_encounter.position-center_of_mass).lengths()
+        max_distance = distances.max()
+        self.large_scale_of_particles_in_the_encounter = max_distance * 2
+        
+        # determine small scale from the smallest distance between all pairs in the encounter
+        # for two body interaction this scale is the same as the large scale
+        positions = self.particles_in_encounter.position
+        transpose_positions = positions.reshape((len(self.particles_in_encounter), 1, 3))
+        distances_between_all_particles = ((transpose_positions - positions)**2).sum(axis=2).sqrt()
+        distances_between_different_particles  = distances_between_all_particles[distances_between_all_particles > 0*max_distance]
+        min_distance = distances_between_different_particles.min()
+        self.small_scale_of_particles_in_the_encounter = min_distance    
+        
+    def determine_singles_from_particles_and_neighbours_in_encounter(self):
         for x in self.particles_in_encounter:
             components = self.get_singles_of_a_particle(x)
             self.all_singles_in_encounter.add_particles(components)
@@ -139,22 +162,6 @@ class AbstractHandleEncounter(object):
         else:
             return particle.as_set()
 
-    def determine_scale_of_particles_in_the_encounter(self):
-        # determine large scale from the distance of the farthest particle to the center of mass
-        center_of_mass = self.particles_in_encounter.center_of_mass()
-        distances = (self.particles_in_encounter.position-center_of_mass).lengths()
-        max_distance = distances.max()
-        self.large_scale_of_particles_in_the_encounter = max_distance * 2
-        
-        # determine small scale from the smallest distance between all pairs in the encounter
-        # for two body interaction this scale is the same as the large scale
-        positions = self.particles_in_encounter.position
-        transpose_positions = positions.reshape((len(self.particles_in_encounter), 1, 3))
-        distances_between_all_particles = ((transpose_positions - positions)**2).sum(axis=2).sqrt()
-        distances_between_different_particles  = distances_between_all_particles[distances_between_all_particles > 0*max_distance]
-        min_distance = distances_between_different_particles.min()
-        self.small_scale_of_particles_in_the_encounter = min_distance    
-           
     def determine_initial_sphere_of_singles_in_encounter(self):
         self.initial_sphere_position = self.all_singles_in_encounter.center_of_mass()
         self.initial_sphere_velocity = self.all_singles_in_encounter.center_of_mass_velocity()
@@ -177,14 +184,10 @@ class AbstractHandleEncounter(object):
         center_of_mass = self.particles_in_encounter.center_of_mass()
         distances = (self.particles_in_field.position-center_of_mass).lengths()
         
-        indices_for_sort = distances.argsort()
+        near_distance = self.large_scale_of_particles_in_the_encounter * self.NEIGHBOURS_FACTOR
+        near_particles = self.particles_in_field[distances <= near_distance]
         
-        sorted_particles = self.particles_in_field[indices_for_sort]
-        sorted_distances = distances[indices_for_sort]
-        
-        for particle, sorted_distance in zip(sorted_particles, sorted_distances):
-            if sorted_distance <= self.large_scale_of_particles_in_the_encounter * self.NEIGHBOURS_FACTOR:
-                self.particles_close_to_encounter.add_particle(particle)
+        self.particles_close_to_encounter.add_particles(near_particles)
                 
     def get_potential_energy_of_particles_in_field(self, particles, field):
         """
@@ -222,13 +225,41 @@ class AbstractHandleEncounter(object):
         parts) larger that the small scale of the encounter from the
         resolved component list.
         """
-        pass
+        tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
         
+        nodes_to_break_up = []
+        
+        hard_binary_radius = self.small_scale_of_particles_in_the_encounter * self.HARD_BINARY_FACTOR
+        
+        # a branch in the tree is a node with two children
+        # the iter_branches will return only the branches under this node
+        roots_to_check = list(tree.iter_branches())
+        while len(roots_to_check)>0:
+            root_node = roots_to_check.pop()
+            children = root_node.get_children_particles()
+            semimajor_axis, _ = self.kepler_orbits.get_semimajor_axis_and_eccentricity_for_binary_components(
+                children[0],
+                children[1]
+            )
+            if semimajor_axis < hard_binary_radius:
+                continue
+                
+            nodes_to_break_up.append(root_node.particle)
+            
+            # if we will break up a level in a triple/multiple, we 
+            # also will check the binaries under that level.
+            roots_to_check.extend(root_node.iter_branches())
+            
+        # as this is a binary tree with no pointer up the tree
+        # we can break up a binary by removing the parent particle
+        for root_node in nodes_to_break_up:
+            self.singles_and_multiples_after_evolve.remove_particle(root_node)
+                
     def scale_evolved_state_to_initial_sphere(self):
         """
         Scale the system so that all particles are just inside the initial sphere.
         Particles should be moving apart.
-        Implementation should be equvalent to moving the system back in time (or forward
+        Implementation should be equivalent to moving the system back in time (or forward
         if the system is smaller than the initial scale).
         
         Implementation on the abstract class is a no-op, need to re-implement this on a subclass
@@ -238,8 +269,10 @@ class AbstractHandleEncounter(object):
     def determine_multiples_in_the_evolved_state(self):
         """
         Called after culling and scaling the evolved state. What is left
-        are multiples (binaries, triples etc) that need to be handled
-        as a single particle or singles
+        are:
+            1. multiples (binaries, triples etc) that need to be handled
+            as a single particle 
+            2. singles
         """
         tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
         
@@ -255,7 +288,7 @@ class AbstractHandleEncounter(object):
             key = (binary.child1.key,binary.child2.key)
             binary_lookup_table[key] = binary
         
-        # a branch in the tree is node with two children
+        # a branch in the tree is a node with two children
         for root_node in tree.iter_branches():
             root_particle = root_node.particle
             
@@ -319,6 +352,7 @@ class KeplerOrbits(object):
         particles.add_particle(particle2)
         
         self.kepler_code.initialize_from_particles(particles)
+        
         return self.kepler_code.get_elements()
 
     def compress_binary_components(self, particle1, particle2, scale):
@@ -326,8 +360,8 @@ class KeplerOrbits(object):
         Returns the change in positions and velocities for 
         the two-body system consisting of 'particle1' and 'particle2'.
         After applying the change the particles will lie
-        inside distance 'scale' of one another.  The final orbit will be
-        receding (moving away from each other).
+        inside distance 'scale' of one another.  
+        The final orbit will be receding (moving away from each other).
         """
         total_mass = particle1.mass + particle2.mass
         rel_position = particle1.position - particle2.position
