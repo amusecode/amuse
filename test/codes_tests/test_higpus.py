@@ -209,7 +209,7 @@ class TestHiGPUs(TestWithMPI):
         instance.initialize_code()
     
         instance.parameters.eta6 = 0.01
-        instance.parameters.eps = 0.0
+        instance.parameters.eps = 0.0 | units.km
         instance.commit_parameters()
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
@@ -411,7 +411,7 @@ class TestHiGPUs(TestWithMPI):
         instance.commit_parameters()        
         
         self.assertEquals( instance.parameters.eta6 ,  0.5 )
-        self.assertEquals( instance.parameters.eta_4 ,  0.01)
+        self.assertEquals( instance.parameters.eta4 ,  0.01)
         self.assertEquals( instance.parameters.begin_time ,  0.0 | nbody_system.time) 
         self.assertEquals( instance.parameters.r_core_plummer ,  0.0 | nbody_system.length)
         self.assertEquals( instance.parameters.mass_plummer ,  0.0 | nbody_system.mass)

@@ -345,7 +345,7 @@ class HiGPUs(GravitationalDynamics):
         object.add_method_parameter(
             "get_eta4",                                  
             "set_eta4",                                 
-            "eta_4",                  
+            "eta4",                  
             "timestep parameter",    
             default_value = 0.01 | units.none
         )
