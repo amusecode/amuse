@@ -228,13 +228,13 @@ class TestHiGPUs(TestWithMPI):
         
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
-        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
+        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
                 
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
         instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
-        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
+        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
         
         instance.cleanup_code()
         
@@ -273,7 +273,7 @@ class TestHiGPUs(TestWithMPI):
     def test3(self):
         instance = self.new_instance_of_an_optional_code(HiGPUs)
         instance.initialize_code()
-        instance.parameters.eps = 0.0
+        instance.parameters.eps = 0.0 | nbody_system.length
         instance.commit_parameters()  
         particles = datamodel.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
