@@ -16,8 +16,8 @@ OPENMP_BUILDDIR = build_mp
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 
-GLOBJECTS=$(BUILDDIR)/fthread.o $(BUILDDIR)/stars3d.o $(BUILDDIR)/libpt.a
-PGLOBJECTS=$(PERIODIC_BUILDDIR)/fthread.o $(PERIODIC_BUILDDIR)/stars3d.o $(PERIODIC_BUILDDIR)/libpt.a
+GLOBJECTS=$(BUILDDIR)/fthread.o $(BUILDDIR)/fi_viewer.o $(BUILDDIR)/libpt.a
+PGLOBJECTS=$(PERIODIC_BUILDDIR)/fthread.o $(PERIODIC_BUILDDIR)/fi_viewer.o $(PERIODIC_BUILDDIR)/libpt.a
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
 GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
@@ -94,7 +94,7 @@ $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
 fi_worker: worker_code.f90 $(BUILDDIR)/libfi.a interface.o 
 	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) worker_code.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
 
-fi_worker_gl: worker_code-gl.f90 interface.o $(BUILDDIR)/libfi.a
+fi_worker_gl: worker_code-gl.f90 $(BUILDDIR)/libfi.a interface.o 
 	make -C $(BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) worker_code-gl.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
@@ -123,6 +123,7 @@ $(OPENMP_BUILDDIR)/Makefile:
 $(OPENMP_BUILDDIR)/libfi.a: $(OPENMP_BUILDDIR)/Makefile 
 	make -C $(OPENMP_BUILDDIR) amuse_interface FFLAGS="-I./$(OPENMP_BUILDDIR) $(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src   F77FLAGS="$(F77FLAGS) $(OPENMP_FCFLAGS)"
 
+fi_worker_mp: BUILDDIR = $(OPENMP_BUILDDIR)
 fi_worker_mp: worker_code.f90 $(OPENMP_BUILDDIR)/libfi.a interface.o 
 	$(MPIFC) $(FFLAGS) $(OPENMP_FCFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(OPENMP_BUILDDIR) worker_code.f90 interface.o -o $@ $(OPENMP_BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
 

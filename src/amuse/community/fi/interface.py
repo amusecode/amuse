@@ -37,6 +37,7 @@ class FiInterface(
     use_modules=['StoppingConditions','AmuseInterface']
     
     MODE_NORMAL = 'normal'
+    MODE_NORMAL_OPENMP = 'openmp'
     MODE_PERIODIC_BOUNDARIES   = 'periodic'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
@@ -48,6 +49,8 @@ class FiInterface(
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:
             return 'fi_worker'
+        elif mode == self.MODE_NORMAL_OPENMP:
+            return 'fi_worker_mp'
         elif mode == self.MODE_PERIODIC_BOUNDARIES:
             return 'fi_worker_periodic'
         else:
@@ -1572,7 +1575,17 @@ class GlFiInterface(FiInterface):
     def viewer():
         function = LegacyFunctionSpecification()  
         return function
-    
+
+    @legacy_function
+    def trigger_partremoval():
+        function = LegacyFunctionSpecification()  
+        return function
+
+    @legacy_function
+    def trigger_viewer_refresh():
+        function = LegacyFunctionSpecification()  
+        return function
+
     def start_viewer(self):
         self.viewer()
         
@@ -3193,3 +3206,25 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         indices_to_remove = self.get_id_of_removed_sph_particle(indices_in_update_list)
         
         incode_storage = self.gas_particles._remove_indices_in_attribute_storage(indices_to_remove)
+
+class FiViewer(Fi):
+
+    def __init__(self, convert_nbody = None, mode = 'normal', **options):
+        Fi.__init__(self, convert_nbody = convert_nbody, mode = mode, use_gl = True , **options)
+
+    def define_state(self, object):
+        object.set_initial_state('UNINITIALIZED')
+        object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
+        object.add_transition('!UNINITIALIZED!STOPPED', 'END', 'cleanup_code')
+        object.add_transition('END', 'STOPPED', 'stop', False)
+        object.add_method('STOPPED', 'stop')
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_method('EDIT', 'new_dm_particle')
+        object.add_method('EDIT', 'new_sph_particle')
+        object.add_method('EDIT', 'new_star_particle')
+        object.add_method('UPDATE', 'delete_particle')
+        object.add_transition('EDIT', 'UPDATE', 'delete_particle')
+        object.add_transition('UPDATE', 'EDIT', 'trigger_partremoval')
+                  
+  
+  

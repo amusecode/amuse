@@ -166,6 +166,10 @@ subroutine gethsm(ppos,h,i,j)
     call brackethsm(ppos,hmin,hmax,success) 
     if(success.EQ.0.OR.hmin.LE.0.OR.hmax.LE.0) then
 !$omp critical
+      print*,getlocalscale(ppos)
+      print*, ppos
+      print*,rsize,root
+      print*,bottom(root,1:3)
       print*,success,hmin,hmax
       call terror(' hsmpos error 1')
 !$omp end critical

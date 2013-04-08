@@ -9,7 +9,7 @@ FC=ifort
 F2PY=f2py
 PIC=
 
-OMPFLAGS= # -openmp -openmp_report0 
+OPENMP_FCFLAGS ?=  -openmp -openmp_report0 
 
 # gfortran flags
 # FFLAGS2=-fdefault-real-8 -ffree-line-length-256  -frecord-marker=4
@@ -18,7 +18,7 @@ OMPFLAGS= # -openmp -openmp_report0
 
 FFLAGS2= -r8 -O2 -ip -u  $(PIC)
 
-FFLAGS= $(FFLAGS2) $(OMPFLAGS)
+FFLAGS= $(FFLAGS2) $(OPENMP_FCFLAGS)
 
 APPS= fi glfi snapviewer hicube map sfh sfh2 rgabe togabe \
       extract rsimple rgadget combine_simple snapreader \
@@ -41,9 +41,9 @@ SFILES=extern_dummy.o
 
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
-GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  #-lguide 
+GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
 
-X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
+X11LIB = # -L/usr/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
 FITSLIB= -lcfitsio
 
@@ -69,6 +69,9 @@ all: $(APPS)
 	$(FC) $(F77FLAGS) $(FFLAGS) $(SCINC) -c -o $@ $< 
 
 stars3d.o: stars3d.f90 mem.o
+	$(FC) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
+
+fi_viewer.o: fi_viewer.f90 mem.o
 	$(FC) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
 
 snapviewer.o: snapviewer.f90
@@ -162,7 +165,7 @@ objects: $(FILES) $(SFILES)
 libpt.a: pt.o ptf77.o pt.h
 	ar crs libpt.a pt.o ptf77.o
 
-gl: stars3d.o libpt.a fthread.o
+gl: fi_viewer.o libpt.a fthread.o
 
 clean: 
 	rm -f *.o *.mod libpt.a libfi.a *.bck *.so *.pyc 

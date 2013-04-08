@@ -1380,5 +1380,11 @@ function get_id_of_removed_sph_particle(x, id_of_removed_particle)
   get_id_of_removed_sph_particle = amuse_get_id_of_removed_sph_particle(x, id_of_removed_particle)
 end function
 
+subroutine trigger_partremoval
+  integer :: ret
+  call partremoval
+  ret=0
+end subroutine
+
 END MODULE
 

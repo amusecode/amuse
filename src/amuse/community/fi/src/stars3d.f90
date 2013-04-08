@@ -561,7 +561,7 @@ use view_modifier
 
 implicit none
 
-integer, parameter :: NMAX=100000 
+integer, parameter :: NMAX=2000000 
 
 real(kind=gldouble), parameter :: M_PI = 3.14159265358979323846_gldouble
 
@@ -575,7 +575,7 @@ integer(GLenum) doubleBuffer
 
 logical,save :: show_gas=.TRUE., show_stars=.TRUE., show_halo=.TRUE., &
 	 update_flag=.TRUE.,show_age=.FALSE.,show_temp=.FALSE.,     &
-	 show_fuvheat=.FALSE.,show_div=.FALSE.
+	 show_fuvheat=.FALSE.,show_div=.FALSE.,show_hsm=.FALSE.
 	 
 integer, save :: gas_color,star_color,halo_color	  
 
@@ -583,7 +583,7 @@ integer(glint), save ::framerate=100;
 
 integer(glint), parameter:: FASTUPDATE=100,SLOWUPDATE=5000
 
-real(kind=glfloat),save :: pointsize_gas=3,pointsize_stars=1.5,pointsize_halo=1.
+real(kind=glfloat),save :: pointsize_gas=3,pointsize_stars=1.5,pointsize_halo=10.
 
 real(kind=glfloat), dimension(3) :: pointpar=(/0.15,0.075,0.026/)
 
@@ -598,10 +598,14 @@ recursive subroutine starreset(dummy)
         real(kind=glfloat) :: xt,yt,zt,temp,red,green,blue,alpha_c
 	integer :: i,step
 	real(kind=glfloat) :: starscale=10.   ! scaling of brightness of stars with age
+	real(kind=glfloat) :: lhmin,lhmax
 
  step=max(nbodies/NMAX,1)
  call gldeletelists(1,3)
 	
+ lhmin=log(minval(hsmooth(1:nsph))) 
+ lhmax=log(maxval(hsmooth(1:nsph))) 
+  
 if(show_gas) then
 
 	call glNewList(1,GL_COMPILE)	
@@ -656,6 +660,17 @@ if(show_gas) then
 	  call glColor4f(red, green, blue,alpha_c)
 	
 	end if
+
+	if(show_hsm) then
+	
+	  green=(log(hsmooth(i))-lhmin)/(lhmax-lhmin)
+	  blue=0.
+	  red=1-green
+    alpha_c=.7-.7*green
+	  call glColor4f(red, green, blue,alpha_c)
+	
+	end if
+
 	
 	call glVertex3f(xt,yt,zt)
 	
@@ -700,7 +715,7 @@ if(show_halo) then
 
 	call glNewList(3,GL_COMPILE)
 	call glPointSize( pointsize_halo)
-	call glColor4f(.75_glfloat, .75_glfloat, .75_glfloat,.7_glfloat)
+	call glColor4f(.25_glfloat, .25_glfloat, 1._glfloat,.9_glfloat)
 	call glBegin(GL_POINTS)
 	do i=nsph+1,nbodies-nstar,step
 	
@@ -964,6 +979,7 @@ show_temp=.FALSE.
 show_age=.FALSE.
 show_fuvheat=.FALSE.
 show_div=.FALSE.
+show_hsm=.FALSE.
 case(2)
 show_temp=.NOT.show_temp
 case(3)
@@ -972,6 +988,8 @@ case(4)
 show_fuvheat=.NOT.show_fuvheat
 case(5)
 show_div=.NOT.show_div
+case(6)
+show_hsm=.NOT.show_hsm
 case default
 
 end select
@@ -1028,6 +1046,7 @@ k=glutCreateMenu(prop_menu)
  call glutaddmenuentry('toggle age', 3)
  call glutaddmenuentry('toggle fuvheat', 4)
  call glutaddmenuentry('toggle divv', 5)
+ call glutaddmenuentry('toggle hsm', 6)
 
 menu= view_modifier_init(starscale())
 
