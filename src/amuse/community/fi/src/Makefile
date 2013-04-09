@@ -30,7 +30,7 @@ COMMONFILES = mem.o elements.o cooling.o ionize.o molecules.o H2cool.o starprop.
   blackhole.o stepsystem.o buildnearlist.o pmgrav.o \
   search.o feedback.o fixedhalo.o init.o timestep.o buildtree.o \
   density.o heating.o entdot.o heco.o ethstep.o \
-  stellar.o fcco.o project.o clean.o sort.o util.o \
+  stellar.o fcco.o makemapmod.o project.o clean.o sort.o util.o \
   gravity.o tidalsum.o treewalk.o gravsum.o fuvflux.o
 
 LIBFILES = $(COMMONFILES) muse_io2_stub.o muse_io_stub.o hash.o muse_helpers.o

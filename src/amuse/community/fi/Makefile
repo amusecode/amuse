@@ -71,7 +71,7 @@ FILES=$(SRC)/muse_helpers.f90 $(SRC)/mem.f90 $(SRC)/elements.f90 $(SRC)/cooling.
   $(SRC)/pmgrav.f90 $(SRC)/search.f90 $(SRC)/feedback.f90 $(SRC)/fixedhalo.f90 $(SRC)/init.f90 \
   $(SRC)/timestep.f90 $(SRC)/buildtree.f90 $(SRC)/density.f90 $(SRC)/io2.f90 $(SRC)/heating.f90 \
   $(SRC)/entdot.f90 $(SRC)/heco.f90 $(SRC)/ethstep.f90 $(SRC)/stellar.f90 $(SRC)/fcco.f90 \
-  $(SRC)/project.f90 $(SRC)/clean.f90 $(SRC)/sort.f90 $(SRC)/util.f90 $(SRC)/gravity.f90 \
+  $(SRC)/makemapmod.f90 $(SRC)/project.f90 $(SRC)/clean.f90 $(SRC)/sort.f90 $(SRC)/util.f90 $(SRC)/gravity.f90 \
   $(SRC)/tidalsum.f90 $(SRC)/treewalk.f90 $(SRC)/gravsum.f90 $(SRC)/fuvflux.f90
 
 AMUSE_INTERFACE_DEPS=
@@ -83,11 +83,11 @@ all: fi_worker
 	$(MPIFC) $(FFLAGS)  -c -o $@ $< 
 	
 $(BUILDDIR)/Makefile: 
-	-mkdir $(BUILDDIR)
+	mkdir -p $(BUILDDIR)
 	ln -s ../src/Makefile  $(BUILDDIR)/Makefile
 	
 $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
-	-mkdir $(BUILDDIR)
+	mkdir -p $(BUILDDIR)
 	$(PYTHON) ./patch_globals_dot_h.py
 	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
@@ -100,7 +100,7 @@ fi_worker_gl: worker_code-gl.f90 $(BUILDDIR)/libfi.a interface.o
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
 
 $(PERIODIC_BUILDDIR)/Makefile:
-	-mkdir $(PERIODIC_BUILDDIR)
+	mkdir -p $(PERIODIC_BUILDDIR)
 	ln -s ../src/Makefile $(PERIODIC_BUILDDIR)/Makefile
 	
 $(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile 
@@ -113,11 +113,11 @@ fi_worker_periodic: worker_code.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po
 
 fi_worker_periodic_gl: worker_code-gl.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
 	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) worker_code-gl.f90 interface.po -o $@  $(PGLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS)
+	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) worker_code-gl.f90 interface.po -o $@  $(PGLOBJECTS) \
+	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)
 
 $(OPENMP_BUILDDIR)/Makefile:
-	-mkdir $(OPENMP_BUILDDIR)
+	mkdir -p $(OPENMP_BUILDDIR)
 	ln -s ../src/Makefile $(OPENMP_BUILDDIR)/Makefile
 	
 $(OPENMP_BUILDDIR)/libfi.a: $(OPENMP_BUILDDIR)/Makefile 
@@ -143,7 +143,7 @@ clean:
 	make -C src purge
 	$(RM) -f *.o *.po *.pyc *.bck worker worker.f90 glworker glworker.f90
 	$(RM) -f worker_code.f90 worker_code_gl.f90 worker_code_sockets.f90 worker_code-gl.f90
-	$(RM) -f fi_worker_periodic fi_worker_gl fi_worker
+	$(RM) -f fi_worker_periodic fi_worker_gl fi_worker fi_worker_mp
 	$(RM) -f fi_worker_periodic_gl
 	$(RM) -f fi_worker_sockets worker-sockets.f90
 	$(RM) -f worker_code_periodic worker_code
