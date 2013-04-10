@@ -1061,3 +1061,39 @@ class TestPH4(TestWithMPI):
         print instance.particles[0].potential_in_code
         self.assertEquals(instance.particles[0].potential(gravitationalConstant=nbody_system.G), -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
         self.assertEquals(instance.particles[0].potential_in_code, -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
+
+    def test27(self):
+        print "Testing get timestep of particles"
+        with_softening = True
+        
+        particles = datamodel.Particles(7)
+        particles.mass = 0.1 | nbody_system.mass
+        particles.radius = 0.01 | nbody_system.length
+        particles.x = [-101.0, -100.0, -2.0, 2.0, 98.0, 102.0, 104.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-5, 0, 0]] | nbody_system.speed
+        total_energy = particles.potential_energy(G=nbody_system.G) + particles.kinetic_energy()
+        
+        instance = ph4()
+        instance.initialize_code()
+        instance.parameters.set_defaults()
+        
+        if with_softening:
+            print "small amount of softening will prevent timesteps far below 1e-6 and huge energy errors..."
+            instance.parameters.epsilon_squared = 1.0e-10 | nbody_system.length**2
+        instance.particles.add_particles(particles)
+        
+        for target_time, min_dt, n_digits in zip([0, 0.23, 0.24, 0.26, 0.27]|nbody_system.time, 
+                [0.5**10, 0.5**11, 0.5**20, 0.5**10, 0.5**10]|nbody_system.time,
+                [10, 7, 4, 5, 5]):
+            instance.evolve_model(target_time)
+            if with_softening:
+                self.assertEquals(instance.particles.timestep.amin(), min_dt)
+                self.assertAlmostRelativeEquals(instance.potential_energy + instance.kinetic_energy, total_energy, n_digits)
+            else:
+                print "\ntarget_time:", target_time
+                print "minimum timestep:", instance.particles.timestep.amin()
+                print "energy error:", (instance.potential_energy + instance.kinetic_energy - total_energy) / total_energy
+            total_energy = instance.potential_energy + instance.kinetic_energy
+        instance.stop()
