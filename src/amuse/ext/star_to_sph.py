@@ -151,11 +151,15 @@ class StellarModel2SPH(object):
 #~            entropy[:i_edge+1] = (entropy[:i_edge+1] + entropy[i_edge+1]) / 2.0
         entropy[:i_edge+1] = entropy[i_edge+1]
         d_entropy = entropy[1:] - entropy[:-1]
-
-        def int_Wr2_A(x):
+        
+        # Integrals over r**2 times the cubic spline kernel W of Monaghan & Lattanzio (1985)
+        # W = 8 / (pi * r_c**3) * (1 - 6 (r/r_c)**2 + 6 (r/r_c)**3)   for   0 < r/r_c < 0.5
+        # W = 8 / (pi * r_c**3) * 2 * (1 - (r/r_c)**3)                for   0.5 < r/r_c < 1
+        
+        def int_Wr2_A(x): # integral over [(pi*r_c**3)/8 * r**2 * W(r)]   for   0 < r/r_c < 0.5
             return (x**3 / 3.0) - (1.2 * x**5 / r_c**2) + (x**6 / r_c**3)
 
-        def int_Wr2_B(x):
+        def int_Wr2_B(x): # integral over [(pi*r_c**3)/8 * r**2 * W(r)]   for   0.5 < r/r_c < 1
             return (x**3 / 1.5) - (1.5 * x**4 / r_c) + (1.2 * x**5 / r_c**2) - (x**6 / (3.0 * r_c**3))
 
         for i in range(i_edge, 0, -1):
