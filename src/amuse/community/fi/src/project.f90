@@ -1,3 +1,120 @@
+ subroutine writefits(filename,naxis,naxes,pic)
+      integer status,unit,blocksize,bitpix,naxis,naxes(3)
+      integer i,j,k,group,fpixel,nelements
+      real pic(:,:)
+      character filename*80
+      logical simple,extend
+
+      status=0
+
+!      filename='HImap.fits'
+      
+      call deletefile(filename,status)
+      call ftgiou(unit,status)
+
+      blocksize=1
+      call ftinit(unit,filename,blocksize,status)
+
+      simple=.true.
+      bitpix=-64
+!      naxis=2
+!      naxes(1)=nx
+!      naxes(2)=ny
+      extend=.true.
+
+      call ftphpr(unit,simple,bitpix,naxis,naxes,0,1,extend,status)
+
+      group=1
+      fpixel=1
+      nelements=1
+      do i=1,naxis
+       nelements=naxes(i)*nelements
+      enddo
+      call ftpprd(unit,group,fpixel,nelements,pic,status)
+
+      call ftclos(unit, status)
+      call ftfiou(unit, status)
+      
+      if (status .gt. 0)call printerror(status)
+      end subroutine
+          
+      subroutine printerror(status)
+
+
+      integer status
+      character errtext*30,errmessage*80
+
+      if (status .le. 0)return
+      call ftgerr(status,errtext)
+      print *,'FITSIO Error Status =',status,': ',errtext
+
+      call ftgmsg(errmessage)
+      do while (errmessage .ne. ' ')
+          print *,errmessage
+          call ftgmsg(errmessage)
+      enddo
+      end subroutine
+      
+      
+      subroutine deletefile(filename,status)
+      integer status,unit,blocksize
+      character*(*) filename
+
+      if (status .gt. 0)return
+
+      call ftgiou(unit,status)
+
+      call ftopen(unit,filename,1,blocksize,status)
+
+      if (status .eq. 0)then
+          call ftdelt(unit,status)
+      else if (status .eq. 103)then
+          status=0
+          call ftcmsg
+      else
+          status=0
+          call ftcmsg
+          call ftdelt(unit,status)
+      end if
+
+      call ftfiou(unit, status)
+      end subroutine
+
+
+subroutine WriteMap(filename,tauname)
+  use MakeMapMod
+  character, optional :: filename*80,tauname*80
+  character :: file*80
+  integer :: naxes(3)
+ 
+  if(present(filename)) then
+   file=filename
+  else
+   print*,' uit filenaam?'
+   read*, file
+  endif
+ 
+  naxes(1)=nx
+  naxes(2)=ny
+  if(file(1:5).NE.'XXXXX') call writefits(file,2,naxes,pic)
+ 
+  if(extinction.eq.1) then
+   
+  if(present(tauname)) then
+   file=tauname
+  else
+   print*,' tau filenaam?'
+   read*, file
+  endif
+ 
+  naxes(1)=nx
+  naxes(2)=ny
+  if(file(1:5).NE.'XXXXX') call writefits(file,2,naxes,opdepth)
+
+  endif  
+ 
+ end subroutine
+
 ! fromgabe
   function Hui_HII_recombB(T)
     real :: T
@@ -433,7 +550,8 @@ subroutine maphimap(nmap)
   filenaam=trim(outputfile)//'-'//nstring//'_'//trim(identify(j))//'.fits'
   opnaam='XXXXX'
   if(ext(j).EQ.1.AND.j.EQ.maps) opnaam='opacity'
-  call EndMap(filenaam,opnaam)
+  call WriteMap(filenaam,opnaam)
+  call EndMap
  enddo
 end subroutine
 

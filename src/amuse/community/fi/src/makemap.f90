@@ -58,6 +58,7 @@ program makecube
  read*, mapmode
 
  call projectparticles(mapmode)
+ call WriteMap
  call EndMap
 
 print*,'other map?(1=yes)'

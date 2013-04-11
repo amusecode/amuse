@@ -74,8 +74,9 @@ FILES=$(SRC)/muse_helpers.f90 $(SRC)/mem.f90 $(SRC)/elements.f90 $(SRC)/cooling.
   $(SRC)/makemapmod.f90 $(SRC)/project.f90 $(SRC)/clean.f90 $(SRC)/sort.f90 $(SRC)/util.f90 $(SRC)/gravity.f90 \
   $(SRC)/tidalsum.f90 $(SRC)/treewalk.f90 $(SRC)/gravsum.f90 $(SRC)/fuvflux.f90
 
-AMUSE_INTERFACE_DEPS=
+MAPFILES=$(SRC)/util.f90 $(SRC)/makemapmod.f90 $(SRC)/map_helpers.f90
 
+AMUSE_INTERFACE_DEPS=
 
 all: fi_worker
 
@@ -138,7 +139,26 @@ interface.o:interface.f90
 	
 interface.po:interface.f90
 	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I./$(PERIODIC_BUILDDIR) -c -o $@ $<
-    
+
+
+build_map/Makefile: 
+	mkdir -p build_map
+	ln -s ../src/Makefile  build_map/Makefile
+
+build_map/libmap.a: build_map/Makefile $(MAPFILES) Makefile
+	mkdir -p build_map
+	make -C build_map libmap.a FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
+
+map_worker: map_worker_code.f90 build_map/libmap.a map_interface.o 
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I./build_map/ map_worker_code.f90 map_interface.o \
+	  -o $@ build_map/libmap.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
+
+map_worker_code.f90: interface.py $(AMUSE_INTERFACE_DEPS)
+	$(CODE_GENERATOR) --type=f90 --needs-mpi=false $< FiMapInterface -o $@
+
+map_interface.o:map_interface.f90
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I./build_map/ -c -o $@ $<
+
 clean:
 	make -C src purge
 	$(RM) -f *.o *.po *.pyc *.bck worker worker.f90 glworker glworker.f90
@@ -150,7 +170,9 @@ clean:
 	$(RM) -f amuse_worker_module.mod
 	$(RM) -f amuseinterface.mod
 	$(RM) -f forsockets.mod
+	$(RM) -f map_worker_code.f90 map_worker
 	$(RM) -Rf $(BUILDDIR)
 	$(RM) -Rf $(PERIODIC_BUILDDIR)
 	$(RM) -Rf $(OPENMP_BUILDDIR)
+	$(RM) -Rf build_map
 

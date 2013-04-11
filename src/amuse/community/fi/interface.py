@@ -7,6 +7,9 @@ from amuse.community.interface.gd import GravityFieldCode
 from amuse.community import *
 from amuse.support.options import option
 
+from amuse.units import generic_unit_system 
+from amuse.community.interface.common import CommonCode
+
 class FiInterface(
     CodeInterface,
     GravitationalDynamicsInterface,
@@ -3226,5 +3229,713 @@ class FiViewer(Fi):
         object.add_transition('EDIT', 'UPDATE', 'delete_particle')
         object.add_transition('UPDATE', 'EDIT', 'trigger_partremoval')
                   
+class FiMapInterface(CodeInterface):   
+
+    use_modules=['StoppingConditions','AmuseInterface']
+    
+    MODE_NORMAL = 'normal'
+    MODE_NORMAL_OPENMP = 'openmp'
+    
+    def __init__(self, mode = MODE_NORMAL,  **options):
+        self.mode = mode
+        CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
+                     
+    def name_of_the_worker(self, mode):
+        if mode == self.MODE_NORMAL:
+            return 'map_worker'
+        elif mode == self.MODE_NORMAL_OPENMP:
+            return 'map_worker_mp'
+        else:
+            return 'map_worker'
   
+    @legacy_function    
+    def initialize_code():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
   
+    @legacy_function    
+    def generate_projection():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def init_map():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def reset_map():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def erase_map():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def new_particle():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.OUT)
+        for x in ['weight','x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('radius', dtype='d', direction=function.IN, default = 0.)
+        function.addParameter('opacity_area', dtype='d', direction=function.IN, default = 0.)
+        function.addParameter('index', dtype='i', direction=function.IN, default = 0)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_state():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['weight','x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('radius', dtype='d', direction=function.IN, default = 0.)
+        function.addParameter('opacity_area', dtype='d', direction=function.IN, default = 0.)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def get_state():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['weight','x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('radius', dtype='d', direction=function.OUT)
+        function.addParameter('opacity_area', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+
+    @legacy_function    
+    def delete_particle():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def set_random_seed():
+        """ random seed to use """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('random_seed', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_random_seed():
+        """ random seed to use """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('random_seed', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function
+    def set_extinction_flag():
+        """ whether to use the particle opacities (0=no, 1= yes) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('extinction_flag', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_extinction_flag():
+        """ whether to use the particle opacities (0=no, 1= yes) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('extinction_flag', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+
+    @legacy_function
+    def set_minimum_distance():
+        """ minimum distance to the camera particles can have """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('minimum_distance', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_minimum_distance():
+        """ minimum distance to the camera particles can have """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('minimum_distance', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function
+    def set_image_angle():
+        """ angle of image in x direction (for perpective proj.) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('image_angle', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_image_angle():
+        """ angle of image in x direction (for perpective proj.) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('image_angle', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function
+    def set_image_width():
+        """ width of image in x direction (for parallel proj.) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('image_width', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_image_width():
+        """ angle of image in x direction (for parallel proj.) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('image_width', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function
+    def set_image_pixel_size():
+        """ pixel size of generated image """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('nx', dtype='i', direction=function.IN)
+        function.addParameter('ny', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_image_pixel_size():
+        """ pixel size of generated image """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('nx', dtype='i', direction=function.OUT)
+        function.addParameter('ny', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    def get_index_range_inclusive(self):
+        ni,nj,error = self.get_image_pixel_size()
+        return (1, ni, 1, nj)
+
+
+    @legacy_function
+    def set_image_target():
+        """ target point of image """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.IN)
+        function.addParameter('y', dtype='d', direction=function.IN)
+        function.addParameter('z', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_image_target():
+        """ target point of image """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.OUT)
+        function.addParameter('y', dtype='d', direction=function.OUT)
+        function.addParameter('z', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function
+    def set_viewpoint():
+        """ camera position (for perspective proj) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.IN)
+        function.addParameter('y', dtype='d', direction=function.IN)
+        function.addParameter('z', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_viewpoint():
+        """ camera position (for perspective proj) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.OUT)
+        function.addParameter('y', dtype='d', direction=function.OUT)
+        function.addParameter('z', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function
+    def set_projection_direction():
+        """ direction of projection (for parallel proj) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.IN)
+        function.addParameter('y', dtype='d', direction=function.IN)
+        function.addParameter('z', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_projection_direction():
+        """ direction of projection (for parallel proj) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.OUT)
+        function.addParameter('y', dtype='d', direction=function.OUT)
+        function.addParameter('z', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function
+    def set_upvector():
+        """ specify the orientation of the image by setting the direction vector of image y """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.IN)
+        function.addParameter('y', dtype='d', direction=function.IN)
+        function.addParameter('z', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_upvector():
+        """ specify the orientation of the image by setting the direction vector of image y """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.OUT)
+        function.addParameter('y', dtype='d', direction=function.OUT)
+        function.addParameter('z', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function
+    def set_projection_mode():
+        """ projection mode (parallel or projection """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('projection_mode', dtype='string', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_projection_mode():
+        """ projection mode (parallel or projection """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('projection_mode', dtype='string', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+
+    @legacy_function    
+    def get_image():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['pixel_value']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def get_opdepth_map():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['pixel_opacity']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+
+class FiMap(CommonCode):
+
+    def __init__(self, unit_converter = None, **options):
+        self.unit_converter = unit_converter
+        
+        CommonCode.__init__(self,  FiMapInterface(**options), **options)
+    
+    def define_converter(self, object):
+        if not self.unit_converter is None:
+            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+
+    def define_methods(self, object):
+        object.add_method(
+             'new_particle', 
+              (
+                object.NO_UNIT,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length**2,
+                object.NO_UNIT,                
+              ), 
+              (
+                object.INDEX,                    
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
+             'set_state', 
+              (
+                object.INDEX,                    
+                object.NO_UNIT,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length**2,
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
+             'get_state', 
+              (
+                object.INDEX,
+              ), 
+              (
+                object.NO_UNIT,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length**2,
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
+             'delete_particle', 
+              (
+                object.INDEX,                    
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        
+        object.add_method(
+             'set_minimum_distance', 
+              (
+                generic_unit_system.length,                    
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
+             'get_minimum_distance', 
+              (
+              ), 
+              (
+                generic_unit_system.length,                    
+                object.ERROR_CODE,
+              )
+        )
+
+        object.add_method(
+             'set_image_width', 
+              (
+                generic_unit_system.length,                    
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
+             'get_image_width', 
+              (
+              ), 
+              (
+                generic_unit_system.length,                    
+                object.ERROR_CODE,
+              )
+        )
+
+        object.add_method(
+             'set_image_target', 
+              (
+                generic_unit_system.length,                    
+                generic_unit_system.length,                    
+                generic_unit_system.length,                    
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
+             'get_image_target', 
+              (
+              ), 
+              (
+                generic_unit_system.length,                    
+                generic_unit_system.length,                    
+                generic_unit_system.length,                    
+                object.ERROR_CODE,
+              )
+        )
+
+        object.add_method(
+             'set_viewpoint', 
+              (
+                generic_unit_system.length,                    
+                generic_unit_system.length,                    
+                generic_unit_system.length,                    
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
+             'get_viewpoint', 
+              (
+              ), 
+              (
+                generic_unit_system.length,                    
+                generic_unit_system.length,                    
+                generic_unit_system.length,                    
+                object.ERROR_CODE,
+              )
+        )
+
+        object.add_method(
+             'get_image', 
+              (
+                object.INDEX,
+                object.INDEX,
+              ), 
+              (
+                object.NO_UNIT,
+                object.ERROR_CODE,
+              )
+        )
+
+        object.add_method(
+             'get_opdepth_map', 
+              (
+                object.INDEX,
+                object.INDEX,
+              ), 
+              (
+                object.NO_UNIT,
+                object.ERROR_CODE,
+              )
+        )
+
+
+    def define_particle_sets(self, object):
+        object.define_grid('image')
+        object.set_grid_range('image', 'get_index_range_inclusive')    
+        object.add_getter('image', 'get_image')
+        object.add_getter('image', 'get_opdepth_map')
+
+        object.define_set('particles', 'id')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_state')
+        object.add_getter('particles', 'get_state')
+
+
+    def define_parameters(self, object):
+        
+        object.add_method_parameter(
+            "get_projection_mode", 
+            "set_projection_mode",
+            "projection_mode", 
+            "projection mode (parallel or perspective)", 
+            default_value = "parallel"
+        )
+
+
+        object.add_method_parameter(
+            "get_random_seed", 
+            "set_random_seed",
+            "random_seed", 
+            "random seed (used for clusters)", 
+            default_value = 45678910
+        )
+
+        object.add_method_parameter(
+            "get_minimum_distance", 
+            "set_minimum_distance",
+            "minimum_distance", 
+            "near clipping plane", 
+            default_value = 0.001 | generic_unit_system.length
+        )
+
+        object.add_method_parameter(
+            "get_extinction_flag", 
+            "set_extinction_flag",
+            "extinction flag", 
+            "extinction flag (0=no extinction, 1=with extinction)", 
+            default_value = 0
+        )
+
+        object.add_method_parameter(
+            "get_image_angle", 
+            "set_image_angle",
+            "image_angle", 
+            "image angle - horizontal (used in perspective proj.)", 
+            default_value = 45
+        )
+
+        object.add_method_parameter(
+            "get_image_width", 
+            "set_image_width",
+            "image_width", 
+            "image width - horizontal (used in parallel proj.)", 
+            default_value = 1 | generic_unit_system.length
+        )
+
+        
+        object.add_caching_parameter(
+            "set_image_pixel_size", 
+            "nx",
+            "nx", 
+            "image pixel size (horizontal)",
+            640,
+        )
+        object.add_caching_parameter(
+            "set_image_pixel_size", 
+            "ny",
+            "ny", 
+            "image pixel size (vertical)",
+            480,
+        )
+        object.add_vector_parameter(
+            "image_size",
+            "image pixel size",
+            ("nx", "ny")
+        )
+
+        object.add_caching_parameter(
+            "set_image_target", 
+            "x",
+            "target_x", 
+            "x coordinate of the point which the image centers on",
+            0 | generic_unit_system.length,
+        )
+        object.add_caching_parameter(
+            "set_image_target", 
+            "y",
+            "target_y", 
+            "y coordinate of the point which the image centers on",
+            0 | generic_unit_system.length,
+        )
+        object.add_caching_parameter(
+            "set_image_target", 
+            "z",
+            "target_z", 
+            "z coordinate of the point which the image centers on",
+            0 | generic_unit_system.length,
+        )
+        object.add_vector_parameter(
+            "image_target",
+            "point which the image centers on",
+            ("target_x", "target_y","target_z")
+        )
+
+        object.add_caching_parameter(
+            "set_viewpoint", 
+            "x",
+            "viewpoint_x", 
+            "x coordinate of the view point (camera location)",
+            0 | generic_unit_system.length,
+        )
+        object.add_caching_parameter(
+            "set_viewpoint", 
+            "y",
+            "viewpoint_y", 
+            "y coordinate of the view point (camera location)",
+            1. | generic_unit_system.length,
+        )
+        object.add_caching_parameter(
+            "set_viewpoint", 
+            "z",
+            "viewpoint_z", 
+            "z coordinate of the view point (camera location)",
+            0 | generic_unit_system.length,
+        )
+        object.add_vector_parameter(
+            "viewpoint",
+            "viewpoint (location of the camera)",
+            ("viewpoint_x", "viewpoint_y","viewpoint_z")
+        )
+
+        object.add_caching_parameter(
+            "set_upvector", 
+            "x",
+            "upvector_x", 
+            "x component of the up-direction of the image",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_upvector", 
+            "y",
+            "upvector_y", 
+            "y component of the up-direction of the image",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_upvector", 
+            "z",
+            "upvector_z", 
+            "z component of the up-direction of the image",
+            1,
+        )
+        object.add_vector_parameter(
+            "upvector",
+            "direction of the up-vector",
+            ("upvector_x", "upvector_y","upvector_z")
+        )
+
+        object.add_caching_parameter(
+            "set_projection_direction", 
+            "x",
+            "projection_direction_x", 
+            "x component of projection direction (for parallel projections)",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_projection_direction", 
+            "y",
+            "projection_direction_y", 
+            "y component of projection direction (for parallel projections)",
+            -1,
+        )
+        object.add_caching_parameter(
+            "set_projection_direction", 
+            "z",
+            "projection_direction_z", 
+            "z component of projection direction (for parallel projections)",
+            0,
+        )
+        object.add_vector_parameter(
+            "projection_direction",
+            "direction of projection (for parallel projection)",
+            ("projection_direction_x", "projection_direction_y","projection_direction_z")
+        )
+
+    def get_index_range_inclusive(self):
+        """
+        Returns the min and max values of indices in each
+        direction. The range is inclusive, the min index
+        and max index both exist and can be queried.
+        The total number of cells in one direction
+        is max - min + 1.
+        """
+        nx, ny = self.get_image_pixel_size()
+        return (1, nx, 1, ny)
+    
+    def commit_parameters(self):
+        self.parameters.send_cached_parameters_to_code()
+              
+    def define_state(self, object): 
+        CommonCode.define_state(self, object)   
+        #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+        
+        object.add_transition('INITIALIZED','PREPROJ','commit_parameters')
+        object.add_transition('PREPROJ','PROJ','init_map')        
+        object.add_transition('PROJ','IMAGE','generate_projection')
+        object.add_transition('PROJ','INITIALIZED','reset_map')
+        object.add_transition('IMAGE','INITIALIZED','reset_map')
+        object.add_method('IMAGE','get_image')
+        object.add_method('IMAGE','get_opdepth_map')
+        object.add_method('IMAGE','erase_map')
+        
+        object.add_method('INITIALIZED', 'before_set_parameter')  
+        object.add_method('PROJ', 'before_get_parameter')
+        object.add_method('PROJ', 'get_image_pixel_size')
+

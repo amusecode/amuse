@@ -35,6 +35,8 @@ COMMONFILES = mem.o elements.o cooling.o ionize.o molecules.o H2cool.o starprop.
 
 LIBFILES = $(COMMONFILES) muse_io2_stub.o muse_io_stub.o hash.o muse_helpers.o
 
+MAPLIBFILES = makemapmod.o hash.o map_helpers.o util.o
+
 FILES = $(COMMONFILES) io.o io2.o
 
 SFILES=extern_dummy.o 
@@ -137,6 +139,9 @@ muse: muse_dynamics_interface muse_dynamics_interface_gl \
 amuse_interface: libfi.a
 
 libfi.a: $(LIBFILES)
+	ar crs $@ $^
+
+libmap.a: $(MAPLIBFILES)
 	ar crs $@ $^
 
 muse_dynamics_interface: muse_interface.f90 $(FILES) hash.o muse_helpers.o
