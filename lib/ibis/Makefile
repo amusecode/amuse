@@ -7,7 +7,10 @@ CODEDIR = deploy${VERSION}
 DOWNLOAD_FROM_WEB = ./downloadhttp.py
 LIBPROFILING = src/profiling/libibisprofiling.a
 
-JDK ?= /usr
+JAVAC ?= /usr/bin/javac
+JAVA ?= /usr/bin/java
+JAVAH ?= /usr/bin/javah
+JAR ?= /usr/bin/jar
 
 CLASSPATH="deploy/lib/*:tmp"
 
@@ -43,12 +46,12 @@ lib/ibis-amuse.jar: src/*/*/*.java
 	$(RM) -r lib tmp
 	mkdir tmp
 	mkdir lib
-	$(JDK)/bin/javac -classpath $(CLASSPATH) -d tmp src/*/*/*.java
-	#$(JDK)/bin/java -classpath $(CLASSPATH) ibis.compile.Ibisc tmp
-	$(JDK)/bin/javah -classpath $(CLASSPATH) -d include ibis.amuse.JNICodeInterface
+	$(JAVAC) -classpath $(CLASSPATH) -d tmp src/*/*/*.java
+	#$(JAVA) -classpath $(CLASSPATH) ibis.compile.Ibisc tmp
+	$(JAVAH) -classpath $(CLASSPATH) -d include ibis.amuse.JNICodeInterface
 	@echo Building jar file
-	$(JDK)/bin/jar -cf lib/ibis-amuse.jar -C tmp .
-	$(JDK)/bin/jar -uf lib/ibis-amuse.jar images/*
+	$(JAR) -cf lib/ibis-amuse.jar -C tmp .
+	$(JAR) -uf lib/ibis-amuse.jar images/*
 	$(RM) -r tmp
 	@echo done compiling Amuse/Ibis lib
 
