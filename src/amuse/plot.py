@@ -289,6 +289,70 @@ def pynbody_column_density_plot(particles, width=None, qty='rho', units=None,
     function(pyndata, width=width.value_in(length_unit), qty=qty, units=units, **kwargs)
     UnitlessArgs.current_plot = native_plot.gca()
 
+def effective_iso_potential_plot(gravity_code,
+        omega,
+        center_of_rotation = [0, 0]|units.AU, 
+        xlim = [-1.5, 1.5] | units.AU, 
+        ylim = [-1.5, 1.5] | units.AU, 
+        resolution = [1000, 1000],
+        number_of_contours = 20,
+        fraction_screen_filled = 0.5,
+        quadratic_contour_levels = True,
+        contour_kwargs = dict(),
+        omega2 = None,
+        center_of_rotation2 = [0, 0]|units.AU,
+        fraction_screen_filled2 = 0.2):
+    """
+    Create a contour plot of the effective potential of particles in a gravity code.
+    The code needs to support 'get_potential_at_point' only, so it can also be an 
+    instance of Bridge.
+    
+    :argument gravity_code: an instance of a gravity code
+    :argument omega: The angular velocity of the system
+    :argument center_of_rotation: The (2D) center around which the system rotates, usually the center of mass
+    :argument xlim: Range in x coordinate; width of window
+    :argument ylim: Range in y coordinate; width of window
+    :argument resolution: Number of points to sample potential for x and y direction
+    :argument number_of_contours: How many contour lines to plot
+    :argument fraction_screen_filled: Lowest contour will enclose this fraction of the screen
+    :argument quadratic_contour_levels: Quadratic or linear scaling between contour levels
+    :argument contour_kwargs: Optional keyword arguments for pyplot.contour
+    """
+    UnitlessArgs.strip(xlim, ylim)
+    xlim, ylim = UnitlessArgs.stripped_args
+    
+    x_num = numpy.linspace(xlim[0], xlim[1], resolution[0])
+    y_num = numpy.linspace(ylim[0], ylim[1], resolution[1])
+    x_num, y_num = numpy.meshgrid(x_num, y_num)
+    x = (x_num | UnitlessArgs.arg_units[0]).flatten()
+    y = (y_num | UnitlessArgs.arg_units[1]).flatten()
+    zeros = x.aszeros()
+    potential = gravity_code.get_potential_at_point(zeros, x, y, zeros)
+    potential -= omega**2 * ((x-center_of_rotation[0])**2 + (y-center_of_rotation[1])**2) / 2.0
+    
+    levels = set_contour_levels(potential, number_of_contours, fraction_screen_filled, quadratic_contour_levels)
+    CS = native_plot.contour(x_num, y_num, potential.number.reshape(resolution[::-1]), levels, **contour_kwargs)
+    #~native_plot.clabel(CS, inline=1, fontsize=10)
+    
+    if omega2 is None:
+        return potential
+    
+    potential2 = potential - omega2**2 * ((x-center_of_rotation2[0])**2 + (y-center_of_rotation2[1])**2) / 2.0
+    #~levels = set_contour_levels(potential, number_of_contours2, fraction_screen_filled2, quadratic_contour_levels2)
+    levels = set_contour_levels(potential2, number_of_contours, fraction_screen_filled2, quadratic_contour_levels)
+    CS = native_plot.contour(x_num, y_num, potential2.number.reshape(resolution[::-1]), levels, **contour_kwargs)
+    return potential.reshape(resolution[::-1]), potential2.reshape(resolution[::-1])
+
+def set_contour_levels(potential, number_of_contours, fraction_screen_filled, quadratic_contour_levels):
+    uniform = numpy.linspace(0.0, 1.0, number_of_contours)
+    V_max = potential.amax().number
+    V_min = potential.sorted().number[int(len(potential)*(1-fraction_screen_filled))]
+    if quadratic_contour_levels:
+        levels = V_min + (V_max-V_min) * uniform * (2 - uniform)
+    else:
+        levels = V_min + (V_max-V_min) * uniform
+    return levels
+
 
 if __name__ == '__main__':
     import numpy as np
