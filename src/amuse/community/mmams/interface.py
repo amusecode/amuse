@@ -141,6 +141,15 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         return function
     
     @legacy_function
+    def get_mass():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('mass', dtype='float64', unit=units.MSun, direction=function.OUT, description = "The total mass of this particle")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def get_stellar_model_element():
         """
         Return properties of the stellar model at a specific zone.
@@ -378,6 +387,10 @@ class MakeMeAMassiveStar(CommonCode):
         
         object.add_method("get_number_of_particles", (), (object.NO_UNIT, object.ERROR_CODE,)) 
     
+    def define_errorcodes(self, object):
+        object.add_errorcode(-1, 'Unspecified, other error.')
+        object.add_errorcode(-2, 'Specified zone is undefined for this particle.')
+        object.add_errorcode(-3, 'A particle with the given index was not found.')
     
     def define_particle_sets(self, object):
         object.define_super_set('particles', ['native_stars', 'imported_stars', 'merge_products'], 
@@ -395,6 +408,7 @@ class MakeMeAMassiveStar(CommonCode):
         for particle_set_name in ['native_stars', 'imported_stars', 'merge_products']:
             object.set_delete(particle_set_name, 'delete_particle')
             object.add_getter(particle_set_name, 'get_number_of_zones')
+            object.add_getter(particle_set_name, 'get_mass')
             object.add_method(particle_set_name, 'add_shell') 
             object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
     

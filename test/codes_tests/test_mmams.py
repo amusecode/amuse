@@ -102,7 +102,7 @@ class TestMakeMeAMassiveStarInterface(TestWithMPI):
         d_mass, mass, radius, density, pressure, entropy, temperature, luminosity, \
             molecular_weight, H1, He4, C12, N14, O16, Ne20, Mg24, Si28, Fe56, \
             error = instance.get_stellar_model_element([0, 186, 0, 0], [0, 0, 1, 3])
-        self.assertEqual(error, [0, 0, -2, -1])
+        self.assertEqual(error, [0, 0, -2, -3])
         self.assertAlmostEqual(mass[0],  0.0, 3)
         self.assertAlmostEqual(mass[1], 20.0, 0)
         self.assertAlmostEqual(radius[0], 0.0, 1)
@@ -276,6 +276,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertAlmostEqual(stellar_model.temperature[-1], 81542.0 | units.K, 0)
         self.assertAlmostEqual(stellar_model.X_H[0], 0.0121, 4)
         self.assertAlmostEqual(stellar_model.X_H[-1], 0.7, 4)
+        self.assertAlmostRelativeEqual(instance.particles.mass, [3.0, 4.0, 20.0, 8.0] | units.MSun, 2)
         instance.stop()
     
     def slowtest4(self):
@@ -939,6 +940,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.particles[0].number_of_zones, 4)
         self.assertEqual(instance.particles[1].number_of_zones, 4)
         self.assertTrue(instance.particles[2].number_of_zones > 100)
+        self.assertAlmostEqual(instance.particles[2].mass, 2.7324 | units.MSun, 3)
         instance.stop()
     
 
@@ -973,12 +975,10 @@ class StarParticleWithStructureWithoutGetMassProfile(Particle):
         return self._radii()[1:]
     
     def get_density_profile(self, number_of_zones = None):
-#        return self.get_mass_profile() * self.mass / (4.0/3.0 * constants.pi * (self._radii()[1:]**3 - self._radii()[:-1]**3))
         return self._mass_profile() * self.mass / (4.0/3.0 * constants.pi * (self._radii()[1:]**3 - self._radii()[:-1]**3))
     
     def get_pressure_profile(self, number_of_zones = None):
         return (constants.G * self._cumulative_mass_profile() * self.mass * self.get_density_profile() * 
-#        return (constants.G * self.get_cumulative_mass_profile() * self.mass * self.get_density_profile() * 
             (self._radii()[1:] - self._radii()[:-1]) / self._radii()[1:]**2)[::-1].accumulate()[::-1]
     
     def get_temperature_profile(self, number_of_zones = None):

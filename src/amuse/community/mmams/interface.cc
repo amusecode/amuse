@@ -62,7 +62,7 @@ int delete_particle(int index_of_the_particle){
     map<long long, usm*>::iterator iter2 = usm_models.find(index_of_the_particle);
     
     if (iter2 == usm_models.end())
-        return -1;
+        return -3;
     if (iter1 != results.end()){
         delete (*iter1).second;
         results.erase(iter1);
@@ -112,7 +112,7 @@ int add_shell(int index_of_the_particle, double d_mass, double cumul_mass,
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
     
     if (it == usm_models.end())
-        return -1;
+        return -3;
     
     if (hashtable_up_to_date_for_particle_with_index == index_of_the_particle)
         hashtable_up_to_date_for_particle_with_index = -1;
@@ -151,7 +151,7 @@ int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle,
     mass_shell shell;
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
     if (it == usm_models.end())
-        return -1;
+        return -3;
     
     if (index_of_the_shell >= it->second->get_num_shells())
         return -2;
@@ -186,8 +186,16 @@ int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle,
 int get_number_of_zones(int index_of_the_particle, int *number_of_shells){
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
     if (it == usm_models.end())
-        return -1;
+        return -3;
     *number_of_shells = it->second->get_num_shells();
+    return 0;
+}
+
+int get_mass(int index_of_the_particle, double *mass){
+    map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
+    if (it == usm_models.end())
+        return -3;
+    *mass = it->second->star_mass;
     return 0;
 }
 
@@ -198,7 +206,7 @@ int merge_two_stars(int *id_product, int id_primary, int id_secondary) {
     map<long long, usm*>::iterator it_secondary = usm_models.find(id_secondary);
     
     if (it_primary == usm_models.end() || it_secondary == usm_models.end())
-        return -1;
+        return -3;
     
     it_primary->second->build_hashtable();
     it_secondary->second->build_hashtable();
@@ -209,13 +217,9 @@ int merge_two_stars(int *id_product, int id_primary, int id_secondary) {
     mmams->merge_stars_consistently(target_n_shells, flag_do_shock_heating);
     mmams->mixing_product(target_n_shells_mixing);
     if (!dump_mixed) {
-//        cerr << "Dumping unmixed product in stdout \n";
         usm_models.insert(--usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_product())));
-//        mmams->get_product().write(stdout);
     } else {
-//        cerr << "Dumping mixed product in stdout \n";
         usm_models.insert(--usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_mixed_product())));
-//        mmams->get_mixed_product().write(stdout);
     }
     *id_product = particle_id_counter;
     number_of_particles++;
