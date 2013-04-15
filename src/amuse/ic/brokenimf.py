@@ -96,8 +96,7 @@ def new_broken_power_law_mass_distribution(number_of_particles, *list_arguments,
     :argument mass_boundaries: the boundaries of the mass ranges (default: [0.1, 125.0] MSun)
     :argument alphas: the exponents of each mass range (default: [-2.35])
     """
-    uc = MultiplePartIMF(*list_arguments, **keyword_arguments)
-    return uc.next_mass(number_of_particles)
+    return MultiplePartIMF(*list_arguments, **keyword_arguments).next_mass(number_of_particles)
 
 def new_scalo_mass_distribution(number_of_particles, mass_max=None, random=True):
     """Returns a Scalo (1986) mass distribution in SI units, with mass ranges:
@@ -107,10 +106,10 @@ def new_scalo_mass_distribution(number_of_particles, mass_max=None, random=True)
     
     :argument mass_max: the cut-off mass (defaults to 125.0 MSun)
     """
-    uc = MultiplePartIMF(
+    return MultiplePartIMF(
         mass_boundaries = [0.10, 0.18, 0.42, 0.62, 1.18, 3.5, 125.0] | units.MSun, 
-        mass_max = mass_max, alphas = [1.6, -1.01, -2.75, -2.08, -3.5, -2.63], random=random)
-    return uc.next_mass(number_of_particles)
+        mass_max = mass_max, alphas = [1.6, -1.01, -2.75, -2.08, -3.5, -2.63], random=random
+    ).next_mass(number_of_particles)
 
 def new_miller_scalo_mass_distribution(number_of_particles, mass_max=None, random=True):
     """Returns a Miller & Scalo (1979) mass distribution in SI units, with mass ranges:
@@ -120,10 +119,10 @@ def new_miller_scalo_mass_distribution(number_of_particles, mass_max=None, rando
     
     :argument mass_max: the cut-off mass (defaults to 125.0 MSun)
     """
-    uc = MultiplePartIMF(
+    return MultiplePartIMF(
         mass_boundaries = [0.1, 1.0, 2.0, 10.0, 125.0] | units.MSun, 
-        mass_max = mass_max, alphas = [-1.25, -2.0, -2.3, -3.3], random=random)
-    return uc.next_mass(number_of_particles)
+        mass_max = mass_max, alphas = [-1.25, -2.0, -2.3, -3.3], random=random
+    ).next_mass(number_of_particles)
 
 def new_kroupa_mass_distribution(number_of_particles, mass_max=None, random=True):
     """Returns a Kroupa (2001) mass distribution in SI units, with mass ranges:
@@ -133,9 +132,9 @@ def new_kroupa_mass_distribution(number_of_particles, mass_max=None, random=True
     
     :argument mass_max: the cut-off mass (defaults to 100.0 MSun)
     """
-    uc = MultiplePartIMF(
+    return MultiplePartIMF(
         mass_boundaries = [0.01, 0.08, 0.5, 100.0] | units.MSun, 
-        mass_max = mass_max, alphas = [-0.3, -1.3, -2.3], random=random)
-    return uc.next_mass(number_of_particles)
+        mass_max = mass_max, alphas = [-0.3, -1.3, -2.3], random=random
+    ).next_mass(number_of_particles)
 
 
