@@ -10,7 +10,7 @@ def new_working_directory(script_filename=None, sub_directories=[]):
     """
     Call this function from your script to create a new directory and move 
     into it, for storing all your simulation output. Invoke it with:
-    > new_working_directory(__file__)
+        new_working_directory(__file__)
     to copy the current version of your script to this new directory for 
     book-keeping purposes.
     """

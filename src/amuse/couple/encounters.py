@@ -112,9 +112,9 @@ class AbstractHandleEncounter(object):
         
         self.determine_structure_of_the_evolved_state()
         
-        self.remove_soft_binaries_from_evolved_state()
-        
         self.scale_evolved_state_to_initial_sphere()
+        
+        self.remove_soft_binaries_from_evolved_state()
         
         self.move_evolved_state_to_original_frame_of_reference()
         
@@ -261,10 +261,10 @@ class AbstractHandleEncounter(object):
         Particles should be moving apart.
         Implementation should be equivalent to moving the system back in time (or forward
         if the system is smaller than the initial scale).
-        
-        Implementation on the abstract class is a no-op, need to re-implement this on a subclass
         """
         pass
+        
+        
     
     def determine_multiples_in_the_evolved_state(self):
         """
@@ -437,3 +437,117 @@ class KeplerOrbits(object):
         
         return delta_positions, delta_velocities
     
+class ScaleSystem(object):
+    
+    def __init__(self, kepler_orbits, G = constants.G):
+        self.kepler_orbits = kepler_orbits
+        self.G = G
+    
+    def move_particle(self, particle, delta_position, delta_velocity):
+        """"
+        Move a particle and all of its descendants by delta position
+        and velocity
+        """
+        
+        particle.position += delta_position
+        particle.velocity += delta_velocity
+        
+        tree = particle.as_set().new_binary_tree_wrapper()
+        
+        descendants = tree.get_descendants_subset()
+        descendants.position += delta_position
+        descendants.velocity += delta_velocity
+    
+    def minimum_separation(self, particles):
+        positions = particles.position
+        radii = particles.radius
+
+        result = None
+        for i in range(len(particles) - 1):
+            i_position = positions[i]
+            j_positions = positions[i+1:]
+            
+            i_radius = radii[i+1:]
+            j_radii = radii[i+1:]
+            
+            delta_positions = i_position - j_positions
+            dr = delta_positions.lengths()
+            sum_radii = i_radius + j_radii
+            
+            delta = dr - sum_radii
+            if result is None:
+                result = delta.min()
+            else:
+                result = min(result, delta.min())
+        return result
+            
+
+
+    
+    def scale_particles_to_sphere(particles, radius):
+        """
+        Rescale the system of particles to lie within a sphere
+        of the given radius.
+        System may be compressed or expanded.
+        """
+        
+
+        center_of_mass_position = particles.center_of_mass()
+        center_of_mass_velocity = particles.center_of_mass_velocity()
+
+        particles.position -= center_of_mass_position
+        particles.velocity -= center_of_mass_velocity
+        
+        kinetic_energy = particles.kinetic_energy()
+        potential_energy = particles.potential_energy(G = self.G)
+        minimum_separation = self.minimum_separation(particles)
+        sphere_radius = position.lengths().max()
+        
+        
+        for i in range(len(node_list)):
+            m = 1
+            rad = node_list[i].radius.number
+            posi = node_list[i].position
+            pos = (posi-cmpos).number
+            vel = (node_list[i].velocity-cmvel).number
+            kin += m*numpy.inner(vel,vel)
+            dpot = 0.0
+            for j in range(i+1,len(node_list)):
+                mj = node_list[j].mass.number
+                radj = node_list[j].radius.number
+                dposj = (node_list[j].position-posi).number
+                rij = math.sqrt(numpy.inner(dposj,dposj))
+                if sepmin > rij-rad-radj:
+                    radsum = rad + radj
+                    imin = i
+                    jmin = j
+                    sepmin = rij - radsum
+                    rijmin = rij
+                dpot -= mj/math.sqrt(numpy.inner(dposj,dposj))
+            pot += m*dpot
+        size = math.sqrt(size)
+        kin /= 2
+
+        #fac = 0.5*scale.number/size	# scale to radius
+        #fac = scale.number/rijmin		# scale to distance
+        fac = radsum/rijmin			# scale to zero separation
+
+        # Compress (or expand) the system and increase (or decrease) the
+        # velocities (relative to the center of mass) to preserve the
+        # energy.  If fac > 1, expansion is always OK if E > 0, which it
+        # should be at this point (but check anyway...).  May have E < 0
+        # if we have a system with small negative energy, stopped because
+        # it is too big.
+
+        vfac2 = 1-(1/fac-1)*pot/kin
+        if vfac2 < 0:
+            print "Can't expand top level system to rjmin > ri+rj"
+            print "fac =", fac, " pot =", pot, " kin =", kin
+            sys.stdout.flush()
+            f = pot/(kin+pot)
+            vfac2 = 0.0
+        vfac = math.sqrt(vfac2)
+        if fac > 0.0:
+            for n in node_list:
+                n.position = cmpos + fac*(n.position-cmpos)
+                n.velocity = cmvel + vfac*(n.velocity-cmvel)
