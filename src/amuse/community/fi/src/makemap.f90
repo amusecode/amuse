@@ -6,6 +6,12 @@ program makecube
  character*80 filenaam
  character(len=5) :: mapmode
  call initmem(nbodsmax,nsphmax,ncells)
+
+ interface
+   subroutine WriteMap(filename,tauname)
+     character, optional :: filename*80,tauname*80
+   end subroutine
+ end interface
  
  CALL set_parameters(0)
 
