@@ -83,10 +83,19 @@
 
 subroutine WriteMap(filename,tauname)
   use MakeMapMod
+  implicit none
   character, optional :: filename*80,tauname*80
   character :: file*80
   integer :: naxes(3)
  
+  interface 
+   subroutine writefits(fname,naxis,naxes,pic)
+      integer status,unit,naxis,naxes(3)
+      real pic(:,:)
+      character fname*80
+    end subroutine
+  end interface
+  
   if(present(filename)) then
    file=filename
   else
@@ -500,6 +509,11 @@ subroutine maphimap(nmap)
            upvector(maxmap,3),width(maxmap),zmin(maxmap)
  integer :: ioerror,i,j,skipfactor,oldseed
  
+ interface
+   subroutine WriteMap(filename,tauname)
+     character, optional :: filename*80,tauname*80
+   end subroutine
+ end interface
 ! reset rndtable to fixed seed (to get consistency for random stars) 
  oldseed=rnseed
  rnseed=initialseed
