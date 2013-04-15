@@ -3927,8 +3927,11 @@ class FiMap(CommonCode):
         #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
         object.add_transition('INITIALIZED','PREPROJ','commit_parameters')
-        object.add_transition('PREPROJ','PROJ','init_map')        
+        object.add_transition('PREPROJ','PROJ','init_map')
         object.add_transition('PROJ','IMAGE','generate_projection')
+        object.add_transition('IMAGE','PROJ','new_particle',False)        
+        object.add_transition('IMAGE','PROJ','delete_particle',False)        
+        object.add_transition('IMAGE','PROJ','set_state',False)        
         object.add_transition('PROJ','INITIALIZED','reset_map')
         object.add_transition('IMAGE','INITIALIZED','reset_map')
         object.add_method('IMAGE','get_image')

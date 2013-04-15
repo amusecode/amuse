@@ -149,6 +149,7 @@ build_map/libmap.a: build_map/Makefile $(MAPFILES) Makefile
 	mkdir -p build_map
 	make -C build_map libmap.a FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
+map_worker: BUILDDIR=./build_map
 map_worker: map_worker_code.f90 build_map/libmap.a map_interface.o 
 	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I./build_map/ map_worker_code.f90 map_interface.o \
 	  -o $@ build_map/libmap.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
@@ -157,7 +158,23 @@ map_worker_code.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 --needs-mpi=false $< FiMapInterface -o $@
 
 map_interface.o:map_interface.f90
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I./build_map/ -c -o $@ $<
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) -I$(BUILDDIR) -c -o $@ $<
+
+
+build_map_mp/Makefile: 
+	mkdir -p build_map_mp
+	ln -s ../src/Makefile  build_map_mp/Makefile
+
+build_map_mp/libmap.a: build_map_mp/Makefile $(MAPFILES) Makefile
+	mkdir -p build_map_mp
+	make -C build_map_mp libmap.a FFLAGS="$(FFLAGS) $(OPENMP_FCFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
+
+map_worker_mp: BUILDDIR=./build_map_mp
+map_worker_mp: map_worker_code.f90 build_map_mp/libmap.a map_interface.o 
+	$(MPIFC) $(FFLAGS) $(OPENMP_FCFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I./build_map_mp/ map_worker_code.f90 map_interface.o \
+	  -o $@ build_map_mp/libmap.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
+
+
 
 clean:
 	make -C src purge
@@ -170,9 +187,9 @@ clean:
 	$(RM) -f amuse_worker_module.mod
 	$(RM) -f amuseinterface.mod
 	$(RM) -f forsockets.mod
-	$(RM) -f map_worker_code.f90 map_worker
+	$(RM) -f map_worker_code.f90 map_worker_mp map_worker
 	$(RM) -Rf $(BUILDDIR)
 	$(RM) -Rf $(PERIODIC_BUILDDIR)
 	$(RM) -Rf $(OPENMP_BUILDDIR)
-	$(RM) -Rf build_map
+	$(RM) -Rf build_map build_map_mp
 

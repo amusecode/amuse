@@ -153,7 +153,7 @@ end subroutine
   real,intent(in) :: pos(:,:),sizes(:),mass(:)
   real,intent(in),optional :: opac(:)
   integer, intent(in), optional :: pindex(:)
-  real ::ppos(3),psize,pmass,popac
+  real ::ppos(3),psize,pmass,popac,d2
   real, allocatable :: scratch(:,:),zdist(:)
   integer, allocatable :: order(:)
   integer i,j,test,xmin,xmax,ymin,ymax
@@ -205,12 +205,13 @@ end subroutine
    pmass=mass(i)
    psize=sizes(i)
    if(present(opac)) popac=opac(i)/dx**2
-   if(projection.eq.1) then   
+   if(projection.eq.1) then
+    d2=sum(ppos**2)   
     psize=psize*camdis/ppos(3)
     ppos(1)=ppos(1)*camdis/ppos(3)
     ppos(2)=ppos(2)*camdis/ppos(3)  
-    pmass=pmass*camdis**2/ppos(3)**2
-    popac=popac*camdis**2/ppos(3)**2
+    pmass=pmass*camdis**2/d2
+    popac=popac*camdis**2/d2
    endif
    xmin=FLOOR((ppos(1)-maxx*psize+xsize/2.)/dx)+1
    xmax=CEILING((ppos(1)+maxx*psize+xsize/2.)/dx)+1
