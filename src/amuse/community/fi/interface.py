@@ -3231,7 +3231,7 @@ class FiViewer(Fi):
                   
 class FiMapInterface(CodeInterface):   
 
-    use_modules=['StoppingConditions','AmuseInterface']
+    use_modules=['StoppingConditions','MapInterface']
     
     MODE_NORMAL = 'normal'
     MODE_NORMAL_OPENMP = 'openmp'
@@ -3242,11 +3242,11 @@ class FiMapInterface(CodeInterface):
                      
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:
-            return 'map_worker'
+            return 'fi_worker_map'
         elif mode == self.MODE_NORMAL_OPENMP:
-            return 'map_worker_mp'
+            return 'fi_worker_map_mp'
         else:
-            return 'map_worker'
+            return 'fi_worker_map'
   
     @legacy_function    
     def initialize_code():

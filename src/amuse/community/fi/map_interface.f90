@@ -1,4 +1,4 @@
-module amuseinterface
+module mapinterface
   use map_helpers
   
 contains
