@@ -1966,7 +1966,9 @@ class IbisChannel(AbstractMessageChannel):
         logging.getLogger("channel").debug("number of workers is %d, number of nodes is %s", self.number_of_workers, self.number_of_nodes)
         
         self.daemon_host = 'localhost'    # Ibis deamon always running on the local machine
-        self.daemon_port = 61575          # A random-but-fixed port number for the Ibis daemon
+        self.daemon_port = self.port          # A random-but-fixed port number for the Ibis daemon
+
+        logging.getLogger("channel").debug("port is %d", self.daemon_port)
         
         self.id = 0
         
@@ -2067,8 +2069,16 @@ class IbisChannel(AbstractMessageChannel):
         return 1
     
     @option(type="int", sections=("channel",))
+    def port(self):
+        return 61575
+    
+    @option(type="int", sections=("channel",))
     def number_of_threads(self):
         return 0
+    
+    @option(type="string", sections=("channel",))
+    def node_label(self):
+        return None
     
     @option(type="boolean", sections=("channel",))
     def copy_worker_code(self):
