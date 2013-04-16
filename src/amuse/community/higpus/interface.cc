@@ -62,6 +62,7 @@ int initialize_code(){
 	if(rank == 0){
 		cout<<"NOTE_1: the code works with nbody units ( G = 1 ): please check the parameters, more info are given in the README file"<<endl;
       cout<<"NOTE_2: the evolve method requires an input time (in nbody units) greater than or equal of the maximum time step ( 't' > or = 'max_step') "<<endl;
+      cout<<"NOTE_3: the code only seems to work when the number of particles is a power of 2"<<endl;
 	}
 	return 0;
 }
@@ -113,7 +114,7 @@ int new_particle(int *id, double mass, double x, double y, double z, double vx, 
 }
 
 int commit_particles(){
-	N = particle_id_counter;
+	N = dm_states.size();
 
 	HostSafeCall(isDivisible(&N, &M,size, NGPU, TPB, &BFMAX));
 
@@ -201,7 +202,7 @@ int evolve_model(double t){
 
 	for (unsigned int i=0; i<M; i++){
       pos_PH[i].x = pos_CH[i].x;
-     	pos_PH[i].y = pos_CH[i].y;
+	pos_PH[i].y = pos_CH[i].y;
       pos_PH[i].z = pos_CH[i].z;
       vel_PH[i].x = vel_CH[i].x;
       vel_PH[i].y = vel_CH[i].y;
@@ -304,9 +305,9 @@ int get_eta6(double *eta6){
    return 0;
 }
 
-int get_number_of_particles(int * number_of_particles){
-   *number_of_particles = particle_id_counter;
-   return 0;
+int get_number_of_particles(int *number_of_particles){
+    *number_of_particles = dm_states.size();
+    return 0;
 }
 
 int set_eta4(double eta4){
@@ -448,9 +449,11 @@ int get_index_of_next_particle(int index_of_the_particle, int * index_of_the_nex
 }
 
 int delete_particle(int index_of_the_particle){
-   dm_states.erase(index_of_the_particle);
-	particle_id_counter--;
-	return 0;
+    if (dm_states.find(index_of_the_particle) == dm_states.end()){
+        return -3;
+    }
+    dm_states.erase(index_of_the_particle);
+    return 0;
 }
 
 int get_potential(int index_of_the_particle, double * potential){ 
@@ -529,7 +532,7 @@ int recommit_particles(){
 	delete [] step;
 	delete [] local_time;
 
-	N = particle_id_counter;
+    N = dm_states.size();
    
    HostSafeCall(isDivisible(&N, &M,size, NGPU, TPB, &BFMAX));
 
