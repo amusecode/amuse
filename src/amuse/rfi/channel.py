@@ -1880,7 +1880,7 @@ class SocketChannel(AbstractMessageChannel):
 
 class OutputHandler(threading.Thread):
     
-    def __init__(self, stream):
+    def __init__(self, stream, port):
         threading.Thread.__init__(self)
         self.stream = stream
 
@@ -1930,19 +1930,18 @@ class IbisChannel(AbstractMessageChannel):
     stderrHandler = None
     
     socket = None
-
     
     @classmethod
-    def getStdoutID(cls):
+    def getStdoutID(cls, port):
         if IbisChannel.stdoutHandler is None:
-            IbisChannel.stdoutHandler = OutputHandler(sys.stdout)
+            IbisChannel.stdoutHandler = OutputHandler(sys.stdout, port)
             
         return IbisChannel.stdoutHandler.id
     
     @classmethod
-    def getStderrID(cls):
+    def getStderrID(cls, port):
         if IbisChannel.stderrHandler is None:
-            IbisChannel.stderrHandler = OutputHandler(sys.stderr)
+            IbisChannel.stderrHandler = OutputHandler(sys.stderr, port)
             
         return IbisChannel.stderrHandler.id
     
@@ -1962,6 +1961,9 @@ class IbisChannel(AbstractMessageChannel):
             
         if self.number_of_workers == 0:
             self.number_of_workers = 1
+            
+        if self.node_label == None:
+            self.node_label = "default"
             
         logging.getLogger("channel").debug("number of workers is %d, number of nodes is %s", self.number_of_workers, self.number_of_nodes)
         
@@ -2010,13 +2012,13 @@ class IbisChannel(AbstractMessageChannel):
         
         #if redirect = none, set output file to console stdout stream ID, otherwise make absolute
         if (self.redirect_stdout_file == 'none'):
-            self.redirect_stdout_file = IbisChannel.getStdoutID()
+            self.redirect_stdout_file = IbisChannel.getStdoutID(self.port)
         else:
             self.redirect_stdout_file = os.path.abspath(self.redirect_stdout_file)
 
         #if redirect = none, set error file to console stderr stream ID, otherwise make absolute
         if (self.redirect_stderr_file == 'none'):
-            self.redirect_stderr_file = IbisChannel.getStderrID()
+            self.redirect_stderr_file = IbisChannel.getStderrID(self.port)
         else:
             self.redirect_stderr_file = os.path.abspath(self.redirect_stderr_file)
         
@@ -2037,7 +2039,7 @@ class IbisChannel(AbstractMessageChannel):
         
         self.socket.sendall('TYPE_WORKER'.encode('utf-8'))
         
-        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers, self.number_of_nodes, self.number_of_threads], 'bool': [self.copy_worker_code]}
+        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file, self.node_label], 'int32': [self.number_of_workers, self.number_of_nodes, self.number_of_threads], 'bool': [self.copy_worker_code]}
         
         message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments);
 
