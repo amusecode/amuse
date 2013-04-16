@@ -1168,7 +1168,7 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
     def output_declare_variables(self):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
-            self.out.lf() + spec.type + ' result;'
+            self.out.lf() + spec.type + ' functionResult;'
         
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
@@ -1181,7 +1181,7 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
     def output_function_start(self):
         self.out.n() 
         if not self.specification.result_type is None:
-            self.out + 'result = '
+            self.out + 'functionResult = '
             
         self.out + 'code.' + self.specification.name + '('
 
@@ -1191,7 +1191,7 @@ class GenerateAJavaStringOfAFunctionSpecification(MakeJavaCodeString):
     def output_copy_output_variables(self):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
-            self.out.lf() + 'reply.set' + spec.output_var_name + 'Slice(0, result);'
+            self.out.lf() + 'reply.set' + spec.output_var_name + 'Slice(0, functionResult);'
 
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
