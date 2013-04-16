@@ -22,17 +22,6 @@ public class OutputForwarder extends Thread {
 
     private final Ibis ibis;
 
-    /**
-     * @param input
-     *            Input stream
-     * @param output
-     *            Stream to forward output to
-     * @param codeName
-     *            Prefix to add to all lines of output
-     * 
-     * @throws IOException
-     *             if the reading stream cannot be created.
-     */
     public OutputForwarder(InputStream input, String file, Ibis ibis) throws IOException {
         this.input = new BufferedInputStream(input);
         this.file = file;

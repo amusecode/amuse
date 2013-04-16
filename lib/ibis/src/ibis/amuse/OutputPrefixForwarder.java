@@ -14,17 +14,6 @@ public class OutputPrefixForwarder extends Thread {
 
     private final String codeName;
 
-    /**
-     * @param input
-     *            Input stream
-     * @param output
-     *            Stream to forward output to
-     * @param codeName
-     *            Prefix to add to all lines of output
-     * 
-     * @throws IOException
-     *             if the reading stream cannot be created.
-     */
     public OutputPrefixForwarder(InputStream input, PrintStream output,
             String outputPrefix) throws IOException {
         this.input = new BufferedReader(new InputStreamReader(input));

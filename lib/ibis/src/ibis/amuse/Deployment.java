@@ -201,11 +201,11 @@ public class Deployment {
     }
 
     public synchronized Job deploy(String codeName, String codeDir, String resourceName, String stdoutFile,
-            String stderrFile, String workerID, int nrOfWorkers, int nrOfNodes, int nrOfThreads, boolean copyWorkerCode)
+            String stderrFile, String workerID, int nrOfWorkers, int nrOfNodes, int nrOfThreads, boolean copyWorkerCode, String nodeLabel)
             throws Exception {
         Resource resource = null;
         logger.info("Deploying worker \"" + workerID + "\" on host " + resourceName + " with " + nrOfWorkers
-                + " workers on " + nrOfNodes + " nodes");
+                + " workers on " + nrOfNodes + " nodes with label " + nodeLabel);
 
         if (resourceName.equalsIgnoreCase("localhost")) {
             resourceName = "local";

@@ -46,8 +46,6 @@ public class CodeProxy {
             IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED, IbisCapabilities.TERMINATION, IbisCapabilities.SIGNALS,
             IbisCapabilities.CLOSED_WORLD);
 
-    private final WorkerInfo info;
-    
     private final AmuseConfigOptions amuseConfig;
 
     // collects mpi profiling data. only used if multiple nodes are used.
@@ -72,8 +70,6 @@ public class CodeProxy {
     private boolean ended = false;
 
     public CodeProxy(WorkerInfo info) throws Exception {
-        this.info = info;
-        
         this.amuseConfig = new AmuseConfigOptions(info.getAmuseHome());
 
         // hostname used for MPI

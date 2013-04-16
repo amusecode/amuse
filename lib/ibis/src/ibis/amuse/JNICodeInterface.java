@@ -46,7 +46,7 @@ public class JNICodeInterface implements CodeInterface {
     /**
      * Performs a call. Uses data from the request and result message
      * 
-     * @throws Exception
+     * @throws CodeException
      *             if the function does not exist, or any other error occurs.
      */
     public native void call() throws CodeException;

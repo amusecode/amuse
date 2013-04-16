@@ -2,7 +2,6 @@ package ibis.amuse;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
-import ibis.util.RunProcess;
 
 import java.io.File;
 import java.io.FileWriter;

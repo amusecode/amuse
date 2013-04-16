@@ -44,6 +44,8 @@ public class Worker implements Runnable, StateListener {
     private final String stdoutFile;
 
     private final String stderrFile;
+    
+    private final String nodeLabel;
 
     private final int nrOfWorkers;
 
@@ -122,6 +124,8 @@ public class Worker implements Runnable, StateListener {
         hostname = initRequest.getString(2);
         stdoutFile = initRequest.getString(3);
         stderrFile = initRequest.getString(4);
+        nodeLabel = initRequest.getString(5);
+
 
         nrOfWorkers = initRequest.getInteger(0);
         nrOfNodes = initRequest.getInteger(1);
@@ -163,7 +167,7 @@ public class Worker implements Runnable, StateListener {
         // finish initializing worker
         try {
             
-            job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes, nrOfThreads, copyWorkerCode);
+            job = deployment.deploy(codeName, codeDir, hostname, stdoutFile, stderrFile, id, nrOfWorkers, nrOfNodes, nrOfThreads, copyWorkerCode, nodeLabel);
             
             synchronized(this) {
                 this.job = job;
