@@ -91,28 +91,6 @@ if test -n "${JAVAC}"; then
   rm -rf A.java A.class
 fi])
 
-### No need for java 1.4 in AMUSE
-##AC_CACHE_CHECK([whether Java compiler works for version 1.4], [r_cv_javac14_works],
-##[r_cv_javac14_works=no
-##if test "${r_cv_javac_works}" = yes; then
-##  rm -f A.java A.class
-##  echo "public class A { }" > A.java
-##  if "${JAVAC}" -source 1.4 -target 1.4 A.java 2>&AS_MESSAGE_LOG_FD; then
-##    if test -f A.class; then
-##      r_cv_javac14_works=yes
-##    fi
-##  fi
-##  rm -rf A.java A.class
-##fi
-##])
-##
-##if test "${r_cv_javac14_works}" = yes; then
-##  JAVAC14="${JAVAC} -source 1.4 -target 1.4"
-##  BUILD_JAVA14=true
-##else
-##  BUILD_JAVA14=false
-##fi
-
 ## this is where our test-class lives (in the AMUSE support dir)
 getsp_cp=support
 
@@ -126,6 +104,7 @@ if test -n "${JAVA}" ; then
   acx_jc_result=
 fi])
 
+
 if test ${r_cv_java_works} = yes; then
   AC_CACHE_CHECK([Java environment], [r_cv_java_home], [
     ## find JAVA_HOME from Java itself unless specified
@@ -135,6 +114,13 @@ if test ${r_cv_java_works} = yes; then
     r_cv_java_home="${JAVA_HOME}"
   ])
   JAVA_HOME="${r_cv_java_home}"
+
+  AC_CACHE_CHECK([Java version], [r_cv_java_version], [
+  ## Detect the java version
+  R_RUN_JAVA(r_cv_java_version,[-classpath ${getsp_cp} getsp java.specification.version])
+
+  ])
+  JAVA_VERSION="${r_cv_java_version}"
 
   # we have Java support, detect flags
   if test -n "${JAVA_HOME}"; then
@@ -310,9 +296,8 @@ int main(void) {
 
     have_java=yes
   fi
-else  ## not r_cv_java_works
-  JAVA=
-  JAVA_HOME=
+##else  ## not r_cv_java_works
+    AC_MSG_WARN([Java not found, Java codes disabled])
 fi
 
 ## AC_SUBST(JAVA_HOME) # not needed? is precious now
@@ -324,4 +309,5 @@ AC_SUBST(JAR)
 AC_SUBST(JAVA_LD_LIBRARY_PATH)
 AC_SUBST(JAVA_LIBS)
 AC_SUBST(JAVA_FLAGS)
+AC_SUBST(JAVA_VERSION)
 ])
