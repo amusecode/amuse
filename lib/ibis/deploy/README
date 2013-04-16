@@ -1,0 +1,71 @@
+-- Ibis-Deploy README --
+
+Ibis-Deploy is a library for running Ibis applications on (remote) resources
+such as clusters, grids, clouds, etc. It is specifically designed to be as easy
+to use as possible. It can be used directly by "management" applications to
+deploy software , but it also comes with a GUI as well as a command line
+interface for end users.
+
+Library Features:
+
+- Simple Java Properties based configuration
+- Automatic deployment of the Ibis server required for most IPL based
+  applications
+- Automatic deployment of SmartSockets infrastructure on used resources
+
+CLI Features:
+
+- Automatic running of distributed experiments
+
+GUI Features:
+
+- Point-and-click interface for running possibly world-wide experiments
+- Visualization of available resources on a world map
+- Visualization of (smartsockets) network information
+
+-- Ibis-Deploy Concepts --
+
+Cluster: A collection of nodes, with a front-end E.g. the VU DAS-3 Cluster, the
+Desktop-grid at the VU, and the Amazon EC2 cloud.
+
+Grid: A collection of clusters. Grids act as a container format for cluster,
+and can be specified in a grid file. (see the examples directory)
+
+Application: A Java application (which normally uses the IPL).
+
+ApplicationSet: Collection of Applications. the ApplicationSet is a container
+format for applications, and can be specified in an "applications" file. (see
+the examples directory)
+
+Job: An application running on a number of nodes of a certain cluster. Each job
+has a status (SUBMITTED, RUNNING, DONE, ERROR, etc) which can be used to track
+the status of a job.
+
+JobDescription: Specification of a job. Note the difference with Job, which
+represents a _running_ job.
+
+Experiment: A number of jobs running concurrently. Can be represented by an
+".experiment" file.
+
+Workspace: A number of experiments, running a certain ApplicationSet on a
+certain Grid. Container of a list of Experiments, a Grid and an ApplicationSet.
+Represented by a directory, containing files for each. Note that the
+Ibis-Deploy GUI only supports a single experiment per workspace.
+
+-- Compiling --
+
+Ibis-Deploy comes with an ant build file (build.xml). Compile with "ant" in the
+root directory of Ibis-Deploy.
+
+-- Running Ibis-Deploy --
+
+Running Ibis-Deploy can be done with either the "ibis-deploy-gui" or the
+"ibis-deploy-cli" script in the bin directory. Both assume the
+current working directory is the root of Ibis-Deploy:
+
+localhost:ibis-deploy-root$ bin/ibis-deploy-gui
+localhost:ibis-deploy-root$ bin/ibis-deploy-cli
+
+Alternatively, the DEPLOY_HOME environment variable can be used to override the location of Ibis-Deploy.
+
+Please run either application with the "--help" option for command line options.

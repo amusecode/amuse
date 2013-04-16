@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Implementation-Title: NEWT Runtime Environment
+Implementation-Version: 2.0-b23-20110303
+Specification-Vendor: JogAmp Community
+Created-By: 1.6.0_24-b07 (Sun Microsystems Inc.)
+Implementation-URL: http://jogamp.org/
+Ant-Version: Apache Ant 1.8.2
+Implementation-Commit: bcf5d6ac871a29398b441df617923d3dd2cf35c1
+Implementation-Vendor: JogAmp Community
+Trusted-Library: true
+Implementation-Vendor-Id: com.jogamp
+Specification-Title: NEWT API Specification
+Implementation-Branch: rc
+Specification-Version: 2.0
+Extension-Name: com.jogamp.newt
+
+Name: newt.dll
+SHA1-Digest: y3qLkrc/0ZoRI3AZsIVHSlRTCTw=
+
