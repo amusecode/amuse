@@ -791,6 +791,16 @@ class VectorQuantity(Quantity):
             (self.unit * other.unit).to_simple_form()
         )
 
+    def dot(self, other,out=None):
+        """
+        Return the dot product of this vector quantity with the supplied vector (quantity).
+        """
+        other = to_quantity(other)
+        return new_quantity_nonone(
+            numpy.dot(self.number, other.number,out=out), 
+            (self.unit * other.unit).to_simple_form()
+        )
+
 
     def tanh(self, out = None):
         if not self.unit.is_none():
