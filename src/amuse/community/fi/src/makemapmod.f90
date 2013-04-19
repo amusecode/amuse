@@ -256,7 +256,7 @@ end subroutine
     
   size=CEILING(2*maxx*hsmooth/dx)+2
   if(2*maxx*hsmooth.LE.sqrt2*dx) size=3
-    
+  
   if(size.le.nx.AND.size.le.ny) then
 
    call positionp(i,j,offset,pos,hsmooth)
@@ -374,10 +374,10 @@ end subroutine
   real x,y
   x=pos(1) ; y=pos(2)
     
-  i=FLOOR((x-maxx*hsmooth+xsize/2.)/dx)-1
-  j=FLOOR((y-maxx*hsmooth+ysize/2.)/dx)-1
-  offset(1)=(x-maxx*hsmooth+xsize/2.)-(i+1)*dx
-  offset(2)=(y-maxx*hsmooth+ysize/2.)-(j+1)*dx
+  i=FLOOR((x-maxx*hsmooth+xsize/2.)/dx)!-1
+  j=FLOOR((y-maxx*hsmooth+ysize/2.)/dx)!-1
+  offset(1)=(x-maxx*hsmooth+xsize/2.)-(i)*dx !(i+1)
+  offset(2)=(y-maxx*hsmooth+ysize/2.)-(j)*dx !(j+1)
  end subroutine
 
 subroutine InitStarMap
