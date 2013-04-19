@@ -213,6 +213,22 @@ function set_particle_state(id,m,x,y,z,r,o) result(ret)
   ret=0
  end function
 
+function set_particle_weight(id,m) result(ret)
+  integer ret
+  integer id,index
+  real :: m
+
+  index=map_find_particle(id,nbod,pindex)
+  if(index.LT.0) then
+    ret=index
+    return
+  endif  
+
+  mass(index)=m
+   
+  ret=0
+end function
+
 function get_particle_state(id,m,x,y,z,r,o) result(ret)
   integer ret
   integer id,index

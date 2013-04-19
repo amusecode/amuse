@@ -31,19 +31,25 @@ function erase_map() result(ret)
   ret=0
 end function    
 
-function new_particle(id,m,x,y,z,r,o,i) result(ret)
+function new_particle(id,x,y,z,m,r,o,i) result(ret)
   integer :: ret,i,id
   real :: m,x,y,z,r,o
   ret=add_particle(id,m,x,y,z,r,o,i)
 end function
 
-function set_state(id,m,x,y,z,r,o) result(ret)
+function set_state(id,x,y,z,m,r,o) result(ret)
   integer :: ret,id
   real :: m,x,y,z,r,o
   ret=set_particle_state(id,m,x,y,z,r,o)
 end function
 
-function get_state(id,m,x,y,z,r,o) result(ret)
+function set_weight(id,m) result(ret)
+  integer :: ret,id
+  real :: m
+  ret=set_particle_weight(id,m)
+end function
+
+function get_state(id,x,y,z,m,r,o) result(ret)
   integer :: ret,id
   real :: m,x,y,z,r,o
   ret=get_particle_state(id,m,x,y,z,r,o)

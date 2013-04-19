@@ -3283,11 +3283,12 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['weight','x','y','z']:
+        for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('weight', dtype='d', direction=function.IN, default = 1.)
         function.addParameter('radius', dtype='d', direction=function.IN, default = 0.)
         function.addParameter('opacity_area', dtype='d', direction=function.IN, default = 0.)
-        function.addParameter('index', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('index', dtype='i', direction=function.IN, default = -1)
         function.result_type = 'i'
         return function
 
@@ -3296,10 +3297,20 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['weight','x','y','z']:
+        for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('weight', dtype='d', direction=function.IN, default = 1.)
         function.addParameter('radius', dtype='d', direction=function.IN, default = 0.)
         function.addParameter('opacity_area', dtype='d', direction=function.IN, default = 0.)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_weight():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('weight', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -3308,8 +3319,9 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['weight','x','y','z']:
+        for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('weight', dtype='d', direction=function.OUT)
         function.addParameter('radius', dtype='d', direction=function.OUT)
         function.addParameter('opacity_area', dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -3553,10 +3565,10 @@ class FiMap(CommonCode):
         object.add_method(
              'new_particle', 
               (
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
                 object.NO_UNIT,
-                generic_unit_system.length,
-                generic_unit_system.length,
-                generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length**2,
                 object.NO_UNIT,                
@@ -3569,13 +3581,23 @@ class FiMap(CommonCode):
         object.add_method(
              'set_state', 
               (
-                object.INDEX,                    
+                object.INDEX,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
                 object.NO_UNIT,
                 generic_unit_system.length,
-                generic_unit_system.length,
-                generic_unit_system.length,
-                generic_unit_system.length,
                 generic_unit_system.length**2,
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
+             'set_weight', 
+              (
+                object.INDEX,                    
+                object.NO_UNIT,
               ), 
               (
                 object.ERROR_CODE,
@@ -3587,10 +3609,10 @@ class FiMap(CommonCode):
                 object.INDEX,
               ), 
               (
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
                 object.NO_UNIT,
-                generic_unit_system.length,
-                generic_unit_system.length,
-                generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length**2,
                 object.ERROR_CODE,
@@ -3725,6 +3747,7 @@ class FiMap(CommonCode):
         object.set_new('particles', 'new_particle')
         object.set_delete('particles', 'delete_particle')
         object.add_setter('particles', 'set_state')
+        object.add_setter('particles', 'set_weight')
         object.add_getter('particles', 'get_state')
 
 
@@ -3928,15 +3951,16 @@ class FiMap(CommonCode):
         
         object.add_transition('INITIALIZED','PREPROJ','commit_parameters')
         object.add_transition('PREPROJ','PROJ','init_map')
-        object.add_transition('PROJ','IMAGE','generate_projection')
+        object.add_transition('PROJ','ERASE','erase_map')
+        object.add_transition('ERASE','IMAGE','generate_projection')
         object.add_transition('IMAGE','PROJ','new_particle',False)        
         object.add_transition('IMAGE','PROJ','delete_particle',False)        
-        object.add_transition('IMAGE','PROJ','set_state',False)        
+        object.add_transition('IMAGE','PROJ','set_state',False)
+        object.add_transition('IMAGE','PROJ','set_weight',False)
         object.add_transition('PROJ','INITIALIZED','reset_map')
         object.add_transition('IMAGE','INITIALIZED','reset_map')
         object.add_method('IMAGE','get_image')
         object.add_method('IMAGE','get_opdepth_map')
-        object.add_method('IMAGE','erase_map')
         
         object.add_method('INITIALIZED', 'before_set_parameter')  
         object.add_method('PROJ', 'before_get_parameter')
