@@ -242,8 +242,6 @@ class CustomPrintingStrategy(PrintingStrategyWithPreferredUnits):
 
 
 def _quantity_in_preferred_units(preferred_units, quantity):
-    if quantity.unit in preferred_units:
-        return quantity
     for preferred_unit in preferred_units:
         if quantity.unit.has_same_base_as(preferred_unit):
             return quantity.as_quantity_in(preferred_unit)
