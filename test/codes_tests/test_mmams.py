@@ -1048,7 +1048,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
             MakeMeAMassiveStar, 
             collision_code_parameters = dict(
                 target_n_shells = 100, 
-                dump_mixed_flag = False, 
+                target_n_shells_mixing = 100, 
                 do_shock_heating_flag = False
             ),
             stellar_evolution_code = stellar_evolution,
@@ -1057,7 +1057,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         
         merged = handler.handle_collision(stellar_evolution.particles[0], stellar_evolution.particles[1])
         self.assertTrue(isinstance(merged, Particles))
-        self.assertTrue(merged.number_of_zones > 100)
+        self.assertTrue(merged.number_of_zones > 50)
         self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
         self.assertEqual(len(stellar_evolution.particles), 1)
         self.assertAlmostEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
@@ -1086,6 +1086,8 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertAlmostEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
         self.assertEqual(handler.collision_code.__class__, MakeMeAMassiveStar)
         self.assertEqual(handler.collision_code.get_name_of_current_state(), 'INITIALIZED')
+        collision.stop()
+        self.assertEqual(handler.collision_code.get_name_of_current_state(), 'STOPPED')
     
     def test4(self):
         print "Test 4: merge particles without get_mass_profile, as fast/crude as possible"

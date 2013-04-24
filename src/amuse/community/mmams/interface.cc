@@ -215,11 +215,12 @@ int merge_two_stars(int *id_product, int id_primary, int id_secondary) {
     results.insert(results.end(), std::pair<long long, mmas*>(particle_id_counter, mmams));
     
     mmams->merge_stars_consistently(target_n_shells, flag_do_shock_heating);
-    mmams->mixing_product(target_n_shells_mixing);
     if (!dump_mixed) {
-        usm_models.insert(--usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_product())));
+        usm_models.insert(usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_product())));
     } else {
-        usm_models.insert(--usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_mixed_product())));
+        mmams->mixing_product(target_n_shells_mixing);
+        mmams->get_mixed_product().star_mass = mmams->get_product().star_mass;
+        usm_models.insert(usm_models.end(), std::pair<long long, usm*>(particle_id_counter, &(mmams->get_mixed_product())));
     }
     *id_product = particle_id_counter;
     number_of_particles++;
