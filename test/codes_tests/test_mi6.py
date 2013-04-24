@@ -528,7 +528,7 @@ class TestMI6(TestWithMPI):
         print "Testing MI6 collision_detection"
         particles = Particles(7)
         particles.mass = 0.00000001 | nbody_system.mass
-        particles.radius = 0.01 | nbody_system.length
+        particles.radius = 0.0001 | nbody_system.length
         particles.x = [-101.0, -100.0, -0.5, 0.5, 100.0, 101.0, 104.0] | nbody_system.length
         particles.y = 0 | nbody_system.length
         particles.z = 0 | nbody_system.length
@@ -543,7 +543,7 @@ class TestMI6(TestWithMPI):
         instance.evolve_model(1.0 | nbody_system.time)
         
         self.assertTrue(collisions.is_set())
-        self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
+        self.assertAlmostEquals(instance.model_time, -(particles[0].x-particles[1].x)/(particles[0].vx-particles[1].vx), 3)
         self.assertEquals(len(collisions.particles(0)), 3)
         self.assertEquals(len(collisions.particles(1)), 3)
         self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
@@ -568,7 +568,7 @@ class TestMI6(TestWithMPI):
         print instance.model_time
         print instance.particles
         self.assertTrue(collisions.is_set())
-        self.assertTrue(instance.model_time < 1.0 | nbody_system.time)
+        self.assertAlmostEquals(instance.model_time, -(particles[6].x-0.5*(particles[4].x+particles[5].x))/particles[6].vx, 3)
         self.assertEquals(len(collisions.particles(0)), 1)
         self.assertEquals(len(collisions.particles(1)), 1)
         self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 2)

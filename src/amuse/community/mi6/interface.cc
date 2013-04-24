@@ -225,6 +225,7 @@ int commit_particles() {
         prt[i].radius = (*iter).second.radius;
         prt[i].pos = Vector3((*iter).second.x, (*iter).second.y, (*iter).second.z);
         prt[i].vel = Vector3((*iter).second.vx, (*iter).second.vy, (*iter).second.vz);
+        prt[i].time = current_time;
         prt[i].index = i;
         prt[i].address = i;
     }
@@ -258,7 +259,7 @@ int commit_particles() {
         address_old[i] = address[i];
     }
     
-    E0, Ek0, Ep0;
+    Tmerge = current_time;
     calc_energy(prt, address, Nip_tot, E0, Ek0, Ep0, 0);
     E1 = E0;
     Ek1 = Ek0;
@@ -314,12 +315,12 @@ void push_particle_data_back_to_buffer(){
         dynamics_state state;
         state.mass = prt[i].mass;
         state.radius = prt[i].radius;
-        state.x = prt[i].pos[0];
-        state.y = prt[i].pos[1];
-        state.z = prt[i].pos[2];
-        state.vx = prt[i].vel[0];
-        state.vy = prt[i].vel[1];
-        state.vz = prt[i].vel[2];
+        state.x = prt[i].pos_pre[0];
+        state.y = prt[i].pos_pre[1];
+        state.z = prt[i].pos_pre[2];
+        state.vx = prt[i].vel_pre[0];
+        state.vy = prt[i].vel_pre[1];
+        state.vz = prt[i].vel_pre[2];
         particle_buffer.insert(pair<int, dynamics_state>(iter->first, state));
     }
     local_index_map.clear();
@@ -979,10 +980,13 @@ int commit_parameters() {
     set_eta(eta_s, eta_fs, eta_smbh, eta_imbh);
     current_time = begin_time;
     Tsys = begin_time;
+    Tmerge = begin_time;
     return 0;
 }
 int recommit_parameters() {
-    return commit_parameters();
+    set_eps2(eps2_fs_fs, eps2_fs_smbh, eps2_bh_bh);
+    set_eta(eta_s, eta_fs, eta_smbh, eta_imbh);
+    return 0;
 }
 
 
