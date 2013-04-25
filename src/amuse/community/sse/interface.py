@@ -103,8 +103,8 @@ class SSEParticles(Particles):
         Particles.__init__(self, storage = storage)
         self._private.code_interface = code_interface 
         self.add_calculated_attribute("temperature", self.calculate_effective_temperature, ["luminosity", "radius"])
-        self.add_function_attribute("evolve_one_step",self.evolve_one_step,self.evolve_one_step)
-        self.add_function_attribute("evolve_for",self.evolve_for,self.evolve_for)
+        self.add_function_attribute("evolve_one_step", self.particleset_evolve_one_step, self.evolve_one_step)
+        self.add_function_attribute("evolve_for", self.particleset_evolve_for, self.evolve_for)
     
     def calculate_effective_temperature(self, luminosity, radius):
         return ((luminosity/(constants.four_pi_stefan_boltzmann*radius**2))**.25).in_(units.K)
@@ -152,10 +152,16 @@ class SSEParticles(Particles):
     
     def evolve_one_step(self, particles, subset):
         self._private.code_interface._evolve_particles(subset.as_set(), subset.age + subset.time_step)
-
+    
+    def particleset_evolve_one_step(self, particles):
+        self._private.code_interface._evolve_particles(particles, particles.age + particles.time_step)
+    
     def evolve_for(self, particles, subset, delta_time):
         self._private.code_interface._evolve_particles(subset.as_set(), subset.age + delta_time)
-        
+    
+    def particleset_evolve_for(self, particles, delta_time):
+        self._private.code_interface._evolve_particles(particles, particles.age + delta_time)
+    
     
     def get_defined_attribute_names(self):
         return ["mass", "radius"]

@@ -564,8 +564,8 @@ class TestSSE(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
         print "ok"
 
-    def test14(self):
-        print "Testing basic operations: evolve_one_step and evolve_for"
+    def test14a(self):
+        print "Testing basic operations: evolve_one_step and evolve_for (on particle)"
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
         instance = SSE()
@@ -579,6 +579,29 @@ class TestSSE(TestWithMPI):
         step_size = se_stars[0].age / number_of_steps
         for i in range(1, number_of_steps + 1):
             se_stars[1].evolve_for(step_size)
+            self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
+        print se_stars
+        self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
+        self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].temperature, se_stars[1].temperature, 3)
+        instance.stop()
+    
+    def test14b(self):
+        print "Testing basic operations: evolve_one_step and evolve_for (on subset)"
+        stars = Particles(2)
+        stars.mass = 1.0 | units.MSun
+        instance = SSE()
+        se_stars = instance.particles.add_particles(stars)
+        self.assertAlmostEqual(se_stars.age, [0.0, 0.0] | units.yr)
+        
+        for i in range(3):
+            se_stars[:1].evolve_one_step()
+        self.assertAlmostEqual(se_stars.age, [1650.46953688, 0.0] | units.Myr, 3)
+        number_of_steps = 10
+        step_size = se_stars[0].age / number_of_steps
+        for i in range(1, number_of_steps + 1):
+            se_stars[1:].evolve_for(step_size)
             self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
         print se_stars
         self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
