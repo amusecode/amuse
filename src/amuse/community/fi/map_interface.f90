@@ -31,6 +31,12 @@ function erase_map() result(ret)
   ret=0
 end function    
 
+function cleanup_code() result(ret)
+  integer :: ret
+  call map_reset()
+  ret=0
+end function
+
 function new_particle(id,x,y,z,m,r,o,i) result(ret)
   integer :: ret,i,id
   real :: m,x,y,z,r,o

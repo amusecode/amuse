@@ -3253,6 +3253,13 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
+
+    @legacy_function    
+    def cleanup_code():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
+
   
     @legacy_function    
     def generate_projection():
