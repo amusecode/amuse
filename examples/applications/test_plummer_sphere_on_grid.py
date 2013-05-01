@@ -313,7 +313,6 @@ class CalculateSolutionIn3D(object):
         result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.3
-        result.set_four_pi_G( 4.0 * pi ) # G == 1
         result.set_grav_mean_rho(self.rho_mean.value_in(density))
         return result
         

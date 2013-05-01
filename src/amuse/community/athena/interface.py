@@ -436,11 +436,16 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
 
     def get_gamma(self):
         return self.par_getd("problem", "gamma"), 0
-    
+        
+    def get_four_pi_G(self):
+        return self.par_getd("problem", "four_pi_G"), 0
+        
     def get_courant_friedrichs_lewy_number(self):
         return self.par_getd("time", "cour_no"), 0
-    
-
+        
+    def get_grav_mean_rho(self):
+        return self.par_getd("problem", "grav_mean_rho"), 0
+        
     @legacy_function
     def get_grid_gravitational_potential():
         function = LegacyFunctionSpecification()
@@ -842,6 +847,27 @@ class Athena(CommonCode):
         )
     
         object.add_method(
+            'set_four_pi_G',
+            ( length**3 / (mass * time**2)),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_four_pi_G',
+            (),
+            ( (length**3) / (mass * (time**2)), object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_grav_mean_rho',
+            (  mass / length**3, ),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_grav_mean_rho',
+            (),
+            (mass / length**3, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
             'setup_mesh',
             (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, length, length, length,),
             (object.ERROR_CODE,)
@@ -1003,6 +1029,25 @@ class Athena(CommonCode):
             default_value = 1.6666666666666667,
             must_set_before_get = True
         )
+        
+        object.add_method_parameter(
+            "get_four_pi_G", 
+            "set_four_pi_G",
+            "four_pi_G", 
+            "value of four times pi time G", 
+            default_value = 4 * numpy.pi * (1| (length**3) / (mass * (time**2))),
+            must_set_before_get = True
+        )
+        
+        object.add_method_parameter(
+            "get_grav_mean_rho", 
+            "set_grav_mean_rho",
+            "gravity_mean_rho", 
+            "define the mean density in the field for self gravity calulations", 
+            default_value = 0 | mass / length ** 3,
+            must_set_before_get = True
+        )
+        
         
         object.add_method_parameter(
             "get_courant_friedrichs_lewy_number", 

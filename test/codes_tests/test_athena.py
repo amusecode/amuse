@@ -1630,16 +1630,17 @@ class TestAthena(TestWithMPI):
         instance.parameters.gamma = 5/3.0
         instance.parameters.courant_number=0.3
         
-        instance.set_four_pi_G( 4 * numpy.pi ) # G = 1, like nbody
-        instance.set_grav_mean_rho(0.0)
+        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+        
+        
+        instance.parameters.four_pi_G =  4 * numpy.pi * (1|(generic_unit_system.length**3) / (generic_unit_system.mass * (generic_unit_system.time**2))) # G = 1, like nbody
+        instance.parameters.gravity_mean_rho = 0.0 | density
         
 
         datamodel.Grid.add_global_vector_attribute("position", ["x","y","z"])
         n = 10
-        
-        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
-        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
-        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
         
         instance.parameters.nx = n
         instance.parameters.ny = n

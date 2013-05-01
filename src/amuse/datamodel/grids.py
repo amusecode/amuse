@@ -196,6 +196,21 @@ class Grid(AbstractGrid):
         else:
             return SubGrid(self, index)
     
+    def iter_cells(self):
+        shape = numpy.asarray(self.shape)
+        
+        index = 0 * shape
+        
+        while index[0] < shape[0]:
+            yield self._get_gridpoint(tuple(index))
+            
+            index[-1] += 1
+            for i in range(len(self.shape) - 1, 0, -1):
+                if index[i] >= shape[i]:
+                    index[i] = 0
+                    index[i-1] += 1
+            
+                
     def _get_gridpoint(self, index):
         return GridPoint(index, self)
         
@@ -614,7 +629,6 @@ class NonOverlappingGridsIndexer(object):
         for x in self.grids[1:]:
             minimum = x.get_minimum_position()
             result = result.minimum(minimum)
-        print result
         return result
         
     def setup_index(self):

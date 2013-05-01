@@ -335,6 +335,26 @@ class TestGrids(amusetest.TestCase):
         #self.assertEquals(grid[0][1][1].particle, None)
 
 
+    def test25(self):
+        grid = datamodel.Grid(5,4,3)
+        grid.mass = 2.0 | units.kg
+        for cell in grid.iter_cells():
+            self.assertEquals(cell.mass, 2.0 | units.kg)
+    
+    def test26(self):
+        
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+    
+        xv, yv, zv = numpy.mgrid[0:5,0:4,0:2]
+        xv = xv.flatten()
+        yv = yv.flatten()
+        zv = zv.flatten()
+        i = 0
+        for cell in grid.iter_cells():
+            expected_position = grid[xv[i], yv[i], zv[i]].position
+            self.assertEquals(cell.position, expected_position)
+            i += 1
+            
 class TestGridAttributes(amusetest.TestCase):
     
     def test1(self):
