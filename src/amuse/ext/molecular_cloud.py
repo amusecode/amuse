@@ -57,7 +57,7 @@ def random_field(nf=32, power=-3., seed=None):
     fj=fj.flatten()
     fk=fk.flatten()
     
-    norm=-numpy.log(numpy.random.uniform(0.,1.,len(fi)))*(fi**2+fj**2+fk**2+1.e-30)**(power/4)
+    norm=-numpy.log(numpy.random.uniform(0.,1.,len(fi)))*(fi**2+fj**2+fk**2+1.e-30)**(power/4.)
     phase=numpy.random.uniform(0.,1.,len(fi))*2*numpy.pi
     vi=norm*numpy.exp(phase*1j)
 
@@ -209,8 +209,6 @@ class molecular_cloud(object):
         vy=vy*vfac
         vz=vz*vfac
         Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
-        print self.internalE/Ep
-        print Ek/Ep
 
         internal_energy=numpy.ones_like(x)*self.internalE
       
