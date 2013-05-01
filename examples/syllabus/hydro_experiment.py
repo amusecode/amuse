@@ -22,15 +22,12 @@ def main(Mstar = 1|units.MSun,
 
     mm = Mdisk/float(Ndisk)
     Nbump = Mbump/mm
-    print "Nbump=", Mbump, Rbump, Nbump
-    print "Mass =", Mstar, Mdisk, bodies.mass.sum().in_(units.MSun), bodies.mass.sum()/Mstar
     bump = new_plummer_gas_model(Nbump, convert_nbody=nbody_system.nbody_to_si(Mbump, Rbump))
 
     bump.x += abump
     r_bump = abump 
     inner_particles = bodies.select(lambda r: (com-r).length()<abump,["position"])
     M_inner = inner_particles.mass.sum() + Mstar
-
     v_circ = (constants.G*M_inner*(2./r_bump - 1./abump)).sqrt().value_in(units.kms)
     bump.velocity += [0, v_circ, 0] | units.kms
     bodies.add_particles(bump)
@@ -43,7 +40,6 @@ def main(Mstar = 1|units.MSun,
 
     import math
     P_bump = (abump**3*4*math.pi**2/(constants.G*(Mbump+Mstar))).sqrt()
-    print "Pbump=", P_bump.in_(units.yr)
     t_end *= P_bump
 
     hydro = Gadget2(converter)

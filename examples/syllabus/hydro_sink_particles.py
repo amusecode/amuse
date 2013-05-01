@@ -1,23 +1,19 @@
 from amuse.lab import *
 
 def hydro_sink_particles(sinks, bodies):
-
     all_lost_particles = Particles()
     for s in sinks:
         xs,ys,zs=s.x,s.y,s.z
         radius_squared = s.radius**2
         insink=bodies.select_array(lambda x,y,z: (x-xs)**2+(y-ys)**2+(z-zs)**2 < radius_squared,['x','y','z'])  
-        print "Ninsink=", len(insink)
         if len(insink)==0:
             return insink
 
         cm=s.position*s.mass
-        print "sink=", s.position, s.mass, cm
         p=s.velocity*s.mass
         s.mass+=insink.total_mass()
         s.position=(cm+insink.center_of_mass()*insink.total_mass())/s.mass
         s.velocity=(p+insink.total_momentum())/s.mass
-        print "insinkstar=", s.mass, s.position, s.velocity
         all_lost_particles.add_particles(insink)
     return all_lost_particles
 

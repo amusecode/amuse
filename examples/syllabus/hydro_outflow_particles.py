@@ -40,7 +40,6 @@ def v_terminal_teff(star):
   return (30 | units.km/units.s) + ((4000 | units.km/units.s)*t4)
 
 def main():
-
     stars = Particles(2)
     stars.mass = (9.5, 10) | units.MSun
     stars[0].position = (1, 0, 0) | units.AU
@@ -77,11 +76,6 @@ def main():
     if len(bodies)>0:
         hydro.gas_particles.add_particles(bodies)
     hydro.parameters.use_hydro_flag=True
-#    hydro.parameters.radiation_flag=False
-#    hydro.parameters.self_gravity_flag=True
-#    hydro.parameters.integrate_entropy_flag=False
-#    hydro.parameters.gamma=1.
-#    hydro.parameters.isothermal_flag=True
     hydro.parameters.timestep=dt
     hydro.parameters.periodic_box_size = 1000*a
     hydro_to_framework = hydro.gas_particles.new_channel_to(bodies)

@@ -9,13 +9,6 @@ set_printing_strategy("custom",
                       precision = 6, prefix = "", 
                       separator = " [", suffix = "]")
 
-def calculate_core_mass(star, H_abundance_limit=1.0e-9):
-    number_of_zones = star.get_number_of_zones()
-    composition = star.get_chemical_abundance_profiles(number_of_zones = number_of_zones)
-    index = (composition[0]>H_abundance_limit).nonzero()[0][0] 
-    mass = (star.get_cumulative_mass_profile(number_of_zones = number_of_zones) * star.mass)[index]
-    return mass[0]
-
 def calculate_zeta(star, z, dmdt):
     stellar = MESA()
     stellar.parameters.metallicity = z
@@ -23,7 +16,6 @@ def calculate_zeta(star, z, dmdt):
     stellar.commit_particles()
     rold = star.radius
     star.mass_change = dmdt
-#    dm = dmdt*star.time_step
     dm = 0.01*star.mass
     star.time_step = dm/dmdt
     stellar.particles.evolve_one_step()
@@ -47,8 +39,7 @@ def main(Mstar, z, dmdt):
         channel_to_framework.copy_attributes(copy_argument)
         star = stellar.particles.copy() 
         zeta = calculate_zeta(star, z, dmdt)
-        Mcore = calculate_core_mass(stellar.particles[0])
-        print "Zeta=", zeta[0], bodies[0].age, bodies[0].mass, bodies[0].radius, Mcore, dmdt, bodies[0].stellar_type
+        print "Zeta=", zeta[0], bodies[0].age, bodies[0].mass, bodies[0].radius, dmdt, bodies[0].stellar_type
 
     stellar.stop()
     

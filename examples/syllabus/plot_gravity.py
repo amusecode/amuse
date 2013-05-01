@@ -28,11 +28,9 @@ def main(filename, lim):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-f", dest="filename", default = "gravity.hdf5",
-                      help="output filename [gravty.hdf5]")
+    result.add_option("-f", dest="filename", default = "gravity.hdf5", help="output filename [gravty.hdf5]")
     result.add_option("-l", unit=units.kpc, 
-                      dest="lim", type="float", default = -1|units.kpc,
-                      help="axis length [1000] %unit")
+                      dest="lim", type="float", default = -1|units.kpc, help="axis length [1000] %unit")
     return result
 
 if __name__ in ('__main__', '__plot__'):

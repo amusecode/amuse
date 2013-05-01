@@ -9,7 +9,7 @@ def main(N=10, W0=7.0, t_end=10):
     bodies = new_king_model(N, W0)
     bodies.scale_to_standard()
 
-    gravity = ph4()
+    gravity = Hermite()
     gravity.particles.add_particles(bodies)
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     gravity.evolve_model(t_end)
@@ -25,12 +25,9 @@ def main(N=10, W0=7.0, t_end=10):
 def new_option_parser():
     from optparse import OptionParser
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int",default = 100,
-                      help="number of stars [10]")
-    result.add_option("-t", dest="t_end", type="float", default = 1,
-                      help="end time of the simulation [1] N-body units")
-    result.add_option("-W", dest="W0", type="float", default = 7.0,
-                      help="Dimension-less depth of the potential (W0) [7.0]")
+    result.add_option("-N", dest="N", type="int",default = 100, help="number of stars [%default]")
+    result.add_option("-t", dest="t_end", type="float", default = 1, help="end time of the simulation [%default] N-body units")
+    result.add_option("-W", dest="W0", type="float", default = 7.0, help="Dimension-less depth of the potential (W0) [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):

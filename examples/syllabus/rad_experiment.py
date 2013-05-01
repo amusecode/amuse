@@ -67,7 +67,7 @@ def read_disk_with_bump(image_id=1, filename="hydro.hdf5"):
             com = si.center_of_mass()
             return si
 
-def irradiate_disk_with_pump(Mstar = 10|units.MSun, tstar = 20|units.Myr, Ndisk=100, Mdisk=0.9|units.MSun,  Rmin=1.0|units.AU, Rmax=100.0|units.AU,  Mbump=0.1|units.MSun,Rbump=10.0|units.AU, abump=10|units.AU, t_end=10|units.yr, n_steps=10, filename = None, image_id=1):
+def irradiate_disk_with_bump(Mstar = 10|units.MSun, tstar = 20|units.Myr, Ndisk=100, Mdisk=0.9|units.MSun,  Rmin=1.0|units.AU, Rmax=100.0|units.AU,  Mbump=0.1|units.MSun,Rbump=10.0|units.AU, abump=10|units.AU, t_end=10|units.yr, n_steps=10):
     dt = t_end/float(n_steps)
 
     stellar = SeBa()
@@ -250,5 +250,5 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
-    irradiate_disk_with_pump(**o.__dict__)
+    irradiate_disk_with_bump(**o.__dict__)
 

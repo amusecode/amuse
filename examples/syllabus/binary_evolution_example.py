@@ -7,7 +7,6 @@ from amuse.units import units
 from amuse.units import quantities
 from amuse import datamodel
 from amuse.community.seba.interface import SeBa
-from amuse.community.bse.interface import BSE
 from matplotlib import pyplot
 
 import numpy
@@ -21,10 +20,7 @@ def create_double_star(Mprim, Msec, a, e):
     primary_stars   = stars.add_particles(primary_stars)
     secondary_stars = stars.add_particles(secondary_stars)
         
-    double_star = datamodel.Particles(
-        semi_major_axis = a,
-        eccentricity    = e
-        )
+    double_star = datamodel.Particles(semi_major_axis = a, eccentricity = e)
     double_star.child1 = list(primary_stars)
     double_star.child2 = list(secondary_stars)
     return double_star, stars
@@ -35,7 +31,6 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     time = 0|units.Myr
     time_step = end_time/n_steps
 
-#    code = BSE()
     code = SeBa()
     code.particles.add_particles(stars)
     code.binaries.add_particles(double_star)
@@ -43,7 +38,6 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     channel_from_code_to_model_for_binaries = code.binaries.new_channel_to(double_star)
     channel_from_code_to_model_for_stars = code.particles.new_channel_to(stars)
     
-    print "start evolving..."
     t = []
     a = []
     e = []
@@ -67,7 +61,6 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     fta.plot(t, 3)
     fta.ylabel('eccentricity')
     pyplot.show()
-
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser

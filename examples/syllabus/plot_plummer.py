@@ -6,7 +6,7 @@ from amuse.plot import scatter, xlabel, ylabel
 from amuse.lab import new_plummer_model
 
 def main(N=10): 
-    figure(figsize=(10,10))
+    figure(figsize=(5,5))
     bodies = new_plummer_model(N)
     scatter(bodies.x, bodies.y)
     xlim(-1, 1)
