@@ -131,7 +131,7 @@ class InstallPrerequisites(object):
             ['gmp'],                    #names of prerequisites
             '3.1.1' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
-            'http://mpfr.loria.fr/mpfr-3.1.1/', #download url, filename is appended
+            'http://ftp.gnu.org/gnu/mpfr/', #download url, filename is appended
             self.mpfr_build             #method to use for building
           ) ,
         ]
