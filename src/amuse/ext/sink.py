@@ -88,7 +88,8 @@ class SinkParticles(ParticlesOverlay):
     def add_sink(self, particle):
         self.add_sinks(particle.as_set())
     
-    def accrete(self, particles):
+    def accrete(self, orgparticles):
+        particles=orgparticles.copy()
         others = (particles - self.get_intersecting_subset_in(particles))
         too_close = []
         for pos, r_squared in zip(self.position, self.sink_radius**2):
@@ -124,7 +125,7 @@ class SinkParticles(ParticlesOverlay):
             self.velocity = corrected_velocities
             self.angular_momentum = corrected_angular_momenta
             
-            particles.remove_particles(all_too_close)
+            orgparticles.remove_particles(all_too_close)
     
     def resolve_duplicates(self, too_close, particles):
         # Find the particles that are within more than one sink's radius
