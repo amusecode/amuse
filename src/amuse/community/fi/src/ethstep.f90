@@ -111,12 +111,15 @@ end subroutine
 
 subroutine extraprho(dt)
   include 'globals.h'
-  real dt
+  real dt,hsmfac
   integer p
-!$omp parallel do shared(dt) private(p)
+!$omp parallel do shared(dt) private(p,hsmfac)
   do p=1,nsph
     rho(p)=rho(p)*exp(-hsmdivv(p)/hsmooth(p)*dt)
-    hsmooth(p)=hsmooth(p)*exp(hsmdivv(p)/hsmooth(p)*dt/3)
+    hsmfac=exp(hsmdivv(p)/hsmooth(p)*dt/3)
+    hsmooth(p)=hsmooth(p)*hsmfac
+    hsmdivv(p)=hsmdivv(p)*hsmfac
+    hsmcurlv(p)=hsmcurlv(p)*hsmfac
   enddo
 end subroutine
 
@@ -132,7 +135,7 @@ subroutine extrapeth(dt)
  integer p,i,imax,j,jmax
  real dt,eth,deth,drad,lerad,lhe
  real l_eradiate,l_snheat,l_efuvheat,l_eradcool
- real ethtoent
+ real ethtoent,hsmfac
  real time1,time2,mintime,maxtime,tottime
 				
   imax=0
@@ -142,7 +145,7 @@ subroutine extrapeth(dt)
   tottime=0.
 
 !$omp parallel private(deth,eth,p,lhe,lerad,drad, &
-!$omp ethtoent,time1,time2) &
+!$omp ethtoent,time1,time2,hsmfac) &
 !$omp shared(dt) &
 !$omp reduction(+ : tottime) & 
 !$omp reduction(max : jmax,imax,maxtime)	&
@@ -163,7 +166,10 @@ subroutine extrapeth(dt)
    call exstepp(p,dt,eth,deth,drad,lerad,lhe,imax,jmax)
 
    rho(p)=rho(p)*exp(-hsmdivv(p)/hsmooth(p)*dt)
-   hsmooth(p)=hsmooth(p)*exp(hsmdivv(p)/hsmooth(p)*dt/3)
+   hsmfac=exp(hsmdivv(p)/hsmooth(p)*dt/3)
+   hsmooth(p)=hsmooth(p)*hsmfac
+   hsmdivv(p)=hsmdivv(p)*hsmfac
+   hsmcurlv(p)=hsmcurlv(p)*hsmfac
    if(uentropy) then
     ethtoent=gamma1/rho(p)**gamma1
    else

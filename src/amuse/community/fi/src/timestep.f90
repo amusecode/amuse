@@ -10,7 +10,7 @@ function courant_timestep(p) result(dt)
 ! gadget visc
 ! dt=courant*hsmooth(p)/(mumaxdvh(p)+ABS(hsmdivv(p)))
  if(dt.le.0) then
-   print*,p,dt,hsmooth(p),csound(p),mumaxdvh(p),hsmdivv(p)
+   print*,p,nbexist(p),dt,hsmooth(p),rho(p),csound(p),mumaxdvh(p),hsmdivv(p),mass(p)
    call terror('timestep error: courant')	  
  endif	 
 end function
