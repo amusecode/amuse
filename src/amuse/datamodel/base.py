@@ -587,6 +587,12 @@ class AbstractSet(object):
                     raise AttributeError("You tried to access attribute '{0}'"
                         " but this attribute is not defined for this set.".format(name_of_the_attribute))
     
+    def _get_derived_attribute_value(self, name_of_the_attribute):
+        if name_of_the_attribute in self._derived_attributes:
+            return self._derived_attributes[name_of_the_attribute].get_values_for_entities(self)
+        else:
+            raise AttributeError("You tried to access attribute '{0}'"
+                " but this attribute is not defined for this set.".format(name_of_the_attribute))
     
     def check_attribute(self, value):
         if not (is_quantity(value) or hasattr(value, 'as_set')):

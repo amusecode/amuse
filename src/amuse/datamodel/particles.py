@@ -1207,7 +1207,8 @@ class Particles(AbstractParticleSet):
         missing_attributes = set(attributes) - set(self.get_attribute_names_defined_in_store()) - set(["index_in_code"])
         defined_attributes = list(set(attributes) - missing_attributes)
         defined_values = dict(zip(defined_attributes, self._private.attribute_storage.get_values_in_store(indices, defined_attributes)))
-        return [defined_values[attribute] if attribute in defined_values else getattr(self[indices], attribute) for attribute in attributes]
+        subset = self[indices]
+        return [defined_values[attribute] if attribute in defined_values else subset._get_derived_attribute_value(attribute) for attribute in attributes]
     
     def get_indices_of_keys(self, keys):
         return self._private.attribute_storage.get_indices_of(keys)
