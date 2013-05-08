@@ -405,7 +405,7 @@ class GravityCodeInField(object):
 
     def kick(self, dt):
         
-        if not hasattr(self.code, 'particles'):
+        if not hasattr(self.code, 'particles') or len(self.code.particles)==0:
             return quantities.zero
         
         particles=self.code.particles.copy()
@@ -555,22 +555,18 @@ class Bridge(object):
                 one_code.stop()
     
     def get_potential_at_point(self,radius,x,y,z):
-        pot=0.*radius
+        pot=quantities.zero
         for x in self.codes:
             _pot=x.get_potential_at_point(radius,x,y,z)
-            if err != 0: 
-                break
             pot=pot+_pot
         return pot
         
     def get_gravity_at_point(self,radius,x,y,z):
-        ax=0.*radius
-        ay=0.*radius
-        az=0.*radius
+        ax=quantities.zero
+        ay=quantities.zero
+        az=quantities.zero
         for x in self.codes:
             _ax,_ay,_az=x.get_gravity_at_point(radius,x,y,z)
-            if err != 0: 
-                break
             ax=ax+_ax
             ay=ay+_ay
             az=az+_az
