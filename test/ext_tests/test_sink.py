@@ -16,6 +16,8 @@ from amuse.ic.plummer import new_plummer_model
 
 
 class TestSinkParticles(TestCase):
+
+    looping_over="sinks"
     
     def test1(self):
         print "Testing SinkParticles initialization from new (blank) particle"
@@ -88,7 +90,7 @@ class TestSinkParticles(TestCase):
                 
         copy = particles.copy()
         
-        sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,5]|units.parsec)
+        sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,5]|units.parsec,looping_over=self.looping_over)
         self.assertEqual(sinks.sink_radius, [4.0, 5.0] | units.parsec)
         self.assertEqual(sinks.mass, [4.0, 8.0] | units.MSun)
         self.assertEqual(sinks.position, [[3, 6, 9], [7, 14, 21]] | units.parsec)
@@ -126,7 +128,7 @@ class TestSinkParticles(TestCase):
         particles.age = range(10) | units.Myr
         copy = particles.copy()
         
-        sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,12]|units.parsec)
+        sinks = SinkParticles(particles[[3, 7]], sink_radius=[4,12]|units.parsec,looping_over=self.looping_over)
         self.assertEqual(sinks.sink_radius, [4.0, 12.0] | units.parsec)
         self.assertEqual(sinks.mass, [4.0, 8.0] | units.MSun)
         self.assertEqual(sinks.position, [[3, 6, 9], [7, 14, 21]] | units.parsec)
@@ -143,7 +145,13 @@ class TestSinkParticles(TestCase):
         self.assertEqual(particles.total_angular_momentum()+sinks.angular_momentum.sum(axis=0), copy.total_angular_momentum()) # angular_momentum is conserved
     
 
+class TestSinkParticlesLoopingOverSources(TestSinkParticles):
+
+    looping_over="sources"
+
 class TestNewSinkParticles(TestCase):
+
+    looping_over="sinks"
     
     def test1(self):
         print "Test the documentation for new_sink_particles"
@@ -172,7 +180,7 @@ class TestNewSinkParticles(TestCase):
         clumps = density_limit_detection.particles().copy()
         sph_code.gas_particles.remove_particles(clumps)
         
-        sinks = new_sink_particles(clumps, sink_radius=1|units.parsec)
+        sinks = new_sink_particles(clumps, sink_radius=1|units.parsec,looping_over=self.looping_over)
         self.assertEqual(sinks.sink_radius, 1.0 | units.parsec)
         self.assertEqual(sinks.mass, 1.0 | units.MSun)
         self.assertEqual(sinks.position, 
@@ -218,7 +226,7 @@ class TestNewSinkParticles(TestCase):
         sph_code.gas_particles.remove_particles(clumps)
         clumps_in_code = sph_code.dm_particles.add_particles(clumps)
         
-        sinks = new_sink_particles(clumps_in_code)
+        sinks = new_sink_particles(clumps_in_code,looping_over=self.looping_over)
         self.assertEqual(sinks.sink_radius, clumps.radius)
         self.assertAlmostRelativeEqual(sinks.mass, UnitMass / number_gas_particles, 10)
         self.assertAlmostRelativeEqual(sinks.position, clumps.position, 10)
@@ -277,6 +285,10 @@ class TestNewSinkParticles(TestCase):
         self.assertAlmostRelativeEqual(sph_code.particles.total_mass().as_quantity_in(units.MSun), UnitMass, 10)
         self.assertAlmostRelativeEqual(sinks.mass, [7.0, 13.0, 15.0, 9.0, 11.0, 11.0] * UnitMass / number_gas_particles, 10)
     
+class TestNewSinkParticlesLoopingOverSources(TestNewSinkParticles):
+
+    looping_over="sources"
+
 
 
 class StubInterface(object):

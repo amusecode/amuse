@@ -28,9 +28,11 @@ def angular_momentum(mass,position,velocity):
 class SinkParticles(ParticlesOverlay):
     
     def __init__(self, original_particles, sink_radius=None, mass=None, position=None, 
-                   velocity=None, angular_momentum=None):
+                   velocity=None, angular_momentum=None, looping_over="sinks"):
         ParticlesOverlay.__init__(self, original_particles)
-                
+        
+        self._private.looping_over=looping_over
+                        
         self.sink_radius = sink_radius or original_particles.radius
         
         if not hasattr(original_particles, "mass"):
@@ -47,7 +49,13 @@ class SinkParticles(ParticlesOverlay):
         if not hasattr(original_particles, "lx"):
             for attribute, value in zip(["lx","ly","lz"], angular_momentum or ([0, 0, 0] | units.kg * units.m**2 / units.s)):
                 setattr(self, attribute, value)
-  
+    
+    def accrete(self,orgparticles):
+        if self._private.looping_over=="sinks":
+          self.accrete_looping_over_sinks(orgparticles)
+        else:
+          self.accrete_looping_over_sources(orgparticles)        
+    
     def add_particles_to_store(self, keys, attributes = [], values = []):
         (
             (attributes_inbase, values_inbase), 
@@ -88,7 +96,7 @@ class SinkParticles(ParticlesOverlay):
     def add_sink(self, particle):
         self.add_sinks(particle.as_set())
     
-    def accrete(self, orgparticles):
+    def accrete_looping_over_sinks(self, orgparticles):
         particles=orgparticles.copy()
         others = (particles - self.get_intersecting_subset_in(particles))
         too_close = []
@@ -101,30 +109,7 @@ class SinkParticles(ParticlesOverlay):
             too_close = self.resolve_duplicates(too_close, particles)
             all_too_close = sum(too_close, particles[0:0])
         if len(all_too_close):
-            corrected_masses = AdaptingVectorQuantity()
-            corrected_positions = AdaptingVectorQuantity()
-            corrected_velocities = AdaptingVectorQuantity()
-            corrected_angular_momenta = AdaptingVectorQuantity()
-            for subset, m, pos, vel, Lin in zip(too_close, self.mass, self.position, self.velocity, self.angular_momentum):
-                if len(subset):
-                    total_mass = subset.total_mass() + m
-                    cmpos=(m*pos + subset.total_mass()*subset.center_of_mass())/total_mass
-                    cmvel=(m*vel + subset.total_mass()*subset.center_of_mass_velocity())/total_mass
-                    L=Lin+angular_momentum(m,pos-cmpos,vel-cmvel)+angular_momentum(subset.mass,subset.position-cmpos,subset.velocity-cmvel).sum(axis=0)
-                    corrected_masses.append(total_mass)                    
-                    corrected_positions.append(cmpos)
-                    corrected_velocities.append(cmvel)
-                    corrected_angular_momenta.append(L)
-                else:
-                    corrected_masses.append(m)
-                    corrected_positions.append(pos)
-                    corrected_velocities.append(vel)
-                    corrected_angular_momenta.append(Lin)                    
-            self.mass = corrected_masses
-            self.position = corrected_positions
-            self.velocity = corrected_velocities
-            self.angular_momentum = corrected_angular_momenta
-            
+            self.aggregate_mass(too_close)            
             orgparticles.remove_particles(all_too_close)
     
     def resolve_duplicates(self, too_close, particles):
@@ -155,7 +140,52 @@ class SinkParticles(ParticlesOverlay):
                     subset -= duplicate
             result.append(subset)
         return result
-    
+
+    def accrete_looping_over_sources(self, orgparticles):
+        if len(self) == 0:
+            return
+        particles=orgparticles.copy()
+        others = (particles - self.get_intersecting_subset_in(particles))
+        too_close = [particles[0:0] for p in self]
+        all_too_close=particles[0:0]
+        positions=self.position
+        masses=self.mass
+        sink_radii2=self.sink_radius**2
+        for p in others:
+            d2=(positions-p.position).lengths_squared()
+            a=numpy.where(d2<sink_radii2)[0]
+            if len(a) > 0:
+                amin=(d2[a]/masses[a]).argmin()
+                too_close[a[amin]]+=p
+                all_too_close+=p
+        if len(all_too_close):
+            self.aggregate_mass(too_close)
+            orgparticles.remove_particles(all_too_close)
+
+    def aggregate_mass(self,too_close):    
+        corrected_masses = AdaptingVectorQuantity()
+        corrected_positions = AdaptingVectorQuantity()
+        corrected_velocities = AdaptingVectorQuantity()
+        corrected_angular_momenta = AdaptingVectorQuantity()
+        for subset, m, pos, vel, Lin in zip(too_close, self.mass, self.position, self.velocity, self.angular_momentum):
+            if len(subset):
+                total_mass = subset.total_mass() + m
+                cmpos=(m*pos + subset.total_mass()*subset.center_of_mass())/total_mass
+                cmvel=(m*vel + subset.total_mass()*subset.center_of_mass_velocity())/total_mass
+                L=Lin+angular_momentum(m,pos-cmpos,vel-cmvel)+angular_momentum(subset.mass,subset.position-cmpos,subset.velocity-cmvel).sum(axis=0)
+                corrected_masses.append(total_mass)                    
+                corrected_positions.append(cmpos)
+                corrected_velocities.append(cmvel)
+                corrected_angular_momenta.append(L)
+            else:
+                corrected_masses.append(m)
+                corrected_positions.append(pos)
+                corrected_velocities.append(vel)
+                corrected_angular_momenta.append(Lin)                    
+        self.mass = corrected_masses
+        self.position = corrected_positions
+        self.velocity = corrected_velocities
+        self.angular_momentum = corrected_angular_momenta
 
 def new_sink_particles(original_particles, *list_arguments, **keyword_arguments):
     """
