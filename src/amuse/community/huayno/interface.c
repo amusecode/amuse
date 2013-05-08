@@ -301,7 +301,7 @@ int evolve_model(double t_end)
   if(dt==0.) dt=t_end-t_now;
   while(t_now < t_end - dt/2) 
   {
-    do_evolve(mainsys,dt,inttype);
+    if(mainsys.n > 0) do_evolve(mainsys,dt,inttype);
     t_now+=dt;
   }
   for(p=0;p<pcounter+1;p++) pindex[p]=-1;
