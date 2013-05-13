@@ -5,21 +5,58 @@ Datamodel
 
 Introduction
 ------------
-The AMUSE datamodel is based on sets of particles. 
 
-Different astrophysical objects are all
-refered to as Particles in the AMUSE code. 
-These objects can be:
+The AMUSE datamodel is based on objects stored in containers. The 
+containers store all the relevant data of the objects. One can work 
+with the data in a container as a whole or with an indiviual object 
+in a container. When working with an individual object all data will 
+be retrieved from and stored in the container of that object. *This 
+is different from normal python objects and lists where the lists 
+store references to the objects and the data is stored on the 
+objects*.
 
-* Star
-* Black hole
-* Gas Particle
-* Dark Matter Particle
+AMUSE supports two kinds of containers. One container kind 
+implements a one dimensional set of objects. You can add and remove 
+objects from the set and combine sets in different ways. This 
+container kind is called **'Particles'** and the individual objects 
+stored are called **'Particle'**. The other container kind 
+implements a multidimensional grid of objects. You cannot change the 
+shape of a grid and objects cannot be added or removed from a 
+grid. This container kind is called **'Grid'** and individual 
+objects stored in the container are called **'GridPoint'**.  
 
-The astrophysical objects are all modelled using 
-the ``Particle`` class . 
-Objects of this class can have a varying set of attributes. These 
-attributes can be defined by a script or a code.
+The containers in AMUSE can save the data for individual objects in 
+different kinds of **'Stores'**. AMUSE currently implements 3 kinds 
+of stores. One kind of store saves all data in memory, this kind is 
+used by default and provides the fastest way to work with the 
+containers. Another kind of store saves and retrieves all data from 
+a community code. It uses MPI messages to communicate this data. 
+This kind is used by default for containers provided by a code and 
+is the primary way by which you can interact with the data inside a 
+running code. The last kind of container stores and retrieves data from
+an HDF5 file. This kind is only used when saving or loading a container.
+
+In memory containers can support a user defined set of attributes 
+for the contained objects. You can define a new attribute for the 
+container by assigning a value to the attribute. In code containers 
+support a pre-defined, per code set of attributes for the contained 
+objects. You cannot define a new attribute on these containers. Also 
+as a code may not allow some attributes to be set individually, the 
+container also cannot set some attributes individually. For example 
+you often cannot set the X position of a particle, you must set the 
+X, Y, and Z position in one go.
+
+Different kinds of particles or gridpoints are not modelled by 
+implementing subclasses. Instead, different kinds of particles are 
+defined ad-hoc, by variable naming (for example planets, stars or 
+cloud_particles) and varying attributes (stars have position and 
+mass, cloud_particles have position and density). This allows you to 
+model your problem with the names and attributes that best fit your 
+model. Unfortunately, this way of working does remove a level of 
+self description in the system. To mitigate this problem the 
+containers defined in community codes and in example scripts all 
+follow the same conventions. We describe these conventions in a 
+later section in this chapter.
 
 Identity
 --------
