@@ -8,9 +8,9 @@ from amuse.community.interface.gd import GravityFieldCode
 from amuse.rfi.core import PythonCodeInterface
 
 try:
-    from pynbody.integrator import Integrator
-    from pynbody.particles import Particles
-    from pynbody.particles.body import Body
+    from tupan.integrator import Integrator
+    from tupan.particles.allparticles import System
+    from tupan.particles.star import Stars
     MODULES_MISSING = False
 except ImportError:
     MODULES_MISSING = True
@@ -23,14 +23,14 @@ for standard dynamics codes (except for changing the name).
 
 
 
-class PyNbodyImplementation(object):
+class TupanImplementation(object):
 
     def __init__(self):
-        self.eta = 0.01
+        self.eta = 0.03125
         self.current_time = 0.0
         self.eps2 = 0.0
         self.time_begin = 0.0
-        self.integrator_method = "hts"
+        self.integrator_method = "sia.dkd21hcc"
         self.particles = []
         self.particles_initialized = False
 
@@ -43,19 +43,23 @@ class PyNbodyImplementation(object):
 
     def commit_parameters(self):
         return 0
-    
+
 
 
     def commit_particles(self):
         num = len(self.particles)
-        particles = Particles({"body": num})
+        particles = System(nstars=num)
         for (i, p) in enumerate(self.particles):
-            particles["body"].id[i] = i
-            particles["body"].mass[i] = p.mass
-            particles["body"].radius[i] = p.radius   # XXX: 'radius' is not used in PyNbody yet.
-            particles["body"].eps2[i] = self.eps2/2
-            particles["body"].pos[i] = p.pos
-            particles["body"].vel[i] = p.vel
+            particles.stars.id[i] = i
+            particles.stars.mass[i] = p.mass
+            particles.stars.radius[i] = p.radius   # XXX: 'radius' is not yet used in Tupan.
+            particles.stars.eps2[i] = self.eps2/2
+            particles.stars.rx[i] = p.rx
+            particles.stars.ry[i] = p.ry
+            particles.stars.rz[i] = p.rz
+            particles.stars.vx[i] = p.vx
+            particles.stars.vy[i] = p.vy
+            particles.stars.vz[i] = p.vz
         self.integrator = Integrator(self.eta, self.time_begin, particles, method=self.integrator_method)
         return 0
 
@@ -63,12 +67,16 @@ class PyNbodyImplementation(object):
         return 0
 
     def new_particle(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
-        body = Body(1)
-        body.mass = mass
-        body.radius = radius
-        body.pos = [x, y, z]
-        body.vel = [vx, vy, vz]
-        self.particles.append(body)
+        star = Stars(1)
+        star.mass = mass
+        star.radius = radius
+        star.rx = x
+        star.ry = y
+        star.rz = z
+        star.vx = vx
+        star.vy = vy
+        star.vz = vz
+        self.particles.append(star)
         index_of_the_particle.value = len(self.particles)-1
         return 0
 
@@ -94,11 +102,15 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            particle.mass[i] = mass
-            particle.radius[i] = radius
-            particle.pos[i] = [x, y, z]
-            particle.vel[i] = [vx, vy, vz]
+            p = particles.stars
+            p.mass[i] = mass
+            p.radius[i] = radius
+            p.rx[i] = x
+            p.ry[i] = y
+            p.rz[i] = z
+            p.vx[i] = vx
+            p.vy[i] = vy
+            p.vz[i] = vz
             return 0
         except Exception as exc:
             print str(exc)
@@ -108,8 +120,8 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            particle.mass[i] = mass
+            p = particles.stars
+            p.mass[i] = mass
             return 0
         except Exception as exc:
             print str(exc)
@@ -119,8 +131,8 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            particle.radius[i] = radius
+            p = particles.stars
+            p.radius[i] = radius
             return 0
         except Exception as exc:
             print str(exc)
@@ -130,8 +142,10 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            particle.pos[i] = [x, y, z]
+            p = particles.stars
+            p.rx[i] = x
+            p.ry[i] = y
+            p.rz[i] = z
             return 0
         except:
             return -1
@@ -140,8 +154,10 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            particle.vel[i] = [vx, vy, vz]
+            p = particles.stars
+            p.vx[i] = vx
+            p.vy[i] = vy
+            p.vz[i] = vz
             return 0
         except:
             return -1
@@ -151,11 +167,11 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            mass.value = particle.mass[i]
-            radius.value = particle.radius[i]
-            x.value, y.value, z.value = particle.pos[i]
-            vx.value, vy.value, vz.value = particle.vel[i]
+            p = particles.stars
+            mass.value = p.mass[i]
+            radius.value = p.radius[i]
+            x.value, y.value, z.value = p.rx[i], p.ry[i], p.rz[i]
+            vx.value, vy.value, vz.value = p.vx[i], p.vy[i], p.vz[i]
             return 0
         except:
             return -1
@@ -164,8 +180,8 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            mass.value = particle.mass[i]
+            p = particles.stars
+            mass.value = p.mass[i]
             return 0
         except:
             return -1
@@ -174,8 +190,8 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            radius.value = particle.radius[i]
+            p = particles.stars
+            radius.value = p.radius[i]
             return 0
         except:
             return -1
@@ -184,8 +200,8 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            x.value, y.value, z.value = particle.pos[i]
+            p = particles.stars
+            x.value, y.value, z.value = p.rx[i], p.ry[i], p.rz[i]
             return 0
         except:
             return -1
@@ -194,8 +210,8 @@ class PyNbodyImplementation(object):
         try:
             i = index_of_the_particle
             particles = self.integrator.particles
-            particle = particles['body']
-            vx.value, vy.value, vz.value = particle.vel[i]
+            p = particles.stars
+            vx.value, vy.value, vz.value = p.vx[i], p.vy[i], p.vz[i]
             return 0
         except:
             return -1
@@ -203,33 +219,32 @@ class PyNbodyImplementation(object):
 
     def get_kinetic_energy(self, kinetic_energy):
         particles = self.integrator.particles
-        ke = particles.get_total_kinetic_energy()
+        ke = particles.kinetic_energy
         kinetic_energy.value = ke
         return 0
 
     def get_potential_energy(self, potential_energy):
         particles = self.integrator.particles
-        particles.update_phi(particles)
-        pe = particles.get_total_potential_energy()
+        pe = particles.potential_energy
         potential_energy.value = pe
         return 0
 
 
     def get_total_mass(self, total_mass):
         particles = self.integrator.particles
-        mtot = particles.get_total_mass()
+        mtot = particles.total_mass
         total_mass.value = mtot
         return 0
 
     def get_center_of_mass_position(self, x, y, z):
         particles = self.integrator.particles
-        rcom = particles.get_center_of_mass_position()
+        rcom = particles.rcom
         x.value, y.value, z.value = rcom
         return 0
 
     def get_center_of_mass_velocity(self, vx, vy, vz):
         particles = self.integrator.particles
-        vcom = particles.get_center_of_mass_velocity()
+        vcom = particles.vcom
         vx.value, vy.value, vz.value = vcom
         return 0
 
@@ -246,9 +261,10 @@ class PyNbodyImplementation(object):
 
 
     def evolve_model(self, t_end):
-        while (self.integrator.current_time < t_end):
-            self.integrator.step(t_end)
-        self.current_time = self.integrator.current_time
+        while (abs(self.integrator.time) < t_end):
+            self.integrator.evolve_step(t_end)
+        self.integrator.finalize(t_end)
+        self.current_time = self.integrator.time
         return 0
 
 
@@ -302,10 +318,10 @@ class PyNbodyImplementation(object):
 
 
 
-class PyNbodyInterface(PythonCodeInterface, GravitationalDynamicsInterface, SinglePointGravityFieldInterface):
+class TupanInterface(PythonCodeInterface, GravitationalDynamicsInterface, SinglePointGravityFieldInterface):
 
     def __init__(self, **options):
-        PythonCodeInterface.__init__(self, PyNbodyImplementation, 'pynbody_worker', **options)
+        PythonCodeInterface.__init__(self, TupanImplementation, 'tupan_worker', **options)
 
 
     @legacy_function
@@ -403,10 +419,10 @@ class PyNbodyInterface(PythonCodeInterface, GravitationalDynamicsInterface, Sing
 
 
 
-class PyNbody(GravitationalDynamics, GravityFieldCode):
+class Tupan(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **options):
-        nbody_interface = PyNbodyInterface(**options)
+        nbody_interface = TupanInterface(**options)
 
         GravitationalDynamics.__init__(
             self,
@@ -414,7 +430,7 @@ class PyNbody(GravitationalDynamics, GravityFieldCode):
             convert_nbody,
             **options
         )
-        
+
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
         GravityFieldCode.define_state(self, object)
@@ -428,7 +444,7 @@ class PyNbody(GravitationalDynamics, GravityFieldCode):
             "timestep parameter",
             default_value = 0.01
         )
-        
+
         object.add_method_parameter(
             "get_eps2",
             "set_eps2",

@@ -9,19 +9,19 @@ PYOPENCL_AVAILABLE := $(shell $(PYTHON) -c "import pyopencl"  1>&2 2> /dev/null 
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: code build install test pynbody_worker
+all: code build install test tupan_worker
 
-code: PyNbody/setup.py
+code: Tupan/setup.py
 
 ifdef DOWNLOAD_CODES
-PyNbody/setup.py:
+Tupan/setup.py:
 	make -C . download
 else
-PyNbody/setup.py:
+Tupan/setup.py:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
-	@echo "DOWNLOAD_CODES is not set. PyNbody will not be downloaded and build."
+	@echo "DOWNLOAD_CODES is not set. Tupan will not be downloaded and build."
 	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
 	@echo "bash> export DOWNLOAD_CODES=1"
 	@echo "csh> setenv DOWNLOAD_CODES 1"
@@ -32,17 +32,17 @@ PyNbody/setup.py:
 endif 
 
 download:
-	git clone git://github.com/GuilhermeFerrari/PyNbody.git
+	git clone git://github.com/GuilhermeFerrari/Tupan.git
 
 build:
-	(cd PyNbody; python setup.py build)
+	(cd Tupan; python setup.py build)
 
 install:
-	(cd PyNbody; python setup.py install --user)
+	(cd Tupan; python setup.py install --user)
 
 test:
 	@echo
-	@echo "Testing import of modules required for PyNbody (OpenGL, PIL, pyopencl):"
+	@echo "Testing import of modules required for Tupan (OpenGL, PIL, pyopencl):"
 ifeq ($(PYOPENGL_AVAILABLE),no)
 	$(error "Python imports not available: OpenGL")
 endif
@@ -56,14 +56,14 @@ endif
 	@echo
 
 
-pynbody_worker: interface.py
-	$(CODE_GENERATOR) --type=py --mode=mpi -x amuse.community.pynbody.interface PyNbodyInterface PyNbodyImplementation -o $@
+tupan_worker: interface.py
+	$(CODE_GENERATOR) --type=py --mode=mpi -x amuse.community.tupan.interface TupanInterface TupanImplementation -o $@
 	
 
 clean:
-	rm -f *.pyc; (cd PyNbody; python setup.py clean -a)
-	rm -f pynbody_worker pynbody_worker_sockets
+	rm -f *.pyc; (cd Tupan; python setup.py clean -a)
+	rm -f tupan_worker tupan_worker_sockets
 
 distclean: clean
-	rm -f *.pyc; rm -rf PyNbody
+	rm -f *.pyc; rm -rf Tupan
 

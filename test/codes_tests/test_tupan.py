@@ -7,28 +7,28 @@ from amuse.datamodel import Particles
 from amuse.ic.plummer import new_plummer_model
 
 try:
-    from amuse.community.pynbody.interface import PyNbodyInterface, PyNbody, MODULES_MISSING
+    from amuse.community.tupan.interface import TupanInterface, Tupan, MODULES_MISSING
 except ImportError:
     MODULES_MISSING = True
 
 
-class TestPyNbodyInterface(TestWithMPI):
+class TestTupanInterface(TestWithMPI):
 
-    def test1(self):
+    def test01(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Test PyNbodyInterface initialization"
-        instance = PyNbodyInterface()
+            self.skip("Failed to import a module required for Tupan")
+        print "Test TupanInterface initialization"
+        instance = TupanInterface()
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
-    def test2(self):
+    def test02(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Test PyNbodyInterface new_particle / get_state"
-        instance = PyNbodyInterface()
+            self.skip("Failed to import a module required for Tupan")
+        print "Test TupanInterface new_particle / get_state"
+        instance = TupanInterface()
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
 
@@ -52,11 +52,11 @@ class TestPyNbodyInterface(TestWithMPI):
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
-    def test3(self):
+    def test03(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Test PyNbodyInterface particle property getters/setters"
-        instance = PyNbodyInterface()
+            self.skip("Failed to import a module required for Tupan")
+        print "Test TupanInterface particle property getters/setters"
+        instance = TupanInterface()
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals([0, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
@@ -92,19 +92,19 @@ class TestPyNbodyInterface(TestWithMPI):
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
-    def test4(self):
+    def test04(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Test PyNbodyInterface parameters"
-        instance = PyNbodyInterface()
+            self.skip("Failed to import a module required for Tupan")
+        print "Test TupanInterface parameters"
+        instance = TupanInterface()
         self.assertEquals(0, instance.initialize_code())
 
-        self.assertEquals(["hts", 0], instance.get_integrator_method().values())
+        self.assertEquals(["sia.dkd21hcc", 0], instance.get_integrator_method().values())
 
         self.assertEquals(0, instance.set_integrator_method("bogus"))
         self.assertEquals(["bogus", 0], instance.get_integrator_method().values())
 
-        self.assertEquals([0.01, 0], instance.get_eta().values())
+        self.assertEquals([0.03125, 0], instance.get_eta().values())
         self.assertEquals(0, instance.set_eta(0.001))
         self.assertEquals([0.001, 0], instance.get_eta().values())
 
@@ -116,11 +116,11 @@ class TestPyNbodyInterface(TestWithMPI):
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
-    def test5(self):
+    def test05(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Test PyNbodyInterface evolve_model, binary"
-        instance = PyNbodyInterface()
+            self.skip("Failed to import a module required for Tupan")
+        print "Test TupanInterface evolve_model, binary"
+        instance = TupanInterface()
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
 
@@ -142,7 +142,7 @@ class TestPyNbodyInterface(TestWithMPI):
 
 
 
-class TestPyNbody(TestWithMPI):
+class TestTupan(TestWithMPI):
 
     default_converter = nbody_system.nbody_to_si(1.0e4 | units.MSun, 1.0 | units.AU)
 
@@ -155,26 +155,26 @@ class TestPyNbody(TestWithMPI):
         particles[1].vy = (constants.G * particles.total_mass() / (1.0 | units.AU)).sqrt()
         return particles
 
-    def test1(self):
+    def test01(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody initialization"
-        instance = PyNbody(self.default_converter, )
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan initialization"
+        instance = Tupan(self.default_converter, )
         instance.initialize_code()
         instance.commit_parameters()
         instance.cleanup_code()
         instance.stop()
 
-    def xtest2(self):
+    def xtest02(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody parameters"
-        instance = PyNbody(self.default_converter, )
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan parameters"
+        instance = Tupan(self.default_converter, )
         instance.initialize_code()
 
         self.assertEquals(instance.parameters.epsilon_squared,
             instance.unit_converter.to_si(0.0 | nbody_system.length**2))
-        self.assertEquals(instance.parameters.timestep_parameter, 0.1)
+        self.assertEquals(instance.parameters.timestep_parameter, 0.125)
 
         for par, value in [('epsilon_squared_star_star', 0.0 | nbody_system.length**2),
                 ('epsilon_squared_star_blackhole', 0.0 | nbody_system.length**2),
@@ -214,11 +214,11 @@ class TestPyNbody(TestWithMPI):
 
         instance.stop()
 
-    def test3(self):
+    def test03(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody particles"
-        instance = PyNbody(self.default_converter, )
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan particles"
+        instance = Tupan(self.default_converter, )
         instance.initialize_code()
         instance.commit_parameters()
         instance.particles.add_particles(self.new_sun_earth_system())
@@ -234,10 +234,10 @@ class TestPyNbody(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
 
-    def xtest4(self):
+    def xtest04(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody evolve_model, 2 particles orbiting the SMBH"
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan evolve_model, 2 particles orbiting the SMBH"
         particles = Particles(2)
         particles.mass = 1.0 | units.MSun
         particles.radius = 1.0 | units.RSun
@@ -248,9 +248,9 @@ class TestPyNbody(TestWithMPI):
         particles.move_to_center()
         print particles
 
-        instance = PyNbody(self.default_converter, )
+        instance = Tupan(self.default_converter, )
         instance.initialize_code()
-        instance.parameters.include_smbh = True
+#        instance.parameters.include_smbh = True
         instance.commit_parameters()
         instance.particles.add_particles(particles)
         instance.commit_particles()
@@ -272,10 +272,10 @@ class TestPyNbody(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
 
-    def test5(self):
+    def test05(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody evolve_model, 2 particles, no SMBH"
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan evolve_model, 2 particles, no SMBH"
         particles = Particles(2)
         particles.mass = 1.0 | units.MSun
         particles.radius = 1.0 | units.RSun
@@ -286,9 +286,9 @@ class TestPyNbody(TestWithMPI):
         print particles
 
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = PyNbody(converter, )
+        instance = Tupan(converter, )
         instance.initialize_code()
-        instance.parameters.smbh_mass = 0.0 | units.MSun
+#        instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()
         instance.particles.add_particles(particles)
         instance.commit_particles()
@@ -309,14 +309,14 @@ class TestPyNbody(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
 
-    def xtest6(self):
+    def test06(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody evolve_model, earth-sun system, no SMBH"
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan evolve_model, earth-sun system, no SMBH"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = PyNbody(converter, )
+        instance = Tupan(converter, )
         instance.initialize_code()
-        instance.parameters.smbh_mass = 0.0 | units.MSun
+#        instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()
         instance.particles.add_particles(self.new_sun_earth_system())
         instance.commit_particles()
@@ -335,10 +335,10 @@ class TestPyNbody(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
 
-    def xtest7(self):
+    def test07(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing effect of PyNbody parameter epsilon_squared"
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing effect of Tupan parameter epsilon_squared"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         particles = self.new_sun_earth_system()
         particles.rotate(0.0, 0.0, -math.pi/4)
@@ -348,10 +348,10 @@ class TestPyNbody(TestWithMPI):
         self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
         tan_final_direction =  []
         for log_eps2 in range(-9,10,2):
-            instance = PyNbody(converter, )
+            instance = Tupan(converter, )
             instance.initialize_code()
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
-            instance.parameters.smbh_mass = 0.0 | units.MSun
+#            instance.parameters.smbh_mass = 0.0 | units.MSun
             instance.commit_parameters()
             instance.particles.add_particles(particles)
             instance.commit_particles()
@@ -368,14 +368,14 @@ class TestPyNbody(TestWithMPI):
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
         self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
 
-    def xtest8(self):
+    def xtest08(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody get_gravity_at_point and get_potential_at_point"
-        instance = PyNbody()
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan get_gravity_at_point and get_potential_at_point"
+        instance = Tupan()
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
-        instance.parameters.smbh_mass = 0.0 | nbody_system.mass
+#        instance.parameters.smbh_mass = 0.0 | nbody_system.mass
 
         particles = Particles(2)
         particles.mass = 1.0 | nbody_system.mass
@@ -410,14 +410,15 @@ class TestPyNbody(TestWithMPI):
 
         instance.stop()
 
-    def xtest9(self):
+    def test09(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody evolve_model and getters energy, plummer sphere, no SMBH"
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan evolve_model and getters energy, plummer sphere, no SMBH"
         converter = nbody_system.nbody_to_si(1.0e2 | units.MSun, 1.0 | units.parsec)
-        instance = PyNbody(converter, )
+        instance = Tupan(converter, )
+        instance.parameters.timestep_parameter = 1.0/256
         instance.initialize_code()
-        instance.parameters.smbh_mass = 0.0 | units.MSun
+#        instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()
         numpy.random.seed(987654321)
         instance.particles.add_particles(new_plummer_model(100, convert_nbody=converter))
@@ -432,18 +433,18 @@ class TestPyNbody(TestWithMPI):
         instance.evolve_model(0.1 | nbody_system.time)
         kinetic_energy = instance.kinetic_energy
         potential_energy = instance.potential_energy
-        self.assertAlmostRelativeEqual(kinetic_energy, 2.1362368884e+37 | units.J, 10)
-        self.assertAlmostRelativeEqual(potential_energy, -4.34842269914e+37 | units.J, 10)
+        self.assertAlmostRelativeEqual(kinetic_energy, 2.1362368884e+37 | units.J, 4)
+        self.assertAlmostRelativeEqual(potential_energy, -4.34842269914e+37 | units.J, 4)
 
-        self.assertAlmostRelativeEqual(potential_energy + kinetic_energy, initial_total_energy, 10)
+        self.assertAlmostRelativeEqual(potential_energy + kinetic_energy, initial_total_energy, 4)
 
         instance.cleanup_code()
         instance.stop()
 
     def xtest10(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody collision_detection"
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan collision_detection"
         particles = Particles(7)
         particles.mass = 0.00000001 | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
@@ -452,7 +453,7 @@ class TestPyNbody(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
 
-        instance = PyNbody()
+        instance = Tupan()
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
@@ -497,8 +498,8 @@ class TestPyNbody(TestWithMPI):
 
     def test11(self):
         if MODULES_MISSING:
-            self.skip("Failed to import a module required for PyNbody")
-        print "Testing PyNbody properties"
+            self.skip("Failed to import a module required for Tupan")
+        print "Testing Tupan properties"
         numpy.random.seed(12345)
         particles = new_plummer_model(100, do_scale=True)
         particles.position += [1, 2, 3] | nbody_system.length
@@ -506,7 +507,7 @@ class TestPyNbody(TestWithMPI):
         particles.velocity += cluster_velocity
         external_kinetic_energy = (0.5 | nbody_system.mass) * cluster_velocity.length_squared()
 
-        instance = PyNbody()
+        instance = Tupan()
         instance.particles.add_particles(particles)
 
         kinetic_energy = instance.kinetic_energy - external_kinetic_energy
