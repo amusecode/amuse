@@ -17,6 +17,31 @@ is different from normal python objects and lists where the lists
 store references to the objects and the data is stored on the 
 objects*.
 
+Amuse containers::
+
+    >>> from amuse.datamodel import Particles
+    >>> from amuse.units import units
+    >>> stars = Particles(2)
+    >>> stars.mass = [2, 3] | units.MSun
+    >>> sun = stars[0]
+    >>> sun.mass = 1 |  units.MSun
+    >>> print stars.mass
+    [1.0, 3.0] MSun
+    >>> stars.mass = [0.5, 5] | units.MSun
+    >>> print sun.mass
+    0.5 MSun
+    
+Python lists::
+
+    >>> from amuse.datamodel import Particle
+    >>> sun = Particle(mass = 1 | units.MSun)
+    >>> star = Particle(mass = 3 | units.MSun)
+    >>> stars = [sun, star]
+    >>> print stars.mass # cannot access attributes on the list
+    Traceback (most recent call last):
+    AttributeError: 'list' object has no attribute 'mass'
+    
+
 Set or grid
 ~~~~~~~~~~~
 AMUSE supports two kinds of containers. One container kind 
@@ -28,6 +53,27 @@ implements a multidimensional grid of objects. You cannot change the
 shape of a grid and objects cannot be added or removed from a 
 grid. This container kind is called **'Grid'** and individual 
 objects stored in the container are called **'GridPoint'**.  
+
+With particles::
+    
+    >>> from amuse.datamodel import Particles
+    >>> from amuse.units import units
+    >>> stars = Particles(2)
+    >>> stars.mass = [2, 3] | units.MSun
+    >>> print stars.mass
+    [2.0, 3.0] MSun
+    
+With grids::
+
+    >>> from amuse.datamodel import Grid
+    >>> from amuse.units import units
+    >>> field = Grid(2,2)
+    >>> field.density = [[1, 2], [3, 4]] | units.g / units.cm ** 3
+    >>> point = field[1,0]
+    >>> point.density = 5  | units.g / units.cm ** 3
+    >>> print field.density
+    [[ 1.  2.], [ 5.  4.]] g / (cm**3)
+    
 
 Memory, code or file
 ~~~~~~~~~~~~~~~~~~~~
@@ -54,6 +100,20 @@ container also cannot set some attributes individually. For example
 you often cannot set the X position of a particle, you must set the 
 X, Y, and Z position in one go.
 
+Adding attributes to a set or object::
+
+    >>> from amuse.datamodel import Particles
+    >>> from amuse.units import units
+    >>> stars = Particles(keys = [1,2])
+    >>> # you can add an attribute by assigning to a name on a set
+    >>> stars.mass = [1, 3] | units.MSun 
+    >>> sun = stars[0]
+    >>> print sun
+    Particle(1, mass=1.0 MSun)
+    >>> sun.radius = 1 | units.RSun
+    >>> print sun
+    Particle(1, mass=1.0 MSun, radius=1.0 RSun)
+
 Objects not classes
 ~~~~~~~~~~~~~~~~~~~
 Different kinds of particles or gridpoints are not modelled by 
@@ -68,6 +128,21 @@ containers defined in community codes and in example scripts all
 follow the same conventions. We describe these conventions in a 
 later section in this chapter.
 
+Diffent attributes and names for different kinds::
+
+    >>> from amuse.datamodel import Particles
+    >>> from amuse.units import units
+    >>> # stars and planets share some attributes (radius)
+    >>> # but also have attributes that make sense only for
+    >>> # the specific kind (population for planets, 
+    >>> # luminosity for stars)
+    >>> stars = Particles(keys = [1,2])
+    >>> stars.luminosity = [1, 3] | units.LSun 
+    >>> stars.radius = 1 | units.RSun
+    >>> planets = Particles(keys = [3,4])
+    >>> planets.radius = 6371  | units.km
+    >>> planets.population = [7000000000, 0]
+    
 Identity
 ~~~~~~~~
 Each object in a container has a unique identity, no two objects in 
@@ -83,6 +158,26 @@ evolution code and in a container of a stellar dynamics code. AMUSE
 provides several functions to link these objects and to transfer 
 data between them.
 
+
+Different sets store information on the same object::
+
+    >>> from amuse.datamodel import Particles
+    >>> from amuse.units import units
+    >>> stars = Particles(keys = [1,2])
+    >>> stars.luminosity = [1, 3] | units.LSun 
+    >>> bodies = Particles(keys = [1,2])
+    >>> bodies.mass = [1, 3] | units.MSun 
+    >>> print bodies[0] == stars[0] # the same 'conceptual' object in different sets
+    True
+    >>> print bodies[0] == stars[1] # not the same object
+    False
+    >>> print bodies[0]
+    Particle(1, mass=1.0 MSun)
+    >>> # finding the coresponding particle in the stars
+    >>> print bodies[0].as_particle_in_set(stars)
+    Particle(1, luminosity=1.0 LSun)
+    
+    
 Ownership
 ~~~~~~~~~
 Objects in a container are owned by that container, the container 
@@ -99,6 +194,7 @@ a random number generator. The chances of duplicate keys using
 key can be determined by a generalization of the birthday problem.
 
 Duplicate keys::
+
     >>> # given n random integers drawn from a discrete uniform distribution 
     >>> # with range [1,highest_integer], what is the probability
     >>> # p(n;highest_integer) that at least two numbers are the same?
