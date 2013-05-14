@@ -25,7 +25,7 @@ all:    sse_worker
 
 
 clean:
-	$(RM) -f *~ *.so *.o src/*.o src/sse worker_code worker_code.f90
+	$(RM) -f *~ *.so *.pyc *.o src/*.o src/sse worker_code worker_code.f90
 	$(RM) -f sse_worker sse_worker_sockets worker_code-sockets.f90
 	$(RM) -f amuse_worker_module.mod
 	$(RM) -f forsockets.mod
