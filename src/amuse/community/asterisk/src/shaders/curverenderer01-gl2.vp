@@ -1,0 +1,20 @@
+//Copyright 2010 JogAmp Community. All rights reserved.
+
+uniform mat4    gcu_PMVMatrix[3]; // P, Mv, and Mvi
+uniform vec3    gcu_ColorStatic;
+uniform float   gcu_Alpha;
+uniform float   gcu_Weight;
+uniform sampler2D      gcu_TextureUnit;
+uniform vec2    gcu_TextureSize;
+
+attribute vec4    gca_Vertices;
+attribute vec2    gca_TexCoords;
+
+varying vec2    gcv_TexCoord;
+
+void main(void)
+{
+  // gl_Position = gcu_PMVMatrix[0] * gcu_PMVMatrix[1] * vec4(gca_Vertices, 1);
+  gl_Position = gcu_PMVMatrix[0] * gcu_PMVMatrix[1] * gca_Vertices;
+  gcv_TexCoord = gca_TexCoords;
+}

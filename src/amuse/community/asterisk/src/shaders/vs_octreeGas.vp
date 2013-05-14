@@ -1,0 +1,25 @@
+#version 140
+
+in vec4 MCvertex;
+in vec3 MCnormal;
+
+uniform mat4 PMatrix;
+uniform mat4 MVMatrix;
+uniform mat3 NormalMatrix;
+
+uniform mat4 node_MVmatrix;
+uniform mat3 node_NormalMatrix;
+uniform float node_scale;
+
+out vec3 vertex_normal;
+out vec3 eye_direction;
+
+void main() {
+    vertex_normal = normalize(NormalMatrix * node_NormalMatrix * MCnormal);    
+    mat4 MV = MVMatrix * node_MVmatrix;    
+    eye_direction = vec3(MV[0][3], MV[1][3], MV[2][3]);
+    
+	mat4 scale_matrix = mat4(node_scale, 0, 0, 0, 0, node_scale, 0, 0, 0, 0, node_scale, 0, 0, 0, 0, 1);	
+	
+    gl_Position = PMatrix * MV * scale_matrix * MCvertex;  
+}

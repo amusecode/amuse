@@ -1,0 +1,16 @@
+//Copyright 2010 JogAmp Community. All rights reserved.
+
+#version 140 
+
+uniform mat4 PMVMatrix;
+
+in vec4 MCvertex;
+in vec2 MCtexCoord;
+
+out vec2 tCoordsFS;
+
+void main(void)
+{
+	tCoordsFS = MCtexCoord;
+	gl_Position = PMVMatrix * MCvertex;
+}

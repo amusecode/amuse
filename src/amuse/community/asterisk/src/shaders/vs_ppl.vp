@@ -1,0 +1,14 @@
+#version 140
+
+in vec4 MCvertex;
+in vec3 MCnormal;
+in vec3 MCtexCoord;
+
+uniform mat4 PMatrix;
+uniform mat4 MVMatrix;
+uniform mat4 SMatrix;
+uniform mat4 ScaleMatrix;
+
+void main() {
+	gl_Position = PMatrix * MVMatrix * SMatrix * ScaleMatrix * MCvertex;
+}

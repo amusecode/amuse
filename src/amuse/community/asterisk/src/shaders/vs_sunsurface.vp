@@ -1,0 +1,43 @@
+#version 140
+
+uniform mat4 MVMatrix;
+uniform mat4 PMatrix;
+uniform mat4 SMatrix;
+uniform mat4 ScaleMatrix;
+
+uniform sampler3D Noise;  
+uniform float Offset;
+
+in vec4 MCvertex;
+in vec3 MCnormal;
+in vec3 MCtexCoord;
+
+out vec3 MCposition;
+
+const float maxIntensity = 0.1;
+
+void main()
+{
+    MCposition = MCtexCoord; 
+    
+    vec4 noisevecX 		= texture(Noise,       (MCposition  + .33 * vec3(Offset*3,        0,      0)));
+    vec4 noisevecY 		= texture(Noise, .50 * (MCposition  + .50 * vec3(0       , Offset*2,      0)));
+    vec4 noisevecZ 		= texture(Noise, .33 * (MCposition  +       vec3(0       ,        0, Offset)));
+
+    float intensity = ((noisevecX[0] +
+                        noisevecX[1] +
+                        noisevecX[2] +
+                        noisevecX[3]) * 0.33) +
+                      ((noisevecY[0] +
+                        noisevecY[1] +
+                        noisevecY[2] +
+                        noisevecY[3]) * 0.33) +
+                      ((noisevecZ[0] +
+                        noisevecZ[1] +
+                        noisevecZ[2] +
+                        noisevecZ[3]) * 0.33);
+
+	vec4 vertex = MCvertex - ((0.5 * maxIntensity) + (maxIntensity * intensity)) * vec4(MCnormal, 1.0);
+    
+    gl_Position     = PMatrix * MVMatrix * SMatrix * ScaleMatrix * vertex;
+}

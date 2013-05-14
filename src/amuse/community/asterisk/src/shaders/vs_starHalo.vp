@@ -1,0 +1,24 @@
+#version 140
+
+in vec4 MCvertex;
+in vec3 MCnormal;
+in vec3 MCtexCoord;
+
+out vec3 vertex_normal;
+out vec3 eye_direction;
+
+uniform mat4 MVMatrix;
+uniform mat4 PMatrix;
+uniform mat4 SMatrix;
+uniform mat4 ScaleMatrix;
+uniform mat3 NormalMatrix;
+
+uniform vec3 CameraPos;
+
+void main() 
+{	 
+    vertex_normal = normalize(NormalMatrix * MCnormal);    
+    eye_direction = normalize(NormalMatrix * CameraPos);
+        
+    gl_Position = PMatrix * MVMatrix * SMatrix * ScaleMatrix * MCvertex;
+ } 
