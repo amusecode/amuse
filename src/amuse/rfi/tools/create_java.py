@@ -1397,12 +1397,20 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
         
         return template_string
     
+    @staticmethod
+    def classpath(classpath, code_dir):
+        result = ''
+        
+        for element in classpath:
+            result = result + ":" + code_dir + "/" + element
+            
+        return result 
+    
     def script_string(self):
         return self.template_string.format(
             executable = sys.executable,
-            code_dir = self.code_dir,
             java = self.java,
-            classpath = self.specification_class.classpath
+            classpath = self.classpath(self.specification_class.classpath, self.code_dir)
             )
 
 

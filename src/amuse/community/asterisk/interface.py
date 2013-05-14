@@ -10,7 +10,7 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         .. [#] The Asterisk 3D visualization project is a collaboration between Sterrewacht Leiden and The Netherlands eScience Center.
     """
 
-    classpath = 'src:src/lib/*:src/lib/jogl/*:src/dist/*:*:.'
+    classpath = 'worker.jar', 'src', 'src/dist/*', 'src/lib/*', 'src/lib/jogl/*'
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="asterisk_worker_java", **keyword_arguments)

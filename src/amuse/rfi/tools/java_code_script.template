@@ -4,13 +4,10 @@ import os
 import subprocess
 import sys
 
-code_dir = '{code_dir}'
 java = '{java}'
 classpath = '{classpath}'
 
 def main():
-
-    os.chdir(code_dir)
 
     arguments = [java, "-cp", classpath, "Worker"]
     arguments = arguments + sys.argv[1:]
