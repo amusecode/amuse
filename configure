@@ -5110,7 +5110,7 @@ fi
 
     have_java=yes
   fi
-##else  ## not r_cv_java_works
+else  ## not r_cv_java_works
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Java not found, Java codes disabled" >&5
 $as_echo "$as_me: WARNING: Java not found, Java codes disabled" >&2;}
 fi

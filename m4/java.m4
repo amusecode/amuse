@@ -296,7 +296,7 @@ int main(void) {
 
     have_java=yes
   fi
-##else  ## not r_cv_java_works
+else  ## not r_cv_java_works
     AC_MSG_WARN([Java not found, Java codes disabled])
 fi
 
