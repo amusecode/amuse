@@ -1012,7 +1012,7 @@ FOOTER_CODE_STRING = """
   private final AmuseMessage reply;
   private final CodeInterface code;
     
-  Worker() {
+  Worker() throws Exception {
       this.request = new AmuseMessage();
       this.reply = new AmuseMessage();
       
@@ -1051,7 +1051,7 @@ FOOTER_CODE_STRING = """
         }
     }
 
-    public static void main(String[] arguments) throws IOException {
+    public static void main(String[] arguments) throws Exception {
         //System.err.println("Java worker");
         //for (String argument : arguments) {
         //    System.err.println("argument: " + argument);
