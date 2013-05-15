@@ -172,7 +172,7 @@ public class Code implements CodeInterface {
 
 class ForTestingInterface(CodeInterface):
 
-    classpath = 'worker.jar'
+    classpath = ['worker.jar']
     cwd = ''
     
     def __init__(self, exefile, **options):
