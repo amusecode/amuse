@@ -345,35 +345,75 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         return function
     
     @legacy_function
-    def set_rotation():
+    def set_x_rotation():
         function = LegacyFunctionSpecification()
         function.addParameter("x_rotation", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_y_rotation():
+        function = LegacyFunctionSpecification()
         function.addParameter("y_rotation", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_z_rotation():
+        function = LegacyFunctionSpecification()
         function.addParameter("z_rotation", dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
     @legacy_function
-    def get_current_rotation():
+    def get_x_rotation():
         function = LegacyFunctionSpecification()
         function.addParameter("x_rotation", dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_y_rotation():
+        function = LegacyFunctionSpecification()
         function.addParameter("y_rotation", dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_z_rotation():
+        function = LegacyFunctionSpecification()
         function.addParameter("z_rotation", dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
     @legacy_function
-    def set_translation():
+    def set_x_translation():
         function = LegacyFunctionSpecification()
         function.addParameter("x_translation", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_y_translation():
+        function = LegacyFunctionSpecification()
         function.addParameter("y_translation", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_z_translation():
+        function = LegacyFunctionSpecification()
         function.addParameter("z_translation", dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
     @legacy_function
-    def get_current_translation():
+    def get_x_translation():
         function = LegacyFunctionSpecification()
         function.addParameter("x_translation", dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_y_translation():
+        function = LegacyFunctionSpecification()
         function.addParameter("y_translation", dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_z_translation():
+        function = LegacyFunctionSpecification()
         function.addParameter("z_translation", dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -381,13 +421,13 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
     @legacy_function
     def get_camera_distance():
         function = LegacyFunctionSpecification()
-        function.addParameter("camera_distance", dtype='float64', direction=function.OUT)
+        function.addParameter("camera_distance", dtype='float64', unit=nbody_system.length, direction=function.OUT)
         function.result_type = 'int32'
         return function
     @legacy_function
     def set_camera_distance():
         function = LegacyFunctionSpecification()
-        function.addParameter("camera_distance", dtype='float64', direction=function.IN)
+        function.addParameter("camera_distance", dtype='float64', unit=nbody_system.length, direction=function.IN)
         function.result_type = 'int32'
         return function
     
@@ -443,7 +483,7 @@ class Asterisk(CommonCode):
         object.add_property("get_current_translation")
         object.add_property("get_current_rotation", public_name = "rotation")
         object.add_property("get_current_translation", public_name = "translation")
-    
+        
     def define_particle_sets(self, object):
         object.define_super_set('particles', ['star_particles', 'gas_particles', 'sphere_particles', 'marker_particles'], 
             index_to_default_set = 0)
@@ -540,64 +580,64 @@ class Asterisk(CommonCode):
             False
         )
         
-        object.add_caching_parameter(
-            "set_rotation", 
-            "x_rotation",
-            "rotation_x", 
-            "Rotation of the scene about the x axis (degrees)",
-            0.0,
+        object.add_method_parameter(
+            "get_x_rotation",
+            "set_x_rotation", 
+            "x_rotation", 
+            "Rotation of the scene about the x axis (degrees)", 
+            default_value = 15.0
         )
-        object.add_caching_parameter(
-            "set_rotation", 
-            "y_rotation",
-            "rotation_y", 
-            "Rotation of the scene about the y axis (degrees)",
-            0.0,
+        object.add_method_parameter(
+            "get_y_rotation",
+            "set_y_rotation", 
+            "y_rotation", 
+            "Rotation of the scene about the y axis (degrees)", 
+            default_value = -15.0
         )
-        object.add_caching_parameter(
-            "set_rotation", 
-            "z_rotation",
-            "rotation_z", 
-            "Rotation of the scene about the z axis (degrees)",
-            0.0,
+        object.add_method_parameter(
+            "get_z_rotation",
+            "set_z_rotation", 
+            "z_rotation", 
+            "Rotation of the scene about the z axis (degrees)", 
+            default_value = 0.0
         )
         object.add_vector_parameter(
             "rotation",
             "Rotation of the scene about the x, y, and z axes (degrees)",
-            ("rotation_x", "rotation_y","rotation_z")
+            ("x_rotation", "y_rotation","z_rotation")
         )
-        object.add_caching_parameter(
-            "set_translation", 
-            "x_translation",
-            "translation_x", 
-            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
-            0.0,
+        object.add_method_parameter(
+            "get_x_translation",
+            "set_x_translation", 
+            "x_translation", 
+            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)", 
+            default_value = 0.0
         )
-        object.add_caching_parameter(
-            "set_translation", 
-            "y_translation",
-            "translation_y", 
-            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
-            0.0,
+        object.add_method_parameter(
+            "get_y_translation",
+            "set_y_translation", 
+            "y_translation", 
+            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)", 
+            default_value = 0.0
         )
-        object.add_caching_parameter(
-            "set_translation", 
-            "z_translation",
-            "translation_z", 
-            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
-            0.0,
+        object.add_method_parameter(
+            "get_z_translation",
+            "set_z_translation", 
+            "z_translation", 
+            "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)", 
+            default_value = 0.0
         )
         object.add_vector_parameter(
             "translation",
             "Translation of the scene, corresponding to a rotation of the scene w.r.t. the view point (degrees)",
-            ("translation_x", "translation_y","translation_z")
+            ("x_translation", "y_translation","z_translation")
         )
         object.add_method_parameter(
             "get_camera_distance",
             "set_camera_distance", 
             "camera_distance", 
             "Distance from the view point to the scene", 
-            default_value = 0.0 | nbody_system.length
+            default_value = 2 | nbody_system.length
         )
         object.add_method_parameter(
             "get_scene_number",

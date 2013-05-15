@@ -189,7 +189,7 @@ public class Asterisk {
             Thread.sleep(10000);
             
             lib.setSceneNumber(3);
-            lib.setRotation(30f, 20f, 0f);
+            lib.setRotation(new VecF3(30f, 20f, 0f));
             lib.setCameraDistance(-5f);
             Thread.sleep(3000);
 
@@ -234,23 +234,19 @@ public class Asterisk {
         
         timer.makeScreenShot(fileName);
         
-//        ((GlueTimedPlayer) timer).setScreenshotFileName(fileName);
-//        ((GlueTimedPlayer) timer).setScreenshotNeeded(true);
     }
-
-    //new
 
     public void setSceneNumber(int sceneNumber) {
         TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
         ((GlueTimedPlayer) timer).setFrame(sceneNumber, true);
     }
 
-    public void setRotation(float x, float y, float z) {
-        amuseInputHandler.setRotation(new VecF3(x, y, z));
+    public void setRotation(VecF3 rotation) {
+        amuseInputHandler.setRotation(rotation);
     }
 
-    public void setTranslation(float x, float y, float z) {
-        amuseInputHandler.setTranslation(new VecF3(x, y, z));
+    public void setTranslation(VecF3 translation) {
+        amuseInputHandler.setTranslation(translation);
     }
 
     public void setCameraDistance(float cameraDistance) {

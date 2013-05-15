@@ -389,14 +389,66 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int set_rotation(double x_rotation, double y_rotation, double z_rotation) {
-        asterisk.setRotation((float) x_rotation, (float) y_rotation, (float) z_rotation);
+    public int set_x_rotation(double x_rotation) {
+        System.err.println("setting x rotation " + x_rotation);
+        VecF3 rotation = asterisk.getRotation();
+        
+        rotation.set(0, (float)x_rotation);
+        
+        asterisk.setRotation(rotation);
+        return 0;
+    }
+    
+    @Override
+    public int set_y_rotation(double y_rotation) {
+        System.err.println("setting y rotation " + y_rotation);
+        VecF3 rotation = asterisk.getRotation();
+        
+        rotation.set(1, (float)y_rotation);
+        
+        asterisk.setRotation(rotation);
         return 0;
     }
 
+    
     @Override
-    public int set_translation(double x_translation, double y_translation, double z_translation) {
-        asterisk.setTranslation((float) x_translation, (float) y_translation, (float) z_translation);
+    public int set_z_rotation(double z_rotation) {
+        VecF3 rotation = asterisk.getRotation();
+        
+        rotation.set(2, (float)z_rotation);
+        
+        asterisk.setRotation(rotation);
+        return 0;
+    }
+    
+    @Override
+    public int set_x_translation(double x_translation) {
+        VecF3 translation = asterisk.getTranslation();
+        
+        translation.set(0, (float)x_translation);
+        
+        asterisk.setTranslation(translation);
+        return 0;
+    }
+    
+    @Override
+    public int set_y_translation(double y_translation) {
+        VecF3 translation = asterisk.getTranslation();
+        
+        translation.set(1, (float)y_translation);
+        
+        asterisk.setTranslation(translation);
+        return 0;
+    }
+
+    
+    @Override
+    public int set_z_translation(double z_translation) {
+        VecF3 translation = asterisk.getTranslation();
+        
+        translation.set(2, (float)z_translation);
+        
+        asterisk.setTranslation(translation);
         return 0;
     }
 
@@ -408,44 +460,82 @@ public class Code implements CodeInterface {
 
     @Override
     public int set_scene(int scene_number) {
+        System.err.println("setting scene to " + scene_number);
         asterisk.setSceneNumber(scene_number);
+        
+        //Do nothing for a bit to compensate for bug
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         return 0;
     }
 
     @Override
     public int set_camera_distance(double camera_distance) {
-        asterisk.setCameraDistance((float)camera_distance);
+        System.err.println("setting camera distance to " + camera_distance);
+        double raw_camera_distance = -camera_distance + 1;  
+        
+        asterisk.setCameraDistance((float)raw_camera_distance);
         return 0;
     }
 
     @Override
     public int get_camera_distance(double[] camera_distance) {
-        camera_distance[0] = asterisk.getCameraDistance();
+        double raw_camera_distance = asterisk.getCameraDistance();
+        
+        camera_distance[0] = -(raw_camera_distance - 1);
         return 0;
     }
 
     @Override
-    public int get_current_translation(double[] x_translation, double[] y_translation, double[] z_translation) {
+    public int get_x_translation(double[] x_translation) {
         VecF3 translation = asterisk.getTranslation();
         x_translation[0] = translation.get(0);
+        return 0;
+    }
+    
+    @Override
+    public int get_y_translation(double[] y_translation) {
+        VecF3 translation = asterisk.getTranslation();
         y_translation[0] = translation.get(1);
+        return 0;
+    }
+
+    @Override
+    public int get_z_translation(double[] z_translation) {
+        VecF3 translation = asterisk.getTranslation();
         z_translation[0] = translation.get(2);
         return 0;
     }
+    
+    @Override
+    public int get_x_rotation(double[] x_rotation) {
+        VecF3 rotation = asterisk.getRotation();
+        x_rotation[0] = rotation.get(0);
+        return 0;
+    }
+    
+    @Override
+    public int get_y_rotation(double[] y_rotation) {
+        VecF3 rotation = asterisk.getRotation();
+        y_rotation[0] = rotation.get(1);
+        return 0;
+    }
+
+    @Override
+    public int get_z_rotation(double[] z_rotation) {
+        VecF3 rotation = asterisk.getRotation();
+        z_rotation[0] = rotation.get(2);
+        return 0;
+    }
+
 
     @Override
     public int screenshot(String screenshot_file_name) {
         asterisk.makePNGScreenshot(screenshot_file_name);
         return 0;
     }
-
-    @Override
-    public int get_current_rotation(double[] x_rotation, double[] y_rotation, double[] z_rotation) {
-        VecF3 rotation = asterisk.getRotation();
-        x_rotation[0] = rotation.get(0);
-        y_rotation[0] = rotation.get(1);
-        z_rotation[0] = rotation.get(2);
-        return 0;
-    }
-
 }
