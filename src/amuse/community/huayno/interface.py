@@ -2,7 +2,11 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface,GravityFieldInterface
 from amuse.community.interface.gd import GravitationalDynamics,GravityFieldCode
 
-class HuaynoInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface,GravityFieldInterface):
+class HuaynoInterface(CodeInterface, 
+                      LiteratureReferencesMixIn, 
+                      GravitationalDynamicsInterface, 
+                      StoppingConditionInterface,
+                      GravityFieldInterface):
     """
     HUAYNO is a code to solve the astrophysical N-body problem. It uses
     recursive Hamiltonian splitting to generate multiple-timestep integrators
@@ -189,6 +193,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
     
 
     def __init__(self, convert_nbody = None, **options):
+        self.stopping_conditions = StoppingConditions(self)
         legacy_interface = HuaynoInterface(**options)
 #        self.legacy_doc = legacy_interface.__doc__
 
@@ -294,9 +299,11 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
+        self.stopping_conditions.define_methods(object)
         
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
+        self.stopping_conditions.define_particle_set(object)
 
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)

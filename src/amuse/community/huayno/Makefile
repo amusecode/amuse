@@ -13,7 +13,8 @@ CFLAGS += -qlanglvl=extc99
 else
 CFLAGS += -O2 -std=gnu99
 endif
-CXXFLAGS +=  -O2
+CFLAGS += $(SC_FLAGS)
+CXXFLAGS +=  -O2 $(SC_FLAGS)
 LIBS += -lm
 INCLUDE =
 
@@ -78,12 +79,12 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py HuaynoInterface -o $@
 
 huayno_worker: __init__.py worker_code.cc worker_code.h  $(BUILDDIR)/libhuayno.a $(BUILDDIR)/interface.o
-	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(BUILDDIR)/interface.o $(BUILDDIR)/libhuayno.a -o $@ $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(BUILDDIR)/interface.o $(BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
 	
 huayno_worker_mp: CFLAGS   += $(OPENMP_CFLAGS) 
 huayno_worker_mp: CXXFLAGS   += $(OPENMP_CFLAGS)	
 huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/libhuayno.a $(OPENMP_BUILDDIR)/interface.o 
-	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENMP_BUILDDIR)/interface.o $(OPENMP_BUILDDIR)/libhuayno.a -o $@ $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENMP_BUILDDIR)/interface.o $(OPENMP_BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
 	
 
 huayno_worker_cl: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
@@ -91,7 +92,7 @@ huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: LIBS += $(CL_LIBS)  -lstdcl
 huayno_worker_cl: INCLUDE += $(CL_FLAGS)
 huayno_worker_cl: __init__.py worker_code.cc worker_code.h $(OPENCL_BUILDDIR)/libhuayno_cl.a $(OPENCL_BUILDDIR)/interface.o 
-	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno_cl.a -o $@ $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno_cl.a -o $@ $(LIBS) $(SC_CLIBS)
 
 .cc.o: $<
 	$(MPICXX) -I$(SRCDIR)  $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 

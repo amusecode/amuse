@@ -23,7 +23,7 @@ struct particle
 {
   UINT id;
   FLOAT mass;
-  FLOAT radius; /*not used*/
+  FLOAT radius; /*only used for stopping conditions*/
   DOUBLE pos[3];
   DOUBLE vel[3];
 #ifdef COMPENSATED_SUMMP

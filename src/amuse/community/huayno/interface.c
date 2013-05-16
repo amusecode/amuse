@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include "evolve.h"
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
 
 struct sys mainsys;
 #define NMAX 1000000
@@ -21,6 +23,8 @@ int initialize_code()
   inttype=8;
   dtime=0.;
   init_code();
+  // AMUSE STOPPING CONDITIONS SUPPORT
+  set_support_for_condition(COLLISION_DETECTION);
   return 0;
 }
 
@@ -299,10 +303,26 @@ int evolve_model(double t_end)
   int p; 
   double dt=dtime;
   if(dt==0.) dt=t_end-t_now;
+  reset_stopping_conditions();
   while(t_now < t_end - dt/2) 
   {
     if(mainsys.n > 0) do_evolve(mainsys,dt,inttype);
-    t_now+=dt;
+    if (set_conditions & enabled_conditions) {
+      printf("Stopping condition set!\n");
+      int type, number_of_particles, id;
+      // COLLISION_DETECTION is currently the only supported stopping condition,
+      // so we know that the first one set should be a collision:
+      if ((get_stopping_condition_info(0, &type, &number_of_particles) < 0) || (type != COLLISION_DETECTION)) {
+        printf("get_stopping_condition_info error: %d\n", get_stopping_condition_info(0, &type, &number_of_particles));
+        printf("id: %d, index: %d (%d ?= %d) (%d ?= 2)\n", id, pindex[id], type, COLLISION_DETECTION, number_of_particles);
+        return -1;
+      }
+      get_stopping_condition_particle_index(0, 0, &id);
+      t_now += mainsys.part[pindex[id]].postime;
+      break;
+    } else {
+      t_now+=dt;
+    }
   }
   for(p=0;p<pcounter+1;p++) pindex[p]=-1;
   for(p=0;p<mainsys.n;p++) pindex[mainsys.part[p].id]=p;
