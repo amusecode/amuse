@@ -185,7 +185,11 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
         BS_CC_KEPLER=26
         CC_BSA=27
         CCC_BSA=28
-        SHARED6_COLLISIONS=29
+        SHARED2_COLLISIONS=29
+        SHARED4_COLLISIONS=30
+        SHARED6_COLLISIONS=31
+        SHARED8_COLLISIONS=32
+        SHARED10_COLLISIONS=33
         
         @classmethod
         def _list(cls):

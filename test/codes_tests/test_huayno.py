@@ -434,26 +434,24 @@ class TestHuayno(TestWithMPI):
             self.assertAlmostEqual(potential0, -nbody_system.G*(1.|nbody_system.mass)*(1./x0+1./((1.|nbody_system.length)-x0)),14)
         instance.stop()
     
-    def test17(self):
-        print "Compare the original (recursive) 6th order shared timestep integrator with the non-recursive, collision-detection enabled integrator"
+    def _compare_integrator_with_collision_integrator(self, inttype_parameter1, inttype_parameter2):
         numpy.random.seed(12345)
         particles = plummer.new_plummer_model(101)
         instance = Huayno()
-        instance.parameters.inttype_parameter = instance.inttypes.SHARED6
+        instance.parameters.inttype_parameter = inttype_parameter1
         instance.particles.add_particles(particles)
         instance.evolve_model(0.2 | nbody_system.time)
         expected_position = instance.particles.position
         expected_velocity = instance.particles.velocity
         instance.reset()
-        instance.parameters.inttype_parameter = instance.inttypes.SHARED6_COLLISIONS
+        instance.parameters.inttype_parameter = inttype_parameter2
         instance.particles.add_particles(particles)
         instance.evolve_model(0.2 | nbody_system.time)
         self.assertAlmostRelativeEquals(expected_position, instance.particles.position, 8)
         self.assertAlmostRelativeEquals(expected_velocity, instance.particles.velocity, 8)
         instance.stop()
     
-    def test18(self):
-        print "Testing Huayno collision_detection"
+    def _run_collision_with_integrator(self, inttype_parameter):
         particles = datamodel.Particles(7)
         particles.mass = 0.001 | nbody_system.mass
         particles.radius = 0.01 | nbody_system.length
@@ -463,7 +461,7 @@ class TestHuayno(TestWithMPI):
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
         instance = Huayno()
-        instance.parameters.inttype_parameter = instance.inttypes.SHARED6_COLLISIONS
+        instance.parameters.inttype_parameter = inttype_parameter
         instance.particles.add_particles(particles)
         collisions = instance.stopping_conditions.collision_detection
         collisions.enable()
@@ -503,4 +501,34 @@ class TestHuayno(TestWithMPI):
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
+    
+    def test17(self):
+        print "Compare the SHARED2 integrator with the collision-detection enabled SHARED2_COLLISIONS integrator"
+        self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED2_COLLISIONS, Huayno.inttypes.SHARED2)
+        print "Testing Huayno collision_detection with SHARED2_COLLISIONS"
+        self._run_collision_with_integrator(Huayno.inttypes.SHARED2_COLLISIONS)
+    
+    def test18(self):
+        print "Compare the SHARED4 integrator with the collision-detection enabled SHARED4_COLLISIONS integrator"
+        self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED4_COLLISIONS, Huayno.inttypes.SHARED4)
+        print "Testing Huayno collision_detection with SHARED4_COLLISIONS"
+        self._run_collision_with_integrator(Huayno.inttypes.SHARED4_COLLISIONS)
+    
+    def test19(self):
+        print "Compare the SHARED6 integrator with the collision-detection enabled SHARED6_COLLISIONS integrator"
+        self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED6_COLLISIONS, Huayno.inttypes.SHARED6)
+        print "Testing Huayno collision_detection with SHARED6_COLLISIONS"
+        self._run_collision_with_integrator(Huayno.inttypes.SHARED6_COLLISIONS)
+    
+    def test20(self):
+        print "Compare the SHARED8 integrator with the collision-detection enabled SHARED8_COLLISIONS integrator"
+        self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED8_COLLISIONS, Huayno.inttypes.SHARED8)
+        print "Testing Huayno collision_detection with SHARED8_COLLISIONS"
+        self._run_collision_with_integrator(Huayno.inttypes.SHARED8_COLLISIONS)
+    
+    def test21(self):
+        print "Compare the SHARED10 integrator with the collision-detection enabled SHARED10_COLLISIONS integrator"
+        self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED10_COLLISIONS, Huayno.inttypes.SHARED10)
+        print "Testing Huayno collision_detection with SHARED10_COLLISIONS"
+        self._run_collision_with_integrator(Huayno.inttypes.SHARED10_COLLISIONS)
     

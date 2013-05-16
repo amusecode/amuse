@@ -5,6 +5,9 @@
 #include <tgmath.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include "evolve.h"
 #include "integrators_shared.h"
 // AMUSE STOPPING CONDITIONS SUPPORT
@@ -66,7 +69,7 @@ static void detect_collisions(struct sys s) {
     }
 }
 
-void evolve_shared6_nonrecursive(struct sys s, DOUBLE dt) {
+static void evolve_shared_collision_detection(struct sys s, DOUBLE dt, void (*dkd_func)(int, struct sys, DOUBLE, DOUBLE, DOUBLE)) {
     FLOAT dtsys;
     int next_level, current_level = 0;
     DOUBLE etime, stime;
@@ -74,7 +77,7 @@ void evolve_shared6_nonrecursive(struct sys s, DOUBLE dt) {
     int *step_at_level = (int*) calloc (MAXLEVEL, sizeof(int));
     int is_collision_detection_enabled;
     
-    printf("evolve_shared6_nonrecursive, dt: %Le \n", dt);
+    printf("evolve_shared_collision_detection, dt: %Le \n", dt);
     if (dt == 0.0L) {
         ENDRUN("timestep too small: dt=%Le\n", dt);
     }
@@ -96,13 +99,32 @@ void evolve_shared6_nonrecursive(struct sys s, DOUBLE dt) {
         stime = time_from_steps(step_at_level, dt_levels);
         next_level = update_steps_and_get_next_level(step_at_level, current_level);
         etime = time_from_steps(step_at_level, dt_levels);
-        dkd6(current_level, s, stime, etime, dt_levels[current_level]);
+        dkd_func(current_level, s, stime, etime, dt_levels[current_level]);
         if (is_collision_detection_enabled) detect_collisions(s);
         if (set_conditions & enabled_conditions) break;
         current_level = next_level;
     } while (current_level > 0);
     free(dt_levels);
     free(step_at_level);
-    
+}
+
+static void kdk_with_zerosys(int clevel, struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
+    kdk(clevel, s, zerosys, stime, etime, dt);
+}
+
+void evolve_shared2_collision_detection(struct sys s, DOUBLE dt) {
+    evolve_shared_collision_detection(s, dt, kdk_with_zerosys);
+}
+void evolve_shared4_collision_detection(struct sys s, DOUBLE dt) {
+    evolve_shared_collision_detection(s, dt, dkd4);
+}
+void evolve_shared6_collision_detection(struct sys s, DOUBLE dt) {
+    evolve_shared_collision_detection(s, dt, dkd6);
+}
+void evolve_shared8_collision_detection(struct sys s, DOUBLE dt) {
+    evolve_shared_collision_detection(s, dt, dkd8);
+}
+void evolve_shared10_collision_detection(struct sys s, DOUBLE dt) {
+    evolve_shared_collision_detection(s, dt, dkd10);
 }
 

@@ -277,8 +277,20 @@ void do_evolve(struct sys s, double dt, int inttype)
     case FOURTH_M5:
       evolve_sf_4m5(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
+    case SHARED2_COLLISIONS:
+      evolve_shared2_collision_detection(s, (DOUBLE) dt);
+      break;
+    case SHARED4_COLLISIONS:
+      evolve_shared4_collision_detection(s, (DOUBLE) dt);
+      break;
     case SHARED6_COLLISIONS:
-      evolve_shared6_nonrecursive(s, (DOUBLE) dt);
+      evolve_shared6_collision_detection(s, (DOUBLE) dt);
+      break;
+    case SHARED8_COLLISIONS:
+      evolve_shared8_collision_detection(s, (DOUBLE) dt);
+      break;
+    case SHARED10_COLLISIONS:
+      evolve_shared10_collision_detection(s, (DOUBLE) dt);
       break;
     default:  
       ENDRUN("unknown integrator\n");
