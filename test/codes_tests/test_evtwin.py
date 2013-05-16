@@ -724,7 +724,7 @@ class TestEVtwin(TestWithMPI):
         instance.stop()
         del instance
     
-    def test12(self):
+    def test12a(self):
         print "Testing basic operations: evolve_one_step and evolve_for"
         stars = Particles(2)
         stars.mass = 1.0 | units.MSun
@@ -739,6 +739,29 @@ class TestEVtwin(TestWithMPI):
         step_size = se_stars[0].age / number_of_steps
         for i in range(1, number_of_steps + 1):
             se_stars[1].evolve_for(step_size)
+            self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
+        print se_stars
+        self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
+        self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].temperature, se_stars[1].temperature, 3)
+        instance.stop()
+    
+    def xtest12b(self):
+        print "Testing basic operations: evolve_one_step and evolve_for (on subset, WIP: Ticket 304)"
+        stars = Particles(2)
+        stars.mass = 1.0 | units.MSun
+        instance = EVtwin()
+        se_stars = instance.particles.add_particles(stars)
+        self.assertAlmostEqual(se_stars.age, [0.0, 0.0] | units.yr)
+        
+        for i in range(3):
+            se_stars[0].evolve_one_step()
+        self.assertAlmostEqual(se_stars.age, [225488.337629, 0.0] | units.yr, 3)
+        number_of_steps = 10
+        step_size = se_stars[0].age / number_of_steps
+        for i in range(1, number_of_steps + 1):
+            se_stars[1:].evolve_for(step_size)
             self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
         print se_stars
         self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
