@@ -6,6 +6,7 @@
 #endif
 #include "evolve.h"
 #include "evolve_shared.h"
+#include "evolve_shared_collisions.h"
 #include "evolve_sf.h"
 #include "evolve_cc.h"
 #include "evolve_kepler.h"
@@ -275,6 +276,9 @@ void do_evolve(struct sys s, double dt, int inttype)
       break;
     case FOURTH_M5:
       evolve_sf_4m5(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      break;
+    case SHARED6_COLLISIONS:
+      evolve_shared6_nonrecursive(s, (DOUBLE) dt);
       break;
     default:  
       ENDRUN("unknown integrator\n");

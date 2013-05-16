@@ -181,7 +181,8 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
         BS_CC_KEPLER=26
         CC_BSA=27
         CCC_BSA=28
-                
+        SHARED6_COLLISIONS=29
+        
         @classmethod
         def _list(cls):
               return set([x for x in cls.__dict__.keys() if not x.startswith('_')])

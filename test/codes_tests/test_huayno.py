@@ -408,3 +408,22 @@ class TestHuayno(TestWithMPI):
             self.assertAlmostEqual(fx, fx0,14)
             self.assertAlmostEqual(potential0, -nbody_system.G*(1.|nbody_system.mass)*(1./x0+1./((1.|nbody_system.length)-x0)),14)
         instance.stop()
+    
+    def test17(self):
+        print "Compare the original (recursive) 6th order shared timestep integrator with the non-recursive, collision-detection enabled integrator"
+        numpy.random.seed(12345)
+        particles = plummer.new_plummer_model(101)
+        instance = Huayno()
+        instance.parameters.inttype_parameter = instance.inttypes.SHARED6
+        instance.particles.add_particles(particles)
+        instance.evolve_model(0.2 | nbody_system.time)
+        expected_position = instance.particles.position
+        expected_velocity = instance.particles.velocity
+        instance.reset()
+        instance.parameters.inttype_parameter = instance.inttypes.SHARED6_COLLISIONS
+        instance.particles.add_particles(particles)
+        instance.evolve_model(0.2 | nbody_system.time)
+        self.assertAlmostRelativeEquals(expected_position, instance.particles.position, 8)
+        self.assertAlmostRelativeEquals(expected_velocity, instance.particles.velocity, 8)
+        instance.stop()
+    

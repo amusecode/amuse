@@ -83,6 +83,7 @@ enum intopt
   BS_CC_KEPLER,    // 26
   CC_BSA,       // 27
   CCC_BSA,       // 28
+  SHARED6_COLLISIONS, // 29
 };
 
 extern FLOAT eps2;

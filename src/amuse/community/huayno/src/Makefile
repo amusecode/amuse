@@ -25,7 +25,8 @@ RM = rm
 #---------------------------------------------
 
 OBJS = evolve.o evolve_shared.o evolve_sf.o evolve_cc.o \
-  evolve_ok.o evolve_kepler.o universal_variable_kepler.o evolve_bs.o
+  evolve_ok.o evolve_kepler.o universal_variable_kepler.o evolve_bs.o \
+  evolve_shared_collisions.o 
 
 all: libhuayno.a
 
