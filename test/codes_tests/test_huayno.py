@@ -344,9 +344,34 @@ class TestHuayno(TestWithMPI):
         particles = plummer.new_plummer_model(64)
         sha=hashlib.sha1()
 
-        for itype in sorted(Huayno.inttypes._list()):
+        class inttypes(object):
+            SHARED2=1
+            EXTRAPOLATE=5
+            PASS_KDK=2
+            PASS_DKD=7
+            HOLD_KDK=3
+            HOLD_DKD=8
+            PPASS_DKD=9
+            BRIDGE_KDK=4
+            BRIDGE_DKD=10
+            CC=11
+            CC_KEPLER=12
+            OK=13
+            KEPLER=14
+            SHARED4=15
+            SHARED6=18
+            SHARED8=19
+            SHARED10=20
+            SHAREDBS=21
+           
+            @classmethod
+            def _list(cls):
+                  return set([x for x in cls.__dict__.keys() if not x.startswith('_')])
+
+        for itype in sorted(inttypes._list()):
             if itype in ("KEPLER"): continue
             instance = Huayno()
+            print itype
             instance.parameters.inttype_parameter=getattr(Huayno.inttypes,itype)
             instance.particles.add_particles(particles)
             instance.evolve_model(0.125 | nbody_system.time)
