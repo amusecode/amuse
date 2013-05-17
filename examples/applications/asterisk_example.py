@@ -52,6 +52,13 @@ if __name__ in ('__main__', '__plot__'):
     #creating visualization code
     converter = nbody.nbody_to_si(10.0 | units.parsec, masses.sum())
     visualization = Asterisk(converter, redirection="none")
+
+    #optional: change OpenGL perspective settings
+    #visualization.set_field_of_view(45.0)
+    #visualization.set_z_near(0.1 | units.parsec)
+    #visualization.set_z_far(3000.0 | units.parsec)
+
+    #initialize code (creates gui windows)
     visualization.initialize_code()
 
     #optional: set the zoom and rotation of the visualization
