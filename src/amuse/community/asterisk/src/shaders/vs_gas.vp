@@ -23,6 +23,7 @@ void main() {
     
     gl_PointSize = 1;
     
+    /*
     if (distanceFactor > 2) {    
     	gl_PointSize = 1;
     } else if (distanceFactor > 1.75) {      
@@ -42,6 +43,7 @@ void main() {
     } else {
     	gl_PointSize = 9;    
     }
+    */
     
     gl_Position = PMatrix * MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);
         

@@ -1,6 +1,7 @@
 package nl.esciencecenter.asterisk;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2GL3;
@@ -12,6 +13,7 @@ import javax.media.opengl.GLException;
 
 import nl.esciencecenter.asterisk.data.GlueScene;
 import nl.esciencecenter.asterisk.data.GlueSceneDescription;
+import nl.esciencecenter.asterisk.data.GlueTimedPlayer;
 import nl.esciencecenter.asterisk.input.AsteriskInputHandler;
 import nl.esciencecenter.asterisk.interfaces.SceneStorage;
 import nl.esciencecenter.asterisk.interfaces.TimedPlayer;
@@ -58,15 +60,12 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class AsteriskGLEventListener implements GLEventListener {
-    private final static Logger logger = LoggerFactory
-            .getLogger(AsteriskGLEventListener.class);
+    private final static Logger logger = LoggerFactory.getLogger(AsteriskGLEventListener.class);
 
-    private ShaderProgram animatedTurbulenceShader, pplShader, starHaloShader,
-            axesShader, pointGasShader, octreeGasShader, postprocessShader,
-            gaussianBlurShader, textShader;
+    private ShaderProgram animatedTurbulenceShader, pplShader, starHaloShader, axesShader, pointGasShader, octreeGasShader,
+            postprocessShader, gaussianBlurShader, textShader;
 
-    private FBO starHaloFBO, pointGasFBO, octreeGasFBO, sphereFBO, starFBO,
-            axesFBO, hudFBO;
+    private FBO starHaloFBO, pointGasFBO, octreeGasFBO, sphereFBO, starFBO, axesFBO, hudFBO;
 
     private Quad FSQ_postprocess, FSQ_blur;
     private Model xAxis, yAxis, zAxis;
@@ -101,15 +100,24 @@ public class AsteriskGLEventListener implements GLEventListener {
     protected final float ftheta = 0.0f;
     protected final float phi = 0.0f;
 
-    protected final float fovy = 45.0f;
+    protected final float fovy;
     private float aspect;
-    protected final float zNear = 0.1f;
-    protected final float zFar = 3000.0f;
+    protected final float zNear;
+    protected final float zFar;
+
+    private final boolean test = false;
 
     public AsteriskGLEventListener(AsteriskInputHandler inputHandler) {
         this.loader = new ShaderProgramLoader();
         this.inputHandler = inputHandler;
         this.font = FontFactory.get(fontSet).getDefault();
+
+        AsteriskSettings settings = AsteriskSettings.getInstance();
+
+        this.fovy = settings.getFieldOfView();
+        this.zNear = settings.getZNear();
+        this.zFar = settings.getZFar();
+
     }
 
     @Override
@@ -120,21 +128,18 @@ public class AsteriskGLEventListener implements GLEventListener {
             this.timer = timer;
             try {
                 final int status = drawable.getContext().makeCurrent();
-                if ((status != GLContext.CONTEXT_CURRENT)
-                        && (status != GLContext.CONTEXT_CURRENT_NEW)) {
+                if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
                     System.err.println("Error swapping context to onscreen.");
                 }
             } catch (final GLException e) {
-                System.err
-                        .println("Exception while swapping context to onscreen.");
+                System.err.println("Exception while swapping context to onscreen.");
                 e.printStackTrace();
             }
 
             final GL3 gl = drawable.getContext().getGL().getGL3();
             gl.glViewport(0, 0, canvasWidth, canvasHeight);
 
-            GlueSceneDescription currentDescription = settings
-                    .getCurrentDescription();
+            GlueSceneDescription currentDescription = settings.getCurrentDescription();
 
             sceneStore = timer.getSceneStorage();
             sceneStore.init(gl);
@@ -175,23 +180,17 @@ public class AsteriskGLEventListener implements GLEventListener {
     private synchronized void displayContext(VisualScene newScene) {
         final GL3 gl = GLContext.getCurrentGL().getGL3();
 
-        final int width = GLContext.getCurrent().getGLDrawable().getWidth();
-        final int height = GLContext.getCurrent().getGLDrawable().getHeight();
-        this.aspect = (float) width / (float) height;
-
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
-        final Point4 eye = new Point4(
-                (float) (radius * Math.sin(ftheta) * Math.cos(phi)),
-                (float) (radius * Math.sin(ftheta) * Math.sin(phi)),
-                (float) (radius * Math.cos(ftheta)), 1.0f);
+        final Point4 eye =
+                new Point4((float) (radius * Math.sin(ftheta) * Math.cos(phi)),
+                        (float) (radius * Math.sin(ftheta) * Math.sin(phi)), (float) (radius * Math.cos(ftheta)), 1.0f);
         final Point4 at = new Point4(0.0f, 0.0f, 0.0f, 1.0f);
         final VecF4 up = new VecF4(0.0f, 1.0f, 0.0f, 0.0f);
 
         if (settings.getStereo()) {
             MatF4 mv = MatrixFMath.lookAt(eye, at, up);
-            mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler
-                    .getViewDist())));
+            mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler.getViewDist())));
             MatF4 mv2 = mv.clone();
 
             if (!settings.getStereoSwitched()) {
@@ -199,23 +198,19 @@ public class AsteriskGLEventListener implements GLEventListener {
             } else {
                 gl.glDrawBuffer(GL2GL3.GL_BACK_RIGHT);
             }
-            mv = mv.mul(MatrixFMath.translate(new VecF3(-.5f
-                    * settings.getStereoOcularDistance(), 0f, 0f)));
-            mv = mv.mul(MatrixFMath
-                    .rotationX(inputHandler.getRotation().get(0)));
-            mv = mv.mul(MatrixFMath
-                    .rotationY(inputHandler.getRotation().get(1)));
-            mv = mv.mul(MatrixFMath
-                    .rotationZ(inputHandler.getRotation().get(2)));
+            mv = mv.mul(MatrixFMath.translate(new VecF3(-.5f * settings.getStereoOcularDistance(), 0f, 0f)));
+            mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
+            mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
+            mv = mv.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
             mv = mv.mul(MatrixFMath.translate(inputHandler.getTranslation()));
 
             renderScene(gl, mv.clone(), newScene);
 
-            try {
-                renderHUDText(gl, newScene, mv.clone());
-            } catch (final UninitializedException e) {
-                e.printStackTrace();
-            }
+            // try {
+            // renderHUDText(gl, newScene, mv.clone());
+            // } catch (final UninitializedException e) {
+            // e.printStackTrace();
+            // }
             renderTexturesToScreen(gl);
 
             if (!settings.getStereoSwitched()) {
@@ -223,36 +218,28 @@ public class AsteriskGLEventListener implements GLEventListener {
             } else {
                 gl.glDrawBuffer(GL2GL3.GL_BACK_LEFT);
             }
-            mv2 = mv2.mul(MatrixFMath.translate(new VecF3(.5f * settings
-                    .getStereoOcularDistance(), 0f, 0f)));
-            mv2 = mv2.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(
-                    0)));
-            mv2 = mv2.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(
-                    1)));
-            mv2 = mv2.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(
-                    2)));
+            mv2 = mv2.mul(MatrixFMath.translate(new VecF3(.5f * settings.getStereoOcularDistance(), 0f, 0f)));
+            mv2 = mv2.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
+            mv2 = mv2.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
+            mv2 = mv2.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
             mv2 = mv2.mul(MatrixFMath.translate(inputHandler.getTranslation()));
 
             renderScene(gl, mv2.clone(), newScene);
 
-            try {
-                renderHUDText(gl, newScene, mv2.clone());
-            } catch (final UninitializedException e) {
-                e.printStackTrace();
-            }
+            // try {
+            // renderHUDText(gl, newScene, mv2.clone());
+            // } catch (final UninitializedException e) {
+            // e.printStackTrace();
+            // }
             renderTexturesToScreen(gl);
         } else {
             MatF4 mv = MatrixFMath.lookAt(eye, at, up);
-            mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler
-                    .getViewDist())));
+            mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler.getViewDist())));
 
             mv = mv.mul(MatrixFMath.translate(inputHandler.getTranslation()));
-            mv = mv.mul(MatrixFMath
-                    .rotationX(inputHandler.getRotation().get(0)));
-            mv = mv.mul(MatrixFMath
-                    .rotationY(inputHandler.getRotation().get(1)));
-            mv = mv.mul(MatrixFMath
-                    .rotationZ(inputHandler.getRotation().get(2)));
+            mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
+            mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
+            mv = mv.mul(MatrixFMath.rotationZ(inputHandler.getRotation().get(2)));
 
             renderScene(gl, mv.clone(), newScene);
 
@@ -285,8 +272,7 @@ public class AsteriskGLEventListener implements GLEventListener {
         }
     }
 
-    private void renderPointGas(GL3 gl, MatF4 mv, VisualScene newScene)
-            throws UninitializedException {
+    private void renderPointGas(GL3 gl, MatF4 mv, VisualScene newScene) throws UninitializedException {
         pointGasFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
@@ -301,13 +287,11 @@ public class AsteriskGLEventListener implements GLEventListener {
 
         pointGasFBO.unBind(gl);
 
-        blur(gl, pointGasFBO, FSQ_blur, settings.getPointGasBlurPassSetting(),
-                settings.getPointGasBlurTypeSetting(),
+        blur(gl, pointGasFBO, FSQ_blur, settings.getPointGasBlurPassSetting(), settings.getPointGasBlurTypeSetting(),
                 settings.getPointGasBlurSizeSetting());
     }
 
-    private void renderOctreeGas(GL3 gl, MatF4 mv, VisualScene newScene)
-            throws UninitializedException {
+    private void renderOctreeGas(GL3 gl, MatF4 mv, VisualScene newScene) throws UninitializedException {
         octreeGasFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
@@ -321,21 +305,17 @@ public class AsteriskGLEventListener implements GLEventListener {
         gl.glEnable(GL.GL_DEPTH_TEST);
 
         octreeGasFBO.unBind(gl);
-        blur(gl, octreeGasFBO, FSQ_blur,
-                settings.getOctreeGasBlurPassSetting(),
-                settings.getOctreeGasBlurTypeSetting(),
+        blur(gl, octreeGasFBO, FSQ_blur, settings.getOctreeGasBlurPassSetting(), settings.getOctreeGasBlurTypeSetting(),
                 settings.getOctreeGasBlurSizeSetting());
     }
 
-    private void renderSpheres(GL3 gl, MatF4 mv, VisualScene newScene)
-            throws UninitializedException {
+    private void renderSpheres(GL3 gl, MatF4 mv, VisualScene newScene) throws UninitializedException {
         sphereFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
         final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
         pplShader.setUniformMatrix("PMatrix", p);
-        pplShader.setUniformMatrix("SMatrix",
-                MatrixFMath.scale(settings.getParticleSizeMultiplier() * .1f));
+        pplShader.setUniformMatrix("SMatrix", MatrixFMath.scale(settings.getParticleSizeMultiplier() * .1f));
         pplShader.setUniformMatrix("MVMatrix", mv);
 
         newScene.drawSpheres(gl, pplShader, mv);
@@ -343,19 +323,16 @@ public class AsteriskGLEventListener implements GLEventListener {
         sphereFBO.unBind(gl);
     }
 
-    private void renderStars(GL3 gl, MatF4 mv, VisualScene newScene)
-            throws UninitializedException {
+    private void renderStars(GL3 gl, MatF4 mv, VisualScene newScene) throws UninitializedException {
         starFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
         noiseTex.use(gl);
-        animatedTurbulenceShader.setUniform("Noise",
-                noiseTex.getMultitexNumber());
+        animatedTurbulenceShader.setUniform("Noise", noiseTex.getMultitexNumber());
 
         final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
         animatedTurbulenceShader.setUniformMatrix("PMatrix", p);
-        animatedTurbulenceShader.setUniformMatrix("SMatrix",
-                MatrixFMath.scale(settings.getParticleSizeMultiplier() * .1f));
+        animatedTurbulenceShader.setUniformMatrix("SMatrix", MatrixFMath.scale(settings.getParticleSizeMultiplier() * .1f));
         // animatedTurbulenceShader.setUniformMatrix("MVMatrix", mv);
         animatedTurbulenceShader.setUniform("Offset", offset);
 
@@ -366,22 +343,18 @@ public class AsteriskGLEventListener implements GLEventListener {
         starFBO.unBind(gl);
     }
 
-    private void renderStarHalos(GL3 gl, MatF4 mv, VisualScene newScene)
-            throws UninitializedException {
+    private void renderStarHalos(GL3 gl, MatF4 mv, VisualScene newScene) throws UninitializedException {
         starHaloFBO.bind(gl);
         gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
         final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
         starHaloShader.setUniformMatrix("PMatrix", p);
-        starHaloShader
-                .setUniformMatrix("SMatrix", MatrixFMath.scale((settings
-                        .getParticleSizeMultiplier() * .2f)));
+        starHaloShader.setUniformMatrix("SMatrix", MatrixFMath.scale((settings.getParticleSizeMultiplier() * .2f)));
 
         newScene.drawStars(gl, starHaloShader, mv);
 
         starHaloFBO.unBind(gl);
-        blur(gl, starHaloFBO, FSQ_blur, settings.getStarHaloBlurPassSetting(),
-                settings.getStarHaloBlurTypeSetting(),
+        blur(gl, starHaloFBO, FSQ_blur, settings.getStarHaloBlurPassSetting(), settings.getStarHaloBlurTypeSetting(),
                 settings.getStarHaloBlurSizeSetting());
     }
 
@@ -408,15 +381,11 @@ public class AsteriskGLEventListener implements GLEventListener {
         axesFBO.unBind(gl);
     }
 
-    private void renderHUDText(GL3 gl, VisualScene newScene, MatF4 mv)
-            throws UninitializedException {
+    private void renderHUDText(GL3 gl, VisualScene newScene, MatF4 mv) throws UninitializedException {
         // SceneDescription currentDesc = newScene.getDescription();
-        String frameNumberString = String.format("%03d : ",
-                timer.getFrameNumber());
+        String frameNumberString = String.format("%03d : ", timer.getFrameNumber());
 
-        frameNumberText.setString(gl,
-                frameNumberString + newScene.getDescriptionString(),
-                Color4.white, fontSize);
+        frameNumberText.setString(gl, frameNumberString + newScene.getDescriptionString(), Color4.white, fontSize);
 
         // String min = Float.toString(currentDesc.getLowerBound());
         // String max = Float.toString(currentDesc.getUpperBound());
@@ -453,8 +422,7 @@ public class AsteriskGLEventListener implements GLEventListener {
         // canvasWidth - textLength - 100,
         // 1.75f * canvasHeight);
 
-        frameNumberText.draw(gl, textShader, canvasWidth, canvasHeight, 30f,
-                30f);
+        frameNumberText.draw(gl, textShader, canvasWidth, canvasHeight, 30f, 30f);
 
         hudFBO.unBind(gl);
     }
@@ -462,37 +430,22 @@ public class AsteriskGLEventListener implements GLEventListener {
     private void renderTexturesToScreen(GL3 gl) {
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
-        postprocessShader.setUniform("axesTexture", axesFBO.getTexture()
-                .getMultitexNumber());
-        postprocessShader.setUniform("pointGasTexture", pointGasFBO
-                .getTexture().getMultitexNumber());
-        postprocessShader.setUniform("octreeGasTexture", octreeGasFBO
-                .getTexture().getMultitexNumber());
-        postprocessShader.setUniform("sphereTexture", sphereFBO.getTexture()
-                .getMultitexNumber());
-        postprocessShader.setUniform("starTexture", starFBO.getTexture()
-                .getMultitexNumber());
-        postprocessShader.setUniform("starHaloTexture", starHaloFBO
-                .getTexture().getMultitexNumber());
-        postprocessShader.setUniform("hudTexture", hudFBO.getTexture()
-                .getMultitexNumber());
+        postprocessShader.setUniform("axesTexture", axesFBO.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("pointGasTexture", pointGasFBO.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("octreeGasTexture", octreeGasFBO.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("sphereTexture", sphereFBO.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("starTexture", starFBO.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("starHaloTexture", starHaloFBO.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("hudTexture", hudFBO.getTexture().getMultitexNumber());
 
-        postprocessShader.setUniform("sphereBrightness",
-                settings.getPostprocessingSphereBrightness());
-        postprocessShader.setUniform("starBrightness",
-                settings.getPostprocessingStarBrightness());
-        postprocessShader.setUniform("starHaloBrightness",
-                settings.getPostprocessingStarHaloBrightness());
-        postprocessShader.setUniform("pointGasBrightness",
-                settings.getPostprocessingPointGasBrightness());
-        postprocessShader.setUniform("octreeGasBrightness",
-                settings.getPostprocessingOctreeGasBrightness());
-        postprocessShader.setUniform("axesBrightness",
-                settings.getPostprocessingAxesBrightness());
-        postprocessShader.setUniform("hudBrightness",
-                settings.getPostprocessingHudBrightness());
-        postprocessShader.setUniform("overallBrightness",
-                settings.getPostprocessingOverallBrightness());
+        postprocessShader.setUniform("sphereBrightness", settings.getPostprocessingSphereBrightness());
+        postprocessShader.setUniform("starBrightness", settings.getPostprocessingStarBrightness());
+        postprocessShader.setUniform("starHaloBrightness", settings.getPostprocessingStarHaloBrightness());
+        postprocessShader.setUniform("pointGasBrightness", settings.getPostprocessingPointGasBrightness());
+        postprocessShader.setUniform("octreeGasBrightness", settings.getPostprocessingOctreeGasBrightness());
+        postprocessShader.setUniform("axesBrightness", settings.getPostprocessingAxesBrightness());
+        postprocessShader.setUniform("hudBrightness", settings.getPostprocessingHudBrightness());
+        postprocessShader.setUniform("overallBrightness", settings.getPostprocessingOverallBrightness());
 
         postprocessShader.setUniformMatrix("MVMatrix", new MatF4());
         postprocessShader.setUniformMatrix("PMatrix", new MatF4());
@@ -511,10 +464,22 @@ public class AsteriskGLEventListener implements GLEventListener {
 
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int w, int h) {
-        final GL3 gl = drawable.getGL().getGL3();
+        try {
+            final int status = drawable.getContext().makeCurrent();
+            if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
+                System.err.println("Error swapping context to onscreen.");
+            }
+        } catch (final GLException e) {
+            System.err.println("Exception while swapping context to onscreen.");
+            e.printStackTrace();
+        }
 
-        canvasWidth = w;
-        canvasHeight = h;
+        final GL3 gl = GLContext.getCurrentGL().getGL3();
+
+        canvasWidth = GLContext.getCurrent().getGLDrawable().getWidth();
+        canvasHeight = GLContext.getCurrent().getGLDrawable().getHeight();
+
+        aspect = (float) canvasWidth / (float) canvasHeight;
 
         starFBO.delete(gl);
         starHaloFBO.delete(gl);
@@ -545,21 +510,17 @@ public class AsteriskGLEventListener implements GLEventListener {
         finalPBO.init(gl);
     }
 
-    private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes,
-            int blurType, float blurSize) {
-        gaussianBlurShader.setUniform("Texture", target.getTexture()
-                .getMultitexNumber());
+    private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes, int blurType, float blurSize) {
+        gaussianBlurShader.setUniform("Texture", target.getTexture().getMultitexNumber());
 
         gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
         gaussianBlurShader.setUniformMatrix("MVMatrix", new MatF4());
 
         gaussianBlurShader.setUniform("blurType", blurType);
         gaussianBlurShader.setUniform("blurSize", blurSize);
-        gaussianBlurShader.setUniform("scrWidth", target.getTexture()
-                .getWidth());
+        gaussianBlurShader.setUniform("scrWidth", target.getTexture().getWidth());
 
-        gaussianBlurShader.setUniform("scrHeight", target.getTexture()
-                .getHeight());
+        gaussianBlurShader.setUniform("scrHeight", target.getTexture().getHeight());
         gaussianBlurShader.setUniform("Alpha", 1f);
 
         gaussianBlurShader.setUniform("blurDirection", 0);
@@ -607,8 +568,7 @@ public class AsteriskGLEventListener implements GLEventListener {
     public void init(GLAutoDrawable drawable) {
         try {
             final int status = drawable.getContext().makeCurrent();
-            if ((status != GLContext.CONTEXT_CURRENT)
-                    && (status != GLContext.CONTEXT_CURRENT_NEW)) {
+            if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
                 System.err.println("Error swapping context to onscreen.");
             }
         } catch (final GLException e) {
@@ -616,10 +576,12 @@ public class AsteriskGLEventListener implements GLEventListener {
             e.printStackTrace();
         }
 
-        canvasWidth = drawable.getWidth();
-        canvasHeight = drawable.getHeight();
+        final GL3 gl = GLContext.getCurrentGL().getGL3();
 
-        final GL3 gl = drawable.getGL().getGL3();
+        canvasWidth = GLContext.getCurrent().getGLDrawable().getWidth();
+        canvasHeight = GLContext.getCurrent().getGLDrawable().getHeight();
+
+        aspect = (float) canvasWidth / (float) canvasHeight;
 
         // Anti-Aliasing
         gl.glEnable(GL3.GL_LINE_SMOOTH);
@@ -652,29 +614,25 @@ public class AsteriskGLEventListener implements GLEventListener {
 
         // Load and compile shaders, then use program.
         try {
-            animatedTurbulenceShader = loader.createProgram(gl,
-                    "animatedTurbulence", new File("shaders/vs_sunsurface.vp"),
-                    new File("shaders/fs_animatedTurbulence.fp"));
-            pplShader = loader.createProgram(gl, "ppl", new File(
-                    "shaders/vs_ppl.vp"), new File("shaders/fs_ppl.fp"));
-            starHaloShader = loader.createProgram(gl, "starHalo", new File(
-                    "shaders/vs_starHalo.vp"), new File(
-                    "shaders/fs_starHalo.fp"));
-            axesShader = loader.createProgram(gl, "axes", new File(
-                    "shaders/vs_axes.vp"), new File("shaders/fs_axes.fp"));
-            pointGasShader = loader.createProgram(gl, "gas", new File(
-                    "shaders/vs_gas.vp"), new File("shaders/fs_gas.fp"));
-            octreeGasShader = loader.createProgram(gl, "octreeGas", new File(
-                    "shaders/vs_octreeGas.vp"), new File(
-                    "shaders/fs_octreeGas.fp"));
-            textShader = loader.createProgram(gl, "text", new File(
-                    "shaders/vs_multiColorTextShader.vp"), new File(
-                    "shaders/fs_multiColorTextShader.fp"));
-            postprocessShader = loader.createProgram(gl, "postprocess",
-                    new File("shaders/vs_postprocess.vp"), new File(
+            animatedTurbulenceShader =
+                    loader.createProgram(gl, "animatedTurbulence", new File("shaders/vs_sunsurface.vp"), new File(
+                            "shaders/fs_animatedTurbulence.fp"));
+            pplShader = loader.createProgram(gl, "ppl", new File("shaders/vs_ppl.vp"), new File("shaders/fs_ppl.fp"));
+            starHaloShader =
+                    loader.createProgram(gl, "starHalo", new File("shaders/vs_starHalo.vp"), new File("shaders/fs_starHalo.fp"));
+            axesShader = loader.createProgram(gl, "axes", new File("shaders/vs_axes.vp"), new File("shaders/fs_axes.fp"));
+            pointGasShader = loader.createProgram(gl, "gas", new File("shaders/vs_gas.vp"), new File("shaders/fs_gas.fp"));
+            octreeGasShader =
+                    loader.createProgram(gl, "octreeGas", new File("shaders/vs_octreeGas.vp"),
+                            new File("shaders/fs_octreeGas.fp"));
+            textShader =
+                    loader.createProgram(gl, "text", new File("shaders/vs_multiColorTextShader.vp"), new File(
+                            "shaders/fs_multiColorTextShader.fp"));
+            postprocessShader =
+                    loader.createProgram(gl, "postprocess", new File("shaders/vs_postprocess.vp"), new File(
                             "shaders/fs_postprocess.fp"));
-            gaussianBlurShader = loader.createProgram(gl, "gaussianBlur",
-                    new File("shaders/vs_postprocess.vp"), new File(
+            gaussianBlurShader =
+                    loader.createProgram(gl, "gaussianBlur", new File("shaders/vs_postprocess.vp"), new File(
                             "shaders/fs_gaussian_blur.fp"));
         } catch (final Exception e) {
             System.err.println(e.getMessage());
@@ -683,22 +641,17 @@ public class AsteriskGLEventListener implements GLEventListener {
         }
 
         // AXES
-        xAxis = new Axis(new VecF3(-1f, 0f, 0f), new VecF3(1f, 0f, 0f), .1f,
-                .02f);
+        xAxis = new Axis(new VecF3(-1f, 0f, 0f), new VecF3(1f, 0f, 0f), .1f, .02f);
         xAxis.init(gl);
-        yAxis = new Axis(new VecF3(0f, -1f, 0f), new VecF3(0f, 1f, 0f), .1f,
-                .02f);
+        yAxis = new Axis(new VecF3(0f, -1f, 0f), new VecF3(0f, 1f, 0f), .1f, .02f);
         yAxis.init(gl);
-        zAxis = new Axis(new VecF3(0f, 0f, -1f), new VecF3(0f, 0f, 1f), .1f,
-                .02f);
+        zAxis = new Axis(new VecF3(0f, 0f, -1f), new VecF3(0f, 0f, 1f), .1f, .02f);
         zAxis.init(gl);
 
         // TEXT
-        frameNumberText = new MultiColorText(font);
-
-        final String text = "Frame: "
-                + AsteriskInterfaceWindow.getTimer().getFrameNumber();
-        frameNumberText.setString(gl, text, Color4.white, fontSize);
+        String text = "Frame: " + AsteriskInterfaceWindow.getTimer().getFrameNumber();
+        frameNumberText = new MultiColorText(gl, font, text, Color4.white, fontSize);
+        // frameNumberText.setString(gl, text, Color4.white, fontSize);
 
         frameNumberText.init(gl);
 
@@ -732,6 +685,48 @@ public class AsteriskGLEventListener implements GLEventListener {
 
         finalPBO = new IntPBO(canvasWidth, canvasHeight);
         finalPBO.init(gl);
+
+        if (test) {
+            int POINTS = 10000000;
+
+            PointGas[] pGas1 = new PointGas[POINTS];
+            int tenPercent = (int) (0.1f * pGas1.length);
+            long startTime = System.currentTimeMillis();
+
+            for (int i = 0; i < pGas1.length; i++) {
+                float[] coordinates = new float[] { randBound(-1f, 2f), randBound(-1f, 2f), randBound(-1f, 2f) };
+
+                float[] color = new float[] {
+                        // 1f, 1f, 1f, 1f
+                        (float) Math.random(), (float) Math.random(), (float) Math.random(), (float) Math.random() };
+
+                pGas1[i] = new PointGas(i, coordinates, color);
+
+                if (i % tenPercent == 0) {
+                    long stopTime = System.currentTimeMillis();
+                    long timePassed = stopTime - startTime;
+
+                    System.out.println("Point cloud generation progress: " + (int) (((float) i / (float) pGas1.length) * 100)
+                            + "% ... Time passed: " + TimeUnit.MILLISECONDS.toSeconds(timePassed) + " seconds.");
+
+                }
+            }
+
+            Snapshot scene1 = new Snapshot("willekeurig", null, null, null, pGas1);
+
+            TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
+            int sceneNumber = ((GlueTimedPlayer) timer).addScene(scene1);
+
+            if (!timer.isInitialized()) {
+                ((GlueTimedPlayer) timer).init();
+
+                new Thread(timer).start();
+            }
+        }
+    }
+
+    private static float randBound(float lower, float delta) {
+        return ((float) Math.random() * delta + lower);
     }
 
     public AsteriskInputHandler getInputHandler() {

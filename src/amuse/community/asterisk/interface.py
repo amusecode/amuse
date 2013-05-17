@@ -469,6 +469,45 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_field_of_view():
+        function = LegacyFunctionSpecification()
+        function.addParameter("field_of_view", dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_field_of_view():
+        function = LegacyFunctionSpecification()
+        function.addParameter("field_of_view", dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_z_near():
+        function = LegacyFunctionSpecification()
+        function.addParameter("z_near", dtype='float64', unit=nbody_system.length, direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_z_near():
+        function = LegacyFunctionSpecification()
+        function.addParameter("z_near", dtype='float64', unit=nbody_system.length, direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_z_far():
+        function = LegacyFunctionSpecification()
+        function.addParameter("z_far", dtype='float64', unit=nbody_system.length, direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_z_far():
+        function = LegacyFunctionSpecification()
+        function.addParameter("z_far", dtype='float64', unit=nbody_system.length, direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
 class Asterisk(CommonCode):
 
     def __init__(self, unit_converter=None, **options):

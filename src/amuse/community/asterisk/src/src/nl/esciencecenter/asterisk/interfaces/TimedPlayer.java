@@ -43,7 +43,6 @@ public interface TimedPlayer extends Runnable {
 
     public void init();
 
-    //blocks until screenshot is actually made
     public void makeScreenShot(String fileName);
 
 }

@@ -143,8 +143,8 @@ public class GlueTimedPlayer implements TimedPlayer {
         }
     }
 
-    public synchronized void addScene(Snapshot scene) {
-        dsManager.addScene(scene);
+    public synchronized int addScene(Snapshot scene) {
+        int sceneNumber = dsManager.addScene(scene);
 
         timeBar.setMaximum(dsManager.getNumFrames() - 1);
         timeBar.invalidate();
@@ -152,6 +152,8 @@ public class GlueTimedPlayer implements TimedPlayer {
         if (currentState == states.WAITINGONFRAME) {
             start();
         }
+
+        return sceneNumber;
     }
 
     @Override

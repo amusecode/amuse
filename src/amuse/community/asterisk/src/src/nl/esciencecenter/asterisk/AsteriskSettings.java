@@ -114,6 +114,10 @@ public class AsteriskSettings extends Settings {
     public static final int SPHERE_SUBDIVISION = 2;
 
     public static final int OCTREE_MODEL_SUBDIVISION = 2;
+    
+    private float fieldOfView = 45.0f;
+    private float zNear = 0.1f;
+    private float zFar = 3000.0f;
 
     private GlueSceneDescription currentDescription;
 
@@ -787,4 +791,30 @@ public class AsteriskSettings extends Settings {
     public int getPointGasBlurSizeSetting() {
         return pointGasBlurSizeSetting;
     }
+    
+    public void setFieldOfView(float value) {
+        this.fieldOfView = value;
+    }
+
+    public float getFieldOfView() {
+        return fieldOfView;
+    }
+
+    public float getZNear() {
+       return zNear;
+    }
+    
+    public void setZNear(float value) {
+        this.zNear = value;
+    }
+
+    public float getZFar() {
+        return zFar;
+    }
+    
+    public void setZFar(float value) {
+        this.zFar = value;
+    }
+
+    
 }

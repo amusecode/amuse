@@ -153,16 +153,16 @@ public class GlueScene implements Runnable, VisualScene {
     public synchronized void drawStars(GL3 gl, ShaderProgram program,
             MatF4 MVMatrix) {
         MatF4 viewModel;
-        try {
-            viewModel = MatrixFMath.inverse(MVMatrix);
-            VecF3 cameraPos = new VecF3(viewModel.get(3), viewModel.get(7),
-                    viewModel.get(11));
-            Collections.sort(stars, new DistanceComparator(cameraPos));
-        } catch (InverseNotAvailableException e) {
-            e.printStackTrace();
-        }
-
         if (stars != null) {
+            try {
+                viewModel = MatrixFMath.inverse(MVMatrix);
+                VecF3 cameraPos = new VecF3(viewModel.get(3), viewModel.get(7),
+                        viewModel.get(11));
+                Collections.sort(stars, new DistanceComparator(cameraPos));
+            } catch (InverseNotAvailableException e) {
+                e.printStackTrace();
+            }
+
             for (StarModel s : stars) {
                 s.draw(gl, program, MVMatrix);
             }

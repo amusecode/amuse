@@ -5,18 +5,17 @@ import nl.esciencecenter.esight.math.VecF3;
 
 public class Code implements CodeInterface {
 
-    private final Asterisk asterisk;
+    private Asterisk asterisk;
 
-    private final ArrayList<CodeParticle> particles;
+    private ArrayList<CodeParticle> particles;
 
     private boolean useOctreeForGas;
     private boolean useStarShader;
 
     public Code() {
-        asterisk = new Asterisk();
-
-        particles = new ArrayList<CodeParticle>();
-
+        AsteriskSettings settings = AsteriskSettings.getInstance();
+        settings.setFieldOfView(20.0f);
+    
         useStarShader = true;
         useOctreeForGas = false;
 
@@ -40,7 +39,8 @@ public class Code implements CodeInterface {
 
     @Override
     public int initialize_code() {
-        //System.err.println("initialize code! (does nothing)");
+        asterisk = new Asterisk();
+        particles = new ArrayList<CodeParticle>();
         return 0;
     }
 
@@ -538,4 +538,48 @@ public class Code implements CodeInterface {
         asterisk.makePNGScreenshot(screenshot_file_name);
         return 0;
     }
+    
+    @Override
+    public int set_field_of_view(double field_of_view) {
+        AsteriskSettings settings = AsteriskSettings.getInstance();
+        settings.setFieldOfView((float)field_of_view);
+        return 0;
+    }
+
+    @Override
+    public int get_field_of_view(double[] field_of_view) {
+        AsteriskSettings settings = AsteriskSettings.getInstance();
+        field_of_view[0] = settings.getFieldOfView();
+        return 0;
+    }
+    
+    @Override
+    public int set_z_near(double zNear) {
+        AsteriskSettings settings = AsteriskSettings.getInstance();
+        settings.setFieldOfView((float)zNear);
+        return 0;
+    }
+
+    @Override
+    public int get_z_near(double[] z_near) {
+        AsteriskSettings settings = AsteriskSettings.getInstance();
+        z_near[0] = settings.getZNear();
+        return 0;
+    }
+    
+    @Override
+    public int set_z_far(double z_far) {
+        AsteriskSettings settings = AsteriskSettings.getInstance();
+        settings.setFieldOfView((float)z_far);
+        return 0;
+    }
+
+    @Override
+    public int get_z_far(double[] z_far) {
+        AsteriskSettings settings = AsteriskSettings.getInstance();
+        z_far[0] = settings.getZFar();
+        return 0;
+    }
+
+    
 }

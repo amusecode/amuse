@@ -148,25 +148,11 @@ public class GlueDatasetManager {
         return availableFrameSequenceNumbers.size();
     }
 
-    public void addScene(Snapshot scene) {
+    public int addScene(Snapshot scene) {
+        int sceneNumber = availableFrameSequenceNumbers.size();
         glueSceneStorage.put(availableFrameSequenceNumbers.size(), scene);
-        availableFrameSequenceNumbers.add(availableFrameSequenceNumbers.size());
+        availableFrameSequenceNumbers.add(sceneNumber);
 
-        // String filename = "bla";
-        // try {
-        // File myFile = new File(filename);
-        // myFile.createNewFile();
-        //
-        // FileOutputStream fos = new FileOutputStream(myFile);
-        // ObjectOutputStream oos = new ObjectOutputStream(fos);
-        // oos.writeObject(scene);
-        // oos.close();
-        //
-        // } catch (FileNotFoundException e) {
-        // e.printStackTrace();
-        // } catch (IOException e) {
-        // e.printStackTrace();
-        // }
-
+        return sceneNumber;
     }
 }
