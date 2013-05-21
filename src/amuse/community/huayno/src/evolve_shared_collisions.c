@@ -58,11 +58,14 @@ static void detect_collisions(struct sys s) {
             dr2 = dx[0]*dx[0] + dx[1]*dx[1] + dx[2]*dx[2];
             radius_sum = s.part[i].radius + s.part[j].radius;
             if (dr2 <= radius_sum*radius_sum) {
-                int stopping_index = next_index_for_stopping_condition();
-                if (stopping_index >= 0) {
-                    set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-                    set_stopping_condition_particle_index(stopping_index, 0, s.part[i].id);
-                    set_stopping_condition_particle_index(stopping_index, 1, s.part[j].id);
+                #pragma omp critical
+                {
+                    int stopping_index = next_index_for_stopping_condition();
+                    if (stopping_index >= 0) {
+                        set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                        set_stopping_condition_particle_index(stopping_index, 0, s.part[i].id);
+                        set_stopping_condition_particle_index(stopping_index, 1, s.part[j].id);
+                    }
                 }
             }
         }
@@ -100,8 +103,10 @@ static void evolve_shared_collision_detection(struct sys s, DOUBLE dt, void (*dk
         next_level = update_steps_and_get_next_level(step_at_level, current_level);
         etime = time_from_steps(step_at_level, dt_levels);
         dkd_func(current_level, s, stime, etime, dt_levels[current_level]);
-        if (is_collision_detection_enabled) detect_collisions(s);
-        if (set_conditions & enabled_conditions) break;
+        if (is_collision_detection_enabled) {
+            detect_collisions(s);
+            if (set_conditions & enabled_conditions) break;
+        }
         current_level = next_level;
     } while (current_level > 0);
     free(dt_levels);
