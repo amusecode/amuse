@@ -7,7 +7,7 @@ import math
 from amuse.community.huayno.interface import HuaynoInterface, Huayno
 
 from amuse.units import nbody_system
-from amuse.units import units
+from amuse.units import units, constants
 from amuse import datamodel
 from amuse.ic import plummer
 try:
@@ -85,21 +85,15 @@ class TestHuaynoInterface(TestWithMPI):
 
 class TestHuayno(TestWithMPI):
     def new_system_of_sun_and_earth(self):
-        stars = datamodel.Stars(2)
-        sun = stars[0]
-        sun.mass = units.MSun(1.0)
-        sun.position = units.m(numpy.array((0.0,0.0,0.0)))
-        sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
-        sun.radius = units.RSun(1.0)
-
-        earth = stars[1]
-        earth.mass = units.kg(5.9736e24)
-        earth.radius = units.km(6371) 
-        earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
-        earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
-        
-        return stars
-            
+        particles = datamodel.Particles(2)
+        particles.mass = [1.0, 3.0037e-6] | units.MSun
+        particles.radius = 1.0 | units.RSun
+        particles.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | units.AU
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.km / units.s
+        particles[1].vy = (constants.G * particles.total_mass() / (1.0 | units.AU)).sqrt()
+        particles.move_to_center()
+        return particles
+    
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
@@ -531,4 +525,25 @@ class TestHuayno(TestWithMPI):
         self._compare_integrator_with_collision_integrator(Huayno.inttypes.SHARED10_COLLISIONS, Huayno.inttypes.SHARED10)
         print "Testing Huayno collision_detection with SHARED10_COLLISIONS"
         self._run_collision_with_integrator(Huayno.inttypes.SHARED10_COLLISIONS)
+    
+    def test22(self):
+        print "Testing zero-mass test particles in Huayno, can be used for removing particles when inside recursive evolve loop"
+        sun_and_earth = self.new_system_of_sun_and_earth()
+        period = (4.0 * math.pi**2 * (1.0 | units.AU)**3 / (constants.G * sun_and_earth.total_mass())).sqrt()
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        huayno = Huayno(convert_nbody, redirection="none")
+        huayno.parameters.epsilon_squared = 0.0 | units.AU**2
+        huayno.parameters.inttype_parameter = huayno.inttypes.SHARED8
+        
+        test_particle = datamodel.Particle(mass=0|units.MSun, position=[4,0,0]|units.AU, velocity=[0,0,0]|units.kms)
+        test_particle.vy = (constants.G * sun_and_earth.total_mass() / (4.0 | units.AU)).sqrt()
+        sun_and_earth.add_particle(test_particle)
+        huayno.particles.add_particles(sun_and_earth)
+        huayno.evolve_model(period)
+        self.assertAlmostRelativeEqual(huayno.particles[:2].x, sun_and_earth[:2].x, 13)
+        huayno.evolve_model(1.25 * period)
+        self.assertAlmostRelativeEqual(huayno.particles[1].y, sun_and_earth[1].x, 13)
+        huayno.evolve_model(8.0 * period)
+        self.assertAlmostRelativeEqual(huayno.particles.x, sun_and_earth.x, 8)
+        huayno.stop()
     
