@@ -45,6 +45,12 @@ class FiInterface(
     
     def __init__(self, mode = MODE_NORMAL,  **options):
         self.mode = mode
+        
+        if options.has_key("number_of_workers") and options["number_of_workers"]!=1:
+          print "you probably want to use mode='openmp'"
+          print "and set the OMP_NUM_THREADS environment variable"
+          raise Exception("Fi expects number_of_workers to be 1") 
+        
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureReferencesMixIn.__init__(self)
                      
