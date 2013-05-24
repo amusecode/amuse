@@ -5,9 +5,12 @@
 #include <stopcond.h>
 
 struct sys mainsys;
-#define NMAX 1000000
 
-int pcounter,pindex[NMAX];
+int nmax=10000;
+int max_pcounter=10000;
+
+int pcounter;
+int *pindex;
 double t_now;
 int inttype;
 double dtime;
@@ -15,9 +18,11 @@ static double begin_time = 0;
 
 int initialize_code()
 {
+  max_pcounter=nmax*sizeof(struct particle)/sizeof(int);
   pcounter=0;
+  pindex=(int *) malloc(max_pcounter*sizeof(int));
   mainsys.n=0;
-  mainsys.part=(struct particle*) malloc(NMAX*sizeof(struct particle));
+  mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
   mainsys.last=NULL;
   dt_param=.03; 
   eps2=0.;
@@ -52,7 +57,18 @@ int new_particle(int *id, double mass,
 {
  int p;
  p=mainsys.n;
- if(p>=NMAX) return -1;
+ if(p>=nmax)
+ {
+   nmax*=2;
+   mainsys.part=(struct particle *) realloc( mainsys.part, nmax*sizeof(struct particle) );  
+   if(mainsys.part == NULL) return -1;
+ }
+ if(pcounter>=max_pcounter)
+ {
+   max_pcounter*=2;
+   pindex=(int *) realloc( pindex, max_pcounter*sizeof(int) );  
+   if(pindex == NULL) return -2;
+ }
  pindex[pcounter]=p;
  *id=pcounter;
  mainsys.part[p].id=pcounter;
@@ -75,9 +91,9 @@ int new_particle(int *id, double mass,
 
 inline int get_pindex(int id,int *p)
 {
-  if(id<0 || id>=pcounter) return -1;
+  if(id<0 || id>pcounter-1) return -1;
   *p=pindex[id];
-  if(*p<0  || *p>=mainsys.n) return -2;
+  if(*p<0  || *p>mainsys.n-1) return -2;
   return 0; 
 }
 
