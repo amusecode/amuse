@@ -71,15 +71,8 @@ int new_particle(int *id, double mass,
  mainsys.part[p].pot=0.;
  mainsys.part[p].timestep=0.;
  mainsys.part[p].postime=0;
- mainsys.n++;  
- if(mainsys.n==1) 
- {
-   mainsys.last=mainsys.part;
- }
- else
- {
-   mainsys.last++;
- }
+ mainsys.n++;
+ mainsys.last=&mainsys.part[p];
  return 0;
 }
 
@@ -91,8 +84,12 @@ int delete_particle(int id)
   if(p < 0 || p>mainsys.n) return -1;
   pindex[id]=-1;
   mainsys.n--;
+  if(mainsys.n==0)
+  {
+    mainsys.last=NULL;
+    return 0;
+  }
   mainsys.last--;
-  if(mainsys.n==0) return 0;
   mainsys.part[p]=mainsys.part[mainsys.n];
   pindex[mainsys.part[p].id]=p;
   return 0; 
