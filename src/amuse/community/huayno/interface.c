@@ -4,20 +4,22 @@
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
 
-struct sys mainsys;
+#define NMAX 10000
+static struct sys mainsys;
 
-int nmax=10000;
-int max_pcounter=10000;
+static int nmax;
+static int max_pcounter;
 
-int pcounter;
-int *pindex;
-double t_now;
-int inttype;
-double dtime;
+static int pcounter;
+static int *pindex;
+static double t_now;
+static int inttype;
+static double dtime;
 static double begin_time = 0;
 
 int initialize_code()
 {
+  nmax=NMAX;
   max_pcounter=nmax*sizeof(struct particle)/sizeof(int);
   pcounter=0;
   pindex=(int *) malloc(max_pcounter*sizeof(int));
@@ -38,6 +40,7 @@ int cleanup_code()
 { 
     for(int i = 0; i < pcounter; i++) pindex[i] = -1;
     pcounter=0;
+    free(pindex);
     mainsys.n=0;
     free(mainsys.part);
     mainsys.last=NULL;
@@ -59,15 +62,19 @@ int new_particle(int *id, double mass,
  p=mainsys.n;
  if(p>=nmax)
  {
+   struct particle *new;
    nmax*=2;
-   mainsys.part=(struct particle *) realloc( mainsys.part, nmax*sizeof(struct particle) );  
-   if(mainsys.part == NULL) return -1;
+   new=(struct particle *) realloc( mainsys.part, nmax*sizeof(struct particle) );  
+   if(new == NULL) return -1;
+   mainsys.part=new;
  }
  if(pcounter>=max_pcounter)
  {
+   int *new;
    max_pcounter*=2;
-   pindex=(int *) realloc( pindex, max_pcounter*sizeof(int) );  
-   if(pindex == NULL) return -2;
+   new=(int *) realloc( pindex, max_pcounter*sizeof(int) );  
+   if(new == NULL) return -2;
+   pindex=new;
  }
  pindex[pcounter]=p;
  *id=pcounter;
@@ -89,7 +96,7 @@ int new_particle(int *id, double mass,
  return 0;
 }
 
-inline int get_pindex(int id,int *p)
+static inline int get_pindex(int id,int *p)
 {
   if(id<0 || id>pcounter-1) return -1;
   *p=pindex[id];
