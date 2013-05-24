@@ -15,7 +15,7 @@ static double begin_time = 0;
 
 int initialize_code()
 {
-  pcounter=-1;
+  pcounter=0;
   mainsys.n=0;
   mainsys.part=(struct particle*) malloc(NMAX*sizeof(struct particle));
   mainsys.last=NULL;
@@ -31,11 +31,8 @@ int initialize_code()
 
 int cleanup_code()
 { 
-    for(int i = 0; i < NMAX; i++) {
-        pindex[i] = 0;
-    }
-    
-    pcounter=-1;
+    for(int i = 0; i < pcounter; i++) pindex[i] = -1;
+    pcounter=0;
     mainsys.n=0;
     free(mainsys.part);
     mainsys.last=NULL;
@@ -56,7 +53,6 @@ int new_particle(int *id, double mass,
  int p;
  p=mainsys.n;
  if(p>=NMAX) return -1;
- pcounter++;
  pindex[pcounter]=p;
  *id=pcounter;
  mainsys.part[p].id=pcounter;
@@ -72,16 +68,25 @@ int new_particle(int *id, double mass,
  mainsys.part[p].timestep=0.;
  mainsys.part[p].postime=0;
  mainsys.n++;
+ pcounter++;
  mainsys.last=&mainsys.part[p];
  return 0;
 }
 
+inline int get_pindex(int id,int *p)
+{
+  if(id<0 || id>=pcounter) return -1;
+  *p=pindex[id];
+  if(*p<0  || *p>=mainsys.n) return -2;
+  return 0; 
+}
+
+
 int delete_particle(int id)
 {
-  int p=0;
-  if(id<0 || id > pcounter) return -1;
-  p=pindex[id];
-  if(p < 0 || p>mainsys.n) return -1;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
   pindex[id]=-1;
   mainsys.n--;
   if(mainsys.n==0)
@@ -100,10 +105,9 @@ int get_state(int id, double *mass,
         double *vx, double *vy, double *vz,
         double *radius)
 {
-  int p=0;
- if(id<0 || id > pcounter) return -1;
- p=pindex[id];
- if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
  *mass=mainsys.part[p].mass; 
  *radius=mainsys.part[p].radius;
  *x=mainsys.part[p].pos[0]; 
@@ -117,30 +121,27 @@ int get_state(int id, double *mass,
 
 int get_mass(int id, double *mass)
 {
-  int p=0;
- if(id<0 || id > pcounter) return -1;
- p=pindex[id];
- if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
  *mass=mainsys.part[p].mass; 
  return 0;
 }
 
 int get_radius(int id, double *radius)
 {
-  int p=0;
- if(id<0 || id > pcounter) return -1;
- p=pindex[id];
- if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
  *radius=mainsys.part[p].radius;
  return 0;
 }
 
 int get_position(int id, double *x, double *y, double *z)
 {
-  int p=0;
- if(id<0 || id > pcounter) return -1;
- p=pindex[id];
- if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
  *x=mainsys.part[p].pos[0]; 
  *y=mainsys.part[p].pos[1]; 
  *z=mainsys.part[p].pos[2]; 
@@ -149,10 +150,9 @@ int get_position(int id, double *x, double *y, double *z)
 
 int get_velocity(int id, double *vx, double *vy, double *vz)
 {
-  int p=0;
- if(id<0 || id > pcounter) return -1;
- p=pindex[id];
- if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
  *vx=mainsys.part[p].vel[0]; 
  *vy=mainsys.part[p].vel[1]; 
  *vz=mainsys.part[p].vel[2]; 
@@ -164,10 +164,9 @@ int set_state(int id, double mass,
         double vx, double vy, double vz, 
         double radius)
 {
-  int p=0;
-  if(id<0 || id > pcounter) return -1;
-  p=pindex[id];
- if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
   mainsys.part[p].mass=mass; 
   mainsys.part[p].radius=radius; 
   mainsys.part[p].pos[0]=x; 
@@ -181,20 +180,18 @@ int set_state(int id, double mass,
 
 int set_mass(int id, double mass)
 {
-  int p=0;
-  if(id<0 || id > pcounter) return -1;
-  p=pindex[id];
-  if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
   mainsys.part[p].mass=mass; 
   return 0;
 }
 
 int set_radius(int id, double radius)
 {
-  int p=0;
-  if(id<0 || id > pcounter) return -1;
-  p=pindex[id];
-  if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
   mainsys.part[p].radius=radius; 
   return 0;
 }
@@ -202,10 +199,9 @@ int set_radius(int id, double radius)
 
 int set_position(int id, double x, double y, double z)
 {
-  int p=0;
-  if(id<0 || id > pcounter) return -1;
-  p=pindex[id];
-  if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
   mainsys.part[p].pos[0]=x; 
   mainsys.part[p].pos[1]=y; 
   mainsys.part[p].pos[2]=z;  
@@ -214,10 +210,9 @@ int set_position(int id, double x, double y, double z)
 
 int set_velocity(int id, double vx, double vy, double vz)
 {
-  int p=0;
-  if(id<0 || id > pcounter) return -1;
-  p=pindex[id];
-  if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
   mainsys.part[p].vel[0]=vx; 
   mainsys.part[p].vel[1]=vy; 
   mainsys.part[p].vel[2]=vz; 
@@ -239,10 +234,9 @@ int get_index_of_first_particle(int  *id)
 
 int get_index_of_next_particle(int  id, int *nout)
 {
-  int p=0;
-  if(id<0 || id > pcounter) return -1;
-  p=pindex[id];
-  if(p < 0 || p>=mainsys.n) return -1;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
   if(p ==mainsys.n-1) return 1;
   *nout=mainsys.part[p+1].id;
   return 0;
@@ -322,7 +316,7 @@ int evolve_model(double t_end)
       t_now+=dt;
     }
   }
-  for(p=0;p<pcounter+1;p++) pindex[p]=-1;
+  for(p=0;p<pcounter;p++) pindex[p]=-1;
   for(p=0;p<mainsys.n;p++) pindex[mainsys.part[p].id]=p;
   return 0;
 }
@@ -423,10 +417,9 @@ int commit_parameters()
 
 int get_potential(int id, double *pot)
 {
-  int p=0;
-  if(id<0 || id > pcounter) return -1;
-  p=pindex[id];
-  if(p < 0 || p>mainsys.n) return -2;
+  int p;
+  int err=get_pindex(id,&p);
+  if(err!=0) return err;
   *pot=mainsys.part[p].pot;
   return 0;
 }

@@ -56,7 +56,7 @@ class TestHuaynoInterface(TestWithMPI):
         
         self.assertEquals(2, instance.get_index_of_next_particle(0)['index_of_the_next_particle'])
         self.assertEquals(0, instance.get_index_of_next_particle(0)['__result'])
-        self.assertEquals(-1, instance.get_index_of_next_particle(1)['__result'])
+        self.assertEquals(-2, instance.get_index_of_next_particle(1)['__result'])
         self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
         
     def test3(self):
@@ -365,7 +365,6 @@ class TestHuayno(TestWithMPI):
         for itype in sorted(inttypes._list()):
             if itype in ("KEPLER"): continue
             instance = Huayno()
-            print itype
             instance.parameters.inttype_parameter=getattr(Huayno.inttypes,itype)
             instance.particles.add_particles(particles)
             instance.evolve_model(0.125 | nbody_system.time)
@@ -374,10 +373,10 @@ class TestHuayno(TestWithMPI):
             instance.stop()
         
         # this result is probably dependent on system architecture hence no good for assert
+        print 
         print sha.hexdigest()
-        print "9714521156a4d4befc1e414f75aa650e1f8836ae"
-    
-    
+        print "8e71f9441578a43af4af927943577ad2c4130e4c"
+        
     def test15(self):
         particles = plummer.new_plummer_model(512)
         expected_positions = None
