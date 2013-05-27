@@ -44,7 +44,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.6.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'http://ignum.dl.sourceforge.net/sourceforge/numpy/', #download url, filename is appended
+            'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -52,7 +52,7 @@ class InstallPrerequisites(object):
             [], 
             '1.1.2', 
             'nose-' , '.tar.gz', 
-            'http://d.pypi.python.org/packages/source/n/nose/', 
+            'http://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
           (
@@ -60,7 +60,7 @@ class InstallPrerequisites(object):
             [], 
             '0.6.24', 
             'distribute-' , '.tar.gz', 
-            'http://d.pypi.python.org/packages/source/d/distribute/', 
+            'http://pypi.python.org/packages/source/d/distribute/', 
             self.python_build
           ),
           (
@@ -141,7 +141,7 @@ class InstallPrerequisites(object):
           (
             'zlib' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '1.2.7' ,                   #version string
+            '1.2.8' ,                   #version string
             'zlib-', '.tar.gz',        #pre- and postfix for filename
             'http://zlib.net/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work

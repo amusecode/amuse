@@ -5,7 +5,7 @@ BASEDIR=`pwd`
 PLATFORM=`uname`
 ARCHITECTURE=`uname -m`
 
-TMPDIR=/data1/vanelteren/tmp
+#TMPDIR=/data1/vanelteren/tmp
 SVNURL=http://www.amusecode.org/svn/trunk
 SVNOPTS=
 NOW=$(date +"%Y%m%d-%H%M%S")
