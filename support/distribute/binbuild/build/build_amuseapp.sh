@@ -266,11 +266,14 @@ fi
 
 if [ ${PLATFORM} == "Darwin" ]; then
     echo 'move refs'
-    
+   
+    cp /usr/local/lib/*.dylib ${PYTHONHOME}/lib 
+
     chmod u+w ${PYTHONHOME}/lib/lib*.dylib
-    
+
     ${PYTHON} mvpath.py -p ${PYTHONHOME}/lib/
     ${PYTHON} mvref.py -p ${PYTHONHOME}/lib/ -b ${PYTHONHOME}
+    ${PYTHON} mvref.py -p /usr/local/lib/ -b ${PYTHONHOME}/lib -r ./
 else
     echo 'move refs'
     ${PYTHON} linux_set_rpath.py --path=${PYTHONHOME}/lib/ --bin-path=${PYTHONHOME}/ || exit $?

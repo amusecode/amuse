@@ -28,8 +28,12 @@ def change_dylib_id(name, newid, dryrun = True):
         print ' '.join(arguments)
         return
 
-    outputstring = subprocess.check_output(arguments)
-    print outputstring
+    try:
+        outputstring = subprocess.check_output(arguments)
+        print outputstring
+    except Exception as ex:
+        print "coule not change id for library:", name
+        print "exception was:", ex
 
 def main(path='.', rpath='@rpath', dryrun = True):
     for x in get_dylib_files(path):

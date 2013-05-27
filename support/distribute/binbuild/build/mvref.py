@@ -73,10 +73,10 @@ def change_dylib_ref(name, oldid, newid, dryrun = True):
     
     try:
         outputstring = subprocess.check_output(arguments)
+        print outputstring
     except subprocess.CalledProcessError as ex:
         print "error while running:", ' '.join(arguments)
         print "output:", ex.output
-    print outputstring
 
 def add_rpath(name, rpath,  dryrun = True):
     arguments = ['install_name_tool', '-add_rpath', rpath, name]
