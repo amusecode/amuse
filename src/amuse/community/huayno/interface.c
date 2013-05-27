@@ -107,8 +107,8 @@ static inline int get_pindex(int id,int *p)
 
 int delete_particle(int id)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
   pindex[id]=-1;
   mainsys.n--;
@@ -128,8 +128,8 @@ int get_state(int id, double *mass,
         double *vx, double *vy, double *vz,
         double *radius)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
  *mass=mainsys.part[p].mass; 
  *radius=mainsys.part[p].radius;
@@ -144,8 +144,8 @@ int get_state(int id, double *mass,
 
 int get_mass(int id, double *mass)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
  *mass=mainsys.part[p].mass; 
  return 0;
@@ -153,8 +153,8 @@ int get_mass(int id, double *mass)
 
 int get_radius(int id, double *radius)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
  *radius=mainsys.part[p].radius;
  return 0;
@@ -162,8 +162,8 @@ int get_radius(int id, double *radius)
 
 int get_position(int id, double *x, double *y, double *z)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
  *x=mainsys.part[p].pos[0]; 
  *y=mainsys.part[p].pos[1]; 
@@ -173,8 +173,8 @@ int get_position(int id, double *x, double *y, double *z)
 
 int get_velocity(int id, double *vx, double *vy, double *vz)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
  *vx=mainsys.part[p].vel[0]; 
  *vy=mainsys.part[p].vel[1]; 
@@ -187,8 +187,8 @@ int set_state(int id, double mass,
         double vx, double vy, double vz, 
         double radius)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
   mainsys.part[p].mass=mass; 
   mainsys.part[p].radius=radius; 
@@ -203,8 +203,8 @@ int set_state(int id, double mass,
 
 int set_mass(int id, double mass)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
   mainsys.part[p].mass=mass; 
   return 0;
@@ -212,8 +212,8 @@ int set_mass(int id, double mass)
 
 int set_radius(int id, double radius)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
   mainsys.part[p].radius=radius; 
   return 0;
@@ -222,8 +222,8 @@ int set_radius(int id, double radius)
 
 int set_position(int id, double x, double y, double z)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
   mainsys.part[p].pos[0]=x; 
   mainsys.part[p].pos[1]=y; 
@@ -233,8 +233,8 @@ int set_position(int id, double x, double y, double z)
 
 int set_velocity(int id, double vx, double vy, double vz)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
   mainsys.part[p].vel[0]=vx; 
   mainsys.part[p].vel[1]=vy; 
@@ -257,8 +257,8 @@ int get_index_of_first_particle(int  *id)
 
 int get_index_of_next_particle(int  id, int *nout)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
   if(p ==mainsys.n-1) return 1;
   *nout=mainsys.part[p+1].id;
@@ -440,8 +440,8 @@ int commit_parameters()
 
 int get_potential(int id, double *pot)
 {
-  int p;
-  int err=get_pindex(id,&p);
+  int p,err;
+  err=get_pindex(id,&p);
   if(err!=0) return err;
   *pot=mainsys.part[p].pot;
   return 0;
