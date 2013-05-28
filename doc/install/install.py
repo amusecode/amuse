@@ -18,6 +18,7 @@ def late(function):
             if instance is None:
                 return self
             value = self.initializer(instance)
+            value = self.initializer(instance)
             setattr(instance,self.initializer.__name__,value)
             return value
     return LateProperty(function)
@@ -78,9 +79,9 @@ class InstallPrerequisites(object):
           (
             'mpich2', 
             [], 
-            '1.5', 
-            'mpich2-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/1.5/', 
+            '3.0.4', 
+            'mpich-', '.tar.gz', 
+            'http://www.mpich.org/static/downloads/3.0.4/', 
             self.mpich2_build
           ) ,
           (

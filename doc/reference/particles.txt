@@ -186,7 +186,7 @@ controls the data and the life-cycle of each object.
 
 
 
-Patricle keys
+Particle keys
 -------------
 All particles have a unique 64-bit key. This key is created using 
 a random number generator. The chances of duplicate keys using 
@@ -268,5 +268,66 @@ data of a particle is stored in the set.
         :noindex:
 
     
+Implementation
+--------------
+
+
+.. graphviz::
+
+   digraph multiples {
+      fontsize=8.0;
+        node [fontsize=8.0,shape=box, style=filled, fillcolor=lightyellow];
+        
+        "AttributeStorage" -> "AbstractSet";
+        "AbstractSet" -> "AbstractParticlesSet";
+        "AbstractSet" -> "AbstractGrid";
+        
+        "AbstractParticlesSet" -> "Particles";
+        "AbstractParticlesSet" -> "ParticlesSubSet";
+        "AbstractParticlesSet" -> "ParticlesSuperSet";
+        "AbstractGrid" -> "Grid";
+        "AbstractGrid" -> "SubGrid";
+        
+        "AttributeStorage" -> "InMemoryStorage" [label = "implements"];
+        "AttributeStorage" -> "InCodeStorage";
+    }
+
+
+
+.. graphviz::
+
+   digraph multiples {
+      fontsize=8.0;
+        node [fontsize=8.0,shape=box, style=filled, fillcolor=lightyellow];
+        edge [color="dodgerblue2", fontcolor="dodgerblue2"];
+
+        "Particles" -> "AttributeStorage" [headlabel=" 1", taillabel="1",label = "store"];
+        "Grid" -> "AttributeStorage" [headlabel=" 1", taillabel="1", label = "store"];
+        "SubGrid" -> "Grid" [headlabel=" 1", taillabel="1", label="view on", color="dodgerblue2"];
+        "ParticlesSubSet" -> "Particles" [headlabel=" 1", taillabel="1", label="view on", color="dodgerblue2"];
+        "ParticlesSuperSet" -> "Particles" [headlabel=" *", taillabel="1", label="view on", color="dodgerblue2"];
+    }
+
+
+.. graphviz::
+
+   digraph multiples {
+      fontsize=8.0;
+        node [fontsize=8.0,shape=box, style=filled, fillcolor=lightyellow];
+
+        "AbstractSet" -> "AttributeStorage" [headlabel=" 1", taillabel="1", label = "stored_attributes", color="dodgerblue2" , fontcolor="dodgerblue2"];
+        "AbstractSet" -> "DerivedAttribute" [headlabel=" *", taillabel="1", label = "derived_attributes", color="dodgerblue2", fontcolor="dodgerblue2"]; 
+        "DerivedAttribute" -> "CalculatedAttribue";
+        "DerivedAttribute" -> "VectorAttribute";
+        "DerivedAttribute" -> "FunctionAttribute";
+        "DerivedAttribute" -> "DomainAttribute";
+    }
+
+.. image:: derived_attributes.png
+
+
+.. autoclass:: amuse.datamodel.AttributeStorage
+    :members:
+
 
 

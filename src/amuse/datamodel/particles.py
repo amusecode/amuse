@@ -1201,12 +1201,16 @@ class Particles(AbstractParticleSet):
         self._private.version += 1
         
     def get_values_in_store(self, indices, attributes):
-        if len(set(attributes) - set(self.get_attribute_names_defined_in_store()) - set(["index_in_code"])) == 0:
+        missing_attributes = set(attributes) - set(self.get_attribute_names_defined_in_store()) - set(["index_in_code"])
+        
+        if len(missing_attributes) == 0:
             return self._private.attribute_storage.get_values_in_store(indices, attributes)
         
-        missing_attributes = set(attributes) - set(self.get_attribute_names_defined_in_store()) - set(["index_in_code"])
         defined_attributes = list(set(attributes) - missing_attributes)
-        defined_values = dict(zip(defined_attributes, self._private.attribute_storage.get_values_in_store(indices, defined_attributes)))
+        defined_values = dict(zip(
+            defined_attributes, 
+            self._private.attribute_storage.get_values_in_store(indices, defined_attributes)
+        ))
         subset = self[indices]
         return [defined_values[attribute] if attribute in defined_values else subset._get_derived_attribute_value(attribute) for attribute in attributes]
     
@@ -2631,7 +2635,7 @@ class DomainAttribute(DerivedAttribute):
         return ParticlesWithNamespacedAttributesView(instance, self.name)
     
     def set_values_for_entities(self, instance, value):
-        raise AttributeError('Cannot change a domain attribute ({0})'.format(self.name))
+        raise AttributeError('"{0}" is already defined as a namespace attribute, you cannot assign a value to it'.format(self.name))
         
     def get_value_for_entity(self, instance, particle, index):
         namespaced_set = ParticlesWithNamespacedAttributesView(particle.particles_set, self.name)
@@ -2645,7 +2649,7 @@ class DomainAttribute(DerivedAttribute):
         )
         
     def set_value_for_entity(self, instance, key, vector):
-        raise AttributeError('Cannot change a domain attribute ({0})'.format(self.name))
+        raise AttributeError('"{0}" is already defined as a namespace attribute, you cannot assign a value to it'.format(self.name))
         
 
 

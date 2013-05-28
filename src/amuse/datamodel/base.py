@@ -88,38 +88,78 @@ def set_random_key_generator(number_of_bits = RandomNumberUniqueKeyGenerator.DEF
 
 class AttributeStorage(object):
     """
-    Abstract base class of particle storage models.
+    Abstract base class of particle storage objects. Implemented by the
+    storage classes and the particle sets
     """
     __version__ = -1
     
     def add_particles_to_store(self, keys, attributes = [], values = []):
+        """
+        Adds particles with the given keys to the set. If attribute names
+        and values are specified these are also set for the new particles.
+        """
         pass
         
     def remove_particles_from_store(self, keys):
+        """
+        Removes particles with the given keys from the set. 
+        """
         pass
         
     def get_values_in_store(self, indices, attributes):
+        """
+        Gets the values for the attributes of the particles at the given indices.
+        """
         pass
         
     def set_values_in_store(self, indices, attributes, list_of_values_to_set):
+        """
+        Sets the attributes of the particles at the given indices to the given values.
+        """
         pass
         
     def get_attribute_names_defined_in_store(self):
+        """
+        Gets the attribute names
+        """
         pass
     
     def has_key_in_store(self, key):
+        """
+        Returns true if the given key can be found in the store
+        """
         return False
         
     def get_all_keys_in_store(self):
+        """
+        Gets the list of all keys stored
+        """
         return []
         
     def get_all_indices_in_store(self):
+        """
+        Gets the list of all valid indices in store.
+        """
+        return []
+        
+    def get_indices_of_keys(self, keys):
+        """
+        Returns the indices where the particles are stored with
+        the given keys.
+        """
         return []
         
     def __len__(self):
+        """
+        Returns the number of particles in store.
+        """
         return 0
         
     def get_value_in_store(self, index, attribute):
+        """
+        Returns the value of an attribute for a particle at the given
+        index.
+        """
         return self.get_values_in_store([index],[attribute])[0][0]
     
     

@@ -7,7 +7,7 @@
 #
 
 #APPVER=2.5.4
-APPVER=2.7.3
+APPVER=2.7.5
 #APPVER=2.6.5
 #APPVER=2.7.1
 APPFILE=Python-${APPVER}.tar.bz2
@@ -75,7 +75,7 @@ if [ $UNAME == 'Darwin' ] ; then
 	${SOURCE_DIR}/${APP_DIR}/configure \
 		--with-dyld \
 		--prefix=${PREFIX} \
-	        --enable-unicode=ucs4\
+	    --enable-unicode=ucs4\
 		--program-suffix=.exe ;
 #--enable-framework=${PREFIX}/Framework \
 #--enable-universal-sdk \
@@ -83,6 +83,7 @@ else
 	${SOURCE_DIR}/${APP_DIR}/configure \
 		--prefix=${PREFIX} \
 		--enable-shared \
+	    --enable-unicode=ucs4\
 		--program-suffix=.exe ;
 fi
 
