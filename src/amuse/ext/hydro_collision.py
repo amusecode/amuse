@@ -215,16 +215,14 @@ class StellarEncounterInHydrodynamics(object):
             print "Analyzing particle distribution using Hop"
         converter = nbody_system.nbody_to_si(gas_particles.total_mass(), 1.0 | units.RSun)
         hop = Hop(unit_converter=converter, redirection = "none" if self.debug else "null")
-        hop.particles.add_particles(gas_particles)
         hop.parameters.density_method = 0
         hop.parameters.number_of_hops = 100
         hop.parameters.number_of_neighbors_for_local_density = min(64, len(gas_particles) / 10)
-        hop.commit_parameters()
+        hop.particles.add_particles(gas_particles)
         hop.calculate_densities()
         hop.parameters.outer_density_threshold = 0.5 * hop.particles.density.mean()
         hop.parameters.saddle_density_threshold_factor = 0.8
         hop.parameters.relative_saddle_density_threshold = True
-        hop.recommit_parameters()
         
         hop.do_hop()
         result = []
