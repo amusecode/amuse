@@ -1,25 +1,18 @@
-import os
-import sys
 import numpy
-
 from numpy import random
-from amuse.test import amusetest
-from amuse.test.amusetest import get_path_to_results
 
-
-
-from amuse.community.fi import interface as interface
-from amuse.community.hop.interface import HopInterface, Hop
-from amuse.units import units
-from amuse.units import nbody_system
+from amuse.test.amusetest import get_path_to_results, TestCase
+from amuse.units import units, nbody_system
+from amuse.support.exceptions import AmuseException
 from amuse.datamodel.particles import Particles
-from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
+from amuse.community.hop.interface import HopInterface, Hop
 
-class TestHopInterface(amusetest.TestCase):
+class TestHopInterface(TestCase):
     def test1(self):
         print "First test: adding particles, setting and getting."
         hop = HopInterface()
+        hop.initialize_code()
         n, err = hop.get_number_of_particles()
         self.assertEquals(n, 0)
         self.assertEquals(err, 0)
@@ -51,6 +44,7 @@ class TestHopInterface(amusetest.TestCase):
         random.seed(1001)
         
         hop = HopInterface()
+        hop.initialize_code()
         
         particles = new_plummer_model(1000)
         ids, errors = hop.new_particle(
@@ -84,6 +78,7 @@ class TestHopInterface(amusetest.TestCase):
         print "Third test: densest neighbors and groups."
                 
         hop = HopInterface()
+        hop.initialize_code()
         
         particles1 = new_plummer_model(10)
         particles2 = new_plummer_model(10)
@@ -169,7 +164,7 @@ class TestHopInterface(amusetest.TestCase):
         self.assertEquals(value,7)
         hop.stop()
     
-class TestHop(amusetest.TestCase):
+class TestHop(TestCase):
     def test1(self):
         print "First test: adding particles, setting and getting."
         hop = Hop()
@@ -315,6 +310,92 @@ class TestHop(amusetest.TestCase):
             native_plot.show()
         
         hop.stop()
+    
+    def test5(self):
+        print "Test error codes"
+        unit_converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        particles = new_plummer_model(200, convert_nbody=unit_converter)
+        hop = Hop(unit_converter=unit_converter)#, redirection="none")
+        hop.parameters.number_of_neighbors_for_local_density = 100
+        hop.particles.add_particles(particles[:99])
+        self.assertRaises(AmuseException, hop.calculate_densities, expected_message=
+            "Error when calling 'calculate_densities' of a 'Hop', errorcode is -5, error is 'Too few particles.'")
+        hop.particles.add_particles(particles[99:101])
+        hop.calculate_densities()
+        hop.parameters.number_of_neighbors_for_hop = 200
+        self.assertRaises(AmuseException, hop.calculate_densities, expected_message=
+            "Error when calling 'calculate_densities' of a 'Hop', errorcode is -5, error is 'Too few particles.'")
+        hop.particles.add_particles(particles[101:])
+        hop.calculate_densities()
+        
+        self.assertRaises(AmuseException, hop.get_mass, 200, expected_message=
+            "Error when calling 'get_mass' of a 'Hop', errorcode is -3, error is 'A particle with the given index was not found.'")
+        hop.stop()
+    
+    def test6(self):
+        print "Test with different masses"
+        # Particles on a cubic grid with masses according to a gaussian density profile
+        grid = numpy.mgrid[-1:1:21j, -1:1:21j, -1:1:21j] | units.m
+        particles = Particles(9261, x=grid[0], y=grid[1], z=grid[2])
+        peak_positions = [[0.2, -0.4, 0.3], [-0.6, 0.2, 0.7]] | units.m
+        particles.mass = 2*numpy.exp(-(particles.position-peak_positions[0]).lengths_squared() / (0.1|units.m**2)) | units.kg
+        particles.mass += numpy.exp(-(particles.position-peak_positions[1]).lengths_squared() / (0.1|units.m**2)) | units.kg
+        self.assertAlmostEquals(particles.position[particles.mass.argmax()], peak_positions[0])
+        self.assertAlmostEquals(particles[:4000].position[particles[:4000].mass.argmax()], peak_positions[1])
+        
+        hop = Hop(unit_converter=nbody_system.nbody_to_si(particles.mass.sum(), 1.0 | units.m))#, redirection="none")
+        hop.parameters.density_method = 2
+        hop.parameters.number_of_neighbors_for_local_density = 50
+        hop.parameters.relative_saddle_density_threshold = True
+        hop.commit_parameters()
+        hop.particles.add_particles(particles)
+        hop.calculate_densities()
+        self.assertAlmostEquals(hop.particles.position[hop.particles.density.argmax()], peak_positions[0])
+        self.assertAlmostEquals(hop.particles[:4000].position[hop.particles[:4000].density.argmax()], peak_positions[1])
+        hop.do_hop()
+        groups = list(hop.groups())
+        self.assertEquals(len(groups), 2)
+        for group, peak_position in zip(groups, peak_positions):
+            self.assertAlmostEquals(group.center_of_mass(), peak_position, 1)
+        hop.stop()
+    
+    def test7(self):
+        print "Testing Hop states"
+        unit_converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        particles = new_plummer_model(200, convert_nbody=unit_converter)
+        
+        print "First do everything manually:",
+        instance = Hop(unit_converter=unit_converter)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.cleanup_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        instance.stop()
+        print "ok"
+
+        print "initialize_code(), commit_parameters(), (re)commit_particles(), " \
+            "and cleanup_code() should be called automatically:",
+        instance = Hop(unit_converter=unit_converter)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.parameters.number_of_neighbors_for_local_density = 50
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.particles.add_particles(particles[:100])
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.particles.add_particles(particles[100:])
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        mass = instance.particles[100].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.stop()
+        self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
+        print "ok"
     
 
 

@@ -7,15 +7,21 @@
 #include <map>
 #include <vector>
 #include <algorithm>
-#include "src/kd.h"
-#include "src/kd.c"
-#include "src/smooth.h"
-#include "src/smooth.c"
-#include "src/hop.cc"
+extern "C" {
+    #include "src/kd.h"
+    #include "src/smooth.h"
+    void smDensityTH(SMX smx,int pi,int nSmooth,int *pList,float *fList);
+    void smHop(SMX smx,int pi,int nSmooth,int *pList,float *fList);
+    void FindGroups(SMX smx);
+    void SortGroups(SMX smx);
+    void MergeGroupsHash(SMX smx);
+    void ReSizeSMX(SMX smx, int nSmooth);
+    void PrepareKD(KD kd);
+}
 #include "worker_code.h"
-#include <iostream>
 
 #define INFORM(string) printf(string); fflush(stdout)
+
 
 class AmuseParticle{
 
@@ -65,8 +71,6 @@ int nGroups_before_regroup;
 int nGroups_after_regroup = -1;
 
 /* control variables */
-int bParamInit = 1;
-int bHopInit = 1;
 int bDensity = 0;
 int bHopDone = 0;
 int bNeighborsFound = 0;
@@ -74,8 +78,7 @@ int bNeighborsFound = 0;
 int ReadPositions(KD &kd){
   std::size_t n = particlesMap.size();
   kd->nActive = n;
-  
-  if (n == 0) return -1;
+  if (n == 0) return -5;
   
   kd->p = (PARTICLE *)malloc(kd->nActive*sizeof(PARTICLE));
 
@@ -90,46 +93,24 @@ int ReadPositions(KD &kd){
     kd->p[c].r[2] = p->z;
     c++;
   }
-  
-  kd->fMass = 1.0/kd->nActive; /* particles have equal mass */
   return 0;
 }
 
 int ReadDensities(SMX &smx){
-  ParticlesMapIterator i;
-  int c = 0;
-  double dens;
-    
-  INFORM("Reading Densities...\n");
-  for (i = particlesMap.begin(); i != particlesMap.end(); i++) {
-    AmuseParticle * p = (*i).second;
-    dens = p->density;
-    if (dens < 0) return -1;
-    smx->kd->p[c].fDensity = p->density;
-    c++;
-  }
-  return 0;
+    ParticlesMapIterator i;
+    int j;
+    INFORM("Reading Densities...\n");
+    for (i=particlesMap.begin(), j=0; i != particlesMap.end(); i++, j++) {
+        if (i->second->density < 0) {
+            INFORM("Encountered negative density\n");
+            return -4;
+        }
+        smx->kd->p[j].fDensity = i->second->density;
+    }
+    return 0;
 }  
 
-int InitParam(){ /* used to set the hop parameters to default values */
-  INFORM("\nInitialising Parameters...\n");
-  nBucket = 16;
-  nSmooth = 64;
-  nDens = 64;
-  nHop = -1;
-  fDensThresh = -1.0;
-  
-  nMethod = 0;
-
-  for (int j=0;j<3;++j) fPeriod[j] = HUGE;
-  nMerge = 4;
-  
-  bParamInit = 0;
-  return 0;
-}
-
 int InitHop(KD &kd, SMX &smx, int bDens){
-  if (bParamInit) InitParam(); /* make sure the parameters have values */
   INFORM("\nInitialising Hop...\n");
   if (nHop<0) nHop=nDens;
   if (bDens==0) nSmooth = nHop+1;
@@ -141,83 +122,88 @@ int InitHop(KD &kd, SMX &smx, int bDens){
 	to have nMerge reflect the number *not* including the primary,
 	so in this case we need to ask for two more! */
 
-  kdInit(&kd,nBucket);
-  if (ReadPositions(kd) == -1) return -1;
-  if (nMerge > kd->nActive) return -1;
-  if (nHop > kd->nActive) return -1;
-  if (nDens > kd->nActive) return -1;
-  if (nSmooth > kd->nActive) return -1;
-  if (nBucket > kd->nActive) return -1;
-  
-  PrepareKD(kd);
-  
-  smInit(&smx,kd,nSmooth,fPeriod);
-  smx->nHop = nHop;
-  smx->nDens = nDens;
-  smx->nMerge = nMerge;
-  smx->nGroups = 0;
-  smx->fDensThresh = fDensThresh;
-  
-  if (bDens == 0) {
-    if(ReadDensities(smx) == -1) return -1;
-  }
-  
-  INFORM("Building Tree...\n");
-  kdBuildTree(kd);
-
-  bHopDone = 0;
-  return 0;
+    kdInit(&kd,nBucket);
+    if (ReadPositions(kd) != 0) {
+        INFORM("\nReadPositions error: no particles\n");
+        return -5;
+    }
+    if (nHop > kd->nActive) {
+        printf("\nnHop: %d, kd->nActive: %d\n", nHop, kd->nActive);
+        INFORM("number_of_hops too large\n");
+        INFORM("(should be less than total number of particles)\n");
+        return -5;
+    }
+    if (nDens > kd->nActive) {
+        printf("\nnDens: %d, kd->nActive: %d\n", nDens, kd->nActive);
+        INFORM("number_of_neighbors_for_local_density too large\n");
+        INFORM("(should be less than total number of particles)\n");
+        return -5;
+    }
+    if (nSmooth > kd->nActive) {
+        printf("\nnSmooth: %d, kd->nActive: %d\n", nSmooth, kd->nActive);
+        INFORM("nSmooth too large, related to number_of_neighbors_for_local_density and number_of_hops\n");
+        INFORM("(should be less than total number of particles)\n");
+        return -5;
+    }
+    if (nBucket > kd->nActive) {
+        printf("\nnBucket: %d, kd->nActive: %d\n", nBucket, kd->nActive);
+        INFORM("number_of_buckets too large\n");
+        return -5;
+    }
+    if (nMerge > kd->nActive) {
+        printf("\nnMerge: %d, kd->nActive: %d\n", nMerge, kd->nActive);
+        INFORM("nMerge too large\n");
+        return -5;
+    }
+    
+    PrepareKD(kd);
+    smInit(&smx,kd,nSmooth,fPeriod);
+    smx->nHop = nHop;
+    smx->nDens = nDens;
+    smx->nMerge = nMerge;
+    smx->nGroups = 0;
+    smx->fDensThresh = fDensThresh;
+    
+    if ((bDens == 0) && (ReadDensities(smx) != 0)) return -4;
+    
+    INFORM("Building Tree...\n");
+    kdBuildTree(kd);
+    bHopDone = 0;
+    return 0;
 }
 
 
 /* parameters */
 int set_nBucket(int value){
-  if (bParamInit) InitParam();
-  
   nBucket = value;
-  bHopInit = 1;
   return 0;
 }
 int get_nBucket(int * value){
-  if (bParamInit) InitParam();
-  
   *value = nBucket;
   return 0;
 }
 
 int set_nDens(int value){
-  if (bParamInit) InitParam();
-  
   nDens = value;
-  bHopInit = 1;
   return 0;
 }
 int get_nDens(int * value){
-  if (bParamInit) InitParam();
-  
   *value = nDens;
-  bHopInit = 1;
   return 0;
 }
 
 int set_nHop(int value){
-  if (bParamInit) InitParam();
   if (value < nMerge +1) return -1;
   nHop = value;
-  bHopInit = 1;
   return 0;
 }
 int get_nHop(int * value){
-
   *value = nHop;
-  
   return 0;
 }
 
 int set_fDensThresh(double value){
-  if (bParamInit) InitParam();
   fDensThresh = value;
-  bHopInit = 1;
   return 0;
 }
 int get_fDensThresh(double * value){
@@ -261,11 +247,9 @@ int get_relative_saddle_density_threshold(int *value){
 }
 
 int set_fPeriod(double x, double y, double z){
-  if (bParamInit) InitParam();
   fPeriod[0] = x;
   fPeriod[1] = y;
   fPeriod[2] = z;
-  bHopInit = 1;
   return 0;
 }
 
@@ -277,10 +261,8 @@ int get_fPeriod(double * x, double * y, double * z){
 }
 
 int set_nMerge(int value){
-  if (bParamInit) InitParam();
   if (value > nHop -1) return -1;
   nMerge = value;
-  bHopInit = 1;
   return 0;
 }
 int get_nMerge(int *value){
@@ -289,7 +271,6 @@ int get_nMerge(int *value){
 }
 
 int set_density_method(int value){
-  if (bParamInit) InitParam();
   switch (value) {
     case 0:
     case 1: 
@@ -306,9 +287,17 @@ int get_density_method(int * value){
    return 0;
 }
 
-int initialize_code()
-{
-    return InitParam();
+int initialize_code() {
+    INFORM("\nInitialising Parameters...\n");
+    nBucket = 16;
+    nSmooth = 64;
+    nDens = 64;
+    nHop = -1;
+    fDensThresh = -1.0;
+    nMethod = 0;
+    for (int j=0;j<3;++j) fPeriod[j] = HUGE;
+    nMerge = 4;
+    return 0;
 }
 
 int cleanup_code()
@@ -326,6 +315,7 @@ int commit_parameters() {
     if (peak_densthresh < 0.0) {
         peak_densthresh = saddle_densthresh > 2.0*outer_densthresh ? saddle_densthresh : 2.0*outer_densthresh;
     }
+    printf("outer_densthresh %f, saddle_densthresh %f, peak_densthresh %f\n", outer_densthresh, saddle_densthresh, peak_densthresh);
     return 0;
 }
 
@@ -339,7 +329,8 @@ int calculate_densities() {
   SMX smx;
   ParticlesList particles_as_list;
   
-  if(InitHop(kd, smx, 1) == -1) return -1;
+  int init_error = InitHop(kd, smx, 1);
+  if (init_error != 0) return init_error;
 
   INFORM("Finding Densities...\n");
   switch (nMethod) {
@@ -447,7 +438,8 @@ void merge_groups(int g1, int g2,
         }
     }
     // All connections are now stored on merge_priorities[index1], so we can remove merge_priorities[index2]
-    merge_priorities.erase(merge_priorities.begin() + index2);
+    delete merge_priorities[index2]; // Free the vector with boundaries,
+    merge_priorities.erase(merge_priorities.begin() + index2); // and remove the reference to it.
     // make sure the other vectors still match
     if (group_peak_density[index2] > group_peak_density[index1]) {
         group_peak_density[index1] = group_peak_density[index2];
@@ -634,6 +626,9 @@ int regroup() {
     }
     nGroups_after_regroup = id_counter;
     
+    for (i=0; i<nGroups_after_regroup; i++) {
+        delete merge_priorities[i];
+    }
     delete[] index_from_id;
     delete[] new_group_id;
     delete[] reindexed_new_group_id;
@@ -645,7 +640,8 @@ int regroup() {
 int do_hop(){
   KD kd;
   SMX smx;
-  if(InitHop(kd, smx, 0) == -1) return -1;
+  int init_error = InitHop(kd, smx, 0);
+  if (init_error != 0) return init_error;
 
   INFORM("Finding Densest Neighbors...\n");
   if (nHop>=nSmooth) {
@@ -696,7 +692,6 @@ int new_particle(int * index_of_the_particle, double mass, double x, double y, d
   AmuseParticle * p = new AmuseParticle(highest_index, mass, x, y, z);
   particlesMap[highest_index] = p;
   highest_index++;
-  bHopInit = 1;
   return 0;
 }
 
@@ -708,71 +703,86 @@ int delete_particle(int index_of_the_particle) {
     }
     delete it->second;
     particlesMap.erase(it);
-    bHopInit = 1;
     return 0;
 }
 
-int get_number_of_particles(int * value) {
-  *value = (int) particlesMap.size();
-  return 0;
+int get_number_of_particles(int *value) {
+    *value = (int) particlesMap.size();
+    return 0;
 }
 
 int set_density(int index_of_the_particle, double density) {
-  if(index_of_the_particle > highest_index) return -1;
-  AmuseParticle * p = particlesMap[index_of_the_particle];
-  p->density = density;
-  bHopInit = 1;
-  return 0;
+    ParticlesMapIterator it;
+    it = particlesMap.find(index_of_the_particle);
+    if (it == particlesMap.end()){
+        return -3;
+    }
+    it->second->density = density;
+    return 0;
 }
 
-int get_density(int index_of_the_particle, double * density) {
-  if(index_of_the_particle > highest_index) return -1;
-  AmuseParticle * p = particlesMap[index_of_the_particle];
-  if (p->density < 0.0) return -1;
-  *density = p->density;
-  return 0;
+int get_density(int index_of_the_particle, double *density) {
+    ParticlesMapIterator it;
+    it = particlesMap.find(index_of_the_particle);
+    if (it == particlesMap.end()){
+        return -3;
+    }
+    *density = it->second->density;
+    return 0;
 }
 
 int set_position(int index_of_the_particle, double x, double y, double z) {
-  if(index_of_the_particle > highest_index) return -1;
-  AmuseParticle * p = particlesMap[index_of_the_particle];
-  p->x = x;
-  p->y = y;
-  p->z = z;
-  bHopInit = 1;
-  return 0;
+    ParticlesMapIterator it;
+    it = particlesMap.find(index_of_the_particle);
+    if (it == particlesMap.end()){
+        return -3;
+    }
+    it->second->x = x;
+    it->second->y = y;
+    it->second->z = z;
+    return 0;
 }
 
-int get_position(int index_of_the_particle, double * x, double * y, double * z) {
-  if(index_of_the_particle > highest_index) return -1; 
-  AmuseParticle * p = particlesMap[index_of_the_particle];
-  *x = p->x;
-  *y = p->y;
-  *z = p->z;
-  return 0;
+int get_position(int index_of_the_particle, double *x, double *y, double *z) {
+    ParticlesMapIterator it;
+    it = particlesMap.find(index_of_the_particle);
+    if (it == particlesMap.end()){
+        return -3;
+    }
+    *x = it->second->x;
+    *y = it->second->y;
+    *z = it->second->z;
+    return 0;
 }
 
-int get_mass(int index_of_the_particle, double * mass) {
-  if(index_of_the_particle > highest_index) return -1; 
-  AmuseParticle * p = particlesMap[index_of_the_particle];
-  *mass = p->mass;
-  return 0;
+int get_mass(int index_of_the_particle, double *mass) {
+    ParticlesMapIterator it;
+    it = particlesMap.find(index_of_the_particle);
+    if (it == particlesMap.end()){
+        return -3;
+    }
+    *mass = it->second->mass;
+    return 0;
 }
 
 int get_densest_neighbor(int index_of_the_particle, int * index_of_densest_neighbor) {
-  if(index_of_the_particle > highest_index) return -1;
-  AmuseParticle * p = particlesMap[index_of_the_particle];
-  if (p->neighbor == -1 ) return 0;
-  *index_of_densest_neighbor = p->neighbor;
-  return 0;
+    ParticlesMapIterator it;
+    it = particlesMap.find(index_of_the_particle);
+    if (it == particlesMap.end()){
+        return -3;
+    }
+    *index_of_densest_neighbor = it->second->neighbor;
+    return 0;
 }
 
 int get_group_id(int index_of_the_particle, int * group_id) {
-  if (!bHopDone) return -1;
-  if(index_of_the_particle > highest_index) return -2;
-  AmuseParticle * p = particlesMap[index_of_the_particle];
-  *group_id = p->group;
-  return 0;
+    ParticlesMapIterator it;
+    it = particlesMap.find(index_of_the_particle);
+    if (it == particlesMap.end()){
+        return -3;
+    }
+    *group_id = it->second->group;
+    return 0;
 }
 
 int get_densest_particle_in_group(int group_id, int * index_of_the_particle) {
@@ -824,7 +834,6 @@ int get_number_of_particles_outside_groups(int * number_of_particles) {
 }
 
 int show_parameters(){
-  if (bParamInit) InitParam();
   printf("Printing Parameters...\n");
   printf("nBucket:\t%d\nfPeriod x:\t%f\nfPeriod y:\t%f\nfPeriod z:\t%f\nnDens:\t%d\nnHop:\t%d\nnMerge:\t%d\nfDensThresh:\t%f\nnMethod:\t%d\n",
   nBucket, fPeriod[0],fPeriod[1],fPeriod[2], nDens, nHop, nMerge, fDensThresh, nMethod);

@@ -661,6 +661,13 @@ class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         return function
+    
+    def commit_particles(self):
+        pass
+    
+    def recommit_particles(self):
+        pass
+    
 
 
 class Hop(CommonCode):
@@ -674,9 +681,15 @@ class Hop(CommonCode):
     def define_converter(self, object):
         if self.unit_converter is None:
             return
-        
         object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
-        
+    
+    def define_errorcodes(self, object):
+        object.add_errorcode(-1, 'Something went wrong...')
+        object.add_errorcode(-2, 'Not implemented.')
+        object.add_errorcode(-3, 'A particle with the given index was not found.')
+        object.add_errorcode(-4, 'Negative density encountered.')
+        object.add_errorcode(-5, 'Too few particles.')
+    
     def define_methods(self, builder):
         
         builder.add_method(
@@ -869,8 +882,8 @@ class Hop(CommonCode):
         object.add_method_parameter(
             "get_nHop", 
             "set_nHop",
-            "number_of_hops", 
-            "number of particles to search to determin to look for density maximum", 
+            "number_of_neighbors_for_hop", 
+            "The number of neighbors to search for local density maximum (search is performed iteratively until a true maximum is found)", 
             default_value = 64
         )
 
@@ -898,6 +911,14 @@ class Hop(CommonCode):
             "Return the bucket parameter to tune the performance of the kd-tree search.", 
             default_value = 16
         )
+        
+        object.add_method_parameter(
+            "get_nMerge", 
+            "set_nMerge",
+            "number_of_particles_per_group_pair_boundary", 
+            "The number of (densest) particles per boundary between each pair of groups, for merging.", 
+            default_value = 4
+        )
   
     def define_particle_sets(self, builder):
         builder.define_set('particles', 'index_of_the_particle')
@@ -910,7 +931,43 @@ class Hop(CommonCode):
         builder.add_getter('particles', 'get_mass', names=('mass',))
         #builder.add_getter('particles', 'get_densest_neighbor')
         builder.add_getter('particles', 'get_group_id', names=('group_id',))
-
+    
+    def define_state(self, object):
+        CommonCode.define_state(self, object)
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('EDIT', 'before_get_parameter')
+        object.add_method('UPDATE','before_get_parameter')
+        
+        object.add_method('EDIT', 'new_particle')
+        object.add_method('EDIT', 'delete_particle')
+        object.add_method('UPDATE', 'new_particle')
+        object.add_method('UPDATE', 'delete_particle')
+        object.add_transition('EDIT', 'RUN', 'commit_particles')
+        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        object.add_method('RUN', 'calculate_densities')
+        object.add_method('RUN', 'do_hop')
+        object.add_method('RUN', 'get_mass')
+        object.add_method('RUN', 'get_position')
+        object.add_method('RUN', 'get_density')
+        object.add_method('RUN', 'get_group_id')
+    
     def no_group(self):
         return self.particles.select(lambda group_id: group_id == -1, ["group_id"])
     

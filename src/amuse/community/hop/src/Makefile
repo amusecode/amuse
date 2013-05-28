@@ -1,25 +1,14 @@
-CFLAGS   += 
-CXXFLAGS += $(CFLAGS)
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
-
 CODELIB = libhop.a
+CODEOBJS = hop.o kd.o smooth.o
 
-CODEOBJS = hop.o
-
-AR = ar ruv
-RANLIB = ranlib
-RM = rm
-
-all: $(CODELIB) 
-
+all: $(CODELIB)
 
 clean:
-	$(RM) -f *.o *.a
+	rm -f *.o $(CODELIB)
 
 $(CODELIB): $(CODEOBJS)
-	$(RM) -f $@
-	$(AR) $@ $(CODEOBJS)
-	$(RANLIB) $@
+	ar ruv $@ $(CODEOBJS)
+	ranlib $@
 
-.cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+.c.o: $<
+	$(CC) $(CFLAGS) -c -o $@ $< 

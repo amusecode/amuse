@@ -3,13 +3,10 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
-
 CFLAGS   += -DDIFFERENT_MASSES
-CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+CXXFLAGS += -DDIFFERENT_MASSES
 
-OBJS = interface.o
+OBJ = interface.o
 
 CODELIB = src/libhop.a
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
@@ -31,8 +28,8 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py HopInterface -o $@
 
-hop_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
+hop_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
+	$(MPICXX) $(CXXFLAGS) $< $(OBJ) $(CODELIB) -o $@
 	
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 
