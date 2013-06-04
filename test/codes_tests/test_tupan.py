@@ -99,11 +99,6 @@ class TestTupanInterface(TestWithMPI):
         instance = TupanInterface()
         self.assertEquals(0, instance.initialize_code())
 
-        self.assertEquals(["sia.dkd21hcc", 0], instance.get_integrator_method().values())
-
-        self.assertEquals(0, instance.set_integrator_method("bogus"))
-        self.assertEquals(["bogus", 0], instance.get_integrator_method().values())
-
         self.assertEquals([0.03125, 0], instance.get_eta().values())
         self.assertEquals(0, instance.set_eta(0.001))
         self.assertEquals([0.001, 0], instance.get_eta().values())
@@ -111,6 +106,13 @@ class TestTupanInterface(TestWithMPI):
         self.assertEquals([0.0, 0], instance.get_begin_time().values())
         self.assertEquals(0, instance.set_begin_time(1.0))
         self.assertEquals([1.0, 0], instance.get_begin_time().values())
+
+        self.assertEquals(["sia.dkd21hcc", 0], instance.get_integrator_method().values())
+        self.assertEquals(0, instance.set_integrator_method("bogus"))
+        self.assertEquals(["bogus", 0], instance.get_integrator_method().values())
+        self.assertEquals(-1, instance.commit_parameters())
+        self.assertEquals(0, instance.set_integrator_method("sakura"))
+        self.assertEquals(["sakura", 0], instance.get_integrator_method().values())
 
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
@@ -288,7 +290,7 @@ class TestTupan(TestWithMPI):
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = Tupan(converter, )
         instance.initialize_code()
-#        instance.parameters.smbh_mass = 0.0 | units.MSun
+        instance.parameters.integrator_method = "sakura"
         instance.commit_parameters()
         instance.particles.add_particles(particles)
         instance.commit_particles()

@@ -42,6 +42,9 @@ class TupanImplementation(object):
         return 0
 
     def commit_parameters(self):
+        if not self.integrator_method in Integrator.PROVIDED_METHODS:
+            print "Unknown integrator: {0}. Provided methods are: {1}".format(self.integrator_method, Integrator.PROVIDED_METHODS)
+            return -1
         return 0
 
 
@@ -459,6 +462,14 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             "begin_time",
             "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
+        )
+        
+        object.add_method_parameter(
+            "get_integrator_method",
+            "set_integrator_method",
+            "integrator_method",
+            "The method to use to integrate the evolution of the system",
+            default_value = "sia.dkd21hcc"
         )
 
     def define_methods(self, object):
