@@ -143,7 +143,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         
     def test7(self):
         p = datamodel.Particles(2)
-        p.a = [1., 4.]
+        p.a = [1.0, 4.0]
         p.b = [2, 5] | units.m
         p.c = [3, 6] | units.m
         
@@ -171,6 +171,93 @@ class TableFormattedTextTests(amusetest.TestCase):
         
         
         os.remove("test.csv")
+        
+    def test9(self):
+        p = datamodel.Particles(5)
+        p.a = [1.0, 2.0, 3.0, 4.0, 5.0]
+        p.b = [10, 11, 12, 13, 14] | units.m
+        p.c = [20, 21, 22, 23, 24] | units.m
+        
+        io.write_set_to_file(
+            p, 
+            "test.csv",
+            "txt", 
+            attribute_names = ('a', 'b', 'c'),
+            attribute_types = (None, units.m, units.m),
+            maximum_number_of_lines_buffered = 1,
+        )
+        with open("test.csv", "r") as f:
+            contents = f.read()
+            
+        expected_contents = '#a b c\n#- m m\n1.0 10.0 20.0\n2.0 11.0 21.0\n3.0 12.0 22.0\n4.0 13.0 23.0\n5.0 14.0 24.0\n'
+        self.assertEquals(expected_contents, contents)
+        p2 = io.read_set_from_file(
+            "test.csv",
+            "txt", 
+            attribute_names = ('a', 'b', 'c'),
+            attribute_types = (None, units.m, units.m),
+            maximum_number_of_lines_buffered = 1,
+        )
+        self.assertAlmostRelativeEquals(p2.a, p.a)
+        self.assertAlmostRelativeEquals(p2.b, p.b)
+        self.assertAlmostRelativeEquals(p2.c, p.c)
+        
+    def test10(self):
+        p = datamodel.Particles(keys=[30,31,32,33,34])
+        p.a = [1.0, 2.0, 3.0, 4.0, 5.0]
+        p.b = [10, 11, 12, 13, 14] | units.m
+        p.c = [20, 21, 22, 23, 24] | units.m
+        print p.key
+        io.write_set_to_file(
+            p, 
+            "test.csv",
+            "txt", 
+            attribute_names = ('a', 'b', 'c'),
+            attribute_types = (None, units.m, units.m),
+            maximum_number_of_lines_buffered = 1,
+            key_in_column = 0
+        )
+        with open("test.csv", "r") as f:
+            contents = f.read()
+        print repr(contents)
+        expected_contents = '#a b c\n#- m m\n30 1.0 10.0 20.0\n31 2.0 11.0 21.0\n32 3.0 12.0 22.0\n33 4.0 13.0 23.0\n34 5.0 14.0 24.0\n'
+        self.assertEquals(expected_contents, contents)
+        p2 = io.read_set_from_file(
+            "test.csv",
+            "txt", 
+            attribute_names = ('a', 'b', 'c'),
+            attribute_types = (None, units.m, units.m),
+            maximum_number_of_lines_buffered = 1,
+            key_in_column = 0
+        )
+        self.assertEquals(p2.key, p.key)
+        self.assertAlmostRelativeEquals(p2.a, p.a)
+        self.assertAlmostRelativeEquals(p2.b, p.b)
+        self.assertAlmostRelativeEquals(p2.c, p.c)
+        
+    def test11(self):
+        p = datamodel.Particles(200)
+        p.a = 2 | units.m
+        
+        io.write_set_to_file(
+            p, 
+            "test.csv",
+            "txt", 
+            attribute_names = ('a'),
+            attribute_types = (units.m,),
+            maximum_number_of_lines_buffered = 10,
+            key_in_column = 0
+        )
+        p2 = io.read_set_from_file(
+            "test.csv",
+            "txt", 
+            attribute_names = ('a'),
+            attribute_types = (units.m,),
+            maximum_number_of_lines_buffered = 10,
+            key_in_column = 0
+        )
+        self.assertEquals(p2.key, p.key)
+        self.assertAlmostRelativeEquals(p2.a, p.a)
         
 class CsvFileTextTests(amusetest.TestCase):
     

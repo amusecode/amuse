@@ -180,6 +180,8 @@ class TableFormattedText(base.FileFormatProcessor):
         number_of_particles = 0
         keys = []
         
+        self.set = None
+        
         while not self.cursor.is_at_end() and not self.cursor.line().startswith(self.footer_prefix_string):
             columns = self.split_into_columns(self.cursor.line())
             if len(columns)>0:
@@ -205,15 +207,40 @@ class TableFormattedText(base.FileFormatProcessor):
                 
                 number_of_particles += 1
             self.cursor.forward()
-    
-        quantities = map(
-            lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
-            values, 
-            self.attribute_types
-        )
-        self.set = self.new_set(number_of_particles, keys = keys)
-        self.set.set_values_in_store(self.set.get_all_indices_in_store(), self.attribute_names, quantities)
+            if number_of_particles > self.maximum_number_of_lines_buffered:
+                quantities = map(
+                    lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
+                    values, 
+                    self.attribute_types
+                )
+                if self.set is None:
+                    self.set = self.new_set(number_of_particles, keys = keys)
+                    self.set.set_values_in_store(self.set.get_all_indices_in_store(), self.attribute_names, quantities)
+                else:
+                    tmp_set = self.new_set(number_of_particles, keys = keys)
+                    tmp_set.set_values_in_store(tmp_set.get_all_indices_in_store(), self.attribute_names, quantities)
+                    self.set.add_particles(tmp_set)
+                    
+                number_of_particles = 0
+                keys = []
+                values = map(lambda x : [], range(len(self.attribute_names)))
         
+        if number_of_particles > 0:
+            quantities = map(
+                lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
+                values, 
+                self.attribute_types
+            )
+            if self.set is None:
+                self.set = self.new_set(number_of_particles, keys = keys)
+                self.set.set_values_in_store(self.set.get_all_indices_in_store(), self.attribute_names, quantities)
+            else:
+                tmp_set = self.new_set(number_of_particles, keys = keys)
+                tmp_set.set_values_in_store(tmp_set.get_all_indices_in_store(), self.attribute_names, quantities)
+                self.set.add_particles(tmp_set)
+        else:
+            self.set = self.new_set(0)
+            
         self.cursor.forward()
         
     def read_footer(self):
@@ -233,28 +260,43 @@ class TableFormattedText(base.FileFormatProcessor):
     def write_rows(self):
         quantities = self.quantities
         units = self.attribute_types
-        numbers = map(lambda quantity, unit : quantity if unit is None else quantity.value_in(unit), quantities, units)
         
-        columns = []
+        max_row = -1
+        for x in quantities:
+            max_row = max(max_row, len(x))
         
-        for x in numbers:
-            columns.append(map(self.convert_number_to_string, x))
+        block_size = min(self.maximum_number_of_lines_buffered, max_row)
+        offset = 0
         
-        rows = []
-        for i in range(len(columns[0])):
-            row = [x[i] for x in columns]
+        while offset < max_row:
             
-            if self.key_in_column >= 0:
-                row.insert(self.key_in_column, self.convert_long_to_string(self.keys[i]))
+            numbers = map(lambda quantity, unit : quantity[offset:offset+block_size] if unit is None else quantity[offset:offset+block_size].value_in(unit), quantities, units)
             
-            rows.append(row)
+            columns = []
+            
+            
+                
+            for x in numbers:
+                columns.append(map(self.convert_number_to_string, x))
+            
+            rows = []
+            for i in range(len(columns[0])):
+                row = [x[i] for x in columns]
+                
+                if self.key_in_column >= 0:
+                    row.insert(self.key_in_column, self.convert_long_to_string(self.keys[i+offset]))
+                
+                rows.append(row)
+            
+            lines = map(lambda  x : self.column_separator.join(x), rows)
+            
+            
+            for x in lines:
+                self.stream.write(x)
+                self.stream.write('\n')
+                
+            offset += block_size
         
-        lines = map(lambda  x : self.column_separator.join(x), rows)
-        
-        for x in lines:
-            self.stream.write(x)
-            self.stream.write('\n')
-    
     def write_row(self, row):
         units = self.attribute_types
         row = map(lambda quantity, unit : quantity if unit is None else quantity.value_in(unit), row, units)
@@ -349,6 +391,13 @@ class TableFormattedText(base.FileFormatProcessor):
     def precision_of_number_output(self):
         "The precision is a decimal number indicating how many digits should be displayed after the decimal point"
         return 12
+    
+    @base.format_option
+    def maximum_number_of_lines_buffered(self):
+        """"The maximum number of lines to convert and write out in one go, larger values may be a little faster but will
+        use a lot more memory"""
+        return 10000
+    
     
     
 class CsvFileText(TableFormattedText):
