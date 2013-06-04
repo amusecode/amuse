@@ -1,0 +1,11 @@
+script:Script
+stars:Particles
+attribute_storage:Storage
+
+script:quantity=stars.mass
+stars[0]:indices=stars.get_all_indices_in_store()
+stars:indices=attribute_storage.get_all_indices_in_store()
+
+stars[1]:quantities=stars.get_values_in_store(indices, ["mass"])
+stars:quantities=attribute_storage.get_values_in_store(indices, ["mass"])
+
