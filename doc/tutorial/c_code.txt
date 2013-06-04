@@ -15,7 +15,7 @@ The legacy code interface supports methods that transfer values to
 and from the code. The values do not have any units and no error 
 handling is provided by the interface. We can add error handling, unit 
 handling and more functions to the legacy interface by defining a 
-subclass of a CodeInterface (this is the objected oriented interface).
+subclass of a InCodeComponentImplementation (this is the objected oriented interface).
 
 .. graphviz::
 
@@ -59,8 +59,8 @@ The suggested procedure for creating a new interface is as follows:
 0. **Legacy Interface.** Start with creating the legacy 
    interface. Define functions on the interface to input and
    output relevant data.
-   The CodeInterface code depends on the legacy interface code.   
-1. **Make a Class.** Create a subclass of the CodeInterface class
+   The InCodeComponentImplementation code depends on the legacy interface code.   
+1. **Make a Class.** Create a subclass of the InCodeComponentImplementation class
 2. **Define methods.** In the legacy interface we have defined functions
    with parameters. In the code interface we need to define the
    units of the parameters and if a parameter or return value
@@ -272,7 +272,7 @@ to the NearestNeighborInterface class:
 
 .. code-block:: python
 
-    class NearestNeighborInterface(CodeInterface):    
+    class NearestNeighborInterface(InCodeComponentImplementation):    
         #...
         
         @legacy_function
@@ -380,7 +380,7 @@ Defining the Object Oriented Interface
 The object oriented interface sits on top of the legacy interface.
 It decorates this interface with sets, unit handling, state engine
 and more. We start creating the object oriented interfacy by inheriting
-from CodeInterface and writing the __init__ function. The build script
+from InCodeComponentImplementation and writing the __init__ function. The build script
 has added this class to the interface.py file for us. Open an editor
 on interface.py and make sure this code is in the file (at the end
 of the file):
@@ -388,10 +388,10 @@ of the file):
 .. code-block:: python
 
     
-    class NearestNeighbor(CodeInterface):
+    class NearestNeighbor(InCodeComponentImplementation):
 
         def __init__(self, **options):
-            CodeInterface.__init__(self,  NearestNeighborInterface(), **options)
+            InCodeComponentImplementation.__init__(self,  NearestNeighborInterface(), **options)
 
 Configuring the handlers
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -408,7 +408,7 @@ pseudo-code shows how the handlers are configured
 
 .. code-block:: python
 
-    class CodeInterface(object):
+    class InCodeComponentImplementation(object):
         #...
         
         def configure_handlers(self):
@@ -558,9 +558,9 @@ Open an editor on *interface.py* and add this method to the
             self.particles.y,
             self.particles.z
         )
-        self.particles.neighbor0 = self.particles[indices0]
-        self.particles.neighbor1 = self.particles[indices1]
-        self.particles.neighbor2 = self.particles[indices2]
+        self.particles.neighbor0 = list(self.particles[indices0])
+        self.particles.neighbor1 = list(self.particles[indices1])
+        self.particles.neighbor2 = list(self.particles[indices2])
         
 This function gets the "x", "y" and "z" attributes from the particles
 set and sends these to the "find_nearest_neighbors" method. This methods
@@ -586,7 +586,7 @@ test_nearestneighbor.py class and add this method:
     def test4(self):
         instance = NearestNeighbor()
         
-        particles = data.Particles(4)
+        particles = datamodel.Particles(4)
         particles.x = [0.0, 1.0, 4.0, 7.5] | generic_unit_system.length
         particles.y = 0.0 | generic_unit_system.length
         particles.z = 0.0 | generic_unit_system.length
@@ -901,13 +901,13 @@ the **define_methods** function, like so::
             builder.add_method(
                 "get_close_neighbors", 
                 (builder.INDEX,),
-                (builder.INDEX, builder.INDEX, builder.INDEX, builder.ERROR_CODE),
+                (builder.LINK('particles'), builder.LINK('particles'), builder.LINK('particles'), builder.ERROR_CODE),
             )
             
             builder.add_method(
                 "get_nearest_neighbor", 
                 (builder.INDEX,),
-                (builder.INDEX, generic_unit_system.length, builder.ERROR_CODE),
+                (builder.LINK('particles'), generic_unit_system.length, builder.ERROR_CODE),
             )
             
             builder.add_method(
@@ -932,17 +932,19 @@ to this. The definition of the **add_method** function is as follows::
 For every argument or return value we can specify if it has a unit or
 if it is special. The special arguments are:
 
-================== ===================================
-definition         description
-================== ===================================
-builder.ERROR_CODE the value is interpreted as an errorcode,
-                   zero means no error for all other values and
-                   Exception will be raise, only valid for one return value.
-builder.NO_UNIT    the value has not unit (for example for the
-                   number of items in a list)
-builder.INDEX      the value is interpreted as an index for
-                   object identifiers
-================== ===================================
+=========================== ===================================
+definition                  description
+=========================== ===================================
+builder.ERROR_CODE          the value is interpreted as an errorcode,
+                            zero means no error for all other values and
+                            Exception will be raise, only valid for one return value.
+builder.NO_UNIT             the value has not unit (for example for the
+                            number of items in a list)
+builder.INDEX               the value is interpreted as an index for
+                            object identifiers
+builder.LINK('particles')   the value is interpreted as a link to
+                            objects in the set with the given name
+=========================== ===================================
 
 Test if the code builds and try it out. In the legacy interface
 directory do::
@@ -1014,10 +1016,10 @@ particles are called *ParticleSets* or shorter *Particles*.
 We define our particle set by implementing a **define_particle_sets** 
 function on our **NearestNeighbor** class like so::
 
-    class NearestNeighbor(CodeInterface):
+    class NearestNeighbor(InCodeComponentImplementation):
 
         def __init__(self, **options):
-            CodeInterface.__init__(self,  NearestNeighborInterface(), **options)
+            InCodeComponentImplementation.__init__(self,  NearestNeighborInterface(), **options)
             
         
         def define_methods(self, builder):
@@ -1059,7 +1061,7 @@ Let's add another test::
         instance.set_maximum_number_of_particles(100)
         instance.commit_parameters()
         
-        particles = data.Particles(4)
+        particles = datamodel.Particles(4)
         particles.x = [0.0, 1.0, 4.0, 7.5] | generic_unit_system.length
         particles.y = 0.0 | generic_unit_system.length
         particles.z = 0.0 | generic_unit_system.length

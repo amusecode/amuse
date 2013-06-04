@@ -26,7 +26,7 @@ two subsets of stars. The first subset contains the stars within
 a certain radius from the center of mass of the plummer system and
 the second subset contains all the other stars.
 
-The plummer module generates a particle set of the form data.Stars(*N*).
+The plummer module generates a particle set of the form datamodel.Stars(*N*).
 
 Imports
 -------
@@ -37,11 +37,11 @@ the particles, which **need to be quantities**.
 
 .. code-block:: python
 
-    >>> from amuse.support import data
+    >>> from amuse import datamodel
     >>> from amuse.units import nbody_system
     >>> from amuse.units import units
     >>> from amuse.ic.plummer import new_plummer_sphere
-    >>> import numpy as np
+    >>> import numpy
 
 
 Model
@@ -209,7 +209,7 @@ First we define a simple dummy legacy code object, with some typical gd interfac
 
     >>> class DummyLegacyCode(object):
     ...     def __init__(self):
-    ...         self.particles = data.Particles()
+    ...         self.particles = datamodel.Particles()
     ...     def add_particles(self, new_particles):
     ...         self.particles.add_particles(new_particles)
     ...     def update_particles(self, particles):
@@ -236,9 +236,9 @@ Checking the changes by looking at the positions (all changed after the evolve),
 
 .. code-block:: python
 
-    >>> np.all(r_inner_init[0]==r_inner_fini[0])
+    >>> numpy.all(r_inner_init[0]==r_inner_fini[0])
     False
-    >>> np.all(r_outer_init[0]==r_outer_fini[0])
+    >>> numpy.all(r_outer_init[0]==r_outer_fini[0])
     True
 
 If we want to update all particles in our model, we can use:
@@ -252,7 +252,7 @@ and check:
 .. code-block:: python
 
     >>> r_outer_fini = outersphere.position
-    >>> np.all(r_outer_init[0] == r_outer_fini[0])
+    >>> numpy.all(r_outer_init[0] == r_outer_fini[0])
     False
 
 Particle Hierarchies
@@ -265,8 +265,8 @@ Let us suppose that the zero-th star, stars[0] has a child and a grandchild star
 
 .. code-block:: python
 
-    >>> child_star = data.Particle()
-    >>> grandchild_star = data.Particle()
+    >>> child_star = datamodel.Particle()
+    >>> grandchild_star = datamodel.Particle()
     >>> child_star.mass = 0.001|units.MSun
     >>> child_star.position = [0,0,0]|units.AU
     >>> child_star.velocity = [0,0,0]|units.AUd
