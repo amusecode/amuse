@@ -1,4 +1,5 @@
 import numpy
+from collections import namedtuple
 
 from amuse.units import nbody_system
 from amuse.units import quantities
@@ -11,6 +12,7 @@ from amuse.units.quantities import new_quantity
 from amuse.units.quantities import zero
 
 from amuse.support import exceptions
+from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges, MinimumSpanningTree
 
 from amuse.datamodel import base
 from amuse.datamodel import rotation
@@ -635,9 +637,9 @@ def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_we
     >>> from amuse.ic.plummer import new_plummer_model
     >>> from amuse.units import nbody_system
     >>> plum=new_plummer_model(100)
-    >>> a=numpy.argsort(plum.position.lengths_squared().number)
+    >>> index=plum.position.lengths_squared().argmin()
     >>> plum.mass=0|nbody_system.mass
-    >>> plum[a[0]].mass=1|nbody_system.mass
+    >>> plum[index].mass=1|nbody_system.mass
     >>> print plum.mass_segregation_Gini_coefficient()
     1.0
     """                   
@@ -802,7 +804,6 @@ def Qparameter(parts, distfunc=None):
     the projection plane.
 
     """
-    from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges
     if distfunc is None:
       def distfunc(p,q):
         return (((p.x-q.x)**2+(p.y-q.y)**2)**0.5).value_in(p.x.unit)
@@ -867,6 +868,51 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
     if verbose: print "number of CC:",len(cc)
     return cc
 
+def minimum_spanning_tree_length(particles):
+    """
+    Calculates the length of the minimum spanning tree (MST) of a set of particles 
+    using David Eppstein's Python implemention of Kruskal's algorithm.
+    """
+    graph = Graph()
+    for particle in particles:
+        others = particles - particle
+        distances = (particle.position - others.position).lengths()
+        for other, distance in zip(others, distances):
+            graph.add_edge(particle, other, distance)
+    return sum([edge[0] for edge in MinimumSpanningTree(graph)], zero)
+
+MassSegregationRatioResults = namedtuple('MassSegregationRatioResults', 
+    ['mass_segregation_ratio', 'uncertainty'])
+
+def mass_segregation_ratio(particles, number_of_particles=20, number_of_random_sets=50, 
+        also_compute_uncertainty=False):
+    """
+    Calculates the mass segregation ratio (Allison et al. 2009, MNRAS 395 1449).
+    
+    (1) Determine the length of the minimum spanning tree (MST) of the 
+        'number_of_particles' most massive stars; l_massive
+    (2) Determine the average length of the MST of 'number_of_random_sets' sets 
+        of 'number_of_particles' random stars; l_norm
+    (3) Determine with what statistical significance l_massive differs from l_norm:
+        MSR = (l_norm / l_massive) +/- (sigma_norm / l_massive)
+    
+    :argument number_of_particles:  the number of most massive stars for the MST for l_massive
+    :argument number_of_random_sets:  the number of randomly selected subsets for 
+        which the MST is calculated to determine l_norm
+    :argument also_compute_uncertainty: if True, a namedtuple is returned with (MSR, sigma) 
+    """
+    most_massive = particles.sorted_by_attribute("mass")[-number_of_particles:]
+    l_massive = most_massive.minimum_spanning_tree_length()
+    l_norms = [] | particles.position.unit
+    for i in range(number_of_random_sets):
+        l_norms.append(particles.random_sample(number_of_particles).minimum_spanning_tree_length())
+    msr = l_norms.mean() / l_massive
+    if also_compute_uncertainty:
+        sigma = l_norms.std() / l_massive
+        return MassSegregationRatioResults(mass_segregation_ratio=msr, uncertainty=sigma)
+    else:
+        return msr
+    
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
@@ -910,4 +956,6 @@ AbstractParticleSet.add_global_function_attribute("find_closest_particle_to", fi
 
 AbstractParticleSet.add_global_function_attribute("Qparameter", Qparameter)
 AbstractParticleSet.add_global_function_attribute("connected_components", connected_components)
+AbstractParticleSet.add_global_function_attribute("minimum_spanning_tree_length", minimum_spanning_tree_length)
+AbstractParticleSet.add_global_function_attribute("mass_segregation_ratio", mass_segregation_ratio)
 

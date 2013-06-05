@@ -1,3 +1,4 @@
+import random
 import numpy.random
 
 from amuse.test import amusetest
@@ -177,7 +178,49 @@ class TestParticlesAttributes(amusetest.TestCase):
         for in_si, in_nbody in zip(si_results[4], nbody_results[4]):
             self.assertAlmostRelativeEqual(in_si, convert.from_target_to_source(in_nbody), places=10)
     
-
+    def test7(self):
+        print "Test minimum_spanning_tree_length"
+        particles = Particles(6)
+        particles.position = [[-5,0,0], [-1,0,0], [0,0,0], [0,1,0], [0,-2,0], [-1,0.1,0]] | units.m
+        self.assertEqual(particles[:1].minimum_spanning_tree_length(), 0 | units.m)
+        self.assertEqual(particles[:2].minimum_spanning_tree_length(), 4 | units.m)
+        self.assertEqual(particles[:3].minimum_spanning_tree_length(), 5 | units.m)
+        self.assertEqual(particles[:4].minimum_spanning_tree_length(), 6 | units.m)
+        self.assertEqual(particles[:5].minimum_spanning_tree_length(), 8 | units.m)
+        self.assertEqual(particles[:6].minimum_spanning_tree_length(), 8.1 | units.m)
+    
+    def test8(self):
+        print "Test mass_segregation_ratio"
+        numpy.random.seed(123)
+        random.seed(456)
+        number_of_particles = 10000
+        particles = new_plummer_sphere(number_of_particles)
+        particles.r_squared = particles.position.lengths_squared()
+        sorted = particles.sorted_by_attribute("r_squared")
+        
+        sorted.mass = numpy.random.uniform(1.0, 2.0, number_of_particles) | nbody_system.mass
+        MSR = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=10)
+        self.assertAlmostEquals(MSR, 0.8877, 3)
+        random.seed(456)
+        result = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=10, also_compute_uncertainty=True)
+        self.assertTrue(isinstance(result, particle_attributes.MassSegregationRatioResults))
+        self.assertAlmostEquals(result.mass_segregation_ratio, 0.8877, 3)
+        self.assertAlmostEquals(result.uncertainty, 0.2482, 3)
+        MSR, sigma = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=50, also_compute_uncertainty=True)
+        self.assertTrue(MSR - sigma < 1.0 < MSR + sigma)
+        
+        sorted.mass = numpy.linspace(1.0, 2.0, number_of_particles) | nbody_system.mass
+        MSR, sigma = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=20, 
+            also_compute_uncertainty=True)
+        self.assertTrue(MSR < 0.1)
+        self.assertTrue(sigma < MSR)
+        
+        sorted.mass = numpy.linspace(2.0, 1.0, number_of_particles) | nbody_system.mass
+        MSR, sigma = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=20, 
+            also_compute_uncertainty=True)
+        self.assertTrue(MSR > 10.0)
+        self.assertTrue(sigma < MSR)
+    
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
     
