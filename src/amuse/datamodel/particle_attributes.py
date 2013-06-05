@@ -11,7 +11,6 @@ from amuse.units.quantities import new_quantity
 from amuse.units.quantities import zero
 
 from amuse.support import exceptions
-from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges
 
 from amuse.datamodel import base
 from amuse.datamodel import rotation
@@ -636,9 +635,9 @@ def mass_segregation_Gini_coefficient(particles, unit_converter=None, density_we
     >>> from amuse.ic.plummer import new_plummer_model
     >>> from amuse.units import nbody_system
     >>> plum=new_plummer_model(100)
-    >>> index=plum.position.lengths_squared().argmin()
+    >>> a=numpy.argsort(plum.position.lengths_squared().number)
     >>> plum.mass=0|nbody_system.mass
-    >>> plum[index].mass=1|nbody_system.mass
+    >>> plum[a[0]].mass=1|nbody_system.mass
     >>> print plum.mass_segregation_Gini_coefficient()
     1.0
     """                   
@@ -803,6 +802,7 @@ def Qparameter(parts, distfunc=None):
     the projection plane.
 
     """
+    from amuse.ext.basicgraph import Graph, MinimumSpanningTreeFromEdges
     if distfunc is None:
       def distfunc(p,q):
         return (((p.x-q.x)**2+(p.y-q.y)**2)**0.5).value_in(p.x.unit)
@@ -867,47 +867,6 @@ def connected_components(parts, threshold=None, distfunc=None, verbose=False):
     if verbose: print "number of CC:",len(cc)
     return cc
 
-def mass_segregation_ratio(particles, number_of_particles=20, number_of_random_sets=50):
-    """
-    Calculates the mass segregation ratio (Allison et al. 2009, MNRAS 395 1449).
-    
-    (1) Determine the length of the minimum spanning tree (MST) of the 
-        'number_of_particles' most massive stars; l_massive
-    (2) Determine the average length of the MST of 'number_of_random_sets' sets 
-        of 'number_of_particles' random stars; l_norm
-    (3) Determine with what statistical significance l_massive differs from l_norm:
-        MSR = (l_norm / l_massive) +/- (sigma_norm / l_massive)
-    
-    :argument number_of_particles:  the number of most massive stars for the MST for l_massive
-    :argument number_of_random_sets:  the number of randomly selected subsets for 
-        which the MST is calculated to determine l_norm
-
-    """
-    most_massive = particles.sorted_by_attribute("mass")[-number_of_particles:]
-    print "number_of_particles", number_of_particles
-    print "N most_massive", len(most_massive)
-    graph=Graph()
-    print "making graph"
-    for particle in most_massive:
-        others = most_massive - particle
-        distances = (particle.position - others.position).lengths()
-        for other, distance in zip(others, distances):
-            graph.add_edge(particle, other, distance)
-
-    all_edges=graph.all_edges()
-  
-    ml=reduce(lambda x,y: x+y[0],all_edges,zero )/len(all_edges)
-  
-    print "constructing MST"
-    mst=MinimumSpanningTreeFromEdges(all_edges)
-  
-    mlmst=reduce(lambda x,y: x+y[0],mst, zero )/len(mst)
-# normalize  
-    mlmst=mlmst/(number_of_particles*numpy.pi)**0.5*(number_of_particles-1)
-  
-    print "Q:",mlmst/ml
-    return mlmst/ml
-
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
@@ -951,5 +910,4 @@ AbstractParticleSet.add_global_function_attribute("find_closest_particle_to", fi
 
 AbstractParticleSet.add_global_function_attribute("Qparameter", Qparameter)
 AbstractParticleSet.add_global_function_attribute("connected_components", connected_components)
-AbstractParticleSet.add_global_function_attribute("mass_segregation_ratio", mass_segregation_ratio)
 

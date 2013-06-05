@@ -268,11 +268,7 @@ int commit_particles()
   bonsai->allocateTreePropMemory(bonsai->localTree);
   bonsai->compute_properties(bonsai->localTree);
 
-  float old_timestep = bonsai->getDt();
-  evolve_model(t_now);
-  fprintf(stderr,"NATHAN is resetting the timestep from %f to %f \n", bonsai->getDt(), old_timestep);
-  bonsai->setDt(old_timestep);
-  
+
   curStateOnHost = false;
 
   return 0;
@@ -481,10 +477,6 @@ int recommit_particles(){
   bonsai->allocateTreePropMemory(bonsai->localTree);
   bonsai->compute_properties(bonsai->localTree);
 
-  float old_timestep = bonsai->getDt();
-  evolve_model(t_now);
-  fprintf(stderr,"NATHAN is resetting the timestep from %f to %f \n", bonsai->getDt(), old_timestep);
-  bonsai->setDt(old_timestep);
 
   curStateOnHost = false;
 
