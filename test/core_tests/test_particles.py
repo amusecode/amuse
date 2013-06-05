@@ -10,6 +10,7 @@ import numpy
 import time
 import pickle
 import textwrap
+import random
 
 from amuse.units import units
 from amuse.units import quantities
@@ -177,7 +178,21 @@ class TestParticles(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles2.mass, [1,2] | units.kg)
         self.assertAlmostRelativeEquals(particles2[1].mass, 2 | units.kg)
         self.assertNotEquals(particles[1].key, particles2[1].key)
+    
+    def test16(self):
+        random.seed(12345)
+        particles = datamodel.Particles(10000)
+        subset = particles.random_sample(2500)
+        self.assertEquals(len(subset), 2500)
+        self.assertEquals(len(particles.difference(subset)), 7500)
         
+        subset2 = particles.random_sample(4000)
+        self.assertEquals(len(subset2), 4000)
+        self.assertEquals(len(particles.difference(subset2)), 6000)
+        # Overlap should be roughly 1000 (0.25 * 0.4 * 10000) 
+        self.assertEquals(len(subset2.get_intersecting_subset_in(subset)), 1008)
+        
+
 class TestParticle(amusetest.TestCase):
     
     def test1(self):

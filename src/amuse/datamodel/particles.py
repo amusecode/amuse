@@ -14,6 +14,7 @@ from amuse.units.quantities import as_vector_quantity
 from amuse.units.quantities import zero
 from amuse.units.quantities import AdaptingVectorQuantity
 
+import random
 import numpy
 from numpy import ma
 
@@ -897,10 +898,7 @@ class AbstractParticleSet(AbstractSet):
         >>> print sorted.radius
         [3.0, 1.0, 2.0] m
         """
-        values = getattr(self, attribute)
-        sorted_indices =  values.argsort(kind=kind)
-        keys = self.get_all_keys_in_store()
-        return self._subset(keys[sorted_indices])
+        return self.__getitem__(getattr(self, attribute).argsort(kind=kind))
         
         
     def sorted_by_attributes(self, *attributes):
@@ -985,7 +983,11 @@ class AbstractParticleSet(AbstractSet):
         keys = numpy.ma.array(self.get_all_keys_in_store(), dtype='uint64')
         keys.mask = ~self.get_valid_particles_mask()
         return other._masked_subset(keys)
-        
+    
+    def random_sample(self, number_of_particles):
+        return self.__getitem__(random.sample(xrange(len(self)), number_of_particles))
+    
+
 class Particles(AbstractParticleSet):
     """
     A set of particles. Attributes and values are stored in

@@ -177,6 +177,26 @@ class TestParticlesAttributes(amusetest.TestCase):
         for in_si, in_nbody in zip(si_results[4], nbody_results[4]):
             self.assertAlmostRelativeEqual(in_si, convert.from_target_to_source(in_nbody), places=10)
     
+    def test7(self):
+        print "Test mass_segregation_ratio"
+        convert_nbody = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
+        particles = Particles(2)
+        particles.position = [[-1, 0, 0], [1,0,0]] | units.parsec
+        particles.velocity = [[-1, 0, 0], [1,0,0]] | units.parsec / units.Myr
+        particles.mass = 0.5 | units.MSun 
+        
+        print particles.mass_segregation_ratio(2, 1)
+#~        self.assertAlmostRelativeEquals(particles.total_mass(), 1.0 | units.MSun)
+#~        self.assertAlmostRelativeEquals(particles.kinetic_energy(), 1.0 * (0.5 | units.MSun) * (1 |units.parsec / units.Myr) **2 )
+#~        self.assertAlmostRelativeEquals(particles.potential_energy(), -constants.G *  (0.5 | units.MSun) ** 2  / ([2,0,0] | units.parsec).length() )
+#~        self.assertAlmostRelativeEquals(particles.virial_radius(), 4.0 | units.parsec)
+#~        
+#~        particles.scale_to_standard(convert_nbody)
+#~        self.assertAlmostRelativeEquals(particles.total_mass(), convert_nbody.to_si(1.0 | nbody_system.mass))
+#~        self.assertAlmostRelativeEquals(particles.kinetic_energy(), convert_nbody.to_si(0.25 | nbody_system.energy))
+#~        self.assertAlmostRelativeEquals(particles.potential_energy().as_quantity_in(units.J), convert_nbody.to_si(-0.5 | nbody_system.energy).as_quantity_in(units.J), 12)
+#~        self.assertAlmostRelativeEquals(particles.virial_radius(), convert_nbody.to_si(1.0 | nbody_system.length))
+        
 
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
