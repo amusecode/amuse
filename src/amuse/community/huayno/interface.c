@@ -468,7 +468,7 @@ int get_gravity_at_point(double * eps, double * x, double * y, double * z,
   struct sys tmpsys;
   tmpsys.n=n;
   tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
-  tmpsys.last=NULL;
+  tmpsys.last=&tmpsys.part[n];
   for(int p=0;p<n;p++)
   {
     tmpsys.part[p].pos[0]=x[p];
@@ -477,15 +477,21 @@ int get_gravity_at_point(double * eps, double * x, double * y, double * z,
     tmpsys.part[p].vel[0]=0;
     tmpsys.part[p].vel[1]=0;
     tmpsys.part[p].vel[2]=0;
+#ifdef COMPENSATED_SUMMV
+    tmpsys.part[p].vel_e[0]=0;
+    tmpsys.part[p].vel_e[1]=0;
+    tmpsys.part[p].vel_e[2]=0;  
+#endif
     tmpsys.part[p].radius=eps[p]; /* not used */
   }
-  kick(0,tmpsys,mainsys,1.);
+  kick(0,tmpsys,mainsys,(double) 1.);
   for(int p=0;p<n;p++) 
   {
     ax[p]=tmpsys.part[p].vel[0];
     ay[p]=tmpsys.part[p].vel[1];
     az[p]=tmpsys.part[p].vel[2];
   }
+  free(tmpsys.part);
   return 0;
 }
 
@@ -496,7 +502,7 @@ int get_potential_at_point(double * eps,
   struct sys tmpsys;
   tmpsys.n=n;
   tmpsys.part=(struct particle*) malloc(n*sizeof(struct particle));
-  tmpsys.last=NULL;
+  tmpsys.last=&tmpsys.part[n];
   for(int p=0;p<n;p++)
   {
     tmpsys.part[p].pos[0]=x[p];
@@ -507,6 +513,7 @@ int get_potential_at_point(double * eps,
   }
   potential(tmpsys,mainsys);
   for(int p=0;p<n;p++) phi[p]=tmpsys.part[p].pot;
+  free(tmpsys.part);
   return 0;
 }
 
