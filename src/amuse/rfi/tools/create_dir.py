@@ -27,8 +27,8 @@ class {0.name_of_the_community_interface_class}({0.name_of_the_superclass_for_th
     
 class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_code_interface_class}):
 
-    def __init__(self):
-        {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_community_interface_class}())
+    def __init__(self, **options):
+        {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_community_interface_class}(**options), **options)
     
 """
 
