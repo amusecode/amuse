@@ -32,7 +32,7 @@ Tupan/setup.py:
 endif 
 
 download:
-	git clone git://github.com/GuilhermeFerrari/Tupan.git
+	git clone -b master git://github.com/GuilhermeFerrari/Tupan.git
 
 build:
 	(cd Tupan; python setup.py build)
