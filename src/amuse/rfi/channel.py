@@ -1043,7 +1043,8 @@ class MpiChannel(AbstractMessageChannel):
         return 0
         
     @classmethod
-    def is_root(self):
+    def is_root(cls):
+        cls.ensure_mpi_initialized()
         return MPI.COMM_WORLD.rank == 0
         
     def start(self):
