@@ -679,6 +679,47 @@ class TestParticlesChannel(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles1.mass,[1,2] | units.kg)
         self.assertAlmostRelativeEquals(particles2.x,[11,13] | units.kg)
 
+        particles2.mass = [3,4] | units.kg
+
+        reverse_channel = channel.reverse()
+        reverse_channel.copy()
+
+        self.assertAlmostRelativeEquals(particles2.mass,[3,4] | units.kg)
+        self.assertAlmostRelativeEquals(particles1.mass,[4,3] | units.kg)
+        self.assertAlmostRelativeEquals(particles2.x,[11,13] | units.kg)
+
+
+    def test11(self):
+
+        particles1 = datamodel.Particles(keys=[10,11])
+        particles1.mass = [1,2] | units.kg
+        particles1.x = [10,12] | units.kg
+
+        particles2 = datamodel.Particles(keys=[11,10])
+        particles2.mass = [3,4] | units.kg
+        particles2.x = [11,13] | units.kg
+
+        self.assertAlmostRelativeEquals(particles2.mass, [3,4] | units.kg)
+        self.assertAlmostRelativeEquals(particles1.mass,[1,2] | units.kg)
+
+        channel = particles1.new_channel_to(particles2, attributes=['mass'], target_names=['x'])
+        channel.copy()
+
+        self.assertAlmostRelativeEquals(particles2.mass,[3,4] | units.kg)
+        self.assertAlmostRelativeEquals(particles1.mass,[1,2] | units.kg)
+        self.assertAlmostRelativeEquals(particles2.x,[2,1] | units.kg)
+        self.assertAlmostRelativeEquals(particles1.x,[10,12] | units.kg)
+
+        particles2.x = [13,11] | units.kg
+
+        reverse_channel = channel.reverse()
+        reverse_channel.copy()
+
+        self.assertAlmostRelativeEquals(particles2.mass,[3,4] | units.kg)
+        self.assertAlmostRelativeEquals(particles1.mass,[11,13] | units.kg)
+        self.assertAlmostRelativeEquals(particles2.x,[13,11] | units.kg)
+        self.assertAlmostRelativeEquals(particles1.x,[10,12] | units.kg)
+
 class TestParticlesSuperset(amusetest.TestCase):
 
     def test1(self):

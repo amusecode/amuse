@@ -2450,11 +2450,18 @@ class ParticleInformationChannel(object):
         self.to_version = self.to_particles._get_version()
 
     def reverse(self):
+        if self.target_names is None:
+            attributes = self.attributes
+            target_names = self.target_names
+        else:
+            attributes = self.target_names
+            target_names = self.attributes
+
         return ParticleInformationChannel(
             self.to_particles,
             self.from_particles,
-            self.attributes,
-            self.target_names
+            attributes,
+            target_names
         )
 
     def intersecting_keys(self):
@@ -2479,7 +2486,7 @@ class ParticleInformationChannel(object):
         self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
 
     def copy(self):
-        if self.attributes:
+        if not self.attributes is None:
             self.copy_attributes(self.attributes, self.target_names)
         elif not self.to_particles.can_extend_attributes():
             self.copy_overlapping_attributes()
