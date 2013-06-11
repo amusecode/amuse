@@ -556,8 +556,8 @@ class Bridge(object):
     
     def get_potential_at_point(self,radius,x,y,z):
         pot=quantities.zero
-        for x in self.codes:
-            _pot=x.get_potential_at_point(radius,x,y,z)
+        for code in self.codes:
+            _pot=code.get_potential_at_point(radius,x,y,z)
             pot=pot+_pot
         return pot
         
@@ -565,8 +565,8 @@ class Bridge(object):
         ax=quantities.zero
         ay=quantities.zero
         az=quantities.zero
-        for x in self.codes:
-            _ax,_ay,_az=x.get_gravity_at_point(radius,x,y,z)
+        for code in self.codes:
+            _ax,_ay,_az=code.get_gravity_at_point(radius,x,y,z)
             ax=ax+_ax
             ay=ay+_ay
             az=az+_az
