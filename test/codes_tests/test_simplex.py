@@ -5,6 +5,9 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.community.simplex.interface import SimpleXInterface, SimpleX,SimpleXSplitSet
 from amuse.units import units
 from amuse.datamodel import Particles
+from amuse.datamodel import Particle
+from amuse.ext.molecular_cloud import ism_cube
+
 #default_options = dict(number_of_workers=2, redirection="none")
 default_options = dict(number_of_workers=1)#,debugger='gdb')
 
@@ -363,6 +366,37 @@ class TestSimpleX(TestWithMPI):
         self.assertEqual( len(instance.particles), N)
 
 
+    def test12(self):
+        N = 1000
+        Lstar=100|units.LSun
+        boxsize=10|units.parsec
+        rho=1.0 | (units.amu/units.cm**3)
+        t_end=0.01 |units.Myr
+        internal_energy = (9. |units.kms)**2
+
+        source=Particle()
+        source.position = (0, 0, 0) |units.parsec
+        source.flux = Lstar/(20. | units.eV)
+        source.rho = rho
+        source.xion = 0.0
+        source.u = internal_energy
+
+        ism = ism_cube(N, boxsize/2., rho, internal_energy).result
+        ism.rho = rho
+        ism.flux = 0. | units.s**-1
+        ism.xion = source.xion
+
+        radiative = SimpleX()
+        radiative.parameters.box_size=1.001*boxsize    
+        radiative.parameters.timestep=0.001 | units.Myr
+
+        radiative.particles.add_particle(source)
+        radiative.particles.add_particles(ism)
+
+        radiative.evolve_model(t_end)
+        self.assertAlmostRelativeEquals( 0.0750819123073, radiative.particles.xion.mean(), 4)
+        radiative.stop()
+        
 class TestSimpleXSplitSet(TestWithMPI):
 
     def test1(self):
@@ -464,6 +498,7 @@ class TestSimpleXSplitSet(TestWithMPI):
             self.assertEqual(getattr(instance.parameters,x), param[x])
 
 
+    
     
 def read_input_file(input_file):
     file = open(input_file, 'r')

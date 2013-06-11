@@ -20,7 +20,7 @@ OBJS = $(OBJDIR)/amuse_interface.o $(OBJDIR)/SimpleX.o \
 GLOBJS = $(OBJDIR)/amuse_interface_gl.o
 
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
-QHULL_PATH = $(PLUGINS)/QHull/
+QHULL_PATH = $(PLUGINS)/qhull-2012.1/
 
 HDF5_PATH = /Users/jppaarde/sw/hdf5-1.6.10/installed
 HDF5_FLAGS ?= -I$(HDF5_PATH)/include
@@ -35,7 +35,7 @@ GSL_LIBS ?= -L$(GSL_PATH)/lib -lgsl -lgslcblas
 
 LIBS =  $(HDF5_LIBS) \
         $(GSL_LIBS) \
-        -L$(QHULL_PATH) -lqhull \
+        -L$(QHULL_PATH)/lib -lqhullstatic \
         -L$(HEALPIX_PATH)/lib  -lhealpix_cxx
 
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11

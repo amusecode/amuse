@@ -1068,11 +1068,13 @@ void SimpleX::compute_triangulation(){
 
     //if the triangulation is not correct the first time, do it again
     //with new boundaries that are correct
+    
     while(!correct){
 
       //empty the vector, it might have been filled in the previous iteration
+    
       simplices_subbox.clear();
-
+    
       //------ find vertices in subbox --------//
 
       //find id's of all vertices in subbox + border around subbox
@@ -1085,6 +1087,7 @@ void SimpleX::compute_triangulation(){
 	  in_subbox++;
 	}
       }
+
       //change the abort to extension of the borders!
       //if( in_box.size() <= (unsigned int) dimension ){ 
       if( in_subbox <= (unsigned int) dimension ){ 
@@ -1145,12 +1148,12 @@ void SimpleX::compute_triangulation(){
       }
 
       // ---------- triangulate this subbox  ---------------//
-
+      //break "./src/Simplex.cpp" 1185
       //variables needed for qhull call
       FILE *errfile=stderr;
       boolT ismalloc=False;
       char flags[250];
-      sprintf(flags,"qhull d Qbb T0");
+      sprintf(flags,"qhull d Qbb Qt T0");
       facetT *facet;
       vertexT *vertex, **vertexp;
       int curlong, totlong;
@@ -1173,11 +1176,12 @@ void SimpleX::compute_triangulation(){
 
       }
 
+
       //assume for now the triangulation will be correct, check will follow
       correct = 1;      
-
       //call to qhull to do triangulation
-      if (!qh_new_qhull(dimension, in_box.size(), pt_array, ismalloc, flags, NULL, errfile)) {
+      int qh_error = qh_new_qhull(dimension, in_box.size(), pt_array, ismalloc, flags, NULL, errfile);
+      if (!qh_error) {
 	//loop over all facets
 	FORALLfacets {
 	  if (!facet->upperdelaunay) {
@@ -1196,6 +1200,7 @@ void SimpleX::compute_triangulation(){
 	    tempSimpl.set_id2( in_box[ ids[1] ] );
 	    tempSimpl.set_id3( in_box[ ids[2] ] );
 	    tempSimpl.set_id4( in_box[ ids[3] ] );
+
 
 
 	    // ---------- check if simplex is in this subbox  ---------------//
@@ -1247,6 +1252,7 @@ void SimpleX::compute_triangulation(){
 	      if( !vertices[ in_box[ids[0]] ].get_border() || !vertices[ in_box[ids[1]] ].get_border() ||
 		  !vertices[ in_box[ids[2]] ].get_border() || !vertices[ in_box[ids[3]] ].get_border() ){
 
+	    
 		//add simplex to list
 		simplices_subbox.push_back(tempSimpl);
 
@@ -1348,7 +1354,6 @@ void SimpleX::compute_triangulation(){
 		  //exclude simplices that are entirely inside the boundary
 		  if( !vertices[ in_box[ids[0]] ].get_border() || !vertices[ in_box[ids[1]] ].get_border() ||
 		      !vertices[ in_box[ids[2]] ].get_border() || !vertices[ in_box[ids[3]] ].get_border() ){
-
 		    simplices_subbox.push_back(tempSimpl);
 		  }
 		}

@@ -6,7 +6,7 @@ use_healpix = yes
 PLUGINS = ./plugins
 KEYVALUE_PATH = $(PLUGINS)/keyValue
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
-QHULL_PATH = $(PLUGINS)/QHull/
+QHULL_PATH = $(PLUGINS)/qhull-2012.1/
 
 HDF5_PLUGIN = $(PLUGINS)/hdf5
 
@@ -32,8 +32,8 @@ CXXCFLAGS := $(CXXCFLAGS_NO_C) -c
 export CXXCFLAGS
 
 MACRODEFS = -DH5_USE_16_API
-MYLIBS = -L$(QHULL_PATH) -lqhull $(GSL_LIBS)  $(HDF5_LIBS)
-MYINCLUDE = -I$(KEYVALUE_PATH) -I$(QHULL_PATH) $(HDF5_PLUGIN_FLAGS) $(HDF5_FLAGS) \
+MYLIBS = -L$(QHULL_PATH)/lib -lqhull $(GSL_LIBS)  $(HDF5_LIBS)
+MYINCLUDE = -I$(KEYVALUE_PATH) -I$(QHULL_PATH)/src/libqhull $(HDF5_PLUGIN_FLAGS) $(HDF5_FLAGS) \
             -I$(PLUGINS)/octree -I$(PLUGINS)/hilbert -I$(SRC) \
             -I$(PLUGINS)/unit_sphere_tess/include $(GSL_FLAGS)
 ifeq ($(use_parallel_hdf5),yes)

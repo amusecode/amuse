@@ -52,7 +52,7 @@ extern "C"
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#include <qhull.h>
+#include <libqhull.h>
 #include <mem.h>
 #include <qset.h>
 #include <geom.h>
