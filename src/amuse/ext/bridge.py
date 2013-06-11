@@ -214,7 +214,7 @@ class bridge(object):
         Ep=quantities.zero
         for x in self.systems:
             Ep+=x.potential_energy
-            if hasattr(x,"particles"):
+            if hasattr(x,"particles")  and len(x.particles)>0:
                 for y in self.partners[x]:
                     _Ep = potential_energy(x,y.get_potential_at_point)
                     if hasattr(y,"particles"):
@@ -288,7 +288,7 @@ class bridge(object):
                     x.synchronize_model()    
                     if(self.verbose):  print ".. done"
         for x in self.systems:
-            if hasattr(x,"particles"):
+            if hasattr(x,"particles") and len(x.particles)>0:
                 for y in self.partners[x]:
                     if x is not y:
                         if(self.verbose):  print x.__class__.__name__,"receives kick from",y.__class__.__name__,
