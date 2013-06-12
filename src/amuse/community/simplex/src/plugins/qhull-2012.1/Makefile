@@ -86,9 +86,9 @@ PRINTC = enscript -2r
 # PRINTC = lpr
 
 #for Gnu's gcc compiler, -O2 for optimization, -g for debugging
-CC        = gcc
+CC        ?= gcc
 CC_OPTS1  = -O2 -fPIC -ansi -Isrc/libqhull $(CC_WARNINGS)
-CXX       = g++
+CXX       ?= g++
 
 # libqhullcpp must be before libqhull
 CXX_OPTS1 = -O2 -Dqh_QHpointer -Isrc/ -Isrc/libqhullcpp -Isrc/libqhull $(CXX_WARNINGS)
@@ -126,7 +126,7 @@ CXX_OPTS2 = $(CXX_OPTS1)
 
 # [gcc 4.4] Compiles without error (-Werror)
 CC_WARNINGS  = -Wall -Wcast-qual -Wextra -Wwrite-strings -Wshadow
-CXX_WARNINGS = -Wall -Wcast-qual -Wextra -Wwrite-strings -Wno-sign-conversion -Wshadow -Wconversion 
+CXX_WARNINGS = -Wall -Wcast-qual -Wextra -Wwrite-strings -Wshadow -Wconversion 
 
 # Compiles OK with all gcc warnings except for -Wno-sign-conversion and -Wconversion
 # Compiles OK with all g++ warnings except Qt source errors on -Wshadow and -Wconversion

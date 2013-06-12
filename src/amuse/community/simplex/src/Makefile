@@ -66,8 +66,7 @@ HEALPix:
 	make all
 
 QHull:
-	@cd  $(QHULL_PATH) ; \
-	make all
+	make -C $(QHULL_PATH) all
 
 SimpleX: HEALPix $(OBJS)
 	$(MPICXX) $(OBJS) -o $(BIN)SimpleX $(CXXCFLAGS_NO_C) -lm $(MYLIBS)
