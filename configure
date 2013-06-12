@@ -1511,7 +1511,7 @@ Optional Packages:
   --with-gmp=PFX          Prefix where GMP has been installed
   --with-mpfr=PFX         Prefix where MPFR has been installed
   --with-hdf5=PFX         Prefix where HDF5 has been installed
-  --with-gsl=PFX   Prefix where GSL is installed (optional)
+  --with-gsl-prefix=PFX   Prefix where GSL is installed (optional)
   --with-gsl-exec-prefix=PFX Exec prefix where GSL is installed (optional)
 
 Some influential environment variables:
