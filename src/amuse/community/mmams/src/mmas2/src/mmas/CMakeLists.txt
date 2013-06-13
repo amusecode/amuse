@@ -11,11 +11,16 @@
 # GSL #
 #######
 
-FIND_LIBRARY(GSL_LIB gsl PATHS /usr/lib /usr/local/lib /opt/local/lib /sw/lib)
-IF (NOT GSL_LIB)
-  MESSAGE(FATAL_ERROR "Cannot find libgsl. Perhaps GSL developer packages are not installed.")
-ENDIF (NOT GSL_LIB)
-FIND_LIBRARY(GSLCBLAS_LIB gslcblas PATHS /usr/lib /usr/local/lib /opt/local/lib /sw/lib)
+IF (NOT GSL_LIBS)
+  FIND_LIBRARY(GSL_LIB gsl PATHS /usr/lib /usr/local/lib /opt/local/lib /sw/lib)
+  IF (NOT GSL_LIB)
+    MESSAGE(FATAL_ERROR "Cannot find libgsl. Perhaps GSL developer packages are not installed.")
+  ENDIF (NOT GSL_LIB)
+  FIND_LIBRARY(GSLCBLAS_LIB gslcblas PATHS /usr/lib /usr/local/lib /opt/local/lib /sw/lib)
+  SET(GSL_LIBS  ${GSL_LIB} ${GSLCBLAS_LIB})
+ELSE (NOT GSL_LIBS)
+ENDIF (NOT GSL_LIBS)
+
 IF (NOT GSL_FLAGS)
 FIND_PATH(GSL_INC gsl/gsl_sys.h PATHS /usr/include /usr/local/include /opt/local/include /sw/include)
 SET(INC ${INC} ${GSL_INC})
@@ -29,7 +34,8 @@ set_source_files_properties(
         mixing.cpp
 	PROPERTIES COMPILE_FLAGS "${GSL_FLAGS}")
 ENDIF (NOT GSL_FLAGS)
-SET(LIBS ${LIBS} ${GSL_LIB} ${GSLCBLAS_LIB})
+
+SET(LIBS ${LIBS} ${GSL_LIBS})
 
 
 INCLUDE_DIRECTORIES(./ ../ ${INC})

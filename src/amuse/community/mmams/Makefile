@@ -33,7 +33,7 @@ all: $(BUILDDIR)/Makefile  mmas2 mmams_worker
 
 $(BUILDDIR)/Makefile:
 	@-mkdir build
-	cd $(BUILDDIR) && cmake ../src/mmas2 -G "$(CMAKE_GENERATOR)" -DGSL_FLAGS=$(GSL_FLAGS)
+	cd $(BUILDDIR) && cmake ../src/mmas2 -G "$(CMAKE_GENERATOR)" -DGSL_FLAGS="$(GSL_FLAGS)" -DGSL_LIBS="$(GSL_LIBS)"
 	
 mmas2: $(BUILDDIR)/Makefile
 	make -C $(BUILDDIR)
