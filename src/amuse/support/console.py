@@ -1,3 +1,4 @@
+import numpy
 from amuse.support.exceptions import AmuseException
 from amuse.support import options
 
@@ -50,19 +51,22 @@ class PrintingStrategy(object):
             return '[' + ', '.join([str(x) for x in number]) + ']'
         return str(number)
     
-    def numbers_to_string(self, quantity, format = "%s"):
+    def numbers_to_string(self, quantity, precision=None):
+        if precision is None:
+            return str(quantity.number)
         if quantity.is_vector():
-            return '[' + ', '.join([format % x for x in quantity.number]) + ']'
-        if quantity.is_scalar():
-            return format % quantity.number
-        return format % quantity.number
+            old_np_precision = numpy.get_printoptions()["precision"]
+            numpy.set_printoptions(precision=precision)
+            result = str(quantity.number)
+            numpy.set_printoptions(precision=old_np_precision)
+            return result
+        return ("%."+str(precision)+"g") % quantity.number
     
     @classmethod
     def register(cls):
         """
         Register this class, so that it can be found by name
-        int the :func:`write_set_to_file` and :func:`read_set_from_file`
-        functions.
+        in the :func:`set_printing_strategy` function.
         """
         add_printing_strategy(cls)
     
@@ -213,17 +217,15 @@ class CustomPrintingStrategy(PrintingStrategyWithPreferredUnits):
     
     provided_strategy_names = ['custom',]
     
-    def __init__(self, nbody_converter = None, print_units = True, preferred_units = [], precision = None,
-            prefix = "", separator = " ", suffix = "", ignore_converter_exceptions = None):
+    def __init__(self, nbody_converter=None, print_units=True, preferred_units=None,
+            precision=None, prefix="", separator=" ", suffix="",
+            ignore_converter_exceptions=None):
         self.ignore_converter_exceptions = (print_units if (ignore_converter_exceptions is None) 
             else ignore_converter_exceptions)
         self.nbody_converter = nbody_converter
         self.print_units = print_units
         self.preferred_units = preferred_units
-        if precision:
-            self.format = "%." + str(precision) + "g"
-        else:
-            self.format = "%s"
+        self.precision = precision
         self.prefix = prefix
         self.separator = separator
         self.suffix = suffix
@@ -232,7 +234,7 @@ class CustomPrintingStrategy(PrintingStrategyWithPreferredUnits):
         return self.prefix
     
     def string_number(self, quantity):
-        return self.numbers_to_string(quantity, format = self.format)
+        return self.numbers_to_string(quantity, precision = self.precision)
     
     def string_separator(self):
         return self.separator
@@ -242,6 +244,8 @@ class CustomPrintingStrategy(PrintingStrategyWithPreferredUnits):
 
 
 def _quantity_in_preferred_units(preferred_units, quantity):
+    if preferred_units is None:
+        return quantity
     for preferred_unit in preferred_units:
         if quantity.unit.has_same_base_as(preferred_unit):
             return quantity.as_quantity_in(preferred_unit)
