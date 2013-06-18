@@ -52,15 +52,20 @@ class PrintingStrategy(object):
         return str(number)
     
     def numbers_to_string(self, quantity, precision=None):
-        if precision is None:
-            return str(quantity.number)
         if quantity.is_vector():
-            old_np_precision = numpy.get_printoptions()["precision"]
-            numpy.set_printoptions(precision=precision)
-            result = str(quantity.number)
-            numpy.set_printoptions(precision=old_np_precision)
-            return result
-        return ("%."+str(precision)+"g") % quantity.number
+            if precision is None:
+                return '[' + ', '.join(["%s" % x for x in quantity.number]) + ']' 
+            else:
+                old_np_precision = numpy.get_printoptions()["precision"]
+                numpy.set_printoptions(precision=precision)
+                result = str(quantity.number)
+                numpy.set_printoptions(precision=old_np_precision)
+                return result
+        else:
+            if precision is None:
+                return "%s" % quantity.number
+            else:
+                return ("%."+str(precision)+"g") % quantity.number
     
     @classmethod
     def register(cls):
