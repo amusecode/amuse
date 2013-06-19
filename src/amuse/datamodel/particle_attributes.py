@@ -760,7 +760,7 @@ def distances_squared(particles,field_particles):
     >>> particles.y = [0.0, 0.0] | units.m
     >>> particles.z = [0.0, 0.0] | units.m
     >>> distances_squared(particles, field_particles)
-    quantity<[[ 1.  1.], [ 9.  1.], [ 16.   4.]] m**2>
+    quantity<[[1.0, 1.0], [9.0, 1.0], [16.0, 4.0]] m**2>
     """
 
     n = len(particles)
@@ -786,7 +786,7 @@ def velocity_diff_squared(particles,field_particles):
     >>> particles.vy = [0.0, 0.0] | units.m
     >>> particles.vz = [0.0, 0.0] | units.m
     >>> velocity_diff_squared(particles, field_particles)
-    quantity<[[ 1.  1.], [ 9.  1.], [ 16.   4.]] m**2>
+    quantity<[[1.0, 1.0], [9.0, 1.0], [16.0, 4.0]] m**2>
     """
 
     n = len(particles)

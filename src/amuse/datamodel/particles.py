@@ -124,11 +124,11 @@ class AbstractParticleSet(AbstractSet):
     >>> particles.z = [5.0 , 6.0] | units.m
     >>> particles.add_vector_attribute("p", ["x","y","z"])
     >>> particles.p
-    quantity<[[ 1.  3.  5.], [ 2.  4.  6.]] m>
+    quantity<[[1.0, 3.0, 5.0], [2.0, 4.0, 6.0]] m>
     >>> particles.p[0]
     quantity<[1.0, 3.0, 5.0] m>
     >>> particles.position # "position" is a global vector attribute, coupled to x,y,z
-    quantity<[[ 1.  3.  5.], [ 2.  4.  6.]] m>
+    quantity<[[1.0, 3.0, 5.0], [2.0, 4.0, 6.0]] m>
 
     """
 

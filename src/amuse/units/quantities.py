@@ -416,11 +416,11 @@ class VectorQuantity(Quantity):
         >>> v1.prod()
         quantity<5760.0 m**8>
         >>> v1.prod(0)
-        quantity<[[ 10.   6.], [  6.  16.]] m**2>
+        quantity<[[10.0, 6.0], [6.0, 16.0]] m**2>
         >>> v1.prod(1)
-        quantity<[[  4.  12.], [ 15.   8.]] m**2>
+        quantity<[[4.0, 12.0], [15.0, 8.0]] m**2>
         >>> v1.prod(2)
-        quantity<[[ 6.  8.], [ 10.  12.]] m**2>
+        quantity<[[6.0, 8.0], [10.0, 12.0]] m**2>
         """
         if axis == None:
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))

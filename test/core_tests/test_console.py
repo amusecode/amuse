@@ -204,17 +204,17 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("custom", nbody_converter = converter, preferred_units = 
             [units.amu, units.AU, units.minute, units.milli(units.K), units.erg], precision = 3, 
             prefix = "(> ", separator = " <|> ", suffix = " <)")
-        self.assertEqual(str(mass), "(> 1.2e+57 <|> amu <)")
+        self.assertEqual(str(mass), "(> 1.20e+57 <|> amu <)")
         self.assertEqual(str(acc), "(> 7.31e-18 <|> AU * min**-2 <)")
         self.assertEqual(str(position), "(> [2.06e+07, 4.13e+07, 6.19e+07] <|> AU <)")
-        self.assertEqual(str(power), "(> 6e+09 <|> erg / min <)")
+        self.assertEqual(str(power), "(> 6.00e+09 <|> erg / min <)")
         self.assertEqual(str(constants.G), "(> 1.19e-67 <|> AU**3 * amu**-1 * min**-2 <)")
         self.assertEqual(str(constants.kB), "(> 1.38e-19 <|> erg * mK**-1 <)")
-        self.assertEqual(str(temperature), "(> 5e+06 <|> mK <)")
+        self.assertEqual(str(temperature), "(> 5.00e+06 <|> mK <)")
         self.assertEqual(str(pi), "(> 3.14 <|> none <)")
         set_printing_strategy("default")
     
-    def xtest10(self):
+    def test10(self):
         print "Testing custom printing strategy with precision keyword"
         mass     = 2.0 | 0.5 * units.MSun
         acc      = 0.23456 | 0.54321 * units.m * units.s**-2
@@ -225,14 +225,14 @@ class TestPrintingStrategy(amusetest.TestCase):
         pi       = 3.1415926535 | units.none
         
         set_printing_strategy("custom", precision = 3)
-        self.assertEqual(str(mass), "2 0.5 * MSun")
+        self.assertEqual(str(mass), "2.00 0.5 * MSun")
         self.assertEqual(str(acc), "0.235 0.54321 * m * s**-2")
         self.assertEqual(str(velocity), "[-0.123, -0.123, -0.123] km / s")
         tmp = "[0.123, 0.200, 3.00]"
         self.assertEqual(str(position), tmp + " AU")
-        self.assertEqual(str(positions), "["+tmp+"\n "+tmp+"] AU")
-        self.assertEqual(str(multi_dimensional), "[["+tmp+"\n  "+tmp+
-            "]\n\n ["+tmp+"\n  "+tmp+"]] AU")
+        self.assertEqual(str(positions), "["+tmp+", "+tmp+"] AU")
+        self.assertEqual(str(multi_dimensional), "[["+tmp+", "+tmp+
+            "], ["+tmp+", "+tmp+"]] AU")
         self.assertEqual(str(pi), "3.14 none")
         set_printing_strategy("default")
 

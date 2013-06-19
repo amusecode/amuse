@@ -52,17 +52,22 @@ class PrintingStrategy(object):
         return str(number)
     
     def numbers_to_string(self, quantity, precision=None):
-        if quantity.is_vector():
-            if precision is None:
-                return '[' + ', '.join(["%s" % x for x in quantity.number]) + ']'
-            else:
-                fmt = "%#." + str(precision) + "g"
-                return '[' + ', '.join([fmt % x for x in quantity.number]) + ']'
+        if precision is None:
+            fmt = "%s"
         else:
-            if precision is None:
-                return "%s" % quantity.number
-            else:
-                return ("%."+str(precision)+"g") % quantity.number
+            fmt = "%#."+str(precision)+"g"
+        
+        if quantity.is_vector():
+            def _1D_vector_to_string(vector):
+                return '[' + ', '.join([fmt % val for val in vector]) + ']'
+            def _traverse_vector(vector):
+                if len(vector.shape) > 1:
+                    return '[' + ', '.join([_traverse_vector(sub) for sub in vector]) + ']'
+                else:
+                    return _1D_vector_to_string(vector)
+            return _traverse_vector(quantity.number)
+        else:
+            return fmt % quantity.number
     
     @classmethod
     def register(cls):

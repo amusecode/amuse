@@ -732,7 +732,7 @@ class AbstractSet(object):
         >>> particles.vx = [1.0 , 2.0] | units.m / units.s
         >>> particles.vy = [3.0 , 4.0] | units.m / units.s
         >>> particles.vel
-        quantity<[[ 1.  3.], [ 2.  4.]] m / s>
+        quantity<[[1.0, 3.0], [2.0, 4.0]] m / s>
         
         """
         cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = VectorAttribute(name_of_the_components)
