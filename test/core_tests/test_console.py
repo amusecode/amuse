@@ -214,7 +214,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         self.assertEqual(str(pi), "(> 3.14 <|> none <)")
         set_printing_strategy("default")
     
-    def test10(self):
+    def xtest10(self):
         print "Testing custom printing strategy with precision keyword"
         mass     = 2.0 | 0.5 * units.MSun
         acc      = 0.23456 | 0.54321 * units.m * units.s**-2
@@ -227,8 +227,8 @@ class TestPrintingStrategy(amusetest.TestCase):
         set_printing_strategy("custom", precision = 3)
         self.assertEqual(str(mass), "2 0.5 * MSun")
         self.assertEqual(str(acc), "0.235 0.54321 * m * s**-2")
-        self.assertEqual(str(velocity), "[-0.123 -0.123 -0.123] km / s")
-        tmp = "[ 0.123  0.2    3.   ]"
+        self.assertEqual(str(velocity), "[-0.123, -0.123, -0.123] km / s")
+        tmp = "[0.123, 0.200, 3.00]"
         self.assertEqual(str(position), tmp + " AU")
         self.assertEqual(str(positions), "["+tmp+"\n "+tmp+"] AU")
         self.assertEqual(str(multi_dimensional), "[["+tmp+"\n  "+tmp+
