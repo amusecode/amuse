@@ -205,7 +205,7 @@ class Roche_Orbit(object):
 
 def new_option_parser():
     parser = OptionParser(description="Calculate the Roche radius for a given orbit.")
-    parser.add_option("-a", dest="semimajor_axis", type="float", default = 1.0, unit=units.RSun, help="The orbit semimajor axis [%default %unit]")
+    parser.add_option("-a", dest="semimajor_axis", type="float", default = 1.0, unit=units.AU, help="The orbit semimajor axis [%default %unit]")
     parser.add_option("-p", dest="period", type="float", default = 0.0, unit=units.day, help="The orbital period, which sets the semimajor axis [%unit]")
     parser.add_option("-e", dest="eccentricity", type="float", default = 0.0, help="The orbit eccentricity [%default]")
     parser.add_option("-M", dest="mass_1", type="float", default = 1.0, unit=units.MSun, help="The mass of the primary (the object that has the Roche lobe) [%default %unit]")
