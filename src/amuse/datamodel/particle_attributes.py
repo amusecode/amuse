@@ -20,11 +20,10 @@ from amuse.datamodel import ParticlesWithUnitsConverted, AbstractParticleSet, Pa
 
 def move_to_center(particles):
     """
-    Move the particle positions to the center of mass and
-    move the particle velocity to the center of mass velocity.
+    Shift positions and velocities of the particles such that their
+    center of mass (velocity) is centered on the origin.
 
-    Implemented as::
-
+    Implemented as:
         particles.position -= particles.center_of_mass()
         particles.velocity -= particles.center_of_mass_velocity()
     """
@@ -37,7 +36,7 @@ def scale_to_standard(particles, convert_nbody = None,
     """
     Scale the particles to a standard NBODY model with
     **total mass=1**, **kinetic energy=0.25** and
-    **potential_energy=0.5** (or **viridial_radius=1.0**)
+    **potential_energy=0.5** (or **virial_radius=1.0**)
 
     :argument convert_nbody: the scaling is in nbody units,
         when the particles are in si units a convert_nbody is needed
@@ -228,7 +227,7 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     """
     Returns the total potential energy of the particles in the particles set.
 
-    :argument smooting_length_squared: the smoothing length is added to every distance.
+    :argument smooting_length_squared: gravitational softening, added to every distance**2.
     :argument G: gravitational constant, need to be changed for particles in different units systems
 
     >>> from amuse.datamodel import Particles
@@ -284,7 +283,7 @@ def thermal_energy(particles):
 
 def particle_specific_kinetic_energy(set, particle):
     """
-    Returns the specific  kinetic energy of a particle.
+    Returns the specific kinetic energy of the particle.
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -300,7 +299,7 @@ def particle_specific_kinetic_energy(set, particle):
 
 def specific_kinetic_energy(particles):
     """
-    Returns the specific kinetic energy of a particle.
+    Returns the specific kinetic energy of each particle in the set.
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -315,9 +314,12 @@ def specific_kinetic_energy(particles):
     return 0.5*(particles.vx**2+particles.vy**2+particles.vz**2)
 
 
-def particle_potential(set, particle, smoothing_length_squared = zero, gravitationalConstant = constants.G):
+def particle_potential(set, particle, smoothing_length_squared = zero, G = constants.G):
     """
-    Returns the potential energy of a particle.
+    Returns the potential at the position of the particle.
+
+    :argument smooting_length_squared: gravitational softening, added to every distance**2.
+    :argument G: gravitational constant, need to be changed for particles in different units systems
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -335,13 +337,13 @@ def particle_potential(set, particle, smoothing_length_squared = zero, gravitati
     dz = particle.z - particles.z
     dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
     dr = (dr_squared+smoothing_length_squared).sqrt()
-    return - gravitationalConstant * (particles.mass / dr).sum()
+    return - G * (particles.mass / dr).sum()
 
 def particleset_potential(particles, smoothing_length_squared = zero, G = constants.G):
     """
-    Returns the potential of the particles in the particles set.
+    Returns the potential at the position of each particle in the set.
 
-    :argument smooting_length_squared: the smoothing length is added to every distance.
+    :argument smooting_length_squared: gravitational softening, added to every distance**2.
     :argument G: gravitational constant, need to be changed for particles in different units systems
 
     >>> from amuse.datamodel import Particles
@@ -714,10 +716,11 @@ def find_closest_particle_to(particles,x,y,z):
 
 def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G):
     """
-    Returns the total potential energy of the particles in the particles set.
+    Returns the total potential energy of the particles associated with an external 
+    gravitational field, which is represented by the field_particles.
 
     :argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
-    :argument smooting_length_squared: the smoothing length is added to every distance.
+    :argument smooting_length_squared: gravitational softening, added to every distance**2.
     :argument G: gravitational constant, need to be changed for particles in different units systems
 
     >>> from amuse.datamodel import Particles

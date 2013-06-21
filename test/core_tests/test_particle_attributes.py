@@ -221,6 +221,53 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertTrue(MSR > 10.0)
         self.assertTrue(sigma < MSR)
     
+    def test9(self):
+        print "Test __doc__ and help for particle attributes"
+        particles = Particles(2)
+        self.assertTrue("Returns the total kinetic energy of the\n    particles in the particles set." in particles.kinetic_energy.__doc__)
+        self.assertEqual(particles.kinetic_energy.__class__.__name__, "BoundParticlesFunctionAttribute")
+        self.assertEqual(particles.kinetic_energy.__class__._function.__name__, "kinetic_energy")
+        # __doc__ must be defined on the __class__ for the Python help to work:
+        self.assertTrue("Returns the total kinetic energy of the\n    particles in the particles set." in particles.kinetic_energy.__class__.__doc__)
+        
+        # difference between particle function and particleS function:
+        self.assertTrue("Returns the specific kinetic energy of each particle in the set." in particles.specific_kinetic_energy.__doc__)
+        self.assertTrue("Returns the specific kinetic energy of each particle in the set." in particles.specific_kinetic_energy.__class__.__doc__)
+        self.assertTrue("Returns the specific kinetic energy of the particle." in particles[0].specific_kinetic_energy.__doc__)
+        self.assertTrue("Returns the specific kinetic energy of the particle." in particles[0].specific_kinetic_energy.__class__.__doc__)
+        
+        self.assertTrue("Returns the potential at the position of each particle in the set." in particles.potential.__doc__)
+        self.assertTrue("Returns the potential at the position of each particle in the set." in particles.potential.__class__.__doc__)
+        self.assertTrue("Returns the potential at the position of the particle." in particles[0].potential.__doc__)
+        self.assertTrue("Returns the potential at the position of the particle." in particles[0].potential.__class__.__doc__)
+    
+    def test10(self):
+        particles = Particles(2)
+        particles.position = [[1, 0, 0], [2,0,0]] | units.m
+        particles.velocity = [[3, 0, 0], [4,0,0]] | units.m / units.s
+        particles.mass = 1 | units.kg
+        
+        self.assertEquals(particles.total_mass(), 2 | units.kg)
+        self.assertEquals(particles.total_momentum(), [7, 0, 0] | units.kg * units.m / units.s)
+        self.assertEquals(particles.total_momentum(), particles.total_mass() * particles.center_of_mass_velocity())
+        self.assertEquals(particles.total_radius(), 0.5 | units.m)
+        
+        convert_nbody = nbody_system.nbody_to_si(1000 | units.kg, 1e-6 | units.m)
+        numpy.random.seed(123)
+        field = new_plummer_sphere(10000, convert_nbody) # small clump of particles, can be regarded as point mass
+        self.assertAlmostRelativeEquals(particles.potential_energy_in_field(field), -constants.G * (1500 | units.kg**2 / units.m), 5)
+        self.assertAlmostEquals(particles.potential_energy_in_field(field), -1.001142 | 1e-7 * units.kg * units.m**2 / units.s**2, 5)
+        
+        field.position *= ((5 | units.m) / field.position.lengths()).reshape((-1, 1)) # spherical shell around particles
+        potential_energy = particles.potential_energy_in_field(field)
+        particles.position += [0, 1, 2] | units.m # as long as particles remain inside the shell, the potential doesn't change
+        self.assertAlmostEquals(particles.potential_energy_in_field(field), potential_energy, 5)
+        
+        particles.mass = [1, 2] | units.kg
+        self.assertAlmostRelativeEquals(particles.potential(), -constants.G * ([2, 1] | units.kg / units.m))
+        self.assertAlmostRelativeEquals(particles.potential()[0], particles[0].potential())
+        self.assertAlmostRelativeEquals(particles.potential()[1], particles[1].potential())
+    
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
     
