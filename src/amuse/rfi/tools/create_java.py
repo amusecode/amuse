@@ -1376,6 +1376,20 @@ class GenerateAJavaInterfaceStringFromASpecificationClass\
 class GenerateAJavaWorkerScript(GenerateASourcecodeString):
 
     @late
+    def amuse_root_dir(self):
+        if 'AMUSE_DIR' in os.environ:
+            return os.environ['AMUSE_DIR']    
+        previous = None
+        result = os.path.abspath(__file__)
+        while not os.path.exists(os.path.join(result,'build.py')):
+            result = os.path.dirname(result)
+            if result == previous:
+                return os.path.dirname(os.path.dirname(__file__))
+            previous = result
+        return result
+
+
+    @late
     def code_dir(self):
         return os.getcwd()
 
@@ -1410,7 +1424,9 @@ class GenerateAJavaWorkerScript(GenerateASourcecodeString):
         return self.template_string.format(
             executable = sys.executable,
             java = self.java,
-            classpath = self.classpath(self.specification_class.classpath, self.code_dir)
+            classpath = self.classpath(self.specification_class.classpath, self.code_dir),
+            code_dir = self.code_dir,
+            amuse_root_dir = self.amuse_root_dir
             )
 
 

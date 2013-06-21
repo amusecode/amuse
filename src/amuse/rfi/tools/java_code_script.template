@@ -6,10 +6,12 @@ import sys
 
 java = '{java}'
 classpath = '{classpath}'
+amuse_root_dir = '{amuse_root_dir}'
+code_dir = '{code_dir}'
 
 def main():
 
-    arguments = [java, "-cp", classpath, "Worker"]
+    arguments = [java, "-Damuse.root.dir=" + amuse_root_dir, "-Dcode.dir=" + code_dir, "-cp", classpath, "Worker"]
     arguments = arguments + sys.argv[1:]
 
     subprocess.call(arguments)
