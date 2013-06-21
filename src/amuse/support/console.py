@@ -58,13 +58,11 @@ class PrintingStrategy(object):
             fmt = "%#."+str(precision)+"g"
         
         if quantity.is_vector():
-            def _1D_vector_to_string(vector):
-                return '[' + ', '.join([fmt % val for val in vector]) + ']'
             def _traverse_vector(vector):
                 if len(vector.shape) > 1:
                     return '[' + ', '.join([_traverse_vector(sub) for sub in vector]) + ']'
                 else:
-                    return _1D_vector_to_string(vector)
+                    return '[' + ', '.join([fmt % val for val in vector]) + ']'
             return _traverse_vector(quantity.number)
         else:
             return fmt % quantity.number
