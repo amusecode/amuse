@@ -216,7 +216,7 @@ class StellarEncounterInHydrodynamics(object):
         converter = nbody_system.nbody_to_si(gas_particles.total_mass(), 1.0 | units.RSun)
         hop = Hop(unit_converter=converter, redirection = "none" if self.debug else "null")
         hop.parameters.density_method = 0
-        hop.parameters.number_of_hops = 100
+        hop.parameters.number_of_neighbors_for_hop = 100
         hop.parameters.number_of_neighbors_for_local_density = min(64, len(gas_particles) / 10)
         hop.particles.add_particles(gas_particles)
         hop.calculate_densities()
