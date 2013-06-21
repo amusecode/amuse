@@ -494,15 +494,17 @@ class HopContainer(object):
     
     def __init__(self):
         self.code = None
+        self.hop_factory = None
     
     def initialize(self, unit_converter):
         if self.code is None or self.code.get_name_of_current_state() == "STOPPED":
-            from amuse.community.hop.interface import Hop
-            self.code = Hop(unit_converter)
+            if self.hop_factory is None:
+                from amuse.community.hop.interface import Hop
+                self.hop_factory = Hop
+            self.code = self.hop_factory(unit_converter)
         else:
             if len(self.code.particles) > 0:
                 self.code.particles.remove_particles(self.code.particles)
-            # something might need to be done with the unit_converter...
         
 
 def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_neighbours=7,

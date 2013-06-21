@@ -469,36 +469,58 @@ class CalculatedAttribute(DerivedAttribute):
         return self.function(*values)
         
 
-class FunctionAttribute(DerivedAttribute):
+def new_particles_function_attribute_with_doc(function):
     class BoundParticlesFunctionAttribute(object):
-        def  __init__(self, function, particles):
-            self.function = function
-            self.particles = particles
-            
+        if function.__doc__:
+            __doc__ = ("\n  Documentation on '{0}' particles function attribute:"
+                "\n\n".format(function.__name__) + function.__doc__)
+        _function = staticmethod(function)
+        def  __init__(self):
+            self.particles = None
         def __call__(self, *list_arguments, **keyword_arguments):
-            return self.function(self.particles, *list_arguments, **keyword_arguments)
+            return self._function(self.particles, *list_arguments, **keyword_arguments)
     
+    return BoundParticlesFunctionAttribute
+
+def new_particle_function_attribute_with_doc(function):
     class BoundParticleFunctionAttribute(object):
-        def  __init__(self, function, particles, particle, index):
-            self.function = function
-            self.particles = particles
-            self.index = index
-            self.particle = particle
-            
+        if function.__doc__:
+            __doc__ = ("\n  Documentation on '{0}' particle function attribute:"
+                "\n\n".format(function.__name__) + function.__doc__)
+        _function = staticmethod(function)
+        def  __init__(self):
+            self.particles = None
+            self.index = None
+            self.particle = None
         def __call__(self, *list_arguments, **keyword_arguments):
-            return self.function(self.particles, self.particle, *list_arguments, **keyword_arguments)
-        
+            return self._function(self.particles, self.particle, *list_arguments, **keyword_arguments)
+    
+    return BoundParticleFunctionAttribute
+
+class FunctionAttribute(DerivedAttribute):
     
     def  __init__(self, particles_function = None, particle_function = None):
-        self.particles_function = particles_function
-        self.particle_function = particle_function
-        
+        self.particles_function_attribute = new_particles_function_attribute_with_doc(particles_function)
+        self.particle_function_attribute = new_particle_function_attribute_with_doc(particle_function)
+    
     def get_values_for_entities(self, particles):
-        return self.BoundParticlesFunctionAttribute(self.particles_function, particles)
-            
-   
+        function_attribute = self.particles_function_attribute()
+        function_attribute.particles = particles
+        return function_attribute
+    
     def get_value_for_entity(self, particles, particle, index):
-        return self.BoundParticleFunctionAttribute(self.particle_function, particles, particle, index)
+        function_attribute = self.particle_function_attribute()
+        function_attribute.particles = particles
+        function_attribute.particle = particle
+        function_attribute.index = index
+        return function_attribute
+    
+    def __getstate__(self):
+        return self.particles_function_attribute._function, self.particle_function_attribute._function
+    
+    def __setstate__(self, state):
+        self.particles_function_attribute = new_particles_function_attribute_with_doc(state[0])
+        self.particle_function_attribute = new_particle_function_attribute_with_doc(state[1])
 
 
 class CollectionAttributes(object):
