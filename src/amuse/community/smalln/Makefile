@@ -11,10 +11,12 @@ ALL	 = smallN_worker
 OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX   ?= mpicxx
+SC_FLAGS ?= -I$(AMUSE_DIR)/lib/stopcond
+SC_CLIBS  ?=  -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi 
 
 CFLAGS   += -Wall -g $(OPT) -I../../ph4/src -I../ph4/src
-CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi -lm $(MUSE_LD_FLAGS)
+CXXFLAGS += $(CFLAGS) $(SC_FLAGS)
+LDFLAGS  += $(SC_CLIBS) -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
 
@@ -31,7 +33,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py SmallNInterface -o $@
 
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py SmallNInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  SmallNInterface -o $@
 
 smallN_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)

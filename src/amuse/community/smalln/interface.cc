@@ -408,7 +408,6 @@ int evolve_model(double to_time)
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=
     // system_time < time[j] + timestep[j].
-
     reset_stopping_conditions();    
     UpdatedParticles.clear();
 

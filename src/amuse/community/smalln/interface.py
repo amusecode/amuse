@@ -7,6 +7,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 # *** the header file interface.h and the stub interface.cc.
 
 class SmallNInterface(CodeInterface,
+                      StoppingConditionInterface,
                       GravitationalDynamicsInterface):
     """
     Self-contained few-body integrator, using a fourth-order,
@@ -16,7 +17,7 @@ class SmallNInterface(CodeInterface,
 
     # Interface specification.
 
-    include_headers = ['interface.h']
+    include_headers = ['interface.h', 'stopcond.h']
 
     def __init__(self, **options):
         CodeInterface.__init__(
@@ -285,6 +286,8 @@ class SmallN(GravitationalDynamics):
     # The actual module.
 
     def __init__(self, convert_nbody = None, **keyword_arguments):
+        self.stopping_conditions = StoppingConditions(self)
+        
         legacy_interface = SmallNInterface(**keyword_arguments)
 
         GravitationalDynamics.__init__(self,
@@ -293,7 +296,8 @@ class SmallN(GravitationalDynamics):
                                        **keyword_arguments)
 
     def define_parameters(self, object):
-
+        self.stopping_conditions.define_parameters(object)
+        
         # Set/get parameters specific to the module, not part of the
         # standard interface.  Accessors used here must be defined
         # above and reflected in interface.cc.  Python access is
@@ -344,9 +348,11 @@ class SmallN(GravitationalDynamics):
         
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
+        self.stopping_conditions.define_particle_set(object)
         object.add_getter("particles", 'get_children_of_particle')
 
     def define_methods(self, object):
+        self.stopping_conditions.define_methods(object)
         GravitationalDynamics.define_methods(self, object)
 
         # Turn interface functions into methods.

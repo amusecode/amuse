@@ -447,3 +447,15 @@ class TestSeBa(TestWithMPI):
         self.assertFalse(instance.parameters.is_logging_of_evolve_enabled)
         instance.parameters.is_logging_of_evolve_enabled = True
         self.assertTrue(instance.parameters.is_logging_of_evolve_enabled)
+        
+    def xtest7(self):
+        instance = self.new_instance_of_an_optional_code(SeBa)
+        instance.parameters.metallicity = 0.03
+        p = Particle()
+        p.mass = 99.1605930967 | units.MSun
+        
+        p = instance.particles.add_particle(p)
+        instance.evolve_model(614 | units.Myr)
+        print p.stellar_type
+        self.assertEquals(str(p.stellar_type),'Black Hole')
+        self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)

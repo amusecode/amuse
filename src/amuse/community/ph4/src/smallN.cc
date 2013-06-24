@@ -130,7 +130,9 @@ static inline real get_pairwise_acc_and_jerk_CPT(hdyn *bi, hdyn *bj,
     real min_distance3 = _INFINITY_;
 
 #if 1
-
+    int is_collision_detection_enabled = 0;
+    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);	// TODO
+    
     // NOTE: assuming here that trees are just a single level deep.
     // MUST be generalized (see below) if we choose to allow
     // unperturbed multiples.
@@ -156,6 +158,24 @@ static inline real get_pairwise_acc_and_jerk_CPT(hdyn *bi, hdyn *bj,
 	    real distance2 = dx*dx;
 	    real distance  = sqrt(distance2);
 	    real distance3 = distance2*distance;
+	    
+	    // AVE COLLISION DETECTION
+	    if(is_collision_detection_enabled) {  
+		real rsum = bbj->get_radius() + bbi->get_radius();
+		if (distance2 <= rsum*rsum) {
+		    int stopping_index  = next_index_for_stopping_condition();
+		    if(stopping_index < 0)
+		    {
+		
+		    }
+		    else
+		    {
+			set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+			set_stopping_condition_particle_index(stopping_index, 0, bbj->get_index());
+			set_stopping_condition_particle_index(stopping_index, 1, bbi->get_index());
+		    }
+		}
+	    }
 
 	    iforce += bbj->get_mass() * dx / distance3;
 	    ijerk  += bbj->get_mass() * (dv / distance3
@@ -309,8 +329,6 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
     bi_min = bj_min = NULL;
     bi_coll = bj_coll = NULL;
 
-    int coll = 0;
-    is_stopping_condition_enabled(COLLISION_DETECTION, &coll);	// TODO
     //real rfac_max = 0;
 
     for_all_daughters(hdyn, b, bi)
@@ -334,9 +352,6 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
 		bj_min = bj;
 	    }
 
-	    if (coll) {
-		//real rfac = 
-	    }
 	}
 
     real dt = b->get_eta()*sqrt(min_timestep2);		// natural time step
@@ -516,6 +531,8 @@ static real take_a_step(hdyn *b,	// root node
     // Ultimately, new_dt will be the actual step taken, while
     // end_point_dt will be the natural time step at the end of the
     // step.
+    int is_collision_detection_enabled = 0;
+    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
 
     for (int i = 0; i <= n_iter; i++) {
 
@@ -544,7 +561,9 @@ static real take_a_step(hdyn *b,	// root node
 		n_iter = 0;
 	    }
 	}
-
+	
+	
+    
 	// Extrapolate acc and jerk to the end of the new step, and
 	// apply the corrector for this iteration.
 
@@ -554,6 +573,10 @@ static real take_a_step(hdyn *b,	// root node
 	    bi->correct_pos_and_vel(new_dt);	// sets pred_xxx
 	    if (bi->is_parent()) advance_components_to_time(bi, t+new_dt);
 	}
+	
+	if(is_collision_detection_enabled && (set_conditions & enabled_conditions)) {
+          break;
+        }
      }
 
     // Complete the step.
@@ -850,6 +873,9 @@ int smallN_evolve(hdyn *b,
 
     real t_check = b->get_system_time() + dt_check;
 
+    if(set_conditions & enabled_conditions) {
+      return 1;
+    }
     while (b->get_system_time() < t_end) {
 
 	// Take a step.  Don't set the end time in advance, as the
@@ -878,7 +904,12 @@ int smallN_evolve(hdyn *b,
 		    return 2;
 		}
 	    }
-
+	
+	
+	if(set_conditions & enabled_conditions) {
+          break;
+        }
+	
 	// Check for the start of unperturbed motion.  Use various
 	// thresholds to avoid this check at the end of every step:
 	//

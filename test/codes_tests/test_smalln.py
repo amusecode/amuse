@@ -471,3 +471,52 @@ class TestSmallN(TestWithMPI):
         fromfile = io.read_set_from_file(output_file, "hdf5")
         self.assertEarthAndMoonWasDetectedAsBinary(fromfile, stars)
         
+   
+    def test17(self):
+        
+        particles = datamodel.Particles(keys=[1,2,3,4,5,6,7])
+        particles.mass = 0.001 | nbody_system.mass
+        particles.radius = 0.1 | nbody_system.length
+        particles.x = [
+            -100.5, -99.5, 
+              -0.5, 0.5, 
+              99.5, 100.5,
+             120.0
+        ] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [
+            [2, 0, 0], [-2, 0, 0],
+            [2, 0, 0], [-2, 0, 0],
+            [2, 0, 0], [-2, 0, 0],
+            [-4, 0, 0]
+        ] | nbody_system.speed
+        print particles.velocity
+        instance = SmallN()
+        instance.particles.add_particles(particles)
+        
+        collisions = instance.stopping_conditions.collision_detection
+        collisions.enable()
+        
+        instance.evolve_model(0.1 | nbody_system.time)
+        print instance.particles.to_string(["x"])
+        instance.evolve_model(0.3 | nbody_system.time)
+        self.assertTrue(collisions.is_set())
+        print collisions.particles(0).key
+        print collisions.particles(1).key
+        print instance.particles.to_string(["x"])
+        instance.evolve_model(1.0 | nbody_system.time)
+        
+        print instance.particles.to_string(["x"])
+        self.assertTrue(collisions.is_set())
+        self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
+        print collisions.particles(0).key
+        print collisions.particles(1).key
+        
+        self.assertEquals(len(collisions.particles(0)), 3)
+        self.assertEquals(len(collisions.particles(1)), 3)
+        self.assertEquals(len(particles - collisions.particles(0) - collisions.particles(1)), 1)
+        self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
+                (collisions.particles(0).radius + collisions.particles(1).radius),
+                [True, True, True])
+        
