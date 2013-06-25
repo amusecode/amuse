@@ -706,6 +706,14 @@ setenv F77 gfortran
         print ""
         print "./install.py --gforker install"
         print ""
+        print ""
+        print "for the example script you will need MATPLOTLIB"
+        print "this script has some support to help installing matplotlib" 
+        print "but this is an experimental feature"
+        print "to install matplotlib do:"
+        print ""
+        print "./install.py --matplotlib install"
+        print ""
         
         
         sys.exit(1)
