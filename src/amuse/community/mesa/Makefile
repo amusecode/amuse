@@ -18,6 +18,7 @@ INCLUDE_DIR=./src/mesa/star/make
 MESA_DIR = ./src/mesa
 MESA_LIB=$(MESA_DIR)/lib/libstar.a
 
+export OPENMP_FCFLAGS=
 include $(MESA_MAKE_DIR)/makefile_header
 include $(MESA_MAKE_DIR)/makefile_include
 
@@ -89,7 +90,7 @@ worker_code.f90: interface.py
 $(MESA_LIB):  $(MESA_DIR)/install
 	cp -f ./install $(MESA_DIR)
 	cp -f ./test_jina.f $(MESA_DIR)/jina/test/src/test_jina.f
-	cd $(MESA_DIR); ./install
+	cd $(MESA_DIR); ./install OPENMP_FCFLAGS=
 
 interface.o: interface.f $(MESA_LIB)
 	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FFLAGS)"
