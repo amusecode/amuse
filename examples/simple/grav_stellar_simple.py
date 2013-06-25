@@ -18,7 +18,6 @@ from amuse import plot as aplot
 
 from amuse.support.console import set_printing_strategy
 
-set_printing_strategy("custom", preferred_units = [units.MSun, units.parsec, units.Myr], precision=3)
 
 def create_stars(number_of_stars, size):
     masses = new_salpeter_mass_distribution(number_of_stars, mass_min = 2|units.MSun)
@@ -98,4 +97,5 @@ def parse_arguments():
 
 if __name__ == "__main__":
     options = parse_arguments()
+    set_printing_strategy("custom", preferred_units = [units.MSun, units.parsec, units.Myr], precision=3)
     gravity_and_stellar_evolution(**options)
