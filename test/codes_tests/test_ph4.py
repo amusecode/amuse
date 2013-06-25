@@ -1059,7 +1059,7 @@ class TestPH4(TestWithMPI):
         self.assertEquals(instance.particles.index_in_code, [3,4])
         instance.commit_particles()
         print instance.particles[0].potential_in_code
-        self.assertEquals(instance.particles[0].potential(gravitationalConstant=nbody_system.G), -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
+        self.assertEquals(instance.particles[0].potential(G=nbody_system.G), -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
         self.assertEquals(instance.particles[0].potential_in_code, -(nbody_system.G * (2 | nbody_system.mass)) / (2 | nbody_system.length))
 
     def test27(self):
