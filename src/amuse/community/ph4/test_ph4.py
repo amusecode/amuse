@@ -32,7 +32,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     comv = pa.center_of_mass_velocity(gravity.particles)
     dcen,rcore,rhocore = pa.densitycentre_coreradius_coredens(gravity.particles)
     cmx,cmy,cmz = dcen
-    lagr,mf = pa.LagrangianRadii(gravity.particles, dcen)  # no units!
+    lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
 
     print ''
     print pre+"time=", time.number

@@ -445,7 +445,7 @@ if __name__ == '__main__':
     t_end = 5.0 | nbody_system.time
     delta_t = 1.0 | nbody_system.time
     n_workers = 2
-    use_gpu = 1
+    use_gpu = 0
     gpu_worker = 1
     salpeter = 0
     accuracy_parameter = 0.1
