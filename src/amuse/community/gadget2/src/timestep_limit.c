@@ -839,6 +839,7 @@ int get_timestep(int p,         /*!< particle index */
       fflush(stdout);
       //endrun(818);
       ZeroTimestepEncountered = 1; // Do not terminate the run, but let AMUSE handle it
+      ti_step = 1;
     }
   
   return ti_step;
