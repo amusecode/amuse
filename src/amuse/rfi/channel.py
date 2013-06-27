@@ -1794,8 +1794,7 @@ class SocketChannel(AbstractMessageChannel):
             if not returncode is None:
                 break
             time.sleep(0.2)
-            count += 1  
-        self.process.wait()
+            count += 1
                  
         if not self.stdout is None:
             self.stdout.close()
