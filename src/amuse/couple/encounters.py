@@ -7,6 +7,7 @@ It is used by the multiples module.
 
 from amuse.datamodel import Particles
 from amuse.units import constants
+from amuse.units import nbody_system
 from amuse.units.quantities import as_vector_quantity
 
 #codes to use
@@ -355,28 +356,15 @@ class KeplerOrbits(object):
         
         return self.kepler_code.get_elements()
 
-    def compress_binary_components(self, particle1, particle2, scale):
+    def compress_binary(self, particles, scale):
         """
         Returns the change in positions and velocities for 
         the two-body system consisting of 'particle1' and 'particle2'.
         After applying the change the particles will lie
         inside distance 'scale' of one another.  
         The final orbit will be receding (moving away from each other).
-        """
-        total_mass = particle1.mass + particle2.mass
-        rel_position = particle1.position - particle2.position
-        rel_velocity = particle1.velocity - particle2.velocity
-        separation = rel_position.length()
-        
-        particles = Particles()
-        particles.add_particle(particle1)
-        particles.add_particle(particle2)
-        
-        center_of_mass_position = particles.center_of_mass()
-        center_of_mass_velocity = particles.center_of_mass_velocity()
-        positions_to_center_of_mass = particles.position - center_of_mass_position
-        velocities_to_center_of_mass = particles.velocity - center_of_mass_velocity
-        
+        """    
+        separation = (particles[1].position - particles[0].position).length()
         if separation <= scale: 
             # particles are already close together, no scaling done
             # AVE is this correct, will the particle(s) be receding?
@@ -384,14 +372,103 @@ class KeplerOrbits(object):
             return particles.position * 0, particles.velocity * 0
         
         
-        self.kepler_code.initialize_from_dyn(
-            total_mass,
-            rel_position[0], rel_position[1], rel_position[2],
-            rel_velocity[0], rel_velocity[1], rel_velocity[2]
-        )
+        self.kepler_code.initialize_from_particles(particles)
 
         true_anomaly, mean_anomaly = self.kepler_code.get_angles()
         semimajor_axis, eccentricity = self.kepler_code.get_elements()
+        
+        periapsis, apoapsis = self.get_periapsis_and_apoapsis(semimajor_axis, eccentricity)
+
+        print semimajor_axis, eccentricity 
+        print periapsis, apoapsis
+        print true_anomaly, mean_anomaly
+        # closest distance plus 1% of the distance between peri and apo
+        limit = periapsis + 0.01*(apoapsis-periapsis)
+        
+        # we cannot scale to smaller than the periapsis distance
+        if scale < limit:
+            scale = limit
+            
+        # Note: Always end up on an outgoing orbit.  If
+        # periastron > scale, we will be just past periapsis.
+        if true_anomaly < 0:
+            self.kepler_code.advance_to_periastron()
+            self.kepler_code.advance_to_radius(scale)
+        else:
+            if self.kepler_code.get_separation() < scale:
+                self.kepler_code.advance_to_radius(scale)
+            else:
+                self.kepler_code.return_to_radius(scale)
+                
+        
+        print self.kepler_code.get_separation_vector()
+        rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
+        rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
+    
+        return self.deltas_to_update_binary(particles, rel_position, rel_velocity)
+    
+    def expand_binary(self, particles, scale):
+        """
+        Returns the change in positions and velocities for 
+        the two-body system consisting of 'particle1' and 'particle2'.
+        After applying the change the particles will lie
+        inside distance 'scale' of one another.  
+        The final orbit will be receding (moving away from each other).
+        """
+        
+        separation = (particles[1].position - particles[0].position).length()        
+        if separation > scale:
+            return particles.position * 0, particles.velocity * 0
+            
+        
+        self.kepler_code.initialize_from_particles(particles)
+
+        true_anomaly,   mean_anomaly = self.kepler_code.get_angles()
+        semimajor_axis, eccentricity = self.kepler_code.get_elements()
+        
+        periapsis, apoapsis = self.get_periapsis_and_apoapsis(semimajor_axis, eccentricity)
+        # largest distance minus 1% of the distance between peri and apo
+        limit = apoapsis - 0.01*(apoapsis-periapsis)
+
+        # we cannot scale to larger than the apoapsis distance
+        if scale > limit:
+            scale = limit
+            
+        # Note: Always end up on an outgoing orbit.  If
+        # periastron > scale, we will be just before apoapsis.
+        if true_anomaly > 0:
+            self.kepler_code.return_to_periastron()
+            self.kepler_code.return_to_radius(scale)
+        else:
+            if self.kepler_code.get_separation() < scale:
+                self.kepler_code.return_to_radius(scale)
+            else:
+                self.kepler_code.advance_to_radius(scale)
+    
+    
+        rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
+        rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
+        
+        return self.deltas_to_update_binary(particles, rel_position, rel_velocity)
+        
+    def deltas_to_update_binary(self, particles, relative_position, relative_velocity):
+        total_mass = particles.mass.sum()
+        center_of_mass_position = particles.center_of_mass()
+        center_of_mass_velocity = particles.center_of_mass_velocity()
+        
+        positions_to_center_of_mass = particles.position - center_of_mass_position
+        velocities_to_center_of_mass = particles.velocity - center_of_mass_velocity
+        
+        f = particles[1].mass / total_mass 
+        fractions = numpy.asarray([f, -(1-f)]).reshape(2,1)
+        print fractions, positions_to_center_of_mass
+        
+        delta_positions  = (relative_position * fractions) - positions_to_center_of_mass
+        delta_velocities = (relative_velocity * fractions) - velocities_to_center_of_mass
+        
+        return delta_positions, delta_velocities
+    
+    def get_periapsis_and_apoapsis(self, semimajor_axis, eccentricity):
         
         # periapsis == smallest distance
         # apoapsis == largest distance
@@ -403,43 +480,14 @@ class KeplerOrbits(object):
             # we have a parabola or a hyperbola
             periapsis = semimajor_axis * (eccentricity-1)
             apoapsis  = semimajor_axis + periapsis
-            # apoapsis is infinity but this is better
+            # apoapsis is infinity, but this is better
             # as we only use it for the limit
-
-
-        # closest distance plus 1% of the distance between peri and apo
-        limit = periapsis + 0.01*(apoapsis-periapsis)
         
-        # we cannot scale to smaller than the periapsis distance
-        if scale < limit:
-            scale = limit
-            
-        if true_anomaly < 0:
-            self.kepler_code.advance_to_periastron()
-            self.kepler_code.advance_to_radius(scale)
-        else:
-            if self.kepler_code.get_separation() < scale:
-                self.kepler_code.advance_to_radius(scale)
-            else:
-                self.kepler_code.return_to_radius(scale)
+        return periapsis, apoapsis
         
-        # Note: Always end up on an outgoing orbit.  If
-        # periastron > scale, we are now just past periapsis.
-
-        rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
-        rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
-        
-        f = particle2.mass / total_mass 
-        fractions = numpy.asarray([-f, (1-f)]).reshape(2,1)
-        
-        delta_positions  = (rel_position * fractions) - positions_to_center_of_mass
-        delta_velocities = (rel_velocity * fractions) - velocities_to_center_of_mass
-        
-        return delta_positions, delta_velocities
-    
 class ScaleSystem(object):
     
-    def __init__(self, kepler_orbits, G = constants.G):
+    def __init__(self, kepler_orbits, G = nbody_system.G):
         self.kepler_orbits = kepler_orbits
         self.G = G
     
@@ -458,11 +506,11 @@ class ScaleSystem(object):
         descendants.position += delta_position
         descendants.velocity += delta_velocity
     
-    def minimum_separation(self, particles):
+    def get_particles_with_minimum_separation(self, particles):
         positions = particles.position
         radii = particles.radius
 
-        result = None
+        minimum_separation = None
         for i in range(len(particles) - 1):
             i_position = positions[i]
             j_positions = positions[i+1:]
@@ -475,20 +523,32 @@ class ScaleSystem(object):
             sum_radii = i_radius + j_radii
             
             delta = dr - sum_radii
-            if result is None:
-                result = delta.min()
-            else:
-                result = min(result, delta.min())
-        return result
+            index = delta.argmin()
+            min_delta =  delta[index]
+            if (
+                    minimum_separation is None 
+                or 
+                    min_delta < minimum_separation
+            ):
+                minimum_separation = min_delta
+                particle_i = particles[i]
+                particle_j = particles[i+1+index]
+        return particle_i, particle_j
             
 
 
     
-    def scale_particles_to_sphere(particles, radius):
+    def scale_particles_to_sphere(self, particles, radius):
         """
         Rescale the system of particles to lie within a sphere
         of the given radius.
+        System is moved to the center of mass.
         System may be compressed or expanded.
+        
+        note:: 
+            radius can be zero -> the system will be scaled to minimum seperation (using the radii), 
+            the radii of the particles can be zero -> the system will be scaled to radius
+            note this is not implemented for 2 body yet!!!
         """
         
 
@@ -500,54 +560,60 @@ class ScaleSystem(object):
         
         kinetic_energy = particles.kinetic_energy()
         potential_energy = particles.potential_energy(G = self.G)
-        minimum_separation = self.minimum_separation(particles)
-        sphere_radius = position.lengths().max()
+        particle0, particle1 = self.get_particles_with_minimum_separation(particles)
+        sphere_radius = particles.position.lengths().max()
+        
+        distance = (particle0.position - particle1.position).length()
+        sum_of_radii = particle0.radius + particle1.radius
+        separation = distance - sum_of_radii
+        
+        # special case, 2 bodies, we can use kepler to 
+        # do the scaling in a consistent, energy perserving way
+        if len(particles) == 2:
+            if distance < sum_of_radii:
+                delta_p, delta_v = self.kepler_orbits.expand_binary(particles, max(radius, sum_of_radii))
+            elif separation > radius:
+                scale = max(2 * radius, sum_of_radii)
+                delta_p, delta_v = self.kepler_orbits.compress_binary(particles, scale)
+            else:
+                delta_p, delta_v = self.kepler_orbits.expand_binary(particles, 2 * radius)
+            particles.position += delta_p
+            particles.velocity += delta_v
+            particles.velocity += center_of_mass_velocity
+            return
         
         
-        for i in range(len(node_list)):
-            m = 1
-            rad = node_list[i].radius.number
-            posi = node_list[i].position
-            pos = (posi-cmpos).number
-            vel = (node_list[i].velocity-cmvel).number
-            kin += m*numpy.inner(vel,vel)
-            dpot = 0.0
-            for j in range(i+1,len(node_list)):
-                mj = node_list[j].mass.number
-                radj = node_list[j].radius.number
-                dposj = (node_list[j].position-posi).number
-                rij = math.sqrt(numpy.inner(dposj,dposj))
-                if sepmin > rij-rad-radj:
-                    radsum = rad + radj
-                    imin = i
-                    jmin = j
-                    sepmin = rij - radsum
-                    rijmin = rij
-                dpot -= mj/math.sqrt(numpy.inner(dposj,dposj))
-            pot += m*dpot
-        size = math.sqrt(size)
-        kin /= 2
-
-        #fac = 0.5*scale.number/size	# scale to radius
-        #fac = scale.number/rijmin		# scale to distance
-        fac = radsum/rijmin			# scale to zero separation
-
-        # Compress (or expand) the system and increase (or decrease) the
-        # velocities (relative to the center of mass) to preserve the
-        # energy.  If fac > 1, expansion is always OK if E > 0, which it
-        # should be at this point (but check anyway...).  May have E < 0
-        # if we have a system with small negative energy, stopped because
-        # it is too big.
-
-        vfac2 = 1-(1/fac-1)*pot/kin
-        if vfac2 < 0:
-            print "Can't expand top level system to rjmin > ri+rj"
-            print "fac =", fac, " pot =", pot, " kin =", kin
-            sys.stdout.flush()
-            f = pot/(kin+pot)
-            vfac2 = 0.0
-        vfac = math.sqrt(vfac2)
-        if fac > 0.0:
-            for n in node_list:
-                n.position = cmpos + fac*(n.position-cmpos)
-                n.velocity = cmvel + vfac*(n.velocity-cmvel)
+        # for all other situations, we revert to scaling
+        # where we perserver energy by scaling
+        # the velocities
+    
+        # we need to scale up, as the separation between particles is less than zero
+        if distance < sum_of_radii:
+            # use the largest scaling factor
+            factor_position = max(sum_of_radii / distance, (2 * radius) / distance)
+            
+        # we need to scale up, as the minimum distance is less than the sphere diameter
+        elif distance < 2 * radius:
+            factor_position = (2 * radius) / distance
+            
+        # we need to scale down, the minimum distance is larger than the radius
+        else:
+            # we have room to scale down
+            if distance > sum_of_radii:
+                if (2 * radius) < sum_of_radii:
+                    factor_position = sum_of_radii / distance
+                else:
+                    factor_position = (2 * radius) / distance
+            # we have no room available for any scaling
+            else:
+                factor_position = 1.0
+       
+        factor_velocity_squared = 1.0 - (1.0/factor_position-1.0) * potential_energy/kinetic_energy
+        
+        if factor_velocity_squared < 0.0:
+            raise Exception("cannot scale the velocities")
+            
+        factor_velocity = numpy.sqrt(factor_velocity_squared)
+        
+        particles.position = center_of_mass_position + factor_position*(particles.position-center_of_mass_position)
+        particles.velocity = center_of_mass_velocity + factor_velocity*(particles.velocity-center_of_mass_velocity)

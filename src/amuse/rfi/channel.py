@@ -716,6 +716,10 @@ class AbstractMessageChannel(OptionalAttributes):
         else:
             return full_name_of_the_worker, []
     
+    @classmethod
+    def is_multithreading_supported(cls):
+        return True
+            
     @option(type='string', sections=("channel",))
     def worker_code_suffix(self):
         return ''
@@ -968,7 +972,11 @@ class MpiChannel(AbstractMessageChannel):
             MPI.Finalize()
         except MPI.Exception as ex:
             return
-        
+            
+    @classmethod
+    def is_multithreading_supported(cls):
+        return MPI.Query_thread() == MPI.THREAD_MULTIPLE
+            
     @option(type="boolean", sections=("channel",))
     def check_mpi(self):
         return True
@@ -1787,6 +1795,7 @@ class SocketChannel(AbstractMessageChannel):
                 break
             time.sleep(0.2)
             count += 1  
+        self.process.wait()
                  
         if not self.stdout is None:
             self.stdout.close()

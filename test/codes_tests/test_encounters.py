@@ -14,7 +14,8 @@ from amuse.couple import encounters
 def new_binary(
         mass1, mass2, semi_major_axis,
         eccentricity = 0, keyoffset = 1,
-        is_at_periapsis = True
+        is_at_periapsis = True,
+        G =  nbody_system.G 
     ):
     total_mass = mass1 + mass2
     mass_fraction_particle_1 = mass1 / (total_mass)
@@ -23,7 +24,7 @@ def new_binary(
     binary[0].mass = mass1
     binary[1].mass = mass2
 
-    mu = nbody_system.G * total_mass
+    mu = G * total_mass
 
     if is_at_periapsis:
         velocity = numpy.sqrt( mu / semi_major_axis  * ((1.0 + eccentricity)/(1.0 - eccentricity)))
@@ -412,9 +413,8 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
         binary.position += [0.1,0.2,0.3]  | nbody_system.length
         binary.velocity += [0.4,0.5,0.6]  | nbody_system.speed
         
-        dpos, dvel = x.compress_binary_components(
-            binary[0],
-            binary[1],
+        dpos, dvel = x.compress_binary(
+            binary,
             1.2 | nbody_system.length
         )
         
@@ -431,3 +431,129 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
         self.assertAlmostRelativeEquals(center_of_mass_velocity_before, center_of_mass_velocity_after)
         separation = (binary[0].position  - binary[1].position).length()
         self.assertAlmostRelativeEquals( separation, 1.2 | nbody_system.length)
+    
+    
+    def test3(self):
+        converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
+        x = encounters.KeplerOrbits(converter)
+        binary = new_binary( 
+            1 | units.MSun,
+            0.5 | units.MSun,
+            1.2 | units.AU,
+            G = constants.G
+        )
+        semimajor_axis, eccentricity = x.get_semimajor_axis_and_eccentricity_for_binary_components(
+            binary[0],
+            binary[1]
+        )
+        self.assertAlmostRelativeEquals(semimajor_axis,  1.2 | units.AU, 8)
+        self.assertAlmostRelativeEquals(eccentricity,  0)
+
+class TestScaleSystem(amusetest.TestWithMPI):
+    
+    def test1(self):
+        kepler = encounters.KeplerOrbits()
+        binary = new_binary( 
+            1 | nbody_system.mass,
+            0.5 | nbody_system.mass,
+            1.2 | nbody_system.length,
+            0.5,
+            is_at_periapsis = False
+        )
+        binary.radius = 0 |  nbody_system.length
+        
+        x = encounters.ScaleSystem(kepler)
+        self.assertTrue((binary[0].position - binary[1].position).length() > 1.5 | nbody_system.length)
+        x.scale_particles_to_sphere(binary, 0.75 | nbody_system.length)
+        self.assertTrue((binary[0].position - binary[1].position).length() <= 1.6 | nbody_system.length)
+        print (binary[0].position - binary[1].position).length()
+        self.assertTrue((binary[0].position - binary[1].position).length() >= (1.5 - 1e-6)| nbody_system.length )
+        
+    
+    
+    def test2(self):
+        kepler = encounters.KeplerOrbits()
+        binary = new_binary( 
+            1 | nbody_system.mass,
+            0.5 | nbody_system.mass,
+            1.2 | nbody_system.length,
+            0.5,
+            is_at_periapsis = True
+        )
+        binary.radius = 0 |  nbody_system.length
+        
+        x = encounters.ScaleSystem(kepler)
+        self.assertTrue((binary[0].position - binary[1].position).length() < 1.5 | nbody_system.length)
+        x.scale_particles_to_sphere(binary, 0.75 | nbody_system.length)
+        self.assertTrue((binary[0].position - binary[1].position).length() <= 1.6 | nbody_system.length)
+        print (binary[0].position - binary[1].position).length()
+        self.assertTrue((binary[0].position - binary[1].position).length() >= (1.5 - 1e-6)| nbody_system.length )
+        
+      
+    def test3(self):
+        kepler = encounters.KeplerOrbits()
+        
+        particles= Particles(keys=(1,2))
+        particles.mass = 1 | nbody_system.mass
+        particles[0].position = [1,0,0] | nbody_system.length
+        particles[0].velocity = [1,0.0,0] | nbody_system.speed
+        
+        particles[1].position = [-1,0,0] | nbody_system.length
+        particles[1].velocity = [-1,0.0,0] | nbody_system.speed
+        
+        particles.radius = 0 |  nbody_system.length
+        
+        x = encounters.ScaleSystem(kepler)
+        
+        print (particles[0].position - particles[1].position).length() 
+        self.assertTrue((particles[0].position - particles[1].position).length() > 1.5 | nbody_system.length)
+        
+        x.scale_particles_to_sphere(particles, 0.75 | nbody_system.length)
+        
+        self.assertTrue((particles[0].position - particles[1].position).length() <= 1.6 | nbody_system.length)
+        print particles
+        self.assertTrue((particles[0].position - particles[1].position).length() >= (1.5 - 1e-6)| nbody_system.length )
+        self.assertAlmostRelativeEquals(particles[0].position,  [0.75,0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(particles[1].position,  [-0.75,0,0] | nbody_system.length)
+        
+        
+    def test4(self):
+        kepler = encounters.KeplerOrbits()
+        
+        particles= Particles(keys=(1,2,3,4,5,6))
+        particles.mass = 1 | nbody_system.mass
+        for i in range(3):
+            position = [0,0,0] | nbody_system.length
+            position[i] = 1 | nbody_system.length
+            particles[i].position =  position
+            position[i] = -1 | nbody_system.length
+            particles[i+3].position =  position
+            
+            velocity = [0,0,0] | nbody_system.speed
+            velocity[i] = 1 | nbody_system.speed
+            particles[i].velocity =  velocity
+            velocity[i] = -1 | nbody_system.speed
+            particles[i+3].velocity =  velocity
+
+        particles.radius = 0 |  nbody_system.length
+        
+        
+        x = encounters.ScaleSystem(kepler)
+        
+        potential_energy0 = particles.potential_energy(G = nbody_system.G)
+        kinetic_energy0 = particles.kinetic_energy()
+        
+        x.scale_particles_to_sphere(particles, 0.5 | nbody_system.length)
+        
+        
+        self.assertAlmostRelativeEquals(particles[0].position,  [1/numpy.sqrt(2),0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(particles[3].position,  [-1/numpy.sqrt(2),0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(particles[0].velocity,  [1.542,0,0] | nbody_system.speed, 3)
+        self.assertAlmostRelativeEquals(particles[3].velocity,  [-1.542,0,0] | nbody_system.speed, 3)
+        
+        potential_energy1 = particles.potential_energy(G = nbody_system.G)
+        kinetic_energy1 = particles.kinetic_energy()
+        
+        
+        self.assertAlmostRelativeEquals(potential_energy0 + kinetic_energy0,potential_energy1 + kinetic_energy1)
+
