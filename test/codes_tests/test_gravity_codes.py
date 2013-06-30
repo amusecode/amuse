@@ -148,12 +148,34 @@ class _TestGravityCodes(TestWithMPI):
         particles.radius = 0.2 | self.length_unit
         particles.move_to_center()
         instance.particles.add_particles(particles)
-        instance.commit_particles()
         self.assertEquals(len(instance.particles), 10)
         collision_detection = instance.stopping_conditions.collision_detection
         collision_detection.enable()
         instance.evolve_model(1 | self.time_unit)
         self.assertTrue(collision_detection.is_set())
+        instance.stop()
+  
+    def test9(self):
+        factory = self.gravity_code_factory()
+        instance = self.new_instance_of_an_optional_code(factory)
+        instance.parameters.stopping_conditions_out_of_box_size = 2 | self.length_unit
+        particles = datamodel.Particles(3)
+        particles.x = [0, 1, 2] | self.length_unit
+        particles.y = 0 | self.length_unit
+        particles.z = 0 | self.length_unit
+        particles.vx = [0, 0, 2] | self.speed_unit
+        particles.vy = [1, -1, 0] | self.speed_unit
+        particles.vz = 0 | self.speed_unit
+        particles.mass = 1 | self.mass_unit
+        particles.radius = 0.0 | self.length_unit
+        instance.particles.add_particles(particles)
+        stopping_condition = instance.stopping_conditions.out_of_box_detection
+        stopping_condition.enable()
+        instance.evolve_model(1 | self.time_unit)
+        print instance.particles
+        print instance.particles.center_of_mass()
+        print (instance.particles.position - instance.particles.center_of_mass()).lengths()
+        self.assertTrue(stopping_condition.is_set())
         instance.stop()
 
     def new_gravity_code(self):
@@ -165,6 +187,8 @@ class TestBHTreeGravityCode(_TestGravityCodes):
     def gravity_code_factory(self):
         return BHTree
 
+    def test9(self):
+        self.skip("no support for out of box detection")
 
 class TestHermiteGravityCode(_TestGravityCodes):
     
@@ -177,6 +201,8 @@ class TestPH4GravityCode(_TestGravityCodes):
     def gravity_code_factory(self):
         return ph4
         
+    def test9(self):
+        self.skip("no support for out of box detection")
 class TestMI6GravityCode(_TestGravityCodes):
     
     def gravity_code_factory(self):
@@ -185,6 +211,8 @@ class TestMI6GravityCode(_TestGravityCodes):
         self.skip("MI6 crashes on removal and addition of particles")
     def test7(self):
         self.skip("MI6 crashes on removal and addition of particles")
+    def test9(self):
+        self.skip("no support for out of box detection")
 
 
         
@@ -230,6 +258,9 @@ class TestPhiGRAPEGravityCode(_TestGravityCodes):
         finally:
             instance.stop()
 
+    def test9(self):
+        self.skip("no support for out of box detection")
+        
 class TestFiGravityCode(_TestGravityCodes):
     
     def gravity_code_factory(self):
@@ -237,6 +268,9 @@ class TestFiGravityCode(_TestGravityCodes):
 
     def test8(self):
         self.skip("no support for collision detection")
+        
+    def test9(self):
+        self.skip("no support for out of box detection")
 
 class TestGadget2GravityCode(_TestGravityCodes):
     length_unit = units.parsec
@@ -258,3 +292,5 @@ class TestGadget2GravityCode(_TestGravityCodes):
     def test8(self):
         self.skip("no support for collision detection")
     
+    def test9(self):
+        self.skip("no support for out of box detection")
