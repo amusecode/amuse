@@ -139,6 +139,22 @@ class _TestGravityCodes(TestWithMPI):
             self.assertEquals(particles[-1], new_particles[0])
         finally:
             instance.stop()
+            
+    def test8(self):
+        factory = self.gravity_code_factory()
+        instance = self.new_instance_of_an_optional_code(factory)
+        random = numpy.random.mtrand.RandomState(3456)
+        particles = new_plummer_model(10, convert_nbody = self.nbody_converter, random = random)
+        particles.radius = 0.2 | self.length_unit
+        particles.move_to_center()
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+        self.assertEquals(len(instance.particles), 10)
+        collision_detection = instance.stopping_conditions.collision_detection
+        collision_detection.enable()
+        instance.evolve_model(1 | self.time_unit)
+        self.assertTrue(collision_detection.is_set())
+        instance.stop()
 
     def new_gravity_code(self):
         self.gravity_code_factory()
@@ -219,6 +235,9 @@ class TestFiGravityCode(_TestGravityCodes):
     def gravity_code_factory(self):
         return Fi
 
+    def test8(self):
+        self.skip("no support for collision detection")
+
 class TestGadget2GravityCode(_TestGravityCodes):
     length_unit = units.parsec
     speed_unit = units.parsec / units.Myr
@@ -236,4 +255,6 @@ class TestGadget2GravityCode(_TestGravityCodes):
     def test2(self):
         self.skip("no support for setting of radius")
     
+    def test8(self):
+        self.skip("no support for collision detection")
     

@@ -27,6 +27,9 @@ int get_stopping_condition_maximum_density_parameter(double *value);
 int set_stopping_condition_maximum_internal_energy_parameter(double value);
 int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 
+int set_stopping_condition_size_limit_parameter(double value);
+int get_stopping_condition_size_limit_parameter(double *value);
+
 #ifdef __cplusplus
 }
 #endif
@@ -43,6 +46,7 @@ int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 #define OUT_OF_BOX_DETECTION 5
 #define DENSITY_LIMIT_DETECTION 6
 #define INTERNAL_ENERGY_LIMIT_DETECTION 7
+#define SIZE_LIMIT_DETECTION 8
 
 #define COLLISION_DETECTION_BITMAP  1
 #define PAIR_DETECTION_BITMAP       2
@@ -52,6 +56,7 @@ int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 #define OUT_OF_BOX_DETECTION_BITMAP 32
 #define DENSITY_LIMIT_DETECTION_BITMAP 64
 #define INTERNAL_ENERGY_LIMIT_DETECTION_BITMAP 128
+#define SIZE_LIMIT_DETECTION_BITMAP 256
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,6 +73,7 @@ extern double minimum_density_parameter;
 extern double maximum_density_parameter;
 extern double minimum_internal_energy_parameter;
 extern double maximum_internal_energy_parameter;
+extern double size_limit_parameter;
 
 int reset_stopping_conditions();
 int next_index_for_stopping_condition();

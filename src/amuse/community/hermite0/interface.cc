@@ -705,10 +705,12 @@ int evolve_system(real t_end)
 
     int is_number_of_steps_detection_enabled;
     int is_out_of_box_detection_enabled;
+    int is_size_limit_detection_enabled;
     int number_of_steps_innerloop = 0;
     int max_number_of_steps;
     double box_size;
     double sqr_distance_wrt_origin;
+    double total, center_of_mass[NDIM];
     int error;
     int n = ident.size();//no particles
     int n_particles_out_of_box = 0;
@@ -785,6 +787,8 @@ int evolve_system(real t_end)
                     &is_number_of_steps_detection_enabled);
     error = is_stopping_condition_enabled(OUT_OF_BOX_DETECTION,
                     &is_out_of_box_detection_enabled);
+    error = is_stopping_condition_enabled(SIZE_LIMIT_DETECTION,
+                    &is_size_limit_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
     get_stopping_condition_out_of_box_parameter(&box_size);    
     // AMUSE STOPPING CONDITIONS
@@ -851,29 +855,43 @@ int evolve_system(real t_end)
                               NUMBER_OF_STEPS_DETECTION);
                 }
             }
-            
-            if (is_out_of_box_detection_enabled) {
-                for (i = 0; i < n; i++) {
-                sqr_distance_wrt_origin = 0.0;
+            if (is_out_of_box_detection_enabled || is_size_limit_detection_enabled) {
                 for (k = 0; k < NDIM; k++) {
-                    sqr_distance_wrt_origin += pos[i][k]*pos[i][k];
+                    center_of_mass[k] = 0.0;
                 }
-                if (sqr_distance_wrt_origin > box_size*box_size) {
-                    int stopping_index = next_index_for_stopping_condition();
-                    set_stopping_condition_info(stopping_index, 
-                                OUT_OF_BOX_DETECTION);
-                    if (n_particles_out_of_box < 10) {
-                        set_stopping_condition_particle_index(stopping_index,
-                                              n_particles_out_of_box,
-                                              ident[i]);
-                        n_particles_out_of_box++;
-                    }
-                    else {
-                        printf("Run out of storable out of box events\n");
+                total = 0.0;
+                for (i = 0; i < n; i++) {
+                    for (k = 0; k < NDIM; k++) {
+                        center_of_mass[k] += mass[i] * pos[i][k] * pos[i][k];
+                        total += mass[i];
                     }
                 }
+                for (k = 0; k < NDIM; k++) {
+                    center_of_mass[k] /= total;
                 }
             }
+            if (is_out_of_box_detection_enabled) {
+                for (i = 0; i < n; i++) {
+                    sqr_distance_wrt_origin = 0.0;
+                    for (k = 0; k < NDIM; k++) {
+                        sqr_distance_wrt_origin += (pos[i][k] - center_of_mass[k])*(pos[i][k] - center_of_mass[k]);
+                    }
+                    if (sqr_distance_wrt_origin > box_size*box_size) {
+                        int stopping_index = next_index_for_stopping_condition();
+                        set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION);
+                        if (n_particles_out_of_box < 10) {
+                            set_stopping_condition_particle_index(stopping_index,
+                                                  n_particles_out_of_box,
+                                                  ident[i]);
+                            n_particles_out_of_box++;
+                        }
+                        else {
+                            printf("Run out of storable out of box events\n");
+                        }
+                    }
+                }
+            }
+            
             if(set_conditions & enabled_conditions) {
                 break;
             }
@@ -1304,6 +1322,7 @@ int initialize_code()
     set_support_for_condition(TIMEOUT_DETECTION);
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
     set_support_for_condition(OUT_OF_BOX_DETECTION);
+    set_support_for_condition(SIZE_LIMIT_DETECTION);
     // -----------------------
 
 #ifndef NOMPI

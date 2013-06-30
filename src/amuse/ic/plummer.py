@@ -18,14 +18,20 @@ __all__ = ["new_plummer_sphere", "new_plummer_model"]
 
 class MakePlummerModel(object):
     def __init__(self, number_of_particles, convert_nbody = None, radius_cutoff = 22.8042468, mass_cutoff = 0.999,
-            do_scale = False, random_state = None):
+            do_scale = False, random_state = None, random = None):
         self.number_of_particles = number_of_particles
         self.convert_nbody = convert_nbody
         self.mass_cutoff = min(mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff))
         self.do_scale = do_scale
         if not random_state == None:
             print "DO NOT USE RANDOM STATE"
+        
         self.random_state = None
+        
+        if random is None:
+            self.random = numpy.random
+        else:
+            self.random = random
 
     def calculate_mass_cuttof_from_radius_cutoff(self, radius_cutoff):
         if radius_cutoff > 99999:
@@ -39,26 +45,26 @@ class MakePlummerModel(object):
     def calculate_radius(self, index):
         mass_min = (index * self.mass_cutoff) / self.number_of_particles
         mass_max = ((index+1) * self.mass_cutoff) / self.number_of_particles
-        random_mass_fraction = numpy.random.uniform(mass_min, mass_max)
+        random_mass_fraction = self.random.uniform(mass_min, mass_max)
         radius = 1.0 / sqrt( pow (random_mass_fraction, -2.0/3.0) - 1.0)
         return radius
 
     def calculate_radius_uniform_distribution(self):
-        return 1.0 /  numpy.sqrt( numpy.power(numpy.random.uniform(0,self.mass_cutoff,(self.number_of_particles,1)), -2.0/3.0) - 1.0)
+        return 1.0 /  numpy.sqrt( numpy.power(self.random.uniform(0,self.mass_cutoff,(self.number_of_particles,1)), -2.0/3.0) - 1.0)
 
     def new_positions_spherical_coordinates(self):
         pi2 = pi * 2
         radius = self.calculate_radius_uniform_distribution()
-        theta = numpy.arccos(numpy.random.uniform(-1.0,1.0, (self.number_of_particles,1)))
-        phi = numpy.random.uniform(0.0,pi2, (self.number_of_particles,1))
+        theta = numpy.arccos(self.random.uniform(-1.0,1.0, (self.number_of_particles,1)))
+        phi = self.random.uniform(0.0,pi2, (self.number_of_particles,1))
         return (radius,theta,phi)
 
     def new_velocities_spherical_coordinates(self, radius):
         pi2 = pi * 2
         x,y = self.new_xy_for_velocity()
         velocity = x * sqrt(2.0) * numpy.power( 1.0 + radius*radius, -0.25)
-        theta = numpy.arccos(numpy.random.uniform(-1.0,1.0, (self.number_of_particles,1)))
-        phi = numpy.random.uniform(0.0,pi2, (self.number_of_particles,1))
+        theta = numpy.arccos(self.random.uniform(-1.0,1.0, (self.number_of_particles,1)))
+        phi = self.random.uniform(0.0,pi2, (self.number_of_particles,1))
         return (velocity,theta,phi)
 
     def coordinates_from_spherical(self, radius, theta, phi):
@@ -72,8 +78,8 @@ class MakePlummerModel(object):
         selected_values_for_x = numpy.zeros(0)
         selected_values_for_y = numpy.zeros(0)
         while (number_of_selected_items < self.number_of_particles):
-            x = numpy.random.uniform(0,1.0, (self.number_of_particles-number_of_selected_items))
-            y = numpy.random.uniform(0,0.1, (self.number_of_particles-number_of_selected_items))
+            x = self.random.uniform(0,1.0, (self.number_of_particles-number_of_selected_items))
+            y = self.random.uniform(0,0.1, (self.number_of_particles-number_of_selected_items))
             g = (x**2) * numpy.power(1.0 - x**2, 3.5)
             compare = y <= g
             selected_values_for_x = numpy.concatenate((selected_values_for_x, x.compress(compare)))

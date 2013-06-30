@@ -557,3 +557,87 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
         self.assertAlmostRelativeEquals(potential_energy0 + kinetic_energy0,potential_energy1 + kinetic_energy1)
 
+
+class TestSmallNHandleEncounter(amusetest.TestWithMPI):
+    
+    def xtest1(self):
+        
+        
+        particles_in_encounter = Particles(keys=(1,2,3))
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
+        particles_in_encounter[2].position = [0,0.5,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        
+        particles_in_field = Particles()
+        
+        x = encounters.AbstractHandleEncounter(
+            particles_in_encounter,
+            particles_in_field,
+            G = nbody_system.G
+        )
+        
+        simple_binary_1 = new_binary(
+            1 | nbody_system.mass, 
+            1 | nbody_system.mass, 
+            0.4 | nbody_system.length
+        )
+        simple_binary_top = new_binary(
+            2 | nbody_system.mass, 
+            1 | nbody_system.mass, 
+            2 | nbody_system.length
+        )
+                
+        def evolve_singles_in_encounter_until_end_state():
+            particles = x.singles_and_multiples_after_evolve
+            particles.add_particles(x.all_singles_in_encounter)
+            particles.child1 = None
+            particles.child2 = None
+            
+            inner_binary_particle = particles.add_particle(Particle(
+                key = 10,
+                mass = 2.0 | nbody_system.mass, 
+                position = particles[0:2].center_of_mass(),
+                velocity = particles[0:2].center_of_mass_velocity(),
+            ))
+            inner_binary_particle.child1 = particles[0]
+            inner_binary_particle.child2 = particles[1]
+            particles[0].position = simple_binary_1[0].position + inner_binary_particle.position
+            particles[1].position = simple_binary_1[1].position + inner_binary_particle.position
+            
+            particles[0].velocity = simple_binary_1[0].velocity + inner_binary_particle.velocity
+            particles[1].velocity = simple_binary_1[1].velocity + inner_binary_particle.velocity
+            
+            root_particle = particles.add_particle(Particle(
+                key = 11,
+                mass = 3.0 | nbody_system.mass, 
+                position = particles.center_of_mass(),
+                velocity = particles.center_of_mass_velocity(),
+            ))
+            
+            root_particle.child1 = inner_binary_particle
+            root_particle.child2 = particles[2]
+            inner_binary_particle.position = simple_binary_top[0].position + root_particle.position
+            particles[2].position = simple_binary_top[1].position + root_particle.position
+            
+            inner_binary_particle.velocity = simple_binary_top[0].velocity + root_particle.velocity
+            particles[2].velocity = simple_binary_top[1].velocity + root_particle.velocity
+            
+            
+            
+        
+        x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
+        x.determine_structure_of_the_evolved_state = lambda : 1
+        
+        x.start()
+        
+        # no multiples as the binary is larger than the 
+        # hard binary scale
+        self.assertEquals(len(x.new_multiples), 1)
+        self.assertEquals(len(x.new_binaries), 1)
+        multiple = x.new_multiples[0]
+        self.assertEquals(len(multiple.components), 2)
+        self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
+        self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
+    

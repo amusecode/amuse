@@ -18,6 +18,8 @@ double minimum_density_parameter = -1.0;
 double maximum_density_parameter = DBL_MAX;
 double minimum_internal_energy_parameter = -1.0;
 double maximum_internal_energy_parameter = DBL_MAX;
+double size_limit_parameter = 0.0;
+
 static int sc_mpi_size;
 
 int enable_stopping_condition(int type) {
@@ -359,6 +361,29 @@ int get_stopping_condition_maximum_internal_energy_parameter(double *value) {
 int get_stopping_condition_maximum_internal_energy_parameter_(double *value) {
     return get_stopping_condition_maximum_internal_energy_parameter(value);
 }
+
+
+
+int set_stopping_condition_size_limit_parameter(double value) {
+    size_limit_parameter = value;
+    return 0;
+}
+
+int set_stopping_condition_size_limit_parameter_(double * value) {
+    return set_stopping_condition_size_limit_parameter(*value);
+}
+
+
+int get_stopping_condition_size_limit_parameter(double *value) {
+    *value = size_limit_parameter;
+    return 0;
+}
+
+int get_stopping_condition_size_limit_parameter_(double * value) {
+    return get_stopping_condition_size_limit_parameter(value);
+}
+
+
 
 
 #if defined( MPILIB ) && !defined(NOMPI)

@@ -340,6 +340,120 @@ class AbstractHandleEncounter(object):
         binary_copy.position = binary_found_in_encounter.position
         binary_copy.velocity = binary_found_in_encounter.velocity
         
+class SmallNHandleEncounter(AbstractHandleEncounter):
+    
+    def evolve_singles_in_encounter_until_end_state():
+        code = SmallN()
+        code.particles.add_particles(x.all_singles_in_encounter)
+        
+        # Temporarily avoid "is_over" problems.  If we allow
+        # collisions to stop early -- when they become too large or
+        # last too long -- then we need will logic to manage the
+        # intermediate state that results.  TODO
+        final_scatter_scale = 1.e30 | nbody_system.length
+
+        time = 0 * end_time
+
+
+        initial_scatter_energy = self.get_total_energy(resolve_collision_code)
+
+
+        #resolve_collision_code.set_break_scale(final_scatter_scale)
+        delta_t_max = 64*delta_t
+
+
+        while time < end_time:
+
+            time += delta_t
+            print 'multiples: evolving to time', time
+            sys.stdout.flush()
+
+            resolve_collision_code.evolve_model(time)
+
+            # DEBUGGING:
+            if self.debug_encounters:
+                print 'multiples: ### snapshot at time %f' % time.number
+                #resolve_collision_code.update_particle_tree()
+                #resolve_collision_code.update_particle_set()
+                resolve_collision_code.particles.synchronize_to(particles)
+                channel.copy()
+                for p in particles:
+                    print 'multiples: ### id=%d, x=%f, y=%f, z=%f,',\
+                          'vx=%f, vy=%f, vz=%f' % \
+                            (p.id, p.x.number, p.y.number, p.z.number,
+                             p.vx.number, p.vy.number, p.vz.number)
+                sys.stdout.flush()
+
+            # The argument final_scatter_scale is used to limit the
+            # size of the system.  It has to be supplied again because
+            # the code that determines if the scattering is over isn't
+            # necessarily the same as resolve_collision_code.
+            # Currently, only smallN has an "is_over()" function.
+            # TODO
+            #
+            # Return values:	0 - not over
+            #			1 - over
+            #			2 - not over, but size exceeded limit
+            #
+            # Note that this is really a stopping condition, and
+            # should eventually be handled that way.  TODO
+
+            # We are currently ignoring any possibility of a physical
+            # collision during the multiples encounter.  TODO
+
+            over = resolve_collision_code.is_over(final_scatter_scale)
+
+            # TODO: what happens if we reach final_scatter_scale but
+            # the encounter isn't over?
+
+            if over:
+                final_scatter_energy \
+                    = self.get_total_energy(resolve_collision_code)
+                scatter_energy_error \
+                    = final_scatter_energy - initial_scatter_energy
+                print 'multiples: over =', over, 'at time', time
+                print 'multiples: initial energy =', initial_scatter_energy
+                print 'multiples: final energy =', final_scatter_energy
+                print 'multiples: energy error =', scatter_energy_error
+                if self.debug_encounters:
+                    print 'multiples: ### END ENCOUNTER ###'
+                sys.stdout.flush()
+
+                # Create a tree in the module representing the binary structure.
+                resolve_collision_code.update_particle_tree()
+
+                # Note that center of mass particles are now part of
+                # the particle set...
+
+                # Return the tree structure to AMUSE.  Children are
+                # identified by get_children_of_particle in interface.??,
+                # and the information is returned in the copy operation.
+
+                resolve_collision_code.update_particle_set()
+                resolve_collision_code.particles.synchronize_to(particles)
+                #print "resolve_collision_code.particles.radius", \
+                #       resolve_collision_code.particles.radius
+                channel.copy()
+                #resolve_collision_code.stop()
+
+                return scatter_energy_error
+
+            if not self.debug_encounters:
+                if delta_t < delta_t_max and time > 0.999999*4*delta_t:
+                    delta_t *= 2
+
+        raise Exception(
+            "Did not finish the small-N simulation before end time {0}".
+            format(end_time)
+        )
+        
+        
+        
+    
+    x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
+    x.determine_structure_of_the_evolved_state = lambda : 1
+        
+        
 class KeplerOrbits(object):
     
     def __init__(self, nbody_converter = None):
