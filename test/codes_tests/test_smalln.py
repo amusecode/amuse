@@ -191,7 +191,6 @@ class TestSmallN(TestWithMPI):
         
     
     def test1(self):
-        self.skip("smalln starts every evolve at time 0")
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
         smalln = SmallN(convert_nbody)
@@ -491,27 +490,17 @@ class TestSmallN(TestWithMPI):
             [2, 0, 0], [-2, 0, 0],
             [-4, 0, 0]
         ] | nbody_system.speed
-        print particles.velocity
+        
         instance = SmallN()
         instance.particles.add_particles(particles)
         
         collisions = instance.stopping_conditions.collision_detection
         collisions.enable()
         
-        instance.evolve_model(0.1 | nbody_system.time)
-        print instance.particles.to_string(["x"])
-        instance.evolve_model(0.3 | nbody_system.time)
-        self.assertTrue(collisions.is_set())
-        print collisions.particles(0).key
-        print collisions.particles(1).key
-        print instance.particles.to_string(["x"])
         instance.evolve_model(1.0 | nbody_system.time)
         
-        print instance.particles.to_string(["x"])
         self.assertTrue(collisions.is_set())
         self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
-        print collisions.particles(0).key
-        print collisions.particles(1).key
         
         self.assertEquals(len(collisions.particles(0)), 3)
         self.assertEquals(len(collisions.particles(1)), 3)
@@ -520,3 +509,47 @@ class TestSmallN(TestWithMPI):
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True, True, True])
         
+    
+    def test18(self):
+        
+        particles = datamodel.Particles(keys=[1,2])
+        particles.mass = 1 | nbody_system.mass
+        particles.radius = 0.1 | nbody_system.length
+        particles.x = [1, -1] | nbody_system.length
+        particles.y = [1, -1] | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [[-1, 0, 0], [1, 0, 0]] | nbody_system.speed
+       
+        instance = SmallN()
+        instance.particles.add_particles(particles)
+        
+        stopping_condition = instance.stopping_conditions.interaction_over_detection
+        stopping_condition.enable()
+        
+        
+        instance.evolve_model(10.0 | nbody_system.time)
+        self.assertTrue(stopping_condition.is_set())
+        self.assertTrue(instance.model_time < 11.0 | nbody_system.time)
+        
+
+    def test19(self):
+        
+        particles = datamodel.Particles(keys=[1,2, 3])
+        particles.mass = 1 | nbody_system.mass
+        particles.radius = 0.1 | nbody_system.length
+        particles.x = [1, -1, 0] | nbody_system.length
+        particles.y = [1, -1, 0] | nbody_system.length
+        particles.z = [0, 0, 1]| nbody_system.length
+        particles.velocity = [[-1, 0, 0], [1, 0, 0],[0,0,-10]] | nbody_system.speed
+       
+        instance = SmallN()
+        instance.particles.add_particles(particles)
+        
+        stopping_condition = instance.stopping_conditions.interaction_over_detection
+        stopping_condition.enable()
+        
+        
+        instance.evolve_model(10.0 | nbody_system.time)
+        self.assertTrue(stopping_condition.is_set())
+        
+        self.assertTrue(instance.model_time < 10.0 | nbody_system.time)

@@ -131,7 +131,7 @@ static inline real get_pairwise_acc_and_jerk_CPT(hdyn *bi, hdyn *bj,
 
 #if 1
     int is_collision_detection_enabled = 0;
-    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);	// TODO
+    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
     
     // NOTE: assuming here that trees are just a single level deep.
     // MUST be generalized (see below) if we choose to allow
@@ -822,6 +822,9 @@ int smallN_evolve(hdyn *b,
 		  real dt_log,		// default = _INFINITY_
 		  int verbose)		// default = 0
 {
+    int is_interaction_over_detection_enabled = 0;
+    is_stopping_condition_enabled(INTERACTION_OVER_DETECTION, &is_interaction_over_detection_enabled);
+    
     set_kepler_tolerance(2);	// energy corrections may force orbital
 				// separations outside allowed limits
 
@@ -830,16 +833,35 @@ int smallN_evolve(hdyn *b,
     // Treat special cases (that may come from AMUSE).
 
     int n_leaves = 0;
-    for_all_leaves(hdyn, b, bi) n_leaves++;
+    for_all_leaves(hdyn, b, bi) {
+        n_leaves++;
+    }
 
     // cout << "In smallN_evolve: "; PRC(b->get_system_time()); PRL(n_leaves);
 
-    if (n_leaves == 1)
-	return 0;
-    else if (n_leaves == 2) {
-	// cout << "smallN: two-body encounter" << endl << flush;
-	two_body(b, t_end, sqrt(break_r2));
-	return 0;
+    if (n_leaves == 1) {
+        return 0;
+    } else if (n_leaves == 2) {
+        // cout << "smallN: two-body encounter" << endl << flush;
+        two_body(b, t_end, sqrt(break_r2));
+    
+        if(is_interaction_over_detection_enabled) {
+            int is_over = check_structure(b, _INFINITY_, 0);
+             
+            if(is_over) {
+                int stopping_index  = next_index_for_stopping_condition();
+                if(stopping_index < 0)
+                {
+                    // TODO, no more space available for stopping conditions
+                }
+                else
+                {
+                    set_stopping_condition_info(stopping_index, INTERACTION_OVER_DETECTION);
+                }
+            }
+        }
+        
+        return 0;
     }
 
     // cout << "smallN: direct integration" << endl << flush;
@@ -876,6 +898,7 @@ int smallN_evolve(hdyn *b,
     if(set_conditions & enabled_conditions) {
       return 1;
     }
+    
     while (b->get_system_time() < t_end) {
 
 	// Take a step.  Don't set the end time in advance, as the
@@ -894,7 +917,7 @@ int smallN_evolve(hdyn *b,
 	// last acc and jerk calculation.
 
 	// Check second (size) termination criterion.
-
+       
 	if (n_steps%NCHECK == 0)
 	    for_all_daughters(hdyn, b, bi) {
 		real r2 = square(bi->get_pos());
@@ -957,12 +980,34 @@ int smallN_evolve(hdyn *b,
 	}
 
 	// Structure analysis:
-
+/* turned off, as we have stopping condition
+ * may need to implement dt for is_over stopping condition check
 	if (dt_check > 0 && b->get_system_time() >= t_check) {
 	    int over = check_structure(b, break_r2, verbose);
 	    if (over) return 0;
 	    while (b->get_system_time() >= t_check) t_check += dt_check;
 	}
+*/
+    
+        if(is_interaction_over_detection_enabled) {
+            int is_over = check_structure(b, _INFINITY_, 0);
+             
+            if(is_over) {
+                int stopping_index  = next_index_for_stopping_condition();
+                if(stopping_index < 0)
+                {
+                    // TODO, no more space available for stopping conditions
+                }
+                else
+                {
+                    set_stopping_condition_info(stopping_index, INTERACTION_OVER_DETECTION);
+                }
+            }
+        }
+        
+        if(set_conditions & enabled_conditions) {
+          break;
+        }
     }
 
     real rmax2 = 0;
