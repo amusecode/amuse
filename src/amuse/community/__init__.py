@@ -1,4 +1,5 @@
-from amuse.support.codes.stopping_conditions import StoppingConditionInterface, StoppingConditions
+from amuse.community.interface.stopping_conditions import StoppingConditionInterface
+from amuse.community.interface.stopping_conditions import StoppingConditions
 
 from amuse.support.options import option
 from amuse.support.options import OptionalAttributes

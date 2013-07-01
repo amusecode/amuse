@@ -70,6 +70,7 @@ int initialize_code()
     // AMUSE stopping conditions support.
 
     set_support_for_condition(COLLISION_DETECTION);
+    set_support_for_condition(INTERACTION_OVER_DETECTION);
     mpi_setup_stopping_conditions();
 
     return 0;

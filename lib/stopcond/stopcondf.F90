@@ -35,7 +35,7 @@ module StoppingConditions
     double precision, private, save :: maximum_density_parameter = DBL_MAX
     double precision, private, save :: minimum_internal_energy_parameter = -1.0
     double precision, private, save :: maximum_internal_energy_parameter = DBL_MAX
-    double precision, private, save :: size_limit_parameter = 0.0
+    double precision, private, save :: INTERACTION_OVER_parameter = 0.0
     
     integer, private, save :: sc_mpi_size;
     integer, private, save :: sc_mpi_rank;
@@ -48,7 +48,7 @@ module StoppingConditions
     INTEGER :: OUT_OF_BOX_DETECTION_BITMAP
     INTEGER :: DENSITY_LIMIT_DETECTION_BITMAP
     INTEGER :: INTERNAL_ENERGY_LIMIT_DETECTION_BITMAP
-    INTEGER :: SIZE_LIMIT_DETECTION_BITMAP
+    INTEGER :: INTERACTION_OVER_DETECTION_BITMAP
 
     INTEGER :: COLLISION_DETECTION
     INTEGER :: PAIR_DETECTION
@@ -58,7 +58,7 @@ module StoppingConditions
     INTEGER :: OUT_OF_BOX_DETECTION
     INTEGER :: DENSITY_LIMIT_DETECTION
     INTEGER :: INTERNAL_ENERGY_LIMIT_DETECTION
-    INTEGER :: SIZE_LIMIT_DETECTION
+    INTEGER :: INTERACTION_OVER_DETECTION
 
     PARAMETER (COLLISION_DETECTION_BITMAP=1)
     PARAMETER (PAIR_DETECTION_BITMAP=2)
@@ -68,7 +68,7 @@ module StoppingConditions
     PARAMETER (OUT_OF_BOX_DETECTION_BITMAP=32)
     PARAMETER (DENSITY_LIMIT_DETECTION_BITMAP=64)
     PARAMETER (INTERNAL_ENERGY_LIMIT_DETECTION_BITMAP=128)
-    PARAMETER (SIZE_LIMIT_DETECTION_BITMAP=256)
+    PARAMETER (INTERACTION_OVER_DETECTION_BITMAP=256)
 
     PARAMETER (COLLISION_DETECTION=0)
     PARAMETER (PAIR_DETECTION=1)
@@ -78,7 +78,7 @@ module StoppingConditions
     PARAMETER (OUT_OF_BOX_DETECTION=5)
     PARAMETER (DENSITY_LIMIT_DETECTION=6)
     PARAMETER (INTERNAL_ENERGY_LIMIT_DETECTION=7)
-    PARAMETER (SIZE_LIMIT_DETECTION=8)
+    PARAMETER (INTERACTION_OVER_DETECTION=8)
 
 
 contains
@@ -429,24 +429,6 @@ function get_stopping_condition_maximum_internal_energy_parameter(value)
     value = maximum_internal_energy_parameter
     get_stopping_condition_maximum_internal_energy_parameter = 0
 end function
-
-
-
-
-function set_stopping_condition_size_limit_parameter(value) 
-    double precision, intent(in) :: value
-    integer :: set_stopping_condition_size_limit_parameter
-    size_limit_parameter = value    
-    set_stopping_condition_size_limit_parameter = 0
-end function
-
-function get_stopping_condition_size_limit_parameter(value) 
-    integer :: get_stopping_condition_size_limit_parameter
-    double precision, intent(out) :: value
-    value = size_limit_parameter
-    get_stopping_condition_size_limit_parameter = 0
-end function
-
 
 
 #if defined( MPILIB ) && !defined(NOMPI)

@@ -364,27 +364,6 @@ int get_stopping_condition_maximum_internal_energy_parameter_(double *value) {
 
 
 
-int set_stopping_condition_size_limit_parameter(double value) {
-    size_limit_parameter = value;
-    return 0;
-}
-
-int set_stopping_condition_size_limit_parameter_(double * value) {
-    return set_stopping_condition_size_limit_parameter(*value);
-}
-
-
-int get_stopping_condition_size_limit_parameter(double *value) {
-    *value = size_limit_parameter;
-    return 0;
-}
-
-int get_stopping_condition_size_limit_parameter_(double * value) {
-    return get_stopping_condition_size_limit_parameter(value);
-}
-
-
-
 
 #if defined( MPILIB ) && !defined(NOMPI)
 

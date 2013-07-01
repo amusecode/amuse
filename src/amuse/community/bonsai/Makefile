@@ -10,10 +10,10 @@ CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK ?= /usr/local/cuda/
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
+CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcuda 
 
 #CXXFLAGS += -I$(CUDA_TK)/include
-LIBS = -lcuda  $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia $(SC_MPI_CLIBS)
+LIBS = $(CUDA_LIBS) $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia $(SC_MPI_CLIBS)
 INCLUDES = -I$(CUDA_TK)/include $(SC_FLAGS)
 
 OBJS = libraryInterface.o
