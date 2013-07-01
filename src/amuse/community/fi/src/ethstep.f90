@@ -19,7 +19,7 @@ subroutine exstepp(p,totaldt,eth,deth,drad,lerad,lhe,imax,jmax)
  if(.NOT.radiate) then
   i=i+1
   eth0=eth+totaldt*deth	
-  if(eth0.LT.ethmin) eth0=ethmin
+  if(eth0.LT.ethmin/10) eth0=ethmin/10
   if(eth0.GT.ethmax) eth0=ethmax
  else
   tpart=0	  
