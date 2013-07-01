@@ -9,7 +9,7 @@ from amuse.rfi.core import PythonCodeInterface
 
 try:
     from tupan.integrator import Integrator
-    from tupan.particles.allparticles import System
+    from tupan.particles.allparticles import ParticleSystem
     from tupan.particles.star import Stars
     MODULES_MISSING = False
 except ImportError:
@@ -51,19 +51,19 @@ class TupanImplementation(object):
 
     def commit_particles(self):
         num = len(self.particles)
-        particles = System(nstars=num)
+        ps = ParticleSystem(nstars=num)
         for (i, p) in enumerate(self.particles):
-            particles.stars.id[i] = i
-            particles.stars.mass[i] = p.mass
-            particles.stars.radius[i] = p.radius   # XXX: 'radius' is not yet used in Tupan.
-            particles.stars.eps2[i] = self.eps2/2
-            particles.stars.rx[i] = p.rx
-            particles.stars.ry[i] = p.ry
-            particles.stars.rz[i] = p.rz
-            particles.stars.vx[i] = p.vx
-            particles.stars.vy[i] = p.vy
-            particles.stars.vz[i] = p.vz
-        self.integrator = Integrator(self.eta, self.time_begin, particles, method=self.integrator_method)
+            ps.stars.id[i] = i
+            ps.stars.mass[i] = p.mass
+            ps.stars.radius[i] = p.radius   # XXX: 'radius' is not yet used in Tupan.
+            ps.stars.eps2[i] = self.eps2/2
+            ps.stars.rx[i] = p.rx
+            ps.stars.ry[i] = p.ry
+            ps.stars.rz[i] = p.rz
+            ps.stars.vx[i] = p.vx
+            ps.stars.vy[i] = p.vy
+            ps.stars.vz[i] = p.vz
+        self.integrator = Integrator(self.eta, self.time_begin, ps, method=self.integrator_method)
         return 0
 
     def synchronize_model(self):
@@ -104,8 +104,8 @@ class TupanImplementation(object):
     def set_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             p.mass[i] = mass
             p.radius[i] = radius
             p.rx[i] = x
@@ -122,8 +122,8 @@ class TupanImplementation(object):
     def set_mass(self, index_of_the_particle, mass):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             p.mass[i] = mass
             return 0
         except Exception as exc:
@@ -133,8 +133,8 @@ class TupanImplementation(object):
     def set_radius(self, index_of_the_particle, radius):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             p.radius[i] = radius
             return 0
         except Exception as exc:
@@ -144,8 +144,8 @@ class TupanImplementation(object):
     def set_position(self, index_of_the_particle, x, y, z):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             p.rx[i] = x
             p.ry[i] = y
             p.rz[i] = z
@@ -156,8 +156,8 @@ class TupanImplementation(object):
     def set_velocity(self, index_of_the_particle, vx, vy, vz):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             p.vx[i] = vx
             p.vy[i] = vy
             p.vz[i] = vz
@@ -169,8 +169,8 @@ class TupanImplementation(object):
     def get_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             mass.value = p.mass[i]
             radius.value = p.radius[i]
             x.value, y.value, z.value = p.rx[i], p.ry[i], p.rz[i]
@@ -182,8 +182,8 @@ class TupanImplementation(object):
     def get_mass(self, index_of_the_particle, mass):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             mass.value = p.mass[i]
             return 0
         except:
@@ -192,8 +192,8 @@ class TupanImplementation(object):
     def get_radius(self, index_of_the_particle, radius):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             radius.value = p.radius[i]
             return 0
         except:
@@ -202,8 +202,8 @@ class TupanImplementation(object):
     def get_position(self, index_of_the_particle, x, y, z):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             x.value, y.value, z.value = p.rx[i], p.ry[i], p.rz[i]
             return 0
         except:
@@ -212,8 +212,8 @@ class TupanImplementation(object):
     def get_velocity(self, index_of_the_particle, vx, vy, vz):
         try:
             i = index_of_the_particle
-            particles = self.integrator.particles
-            p = particles.stars
+            ps = self.integrator.particle_system
+            p = ps.stars
             vx.value, vy.value, vz.value = p.vx[i], p.vy[i], p.vz[i]
             return 0
         except:
@@ -221,33 +221,33 @@ class TupanImplementation(object):
 
 
     def get_kinetic_energy(self, kinetic_energy):
-        particles = self.integrator.particles
-        ke = particles.kinetic_energy
+        ps = self.integrator.particle_system
+        ke = ps.kinetic_energy
         kinetic_energy.value = ke
         return 0
 
     def get_potential_energy(self, potential_energy):
-        particles = self.integrator.particles
-        pe = particles.potential_energy
+        ps = self.integrator.particle_system
+        pe = ps.potential_energy
         potential_energy.value = pe
         return 0
 
 
     def get_total_mass(self, total_mass):
-        particles = self.integrator.particles
-        mtot = particles.total_mass
+        ps = self.integrator.particle_system
+        mtot = ps.total_mass
         total_mass.value = mtot
         return 0
 
     def get_center_of_mass_position(self, x, y, z):
-        particles = self.integrator.particles
-        rcom = particles.rcom
+        ps = self.integrator.particle_system
+        rcom = ps.rcom
         x.value, y.value, z.value = rcom
         return 0
 
     def get_center_of_mass_velocity(self, vx, vy, vz):
-        particles = self.integrator.particles
-        vcom = particles.vcom
+        ps = self.integrator.particle_system
+        vcom = ps.vcom
         vx.value, vy.value, vz.value = vcom
         return 0
 
@@ -463,7 +463,7 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
-        
+
         object.add_method_parameter(
             "get_integrator_method",
             "set_integrator_method",
