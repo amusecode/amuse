@@ -450,9 +450,9 @@ class SmallNHandleEncounter(AbstractHandleEncounter):
         
         
     
-    x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
-    x.determine_structure_of_the_evolved_state = lambda : 1
-        
+        x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
+        x.determine_structure_of_the_evolved_state = lambda : 1
+            
         
 class KeplerOrbits(object):
     

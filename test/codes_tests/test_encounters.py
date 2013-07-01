@@ -589,46 +589,6 @@ class TestSmallNHandleEncounter(amusetest.TestWithMPI):
             2 | nbody_system.length
         )
                 
-        def evolve_singles_in_encounter_until_end_state():
-            particles = x.singles_and_multiples_after_evolve
-            particles.add_particles(x.all_singles_in_encounter)
-            particles.child1 = None
-            particles.child2 = None
-            
-            inner_binary_particle = particles.add_particle(Particle(
-                key = 10,
-                mass = 2.0 | nbody_system.mass, 
-                position = particles[0:2].center_of_mass(),
-                velocity = particles[0:2].center_of_mass_velocity(),
-            ))
-            inner_binary_particle.child1 = particles[0]
-            inner_binary_particle.child2 = particles[1]
-            particles[0].position = simple_binary_1[0].position + inner_binary_particle.position
-            particles[1].position = simple_binary_1[1].position + inner_binary_particle.position
-            
-            particles[0].velocity = simple_binary_1[0].velocity + inner_binary_particle.velocity
-            particles[1].velocity = simple_binary_1[1].velocity + inner_binary_particle.velocity
-            
-            root_particle = particles.add_particle(Particle(
-                key = 11,
-                mass = 3.0 | nbody_system.mass, 
-                position = particles.center_of_mass(),
-                velocity = particles.center_of_mass_velocity(),
-            ))
-            
-            root_particle.child1 = inner_binary_particle
-            root_particle.child2 = particles[2]
-            inner_binary_particle.position = simple_binary_top[0].position + root_particle.position
-            particles[2].position = simple_binary_top[1].position + root_particle.position
-            
-            inner_binary_particle.velocity = simple_binary_top[0].velocity + root_particle.velocity
-            particles[2].velocity = simple_binary_top[1].velocity + root_particle.velocity
-            
-            
-            
-        
-        x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
-        x.determine_structure_of_the_evolved_state = lambda : 1
         
         x.start()
         
