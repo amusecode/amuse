@@ -2086,11 +2086,47 @@ class ParticlesOverlay(AbstractParticleSet):
     def __init__(self, particles, overlay_set = None):
         AbstractParticleSet.__init__(self)
 
-        self._private.base_set = particles.as_set()
+        self._private.base_set = particles
         if overlay_set is None:
             overlay_set = Particles(keys = self._private.base_set.key)
         self._private.overlay_set = overlay_set
+        self._private.base_version = self._private.base_set._get_version()
 
+    def _ensure_updated_set_properties(self):
+        if self._private.base_version == self._private.base_set._get_version():
+            return
+
+        self._private.base_version = self._private.base_set._get_version()
+        
+        base_set = self._private.base_set
+        overlay_set = self._private.overlay_set
+        
+        base_set_keys = base_set.key
+        overlay_set_keys = overlay_set.key
+        removed_indices = []
+        index = 0
+        index_in_overlay = 0
+        while index < len(base_set_keys) and index_in_overlay < len(overlay_set_keys):
+            key1 = base_set_keys[index]
+            key2 = overlay_set_keys[index_in_overlay]
+            if key2 == key1:
+                index_in_overlay += 1
+                index += 1
+            else:
+                while key2 != key1:
+                    removed_indices.append(index_in_overlay)
+                    index_in_overlay += 1
+                    if index_in_overlay >= len(overlay_set_keys):
+                        break
+                    key2 = overlay_set_keys[index_in_overlay]
+            
+        added_keys = []
+        if index_in_overlay >= len(overlay_set_keys):
+            added_keys = base_set_keys[index:]
+        
+        overlay_set.remove_particles_from_store(removed_indices)
+        if len(added_keys) > 0:
+            overlay_set.add_particles_to_store(added_keys)
 
     def can_extend_attributes(self):
         return self._private.overlay_set.can_extend_attributes()
@@ -2098,15 +2134,13 @@ class ParticlesOverlay(AbstractParticleSet):
     def __len__(self):
         return len(self._private.overlay_set)
 
-    def _get_subsets_version(self):
-        versions = [[x._get_version()] for x in self._private.particle_sets]
-        return numpy.sum(versions)
-
     def _get_version(self):
         return self._private.overlay_set._get_version() +  self._private.base_set._get_version()
 
 
     def __getitem__(self, index):
+        self._ensure_updated_set_properties()
+        
         keys = self.get_all_keys_in_store()[index]
 
         if hasattr(keys, '__iter__'):
@@ -2145,6 +2179,8 @@ class ParticlesOverlay(AbstractParticleSet):
         return (attributes_inbase, values_inbase), (attributes_inoverlay, values_inoverlay)
 
     def add_particles_to_store(self, keys, attributes = [], values = []):
+        self._ensure_updated_set_properties()
+        
         (
             (attributes_inbase, values_inbase),
             (attributes_inoverlay, values_inoverlay)
@@ -2154,16 +2190,23 @@ class ParticlesOverlay(AbstractParticleSet):
         self._private.base_set.add_particles_to_store(keys, attributes_inbase, values_inbase)
         self._private.overlay_set.add_particles_to_store(keys, attributes_inoverlay, values_inoverlay)
 
+        self._private.base_version = self._private.base_set._get_version()
+        
     def remove_particles_from_store(self, indices):
+        self._ensure_updated_set_properties()
+        
         indices = numpy.asarray(indices)
 
         self._private.base_set.remove_particles_from_store(indices[...,0])
         self._private.overlay_set.remove_particles_from_store(indices[...,1])
 
+        self._private.base_version = self._private.base_set._get_version()
+        
 
 
     def get_values_in_store(self, indices, attributes):
-
+        self._ensure_updated_set_properties()
+        
         (
             (attributes_inbase, indices_inbase),
             (attributes_inoverlay, indices_inoverlay)
@@ -2196,6 +2239,8 @@ class ParticlesOverlay(AbstractParticleSet):
         return result
 
     def set_values_in_store(self, indices, attributes, values):
+        self._ensure_updated_set_properties()
+        
         (
             (attributes_inbase, values_inbase),
             (attributes_inoverlay, values_inoverlay)
@@ -2226,21 +2271,29 @@ class ParticlesOverlay(AbstractParticleSet):
         return result
 
     def get_all_keys_in_store(self):
+        self._ensure_updated_set_properties()
+        
         return self._private.overlay_set.get_all_keys_in_store()
 
     def get_all_indices_in_store(self):
+        self._ensure_updated_set_properties()
+        
         indices0 = self._private.base_set.get_all_indices_in_store()
         indices1 = self._private.overlay_set.get_all_indices_in_store()
 
         return zip(indices0, indices1)
 
     def get_indices_of_keys(self, keys):
+        self._ensure_updated_set_properties()
+        
         indices0 = self._private.base_set.get_indices_of_keys(keys)
         indices1 = self._private.overlay_set.get_indices_of_keys(keys)
 
         return zip(indices0, indices1)
 
     def has_key_in_store(self, key):
+        self._ensure_updated_set_properties()
+        
         return self._private.overlay_set.has_key_in_store(key)
 
     def _original_set(self):

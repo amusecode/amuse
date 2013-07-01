@@ -481,6 +481,14 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles[-3:-1].mass, [4,20] | units.kg)
         self.assertAlmostRelativeEquals(particles[::-1].mass, [21,20,4,3,2,1] | units.kg)
 
+    def xtest15(self):
+        set1 = datamodel.Particles(3)
+        set1.x = [1.0, 2.0, 3.0] | units.kg
+        subset = set1[0:2]
+        self.assertAlmostRelativeEquals(subset.x, [1.0, 2.0] | units.kg)
+        set1.remove_particle(set1[0])
+        self.assertAlmostRelativeEquals(subset.x, [2.0] | units.kg)
+        
 class TestParticlesChannel(amusetest.TestCase):
 
     def test1(self):
@@ -4207,3 +4215,27 @@ class TestParticlesOverlay(amusetest.TestCase):
         self.assertAlmostRelativeEquals(set2.x, [7.0,8.0,9.0] | units.kg)
         self.assertAlmostRelativeEquals(set1.x, [7.0,8.0,9.0] | units.kg)
 
+
+    def test7(self):
+        set1 = datamodel.Particles(2)
+        set1.x = [1.0, 2.0] | units.kg
+        set2 = datamodel.ParticlesOverlay(set1)
+        set2.y = [4.0, 5.0] | units.m
+        set1.remove_particle(set1[0])
+        
+        self.assertAlmostRelativeEquals(set2.y, [5.0] | units.m)
+        
+    def test8(self):
+        set1 = datamodel.Particles(10)
+        set1.x = range(10) | units.kg
+        set2 = datamodel.ParticlesOverlay(set1)
+        set2.y = (range(10) | units.m) * 2
+        print set2
+        set1.remove_particle(set1[0])
+        set1.remove_particle(set1[4])
+        set1.add_particle(datamodel.Particle(x = 10 | units.kg))
+        set1.add_particle(datamodel.Particle(x = 10 | units.kg))
+        set1.remove_particle(set1[-2])
+        
+        print set2
+        self.assertAlmostRelativeEquals(set1.x, set2.x)
