@@ -208,7 +208,7 @@ class AbstractHandleEncounter(object):
         if not (len(self.particles_in_encounter) == 2):
             return
         
-        code = self.KeplerOrbits()
+        code = KeplerOrbits()
         delta_position, delta_velocity = code.expand_binary(
             self.particles_in_encounter,
             self.SCATTER_FACTOR * self.small_scale_of_particles_in_the_encounter

@@ -623,3 +623,68 @@ class TestSmallNHandleEncounter(amusetest.TestWithMPI):
         self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
     
+
+    def test2(self):
+        
+        
+        particles_in_encounter = Particles(keys=(1,2))
+        particles_in_encounter.mass = 2 | nbody_system.mass
+        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        
+        particles_in_field = Particles()
+        
+        binary1 = new_binary(
+            1 | nbody_system.mass, 
+            1 | nbody_system.mass, 
+            0.01 | nbody_system.length,
+            keyoffset = 30
+        )
+        binary2 = new_binary(
+            1 | nbody_system.mass, 
+            1 | nbody_system.mass, 
+            0.01 | nbody_system.length,
+            keyoffset = 40
+        )
+        binaries = Particles(keys=(20,21))
+        binaries[0].child1 = binary1[0]
+        binaries[0].child2 = binary1[1]
+        binaries[1].child1 = binary2[0]
+        binaries[1].child2 = binary2[1]
+        binary1.child1 = None
+        binary1.child2 = None
+        binary2.child1 = None
+        binary2.child2 = None
+        
+        multiples = Particles()
+        multiple = particles_in_encounter[0]
+        multiple.components = binary1
+        multiples.add_particle(multiple)
+        multiple = particles_in_encounter[1]
+        multiple.components = binary2
+        multiples.add_particle(multiple)
+        
+        x = encounters.SmallNHandleEncounter(
+            particles_in_encounter,
+            particles_in_field,
+            existing_binaries = binaries,
+            existing_multiples = multiples,
+            G = nbody_system.G
+        )
+        
+        
+        x.start()
+        print x.new_multiples
+        self.assertEquals(len(x.new_multiples), 2)
+        self.assertEquals(len(x.new_binaries), 2)
+        multiple = x.new_multiples[0]
+        self.assertEquals(len(multiple.components), 2)
+    
+    
+        self.assertAlmostRelativeEqual(multiple.components[0].key, binaries[0].child1.key)
+        self.assertAlmostRelativeEqual(multiple.components[1].key, binaries[1].child1.key)
+        multiple = x.new_multiples[1]
+        self.assertEquals(len(multiple.components), 2)
+        self.assertAlmostRelativeEqual(multiple.components[0].key, binaries[0].child2.key)
+        self.assertAlmostRelativeEqual(multiple.components[1].key, binaries[1].child2.key)
