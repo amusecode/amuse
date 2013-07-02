@@ -133,6 +133,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field[2].position = [0.5,1,0] | nbody_system.length
         particles_in_field[3].position = [0.5,-0.5,0] | nbody_system.length
         particles_in_field[4].position = [0,0,2] | nbody_system.length
+        particles_in_field.velocity = [0,0,0]  | nbody_system.speed
         
         x = encounters.AbstractHandleEncounter(
             particles_in_encounter,
@@ -188,13 +189,14 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
         
-        particles_in_field = Particles(keys=(2,4,5,6,7,))
+        particles_in_field = Particles(keys=(3,4,5,6,7,))
         particles_in_field.mass = [1,2,3,4,5] | nbody_system.mass
         particles_in_field[0].position = [2,0,0] | nbody_system.length
         particles_in_field[1].position = [1.5,0,0] | nbody_system.length
         particles_in_field[2].position = [0.5,1,0] | nbody_system.length
         particles_in_field[3].position = [0.5,-0.5,0] | nbody_system.length
         particles_in_field[4].position = [0,0,2] | nbody_system.length
+        particles_in_field.velocity = [0,0,0]  | nbody_system.speed
         
         binaries = Particles(keys=(20,))
         binaries[0].child1 = particles_in_encounter[0]
@@ -259,6 +261,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field[2].position = [0.5,1,0] | nbody_system.length
         particles_in_field[3].position = [0.5,-0.5,0] | nbody_system.length
         particles_in_field[4].position = [0,0,2] | nbody_system.length
+        particles_in_field.velocity = [0,0,0]  | nbody_system.speed
         
         x = encounters.AbstractHandleEncounter(
             particles_in_encounter,
@@ -386,6 +389,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
 
 class TestKeplerOrbits(amusetest.TestWithMPI):
     
+        
     def test1(self):
         x = encounters.KeplerOrbits()
         binary = new_binary( 
@@ -432,8 +436,40 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
         separation = (binary[0].position  - binary[1].position).length()
         self.assertAlmostRelativeEquals( separation, 1.2 | nbody_system.length)
     
-    
     def test3(self):
+        x = encounters.KeplerOrbits()
+        binary = new_binary( 
+            1 | nbody_system.mass,
+            0.5 | nbody_system.mass,
+            2.0 | nbody_system.length,
+            0.5,
+            is_at_periapsis = True
+            
+        )
+        binary.position += [0.1,0.2,0.3]  | nbody_system.length
+        binary.velocity += [0.4,0.5,0.6]  | nbody_system.speed
+        
+        dpos, dvel = x.expand_binary(
+            binary,
+            2.5 | nbody_system.length
+        )
+        
+        center_of_mass_before = binary.center_of_mass()
+        center_of_mass_velocity_before = binary.center_of_mass_velocity()
+        
+        binary.position += dpos
+        binary.velocity += dvel
+        
+        center_of_mass_after = binary.center_of_mass()
+        center_of_mass_velocity_after = binary.center_of_mass_velocity()
+        
+        self.assertAlmostRelativeEquals(center_of_mass_before, center_of_mass_after, 8)
+        self.assertAlmostRelativeEquals(center_of_mass_velocity_before, center_of_mass_velocity_after, 8)
+        separation = (binary[0].position  - binary[1].position).length()
+        self.assertAlmostRelativeEquals( separation, 2.5 | nbody_system.length)
+    
+    
+    def test4(self):
         converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
         x = encounters.KeplerOrbits(converter)
         binary = new_binary( 
@@ -560,7 +596,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
 
 class TestSmallNHandleEncounter(amusetest.TestWithMPI):
     
-    def xtest1(self):
+    def test1(self):
         
         
         particles_in_encounter = Particles(keys=(1,2,3))
@@ -572,32 +608,18 @@ class TestSmallNHandleEncounter(amusetest.TestWithMPI):
         
         particles_in_field = Particles()
         
-        x = encounters.AbstractHandleEncounter(
+        x = encounters.SmallNHandleEncounter(
             particles_in_encounter,
             particles_in_field,
             G = nbody_system.G
         )
         
-        simple_binary_1 = new_binary(
-            1 | nbody_system.mass, 
-            1 | nbody_system.mass, 
-            0.4 | nbody_system.length
-        )
-        simple_binary_top = new_binary(
-            2 | nbody_system.mass, 
-            1 | nbody_system.mass, 
-            2 | nbody_system.length
-        )
-                
-        
         x.start()
-        
-        # no multiples as the binary is larger than the 
-        # hard binary scale
         self.assertEquals(len(x.new_multiples), 1)
         self.assertEquals(len(x.new_binaries), 1)
         multiple = x.new_multiples[0]
         self.assertEquals(len(multiple.components), 2)
+        print multiple.components
         self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
     

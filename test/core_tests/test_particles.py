@@ -879,6 +879,22 @@ class TestParticlesSuperset(amusetest.TestCase):
         particles_in_original = particle_in_copy.as_particle_in_set(superset)
         self.assertAlmostRelativeEquals(particles_in_original.mass, 2 | units.kg)
 
+    def test12(self):
+        particles1 = datamodel.Particles(keys=[9,10,11,12])
+        particles1.mass = [1,2,3,4] | units.kg
+        particles2 = datamodel.Particles()
+        superset = particles1  | particles2
+        self.assertEquals(superset.get_attribute_names_defined_in_store(), ["mass"])
+        
+    def test13(self):
+        particles1 = datamodel.Particles(keys=[9,10,11,12])
+        particles1.mass = [1,2,3,4] | units.kg
+        particles1.other1 = [1,2,3,4] | units.kg
+        particles2 = datamodel.Particles(keys=[13,14,15,16])
+        particles2.mass = [1,2,3,4] | units.kg
+        particles2.other2 = [1,2,3,4] | units.kg
+        superset = particles1  | particles2
+        self.assertEquals(superset.get_attribute_names_defined_in_store(), ["mass"])
 
 
 class TestParticlesSupersetWithNames(amusetest.TestCase):

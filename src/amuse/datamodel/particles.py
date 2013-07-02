@@ -1613,9 +1613,11 @@ class ParticlesSuperset(AbstractParticleSet):
             set.set_values_in_store(indices_in_subset, attributes, quantities)
 
     def get_attribute_names_defined_in_store(self):
+        self._ensure_updated_set_properties()
         result = set(self._private.particle_sets[0].get_attribute_names_defined_in_store())
         for particle_set in self._private.particle_sets[1:]:
-            result &= set(particle_set.get_attribute_names_defined_in_store())
+            if len(particle_set) > 0:
+                result &= set(particle_set.get_attribute_names_defined_in_store())
         return list(result)
 
     def get_all_keys_in_store(self):
