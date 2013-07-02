@@ -7,6 +7,7 @@ from amuse.support.core import late
 from amuse.support import console
 
 from amuse.units.core import zero_unit
+from amuse.support.core import compare_version_strings
 
 """
 """
@@ -1207,5 +1208,6 @@ def set_numpy_operators():
 def unset_numpy_operators():
     global _previous_operators
     numpy.set_numeric_ops(**_previous_operators)
-    
-set_numpy_operators()
+
+if compare_version_strings(numpy.__version__, '1.5.0') >= 0:
+    set_numpy_operators()
