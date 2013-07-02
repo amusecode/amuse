@@ -1156,3 +1156,56 @@ def linspace(start, stop, num = 50,  endpoint=True, retstep=False):
     else:
         return new_quantity(array, unit)
 
+def numpy_or_operator(array, other, out = None):
+    if isinstance(other, unit):
+        return other.new_quantity(array)
+    else:
+        return numpy.bitwise_or(array, other, out)
+    
+def numpy_div_operator(array, other, out = None):
+    if is_quantity(other):
+        return other.__rdiv__(array)
+    else:
+        return numpy.divide(array, other, out)
+        
+def numpy_true_div_operator(array, other, out = None):
+    if is_quantity(other):
+        return other.__rtruediv__(array)
+    else:
+        return numpy.true_divide(array, other, out)
+        
+def numpy_multiply_operator(array, other, out = None):
+    if is_quantity(other):
+        return other.__rmul__(array)
+    else:
+        return numpy.multiply(array, other, out)
+
+numpy_multiply_operator.reduce = numpy.multiply.reduce
+numpy_true_div_operator.reduce = numpy.true_divide.reduce
+numpy_div_operator.reduce = numpy.divide.reduce
+numpy_multiply_operator.accumulate = numpy.multiply.accumulate
+numpy_true_div_operator.accumulate = numpy.true_divide.accumulate
+numpy_div_operator.accumulate = numpy.divide.accumulate
+numpy_multiply_operator.reduceat = numpy.multiply.reduceat
+numpy_true_div_operator.reduceat = numpy.true_divide.reduceat
+numpy_div_operator.reduceat = numpy.divide.reduceat
+
+_previous_operators = None
+
+def set_numpy_operators():
+    import atexit
+    
+    global _previous_operators
+    
+    _previous_operators = numpy.set_numeric_ops(
+        multiply = numpy_multiply_operator,
+        divide = numpy_div_operator,
+        true_divide = numpy_true_div_operator
+    ) 
+    atexit.register(unset_numpy_operators)    
+    
+def unset_numpy_operators():
+    global _previous_operators
+    numpy.set_numeric_ops(**_previous_operators)
+    
+set_numpy_operators()

@@ -1031,30 +1031,6 @@ def k(unit):
     quantity<1000.0 kg>
     """
     return factor_unit(1000, unit, 'kilo','k')           
-    
-
-    
-def numpy_or_operator(array, other, out = None):
-    if isinstance(other, unit):
-        return other.new_quantity(array)
-    else:
-        return numpy.bitwise_or(array, other, out)
-
-_previous_operator = None
-
-def set_numpy_or_operator():
-    import atexit
-    
-    global _previous_operator
-    
-    _previous_operator = numpy.set_numeric_ops(bitwise_or = numpy_or_operator)['bitwise_or']
-    atexit.register(unset_numpy_or_operator)    
-    
-def unset_numpy_or_operator():
-    global _previous_operator
-    numpy.set_numeric_ops(bitwise_or = _previous_operator)
-    
-#set_numpy_or_operator()
        
 
 
