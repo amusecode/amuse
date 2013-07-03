@@ -65,13 +65,14 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field.velocity = [0,0.0,0] | nbody_system.speed
         
         x = encounters.AbstractHandleEncounter(
-            particles_in_encounter,
-            particles_in_field,
             G = nbody_system.G,
             kepler_code = Kepler()
         )
         
-        x.start()
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particles(particles_in_field)
+        
+        x.execute()
         
         self.assertAlmostRelativeEqual(x.large_scale_of_particles_in_the_encounter, 1.0 | nbody_system.length)
         self.assertAlmostRelativeEqual(x.small_scale_of_particles_in_the_encounter, 1.0 | nbody_system.length)
@@ -104,14 +105,15 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         multiple.components.child2 = None
         
         x = encounters.AbstractHandleEncounter(
-            particles_in_encounter,
-            particles_in_field,
-            existing_multiples = particles_in_multiples,
             G = nbody_system.G,
             kepler_code = Kepler()
         )
         
-        x.start()
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particles(particles_in_field)
+        x.existing_multiples.add_particles(particles_in_multiples)
+        
+        x.execute()
         
         self.assertEquals(len(x.all_singles_in_encounter), 3)
         
@@ -143,12 +145,14 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field.velocity = [0,0,0]  | nbody_system.speed
         
         x = encounters.AbstractHandleEncounter(
-            particles_in_encounter,
-            particles_in_field,
             G = nbody_system.G,
             kepler_code = Kepler()
         )
         
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particles(particles_in_field)
+    
+    
         simple_binary = new_binary(
             1 | nbody_system.mass, 
             1 | nbody_system.mass, 
@@ -178,7 +182,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
         x.determine_structure_of_the_evolved_state = lambda : 1
         
-        x.start()
+        x.execute()
         self.assertEquals(len(x.new_multiples), 1)
         self.assertEquals(len(x.new_binaries), 1)
         multiple = x.new_multiples[0]
@@ -211,12 +215,14 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         binaries[0].child2 = particles_in_encounter[1]
         
         x = encounters.AbstractHandleEncounter(
-            particles_in_encounter,
-            particles_in_field,
-            existing_binaries = binaries,
             G = nbody_system.G,
             kepler_code = Kepler()
         )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particles(particles_in_field)
+        x.existing_binaries.add_particles(binaries)
+        
         
         simple_binary = new_binary(
             1 | nbody_system.mass, 
@@ -247,7 +253,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
         x.determine_structure_of_the_evolved_state = lambda : 1
         
-        x.start()
+        x.execute()
         self.assertEquals(len(x.new_multiples), 1)
         self.assertEquals(len(x.new_binaries), 0)
         self.assertEquals(len(x.updated_binaries), 1)
@@ -273,11 +279,13 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field.velocity = [0,0,0]  | nbody_system.speed
         
         x = encounters.AbstractHandleEncounter(
-            particles_in_encounter,
-            particles_in_field,
             G = nbody_system.G,
             kepler_code = Kepler()
         )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particles(particles_in_field)
+        
         
         simple_binary = new_binary(
             1 | nbody_system.mass, 
@@ -308,7 +316,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
         x.determine_structure_of_the_evolved_state = lambda : 1
         
-        x.start()
+        x.execute()
         
         # no multiples as the binary is larger than the 
         # hard binary scale
@@ -325,14 +333,13 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[2].position = [0,0.5,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
         
-        particles_in_field = Particles()
         
         x = encounters.AbstractHandleEncounter(
-            particles_in_encounter,
-            particles_in_field,
             G = nbody_system.G,
             kepler_code = Kepler()
         )
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        
         
         simple_binary_1 = new_binary(
             1 | nbody_system.mass, 
@@ -386,7 +393,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
         x.determine_structure_of_the_evolved_state = lambda : 1
         
-        x.start()
+        x.execute()
         
         # no multiples as the binary is larger than the 
         # hard binary scale
@@ -608,8 +615,6 @@ class TestScaleSystem(amusetest.TestWithMPI):
 class TestHandleEncounter(amusetest.TestWithMPI):
     
     def test1(self):
-        
-        
         particles_in_encounter = Particles(keys=(1,2,3))
         particles_in_encounter.mass = 1 | nbody_system.mass
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
@@ -620,34 +625,30 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         particles_in_field = Particles()
         
         x = encounters.HandleEncounter(
-            particles_in_encounter,
-            particles_in_field,
             kepler_code = Kepler(),
             resolve_collision_code = SmallN(),
             interaction_over_code = None,
             G = nbody_system.G
         )
         
-        x.start()
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        
+        x.execute()
         self.assertEquals(len(x.new_multiples), 1)
         self.assertEquals(len(x.new_binaries), 1)
         multiple = x.new_multiples[0]
         self.assertEquals(len(multiple.components), 2)
-        print multiple.components
         self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
     
 
     def test2(self):
-        
-        
         particles_in_encounter = Particles(keys=(1,2))
         particles_in_encounter.mass = 2 | nbody_system.mass
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
         
-        particles_in_field = Particles()
         
         binary1 = new_binary(
             1 | nbody_system.mass, 
@@ -680,19 +681,18 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         multiples.add_particle(multiple)
         
         x = encounters.HandleEncounter(
-            particles_in_encounter,
-            particles_in_field,
-            existing_binaries = binaries,
-            existing_multiples = multiples,
             kepler_code = Kepler(),
             resolve_collision_code = SmallN(),
             interaction_over_code = None,
             G = nbody_system.G
         )
         
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.existing_binaries.add_particles(binaries)
+        x.existing_multiples.add_particles(multiples)
         
-        x.start()
-        print x.new_multiples
+        
+        x.execute()
         self.assertEquals(len(x.new_multiples), 2)
         self.assertEquals(len(x.new_binaries), 2)
         multiple = x.new_multiples[0]

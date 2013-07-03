@@ -58,30 +58,22 @@ class AbstractHandleEncounter(object):
     # to the small scale of the interaction.
     SCATTER_FACTOR=10
     
-    def __init__(self, 
-        particles_in_encounter, 
-        particles_in_field = None, 
-        existing_multiples = None, 
-        existing_binaries = None,
+    def __init__(self,
         kepler_code = None,
         G = constants.G
     ):
+        self.G = G
+        self.kepler_orbits = KeplerOrbits(kepler_code)
+        self.reset()
         
-        if existing_multiples is None:
-            self.existing_multiples = Particles()
-        else:
-            self.existing_multiples = existing_multiples
-            
-        if existing_binaries is None:
-            self.existing_binaries = Particles()
-        else:
-            self.existing_binaries = existing_binaries
-            
-        if particles_in_field is None:
-            self.particles_in_field = Particles()
-        else:
-            self.particles_in_field = particles_in_field
-            
+    def reset(self):
+        self.particles_in_field = Particles()
+        self.particles_in_encounter = Particles()
+        self.particles_close_to_encounter = Particles()
+        
+        self.existing_multiples = Particles()
+        self.existing_binaries = Particles()
+        
         self.new_binaries = Particles()
         self.new_multiples = Particles()
         
@@ -90,21 +82,15 @@ class AbstractHandleEncounter(object):
         self.dissolved_binaries = Particles()
         self.dissolved_multiples = Particles()
         
-        self.particles_close_to_encounter = Particles()
-        self.particles_in_encounter = particles_in_encounter
-        self.particles_in_field = particles_in_field
-        self.particles_close_to_encounter = Particles()
-        
         self.all_singles_in_encounter = Particles()
-        self.all_singles_close_to_encounter =  Particles()
+        self.all_singles_close_to_encounter = Particles()
+        self.all_singles_in_evolve = ParticlesSuperset([self.all_singles_in_encounter, self.all_singles_close_to_encounter])
         
-        self.all_singles_in_evolve =  ParticlesSuperset([self.all_singles_in_encounter, self.all_singles_close_to_encounter])
         self.singles_and_multiples_after_evolve = Particles()
-        
     
-        self.kepler_orbits = KeplerOrbits(kepler_code)
+        self.kepler_orbits.reset()
             
-    def start(self):
+    def execute(self):
         
         self.determine_scale_of_particles_in_the_encounter()
         
@@ -365,30 +351,30 @@ class AbstractHandleEncounter(object):
 class HandleEncounter(AbstractHandleEncounter):
     
     def __init__(self,
-        particles_in_encounter, 
-        particles_in_field = None, 
-        existing_multiples = None, 
-        existing_binaries = None,
-        kepler_code = None,
-        resolve_collision_code = None,
-        interaction_over_code = None,
+        kepler_code,
+        resolve_collision_code,
+        interaction_over_code,
         G = nbody_system.G
     ):
+        self.resolve_collision_code = resolve_collision_code
+        self.interaction_over_code = interaction_over_code
         AbstractHandleEncounter.__init__(
             self,
-            particles_in_encounter,
-            particles_in_field,
-            existing_multiples,
-            existing_binaries,
             kepler_code,
             G
         )
-        self.resolve_collision_code = resolve_collision_code
-        self.interaction_over_code = interaction_over_code
+    
+    def reset(self):
+        AbstractHandleEncounter.reset(self)
+        
+        self.resolve_collision_code.reset()
+        if not self.interaction_over_code is None:
+            self.interaction_over_code.reset()
     
     def evolve_singles_in_encounter_until_end_state(self):
         code = self.resolve_collision_code
         code.reset()
+        
         code.particles.add_particles(self.all_singles_in_evolve)
         
         interaction_over = code.stopping_conditions.interaction_over_detection
@@ -425,6 +411,9 @@ class KeplerOrbits(object):
     def __init__(self, kepler_code):
         self.kepler_code = kepler_code
         self.kepler_code.initialize_code()
+    
+    def reset(self):
+        pass
         
     def get_semimajor_axis_and_eccentricity_for_binary_components(self, particle1, particle2):
         
@@ -722,37 +711,42 @@ class Multiples(options.OptionalAttributes):
 
     def __init__(self, 
             particles,
-            existing_multiples = None, 
-            existing_binaries = None,
+            multiples = None, 
+            binaries = None,
             gravity_code = None,
-            kepler_code = None,
-            resolve_collision_code = None,
-            interaction_is_over_code = None,
+            handle_encounter_code = None,
             G = nbody_system.G,
             **options
         ):
             
         options.OptionalAttributes.__init__(self, **options)
         
-        self.gravity_code = gravity_code
-        self._inmemory_particles = self.gravity_code.particles.copy()
-        self._inmemory_particles.id = self.gravity_code.particles.index_in_code
-                
-        self.channel_from_code_to_memory = \
-            self.gravity_code.particles.new_channel_to(self._inmemory_particles)
-        
-        self.resolve_collision_code_creation_function \
-            = resolve_collision_code_creation_function
-        self.kepler = kepler_code
-        self.multiples_external_tidal_correction = 0.0 * self.gravity_code.kinetic_energy
-        self.multiples_internal_tidal_correction \
-            = self.multiples_external_tidal_correction
-        self.multiples_integration_energy_error \
-            = self.multiples_external_tidal_correction
-        self.root_to_tree = {}
-        if gravity_constant is None:
-            gravity_constant = nbody_system.G
-        
-        self.multiples = datamodel.Particles()
-        self.gravity_constant = gravity_constant
-        self.debug_encounters = False
+        self.particles = particles
+        self.multiples = multiples
+        self.binaries = binaries
+        if self.multiples is None:
+            if not self.binaries is None:
+                self.multiples = Particles()
+                self.multiples.add_particles(self.binaries)
+                for binary in self.binaries:
+                    multiple = binary
+                    components = Particles()
+                    components.add_particle(binary.child1)
+                    components.add_particle(binary.child2)
+                    multiple.components = components
+                    multiple.mass     = components.mass.sum()
+                    # TODO radius!
+                    multiple.radius   = (binary.child1.position - binary.child2.position).length() * 2
+                    multiple.position = components.center_of_mass()
+                    multiple.velocity = components.center_of_mass_velocity()
+                    self.multiples.add_particles(multiple)
+            else:
+                self.multiples = Particles()
+        if self.binaries is None:
+            self.binaries = Particles()
+            
+        self.handle_encounter_code = handle_encounter_code
+        self.G = G
+    
+    def evolve_model(self):
+        pass
