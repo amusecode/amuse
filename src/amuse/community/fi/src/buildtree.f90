@@ -330,6 +330,13 @@ subroutine parttree(lcell,hcell,shift,nnewcell,mxincell,maxnewcell,success)
           nnewcell=nnewcell+1
           newcell=nbodsmax+nnewcell+shift
           if(newcell.GT.maxnewcell) then
+            print*, "start DEBUG"
+            print*, nsub,newcell,maxnewcell
+            print*, pos(i,1:3)
+            do k=1,nsub
+              print*, k,pos(order_bodlist(cellp(j)+cellstart(i)+k-1),1:3)
+            enddo
+            print*, "end DEBUG"
             success=2
             return
           endif
