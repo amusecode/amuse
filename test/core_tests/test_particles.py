@@ -2200,6 +2200,50 @@ class TestParticlesWithChildren(amusetest.TestCase):
         self.assertEquals(memory_particles[0].child1.child1.mass, 3.0 | units.kg)
         self.assertEquals(memory_particles[0].child1.child2.mass, 4.0 | units.kg)
 
+    def test8(self):
+
+        particles = datamodel.Particles(keys=(1,))
+
+        children = datamodel.Particles(keys=(10,11))
+        parent = particles[0]
+        
+        child1 = children[0]
+        child2 = children[1]
+        
+        child1.mass = 1 | units.kg
+        child2.mass = 2 | units.kg
+
+        parent.child1 = child1
+        parent.child2 = child2
+        
+        copy_of_parent = parent.copy()
+        self.assertEquals(copy_of_parent.child1.key,10)
+        self.assertEquals(copy_of_parent.child2.key,11)
+        self.assertAlmostRelativeEquals(copy_of_parent.child1.mass,1 | units.kg)
+        self.assertAlmostRelativeEquals(copy_of_parent.child2.mass,2 | units.kg)
+        
+    
+    def test9(self):
+
+        particles = datamodel.Particles(keys=(1,10,11))
+
+        parent = particles[0]
+        child1 = particles[1]
+        child2 = particles[2]
+
+        
+        child1.mass = 1 | units.kg
+        child2.mass = 2 | units.kg
+
+        parent.child1 = child1
+        parent.child2 = child2
+        
+        copy_of_parent = parent.copy()
+        self.assertEquals(copy_of_parent.child1.key,10)
+        self.assertEquals(copy_of_parent.child2.key,11)
+        self.assertAlmostRelativeEquals(copy_of_parent.child1.mass,1 | units.kg)
+        self.assertAlmostRelativeEquals(copy_of_parent.child2.mass,2 | units.kg)
+        
 class TestParticlesSupersetComplex(amusetest.TestCase):
 
     def test1(self):

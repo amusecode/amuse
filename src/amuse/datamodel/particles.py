@@ -598,7 +598,7 @@ class AbstractParticleSet(AbstractSet):
         converted = []
         for x in values:
             if isinstance(x, LinkedArray):
-                converted.append(x.copy_with_link_transfer(particles._original_set(), self))
+                converted.append(x.copy_with_link_transfer(particles, self))
             else:
                 converted.append(x)
         try:
@@ -1852,6 +1852,8 @@ class ParticlesSubset(AbstractParticleSet):
     def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
         if keep_structure:
             result = ParticlesSubset(None, [])
+            if memento is None:
+                memento = dict()
             memento[id(self)] = result
             if id(self._private.particles) in memento:
                 result._private.particles = memento[id(self._private.particles)]
@@ -2814,9 +2816,10 @@ class Particle(object):
 
         child.parent = self
 
+    
     def copy(self):
-        return self.as_set().copy()[0]
-
+        return self.particles_set.copy()._get_particle(self.key)
+        
     def __add__(self, particles):
         """
         Returns a particle subset, composed of the given

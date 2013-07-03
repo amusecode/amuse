@@ -1,4 +1,4 @@
-# nosetests-2.7 --nocapture --nologcapture -w test/codes_tests --tests=test_multiples 
+# nosetests --nocapture --nologcapture -w test/codes_tests --tests=test_multiples 
 
 from amuse.test.amusetest import TestWithMPI
 
@@ -19,8 +19,9 @@ from amuse.units import constants
 from amuse import datamodel
 from amuse.ic import plummer
 from amuse.couple import multiples
+from amuse.couple import encounters
 
-class _TestSimpleMultiples(TestWithMPI):
+class TestSimpleMultiples(TestWithMPI):
     previous = None
     
     def new_smalln(self):
@@ -93,57 +94,64 @@ class _TestSimpleMultiples(TestWithMPI):
             [0,0.1, 0]
         ]|nbody_system.speed
         stars.radius = 0.5 | nbody_system.length
-        code.particles.add_particles(stars)
         
-        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
-        multiples_code.binary_breakup_factor = 1
-        print multiples_code.multiples_energy_correction
-        total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-        print total_energy0
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+            interaction_over_code = None
+        )
+        multiples_code = encounters.Multiples(
+            stars,
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        
         multiples_code.evolve_model(0.6|nbody_system.time)
-        total_energy1 =  multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-        print total_energy1
-        print 
-        print total_energy0
-        error = abs((total_energy1 - total_energy0)/total_energy0)
-        print multiples_code.multiples_energy_correction
-        print "ERROR:", error
-        self.assertTrue(error < 1e-7)
-        #self.assertAlmostRelativeEquals(multiples_code.multiples_energy_correction - multiples_code.kinetic_energy, -total_energy0, 7)
-    
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.binaries), 1)
+        
+        
     def test1(self):
         code = Hermite()
-        stars = datamodel.Particles(3)
+        stars = datamodel.Particles(keys = (1,2,3, 4))
         stars.mass = 1 | nbody_system.mass
         stars.position = [
             [0,0,0],
-            [1.2, 0, 0],
+            [0.5, 0, 0],
+            [2, 0, 0],
             [-10, 0, 0],
         ]|nbody_system.length
         stars.velocity = [
             [0,0,0],
             [0,0.1, 0],
-            [0,0, 0],
+            [0,-0.1, 0],
+            [0,0.2, 0],
         ]|nbody_system.speed
         stars.radius = 0.5 | nbody_system.length
-        code.particles.add_particles(stars)
         
-        converter = nbody_system.nbody_to_si(units.MSun, units.parsec)
-        print converter.to_si(stars.velocity)
-        print converter.to_si(0.6|nbody_system.time).as_quantity_in(units.Myr)
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+            interaction_over_code = None
+        )
+        multiples_code = encounters.Multiples(
+            stars,
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
         
-        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
-        multiples_code.binary_breakup_factor = 1
-        print multiples_code.multiples_energy_correction
-        total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-        print total_energy0
         multiples_code.evolve_model(0.6|nbody_system.time)
-        total_energy1 =  multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-        print total_energy1
-        print multiples_code.multiples_energy_correction
-        error = abs((total_energy1 - total_energy0)/total_energy0)
-        print "error:", error
-        self.assertTrue(error < 1e-7)
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.binaries), 1)
+        multiples_code.evolve_model(2|nbody_system.time)
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.binaries), 1)
+        multiples_code.evolve_model(3|nbody_system.time)
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.particles), 2)
+        print multiples_code.binaries
+        self.assertEquals(len(multiples_code.binaries), 1)
+        
         
     def xtest2(self):
         converter = nbody_system.nbody_to_si(units.MSun, units.parsec)
@@ -283,7 +291,7 @@ class _TestSimpleMultiples(TestWithMPI):
         
         self.assertTrue(error < 1e-5)
         
-    def test5(self):
+    def xtest5(self):
         code1 = Hermite()
         stars = datamodel.Particles()
         binary1 = self.new_binary(
@@ -351,7 +359,7 @@ class _TestSimpleMultiples(TestWithMPI):
         )
         
              
-    def test6(self):
+    def xtest6(self):
         code = Hermite()
         stars = datamodel.Particles(2)
         
@@ -377,7 +385,7 @@ class _TestSimpleMultiples(TestWithMPI):
         
         self.assertEquals(len(multiples_code.particles), 2)
 
-    def test7(self):
+    def xtest7(self):
         code = Hermite()
         stars = datamodel.Particles(3)
         

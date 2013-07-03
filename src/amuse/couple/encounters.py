@@ -82,6 +82,9 @@ class AbstractHandleEncounter(object):
         self.dissolved_binaries = Particles()
         self.dissolved_multiples = Particles()
         
+        self.captured_singles = Particles()
+        self.released_singles = Particles()
+        
         self.all_singles_in_encounter = Particles()
         self.all_singles_close_to_encounter = Particles()
         self.all_singles_in_evolve = ParticlesSuperset([self.all_singles_in_encounter, self.all_singles_close_to_encounter])
@@ -115,6 +118,10 @@ class AbstractHandleEncounter(object):
         self.move_evolved_state_to_original_frame_of_reference()
         
         self.determine_multiples_in_the_evolved_state()
+        
+        self.determine_captured_singles_from_the_multiples()
+        
+        self.determine_released_singles_from_the_multiples()
         
     def determine_scale_of_particles_in_the_encounter(self):
         # determine large scale from the distance of the farthest particle to the center of mass
@@ -152,7 +159,6 @@ class AbstractHandleEncounter(object):
             result.velocity += particle.velocity
             
             self.dissolved_multiples.add_particle(multiple)
-            self.existing_multiples.remove_particle(multiple)
             return result
         else:
             return particle.as_set()
@@ -294,11 +300,23 @@ class AbstractHandleEncounter(object):
         
         binary_lookup_table = {}
         for binary in self.existing_binaries:
-            key = (binary.child1.key,binary.child2.key)
-            binary_lookup_table[key] = binary
+            binary_lookup_table[binary.child1.key] = binary
+            binary_lookup_table[binary.child2.key] = binary
+            
+        
+        #multiples_lookup_table = {}
+        #for multiples in self.existing_multiples:
+        #    subtree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
+        #    tree = components.new_binary_tree_wrapper()
+        #    leaves = Particles()
+        #    for node in tree.iter_descendant_leafs():
+        #        leaves.add_particle(node.particle)
+        #    key = tuples(leaves.key.sorted())
+        #    multiples_lookup_table[key] = binary
         
         # a branch in the tree is a node with two children
         for root_node in tree.iter_branches():
+                
             root_particle = root_node.particle
             
             multiple_components = Particles()
@@ -314,8 +332,45 @@ class AbstractHandleEncounter(object):
             
             # create multiple partice and store it
             multiple_particle = root_particle.copy()
+            multiple_particle.child1 = None
+            multiple_particle.child2 = None
             multiple_particle.components = multiple_components
             self.new_multiples.add_particle(multiple_particle)
+    
+    def determine_captured_singles_from_the_multiples(self):
+        for particle in self.particles_in_encounter:
+            if particle in self.existing_multiples:
+                continue
+                
+            for multiple in self.new_multiples:
+                if particle in multiple.components:
+                    self.captured_singles.add_particle(particle)
+            
+        for particle in self.particles_close_to_encounter:
+            if particle in self.existing_multiples:
+                continue
+                
+            for multiple in self.new_multiples:
+                if particle in multiple.components:
+                    self.captured_singles.add_particle(particle)
+        
+    
+    def determine_released_singles_from_the_multiples(self):
+        tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
+        for root_node in tree.iter_leafs():
+            
+            particle = root_node.particle
+            if particle in self.particles_in_encounter or particle in self.particles_close_to_encounter:
+                continue
+            
+            found = False
+            for multiple in self.new_multiples:
+                if particle in multiple.components:
+                    found = True
+                    break
+            
+            if not found:
+                self.released_singles.add_particle(particle)
             
         
     def update_binaries(self, root_node, binary_lookup_table):
@@ -323,13 +378,47 @@ class AbstractHandleEncounter(object):
         # the children are leafs (have no children of their own)
         if root_node.is_binary():
             binary_found_in_encounter = root_node.particle
-                
-            key = tuple([x.particle.key for x in root_node.iter_children()])
-            if key in binary_lookup_table:
-                binary_known_in_system = binary_lookup_table[key]
-                self.update_binary(binary_found_in_encounter, binary_known_in_system)
+            
+            children = list(root_node.iter_children())
+            key0 = children[0].particle.key
+            key1 = children[1].particle.key
+            
+            if key0 in binary_lookup_table:
+                if key1 in binary_lookup_table:
+                    binary0 = binary_lookup_table[key0]
+                    binary1 = binary_lookup_table[key1]
+                    if binary0 is binary1:
+                        binary_known_in_system = binary0
+                        self.update_binary(binary_found_in_encounter, binary_known_in_system)
+                    
+                    else:
+                        x = self.new_binaries.add_particle(binary_found_in_encounter)
+                        self.dissolved_binaries.add_particle(binary0)
+                        self.dissolved_binaries.add_particle(binary1)
+                        del binary_lookup_table[binary0.child1.key]
+                        del binary_lookup_table[binary0.child2.key]
+                        del binary_lookup_table[binary1.child1.key]
+                        del binary_lookup_table[binary1.child2.key]
+                        binary_lookup_table[key0] = x
+                        binary_lookup_table[key1] = x
+                else:
+                    x = self.new_binaries.add_particle(binary_found_in_encounter)
+                    binary0 = binary_lookup_table[key0]
+                    self.dissolved_binaries.add_particle(binary0)
+                    del binary_lookup_table[binary0.child1.key]
+                    del binary_lookup_table[binary0.child2.key]
+                    binary_lookup_table[key0] = x
+                    binary_lookup_table[key1] = x
+            elif key1 in binary_lookup_table:
+                x = self.new_binaries.add_particle(binary_found_in_encounter)
+                binary1 = binary_lookup_table[key1]
+                self.dissolved_binaries.add_particle(binary1)
+                del binary_lookup_table[binary1.child1.key]
+                del binary_lookup_table[binary1.child2.key]
+                binary_lookup_table[key0] = x
+                binary_lookup_table[key1] = x
             else:
-                 self.new_binaries.add_particle(binary_found_in_encounter)
+                self.new_binaries.add_particle(binary_found_in_encounter)
         else:
             for branch in root_node.iter_descendant_branches():
                 if branch.is_binary():
@@ -410,7 +499,6 @@ class KeplerOrbits(object):
     
     def __init__(self, kepler_code):
         self.kepler_code = kepler_code
-        self.kepler_code.initialize_code()
     
     def reset(self):
         pass
@@ -448,9 +536,6 @@ class KeplerOrbits(object):
         
         periapsis, apoapsis = self.get_periapsis_and_apoapsis(semimajor_axis, eccentricity)
 
-        print semimajor_axis, eccentricity 
-        print periapsis, apoapsis
-        print true_anomaly, mean_anomaly
         # closest distance plus 1% of the distance between peri and apo
         limit = periapsis + 0.01*(apoapsis-periapsis)
         
@@ -469,8 +554,6 @@ class KeplerOrbits(object):
             else:
                 self.kepler_code.return_to_radius(scale)
                 
-        
-        print self.kepler_code.get_separation_vector()
         rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
         rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
     
@@ -531,7 +614,6 @@ class KeplerOrbits(object):
         
         f = particles[1].mass / total_mass 
         fractions = numpy.asarray([f, -(1-f)]).reshape(2,1)
-        print fractions, positions_to_center_of_mass
         
         delta_positions  = (relative_position * fractions) - positions_to_center_of_mass
         delta_velocities = (relative_velocity * fractions) - velocities_to_center_of_mass
@@ -716,10 +798,10 @@ class Multiples(options.OptionalAttributes):
             gravity_code = None,
             handle_encounter_code = None,
             G = nbody_system.G,
-            **options
+            **opts
         ):
             
-        options.OptionalAttributes.__init__(self, **options)
+        options.OptionalAttributes.__init__(self, **opts)
         
         self.particles = particles
         self.multiples = multiples
@@ -744,9 +826,111 @@ class Multiples(options.OptionalAttributes):
                 self.multiples = Particles()
         if self.binaries is None:
             self.binaries = Particles()
-            
+        
+        self.gravity_code = gravity_code
         self.handle_encounter_code = handle_encounter_code
         self.G = G
+        
+        self.gravity_code.particles.add_particles(particles)
+        self.channel_from_code_to_model = self.gravity_code.particles.new_channel_to(self.particles)
+        
+        self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
+        self.stopping_condition.enable()
+        
+    def evolve_model(self, time):
+        self.model_time = self.gravity_code.model_time
+        
+        while self.model_time < time:
+            self.gravity_code.evolve_model(time)
+            self.model_time = self.gravity_code.model_time
+            self.channel_from_code_to_model.copy()
+            
+            if self.stopping_condition.is_set():
+                self.handle_stopping_condition()
+                self.particles.synchronize_to(self.gravity_code.particles)
     
-    def evolve_model(self):
-        pass
+            if len(self.particles) == 1:
+                break
+                
+    @property
+    def singles(self):
+        result = self.particles.copy()
+        for multiple in self.multiples:
+            result.remove_particle(multiple)
+            components = multiple.components
+            tree = components.new_binary_tree_wrapper()
+            subset = Particles()
+            for node in tree.iter_descendant_leafs():
+                subset.add_particle(node.particle)
+            subset.position += particle.position
+            subset.velocity += particle.velocity
+            result.add_particles(subset)
+        return result
+        
+    def handle_stopping_condition(self):
+        encounters = self.determine_encounters()
+        for particles_in_encounter in encounters:
+            self.handle_encounter(particles_in_encounter)
+    
+    def handle_encounter(self, particles_in_encounter):
+        code = self.handle_encounter_code
+    
+        code.reset()
+        
+        code.particles_in_encounter.add_particles(particles_in_encounter)
+        code.particles_in_field.add_particles(self.particles - particles_in_encounter)
+        code.existing_binaries.add_particles(self.binaries)
+        code.existing_multiples.add_particles(self.multiples)
+        
+        code.execute()
+        
+        # update particles (will have singles and multiples)
+        self.particles.remove_particles(code.dissolved_multiples)
+        self.particles.remove_particles(code.captured_singles)
+        self.particles.add_particles(code.new_multiples)
+        
+        # update multiples
+        self.multiples.remove_particles(code.dissolved_multiples)
+        self.multiples.add_particles(code.new_multiples)
+        
+        # update binaries
+        self.binaries.remove_particles(code.dissolved_binaries)
+        self.binaries.add_particles(code.new_binaries)
+            
+    
+    def determine_encounters(self):
+        particles0 = self.stopping_condition.particles(0)
+        particles1 = self.stopping_condition.particles(1)
+        
+        encounters = []
+        
+        from_key_to_encounter = {}
+        for particle0, particle1 in zip(particles0, particles1):
+            key0 = particle0.key
+            key1 = particle1.key
+            if key0 in from_key_to_encounter:
+                if key1 in from_key_to_encounter:
+                    encounter0 = from_key_to_encounter[key0]
+                    encounter1 = from_key_to_encounter[key1]
+                    if not encounter0 is encounter1:
+                        encounter0.add_particles(encounter1)
+                        encounter1.remove_particles(encounter1)
+                        for x in encounter0:
+                            from_key_to_encounter[x.key] = encounter0
+                else:
+                    encounter = from_key_to_encounter[key0]
+                    encounter.add_particle(particle1)
+                    from_key_to_encounter[key1] = encounter
+            elif key1 in from_key_to_encounter:
+                encounter = from_key_to_encounter[key1]
+                encounter.add_particle(particle0)
+                from_key_to_encounter[key0] = encounter
+            else:
+                encounter = Particles()
+                encounter.add_particle(particle0)
+                encounter.add_particle(particle1)
+                encounters.append(encounter)
+                from_key_to_encounter[key0] = encounter
+                from_key_to_encounter[key1] = encounter
+        
+        return [x for x in encounters if len(x) > 0]

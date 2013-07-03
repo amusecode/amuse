@@ -48,6 +48,11 @@ def new_binary(
         
 class TestAbstractHandleEncounter(amusetest.TestWithMPI):
     
+    def new_kepler(self):
+        x = Kepler()
+        x.initialize_code()
+        return x
+        
     def test1(self):
         particles_in_encounter = Particles(2)
         particles_in_encounter.mass = 1 | nbody_system.mass
@@ -66,7 +71,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
-            kepler_code = Kepler()
+            kepler_code = self.new_kepler()
         )
         
         x.particles_in_encounter.add_particles(particles_in_encounter)
@@ -106,7 +111,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
-            kepler_code = Kepler()
+            kepler_code = self.new_kepler()
         )
         
         x.particles_in_encounter.add_particles(particles_in_encounter)
@@ -146,7 +151,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
-            kepler_code = Kepler()
+            kepler_code = self.new_kepler()
         )
         
         x.particles_in_encounter.add_particles(particles_in_encounter)
@@ -216,7 +221,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
-            kepler_code = Kepler()
+            kepler_code = self.new_kepler()
         )
         
         x.particles_in_encounter.add_particles(particles_in_encounter)
@@ -280,7 +285,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
-            kepler_code = Kepler()
+            kepler_code = self.new_kepler()
         )
         
         x.particles_in_encounter.add_particles(particles_in_encounter)
@@ -336,7 +341,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
-            kepler_code = Kepler()
+            kepler_code = self.new_kepler()
         )
         x.particles_in_encounter.add_particles(particles_in_encounter)
         
@@ -404,12 +409,70 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
     
+    
+    
+    def test7(self):
+        
+        particles_in_encounter = Particles(keys=(1,2,3))
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
+        particles_in_encounter[2].position = [0,0.5,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        
+        
+        x = encounters.AbstractHandleEncounter(
+            G = nbody_system.G,
+            kepler_code = self.new_kepler()
+        )
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        
+        multiples = Particles()
+        particle_in_multiples = multiples.add_particle( particles_in_encounter[2])
+        particle_in_multiples.components = Particles(keys=(4,5))
+        particle_in_multiples.components.mass = 1 | nbody_system.mass
+        particle_in_multiples.components[0].position = [0,0,0.2] | nbody_system.length
+        particle_in_multiples.components[1].position = [0,0,-0.2] | nbody_system.length
+        particle_in_multiples.components.velocity = [0,0.0,0] | nbody_system.speed
+        particle_in_multiples.components.child1 = None
+        particle_in_multiples.components.child2 = None
+        x.existing_multiples.add_particles(multiples) 
+        
+                
+        def evolve_singles_in_encounter_until_end_state():
+            
+            particles = x.singles_and_multiples_after_evolve
+            particles.add_particles(x.all_singles_in_encounter)
+            print particles
+            particles.child1 = None
+            particles.child2 = None
+        
+            
+            
+        
+        x.evolve_singles_in_encounter_until_end_state = evolve_singles_in_encounter_until_end_state
+        x.determine_structure_of_the_evolved_state = lambda : 1
+        
+        x.execute()
+        
+        # no multiples as the binary is larger than the 
+        # hard binary scale
+        self.assertEquals(len(x.new_multiples), 0)
+        self.assertEquals(len(x.new_binaries), 0)
+        self.assertEquals(len(x.dissolved_multiples), 1)
+        self.assertEquals(len(x.released_singles), 2)
+        self.assertTrue(particle_in_multiples.components[0] in x.released_singles)
+        self.assertTrue(particle_in_multiples.components[1] in x.released_singles)
 
 class TestKeplerOrbits(amusetest.TestWithMPI):
     
+    def new_kepler(self):
+        x = Kepler()
+        x.initialize_code()
+        return x
         
     def test1(self):
-        x = encounters.KeplerOrbits(Kepler())
+        x = encounters.KeplerOrbits(self.new_kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -423,7 +486,7 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
         self.assertAlmostRelativeEquals(eccentricity,  0)
         
     def test2(self):
-        x = encounters.KeplerOrbits(Kepler())
+        x = encounters.KeplerOrbits(self.new_kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -455,7 +518,7 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
         self.assertAlmostRelativeEquals( separation, 1.2 | nbody_system.length)
     
     def test3(self):
-        x = encounters.KeplerOrbits(Kepler())
+        x = encounters.KeplerOrbits(self.new_kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -489,7 +552,9 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
     
     def test4(self):
         converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
-        x = encounters.KeplerOrbits(Kepler(converter))
+        kepler = Kepler(converter)
+        kepler.initialize_code()
+        x = encounters.KeplerOrbits(kepler)
         binary = new_binary( 
             1 | units.MSun,
             0.5 | units.MSun,
@@ -505,8 +570,13 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
 
 class TestScaleSystem(amusetest.TestWithMPI):
     
+    def new_kepler(self):
+        x = Kepler()
+        x.initialize_code()
+        return x
+        
     def test1(self):
-        kepler = encounters.KeplerOrbits(Kepler())
+        kepler = encounters.KeplerOrbits(self.new_kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -526,7 +596,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
     
     
     def test2(self):
-        kepler = encounters.KeplerOrbits(Kepler())
+        kepler = encounters.KeplerOrbits(self.new_kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -545,7 +615,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
       
     def test3(self):
-        kepler = encounters.KeplerOrbits(Kepler())
+        kepler = encounters.KeplerOrbits(self.new_kepler())
         
         particles= Particles(keys=(1,2))
         particles.mass = 1 | nbody_system.mass
@@ -572,7 +642,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
         
     def test4(self):
-        kepler = encounters.KeplerOrbits(Kepler())
+        kepler = encounters.KeplerOrbits(self.new_kepler())
         
         particles= Particles(keys=(1,2,3,4,5,6))
         particles.mass = 1 | nbody_system.mass
@@ -614,6 +684,11 @@ class TestScaleSystem(amusetest.TestWithMPI):
 
 class TestHandleEncounter(amusetest.TestWithMPI):
     
+    def new_kepler(self):
+        x = Kepler()
+        x.initialize_code()
+        return x
+        
     def test1(self):
         particles_in_encounter = Particles(keys=(1,2,3))
         particles_in_encounter.mass = 1 | nbody_system.mass
@@ -625,7 +700,7 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         particles_in_field = Particles()
         
         x = encounters.HandleEncounter(
-            kepler_code = Kepler(),
+            kepler_code = self.new_kepler(),
             resolve_collision_code = SmallN(),
             interaction_over_code = None,
             G = nbody_system.G
@@ -640,6 +715,8 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         self.assertEquals(len(multiple.components), 2)
         self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
+        self.assertEquals(len(x.captured_singles), 2)
+        self.assertEquals(x.captured_singles.key, [1,2])
     
 
     def test2(self):
@@ -681,7 +758,7 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         multiples.add_particle(multiple)
         
         x = encounters.HandleEncounter(
-            kepler_code = Kepler(),
+            kepler_code = self.new_kepler(),
             resolve_collision_code = SmallN(),
             interaction_over_code = None,
             G = nbody_system.G
@@ -695,6 +772,9 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         x.execute()
         self.assertEquals(len(x.new_multiples), 2)
         self.assertEquals(len(x.new_binaries), 2)
+        self.assertEquals(len(x.captured_singles), 0)
+        self.assertEquals(len(x.released_singles), 0)
+        
         multiple = x.new_multiples[0]
         self.assertEquals(len(multiple.components), 2)
     
@@ -705,3 +785,54 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         self.assertEquals(len(multiple.components), 2)
         self.assertAlmostRelativeEqual(multiple.components[0].key, binaries[0].child2.key)
         self.assertAlmostRelativeEqual(multiple.components[1].key, binaries[1].child2.key)
+
+    def test3(self):
+        particles_in_encounter = Particles(keys=(1,2))
+        particles_in_encounter.mass = 2 | nbody_system.mass
+        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        
+        
+        binary1 = new_binary(
+            1 | nbody_system.mass, 
+            1 | nbody_system.mass, 
+            0.01 | nbody_system.length,
+            keyoffset = 30
+        )
+        binaries = Particles(keys=(20,))
+        binaries[0].child1 = binary1[0]
+        binaries[0].child2 = binary1[1]
+        binary1.child1 = None
+        binary1.child2 = None
+        
+        multiples = Particles()
+        multiple = particles_in_encounter[0]
+        multiple.components = binary1
+        multiples.add_particle(multiple)
+        
+        x = encounters.HandleEncounter(
+            kepler_code = self.new_kepler(),
+            resolve_collision_code = SmallN(),
+            interaction_over_code = None,
+            G = nbody_system.G
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.existing_binaries.add_particles(binaries)
+        x.existing_multiples.add_particles(multiples)
+        
+        x.execute()
+        
+        self.assertEquals(len(x.new_multiples), 1)
+        self.assertEquals(len(x.dissolved_multiples), 1)
+        self.assertEquals(len(x.new_binaries), 1)
+        self.assertEquals(len(x.captured_singles), 1)
+        self.assertEquals(len(x.released_singles), 1)
+        
+        multiple = x.new_multiples[0]
+        print multiple.child1
+        self.assertEquals(len(multiple.components), 2)
+        print multiple.components
+        
+    
