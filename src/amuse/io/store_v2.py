@@ -899,12 +899,17 @@ class StoreHDF(object):
             
         dataset = group["keys"]
         keys = numpy.ndarray(len(dataset), dtype = dataset.dtype)
-        dataset.read_direct(keys)
+        if len(keys) == 0:
+            particles = class_of_the_container(is_working_copy = False)
+            self.mapping_from_groupid_to_set[group.id] = particles
+        else:
+            dataset.read_direct(keys)
         
-        particles = class_of_the_container(is_working_copy = False)
-        particles._private.attribute_storage = HDF5AttributeStorage(keys, group, self)
-        self.mapping_from_groupid_to_set[group.id] = particles
-        self.load_collection_attributes(particles, group)
+            particles = class_of_the_container(is_working_copy = False)
+            particles._private.attribute_storage = HDF5AttributeStorage(keys, group, self)
+       
+            self.mapping_from_groupid_to_set[group.id] = particles
+            self.load_collection_attributes(particles, group)
         
         
         return particles
