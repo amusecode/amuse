@@ -11,10 +11,7 @@ from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import quantities
 from amuse.units.quantities import as_vector_quantity
-
-#codes to use
-from amuse.community.kepler.interface import Kepler
-from amuse.community.smalln.interface import SmallN
+from amuse.support import options
 
 import numpy
 
@@ -66,7 +63,7 @@ class AbstractHandleEncounter(object):
         particles_in_field = None, 
         existing_multiples = None, 
         existing_binaries = None,
-        kepler_orbits = None,
+        kepler_code = None,
         G = constants.G
     ):
         
@@ -105,8 +102,7 @@ class AbstractHandleEncounter(object):
         self.singles_and_multiples_after_evolve = Particles()
         
     
-        if kepler_orbits is None:
-            self.kepler_orbits = KeplerOrbits()
+        self.kepler_orbits = KeplerOrbits(kepler_code)
             
     def start(self):
         
@@ -208,8 +204,7 @@ class AbstractHandleEncounter(object):
         if not (len(self.particles_in_encounter) == 2):
             return
         
-        code = KeplerOrbits()
-        delta_position, delta_velocity = code.expand_binary(
+        delta_position, delta_velocity = self.kepler_orbits.expand_binary(
             self.particles_in_encounter,
             self.SCATTER_FACTOR * self.small_scale_of_particles_in_the_encounter
         )
@@ -367,10 +362,33 @@ class AbstractHandleEncounter(object):
         binary_copy.position = binary_found_in_encounter.position
         binary_copy.velocity = binary_found_in_encounter.velocity
         
-class SmallNHandleEncounter(AbstractHandleEncounter):
+class HandleEncounter(AbstractHandleEncounter):
+    
+    def __init__(self,
+        particles_in_encounter, 
+        particles_in_field = None, 
+        existing_multiples = None, 
+        existing_binaries = None,
+        kepler_code = None,
+        resolve_collision_code = None,
+        interaction_over_code = None,
+        G = nbody_system.G
+    ):
+        AbstractHandleEncounter.__init__(
+            self,
+            particles_in_encounter,
+            particles_in_field,
+            existing_multiples,
+            existing_binaries,
+            kepler_code,
+            G
+        )
+        self.resolve_collision_code = resolve_collision_code
+        self.interaction_over_code = interaction_over_code
     
     def evolve_singles_in_encounter_until_end_state(self):
-        code = SmallN()
+        code = self.resolve_collision_code
+        code.reset()
         code.particles.add_particles(self.all_singles_in_evolve)
         
         interaction_over = code.stopping_conditions.interaction_over_detection
@@ -404,8 +422,8 @@ class SmallNHandleEncounter(AbstractHandleEncounter):
         
 class KeplerOrbits(object):
     
-    def __init__(self, nbody_converter = None):
-        self.kepler_code = Kepler(nbody_converter)
+    def __init__(self, kepler_code):
+        self.kepler_code = kepler_code
         self.kepler_code.initialize_code()
         
     def get_semimajor_axis_and_eccentricity_for_binary_components(self, particle1, particle2):
@@ -698,3 +716,43 @@ class ScaleSystem(object):
         
         particles.position = center_of_mass_position + factor_position*(particles.position-center_of_mass_position)
         particles.velocity = center_of_mass_velocity + factor_velocity*(particles.velocity-center_of_mass_velocity)
+
+
+class Multiples(options.OptionalAttributes):
+
+    def __init__(self, 
+            particles,
+            existing_multiples = None, 
+            existing_binaries = None,
+            gravity_code = None,
+            kepler_code = None,
+            resolve_collision_code = None,
+            interaction_is_over_code = None,
+            G = nbody_system.G,
+            **options
+        ):
+            
+        options.OptionalAttributes.__init__(self, **options)
+        
+        self.gravity_code = gravity_code
+        self._inmemory_particles = self.gravity_code.particles.copy()
+        self._inmemory_particles.id = self.gravity_code.particles.index_in_code
+                
+        self.channel_from_code_to_memory = \
+            self.gravity_code.particles.new_channel_to(self._inmemory_particles)
+        
+        self.resolve_collision_code_creation_function \
+            = resolve_collision_code_creation_function
+        self.kepler = kepler_code
+        self.multiples_external_tidal_correction = 0.0 * self.gravity_code.kinetic_energy
+        self.multiples_internal_tidal_correction \
+            = self.multiples_external_tidal_correction
+        self.multiples_integration_energy_error \
+            = self.multiples_external_tidal_correction
+        self.root_to_tree = {}
+        if gravity_constant is None:
+            gravity_constant = nbody_system.G
+        
+        self.multiples = datamodel.Particles()
+        self.gravity_constant = gravity_constant
+        self.debug_encounters = False

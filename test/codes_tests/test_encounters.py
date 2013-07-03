@@ -11,6 +11,11 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.couple import encounters
 
+
+#codes to use
+from amuse.community.kepler.interface import Kepler
+from amuse.community.smalln.interface import SmallN
+
 def new_binary(
         mass1, mass2, semi_major_axis,
         eccentricity = 0, keyoffset = 1,
@@ -62,7 +67,8 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x = encounters.AbstractHandleEncounter(
             particles_in_encounter,
             particles_in_field,
-            G = nbody_system.G
+            G = nbody_system.G,
+            kepler_code = Kepler()
         )
         
         x.start()
@@ -101,7 +107,8 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             particles_in_encounter,
             particles_in_field,
             existing_multiples = particles_in_multiples,
-            G = nbody_system.G
+            G = nbody_system.G,
+            kepler_code = Kepler()
         )
         
         x.start()
@@ -138,7 +145,8 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x = encounters.AbstractHandleEncounter(
             particles_in_encounter,
             particles_in_field,
-            G = nbody_system.G
+            G = nbody_system.G,
+            kepler_code = Kepler()
         )
         
         simple_binary = new_binary(
@@ -206,7 +214,8 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             particles_in_encounter,
             particles_in_field,
             existing_binaries = binaries,
-            G = nbody_system.G
+            G = nbody_system.G,
+            kepler_code = Kepler()
         )
         
         simple_binary = new_binary(
@@ -266,7 +275,8 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x = encounters.AbstractHandleEncounter(
             particles_in_encounter,
             particles_in_field,
-            G = nbody_system.G
+            G = nbody_system.G,
+            kepler_code = Kepler()
         )
         
         simple_binary = new_binary(
@@ -320,7 +330,8 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x = encounters.AbstractHandleEncounter(
             particles_in_encounter,
             particles_in_field,
-            G = nbody_system.G
+            G = nbody_system.G,
+            kepler_code = Kepler()
         )
         
         simple_binary_1 = new_binary(
@@ -391,7 +402,7 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
     
         
     def test1(self):
-        x = encounters.KeplerOrbits()
+        x = encounters.KeplerOrbits(Kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -405,7 +416,7 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
         self.assertAlmostRelativeEquals(eccentricity,  0)
         
     def test2(self):
-        x = encounters.KeplerOrbits()
+        x = encounters.KeplerOrbits(Kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -437,7 +448,7 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
         self.assertAlmostRelativeEquals( separation, 1.2 | nbody_system.length)
     
     def test3(self):
-        x = encounters.KeplerOrbits()
+        x = encounters.KeplerOrbits(Kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -471,7 +482,7 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
     
     def test4(self):
         converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
-        x = encounters.KeplerOrbits(converter)
+        x = encounters.KeplerOrbits(Kepler(converter))
         binary = new_binary( 
             1 | units.MSun,
             0.5 | units.MSun,
@@ -488,7 +499,7 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
 class TestScaleSystem(amusetest.TestWithMPI):
     
     def test1(self):
-        kepler = encounters.KeplerOrbits()
+        kepler = encounters.KeplerOrbits(Kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -508,7 +519,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
     
     
     def test2(self):
-        kepler = encounters.KeplerOrbits()
+        kepler = encounters.KeplerOrbits(Kepler())
         binary = new_binary( 
             1 | nbody_system.mass,
             0.5 | nbody_system.mass,
@@ -527,7 +538,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
       
     def test3(self):
-        kepler = encounters.KeplerOrbits()
+        kepler = encounters.KeplerOrbits(Kepler())
         
         particles= Particles(keys=(1,2))
         particles.mass = 1 | nbody_system.mass
@@ -554,7 +565,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
         
     def test4(self):
-        kepler = encounters.KeplerOrbits()
+        kepler = encounters.KeplerOrbits(Kepler())
         
         particles= Particles(keys=(1,2,3,4,5,6))
         particles.mass = 1 | nbody_system.mass
@@ -594,7 +605,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
         self.assertAlmostRelativeEquals(potential_energy0 + kinetic_energy0,potential_energy1 + kinetic_energy1)
 
 
-class TestSmallNHandleEncounter(amusetest.TestWithMPI):
+class TestHandleEncounter(amusetest.TestWithMPI):
     
     def test1(self):
         
@@ -608,9 +619,12 @@ class TestSmallNHandleEncounter(amusetest.TestWithMPI):
         
         particles_in_field = Particles()
         
-        x = encounters.SmallNHandleEncounter(
+        x = encounters.HandleEncounter(
             particles_in_encounter,
             particles_in_field,
+            kepler_code = Kepler(),
+            resolve_collision_code = SmallN(),
+            interaction_over_code = None,
             G = nbody_system.G
         )
         
@@ -665,11 +679,14 @@ class TestSmallNHandleEncounter(amusetest.TestWithMPI):
         multiple.components = binary2
         multiples.add_particle(multiple)
         
-        x = encounters.SmallNHandleEncounter(
+        x = encounters.HandleEncounter(
             particles_in_encounter,
             particles_in_field,
             existing_binaries = binaries,
             existing_multiples = multiples,
+            kepler_code = Kepler(),
+            resolve_collision_code = SmallN(),
+            interaction_over_code = None,
             G = nbody_system.G
         )
         
