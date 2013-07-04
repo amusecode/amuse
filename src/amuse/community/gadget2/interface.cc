@@ -1387,6 +1387,10 @@ int get_position_comoving(int *index, double *x, double *y, double *z, int lengt
     double *buffer = new double[length*3];
     int *count = new int[length];
     int local_index;
+#ifdef PERIODIC
+    double boxSize = All.BoxSize;
+    double boxHalf = 0.5 * All.BoxSize;
+#endif
 
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
@@ -1407,6 +1411,13 @@ int get_position_comoving(int *index, double *x, double *y, double *z, int lengt
     } else {
         MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#ifdef PERIODIC
+        for (int i = 0; i < 3*length; i++){
+            if (buffer[i] > boxHalf){
+                buffer[i] -= boxSize;
+            }
+        }
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1590,6 +1601,10 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
     double *buffer = new double[length*7];
     int *count = new int[length];
     int local_index;
+#ifdef PERIODIC
+    double boxSize = All.BoxSize;
+    double boxHalf = 0.5 * All.BoxSize;
+#endif
 
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index)){
@@ -1618,6 +1633,13 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
     } else {
         MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#ifdef PERIODIC
+        for (int i = length; i < 4*length; i++){
+            if (buffer[i] > boxHalf){
+                buffer[i] -= boxSize;
+            }
+        }
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1735,6 +1757,10 @@ int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
     double *buffer = new double[length*8];
     int *count = new int[length];
     int local_index;
+#ifdef PERIODIC
+    double boxSize = All.BoxSize;
+    double boxHalf = 0.5 * All.BoxSize;
+#endif
 #ifndef ISOTHERM_EQS
     double a3;
 
@@ -1778,6 +1804,13 @@ int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
     } else {
         MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#ifdef PERIODIC
+        for (int i = length; i < 4*length; i++){
+            if (buffer[i] > boxHalf){
+                buffer[i] -= boxSize;
+            }
+        }
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2463,6 +2496,9 @@ int get_number_of_particles(int *number_of_particles){
     return 0;
 }
 int get_center_of_mass_position(double *x, double *y, double *z){
+#ifdef PERIODIC
+    return -2;
+#endif
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
     if (ThisTask) {return 0;}
@@ -2512,6 +2548,13 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
     pos[0] = a_inv * x;
     pos[1] = a_inv * y;
     pos[2] = a_inv * z;
+#ifdef PERIODIC
+    for (int i = 0; i < 3; i++){
+        if (pos[i] < 0.0){
+            pos[i] += All.BoxSize;
+        }
+    }
+#endif
     vel[0] = a * vx;
     vel[1] = a * vy;
     vel[2] = a * vz;

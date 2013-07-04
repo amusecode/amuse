@@ -294,19 +294,19 @@ class TestGadget2Interface(TestWithMPI):
         instance.commit_particles()
         m,x,y,z,vx,vy,vz,err=instance.get_state(ids)
         self.assertAlmostEqual(x, [0.5,0.,0.], places=6)
-        self.assertAlmostEqual(y, [0.,1.5,0.], places=6)
+        self.assertAlmostEqual(y, [0.,-0.5,0.], places=6)
         self.assertAlmostEqual(z, [0.,0.,0.5], places=6)
         instance.evolve_model(0.1)
         m,x,y,z,vx,vy,vz,err=instance.get_state(ids)
         self.assertAlmostEqual(x, [0.4,0.,0.], places=6)
-        self.assertAlmostEqual(y, [0.,1.6,0.], places=6)
+        self.assertAlmostEqual(y, [0.,-0.4,0.], places=6)
         self.assertAlmostEqual(z, [0.,0.,0.4], places=6)
         
         instance.evolve_model(1.0)
         m,x,y,z,vx,vy,vz,err=instance.get_state(ids)
-        self.assertAlmostEqual(x, [1.5,0.,0.], places=6)
+        self.assertAlmostEqual(x, [-0.5,0.,0.], places=6)
         self.assertAlmostEqual(y, [0.,0.5,0.], places=6)
-        self.assertAlmostEqual(z, [0.,0.,1.5], places=6)
+        self.assertAlmostEqual(z, [0.,0.,-0.5], places=6)
         instance.cleanup_code()
         instance.stop()
         
@@ -751,18 +751,18 @@ class TestGadget2(TestWithMPI):
         
         instance.dm_particles.add_particles(self.three_particles_IC)
         self.assertAlmostEqual(instance.dm_particles.x, [0.5,0.,0.] | units.kpc, places=6)
-        self.assertAlmostEqual(instance.dm_particles.y, [0.,1.5,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,-0.5,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.5] | units.kpc, places=6)
         
         instance.evolve_model(0.1 | generic_unit_system.time)
         self.assertAlmostEqual(instance.dm_particles.x, [0.4,0.,0.] | units.kpc, places=6)
-        self.assertAlmostEqual(instance.dm_particles.y, [0.,1.6,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,-0.4,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.4] | units.kpc, places=6)
         
         instance.evolve_model(1.0 | generic_unit_system.time)
-        self.assertAlmostEqual(instance.dm_particles.x, [1.5,0.,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.x, [-0.5,0.,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.y, [0.,0.5,0.] | units.kpc, places=6)
-        self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,1.5] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,-0.5] | units.kpc, places=6)
         instance.stop()
         
     def test15b(self):
@@ -832,14 +832,14 @@ class TestGadget2(TestWithMPI):
         instance.dm_particles.add_particles(self.three_particles_IC)
         self.assertAlmostEqual(instance.model_time, instance.parameters.begin_time)
         self.assertAlmostEqual(instance.dm_particles.x, [0.5,0.,0.] | units.kpc, places=6)
-        self.assertAlmostEqual(instance.dm_particles.y, [0.,1.5,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,-0.5,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.5] | units.kpc, places=6)
         
         instance.evolve_model(10.14 | generic_unit_system.time)
         self.assertAlmostRelativeEqual(instance.model_time, 
             instance.parameters.begin_time + instance.parameters.min_size_timestep, 7)
         self.assertAlmostEqual(instance.dm_particles.x, [0.4,0.,0.] | units.kpc, places=6)
-        self.assertAlmostEqual(instance.dm_particles.y, [0.,1.6,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,-0.4,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.4] | units.kpc, places=6)
         instance.stop()
     
@@ -1229,6 +1229,55 @@ class TestGadget2(TestWithMPI):
         write_set_to_file(instance.particles, "z1", "hdf5")
         instance.evolve_to_redshift(0.0)
         write_set_to_file(instance.particles, "z0", "hdf5")
+        instance.stop()
+    
+    def test28(self):
+        print "Testing Gadget get_hydro_state_at_point in periodic mode"
+        gas = Particles(8000)
+        gas.mass = 1.0/8000 | generic_unit_system.mass
+        gas.x, gas.y, gas.z = numpy.mgrid[-1:0.9:20j, -1:0.9:20j, -1:0.9:20j] | units.kpc
+        gas.velocity = [0, 0, 0] | units.m / units.s
+        gas.u = (1 + 0.8 * numpy.sin(gas.x * (numpy.pi | units.kpc**-1))) | generic_unit_system.specific_energy
+        
+        instance = Gadget2(self.default_converter, mode='periodic', **default_options)
+        instance.parameters.periodic_box_size = 2.0 | units.kpc
+        instance.gas_particles.add_particles(gas)
+        
+        self.assertAlmostRelativeEqual(instance.total_mass, 1.0e10 | units.MSun, 3)
+        self.assertAlmostRelativeEqual(instance.thermal_energy, 1.0e10 | units.MSun * units.km**2 * units.s**-2, 3)
+        
+        number_of_points = 100
+        in_domain = numpy.linspace(-1.0, 1.0, 100) | units.kpc
+        domain_border = numpy.ones(100) | units.kpc
+        speeds = [0.0 | units.m / units.s]*3
+        state_left = instance.get_hydro_state_at_point(-domain_border, in_domain, in_domain, *speeds)
+        state_right = instance.get_hydro_state_at_point(domain_border, in_domain, in_domain, *speeds)
+        for var_left, var_right in zip(state_left, state_right):
+            self.assertEqual(var_left, var_right)
+        
+        state_back = instance.get_hydro_state_at_point(in_domain, -domain_border, in_domain, *speeds)
+        state_front = instance.get_hydro_state_at_point(in_domain, domain_border, in_domain, *speeds)
+        for var_front, var_back in zip(state_front, state_back):
+            self.assertEqual(var_front, var_back)
+        
+        state_bottom = instance.get_hydro_state_at_point(in_domain, in_domain, -domain_border, *speeds)
+        state_top = instance.get_hydro_state_at_point(in_domain, in_domain, domain_border, *speeds)
+        for var_top, var_bottom in zip(state_top, state_bottom):
+            self.assertEqual(var_top, var_bottom)
+        
+        self.assertAlmostRelativeEqual(state_left[0].mean(), 1.25e9 | units.MSun * units.kpc**-3, 2)
+        self.assertAlmostRelativeEqual(state_back[0].mean(), 1.25e9 | units.MSun * units.kpc**-3, 2)
+        self.assertAlmostRelativeEqual(state_bottom[0].mean(), 1.25e9 | units.MSun * units.kpc**-3, 2)
+        
+        self.assertAlmostRelativeEqual(state_left[4].mean(), 1.25e9 | units.MSun * units.kpc**-3 * units.km**2 * units.s**-2, 2)
+        self.assertAlmostRelativeEqual(state_back[4].mean(), 1.25e9 | units.MSun * units.kpc**-3 * units.km**2 * units.s**-2, 2)
+        self.assertAlmostRelativeEqual(state_bottom[4].mean(), 1.25e9 | units.MSun * units.kpc**-3 * units.km**2 * units.s**-2, 2)
+        
+        # With x=cst, variations in u (and therefore in rhoe) should be small
+        self.assertAlmostEqual(state_left[4].std() / (1.25e9 | units.MSun * units.kpc**-3 * units.km**2 * units.s**-2), 0.0, 2)
+        # Over the entire x domain, variations in rhoe should equal the sine amplitude (=0.8) times the rms(sine) over a whole period (=sqrt(.5))
+        self.assertAlmostEqual(state_back[4].std() / (1.25e9 | units.MSun * units.kpc**-3 * units.km**2 * units.s**-2), 0.8 * numpy.sqrt(0.5), 1)
+        self.assertAlmostEqual(state_bottom[4].std() / (1.25e9 | units.MSun * units.kpc**-3 * units.km**2 * units.s**-2), 0.8 * numpy.sqrt(0.5), 1)
         instance.stop()
     
 
