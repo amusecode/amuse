@@ -204,7 +204,7 @@ class molecular_cloud(object):
         Ep=3./5
         self.internalE=Ep*self.ethep_ratio
         Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
-        vfac=sqrt(1/self.ekep_ratio*Ep/Ek)
+        vfac=sqrt(self.ekep_ratio*Ep/Ek)
         vx=vx*vfac
         vy=vy*vfac
         vz=vz*vfac
