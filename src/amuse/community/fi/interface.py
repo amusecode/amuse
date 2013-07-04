@@ -409,8 +409,10 @@ class FiInterface(
     @legacy_function    
     def get_hydro_state_at_point():
         function = LegacyFunctionSpecification()  
-        for x in ['x','y','z','vx','vy','vz']:
+        for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='d', direction=function.IN, default = 0)
         for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('npoints', dtype='i', direction=function.LENGTH)

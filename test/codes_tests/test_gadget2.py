@@ -642,8 +642,7 @@ class TestGadget2(TestWithMPI):
         instance.gas_particles.add_particles(gas)
         
         coords = [0.0 | units.kpc]*3
-        speeds = [0.0 | units.m / units.s]*3
-        hydro_state = instance.get_hydro_state_at_point(*(coords+speeds))
+        hydro_state = instance.get_hydro_state_at_point(*coords)
         expected = [ 3.5469e-19 | units.kg * units.m**-3, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
@@ -654,8 +653,7 @@ class TestGadget2(TestWithMPI):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         
         coords = [0.1 | units.kpc]*3
-        speeds = [0.0 | units.m / units.s]*3
-        hydro_state = instance.get_hydro_state_at_point(*(coords+speeds))
+        hydro_state = instance.get_hydro_state_at_point(*coords)
         expected = [ 4.1456e-19 | units.kg * units.m**-3, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
@@ -681,8 +679,7 @@ class TestGadget2(TestWithMPI):
         instance.gas_particles.add_particles(gas)
         
         coords = [0.0 | units.kpc]*3
-        speeds = [0.0 | units.m / units.s]*3
-        rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*(coords + speeds))
+        rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*coords)
         self.assertAlmostRelativeEqual(rho,   density,                              places=3)
         self.assertAlmostRelativeEqual(rho,   max(instance.gas_particles.rho),      places=2)
         self.assertIsOfOrder(          rho,   instance.gas_particles.rho)
@@ -693,7 +690,7 @@ class TestGadget2(TestWithMPI):
             0.5 * instance.gas_particles[0].velocity.length_squared()),  places=3)
         
         coords = [0.1 | units.kpc]*3
-        rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*(coords + speeds))
+        rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*coords)
         self.assertAlmostRelativeEqual(rho,   density,                              places=3)
         self.assertAlmostRelativeEqual(rhovx, density*instance.gas_particles[0].vx, places=3)
         self.assertAlmostRelativeEqual(rhovy, density*instance.gas_particles[0].vy, places=3)
@@ -1249,19 +1246,18 @@ class TestGadget2(TestWithMPI):
         number_of_points = 100
         in_domain = numpy.linspace(-1.0, 1.0, 100) | units.kpc
         domain_border = numpy.ones(100) | units.kpc
-        speeds = [0.0 | units.m / units.s]*3
-        state_left = instance.get_hydro_state_at_point(-domain_border, in_domain, in_domain, *speeds)
-        state_right = instance.get_hydro_state_at_point(domain_border, in_domain, in_domain, *speeds)
+        state_left = instance.get_hydro_state_at_point(-domain_border, in_domain, in_domain)
+        state_right = instance.get_hydro_state_at_point(domain_border, in_domain, in_domain)
         for var_left, var_right in zip(state_left, state_right):
             self.assertEqual(var_left, var_right)
         
-        state_back = instance.get_hydro_state_at_point(in_domain, -domain_border, in_domain, *speeds)
-        state_front = instance.get_hydro_state_at_point(in_domain, domain_border, in_domain, *speeds)
+        state_back = instance.get_hydro_state_at_point(in_domain, -domain_border, in_domain)
+        state_front = instance.get_hydro_state_at_point(in_domain, domain_border, in_domain)
         for var_front, var_back in zip(state_front, state_back):
             self.assertEqual(var_front, var_back)
         
-        state_bottom = instance.get_hydro_state_at_point(in_domain, in_domain, -domain_border, *speeds)
-        state_top = instance.get_hydro_state_at_point(in_domain, in_domain, domain_border, *speeds)
+        state_bottom = instance.get_hydro_state_at_point(in_domain, in_domain, -domain_border)
+        state_top = instance.get_hydro_state_at_point(in_domain, in_domain, domain_border)
         for var_top, var_bottom in zip(state_top, state_bottom):
             self.assertEqual(var_top, var_bottom)
         
@@ -1315,7 +1311,7 @@ def hydro_plot(view, hydro_code, image_size, figname):
     grid.y += view[2]
     speed = grid.z.reshape(size) * (0 | 1/units.s)
     rho, rhovx, rhovy, rhovz, rhoe = hydro_code.get_hydro_state_at_point(grid.x.reshape(size), 
-        grid.y.reshape(size), grid.z.reshape(size), speed, speed, speed)
+        grid.y.reshape(size), grid.z.reshape(size))
     
     min_v =  800.0 | units.km / units.s
     max_v = 3000.0 | units.km / units.s
