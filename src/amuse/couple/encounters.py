@@ -792,9 +792,6 @@ class ScaleSystem(object):
 class Multiples(options.OptionalAttributes):
 
     def __init__(self, 
-            particles,
-            multiples = None, 
-            binaries = None,
             gravity_code = None,
             handle_encounter_code = None,
             G = nbody_system.G,
@@ -802,13 +799,32 @@ class Multiples(options.OptionalAttributes):
         ):
             
         options.OptionalAttributes.__init__(self, **opts)
+    
+       
+        self.gravity_code = gravity_code
+        self.handle_encounter_code = handle_encounter_code
+        self.G = G
         
-        self.particles = particles
-        self.multiples = multiples
-        self.binaries = binaries
-        if self.multiples is None:
-            if not self.binaries is None:
-                self.multiples = Particles()
+        self.reset()
+    
+    def reset(self):
+        self.particles = Particles()
+        
+        self.multiples = Particles()
+        self.binaries  = Particles()
+        self.singles   = Particles()
+        
+        self.gravity_code.reset()
+        self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
+        self.stopping_condition.enable()
+        
+        self.channel_from_code_to_model = self.gravity_code.particles.new_channel_to(self.particles)
+        
+        
+    
+    def commit_particles(self):
+        if len(self.multiples) == 0:
+            if not len(self.binaries) == 0:
                 self.multiples.add_particles(self.binaries)
                 for binary in self.binaries:
                     multiple = binary
@@ -816,26 +832,15 @@ class Multiples(options.OptionalAttributes):
                     components.add_particle(binary.child1)
                     components.add_particle(binary.child2)
                     multiple.components = components
-                    multiple.mass     = components.mass.sum()
+                    multiple.mass = components.mass.sum()
                     # TODO radius!
-                    multiple.radius   = (binary.child1.position - binary.child2.position).length() * 2
+                    multiple.radius = (binary.child1.position - binary.child2.position).length() * 2
                     multiple.position = components.center_of_mass()
                     multiple.velocity = components.center_of_mass_velocity()
                     self.multiples.add_particles(multiple)
-            else:
-                self.multiples = Particles()
-        if self.binaries is None:
-            self.binaries = Particles()
         
-        self.gravity_code = gravity_code
-        self.handle_encounter_code = handle_encounter_code
-        self.G = G
+        self.gravity_code.particles.add_particles(self.particles)
         
-        self.gravity_code.particles.add_particles(particles)
-        self.channel_from_code_to_model = self.gravity_code.particles.new_channel_to(self.particles)
-        
-        self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
-        self.stopping_condition.enable()
         
     def evolve_model(self, time):
         self.model_time = self.gravity_code.model_time

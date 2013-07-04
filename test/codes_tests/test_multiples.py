@@ -101,11 +101,11 @@ class TestSimpleMultiples(TestWithMPI):
             interaction_over_code = None
         )
         multiples_code = encounters.Multiples(
-            stars,
             gravity_code = code,
             handle_encounter_code = encounter_code
         )
-        
+        multiples_code.particles.add_particles(stars)
+        multiples_code.commit_particles()
         multiples_code.evolve_model(0.6|nbody_system.time)
         self.assertEquals(len(multiples_code.multiples), 1)
         self.assertEquals(len(multiples_code.binaries), 1)
@@ -135,10 +135,11 @@ class TestSimpleMultiples(TestWithMPI):
             interaction_over_code = None
         )
         multiples_code = encounters.Multiples(
-            stars,
             gravity_code = code,
             handle_encounter_code = encounter_code
         )
+        multiples_code.particles.add_particles(stars)
+        multiples_code.commit_particles()
         
         multiples_code.evolve_model(0.6|nbody_system.time)
         self.assertEquals(len(multiples_code.multiples), 1)
