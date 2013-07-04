@@ -59,11 +59,15 @@ class TestSimpleMultiples(TestWithMPI):
         return result
         
     def new_binary(self, mass1, mass2, semi_major_axis,
-                   eccentricity = 0, keyoffset = 0):
+                   eccentricity = 0, keyoffset = -1):
         total_mass = mass1 + mass2
         mass_fraction_particle_1 = mass1 / (total_mass)
     
-        binary = datamodel.Particles(keys=range(keyoffset, keyoffset+2))
+        if keyoffset >= 0:
+            binary = datamodel.Particles(keys=range(keyoffset, keyoffset+2))
+        else:
+            binary = datamodel.Particles()
+            
         binary[0].mass = mass1
         binary[1].mass = mass2
     
@@ -71,7 +75,6 @@ class TestSimpleMultiples(TestWithMPI):
     
         velocity_perihelion = numpy.sqrt( mu / semi_major_axis  * ((1.0 + eccentricity)/(1.0 - eccentricity)))
         radius_perihelion = semi_major_axis * (1.0 - eccentricity)
-        print velocity_perihelion
         
         binary[0].position = ((1.0 - mass_fraction_particle_1) * radius_perihelion * [1.0,0.0,0.0])
         binary[1].position = -(mass_fraction_particle_1 * radius_perihelion * [1.0,0.0,0.0])
@@ -153,6 +156,75 @@ class TestSimpleMultiples(TestWithMPI):
         print multiples_code.binaries
         self.assertEquals(len(multiples_code.binaries), 1)
         
+
+    def test2(self):
+        code = Hermite()
+        stars = datamodel.Particles(keys = (1,2,3, 4))
+        stars.mass = 1 | nbody_system.mass
+        stars.position = [
+            [0,0,0],
+            [0.5, 0, 0],
+            [2, 0, 0],
+            [-10, 0, 0],
+        ]|nbody_system.length
+        stars.velocity = [
+            [0,0,0],
+            [0,0.1, 0],
+            [0,-0.1, 0],
+            [0,0.2, 0],
+        ]|nbody_system.speed
+        stars.radius = 0.5 | nbody_system.length
+        
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+            interaction_over_code = None
+        )
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.particles.add_particles(stars)
+        multiples_code.commit_particles()
+        
+        multiples_code.evolve_model(3|nbody_system.time)
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.particles), 2)
+        self.assertEquals(len(multiples_code.binaries), 1)
+    
+    
+    def test3(self):
+        code = Hermite()
+        particles_in_binary = self.new_binary(
+            0.1 | nbody_system.mass,
+            0.1 | nbody_system.mass,
+            0.01 | nbody_system.length,
+            keyoffset = 1
+        )
+        particles_in_binary.radius = 0.001 | nbody_system.length
+        binary = datamodel.Particle(key = 3)
+        binary.child1 = particles_in_binary[0]
+        binary.child2 = particles_in_binary[1]
+        binary.radius = 0.5 | nbody_system.length
+        binary.mass = 0.2 | nbody_system.mass
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+            interaction_over_code = None
+        )
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.singles.add_particles(particles_in_binary)
+        multiples_code.binaries.add_particle(binary)
+        
+        self.assertEquals(len(multiples_code.singles), 2)
+        self.assertEquals(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles))
+        
+        multiples_code.commit_particles()
+        
+        self.assertEquals(len(multiples_code.multiples), 1)
         
     def xtest2(self):
         converter = nbody_system.nbody_to_si(units.MSun, units.parsec)

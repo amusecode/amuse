@@ -1723,7 +1723,6 @@ class ParticlesSubset(AbstractParticleSet):
 
     def __getitem__(self, index):
         keys = self.get_all_keys_in_store()[index]
-
         if hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:

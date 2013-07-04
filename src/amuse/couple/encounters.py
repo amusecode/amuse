@@ -13,6 +13,7 @@ from amuse.units import quantities
 from amuse.units.quantities import as_vector_quantity
 from amuse.support import options
 
+import logging
 import numpy
 
 class AbstractHandleEncounter(object):
@@ -57,6 +58,7 @@ class AbstractHandleEncounter(object):
     # Initial separation for the scattering experiment, relative
     # to the small scale of the interaction.
     SCATTER_FACTOR=10
+    
     
     def __init__(self,
         kepler_code = None,
@@ -320,8 +322,8 @@ class AbstractHandleEncounter(object):
             root_particle = root_node.particle
             
             multiple_components = Particles()
-            # descendants are all children and grandchildren etc. etc.
-            for child in root_node.iter_descendants():
+            # descendant_leafs are all children and grandchildren and ... without children
+            for child in root_node.iter_descendant_leafs():
                 component_particle = multiple_components.add_particle(child.particle)
             
             self.update_binaries(root_node, binary_lookup_table)
@@ -335,6 +337,7 @@ class AbstractHandleEncounter(object):
             multiple_particle.child1 = None
             multiple_particle.child2 = None
             multiple_particle.components = multiple_components
+            multiple_particle.radius = 0.5 | nbody_system.length # multiple_components.position.lengths().max() * 2
             self.new_multiples.add_particle(multiple_particle)
     
     def determine_captured_singles_from_the_multiples(self):
@@ -468,9 +471,9 @@ class HandleEncounter(AbstractHandleEncounter):
         
         interaction_over = code.stopping_conditions.interaction_over_detection
         interaction_over.enable()
-        
-        code.evolve_model(1e30 | nbody_system.time)
-
+        print code.particles
+        code.evolve_model(10000 | nbody_system.time)
+        print "evolve done", code.model_time,  interaction_over.is_set()
         if interaction_over.is_set():
             # Create a tree in the module representing the binary structure.
             code.update_particle_tree()
@@ -789,6 +792,40 @@ class ScaleSystem(object):
         particles.velocity = center_of_mass_velocity + factor_velocity*(particles.velocity-center_of_mass_velocity)
 
 
+class Binaries(Particles):
+    
+    def __init__(self, singles):
+        Particles.__init__(self)
+        self._private.singles = singles
+        self.add_particle_function_attribute('components', self.get_children_subset)
+        
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        if len(keys) == 0:
+            return
+            
+        given_attributes = set(attributes)
+        
+        if not "child1" in given_attributes:
+            raise Exception("a binary must always have a child1 attribute")
+            
+        if not "child2" in given_attributes:
+            raise Exception("a binary must always have a child2 attribute")
+            
+        all_attributes = []
+        all_values = []
+        for attribute, value in zip(attributes, values):
+            all_attributes.append(attribute)
+            if attribute == 'child1' or attribute == 'child2':
+                value = value.copy_with_link_transfer(None, self._private.singles)
+                all_values.append(value)
+            else:
+                all_values.append(value)
+        
+        return super(Binaries, self).add_particles_to_store(keys, all_attributes, all_values)
+    
+    def get_children_subset(self, binaries, particle):
+        return self._private.singles._subset(keys = (particle.child1.key, particle.child2.key))
+        
 class Multiples(options.OptionalAttributes):
 
     def __init__(self, 
@@ -811,8 +848,8 @@ class Multiples(options.OptionalAttributes):
         self.particles = Particles()
         
         self.multiples = Particles()
-        self.binaries  = Particles()
         self.singles   = Particles()
+        self.binaries  = Binaries(self.singles)
         
         self.gravity_code.reset()
         self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
@@ -825,26 +862,30 @@ class Multiples(options.OptionalAttributes):
     def commit_particles(self):
         if len(self.multiples) == 0:
             if not len(self.binaries) == 0:
-                self.multiples.add_particles(self.binaries)
                 for binary in self.binaries:
-                    multiple = binary
-                    components = Particles()
-                    components.add_particle(binary.child1)
-                    components.add_particle(binary.child2)
+                    multiple = self.multiples.add_particle(binary)
+                    components = binary.components().copy()
                     multiple.components = components
                     multiple.mass = components.mass.sum()
                     # TODO radius!
                     multiple.radius = (binary.child1.position - binary.child2.position).length() * 2
                     multiple.position = components.center_of_mass()
                     multiple.velocity = components.center_of_mass_velocity()
-                    self.multiples.add_particles(multiple)
+                    components.position -= multiple.position 
+                    components.velocity -= multiple.velocity 
+                    #self.multiples.add_particle(multiple)
         
+        if len(self.particles) == 0:
+            #self.particles.add_particles(singles_not_in_a_multiple)
+            self.particles.add_particles(self.multiples)
+            
         self.gravity_code.particles.add_particles(self.particles)
         
         
     def evolve_model(self, time):
         self.model_time = self.gravity_code.model_time
         
+        previous_time = None
         while self.model_time < time:
             self.gravity_code.evolve_model(time)
             self.model_time = self.gravity_code.model_time
@@ -853,12 +894,23 @@ class Multiples(options.OptionalAttributes):
             if self.stopping_condition.is_set():
                 self.handle_stopping_condition()
                 self.particles.synchronize_to(self.gravity_code.particles)
-    
+            
+            if not previous_time is None and previous_time == self.model_time:
+                break
+            
+            previous_time = self.model_time
+            
             if len(self.particles) == 1:
                 break
-                
+        
+    def synchronize_model(self):
+        """
+        updates the singles to the right position
+        """
+        
+        
     @property
-    def singles(self):
+    def _singles(self):
         result = self.particles.copy()
         for multiple in self.multiples:
             result.remove_particle(multiple)
@@ -887,7 +939,11 @@ class Multiples(options.OptionalAttributes):
         code.existing_binaries.add_particles(self.binaries)
         code.existing_multiples.add_particles(self.multiples)
         
+        print "handling encounter"
         code.execute()
+        
+        print "handling encounter done"
+        
         
         # update particles (will have singles and multiples)
         self.particles.remove_particles(code.dissolved_multiples)
