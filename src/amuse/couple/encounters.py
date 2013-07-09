@@ -258,9 +258,9 @@ class AbstractHandleEncounter(object):
                 children[0],
                 children[1]
             )
+            print "semimajor_axis",semimajor_axis
             if semimajor_axis < hard_binary_radius:
                 continue
-                
             nodes_to_break_up.append(root_node.particle)
             
             # if we will break up a level in a triple/multiple, we 
@@ -337,9 +337,11 @@ class AbstractHandleEncounter(object):
             multiple_particle.child1 = None
             multiple_particle.child2 = None
             multiple_particle.components = multiple_components
-            multiple_particle.radius = 0.5 | nbody_system.length # multiple_components.position.lengths().max() * 2
+            multiple_particle.radius = multiple_components.position.lengths().max() * 2
+            print "RADIUS: ", multiple_particle.radius , multiple_components.radius
             self.new_multiples.add_particle(multiple_particle)
-    
+            print self.new_multiples.radius
+            
     def determine_captured_singles_from_the_multiples(self):
         for particle in self.particles_in_encounter:
             if particle in self.existing_multiples:
@@ -471,7 +473,8 @@ class HandleEncounter(AbstractHandleEncounter):
         
         interaction_over = code.stopping_conditions.interaction_over_detection
         interaction_over.enable()
-        print code.particles
+        print code.particles.key
+        end_time = 10000 | nbody_system.time
         code.evolve_model(10000 | nbody_system.time)
         print "evolve done", code.model_time,  interaction_over.is_set()
         if interaction_over.is_set():
@@ -856,7 +859,7 @@ class Multiples(options.OptionalAttributes):
         self.stopping_condition.enable()
         
         self.channel_from_code_to_model = self.gravity_code.particles.new_channel_to(self.particles)
-        
+        self.channel_from_model_to_code = self.particles.new_channel_to(self.gravity_code.particles)
         
     
     def commit_particles(self):
@@ -893,7 +896,10 @@ class Multiples(options.OptionalAttributes):
             
             if self.stopping_condition.is_set():
                 self.handle_stopping_condition()
+                print self.particles.radius
                 self.particles.synchronize_to(self.gravity_code.particles)
+                print self.particles.radius
+                self.channel_from_model_to_code.copy()
             
             if not previous_time is None and previous_time == self.model_time:
                 break
@@ -910,7 +916,7 @@ class Multiples(options.OptionalAttributes):
         
         
     @property
-    def _singles(self):
+    def all_singles(self):
         result = self.particles.copy()
         for multiple in self.multiples:
             result.remove_particle(multiple)
@@ -926,6 +932,9 @@ class Multiples(options.OptionalAttributes):
         
     def handle_stopping_condition(self):
         encounters = self.determine_encounters()
+        if len(encounters[0]) > 1:
+            if hasattr(self, 'plot_func'):
+                self.plot_func(encounters[0])
         for particles_in_encounter in encounters:
             self.handle_encounter(particles_in_encounter)
     
@@ -940,16 +949,19 @@ class Multiples(options.OptionalAttributes):
         code.existing_multiples.add_particles(self.multiples)
         
         print "handling encounter"
+        print code.particles_in_encounter.key
         code.execute()
         
         print "handling encounter done"
-        
+        print "number of multiples: ", len(code.new_multiples)
         
         # update particles (will have singles and multiples)
         self.particles.remove_particles(code.dissolved_multiples)
         self.particles.remove_particles(code.captured_singles)
         self.particles.add_particles(code.new_multiples)
-        
+        if len(code.new_multiples) > 0:
+            print code.new_multiples.radius
+            print self.particles.radius
         # update multiples
         self.multiples.remove_particles(code.dissolved_multiples)
         self.multiples.add_particles(code.new_multiples)
@@ -957,12 +969,17 @@ class Multiples(options.OptionalAttributes):
         # update binaries
         self.binaries.remove_particles(code.dissolved_binaries)
         self.binaries.add_particles(code.new_binaries)
-            
+        
+        channel = code.singles_and_multiples_after_evolve.new_channel_to(self.particles)
+        channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
+        
     
     def determine_encounters(self):
         particles0 = self.stopping_condition.particles(0)
         particles1 = self.stopping_condition.particles(1)
-        
+        print (particles0.position - particles1.position).lengths()
+        print particles0.position
+        print particles1.position
         encounters = []
         
         from_key_to_encounter = {}
