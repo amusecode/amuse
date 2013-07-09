@@ -14,6 +14,12 @@ APPFILE=Python-${APPVER}.tar.bz2
 APP_DIR=Python-${APPVER}
 URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
+
+OPENSSLVERSION="1.0.1e"
+OPENSSLFILE=openssl-${OPENSSLVERSION}.tar.gz 
+OPENSSLURL=http://www.openssl.org/source/${OPENSSLFILE}
+OPENSSLDIR=openssl-${OPENSSLVERSION}
+
 if [ -z ${PREFIX} ]; then
 	echo The PREFIX variable is not set, please set it to an user directory
 	exit 1
@@ -52,6 +58,16 @@ else
 	fi
 fi
 
+if [ -e ${OPENSSLFILE} ] ; then
+	echo "...openssl file already downloaded";
+else
+	if which curl >/dev/null; then
+		curl -O ${OPENSSLURL} ;
+	else
+		wget ${OPENSSLURL};
+	fi
+fi
+
 cd ..
 echo "Done"
 
@@ -59,12 +75,33 @@ echo "Done"
 cd ${SOURCE_DIR}
 rm -Rf ${APP_DIR}
 echo "Unpacking source files.."
-tar -xf ${DOWNLOAD_DIR}/$APPFILE
+tar -xf ${DOWNLOAD_DIR}/${APPFILE}
 echo "..Done"
 
+cd ${SOURCE_DIR}
+rm -Rf ${OPENSSLDIR}
+echo "Unpacking openssl source files.."
+tar -xf ${DOWNLOAD_DIR}/${OPENSSLFILE}
+echo "..Done"
 cd ..
 
 echo "Building files.."
+
+cd ${SOURCE_DIR}
+cd ${OPENSSLDIR}
+
+
+MACHINE=`(uname -m) 2>/dev/null`
+
+./config \
+    --prefix=${PREFIX}  \
+    --openssldir=${PREFIX}/openssl \
+    --shared
+
+make
+
+make install
+
 cd ${BUILD_DIR}
 rm -Rf ${APP_DIR}
 mkdir ${APP_DIR}
