@@ -489,8 +489,8 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
           '--prefix='+self.prefix,
           '--enable-fc',
           '--enable-shared',
+          '--enable-threads', 
           '--with-python='+sys.executable,
-          '--with-pm=mpd',
           '--enable-sharedlibs=osx-gcc',
           '--with-device=ch3:sock',
         ]
