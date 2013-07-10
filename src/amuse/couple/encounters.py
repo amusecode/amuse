@@ -11,7 +11,9 @@ from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import quantities
 from amuse.units.quantities import as_vector_quantity
+
 from amuse.support import options
+from amuse.support import code
 
 import logging
 import numpy
@@ -826,8 +828,28 @@ class Binaries(Particles):
         
         return super(Binaries, self).add_particles_to_store(keys, all_attributes, all_values)
     
+    def remove_particles_from_store(self, keys):
+        if len(keys) == 0:
+            return
+        
+        pass    
+        
+        return super(Binaries, self).remove_particles_from_store(keys)
     def get_children_subset(self, binaries, particle):
         return self._private.singles._subset(keys = (particle.child1.key, particle.child2.key))
+        
+class MultiplesStoppingConditions(object):
+    
+    def __init__(self):
+        self.multiples_change_detection = code.StoppingCondition('multiples_change_detection')
+        self.binaries_change_detection = code.StoppingCondition('binaries_change_detection')
+    
+    def reset(self):
+        self.multiples_change_detection.disable()
+        self.binaries_change_detection.disable()
+        
+    def is_set(self):
+        return self.multiples_change_detection.is_set() or self.binaries_change_detection.is_set()
         
 class Multiples(options.OptionalAttributes):
 
@@ -846,6 +868,9 @@ class Multiples(options.OptionalAttributes):
         self.G = G
         
         self.reset()
+        
+        self.stopping_conditions = MultiplesStoppingConditions()
+        
     
     def reset(self):
         self.particles = Particles()
@@ -878,8 +903,11 @@ class Multiples(options.OptionalAttributes):
                     components.velocity -= multiple.velocity 
                     #self.multiples.add_particle(multiple)
         
+        if len(self.singles) == 0:
+            self.singles.add_particles(self.particles)
+            
         if len(self.particles) == 0:
-            #self.particles.add_particles(singles_not_in_a_multiple)
+            self.particles.add_particles(self.singles)
             self.particles.add_particles(self.multiples)
             
         self.gravity_code.particles.add_particles(self.particles)
@@ -902,6 +930,9 @@ class Multiples(options.OptionalAttributes):
                 self.channel_from_model_to_code.copy()
             
             if not previous_time is None and previous_time == self.model_time:
+                break
+            
+            if self.stopping_conditions.is_set():
                 break
             
             previous_time = self.model_time
@@ -954,14 +985,22 @@ class Multiples(options.OptionalAttributes):
         
         print "handling encounter done"
         print "number of multiples: ", len(code.new_multiples)
-        
         # update particles (will have singles and multiples)
         self.particles.remove_particles(code.dissolved_multiples)
         self.particles.remove_particles(code.captured_singles)
         self.particles.add_particles(code.new_multiples)
-        if len(code.new_multiples) > 0:
-            print code.new_multiples.radius
-            print self.particles.radius
+        self.particles.add_particles(code.released_singles)
+        
+        self.singles.remove_particles(code.captured_singles)
+        self.singles.add_particles(code.released_singles)
+        
+        if self.stopping_conditions.multiples_change_detection.is_enabled():
+            if len(code.new_multiples) > 0 or len(code.dissolved_multiples) > 0:
+                self.stopping_conditions.multiples_change_detection.set(
+                    code.new_multiples,
+                    code.dissolved_multiples
+                )
+                
         # update multiples
         self.multiples.remove_particles(code.dissolved_multiples)
         self.multiples.add_particles(code.new_multiples)
@@ -969,6 +1008,13 @@ class Multiples(options.OptionalAttributes):
         # update binaries
         self.binaries.remove_particles(code.dissolved_binaries)
         self.binaries.add_particles(code.new_binaries)
+        
+        if self.stopping_conditions.binaries_change_detection.is_enabled():
+            if len(code.new_binaries) > 0 or len(code.dissolved_binaries) > 0:
+                self.stopping_conditions.binaries_change_detection.set(
+                    code.new_binaries,
+                    code.dissolved_binaries
+                )
         
         channel = code.singles_and_multiples_after_evolve.new_channel_to(self.particles)
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])

@@ -227,12 +227,67 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.commit_particles()
         
         self.assertEquals(len(multiples_code.multiples), 1)
+    
+    def test4(self):
+        code = Hermite()
+        stars = datamodel.Particles(keys = (1,2,3, 4))
+        stars.mass = 1 | nbody_system.mass
+        stars.position = [
+            [0,0,0],
+            [0.5, 0, 0],
+            [2, 0, 0],
+            [-10, 0, 0],
+        ]|nbody_system.length
+        stars.velocity = [
+            [0,0,0],
+            [0,0.1, 0],
+            [0,-0.1, 0],
+            [0,0.2, 0],
+        ]|nbody_system.speed
+        stars.radius = 0.5 | nbody_system.length
         
-    def xtest2(self):
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+            interaction_over_code = None
+        )
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.particles.add_particles(stars)
+        multiples_code.commit_particles()
+        stopping_condition = multiples_code.stopping_conditions.multiples_change_detection
+        stopping_condition.enable()
+        
+        multiples_code.evolve_model(3|nbody_system.time)
+        self.assertTrue(stopping_condition.is_set())
+        self.assertAlmostRelativeEquals(multiples_code.model_time , 0.0075 | nbody_system.time, 4)
+        self.assertEquals(len(stopping_condition.particles(0)), 1)
+        self.assertEquals(len(stopping_condition.particles(1)), 0)
+        
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.multiples[0].components), 2)
+        self.assertEquals(len(multiples_code.particles), 3) # 1 multiples with 2 singles, plus 2 singles free
+        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEquals(len(multiples_code.singles), 2)
+        
+        multiples_code.evolve_model(3|nbody_system.time)
+        self.assertTrue(stopping_condition.is_set())
+        self.assertAlmostRelativeEquals(multiples_code.model_time , 1.17493 | nbody_system.time, 4)
+        self.assertEquals(len(stopping_condition.particles(0)), 1) # 1 new multiple
+        self.assertEquals(len(stopping_condition.particles(1)), 1) # 1 dissolved multiple
+        
+        self.assertEquals(len(multiples_code.multiples[0].components), 2)
+        self.assertEquals(len(multiples_code.particles), 3) # 1 multiples with 2 singles, plus 2 singles free
+        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEquals(len(multiples_code.singles), 2)
+    
+    def test5(self):
         converter = nbody_system.nbody_to_si(units.MSun, units.parsec)
         
         code = Hermite(converter)
-        stars = datamodel.Particles(2)
+        stars = datamodel.Particles(keys=(1,2))
         stars.mass = converter.to_si(1 | nbody_system.mass)
         stars.position = converter.to_si([
             [0,0,0],
@@ -243,28 +298,30 @@ class TestSimpleMultiples(TestWithMPI):
             [0,0.1, 0]
         ]|nbody_system.speed)
         stars.radius = converter.to_si(0.5 | nbody_system.length)
-        code.particles.add_particles(stars)
         
-        multiples_code = multiples.Multiples(code, self.new_smalln_si, self.new_kepler_si(), gravity_constant = constants.G)
-        multiples_code.binary_breakup_factor = 1
         
-        print multiples_code.multiples_energy_correction
-        total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-        print total_energy0
-        multiples_code.evolve_model(converter.to_si(0.6|nbody_system.time))
-        total_energy1 =  multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-        print total_energy1
-        print total_energy0
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler_si(),
+            resolve_collision_code = self.new_smalln_si(),
+            interaction_over_code = None,
+            G = constants.G
+        )
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code,
+            G = constants.G
+        )
+        end_time = converter.to_si(1.0|nbody_system.time)
+        multiples_code.particles.add_particles(stars)
+        multiples_code.commit_particles()
+        multiples_code.evolve_model(end_time)
         
-        print converter.to_nbody(total_energy1)
-        print converter.to_nbody(total_energy0)
-        error = abs((total_energy1 - total_energy0)/total_energy0)
-        print multiples_code.multiples_energy_correction
-        print converter.to_nbody(multiples_code.multiples_energy_correction)
-        print "ERROR:", error
-        self.assertTrue(error < 1e-4)
-        #self.assertAlmostRelativeEquals(multiples_code.multiples_energy_correction - multiples_code.kinetic_energy, -total_energy0, 7)
-
+        self.assertEquals(len(multiples_code.particles),1) # 1 multiples with 2 singles
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.multiples[0].components), 2)
+        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEquals(len(multiples_code.singles), 0)
+        
     def xtest3(self):
         code = Hermite()
         stars = datamodel.Particles()
