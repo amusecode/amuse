@@ -844,7 +844,11 @@ class MultiplesStoppingConditions(object):
         self.multiples_change_detection = code.StoppingCondition('multiples_change_detection')
         self.binaries_change_detection = code.StoppingCondition('binaries_change_detection')
     
-    def reset(self):
+    def unset(self):
+        self.multiples_change_detection.unset()
+        self.binaries_change_detection.unset()
+        
+    def disable(self):
         self.multiples_change_detection.disable()
         self.binaries_change_detection.disable()
         
@@ -867,9 +871,10 @@ class Multiples(options.OptionalAttributes):
         self.handle_encounter_code = handle_encounter_code
         self.G = G
         
+        self.stopping_conditions = MultiplesStoppingConditions()
+        
         self.reset()
         
-        self.stopping_conditions = MultiplesStoppingConditions()
         
     
     def reset(self):
@@ -886,6 +891,7 @@ class Multiples(options.OptionalAttributes):
         self.channel_from_code_to_model = self.gravity_code.particles.new_channel_to(self.particles)
         self.channel_from_model_to_code = self.particles.new_channel_to(self.gravity_code.particles)
         
+        self.stopping_conditions.disable()
     
     def commit_particles(self):
         if len(self.multiples) == 0:
@@ -914,6 +920,8 @@ class Multiples(options.OptionalAttributes):
         
         
     def evolve_model(self, time):
+        self.stopping_conditions.unset()
+        
         self.model_time = self.gravity_code.model_time
         
         previous_time = None

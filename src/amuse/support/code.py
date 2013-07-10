@@ -144,10 +144,24 @@ class StoppingCondition(object):
     
     def enable(self):
         self._is_enabled = True
+        
+    def disable(self):
+        self._is_enabled = False
     
     def set(self, *particles):
         self._is_set = True
-        self._particles = particles
+        if len(self._particles) == 0:
+            self._particles = list(particles)
+        else:
+            for i, particle_set in enumerate(particles):
+                if len(self._particles) == i:
+                    self._particles.append(particle_set)
+                else:
+                    self._particles[i].add_particles(particle_set)
+    
+    def unset(self):
+        self._is_set = False
+        self._particles = []
         
     def particles(self, index):
         if index >= len(self._particles):
