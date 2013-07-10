@@ -59,6 +59,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         particles_in_field = Particles(5)
         particles_in_field.mass = [1,2,3,4,5] | nbody_system.mass
@@ -68,6 +69,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field[3].position = [0.5,-0.5,0] | nbody_system.length
         particles_in_field[4].position = [0,0,2] | nbody_system.length
         particles_in_field.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_field.radius = 0 | nbody_system.length
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
@@ -139,6 +141,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         particles_in_field = Particles(keys=(2,4,5,6,7,))
         particles_in_field.mass = [1,2,3,4,5] | nbody_system.mass
@@ -148,6 +151,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field[3].position = [0.5,-0.5,0] | nbody_system.length
         particles_in_field[4].position = [0,0,2] | nbody_system.length
         particles_in_field.velocity = [0,0,0]  | nbody_system.speed
+        particles_in_field.radius = 0 | nbody_system.length
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
@@ -205,6 +209,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         particles_in_field = Particles(keys=(3,4,5,6,7,))
         particles_in_field.mass = [1,2,3,4,5] | nbody_system.mass
@@ -214,6 +219,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field[3].position = [0.5,-0.5,0] | nbody_system.length
         particles_in_field[4].position = [0,0,2] | nbody_system.length
         particles_in_field.velocity = [0,0,0]  | nbody_system.speed
+        particles_in_field.radius = 0 | nbody_system.length
         
         binaries = Particles(keys=(20,))
         binaries[0].child1 = particles_in_encounter[0]
@@ -273,6 +279,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         particles_in_field = Particles(keys=(2,4,5,6,7,))
         particles_in_field.mass = [1,2,3,4,5] | nbody_system.mass
@@ -282,6 +289,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field[3].position = [0.5,-0.5,0] | nbody_system.length
         particles_in_field[4].position = [0,0,2] | nbody_system.length
         particles_in_field.velocity = [0,0,0]  | nbody_system.speed
+        particles_in_field.radius = 0 | nbody_system.length
         
         x = encounters.AbstractHandleEncounter(
             G = nbody_system.G,
@@ -337,6 +345,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter[2].position = [0,0.5,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         
         x = encounters.AbstractHandleEncounter(
