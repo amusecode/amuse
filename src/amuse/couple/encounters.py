@@ -5,6 +5,7 @@ encounters between particles.
 It is used by the multiples module.
 """
 
+from amuse.datamodel import Particle
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSuperset
 from amuse.units import constants
@@ -843,17 +844,24 @@ class MultiplesStoppingConditions(object):
     def __init__(self):
         self.multiples_change_detection = code.StoppingCondition('multiples_change_detection')
         self.binaries_change_detection = code.StoppingCondition('binaries_change_detection')
+        self.encounter_detection = code.StoppingCondition('encounter_detection')
     
     def unset(self):
         self.multiples_change_detection.unset()
         self.binaries_change_detection.unset()
+        self.encounter_detection.unset()
         
     def disable(self):
         self.multiples_change_detection.disable()
         self.binaries_change_detection.disable()
+        self.encounter_detection.disable()
         
     def is_set(self):
-        return self.multiples_change_detection.is_set() or self.binaries_change_detection.is_set()
+        return (
+            self.multiples_change_detection.is_set() or 
+            self.binaries_change_detection.is_set() or 
+            self.encounter_detection.is_set()
+        )
         
 class Multiples(options.OptionalAttributes):
 
@@ -1002,6 +1010,30 @@ class Multiples(options.OptionalAttributes):
         self.singles.remove_particles(code.captured_singles)
         self.singles.add_particles(code.released_singles)
         
+        if self.stopping_conditions.encounter_detection.is_enabled():
+            model = Particles()
+            
+            particles_before_evolve = Particles()
+            particles_before_evolve.add_particles(code.particles_in_encounter)
+            particles_before_evolve.add_particles(code.particles_close_to_encounter)
+            particles_after_evolve = Particles()
+            particles_after_evolve.add_particles(code.particles_in_encounter)
+            particles_after_evolve.add_particles(code.particles_close_to_encounter)
+            particles_after_evolve.remove_particles(code.dissolved_multiples)
+            particles_after_evolve.remove_particles(code.captured_singles)
+            particles_after_evolve.add_particles(code.released_singles)
+            particles_after_evolve.add_particles(code.new_multiples)
+            
+        
+            channel = code.singles_and_multiples_after_evolve.new_channel_to(particles_after_evolve)
+            channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
+            
+            particle = Particle()
+            particle.particles_before_evolve = particles_before_evolve
+            particle.particles_after_evolve = particles_after_evolve
+            model.add_particle(particle)
+            self.stopping_conditions.encounter_detection.set(model)
+            
         if self.stopping_conditions.multiples_change_detection.is_enabled():
             if len(code.new_multiples) > 0 or len(code.dissolved_multiples) > 0:
                 self.stopping_conditions.multiples_change_detection.set(

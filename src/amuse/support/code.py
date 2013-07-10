@@ -131,7 +131,7 @@ class StoppingCondition(object):
         self.name = name
         self._is_enabled = False
         self._is_set = False
-        self._particles = []
+        self._particles = [datamodel.Particles() for x in range(256)]
         
     def is_supported(self):
         return True
@@ -150,18 +150,15 @@ class StoppingCondition(object):
     
     def set(self, *particles):
         self._is_set = True
-        if len(self._particles) == 0:
-            self._particles = list(particles)
-        else:
-            for i, particle_set in enumerate(particles):
-                if len(self._particles) == i:
-                    self._particles.append(particle_set)
-                else:
-                    self._particles[i].add_particles(particle_set)
+        for i, particle_set in enumerate(particles):
+            if len(self._particles) == i:
+                self._particles.append(datamodel.Particles())
+            
+            self._particles[i].add_particles(particle_set)
     
     def unset(self):
         self._is_set = False
-        self._particles = []
+        self._particles = [datamodel.Particles() for x in range(256)]
         
     def particles(self, index):
         if index >= len(self._particles):
