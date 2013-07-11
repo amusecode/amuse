@@ -972,8 +972,8 @@ class Multiples(options.OptionalAttributes):
             subset = Particles()
             for node in tree.iter_descendant_leafs():
                 subset.add_particle(node.particle)
-            subset.position += particle.position
-            subset.velocity += particle.velocity
+            subset.position += multiple.position
+            subset.velocity += multiple.velocity
             result.add_particles(subset)
         return result
         
