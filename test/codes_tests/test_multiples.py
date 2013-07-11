@@ -220,11 +220,11 @@ class TestSimpleMultiples(TestWithMPI):
             gravity_code = code,
             handle_encounter_code = encounter_code
         )
-        multiples_code.singles.add_particles(particles_in_binary)
+        multiples_code.singles_in_binaries.add_particles(particles_in_binary)
         multiples_code.binaries.add_particle(binary)
         
-        self.assertEquals(len(multiples_code.singles), 2)
-        self.assertEquals(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles))
+        self.assertEquals(len(multiples_code.singles_in_binaries), 2)
+        self.assertEquals(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles_in_binaries))
         
         multiples_code.commit_particles()
         
@@ -405,6 +405,7 @@ class TestSimpleMultiples(TestWithMPI):
             interaction_over_code = None,
             G = constants.G
         )
+        encounter_code.HARD_BINARY_FACTOR = 1
         multiples_code = encounters.Multiples(
             gravity_code = code,
             handle_encounter_code = encounter_code,

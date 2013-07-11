@@ -56,7 +56,7 @@ class AbstractHandleEncounter(object):
     
     # a hard binary is defined as the small scale of the
     # interaction times this factor
-    HARD_BINARY_FACTOR=1
+    HARD_BINARY_FACTOR=2
     
     # Initial separation for the scattering experiment, relative
     # to the small scale of the interaction.
@@ -269,7 +269,7 @@ class AbstractHandleEncounter(object):
                 children[0],
                 children[1]
             )
-            print "semimajor_axis",semimajor_axis
+            print "semimajor_axis", semimajor_axis, _, hard_binary_radius,  semimajor_axis < hard_binary_radius
             if semimajor_axis < hard_binary_radius:
                 continue
             nodes_to_break_up.append(root_node.particle)
@@ -991,21 +991,17 @@ class Multiples(options.OptionalAttributes):
         
         
     def evolve_model(self, time):
-        print "enter evolve model at time=", time
         self.stopping_conditions.unset()
         
         self.model_time = self.gravity_code.model_time
         
         previous_time = None
         while self.model_time < time:
-            print "enter gravity code: ", self.gravity_code
             self.gravity_code.evolve_model(time)
             self.model_time = self.gravity_code.model_time
-            print "time=", self.model_time 
             self.channel_from_code_to_model.copy()
             
             if self.stopping_condition.is_set():
-                print "Stopping condition set at time=", self.model_time 
                 self.handle_stopping_condition()
                 self.particles.synchronize_to(self.gravity_code.particles)
                 self.channel_from_model_to_code.copy()
