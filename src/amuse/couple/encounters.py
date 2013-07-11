@@ -505,14 +505,18 @@ class HandleEncounter(AbstractHandleEncounter):
         code = self.resolve_collision_code
         code.reset()
         
+        #print self.all_singles_in_evolve
         code.particles.add_particles(self.all_singles_in_evolve)
         
         interaction_over = code.stopping_conditions.interaction_over_detection
         interaction_over.enable()
-        print code.particles.key
+        
         end_time = 10000 | nbody_system.time
-        code.evolve_model(10000 | nbody_system.time)
+        if len(self.all_singles_in_evolve) == 2:
+            end_time = 100 | nbody_system.time
+        code.evolve_model(end_time)
         print "evolve done", code.model_time,  interaction_over.is_set()
+            
         if interaction_over.is_set():
             # Create a tree in the module representing the binary structure.
             code.update_particle_tree()
@@ -591,7 +595,9 @@ class KeplerOrbits(object):
 
         # closest distance plus 1% of the distance between peri and apo
         limit = periapsis + 0.01*(apoapsis-periapsis)
-        
+        if periapsis < scale and limit > scale:
+            limit = scale
+            
         # we cannot scale to smaller than the periapsis distance
         if scale < limit:
             scale = limit
@@ -799,8 +805,9 @@ class ScaleSystem(object):
         # special case, 2 bodies, we can use kepler to 
         # do the scaling in a consistent, energy perserving way
         if len(particles) == 2:
+            print separation, distance, sum_of_radii, max(radius, sum_of_radii)
             if distance < sum_of_radii:
-                delta_p, delta_v = self.kepler_orbits.expand_binary(particles, max(radius, sum_of_radii))
+                delta_p, delta_v = self.kepler_orbits.expand_binary(particles, max(2*radius, sum_of_radii))
             elif separation > radius:
                 scale = max(2 * radius, sum_of_radii)
                 delta_p, delta_v = self.kepler_orbits.compress_binary(particles, scale)
@@ -1048,6 +1055,10 @@ class Multiples(options.OptionalAttributes):
         
         print "handling encounter"
         print code.particles_in_encounter.key
+        #print code.particles_in_encounter.position
+        #print code.particles_in_encounter.velocity
+        #print code.particles_in_encounter.radius
+        #print code.particles_in_encounter.mass
         code.execute()
         
         print "handling encounter done"
