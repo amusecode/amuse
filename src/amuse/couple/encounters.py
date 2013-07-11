@@ -950,7 +950,8 @@ class Multiples(options.OptionalAttributes):
         
         self.multiples = Particles()
         self.singles   = Particles()
-        self.binaries  = Binaries(self.singles)
+        self.singles_in_binaries = Particles()
+        self.binaries  = Binaries(self.singles_in_binaries)
         
         self.gravity_code.reset()
         self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
@@ -967,6 +968,8 @@ class Multiples(options.OptionalAttributes):
                 for binary in self.binaries:
                     multiple = self.multiples.add_particle(binary)
                     components = binary.components().copy()
+                    components.child1 = None
+                    components.child2 = None
                     multiple.components = components
                     multiple.mass = components.mass.sum()
                     # TODO radius!
@@ -988,17 +991,21 @@ class Multiples(options.OptionalAttributes):
         
         
     def evolve_model(self, time):
+        print "enter evolve model at time=", time
         self.stopping_conditions.unset()
         
         self.model_time = self.gravity_code.model_time
         
         previous_time = None
         while self.model_time < time:
+            print "enter gravity code: ", self.gravity_code
             self.gravity_code.evolve_model(time)
             self.model_time = self.gravity_code.model_time
+            print "time=", self.model_time 
             self.channel_from_code_to_model.copy()
             
             if self.stopping_condition.is_set():
+                print "Stopping condition set at time=", self.model_time 
                 self.handle_stopping_condition()
                 self.particles.synchronize_to(self.gravity_code.particles)
                 self.channel_from_model_to_code.copy()
