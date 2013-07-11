@@ -73,8 +73,11 @@ class AbstractHandleEncounter(object):
         
     def reset(self):
         self.particles_in_field = Particles()
+        
         self.particles_in_encounter = Particles()
         self.particles_close_to_encounter = Particles()
+        
+        self.all_particles_in_encounter = ParticlesSuperset([self.particles_in_encounter, self.particles_close_to_encounter])
         
         self.existing_multiples = Particles()
         self.existing_binaries = Particles()
@@ -104,11 +107,11 @@ class AbstractHandleEncounter(object):
         
         self.select_neighbours_from_field()
         
+        self.determine_initial_sphere_of_particles_in_encounter()
+        
         self.scale_up_system_if_two_body_scattering()
         
         self.determine_singles_from_particles_and_neighbours_in_encounter()
-        
-        self.determine_initial_sphere_of_singles_in_encounter()
         
         self.move_all_singles_to_initial_sphere_frame_of_reference()
         
@@ -116,11 +119,7 @@ class AbstractHandleEncounter(object):
         
         self.determine_structure_of_the_evolved_state()
         
-        self.scale_evolved_state_to_initial_sphere()
-        
         self.remove_soft_binaries_from_evolved_state()
-        
-        self.move_evolved_state_to_original_frame_of_reference()
         
         self.determine_multiples_in_the_evolved_state()
         
@@ -128,6 +127,15 @@ class AbstractHandleEncounter(object):
         
         self.determine_released_singles_from_the_multiples()
         
+        self.determine_particles_after_encounter()
+        
+        self.scale_evolved_state_to_initial_sphere()
+        
+        self.move_evolved_state_to_original_frame_of_reference()
+        
+        self.update_positions_of_subsets()
+    
+    
     def determine_scale_of_particles_in_the_encounter(self):
         # determine large scale from the distance of the farthest particle to the center of mass
         center_of_mass = self.particles_in_encounter.center_of_mass()
@@ -168,11 +176,11 @@ class AbstractHandleEncounter(object):
         else:
             return particle.as_set()
 
-    def determine_initial_sphere_of_singles_in_encounter(self):
-        self.initial_sphere_position = self.all_singles_in_evolve.center_of_mass()
-        self.initial_sphere_velocity = self.all_singles_in_evolve.center_of_mass_velocity()
+    def determine_initial_sphere_of_particles_in_encounter(self):
+        self.initial_sphere_position = self.all_particles_in_encounter.center_of_mass()
+        self.initial_sphere_velocity = self.all_particles_in_encounter.center_of_mass_velocity()
         
-        distances = (self.all_singles_in_evolve.position-self.initial_sphere_position).lengths()
+        distances = (self.all_particles_in_encounter.position-self.initial_sphere_position).lengths()
         self.initial_sphere_radius = distances.max()
     
     def move_all_singles_to_initial_sphere_frame_of_reference(self):
@@ -180,8 +188,8 @@ class AbstractHandleEncounter(object):
         self.all_singles_in_evolve.velocity -= self.initial_sphere_velocity
         
     def move_evolved_state_to_original_frame_of_reference(self):
-        self.singles_and_multiples_after_evolve.position += self.initial_sphere_position
-        self.singles_and_multiples_after_evolve.velocity += self.initial_sphere_velocity
+        self.particles_after_encounter.position += self.initial_sphere_position
+        self.particles_after_encounter.velocity += self.initial_sphere_velocity
         
     def select_neighbours_from_field(self): 
         if len(self.particles_in_field) == 0:
@@ -343,7 +351,6 @@ class AbstractHandleEncounter(object):
             multiple_particle.radius = multiple_components.position.lengths().max() * 2
             print "RADIUS: ", multiple_particle.radius , multiple_components.radius
             self.new_multiples.add_particle(multiple_particle)
-            print self.new_multiples.radius
             
     def determine_captured_singles_from_the_multiples(self):
         for particle in self.particles_in_encounter:
@@ -381,6 +388,31 @@ class AbstractHandleEncounter(object):
                 self.released_singles.add_particle(particle)
             
         
+    def determine_particles_after_encounter(self):
+        particles_after_encounter = Particles()
+        particles_after_encounter.add_particles(self.particles_in_encounter)
+        particles_after_encounter.add_particles(self.particles_close_to_encounter)
+        particles_after_encounter.remove_particles(self.dissolved_multiples)
+        particles_after_encounter.remove_particles(self.captured_singles)
+        particles_after_encounter.add_particles(self.released_singles)
+        particles_after_encounter.add_particles(self.new_multiples)
+        
+        channel = self.singles_and_multiples_after_evolve.new_channel_to(particles_after_encounter)
+        channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
+        
+        self.particles_after_encounter = particles_after_encounter
+    
+    def update_positions_of_subsets(self):
+        channel = self.particles_after_encounter.new_channel_to(self.new_binaries)
+        channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
+        
+        channel = self.particles_after_encounter.new_channel_to(self.new_multiples)
+        channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
+        
+        channel = self.particles_after_encounter.new_channel_to(self.released_singles)
+        channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
+        
+            
     def update_binaries(self, root_node, binary_lookup_table):
         # a binary tree node is a node with two children
         # the children are leafs (have no children of their own)
@@ -438,6 +470,7 @@ class AbstractHandleEncounter(object):
                     else:
                         self.new_binaries.add_particle(binary_found_in_encounter)
                 
+    
     def update_binary(self, binary_found_in_encounter, binary_known_in_system):
         binary_copy = self.updated_binaries.add_particle(binary_known_in_system)
         binary_copy.child1 = binary_found_in_encounter.child1.copy()
@@ -484,7 +517,7 @@ class HandleEncounter(AbstractHandleEncounter):
             # Create a tree in the module representing the binary structure.
             code.update_particle_tree()
 
-            # Return the tree structure to AMUSE.
+            # Return the tree structure.
             code.update_particle_set()
             self.singles_and_multiples_after_evolve.add_particles(code.particles)
         else:        
@@ -502,6 +535,17 @@ class HandleEncounter(AbstractHandleEncounter):
         """
         pass
         
+     
+    def scale_evolved_state_to_initial_sphere(self):
+        """
+        Scale the system so that all particles are just inside the initial sphere.
+        Particles should be moving apart.
+        Implementation should be equivalent to moving the system back in time (or forward
+        if the system is smaller than the initial scale).
+        """
+        
+        self.scale_code = ScaleSystem(self.kepler_orbits, self.G)
+        self.scale_code.scale_particles_to_sphere(self.particles_after_encounter, self.initial_sphere_radius)
         
         
 class KeplerOrbits(object):
@@ -688,7 +732,7 @@ class ScaleSystem(object):
     def get_particles_with_minimum_separation(self, particles):
         positions = particles.position
         radii = particles.radius
-
+        
         minimum_separation = None
         for i in range(len(particles) - 1):
             i_position = positions[i]
@@ -737,6 +781,11 @@ class ScaleSystem(object):
         particles.position -= center_of_mass_position
         particles.velocity -= center_of_mass_velocity
         
+        # special case, 1 body
+        if len(particles) == 1:
+            "The position and velocity of this particle must be zero"
+            return
+        
         kinetic_energy = particles.kinetic_energy()
         potential_energy = particles.potential_energy(G = self.G)
         particle0, particle1 = self.get_particles_with_minimum_separation(particles)
@@ -746,6 +795,7 @@ class ScaleSystem(object):
         sum_of_radii = particle0.radius + particle1.radius
         separation = distance - sum_of_radii
         
+            
         # special case, 2 bodies, we can use kepler to 
         # do the scaling in a consistent, energy perserving way
         if len(particles) == 2:
@@ -763,7 +813,7 @@ class ScaleSystem(object):
         
         
         # for all other situations, we revert to scaling
-        # where we perserver energy by scaling
+        # where we perserve energy by scaling
         # the velocities
     
         # we need to scale up, as the separation between particles is less than zero
@@ -786,10 +836,13 @@ class ScaleSystem(object):
             # we have no room available for any scaling
             else:
                 factor_position = 1.0
-       
         factor_velocity_squared = 1.0 - (1.0/factor_position-1.0) * potential_energy/kinetic_energy
-        
         if factor_velocity_squared < 0.0:
+            print particles.position
+            print particles.velocity
+            print particles.radius
+            print radius
+            print distance, sum_of_radii
             raise Exception("cannot scale the velocities")
             
         factor_velocity = numpy.sqrt(factor_velocity_squared)
@@ -940,9 +993,7 @@ class Multiples(options.OptionalAttributes):
             
             if self.stopping_condition.is_set():
                 self.handle_stopping_condition()
-                print self.particles.radius
                 self.particles.synchronize_to(self.gravity_code.particles)
-                print self.particles.radius
                 self.channel_from_model_to_code.copy()
             
             if not previous_time is None and previous_time == self.model_time:
@@ -1012,25 +1063,15 @@ class Multiples(options.OptionalAttributes):
         
         if self.stopping_conditions.encounter_detection.is_enabled():
             model = Particles()
-            
-            particles_before_evolve = Particles()
-            particles_before_evolve.add_particles(code.particles_in_encounter)
-            particles_before_evolve.add_particles(code.particles_close_to_encounter)
-            particles_after_evolve = Particles()
-            particles_after_evolve.add_particles(code.particles_in_encounter)
-            particles_after_evolve.add_particles(code.particles_close_to_encounter)
-            particles_after_evolve.remove_particles(code.dissolved_multiples)
-            particles_after_evolve.remove_particles(code.captured_singles)
-            particles_after_evolve.add_particles(code.released_singles)
-            particles_after_evolve.add_particles(code.new_multiples)
-            
-        
-            channel = code.singles_and_multiples_after_evolve.new_channel_to(particles_after_evolve)
-            channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
+            print len(code.new_multiples)
+            particles_before_encounter = Particles()
+            particles_before_encounter.add_particles(code.all_particles_in_encounter)
+            particles_after_encounter = Particles()
+            particles_after_encounter.add_particles(code.particles_after_encounter)
             
             particle = Particle()
-            particle.particles_before_evolve = particles_before_evolve
-            particle.particles_after_evolve = particles_after_evolve
+            particle.particles_before_encounter = particles_before_encounter
+            particle.particles_after_encounter = particles_after_encounter
             model.add_particle(particle)
             self.stopping_conditions.encounter_detection.set(model)
             
@@ -1056,7 +1097,7 @@ class Multiples(options.OptionalAttributes):
                     code.dissolved_binaries
                 )
         
-        channel = code.singles_and_multiples_after_evolve.new_channel_to(self.particles)
+        channel = code.particles_after_encounter.new_channel_to(self.particles)
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
         
     
@@ -1064,8 +1105,6 @@ class Multiples(options.OptionalAttributes):
         particles0 = self.stopping_condition.particles(0)
         particles1 = self.stopping_condition.particles(1)
         print (particles0.position - particles1.position).lengths()
-        print particles0.position
-        print particles1.position
         encounters = []
         
         from_key_to_encounter = {}

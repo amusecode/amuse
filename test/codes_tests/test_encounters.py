@@ -102,7 +102,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_multiples = Particles()
         particles_in_multiples.add_particle(particles_in_encounter[0])
         multiple = particles_in_multiples[0]
-        multiple.components = Particles(2)
+        multiple.components = Particles(keys = (3,4))
         multiple.components.mass = 0.5 | nbody_system.mass
         multiple.components[0].position = [0,0.1,0] | nbody_system.length
         multiple.components[1].position = [0,-0.1,0] | nbody_system.length
@@ -126,8 +126,10 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         self.assertAlmostRelativeEqual(x.all_singles_in_encounter.mass, [0.5, 0.5, 1.0]| nbody_system.mass)
         
-        child1 = x.singles_and_multiples_after_evolve[0]
-        child2 = x.singles_and_multiples_after_evolve[1]
+        self.assertEquals(len(x.released_singles), 2)
+        print x.particles_after_encounter
+        child1 = x.particles_after_encounter[1]
+        child2 = x.particles_after_encounter[2]
         self.assertAlmostRelativeEqual(child1.position, [1,0.1,0]| nbody_system.length)
         self.assertAlmostRelativeEqual(child1.velocity, [0,0.5,0.2]| nbody_system.speed)
         self.assertAlmostRelativeEqual(child2.position, [1,-0.1,0]| nbody_system.length)
@@ -844,4 +846,35 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         self.assertEquals(len(multiple.components), 2)
         print multiple.components
         
-    
+    def test4(self):
+        particles_in_encounter = Particles(keys=(1,2))
+        particles_in_encounter.mass = 1.0 /20.0  | nbody_system.mass
+        
+        particles_in_encounter[0].position = [0.303976184547589401, 0.273137803329168094, 0.0] | nbody_system.length
+        particles_in_encounter[1].position = [0.290167020486133631, 0.273139253307546515, 0.0] | nbody_system.length
+        particles_in_encounter[0].velocity = [-2.544712989335638387, -1.224759650260411004, 0.0] | nbody_system.speed
+        particles_in_encounter[1].velocity = [0.898326624897966997, 0.870611747842778838, 0.0] | nbody_system.speed
+        particles_in_encounter.radius = 0.007 | nbody_system.length
+        
+        x = encounters.HandleEncounter(
+            kepler_code = self.new_kepler(),
+            resolve_collision_code = SmallN(),
+            interaction_over_code = None,
+            G = nbody_system.G
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        
+        x.execute()
+        
+        self.assertEquals(len(x.new_multiples), 0)
+        self.assertEquals(len(x.dissolved_multiples), 0)
+        self.assertEquals(len(x.new_binaries), 0)
+        self.assertEquals(len(x.captured_singles), 0)
+        self.assertEquals(len(x.released_singles), 0)
+        r_before = (particles_in_encounter[0].position - particles_in_encounter[1].position ).length()
+        r_after = (x.particles_after_encounter[0].position - x.particles_after_encounter[1].position).length()
+        print r_before, r_after
+        self.assertFalse(r_after > (10 * r_before))
+        
+            
