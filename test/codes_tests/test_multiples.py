@@ -308,6 +308,7 @@ class TestSimpleMultiples(TestWithMPI):
             interaction_over_code = None,
             G = constants.G
         )
+        encounter_code.HARD_BINARY_FACTOR = 1
         multiples_code = encounters.Multiples(
             gravity_code = code,
             handle_encounter_code = encounter_code,

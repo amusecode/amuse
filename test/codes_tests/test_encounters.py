@@ -298,6 +298,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             kepler_code = self.new_kepler()
         )
         
+        x.HARD_BINARY_FACTOR = 1
         x.particles_in_encounter.add_particles(particles_in_encounter)
         x.particles_in_field.add_particles(particles_in_field)
         
@@ -893,7 +894,6 @@ class TestHandleEncounter(amusetest.TestWithMPI):
             interaction_over_code = None,
             G = nbody_system.G
         )
-        
         x.particles_in_encounter.add_particles(particles_in_encounter)
         
         x.execute()

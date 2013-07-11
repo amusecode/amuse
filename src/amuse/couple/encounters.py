@@ -56,7 +56,7 @@ class AbstractHandleEncounter(object):
     
     # a hard binary is defined as the small scale of the
     # interaction times this factor
-    HARD_BINARY_FACTOR=2
+    HARD_BINARY_FACTOR=3
     
     # Initial separation for the scattering experiment, relative
     # to the small scale of the interaction.
@@ -1001,6 +1001,7 @@ class Multiples(options.OptionalAttributes):
             self.model_time = self.gravity_code.model_time
             self.channel_from_code_to_model.copy()
             
+            self.particles.new_channel_to(self.multiples).copy_attributes(["x","y","z","vx","vy","vz"])
             if self.stopping_condition.is_set():
                 self.handle_stopping_condition()
                 self.particles.synchronize_to(self.gravity_code.particles)
