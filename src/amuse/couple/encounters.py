@@ -137,11 +137,23 @@ class AbstractHandleEncounter(object):
     
     
     def determine_scale_of_particles_in_the_encounter(self):
+        # limit all scaling to the sum of radii of two particles
+        # the min distance may not be smaller
+        # the max distance may not be smaller
+        max_sum_radii = None
+        radii = self.particles_in_encounter.radius
+        for i, radius in enumerate(radii[:-1]):
+            max_sum_radii_i = (radius + radii[i+1:]).max()
+            if max_sum_radii is None or max_sum_radii_i > max_sum_radii:
+                max_sum_radii = max_sum_radii_i
+                
+        
         # determine large scale from the distance of the farthest particle to the center of mass
         center_of_mass = self.particles_in_encounter.center_of_mass()
         distances = (self.particles_in_encounter.position-center_of_mass).lengths()
-        max_distance = distances.max()
-        self.large_scale_of_particles_in_the_encounter = max_distance * 2
+        max_distance = distances.max() * 2 # times 2 as we are relative to the center of mass
+        max_distance = max(max_sum_radii,  max_distance)
+        self.large_scale_of_particles_in_the_encounter = max_distance 
         
         # determine small scale from the smallest distance between all pairs in the encounter
         # for two body interaction this scale is the same as the large scale
@@ -150,6 +162,7 @@ class AbstractHandleEncounter(object):
         distances_between_all_particles = ((transpose_positions - positions)**2).sum(axis=2).sqrt()
         distances_between_different_particles  = distances_between_all_particles[distances_between_all_particles > 0*max_distance]
         min_distance = distances_between_different_particles.min()
+        min_distance = max(max_sum_radii,  min_distance)
         self.small_scale_of_particles_in_the_encounter = min_distance    
         
     def determine_singles_from_particles_and_neighbours_in_encounter(self):
@@ -181,7 +194,7 @@ class AbstractHandleEncounter(object):
         self.initial_sphere_velocity = self.all_particles_in_encounter.center_of_mass_velocity()
         
         distances = (self.all_particles_in_encounter.position-self.initial_sphere_position).lengths()
-        self.initial_sphere_radius = distances.max()
+        self.initial_sphere_radius = max(distances.max(), self.small_scale_of_particles_in_the_encounter / 2.0)
     
     def move_all_singles_to_initial_sphere_frame_of_reference(self):
         self.all_singles_in_evolve.position -= self.initial_sphere_position
@@ -204,7 +217,7 @@ class AbstractHandleEncounter(object):
         self.particles_close_to_encounter.add_particles(near_particles)
     
     def scale_up_system_if_two_body_scattering(self):
-        if len(self.particles_in_field) > 0:
+        if len(self.particles_close_to_encounter) > 0:
             return # no two body scattering if close perturbers
         if not (len(self.particles_in_encounter) == 2):
             return
@@ -349,7 +362,6 @@ class AbstractHandleEncounter(object):
             multiple_particle.child2 = None
             multiple_particle.components = multiple_components
             multiple_particle.radius = multiple_components.position.lengths().max() * 2
-            print "RADIUS: ", multiple_particle.radius , multiple_components.radius
             self.new_multiples.add_particle(multiple_particle)
             
     def determine_captured_singles_from_the_multiples(self):
@@ -505,7 +517,7 @@ class HandleEncounter(AbstractHandleEncounter):
         code = self.resolve_collision_code
         code.reset()
         
-        #print self.all_singles_in_evolve
+        print self.all_singles_in_evolve.key
         code.particles.add_particles(self.all_singles_in_evolve)
         
         interaction_over = code.stopping_conditions.interaction_over_detection
@@ -570,7 +582,33 @@ class KeplerOrbits(object):
         
         return self.kepler_code.get_elements()
 
-    def compress_binary(self, particles, scale):
+
+    def move_binary(self, scale, true_anomaly, receeding):
+        
+        if receeding:
+            # Note: Always end up on an outgoing orbit.  If
+            # periastron > scale, we will be just past periapsis.
+            if true_anomaly < 0:
+                self.kepler_code.advance_to_periastron()
+                self.kepler_code.advance_to_radius(scale)
+            else:
+                if self.kepler_code.get_separation() < scale:
+                    self.kepler_code.advance_to_radius(scale)
+                else:
+                    self.kepler_code.return_to_radius(scale)
+        else:
+            if true_anomaly > 0:
+                self.kepler_code.return_to_periastron()
+                self.kepler_code.return_to_radius(scale)
+            else:
+                if self.kepler_code.get_separation() < scale:
+                    self.kepler_code.return_to_radius(scale)
+                else:
+                    self.kepler_code.advance_to_radius(scale)
+                    
+
+            
+    def compress_binary(self, particles, scale, receeding = True):
         """
         Returns the change in positions and velocities for 
         the two-body system consisting of 'particle1' and 'particle2'.
@@ -602,23 +640,14 @@ class KeplerOrbits(object):
         if scale < limit:
             scale = limit
             
-        # Note: Always end up on an outgoing orbit.  If
-        # periastron > scale, we will be just past periapsis.
-        if true_anomaly < 0:
-            self.kepler_code.advance_to_periastron()
-            self.kepler_code.advance_to_radius(scale)
-        else:
-            if self.kepler_code.get_separation() < scale:
-                self.kepler_code.advance_to_radius(scale)
-            else:
-                self.kepler_code.return_to_radius(scale)
-                
+        self.move_binary(scale, true_anomaly, receeding)
+        
         rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
         rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
     
         return self.deltas_to_update_binary(particles, rel_position, rel_velocity)
     
-    def expand_binary(self, particles, scale):
+    def expand_binary(self, particles, scale, receeding = False):
         """
         Returns the change in positions and velocities for 
         the two-body system consisting of 'particle1' and 'particle2'.
@@ -643,20 +672,11 @@ class KeplerOrbits(object):
         limit = apoapsis - 0.01*(apoapsis-periapsis)
 
         # we cannot scale to larger than the apoapsis distance
-        if scale > limit:
+        # but if eccentricity > 1 we can!
+        if eccentricity <= 1 and scale > limit:
             scale = limit
             
-        # Note: Always end up on an outgoing orbit.  If
-        # periastron > scale, we will be just before apoapsis.
-        if true_anomaly > 0:
-            self.kepler_code.return_to_periastron()
-            self.kepler_code.return_to_radius(scale)
-        else:
-            if self.kepler_code.get_separation() < scale:
-                self.kepler_code.return_to_radius(scale)
-            else:
-                self.kepler_code.advance_to_radius(scale)
-    
+        self.move_binary(scale, true_anomaly, receeding)
     
         rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
         rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
@@ -805,14 +825,15 @@ class ScaleSystem(object):
         # special case, 2 bodies, we can use kepler to 
         # do the scaling in a consistent, energy perserving way
         if len(particles) == 2:
-            print separation, distance, sum_of_radii, max(radius, sum_of_radii)
+            print distance, sum_of_radii, radius
             if distance < sum_of_radii:
-                delta_p, delta_v = self.kepler_orbits.expand_binary(particles, max(2*radius, sum_of_radii))
+                scale = max(2*radius, sum_of_radii)
+                delta_p, delta_v = self.kepler_orbits.expand_binary(particles, scale, receeding = True)
             elif separation > radius:
                 scale = max(2 * radius, sum_of_radii)
-                delta_p, delta_v = self.kepler_orbits.compress_binary(particles, scale)
+                delta_p, delta_v = self.kepler_orbits.compress_binary(particles, scale, receeding = True)
             else:
-                delta_p, delta_v = self.kepler_orbits.expand_binary(particles, 2 * radius)
+                delta_p, delta_v = self.kepler_orbits.expand_binary(particles, 2 * radius, receeding = True)
             particles.position += delta_p
             particles.velocity += delta_v
             particles.velocity += center_of_mass_velocity
@@ -845,11 +866,14 @@ class ScaleSystem(object):
                 factor_position = 1.0
         factor_velocity_squared = 1.0 - (1.0/factor_position-1.0) * potential_energy/kinetic_energy
         if factor_velocity_squared < 0.0:
+            from amuse.units import units
             print particles.position
             print particles.velocity
             print particles.radius
-            print radius
-            print distance, sum_of_radii
+            print "radius", radius
+            print "distance", distance.as_quantity_in(units.AU)
+            print "sum_of_radii", sum_of_radii
+            print "factor_position", factor_position
             raise Exception("cannot scale the velocities")
             
         factor_velocity = numpy.sqrt(factor_velocity_squared)

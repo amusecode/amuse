@@ -548,7 +548,6 @@ class ServerSideMPIMessage(MPIMessage):
             request.Wait()
         else:
             request.Wait()
-            
         return header
         
     

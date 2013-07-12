@@ -457,7 +457,7 @@ class TestInterface(TestWithMPI):
         
     def test14(self):
         x = ForTestingInterface()
-        result = x.sleep(0.01)
+        result = x.sleep(2)
         self.assertEquals(result, 0)
         request = x.sleep.async(0.01)
         request.wait()

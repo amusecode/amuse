@@ -149,7 +149,7 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertEquals(len(multiples_code.binaries), 1)
         
         self.assertAlmostRelativeEquals(multiples_code.particles[:-1].radius, 0.5 | nbody_system.length)
-        self.assertAlmostRelativeEquals(multiples_code.particles[-1].radius, 0.4125 | nbody_system.length, 3)
+        self.assertAlmostRelativeEquals(multiples_code.particles[-1].radius, 0.4446| nbody_system.length, 3)
         multiples_code.evolve_model(2|nbody_system.time)
         self.assertEquals(len(multiples_code.multiples), 1)
         self.assertEquals(len(multiples_code.binaries), 1)
@@ -276,7 +276,7 @@ class TestSimpleMultiples(TestWithMPI):
         
         multiples_code.evolve_model(3|nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
-        self.assertAlmostRelativeEquals(multiples_code.model_time , 1.2069 | nbody_system.time, 4)
+        self.assertAlmostRelativeEquals(multiples_code.model_time , 1.19126 | nbody_system.time, 4)
         self.assertEquals(len(stopping_condition.particles(0)), 1) # 1 new multiple
         self.assertEquals(len(stopping_condition.particles(1)), 1) # 1 dissolved multiple
         

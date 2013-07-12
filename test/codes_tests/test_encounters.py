@@ -94,10 +94,13 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
-        particles_in_field = Particles(keys=(3,))
-        particles_in_field.mass = 1 | nbody_system.mass
-        particles_in_field[0].position = [3,0,0] | nbody_system.length
+        particles_in_field = Particles(keys=(5,))
+        particles_in_field.mass = 2 | nbody_system.mass
+        particles_in_field.position = [-0.5,0,0] | nbody_system.length
+        particles_in_field.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_field.radius = 0 | nbody_system.length
         
         particles_in_multiples = Particles()
         particles_in_multiples.add_particle(particles_in_encounter[0])
@@ -123,13 +126,17 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x.execute()
         
         self.assertEquals(len(x.all_singles_in_encounter), 3)
+        self.assertEquals(len(x.all_singles_in_evolve), 4)
         
-        self.assertAlmostRelativeEqual(x.all_singles_in_encounter.mass, [0.5, 0.5, 1.0]| nbody_system.mass)
+        
+        self.assertAlmostRelativeEqual(x.all_singles_in_evolve.mass, [0.5, 0.5, 1.0, 2.0]| nbody_system.mass)
         
         self.assertEquals(len(x.released_singles), 2)
         print x.particles_after_encounter
-        child1 = x.particles_after_encounter[1]
-        child2 = x.particles_after_encounter[2]
+        child1 = x.particles_after_encounter[-2]
+        child2 = x.particles_after_encounter[-1]
+        print child1.position
+        print child2.position
         self.assertAlmostRelativeEqual(child1.position, [1,0.1,0]| nbody_system.length)
         self.assertAlmostRelativeEqual(child1.velocity, [0,0.5,0.2]| nbody_system.speed)
         self.assertAlmostRelativeEqual(child2.position, [1,-0.1,0]| nbody_system.length)
@@ -431,6 +438,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter[2].position = [0,0.5,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         
         x = encounters.AbstractHandleEncounter(
@@ -475,6 +483,30 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         self.assertEquals(len(x.released_singles), 2)
         self.assertTrue(particle_in_multiples.components[0] in x.released_singles)
         self.assertTrue(particle_in_multiples.components[1] in x.released_singles)
+        
+    
+    def test8(self):
+        particles_in_encounter = Particles(3)
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [0,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[2].position = [2,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_encounter.radius = [0.5, 1, 0.2] | nbody_system.length
+        
+        
+        x = encounters.AbstractHandleEncounter(
+            G = nbody_system.G,
+            kepler_code = self.new_kepler()
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        
+        x.execute()
+        
+        self.assertAlmostRelativeEqual(x.large_scale_of_particles_in_the_encounter, 2.0 | nbody_system.length)
+        self.assertAlmostRelativeEqual(x.small_scale_of_particles_in_the_encounter, 1.5 | nbody_system.length)
+        
 
 class TestKeplerOrbits(amusetest.TestWithMPI):
     
@@ -582,8 +614,8 @@ class TestKeplerOrbits(amusetest.TestWithMPI):
 
 class TestScaleSystem(amusetest.TestWithMPI):
     
-    def new_kepler(self):
-        x = Kepler()
+    def new_kepler(self, converter = None):
+        x = Kepler(converter)
         x.initialize_code()
         return x
         
@@ -693,7 +725,37 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
         self.assertAlmostRelativeEquals(potential_energy0 + kinetic_energy0,potential_energy1 + kinetic_energy1)
 
-
+    def test5(self):
+        converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
+        kepler = encounters.KeplerOrbits(self.new_kepler(converter))
+        
+        particles= Particles(keys=(1,2,3))
+        particles.position = [
+            [ -1.28230200e-05,  -3.69457095e-05,  -2.02383488e-05],
+            [ -2.91749746e-05,  -1.21387289e-05,   1.56377986e-07],
+            [  2.92123436e-05,   1.22463965e-05,  -9.73992061e-08]
+        ] | units.parsec
+        particles.velocity = [
+            [  -8685.98414414, -413260.30543051, -135268.19175611],    
+            [  19639.55455979,  -30251.55372943,     972.69648982],
+            [ -19614.24178601,   31455.88066005,    -578.49669843]
+        ] | (units.m / units.s)
+        particles.mass = [0.14571045,  50., 50.] | units.MSun
+        particles.radius = [8, 0., 0.0] | units.AU
+        
+        x = encounters.ScaleSystem(kepler, G = constants.G)
+        
+        potential_energy0 = particles.potential_energy()
+        kinetic_energy0 = particles.kinetic_energy()
+        
+        x.scale_particles_to_sphere(particles, 4 | units.AU)
+        
+        potential_energy1 = particles.potential_energy()
+        kinetic_energy1 = particles.kinetic_energy()
+        
+        self.assertAlmostRelativeEquals(potential_energy0 + kinetic_energy0,potential_energy1 + kinetic_energy1)
+        
+        
 class TestHandleEncounter(amusetest.TestWithMPI):
     
     def new_kepler(self):
@@ -708,6 +770,7 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter[2].position = [0,0.5,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         particles_in_field = Particles()
         
@@ -737,6 +800,7 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         
         binary1 = new_binary(
@@ -804,6 +868,7 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter[0].position = [1,0,0] | nbody_system.length
         particles_in_encounter[1].position = [0,0,0] | nbody_system.length
         particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
         
         
         binary1 = new_binary(
