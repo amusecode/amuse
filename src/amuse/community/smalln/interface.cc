@@ -577,18 +577,27 @@ int update_particle_tree()
 	    UpdatedParticles.push_back(UpdatedParticle(newindex, 1));
 	}
 
+    // ARJEN: I'm pretty sure that think the memory leak occurs
+    // because each invocation to get_tree() above creates a new data
+    // structure, but it is never deleted.  If I could do it locally I
+    // would do it as follows, but this causes an error, presumably
+    // because the data are still needed in the driving script.
+
+    // rmtree(b);			// clean up temparary data structures
+    // b = b_copy;
+
     return 0;
 }
 
-int restore_particle_tree()
-{
-    if (!b_copy) return -1;
-    rmtree(b);			// possible problem with hdyn2 tree?
-    b = b_copy;			// b is now the smallN tree again
-    b_copy = NULL;
-    UpdatedParticles.clear();
-    return 0;
-}
+// int restore_particle_tree()	// never used
+// {
+//     if (!b_copy) return -1;
+//     rmtree(b);			// possible problem with hdyn2 tree?
+//     b = b_copy;			// b is now the smallN tree again
+//     b_copy = NULL;
+//     UpdatedParticles.clear();
+//     return 0;
+// }
 
 int get_number_of_particles_added(int * n_added)
 {
