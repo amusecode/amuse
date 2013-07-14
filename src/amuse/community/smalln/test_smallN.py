@@ -206,10 +206,10 @@ def run_smallN(infile = None, number_of_stars = 10,
             roots = list(x.iter_roots())
             for r in roots:
                 for level, particle in r.iter_levels():
-                    print '  '*level, int(particle.id.number),
+                    print '  '*level, int(particle.id),
                     if not particle.child1 is None:
                         m,a,e = get_binary_elements(particle)
-                        print ' (', m, a, e.number, ')'
+                        print ' (', m, a, e, ')'
                     else:
                         print ''
             break
