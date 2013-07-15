@@ -121,6 +121,8 @@ class  kepler
 	void set_periastron(const real q)	  {periastron = q;}
 
 	void set_mean_anomaly(const real M)	  {mean_anomaly = M;}
+	void set_time_of_periastron_passage(const real t)
+					{time_of_periastron_passage = t;}
 
 	// Not in the starlab version:
 
@@ -217,6 +219,8 @@ class  kepler
 	void print_dyn(ostream & s = cout);
 	void print_elements(ostream & s = cout);
 	void print_all(ostream & s = cout);
+
+	void copy_data_from(kepler *k);
 };
 
 // Functions in kepler.cc:

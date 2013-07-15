@@ -482,6 +482,42 @@ void kepler::print_elements(ostream & s)
     s.precision(p);
 }
 
+void kepler::copy_data_from(kepler *from_k)
+{
+    if (from_k == NULL) return;
+
+    // Copy all data from from_k to this instance.
+    // Is there an easier way to do this...?
+
+    total_mass = from_k->total_mass;
+    energy = from_k->energy;
+    angular_momentum = from_k->angular_momentum;
+    mean_motion = from_k->mean_motion;
+    period = from_k->period;
+    normal_unit_vector = from_k->normal_unit_vector;
+    longitudinal_unit_vector = from_k->longitudinal_unit_vector;
+    transverse_unit_vector = from_k->transverse_unit_vector;
+    semi_major_axis = from_k->semi_major_axis;
+    eccentricity = from_k->eccentricity;
+    periastron = from_k->periastron;
+    time_of_periastron_passage = from_k->time_of_periastron_passage;
+    time = from_k->time;
+    rel_pos = from_k->rel_pos;
+    rel_vel = from_k->rel_vel;
+    separation = from_k->separation;
+    true_anomaly = from_k->true_anomaly;
+    mean_anomaly = from_k->mean_anomaly;
+    pred_time = from_k->pred_time;
+    pred_rel_pos = from_k->pred_rel_pos;
+    pred_rel_vel = from_k->pred_rel_vel;
+    pred_separation = from_k->pred_separation;
+    pred_true_anomaly = from_k->pred_true_anomaly;
+    pred_mean_anomaly = from_k->pred_mean_anomaly;
+    circular_binary_limit = from_k->circular_binary_limit;
+    tidal_potential = from_k->tidal_potential;
+    delta_angular_momentum = from_k->delta_angular_momentum;
+}
+
 //----------------------------------------------------------------------------
 
 // Manipulation of orbit:

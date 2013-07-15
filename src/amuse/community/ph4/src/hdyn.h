@@ -62,7 +62,7 @@ class hdyn
 	kep = NULL;
     }
 
-    ~hdyn() {if (kep) delete kep;}
+    virtual ~hdyn() {if (kep) delete kep;}
 
     // Setters:
 
@@ -213,6 +213,8 @@ class hdyn
     inline void correct_acc_and_jerk(const real new_dt,
 				     const real prev_new_dt);
     inline void correct_pos_and_vel(const real new_dt);
+
+    void copy_data_from(hdyn *from_b);
 };
 
 typedef hdyn * hdynptr;  // to enable dynamic array declarations such as
@@ -243,6 +245,7 @@ void add_node(hdyn *n, hdyn *m);
 void detach_node(hdyn *n);
 void create_binary_node(hdyn *cm, hdyn *bi, hdyn *bj);
 void rmtree(hdyn *b, bool delete_b = true);
+void pp2(hdyn *b, int level = 0);
 
 // In smallN.cc:
 

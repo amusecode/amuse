@@ -4,7 +4,7 @@
 // externally visible functions are
 //
 //	int  check_structure(hdyn *bin, bool verbose = true)
-//	hdyn *get_tree(hdyn *bin)
+//	hdyn *get_tre(hdyn *bin)
 //
 // NOTES: The original code code used Starlab stories to track
 // critical information.  Stories are handy, but maybe too much to
@@ -1028,13 +1028,49 @@ int check_structure(hdyn *bin,			// input root node
 
     // Clean up and exit.
 
-    rmtree(b);
+    rmtree(b);			// hdyn function OK (with virtual destructor)?
+
     return over;
+}
+
+local hdyn *copy_tree2(hdyn2 *from_b)
+{
+    // Make an hdyn copy of (the hdyn parts) of an hdyn2 tree, and
+    // return a pointer to it.  Is there an easier way to extract the
+    // hdyn part of an hdyn2...? 
+
+    hdyn *b = new hdyn();
+    b->copy_data_from((hdyn*)from_b);	// cast is OK here to access data
+    if (from_b->get_parent() == NULL) b->set_parent(NULL);
+
+    hdyn *od = NULL;
+    for_all_daughters(hdyn2, from_b, bb)
+	if (!od) {
+	    od = copy_tree2(bb);
+	    od->set_parent(b);
+	    b->set_oldest_daughter(od);
+	} else {
+	    hdyn *yd = copy_tree2(bb);
+	    yd->set_parent(b);
+	    od->set_younger_sister(yd);
+	    yd->set_older_sister(od);
+	    od = yd;
+	}
+
+    return b;
 }
 
 hdyn *get_tree(hdyn *bin)
 {
-    return (hdyn*)get_tree2(bin);	// cast OK?
+    // Need to return an hdyn pointer from an hdyn2 object.  A cast
+    // would return the correct data, but when rmtree() is called on
+    // the cast pointer there may be problems removing the hdyn2 part.
+    // Better to make an hdyn copy here and return that.
+
+    hdyn2 *b = get_tree2(bin);		// NB don't delete b -- done elsewhere
+    hdyn *bb = copy_tree2(b);
+
+    return bb;
 }
 
 #else

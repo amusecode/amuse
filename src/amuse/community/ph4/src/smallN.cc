@@ -823,7 +823,8 @@ int smallN_evolve(hdyn *b,
 		  int verbose)		// default = 0
 {
     int is_interaction_over_detection_enabled = 0;
-    is_stopping_condition_enabled(INTERACTION_OVER_DETECTION, &is_interaction_over_detection_enabled);
+    is_stopping_condition_enabled(INTERACTION_OVER_DETECTION,
+				  &is_interaction_over_detection_enabled);
     
     set_kepler_tolerance(2);	// energy corrections may force orbital
 				// separations outside allowed limits
@@ -856,7 +857,8 @@ int smallN_evolve(hdyn *b,
                 }
                 else
                 {
-                    set_stopping_condition_info(stopping_index, INTERACTION_OVER_DETECTION);
+                    set_stopping_condition_info(stopping_index,
+						INTERACTION_OVER_DETECTION);
                 }
             }
         }

@@ -136,11 +136,51 @@ void rmtree(hdyn* b,
     if (delete_b) delete b;	// optionally leave node itself untouched
 }
 
+void pp2(hdyn *b,
+	 int level)		// default = 0
+{
+    for (int i = 0; i<level*2; i++) {cout << " ";}
+    cout << b->get_index() << " " << b->get_mass()
+	 << " " << b->get_pos() << endl;
+    for_all_daughters(hdyn, b, daughter)
+	pp2(daughter, level + 1);	
+}
+
+
 // Prediction:
 
 void predict_loworder_all(hdyn *b, real t) {
     if (t != b->get_t_pred()) {
 	for_all_daughters(hdyn, b, bi) bi->predict_loworder(t);
 	b->set_t_pred(t);
+    }
+}
+
+void hdyn::copy_data_from(hdyn *from_b)
+{
+    if (from_b == NULL) return;
+
+    // Copy all dynamic data from from_k to this instance.
+    // Is there an easier way to do this...?
+
+    index = from_b->index;
+    mass = from_b->mass;
+    radius = from_b->radius;
+    pot = from_b->pot;
+    t_pred = from_b->t_pred;
+    fully_unperturbed = from_b->fully_unperturbed;
+    pos = from_b->pos;
+    vel = from_b->vel;
+    pred_pos = from_b->pred_pos;
+    pred_vel = from_b-> pred_vel;
+    acc = from_b->acc;
+    jerk = from_b->jerk;
+    old_acc = from_b->old_acc;
+    old_jerk = from_b->old_jerk;
+
+    if (from_b->kep != NULL) {
+	kepler *k = new kepler();
+	k->copy_data_from(from_b->kep);
+	kep = k;
     }
 }
