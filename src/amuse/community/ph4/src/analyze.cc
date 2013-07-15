@@ -1067,8 +1067,9 @@ hdyn *get_tree(hdyn *bin)
     // the cast pointer there may be problems removing the hdyn2 part.
     // Better to make an hdyn copy here and return that.
 
-    hdyn2 *b = get_tree2(bin);		// NB don't delete b -- done elsewhere
+    hdyn2 *b = get_tree2(bin);
     hdyn *bb = copy_tree2(b);
+    rmtree(b);
 
     return bb;
 }
