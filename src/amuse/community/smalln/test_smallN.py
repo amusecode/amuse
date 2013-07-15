@@ -195,7 +195,6 @@ def run_smallN(infile = None, number_of_stars = 10,
 
         over = gravity.is_over()
         if over:
-            print '\ninteraction is over'
             gravity.update_particle_tree()
             gravity.update_particle_set()
             gravity.particles.synchronize_to(stars)
@@ -223,8 +222,8 @@ def run_smallN(infile = None, number_of_stars = 10,
 if __name__ == '__main__':
 
     infile = None
-    N = 10
-    t_end = 5.0 | nbody_system.time
+    N = 3
+    t_end = 50.0 | nbody_system.time
     delta_t = 1.0 | nbody_system.time
     accuracy_parameter = 0.1
     random_seed = -1
