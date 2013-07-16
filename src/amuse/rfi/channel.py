@@ -1752,7 +1752,7 @@ class SocketChannel(AbstractMessageChannel):
         environment = os.environ
         
         if self.number_of_workers > 1:
-            logging.getLogger("channel").warn("multiple workers instances for socket worker not properly tested yet")
+            logging.getLogger("channel").info("multiple workers instances for socket worker not properly tested yet")
             
             #prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
