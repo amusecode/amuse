@@ -1,8 +1,8 @@
 #ifndef MERGE_H
 #define MERGE_H
 
-#include"Particle.h"
 #include"external_field.h"
+#include"Particle.h"
 
 int merge_check(Particle prt[],
 		int address[],

@@ -1,10 +1,10 @@
 #ifndef EXTERNAL_FIELD_H
 #define EXTERNAL_FIELD_H
 
+#include"mpi_interface.h"
 #include"Vector3.h"
 #include"force.h"
 #include"Particle.h"
-#include"mpi_interface.h"
 
 /////////////////////////////
 ///// forces from SMBH //////

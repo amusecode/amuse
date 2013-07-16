@@ -1,6 +1,8 @@
 #ifndef MPI_INTERFACE_H
 #define MPI_INTERFACE_H
 
+#include"mpi.h"
+//#include"/data/iwasawa/work/amuse/prerequisites/include/mpi.h"
 #include<iostream>
 #include<fstream>
 #include<cmath>
@@ -8,8 +10,6 @@
 //#include<unistd.h>
 #include<typeinfo>
 #include<cstring>
-#include"mpi.h"
-//#include"/data/iwasawa/work/amuse/prerequisites/include/mpi.h"
 #include"Particle.h"
 
 void allocate_mpi_buffer(const int &N);

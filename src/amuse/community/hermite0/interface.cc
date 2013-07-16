@@ -16,6 +16,10 @@
 //    version 3a: Aug 2007   Steve McMillan (MODEST-7a)
 //=============================================================================
 
+#ifndef NOMPI
+#include <mpi.h>
+#endif
+
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
@@ -28,10 +32,6 @@
 #include <algorithm>
 #include <string>
 #include <map>
-
-#ifndef NOMPI
-#include <mpi.h>
-#endif
 
 
 // AMUSE STOPPING CONDITIONS SUPPORT

@@ -1,12 +1,12 @@
 #ifndef EVOLVE_H
 #define EVOLVE_H
 
+#include"mpi_interface.h"
+#include"external_field.h"
 #include"Particle.h"
 #include"merge.h"
 #include"schedule.h"
-#include"mpi_interface.h"
 #include "6thorder.h"
-#include"external_field.h"
 
 extern int EX_FLAG;
 

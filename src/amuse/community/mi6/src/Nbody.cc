@@ -1,17 +1,17 @@
 /*
 J-paralel
 */
+#include"mpi_interface.h"
+#include"external_field.h"
 #include<iostream>
 #include<fstream>
 #include<cmath>
 #include<unistd.h>
 #include"6thorder.h"
 #include"IO.h"
-#include"mpi_interface.h"
 #include"evolve.h"
 #include"energy.h"
 #include"merge.h"
-#include"external_field.h"
 
 using namespace std;
 
