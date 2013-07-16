@@ -16,6 +16,8 @@ import array
 
 import logging
 
+#logging.basicConfig(level=logging.WARN)
+
 try:
     from mpi4py import rc
     rc.initialize = False
@@ -25,6 +27,7 @@ except ImportError:
     
 from subprocess import Popen, PIPE
 
+from amuse import config
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
@@ -910,7 +913,7 @@ class MpiChannel(AbstractMessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type = None, interpreter_executable = None,  **options):
         AbstractMessageChannel.__init__(self, **options)
         
-        logging.basicConfig(level=logging.WARN)
+        #logging.basicConfig(level=logging.WARN)
         #logging.getLogger("channel").setLevel(logging.DEBUG)
         #logging.getLogger("code").setLevel(logging.DEBUG)
         
@@ -1668,7 +1671,7 @@ class SocketChannel(AbstractMessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable = None,**options):
         AbstractMessageChannel.__init__(self, **options)
         
-        #logging.basicConfig(level=logging.DEBUG)
+        
         
         logging.getLogger("channel").debug("initializing SocketChannel with options %s", options)
        
@@ -1680,17 +1683,22 @@ class SocketChannel(AbstractMessageChannel):
         if self.hostname != None and self.hostname != 'localhost':
             raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
             
-#        if self.number_of_workers != 0 and self.number_of_workers != 1:
-#            raise exceptions.CodeException("can only a single worker for each code using Socket Channel, not " + str(self.number_of_workers))
-            
         self.id = 0
+
+        if config.mpi.mpiexec_enabled:
+            self.mpiexec = config.mpi.mpiexec
+        else:
+            self.mpiexec = None
+            if self.number_of_workers != 0 and self.number_of_workers != 1:
+                raise exceptions.CodeException("Multiple workers requested, but mpiexec not configured in amuse");
+
         
         if not legacy_interface_type is None:
             self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
             
-        #logging.getLogger("channel").debug("full name of worker is %s", self.full_name_of_the_worker)
+        logging.getLogger("channel").debug("full name of worker is %s", self.full_name_of_the_worker)
         
         self._is_inuse = False
         self.socket = None
@@ -1743,17 +1751,18 @@ class SocketChannel(AbstractMessageChannel):
         
         if self.number_of_workers > 1:
             logging.getLogger("channel").warn("multiple workers instances for socket worker not properly tested yet")
-            command = "mpiexec"
+            
             #prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
             arguments.insert(0, "-np")
-            arguments.insert(0, "/usr/bin/mpiexec")
+            arguments.insert(0, self.mpiexec)
+            
+            command = self.mpiexec
 
-        logging.getLogger("channel").warn("starting process with arguments %s", arguments)
-
+        logging.getLogger("channel").info("starting process with command `%s` and arguments `%s`", command, arguments)
         
         self.process = Popen(arguments, executable = command, stdout = self.stdout, stderr = self.stderr)
-        logging.getLogger("channel").warn("waiting for connection from worker")
+        logging.getLogger("channel").debug("waiting for connection from worker")
      
         self.socket, address = server_socket.accept()
         
@@ -1892,11 +1901,11 @@ class OutputHandler(threading.Thread):
         threading.Thread.__init__(self)
         self.stream = stream
 
-        logging.getLogger("channel").debug("output handler connecting to daemon")
+        logging.getLogger("channel").debug("output handler connecting to daemon at %d", port)
         
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
-        address = ('localhost', 61575)
+        address = ('localhost', port)
         
         try:
             self.socket.connect(address)
@@ -1920,14 +1929,14 @@ class OutputHandler(threading.Thread):
     def run(self):
         
         while True:
-            logging.getLogger("channel").debug("receiving data for output")
+            #logging.getLogger("channel").debug("receiving data for output")
             data = self.socket.recv(1024)
             
             if len(data) == 0:
-                logging.getLogger("channel").debug("end of output", len(data))
+                #logging.getLogger("channel").debug("end of output", len(data))
                 return
             
-            logging.getLogger("channel").debug("got %d bytes", len(data))
+            #logging.getLogger("channel").debug("got %d bytes", len(data))
             
             self.stream.write(data)
 
@@ -1956,10 +1965,9 @@ class IbisChannel(AbstractMessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable = None, **options):
         AbstractMessageChannel.__init__(self, **options)
         
-        logging.basicConfig(level=logging.WARN)
         #logging.getLogger("channel").setLevel(logging.DEBUG)
         
-        #logging.getLogger("channel").debug("initializing IbisChannel with options %s", options)
+        logging.getLogger("channel").info("initializing IbisChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker
         self.interpreter_executable = interpreter_executable

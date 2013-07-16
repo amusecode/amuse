@@ -32,6 +32,8 @@ class mpi(object):
     mpicxx = '@MPICXX@' 
     mpicc  = '@MPICC@'
     mpif95 = '@MPIFC@'
+    mpiexec = '@MPIEXEC@'
+    mpiexec_enabled = '@WITH_MPIEXEC@'=='yes'
 
 class java(object):
     is_enabled = '@have_java@'=='yes'
