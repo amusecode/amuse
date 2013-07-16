@@ -1749,6 +1749,8 @@ class SocketChannel(AbstractMessageChannel):
         arguments.insert(0, command)        
         arguments.append(str(server_socket.getsockname()[1]))
         
+        environment = os.environ
+        
         if self.number_of_workers > 1:
             logging.getLogger("channel").warn("multiple workers instances for socket worker not properly tested yet")
             
@@ -1759,8 +1761,13 @@ class SocketChannel(AbstractMessageChannel):
             
             command = self.mpiexec
 
-        
-        environment = dict((k, v) for (k, v) in os.environ.iteritems() if ((not "MPI" in k) and (not "MPICH" in k)))
+            #limit environment to bare minimum
+            keys = ['HOME', 'PATH', 'LD_LIBRARY_PATH', 'USER', 'SHELL', 'LANG', 'PYTHONPATH', 'PYTHONHOME']
+
+            environment = dict()
+            for key in keys:
+                if os.environ.has_key(key):
+                    environment[key] = os.environ.get(key)
 
         logging.getLogger("channel").info("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, environment)
         
