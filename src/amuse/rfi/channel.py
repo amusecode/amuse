@@ -1759,9 +1759,12 @@ class SocketChannel(AbstractMessageChannel):
             
             command = self.mpiexec
 
-        logging.getLogger("channel").info("starting process with command `%s` and arguments `%s`", command, arguments)
         
-        self.process = Popen(arguments, executable = command, stdout = self.stdout, stderr = self.stderr)
+        environment = dict((k, v) for (k, v) in os.environ.iteritems() if ((not "MPI" in k) and (not "MPICH" in k)))
+
+        logging.getLogger("channel").info("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, environment)
+        
+        self.process = Popen(arguments, executable = command, stdout = self.stdout, stderr = self.stderr, close_fds=False, env=environment)
         logging.getLogger("channel").debug("waiting for connection from worker")
      
         self.socket, address = server_socket.accept()
