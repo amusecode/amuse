@@ -619,6 +619,7 @@ class string_unit(nonnumeric_unit):
         return 'S256'
 
 class enumeration_unit(nonnumeric_unit):
+    DEFINED={}
     """
     Enumeration unit objects define a fixed set of quantities.
     
@@ -662,6 +663,7 @@ class enumeration_unit(nonnumeric_unit):
         if not len(self.possible_values) == len(self.names_for_values):
             raise exceptions.AmuseException("Must provide equal lenght list for values({0}) and names({1})".format(len(self.possible_values), len(self.names_for_values)))
         self.mapping_from_values_to_names = self._initial_mapping_from_values_to_names()
+        self.DEFINED[name] = self
         
     def _initial_list_of_possible_values(self, possible_values, names_for_values):
         if possible_values is None:
@@ -709,6 +711,22 @@ class enumeration_unit(nonnumeric_unit):
     @property
     def dtype(self):
         return 'int32'
+        
+    @classmethod
+    def get(cls, name):
+        try:
+            return cls.DEFINED[name]
+        except KeyError as ex:
+            from amuse.units import nbody_system
+            from amuse.units import si
+            return cls.DEFINED[name]
+            
+
+    def __reduce__(self):
+        return (get_enumeration_unit_with_name, (self.name,))
+    
+        
+        
     
     
 class named_unit(unit):
@@ -1049,6 +1067,8 @@ def get_system_with_name(name):
     return system.get(name)
 
 
+def get_enumeration_unit_with_name(name):
+    return enumeration_unit.get(name)
 
 def get_base_unit_with_name(system, name):
     return system.base(name)

@@ -1009,6 +1009,14 @@ class NonNumericQuantity(Quantity):
     def new_zeros_array(self, length):
         array = numpy.zeros(length, dtype=self.unit.dtype)
         return new_quantity(array, self.unit)
+    
+    
+    def __getstate__(self):
+        return (self.unit, self.value)
+        
+    def __setstate__(self, tuple):
+        self.unit = tuple[0]
+        self.value = tuple[1]
 
 class AdaptingVectorQuantity(VectorQuantity):
     """

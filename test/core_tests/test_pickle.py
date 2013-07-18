@@ -140,6 +140,16 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         self.assertEqual(process.returncode, 0)        
         self.assertEqual(str(quantity),unpickled_quantity_string.strip())
         
+    
+    def test11(self):
+        value = 1 | stellar_type
+        print value
+        self.assertEqual(1 | stellar_type, value)
+        pickled = pickle.dumps(value)
+        unpickled_value = pickle.loads(pickled)
+        self.assertEqual(1 | stellar_type, unpickled_value)
+
+        
 class TestPicklingOfParticleSets(amusetest.TestCase):
 
     def test1(self):
