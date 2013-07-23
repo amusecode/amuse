@@ -1689,7 +1689,7 @@ class SocketChannel(AbstractMessageChannel):
             
         self.id = 0
 
-        if not confis is None and config.mpi.mpiexec_enabled:
+        if not config is None and config.mpi.mpiexec_enabled:
             self.mpiexec = config.mpi.mpiexec
         else:
             self.mpiexec = None
