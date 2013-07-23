@@ -27,7 +27,11 @@ except ImportError:
     
 from subprocess import Popen, PIPE
 
-from amuse import config
+try:
+    from amuse import config
+except ImportError:
+    config = None
+    
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
@@ -1685,7 +1689,7 @@ class SocketChannel(AbstractMessageChannel):
             
         self.id = 0
 
-        if config.mpi.mpiexec_enabled:
+        if not confis is None and config.mpi.mpiexec_enabled:
             self.mpiexec = config.mpi.mpiexec
         else:
             self.mpiexec = None
