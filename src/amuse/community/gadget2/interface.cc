@@ -332,6 +332,11 @@ int commit_particles(){
             SphP[i].HydroAccel[j] = 0;
         }
         SphP[i].DtEntropy = 0;
+#ifdef TIMESTEP_UPDATE
+        SphP[i].FeedbackFlag = 0;
+        for(j = 0; j < 3; j++)
+            SphP[i].FeedAccel[j] = 0;
+#endif        
     }
 
     ngb_treeallocate(MAX_NGB);

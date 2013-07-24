@@ -827,7 +827,7 @@ int get_timestep(int p,         /*!< particle index */
     {
       printf("\nError: A timestep of size zero was assigned on the integer timeline!\n"
              "We better stop.\n"
-             "Task=%d Part-ID=%d dt=%g tibase=%g ti_step=%d ac=%g xyz=(%g|%g|%g) tree=(%g|%g%g)\n\n",
+             "Task=%d Part-ID=%d dt=%g tibase=%g ti_step=%d ac=%g xyz=(%g|%g|%g) tree=(%g|%g|%g)\n\n",
              ThisTask, (int) P[p].ID, dt, All.Timebase_interval, ti_step, ac,
              P[p].Pos[0], P[p].Pos[1], P[p].Pos[2], P[p].GravAccel[0], P[p].GravAccel[1], P[p].GravAccel[2]);
 #ifdef PMGRID
@@ -835,13 +835,19 @@ int get_timestep(int p,         /*!< particle index */
 #endif
       if(P[p].Type == 0)
 	printf("hydro-frc=(%g|%g|%g)\n", SphP[p].HydroAccel[0], SphP[p].HydroAccel[1], SphP[p].HydroAccel[2]);
+      if(P[p].Type == 0)
+	printf("feedback-flag=%d feedback-frc=(%g|%g|%g)\n", SphP[p].FeedbackFlag,SphP[p].FeedAccel[0], SphP[p].FeedAccel[1], SphP[p].FeedAccel[2]);
       
       fflush(stdout);
       //endrun(818);
       ZeroTimestepEncountered = 1; // Do not terminate the run, but let AMUSE handle it
       ti_step = 1;
     }
-  
+  if(P[p].Type == 0)
+    if(SphP[p].FeedbackFlag<0 || SphP[p].FeedbackFlag>2)
+      {
+      printf("invalid feedback-flag, Task=%d p=%d Part-ID=%d\n", ThisTask, p, (int) P[p].ID);
+    }
   return ti_step;
 }
 
