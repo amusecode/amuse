@@ -243,6 +243,7 @@ END FUNCTION
 ! star to remove
      is=INT(ran2(idum)*REAL(nsmax)) + 1
      r(1:3,is)=r(1:3,nsmax)
+     v(1:3,is)=v(1:3,nsmax)
      nsmax=nsmax - 1
      IF (nsmax==nstar) EXIT
    END DO

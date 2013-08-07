@@ -110,7 +110,7 @@ class MakeFractalCluster(object):
         if self.masses is None:
             masses=numpy.array([0.]*len(x))+1./self.N
         else:
-            masses=self.masses
+            masses=self.masses/self.masses.sum()
         positions =  numpy.hstack((x,y,z))
         velocities =  numpy.hstack((vx,vy,vz))
         
@@ -125,12 +125,13 @@ class MakeFractalCluster(object):
         result.velocity = nbody_system.speed.new_quantity( velocities)
         result.radius = 0 | nbody_system.length
 
+        result.move_to_center()
+
         ep=result.potential_energy(G=nbody_system.G)
         ek=result.kinetic_energy()
         fac=(self.virial_ratio*abs(ep)/ek)**0.5
         result.velocity*=fac
 
-        result.move_to_center()
         if self.do_scale:
             result.scale_to_standard()
 
