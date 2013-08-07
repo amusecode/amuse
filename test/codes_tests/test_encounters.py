@@ -506,8 +506,174 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         self.assertAlmostRelativeEqual(x.large_scale_of_particles_in_the_encounter, 2.0 | nbody_system.length)
         self.assertAlmostRelativeEqual(x.small_scale_of_particles_in_the_encounter, 1.5 | nbody_system.length)
+    
+    
+    
+    def test8(self):
+        particles_in_encounter = Particles(2)
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [0,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [1,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
         
-
+        
+        x = encounters.AbstractHandleEncounter(
+            G = nbody_system.G,
+            kepler_code = self.new_kepler()
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+       
+        
+        x.execute()
+        
+        self.assertAlmostRelativeEqual(x.initial_potential_in_field,  0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_energy, -0.75 | nbody_system.energy)
+        
+    
+    def test9(self):
+        particles_in_encounter = Particles(2)
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [0,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [1,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
+        
+        
+        x = encounters.AbstractHandleEncounter(
+            G = nbody_system.G,
+            kepler_code = self.new_kepler()
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+       
+        
+        x.execute()
+        
+        self.assertAlmostRelativeEqual(x.initial_potential_in_field,  0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_energy, -0.75 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_singles_energy, -0.75 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.delta_phi_1,  0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_multiple_energy,  0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.final_energy, -0.75 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.delta_phi_2, 0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.final_multiple_energy,  0 | nbody_system.energy)
+        
+        
+    def test10(self):
+        particles_in_encounter = Particles(2)
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [0,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [1,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
+        
+        
+        x = encounters.AbstractHandleEncounter(
+            G = nbody_system.G,
+            kepler_code = self.new_kepler()
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particle(Particle(
+            mass = 1 | nbody_system.mass, 
+            position = [5,0,0]  | nbody_system.length,
+            velocity = [0,0,0]  | nbody_system.speed,
+            radius = 0 | nbody_system.length 
+        ))
+       
+        
+        x.execute()
+        
+        self.assertAlmostRelativeEqual(x.initial_potential_in_field,   -0.45 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_energy, -0.75 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_singles_energy, -0.75 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.delta_phi_1,  0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_multiple_energy,  0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.final_energy, -0.75 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.delta_phi_2, 0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.final_multiple_energy,  0 | nbody_system.energy)
+        
+    def test11(self):
+        particles_in_encounter = Particles(2)
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [0,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [1,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
+        
+        particles_in_multiples = Particles()
+        particles_in_multiples.add_particle(particles_in_encounter[0])
+        multiple = particles_in_multiples[0]
+        multiple.components = Particles(keys = (3,4))
+        multiple.components.mass = 0.5 | nbody_system.mass
+        multiple.components[0].position = [0,0.1,0] | nbody_system.length
+        multiple.components[1].position = [0,-0.1,0] | nbody_system.length
+        multiple.components[0].velocity = [0,0,0.2] | nbody_system.speed
+        multiple.components[1].velocity = [0,0.1,-0.2] | nbody_system.speed
+        multiple.components.child1 = None
+        multiple.components.child2 = None
+        
+        
+        
+        x = encounters.AbstractHandleEncounter(
+            G = nbody_system.G,
+            kepler_code = self.new_kepler()
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particle(Particle(
+            mass = 1 | nbody_system.mass, 
+            position = [5,0,0]  | nbody_system.length,
+            velocity = [0,0,0]  | nbody_system.speed,
+            radius = 0 | nbody_system.length 
+        ))
+        x.existing_multiples.add_particles(particles_in_multiples)
+       
+        
+        x.execute()
+        
+        self.assertAlmostRelativeEqual(x.initial_potential_in_field,   -0.45 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_energy, -0.75 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_singles_energy, -1.912495| nbody_system.energy,4)
+        self.assertAlmostRelativeEqual(x.delta_phi_1,  0.06500400 | nbody_system.energy,4)
+        self.assertAlmostRelativeEqual(x.initial_multiple_energy,  -1.2275 | nbody_system.energy,4)
+        self.assertAlmostRelativeEqual(x.final_energy, -1.9124959996 | nbody_system.energy, 4)
+        self.assertAlmostRelativeEqual(x.delta_phi_2, 0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.final_multiple_energy,  0 | nbody_system.energy)
+        
+    def test12(self):
+        particles_in_encounter = Particles(2)
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [0,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [1,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
+        particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
+        
+        
+        x = encounters.AbstractHandleEncounter(
+            G = nbody_system.G,
+            kepler_code = self.new_kepler()
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particle(Particle(
+            mass = 0.1 | nbody_system.mass, 
+            position = [1.5,0,0]  | nbody_system.length,
+            velocity = [0,0,0]  | nbody_system.speed,
+            radius = 1 | nbody_system.length 
+        ))
+       
+        
+        x.execute()
+        
+        self.assertAlmostRelativeEqual(x.initial_potential_in_field,   0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_energy, -1.016666 | nbody_system.energy, 4)
+        self.assertAlmostRelativeEqual(x.initial_singles_energy, -1.016666 | nbody_system.energy, 4)
+        self.assertAlmostRelativeEqual(x.delta_phi_1,  0 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.initial_multiple_energy,  0 | nbody_system.energy)
+        
 class TestKeplerOrbits(amusetest.TestWithMPI):
     
     def new_kepler(self):

@@ -1238,6 +1238,9 @@ class GravitationalDynamics(common.CommonCode):
         self.initialize_code()
         self.parameters.reset_from_memento(parameters)
         
+    def get_total_energy(self):
+        return self.get_potential_energy() + self.get_kinetic_energy()
+        
 
 class GravityFieldCode(object):
         

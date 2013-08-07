@@ -12,12 +12,17 @@ from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import quantities
 from amuse.units.quantities import as_vector_quantity
+from amuse.units.quantities import zero
 
 from amuse.support import options
 from amuse.support import code
 
 import logging
 import numpy
+import logging
+
+LOG_ENERGY = logging.getLogger('energy')
+LOG_ENCOUNTER = logging.getLogger('encounter')
 
 class AbstractHandleEncounter(object):
     """Abstract base class for all strategies to handle encounters.
@@ -100,6 +105,7 @@ class AbstractHandleEncounter(object):
         self.singles_and_multiples_after_evolve = Particles()
     
         self.kepler_orbits.reset()
+        self.scatter_energy_error = zero
             
     def execute(self):
         
@@ -107,11 +113,17 @@ class AbstractHandleEncounter(object):
         
         self.select_neighbours_from_field()
         
+        self.determine_initial_energies()
+        
         self.determine_initial_sphere_of_particles_in_encounter()
         
         self.scale_up_system_if_two_body_scattering()
         
-        self.determine_singles_from_particles_and_neighbours_in_encounter()
+        self.determine_initial_multiple_energy()
+        
+        self.determine_singles_and_energies_from_particles_and_neighbours_in_encounter()
+        
+        self.determine_initial_singles_energies()
         
         self.move_all_singles_to_initial_sphere_frame_of_reference()
         
@@ -134,7 +146,28 @@ class AbstractHandleEncounter(object):
         self.move_evolved_state_to_original_frame_of_reference()
         
         self.update_positions_of_subsets()
+        
+        self.determine_final_multiple_energy()
+        
+        self.determine_final_energies()
+        
+        self.create_energy_report()
     
+    
+    def determine_initial_energies(self):
+        
+        self.initial_energy =  self.all_particles_in_encounter.kinetic_energy()
+        self.initial_energy += self.all_particles_in_encounter.potential_energy(G=self.G)
+        
+        # particles_close_to_encounter come from the field, 
+        # so these have to be removed for the potential calculation
+        self.initial_potential_in_field = self.all_particles_in_encounter.potential_energy_in_field(
+            self.particles_in_field - self.particles_close_to_encounter,
+            G=self.G
+        )
+        
+        LOG_ENERGY.info("E0={0}, PHI0={1}".format(self.initial_energy, self.initial_potential_in_field))
+        
     
     def determine_scale_of_particles_in_the_encounter(self):
         # limit all scaling to the sum of radii of two particles
@@ -165,15 +198,87 @@ class AbstractHandleEncounter(object):
         min_distance = max(max_sum_radii,  min_distance)
         self.small_scale_of_particles_in_the_encounter = min_distance    
         
-    def determine_singles_from_particles_and_neighbours_in_encounter(self):
+    def determine_initial_multiple_energy(self):
+        self.initial_multiple_energy = zero
         for x in self.particles_in_encounter:
-            components = self.get_singles_of_a_particle(x)
-            self.all_singles_in_encounter.add_particles(components)
+            energy = self.get_energy_of_a_multiple(x)
+            self.initial_multiple_energy += energy
+             
         for x in self.particles_close_to_encounter:
-            components = self.get_singles_of_a_particle(x)
-            self.all_singles_close_to_encounter.add_particles(components)
+            energy = self.get_energy_of_a_multiple(x)
+            self.initial_multiple_energy += energy
+    
+    def determine_final_multiple_energy(self):
+        self.final_multiple_energy = zero
+        for x in self.particles_after_encounter:
+            energy = self.get_energy_of_a_multiple(x)
+            self.final_multiple_energy += energy
+             
         
-    def get_singles_of_a_particle(self, particle):
+    def determine_singles_and_energies_from_particles_and_neighbours_in_encounter(self):
+        for x in self.particles_in_encounter:
+            components = self.break_up_multiple_and_return_singles_of_a_particle(x)
+            self.all_singles_in_encounter.add_particles(components)
+             
+        for x in self.particles_close_to_encounter:
+            components = self.break_up_multiple_and_return_singles_of_a_particle(x)
+            self.all_singles_close_to_encounter.add_particles(components)
+            
+            
+    def determine_initial_singles_energies(self):
+        
+        self.initial_singles_energy =  self.all_singles_in_evolve.kinetic_energy()
+        self.initial_singles_energy += self.all_singles_in_evolve.potential_energy(G=self.G)
+        
+        self.delta_phi_1 = self.initial_singles_energy - self.initial_energy - self.initial_multiple_energy
+             
+        LOG_ENERGY.info("E1={0}, EMul0={1}, DPHI1={2}".format(
+                self.initial_singles_energy, 
+                self.initial_multiple_energy,
+                self.delta_phi_1
+            )
+        )
+      
+    
+    def determine_final_energies(self):
+        
+        self.final_kinetic_energy =  self.particles_after_encounter.kinetic_energy()
+        self.final_energy = self.final_kinetic_energy + self.particles_after_encounter.potential_energy(G=self.G)
+        
+        self.final_potential_in_field = self.particles_after_encounter.potential_energy_in_field(
+            self.particles_in_field - self.particles_close_to_encounter,
+            G=self.G
+        )
+        
+        self.delta_phi_2 = (
+            self.initial_singles_energy + self.scatter_energy_error - 
+            self.final_multiple_energy - 
+            self.final_energy
+        )
+             
+        LOG_ENERGY.info("E3={0}, PHI2={1}, EMul1={2}, DPHI2={3}".format(
+                self.final_energy, 
+                self.final_potential_in_field,
+                self.final_multiple_energy,
+                self.delta_phi_2
+            )
+        )
+        
+    def create_energy_report(self):
+        self.delta_energy = self.final_energy - self.initial_energy
+        self.delta_potential_in_field = self.final_potential_in_field - self.initial_potential_in_field
+        self.delta_multiple_energy = self.final_multiple_energy - self.initial_multiple_energy
+        self.delta_internal_potential = self.delta_phi_2 - self.delta_phi_1
+        
+        if self.final_kinetic_energy == zero:
+            return
+            
+        tidal_factor = self.delta_energy / self.final_kinetic_energy
+        if  abs(tidal_factor) >  1e-2:
+            LOG_ENERGY.warn("Tidal correction is needed, {0}".format(tidal_factor))
+        
+      
+    def break_up_multiple_and_return_singles_of_a_particle(self, particle):
         if particle in self.existing_multiples:
             multiple = particle.as_particle_in_set(self.existing_multiples)
             components = multiple.components
@@ -181,6 +286,7 @@ class AbstractHandleEncounter(object):
             result = Particles()
             for node in tree.iter_descendant_leafs():
                 result.add_particle(node.particle)
+            
             result.position += particle.position
             result.velocity += particle.velocity
             
@@ -188,6 +294,24 @@ class AbstractHandleEncounter(object):
             return result
         else:
             return particle.as_set()
+
+    def get_energy_of_a_multiple(self, particle):
+        if particle in self.existing_multiples:
+            multiple = particle.as_particle_in_set(self.existing_multiples)
+            components = multiple.components
+            tree = components.new_binary_tree_wrapper()
+            singles = Particles()
+            for node in tree.iter_descendant_leafs():
+                singles.add_particle(node.particle)
+            
+            # tree is stored in rest state,
+            # no energy of central particle
+            energy  = singles.kinetic_energy()
+            energy += singles.potential_energy(G = self.G)
+            
+            return  energy
+        else:
+            return zero
 
     def determine_initial_sphere_of_particles_in_encounter(self):
         self.initial_sphere_position = self.all_particles_in_encounter.center_of_mass()
@@ -249,6 +373,7 @@ class AbstractHandleEncounter(object):
         """
         self.singles_and_multiples_after_evolve.add_particles(self.all_singles_in_evolve)
         
+        self.scatter_energy_error = zero
     
     def determine_structure_of_the_evolved_state(self):
         """
@@ -520,6 +645,8 @@ class HandleEncounter(AbstractHandleEncounter):
         print self.all_singles_in_evolve.key
         code.particles.add_particles(self.all_singles_in_evolve)
         
+        initial_scatter_energy = code.get_total_energy()
+        
         interaction_over = code.stopping_conditions.interaction_over_detection
         interaction_over.enable()
         
@@ -535,7 +662,14 @@ class HandleEncounter(AbstractHandleEncounter):
 
             # Return the tree structure.
             code.update_particle_set()
+            
+            final_scatter_energy = code.get_total_energy()
+            
+            self.scatter_energy_error = final_scatter_energy - initial_scatter_energy 
+            
             self.singles_and_multiples_after_evolve.add_particles(code.particles)
+            
+            LOG_ENERGY.info('scatter_energy_error={0}'.format(self.scatter_energy_error))
         else:        
             raise Exception(
                 "Did not finish the small-N simulation before end time {0}".
@@ -1065,9 +1199,6 @@ class Multiples(options.OptionalAttributes):
         
     def handle_stopping_condition(self):
         encounters = self.determine_encounters()
-        if len(encounters[0]) > 1:
-            if hasattr(self, 'plot_func'):
-                self.plot_func(encounters[0])
         for particles_in_encounter in encounters:
             self.handle_encounter(particles_in_encounter)
     
@@ -1176,3 +1307,4 @@ class Multiples(options.OptionalAttributes):
                 from_key_to_encounter[key1] = encounter
         
         return [x for x in encounters if len(x) > 0]
+
