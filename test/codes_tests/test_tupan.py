@@ -115,6 +115,14 @@ class TestTupanInterface(TestWithMPI):
         self.assertEquals(["sakura", 0], instance.get_integrator_method().values())
 
         self.assertEquals(0, instance.commit_parameters())
+
+        self.assertEquals(0, instance.set_pn_order(7))
+        self.assertEquals([7, 0], instance.get_pn_order().values())
+        self.assertEquals(-1, instance.commit_parameters())
+        self.assertEquals(0, instance.set_clight(1024))
+        self.assertEquals([1024, 0], instance.get_clight().values())
+
+        self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
