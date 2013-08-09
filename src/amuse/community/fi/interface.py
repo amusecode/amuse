@@ -3218,6 +3218,9 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         
         incode_storage = self.gas_particles._remove_indices_in_attribute_storage(indices_to_remove)
 
+    def get_total_energy(self):
+        return self.__getattr__('get_total_energy')()
+        
 class FiViewer(Fi):
 
     def __init__(self, convert_nbody = None, mode = 'normal', **options):
@@ -3980,4 +3983,3 @@ class FiMap(CommonCode):
         object.add_method('INITIALIZED', 'before_set_parameter')  
         object.add_method('PROJ', 'before_get_parameter')
         object.add_method('PROJ', 'get_image_pixel_size')
-
