@@ -1174,25 +1174,25 @@ class Multiples(options.OptionalAttributes):
                 
                 self.local_energy_error = (
                     dE_gravity_code 
-                    - self.encounter_code.delta_energy
-                    - self.encounter_code.delta_potential_in_field
+                    - self.handle_encounter_code.delta_energy
+                    - self.handle_encounter_code.delta_potential_in_field
                 )
                 self.internal_local_energy_error = (
                       dE_gravity_code
-                    + self.encounter_code.delta_multiple_energy
-                    - self.encounter_code.delta_potential_in_field
+                    + self.handle_encounter_code.delta_multiple_energy
+                    - self.handle_encounter_code.delta_potential_in_field
                 )
                 self.corrected_internal_local_energy_error = (
                       dE_gravity_code 
-                    + self.encounter_code.delta_multiple_energy
-                    - self.encounter_code.delta_potential_in_field
-                    + self.encounter_code.delta_internal_potential
-                    - self.encounter_code.scatter_energy_error
+                    + self.handle_encounter_code.delta_multiple_energy
+                    - self.handle_encounter_code.delta_potential_in_field
+                    + self.handle_encounter_code.delta_internal_potential
+                    - self.handle_encounter_code.scatter_energy_error
                 )
                 
-                ENERGY_LOG.info('net local error = {0}'.format(self.local_energy_error))
-                ENERGY_LOG.info('net local internal error = {0}'.format(self.internal_local_energy_error))
-                ENERGY_LOG.info('corrected local internal error = {0}'.format(self.corrected_internal_local_energy_error))
+                LOG_ENERGY.info('net local error = {0}'.format(self.local_energy_error))
+                LOG_ENERGY.info('net local internal error = {0}'.format(self.internal_local_energy_error))
+                LOG_ENERGY.info('corrected local internal error = {0}'.format(self.corrected_internal_local_energy_error))
                 
             if not previous_time is None and previous_time == self.model_time:
                 break
