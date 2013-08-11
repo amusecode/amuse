@@ -1161,10 +1161,39 @@ class Multiples(options.OptionalAttributes):
             
             self.particles.new_channel_to(self.multiples).copy_attributes(["x","y","z","vx","vy","vz"])
             if self.stopping_condition.is_set():
+                
+                initial_energy = self.gravity_code.get_total_energy()
+                
                 self.handle_stopping_condition()
                 self.particles.synchronize_to(self.gravity_code.particles)
                 self.channel_from_model_to_code.copy()
-            
+                
+                final_energy = self.gravity_code.get_total_energy()
+                
+                dE_gravity_code = final_energy - initial_energy
+                
+                self.local_energy_error = (
+                    dE_gravity_code 
+                    - self.encounter_code.delta_energy
+                    - self.encounter_code.delta_potential_in_field
+                )
+                self.internal_local_energy_error = (
+                      dE_gravity_code
+                    + self.encounter_code.delta_multiple_energy
+                    - self.encounter_code.delta_potential_in_field
+                )
+                self.corrected_internal_local_energy_error = (
+                      dE_gravity_code 
+                    + self.encounter_code.delta_multiple_energy
+                    - self.encounter_code.delta_potential_in_field
+                    + self.encounter_code.delta_internal_potential
+                    - self.encounter_code.scatter_energy_error
+                )
+                
+                ENERGY_LOG.info('net local error = {0}'.format(self.local_energy_error))
+                ENERGY_LOG.info('net local internal error = {0}'.format(self.internal_local_energy_error))
+                ENERGY_LOG.info('corrected local internal error = {0}'.format(self.corrected_internal_local_energy_error))
+                
             if not previous_time is None and previous_time == self.model_time:
                 break
             

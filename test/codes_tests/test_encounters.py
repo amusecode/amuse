@@ -1139,3 +1139,44 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         print r_before, r_after
         self.assertFalse(r_after > (10 * r_before))
             
+    
+    def test6(self):
+        particles_in_encounter = Particles(keys=(1,2))
+        particles_in_encounter.mass = 2 | nbody_system.mass
+        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
+        
+        particles_in_field = Particles(10)
+        particles_in_field.mass = 1 | nbody_system.mass
+        for i in range(len(particles_in_field)):
+            if i == 5:
+                j = len(particles_in_field)
+            else:
+                j = i
+            particles_in_field[i].position = [-10 + (2*j), -10 + (2*j), 0] | nbody_system.length
+        particles_in_field.velocity =  [0,0.0,0] | nbody_system.speed
+        particles_in_field.radius = 0 | nbody_system.length
+        
+        
+        x = encounters.HandleEncounter(
+            kepler_code = self.new_kepler(),
+            resolve_collision_code = SmallN(),
+            interaction_over_code = None,
+            G = nbody_system.G
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.particles_in_field.add_particles(particles_in_field)
+        
+        x.execute()
+        
+        self.assertEquals(len(x.new_multiples), 1)
+        self.assertEquals(len(x.dissolved_multiples), 0)
+        self.assertEquals(len(x.new_binaries), 1)
+        self.assertEquals(len(x.captured_singles), 2)
+        self.assertEquals(len(x.released_singles), 0)
+        
+        
+        
