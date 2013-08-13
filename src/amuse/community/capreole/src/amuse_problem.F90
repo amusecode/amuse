@@ -1,6 +1,7 @@
 module problem
   use sizes, only: mbc,neq,RHO,RHVX,RHVY,RHVZ,EN,nrofDim
   use precision, only: dp
+  use atomic, only : gamma1
   use hydro, only:  state,pressr,set_state_pointer,NEW,OLD,restart_state,gforce
   use mesh, only: sx,ex,sy,ey,sz,ez,meshx,meshy,meshz
   use boundary, only: boundaries,REFLECTIVE,OUTFLOW,PROBLEM_DEF,X_IN,X_OUT,Y_IN, &
