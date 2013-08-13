@@ -40,7 +40,9 @@
         if (ioerror.EQ.0) then
             READ (99,*,IOSTAT=ioerror)  KSTART_AMUSE, TCOMP_AMUSE, TCRITp, 
      &      isernb, iserreg
-        else 
+        end if
+        
+        if (ioerror.NE.0)  then
             KSTART_AMUSE = 1
             TCOMP_AMUSE = 10000.0
             TCRITp = 1.E6
@@ -59,7 +61,7 @@
             NFIX = 1
             NCRIT = 10
             NRAND_AMUSE = 4353
-            NNBOPT = 80
+            NNBOPT = 2
             NRUN = 1
         end if
         

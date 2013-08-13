@@ -50,13 +50,14 @@ class Nbody6xxInterfaceTests(TestWithMPI):
         
         
     def xtest3(self):
-        instance = Nbody6xxInterface()#debugger="ddd")
+        instance = Nbody6xxInterface(redirection="none")#,debugger="ddd")
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         
         # Set up an equal-mass binary on a circular orbit:
         self.assertEquals([1, 0], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01).values())
         self.assertEquals([2, 0], instance.new_particle(0.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
+        self.assertEquals([3, 0], instance.new_particle(100.5,  -0.5, 0, 0,  0,-0.5, 0, 0.01).values())
         self.assertEquals(0, instance.commit_particles())
         
         self.assertEquals(0, instance.evolve_model(math.pi))
