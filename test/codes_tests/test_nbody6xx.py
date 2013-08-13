@@ -50,7 +50,7 @@ class Nbody6xxInterfaceTests(TestWithMPI):
         
         
     def xtest3(self):
-        instance = Nbody6xxInterface(redirection="none")
+        instance = Nbody6xxInterface()#debugger="ddd")
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         

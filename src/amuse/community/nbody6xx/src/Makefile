@@ -59,7 +59,7 @@ standard:
 
 amuse: 
 	cp mpif.null.h mpif.h
-	$(MAKE) $(CODELIB) "FC = $(MPIFC)" "FFLAGS = -O3 -fPIC" "SOURCE = energy.f $(SOURCE)"
+	$(MAKE) $(CODELIB) "FC = $(MPIFC)" "FFLAGS = $(FCFLAGS)" "SOURCE = energy.f $(SOURCE)"
 
 gpu:
 	cp mpif.null.h mpif.h
