@@ -191,7 +191,11 @@
         INCLUDE 'src/common6.h'
         INTEGER :: number_of_particles
         INTEGER :: get_number_of_particles
-        number_of_particles = N
+        if (N.LT.0) then
+            number_of_particles = last_index - 1
+        else
+            number_of_particles = N
+        end if
         get_number_of_particles = 0
       END FUNCTION
       
