@@ -35,7 +35,7 @@
         INTEGER :: initialize_code
         INTEGER :: J, VAL, N_DUMMY, ioerror
         print *, "initialization..."
-        OPEN (UNIT=99, FILE='inbody6xx.nput', IOSTAT=ioerror)
+        OPEN (UNIT=99, FILE='nbody6xx.input', IOSTAT=ioerror)
         
         if (ioerror.EQ.0) then
             READ (99,*,IOSTAT=ioerror)  KSTART_AMUSE, TCOMP_AMUSE, TCRITp, 
