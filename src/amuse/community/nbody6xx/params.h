@@ -1,0 +1,3 @@
+      PARAMETER  (NMAX=40010,KMAX=7010,LMAX=500,MMAX=100,
+     &            MLD=22,MLR=22,MLV=10,MCL=10,NCMAX=10,NTMAX=100)
+      parameter (maxpe=1024)
