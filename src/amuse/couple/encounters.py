@@ -211,7 +211,7 @@ class AbstractHandleEncounter(object):
     def determine_final_multiple_energy(self):
         self.final_multiple_energy = zero
         for x in self.particles_after_encounter:
-            energy = self.get_energy_of_a_multiple(x)
+            energy = self.get_final_energy_of_a_multiple(x)
             self.final_multiple_energy += energy
              
         
@@ -312,6 +312,25 @@ class AbstractHandleEncounter(object):
             return  energy
         else:
             return zero
+            
+    def get_final_energy_of_a_multiple(self, particle):
+        if particle in self.new_multiples:
+            multiple = particle.as_particle_in_set(self.new_multiples)
+            components = multiple.components
+            tree = components.new_binary_tree_wrapper()
+            singles = Particles()
+            for node in tree.iter_descendant_leafs():
+                singles.add_particle(node.particle)
+            
+            # tree is stored in rest state,
+            # no energy of central particle
+            energy  = singles.kinetic_energy()
+            energy += singles.potential_energy(G = self.G)
+            
+            return  energy
+        else:
+            return zero
+        
 
     def determine_initial_sphere_of_particles_in_encounter(self):
         self.initial_sphere_position = self.all_particles_in_encounter.center_of_mass()
@@ -1118,6 +1137,11 @@ class Multiples(options.OptionalAttributes):
         self.channel_from_code_to_model = self.gravity_code.particles.new_channel_to(self.particles)
         self.channel_from_model_to_code = self.particles.new_channel_to(self.gravity_code.particles)
         
+        self.multiples_external_tidal_correction = zero
+        self.multiples_internal_tidal_correction = zero
+        self.multiples_integration_energy_error = zero
+        self.all_multiples_energy = zero
+        
         self.stopping_conditions.disable()
     
     def commit_particles(self):
@@ -1162,6 +1186,8 @@ class Multiples(options.OptionalAttributes):
             self.particles.new_channel_to(self.multiples).copy_attributes(["x","y","z","vx","vy","vz"])
             if self.stopping_condition.is_set():
                 
+                print "AMU", self.all_multiples_energy
+                
                 initial_energy = self.gravity_code.get_total_energy()
                 
                 self.handle_stopping_condition()
@@ -1170,30 +1196,8 @@ class Multiples(options.OptionalAttributes):
                 
                 final_energy = self.gravity_code.get_total_energy()
                 
-                dE_gravity_code = final_energy - initial_energy
-                
-                self.local_energy_error = (
-                    dE_gravity_code 
-                    - self.handle_encounter_code.delta_energy
-                    - self.handle_encounter_code.delta_potential_in_field
-                )
-                self.internal_local_energy_error = (
-                      dE_gravity_code
-                    + self.handle_encounter_code.delta_multiple_energy
-                    - self.handle_encounter_code.delta_potential_in_field
-                )
-                self.corrected_internal_local_energy_error = (
-                      dE_gravity_code 
-                    + self.handle_encounter_code.delta_multiple_energy
-                    - self.handle_encounter_code.delta_potential_in_field
-                    + self.handle_encounter_code.delta_internal_potential
-                    - self.handle_encounter_code.scatter_energy_error
-                )
-                
-                LOG_ENERGY.info('net local error = {0}'.format(self.local_energy_error))
-                LOG_ENERGY.info('net local internal error = {0}'.format(self.internal_local_energy_error))
-                LOG_ENERGY.info('corrected local internal error = {0}'.format(self.corrected_internal_local_energy_error))
-                
+                self.update_energy_bookkeeping(initial_energy, final_energy)
+                                
             if not previous_time is None and previous_time == self.model_time:
                 break
             
@@ -1209,6 +1213,68 @@ class Multiples(options.OptionalAttributes):
         """
         updates the singles to the right position
         """
+        
+    def get_total_energy_of_all_multiples(self):
+        result = zero
+        for x in self.multiples:
+            result += self.get_energy_of_a_multiple(x)
+        return result
+        
+    def get_energy_of_a_multiple(self, multiple):
+        components = multiple.components
+        tree = components.new_binary_tree_wrapper()
+        singles = Particles()
+        for node in tree.iter_descendant_leafs():
+            singles.add_particle(node.particle)
+        
+        # tree is stored in rest state,
+        # no energy of central particle
+        energy  = singles.kinetic_energy()
+        energy += singles.potential_energy(G = self.G)
+        
+        return  energy
+        
+    def update_energy_bookkeeping(self, initial_energy, final_energy):
+        dE_gravity_code = final_energy - initial_energy
+                
+        self.local_energy_error = (
+            dE_gravity_code 
+            - self.handle_encounter_code.delta_energy
+            - self.handle_encounter_code.delta_potential_in_field
+        )
+        self.internal_local_energy_error = (
+              dE_gravity_code
+            + self.handle_encounter_code.delta_multiple_energy
+            - self.handle_encounter_code.delta_potential_in_field
+        )
+        self.corrected_internal_local_energy_error = (
+              dE_gravity_code 
+            + self.handle_encounter_code.delta_multiple_energy
+            - self.handle_encounter_code.delta_potential_in_field
+            + self.handle_encounter_code.delta_internal_potential
+            - self.handle_encounter_code.scatter_energy_error
+        )
+        
+        LOG_ENERGY.info('net local error = {0}'.format(self.local_energy_error))
+        LOG_ENERGY.info('net local internal error = {0}'.format(self.internal_local_energy_error))
+        LOG_ENERGY.info('corrected local internal error = {0}'.format(self.corrected_internal_local_energy_error))
+        
+        self.multiples_external_tidal_correction += self.handle_encounter_code.delta_potential_in_field
+        self.multiples_internal_tidal_correction -= self.handle_encounter_code.delta_internal_potential
+        self.multiples_integration_energy_error += self.handle_encounter_code.scatter_energy_error
+        
+        self.all_multiples_energy = self.get_total_energy_of_all_multiples()
+        print "AMU", self.all_multiples_energy, self.handle_encounter_code.delta_multiple_energy
+        self.total_energy = final_energy + self.all_multiples_energy
+        self.corrected_total_energy = (
+            self.total_energy
+            - self.multiples_external_tidal_correction
+            - self.multiples_internal_tidal_correction
+            - self.multiples_integration_energy_error
+        )
+        
+        LOG_ENERGY.info('total energy (top+mul) = {0}'.format(self.total_energy))
+        LOG_ENERGY.info('corrected_total energy (top+mul) = {0}'.format(self.corrected_total_energy))
         
         
     @property
@@ -1243,10 +1309,6 @@ class Multiples(options.OptionalAttributes):
         
         print "handling encounter"
         print code.particles_in_encounter.key
-        #print code.particles_in_encounter.position
-        #print code.particles_in_encounter.velocity
-        #print code.particles_in_encounter.radius
-        #print code.particles_in_encounter.mass
         code.execute()
         
         print "handling encounter done"
@@ -1336,4 +1398,15 @@ class Multiples(options.OptionalAttributes):
                 from_key_to_encounter[key1] = encounter
         
         return [x for x in encounters if len(x) > 0]
+        
+    def get_total_energy(self):
+        
+        self.total_energy = self.gravity_code.get_total_energy() + self.all_multiples_energy
+        self.corrected_total_energy = (
+            self.total_energy
+            - self.multiples_external_tidal_correction
+            - self.multiples_internal_tidal_correction
+            - self.multiples_integration_energy_error
+        )
+        return self.corrected_total_energy
 

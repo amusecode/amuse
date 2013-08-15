@@ -1178,5 +1178,64 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         self.assertEquals(len(x.captured_singles), 2)
         self.assertEquals(len(x.released_singles), 0)
         
+    
+    def test7(self):
+        particles_in_encounter = Particles(keys=(1,2))
+        particles_in_encounter.mass = 2 | nbody_system.mass
+        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
+        
+        
+        binary1 = new_binary(
+            1 | nbody_system.mass, 
+            1 | nbody_system.mass, 
+            0.01 | nbody_system.length,
+            keyoffset = 30
+        )
+        binary_energy = binary1.kinetic_energy() + binary1.potential_energy(G = nbody_system.G)
+        self.assertAlmostRelativeEqual(binary_energy, -50 | nbody_system.energy)
+        
+        binaries = Particles(keys=(20,))
+        binaries[0].child1 = binary1[0]
+        binaries[0].child2 = binary1[1]
+        binary1.child1 = None
+        binary1.child2 = None
+        
+        
+        multiples = Particles()
+        multiple = particles_in_encounter[0]
+        multiple.components = binary1
+        multiples.add_particle(multiple)
+        
+        x = encounters.HandleEncounter(
+            kepler_code = self.new_kepler(),
+            resolve_collision_code = SmallN(),
+            interaction_over_code = None,
+            G = nbody_system.G
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        x.existing_binaries.add_particles(binaries)
+        x.existing_multiples.add_particles(multiples)
+        
+        
+        x.execute()
+        self.assertEquals(len(x.new_multiples), 1)
+        self.assertEquals(len(x.new_binaries), 1)
+        self.assertEquals(len(x.captured_singles), 1)
+        self.assertEquals(len(x.released_singles), 1)
+        
+        multiple = x.new_multiples[0]
+        self.assertEquals(len(multiple.components), 2)
+    
+        self.assertAlmostRelativeEqual(multiple.components[0].key, binaries[0].child1.key)
+        self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
+        self.assertAlmostRelativeEqual(x.initial_multiple_energy, -50 | nbody_system.energy)
+        self.assertAlmostRelativeEqual(x.final_multiple_energy, -85.4374660707| nbody_system.energy, 4)
+        
+        
+        
         
         

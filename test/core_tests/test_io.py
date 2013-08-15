@@ -64,7 +64,10 @@ class FrameworkTests(amusetest.TestCase):
     
     def test4(self):
         options = base.get_options_for_format('123')
-        name, description, default = options[1]
+        options.sort(key = lambda x: x[0])
+        for x in options:
+            print x
+        name, description, default = options[0]
         self.assertEquals(name, 'add_comma')
         self.assertEquals(description, 'if True will add a comma between each value')
         self.assertEquals(default, True)
@@ -231,18 +234,20 @@ class FormatTests(amusetest.TestCase):
     
     def test8(self):
         options = base.get_options_for_format('tsf')
+        options.sort(key = lambda x: x[0])
         name, description, default = options[1]
         self.assertEquals(name, 'nbody_to_si_converter')
         self.assertEquals(description, 'NEMO datafiles store nbody data, provide a '
             'converter to store si data (None means no converter)')
         self.assertEquals(default, None)
-        
         options = base.get_options_for_format('dyn')
-        name, description, default = options[2]
+        options.sort(key = lambda x: x[0])
+        name, description, default = options[1]
         self.assertEquals(name, 'dynamics_mass_units')
         
         options = base.get_options_for_format('hdf5')
-        name, description, default = options[1]
+        options.sort(key = lambda x: x[0])
+        name, description, default = options[0]
         self.assertEquals(name, 'append_to_file')
         self.assertTrue(description.find('If set to True, new data is appended to HDF5 files.') >= 0)
         self.assertTrue(description.find('If set to False, the existing file is removed and overwritten.') >= 0)
