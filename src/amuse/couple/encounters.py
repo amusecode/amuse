@@ -1101,7 +1101,21 @@ class MultiplesStoppingConditions(object):
         )
         
 class Multiples(options.OptionalAttributes):
-
+    """
+    
+    Data model:
+    
+    1) particles -> multiples (binaries, ternaries etc.) + singles
+        are evolved by gravity code
+    2) multiples ->  subset of particles with components
+        have a list of components
+    3) component_singles -> singles part of a multiple 
+        are part of a multiple, are stored relative
+        to the center of mass position and velocity of the multiple
+    4) binaries  -> separate list of particles
+        have 2 components (in component_singles list)        
+    
+    """
     def __init__(self, 
             gravity_code = None,
             handle_encounter_code = None,
@@ -1124,11 +1138,12 @@ class Multiples(options.OptionalAttributes):
     
     def reset(self):
         self.particles = Particles()
-        
+    
         self.multiples = Particles()
         self.singles   = Particles()
-        self.singles_in_binaries = Particles()
-        self.binaries  = Binaries(self.singles_in_binaries)
+        
+        self.component_singles = Particles()
+        self.binaries  = Binaries(self.component_singles)
         
         self.gravity_code.reset()
         self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
