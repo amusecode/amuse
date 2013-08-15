@@ -1142,8 +1142,11 @@ class Multiples(options.OptionalAttributes):
         self.multiples = Particles()
         self.singles   = Particles()
         
-        self.component_singles = Particles()
-        self.binaries  = Binaries(self.component_singles)
+        self.singles_in_binaries = Particles()
+        self.binaries  = Binaries(self.singles_in_binaries)
+        
+        self.singles_in_multiples = Particles()
+        
         
         self.gravity_code.reset()
         self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
@@ -1164,7 +1167,7 @@ class Multiples(options.OptionalAttributes):
             if not len(self.binaries) == 0:
                 for binary in self.binaries:
                     multiple = self.multiples.add_particle(binary)
-                    components = binary.components().copy()
+                    components = self.singles_in_multiples.add_particles(binary.components())
                     components.child1 = None
                     components.child2 = None
                     multiple.components = components
@@ -1185,6 +1188,9 @@ class Multiples(options.OptionalAttributes):
             self.particles.add_particles(self.multiples)
             
         self.gravity_code.particles.add_particles(self.particles)
+        
+        
+        self.all_multiples_energy = self.get_total_energy_of_all_multiples()
         
         
     def evolve_model(self, time):

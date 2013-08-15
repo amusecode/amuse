@@ -229,6 +229,9 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.commit_particles()
         
         self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.singles_in_multiples), 2)
+        
+        
     
     def test4(self):
         code = Hermite()
@@ -442,20 +445,23 @@ class TestSimpleMultiples(TestWithMPI):
         
         self.assertAlmostRelativeEquals(total_energy_before, total_energy_after, 7)
         
-    def xxtest8(self):
+    
+    def test8(self):
         code = Hermite()
-        stars = datamodel.Particles(keys = (1,2,3, 4))
-        stars.mass = 1 | nbody_system.mass
-        stars.position = [
-            [0.303976184548, 0.273137803329, 0.0],
-            [0.290167020486, 0.273139253308, 0.0],
-        ]|nbody_system.length
-        stars.velocity = [
-            [-2.54471298934, -1.22475965026, 0.0],
-            [0.898326624898, 0.870611747843, 0.0]
-        ]|nbody_system.speed
-        stars.radius = 0.5 | nbody_system.length
-        
+        particles_in_binary = self.new_binary(
+            0.1 | nbody_system.mass,
+            0.1 | nbody_system.mass,
+            0.01 | nbody_system.length,
+            keyoffset = 1
+        )
+        particles_in_binary.radius = 0.001 | nbody_system.length
+        binary = datamodel.Particle(key = 3)
+        binary.child1 = particles_in_binary[0]
+        binary.child2 = particles_in_binary[1]
+        binary.radius = 0.5 | nbody_system.length
+        binary.mass = 0.2 | nbody_system.mass
+        binary.position = [0.0,0.0,0.0] | nbody_system.length
+        binary.velocity = [0.0,0.0,0.0] | nbody_system.speed
         encounter_code = encounters.HandleEncounter(
             kepler_code =  self.new_kepler(),
             resolve_collision_code = self.new_smalln(),
@@ -465,22 +471,39 @@ class TestSimpleMultiples(TestWithMPI):
             gravity_code = code,
             handle_encounter_code = encounter_code
         )
-        multiples_code.particles.add_particles(stars)
-        multiples_code.commit_particles()
-        stopping_condition = multiples_code.stopping_conditions.multiples_change_detection
-        stopping_condition.enable()
+        multiples_code.singles_in_binaries.add_particles(particles_in_binary)
+        multiples_code.binaries.add_particle(binary)
+        multiples_code.particles.add_particle(binary)
         
-        multiples_code.evolve_model(3|nbody_system.time)
-        self.assertTrue(stopping_condition.is_set())
-        self.assertAlmostRelativeEquals(multiples_code.model_time , 0.0075 | nbody_system.time, 4)
-        self.assertEquals(len(stopping_condition.particles(0)), 1)
-        self.assertEquals(len(stopping_condition.particles(1)), 0)
+        field_particle = datamodel.Particle(key = 4)
+        field_particle.mass = 0.5  | nbody_system.mass
+        field_particle.radius = 0.1 | nbody_system.length
+        field_particle.position = [0.0,0.2,0.0]| nbody_system.length
+        field_particle.velocity = [0.0,0.0,0.0] | nbody_system.speed
+        
+        multiples_code.particles.add_particle(field_particle)
+        
+        self.assertEquals(len(multiples_code.singles_in_binaries), 2)
+        self.assertEquals(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles_in_binaries))
+        
+        multiples_code.commit_particles()
+        
+        initial_energy = multiples_code.get_total_energy()
         
         self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.multiples[0].components), 2)
-        self.assertEquals(len(multiples_code.particles), 3) # 1 multiples with 2 singles, plus 2 singles free
-        self.assertEquals(len(multiples_code.binaries), 1)
-        self.assertEquals(len(multiples_code.singles), 2)
+        self.assertEquals(len(multiples_code.singles_in_multiples), 2)
+        self.assertEquals(len(multiples_code.particles), 2)
+        
+        stopping_condition = multiples_code.stopping_conditions.encounter_detection
+        stopping_condition.enable()
+        
+        
+        multiples_code.evolve_model(2 |nbody_system.time)
+        
+        final_energy = multiples_code.get_total_energy()
+        self.assertTrue(stopping_condition.is_set())
+        self.assertAlmostRelativeEquals(initial_energy, final_energy, 7)
+        
         
     def xtest3(self):
         code = Hermite()
