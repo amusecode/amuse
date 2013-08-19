@@ -23,6 +23,9 @@ from amuse.rfi.channel import IbisChannel
 from amuse.rfi.channel import SocketChannel
 from amuse.rfi.channel import is_mpd_running
 
+CODE_LOG = logging.getLogger("code")
+if CODE_LOG.level == logging.NOTSET:
+    CODE_LOG.setLevel(logging.WARN)
 
 """
 This module implements the code to the define interfaces between python
@@ -93,7 +96,7 @@ class CodeFunction(object):
             
             dtype_to_result = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array)
         except Exception, ex:
-            logging.getLogger("code").info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
+            CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
             raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
         result = self.converted_results(dtype_to_result, handle_as_array)

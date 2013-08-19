@@ -497,6 +497,14 @@ class TestSimpleMultiples(TestWithMPI):
         stopping_condition = multiples_code.stopping_conditions.encounter_detection
         stopping_condition.enable()
         
+        singles = datamodel.Particles()
+        singles.add_particles(particles_in_binary)
+        singles.add_particle(field_particle)
+        
+        
+        singles_energy = singles.kinetic_energy() + singles.potential_energy(G=nbody_system.G)
+        self.assertAlmostRelativeEquals(initial_energy, singles_energy, 3)
+        
         
         multiples_code.evolve_model(2 |nbody_system.time)
         

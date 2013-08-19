@@ -98,8 +98,6 @@ try:
         import textwrap
     elif sys.version >= '2.2':
         from optparse import textwrap
-    else:
-        from optik import textwrap
 except ImportError:
     sys.stderr.write("Can't import textwrap module!\n")
     raise
