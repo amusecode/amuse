@@ -749,11 +749,11 @@ def potential_energy_in_field(particles, field_particles, smoothing_length_squar
     m_m = particles.mass.reshape([n,1]) * field_particles.mass
     return -G * (m_m / dr).sum()
     
-def distances_squared(particles,field_particles):
+def distances_squared(particles, other_particles):
     """
-    Returns the total potential energy of the particles in the particles set.
+    Returns the distance squared from each particle in this set to each of the particles in the other set.
 
-    :argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
+    :argument other_particles: the particles to which the distance squared is calculated
     
     >>> from amuse.datamodel import Particles
     >>> field_particles = Particles(2)
@@ -764,15 +764,60 @@ def distances_squared(particles,field_particles):
     >>> particles.x = [1.0, 3.0, 4] | units.m
     >>> particles.y = [0.0, 0.0] | units.m
     >>> particles.z = [0.0, 0.0] | units.m
-    >>> distances_squared(particles, field_particles)
+    >>> particles.distances_squared(field_particles)
     quantity<[[1.0, 1.0], [9.0, 1.0], [16.0, 4.0]] m**2>
     """
-
-    n = len(particles)
-    dimensions = particles.position.shape[-1]
-    transposed_positions = particles.position.reshape([n,1,dimensions]) 
-    dxdydz = transposed_positions - field_particles.position
+    transposed_positions = particles.position.reshape((len(particles), 1, -1))
+    dxdydz = transposed_positions - other_particles.position
     return (dxdydz**2).sum(-1)
+    
+def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
+    """
+    Returns the nearest neighbour of each particle in this set. If the 'neighbours'
+    particle set is supplied, the search is performed on the neighbours set, for 
+    each particle in the orignal set. Otherwise the nearest neighbour in the same 
+    set is searched.
+
+    :argument neighbours: the particle set in which to search for the nearest neighbour (optional)
+    
+    >>> from amuse.datamodel import Particles
+    >>> particles = Particles(3)
+    >>> particles.x = [1.0, 3.0, 4] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.nearest_neighbour().x
+    quantity<[3.0, 4.0, 3.0] m>
+    >>> field_particles = Particles(2)
+    >>> field_particles.x = [0.0, 2.5] | units.m
+    >>> field_particles.y = [0.0, 0.0] | units.m
+    >>> field_particles.z = [0.0, 0.0] | units.m
+    >>> particles.nearest_neighbour(field_particles).x
+    quantity<[0.0, 2.5, 2.5] m>
+    """
+    if neighbours is None:
+        other_particles = particles
+    else:
+        other_particles = neighbours
+    
+    if len(particles) * len(other_particles) * 3 > max_array_length:
+        neighbour_indices = []
+        particles_per_batch = max(1, max_array_length / (3 * len(other_particles)))
+        number_of_batches = (len(particles) - 1) / particles_per_batch + 1
+        indices_in_each_batch = [numpy.arange(particles_per_batch) + i*particles_per_batch for i in range(number_of_batches-1)]
+        indices_in_each_batch.append(numpy.arange(indices_in_each_batch[-1][-1]+1, len(particles)))
+        for indices in indices_in_each_batch:
+            distances_squared = particles[indices].distances_squared(other_particles)
+            if neighbours is None:
+                diagonal_indices = [numpy.arange(len(indices)), indices]
+                distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
+            neighbour_indices.append(distances_squared.argmin(axis=1))
+        return other_particles[numpy.concatenate(neighbour_indices)]
+    
+    distances_squared = particles.distances_squared(other_particles)
+    if neighbours is None:
+        diagonal_indices = [numpy.arange(len(particles))]*2
+        distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
+    return other_particles[distances_squared.argmin(axis=1)]
     
 
 def velocity_diff_squared(particles,field_particles):
@@ -958,6 +1003,8 @@ AbstractParticleSet.add_global_function_attribute("mass_segregation_Gini_coeffic
 
 AbstractParticleSet.add_global_function_attribute("LagrangianRadii", LagrangianRadii)
 AbstractParticleSet.add_global_function_attribute("find_closest_particle_to", find_closest_particle_to)
+AbstractParticleSet.add_global_function_attribute("distances_squared", distances_squared)
+AbstractParticleSet.add_global_function_attribute("nearest_neighbour", nearest_neighbour)
 
 AbstractParticleSet.add_global_function_attribute("Qparameter", Qparameter)
 AbstractParticleSet.add_global_function_attribute("connected_components", connected_components)

@@ -268,6 +268,35 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles.potential()[0], particles[0].potential())
         self.assertAlmostRelativeEquals(particles.potential()[1], particles[1].potential())
     
+    def test11(self):
+        print "Test nearest_neighbour"
+        particles = Particles(21)
+        particles.x = numpy.logspace(0.0, 2.0, 21) | units.m
+        particles.y = 0.0 | units.m
+        particles.z = 0.0 | units.m
+        self.assertEqual(particles.nearest_neighbour()[0], particles[1])
+        self.assertEqual(particles.nearest_neighbour()[1:].key, particles[:-1].key)
+        
+        neighbours = Particles(3)
+        neighbours.x = [1.0, 10.0, 100.0] | units.m
+        neighbours.y = 0.0 | units.m
+        neighbours.z = 0.0 | units.m
+        self.assertEqual(particles.nearest_neighbour(neighbours).key, neighbours.key[[0]*8 + [1]*10 + [2]*3])
+        
+        # A few tests to check the correct behaviour of 'max_array_length' (to prevent memory overflow)
+        nearest_neighbours = particles.nearest_neighbour(max_array_length=3*21*21) # all in one go
+        self.assertEqual(nearest_neighbours[0], particles[1])
+        self.assertEqual(nearest_neighbours[1:].key, particles[:-1].key)
+        nearest_neighbours = particles.nearest_neighbour(max_array_length=3*21*21-1) # two passes
+        self.assertEqual(nearest_neighbours[0], particles[1])
+        self.assertEqual(nearest_neighbours[1:].key, particles[:-1].key)
+        nearest_neighbours = particles.nearest_neighbour(max_array_length=1) # 21 passes, one for each particle
+        self.assertEqual(nearest_neighbours[0], particles[1])
+        self.assertEqual(nearest_neighbours[1:].key, particles[:-1].key)
+        self.assertEqual(particles.nearest_neighbour(neighbours, max_array_length=189).key, neighbours.key[[0]*8 + [1]*10 + [2]*3]) # all in one go
+        self.assertEqual(particles.nearest_neighbour(neighbours, max_array_length=188).key, neighbours.key[[0]*8 + [1]*10 + [2]*3]) # two passes
+        self.assertEqual(particles.nearest_neighbour(neighbours, max_array_length=1).key, neighbours.key[[0]*8 + [1]*10 + [2]*3]) # 21 passes, one for each particle
+    
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
     
