@@ -107,7 +107,7 @@ class TestTupanInterface(TestWithMPI):
         self.assertEquals(0, instance.set_begin_time(1.0))
         self.assertEquals([1.0, 0], instance.get_begin_time().values())
 
-        self.assertEquals(["sia.dkd21hcc", 0], instance.get_integrator_method().values())
+        self.assertEquals(["sia21h.dkd", 0], instance.get_integrator_method().values())
         self.assertEquals(0, instance.set_integrator_method("bogus"))
         self.assertEquals(["bogus", 0], instance.get_integrator_method().values())
         self.assertEquals(-1, instance.commit_parameters())

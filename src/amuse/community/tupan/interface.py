@@ -28,7 +28,7 @@ class TupanImplementation(object):
         self.current_time = 0.0
         self.eps2 = 0.0
         self.time_begin = 0.0
-        self.integrator_method = "sia.dkd21hcc"
+        self.integrator_method = "sia21h.dkd"
         self.pn_order = 0
         self.clight = None
         self.particles = []
@@ -534,7 +534,7 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             "set_integrator_method",
             "integrator_method",
             "The method to use to integrate the evolution of the system",
-            default_value="sia.dkd21hcc"
+            default_value="sia21h.dkd"
         )
 
         object.add_method_parameter(
