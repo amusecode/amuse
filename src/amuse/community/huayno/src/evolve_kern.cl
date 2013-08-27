@@ -8,7 +8,7 @@
 
 #define RVTIMESTEP
 #define RATIMESTEP
-#define RVRARATIO   1.
+#define RARVRATIO   1.
 
 #define FLOAT float
 #define FLOAT4 float4
@@ -108,7 +108,7 @@ __kernel void timestep_kernel(
         FLOAT mu=p.w+p2.w;
         
 #ifdef RATIMESTEP
-        FLOAT tau=RVRARATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
+        FLOAT tau=RARVRATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
         FLOAT dtau=3/2.*dir*tau*vdotdr2;
         if(dtau>1.) dtau=1.;
         tau/=(1-dtau/2);
