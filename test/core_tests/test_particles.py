@@ -1887,6 +1887,67 @@ class TestParticlesWithUnitsConverted(amusetest.TestCase):
         self.assertEquals(converted_stars[0].stellar_type, units.stellar_type("Main Sequence star"))
 
 
+
+class TestParticlesWithTransformedAttributes(amusetest.TestCase):
+
+    def test1(self):
+        stars = datamodel.Particles(2)
+        stars[0].mass = 10 | units.g
+        stars[1].mass = 20 | units.g
+
+        def get_function(attribute, quantity):
+            return quantity * 2
+            
+        def set_function(attribute, quantity):
+            return quantity / 2
+
+        converted_stars = datamodel.ParticlesWithAttributesTransformed(
+            stars,
+            get_function,
+            set_function
+        )
+
+        self.assertEquals(stars[0].mass, 10 | units.g)
+        self.assertEquals(converted_stars[0].mass, 20 | units.g)
+
+
+        converted_stars[0].mass = 40 | units.g
+
+        self.assertEquals(stars[0].mass, 20 | units.g)
+
+
+
+    def test4(self):
+        
+        stars = datamodel.Particles(2)
+        stars[0].mass = 1 | units.MSun
+        stars[0].position = [0,0,0] | units.AU
+        stars[0].velocity = [0,1,0] | units.kms
+        
+        stars[1].mass = 1 | units.MSun
+        stars[1].position = [1,0,0] | units.AU
+        stars[1].velocity = [0,2,0] | units.kms
+        
+        com = stars.center_of_mass()
+        cov = stars.center_of_mass_velocity()
+        
+        converted_stars = datamodel.ParticlesWithAttributesTransformed.translate(
+            stars,
+            -com,
+            -cov
+        )
+
+        com1 = converted_stars.center_of_mass()
+        cov1 = converted_stars.center_of_mass_velocity()
+        self.assertAlmostRelativeEquals(com1, [0,0,0] | units.AU)
+        self.assertAlmostRelativeEquals(cov1, [0,0,0] | units.kms)
+        self.assertAlmostRelativeEquals(converted_stars[0].position, [-0.5,0,0] | units.AU)
+        self.assertAlmostRelativeEquals(converted_stars[1].position, [0.5,0,0] | units.AU)
+        self.assertAlmostRelativeEquals(converted_stars[0].velocity, [0,-0.5,0] | units.kms)
+        self.assertAlmostRelativeEquals(converted_stars[1].velocity, [0,0.5,0] | units.kms)
+        
+        
+
 class TestParticlesWithChildren(amusetest.TestCase):
 
     def test1(self):

@@ -2478,7 +2478,178 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     def get_unit_converter(self):
         return self._private.converter.generic_to_si
         
+
+
+class ParticlesWithAttributesTransformed(AbstractParticleSet):
+    """
+    A view on a particle sets. Some attributes are transformed
+    on input or output.
+    """
+    
+    def __init__(self, particles, get_function, set_function):
+        AbstractParticleSet.__init__(self, particles)
+
+        self._private.particles = particles
+        self._private.get_function = get_function
+        self._private.set_function = set_function
+
+    @classmethod
+    def translate(cls, particles, position, velocity):
+        def get_function(attribute, quantity):
+            if(attribute == 'x'):
+                return quantity + position[0]
+            elif(attribute == 'y'):
+                return quantity + position[1]
+            elif(attribute == 'z'):
+                return quantity + position[2]
+            elif(attribute == 'vx'):
+                return quantity + velocity[0]
+            elif(attribute == 'vy'):
+                return quantity + velocity[1]
+            elif(attribute == 'vz'):
+                return quantity + velocity[2]
+            else:
+                return quantity
+                
+        def set_function(attribute, quantity):
+            if(attribute == 'x'):
+                return quantity - position[0]
+            elif(attribute == 'y'):
+                return quantity - position[1]
+            elif(attribute == 'z'):
+                return quantity - position[2]
+            elif(attribute == 'vx'):
+                return quantity - velocity[0]
+            elif(attribute == 'vy'):
+                return quantity - velocity[1]
+            elif(attribute == 'vz'):
+                return quantity - velocity[2]
+            else:
+                return quantity
+                
+                
+                
+        return cls(
+            particles,
+            get_function,
+            set_function
+        )
         
+    def compressed(self):
+        return ParticlesWithTransformatedAttributes(
+            self._private.particles.compressed(), 
+            self._private.get_function,
+            self._private.set_function
+        )
+
+    def get_valid_particles_mask(self):
+        return self._private.particles.get_valid_particles_mask()
+
+    def __getitem__(self, index):
+
+        keys = self.get_all_keys_in_store()[index]
+
+        if keys is ma.masked:
+            return None
+        elif hasattr(keys, '__iter__'):
+            return self._subset(keys)
+        else:
+            return Particle(keys, self)
+
+    def _get_version(self):
+        return self._private.particles._get_version()
+
+    def shallow_copy(self):
+        copiedParticles =  self._private.particles.shallow_copy()
+        return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
+
+    def unconverted_set(self):
+        return self._private.particles
+
+
+    def can_extend_attributes(self):
+        return self._private.particles.can_extend_attributes()
+
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        converted_values = []
+        for quantity in values:
+            converted_quantity = self._private.converter.from_source_to_target(quantity)
+            converted_values.append(converted_quantity)
+        self._private.particles.add_particles_to_store(keys, attributes, converted_values)
+
+    def remove_particles_from_store(self, keys):
+        self._private.particles.remove_particles_from_store(keys)
+
+    def get_values_in_store(self, indices, attributes):
+        values = self._private.particles.get_values_in_store(indices, attributes)
+        converted_values = []
+        for attribute, quantity in zip(attributes, values):
+            if isinstance(quantity, LinkedArray):
+                objects = quantity
+                convert_objects = []
+                for x in objects:
+                    if x is None:
+                        convert_objects.append(x)
+                    else:
+                        if isinstance(x, Particle):
+                            convert_objects.append(ParticlesWithTransformatedAttributes(x.as_set(), self._private.get_function, self._private.set_function)[0])
+                        else:
+                            convert_objects.append(ParticlesWithTransformatedAttributes(x, self._private.get_function, self._private.set_function))
+                convert_objects = LinkedArray(convert_objects)
+                converted_values.append(convert_objects)
+            else:
+                converted_quantity = self._private.get_function(attribute, quantity)
+                converted_values.append(converted_quantity)
+        return converted_values
+
+    def set_values_in_store(self, indices, attributes, values):
+        converted_values = []
+        for attribute, quantity in zip(attributes, values):
+            converted_quantity = self._private.set_function(attribute, quantity)
+            converted_values.append(converted_quantity)
+        self._private.particles.set_values_in_store(indices, attributes, converted_values)
+
+    def get_attribute_names_defined_in_store(self):
+        return self._private.particles.get_attribute_names_defined_in_store()
+
+    def get_all_keys_in_store(self):
+        return self._private.particles.get_all_keys_in_store()
+
+    def get_all_indices_in_store(self):
+        return self._private.particles.get_all_indices_in_store()
+
+    def get_indices_of_keys(self, keys):
+        return self._private.particles.get_indices_of_keys(keys)
+
+    def has_key_in_store(self, key):
+        return self._private.particles.has_key_in_store(key)
+
+    def as_set(self):
+        return ParticlesSubset(self, self.get_all_keys_in_store())
+
+    def get_timestamp(self):
+        timestamp = self._private.particles.get_timestamp()
+        if not timestamp is None:
+            timestamp = self._private.get_function("timestamp", timestamp)
+        return timestamp
+
+    def savepointsavepoint(self, timestamp=None):
+        if not timestamp is None:
+            timestamp = self._private.get_function("timestamp", timestamp)
+        return ParticlesWithUnitsConverted(
+            self._private.particles.savepoint(timestamp),
+            self._private.converter
+        )
+
+    def previous_state(self):
+        return ParticlesWithUnitsConverted(
+            self._private.particles.previous_state(),
+            self._private.get_function,
+            self._private.set_function,
+        )
+
+    def get_unit_converter(self):
+        return self._private.converter.generic_to_si
 
 
 

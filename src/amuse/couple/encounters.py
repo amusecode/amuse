@@ -639,7 +639,7 @@ class HandleEncounter(AbstractHandleEncounter):
     def __init__(self,
         kepler_code,
         resolve_collision_code,
-        interaction_over_code,
+        interaction_over_code = None,
         G = nbody_system.G
     ):
         self.resolve_collision_code = resolve_collision_code
@@ -1144,8 +1144,9 @@ class Multiples(options.OptionalAttributes):
         
         self.singles_in_binaries = Particles()
         self.binaries  = Binaries(self.singles_in_binaries)
+        self.singles_in_binaries_previous  = None
         
-        self.singles_in_multiples = Particles()
+        self.components_of_multiples = Particles()
         
         
         self.gravity_code.reset()
@@ -1167,7 +1168,7 @@ class Multiples(options.OptionalAttributes):
             if not len(self.binaries) == 0:
                 for binary in self.binaries:
                     multiple = self.multiples.add_particle(binary)
-                    components = self.singles_in_multiples.add_particles(binary.components())
+                    components = self.components_of_multiples.add_particles(binary.components())
                     components.child1 = None
                     components.child2 = None
                     multiple.components = components
@@ -1190,6 +1191,7 @@ class Multiples(options.OptionalAttributes):
         self.gravity_code.particles.add_particles(self.particles)
         
         
+        self.singles_in_binaries_previous = self.singles_in_binaries.copy()
         self.all_multiples_energy = self.get_total_energy_of_all_multiples()
         
         
@@ -1343,9 +1345,39 @@ class Multiples(options.OptionalAttributes):
         self.singles.remove_particles(code.captured_singles)
         self.singles.add_particles(code.released_singles)
         
+        if self.stopping_conditions.multiples_change_detection.is_enabled():
+            if len(code.new_multiples) > 0 or len(code.dissolved_multiples) > 0:
+                self.stopping_conditions.multiples_change_detection.set(
+                    code.new_multiples,
+                    code.dissolved_multiples
+                )
+                
+        # update multiples
+        self.multiples.remove_particles(code.dissolved_multiples)
+        for x in code.dissolved_multiples:
+            self.components_of_multiples.remove_particles(x.components)
+        
+        new_multiples = self.multiples.add_particles(code.new_multiples)
+        for x in new_multiples:
+            x.components = self.components_of_multiples.add_particles(x.components)
+        
+            
+        
+        # update binaries
+        for x in code.dissolved_binaries:
+            self.singles_in_binaries.remove_particle(x.child1)
+            self.singles_in_binaries.remove_particle(x.child2)
+        for x in code.new_binaries:
+            self.singles_in_binaries.add_particle(x.child1)
+            self.singles_in_binaries.add_particle(x.child2)
+        self.binaries.remove_particles(code.dissolved_binaries)
+        new_binaries = self.binaries.add_particles(code.new_binaries)
+        
+        self.singles_in_binaries_previous = self.singles_in_binaries.copy()
+    
         if self.stopping_conditions.encounter_detection.is_enabled():
             model = Particles()
-            print len(code.new_multiples)
+            print len(new_multiples)
             particles_before_encounter = Particles()
             particles_before_encounter.add_particles(code.all_particles_in_encounter)
             particles_after_encounter = Particles()
@@ -1357,25 +1389,11 @@ class Multiples(options.OptionalAttributes):
             model.add_particle(particle)
             self.stopping_conditions.encounter_detection.set(model)
             
-        if self.stopping_conditions.multiples_change_detection.is_enabled():
-            if len(code.new_multiples) > 0 or len(code.dissolved_multiples) > 0:
-                self.stopping_conditions.multiples_change_detection.set(
-                    code.new_multiples,
-                    code.dissolved_multiples
-                )
-                
-        # update multiples
-        self.multiples.remove_particles(code.dissolved_multiples)
-        self.multiples.add_particles(code.new_multiples)
-        
-        # update binaries
-        self.binaries.remove_particles(code.dissolved_binaries)
-        self.binaries.add_particles(code.new_binaries)
         
         if self.stopping_conditions.binaries_change_detection.is_enabled():
             if len(code.new_binaries) > 0 or len(code.dissolved_binaries) > 0:
                 self.stopping_conditions.binaries_change_detection.set(
-                    code.new_binaries,
+                    new_binaries,
                     code.dissolved_binaries
                 )
         
@@ -1431,3 +1449,53 @@ class Multiples(options.OptionalAttributes):
         )
         return self.corrected_total_energy
 
+    def update_model(self):
+        attributes_to_update = ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']
+        
+        # we do all the work on the singles_in_binaries_previous set
+        # this makes sure all keys match attributes
+        self.singles_in_binaries_previous.delta_position = self.singles_in_binaries.position - self.singles_in_binaries_previous.position
+        self.singles_in_binaries_previous.delta_velocity = self.singles_in_binaries.velocity - self.singles_in_binaries_previous.velocity
+        
+        # take not yet updated positions
+        channel = self.components_of_multiples.new_channel_to(self.singles_in_binaries_previous)
+        channel.copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
+        
+        # update these
+        self.singles_in_binaries_previous.position += self.singles_in_binaries_previous.delta_position
+        self.singles_in_binaries_previous.velocity += self.singles_in_binaries_previous.delta_velocity
+        
+        # copy back
+        channel = self.singles_in_binaries_previous.new_channel_to(self.components_of_multiples)
+        channel.copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
+        
+        channel = self.singles_in_binaries.new_channel_to(self.components_of_multiples)
+        channel.copy_attribute('mass')
+        
+        for multiple in self.multiples:
+            components = self.get_singles_of_a_multiple(multiple)
+            multiple.mass = components.mass.sum()
+            center_of_mass = components.center_of_mass()
+            center_of_mass_velocity = components.center_of_mass_velocity()
+            print "center_of_mass", center_of_mass
+            multiple.position += center_of_mass
+            multiple.velocity += center_of_mass_velocity
+            components.position -= center_of_mass
+            components.velocity -= center_of_mass_velocity
+    
+        channel = self.multiples.new_channel_to(self.particles)
+        channel.copy_attributes(attributes_to_update)
+        #channel = self.singles.new_channel_to(self.particles)
+        #channel.copy_attributes('mass', 'x', 'y', 'z', 'vx', 'vy', 'vz')
+    
+        channel = self.particles.new_channel_to(self.gravity_code.particles)
+        channel.copy_attributes(attributes_to_update)
+        self.singles_in_binaries_previous = self.singles_in_binaries.copy()
+        
+    def get_singles_of_a_multiple(self, multiple):
+        components = multiple.components
+        tree = components.new_binary_tree_wrapper()
+        singles = Particles()
+        for node in tree.iter_descendant_leafs():
+            singles.add_particle(node.particle)
+        return singles

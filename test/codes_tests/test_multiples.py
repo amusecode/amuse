@@ -229,7 +229,7 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.commit_particles()
         
         self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.singles_in_multiples), 2)
+        self.assertEquals(len(multiples_code.components_of_multiples), 2)
         
         
     
@@ -491,7 +491,7 @@ class TestSimpleMultiples(TestWithMPI):
         initial_energy = multiples_code.get_total_energy()
         
         self.assertEquals(len(multiples_code.multiples), 1)
-        self.assertEquals(len(multiples_code.singles_in_multiples), 2)
+        self.assertEquals(len(multiples_code.components_of_multiples), 2)
         self.assertEquals(len(multiples_code.particles), 2)
         
         stopping_condition = multiples_code.stopping_conditions.encounter_detection
@@ -512,225 +512,134 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertTrue(stopping_condition.is_set())
         self.assertAlmostRelativeEquals(initial_energy, final_energy, 7)
         
-        
-    def xtest3(self):
-        code = Hermite()
-        stars = datamodel.Particles()
-        binary1 = self.new_binary(
-            1.0 | nbody_system.mass,
-            0.4 | nbody_system.mass,
-            0.01 |  nbody_system.length,
-            keyoffset = 1
-        )
-        binary2 = self.new_binary(
-            0.5 | nbody_system.mass,
-            0.2 | nbody_system.mass,
-            0.005 |  nbody_system.length,
-            keyoffset = 3
-        )
-        binary2.position += [0.5,0,0] | nbody_system.length
-        binary2.velocity += [0,0,0.03] | nbody_system.speed
-        stars.add_particles(binary1)
-        stars.add_particles(binary2)
-        stars.radius = 0.005 | nbody_system.length
-        print stars
-        code.particles.add_particles(stars)
-
-        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
-        multiples_code.binary_breakup_factor = 1
-        
-       
-        total_energy0 = multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-        multiples_code.evolve_model(0.1|nbody_system.time)
-        multiples_code.print_multiples()
-        total_energy1 =  multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-
-        error = abs((total_energy1 - total_energy0)/total_energy0)
-        
-        self.assertTrue(error < 1e-7)
-        multiples_code.evolve_model(0.2|nbody_system.time)
-        multiples_code.print_multiples()
-        total_energy2 =  multiples_code.kinetic_energy + multiples_code.potential_energy - multiples_code.multiples_energy_correction
-
-        error = abs((total_energy2 - total_energy0)/total_energy0)
-        
-        self.assertTrue(error < 1e-5)
-        
-        stars = multiples_code.stars
-        self.assertEquals(len(stars), 4)
-        self.assertEquals(len(code.particles), 2)
     
-
-    def xtest4(self):
+    def test9(self):
         code = Hermite()
-        stars = datamodel.Particles()
-        binary1 = self.new_binary(
-            1.0 | nbody_system.mass,
-            1.0 | nbody_system.mass,
-            0.1 | nbody_system.length,
+        
+        particles_in_binary = self.new_binary(
+            0.1 | nbody_system.mass,
+            0.1 | nbody_system.mass,
+            0.01 | nbody_system.length,
             keyoffset = 1
         )
-        binary2 = self.new_binary(
-            1.0 | nbody_system.mass,
-            1.0 | nbody_system.mass,
-            0.2 | nbody_system.length,
-            keyoffset = 3
-        )
-        binary1.position += [1.0,0.0,0] | nbody_system.length
-        binary2.position -= [1.0,0.0,0] | nbody_system.length
-        stars.add_particles(binary1)
-        stars.add_particles(binary2)
-        stars.radius = 0.25 | nbody_system.length
+        particles_in_binary.radius = 0.001 | nbody_system.length
         
-        code.particles.add_particles(stars)
-
-        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
-        multiples_code.binary_breakup_factor = 1
-        total_energy0 = (
-            multiples_code.kinetic_energy 
-            + multiples_code.potential_energy 
-            - multiples_code.multiples_energy_correction
+        binary = datamodel.Particle(key = 3)
+        binary.child1 = particles_in_binary[0]
+        binary.child2 = particles_in_binary[1]
+        binary.radius = 0.5 | nbody_system.length
+        binary.mass = 0.2 | nbody_system.mass
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
         )
-        multiples_code.evolve_model(0.1|nbody_system.time)
-        multiples_code.print_multiples()
-        total_energy1 =  (
-            multiples_code.kinetic_energy
-            + multiples_code.potential_energy
-            - multiples_code.multiples_energy_correction
+        
+        
+        others = datamodel.Particles(key = [4,5,6])
+        for i in range(3):
+            others[i].position = [i, 0, 0] | nbody_system.length
+            others[i].velocity = [0, 0, i] | nbody_system.speed
+            others[i].mass = 1 | nbody_system.mass
+            
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
         )
-
-        error = abs((total_energy1 - total_energy0)/total_energy0)
+        multiples_code.singles_in_binaries.add_particles(particles_in_binary)
+        multiples_code.binaries.add_particle(binary)
         
-        self.assertTrue(error < 1e-7)
-        multiples_code.evolve_model(2.0|nbody_system.time)
-        multiples_code.print_multiples()
-        total_energy2 =(
-            multiples_code.kinetic_energy
-            + multiples_code.potential_energy 
-            - multiples_code.multiples_energy_correction
-        )
-
-        error = abs((total_energy2 - total_energy0)/total_energy0)
+        multiples_code.singles.add_particles(others)
         
-        self.assertTrue(error < 1e-5)
         
-    def xtest5(self):
-        code1 = Hermite()
-        stars = datamodel.Particles()
-        binary1 = self.new_binary(
-            1.0 | nbody_system.mass,
-            0.2 | nbody_system.mass,
-            0.01 |  nbody_system.length,
-            eccentricity = 0.7,
+        multiples_code.commit_particles()
+        
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.components_of_multiples), 2)
+        self.assertEquals(len(multiples_code.singles), 3)
+        self.assertEquals(len(multiples_code.particles), 4)
+        self.assertEquals(len(code.particles), 4)
+        
+        self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass,0.2 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(code.particles[-1].mass,0.2 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(code.particles[-1].position, [0,0,0] | nbody_system.length, 6)
+        self.assertAlmostRelativeEquals(code.particles[-1].velocity, [0,0, 0] | nbody_system.speed, 6)
+        
+        
+        multiples_code.update_model()
+        self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 0.2 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(code.particles[-1].mass, 0.2 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(code.particles[-1].position, [0,0,0] | nbody_system.length, 6)
+        self.assertAlmostRelativeEquals(code.particles[-1].velocity, [0,0, 0] | nbody_system.speed, 6)
+        
+        multiples_code.singles_in_binaries[0].mass = 0.2 | nbody_system.mass
+        
+        multiples_code.update_model()
+        
+        self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 0.3 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(code.particles[-1].mass, 0.3 | nbody_system.mass)
+        print code.particles[-1].position
+        print code.particles[-1].velocity
+        self.assertAlmostRelativeEquals(code.particles[-1].position, [0.00166666666667,0,0] | nbody_system.length, 6)
+        self.assertAlmostRelativeEquals(code.particles[-1].velocity, [0, 0.7453559925, 0] | nbody_system.speed, 6)
+        
+        
+        
+      
+    def test10(self):
+        code = Hermite()
+        
+        particles_in_binary = self.new_binary(
+            0.1 | nbody_system.mass,
+            0.1 | nbody_system.mass,
+            0.01 | nbody_system.length,
             keyoffset = 1
         )
-        binary2 = self.new_binary(
-            0.8 | nbody_system.mass,
-            0.3 | nbody_system.mass,
-            0.01 |  nbody_system.length,
-            eccentricity = 0.9,
-            keyoffset = 3
-        )
-        binary1.position += [-0.5,-0.5,-0.5] | nbody_system.length
-        binary1.velocity += [0.0,0.0,0.0] | nbody_system.speed
-        binary2.position += [0.5,0.5,0.5] | nbody_system.length
-        binary2.velocity += [0.0,0.0,0.0] | nbody_system.speed
-        stars.add_particles(binary1)
-        stars.add_particles(binary2)
-        stars.radius = 0.2 | nbody_system.length
-        code1.particles.add_particles(stars)
-        kepler1 = self.new_kepler()
-        print binary2.velocity, (binary2[0].velocity - binary2[1].velocity).length
-        multiples_code1 = multiples.Multiples(code1, self.new_smalln, kepler1)
-        multiples_code1.binary_breakup_factor = 1
-        multiples_code1.evolve_model(0.1|nbody_system.time)
-        multiples_code1.print_multiples()
-        stars = multiples_code1.stars
-        self.assertEquals(len(stars), 4)
-        code2 = Hermite()
-        code2.particles.add_particles(stars)
-        kepler2 = self.new_kepler()
-        multiples_code2 = multiples.Multiples(code2, self.new_smalln, kepler2)
-        multiples_code2.binary_breakup_factor = 1
-        multiples_code1.evolve_model(0.2|nbody_system.time)
-        multiples_code2.evolve_model(0.1|nbody_system.time)
-        multiples_code1.print_multiples()
-        multiples_code2.print_multiples()
-        # compare the root positions
-        p01 = multiples_code1._inmemory_particles[0]
-        p02 = p01.as_particle_in_set(multiples_code2._inmemory_particles)
-        self.assertAlmostRelativeEquals(p01.position, p01.position)
-        p11 = multiples_code1._inmemory_particles[1]
-        p12 = p11.as_particle_in_set(multiples_code2._inmemory_particles)
-        self.assertAlmostRelativeEquals(p11.position, p11.position)
+        particles_in_binary.radius = 0.01 | nbody_system.length
         
-        if p01.mass == 1.2 | nbody_system.mass:
-            b1 = p01
-            b2 = p11
-        else:
-            b1 = p11
-            b2 = p01
-        b1stars = binary1.get_intersecting_subset_in(multiples_code1.stars)
-        self.assertAlmostRelativeEquals(
-            b1stars.center_of_mass(),
-            b1.position,
-        )
-        b2stars = binary2.get_intersecting_subset_in(multiples_code1.stars)
-        self.assertAlmostRelativeEquals(
-            b2stars.center_of_mass(),
-            b2.position,
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
         )
         
-             
-    def xtest6(self):
-        code = Hermite()
-        stars = datamodel.Particles(2)
         
-        stars.mass = 2 | nbody_system.mass
+        others = datamodel.Particles(key = [4,5,6])
+        for i in range(3):
+            others[i].position = [i, 0, 0] | nbody_system.length
+            others[i].velocity = [0, 0, i] | nbody_system.speed
+            others[i].mass = 1 | nbody_system.mass
+            others[i].radius  = 0.05 | nbody_system.length
+            
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.singles.add_particles(particles_in_binary)
+        multiples_code.singles.add_particles(others)
         
-        stars.position = [
-            [0, 0, 0],
-            [1, 1, 0]
-        ]|nbody_system.length
         
-        stars.velocity = [
-            [1, 0,0],
-            [-1, 0, 0]
-        ]|nbody_system.speed
+        multiples_code.commit_particles()
+        multiples_code.evolve_model(1 | nbody_system.time)
         
-        stars.radius = 0.5 | nbody_system.length
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.components_of_multiples), 2)
+        self.assertEquals(len(multiples_code.singles), 3)
+        self.assertEquals(len(multiples_code.particles), 4)
+        self.assertEquals(len(code.particles), 4)
         
-        code.particles.add_particles(stars)
+        self.assertEquals(id(multiples_code.singles_in_binaries), id(multiples_code.binaries[0].child1.particles_set))
+        self.assertEquals(id(multiples_code.components_of_multiples), id(multiples_code.multiples[0].components[0].particles_set))
+        #multiples_code.singles_in_binaries[0].mass = 0.2 | nbody_system.mass
+        self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 1.1 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(multiples_code.particles.mass.sum(), 0.1 + 0.1 + 3.0 | nbody_system.mass)
+        multiples_code.update_model()
         
-        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
-        multiples_code.evolve_model(0.6|nbody_system.time)
-        print multiples_code.particles
+        self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 1.1 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(code.particles[-1].mass, 1.1 | nbody_system.mass)
         
-        self.assertEquals(len(multiples_code.particles), 2)
-
-    def xtest7(self):
-        code = Hermite()
-        stars = datamodel.Particles(3)
+        multiples_code.singles_in_binaries[0].mass += 0.2 | nbody_system.mass
         
-        stars.mass = 2 | nbody_system.mass
-        stars.position = [
-            [0, 0, 0],
-            [1, 1, 0],
-            [2, 2, 0],
-        ]|nbody_system.length
+        multiples_code.update_model()
         
-        stars.velocity = [
-            [1, 0,0],
-            [-1, 0, 0],
-            [-2,-2, 0],
-        ]|nbody_system.speed
+        self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 1.3 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(code.particles[-1].mass, 1.3 | nbody_system.mass)
         
-        stars.radius = 0.5 | nbody_system.length
-        
-        code.particles.add_particles(stars)
-        
-        multiples_code = multiples.Multiples(code, self.new_smalln, self.new_kepler())
-        multiples_code.evolve_model(0.6|nbody_system.time)
-        print multiples_code.particles
-        
-        self.assertEquals(len(multiples_code.particles), 3)
