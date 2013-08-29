@@ -613,6 +613,30 @@ int delete_binary(int index_of_the_star){
     
 }
 
+
+int get_children_of_binary(
+    int index_of_the_star,
+    int * child1_index, int * child2_index)
+{
+    
+    *child1_index = -1;
+    *child2_index = -1;
+    map<int, nodeptr>::iterator i = mapping_from_id_to_node.find(index_of_the_star);
+    if(i == mapping_from_id_to_node.end()) {
+        return -1;
+    } else {
+        node * binary = i->second;
+        
+        node * child1 = binary->get_oldest_daughter();
+        if(child1 != 0) {
+            node * child2 = child1->get_younger_sister();
+            *child1_index = child1->get_index();
+            *child2_index = child2->get_index();
+        }
+        return 0;
+    }   
+}
+
 int get_eccentricity(int index_of_the_star, double * value){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);

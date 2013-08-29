@@ -145,6 +145,25 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
         
+    @legacy_function
+    def get_children_of_binary():
+        """
+        Return the indices of both children
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_star', dtype='int32',
+                              direction=function.IN, 
+                 description = 'index of the parent particle',
+                 unit = INDEX)
+        function.addParameter('child1', dtype='int32', direction=function.OUT,
+                description = 'index of the first child particle, -1 if none',
+                unit = LINK('particles') )
+        function.addParameter('child2', dtype='int32', direction=function.OUT,
+                unit = LINK('particles'))
+        function.can_handle_array = True
+        function.result_type = 'int32'
+        return function
+        
     
     @legacy_function
     def get_is_logging_of_evolve_enabled():
@@ -291,3 +310,4 @@ class SeBa(se.StellarEvolution):
         object.add_getter('binaries', 'get_mass', names = ('mass',))
         object.add_getter('binaries', 'get_time_step', names = ('time_step',))
         object.add_getter('binaries', 'get_age', names = ('age',))
+        object.add_getter("binaries", 'get_children_of_binary')

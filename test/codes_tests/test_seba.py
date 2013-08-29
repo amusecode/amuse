@@ -447,7 +447,34 @@ class TestSeBa(TestWithMPI):
         self.assertFalse(instance.parameters.is_logging_of_evolve_enabled)
         instance.parameters.is_logging_of_evolve_enabled = True
         self.assertTrue(instance.parameters.is_logging_of_evolve_enabled)
+    
+    def test7(self):
+        instance = self.new_instance_of_an_optional_code(SeBa)
+        instance.commit_parameters()
+        stars =  Particles(2)
+        stars[0].mass = 3.0 | units.MSun
+        stars[1].mass = 0.3 | units.MSun
         
+        
+        mu = (3.3 | units.MSun) * constants.G
+        orbital_period = 200.0 | units.day
+        semi_major_axis = (((orbital_period / (2.0 * numpy.pi))**2)*mu)**(1.0/3.0)
+        
+        instance.particles.add_particles(stars)
+        
+        binaries =  Particles(1)
+        
+        binary = binaries[0]
+        binary.semi_major_axis = semi_major_axis
+        binary.eccentricity = 0.5
+        binary.child1 = stars[0]
+        binary.child2 = stars[1]
+        
+        instance.binaries.add_particles(binaries)
+        
+        self.assertAlmostRelativeEquals(instance.binaries[0].child1.mass, 3.0 | units.MSun, 4)
+        self.assertAlmostRelativeEquals(instance.binaries[0].child2.mass, 0.3 | units.MSun, 4)
+            
     def xtest7(self):
         instance = self.new_instance_of_an_optional_code(SeBa)
         instance.parameters.metallicity = 0.03
