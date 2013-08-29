@@ -48,6 +48,8 @@ def new_salpeter_mass_distribution(number_of_particles, *list_arguments, **keywo
     """Returns a salpeter mass distribution in SI units.
     
     :argument alpha: the dimensionless exponent of the Salpeter function (defaults to -2.35)
+    :argument mass_min: the minimum of the mass function (default 0.1 MSun)
+    :argument mass_max: the maximum of the mass function (default 125 MSun)
     """
     uc = SalpeterIMF(*list_arguments, **keyword_arguments)
     return uc.next_mass(number_of_particles).as_quantity_in(uc.mass_min.unit)
@@ -57,6 +59,8 @@ def new_salpeter_mass_distribution_nbody(number_of_particles, **keyword_argument
     All masses will be scaled so that the total mass is always 1.0.
     
     :argument alpha: the dimensionless exponent of the Salpeter function (defaults to -2.35)
+    :argument mass_min: the minimum of the mass function (0.1)
+    :argument mass_max: the maximum of the mass function (125)
     """
     if not 'mass_min' in keyword_arguments:
         keyword_arguments['mass_min'] = 0.1 | nbody_system.mass
