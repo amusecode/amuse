@@ -373,7 +373,12 @@ class Multiples(object):
 
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
-            if newtime == time:
+           
+            #JB, modified this, in Bonsai we can take a 0 time-step to detect
+            #multiples. That would cause the newtime == time to evaluate to true
+            #when there are multiples detected and break out of the evaluate
+            #loop before the time reached end_time
+            if newtime == time and (stopping_condition.is_set() == False):
                 break
                 
             time = newtime
@@ -1091,7 +1096,7 @@ class Multiples(object):
             print 'multiples: ### START ENCOUNTER ###'
             print 'multiples: ### snapshot at time %f' % 0.0
             for p in particles:
-                print 'multiples: ### id=%d, x=%f, y=%f, z=%f,',\
+                print 'multiples: ### id=%d, x=%f, y=%f, z=%f,'\
                       'vx=%f, vy=%f, vz=%f' % \
                         (p.id, p.x.number, p.y.number, p.z.number,
                          p.vx.number, p.vy.number, p.vz.number)
@@ -1119,7 +1124,7 @@ class Multiples(object):
                 resolve_collision_code.particles.synchronize_to(particles)
                 channel.copy()
                 for p in particles:
-                    print 'multiples: ### id=%d, x=%f, y=%f, z=%f,',\
+                    print 'multiples: ### id=%d, x=%f, y=%f, z=%f,'\
                           'vx=%f, vy=%f, vz=%f' % \
                             (p.id, p.x.number, p.y.number, p.z.number,
                              p.vx.number, p.vy.number, p.vz.number)
