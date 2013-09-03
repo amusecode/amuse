@@ -530,8 +530,8 @@ void octree::approximate_gravity(tree_structure &tree)
   tree.activePartlist.zeroMem();
 
 //   int grpOffset = 0;
-
-  //Set the kernel parameters, many!
+  
+ //Set the kernel parameters, many!
   approxGrav.set_arg<int>(0,    &tree.n_active_groups);
   approxGrav.set_arg<int>(1,    &tree.n);
   approxGrav.set_arg<float>(2,  &(this->eps2));

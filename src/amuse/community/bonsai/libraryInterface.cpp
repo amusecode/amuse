@@ -251,6 +251,7 @@ int commit_particles()
 
     bonsai->localTree.bodies_Ppos[i] = bodies_pos[i];
     bonsai->localTree.bodies_Pvel[i] = bodies_vel[i];
+    bonsai->localTree.bodies_time[i] = bodies_time[i];
   }
 
   //Copy the particles to the device
@@ -259,7 +260,7 @@ int commit_particles()
   bonsai->localTree.bodies_Ppos.h2d();
   bonsai->localTree.bodies_Pvel.h2d();
   bonsai->localTree.bodies_ids.h2d();
-
+  bonsai->localTree.bodies_time.h2d();
 
   //Build a tree-structure for initial initialization
   bonsai->sort_bodies(bonsai->localTree, true);
@@ -270,6 +271,7 @@ int commit_particles()
 
 
   curStateOnHost = false;
+
 
   return 0;
 }
@@ -340,12 +342,13 @@ int evolve_model(double t_end)
 //  system.set_softening(eps);
 //  system.set_opening_angle(theta);
 
-
+  reset_stopping_conditions(); 
   bonsai->setTEnd(t_end);
   bonsai->iterate();
   if (maxlevels_exceeded) return -4;
 
-  t_now = t_end;
+  t_now = bonsai->getTime();
+//  t_now = t_end;
 
   return 0;
 }
@@ -745,6 +748,7 @@ int cleanup_code(){
 
 int set_begin_time(double input) {
     begin_time = input;
+    t_now = begin_time;
     return 0;
 }
 

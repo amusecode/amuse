@@ -309,11 +309,10 @@ extern "C" __global__ void correct_particles(const int n_bodies,
   vel [idx] = v;
   acc0[idx] = a1;
 
-//   time[idx] = (float2){tc, tc + dt};
-
-
   //Code specific to stopping conditions
   int j = ngb[idx];
+  
+#if 1 
   if(j >= 0)    //Only check if we have a valid nearby neighbour
   {
     float4 posi = pPos[idx];
@@ -323,23 +322,46 @@ extern "C" __global__ void correct_particles(const int n_bodies,
 
     //Compute distance and compare to summed radius
     float ds2 = ((posi.x-posj.x)*(posi.x-posj.x)) +
-          ((posi.y-posj.y)*(posi.y-posj.y)) +
-          ((posi.z-posj.z)*(posi.z-posj.z));
+                ((posi.y-posj.y)*(posi.y-posj.y)) +
+                ((posi.z-posj.z)*(posi.z-posj.z));
 
     float rsum = radi + radj;
     if (ds2 <= rsum*rsum)
     {
-      //Collision detected, store the indices of the involved particles
-      //Note that this will create double items in the final list
-      //if j is nearest neighbour of i and i nearest neighbour of j
-      pairDetection[2*idx+0] = idx | (1 << 31);
-      pairDetection[2*idx+1] = j   | (1 << 31);
+      float4 veli = pVel[idx];
+      float4 velj = pVel[j];    
+  
+      //Compute distance and compare to summed radius
+      float r = ((posi.x-posj.x)*(posi.x-posj.x)) +
+                        ((posi.y-posj.y)*(posi.y-posj.y)) +
+                        ((posi.z-posj.z)*(posi.z-posj.z));
+      float v = ((veli.x-velj.x)*(veli.x-velj.x)) +
+                        ((veli.y-velj.y)*(veli.y-velj.y)) +
+                        ((veli.z-velj.z)*(veli.z-velj.z));
+      float vr =((posi.x-posj.x)*(veli.x-velj.x)) +
+                        ((posi.y-posj.y)*(veli.y-velj.y)) +
+                        ((posi.z-posj.z)*(veli.z-velj.z));
+  
+      //TODO remove these expensive operations instead just 
+      //do vr*vr and EPS*EPS
+      r = sqrt(r);
+      v = sqrt(v);
+
+      #define EPS 0.001   // see couple/multiples.py
+      if (vr < EPS*r*v)
+      {
+        //Collision detected, store the indices of the involved particles
+        //Note that this will create double items in the final list
+        //if j is nearest neighbour of i and i nearest neighbour of j
+        pairDetection[2*idx+0] = idx | (1 << 31);
+        pairDetection[2*idx+1] = j   | (1 << 31);
 
       //Another option is to store it like this, but this destroys the
       //info about pairs
-    }
+      }
+    }//if ds2 <=
   }//if j >= 0
-
+#endif
 
 }
 
@@ -549,8 +571,18 @@ extern "C"  __global__ void compute_dt(const int n_bodies,
   power     = max(power, dt_limit);
 
 
+  int count = 0;
   dt = 1.0f/(1 << power);
-  while(fmodf(tc, dt) != 0.0f) dt *= 0.5f;      // could be slow!
+  while(fmodf(tc, dt) != 0.0f)
+  {
+	  dt *= 0.5f;      // could be slow!
+	  count++;
+	  if(count > 30)
+	  {
+		  dt = timeStep;
+		  break;
+	  }
+  }
 
   //if(dt < 1./16384) dt = 1./16384;
   //if(dt < 1./1048576) dt = 1./1048576;
