@@ -1,11 +1,9 @@
 import math
-
-
-
-
-# misc every day
 from amuse.units.si import *
 from amuse.units.derivedsi import *
+from amuse.units import constants
+
+# misc every day
 minute = named('minute', 'min', 60 * s)
 hour   = named('hour',   'hr',  60 * minute)
 day    = named('day',    'day', 24 * hour)
@@ -13,6 +11,15 @@ yr     = named('year',   'yr',  365.242199 * day)
 julianyr = named('julian yr','julianyr',365.25* day)
 ms = named('meter per seconds', 'ms', m / s)
 kms = named('kilometer per seconds', 'kms', km / s)
+
+# units based on measured quantities
+e = named('electron charge', 'e', constants.elementary_charge.as_unit())
+eV=named('electron volt','eV', e*V)
+MeV=named('mega electron volt','eV', 1e6*eV)
+GeV=named('giga electron volt','GeV', 1e9*eV)
+E_h = named('hartree energy', 'E_h', constants.Hartree_energy.as_unit())
+amu = named('atomic mass unit', 'amu', constants.u.as_unit())
+Ry = named('rydberg unit', 'Ry', (constants.Rydberg_constant * constants.h * constants.c).as_quantity_in(eV).as_unit())
 
 # astronomical units
 angstrom = named('angstrom', 'angstrom', 1e-10*m)

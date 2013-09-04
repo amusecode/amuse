@@ -21,12 +21,12 @@ from amuse.units.units import *
 ADDITIONAL_DERIVED_CONSTANTS = \
 """
 pi = numpy.pi | none
-hbar=h/(2.0*numpy.pi)
-four_pi_stefan_boltzmann = 4.0*numpy.pi*Stefan_hyphen_Boltzmann_constant
-mu0=4*numpy.pi*1.e-7 | N/A**2
-eps0=mu0**-1*c**-2
+hbar = h / (2.0 * numpy.pi)
+four_pi_stefan_boltzmann = 4.0 * numpy.pi * Stefan_hyphen_Boltzmann_constant
+mu0 = 4 * numpy.pi * 1.e-7 | N/A**2
+eps0 = mu0**-1 * c**-2
 #machine constants
-eps =numpy.finfo(numpy.double).eps
+eps = numpy.finfo(numpy.double).eps
 precision = int(numpy.log10(2/eps))
 """
 class GetConstantsFromFiles(object):
@@ -48,7 +48,7 @@ class GetConstantsFromFiles(object):
         f.close()
      
     def get_table_from_file(self):
-        f = open(os.path.join(self.directory, 'nist.txt'), 'r')     
+        f = open(os.path.join(self.directory, 'nist.txt'), 'r') # CODATA 2006, for CODATA 2010 use 'nist2010.txt'
         self.nist_table = f.read()                             
         f.close()                                    
 
@@ -94,7 +94,7 @@ class Constants(object):
         self.nisttablebaseunits = []
         self.nisttabledependingunits = []
 
-        self. siunits = dir(si)+dir(derivedsi)
+        self.siunits = dir(si)+dir(derivedsi)
         
     def test_regexp(self, regexp):
         lines =self.table.splitlines(1)
@@ -117,30 +117,37 @@ class Constants(object):
         unit = []
 
         lines =self.table.splitlines(1)
-        for tel in range(9): lines.pop(0)
-        for i in lines:
-            namestr = i[0:54]
+        for n, line in enumerate(lines):
+            if "----------------------" in line:
+                number_of_header_lines = n + 1
+                break
+        firstline = lines[number_of_header_lines]
+        namestr_length = len(firstline) - len(firstline[firstline.find("   "):].lstrip())
+        column_index_of_uncertainty = len(firstline) - len(firstline[namestr_length+21+firstline[namestr_length+21:].find(" "):].lstrip())
+        column_index_of_unit = len(firstline) - len(firstline[column_index_of_uncertainty+21+firstline[column_index_of_uncertainty+21:].find(" "):].lstrip())
+        for i in lines[number_of_header_lines:]:
+            namestr = i[0:namestr_length]
 
-            marker1 = 76
-            marker2 = 98
+            marker1 = column_index_of_uncertainty
+            marker2 = column_index_of_unit
 
             while 1:
-                if i[marker1]=='\x20':
+                if i[marker1-1]=='\x20':
                     break
                 else:
                     marker1+=1
             while 1:
-                if i[marker2]=='\x20':
+                if i[marker2-1]=='\x20':
                     break
                 else:
                     marker2+=1
 
             nrs=[]
-            nrs.append(i[54:marker1])
+            nrs.append(i[namestr_length:marker1])
             nrs.append(i[marker1:marker2])
-            unitstr = i[marker2:-1]
+            unitstr = i[marker2:]
                 
-            unitstr = unitstr.lstrip(' ').replace(' ','*').replace('^','**')
+            unitstr = unitstr.strip().replace(' ','*').replace('^','**')
 
             new_name = self.translate(namestr.rstrip(' ').replace(' ','_').replace('.','').replace('{','X').replace('}','X').replace('(','X').replace(')','X').replace('-','_hyphen_').replace(',','_and_').replace('/','_div_'))
             error.append(nrs[1].replace(' ',''))
@@ -149,34 +156,22 @@ class Constants(object):
             else:
                 this_unit = unitstr
 
-            self.nisttable.append([new_name, float(i[54:marker1].replace(' ','').replace('...','')), unitstr])
+            self.nisttable.append([new_name, float(i[namestr_length:marker1].replace(' ','').replace('...','')), unitstr])
 
     def sort_units(self):
-
-        for i in self.nisttable:
-            if i[2].replace('\n','') in self.siunits:
-                self.nisttablebaseunits.append(i)
-            elif i[2] == '':
-                self.nisttablenoneunits.append(i)
+        for entry in self.nisttable:
+            if entry[2] in self.siunits:
+                self.nisttablebaseunits.append(entry)
+            elif entry[2] == '':
+                self.nisttablenoneunits.append(entry)
+            elif set(re.split('[*/^]',re.sub('\*\*-?[0-9.]*','',entry[2]))).issubset(set(self.siunits)):
+                self.nisttablederivedunits.append(entry)
             else:
-                derived_unit = i[2].replace('\n','')
-                units_in_derived_unit = re.split('[*/^]',derived_unit)
-                l = list(set(units_in_derived_unit)-set(self.siunits))
-                for ind, j in enumerate(l): l[ind] = re.sub('-?[0-9.]*','',j)
-                no_empty_l = []
-                for ind, j in enumerate(l): 
-                    if not j=='': no_empty_l.append(j)
-                if len(no_empty_l)==0:
-                    self.nisttablederivedunits.append(i)
-                else:
-                    self.nisttabledependingunits.append(i)
+                self.nisttabledependingunits.append(entry)
     
     def print_list_of_units(self, unitlist):
-        for i in unitlist:
-            i[2]=i[2].strip('\n')
-            if i[2]=='':
-                i[2] = 'none'
-            self.nistfile += ("{0} = {1} | {2}\n".format(i[0], i[1], i[2]))
+        for name, value, unit in unitlist:
+            self.nistfile += ("{0} = {1} | {2}\n".format(name, value, unit or "none"))
 
     def generate_constants(self):
         self.list_constants()
