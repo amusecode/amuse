@@ -10,6 +10,7 @@ from amuse.units import si
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units import quantities
+from amuse.units import core
 
 
 from amuse import datamodel
@@ -312,7 +313,14 @@ class TestQuantities(amusetest.TestCase):
           raise Exception("expect error")
         except:
           pass
-
+    
+    def test29(self):
+        one_inch = 2.54 | units.cm
+        self.assertFalse(isinstance(one_inch, core.unit))
+        self.assertTrue(isinstance(one_inch.as_unit(), core.unit))
+        self.assertEquals(one_inch.as_unit(), 2.54 * units.cm)
+        self.assertEquals(1 | one_inch.as_unit(), 2.54 | units.cm)
+    
 
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):

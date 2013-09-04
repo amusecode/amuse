@@ -316,6 +316,9 @@ class ScalarQuantity(Quantity):
     amax=max
     def sorted(self):
         return self
+    
+    def as_unit(self):
+        return self.number * self.unit
 
 class VectorQuantity(Quantity):
     """
