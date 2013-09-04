@@ -1,17 +1,8 @@
-import os
-import sys
-import numpy
-import math
-
 from amuse.test.amusetest import TestWithMPI
-from amuse.community.mocassin.interface import MocassinInterface, Mocassin
-
-
-
-from mpi4py import MPI
-from amuse.units import generic_unit_system
 from amuse.units import units
 from amuse import datamodel
+from amuse.community.mocassin.interface import MocassinInterface, Mocassin, mocassin_rydberg_unit
+
 
 class TestMocassinInterface(TestWithMPI):
     
@@ -39,8 +30,6 @@ class TestMocassinInterface(TestWithMPI):
             self.assertAlmostRelativeEqual(x[index], expected_x, 6)
             self.assertAlmostRelativeEqual(y[index], -100)
             self.assertAlmostRelativeEqual(z[index], -100)
-        
-        
         
         instance.stop()
     
@@ -261,8 +250,8 @@ class TestMocassin(TestWithMPI):
         instance.parameters.length_y = 0.95E+19 | units.cm
         instance.parameters.length_z = 0.95E+19 | units.cm
         
-        instance.set_high_limit_of_the_frequency_mesh(15 | units.ryd)
-        instance.set_low_limit_of_the_frequency_mesh(1.001e-5| units.ryd)
+        instance.set_high_limit_of_the_frequency_mesh(15 | mocassin_rydberg_unit)
+        instance.set_low_limit_of_the_frequency_mesh(1.001e-5| mocassin_rydberg_unit)
         instance.set_maximum_number_of_monte_carlo_iterations(1)
         instance.set_total_number_of_photons(100)
         #instance.set_constant_hydrogen_density(100 | units.cm**-3)

@@ -594,7 +594,7 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
 #class Methods(object):
 #    get_grid_electron_density = MethodWithUnit(name = "get_grid_electron_density", i = INDEX, j = INDEX, k = INDEX, is_active = NOUNIT )
 
-units.ryd = 13.6 * derivedsi.eV
+mocassin_rydberg_unit = 13.6 * units.eV
 
 class Mocassin(InCodeComponentImplementation):
     
@@ -757,12 +757,12 @@ class Mocassin(InCodeComponentImplementation):
         object.add_method(
             "get_high_limit_of_the_frequency_mesh",
             (),
-            (units.ryd, object.ERROR_CODE,)
+            (mocassin_rydberg_unit, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_high_limit_of_the_frequency_mesh",
-            (units.ryd, ),
+            (mocassin_rydberg_unit, ),
             (object.ERROR_CODE,)
         )
         
@@ -817,12 +817,12 @@ class Mocassin(InCodeComponentImplementation):
         object.add_method(
             "get_low_limit_of_the_frequency_mesh",
             (),
-            (units.ryd, object.ERROR_CODE,)
+            (mocassin_rydberg_unit, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_low_limit_of_the_frequency_mesh",
-            (units.ryd, ),
+            (mocassin_rydberg_unit, ),
             (object.ERROR_CODE,)
         )
         
@@ -959,7 +959,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_high_limit_of_the_frequency_mesh", 
             "high_limit_of_the_frequency_mesh", 
             "<fill>", 
-            default_value = 15. | units.ryd
+            default_value = 15. | mocassin_rydberg_unit
         )
     
     
@@ -995,7 +995,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_low_limit_of_the_frequency_mesh", 
             "low_limit_of_the_frequency_mesh", 
             "<fill>", 
-            default_value = 1.001e-5 | units.ryd
+            default_value = 1.001e-5 | mocassin_rydberg_unit
         )
     
     
