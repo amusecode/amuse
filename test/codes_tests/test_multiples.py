@@ -642,4 +642,68 @@ class TestSimpleMultiples(TestWithMPI):
         
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 1.3 | nbody_system.mass)
         self.assertAlmostRelativeEquals(code.particles[-1].mass, 1.3 | nbody_system.mass)
+    
+    
+      
+    def test11(self):
+        code = Hermite()
         
+        particles_in_binary = self.new_binary(
+            1 | nbody_system.mass,
+            1 | nbody_system.mass,
+            0.001 | nbody_system.length,
+            keyoffset = 1
+        )
+        particles_in_binary.radius = 0.01 | nbody_system.length
+        
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+        )
+        
+        
+        others = datamodel.Particles(keys = [4,5,6])
+        for i in range(3):
+            others[i].position = [i, 0, 0] | nbody_system.length
+            others[i].velocity = [0, 0, 0] | nbody_system.speed
+            others[i].mass = 0.2 | nbody_system.mass
+            others[i].radius  = 0.05 | nbody_system.length
+            
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.singles.add_particles(particles_in_binary)
+        multiples_code.singles.add_particles(others)
+        
+        
+        stopping_condition = multiples_code.stopping_conditions.binaries_change_detection
+        stopping_condition.enable()
+        
+        multiples_code.commit_particles()   
+        multiples_code.evolve_model(1 | nbody_system.time)
+        self.assertEquals(len(multiples_code.multiples), 1)        
+        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEquals(len(multiples_code.components_of_multiples), 2)
+        self.assertEquals(len(multiples_code.singles), 3)
+        self.assertEquals(len(multiples_code.particles), 4)
+        self.assertEquals(len(code.particles), 4)
+        self.assertTrue(stopping_condition.is_set())
+        multiples_code.particles[-1].velocity = [0, 0, 0] | nbody_system.speed
+        multiples_code.update_model()
+        print multiples_code.particles.key
+        
+        self.assertEquals(len(stopping_condition.particles(0)), 1)
+        self.assertEquals(len(stopping_condition.particles(1)), 0)
+        self.assertEquals(len(stopping_condition.particles(2)), 0)
+        self.assertAlmostRelativeEquals(multiples_code.multiples[0].mass, 2.0 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(multiples_code.particles.mass.sum(), 2.6 | nbody_system.mass)
+        print multiples_code.particles.velocity
+        multiples_code.evolve_model(2 | nbody_system.time)
+        self.assertTrue(stopping_condition.is_set())
+        self.assertEquals(len(stopping_condition.particles(0)), 0)
+        self.assertEquals(len(stopping_condition.particles(1)), 0)
+        self.assertEquals(len(stopping_condition.particles(2)), 1)
+        self.assertAlmostRelativeEquals(multiples_code.multiples[0].mass, 2.0 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(multiples_code.particles.mass.sum(), 2.6 | nbody_system.mass)
+

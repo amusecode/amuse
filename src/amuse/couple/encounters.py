@@ -1370,6 +1370,14 @@ class Multiples(options.OptionalAttributes):
         for x in code.new_binaries:
             self.singles_in_binaries.add_particle(x.child1)
             self.singles_in_binaries.add_particle(x.child2)
+        for x in code.updated_binaries:
+            child1 =  x.child1.as_particle_in_set(self.singles_in_binaries)
+            child1.position = x.child1.position
+            child1.velocity = x.child1.velocity
+            child2 =  x.child2.as_particle_in_set(self.singles_in_binaries)
+            child2.position = x.child2.position
+            child2.velocity = x.child2.velocity
+            
         self.binaries.remove_particles(code.dissolved_binaries)
         new_binaries = self.binaries.add_particles(code.new_binaries)
         
@@ -1388,13 +1396,16 @@ class Multiples(options.OptionalAttributes):
             particle.particles_after_encounter = particles_after_encounter
             model.add_particle(particle)
             self.stopping_conditions.encounter_detection.set(model)
-            
+        
+        channel = code.updated_binaries.new_channel_to(self.binaries)
+         
         
         if self.stopping_conditions.binaries_change_detection.is_enabled():
-            if len(code.new_binaries) > 0 or len(code.dissolved_binaries) > 0:
+            if len(code.new_binaries) > 0 or len(code.dissolved_binaries) > 0 or len(code.updated_binaries) > 0 :
                 self.stopping_conditions.binaries_change_detection.set(
                     new_binaries,
-                    code.dissolved_binaries
+                    code.dissolved_binaries,
+                    code.updated_binaries.get_intersecting_subset_in(self.binaries)                    
                 )
         
         channel = code.particles_after_encounter.new_channel_to(self.particles)
@@ -1452,6 +1463,8 @@ class Multiples(options.OptionalAttributes):
     def update_model(self):
         attributes_to_update = ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']
         
+        channel = self.particles.new_channel_to(self.multiples)
+        channel.copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
         # we do all the work on the singles_in_binaries_previous set
         # this makes sure all keys match attributes
         self.singles_in_binaries_previous.delta_position = self.singles_in_binaries.position - self.singles_in_binaries_previous.position
@@ -1478,6 +1491,7 @@ class Multiples(options.OptionalAttributes):
             center_of_mass = components.center_of_mass()
             center_of_mass_velocity = components.center_of_mass_velocity()
             print "center_of_mass", center_of_mass
+            print "center_of_mass", center_of_mass_velocity, multiple.velocity 
             multiple.position += center_of_mass
             multiple.velocity += center_of_mass_velocity
             components.position -= center_of_mass
