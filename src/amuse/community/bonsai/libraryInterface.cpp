@@ -423,7 +423,19 @@ int recommit_parameters(){
 }
 
 int synchronize_model(){
-  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+  //fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+  fprintf(stderr,"SYNC MODEL: %s:%d \n", __FILE__, __LINE__);
+
+  //Force all particles to be updated on the current time, t_now
+  bonsai->localTree.bodies_time.d2h();
+  for(int i=0; i < n_bodies; i++)
+  {
+    bonsai->localTree.bodies_time[i].y = t_now;  
+  }
+  bonsai->localTree.bodies_time.h2d();
+  evolve_model(t_now);
+
+  fprintf(stderr,"SYNC MODEL DONE \n");
 
   return 0;
 }

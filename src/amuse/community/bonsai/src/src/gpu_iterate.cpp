@@ -189,6 +189,17 @@ void octree::iterate() {
       }
   }
 
+  if(t_current >= tEnd) return;
+
+  #ifdef _AMUSE_STOPPING_CONDITIONS_
+    //Check if a stopping condition was triggered
+    if(this->stopping_condition_found)
+    {
+      return;
+    }
+  #endif
+      
+
   double t0 = get_time();
   for(int i=0; i < 10000000; i++) //Large number, limit
   {
