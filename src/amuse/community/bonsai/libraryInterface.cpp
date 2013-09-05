@@ -158,8 +158,7 @@ int new_particle(int *id, double mass, double x, double y, double z, double vx, 
 
   double tempTimeStep =  bonsai->getDt();
 
-  //TODO change this into probably t_now to make sure it will do a step to get proper dt in block step mode
-  bodies_time[n_bodies].y = t_now + tempTimeStep;
+  bodies_time[n_bodies].y = t_now; //Force new update to be t_now, to perform init step
 
 
   bodies_grav.resize(n_bodies+1);
