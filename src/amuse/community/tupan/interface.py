@@ -221,14 +221,14 @@ class TupanImplementation(object):
 
     def get_center_of_mass_position(self, x, y, z):
         ps = self.integrator.particle_system
-        rcom = ps.rcom
-        x.value, y.value, z.value = rcom
+        com_r = ps.com_r
+        x.value, y.value, z.value = com_r
         return 0
 
     def get_center_of_mass_velocity(self, vx, vy, vz):
         ps = self.integrator.particle_system
-        vcom = ps.vcom
-        vx.value, vy.value, vz.value = vcom
+        com_v = ps.com_v
+        vx.value, vy.value, vz.value = com_v
         return 0
 
     def get_gravity_at_point(self, eps, x, y, z, ax, ay, az, length):
