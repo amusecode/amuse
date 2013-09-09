@@ -172,6 +172,8 @@ class TestBonsai(TestWithMPI):
         self.assertAlmostEquals(instance.kinetic_energy,    0.244612112641 | nbody_system.energy)
         self.assertAlmostEquals(instance.total_mass, 1.0 | nbody_system.mass)
         
+        E0 = instance.kinetic_energy + instance.potential_energy
+
         self.assertRaises(AmuseException, getattr, instance, "total_radius", expected_message = 
             "Error when calling 'get_total_radius' of a 'Bonsai', errorcode is -2, "
             "error is 'Called function is not implemented.'")
@@ -184,11 +186,11 @@ class TestBonsai(TestWithMPI):
 
         instance.evolve_model(1.0 | nbody_system.time)
         self.assertAlmostEquals(instance.model_time, 1.0 | nbody_system.time)
-        self.assertAlmostEquals(instance.potential_energy, -0.486187309027 | nbody_system.energy, 1)
-        self.assertAlmostEquals(instance.kinetic_energy,    0.244612112641 | nbody_system.energy, 1)
+        self.assertAlmostEquals(instance.potential_energy, -0.4915 | nbody_system.energy, 4)
+        self.assertAlmostEquals(instance.kinetic_energy,    0.2499 | nbody_system.energy, 4)
         self.assertAlmostEquals(
             instance.kinetic_energy + instance.potential_energy, 
-            0.244612112641 - 0.486187309027 | nbody_system.energy, 4)
+            E0, 4)
         instance.particles.remove_particle(plummer[2])
         instance.evolve_model(2.0 | nbody_system.time)
         instance.particles.remove_particle(plummer[20])
