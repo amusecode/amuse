@@ -1139,7 +1139,7 @@ def to_quantity(input):
     if is_quantity(input):
         return input
     else:
-        from amuse.units.units import none
+        from amuse.units.si import none
         return new_quantity(input, none)
 
 def arange(start, stop, step):
@@ -1169,7 +1169,7 @@ def linspace(start, stop, num = 50,  endpoint=True, retstep=False):
         return new_quantity(array, unit)
 
 def separate_numbers_and_units(values):
-    from amuse.units.units import none
+    from amuse.units.si import none
     number = []
     unit = []
     for value in values:
@@ -1198,7 +1198,7 @@ def polyval(p, x):
     y_unit = p_unit[-1].to_reduced_form()
     x_unit = (y_unit/p_unit[-2]).to_reduced_form()
 
-    from amuse.units.units import none
+    from amuse.units.si import none
     if x_unit != none:
         x = x.value_in(x_unit)
 

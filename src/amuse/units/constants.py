@@ -3,7 +3,8 @@
 #or change them, change the nist.txt file and run nist.py
 
 import numpy
-from amuse.units.units import *
+from amuse.units.si import *
+from amuse.units.derivedsi import *
 
 #BASE UNITS***********************************************
 X220X_lattice_spacing_of_silicon = 1.920155762e-10 | m
