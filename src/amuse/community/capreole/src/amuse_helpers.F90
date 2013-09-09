@@ -49,7 +49,7 @@ module amuse_helpers
     integer(kind=4) :: get_stopping_condition_timeout_parameter 
     integer :: clock_init, clock_current, count_rate, count_max
     integer(kind=4) :: max_number_of_steps
-    integer :: timeout
+    real*8 :: timeout
     integer :: number_of_steps_innerloop
     integer :: stopping_index
     integer :: next_index_for_stopping_condition
