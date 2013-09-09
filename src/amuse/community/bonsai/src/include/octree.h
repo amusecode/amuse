@@ -284,7 +284,7 @@ protected:
   int   dt_limit;
   float eta;
   float timeStep;
-  int   tEnd;
+  float   tEnd;
   float theta;
 
   //Sim stats
