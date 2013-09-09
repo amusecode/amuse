@@ -320,6 +320,16 @@ class TestParticle(amusetest.TestCase):
 
         self.assertAlmostRelativeEquals(particles[-3].mass, 4 | units.kg)
         self.assertAlmostRelativeEquals(particles[-1].mass, 21 | units.kg)
+        
+        
+    def test1(self):
+        particles = datamodel.Particles(keys = [10,11])
+        particles.mass = [1,2] | units.kg
+        self.assertAlmostRelativeEquals(particles[0].mass, 1 | units.kg)
+        copy = particles[0].empty_copy()
+        self.assertFalse(hasattr(copy, 'mass'))
+        self.assertTrue(hasattr(particles[0], 'mass'))
+
 
 class TestParticlesSubset(amusetest.TestCase):
 

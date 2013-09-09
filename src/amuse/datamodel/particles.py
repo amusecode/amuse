@@ -2993,6 +2993,13 @@ class Particle(object):
     def copy(self):
         return self.particles_set.copy()._get_particle(self.key)
         
+    def empty_copy(self):
+        keys = [self.key]
+        result = Particles()
+        result.add_particles_to_store(keys, [],[])
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self.particles_set._derived_attributes))
+        return result._get_particle(self.key)
+        
     def __add__(self, particles):
         """
         Returns a particle subset, composed of the given
