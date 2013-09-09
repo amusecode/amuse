@@ -164,7 +164,8 @@ class TestBonsai(TestWithMPI):
         
         self.assertEquals(instance.model_time, 0.0 | nbody_system.time)
         instance.evolve_model(0.0001 | nbody_system.time)
-        self.assertTrue(instance.model_time > 0.0001 | nbody_system.time)
+        print instance.model_time
+        self.assertTrue(instance.model_time >= 0.0001 | nbody_system.time)
         self.assertEquals(instance.model_time, 1.0 * instance.parameters.timestep)
         
         self.assertAlmostEquals(instance.potential_energy, -0.486261308193 | nbody_system.energy)
@@ -258,7 +259,7 @@ class TestBonsai(TestWithMPI):
         instance.particles.add_particles(plummer)
         
         instance.particles[0].position -= [1e9, 0, 0] | nbody_system.length
-        self.assertRaises(AmuseException, instance.evolve_model, 0.5 | nbody_system.time, expected_message = 
+        self.assertRaises(AmuseException, instance.evolve_model, 1.0 | nbody_system.time, expected_message = 
             "Error when calling 'evolve_model' of a 'Bonsai', errorcode is -4, error is "
             "'The tree has become too deep, consider the removal of far away particles to prevent a too large box.'")
         
