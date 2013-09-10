@@ -32,16 +32,21 @@ def move_to_center(particles):
 
 
 def scale_to_standard(particles, convert_nbody = None,
-                      smoothing_length_squared = zero):
+                      smoothing_length_squared = zero,
+                      virial_ratio = 0.5):
     """
-    Scale the particles to a standard NBODY model with
-    **total mass=1**, **kinetic energy=0.25** and
-    **potential_energy=0.5** (or **virial_radius=1.0**)
+    Scale the particles to a standard NBODY model with G=1,
+    total_mass=1, and virial_radius=1 (or potential_energy=-0.5). 
+    In virial equilibrium (virial_ratio=0.5, default) the 
+    kinetic_energy=0.25 and the velocity_dispersion=1/sqrt(2).
 
     :argument convert_nbody: the scaling is in nbody units,
         when the particles are in si units a convert_nbody is needed
     :argument smoothing_length_squared: needed for calculating
         the potential energy correctly.
+    :argument virial_ratio: scale velocities to Q=K/|U|, (kinetic/potential energy); 
+        Q = virial_ratio > 0.5: supervirial, will expand
+        Q = virial_ratio < 0.5: subvirial, will collapse
     """
     if not convert_nbody is None:
         particles = ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_generic_to_si())
@@ -68,13 +73,13 @@ def scale_to_standard(particles, convert_nbody = None,
     if smoothing_length_squared == zero:
         potential_energy = target_energy
     else:
-        potential_energy \
-            = particles.potential_energy(G=nbody_system.G,
-                         smoothing_length_squared = smoothing_length_squared)
-
-    kinetic_energy = particles.kinetic_energy()
-    target_energy =  -0.5*potential_energy
-    scale_factor = numpy.sqrt(target_energy / kinetic_energy)
+        potential_energy = particles.potential_energy(G=nbody_system.G,
+            smoothing_length_squared = smoothing_length_squared)
+    
+    if virial_ratio == 0:
+        scale_factor = 0
+    else:
+        scale_factor = numpy.sqrt(abs(virial_ratio*potential_energy) / particles.kinetic_energy())
     particles.velocity *= scale_factor
 
 

@@ -30,6 +30,13 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), -0.5 | nbody_system.energy)
         self.assertAlmostRelativeEquals(particles.virial_radius(), 1.0 | nbody_system.length)
         
+        particles.scale_to_standard(virial_ratio=1) # unbound
+        self.assertAlmostRelativeEquals(particles.kinetic_energy(), 0.5 | nbody_system.energy)
+        self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), -0.5 | nbody_system.energy)
+        particles.scale_to_standard(virial_ratio=0) # velocities zeroed
+        self.assertAlmostRelativeEquals(particles.kinetic_energy(), 0 | nbody_system.energy)
+        self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), -0.5 | nbody_system.energy)
+    
     def test2(self):
         print "Test basic particle attributes and scale_to_standard - SI units"
         convert_nbody = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
@@ -49,6 +56,13 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles.potential_energy().as_quantity_in(units.J), convert_nbody.to_si(-0.5 | nbody_system.energy).as_quantity_in(units.J), 12)
         self.assertAlmostRelativeEquals(particles.virial_radius(), convert_nbody.to_si(1.0 | nbody_system.length))
         
+        particles.scale_to_standard(convert_nbody, virial_ratio=1) # unbound
+        self.assertAlmostRelativeEquals(particles.kinetic_energy(), 0.5 * constants.G * (1 | units.MSun**2 / units.parsec), 13)
+        self.assertAlmostRelativeEquals(particles.potential_energy(), -0.5 * constants.G * (1 | units.MSun**2 / units.parsec))
+        particles.scale_to_standard(convert_nbody, virial_ratio=0) # velocities zeroed
+        self.assertAlmostRelativeEquals(particles.kinetic_energy(), 0 | units.J)
+        self.assertAlmostRelativeEquals(particles.potential_energy(), -0.5 * constants.G * (1 | units.MSun**2 / units.parsec))
+    
     def test3(self):
         print "Test new_particle_from_cluster_core - nbody units"
         numpy.random.seed(123)
