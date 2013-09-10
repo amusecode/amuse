@@ -11,17 +11,17 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: code build install test tupan_worker
 
-code: Tupan/setup.py
+code: tupan/setup.py
 
 ifdef DOWNLOAD_CODES
-Tupan/setup.py:
+tupan/setup.py:
 	make -C . download
 else
-Tupan/setup.py:
+tupan/setup.py:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
-	@echo "DOWNLOAD_CODES is not set. Tupan will not be downloaded and build."
+	@echo "DOWNLOAD_CODES is not set. tupan will not be downloaded and build."
 	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
 	@echo "bash> export DOWNLOAD_CODES=1"
 	@echo "csh> setenv DOWNLOAD_CODES 1"
@@ -32,17 +32,17 @@ Tupan/setup.py:
 endif 
 
 download:
-	git clone -b master git://github.com/GuilhermeFerrari/Tupan.git
+	git clone -b master https://github.com/ggf84/tupan.git
 
 build:
-	(cd Tupan; python setup.py build)
+	(cd tupan; python setup.py build)
 
 install:
-	(cd Tupan; python setup.py install --user)
+	(cd tupan; python setup.py install --user)
 
 test:
 	@echo
-	@echo "Testing import of modules required for Tupan (OpenGL, PIL, pyopencl):"
+	@echo "Testing import of modules required for tupan (OpenGL, PIL, pyopencl):"
 ifeq ($(PYOPENGL_AVAILABLE),no)
 	$(error "Python imports not available: OpenGL")
 endif
@@ -61,9 +61,9 @@ tupan_worker: interface.py
 	
 
 clean:
-	rm -f *.pyc; (cd Tupan; python setup.py clean -a)
+	rm -f *.pyc; (cd tupan; python setup.py clean -a)
 	rm -f tupan_worker tupan_worker_sockets
 
 distclean: clean
-	rm -f *.pyc; rm -rf Tupan
+	rm -f *.pyc; rm -rf tupan
 
