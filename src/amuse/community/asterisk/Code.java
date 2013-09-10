@@ -12,7 +12,7 @@ public class Code implements CodeInterface {
     private boolean useOctreeForGas;
     private boolean useStarShader;
 
-    public Code() {
+    public Code(String codeDir, String amuseRootDir) {
         AsteriskSettings settings = AsteriskSettings.getInstance();
         settings.setFieldOfView(20.0f);
     
@@ -35,6 +35,11 @@ public class Code implements CodeInterface {
         // particle could still be null here
         return particle;
 
+    }
+
+    @Override
+    public void end() {
+        //IGNORE
     }
 
     @Override

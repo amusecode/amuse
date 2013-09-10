@@ -1937,6 +1937,7 @@ class OutputHandler(threading.Thread):
         
         self.id = result.strings[0]
         
+        logging.getLogger("channel").debug("output handler successfully connected to daemon at %d", port)
         self.daemon = True
         self.start()
         
@@ -1993,7 +1994,7 @@ class IbisChannel(AbstractMessageChannel):
             self.number_of_workers = 1
             
         if self.node_label == None:
-            self.node_label = "default"
+            self.node_label = ""
             
         logging.getLogger("channel").debug("number of workers is %d, number of nodes is %s", self.number_of_workers, self.number_of_nodes)
         
@@ -2149,7 +2150,7 @@ class IbisChannel(AbstractMessageChannel):
         
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
-        logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", id, function_id, call_count)
+        logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", call_id, function_id, call_count)
         
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")

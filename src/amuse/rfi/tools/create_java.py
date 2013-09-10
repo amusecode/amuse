@@ -317,7 +317,12 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             byte[] bytes;
 
             try {
-                bytes = value.getBytes("UTF-8");
+                if (value == null) {
+                    //set null values to an empty string
+                    bytes = new String().getBytes("UTF-8");
+                } else {
+                    bytes = value.getBytes("UTF-8");
+                }
 
                 // set length of string in header
                 stringHeader.put(position, bytes.length);
@@ -338,7 +343,12 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             byte[] bytes;
 
             try {
-                bytes = value.getBytes("UTF-8");
+                if (value == null) {
+                    //set null values to an empty string
+                    bytes = new String().getBytes("UTF-8");
+                } else {
+                    bytes = value.getBytes("UTF-8");
+                }
 
                 // set length of string in header
                 stringHeader.put(index, bytes.length);
@@ -1012,11 +1022,11 @@ FOOTER_CODE_STRING = """
   private final AmuseMessage reply;
   private final CodeInterface code;
     
-  Worker() throws Exception {
+  Worker(String codeDir, String amuseRootDir) throws Exception {
       this.request = new AmuseMessage();
       this.reply = new AmuseMessage();
       
-      code = new Code();
+      code = new Code(codeDir, amuseRootDir);
   }
 
   private void runSockets(int port) {
@@ -1046,6 +1056,7 @@ FOOTER_CODE_STRING = """
                 
                 //System.err.println("call handled");
             }
+            code.end();
         } catch (IOException e) {
             System.err.println("Error running worker: " + e.getMessage());
         }
@@ -1061,11 +1072,25 @@ FOOTER_CODE_STRING = """
             System.err.println("No arguments to java worker. expected a socket port number");
             System.exit(1);
         }
+        
+        String codeDir = System.getProperty("code.dir");
+        
+        if (codeDir == null) {
+            System.err.println("Expected code dir not specified");
+            System.exit(1);
+        }
+        
+        String amuseRootDir = System.getProperty("amuse.root.dir");
+        
+        if (amuseRootDir == null) {
+            System.err.println("Expected amuse root dir not specified");
+            System.exit(1);
+        }
+        
 
         int port = Integer.parseInt(arguments[0]);
 
-        new Worker().runSockets(port);
-
+        new Worker(codeDir, amuseRootDir).runSockets(port);
     }    
 
 
@@ -1364,6 +1389,9 @@ class GenerateAJavaInterfaceStringFromASpecificationClass\
     def start(self):  
         self.out + 'public interface CodeInterface {'
         self.out.indent().lf()
+        
+        self.out + 'public void end();'
+        self.out.lf() 
             
         self.output_sourcecode_for_functions()
         

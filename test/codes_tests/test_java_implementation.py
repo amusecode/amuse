@@ -16,6 +16,13 @@ from amuse.rfi import channel
 from amuse.rfi.core import *
 codestring = """
 public class Code implements CodeInterface {
+
+  public Code(String codeDir, String amuseRootDir) {
+  }
+
+  public void end() {
+        //IGNORE
+  }
   
   // parameter "int_in" is an input parameter
   // parameter "int_out" is an output parameter
