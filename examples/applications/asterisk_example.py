@@ -1,18 +1,12 @@
-import time
 import numpy.random
-from amuse.community import *
-from amuse.lab import *
 
-from amuse.community.asterisk.interface import AsteriskInterface
-from amuse.community.asterisk.interface import Asterisk
-
-from matplotlib import pyplot
-from amuse.units import units
-from amuse.datamodel import Particles
-from amuse.ic.brokenimf import new_scalo_mass_distribution
+from amuse.units import units, nbody_system
+from amuse.ic.flatimf import new_flat_mass_distribution
+from amuse.ic.plummer import new_plummer_model
 from amuse.ext.particles_with_color import new_particles_with_blackbody_color
 from amuse.community.seba.interface import SeBa
 from amuse.community.bhtree.interface import BHTree
+from amuse.community.asterisk.interface import Asterisk
 
 def new_stellar_evolution(particles):
     stellar_evolution = SeBa()
@@ -30,7 +24,7 @@ if __name__ in ('__main__', '__plot__'):
     #create a plumber sphere with a number of stars
     numpy.random.seed(12345)
     masses = new_flat_mass_distribution(number_of_particles) 
-    converter = nbody.nbody_to_si(1.0 | units.parsec, masses.sum())
+    converter = nbody_system.nbody_to_si(1.0 | units.parsec, masses.sum())
     particles = new_plummer_model(number_of_particles, converter)
     particles.mass = masses
     particles.move_to_center()
@@ -50,7 +44,7 @@ if __name__ in ('__main__', '__plot__'):
     particles.radius = stellar_evolution.particles.radius.sqrt() * (1e4 | units.parsec).sqrt()
     
     #creating visualization code
-    converter = nbody.nbody_to_si(10.0 | units.parsec, masses.sum())
+    converter = nbody_system.nbody_to_si(10.0 | units.parsec, masses.sum())
     visualization = Asterisk(converter, redirection="none")
 
     #optional: change OpenGL perspective settings
