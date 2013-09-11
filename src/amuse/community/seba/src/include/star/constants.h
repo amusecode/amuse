@@ -192,16 +192,21 @@ enum dynamics_update_parameter {stellar_mass_update_limit,
    			        binary_update_time_fraction
 				};
 
-static
+extern
 class stellar_evolution_constants {  // Easy to have a name for compiling.
   public:
+  stellar_evolution_constants() {
+    pk = internally_decided_velocity_kick;
+    v_disp = 600;
+  }
+
+  super_nova_kick_distribution pk;
+  real v_disp;
 
   real mathematics(mathematical_constant);
   real physics(physics_constants);
 
-  real super_nova_kick(super_nova_kick_distribution pk =
-		       internally_decided_velocity_kick,
-		       const real v_disp = 600);
+  real super_nova_kick();
   
   real parameters(solar_parameter);
   real parameters(astronomical_scale_parameter);

@@ -1,6 +1,8 @@
 #include "constants.h"
 #include "stdfunc.h"
 
+stellar_evolution_constants cnsts;
+
 // constructor for constant class.
 // Currently there are not functionalities.
 
@@ -64,9 +66,7 @@ real stellar_evolution_constants::physics(physics_constants pp) {
     }
 }
 
-real stellar_evolution_constants::super_nova_kick(
-				  super_nova_kick_distribution pk,
-				  const real v_disp){
+real stellar_evolution_constants::super_nova_kick() {
   
   // Super Nova Kick functions.
   // kick velicity imparted to the remnant during the supernova event.
@@ -87,6 +87,7 @@ real stellar_evolution_constants::super_nova_kick(
   
   // selected kick distribution imparted to a newly formed neutron star
   // in a supernova. 
+  PRL(v_disp);
     switch(pk) {
         case no_velocity_kick:              return 0;
              break;                                

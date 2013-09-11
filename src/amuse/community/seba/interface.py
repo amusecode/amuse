@@ -43,7 +43,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
-    
+
     @legacy_function   
     def new_binary():
         """
@@ -199,6 +199,41 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
+    @legacy_function
+    def get_supernova_kick_velocity():
+        """
+        Retrieve the current value of the supernova kick velocity (in kms). 
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('v_disp', dtype='float64', direction=function.OUT,
+            description = "The current value of the kick velocity dispersion")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the metallicity was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the metallicity
+        """
+        return function
+        
+    
+    @legacy_function
+    def set_supernova_kick_velocity():
+        """
+        Update the value of the kick velocity dispersion.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('v_disp', dtype='float64', direction=function.IN,
+            description = "The new value of the supernova kick velocity dispersion.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the metallicity was set
+        -1 - ERROR
+            The code does not have support for updating the metallicity
+        """
+        return function
+
     def evolve_model(self, time):
         return self.evolve_system(time)
 
@@ -261,6 +296,16 @@ class SeBa(se.StellarEvolution):
             (object.INDEX,), 
             (units.Myr, object.ERROR_CODE,)
         )
+        object.add_method(
+            "get_supernova_kick_velocity", 
+            (), 
+            (units.kms, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "set_supernova_kick_velocity", 
+            (units.kms,), 
+            (object.ERROR_CODE,)
+        )
     
     def update_time_steps(self):
         pass
@@ -272,6 +317,13 @@ class SeBa(se.StellarEvolution):
             "metallicity", 
             "Metallicity of all stats", 
             default_value = 0.02
+        )
+        object.add_method_parameter(
+            "get_supernova_kick_velocity",
+            "set_supernova_kick_velocity",
+            "supernova_kick_velocity", 
+            "Kick velocity to compact object formed in supernova", 
+            default_value = 600 | units.kms
         )
         
         object.add_method_parameter(

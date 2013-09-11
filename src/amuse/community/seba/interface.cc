@@ -318,7 +318,16 @@ int get_metallicity(double * metallicity){
     return 0;
 }
 
-
+int set_supernova_kick_velocity(double v_disp) {
+    cnsts.v_disp = v_disp;
+    PRL(v_disp);
+    PRL(cnsts.v_disp);
+    return 0;
+}
+int get_supernova_kick_velocity(double * v_disp){
+  *v_disp = cnsts.v_disp;
+    return 0;
+}
 
 int get_is_logging_of_evolve_enabled(int *value){
     *value = is_logging_of_evolve_enabled ? 1 : 0;
