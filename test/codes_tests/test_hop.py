@@ -397,5 +397,39 @@ class TestHop(TestCase):
         self.assertEquals(instance.get_name_of_current_state(), 'STOPPED')
         print "ok"
     
+    def test8(self):
+        random.seed(1001)
+        print "Test 8: SI vs nbody units."
+        converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.RSun)
+        numpy.random.seed(1234)
+        particles = new_plummer_model(1000, convert_nbody=converter)
+        hop = Hop(unit_converter=converter)
+        hop.particles.add_particles(particles)
+        hop.calculate_densities()
+        hop.parameters.outer_density_threshold = 0.1 | nbody_system.mass / nbody_system.length**3
+        hop.do_hop()
+        groups = list(hop.groups())
+        
+        self.assertEquals(len(hop.particles), 1000)
+        self.assertEquals(len(groups), 1)
+        self.assertEquals(len(groups[0]), 511)
+        self.assertEquals(len(hop.no_group()), 489)
+        hop.stop()
+        
+        numpy.random.seed(1234)
+        particles = new_plummer_model(1000)
+        hop = Hop()
+        hop.particles.add_particles(particles)
+        hop.calculate_densities()
+        hop.parameters.outer_density_threshold = 0.1 | nbody_system.mass / nbody_system.length**3
+        hop.do_hop()
+        groups = list(hop.groups())
+        
+        self.assertEquals(len(hop.particles), 1000)
+        self.assertEquals(len(groups), 1)
+        self.assertEquals(len(groups[0]), 511)
+        self.assertEquals(len(hop.no_group()), 489)
+        hop.stop()
+    
 
 
