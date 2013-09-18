@@ -385,8 +385,8 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
             jmin -= 1
             jmax += 1
         if kmin != kmax:
-            kmin -=1
-            kmax +=1
+            kmin -= 1
+            kmax += 1
         return imin,imax, jmin, jmax, kmin, kmax        
     
     @legacy_function    

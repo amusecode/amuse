@@ -230,7 +230,7 @@ static void boundary_right_x3_copy(GridS *pGrid)
  */
 
 
-static inline void ijk_pos_dom(
+static inline void ijk_pos_dom_for_potential_grid(
     const Real x1, const Real x2, const Real x3,
     Real * i, Real * j, Real * k,
     Real * dx, Real * dy, Real * dz
@@ -242,23 +242,48 @@ static inline void ijk_pos_dom(
     *i = 0;
     *dx = 0;
   } else {
-    *i = ((x1 - domain->MinX[0])/domain->dx[0]) - 0.5 + nghost;
+    *i = ((x1 - domain->MinX[0])/domain->dx[0]) + 0.5 + nghost;
     *dx = modf(*i, i);
+    if(*i >= domain->Nx[0] + 1 + nghost) {
+        *i = domain->Nx[0] + 1 + nghost ;
+        *dx = 0;
+    }
+    if(*i < nghost) {
+        *i = nghost;
+        *dx = 0;
+    }
   }
   if(domain->Nx[1] == 1) {
      *j = 0;
      *dy = 0.0;
   } else {
-    *j = ((x2 - domain->MinX[1])/domain->dx[1]) - 0.5 + nghost;
+    *j = ((x2 - domain->MinX[1])/domain->dx[1]) + 0.5 + nghost;
     *dy = modf(*j, j);
+    if(*j >= domain->Nx[1] + 1 + nghost) {
+        *j = domain->Nx[1] + 1 + nghost ;
+        *dy = 0;
+    }
+    if(*j < nghost) {
+        *j = nghost;
+        *dy = 0;
+        
+    }
   }
   
   if(domain->Nx[2] == 1) {
     *k = 0.0;
     *dz = 0;
   } else {
-    *k = ((x3 - domain->MinX[2])/domain->dx[2]) - 0.5 + nghost;
+    *k = ((x3 - domain->MinX[2])/domain->dx[2]) + 0.5 + nghost;
     *dz = modf(*k, k);
+    if(*k >= domain->Nx[2] + 1 + nghost) {
+        *k = domain->Nx[2] + 1 + nghost;
+        *dz = 0;
+    }
+    if(*k < nghost) {
+        *k = nghost;
+        *dz = 0;
+    }
   }
 }
 
@@ -268,12 +293,15 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
 {
     Real i, j, k;
     Real dx, dy, dz;
-    ijk_pos_dom(x1,x2,x3, &i, &j, &k, &dx, &dy, &dz);
+    i = j = k = 0;
+    dx = dy = dz = 0;
+    ijk_pos_dom_for_potential_grid(x1,x2,x3, &i, &j, &k, &dx, &dy, &dz);
     int ii, jj, kk;
     ii = i;
     jj = j;
     kk = k;
     
+    DomainS * domain = &mesh.Domain[0][0];
     Real potential000 = Potentials[kk][jj][ii];
     Real potential001 = potential000;
     Real potential100 = potential000;
@@ -1168,7 +1196,7 @@ int get_gravity_at_point(double eps, double x,double y, double z,
     int index_of_grid = 1; // supports only one grid!
     
     
-    ijk_pos_dom(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
+    ijk_pos_dom_for_potential_grid(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
     i = ii; j = jj; k = kk;
     get_grid_gravitational_acceleration(&i, &j, &k, &index_of_grid, fx, fy, fz, 1);
 
@@ -1839,12 +1867,13 @@ int get_potential(
     }
 
     int imin = 0;
-    int imax = mesh.Nx[0]+nghost;
+    int imax = mesh.Nx[0]+1+nghost;
     int jmin, jmax;
+    
     if (mesh.Nx[1] > 1)
     {
-        jmin = 0;
-        jmax = mesh.Nx[1]+nghost;
+        jmin = nghost;
+        jmax = mesh.Nx[1]+1+nghost;
     }
     else
     {
@@ -1853,8 +1882,8 @@ int get_potential(
     int kmin, kmax;
     if (mesh.Nx[2] > 1)
     {
-        kmin = 0;
-        kmax = mesh.Nx[2]+nghost;
+        kmin = nghost;
+        kmax = mesh.Nx[2]+1+nghost;
     }
     else
     {
@@ -1865,13 +1894,13 @@ int get_potential(
 
     for(l=0; l < number_of_points; l++)
     {
-        i0 = i[l] + nghost;
+        i0 = i[l] + nghost + 1;
         j0 = j[l];
         k0 = k[l];
         potential[l] = 0.0;
 
-        if(mesh.Nx[1] > 1) {j0 += nghost;}
-        if(mesh.Nx[2] > 1) {k0 += nghost;}
+        if(mesh.Nx[1] > 1) {j0 += nghost + 1;}
+        if(mesh.Nx[2] > 1) {k0 += nghost + 1;}
 
         if (
             (i0 >= imin && i0 <= imax) &&
@@ -1909,13 +1938,14 @@ int set_potential(
         return -2;
     }
 
-    int imin = 0;
-    int imax = mesh.Nx[0] + nghost;
+    int imin = nghost;
+    int imax = mesh.Nx[0] + 1 + nghost;
     int jmin, jmax;
+    
     if (mesh.Nx[1] > 1)
     {
-        jmin = 0;
-        jmax = mesh.Nx[1] + nghost;
+        jmin = nghost;
+        jmax = mesh.Nx[1] + 1 + nghost;
     }
     else
     {
@@ -1924,8 +1954,8 @@ int set_potential(
     int kmin, kmax;
     if (mesh.Nx[2] > 1)
     {
-        kmin = 0;
-        kmax = mesh.Nx[2] + nghost;
+        kmin = nghost;
+        kmax = mesh.Nx[2] + 1 + nghost;
     }
     else
     {
@@ -1936,12 +1966,12 @@ int set_potential(
 
     for(l=0; l < number_of_points; l++)
     {
-        i0 = i[l] + nghost;
+        i0 = i[l] + nghost + 1;
         j0 = j[l];
         k0 = k[l];
 
-        if(mesh.Nx[1] > 1) {j0 += nghost;}
-        if(mesh.Nx[2] > 1) {k0 += nghost;}
+        if(mesh.Nx[1] > 1) {j0 += nghost + 1;}
+        if(mesh.Nx[2] > 1) {k0 += nghost + 1;}
         if (
             (i0 >= imin && i0 <= imax) &&
             (j0 >= jmin && j0 <= jmax) &&

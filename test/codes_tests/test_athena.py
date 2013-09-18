@@ -1413,7 +1413,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
-        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        instance.set_boundary("outflow","outflow","outflow","outflow","outflow","outflow")
         instance.set_has_external_gravitational_potential(1)
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
@@ -1434,7 +1434,7 @@ class TestAthena(TestWithMPI):
         x = instance.potential_grid.x
         y = instance.potential_grid.y
         
-        
+        print 1
         for i in range(12):
             for j in range(12):
                 px = x[i][j][0].value_in(generic_unit_system.length)
@@ -1444,22 +1444,39 @@ class TestAthena(TestWithMPI):
                     potential = 0.0
                 if py < 0 or py > 1.0:
                     potential = 0.0
-                instance.potential_grid[i][j][0].potential = generic_unit_system.potential.new_quantity([potential])
-        #channel = potential_grid.new_channel_to(instance.potential_grid)
-        #channel.copy()
+                #print potential
+                potential_grid.potential[i][j][0] = -0.001 * generic_unit_system.potential.new_quantity([potential])
+                #instance.potential_grid[i][j][0].potential = -0.001 * generic_unit_system.potential.new_quantity([potential])
+        channel = potential_grid.new_channel_to(instance.potential_grid)
+        channel.copy()
+        print 2
         result = instance.initialize_grid()
         
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
             self.assertAlmostRelativeEquals(x, 0.1)
-            
+        #print instance.potential_grid[...,...,0].potential
         instance.evolve_model(1.0 | generic_unit_system.time)
-        #print instance.grid.rhox
+        #print "--------------------------"
+        #print instance.grid.rho[...,...,0]
         z = instance.grid.rho[...,...,0]
-        z = instance.potential_grid.potential[...,...,0]
-        z = z.value_in(generic_unit_system.potential)
+        #z = instance.potential_grid.potential[...,...,0]
+        #z = z.value_in(generic_unit_system.potential)
+        z = z.value_in(density)
         #from matplotlib import pyplot
-        #pyplot.imshow(z)
+        #x = instance.potential_grid[...,50,0].x
+        ##y = instance.potential_grid[...,50,0].y
+        #z = instance.potential_grid[...,50,0].z
+        #pyplot.plot(x.value_in(generic_unit_system.length), instance.potential_grid[...,50,0].potential.value_in(generic_unit_system.potential))
+        
+        #dx = x[1] - x[0]
+        #x += 1.5 * dx
+        #interpolated = instance.get_interpolated_gravitational_potential(x,y,z)
+        #pyplot.plot(x.value_in(generic_unit_system.length), interpolated.value_in(generic_unit_system.potential))
+        
+        #img = pyplot.imshow(z)
+        #img.set_interpolation('none')
+
         #pyplot.savefig("bla.png")
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertNotEquals(x, 0.1)
@@ -2373,3 +2390,159 @@ class TestAthena(TestWithMPI):
         interpolated = instance.get_interpolated_gravitational_potential(x,y,z)
         print y*factor
         self.assertAlmostRelativeEquals(interpolated, y * factor)
+        
+    
+    def test26(self):
+        n = 4
+        instance=self.new_instance(Athena)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.3)
+        instance.parameters.nx = n
+        instance.parameters.ny = n
+        instance.parameters.nz = n
+        instance.parameters.length_x = n | generic_unit_system.length
+        instance.parameters.length_y = n | generic_unit_system.length
+        instance.parameters.length_z = n | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        instance.set_has_external_gravitational_potential(1)
+        instance.commit_parameters()
+        
+        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+    
+        potential_grid = datamodel.Grid(n + 2, n + 2, n + 2)
+        potential_grid.potential = 0.0 | generic_unit_system.potential
+        x = instance.potential_grid.x
+        y = instance.potential_grid.y
+        z = instance.potential_grid.z
+        potential_grid.potential = (1 | generic_unit_system.potential) * ( (x + y + z) / (1 | generic_unit_system.length))
+        channel = potential_grid.new_channel_to(instance.potential_grid)
+        channel.copy()
+        result = instance.initialize_grid()
+        print x[...,0,0]
+        print instance.grid.x[...,0,0]
+        print instance.potential_grid.potential[...,0,0]
+        print potential_grid.potential[...,0,0]
+        self.assertAlmostRelativeEquals(potential_grid.potential[...,0,0], instance.potential_grid.potential[...,0,0])
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (1.0 |generic_unit_system.length), y[0,0,0], z[0,0,0])
+        print interpolated_inside, interpolated_outside
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] , y[0,0,0] - (2.0 |generic_unit_system.length), z[0,0,0])
+        print interpolated_inside, interpolated_outside
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] , y[0,0,0], z[0,0,0]  - (2.0 |generic_unit_system.length))
+        print interpolated_inside, interpolated_outside
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0] + (2.0 |generic_unit_system.length), y[0,0,0], z[0,0,0])
+        print interpolated_inside, interpolated_outside
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0]  + (2.0 |generic_unit_system.length), z[0,0,0])
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0], z[0,0,5])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0] , z[0,0,5]  + (2.0 |generic_unit_system.length))
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (2.0 |generic_unit_system.length) , y[0,0,0] - (2.0 |generic_unit_system.length), z[0,0,0]  - (2.0 |generic_unit_system.length))
+        print interpolated_inside, interpolated_outside
+        
+        
+    def test27(self):
+        n = 4
+        instance=self.new_instance(Athena)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.3)
+        instance.parameters.nx = n
+        instance.parameters.ny = n
+        instance.parameters.nz = 1
+        instance.parameters.length_x = n | generic_unit_system.length
+        instance.parameters.length_y = n | generic_unit_system.length
+        instance.parameters.length_z = 0 | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        instance.set_has_external_gravitational_potential(1)
+        instance.commit_parameters()
+        
+        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+    
+        potential_grid = datamodel.Grid(n + 2, n + 2, 1)
+        potential_grid.potential = 0.0 | generic_unit_system.potential
+        x = instance.potential_grid.x
+        y = instance.potential_grid.y
+        z = instance.potential_grid.z
+        potential_grid.potential = (1 | generic_unit_system.potential) * ( (x + y) / (1 | generic_unit_system.length))
+        channel = potential_grid.new_channel_to(instance.potential_grid)
+        channel.copy()
+        result = instance.initialize_grid()
+        self.assertAlmostRelativeEquals(potential_grid.potential[...,0,0], instance.potential_grid.potential[...,0,0])
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (1.0 |generic_unit_system.length), y[0,0,0], z[0,0,0])
+        print interpolated_inside, interpolated_outside
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] , y[0,0,0] - (2.0 |generic_unit_system.length), z[0,0,0])
+        print interpolated_inside, interpolated_outside
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0] + (2.0 |generic_unit_system.length), y[0,0,0], z[0,0,0])
+        print interpolated_inside, interpolated_outside
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,5,0]  + (2.0 |generic_unit_system.length), z[0,0,0])
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (2.0 |generic_unit_system.length) , y[0,0,0] - (2.0 |generic_unit_system.length), z[0,0,0])
+        print interpolated_inside, interpolated_outside
+
+    def test28(self):
+        n = 4
+        instance=self.new_instance(Athena)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.3)
+        instance.parameters.nx = n
+        instance.parameters.ny = n
+        instance.parameters.nz = 1
+        instance.parameters.length_x = n | generic_unit_system.length
+        instance.parameters.length_y = n | generic_unit_system.length
+        instance.parameters.length_z = 0 | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        instance.set_has_external_gravitational_potential(1)
+        instance.commit_parameters()
+        
+        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+    
+        potential_grid = datamodel.Grid(n + 2, n + 2, 1)
+        potential_grid.potential = 0.0 | generic_unit_system.potential
+        x = instance.potential_grid.x
+        y = instance.potential_grid.y
+        z = instance.potential_grid.z
+        potential_grid.potential = (1 | generic_unit_system.potential) * ( (x + y) / (1 | generic_unit_system.length))
+        channel = potential_grid.new_channel_to(instance.potential_grid)
+        channel.copy()
+        result = instance.initialize_grid()
+        self.assertAlmostRelativeEquals(potential_grid.potential[...,0,0], instance.potential_grid.potential[...,0,0])
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[0,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[0,0,0] - (0.5 |generic_unit_system.length), y[0,0,0], z[0,0,0])
+        
+        self.assertAlmostRelativeEquals(potential_grid.potential[...,0,0], instance.potential_grid.potential[...,0,0])
+        interpolated_inside = instance.get_interpolated_gravitational_potential(x[5,0,0], y[0,0,0], z[0,0,0])
+        interpolated_outside = instance.get_interpolated_gravitational_potential(x[5,0,0] + (0.5 |generic_unit_system.length), y[0,0,0], z[0,0,0])
+        print interpolated_inside, interpolated_outside
+        self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
+
