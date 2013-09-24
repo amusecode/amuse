@@ -288,8 +288,9 @@ def pynbody_column_density_plot(particles, width=None, qty='rho', units=None,
     if units is None and qty == 'rho':
         units = 'm_p cm^-2'
 
-    function(pyndata, width=width.value_in(length_unit), qty=qty, units=units, **kwargs)
+    result = function(pyndata, width=width.value_in(length_unit), qty=qty, units=units, **kwargs)
     UnitlessArgs.current_plot = native_plot.gca()
+    return result
 
 def effective_iso_potential_plot(gravity_code,
         omega,
