@@ -54,7 +54,7 @@ class thorne_zytkow : public single_star {
 	friend neutron_star::neutron_star(thorne_zytkow &);
 	friend black_hole::black_hole(thorne_zytkow &);
         friend void super_giant::adjust_accretor_age(const real, 
-						const bool=true);
+						const bool rejuvenate);
 };
 #endif 		// _THORNE_ZYTKOW
 

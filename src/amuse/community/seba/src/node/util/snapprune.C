@@ -30,7 +30,7 @@
  *  main  --
  *-----------------------------------------------------------------------------
  */
-main(int argc, char ** argv)
+int main(int argc, char ** argv)
 {
     int  k = 2;    // default: pass half of all snapshots
     int  s = 0;    // default: do not skip any snapshpt
@@ -87,6 +87,7 @@ main(int argc, char ** argv)
 	if (x>0 && node_read>=x)
 	  exit(1);
     }
+    return 0;
 }
 
 /* endof: snapprune.c */
