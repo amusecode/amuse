@@ -1,6 +1,6 @@
 module fractalMod
 
- integer :: nstar=0,iseed=1234321
+ integer :: nstar=0, iseed=1234321, n_generated=0
  real :: fdim=1.6
  
  real, allocatable :: r(:,:), v(:,:)
@@ -31,6 +31,7 @@ function amuse_generator() result(err)
   if(allocated(r)) deallocate(r,v)
   allocate(r(3,nstar),v(3,nstar))
   call makefractal(nstar,r,v,fdim,iseed)
+  n_generated = nstar
 end function
 
 end module

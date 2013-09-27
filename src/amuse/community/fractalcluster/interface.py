@@ -4,6 +4,7 @@ from amuse.community import *
 from amuse.datamodel import Particles
 from amuse import datamodel
 from amuse.units import nbody_system
+from amuse.community.interface.common import CommonCodeInterface, CommonCode
 
 class FractalClusterInterface(CodeInterface,  LiteratureReferencesMixIn):
     """
@@ -34,7 +35,7 @@ class FractalClusterInterface(CodeInterface,  LiteratureReferencesMixIn):
         return function
 
     @legacy_function
-    def generator():
+    def generate_particles():
         function = LegacyFunctionSpecification()
         function.result_type = 'i'
         return function
@@ -77,71 +78,185 @@ class FractalClusterInterface(CodeInterface,  LiteratureReferencesMixIn):
         function.addParameter('nstar', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function
+    
+    new_particle = None
+    
+    def delete_particle(self, index_of_the_particle):
+        return 0
+    
+    @legacy_function
+    def get_number_of_particles_updated():
+        """
+        Return the number of particles added during the last generate_particles.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('number_of_particles', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+
+
+class FractalCluster(CommonCode):
+    
+    def __init__(self, unit_converter=None, **options):
+        self.unit_converter = unit_converter
+        InCodeComponentImplementation.__init__(self, FractalClusterInterface(**options), **options)
+    
+    def initialize_code(self):
+        pass
+    
+    def cleanup_code(self):
+        pass
+    
+    def commit_parameters(self):
+        pass
+    
+    def recommit_parameters(self):
+        pass
+    
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_nstar",
+            "set_nstar",
+            "number_of_particles",
+            "the number of particles to be generated in the model",
+            default_value = 0
+        )
+        
+        object.add_method_parameter(
+            "get_fractal_dimension",
+            "set_fractal_dimension",
+            "fractal_dimension",
+            "the fractal dimension of the spatial particle distribution",
+            default_value = 1.6
+        )
+        
+        object.add_method_parameter(
+            "get_random_seed",
+            "set_random_seed",
+            "random_seed",
+            "the initial seed to be used by the random number generator",
+            default_value = 1234321
+        )
+    
+    def define_methods(self, object):
+        CommonCode.define_methods(self, object)
+        object.add_method("generate_particles", (), (object.ERROR_CODE,))
+        object.add_method("get_number_of_particles_updated", (), (object.NO_UNIT, object.ERROR_CODE,))
+        
+        object.add_method("get_state", (object.INDEX,), 
+            [nbody_system.length]*3 + [nbody_system.speed]*3 + [object.ERROR_CODE]
+        )
+        
+        object.add_method("get_target_number_of_particles", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_target_number_of_particles", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        
+        object.add_method("get_fractal_dimension", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_fractal_dimension", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        
+        object.add_method("get_random_seed", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_random_seed", (object.NO_UNIT, ), (object.ERROR_CODE,))
+
+    def define_converter(self, object):
+        if not self.unit_converter is None:
+            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+    
+    def define_particle_sets(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_getter('particles', 'get_state')
+    
+    def define_state(self, object):
+        CommonCode.define_state(self, object)
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        object.add_method('EDIT', 'before_get_parameter')
+        
+        object.add_transition('EDIT', 'RUN', 'generate_particles', False)
+        object.add_transition('RUN', 'EDIT', 'clear_particle_set')
+        object.add_method('EDIT', 'get_number_of_particles_updated')
+        object.add_method('RUN', 'get_number_of_particles_updated')
+        object.add_method('RUN', 'get_state')
+    
+    def generate_particles(self):
+        result = self.overridden().generate_particles()
+        self.update_particle_set()
+    
+    def update_particle_set(self):
+        """
+        update the particle set after changes in the code
+        
+        this implementation needs to move to the
+        amuse.datamodel.incode_storage module, as
+        it uses a lot of internal methods and info!
+        """
+        number_of_updated_particles = self.get_number_of_particles_updated()
+        if number_of_updated_particles:
+            self.particles._private.attribute_storage._add_indices(
+                range(1, number_of_updated_particles+1)
+            )
+    
+    def clear_particle_set(self):
+        if len(self.particles):
+            self.particles.remove_particles(self.particles)
+    
+
 
 class MakeFractalCluster(object):
-    def __init__(self,N=None,masses=None,convert_nbody = None,do_scale=False,
-                     random_seed=None,fractal_dimension=1.6,virial_ratio=0.5,verbose=False):
-        if N is None and masses is not None:
-          self.N=len(masses)
-        if masses is not None and len(masses)!=N:
-          print "warning: provided mass array not equal to masses"          
-        self.N=N
+    
+    def __init__(self, N=None, convert_nbody=None, masses=None, do_scale=True,
+            random_seed=None, fractal_dimension=1.6, virial_ratio=0.5, verbose=False):
+        if masses is None:
+            if N is None:
+                raise exceptions.AmuseException("Either keyword argument 'N' (number of particles) or "
+                    "'masses' (vector quantity with mass of each particle) is required.")
+            self.masses = numpy.ones(N) / N | nbody_system.mass
+            self.N = N
+        else:
+            if not N is None and len(masses) != N:
+                print "warning: provided mass array not equal to masses"
+            self.masses = masses / masses.sum() | nbody_system.mass
+            self.N = len(masses)
+        
         self.convert_nbody=convert_nbody
         self.do_scale=do_scale
         self.random_seed=random_seed
-        self.masses=masses
         self.fractal_dimension=fractal_dimension
         self.virial_ratio=virial_ratio
         self.verbose=verbose
 
     def new_model(self):
-        if self.verbose:
-          frac=FractalClusterInterface(redirection="none")
-        else:  
-          frac=FractalClusterInterface()
-        frac.set_nstar(self.N)
-        frac.set_fractal_dimension(self.fractal_dimension)
+        generator = FractalCluster(redirection=("none" if self.verbose else "null"))
+        generator.parameters.number_of_particles = self.N
+        generator.parameters.fractal_dimension = self.fractal_dimension
         if self.random_seed is not None:
-            frac.set_random_seed(self.random_seed)
-        frac.generator()
-        
-        x,y,z,vx,vy,vz,err=frac.get_state(range(1,self.N+1))
-
-        if self.masses is None:
-            masses=numpy.array([0.]*len(x))+1./self.N
-        else:
-            masses=self.masses/self.masses.sum()
-        positions =  numpy.hstack((x,y,z))
-        velocities =  numpy.hstack((vx,vy,vz))
-        
-        return masses,positions,velocities
+            generator.parameters.random_seed = self.random_seed
+        generator.generate_particles()
+        result = generator.particles.copy()
+        generator.stop()
+        result.mass = self.masses
+        result.radius = 0 | nbody_system.length
+        return result
 
     @property
     def result(self):
-        masses, positions, velocities = self.new_model()
-        result = datamodel.Particles(self.N)
-        result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
-        result.position = nbody_system.length.new_quantity(positions)
-        result.velocity = nbody_system.speed.new_quantity( velocities)
-        result.radius = 0 | nbody_system.length
-
-        result.move_to_center()
-
-        ep=result.potential_energy(G=nbody_system.G)
-        ek=result.kinetic_energy()
-        fac=(self.virial_ratio*abs(ep)/ek)**0.5
-        result.velocity*=fac
-
+        particles = self.new_model()
+        particles.move_to_center()
         if self.do_scale:
-            result.scale_to_standard()
-
+            particles.scale_to_standard(virial_ratio=self.virial_ratio)
+        
         if not self.convert_nbody is None:
-            result = datamodel.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_generic())
-            result = result.copy()
+            return datamodel.ParticlesWithUnitsConverted(particles, self.convert_nbody.as_converter_from_si_to_generic()).copy()
+        return particles
 
-        return result
-
-def new_fractal_cluster_model(**keyword_arguments):
+def new_fractal_cluster_model(*list_arguments, **keyword_arguments):
     """
     create a fractal stellar distribution
 
@@ -150,8 +265,8 @@ def new_fractal_cluster_model(**keyword_arguments):
     :argument fractal_dimension: fractal dimension of distribution, between 1.6 and 3 [1.6]
     :argument random_seed: random seed [None]
     :argument convert_nbody:  When given will convert the resulting set to SI units
-    :argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
+    :argument do_scale: scale the result to exact nbody units (G=1, M=1, U=-0.5)
     :argument virial_ratio: ratio of kinetic to potential energy [0.5]
     """
-    uc = MakeFractalCluster(**keyword_arguments)
+    uc = MakeFractalCluster(*list_arguments, **keyword_arguments)
     return uc.result

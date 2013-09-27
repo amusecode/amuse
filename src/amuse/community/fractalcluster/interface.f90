@@ -6,7 +6,7 @@ function get_state(id,x,y,z,vx,vy,vz,n) result(err)
   err=amuse_get_state(id,x,y,z,vx,vy,vz,n)
 end function
 
-function generator() result(err)
+function generate_particles() result(err)
   use fractalMod
   integer :: err
   err=amuse_generator()
@@ -54,4 +54,11 @@ function set_nstar(i) result(err)
   integer i,err
   err=0
   nstar=i
+end function
+
+function get_number_of_particles_updated(i) result(err)
+  use fractalMod
+  integer i, err
+  err = 0
+  i = n_generated
 end function
