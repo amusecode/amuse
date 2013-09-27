@@ -967,7 +967,65 @@ def mass_segregation_ratio(particles, number_of_particles=20, number_of_random_s
         return MassSegregationRatioResults(mass_segregation_ratio=msr, uncertainty=sigma)
     else:
         return msr
+
+def correlation_dimension(particles, max_array_length=10000000):
+    """
+    Computes the correlation dimension, a measure of the fractal dimension of a 
+    set of points. The measure is based on counting the number of pairs with a 
+    mutual distance less than 'eps', for varying values of 'eps'.
+    """
+    size = (particles.position.max(axis=0) - particles.position.min(axis=0)).max()
+    eps2_range = (size / 2**numpy.arange(2.0, 6.0, 0.1))**2
     
+    if 3 * len(particles)**2 > max_array_length:
+        counts_per_batch = []
+        particles_per_batch = max(1, max_array_length / (3 * len(particles)))
+        number_of_batches = (len(particles) - 1) / particles_per_batch + 1
+        indices_in_each_batch = [numpy.arange(particles_per_batch) + i*particles_per_batch for i in range(number_of_batches-1)]
+        indices_in_each_batch.append(numpy.arange(indices_in_each_batch[-1][-1]+1, len(particles)))
+        for indices in indices_in_each_batch:
+            distances_squared = particles[indices].distances_squared(particles)
+            diagonal_indices = [numpy.arange(len(indices)), indices]
+            distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
+            
+            counts_per_batch.append([numpy.count_nonzero(distances_squared < eps2) for eps2 in eps2_range])
+        number_of_close_pairs = numpy.array(counts_per_batch).sum(axis=0)
+    else:
+        distances_squared = particles.distances_squared(particles)
+        diagonal_indices = [numpy.arange(len(particles))]*2
+        distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
+        number_of_close_pairs = numpy.array([numpy.count_nonzero(distances_squared < eps2) for eps2 in eps2_range])
+    
+    upper_index = numpy.searchsorted(-number_of_close_pairs, 0) # Prevent log(0)
+    x = 0.5*numpy.log10(eps2_range.number[:upper_index])
+    y = numpy.log10(number_of_close_pairs[:upper_index])
+    fit_coefficients = numpy.polyfit(x, y, 1)
+    return fit_coefficients[0]
+
+def box_counting_dimension(particles):
+    """
+    Computes the box-counting dimension, a measure of the fractal dimension of a 
+    set of points. The measure is based on counting the number of boxes required 
+    to cover the set, within a regular grid of cubic, equal-size boxes, for 
+    varying box sizes.
+    """
+    moved_positions = particles.position - particles.position.min(axis=0)
+    scaled_positions = moved_positions * (0.9999 / moved_positions.max())
+    boxes_per_dimension_range = (2**numpy.arange(1.0, 7.0, 0.05)).round()
+    number_of_boxes_filled = []
+    for boxes_per_dimension in boxes_per_dimension_range:
+        number_of_boxes_filled.append(len(set(
+            [(r[0], r[1], r[2]) for r in (scaled_positions * boxes_per_dimension).astype(int)]
+        )))
+    
+    number_of_boxes_filled = numpy.array(number_of_boxes_filled, dtype=numpy.float)
+    # When #filled-boxes ~ #particles, the dimension goes to 0. Exclude those values:
+    upper_index = numpy.searchsorted(number_of_boxes_filled, 0.2 * len(particles))
+    x = numpy.log(boxes_per_dimension_range[:upper_index])
+    y = numpy.log(number_of_boxes_filled[:upper_index])
+    fit_coefficients = numpy.polyfit(x, y, 1)
+    return fit_coefficients[0]
+
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
@@ -1015,4 +1073,6 @@ AbstractParticleSet.add_global_function_attribute("Qparameter", Qparameter)
 AbstractParticleSet.add_global_function_attribute("connected_components", connected_components)
 AbstractParticleSet.add_global_function_attribute("minimum_spanning_tree_length", minimum_spanning_tree_length)
 AbstractParticleSet.add_global_function_attribute("mass_segregation_ratio", mass_segregation_ratio)
+AbstractParticleSet.add_global_function_attribute("correlation_dimension", correlation_dimension)
+AbstractParticleSet.add_global_function_attribute("box_counting_dimension", box_counting_dimension)
 

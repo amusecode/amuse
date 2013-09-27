@@ -311,6 +311,95 @@ class TestParticlesAttributes(amusetest.TestCase):
         self.assertEqual(particles.nearest_neighbour(neighbours, max_array_length=188).key, neighbours.key[[0]*8 + [1]*10 + [2]*3]) # two passes
         self.assertEqual(particles.nearest_neighbour(neighbours, max_array_length=1).key, neighbours.key[[0]*8 + [1]*10 + [2]*3]) # 21 passes, one for each particle
     
+    def new_koch_star(self, level=5):
+        height = numpy.sqrt(3) / 6.0
+        def next_iteration(x_values, y_values):
+            dx = x_values[1:] - x_values[:-1]
+            dy = y_values[1:] - y_values[:-1]
+            x_one_third = x_values[:-1] + dx / 3.0
+            y_one_third = y_values[:-1] + dy / 3.0
+            x_two_third = x_one_third + dx / 3.0
+            y_two_third = y_one_third + dy / 3.0
+            x_new_point = x_values[:-1] + 0.5*dx - height * dy
+            y_new_point = y_values[:-1] + 0.5*dy + height * dx
+            new_x = numpy.append(numpy.dstack((x_values[:-1], x_one_third, x_new_point, x_two_third)), [x_values[-1]])
+            new_y = numpy.append(numpy.dstack((y_values[:-1], y_one_third, y_new_point, y_two_third)), [y_values[-1]])
+            return new_x, new_y
+        x, y = numpy.array([0.0, 0.5, 1.0, 0.0]), numpy.array([0.0, 3*height, 0.0, 0.0])
+        for i in range(level):
+            x, y = next_iteration(x, y)
+        return x, y
+    
+    def test12(self):
+        print "Test correlation_dimension"
+        # Particles distributed uniformly in 3D
+        particles = Particles(729)
+        particles.position = numpy.mgrid[0:9.0, 0:9.0, 0:9.0].reshape(3, -1).transpose() | units.m
+        dimension = particles.correlation_dimension()
+        self.assertAlmostRelativeEquals(dimension, 3.0, 1)
+        # Fractal dimension is scale-free
+        particles.position *= 1000
+        self.assertAlmostRelativeEquals(dimension, particles.correlation_dimension(), 10)
+        
+        # Particles distributed in the x-y plane
+        particles.position = numpy.concatenate((numpy.mgrid[0:27.0, 0:27.0].reshape(2, -1), numpy.zeros((1, 729)))).transpose() | units.m
+        dimension = particles.correlation_dimension()
+        self.assertAlmostRelativeEquals(dimension, 2.0, 1)
+        particles.position *= 1000
+        self.assertAlmostRelativeEquals(dimension, particles.correlation_dimension(), 10)
+        
+        # Particles distributed along a line
+        particles.position = numpy.concatenate([numpy.arange(729.0).reshape(1, -1)]*3).transpose() | units.m
+        dimension = particles.correlation_dimension()
+        self.assertAlmostRelativeEquals(dimension, 1.0, 1)
+        particles.position *= 1000
+        self.assertAlmostRelativeEquals(dimension, particles.correlation_dimension(), 10)
+        
+        # Particles on a Koch curve
+        x, y = self.new_koch_star(level=6)
+        numpy.random.seed(123456)
+        sel = numpy.random.randint(len(x), size=729)
+        particles.position = numpy.hstack((x[sel], y[sel], numpy.zeros(729))) | units.m
+        dimension = particles.correlation_dimension()
+        self.assertAlmostRelativeEquals(dimension, 1.26186, 1)
+        particles.position *= 1000
+        self.assertAlmostRelativeEquals(dimension, particles.correlation_dimension(), 10)
+    
+    def test13(self):
+        print "Test box_counting_dimension"
+        # Particles distributed uniformly in 3D
+        particles = Particles(4096)
+        particles.position = numpy.mgrid[0:16.0, 0:16.0, 0:16.0].reshape(3, -1).transpose() | units.m
+        dimension = particles.box_counting_dimension()
+        self.assertAlmostRelativeEquals(dimension, 3.0, 1)
+        # Fractal dimension is scale-free
+        particles.position *= 1000
+        self.assertAlmostRelativeEquals(dimension, particles.box_counting_dimension(), 10)
+        
+        # Particles distributed in the x-y plane
+        particles.position = numpy.concatenate((numpy.mgrid[0:64.0, 0:64.0].reshape(2, -1), numpy.zeros((1, 4096)))).transpose() | units.m
+        dimension = particles.box_counting_dimension()
+        self.assertAlmostRelativeEquals(dimension, 2.0, 1)
+        particles.position *= 1000
+        self.assertAlmostRelativeEquals(dimension, particles.box_counting_dimension(), 10)
+        
+        # Particles distributed along a line
+        particles.position = numpy.concatenate([numpy.arange(4096.0).reshape(1, -1)]*3).transpose() | units.m
+        dimension = particles.box_counting_dimension()
+        self.assertAlmostRelativeEquals(dimension, 1.0, 1)
+        particles.position *= 1000
+        self.assertAlmostRelativeEquals(dimension, particles.box_counting_dimension(), 10)
+        
+        # Particles on a Koch curve
+        x, y = self.new_koch_star(level=7)
+        numpy.random.seed(123456)
+        sel = numpy.random.randint(len(x), size=4096)
+        particles.position = numpy.hstack((x[sel], y[sel], numpy.zeros(4096))) | units.m
+        dimension = particles.box_counting_dimension()
+        self.assertAlmostRelativeEquals(dimension, 1.26186, 1)
+        particles.position *= 1000
+        self.assertAlmostRelativeEquals(dimension, particles.box_counting_dimension(), 10)
+    
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
     
