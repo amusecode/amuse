@@ -988,13 +988,13 @@ def correlation_dimension(particles, max_array_length=10000000):
             diagonal_indices = [numpy.arange(len(indices)), indices]
             distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
             
-            counts_per_batch.append([numpy.count_nonzero(distances_squared < eps2) for eps2 in eps2_range])
+            counts_per_batch.append([(distances_squared < eps2).sum() for eps2 in eps2_range])
         number_of_close_pairs = numpy.array(counts_per_batch).sum(axis=0)
     else:
         distances_squared = particles.distances_squared(particles)
         diagonal_indices = [numpy.arange(len(particles))]*2
         distances_squared.number[diagonal_indices] = numpy.inf # can't be your own neighbour
-        number_of_close_pairs = numpy.array([numpy.count_nonzero(distances_squared < eps2) for eps2 in eps2_range])
+        number_of_close_pairs = numpy.array([(distances_squared < eps2).sum() for eps2 in eps2_range])
     
     upper_index = numpy.searchsorted(-number_of_close_pairs, 0) # Prevent log(0)
     x = 0.5*numpy.log10(eps2_range.number[:upper_index])
