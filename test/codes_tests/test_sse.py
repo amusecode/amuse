@@ -779,3 +779,16 @@ class TestSSE(TestWithMPI):
         self.assertEqual(stars[1].CO_core_mass, stars[1].mass)
         instance.stop()
     
+
+    def test21(self):
+        instance = SSE()
+        stars = instance.particles.add_particles(Particles(mass = 30 | units.MSun))
+        mass_loss_wind = stars[0].mass_loss_wind
+        self.assertAlmostRelativeEquals(mass_loss_wind, 1.703e-07 | units.MSun / units.yr, 3)
+        instance.evolve_model(1 | units.Myr)
+        dm = (1 | units.Myr)* mass_loss_wind
+        self.assertAlmostRelativeEquals(stars[0].mass, (30 | units.MSun) - dm  ,  3)
+        self.assertAlmostRelativeEquals(stars[0].mass_loss_wind, 2.053e-07 | units.MSun / units.yr, 3)
+    
+        instance.stop()
+    

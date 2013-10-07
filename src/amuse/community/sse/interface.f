@@ -137,3 +137,19 @@ cf2py intent(in) kw, mass, age, mt, tm, epoch
       dt = MAX(dt,1.0d-07*age)
       return
       end
+      
+      
+      subroutine get_mass_loss_wind(kw, lum, r, mt, mc, mlout)
+      implicit none
+      integer kw
+      real*8 lum,r,mt,mc,rl
+      real*8 mlout
+      real*8 mlwind
+      real*8 z, zpars(20)
+      common /SSE_init/ z, zpars
+      rl = 0.0
+      mlout = mlwind(kw, lum, r, mt, mc, rl, z)
+      
+      return
+      end
+

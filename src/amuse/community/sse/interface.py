@@ -80,6 +80,19 @@ class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
        
         return function
         
+    @legacy_function      
+    def get_mass_loss_wind():
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True  
+        function.addParameter('kw', dtype='i', direction=function.IN, unit = units.stellar_type)
+        function.addParameter('lum', dtype='d', direction=function.IN, unit = units.LSun)
+        function.addParameter('r', dtype='d', direction=function.IN, unit = units.RSun)
+        function.addParameter('mt', dtype='d', direction=function.IN, unit =  units.MSun)
+        function.addParameter('mc', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('mlout', dtype='d', direction=function.OUT, unit = units.MSun/units.yr)
+       
+        return function
+        
     def initialize_code(self):
         return 0
         
@@ -307,6 +320,15 @@ class SSE(common.CommonCode):
             'get_time_step', 
             ('stellar_type', 'initial_mass', 'age', 
              'mass', 'main_sequence_lifetime', 'epoch')
+        )
+        
+        object.add_attribute(
+            'particles',
+            'mass_loss_wind', 
+            'get_mass_loss_wind', 
+            ('stellar_type', 'luminosity', 
+             'radius', 'mass', 
+             'CO_core_mass')
         )
         
     def _evolve_particles(self, particles, end_time):
