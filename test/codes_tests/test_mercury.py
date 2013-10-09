@@ -571,7 +571,7 @@ class TestMercury(TestWithMPI):
         mercury.particles.add_particles(solsys)
         start_pos = mercury.particles[5].position
         mercury.evolve_model(11.8618|units.yr)
-        self.assertAlmostEqual(mercury.particles[5].position, start_pos, 2)
+        self.assertAlmostEqual(mercury.particles[5].position, start_pos, 1)
         mercury.stop()
 
     def test12(self):

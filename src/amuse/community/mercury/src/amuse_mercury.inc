@@ -38,6 +38,6 @@
       parameter (TWOPI = PI * 2.d0)
       parameter (PIBY2 = PI * .5d0)
       parameter (DR = PI / 180.d0)
-      parameter (K2 = 2.959122082855911d-4)
+      parameter (K2 = 2.959872379828867d-04)  ! was: 2.959122082855911d-4
       parameter (AU = 1.4959787e13)
-      parameter (MSUN = 1.9891e33)
+      parameter (MSUN = 1.988920e+33) ! was: 1.9891e33

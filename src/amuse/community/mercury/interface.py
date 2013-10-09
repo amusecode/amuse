@@ -7,9 +7,6 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 from amuse.datamodel import Particles
 
-gravitational_parameter=2.959122082855911e-4| (units.AU**3 * units.day**-2)
-gravitational_constant=gravitational_parameter/ (1. | units.MSun)
-
 class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     """
     Mercury N-body integrator package, version 6.2.
