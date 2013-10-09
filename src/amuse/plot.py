@@ -103,10 +103,9 @@ def loglog(*args, **kwargs):
     native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
     return result
 
-def scatter(x, y, s=20, c='b', marker='o', cmap=None, norm=None, vmin=None, vmax=None, alpha=1.0, linewidths=None, faceted=True, verts=None, hold=None, **kwargs):
+def scatter(x, y, **kwargs):
     UnitlessArgs.strip(x,y)
-    args = UnitlessArgs.stripped_args
-    return native_plot.scatter(args[0], args[1], s, c, marker, cmap, norm, vmin, vmax, alpha, linewidths, faceted, verts, hold, **kwargs)
+    return native_plot.scatter(*UnitlessArgs.stripped_args, **kwargs)
 
 def hist(x, bins=10, range=None, normed=False, weights=None, cumulative=False, bottom=None, histtype='bar', align='mid', orientation='vertical', rwidth=None, log=False, hold=None, **kwargs):
     UnitlessArgs.strip(x)
@@ -210,7 +209,7 @@ def sph_particles_plot(particles, u_range = None, min_size = 100, max_size = 100
 
     x = x.as_quantity_in(length_unit)
     y = y.as_quantity_in(length_unit)
-    scatter(x, y, sizes, colors, edgecolors = "none", alpha = alpha)
+    scatter(x, y, s=sizes, c=colors, edgecolors="none", alpha=alpha)
     if gd_particles:
         scatter(gd_particles.x, gd_particles.y, c='w', marker='o')
     xlabel('x')
