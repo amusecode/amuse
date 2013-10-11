@@ -106,7 +106,7 @@ is used for. First we import the necessary AMUSE modules.
 .. code-block:: python
    
    >>> from amuse.community.bhtree.interface import BHTree
-   >>> from amuse.support.data import core
+   >>> from amuse.datamodel import Particles
    >>> from amuse.units import nbody_system
    >>> from amuse.units import units
 
@@ -132,7 +132,7 @@ Sun and the Earth, and hand them over to the BHTree instance.
 
 .. code-block:: python
    
-   >>> stars = data.Particles(2)
+   >>> stars = Particles(2)
    >>> sun = stars[0]
    >>> sun.mass = 1.0 | units.MSun
    >>> sun.position = [0.0,0.0,0.0] | units.m
@@ -142,7 +142,7 @@ Sun and the Earth, and hand them over to the BHTree instance.
    >>> earth.mass = 5.9736e24 | units.kg
    >>> earth.radius = 6371.0 | units.km 
    >>> earth.position = [1.0, 0.0, 0.0] | units.AU
-   >>> earth.velocity = [0.0, 29783, 0.0] | units.ms
+   >>> earth.velocity = [0.0, 29783, 0.0] | units.m / units.s
    >>> instance.particles.add_particles(stars)
 
 We need to setup a channel to copy values from the code
