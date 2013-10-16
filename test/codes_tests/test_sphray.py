@@ -539,7 +539,7 @@ class TestSPHRay(TestWithMPI):
             self.assertEqual(val1,123)            
 
         for par,val in [
-            ("spectra_file", "./spectra/thermal30k.cdf")]:
+            ("spectra_file", "./spectra/thermal1e5.cdf")]:
             val1=getattr(instance.parameters,par)
             self.assertEqual(val,val1)            
             setattr(instance.parameters, par, "somefile")
