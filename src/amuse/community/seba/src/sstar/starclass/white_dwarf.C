@@ -351,6 +351,7 @@ real white_dwarf::retention_efficiency(real dmdt, real M_WD, bool hydrogen) {
 // (Madelon+GN May 16 2011)
 // Retention efficiencies according to Nomoto
 // (SilT Jun 19th 2012) rewritten equations
+// (SilT Oct 16th 2013) no wind stripping -> c1 = 0 
 real white_dwarf::retention_H(real dmdt, real M_WD) {
 
     if (dmdt < 1.e-7 || M_WD < 0.6) return 0.;
@@ -363,7 +364,9 @@ real white_dwarf::retention_H(real dmdt, real M_WD) {
     real M_st_log = log10(M_st);
     
     if (logdmdt > M_cr_log) 
-        eta = 4. * pow(10,M_cr_log) / (3.*pow(10,M_cr_log) + dmdt);  
+        // (SilT Oct 16th 2013) no wind stripping -> c1 = 0 
+        eta = pow(10, M_cr_log) / dmdt;   
+//        eta = 4. * pow(10,M_cr_log) / (3.*pow(10,M_cr_log) + dmdt);  
     if (logdmdt < M_st_log)
         eta = (logdmdt - 1.e-7) / (M_st_log - 1.e-7);
       
