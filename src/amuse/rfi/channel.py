@@ -1924,7 +1924,7 @@ class OutputHandler(threading.Thread):
         try:
             self.socket.connect(address)
         except:
-            raise exceptions.CodeException("Could not connect to Ibis Daemon at " + str(address))
+            raise exceptions.CodeException("Could not connect to Distributed Daemon at " + str(address))
         
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
         
@@ -1955,7 +1955,7 @@ class OutputHandler(threading.Thread):
             
             self.stream.write(data)
 
-class IbisChannel(AbstractMessageChannel):
+class DistributedChannel(AbstractMessageChannel):
     
     stdoutHandler = None
     
@@ -1965,24 +1965,24 @@ class IbisChannel(AbstractMessageChannel):
     
     @classmethod
     def getStdoutID(cls, port):
-        if IbisChannel.stdoutHandler is None:
-            IbisChannel.stdoutHandler = OutputHandler(sys.stdout, port)
+        if DistributedChannel.stdoutHandler is None:
+            DistributedChannel.stdoutHandler = OutputHandler(sys.stdout, port)
             
-        return IbisChannel.stdoutHandler.id
+        return DistributedChannel.stdoutHandler.id
     
     @classmethod
     def getStderrID(cls, port):
-        if IbisChannel.stderrHandler is None:
-            IbisChannel.stderrHandler = OutputHandler(sys.stderr, port)
+        if DistributedChannel.stderrHandler is None:
+            DistributedChannel.stderrHandler = OutputHandler(sys.stderr, port)
             
-        return IbisChannel.stderrHandler.id
+        return DistributedChannel.stderrHandler.id
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable = None, **options):
         AbstractMessageChannel.__init__(self, **options)
         
         #logging.getLogger("channel").setLevel(logging.DEBUG)
         
-        logging.getLogger("channel").info("initializing IbisChannel with options %s", options)
+        logging.getLogger("channel").info("initializing DistributedChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker
         self.interpreter_executable = interpreter_executable
@@ -1998,8 +1998,8 @@ class IbisChannel(AbstractMessageChannel):
             
         logging.getLogger("channel").debug("number of workers is %d, number of nodes is %s", self.number_of_workers, self.number_of_nodes)
         
-        self.daemon_host = 'localhost'    # Ibis deamon always running on the local machine
-        self.daemon_port = self.port          # A random-but-fixed port number for the Ibis daemon
+        self.daemon_host = 'localhost'    # Distributed process always running on the local machine
+        self.daemon_port = self.port          # Port number for the Distributed process
 
         logging.getLogger("channel").debug("port is %d", self.daemon_port)
         
@@ -2043,13 +2043,13 @@ class IbisChannel(AbstractMessageChannel):
         
         #if redirect = none, set output file to console stdout stream ID, otherwise make absolute
         if (self.redirect_stdout_file == 'none'):
-            self.redirect_stdout_file = IbisChannel.getStdoutID(self.port)
+            self.redirect_stdout_file = DistributedChannel.getStdoutID(self.port)
         else:
             self.redirect_stdout_file = os.path.abspath(self.redirect_stdout_file)
 
         #if redirect = none, set error file to console stderr stream ID, otherwise make absolute
         if (self.redirect_stderr_file == 'none'):
-            self.redirect_stderr_file = IbisChannel.getStderrID(self.port)
+            self.redirect_stderr_file = DistributedChannel.getStderrID(self.port)
         else:
             self.redirect_stderr_file = os.path.abspath(self.redirect_stderr_file)
         
@@ -2176,7 +2176,7 @@ class IbisChannel(AbstractMessageChannel):
         return message.to_result(handle_as_array)
     
     def nonblocking_recv_message(self, tag, handle_as_array):
-        #       raise exceptions.CodeException("Nonblocking receive not supported by IbisChannel")
+        #       raise exceptions.CodeException("Nonblocking receive not supported by DistributedChannel")
         request = SocketMessage().nonblocking_receive(self.socket)
         
         def handle_result(function):

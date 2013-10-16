@@ -793,7 +793,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
         
         output_dir = self.get_output_directory()
-        if not ("channel_type" in options and options["channel_type"] == 'ibis'):
+        if not ("channel_type" in options and options["channel_type"] == 'distributed'):
             ensure_data_directory_exists(os.path.join(output_dir, 'star_data', 'starting_models'))
         
         self.set_MESA_paths(

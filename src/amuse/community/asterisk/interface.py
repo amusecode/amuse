@@ -16,7 +16,7 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         CodeInterface.__init__(self, name_of_the_worker="asterisk_worker_java", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
 
-    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
+    @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'sockets'
     

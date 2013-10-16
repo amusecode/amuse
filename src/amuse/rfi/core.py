@@ -19,7 +19,7 @@ from amuse.support.options import OptionalAttributes, option
 from amuse.rfi.tools.create_definition import CodeDocStringProperty
 from amuse.rfi.channel import MpiChannel
 from amuse.rfi.channel import MultiprocessingMPIChannel
-from amuse.rfi.channel import IbisChannel
+from amuse.rfi.channel import DistributedChannel
 from amuse.rfi.channel import SocketChannel
 from amuse.rfi.channel import is_mpd_running
 
@@ -657,7 +657,7 @@ class CodeInterface(OptionalAttributes):
         
 
 
-    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
+    @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
         
@@ -701,8 +701,8 @@ class CodeInterface(OptionalAttributes):
                 
         elif self.channel_type == 'remote':
             return MultiprocessingMPIChannel
-        elif self.channel_type == 'ibis':
-            return IbisChannel
+        elif self.channel_type == 'distributed':
+            return DistributedChannel
         elif self.channel_type == 'sockets':
             return SocketChannel
         else:

@@ -186,7 +186,7 @@ class ForTestingInterface(CodeInterface):
         CodeInterface.__init__(self, exefile, **options)
 
     #override default channel_type. We don't support the mpi channel...
-    @option(choices=['mpi','remote','ibis', 'sockets'], sections=("channel",))
+    @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'sockets'
 
