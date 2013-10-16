@@ -431,6 +431,40 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function
 
     @legacy_function
+    def set_spectra_file():
+        """
+        set the spectrafile to use(relative to data directory)
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('spectra_file', dtype='string', direction=function.IN,
+            description = "Name of the file")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was set
+        -1 - ERROR
+            Directory does not exist
+        """
+        return function
+
+    @legacy_function
+    def get_spectra_file():
+        """
+        get the spectrafile to use(relative to data directory)
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('spectra_file', dtype='string', direction=function.OUT,
+            description = "Name of the file")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Value was retrieved
+        -1 - ERROR
+            Could not retrieve value
+        """
+        return function
+
+    @legacy_function
     def set_output_directory():
         """
         Update the output path.
@@ -568,6 +602,14 @@ class SPHRay(CommonCode):
             "helium_case_A_flag", 
             "flag for  helium case A recombination (1)", 
             True
+        )
+
+        object.add_method_parameter(
+            "get_spectra_file",
+            "set_spectra_file", 
+            "spectra_file", 
+            "spectra file to use", 
+            default_value = "./spectra/thermal30k.cdf"
         )
 
     def define_methods(self, object):

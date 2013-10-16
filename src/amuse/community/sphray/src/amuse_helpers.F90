@@ -31,12 +31,17 @@ character(len=clen) :: AtomicRatesFile='./atomic_rates/atomic_rates_Hui.txt'
 real(r8b) :: default_spectral_type = -1.
 
 
-
-
  contains
 
+subroutine sphray_set_spectra_file(x)
+  character(len=clen) :: x
+  SpectraFile=x
+end subroutine  
 
-
+subroutine sphray_get_spectra_file(x)
+  character(len=clen) :: x
+  x=SpectraFile
+end subroutine
 
 subroutine sphray_set_data_directory(x)
   character(len=clen) :: x
@@ -1087,9 +1092,9 @@ subroutine set_default_parameters
   GV%SourcePath='./'          !< [Config File] dir where source snapshots are
 
 
-  GV%SpectraFile='./data/spectra/thermal1e5.cdf'        !< [Config File] file containing spectra tables
-  GV%b2cdFile='./data/column_depth/latmon_b2cd_table.txt'           !< [Config File] file containing b2cd tables
-  GV%AtomicRatesFile='./data/atomic_rates/atomic_rates_Hui.txt'    !< [Config File] file containnig atomic rates tables
+  GV%SpectraFile=SpectraFile        !< [Config File] file containing spectra tables
+  GV%b2cdFile=b2cdFile           !< [Config File] file containing b2cd tables
+  GV%AtomicRatesFile=AtomicRatesFile    !< [Config File] file containnig atomic rates tables
 
   GV%ParFileBase='none'         !< [Config File] particle snapshot file base
   GV%SourceFileBase='none'      !< [Config File] source snapshot file base

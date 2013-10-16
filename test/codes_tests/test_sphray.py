@@ -538,6 +538,14 @@ class TestSPHRay(TestWithMPI):
             val1=getattr(instance.parameters,par)
             self.assertEqual(val1,123)            
 
+        for par,val in [
+            ("spectra_file", "./spectra/thermal30k.cdf")]:
+            val1=getattr(instance.parameters,par)
+            self.assertEqual(val,val1)            
+            setattr(instance.parameters, par, "somefile")
+            val1=getattr(instance.parameters,par)
+            self.assertEqual(val1,"somefile")
+
         for par,val,tval in [ ("number_of_rays", 1022.69032205 | (units.Myr**-1) , 10000| units.Myr**-1),
                               ("box_size",13.2 | units.kpc,  10. | units.kpc),
                               ("default_spectral_type", -1.,1.)]:

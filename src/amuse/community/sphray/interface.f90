@@ -180,6 +180,22 @@ function evolve_model(tend) result(ret)
   ret=0
 end function
 
+function set_spectra_file(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  character(len=512) :: x
+  call sphray_set_spectra_file(x)
+  ret=0
+end function
+
+function get_spectra_file(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  character(len=512) :: x
+  call sphray_get_spectra_file(x)
+  ret=0
+end function
+
 function set_data_directory(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
