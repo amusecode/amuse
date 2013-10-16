@@ -49,7 +49,7 @@ all:	compile simplex_worker
 compile: $(APP)
 
 $(APP):
-	cd $(SRCDIR) && $(MAKE)
+	cd $(SRCDIR) && $(MAKE) CC="$(CC) $(CFLAGS)" CXX="$(CXX) $(CXXFLAGS)"
 
 clean:
 	$(RM) *.so *.o *.pyc worker.cc worker.h worker_gl.cc worker_gl.h

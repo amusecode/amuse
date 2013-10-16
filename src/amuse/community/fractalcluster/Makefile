@@ -16,12 +16,12 @@ LIBS=$(SRC)/libfractal.a
 PIC=#-fPIC
 
 ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
-FFLAGS= -fdefault-real-8 -cpp -O3
+FFLAGS= $(FCFLAGS) -fdefault-real-8 -cpp -O3
 endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
 IFORTFLAGS= -r8 -u
-FFLAGS= $(IFORTFLAGS) -O2 
+FFLAGS= $(FCFLAGS) $(IFORTFLAGS) -O2 
 endif
 
 FFLAGS2= -I./src/

@@ -5,7 +5,7 @@ libsupport.a:
 	ranlib libsupport.a
 
 support.o: support.c
-	gcc support.c -c -o support.o
+	$(CC) $(CFLAGS) support.c -c -o support.o
 
 clean: 
 	rm *.o *.a

@@ -11,7 +11,8 @@ MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 PYTHON ?= python
 FC      = $(FORTRAN)
-export FC
+MPIFC+= $(FCFLAGS)
+export FC MPIFC
 
 MESA_MAKE_DIR=./mesa_reqs
 INCLUDE_DIR=./src/mesa/star/make
@@ -22,7 +23,7 @@ export OPENMP_FCFLAGS=
 include $(MESA_MAKE_DIR)/makefile_header
 include $(MESA_MAKE_DIR)/makefile_include
 
-WORK_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(FCchecks) $(FCdebug) $(FFLAGS) \
+WORK_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(FCchecks) $(FCdebug) $(FCFLAGS)  $(FFLAGS)\
    -I$(MESA_INCLUDE_DIR) -c $(FCfree)
 STAR_WORK_OBJS = \
    $(MESA_MAKE_DIR)/run_star_support.o $(MESA_MAKE_DIR)/run_star_extras.o \
@@ -82,7 +83,7 @@ $(ZAMS_DATA):
 	gunzip -c $(ZAMS_DATA).gz > $(ZAMS_DATA)
 
 mesa_worker:	worker_code.f90 interface.o $(STAR_WORK_OBJS)
-	$(MPIF90) $(FFLAGS) $(FCopenmp) $(FS_FLAGS) $^ -o $@ $(LOAD_MESA_STAR) $(FS_LIBS)
+	$(MPIF90) $(FCFLAGS) $(FFLAGS) $(FCopenmp) $(FS_FLAGS) $^ -o $@ $(LOAD_MESA_STAR) $(FS_LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@
@@ -90,8 +91,8 @@ worker_code.f90: interface.py
 $(MESA_LIB):  $(MESA_DIR)/install
 	cp -f ./install $(MESA_DIR)
 	cp -f ./test_jina.f $(MESA_DIR)/jina/test/src/test_jina.f
-	cd $(MESA_DIR); ./install OPENMP_FCFLAGS=
+	cd $(MESA_DIR); ./install MPIFC="$(MPIFC) $(FCFLAGS)" OPENMP_FCFLAGS=
 
 interface.o: interface.f $(MESA_LIB)
-	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FFLAGS)"
+	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FCFLAGS)"
 	$(WORK_COMPILE) -I$(INCLUDE_DIR) -I$(MESA_MAKE_DIR) -o $@ $<

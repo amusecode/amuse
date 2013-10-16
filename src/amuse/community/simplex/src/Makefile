@@ -27,7 +27,7 @@ OBJ=./obj/
 LIB=./lib/
 BIN=./bin/
 
-CXXCFLAGS_NO_C = -Wall -ansi -O2 -g -ffast-math -fomit-frame-pointer
+CXXCFLAGS_NO_C = $(CXXFLAGS) -Wall -ansi -O2 -g -ffast-math -fomit-frame-pointer
 CXXCFLAGS := $(CXXCFLAGS_NO_C) -c
 export CXXCFLAGS
 

@@ -13,7 +13,7 @@
 #FFLAGS = -O2
 #FFLAGS = -O2 -pg
 ##ceFFLAGS = -O3 -fno-automatic
-FFLAGS = -fno-automatic -g
+FFLAGS = $(FCFLAGS) -fno-automatic -g
 #FFLAGS = -CB
 #FFLAGS = -C
 #FFLAGS = -ftrapuv -check all -check noarg_temp_created -debug all -Winline -vec-report0 -WB -g -traceback -warn all
@@ -41,7 +41,7 @@ HEADERS=.
 LIBS=rand.o
 #PROGS=mufu plumix
 #CFLAGS=-I$(HEADERS) -O3 -Wall -ffast-math
-CFLAGS=-I$(HEADERS) -O3 
+CFLAGS+=-I$(HEADERS)
 LDFLAGS=-lm $(MUSE_LD_FLAGS)
 #===========================
 

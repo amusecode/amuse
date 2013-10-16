@@ -4,15 +4,15 @@ AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
 CC ?= gcc
-CFLAGS = -O3
+CFLAGS ?= -O3
 
 FC ?= gfortran
 FORTRAN ?= $(FC)
 ifeq ($(findstring gfortran, $(shell $(FORTRAN) --help)), gfortran)
-FFLAGS = -ffixed-line-length-0 -O -fno-backslash
+FFLAGS = $(FCFLAGS) -ffixed-line-length-0 -O -fno-backslash
 endif
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-FFLAGS = -O3 -132 -nofor-main
+FFLAGS = $(FCFLAGS) -O3 -132 -nofor-main
 endif
 
 ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))

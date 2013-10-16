@@ -30,7 +30,7 @@ distclean:
 	$(RM) *~ worker_code
 
 $(CODELIB): src
-	cd src; make all
+	cd src; make -C. CXX="$(CXX) $(CXXFLAGS)"
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py SeBaInterface -o $@

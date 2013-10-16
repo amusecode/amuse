@@ -30,7 +30,7 @@ all:    $(BUILDDIR)/Makefile evtwin_worker
 
 $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 	-mkdir -p $(BUILDDIR)
-	cd $(BUILDDIR) && FC=$(FC) cmake ../src -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)"
+	cd $(BUILDDIR) && FC="$(FC) $(FCFLAGS)" cmake ../src -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)"
 
 clean:
 	rm -f *.pyc make.log
