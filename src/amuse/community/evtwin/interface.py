@@ -18,7 +18,8 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
     The work-around for the helium flash is not yet implemented in the AMUSE 
     interface to evtwin. Currently only solar metallicity.
     
-        .. [#] Eggleton, P.P. 1971, MNRAS, 151, 351: "The evolution of low mass stars"
+        .. [#] ** Eggleton, P.P. 1971, MNRAS, 151, 351: "The evolution of low mass stars"
+        .. [#] ** Glebbeek, Pols & Hurley, 2008 A&A (for enhancements to the solver)
         .. [#] Eggleton, P.P. 1972, MNRAS, 156, 361: "Composition changes during stellar evolution"
         .. [#] Eggleton, P.P. 1973, MNRAS, 163, 279: "A numerical treatment of double shell source stars"
         .. [#] Eggleton, P.P., Faulkner, J., & Flannery, B.P. 1973, A&A, 23, 325:
@@ -33,7 +34,6 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         .. [#] Eggleton, P.P., & Kiseleva-Eggleton, L. 2002, ApJ, 575, 461: "The Evolution of Cool Algols"
         .. [#] Stancliffe, Glebbeek, Izzard & Pols, 2007 A&A (for thermohaline mixing)
         .. [#] Eldridge & Tout, 2004 MNRAS 348 (for the OPAL 1996 opacity tables)
-        .. [#] Glebbeek, Pols & Hurley, 2008 A&A (for enhancements to the solver)
     """
     use_modules = ['twin_library_v2', 'create_new_model']
     
