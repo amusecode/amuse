@@ -216,7 +216,8 @@ class TestWithMPI(TestCase):
             
     def tearDown(self):
         from amuse.rfi.core import stop_interfaces
-        stop_interfaces()
+        #leave the distributed code alone, stop the rest
+        stop_interfaces(exceptions= ['DistributedAmuseInterface'])
     
     def new_instance(self, factory, *arguments, **kwarguments):
         try:

@@ -505,7 +505,7 @@ class LegacyFunctionSpecification(object):
 
 
 
-def stop_interfaces():
+def stop_interfaces(exceptions = []):
     """
     Stop the workers of all instantiated interfaces.
     
@@ -514,7 +514,7 @@ def stop_interfaces():
     """
     for reference in CodeInterface.instances:
         x = reference()
-        if not x is None:
+        if not x is None and x.__class__.__name__ not in exceptions:
             try:
                 x._stop()
             except:
