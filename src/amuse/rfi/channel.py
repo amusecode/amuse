@@ -2028,6 +2028,13 @@ class DistributedChannel(AbstractMessageChannel):
       
 
     def check_if_worker_is_up_to_date(self, object):
+#         if self.hostname != 'localhost':
+#             return
+#         
+#         logging.getLogger("channel").debug("hostname = %s, checking for worker", self.hostname)
+#         
+#         AbstractMessageChannel.check_if_worker_is_up_to_date(self, object)
+   
         pass
    
     def start(self):
