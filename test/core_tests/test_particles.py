@@ -190,7 +190,10 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(len(subset2), 4000)
         self.assertEquals(len(particles.difference(subset2)), 6000)
         # Overlap should be roughly 1000 (0.25 * 0.4 * 10000)
-        self.assertEquals(len(subset2.get_intersecting_subset_in(subset)), 1008)
+        number_of_overlapping_particles = len(subset2.get_intersecting_subset_in(subset))
+	print number_of_overlapping_particles
+        self.assertTrue(number_of_overlapping_particles >  975)
+        self.assertTrue(number_of_overlapping_particles < 1025)
 
 
 class TestParticle(amusetest.TestCase):
@@ -1062,7 +1065,7 @@ class TestParticlesExtra(amusetest.TestCase):
         self.assertEquals(particles.potential_energy(), Ep)
 
         self.assertEquals((particles.mass*particles.specific_kinetic_energy()).sum(), Ek)
-        self.assertEquals(0.5*(particles.mass*particles.potential()).sum(), Ep)
+        self.assertAlmostRelativeEquals(0.5*(particles.mass*particles.potential()).sum(), Ep)
 
     def test10(self):
         particles = datamodel.Particles(4)

@@ -204,7 +204,19 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
             print self.method
             raise
         return self.convert_return_value(return_value, storage, attributes_to_return)
+    
+    def get_attribute_values_async(self, storage, attributes_to_return, *indices):
         
+        self.check_arguments(storage, indices, attributes_to_return)
+        
+        def result_handler(inner):
+            return self.convert_return_value(inner(), storage, attributes_to_return)
+            
+        async_request = self.method.async(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
+        async_request.add_result_handler(result_handler)
+        return async_request
+    
+    
 class ParticleGetGriddedAttributesMethod(ParticleGetAttributesMethod):
     
     def __init__(self, method, get_range_method, attribute_names = None):
@@ -839,6 +851,37 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         for attribute in attributes:
             results.append(mapping_from_attribute_to_result[attribute])
         return results
+        
+    
+    def get_values_in_store_async(self, indices_in_the_code, attributes):
+    
+        if indices_in_the_code is None:
+            indices_in_the_code = self.code_indices
+            
+        if len(indices_in_the_code) == 0:
+            return [[] for attribute in attributes]
+             
+        mapping_from_attribute_to_result = {}
+        
+        getters = self.select_getters_for(attributes)
+        if len(getters) > 1:
+            raise Exception("more than 1 getters needed for this set of attributes, not supported yet in async mode")
+        
+        for getter in getters:
+            request = getter.get_attribute_values_async(self, attributes, indices_in_the_code)
+            def result_handler(inner, mapping):
+                mapping.update(inner())
+            request.add_result_handler(result_handler, mapping_from_attribute_to_result)
+    
+        def all_handler(inner, mapping):
+            inner()
+            results = []
+            for attribute in attributes:
+                results.append(mapping[attribute])
+            return results
+            
+        request.add_result_handler(all_handler, mapping_from_attribute_to_result)
+        return request
         
     def set_values_in_store(self, indices_in_the_code, attributes, values):
         if len(indices_in_the_code) == 0:
