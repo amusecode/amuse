@@ -11,6 +11,12 @@ export PATH=${PYTHONHOME}/bin:${PATH}
 export PYTHONPATH=${PYTHONHOME}/customize
 export PYTHON=${PYTHONHOME}/python
 
-exec python ${PYTHONHOME}/bin/ipython notebook --pylab inline --notebook-dir=${PYTHONHOME}/tutorial
+RUNDIR=/tmp/${USER}/amuse-tutorial
+
+mkdir -p $RUNDIR
+
+cp ${PYTHONHOME}/tutorial/* ${RUNDIR}/
+
+exec python ${PYTHONHOME}/bin/ipython notebook --pylab inline --notebook-dir=${RUNDIR} --profile=nbserver
 
 
