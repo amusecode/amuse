@@ -189,11 +189,12 @@ class ASyncSocketRequest(object):
         
 class AsyncRequestWithHandler(object):
     
-    def __init__(self, async_request, result_handler, args=(), kwargs={}):
+    def __init__(self, pool, async_request, result_handler, args=(), kwargs={}):
         self.async_request = async_request
         self.result_handler = result_handler
         self.args = args
         self.kwargs = kwargs
+        self.pool = pool
     
     def run(self):
         self.result_handler(self.async_request, *self.args, **self.kwargs)
