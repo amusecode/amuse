@@ -31,20 +31,20 @@ or on IRC at the #amuse channel on irc.freenode.net.
 Tarball
 ~~~~~~~
 
-Obtain the tarball (e.g. amuse-8.0.tar.gz) from the download-site and unpack it 
+Obtain the tarball (e.g. amuse-8.1.tar.gz) from the download-site and unpack it 
 in the amuse directory using:
 
 .. code-block:: sh
 
-    > tar -xf amuse-8.0.tar.gz
+    > tar -xf amuse-8.1.tar.gz
 
-this will make an amuse sub-directory ``amuse-8.0``, which we will be referring to as
+this will make an amuse sub-directory ``amuse-8.1``, which we will be referring to as
 the AMUSE root directory, e.g.:
 
 .. code-block:: sh
     
     ./amuse
-    +-- amuse-8.0
+    +-- amuse-8.1
         |-- bin
      	|-- build.py
     	|-- configure
