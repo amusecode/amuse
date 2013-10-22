@@ -16,7 +16,7 @@ import array
 
 import logging
 
-# logging.basicConfig(level=logging.WARN)
+#logging.basicConfig(level=logging.INFO)
 
 try:
     from mpi4py import rc
@@ -2000,7 +2000,7 @@ class DistributedChannel(AbstractMessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, **options):
         AbstractMessageChannel.__init__(self, **options)
         
-        # logging.getLogger("channel").setLevel(logging.DEBUG)
+        #logging.getLogger("channel").setLevel(logging.INFO)
         
         logging.getLogger("channel").info("initializing DistributedChannel with options %s", options)
        
@@ -2105,7 +2105,10 @@ class DistributedChannel(AbstractMessageChannel):
             self.stop()
             raise exceptions.CodeException("Could not start worker for " + self.name_of_the_worker + ": " + result.strings[0])
         
+        self.remote_amuse_dir = result.strings[0]
+        
         logging.getLogger("channel").info("worker %s initialized", self.name_of_the_worker)
+        logging.getLogger("channel").info("worker remote amuse dir = %s", self.remote_amuse_dir)
         
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
