@@ -757,6 +757,9 @@ class AbstractMessageChannel(OptionalAttributes):
     @option(type='string', sections=("channel",))
     def worker_code_directory(self):
         return ''
+    
+    
+    
         
     @option(type='boolean', sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
@@ -2114,6 +2117,11 @@ class DistributedChannel(AbstractMessageChannel):
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
+    
+    
+    @option(type='string', sections=("channel",))
+    def get_amuse_root_directory(self):
+        return self.remote_amuse_dir
         
     @option(type="int", sections=("channel",))
     def number_of_nodes(self):
