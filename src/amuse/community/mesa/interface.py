@@ -31,42 +31,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
-        
-    @option(type="string", sections=('data',))
-    def amuse_root_directory(self):
-        """
-        The root directory of AMUSE, used as default root for all data directories
-        """
-        return get_amuse_root_dir()
-        
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(self.amuse_root_directory, 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(self.amuse_root_directory, 'data')
-        
-    def get_data_directory(self):
-        """
-        Returns the root name of the directory for the MESA
-        application data files.
-        """
-        return os.path.join(self.input_data_root_directory, 'mesa', 'input')
-    
-    def get_output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'mesa', 'output')
     
     @property
     def default_path_to_inlist(self):

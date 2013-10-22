@@ -641,22 +641,47 @@ class CodeInterface(OptionalAttributes):
     def stop(self):
         self._stop()
     
+    @property
+    def module_name(self):
+        return self.__module__.split('.')[-2]
+    
     def get_data_directory(self):
         """
         Returns the root name of the directory for the 
-        application data files
+        application data files.
         """
-        pass
+        return os.path.join(self.input_data_root_directory, self.module_name, 'input')
     
     def get_output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        pass
+        return os.path.join(self.output_data_root_directory, self.module_name, 'output')
+    
+    @option(type="string", sections=('data',))
+    def amuse_root_directory(self):
+        """
+        The root directory of AMUSE, used as default root for all data directories
+        """
+        return self.channel.get_amuse_root_directory()
         
-
-
+    @option(type="string", sections=('data',))
+    def input_data_root_directory(self):
+        """
+        The root directory of the input data, read only directories
+        """
+        return os.path.join(self.amuse_root_directory, 'data')
+        
+    @option(type="string", sections=('data',))
+    def output_data_root_directory(self):
+        """
+        The root directory of the output data,
+        read - write directory
+        """
+        return os.path.join(self.amuse_root_directory, 'data')
+    
+    
     @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'mpi'

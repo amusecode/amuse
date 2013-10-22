@@ -769,6 +769,22 @@ class AbstractMessageChannel(OptionalAttributes):
     def number_of_workers(self):
         return 1
         
+    def get_amuse_root_directory(self):
+        return self.amuse_root_dir
+    
+    @option(sections=('data',))
+    def amuse_root_dir(self):
+        if 'AMUSE_DIR' in os.environ:
+            return os.environ['AMUSE_DIR']    
+        previous = None
+        result = os.path.abspath(__file__)
+        while not os.path.exists(os.path.join(result,'build.py')):
+            result = os.path.dirname(result)
+            if result == previous:
+                raise exceptions.AmuseException("Could not locate AMUSE root directory!")
+            previous = result
+        return result
+    
     def check_if_worker_is_up_to_date(self, object):
         if not self.must_check_if_worker_is_up_to_date:
             return
@@ -2119,7 +2135,6 @@ class DistributedChannel(AbstractMessageChannel):
         return "none"
     
     
-    @option(type='string', sections=("channel",))
     def get_amuse_root_directory(self):
         return self.remote_amuse_dir
         
