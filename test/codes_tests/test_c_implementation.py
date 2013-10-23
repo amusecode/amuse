@@ -421,12 +421,12 @@ class TestInterface(TestWithMPI):
         
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
-	uc.needs_mpi = False
+        uc.needs_mpi = False
         header =  uc.result
         
         uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
-	uc.needs_mpi = False
+        uc.needs_mpi = False
         code =  uc.result
         
         string = '\n\n'.join([header, code])

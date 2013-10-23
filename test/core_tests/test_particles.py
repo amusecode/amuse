@@ -191,10 +191,16 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(len(particles.difference(subset2)), 6000)
         # Overlap should be roughly 1000 (0.25 * 0.4 * 10000)
         number_of_overlapping_particles = len(subset2.get_intersecting_subset_in(subset))
-	print number_of_overlapping_particles
         self.assertTrue(number_of_overlapping_particles >  975)
         self.assertTrue(number_of_overlapping_particles < 1025)
-
+        
+    
+    def test17(self):
+        particles = datamodel.Particles(2)
+        particles.name = 'ONE'
+        
+        particles[1].name = 'LONGER'
+        self.assertEquals(particles[1].name, 'LONGER')
 
 class TestParticle(amusetest.TestCase):
 

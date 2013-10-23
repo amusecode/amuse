@@ -26,6 +26,9 @@ class compilers(object):
     ifort_version = '@IFORT_VERSION@'
 
     fc_iso_c_bindings = '@FC_ISO_C_BINDINGS@'=='yes'
+    
+    pythondev_cflags = '@PYTHONDEV_CFLAGS@'
+    pythondev_ldflags = '@PYTHONDEV_LDFLAGS@'
 
 class mpi(object):
     is_enabled = '@WITH_MPI@'=='yes'

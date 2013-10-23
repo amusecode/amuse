@@ -387,6 +387,7 @@ def get_in_memory_attribute_storage_factory():
 
 
 class InMemoryAttribute(object):
+    MAX_STRING_LENGTH = 1024
     
     def __init__(self, name):
         self.name = name
@@ -430,6 +431,9 @@ class InMemoryAttribute(object):
         else:
             array = numpy.asanyarray(values_to_set)
             dtype = array.dtype
+            if dtype.kind == 'S' and dtype.itemsize < cls.MAX_STRING_LENGTH:
+                array = numpy.asarray(values_to_set, dtype=numpy.dtype('S'+str(cls.MAX_STRING_LENGTH)))
+                dtype = array.dtype
             shape = cls._determine_shape(shape, array)
             if dtype == numpy.object:
                 return InMemoryLinkedAttribute(name, shape)
