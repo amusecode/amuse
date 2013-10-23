@@ -31,11 +31,11 @@ GPULIBS  =  $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread
 
 all:	compile bhtree_worker
 
-python_worker.o: python_worker.c
-	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SC_FLAGS) -c -o $@ $< 
-	
-bhtree_worker_python: python_worker.o
-	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(SC_FLAGS) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS)
+#python_worker.o: python_worker.c
+#	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SC_FLAGS) -c -o $@ $< 
+#	
+#bhtree_worker_python: python_worker.o
+#	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(SC_FLAGS) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS)
     
 
 compile: $(BHTC)
