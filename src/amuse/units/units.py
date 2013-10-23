@@ -15,7 +15,7 @@ kms = named('kilometer per seconds', 'kms', km / s)
 # units based on measured quantities
 e = named('electron charge', 'e', constants.elementary_charge.as_unit())
 eV=named('electron volt','eV', e*V)
-MeV=named('mega electron volt','eV', 1e6*eV)
+MeV=named('mega electron volt','MeV', 1e6*eV)
 GeV=named('giga electron volt','GeV', 1e9*eV)
 E_h = named('hartree energy', 'E_h', constants.Hartree_energy.as_unit())
 amu = named('atomic mass unit', 'amu', constants.u.as_unit())
