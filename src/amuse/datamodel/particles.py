@@ -1582,6 +1582,11 @@ class ParticlesSuperset(AbstractParticleSet):
                 if not resultunit is None:
                     resultvalue[indices] = quantity.value_in(resultunit)
                 else:
+                    current_dtype = quantity.dtype
+                    result_dtype = resultvalue.dtype
+                    if result_dtype.kind == 'S' and (current_dtype.itemsize > result_dtype.itemsize):
+                        resultvalue = numpy.asarray(resultvalue, dtype = current_dtype)     
+                        values[valueindex] = resultvalue  
                     resultvalue[indices] = quantity
 
         return map(lambda u,v : u(v), converts, values)

@@ -196,11 +196,14 @@ class TestParticles(amusetest.TestCase):
         
     
     def test17(self):
-        particles = datamodel.Particles(2)
-        particles.name = 'ONE'
+        names = ('123','1234', '12345')
+        particles = datamodel.Particles(3)
+        particles.name = names
+        for i in range(3):
+            self.assertEquals(particles[i].name, names[i])
         
-        particles[1].name = 'LONGER'
-        self.assertEquals(particles[1].name, 'LONGER')
+        particles[1].name = '123456'
+        self.assertEquals(particles[1].name, '123456')
 
 class TestParticle(amusetest.TestCase):
 
@@ -915,7 +918,27 @@ class TestParticlesSuperset(amusetest.TestCase):
         superset = particles1  | particles2
         self.assertEquals(superset.get_attribute_names_defined_in_store(), ["mass"])
 
-
+    def test14(self):
+        particles1 = datamodel.Particles(3)
+        particles1.name = '123'
+        particles2 = datamodel.Particles(3)
+        particles2.name = '1234'
+        superset = particles1  | particles2
+        for i in range(3):
+            self.assertEquals(superset[i].name, '123')
+            self.assertEquals(superset.name[i], '123')
+            self.assertEquals(superset[i+3].name, '1234')
+            self.assertEquals(superset.name[i+3], '1234')
+        superset[2:4].name = '12345'        
+        self.assertEquals(superset[1].name, '123')
+        self.assertEquals(superset.name[1], '123')
+        self.assertEquals(superset[2].name, '12345')
+        self.assertEquals(superset.name[2], '12345')
+        self.assertEquals(superset[3].name, '12345')
+        self.assertEquals(superset.name[3], '12345')
+        self.assertEquals(superset[4].name, '1234')
+        self.assertEquals(superset.name[4], '1234')
+            
 class TestParticlesSupersetWithNames(amusetest.TestCase):
 
     def test1(self):
