@@ -293,7 +293,7 @@ class ForTesting(InCodeComponentImplementation):
 
 
 
-class TestInterface(TestWithMPI):
+class TestCImplementationInterface(TestWithMPI):
     
     def get_mpicc_name(self):
         try:
@@ -437,7 +437,7 @@ class TestInterface(TestWithMPI):
         self.c_build(self.exefile, [interfacefile, codefile] )
     
     def setUp(self):
-        super(TestInterface, self).setUp()
+        super(TestCImplementationInterface, self).setUp()
         print "building...",
         self.check_can_compile_modules()
         try:
