@@ -4,7 +4,8 @@ from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravityFieldInterface
 from amuse.community.interface.gd import GravityFieldCode
 
-class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface, GravityFieldInterface):
+class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
+        StoppingConditionInterface, GravityFieldInterface, CodeWithDataDirectories):
     """
     Pikachu - a.k.a. P^3 Tree
     Hybrid N-body module, combining a tree (Barnes & Hut) to approximate long-range 
@@ -27,28 +28,6 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
         else:
             print "Warning: unknown mode: '{0}' - using default ('{1}').".format(mode, self.MODE_NORMAL)
             return 'pikachu_worker'
-    
-    @option(type="string", sections=('data',))
-    def amuse_root_directory(self):
-        """
-        The root directory of AMUSE, used as default root for all data directories
-        """
-        return get_amuse_root_dir()
-    
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(self.amuse_root_directory, 'data')
-    
-    def get_output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'pikachu', 'output')
     
     @option(type="string", sections=('data',))
     def default_kernel_directory(self):

@@ -16,6 +16,7 @@ from amuse.datamodel import parameters
 from amuse.datamodel import attributes
 from amuse.support.literature import LiteratureReferencesMixIn
 from amuse.rfi.core import CodeInterface
+from amuse.rfi.core import CodeWithDataDirectories
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
 from amuse.rfi.core import is_mpd_running

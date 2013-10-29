@@ -1,4 +1,4 @@
-from operator import itemgetter
+import os.path
 from amuse.community import *
 from amuse.community.interface.se import StellarEvolution, StellarEvolutionInterface, \
     InternalStellarStructure, InternalStellarStructureInterface
@@ -6,10 +6,9 @@ from amuse.community.interface.se import StellarEvolution, StellarEvolutionInter
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import OptionalAttributes, option
 
-import os
 
 class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
-        InternalStellarStructureInterface):
+        InternalStellarStructureInterface, CodeWithDataDirectories):
     """
     Evtwin is based on Peter Eggleton's stellar evolution code, and solves 
     the differential equations that apply to the interior of a star. Therefore 
@@ -41,59 +40,10 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         CodeInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
     
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-        
-    @option(type="string")
-    def data_directory(self):
-        """
-        The root name of the directory for the EVTwin
-        application data files. This directory should contain the
-        zams data and init.run and init.dat.
-        """
-        return os.path.join(self.input_data_root_directory, 'evtwin', 'input')
-        
-
-    @option(type="string")
-    def output_directory(self):
-        """
-        The root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'data', 'evtwin', 'output')        
-
-    def get_data_directory(self):
-        """
-        Returns the root name of the directory for the EVTwin
-        application data files.
-        """
-        return self.data_directory
-        
-    def get_output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return self.output_directory
-    
     @property
     def default_path_to_ev_database(self):
-        dir = os.path.dirname(__file__)
-        return os.path.join(dir, 'src')
-        
+        return self.get_code_src_directory()
+    
     @legacy_function
     def new_particle():
         """

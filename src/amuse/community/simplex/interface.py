@@ -5,7 +5,8 @@ from amuse.support.options import option
 
 from amuse.datamodel import Particles
 
-class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
+class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn, 
+        CodeWithDataDirectories):
     """
     SimpleX(2.5) is a method for radiative transfer on an unstructured Delaunay 
     grid. The grid samples the medium through which photons are transported in 
@@ -23,39 +24,8 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         CodeInterface.__init__(self, name_of_the_worker = "simplex_worker", **kwargs)
         LiteratureReferencesMixIn.__init__(self)
     
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string")
-    def data_directory(self):
-        """
-        The root name of the directory for the SimpleX
-        application data files.
-        """
-        return os.path.join(self.input_data_root_directory, 'simplex', 'input')
-    
-    @option(type="string")
-    def output_directory(self):
-        """
-        The root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'simplex', 'output')
-    
     @legacy_function
-    def set_output_directory():
+    def set_simplex_output_directory():
         function = LegacyFunctionSpecification()
         function.addParameter('output_path', dtype='string', direction=function.IN,
             description = "Name of the output directory")
@@ -63,7 +33,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
     
     @legacy_function
-    def set_data_directory():
+    def set_simplex_data_directory():
         """
         Update the path to the SimpleX database.
         """
@@ -80,7 +50,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
     
     @legacy_function
-    def get_data_directory():
+    def get_simplex_data_directory():
         """
         Retrieve the path to the SimpleX database currently used.
         """
@@ -653,8 +623,8 @@ class SimpleX(CommonCode):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, SimpleXInterface(**options))
-        self.set_output_directory(self.output_directory)
-        self.set_data_directory(self.data_directory)
+        self.set_simplex_output_directory(self.output_directory)
+        self.set_simplex_data_directory(self.data_directory)
 
     def define_properties(self, object):
         object.add_property('get_time', public_name = "model_time")
@@ -743,8 +713,8 @@ class SimpleX(CommonCode):
         )
 
         object.add_method_parameter(
-            "get_data_directory", 
-            "set_data_directory",
+            "get_simplex_data_directory", 
+            "set_simplex_data_directory",
             "simplex_data_directory", 
             "Name of the SimpleX data directory", 
             default_value = "."
@@ -1132,13 +1102,13 @@ class SimpleX(CommonCode):
         )
 
         object.add_method(
-            "get_data_directory",
+            "get_simplex_data_directory",
             (),
             (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
-            "set_data_directory",
+            "set_simplex_data_directory",
             (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )

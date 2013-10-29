@@ -15,7 +15,8 @@ class FiInterface(
     GravitationalDynamicsInterface,
     LiteratureReferencesMixIn,
     StoppingConditionInterface,
-    GravityFieldInterface):   
+    GravityFieldInterface,
+    CodeWithDataDirectories):   
     """
     FI is a parallel TreeSPH code for galaxy simulations. Extensively 
     rewritten, extended and parallelized it is a development from code from 
@@ -64,41 +65,7 @@ class FiInterface(
             return 'fi_worker_periodic'
         else:
             return 'fi_worker'
-        
-            
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    def get_data_directory(self):
-        """
-        Returns the root name of the directory for the Fi
-        application data files.
-        """
-        return os.path.join(self.input_data_root_directory, 'fi', 'input')
     
-    def get_output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'data', 'fi', 'output')
-    
-    
-        
-    
-       
     def new_particle(self, mass, x, y, z, vx, vy, vz, radius = 0.0):
         return self.new_dm_particle(mass, x, y, z, vx, vy, vz, radius)
     

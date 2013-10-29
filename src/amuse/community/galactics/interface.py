@@ -10,13 +10,14 @@ from amuse.support.options import option
 from subprocess import Popen, PIPE
 
 from amuse.rfi.core import PythonCodeInterface
+
 class GalactICsImplementation(object):
     
     def __init__(self):
         self._output_directory = "./"
         self._particles_generated = False
         self._particle_data = numpy.array([])
-    
+        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "bin")
         
         
     def get_output_path(self, output_path):
@@ -27,8 +28,9 @@ class GalactICsImplementation(object):
         self._output_directory = output_path
         return 0
     
-    def _bin_path(self):
-        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "bin")
+    def set_src_bin_path(self, src_bin_path):
+        self._bin_path = src_bin_path
+        return 0
     
     def initialize_code(self):
         self.set_default_parameter_values()
@@ -228,14 +230,14 @@ class GalactICsImplementation(object):
                 return 0
             print "Writing output to:", self._cwd
             
-            print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path(), "dbh")], 
+            print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path, "dbh")], 
                 cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate(in_dbh))
             
-            print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path(), "getfreqs")], 
+            print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path, "getfreqs")], 
                 cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate())
             
             if self._generate_disk_flag:
-                print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path(), "diskdf")], 
+                print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path, "diskdf")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate(in_diskdf))
             return 0
         except Exception as ex:
@@ -259,12 +261,12 @@ class GalactICsImplementation(object):
             if self._generate_disk_flag:
                 in_disk  = self.generate_in_disk_string()
                 disk_file = open(os.path.join(self._cwd, "disk"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path(), "gendisk")], 
+                stdout, stderr = (Popen([os.path.join(self._bin_path, "gendisk")], 
                     cwd = self._cwd, stdin = PIPE, stdout = disk_file, stderr = PIPE).communicate(in_disk))
                 disk_file.close()
                 
                 disk1_file = open(os.path.join(self._cwd, "disk1"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path(), "energysort"), "dbh.dat", "disk", "disk"], 
+                stdout, stderr = (Popen([os.path.join(self._bin_path, "energysort"), "dbh.dat", "disk", "disk"], 
                     cwd = self._cwd, stdin = PIPE, stdout = disk1_file, stderr = PIPE).communicate())
                 disk1_file.close()
                 if stderr: print stderr; return -1
@@ -273,12 +275,12 @@ class GalactICsImplementation(object):
             if self._generate_bulge_flag:
                 in_bulge = self.generate_in_bulge_string()
                 bulge_file = open(os.path.join(self._cwd, "bulge"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path(), "genbulge")], 
+                stdout, stderr = (Popen([os.path.join(self._bin_path, "genbulge")], 
                     cwd = self._cwd, stdin = PIPE, stdout = bulge_file, stderr = PIPE).communicate(in_bulge))
                 bulge_file.close()
                 
                 bulge1_file = open(os.path.join(self._cwd, "bulge1"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path(), "energysort"), "dbh.dat", "bulge", "bulge"], 
+                stdout, stderr = (Popen([os.path.join(self._bin_path, "energysort"), "dbh.dat", "bulge", "bulge"], 
                     cwd = self._cwd, stdin = PIPE, stdout = bulge1_file, stderr = PIPE).communicate())
                 bulge1_file.close()
                 if stderr: print stderr; return -1
@@ -288,7 +290,7 @@ class GalactICsImplementation(object):
                 in_halo  = self.generate_in_halo_string()
                 halo_file = open(os.path.join(self._cwd, "halo"), "wb")
                 process = Popen(
-                        [os.path.join(self._bin_path(), "genhalo")], 
+                        [os.path.join(self._bin_path, "genhalo")], 
                         cwd = self._cwd,
                         stdin = PIPE,
                         stdout = halo_file,
@@ -301,7 +303,7 @@ class GalactICsImplementation(object):
                 
                 halo1_file = open(os.path.join(self._cwd, "halo1"), "wb")
                 process = Popen(
-                        [os.path.join(self._bin_path(), "energysort"), "dbh.dat", "halo", "halo"], 
+                        [os.path.join(self._bin_path, "energysort"), "dbh.dat", "halo", "halo"], 
                         cwd = self._cwd,
                         stdin = PIPE,
                         stdout = halo1_file,
@@ -319,7 +321,7 @@ class GalactICsImplementation(object):
             galaxy_file.close()
             if stderr: print stderr; return -1
             
-            stdout, stderr = Popen([os.path.join(self._bin_path(), "toascii"), "galaxy"], 
+            stdout, stderr = Popen([os.path.join(self._bin_path, "toascii"), "galaxy"], 
                 cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate()
             if stderr: print stderr; return -1
             
@@ -359,7 +361,8 @@ class GalactICsImplementation(object):
     
 
 
-class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
+class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureReferencesMixIn,
+        CodeWithDataDirectories):
     """
     GalactICs allows to generate self-consistent disc-bulge-halo galaxy models. 
     The bulge and halo distribution functions (DFs) are functions of E and L_z 
@@ -379,27 +382,13 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
     def __init__(self, **options):
         PythonCodeInterface.__init__(self, GalactICsImplementation, **options)
         LiteratureReferencesMixIn.__init__(self)
+        self.set_src_bin_path(os.path.join(self.get_code_src_directory(), 'bin'))
     
     def _check_if_worker_is_up_to_date(self):
-        if not os.path.exists(os.path.join(GalactICsImplementation()._bin_path(), "dbh")):
+        if not os.path.exists(os.path.join(GalactICsImplementation()._bin_path, "dbh")):
             raise exceptions.CodeException(
                 "The worker code of the '{0}' interface class is not up to date.\n"
                 "Please do a 'make clean; make' in the root directory.".format(type(self).__name__))
-    
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    def get_output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'galactics', 'output')
     
     new_particle = None
     
@@ -419,6 +408,14 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         function = LegacyFunctionSpecification()
         function.addParameter('output_directory', dtype='string', direction=function.IN,
             description = "The path to the output directory.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_src_bin_path():
+        function = LegacyFunctionSpecification()
+        function.addParameter('src_bin_path', dtype='string', direction=function.IN,
+            description = "The path to the Galactics binaries.")
         function.result_type = 'int32'
         return function
     

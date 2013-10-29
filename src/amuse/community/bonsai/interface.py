@@ -2,15 +2,13 @@ import os.path
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
-class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, StoppingConditionInterface):
+class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, 
+        StoppingConditionInterface, CodeWithDataDirectories):
     """
         .. [#] Bedorf J., Gaburov E., Portegies Zwart S., "A sparse octree
         .. [#] gravitational N-body code that runs entirely on the GPU processor",
         .. [#] 2012, JCoPh, 231, 2825
     """
-
-
-
 
     include_headers = ['worker_code.h', 'stopcond.h']
     
@@ -19,11 +17,10 @@ class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDyn
     
     def __init__(self, mode=None, **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_worker(mode), **options)
-
-
         LiteratureReferencesMixIn.__init__(self)
-
-        self.set_src_directory(os.path.join(os.path.dirname(__file__), 'src', ''))
+        self.set_src_directory(
+            os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'bonsai', 'src', '')
+        )
     
     @legacy_function
     def set_src_directory():

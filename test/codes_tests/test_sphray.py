@@ -61,9 +61,9 @@ class TestSPHRayInterface(TestWithMPI):
         
         instance = SPHRayInterface(**default_options)
         self.assertEqual(0, instance.initialize_code())
-        ensure_data_directory_exists(instance.output_directory())
-        self.assertEquals(0, instance.set_data_directory(instance.data_directory()))        
-        self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
+        ensure_data_directory_exists(instance.output_directory)
+        self.assertEquals(0, instance.set_sphray_data_directory(instance.data_directory))        
+        self.assertEquals(0, instance.set_sphray_output_directory(instance.output_directory))        
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -71,20 +71,20 @@ class TestSPHRayInterface(TestWithMPI):
     def test2(self):
         print "Test 2: add, commit_particles"
         instance = SPHRayInterface(**default_options)
-        ensure_data_directory_exists(instance.output_directory())
-        self.assertEqual(0, instance.set_data_directory(instance.data_directory()))
-        self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
+        ensure_data_directory_exists(instance.output_directory)
+        self.assertEqual(0, instance.set_sphray_data_directory(instance.data_directory))
+        self.assertEquals(0, instance.set_sphray_output_directory(instance.output_directory))        
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory(), 'sphray_4K')
+        input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_4K")
         mass, hsml, x, y, z, rho, xe, u = self.read_gas_file(input_file)
         number_of_gas_particles = len(x)
         indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u)
         self.assertEqual(errors, [0]*number_of_gas_particles)
         self.assertEqual(indices, range(1,number_of_gas_particles+1))
         
-        input_file = os.path.join(instance.data_directory(), 'test1_sources_001.1')
+        input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1")
         L, xs, ys, zs, spctype = self.read_src_file(input_file)
         number_of_src_particles = len(xs)
         s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
@@ -115,20 +115,20 @@ class TestSPHRayInterface(TestWithMPI):
     def test3(self):
         print "Test 3: add, commit_particles, setters, remove"
         instance = SPHRayInterface(**default_options)
-        ensure_data_directory_exists(instance.output_directory())
-        self.assertEqual(0, instance.set_data_directory(instance.data_directory()))
-        self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
+        ensure_data_directory_exists(instance.output_directory)
+        self.assertEqual(0, instance.set_sphray_data_directory(instance.data_directory))
+        self.assertEquals(0, instance.set_sphray_output_directory(instance.output_directory))        
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory(), 'sphray_4K')
+        input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_4K")
         mass, hsml, x, y, z, rho, xe, u = self.read_gas_file(input_file)
         number_of_gas_particles = len(x)
         indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u)
         self.assertEqual(errors, [0]*number_of_gas_particles)
         self.assertEqual(indices, range(1,number_of_gas_particles+1))
         
-        input_file = os.path.join(instance.data_directory(), 'test1_sources_001.1')
+        input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1")
         L, xs, ys, zs, spctype = self.read_src_file(input_file)
         number_of_src_particles = len(xs)
         s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
@@ -206,20 +206,20 @@ class TestSPHRayInterface(TestWithMPI):
     def test4(self):
         print "Test 2: set, get time"
         instance = SPHRayInterface(**default_options)
-        ensure_data_directory_exists(instance.output_directory())
-        self.assertEqual(0, instance.set_data_directory(instance.data_directory()))
-        self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
+        ensure_data_directory_exists(instance.output_directory)
+        self.assertEqual(0, instance.set_sphray_data_directory(instance.data_directory))
+        self.assertEquals(0, instance.set_sphray_output_directory(instance.output_directory))        
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory(), 'sphray_4K')
+        input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_4K")
         mass, hsml, x, y, z, rho, xe, u = self.read_gas_file(input_file)
         number_of_gas_particles = len(x)
         indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u)
         self.assertEqual(errors, [0]*number_of_gas_particles)
         self.assertEqual(indices, range(1,number_of_gas_particles+1))
         
-        input_file = os.path.join(instance.data_directory(), 'test1_sources_001.1')
+        input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1")
         L, xs, ys, zs, spctype = self.read_src_file(input_file)
         number_of_src_particles = len(xs)
         s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
@@ -234,6 +234,7 @@ class TestSPHRayInterface(TestWithMPI):
         err= instance.set_time(123.)
         self.assertEqual(-1,err)   # because we don't know whether it is safe yet
         time,err= instance.get_time()
+        instance.stop()
         self.assertEqual(0,err)
         self.assertEqual(123.,time)
 
@@ -275,25 +276,26 @@ class TestSPHRayInterface(TestWithMPI):
         self.assertEqual(err, 0)
         self.assertEqual(result,0.)
         err=instance.set_globalHefraction(0.1)
+        instance.stop()
         self.assertEqual(err, -2)
 
     def test6(self):
         print "Test 3: add, commit_particles, setters, remove with velocity"
         instance = SPHRayInterface(**default_options)
-        ensure_data_directory_exists(instance.output_directory())
-        self.assertEqual(0, instance.set_data_directory(instance.data_directory()))
-        self.assertEquals(0, instance.set_output_directory(instance.output_directory()))        
+        ensure_data_directory_exists(instance.output_directory)
+        self.assertEqual(0, instance.set_sphray_data_directory(instance.data_directory))
+        self.assertEquals(0, instance.set_sphray_output_directory(instance.output_directory))        
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory(), 'sphray_4K')
+        input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_4K")
         mass, hsml, x, y, z, rho, xe, u,vx,vy,vz = self.read_gas_file_vel(input_file)
         number_of_gas_particles = len(x)
         indices, errors = instance.new_gas_particle(mass, hsml, x, y, z, rho, xe, u,vx,vy,vz)
         self.assertEqual(errors, [0]*number_of_gas_particles)
         self.assertEqual(indices, range(1,number_of_gas_particles+1))
         
-        input_file = os.path.join(instance.data_directory(), 'test1_sources_001.1')
+        input_file = os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1")
         L, xs, ys, zs, spctype = self.read_src_file(input_file)
         number_of_src_particles = len(xs)
         s_indices, errors = instance.new_src_particle(L, xs, ys, zs, spctype)
@@ -489,8 +491,8 @@ class TestSPHRay(TestWithMPI):
 
         instance=SPHRay()
 
-        gasparts=self.read_gas_file(os.path.join(instance.data_directory(), 'sphray_4K'))
-        srcparts=self.read_src_file(os.path.join(instance.data_directory(), 'test1_sources_001.1'))
+        gasparts=self.read_gas_file(os.path.join(os.path.dirname(__file__), "test_sphray_data_4K"))
+        srcparts=self.read_src_file(os.path.join(os.path.dirname(__file__), "test_sphray_data_sources_001.1"))
                 
         self.assertEqual(len(instance.gas_particles),0)
         self.assertEqual(len(instance.src_particles),0)
@@ -557,7 +559,7 @@ class TestSPHRay(TestWithMPI):
 
         
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
-        
+        instance.stop()
         
     
     def test3(self):
@@ -577,7 +579,8 @@ class TestSPHRay(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.src_particles.y, 3 | units.m,7)
         self.assertAlmostRelativeEquals(instance.src_particles.z, 4 | units.m,7)
         self.assertAlmostRelativeEquals(instance.src_particles.SpcType, 12.3,7)
-               
+        instance.stop()
+    
     def test4(self):
         instance=SPHRay()
 
@@ -610,7 +613,8 @@ class TestSPHRay(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.src_particles.SpcType, 12.3,7)
                
         print instance.src_particles
-        
+        instance.stop()
+    
     def read_gas_file(self,filename):
         p=read_set_from_file(filename,'amuse')
         mass=p.mass.number

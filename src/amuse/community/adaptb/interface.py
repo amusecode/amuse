@@ -1,7 +1,8 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
-class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
+        StoppingConditionInterface, CodeWithDataDirectories):
     """
     Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
     """
@@ -11,29 +12,6 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         CodeInterface.__init__(self, name_of_the_worker="adaptb_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
     
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string")
-    def output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'adaptb', 'output')
-
-    def get_output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return self.output_directory
-  
     @legacy_function
     def get_adaptb_output_directory():
         function = LegacyFunctionSpecification()

@@ -5,35 +5,12 @@ from amuse.ext.polarsupport import PolarSupport
 import os
 import numpy as np
 
-class mmcInterface(CodeInterface, PolarSupport):
+class mmcInterface(CodeInterface, PolarSupport, CodeWithDataDirectories):
 
     use_modules = ['MMC']
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mmc_worker", **options)
-
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string")
-    def data_directory(self):
-        """
-        The root name of the directory for the mmc
-        application data files.
-        """
-        return os.path.join(self.input_data_root_directory, 'data', 'mmc')
 
     @legacy_function
     def nonstandard_init():

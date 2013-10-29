@@ -4,50 +4,33 @@ from amuse.support.core import OrderedDictionary
 from amuse.units import derivedsi
 from amuse.support.options import option
 
-import tempfile
 import os
-import time
 
-class MocassinInterface(CodeInterface, CommonCodeInterface):
+class MocassinInterface(CodeInterface, CommonCodeInterface,
+        CodeWithDataDirectories):
     MOCASSIN_VERSION = '2.02.70'
     use_modules = ['mocassin_interface',]
     
     def __init__(self, **keyword_arguments):
+        if self.channel_type == 'distributed':
+            raise exceptions.AmuseException("Distributed channel not (yet) supported by Mocassin")
         CodeInterface.__init__(self, name_of_the_worker="mocassin_worker", **keyword_arguments)
+        self._options = keyword_arguments
         self._abundancies_table = None
-        
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
+    
     def get_default_input_directory(self):
-        return (os.path.join(os.path.join(os.path.dirname(__file__), 'src'), 'mocassin.{0}'.format(self.MOCASSIN_VERSION))) + os.sep
+        return os.path.join(self.get_code_src_directory(), 'mocassin.{0}'.format(self.MOCASSIN_VERSION), '')
         
     def get_default_output_directory(self):
-        return os.path.join(self.input_data_root_directory, 'mocassin', 'output')+ os.sep
+        return self.output_directory + os.sep
         
     def setup_abundancies(self):
-        fd, name = tempfile.mkstemp()
-        #print name
-        if len(name) > 1024:
-            raise Exception("Error in filename length of abundancies file, maximum length is 1024")
-        with os.fdopen(fd, 'w') as f:
+        print self.output_directory
+        abundancies_file_name = os.path.join(self.output_directory, 'tmp_abundancies_file')
+        with open(abundancies_file_name, 'w') as abundancies_file:
             for atomname, value in self.abundancies_table().iteritems():
-                f.write("{0} !{1}\n".format(value, atomname))
-        self.set_abundancies_filename(name, 1)
-            
-        
+                abundancies_file.write("{0} !{1}\n".format(value, atomname))
+        self.set_abundancies_filename(abundancies_file_name, 1)
     
     def abundancies_table(self):
         if self._abundancies_table  is None:
@@ -174,14 +157,14 @@ class MocassinInterface(CodeInterface, CommonCodeInterface):
         return function
         
     @legacy_function    
-    def set_output_directory():
+    def set_mocassin_output_directory():
         function = LegacyFunctionSpecification()  
         function.addParameter('path', dtype='s', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function    
-    def get_output_directory():
+    def get_mocassin_output_directory():
         function = LegacyFunctionSpecification()  
         function.addParameter('path', dtype='s', direction=function.OUT)
         function.result_type = 'int32'
@@ -803,13 +786,13 @@ class Mocassin(InCodeComponentImplementation):
         )
         
         object.add_method(
-            "get_output_directory",
+            "get_mocassin_output_directory",
             (),
             (object.NO_UNIT, object.ERROR_CODE,)
         )
         
         object.add_method(
-            "set_output_directory",
+            "set_mocassin_output_directory",
             (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )

@@ -4,9 +4,9 @@ from amuse.community import *
 from amuse.support.options import option
 
 
-class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
-    """    
-    
+class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn, 
+        CodeWithDataDirectories):
+    """
     SPHRAY is a smoothed particle hydrodynamics (SPH) ray tracer designed to
     solve the 3D, time-dependent, radiative transfer equation. SPHRAY relies on 
     a Monte Carlo (MC) ray-tracing scheme that does not interpolate the SPH 
@@ -22,43 +22,12 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
     def __init__(self,  **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(), **options)
         LiteratureReferencesMixIn.__init__(self)
-        
     
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
     def name_of_the_worker(self):
         return 'sphray_worker'
         
-    def data_directory(self):
-        """
-        Returns the root name of the directory for the 
-        application data files.
-        """
-        return os.path.join(self.input_data_root_directory, 'sphray', 'input')
-
-    def output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'sphray', 'output')
-
     def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
         pass
-
 
     @legacy_function    
     def commit_particles():
@@ -397,7 +366,7 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function
 
     @legacy_function
-    def set_data_directory():
+    def set_sphray_data_directory():
         """
         Update the path to the sphray database.
         """
@@ -414,7 +383,7 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function
 
     @legacy_function
-    def get_data_directory():
+    def get_sphray_data_directory():
         """
         Retrieve the path to the database currently used.
         """
@@ -465,7 +434,7 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function
 
     @legacy_function
-    def set_output_directory():
+    def set_sphray_output_directory():
         """
         Update the output path.
         """
@@ -482,7 +451,7 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function
 
     @legacy_function
-    def get_output_directory():
+    def get_sphray_output_directory():
         """
         Retrieve the output path.
         """
@@ -511,8 +480,8 @@ class SPHRay(CommonCode):
                 1. | units.kms)
 
         InCodeComponentImplementation.__init__(self, SPHRayInterface(**options))
-        self.set_data_directory(self.data_directory())
-        self.set_output_directory(self.output_directory())
+        self.set_sphray_data_directory(self.data_directory)
+        self.set_sphray_output_directory(self.output_directory)
         
     def define_converter(self, object):
         if self.unit_converter is None:

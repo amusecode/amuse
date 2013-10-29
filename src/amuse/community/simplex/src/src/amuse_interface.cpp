@@ -868,18 +868,18 @@ int initialize_code() {
   return (*SimpleXGrid).setup_simplex();  
 }
 
-int set_output_directory(char *output_path){
+int set_simplex_output_directory(char *output_path){
     global_output_path = output_path;
     return 0;
 }
 
-int set_data_directory( char *data_path ){
+int set_simplex_data_directory( char *data_path ){
   global_data_path = data_path;
   return 0;
 }
 
 char buf[1024];
-int get_data_directory(char **data_path ){
+int get_simplex_data_directory(char **data_path ){
   strncpy(buf,global_data_path.c_str(),1024);
   *data_path=buf;
   return 0;

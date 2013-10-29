@@ -196,7 +196,7 @@ function get_spectra_file(x) result(ret)
   ret=0
 end function
 
-function set_data_directory(x) result(ret)
+function set_sphray_data_directory(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
   character(len=512) :: x
@@ -204,7 +204,7 @@ function set_data_directory(x) result(ret)
   ret=0
 end function
 
-function get_data_directory(x) result(ret)
+function get_sphray_data_directory(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
   character(len=512) :: x
@@ -212,7 +212,7 @@ function get_data_directory(x) result(ret)
   ret=0
 end function
 
-function set_output_directory(x) result(ret)
+function set_sphray_output_directory(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
   character(len=512) :: x
@@ -220,7 +220,7 @@ function set_output_directory(x) result(ret)
   ret=0
 end function
 
-function get_output_directory(x) result(ret)
+function get_sphray_output_directory(x) result(ret)
   use amuse_sphrayMod
   integer :: ret
   character(len=512) :: x

@@ -237,7 +237,7 @@ class TestMocassin(TestWithMPI):
         instance.initialize_code()
         instance.set_random_seed(1)
         instance.set_input_directory(instance.get_default_input_directory())
-        instance.set_output_directory(instance.get_default_output_directory())
+        instance.set_mocassin_output_directory(instance.get_default_output_directory())
         
         instance.set_initial_nebular_temperature(200.0 | units.K)
         

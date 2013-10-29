@@ -13,7 +13,8 @@ class Gadget2Interface(
     GravitationalDynamicsInterface, 
     LiteratureReferencesMixIn, 
     StoppingConditionInterface,
-    SinglePointGravityFieldInterface
+    SinglePointGravityFieldInterface,
+    CodeWithDataDirectories
     ):
     """
     GADGET-2 computes gravitational forces with a hierarchical tree 
@@ -54,53 +55,6 @@ class Gadget2Interface(
             return 'gadget2_worker_nogravity'
         else:
             return 'gadget2_worker'
-    
-            
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string")
-    def data_directory(self):
-        """
-        Returns the root name of the directory for the Gadget2
-        application data files.
-        """
-        return os.path.join(self.input_data_root_directory, 'gadget2', 'input')
-        
-    
-    @option(type="string")
-    def output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return os.path.join(self.output_data_root_directory, 'gadget2', 'output')        
-    
-    def get_data_directory(self):
-        """
-        Returns the root name of the directory for the Gadget2
-        application data files.
-        """
-        return self.data_directory
-    
-    def get_output_directory(self):
-        """
-        Returns the root name of the directory to use by the 
-        application to store it's output / temporary files in.
-        """
-        return self.output_directory
     
     @legacy_function
     def new_dm_particle():

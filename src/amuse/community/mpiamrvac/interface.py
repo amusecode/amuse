@@ -6,7 +6,8 @@ from amuse.community.interface.common import CommonCode
 
 import os
 
-class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditionInterface):
+class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditionInterface,
+        CodeWithDataDirectories):
     
     use_modules = ['mpiamrvac_interface', 'StoppingConditions']
     
@@ -31,21 +32,6 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
         else:
             return 'mpiamrvac_worker'
     
-    @option(type="string", sections=('data',))
-    def input_data_root_directory(self):
-        """
-        The root directory of the input data, read only directories
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
-    @option(type="string", sections=('data',))
-    def output_data_root_directory(self):
-        """
-        The root directory of the output data,
-        read - write directory
-        """
-        return os.path.join(get_amuse_root_dir(), 'data')
-        
     #
     # options
     #
@@ -57,13 +43,13 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
         all parameters.
         """
         if self._mode == self.MODE_2D:
-            return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_2d.par')
+            return os.path.join(self.data_directory, 'amrvac_2d.par')
         elif self._mode == self.MODE_2D_ACC:
-            return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_2d-acc.par')
+            return os.path.join(self.data_directory, 'amrvac_2d-acc.par')
         elif self._mode == self.MODE_1D:
-            return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac_1d.par')
+            return os.path.join(self.data_directory, 'amrvac_1d.par')
         else:
-            return os.path.join(self.input_data_root_directory, 'mpiamrvac', 'input', 'amrvac.par')
+            return os.path.join(self.data_directory, 'amrvac.par')
     
     #
     # parameters

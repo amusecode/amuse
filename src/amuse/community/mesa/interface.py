@@ -11,7 +11,7 @@ from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import option
 
 class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
-        InternalStellarStructureInterface): 
+        InternalStellarStructureInterface, CodeWithDataDirectories): 
     """
     The software project MESA (Modules for Experiments in Stellar Astrophysics, 
     http://mesa.sourceforge.net/), aims to provide state-of-the-art, robust, 

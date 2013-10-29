@@ -804,22 +804,22 @@ CONTAINS
     END FUNCTION
     
     
-    FUNCTION set_output_directory(path)
+    FUNCTION set_mocassin_output_directory(path)
         IMPLICIT NONE
         CHARACTER(LEN=*) path
-        INTEGER set_output_directory
+        INTEGER set_mocassin_output_directory
         outputDir = TRIM(path)
-        set_output_directory = 0
+        set_mocassin_output_directory = 0
     END FUNCTION
     
 
-    FUNCTION get_output_directory(path)
+    FUNCTION get_mocassin_output_directory(path)
         IMPLICIT NONE
         CHARACTER(LEN=*) path
-        INTEGER get_output_directory
+        INTEGER get_mocassin_output_directory
         
         path = outputDir
-        get_output_directory = 0
+        get_mocassin_output_directory = 0
     END FUNCTION
     
     FUNCTION set_constant_hydrogen_density(value)

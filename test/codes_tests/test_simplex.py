@@ -16,7 +16,7 @@ class TestSimpleXInterface(TestWithMPI):
     def test1(self):
         print "Test 1: initialization"
         instance = SimpleXInterface(**default_options)
-        self.assertEqual(0, instance.set_output_directory(instance.output_directory))
+        self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual(0, instance.cleanup_code())
@@ -25,11 +25,11 @@ class TestSimpleXInterface(TestWithMPI):
     def test2(self):
         print "Test 2: commit_particles, getters and setters"
         instance = SimpleXInterface(**default_options)
-        self.assertEqual(0, instance.set_output_directory(instance.output_directory))
+        self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         x, y, z, n_H, flux, X_ion,u = read_input_file(input_file)
         x=numpy.array(x)
         y=numpy.array(y)
@@ -90,11 +90,11 @@ class TestSimpleXInterface(TestWithMPI):
     def test3(self):
         print "Test 3: evolve"
         instance = SimpleXInterface(**default_options)
-        self.assertEqual(0, instance.set_output_directory(instance.output_directory))
+        self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         x, y, z, n_H, flux, X_ion,u = read_input_file(input_file)
 
         number_of_particles = len(x)
@@ -132,7 +132,7 @@ class TestSimpleXInterface(TestWithMPI):
     def test4(self):
         print "Test 4: set boxsize, hilbert_order, timestep"
         instance = SimpleXInterface(**default_options)
-        self.assertEqual(0, instance.set_output_directory(instance.output_directory))
+        self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
         
         instance.set_box_size(16384.)
@@ -145,7 +145,7 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertEqual(1,instance.get_hilbert_order()['hilbert_order'])
         self.assertEqual(0.5,instance.get_timestep()['timestep'])
 
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         x, y, z, n_H, flux, X_ion,u = read_input_file(input_file)
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion,u)
@@ -161,11 +161,11 @@ class TestSimpleXInterface(TestWithMPI):
     def test5(self):
         print "Test 2: delete particles"
         instance = SimpleXInterface(**default_options)
-        self.assertEqual(0, instance.set_output_directory(instance.output_directory))
+        self.assertEqual(0, instance.set_simplex_output_directory(instance.output_directory))
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         x, y, z, n_H, flux, X_ion,u = read_input_file(input_file)
         x=numpy.array(x)
         y=numpy.array(y)
@@ -201,7 +201,7 @@ class TestSimpleX(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles = particles_from_input_file(input_file)
         instance.particles.add_particles(particles)
         instance.commit_particles()
@@ -220,7 +220,7 @@ class TestSimpleX(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles = particles_from_input_file(input_file)
         particles.du_dt = particles.u/(10|units.Myr)
         instance.particles.add_particles(particles)
@@ -291,7 +291,7 @@ class TestSimpleX(TestWithMPI):
         instance = SimpleX(**default_options)
         instance.parameters.recombination_radiation_flag=1
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles = particles_from_input_file(input_file)
         instance.particles.add_particles(particles)
         self.assertAlmostEqual(instance.particles.xion.mean(), 0.0)
@@ -310,7 +310,7 @@ class TestSimpleX(TestWithMPI):
         print "Test 8: two step evolve"
         instance = SimpleX(**default_options)
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles = particles_from_input_file(input_file)
         instance.particles.add_particles(particles)
         self.assertAlmostEqual(instance.particles.xion.mean(), 0.0)
@@ -325,7 +325,7 @@ class TestSimpleX(TestWithMPI):
         print "Test 9: add test"
         instance = SimpleX(number_of_workers=1)
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles = particles_from_input_file(input_file)
         N=len(particles)
         toadd=particles[0:10].copy()
@@ -340,7 +340,7 @@ class TestSimpleX(TestWithMPI):
         print "Test 10: add test"
         instance = SimpleX(number_of_workers=2)
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles = particles_from_input_file(input_file)
         N=len(particles)
         toadd=particles[0:10].copy()
@@ -355,7 +355,7 @@ class TestSimpleX(TestWithMPI):
         print "Test 11: add test"
         instance = SimpleX(number_of_workers=1)
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles = particles_from_input_file(input_file)
         N=len(particles)
         toadd=particles[0:10].copy()
@@ -413,7 +413,7 @@ class TestSimpleXSplitSet(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles,src_particles = splitset_from_input_file(input_file)
         instance.gas_particles.add_particles(particles)
         instance.src_particles.add_particles(src_particles)
@@ -433,7 +433,7 @@ class TestSimpleXSplitSet(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         
-        input_file = os.path.join(instance.data_directory, 'vertices_test3.txt')
+        input_file = os.path.join(os.path.dirname(__file__), "test_simplex_data.txt")
         particles,src_particles = splitset_from_input_file(input_file)
         instance.src_particles.add_particles(src_particles)
         particles.du_dt = particles.u/(10|units.Myr)
