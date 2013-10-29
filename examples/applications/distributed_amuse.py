@@ -48,6 +48,8 @@ sys.argv = sys.argv[1:]
 
 execfile(script)
 
-print "all tests done, stopping distributed code"
+print "script done, stopping distributed code"
+
+instance.stop()
 
 
