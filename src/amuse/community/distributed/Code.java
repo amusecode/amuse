@@ -102,7 +102,7 @@ public class Code implements CodeInterface {
             return 0;
         } catch (DistributedAmuseException e) {
             reportError("Error on creating new resource: " + e, e);
-            return 10;
+            return -10;
         }
     }
 
