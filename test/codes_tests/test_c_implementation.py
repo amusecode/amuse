@@ -604,7 +604,7 @@ class TestCImplementationInterface(TestWithMPI):
     def test16(self):
         instance = ForTesting(self.exefile)
         
-        #self.assertRaises(exceptions.AmuseException, lambda : instance.echo_int([]))
+        self.assertRaises(exceptions.AmuseException, lambda : instance.echo_int([]))
         instance.stop()
         
     def test17(self):
