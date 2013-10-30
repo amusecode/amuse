@@ -20,13 +20,12 @@ class TestCSocketsImplementationInterface(test_c_implementation.TestCImplementat
 
     def setUp(self):
         super(TestCSocketsImplementationInterface, self).setUp()
-	#set sockets channel as default channel
+        #set sockets channel as default channel
         options.GlobalOptions.instance().override_value_for_option("channel_type", "sockets")
 
     def tearDown(self):
-	del options.GlobalOptions.instance().overriden_options["channel_type"]
-	pass
+        del options.GlobalOptions.instance().overriden_options["channel_type"]
 
     def test22(self):
-	print 'this test uses mpi internals, skip here'
+        self.skip("this test uses mpi internals, skip here")
 

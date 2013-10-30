@@ -21,31 +21,31 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
 
     def setUp(self):
         super(TestCDistributedImplementationInterface, self).setUp()
-	print "Setting up distributed code"
-	#instance = DistributedAmuse(redirection='none')
-	self.distinstance = DistributedAmuse(redirection='none')
-	self.distinstance.initialize_code()
+        print "Setting up distributed code"
+        #instance = DistributedAmuse(redirection='none')
+        self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse, redirection='none')
+        self.distinstance.initialize_code()
 
-	print "Resources:"
-	print self.distinstance.resources
+        print "Resources:"
+        print self.distinstance.resources
 
-	reservation = Reservation()
-	reservation.resource_name='local'
-	reservation.node_count=1
-	reservation.time= 2|units.hour
-	reservation.slots_per_node=2
-	reservation.node_label='local'
-	self.distinstance.reservations.add_reservation(reservation)
-	print "Reservations:"
-	print self.distinstance.reservations
+        reservation = Reservation()
+        reservation.resource_name='local'
+        reservation.node_count=1
+        reservation.time= 2|units.hour
+        reservation.slots_per_node=2
+        reservation.node_label='local'
+        self.distinstance.reservations.add_reservation(reservation)
+        print "Reservations:"
+        print self.distinstance.reservations
 
-	print "Waiting for reservations"
-	self.distinstance.wait_for_reservations()
+        print "Waiting for reservations"
+        self.distinstance.wait_for_reservations()
 
     def tearDown(self):
-	print "Stopping distributed code"
-	self.distinstance.stop()
+        print "Stopping distributed code"
+        self.distinstance.stop()
 
     def test22(self):
-	print 'this test uses mpi internals, skip here'
+        self.skip("this test uses mpi internals, skip here")
 

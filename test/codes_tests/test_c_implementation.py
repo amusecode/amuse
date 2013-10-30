@@ -576,8 +576,11 @@ class TestCImplementationInterface(TestWithMPI):
     def test14(self):
         instance = ForTesting(self.exefile)
         self.assertRaises(exceptions.CodeException, lambda : instance.echo_int())
+        old_id = instance.legacy_interface.echo_int.specification.id
         instance.legacy_interface.echo_int.specification.id = -9
         self.assertRaises(exceptions.CodeException, lambda : instance.echo_int(1 | units.m))
+        instance.legacy_interface.echo_int.specification.id = old_id
+        instance.echo_int(1 | units.m)
         instance.stop()
 
     def test15(self):
