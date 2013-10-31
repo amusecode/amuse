@@ -17,7 +17,7 @@ class bb79_cloud(object):
   arguments:
     targetN -- intended number of particles
     omega -- angular velocity (cloud rotates as a rigid body around the z-axis), 
-      given in units of base rad/s
+      given in units of base rad/s if a converter is given, in 1./nbody_system.time if no converter is given
     rho_perturb -- amplitude of the density perturbation
     ethep_ratio -- ratio between total thermal and potential enegry
     convert_nbody -- to set the Nbody units
@@ -30,11 +30,12 @@ class bb79_cloud(object):
   perturbation. See Kitsionas (2003, sec. 3.1, 
   http://adsabs.harvard.edu/abs/2003PhDT.......219K)
   """
-  def __init__(self, targetN=10000, omega=1.56e-12 | units.rad/units.s, 
+  def __init__(self, targetN=10000, omega=0.775066020047 | nbody_system.time**-1, 
                rho_perturb=0.5, ethep_ratio=0.25, convert_nbody=None, base_grid=None):
     self.targetN=targetN
-    omega=convert_nbody.to_nbody(omega)
-    self.omega=omega.value_in(units.rad/generic_unit_system.time)
+    if convert_nbody is not None:
+      omega=convert_nbody.to_nbody(omega)
+    self.omega=omega.value_in(1./nbody_system.time)
     self.rho_peturb=rho_perturb
     self.ethep_ratio=ethep_ratio
     self.convert_nbody=convert_nbody
