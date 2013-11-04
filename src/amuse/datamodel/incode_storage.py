@@ -714,6 +714,9 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
     
     def get_defined_attribute_names(self):
         return sorted(self.attributes)
+        
+    def get_defined_settable_attribute_names(self):
+        return sorted(self.writable_attributes)
 
     
 class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
@@ -1063,6 +1066,9 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         
     def _get_writeable_attribute_names(self):
         return self.writable_attributes
+        
+    def get_defined_settable_attribute_names(self):
+        return sorted(self.writable_attributes)
 
 
 

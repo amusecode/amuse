@@ -161,6 +161,13 @@ class AttributeStorage(object):
         index.
         """
         return self.get_values_in_store([index],[attribute])[0][0]
+        
+    
+    def get_defined_attribute_names(self):
+        return []    
+    
+    def get_defined_settable_attribute_names(self):
+        return self.get_defined_attribute_names()
     
     
 class DerivedAttribute(object):

@@ -171,6 +171,8 @@ class InMemoryAttributeStorage(AttributeStorage):
     def get_defined_attribute_names(self):
         return sorted(self.mapping_from_attribute_to_quantities.keys())
         
+    def get_defined_settable_attribute_names(self):
+        return self.get_defined_attribute_names()
         
 
     def _get_values_for_indices(self, indices, attributes):
@@ -263,6 +265,9 @@ class InMemoryGridAttributeStorage(object):
         return sorted(self.mapping_from_attribute_to_quantities.keys())
         
     def _get_writeable_attribute_names(self):
+        return self.get_defined_attribute_names()
+    
+    def get_defined_settable_attribute_names(self):
         return self.get_defined_attribute_names()
 
 

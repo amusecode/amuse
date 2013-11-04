@@ -412,6 +412,9 @@ class HDF5AttributeStorage(AttributeStorage):
         
     def get_defined_attribute_names(self):
         return self.attributesgroup.keys()
+        
+    def get_defined_settable_attribute_names(self):
+        return self.get_defined_attribute_names()
     
     def get_values_in_store(self, indices, attributes):
         results = []

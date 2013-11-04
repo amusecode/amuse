@@ -311,7 +311,7 @@ class TestSimpleMultiples(TestWithMPI):
             interaction_over_code = None,
             G = constants.G
         )
-        encounter_code.HARD_BINARY_FACTOR = 1
+        encounter_code.parameters.hard_binary_factor = 1
         multiples_code = encounters.Multiples(
             gravity_code = code,
             handle_encounter_code = encounter_code,
@@ -409,13 +409,13 @@ class TestSimpleMultiples(TestWithMPI):
             interaction_over_code = None,
             G = constants.G
         )
-        encounter_code.HARD_BINARY_FACTOR = 1
+        encounter_code.parameters.hard_binary_factor = 1
         multiples_code = encounters.Multiples(
             gravity_code = code,
             handle_encounter_code = encounter_code,
             G = constants.G
         )
-        multiples_code.particles.add_particles(stars)
+        multiples_code.singles.add_particles(stars)
         multiples_code.commit_particles()
         
         stopping_condition = multiples_code.stopping_conditions.encounter_detection
@@ -473,7 +473,6 @@ class TestSimpleMultiples(TestWithMPI):
         )
         multiples_code.singles_in_binaries.add_particles(particles_in_binary)
         multiples_code.binaries.add_particle(binary)
-        multiples_code.particles.add_particle(binary)
         
         field_particle = datamodel.Particle(key = 4)
         field_particle.mass = 0.5  | nbody_system.mass
@@ -481,13 +480,13 @@ class TestSimpleMultiples(TestWithMPI):
         field_particle.position = [0.0,0.2,0.0]| nbody_system.length
         field_particle.velocity = [0.0,0.0,0.0] | nbody_system.speed
         
-        multiples_code.particles.add_particle(field_particle)
+        multiples_code.singles.add_particle(field_particle)
         
         self.assertEquals(len(multiples_code.singles_in_binaries), 2)
         self.assertEquals(id(multiples_code.binaries[0].child1.particles_set), id(multiples_code.singles_in_binaries))
         
         multiples_code.commit_particles()
-        
+        multiples_code.multiples.radius =  0.5 | nbody_system.length
         initial_energy = multiples_code.get_total_energy()
         
         self.assertEquals(len(multiples_code.multiples), 1)
@@ -540,6 +539,7 @@ class TestSimpleMultiples(TestWithMPI):
             others[i].position = [i, 0, 0] | nbody_system.length
             others[i].velocity = [0, 0, i] | nbody_system.speed
             others[i].mass = 1 | nbody_system.mass
+            others[i].radius = 0 | nbody_system.length
             
         multiples_code = encounters.Multiples(
             gravity_code = code,
@@ -575,6 +575,7 @@ class TestSimpleMultiples(TestWithMPI):
         
         multiples_code.update_model()
         
+        print code.particles.mass
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 0.3 | nbody_system.mass)
         self.assertAlmostRelativeEquals(code.particles[-1].mass, 0.3 | nbody_system.mass)
         print code.particles[-1].position
@@ -706,4 +707,6 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertEquals(len(stopping_condition.particles(2)), 1)
         self.assertAlmostRelativeEquals(multiples_code.multiples[0].mass, 2.0 | nbody_system.mass)
         self.assertAlmostRelativeEquals(multiples_code.particles.mass.sum(), 2.6 | nbody_system.mass)
-
+    
+        
+        

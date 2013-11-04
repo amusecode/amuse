@@ -180,8 +180,8 @@ class Grid(AbstractGrid):
     def get_attribute_names_defined_in_store(self):
         return self._private.attribute_storage.get_defined_attribute_names()
         
-    def _get_writeable_attribute_names(self):
-        return self._private.attribute_storage._get_writeable_attribute_names()
+    def get_defined_settable_attribute_names(self):
+        return self._private.attribute_storage.get_defined_settable_attribute_names()
 
 
     def _original_set(self):
@@ -275,8 +275,8 @@ class SubGrid(AbstractGrid):
     def get_attribute_names_defined_in_store(self):
         return self._private.grid.get_attribute_names_defined_in_store()
         
-    def _get_writeable_attribute_names(self):
-        return self._private.grid._get_writeable_attribute_names()
+    def get_defined_settable_attribute_names(self):
+        return self._private.grid.get_defined_settable_attribute_names()
     
     @property
     def shape(self):
@@ -358,7 +358,7 @@ class GridInformationChannel(object):
     def copy_overlapping_attributes(self):
 
         from_names = self.source.get_attribute_names_defined_in_store()
-        to_names = self.target._get_writeable_attribute_names()
+        to_names = self.target.get_defined_settable_attribute_names()
         names_to_copy = set(from_names).intersection(set(to_names))
              
         self.copy_attributes(list(names_to_copy))  

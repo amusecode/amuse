@@ -305,7 +305,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             kepler_code = self.new_kepler()
         )
         
-        x.HARD_BINARY_FACTOR = 1
+        x.parameters.hard_binary_factor = 1
         x.particles_in_encounter.add_particles(particles_in_encounter)
         x.particles_in_field.add_particles(particles_in_field)
         
@@ -673,6 +673,20 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         self.assertAlmostRelativeEqual(x.initial_singles_energy, -1.016666 | nbody_system.energy, 4)
         self.assertAlmostRelativeEqual(x.delta_phi_1,  0 | nbody_system.energy)
         self.assertAlmostRelativeEqual(x.initial_multiple_energy,  0 | nbody_system.energy)
+        
+    
+    def test13(self):
+        x = encounters.AbstractHandleEncounter(
+            G = nbody_system.G,
+            kepler_code = self.new_kepler()
+        )
+        
+        x.parameters.hard_binary_factor = 1
+        self.assertEquals(x.parameters.hard_binary_factor, 1)
+        self.assertEquals(x.parameters.scatter_factor, 10)
+        x.parameters.scatter_factor = 2
+        self.assertEquals(x.parameters.scatter_factor, 2)
+        self.assertEquals(x.get_scatter_factor(), 2)
         
 class TestKeplerOrbits(amusetest.TestWithMPI):
     

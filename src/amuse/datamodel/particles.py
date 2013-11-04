@@ -164,6 +164,9 @@ class AbstractParticleSet(AbstractSet):
     def get_attribute_names_defined_in_store(self):
         return []
 
+    def get_settable_attribute_names_defined_in_store(self):
+        return []
+
     def get_indices_of_keys(self, keys):
         pass
 
@@ -1224,6 +1227,9 @@ class Particles(AbstractParticleSet):
 
     def get_attribute_names_defined_in_store(self):
         return self._private.attribute_storage.get_defined_attribute_names()
+        
+    def get_settable_attribute_names_defined_in_store(self):
+        return self._private.attribute_storage.get_defined_settable_attribute_names()
 
     def get_all_keys_in_store(self):
         return self._private.attribute_storage.get_all_keys_in_store()
@@ -1619,11 +1625,33 @@ class ParticlesSuperset(AbstractParticleSet):
 
     def get_attribute_names_defined_in_store(self):
         self._ensure_updated_set_properties()
-        result = set(self._private.particle_sets[0].get_attribute_names_defined_in_store())
-        for particle_set in self._private.particle_sets[1:]:
+        result = None
+        for particle_set in self._private.particle_sets:
             if len(particle_set) > 0:
-                result &= set(particle_set.get_attribute_names_defined_in_store())
-        return list(result)
+                attribute_names = set(particle_set.get_attribute_names_defined_in_store())
+                if result is None:
+                    result = attribute_names
+                else: 
+                    result &= attribute_names
+        if result is None:
+            return []
+        else:
+            return list(result)
+    
+    def get_settable_attribute_names_defined_in_store(self):
+        self._ensure_updated_set_properties()
+        result = None
+        for particle_set in self._private.particle_sets:
+            if len(particle_set) > 0:
+                attribute_names = set(particle_set.get_settable_attribute_names_defined_in_store())
+                if result is None:
+                    result = attribute_names
+                else: 
+                    result &= attribute_names
+        if result is None:
+            return []
+        else:
+            return list(result)
 
     def get_all_keys_in_store(self):
         self._ensure_updated_set_properties()
@@ -1797,6 +1825,9 @@ class ParticlesSubset(AbstractParticleSet):
 
     def get_attribute_names_defined_in_store(self):
         return self._private.particles.get_attribute_names_defined_in_store()
+        
+    def get_settable_attribute_names_defined_in_store(self):
+        return self._private.particles.get_settable_attribute_names_defined_in_store()
 
     def get_all_keys_in_store(self):
         return self._private.keys
@@ -1965,6 +1996,9 @@ class ParticlesMaskedSubset(ParticlesSubset):
 
     def get_attribute_names_defined_in_store(self):
         return self._private.particles.get_attribute_names_defined_in_store()
+        
+    def get_settable_attribute_names_defined_in_store(self):
+        return self._private.particles.get_settable_attribute_names_defined_in_store()
 
     def get_all_keys_in_store(self):
         return self._private.keys
@@ -2277,6 +2311,11 @@ class ParticlesOverlay(AbstractParticleSet):
         result = list(self._private.base_set.get_attribute_names_defined_in_store())
         result.extend(self._private.overlay_set.get_attribute_names_defined_in_store())
         return result
+        
+    def get_settable_attribute_names_defined_in_store(self):
+        result = list(self._private.base_set.get_settable_attribute_names_defined_in_store())
+        result.extend(self._private.overlay_set.get_settable_attribute_names_defined_in_store())
+        return result
 
     def get_all_keys_in_store(self):
         self._ensure_updated_set_properties()
@@ -2444,6 +2483,9 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
 
     def get_attribute_names_defined_in_store(self):
         return self._private.particles.get_attribute_names_defined_in_store()
+        
+    def get_settable_attribute_names_defined_in_store(self):
+        return self._private.particles.get_settable_attribute_names_defined_in_store()
 
     def get_all_keys_in_store(self):
         return self._private.particles.get_all_keys_in_store()
@@ -2616,6 +2658,9 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
 
     def get_attribute_names_defined_in_store(self):
         return self._private.particles.get_attribute_names_defined_in_store()
+        
+    def get_settable_attribute_names_defined_in_store(self):
+        return self._private.particles.get_settable_attribute_names_defined_in_store()
 
     def get_all_keys_in_store(self):
         return self._private.particles.get_all_keys_in_store()
@@ -2734,7 +2779,7 @@ class ParticleInformationChannel(object):
 
     def copy_overlapping_attributes(self):
         from_names = self.from_particles.get_attribute_names_defined_in_store()
-        to_names = self.to_particles.get_attribute_names_defined_in_store()
+        to_names = self.to_particles.get_settable_attribute_names_defined_in_store()
         names_to_copy = set(from_names).intersection(set(to_names))
 
         self.copy_attributes(list(names_to_copy))
@@ -2838,6 +2883,13 @@ class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
 
     def get_attribute_names_defined_in_store(self):
         names = self._private.particles.get_attribute_names_defined_in_store()
+        namespace_prefix = self._private.namespace  + '__'
+        len_namespace_prefix = len(namespace_prefix)
+        return [x[len_namespace_prefix:] for x in names if x.startswith(namespace_prefix)]
+        
+    
+    def get_settable_attribute_names_defined_in_store(self):
+        names = self._private.particles.get_settable_attribute_names_defined_in_store()
         namespace_prefix = self._private.namespace  + '__'
         len_namespace_prefix = len(namespace_prefix)
         return [x[len_namespace_prefix:] for x in names if x.startswith(namespace_prefix)]

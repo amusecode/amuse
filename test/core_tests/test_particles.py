@@ -1347,7 +1347,14 @@ class TestParticlesWithBinding(amusetest.TestCase):
 
             return ( [0] * len(id),)
 
-
+        def get_radius(self, id):
+            masses = []
+            errors = []
+            for x in id:
+                masses.append(1)
+                errors.append(0)
+            return ( masses, errors, )
+        
         def get_link(self, id):
             result = []
             errors = []
@@ -1828,6 +1835,49 @@ class TestParticlesWithBinding(amusetest.TestCase):
         local_particles.add_calculated_attribute("mass", lambda m2: m2.sqrt(), attributes_names=["mass_squared"])
         interface.particles.add_particles(local_particles)
         self.assertAlmostRelativeEquals(interface.particles.mass , [3.0, 4.0] | units.kg)
+        
+    class TestInterface2(InCodeComponentImplementation):
+
+        def __init__(self):
+            InCodeComponentImplementation.__init__(self, TestParticlesWithBinding.TestLegacyCode())
+
+        def define_methods(self, handler):
+            handler.add_method('get_mass',(handler.NO_UNIT,), (units.g, handler.ERROR_CODE))
+            handler.add_method('set_mass',(handler.NO_UNIT, units.g,), (handler.ERROR_CODE,))
+            handler.add_method('get_radius',(handler.NO_UNIT,), (units.m, handler.ERROR_CODE))
+
+            handler.add_method('new_particle',(units.g,), (handler.INDEX, handler.ERROR_CODE))
+            handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+            handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+
+
+        def define_particle_sets(self, handler):
+            handler.define_set('particles', 'id')
+            handler.set_new('particles', 'new_particle')
+            handler.set_delete('particles', 'delete_particle')
+            handler.add_setter('particles', 'set_mass')
+            handler.add_getter('particles', 'get_mass', names = ('mass',))
+            handler.add_getter('particles', 'get_radius', names = ('radius',))
+            
+    def test17(self):
+        interface = self.TestInterface2()
+        interface.particles.add_particles_to_store(
+            [1,2],
+            ["mass"],
+            [[3.0, 4.0] | units.kg]
+        )
+
+        remote_particles = interface.particles
+        local_particles = remote_particles.copy()
+        channel = remote_particles.new_channel_to(local_particles)
+        self.assertEquals(local_particles[0].radius.value_in(units.m), 1)
+
+        channel = local_particles.new_channel_to(remote_particles)
+        local_particles.radius = 10 | units.m
+        local_particles.mass = 3.5 | units.kg
+        channel.copy()
+        
+        self.assertEquals(remote_particles[0].mass.value_in(units.kg), 3.5)
 
 class TestParticlesWithUnitsConverted(amusetest.TestCase):
 

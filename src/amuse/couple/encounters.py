@@ -16,6 +16,7 @@ from amuse.units.quantities import zero
 
 from amuse.support import options
 from amuse.support import code
+from amuse.support import interface
 
 import logging
 import numpy
@@ -55,18 +56,6 @@ class AbstractHandleEncounter(object):
        small scale of interaction.    
     """
     
-    # look for neighbours of the interaction
-    # neighbours_factor * large scale of the interaction
-    NEIGHBOURS_FACTOR=1
-    
-    # a hard binary is defined as the small scale of the
-    # interaction times this factor
-    HARD_BINARY_FACTOR=3
-    
-    # Initial separation for the scattering experiment, relative
-    # to the small scale of the interaction.
-    SCATTER_FACTOR=10
-    
     
     def __init__(self,
         kepler_code = None,
@@ -74,7 +63,63 @@ class AbstractHandleEncounter(object):
     ):
         self.G = G
         self.kepler_orbits = KeplerOrbits(kepler_code)
+        
+        handler = interface.HandleParameters(self)
+        self.define_parameters(handler)
+        self.parameters = handler.get_attribute('parameters', None)
+        
+        self.hard_binary_factor = 3.0
+        self.neighbours_factor = 1.0
+        self.scatter_factor = 10.0
+        
         self.reset()
+    
+    def before_set_parameter(self):
+        pass
+        
+    def before_get_parameter(self):
+        pass
+        
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
+            "get_neighbours_factor",
+            "set_neighbours_factor",
+            "neighbours_factor",
+            "look for neighbours of the interaction, neighbours_factor * large scale of the interaction",
+            default_value = 1.0
+        )
+        handler.add_method_parameter(
+            "get_hard_binary_factor",
+            "set_hard_binary_factor",
+            "hard_binary_factor",
+            "a hard binary is defined as the small scale of the interaction times this factor",
+            default_value = 3.0
+        )
+        handler.add_method_parameter(
+            "get_scatter_factor",
+            "set_scatter_factor",
+            "scatter_factor",
+            "Initial separation for the scattering experiment, relative to the small scale of the interaction.",
+            default_value = 3.0
+        )
+        
+    def get_neighbours_factor(self):
+        return self.neighbours_factor
+        
+    def set_neighbours_factor(self, value):
+        self.neighbours_factor = value
+        
+    def get_hard_binary_factor(self):
+        return self.hard_binary_factor
+        
+    def set_hard_binary_factor(self, value):
+        self.hard_binary_factor = value
+        
+    def get_scatter_factor(self):
+        return self.scatter_factor
+        
+    def set_scatter_factor(self, value):
+        self.scatter_factor = value
         
     def reset(self):
         self.particles_in_field = Particles()
@@ -354,7 +399,7 @@ class AbstractHandleEncounter(object):
         center_of_mass = self.particles_in_encounter.center_of_mass()
         distances = (self.particles_in_field.position-center_of_mass).lengths()
         
-        near_distance = self.large_scale_of_particles_in_the_encounter * self.NEIGHBOURS_FACTOR
+        near_distance = self.large_scale_of_particles_in_the_encounter * self.neighbours_factor
         near_particles = self.particles_in_field[distances <= near_distance]
         
         self.particles_close_to_encounter.add_particles(near_particles)
@@ -367,7 +412,7 @@ class AbstractHandleEncounter(object):
         
         delta_position, delta_velocity = self.kepler_orbits.expand_binary(
             self.particles_in_encounter,
-            self.SCATTER_FACTOR * self.small_scale_of_particles_in_the_encounter
+            self.scatter_factor * self.small_scale_of_particles_in_the_encounter
         )
         self.particles_in_encounter.position += delta_position
         self.particles_in_encounter.velocity += delta_velocity
@@ -414,7 +459,7 @@ class AbstractHandleEncounter(object):
         
         nodes_to_break_up = []
         
-        hard_binary_radius = self.small_scale_of_particles_in_the_encounter * self.HARD_BINARY_FACTOR
+        hard_binary_radius = self.small_scale_of_particles_in_the_encounter * self.hard_binary_factor
         
         # a branch in the tree is a node with two children
         # the iter_branches will return only the branches under this node
@@ -1133,14 +1178,16 @@ class Multiples(options.OptionalAttributes):
         self.stopping_conditions = MultiplesStoppingConditions()
         
         self.reset()
-        
-        
     
     def reset(self):
-        self.particles = Particles()
     
         self.multiples = Particles()
         self.singles   = Particles()
+        
+        self.particles = ParticlesSuperset(
+            [self.singles, self.multiples],
+            index_to_default_set = 0
+        )
         
         self.singles_in_binaries = Particles()
         self.binaries  = Binaries(self.singles_in_binaries)
@@ -1181,13 +1228,12 @@ class Multiples(options.OptionalAttributes):
                     components.velocity -= multiple.velocity 
                     #self.multiples.add_particle(multiple)
         
-        if len(self.singles) == 0:
-            self.singles.add_particles(self.particles)
+        #if len(self.singles) == 0:
+        #    self.singles.add_particles(self.particles)
             
-        if len(self.particles) == 0:
-            self.particles.add_particles(self.singles)
-            self.particles.add_particles(self.multiples)
-            
+        #if len(self.particles) == 0:
+        #    self.particles.add_particles(self.singles)
+        #    self.particles.add_particles(self.multiples)
         self.gravity_code.particles.add_particles(self.particles)
         
         
@@ -1198,15 +1244,18 @@ class Multiples(options.OptionalAttributes):
     def evolve_model(self, time):
         self.stopping_conditions.unset()
         
+        attributes_to_update = ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'radius']
+        self.channel_from_model_to_code.copy_attributes(attributes_to_update)
+        
         self.model_time = self.gravity_code.model_time
         
         previous_time = None
         while self.model_time < time:
             self.gravity_code.evolve_model(time)
+            print "so far..."
             self.model_time = self.gravity_code.model_time
             self.channel_from_code_to_model.copy()
             
-            self.particles.new_channel_to(self.multiples).copy_attributes(["x","y","z","vx","vy","vz"])
             if self.stopping_condition.is_set():
                 
                 print "AMU", self.all_multiples_energy
@@ -1302,9 +1351,8 @@ class Multiples(options.OptionalAttributes):
         
     @property
     def all_singles(self):
-        result = self.particles.copy()
+        result = self.singles.copy()
         for multiple in self.multiples:
-            result.remove_particle(multiple)
             components = multiple.components
             tree = components.new_binary_tree_wrapper()
             subset = Particles()
@@ -1329,7 +1377,6 @@ class Multiples(options.OptionalAttributes):
         code.particles_in_field.add_particles(self.particles - particles_in_encounter)
         code.existing_binaries.add_particles(self.binaries)
         code.existing_multiples.add_particles(self.multiples)
-        
         print "handling encounter"
         print code.particles_in_encounter.key
         code.execute()
@@ -1337,11 +1384,6 @@ class Multiples(options.OptionalAttributes):
         print "handling encounter done"
         print "number of multiples: ", len(code.new_multiples)
         # update particles (will have singles and multiples)
-        self.particles.remove_particles(code.dissolved_multiples)
-        self.particles.remove_particles(code.captured_singles)
-        self.particles.add_particles(code.new_multiples)
-        self.particles.add_particles(code.released_singles)
-        
         self.singles.remove_particles(code.captured_singles)
         self.singles.add_particles(code.released_singles)
         
@@ -1461,10 +1503,7 @@ class Multiples(options.OptionalAttributes):
         return self.corrected_total_energy
 
     def update_model(self):
-        attributes_to_update = ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']
         
-        channel = self.particles.new_channel_to(self.multiples)
-        channel.copy_attributes(['x', 'y', 'z', 'vx', 'vy', 'vz'])
         # we do all the work on the singles_in_binaries_previous set
         # this makes sure all keys match attributes
         self.singles_in_binaries_previous.delta_position = self.singles_in_binaries.position - self.singles_in_binaries_previous.position
@@ -1497,11 +1536,7 @@ class Multiples(options.OptionalAttributes):
             components.position -= center_of_mass
             components.velocity -= center_of_mass_velocity
     
-        channel = self.multiples.new_channel_to(self.particles)
-        channel.copy_attributes(attributes_to_update)
-        #channel = self.singles.new_channel_to(self.particles)
-        #channel.copy_attributes('mass', 'x', 'y', 'z', 'vx', 'vy', 'vz')
-    
+        attributes_to_update = ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'radius']
         channel = self.particles.new_channel_to(self.gravity_code.particles)
         channel.copy_attributes(attributes_to_update)
         self.singles_in_binaries_previous = self.singles_in_binaries.copy()
