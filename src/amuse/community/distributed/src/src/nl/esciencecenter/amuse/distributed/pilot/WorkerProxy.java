@@ -202,7 +202,7 @@ public class WorkerProxy extends Thread {
             process.exitValue();
             //we only end up here if the process is done
             return true;
-        } catch (IllegalStateException e) {
+        } catch (IllegalThreadStateException e) {
             //we got this exception as the process is not done yet
             return false;
         }

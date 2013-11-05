@@ -35,7 +35,7 @@ ifeq ($(JAVA_ENABLED),no)
 	$(error "Java support not configured in AMUSE")
 endif
 ifeq (,$(findstring $(JAVA_VERSION), 1.7))
-	$(error "Java 1.7 required for Asterisk, but AMUSE configured with Java $(JAVA_VERSION)")
+	$(error "Java 1.7 required for Distributed Amuse, but AMUSE configured with Java $(JAVA_VERSION)")
 endif
 
 update:
