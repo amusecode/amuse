@@ -70,18 +70,17 @@ class TestHermiteInterface(TestWithMPI):
         
     def test3(self):
         hermite = HermiteInterface()
-        hermite.eps2 = 0.101
-        self.assertEquals(0.101, hermite.eps2)
-        hermite.eps2 = 0.110
-        self.assertEquals(0.110, hermite.eps2)
+        self.assertEquals(0, hermite.set_eps2(0.101))
+        self.assertEquals([0.101, 0], hermite.get_eps2().values())
+        self.assertEquals(0, hermite.set_eps2(0.2))
+        self.assertEquals([0.2, 0], hermite.get_eps2().values())
         hermite.stop()
 
     def test4(self):
         hermite = HermiteInterface()
-        hermite.flag_collision = 1
-        self.assertEquals(1, hermite.flag_collision)
-        hermite.flag_collision = 0
-        self.assertEquals(0, hermite.flag_collision)
+        self.assertEquals([0, 0], hermite.get_is_time_reversed_allowed().values())
+        self.assertEquals(0, hermite.set_is_time_reversed_allowed(1))
+        self.assertEquals([1, 0], hermite.get_is_time_reversed_allowed().values())
         hermite.stop()
 
     def test5(self):
