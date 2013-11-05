@@ -27,6 +27,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.SocketTimeoutException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
@@ -52,7 +53,8 @@ public class WorkerProxy extends Thread {
     private static final Logger logger = LoggerFactory.getLogger(WorkerProxy.class);
 
     //how long until we give up on a worker initializing?
-    private static final int ACCEPT_TIMEOUT = 10000; // ms
+    private static final int ACCEPT_TIMEOUT = 100; // ms
+    private static final int ACCEPT_TRIES = 50;
 
     private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_", "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_" };
 
@@ -194,15 +196,47 @@ public class WorkerProxy extends Thread {
         return builder.start();
     }
 
-    private static SocketChannel acceptConnection(ServerSocketChannel serverSocket) throws IOException {
+    //small utility to figure out if the process is still running.
+    private static boolean hasEnded(Process process) {
+        try {
+            process.exitValue();
+            //we only end up here if the process is done
+            return true;
+        } catch (IllegalStateException e) {
+            //we got this exception as the process is not done yet
+            return false;
+        }
+    }
+
+    private static SocketChannel acceptConnection(ServerSocketChannel serverSocket, Process process) throws IOException,
+            DistributedAmuseException {
+        logger.debug("accepting connection");
+        
         serverSocket.configureBlocking(true);
         serverSocket.socket().setSoTimeout(ACCEPT_TIMEOUT);
 
-        //will timeout if this takes too long
-        SocketChannel result = serverSocket.accept();
+        for (int i = 0; i < ACCEPT_TRIES; i++) {
+            try {
 
-        result.socket().setTcpNoDelay(true);
-        return result;
+                //will timeout if this takes too long.
+                //Note we do an accept on the socket, not the channel.
+                //This is required as a workaround, otherwise the timeout on the accept is ignored
+                SocketChannel result = serverSocket.socket().accept().getChannel();
+
+                logger.debug("connection accepted");
+                result.socket().setTcpNoDelay(true);
+                return result;
+            } catch (SocketTimeoutException e) {
+                logger.debug("got timeout exception", e);
+                if (hasEnded(process)) {
+                    throw new DistributedAmuseException("worker failed to connect to java pilot, exited with exit code "
+                            + process.exitValue());
+                } else {
+                    logger.debug("Got a timeout in accepting connection from worker. will keep trying");
+                }
+            }
+        }
+        throw new DistributedAmuseException("worker failed to connect to java pilot process within time");
     }
 
     /**
@@ -220,7 +254,8 @@ public class WorkerProxy extends Thread {
         serverSocket.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
 
         //create process
-        process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(), hostnames, tempDirectory);
+        process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(), hostnames,
+                tempDirectory);
 
         //attach streams
         out = new OutputForwarder(process.getInputStream(), description.getStdoutFile(), ibis);
@@ -228,7 +263,7 @@ public class WorkerProxy extends Thread {
 
         logger.info("process started");
 
-        socket = acceptConnection(serverSocket);
+        socket = acceptConnection(serverSocket, process);
         serverSocket.close();
 
         logger.info("connection with local worker process established");

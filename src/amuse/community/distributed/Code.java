@@ -467,7 +467,7 @@ public class Code implements CodeInterface {
 
     @Override
     public void end() {
-        //NOTHING
+        distributedAmuse.end();
     }
 
 }

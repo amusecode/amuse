@@ -98,7 +98,7 @@ public class OutputForwarder extends Thread {
                 }
             }
         } catch (IOException error) {
-            if (!error.getMessage().equals("Stream closed")) {
+            if (error.getMessage() == null || !error.getMessage().equals("Stream closed")) {
                 logger.error("Error on forwarding code output", error);
             }
         } finally {

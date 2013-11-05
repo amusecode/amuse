@@ -236,7 +236,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
                 jobRunner.start();
             } catch (Exception e) {
                 logger.error("Error starting job", e);
-                replyException = new Exception("Error starting job", e);
+                replyException = new Exception("Error starting job:" + e, e);
             }
             logger.debug("Sending reply");
 

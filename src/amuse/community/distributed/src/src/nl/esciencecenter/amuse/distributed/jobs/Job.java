@@ -151,8 +151,14 @@ public abstract class Job extends Thread implements MessageUpcall {
         return state == State.FAILED;
     }
 
-    public synchronized void waitUntilRunning() {
+    public synchronized void waitUntilRunning() throws Exception {
         while (!isRunning()) {
+            if (hasFailed()) {
+                throw getError();
+            }
+            if (isDone()) {
+                throw new DistributedAmuseException("Job already done while waiting until it is running");
+            }
             try {
                 wait();
             } catch (InterruptedException e) {
@@ -221,7 +227,6 @@ public abstract class Job extends Thread implements MessageUpcall {
             ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
 
-
             sendPort.connect(master.getIbisIdentifier(), "pilot");
 
             WriteMessage writeMessage = sendPort.newMessage();
@@ -256,11 +261,13 @@ public abstract class Job extends Thread implements MessageUpcall {
             receivePort.close();
 
             if (error != null) {
-                setError(new DistributedAmuseException("Remote node reported error", error));
+                setError(new DistributedAmuseException("Remote node reported error:" + error, error));
+                logger.trace("job {} ERROR", this);
             } else {
                 setState(State.RUNNING);
+                logger.trace("job {} started", this);
             }
-            logger.trace("job {} started", this);
+            
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Job failed!", e);
             setError(e);

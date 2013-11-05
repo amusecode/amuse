@@ -72,6 +72,8 @@ public class DistributedAmuse {
     private final Xenon xenon;
 
     private File tmpDir;
+    
+    private boolean ended = false;
 
     private static File createTmpDir() throws DistributedAmuseException {
         File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -134,10 +136,25 @@ public class DistributedAmuse {
         return workerConnectionServer.getPort();
     }
 
+    //to be on the safe side, synchronize this flag
+    private synchronized boolean hasEnded() {
+        return ended;
+    }
+    
+    //to be on the safe side, synchronize this flag
+    private synchronized void setEnded() {
+        ended = true;
+    }
+    
     /**
      * 
      */
     public void end() {
+        if (hasEnded()) {
+            return;
+        }
+        setEnded();
+        
         logger.info("Ending distributed Amuse.");
         
         logger.debug("Ending web interface");

@@ -1341,7 +1341,9 @@ class GenerateAJavaSourcecodeStringFromASpecificationClass\
         self.out.lf().lf() + 'switch (request.getFunctionID()) {'
         self.out.indent()
         self.out.lf() + 'case 0:'
-        self.out.indent().lf() + 'return false;'
+        self.out.indent()
+        self.out.lf() + 'code.end();'
+        self.out.lf() + 'return false;'
         self.out.dedent()
         
         self.output_sourcecode_for_functions()

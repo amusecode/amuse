@@ -34,6 +34,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,8 +66,20 @@ public class WebInterface extends AbstractHandler {
 
     public WebInterface(DistributedAmuse distributedAmuse, int port) throws Exception {
         this.distributedAmuse = distributedAmuse;
-        server = new Server(port);
+
+        QueuedThreadPool threadPool = new QueuedThreadPool(5);
+        threadPool.setDaemon(true);
+        
+        server = new Server(threadPool);
+        
+        ServerConnector http = new ServerConnector(server);
+        //http.setHost("localhost");
+        http.setPort(port);
+        //http.setIdleTimeout(30000);
+        
+        server.addConnector(http);
         server.setHandler(this);
+
         server.start();
 
         //get actual port from jetty
