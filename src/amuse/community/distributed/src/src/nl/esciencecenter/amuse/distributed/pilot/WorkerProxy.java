@@ -103,10 +103,10 @@ public class WorkerProxy extends Thread {
         } else {
             for (int i = 0; i < nodes.length; i++) {
                 String tags[] = nodes[i].tagAsString().split(",");
-                if (tags.length != 3) {
+                if (tags.length != 4) {
                     throw new DistributedAmuseException("Cannot get tag from node identifier: " + nodes[i].tagAsString());
                 }
-                String hostname = tags[2];
+                String hostname = tags[3];
 
                 // number of processes per node
                 int ppn = nrOfProcesses / nrOfNodes;
