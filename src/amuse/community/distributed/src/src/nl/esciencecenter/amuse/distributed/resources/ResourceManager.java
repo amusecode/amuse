@@ -4,7 +4,9 @@ import ibis.ipl.server.Server;
 import ibis.ipl.server.ServerProperties;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
@@ -25,15 +27,15 @@ public class ResourceManager {
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
 
     private final Xenon xenon;
-    
+
     private final Server iplServer;
-    
+
     private final ArrayList<Resource> resources;
-    
+
     public ResourceManager(Xenon xenon, File tmpDir, String amuseRootDir) throws DistributedAmuseException {
         resources = new ArrayList<Resource>();
         this.xenon = xenon;
-        
+
         try {
             Properties properties = new Properties();
             //use a random free port.
@@ -49,17 +51,17 @@ public class ResourceManager {
         newResource("local", null, null, amuseRootDir, "local", false);
     }
 
-    public synchronized Resource newResource(String name, String location, String gateway, String amuseDir,
-            String schedulerType, Boolean startHub) throws DistributedAmuseException {
-        logger.debug("creating new resource: name = " + name + " location = " + location 
-                + " scheduler type = " + schedulerType + " amuse dir = " + amuseDir + " start hub = " + startHub);
+    public synchronized Resource newResource(String name, String location, String gateway, String amuseDir, String schedulerType,
+            Boolean startHub) throws DistributedAmuseException {
+        logger.debug("creating new resource: name = " + name + " location = " + location + " scheduler type = " + schedulerType
+                + " amuse dir = " + amuseDir + " start hub = " + startHub);
 
         for (Resource resource : resources) {
             if (resource.getName().equals(name)) {
                 throw new DistributedAmuseException("Resource " + name + " already exists");
             }
         }
-        
+
         String gatewayLocation = null;
         if (gateway != null && !gateway.isEmpty()) {
             gatewayLocation = getResource(gateway).getLocation();
@@ -89,11 +91,11 @@ public class ResourceManager {
         }
         throw new DistributedAmuseException("Resource with name " + name + " not found");
     }
-    
+
     public synchronized int getResourceCount() {
         return resources.size();
     }
-    
+
     public synchronized Resource[] getResources() {
         return resources.toArray(new Resource[resources.size()]);
     }
@@ -116,17 +118,20 @@ public class ResourceManager {
     public String[] getHubAddresses() {
         return iplServer.getHubs();
     }
-    
+
+    public void endRegistry() {
+        iplServer.getRegistryService().end(60000);
+    }
+
     public synchronized void end() {
         logger.debug("waiting for all ipl services to end");
         iplServer.end(60000);
         logger.debug("services ended");
 
-        for(Resource resource: resources) {
+        for (Resource resource : resources) {
             logger.debug("ending resource {}", resource);
             resource.stop();
         }
     }
-
 
 }

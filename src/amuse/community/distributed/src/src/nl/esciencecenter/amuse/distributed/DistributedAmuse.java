@@ -87,6 +87,7 @@ public class DistributedAmuse {
     }
 
     public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort) throws DistributedAmuseException {
+        logger.info("Initializing Distributed Amuse");
         try {
             xenon = XenonFactory.newXenon(null);
         } catch (XenonException  e) {
@@ -108,6 +109,7 @@ public class DistributedAmuse {
         } catch (Exception e) {
             throw new DistributedAmuseException("could not create web interface", e);
         }
+        logger.info("Distributed Amuse Initialized");
     }
 
     public ResourceManager resourceManager() {
@@ -146,6 +148,9 @@ public class DistributedAmuse {
         
         logger.debug("Ending job manager");
         jobManager.end();
+
+        logger.debug("Ending registry");
+        resourceManager.endRegistry();
         
         logger.debug("Ending reservation manager");
         reservationManager.end();

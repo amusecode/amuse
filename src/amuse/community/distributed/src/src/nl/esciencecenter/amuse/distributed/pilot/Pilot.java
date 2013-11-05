@@ -167,7 +167,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         for (Entry<Object, Object> entry : properties.entrySet()) {
             System.err.println(entry.getKey() + " = " + entry.getValue());
         }
-
+        
         Pilot pilot = new Pilot(configuration, properties, reservationID, nodeLabel, slots);
 
         pilot.run();

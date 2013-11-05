@@ -81,34 +81,28 @@ public class JobStatusMonitor extends Thread {
         notifyAll();
     }
 
-    public synchronized void waitUntilAllRunning() throws DistributedAmuseException {
-        while (true) {
-            boolean allRunning = true;
+    /**
+     * Returns if all reservations are running.
+     * @return true if all reservations are running.
+     * @throws DistributedAmuseException if some reservations are already done or in error.
+     */
+    public synchronized boolean areAllRunning() throws DistributedAmuseException {
+        boolean allRunning = true;
 
-            for (JobStatus status : statusMap.values()) {
-                if (status == null || !status.isRunning()) {
-                    allRunning = false;
-                }
-                if (status != null && status.hasException()) {
-                    throw new DistributedAmuseException("Reservation failed while waiting for all reservations to start",
-                            status.getException());
-                }
-                if (status != null && status.isDone()) {
-                    throw new DistributedAmuseException("Reservation already done waiting for all reservations to start");
-                }
+        for (JobStatus status : statusMap.values()) {
+            if (status == null || !status.isRunning()) {
+                allRunning = false;
             }
-
-            if (allRunning) {
-                return;
+            if (status != null && status.hasException()) {
+                throw new DistributedAmuseException("Reservation failed while waiting for all reservations to start",
+                        status.getException());
             }
-
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                //return immediately if we get interrupted
-                return;
+            if (status != null && status.isDone()) {
+                throw new DistributedAmuseException("Reservation already done waiting for all reservations to start");
             }
         }
+
+        return allRunning;
 
     }
 
