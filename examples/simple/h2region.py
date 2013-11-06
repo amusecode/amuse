@@ -6,7 +6,7 @@ import numpy
 from matplotlib import pyplot
 from optparse import OptionParser
 
-from amuse.community.mocassin.interface import Mocassin
+from amuse.community.mocassin.interface import Mocassin, mocassin_rydberg_unit
 
 from amuse.units import units
 from amuse.units import nbody_system
@@ -76,7 +76,7 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
     radiative_transfer = Mocassin(number_of_workers = 2) #, debugger = "xterm")
     
     radiative_transfer.set_input_directory(radiative_transfer.get_default_input_directory())
-    radiative_transfer.set_output_directory(radiative_transfer.get_default_output_directory())
+    radiative_transfer.set_mocassin_output_directory(radiative_transfer.get_default_output_directory())
     
     radiative_transfer.initialize_code()
     
@@ -89,8 +89,8 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
     setup_abundancies(radiative_transfer)
     
     radiative_transfer.parameters.initial_nebular_temperature = 6000.0 | units.K
-    radiative_transfer.parameters.high_limit_of_the_frequency_mesh = 15 | units.ryd
-    radiative_transfer.parameters.low_limit_of_the_frequency_mesh  = 1.001e-5| units.ryd
+    radiative_transfer.parameters.high_limit_of_the_frequency_mesh = 15 | mocassin_rydberg_unit
+    radiative_transfer.parameters.low_limit_of_the_frequency_mesh  = 1.001e-5 | mocassin_rydberg_unit
     
     radiative_transfer.parameters.total_number_of_photons = 10000000
     radiative_transfer.parameters.total_number_of_points_in_frequency_mesh = 600
