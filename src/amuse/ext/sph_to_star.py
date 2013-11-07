@@ -23,9 +23,10 @@ class SPH2StellarModel(object):
     def derive_stellar_structure(self):
         sorted = self.sph_particles.pressure.argsort()[::-1]
         binned = sorted.reshape((-1, self.particles_per_zone))
-            
+        
         stellar_model = dict()
         stellar_model["dmass"] = self.sph_particles.mass[binned].sum(axis=1)
+        stellar_model['pressure']= self.sph_particles.pressure[binned].sum(axis=1)
         stellar_model["rho"] = stellar_model["dmass"] / (self.sph_particles.mass / self.sph_particles.density)[binned].sum(axis=1)
         stellar_model["radius"] = ((3 / (4 * numpy.pi)) * stellar_model["dmass"] / stellar_model["rho"]).accumulate()**(1.0/3.0) * 1
         stellar_model["temperature"] = ((self.sph_particles.mass * self.sph_particles.u * self.sph_particles.mu)[binned].sum(axis=1) / 
