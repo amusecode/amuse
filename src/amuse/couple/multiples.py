@@ -371,7 +371,13 @@ class Multiples(object):
 #                 print 'neighbor_veto =', \
 #                     self.neighbor_veto
 
+            print 'calling evolve_model'
+            sys.stdout.flush()
+
             self.gravity_code.evolve_model(end_time)
+            print 'back'
+            sys.stdout.flush()
+
             newtime = self.gravity_code.model_time
            
             #JB, modified this, in Bonsai we can take a 0 time-step to detect
@@ -380,14 +386,25 @@ class Multiples(object):
             #loop before the time reached end_time
             if newtime == time and (stopping_condition.is_set() == False):
                 break
-                
+            
+            self.gravity_code.evolve_model(end_time)
+            print 'back 2'
+            sys.stdout.flush()
+
             time = newtime
             
             if stopping_condition.is_set():
 
+                print 'stopping cond'
+                sys.stdout.flush()
+
                 star1 = stopping_condition.particles(0)[0]
                 star2 = stopping_condition.particles(1)[0]
                 ignore = 0
+
+                print star1
+                print star2
+                sys.stdout.flush()
 
                 # Note from Steve, 8/12: We can pick up a lot of
                 # encounters that are then ignored here.  I have
@@ -410,10 +427,30 @@ class Multiples(object):
                 # if angle > (numpy.pi * 0.44):
 
                 r = (star2.position-star1.position).length()
+                print 'r =', r
+                sys.stdout.flush()
                 v = (star2.velocity-star1.velocity).length()
-                vr = numpy.inner(star2.velocity-star1.velocity,
-                                 star2.position-star1.position)
+                print 'v =', v
+                sys.stdout.flush()
+
+
+                # Temporary numpy workaround - Steve.
+                #
+                # vr = numpy.inner(star2.velocity-star1.velocity,
+                #                  star2.position-star1.position)
+                vr = numpy.inner(
+                 (star2.velocity-star1.velocity).value_in(nbody_system.speed),
+                 (star2.position-star1.position).value_in(nbody_system.length))\
+		  | nbody_system.speed*nbody_system.length
+
+
+                print 'vr =', vr
+                sys.stdout.flush()
                 EPS = 0.001
+
+                print 'vr, EPS*r*v:', vr, EPS*r*v
+                sys.stdout.flush()
+                
                 if vr < EPS*r*v:
 
                     print '\n'+'~'*60
@@ -985,8 +1022,18 @@ class Multiples(object):
                     if rij > r:
                         r = rij
                         v = (i.velocity-j.velocity).length()
-                        vr = numpy.inner(j.velocity-i.velocity,
-                                         j.position-i.position)
+
+
+                        # Temporary numpy workaround - Steve.
+                        #
+                        # vr = numpy.inner(j.velocity-i.velocity,
+                        #                  j.position-i.position)
+                        vr = numpy.inner(
+			 (j.velocity-i.velocity).value_in(nbody_system.speed),
+                         (j.position-i.position).value_in(nbody_system.length))\
+			  | nbody_system.speed*nbody_system.length
+
+
         print ''
         if 1:
             print '                 r =', r
