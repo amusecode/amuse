@@ -3,9 +3,14 @@
 #endif
 
 #include <iostream>
+#include <string>
 #include <cmath>
 #include <vector>
 #include "worker_code.h"
+
+#ifdef GPU
+#include "cuda_fastkick.h"
+#endif
 
 
 using namespace std;
@@ -16,8 +21,11 @@ int mpi_size = 1;
 #endif
 
 int n_local, n_total;
-//~double *m, *x, *y, *z;
 vector<double> m, x, y, z;
+
+#ifdef GPU
+#endif
+
 
 // Control parameters:
 
@@ -40,7 +48,11 @@ int initialize_code() {
 #endif
     n_total = 0;
     n_local = 0;
+#ifdef GPU
+    return cuda_initialize_code();
+#else
     return 0;
+#endif
 }
 
 int commit_parameters() {
@@ -50,10 +62,18 @@ int recommit_parameters() {
     return 0;
 }
 int commit_particles() {
+#ifdef GPU
+    return cuda_commit_particles(m, x, y, z);
+#else
     return 0;
+#endif
 }
 int recommit_particles() {
+#ifdef GPU
+    return cuda_recommit_particles(m, x, y, z);
+#else
     return 0;
+#endif
 }
 
 int get_eps2(double *_epsilon_squared){
@@ -70,7 +90,11 @@ int cleanup_code() {
     x.clear();
     y.clear();
     z.clear();
+#ifdef GPU
+    return cuda_cleanup_code();
+#else
     return 0;
+#endif
 }
 
 int new_particle(int *id, double *mass_in, double *x_in, double *y_in, double *z_in, int length) {
@@ -112,6 +136,10 @@ int get_potential_at_point(double *eps_in, double *x_in, double *y_in, double *z
         double *phi, int length){
     double dx, dy, dz, r;
     
+#ifdef GPU
+    int result = cuda_get_potential_at_point(eps2, eps_in, x_in, y_in, z_in, phi, length);
+    // communicate errors for MPI
+#else
     for (int j = 0; j < length; j++) {
         phi[j] = 0;
         for (int i = 0; i < n_local; i++) {
@@ -122,6 +150,7 @@ int get_potential_at_point(double *eps_in, double *x_in, double *y_in, double *z
             phi[j] -= m[i]/r;
         }
     }
+#endif
     
 #ifndef NOMPI
     if (mpi_rank) {
@@ -130,13 +159,22 @@ int get_potential_at_point(double *eps_in, double *x_in, double *y_in, double *z
         MPI_Reduce(MPI_IN_PLACE, phi, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
+
+#ifdef GPU
+    return result;
+#else
     return 0;
+#endif
 }
 
 int get_gravity_at_point(double *eps_in, double *x_in, double *y_in, double *z_in, 
         double *ax, double *ay, double *az, int length){
     double dx, dy, dz, r2, tmp;
     
+#ifdef GPU
+    int result = cuda_get_gravity_at_point(eps2, eps_in, x_in, y_in, z_in, ax, ay, az, length);
+    // communicate errors for MPI
+#else
     for (int j = 0; j < length; j++) {
         ax[j] = 0;
         ay[j] = 0;
@@ -152,6 +190,7 @@ int get_gravity_at_point(double *eps_in, double *x_in, double *y_in, double *z_i
             az[j] += tmp * dz;
         }
     }
+#endif
     
 #ifndef NOMPI
     if (mpi_rank) {
@@ -164,6 +203,11 @@ int get_gravity_at_point(double *eps_in, double *x_in, double *y_in, double *z_i
         MPI_Reduce(MPI_IN_PLACE, az, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
+
+#ifdef GPU
+    return result;
+#else
     return 0;
+#endif
 }
 

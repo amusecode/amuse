@@ -8,8 +8,19 @@ class FastKickInterface(CodeInterface, CommonCodeInterface, GravityFieldInterfac
     """
     include_headers = ['worker_code.h']
 
-    def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker="fastkick_worker", **options)
+    MODE_CPU = 'cpu'
+    MODE_GPU = 'gpu'
+
+    def __init__(self, mode=MODE_CPU, **options):
+        CodeInterface.__init__(self, name_of_the_worker=self.get_name_of_the_worker(mode), **options)
+
+    def get_name_of_the_worker(self, mode):
+        if mode == self.MODE_CPU:
+            return "fastkick_worker"
+        if mode == self.MODE_GPU:
+            return "fastkick_worker_gpu"
+        else:
+            return "fastkick_worker"
 
     @legacy_function
     def new_particle():

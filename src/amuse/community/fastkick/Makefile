@@ -6,6 +6,7 @@ AMUSE_DIR?=../../../..
 MPICXX ?= mpicxx
 
 OBJ = interface.o
+GPU_OBJ = interface.gpuo cuda_fastkick.o
 
 CODE_GENERATOR = $(PYTHON) $(AMUSE_DIR)/build.py
 
@@ -20,9 +21,18 @@ worker_code.h: interface.py
 fastkick_worker: worker_code.cc worker_code.h $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $< $(OBJ) -o $@ 
 
-.cc.o: $<
-	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
+fastkick_worker_gpu: worker_code.cc worker_code.h  $(GPU_OBJ)
+	$(MPICXX) $(CXXFLAGS) $< $(GPU_OBJ) -o $@ $(CUDA_LIBS) -DGPU
+
+interface.o: interface.cc
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
+
+interface.gpuo: interface.cc
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $< -DGPU
+
+cuda_fastkick.o: cuda_fastkick.cu
+	$(NVCC) $(NVCCFLAGS) -c $< -o $@
 
 clean:
-	rm -f *.o *.pyc worker_code.cc worker_code.h
-	rm -f fastkick_worker
+	rm -f *.o *.gpuo *.pyc worker_code.cc worker_code.h
+	rm -f fastkick_worker fastkick_worker_gpu
