@@ -42,7 +42,7 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
 def new_smalln():
     result = SmallN()
     result.parameters.timestep_parameter = 0.1
-    result.parameters.cm_index = 2001
+    #result.parameters.cm_index = 2001
     return result
         
 def run_ph4(infile = None, number_of_stars = 40,

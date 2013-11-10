@@ -97,9 +97,12 @@ def new_smalln():
     
 def init_smalln():
     global SMALLN
+    sys.stdout.flush()
     SMALLN = SmallN()
+    sys.stdout.flush()
     SMALLN.parameters.timestep_parameter = 0.1
-    SMALLN.parameters.cm_index = 2001
+    #SMALLN.parameters.cm_index = 2001		# don't set this here!!
+    sys.stdout.flush()
 
 def init_kepler(star1, star2):        
     try:
