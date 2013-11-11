@@ -430,6 +430,19 @@ class VectorQuantity(Quantity):
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))
         else:
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** self.number.shape[axis])
+    
+    
+    def inner(self, other):
+        """Calculate the inner product of self with other.
+
+        >>> from amuse.units import units
+        >>> v1 = [1.0, 2.0, 3.0] | units.m
+        >>> v1.inner(v1)
+        quantity<14.0 m**2>
+        """
+        other = to_quantity(other)
+        return new_quantity_nonone(numpy.inner(self._number, other._number), (self.unit * other.unit).to_simple_form())
+
 
     def length_squared(self):
         """Calculate the squared length of the vector.
@@ -795,9 +808,14 @@ class VectorQuantity(Quantity):
             (self.unit * other.unit).to_simple_form()
         )
 
-    def dot(self, other,out=None):
+    def dot(self, other, out=None):
         """
         Return the dot product of this vector quantity with the supplied vector (quantity).
+        
+        >>> from amuse.units import units
+        >>> v1 = [1.0, 2.0, 3.0] | units.m
+        >>> v1.dot(v1)
+        quantity<14.0 m**2>
         """
         other = to_quantity(other)
         return new_quantity_nonone(

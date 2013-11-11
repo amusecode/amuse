@@ -1,4 +1,4 @@
-import h5py
+
 import numpy
 import pickle
 import os.path

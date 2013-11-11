@@ -1,4 +1,10 @@
-import h5py
+try:
+    import h5py
+except ImportError as ex:
+    import warnings
+    warnings.warn("could not load h5py, hdf5 files not supported", ImportWarning)
+    h5py = None
+    
 import numpy
 import pickle
 import os.path
@@ -481,6 +487,9 @@ class StoreHDF(object):
     UNNAMED_REFERENCES_GROUP_NAME = "referenced"
     
     def __init__(self, filename, append_to_file=True, open_for_writing = True, copy_history = False):
+        if h5py is None:
+            raise AmuseException("h5py module not available, cannot use hdf5 files")
+            
         if not append_to_file and open_for_writing and os.path.exists(filename):
             os.remove(filename)
             
