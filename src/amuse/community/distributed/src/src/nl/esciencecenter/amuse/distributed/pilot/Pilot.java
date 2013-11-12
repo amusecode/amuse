@@ -72,12 +72,13 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
     private static File createTmpDir(UUID id) throws IOException {
         File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
+        String userName = System.getProperty("user.name");
 
         if (!systemTmpDir.exists()) {
             throw new IOException("Java tmpdir does not exist " + systemTmpDir);
         }
 
-        File result = new File(systemTmpDir, "distributed-amuse/pilot-" + id.toString());
+        File result = new File(systemTmpDir, "distributed-amuse-" + userName + "/pilot-" + id.toString());
         result.mkdirs();
 
         return result;

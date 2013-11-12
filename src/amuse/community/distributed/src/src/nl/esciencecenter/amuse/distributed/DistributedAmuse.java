@@ -19,6 +19,7 @@ import ibis.ipl.IbisCapabilities;
 import ibis.ipl.PortType;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.jobs.JobManager;
@@ -77,17 +78,18 @@ public class DistributedAmuse {
 
     private static File createTmpDir() throws DistributedAmuseException {
         File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
+        String userName = System.getProperty("user.name");
 
         if (!systemTmpDir.exists()) {
             throw new DistributedAmuseException("Java tmpdir does not exist " + systemTmpDir);
         }
 
-        File result = new File(systemTmpDir, "distributed-amuse/daemon-" + UUID.randomUUID().toString());
+        File result = new File(systemTmpDir, "distributed-amuse-" + userName + "/daemon-" + UUID.randomUUID().toString());
         result.mkdirs();
 
         return result;
     }
-
+    
     public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort) throws DistributedAmuseException {
         logger.info("Initializing Distributed Amuse");
         try {
