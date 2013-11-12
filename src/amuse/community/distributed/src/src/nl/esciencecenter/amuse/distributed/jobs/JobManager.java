@@ -131,7 +131,7 @@ public class JobManager extends Thread {
     }
     
     public FunctionJob submitFunctionJob(String function, String arguments, String nodeLabel) throws DistributedAmuseException {
-        FunctionJob result = new FunctionJob(function, arguments, nodeLabel, ibis);
+        FunctionJob result = new FunctionJob(function, arguments, nodeLabel, ibis, this);
         
         addFunctionJob(result);
         
@@ -174,7 +174,7 @@ public class JobManager extends Thread {
 
     public ScriptJob submitScriptJob(String scriptName, String arguments, String scriptDir, String nodeLabel,
             boolean reUseCodeFiles) throws DistributedAmuseException {
-        ScriptJob result = new ScriptJob(scriptName, arguments, scriptDir, nodeLabel, reUseCodeFiles, ibis);
+        ScriptJob result = new ScriptJob(scriptName, arguments, scriptDir, nodeLabel, reUseCodeFiles, ibis, this);
         
         addScriptJob(result);
         
@@ -227,7 +227,7 @@ public class JobManager extends Thread {
 
 
     public WorkerJob submitWorkerJob(WorkerDescription jobDescription) throws DistributedAmuseException {
-        WorkerJob result = new WorkerJob(jobDescription, ibis);
+        WorkerJob result = new WorkerJob(jobDescription, ibis, this);
 
         addWorkerJob(result);
 
@@ -261,7 +261,7 @@ public class JobManager extends Thread {
 
     public void end() {
         this.interrupt();
-
+        
         for (Job job : getWorkerJobs()) {
             try {
                 job.cancel();
@@ -283,13 +283,16 @@ public class JobManager extends Thread {
                 logger.error("Failed to cancel job: " + job, e);
             }
         }
-
+        
         try {
             logger.debug("Terminating ibis pool");
             ibis.registry().terminate();
         } catch (IOException e) {
             logger.error("Failed to terminate ibis pool", e);
         }
+        
+        nodes.waitUntilEmpty(60000);
+        
         try {
             ibis.end();
         } catch (IOException e) {

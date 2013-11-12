@@ -37,8 +37,8 @@ public class WorkerJob extends Job {
     private ReceivePortIdentifier remoteWorkerPort = null;
 
     
-    public WorkerJob(WorkerDescription description, Ibis ibis) throws DistributedAmuseException {
-        super(description.getNodeLabel(), description.getNrOfNodes(), ibis);
+    public WorkerJob(WorkerDescription description, Ibis ibis, JobManager jobManager) throws DistributedAmuseException {
+        super(description.getNodeLabel(), description.getNrOfNodes(), ibis, jobManager);
         this.description = description;
     }
 

@@ -119,6 +119,7 @@ public class PilotNodes implements RegistryEventHandler {
                     //TODO: do something with the jobs still running on this node, if any...
                 }
             }
+            notifyAll();
         }
     }
 
@@ -160,6 +161,28 @@ public class PilotNodes implements RegistryEventHandler {
         
         //if all ids are present at some node the set should now be empty
         return ids.isEmpty();
+    }
+
+    public synchronized void waitUntilEmpty(long timeout) {
+        long deadline = System.currentTimeMillis() + timeout;
+        
+        while (!isEmpty()) {
+            long now = System.currentTimeMillis();
+            
+            if (now >= deadline) {
+                logger.debug("timeout on waiting until all pilot nodes done");
+                return;
+            }
+            
+            logger.debug("waiting until all pilot nodes done");
+            
+            try {
+                wait(deadline - now);
+            } catch (InterruptedException e) {
+                return;
+            }
+        }
+        logger.debug("all pilot nodes done");
     }
 
 }

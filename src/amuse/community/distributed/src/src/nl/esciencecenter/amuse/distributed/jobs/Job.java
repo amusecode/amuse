@@ -60,6 +60,8 @@ public abstract class Job extends Thread implements MessageUpcall {
     }
 
     private final Ibis ibis;
+    
+    private final JobManager jobManager;
 
     private final ReceivePort resultReceivePort;
 
@@ -78,11 +80,12 @@ public abstract class Job extends Thread implements MessageUpcall {
     //will never timeout until timeout set
     private long expirationDate = Long.MAX_VALUE;
 
-    public Job(String nodeLabel, int numberOfNodes, Ibis ibis) throws DistributedAmuseException {
+    public Job(String nodeLabel, int numberOfNodes, Ibis ibis, JobManager jobManager) throws DistributedAmuseException {
         this.nodeLabel = nodeLabel;
         this.numberOfNodes = numberOfNodes;
 
         this.ibis = ibis;
+        this.jobManager = jobManager;
 
         this.jobID = getNextID();
 
@@ -325,6 +328,8 @@ public abstract class Job extends Thread implements MessageUpcall {
         } else {
             setState(State.DONE);
         }
+        
+        jobManager.nudge();
 
         logger.debug("Status message received, state now: {}", this);
 
