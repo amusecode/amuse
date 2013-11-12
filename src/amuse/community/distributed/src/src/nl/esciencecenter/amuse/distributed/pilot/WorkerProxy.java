@@ -177,13 +177,20 @@ public class WorkerProxy extends Thread {
                 throw new DistributedAmuseException("multiple workers (" + description.getNrOfWorkers()
                         + ") requested, but mpiexec disabled in this AMUSE installation");
             }
-        } else if (description.getNrOfNodes() == 1) {
-            // no need for machine file, set number of processes.
-            builder.command(amuseConfiguration.getMpiexec(), "-n", Integer.toString(description.getNrOfWorkers()));
         } else {
-            // use machine file
-            File hostFile = createHostFile(hostnames, tempDirectory);
-            builder.command(amuseConfiguration.getMpiexec(), "-machinefile", hostFile.getAbsolutePath());
+            // use mpiexec
+            builder.command().add(amuseConfiguration.getMpiexec());
+
+            // set machine file, if needed
+            if (description.getNrOfNodes() != 1) {
+                File hostFile = createHostFile(hostnames, tempDirectory);
+                builder.command().add("-machinefile");
+                builder.command().add(hostFile.getAbsolutePath());
+            }
+            
+            // set number of processes to start
+            builder.command().add("-n");
+            builder.command().add(Integer.toString(description.getNrOfWorkers()));
         }
 
         // executable and port options
