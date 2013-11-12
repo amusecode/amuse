@@ -71,7 +71,7 @@ public class PilotNodes implements RegistryEventHandler {
             }
         }
         if (found != result.length) {
-            logger.debug("no suitable nodes found for job {} in {}", job, nodes);
+            logger.info("no suitable nodes found for job {} in {}", job, nodes);
             return null;
         }
 

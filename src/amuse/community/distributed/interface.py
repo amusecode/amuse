@@ -100,6 +100,16 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     @legacy_function
+    def get_webinterface_url():
+        """
+        Returns the url of the webinterface running inside the distributed code
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("address", dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def new_resource():
         """
         Define a new resource. This function returns an index that can be used to refer

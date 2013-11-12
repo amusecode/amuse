@@ -398,6 +398,12 @@ public class Code implements CodeInterface {
         number_of_workers[0] = distributedAmuse.jobManager().getWorkerJobCount();
         return 0;
     }
+    
+    // parameter "address" is an output parameter
+    public int get_webinterface_url(String[] address) {
+        address[0] = distributedAmuse.webInterface().getURL();
+        return 0;
+    }
 
     @Override
     /**

@@ -125,6 +125,10 @@ public class DistributedAmuse {
     public JobManager jobManager() {
         return jobManager;
     }
+    
+    public WebInterface webInterface() {
+        return webInterface;
+    }
 
     /**
      * Port used by the IbisChannel to connect to when creating workers and stderr/stdout streams

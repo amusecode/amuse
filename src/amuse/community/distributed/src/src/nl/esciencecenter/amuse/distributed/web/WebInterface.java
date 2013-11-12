@@ -17,6 +17,8 @@ package nl.esciencecenter.amuse.distributed.web;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -67,10 +69,11 @@ public class WebInterface extends AbstractHandler {
     public WebInterface(DistributedAmuse distributedAmuse, int port) throws Exception {
         this.distributedAmuse = distributedAmuse;
 
-        QueuedThreadPool threadPool = new QueuedThreadPool(5);
+        QueuedThreadPool threadPool = new QueuedThreadPool(100);
         threadPool.setDaemon(true);
         
         server = new Server(threadPool);
+        
         
         ServerConnector http = new ServerConnector(server);
         //http.setHost("localhost");
@@ -84,16 +87,26 @@ public class WebInterface extends AbstractHandler {
 
         //get actual port from jetty
         this.port = ((ServerConnector) server.getConnectors()[0]).getLocalPort();
-        logger.info("Web interface running on http://localhost:" + this.port);
+        logger.info("Web interface running on " + getURL());
     }
 
     public int getPort() {
         return port;
     }
+    
+    public String getURL() {
+        try {
+            InetAddress localAddress = InetAddress.getLocalHost();
+            return "http://" + localAddress.getHostAddress() + ":" + this.port;
+        } catch (UnknownHostException e) {
+            return "http://localhost:" + this.port;
+        }
+    }
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
+        logger.debug("handling request for page: " + target);
         response.setContentType("text/html;charset=utf-8");
         writeHeader(response.getWriter());
         try {
