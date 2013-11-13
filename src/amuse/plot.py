@@ -25,6 +25,7 @@ except ImportError:
 from amuse.support.exceptions import AmuseException
 from amuse.units import units, constants
 from amuse.units import quantities
+from amuse.support import console
 
 auto_label = "{0}"
 custom_label = "{0} {1}"
@@ -33,27 +34,52 @@ class UnitlessArgs(object):
     current_plot = None
 
     @classmethod
-    def strip(cli, *args, **kwargs):
-        if cli.current_plot is native_plot.gca():
-            args = [arg.as_quantity_in(unit) if isinstance(arg, quantities.Quantity) else arg
-                for arg, unit in map(None, args, cli.arg_units)]
-        cli.clear()
-        cli.current_plot = native_plot.gca()
-        for i, v in enumerate(args):
-            if isinstance(v, quantities.Quantity):
-                cli.stripped_args.append(v.value_in(v.unit))
-                cli.arg_units.append(v.unit)
-                cli.unitnames_of_args.append("["+str(v.unit)+"]")
+    def strip(self, *args, **kwargs):
+        if self.current_plot is native_plot.gca():
+            args = [arg.as_quantity_in(unit) if quantities.is_quantity(arg) else arg
+                for arg, unit in map(None, args, self.arg_units)]
+        self.clear()
+        self.current_plot = native_plot.gca()
+        for arg in args:
+            if quantities.is_quantity(arg):
+                arg = console.current_printing_strategy.convert_quantity(arg)
+
+                self.stripped_args.append(arg.value_in(arg.unit))
+                self.arg_units.append(arg.unit)
+                self.unitnames_of_args.append("["+str(arg.unit)+"]")
             else:
-                cli.stripped_args.append(v)
-                cli.arg_units.append(None)
-                cli.unitnames_of_args.append("")
+                self.stripped_args.append(arg)
+                self.arg_units.append(None)
+                self.unitnames_of_args.append("")
+
+        return self.stripped_args
 
     @classmethod
-    def clear(cli):
-        cli.stripped_args = []
-        cli.arg_units = []
-        cli.unitnames_of_args = []
+    def clear(self):
+        self.stripped_args = []
+        self.arg_units = []
+        self.unitnames_of_args = []
+
+    @classmethod
+    def x_label(self, s=None):
+        unit_name = self.unitnames_of_args[0]
+
+        return self.label(s, unit_name)
+
+    @classmethod
+    def y_label(self, s=None):
+        unit_name = self.unitnames_of_args[1]
+
+        return self.label(s, unit_name)
+
+    @classmethod
+    def label(self, s, unit_name):
+        if s is None:
+            return auto_label.format(unit_name)
+        else:
+            return custom_label.format(s, unit_name)
+
+
 
 def latex_support():
     from matplotlib import rc
@@ -62,54 +88,48 @@ def latex_support():
     rc('text', usetex=True)
 
 def plot(*args, **kwargs):
-    UnitlessArgs.strip(*args, **kwargs)
-    args = UnitlessArgs.stripped_args
+    args = UnitlessArgs.strip(*args, **kwargs)
     result = native_plot.plot(*args, **kwargs)
-    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
-    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
     return result
 
 def plot3(*args, **kwargs):
-    UnitlessArgs.strip(*args, **kwargs)
-    args = UnitlessArgs.stripped_args
+    args = UnitlessArgs.strip(*args, **kwargs)
     fig = native_plot.figure()
     ax = fig.gca(projection='3d')
     return ax.plot(*args, **kwargs)
-    #ax.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
-    #ax.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
-    #ax.zlabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
 
 def semilogx(*args, **kwargs):
-    UnitlessArgs.strip(*args, **kwargs)
-    args = UnitlessArgs.stripped_args
+    args = UnitlessArgs.strip(*args, **kwargs)
     result = native_plot.semilogx(*args, **kwargs)
-    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
-    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
     return result
 
 def semilogy(*args, **kwargs):
-    UnitlessArgs.strip(*args, **kwargs)
-    args = UnitlessArgs.stripped_args
+    args = UnitlessArgs.strip(*args, **kwargs)
     result = native_plot.semilogy(*args, **kwargs)
-    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
-    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
     return result
 
 def loglog(*args, **kwargs):
-    UnitlessArgs.strip(*args, **kwargs)
-    args = UnitlessArgs.stripped_args
+    args = UnitlessArgs.strip(*args, **kwargs)
     result = native_plot.loglog(*args, **kwargs)
-    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
-    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
     return result
 
 def scatter(x, y, **kwargs):
-    UnitlessArgs.strip(x,y)
-    return native_plot.scatter(*UnitlessArgs.stripped_args, **kwargs)
+    args = UnitlessArgs.strip(x,y)
+    result = native_plot.scatter(*UnitlessArgs.stripped_args, **kwargs)
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
+    return result
 
 def hist(x, bins=10, range=None, normed=False, weights=None, cumulative=False, bottom=None, histtype='bar', align='mid', orientation='vertical', rwidth=None, log=False, hold=None, **kwargs):
-    UnitlessArgs.strip(x)
-    args = UnitlessArgs.stripped_args
+    args = UnitlessArgs.strip(x)
     result = native_plot.hist(args[0], bins, range, normed, weights, cumulative, bottom, histtype, align, orientation, rwidth, log, hold, **kwargs)
     UnitlessArgs.unitnames_of_args.append("")
     return result
@@ -121,27 +141,60 @@ def errorbar(*args, **kwargs):
         else:
             args += (None,)
 
-    UnitlessArgs.strip(*args, **kwargs)
-    args = UnitlessArgs.stripped_args
+    yerr, xerr = args[2:4]
+
+    args1 = UnitlessArgs.strip(*args[:2])
+    args2 = UnitlessArgs.strip(xerr, yerr)
+    args = args1 + args2[::-1]
+
     result = native_plot.errorbar(*args, **kwargs)
-    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
-    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
     return result
 
-def text(x, y, s, **kwargs):
-    UnitlessArgs.strip(x,y)
-    args = UnitlessArgs.stripped_args
-    return native_plot.text(args[0], args[1], s, **kwargs)
+def text(*args, **kwargs):
+    args = UnitlessArgs.strip(*args, **kwargs)
+    return native_plot.text(*args, **kwargs)
 
 def xlabel(s, *args, **kwargs):
     if not '[' in s:
-        s = custom_label.format(s, UnitlessArgs.unitnames_of_args[0])
+        s = UnitlessArgs.x_label(s)
     return native_plot.xlabel(s, *args, **kwargs)
 
 def ylabel(s, *args, **kwargs):
     if not '[' in s:
-        s = custom_label.format(s, UnitlessArgs.unitnames_of_args[1])
+        s = UnitlessArgs.y_label(s)
     return native_plot.ylabel(s, *args, **kwargs)
+
+def xlim(*args, **kwargs):
+    if len(UnitlessArgs.arg_units) is 0:
+        raise AmuseException("Cannot call xlim function before plotting")
+
+    x_unit = UnitlessArgs.arg_units[0]
+
+    if x_unit is not None:
+        args = [arg.value_in(x_unit) for arg in args]
+
+        for name in ("xmin", "xmax"):
+            if name in kwargs:
+                kwargs[name] = kwargs[name].value_in(x_unit)
+
+    native_plot.xlim(*args, **kwargs)
+
+def ylim(*args, **kwargs):
+    if len(UnitlessArgs.arg_units) is 0:
+        raise AmuseException("Cannot call ylim function before plotting")
+
+    y_unit = UnitlessArgs.arg_units[1]
+
+    if y_unit is not None:
+        args = [arg.value_in(y_unit) for arg in args]
+
+        for name in ("ymin", "ymax"):
+            if name in kwargs:
+                kwargs[name] = kwargs[name].value_in(y_unit)
+
+    native_plot.ylim(*args, **kwargs)
 
 def smart_length_units_for_vector_quantity(quantity):
     length_units = [units.Mpc, units.kpc, units.parsec, units.AU, units.RSun, units.km]
