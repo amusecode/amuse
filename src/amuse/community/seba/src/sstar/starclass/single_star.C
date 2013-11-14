@@ -2566,12 +2566,12 @@ real single_star::AGB_radius(const real lum, const real mass,
 
   real A, b50;
   real m_HeF = helium_flash_mass(z);
-  if(mass <= m_HeF-0.2) {
+  if(mass_tot <= m_HeF-0.2) {
 
     b50 = smc.b(3,z);
     A = smc.b(56,z) + smc.b(57,z)*mass_tot;
   }
-  else if(mass >= m_HeF) {
+  else if(mass_tot >= m_HeF) {
     real b51 = smc.b(51,z);
     real b52 = smc.b(52,z);
     real b53 = smc.b(53,z);

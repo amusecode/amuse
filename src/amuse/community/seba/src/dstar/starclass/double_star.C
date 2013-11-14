@@ -2,7 +2,6 @@
 //
 // double_star.C
 //
-// test if I can submit to Amuse svn
 
 #include "double_star.h"
 
