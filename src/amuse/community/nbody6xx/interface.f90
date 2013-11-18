@@ -38,8 +38,8 @@
         OPEN (UNIT=99, FILE='nbody6xx.input', IOSTAT=ioerror)
         
         if (ioerror.EQ.0) then
-            READ (99,*,IOSTAT=ioerror)  KSTART_AMUSE, TCOMP_AMUSE, TCRITp, 
-     &      isernb, iserreg
+            READ (99,*,IOSTAT=ioerror)  KSTART_AMUSE, TCOMP_AMUSE, 
+     &          TCRITp, isernb, iserreg
         end if
         
         if (ioerror.NE.0)  then
@@ -67,8 +67,8 @@
         
         PRINT *,  N, NFIX, NCRIT, NRAND_AMUSE, NNBOPT, NRUN
         if (ioerror.EQ.0)  then
-            READ (99,*,IOSTAT=ioerror)  ETAI, ETAR, RS0_AMUSE, DTADJ, DELTAT, TCRIT,
-     &              QE, RBAR, ZMBAR
+            READ (99,*,IOSTAT=ioerror)  ETAI, ETAR, RS0_AMUSE, DTADJ,
+     &              DELTAT, TCRIT, QE, RBAR, ZMBAR
         end if
         
         if (ioerror.NE.0)  then
