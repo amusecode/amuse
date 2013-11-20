@@ -94,10 +94,18 @@ ramses:	$(MODOBJ) $(AMRLIB) ramses.o
 	$(F90) $(MODOBJ) $(AMRLIB) ramses.o -o $(EXEC)$(NDIM)d $(LIBS)
 ramses_aton: $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) $(ATON_OBJ) ramses.o
 	$(F90) $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) $(ATON_OBJ) ramses.o -o $(EXEC)$(NDIM)d $(LIBS) $(LIBCUDA)
+
+# for amuse:
+RAMSESLIB = libramses.a
+all: ramses $(RAMSESLIB)
+$(RAMSESLIB): $(MODOBJ) $(AMRLIB)
+	ar crs $(RAMSESLIB) $(MODOBJ) $(AMRLIB)
+
 #############################################################################
 %.o:%.f90
 	$(F90) $(FFLAGS) -c $^ -o $@
 #############################################################################
 clean :
+	rm -f $(RAMSESLIB)
 	rm *.o *.$(MOD)
 #############################################################################
