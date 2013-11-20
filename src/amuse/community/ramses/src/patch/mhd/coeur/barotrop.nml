@@ -1,0 +1,68 @@
+This namelist contains various input parameters for RAMSES runs
+
+&RUN_PARAMS  
+hydro=.true.
+poisson=.true.
+nrestart=0
+ncontrol=1
+nremap=10
+nsubcycle=6*1,2
+/
+
+&AMR_PARAMS 
+levelmin=6
+levelmax=18
+ngridmax=1000000
+nexpand=2
+boxlen=4.0
+/
+
+&BOUNDARY_PARAMS
+nboundary = 6
+bound_type= 2, 2, 2, 2, 2, 2
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+/
+
+&INIT_PARAMS
+alpha=0.35
+beta=0.0
+crit=0.0
+delta_rho=0.0
+/
+
+&OUTPUT_PARAMS
+foutput=50
+fbackup=50
+noutput=4
+tout=0,0.2714,0.5428,0.691262,0.8142,1.0857,2.
+/
+
+&POISSON_PARAMS 
+gravity_type=0
+epsilon=1d-4
+/
+
+&HYDRO_PARAMS
+gamma=1.66666667
+courant_factor=0.8
+slope_type=1
+scheme='muscl'
+riemann='llf'
+/
+
+&PHYSICS_PARAMS
+n_star=1d-13
+T2_star=4.55
+g_star=0.6666667
+/
+
+&REFINE_PARAMS 
+jeans_refine=20*10.
+interpol_var=1
+interpol_type=0
+/

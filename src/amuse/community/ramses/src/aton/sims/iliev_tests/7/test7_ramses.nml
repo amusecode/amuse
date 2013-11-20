@@ -1,0 +1,77 @@
+! Radiative transfer test. These settings correspond to Test 7 from
+! I. Illiev et al., "Cosmological Radiative Transfer Comparison Project II:
+! The Radiation-Hydrodynamic Tests", 2008, arXiv:0905.2920v1.
+
+! Uses equilibrium cooling.
+
+&RUN_PARAMS
+hydro=.true.
+aton=.true.
+ncontrol=1
+nrestart=0
+nremap=0
+nsubcycle=1
+nstepmax=100000
+/
+
+&RADIATION_PARAMS
+rad_max_time_step=0.001
+rad_flux_at_x_min_boundary=.true.
+rad_flux_x=1.0e10  ! photons / s / m^2
+rad_density=33.356
+/
+
+&PHYSICS_PARAMS
+cooling=.true.
+metal=.false.
+J21=0.1
+units_density=3.32e-28  ! mH * 2 * 10^-4 grams/cm^3
+units_time=3.156e14     ! 10 Myr
+units_length=2.037e22   ! 6.6 kpc
+/
+
+&AMR_PARAMS
+levelmin=7
+levelmax=7
+ngridtot=2000000
+nexpand=1
+boxlen=1.0
+/
+
+&INIT_PARAMS
+nregion=2
+region_type(1)='square'  ! The outer region.
+region_type(2)='square'  ! The dense clump region.
+x_center=0.5,0.758
+y_center=0.5,0.5
+z_center=0.5,0.5
+length_x=1.0,0.242
+length_y=1.0,0.242
+length_z=1.0,0.242
+exp_region=10,2
+d_region=1.0,200.0
+p_region=1.5972e-04,1.5972e-04  ! 8000K and 40K
+/
+
+&BOUNDARY_PARAMS
+nboundary = 6
+bound_type= 2, 2, 2, 2, 2, 2
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+/
+
+&OUTPUT_PARAMS
+noutput=6
+tout=0.0,0.1,0.5,1.0,2.5,5.0
+/
+
+&HYDRO_PARAMS
+gamma=1.6666667
+courant_factor=0.8
+scheme='muscl'
+slope_type=1
+/

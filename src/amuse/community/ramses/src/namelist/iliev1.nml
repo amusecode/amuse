@@ -1,0 +1,96 @@
+&RUN_PARAMS 
+hydro=.true.
+static=.true.
+nrestart=0
+rt=.true.
+/
+
+&INIT_PARAMS
+nregion=1
+region_type(1)='square'
+x_center=0.5
+y_center=0.5
+z_center=0.5
+length_x=100.0
+length_y=100.0
+exp_region=10.0
+d_region=1.d-3	  		! cm-3
+p_region= 8.69869d-8		! =10^4 K
+/
+
+&AMR_PARAMS 
+levelmin=6
+levelmax=7
+ngridmax=50000
+boxlen=6.6			!  6.6 kpc
+/
+
+&OUTPUT_PARAMS
+noutput=5
+tout=10,30,100,200,500
+/
+
+&HYDRO_PARAMS
+gamma=1.4
+courant_factor=0.8
+scheme='muscl'
+slope_type=1
+/
+
+&PHYSICS_PARAMS
+cooling=.false.
+units_density=1.66d-24		! gram per proton
+units_time=3.1557d13		! 1 Myr in seconds
+units_length=3.0857d21 		! 1 kpc in cm
+/
+
+&REFINE_PARAMS
+err_grad_d=0.1
+/
+
+&RT_PARAMS
+X=1d0
+Y=0d0
+rt_TConst=1d4			! Kelvin
+rt_flux_scheme='glf'
+rt_c_fraction=0.01
+rt_otsa=.false.			! no OTSA
+rt_nregion=1   			!-----------------------------------------
+rt_region_type(1)='square'
+rt_reg_x_center=0.5
+rt_reg_y_center=0.5
+rt_reg_z_center=0.5
+rt_reg_length_x=100.0
+rt_reg_length_y=100.0
+rt_reg_length_z=100.0
+rt_exp_region=10.0
+rt_xion_region=1.2d-3	        ! xHII fraction in box
+rt_nsource=1   			!-----------------------------------------
+rt_source_type(1)='point'
+rt_src_x_center=0.0
+rt_src_y_center=0.0
+rt_src_z_center=0.0
+rt_src_length_x=1.0
+rt_src_length_y=1.0
+rt_src_length_z=1.0
+rt_n_source=5.d48	        ! 5E48 photons per sec emitted from source
+rt_err_grad_xHII=0.8 
+rt_err_grad_xHI=0.8 
+/
+
+&RT_GROUPS
+group_csn=6.3d-18, 0., 0.         ! monochromatic source at 13.6 eV
+group_cse=6.3d-18, 0., 0.         ! monochromatic source at 13.6 eV
+group_egy=13.6d0, 0., 0.
+/
+
+&BOUNDARY_PARAMS
+nboundary=6
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+bound_type= 1, 2, 1, 2, 1, 2	! Reflective+outflow boundaries
+/

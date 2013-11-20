@@ -1,0 +1,109 @@
+&RUN_PARAMS 
+hydro=.true.
+rt=.true.
+nrestart=0
+nremap=0
+nsubcycle=10*1
+verbose=.false.
+/
+
+&INIT_PARAMS
+nregion=1
+region_type(1)='square'
+x_center=7.5
+y_center=7.5
+z_center=7.5
+length_x=100.0
+length_y=100.0
+length_z=100.0
+exp_region=10.0
+d_region=1d-3		   	  ! 1e-3 hydrogen atoms per cc
+p_region=8.69869d-10		  ! 100 K
+/
+
+&AMR_PARAMS 
+levelmin=7
+levelmax=7
+ngridmax=300000
+nexpand=1
+boxlen=15.			!  1 kpc
+/
+
+&OUTPUT_PARAMS
+delta_tout=10.
+tend=500.
+/
+
+&HYDRO_PARAMS
+gamma=1.4
+courant_factor=0.8
+scheme='muscl'
+slope_type=2
+riemann='hllc'
+/
+
+&PHYSICS_PARAMS
+cooling=.false.
+units_density=1.66d-24
+units_time=3.1556926d13
+units_length=3.08568025d21
+/
+
+&REFINE_PARAMS
+err_grad_d=0.4
+/
+
+&RT_PARAMS
+X=1d0
+Y=0d0
+rt_flux_scheme='glf'
+hll_evals_file='/Users/romain/ramses/trunk/ramses/rt/hll_evals.list'
+rt_courant_factor=0.8
+rt_c_fraction=0.01
+rt_cooling=.true.
+rt_nsource=3
+rt_source_type=3*'point'
+rt_src_x_center=3*0.
+rt_src_y_center=3*0.
+rt_src_z_center=3*0.
+rt_src_length_x=3*1.0
+rt_src_length_y=3*1.0
+rt_src_length_z=3*1.0
+rt_src_group=1,2,3
+rt_n_source=2.235d48,2.47d48,0.295d48 ! Total = 5d48
+rt_u_source=3*0
+rt_v_source=3*0
+rt_w_source=3*0
+rt_nregion=1
+rt_region_type(1)='square'
+rt_reg_x_center=7.5
+rt_reg_y_center=7.5
+rt_reg_z_center=7.5
+rt_reg_length_x=100.0
+rt_reg_length_y=100.0
+rt_reg_length_z=100.0
+rt_exp_region=10.0
+rt_xion_region=1.d-6    ! hydrogen ionization state in box (no Helium)
+/
+
+&RT_GROUPS			! Blackbody at T=1d5 Kelvin
+group_csn(1,:)= 3.00d-18, 0.,0.   ! pck 1-> HI, HeI, HeII
+group_cse(1,:)= 2.78d-18, 0.,0.   ! pck 1-> HI, HeI, HeII
+group_csn(2,:)= 5.69d-19, 0.,0.   ! pck 2-> HI, HeI, HeII
+group_cse(2,:)= 5.04d-19, 0.,0.   ! pck 2-> HI, HeI, HeII
+group_csn(3,:)= 7.89d-20, 0.,0.   ! pck 3-> HI, HeI, HeII
+group_cse(3,:)= 7.46d-20, 0.,0.   ! pck 3-> HI, HeI, HeII
+group_egy = 18.85, 35.079, 65.666
+spec2group    = 1,2,3             ! HI, HeI, HeII -> pck
+/
+
+&BOUNDARY_PARAMS 
+nboundary=6
+bound_type= 1, 2,  1,  2,  1,  2
+ibound_min=-1, 1, -1, -1, -1, -1
+ibound_max=-1, 1,  1,  1,  1,  1
+jbound_min= 0, 0, -1,  1, -1, -1
+jbound_max= 0, 0, -1,  1,  1,  1
+kbound_min= 0, 0,  0,  0, -1,  1
+kbound_max= 0, 0,  0,  0, -1,  1
+/

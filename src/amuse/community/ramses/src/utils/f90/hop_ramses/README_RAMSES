@@ -1,0 +1,26 @@
+
+// Written by D.Aubert 
+// dominique.aubert@cea.fr
+
+The hop_input.c file has been  modified to make hop compatible with multi-file
+Ramses format. For example, the following command line:
+
+./hop -in ./output_00021/part_00021.out -p 1.
+
+tells hop  to parse files  part_00021.out00001 to part_00021.out0000N  where N
+stands for the number of processors used to produce the snaphot. 
+
+Regroup can be run using the following command:
+
+./regroup -root output_hop -douter 80. -dsaddle 200. -dpeak 240. -f77
+
+Positions can be computed using
+
+./poshalo -inp output_00021 -pre zregroup -xmi 0.1 -xma 0.9
+
+Here is a full example on a ramses zoom simulation:
+
+./hop -in output_00347/part_00347.out -p 1. -o hop00347
+./regroup -root hop00347 -douter 80. -dsaddle 200. -dpeak 240. -f77 -o grp00347
+./poshalo -inp output_00347 -pre grp00347 -xmi 0.375 -xma 0.625 -ymi 0.375 -yma 0.625 -zmi 0.375 -zma 0.625
+ 

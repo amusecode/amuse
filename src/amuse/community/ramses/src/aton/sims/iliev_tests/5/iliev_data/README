@@ -1,0 +1,15 @@
+http://www.cita.utoronto.ca/~iliev/rtwiki/doku.php?id=tests5-7
+
+The data files provided are in standard IFRIT binary (little-endian) format. The first line lists the grid dimensions (here 128 128 128 for all data) and then the 3D arrays for each variable as follows:
+ write(1) n, n, n
+ write(1) (((nHI(i,j,k),i=1,n),j=1,n),k=1,n)
+ write(1) (((press(i,j,k),i=1,n),j=1,n),k=1,n)
+ write(1) (((temp(i,j,k),i=1,n),j=1,n),k=1,n)
+ close(1)
+for the first set of files, and
+ write(1) n, n, n
+ write(1) (((dens(i,j,k),i=1,n),j=1,n),k=1,n)
+ write(1) (((mach(i,j,k),i=1,n),j=1,n),k=1,n)
+ write(1) (((1.0-nHI(i,j,k),i=1,n),j=1,n),k=1,n)
+ close(1)
+for the second set of files.

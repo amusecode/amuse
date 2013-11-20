@@ -1,0 +1,65 @@
+This namelist contains various input parameters for RAMSES runs
+
+&RUN_PARAMS  
+hydro=.true.
+poisson=.true.
+simple_boundary=.true.
+nrestart=0
+ncontrol=10
+nbackup=650
+nremap=1000000
+nsubcycle=4*1,2
+/
+
+&AMR_PARAMS 
+levelmin=6
+levelmax=10
+ngridmax=200000
+nexpand=1
+boxlen=12.0
+/
+
+&BOUNDARY_PARAMS
+nboundary = 4
+ibound_min= 0, 0,-1,+1
+ibound_max= 0, 0,-1,+1
+jbound_min=-1,+1,-1,-1
+jbound_max=-1,+1,+1,+1
+bound_type= 2, 2, 2, 2
+/
+
+&INIT_PARAMS
+nregion=2
+d_region=2.0,1.0
+v_region=0.0,0.0
+x_center=0.25
+/
+
+&OUTPUT_PARAMS
+noutput=100
+tout=  6.85, 13.69, 20.54, 27.38, 34.23, 41.07, 47.92, 54.76, 61.61, 68.45, 75.30, 82.14, 88.99, 95.83,102.68,109.52,116.37,123.21,130.06,136.90,143.75,150.59,157.44,164.28,171.13,177.97,184.82,191.66,198.51,205.36,212.20,219.05,225.89,232.74,239.58,246.43,253.27,260.12,266.96,273.81,280.65,287.50,294.34,301.19,308.03,314.88,321.72,328.57,335.41,342.26,349.10,355.95,362.79,369.64,376.48,383.33,390.17,397.02,403.87,410.71,417.56,424.40,431.25,438.09,444.94,451.78,458.63,465.47,472.32,479.16,486.01,492.85,499.70,506.54,513.39,520.23,527.08,533.92,540.77,547.61,554.46,561.30,568.15,574.99,581.84,588.68,595.53,602.38,609.22,616.07,622.91,629.76,636.60,643.45,650.29,657.14,663.98,670.83,677.67,684.52,
+/
+
+&POISSON_PARAMS 
+gravity_type=3
+gravity_params=0.2,4.0,0.05,1.d-3,0.02,
+/
+
+&HYDRO_PARAMS
+gamma=1.01
+courant_factor=0.8
+slope_type=3
+scheme='plmde'
+/
+
+&REFINE_PARAMS 
+interpol_var=0
+interpol_type=1
+x_refine=8*6.
+y_refine=8*6.
+r_refine=5.,3*4.0,5*3.
+m_refine=10*0.0
+/
+
+
+

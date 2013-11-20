@@ -1,0 +1,106 @@
+&RUN_PARAMS 
+hydro=.true.
+nrestart=0
+nremap=0
+nsubcycle=10*2
+verbose=.false.
+rt=.true.
+/
+
+&INIT_PARAMS
+nregion=1
+region_type(1)='square'
+x_center=0.5
+y_center=0.5
+z_center=0.5
+length_x=100.0
+length_y=100.0
+length_z=100.0
+exp_region=10.0
+p_region= 8.69869d-10		    ! 100 K
+/
+
+&AMR_PARAMS 
+levelmin=6
+levelmax=7
+ngridtot=3000000
+nexpand=1
+boxlen=.8			!  0.8 kpc
+/
+
+&OUTPUT_PARAMS
+noutput=5
+tout=1, 3, 10, 25, 75
+/
+
+&HYDRO_PARAMS
+gamma=1.4
+courant_factor=0.8
+scheme='muscl'
+slope_type=1
+/
+
+&PHYSICS_PARAMS
+cooling=.true.
+units_density=1.66000d-24
+units_time=3.1556926d13		! 1 Myr in seconds
+units_length=3.08568025d21 	! 1 kpc in cm
+/
+
+&REFINE_PARAMS
+err_grad_d=0.4
+/
+
+&RT_PARAMS
+X=1d0
+Y=0d0
+rt_output_coolstats=.true.
+rt_flux_scheme='glf'
+rt_smooth=.true.
+rt_courant_factor=0.8		! courant number for RT timesteps
+rt_c_fraction=0.01		      ! fraction of actual lightspeed set to RT lightspeed
+rt_otsa=.false.			      		       	              	        ! no OTSA
+rt_err_grad_xHII=0.1
+rt_nregion=1   !--------------------------------------------------------------------
+rt_region_type(1)='square'
+rt_reg_x_center=0.5
+rt_reg_y_center=0.5
+rt_reg_z_center=0.5
+rt_reg_length_x=100.0
+rt_reg_length_y=100.0
+rt_reg_length_z=100.0
+rt_exp_region=10.0
+rt_xion_region=1.d-6	        ! hydrogen ionization state in box (no Helium)
+rt_nsource=3   !--------------------------------------------------------------------
+rt_source_type=3*'point'
+rt_src_x_center=3*0.0
+rt_src_y_center=3*0.0
+rt_src_z_center=3*0.0
+rt_src_length_x=3*1.0
+rt_src_length_y=3*1.0
+rt_src_length_z=3*1.0
+rt_src_group=1,2,3
+rt_n_source=4.47d49,4.94d49,0.59d49		! Total = 1E50 photons per s emitted
+/
+
+&RT_GROUPS                                       ! Blackbody at T=1.d5 Kelvin
+group_csn(1,:)= 3.00d-18, 0.,       0.           ! pck 1-> HI, HeI, HeII
+group_cse(1,:)= 2.78d-18, 0.,       0.           ! pck 1-> HI, HeI, HeII
+group_csn(2,:)= 5.69d-19, 0.,       0.           ! pck 2-> HI, HeI, HeII
+group_cse(2,:)= 5.04d-19, 0.,       0.           ! pck 2-> HI, HeI, HeII
+group_csn(3,:)= 7.89d-20, 0.,       0.           ! pck 3-> HI, HeI, HeII
+group_cse(3,:)= 7.46d-20, 0.,       0.           ! pck 3-> HI, HeI, HeII
+group_egy     = 18.85,    35.08,     65.67
+spec2group    = 1,        2,        3            ! HI, HeI, HeII -> pck
+/
+
+&BOUNDARY_PARAMS
+nboundary=6
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+bound_type= 1, 2, 1, 2, 1, 2	! reflective boundary
+/

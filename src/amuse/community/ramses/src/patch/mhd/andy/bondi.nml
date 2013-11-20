@@ -1,0 +1,75 @@
+This namelist contains various input parameters for RAMSES runs. 
+This is the MHD bondi accretion test.
+
+&RUN_PARAMS
+verbose=.false.
+hydro=.true.
+poisson=.true.
+sink=.true.
+pic=.true.
+nrestart=0
+ncontrol=1
+nremap=0
+nsubcycle=10*1
+/
+
+&INIT_PARAMS
+filetype='ascii'
+initfile(1)='/home/cont003/teyssier/svnramses/trunk/patch/mhd/andy'
+/
+
+&AMR_PARAMS
+levelmin=6
+levelmax=10
+ngridmax=1000000
+npartmax=100000
+nexpand=1
+boxlen=1.
+/
+
+&OUTPUT_PARAMS
+foutput=10
+tend=10.
+delta_tout=0.1
+/
+
+&HYDRO_PARAMS
+gamma=1.666667
+courant_factor=0.5
+slope_type=1
+riemann='hlld'
+riemann2d='hlld'
+/
+
+&PHYSICS_PARAMS
+isothermal=.true.
+bondi=.true.
+T2_star=1.0
+g_star=1.0
+/
+
+&POISSON_PARAMS
+gravity_type=2
+gravity_params=0.001
+/
+
+&REFINE_PARAMS
+interpol_var=1
+interpol_type=0
+err_grad_d=0.01
+r_refine=0.078125,0.0390625,0.01953125,0.009765625,0.0048828125
+x_refine=0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+y_refine=0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+z_refine=0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+/
+
+&BOUNDARY_PARAMS
+nboundary = 6
+bound_type= 2, 2, 2, 2, 2, 2
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+/

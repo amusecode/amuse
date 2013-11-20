@@ -1,0 +1,71 @@
+! Radiative transfer test. These settings correspond to Test 5 from
+! I. Illiev et al., "Cosmological Radiative Transfer Comparison Project II:
+! The Radiation-Hydrodynamic Tests", 2008, arXiv:0905.2920v1.
+
+! Uses equilibrium cooling.
+
+&RUN_PARAMS
+hydro=.true.
+aton=.true.
+ncontrol=1
+nrestart=0
+nremap=0
+nsubcycle=10*1
+nstepmax=1000
+/
+
+&RADIATION_PARAMS
+allow_gpu_overload=false
+rad_max_time_step=0.01
+rad_light_speed_factor=0.1
+rad_num_sources=1
+rad_source_x=0.5
+rad_source_y=0.5
+rad_source_z=0.5
+rad_source_rate=5.0d+48  ! photons / s
+/
+
+&PHYSICS_PARAMS
+cooling=.true.
+metal=.false.
+J21=0.1
+units_density=1.66e-27  ! mH * 10^-3 grams/cm^3
+units_time=3.156e15     ! 100 Myr
+units_length=9.258e22   ! 30 kpc
+/
+
+&AMR_PARAMS 
+levelmin=8
+levelmax=8
+ngridmax=500000
+nexpand=1
+boxlen=1.0
+/
+
+&INIT_PARAMS
+nregion=1
+region_type='square'
+x_center=0.5
+y_center=0.5
+z_center=0.5
+length_x=1.0
+length_y=1.0
+length_z=1.0
+exp_region=10
+d_region=1.0
+u_region=0.0
+v_region=0.0
+p_region=9.65e-6  ! This corresponds to 100K. (The value depends on units.)
+/
+
+&OUTPUT_PARAMS
+noutput=7
+tout=0.0,0.01,0.1,0.3,1.0,2.0,5.0 ! 10, 30, 100, 200, 500 Myr
+/
+
+&HYDRO_PARAMS
+gamma=1.6666667
+courant_factor=0.8
+scheme='muscl'
+slope_type=1
+/

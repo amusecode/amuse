@@ -1,0 +1,61 @@
+###############
+# HOWTO Galic #
+###############
+
+- Les  parametres de  la galaxie  a initialiser  sont a  modifier dans
+  'main.c'.
+
+- Les fichiers crees  'info.txt', 'ic_part', 'params.txt', 'Vcirc.dat'
+  sont crees a partir de 'save.c'
+
+Vcirc.dat: 
+colonne 1 rayon en pc
+colonne 2 Vcirc en km/s
+
+ic_part: 
+colonne 1, 2 et 3: coordonnees en  kpc 
+colonne 4, 5 et 6: vitesses en km/s
+colonne 7: masses en 10^9 Msol.
+
+Parametres
+----------
+
+- Les parametres du modele  galactique (spin parameter, V200, c, bulge
+  mass, etc), tu les choisis comme tu veux.
+
+- Pour ce qui est du gaz, tu  peux modifier le nombre N_GAZ de la meme
+  maniere que  les N_DISK, N_HALO,  etc. Cela echantillonera  mieux ta
+  distribution de gaz dans Galic mais le gaz ne sera pas ecrit dans le
+  fichier 'ic_part' en sortie.
+
+RAMSES
+------
+
+- Pour  rentrer le  gaz dans  le MERGER  module de  RAMSES  de maniere
+  coherente, il suffit de renseigner  la masse du disque de gaz donnee
+  par  Galic, de  fournir le  fichier  'Vcirc.dat', et  de donner  les
+  tailles de ton  disque. Pour le profil exponentiel  du dique de gaz,
+  choisir un rayon  du disque donne par la taille  du disque donne par
+  Galic, a savoir  H=4.32 kpc (H n'est pas  la hauteur, mefiance) avec
+  ce jeu de parametres.
+
+- Pour  la  hauteur  caracteristique  du disque,  le  disque  d'etoile
+  initialise par Galic a une hauteur H*DiskHeight ou DiskHeight est le
+  parametre que tu  as choisi (0.1 ici). Le disque  de gaz est souvent
+  plus fin que le disque d'etoiles, aussi je recommande de prendre une
+  hauteur caracteristique  de gaz  entre 0.5 et  1 fois la  hauteur du
+  disque d'etoiles, donc ici 0.216 - 0.432 kpc.
+
+Notes
+-----
+
+- La galaxie initialisee par Galic  est vraiment tres etendue, avec un
+  halo non tronque  qui s'etend tres loin, tout comme  le disque et le
+  bulbe d'etoiles. Si cette galaxie est mise dans RAMSES telle quelle,
+  dans  une boite  trop petite  pour contenir  toutes  les particules,
+  alors le MERGER module va  tronquer la galaxie de maniere franche au
+  bord  de la  boite, par  consequent  de maniere  non isotrope.  Pour
+  eviter cela,  on peut choisir  de retravailler le  fichier 'ic_part'
+  avant  de le  mettre  dans RAMSES  afin  de tronquer  la galaxie  de
+  maniere spherique...
+

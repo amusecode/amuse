@@ -1,0 +1,70 @@
+
+&RUN_PARAMS 
+hydro=.true.
+poisson=.true.
+ncontrol=1
+nsubcycle=1,15*2
+nremap=10
+nrestart=0
+/
+
+&AMR_PARAMS
+levelmin=7
+levelmax=11
+ngridmax=600000
+boxlen=60.0
+/
+
+&BOUNDARY_PARAMS
+nboundary = 6
+bound_type= 2, 2, 2, 2, 2, 2
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+/
+
+&INIT_PARAMS
+filetype='ascii'
+initfile(1)='/home/ydubois/data'
+/
+
+&OUTPUT_PARAMS
+foutput=1
+fbackup=50
+noutput=1
+tout=30.0
+/
+
+&POISSON_PARAMS
+gravity_type=-4
+gravity_params=35.,10.,0.1,0.15,1d-5
+/
+
+&HYDRO_PARAMS
+pressure_fix=.true.
+gamma=1.666666667
+courant_factor=0.8
+slope_type=1
+scheme='muscl'
+riemann='hlld'
+riemann2d='hlld'
+/
+
+&PHYSICS_PARAMS
+cooling=.true.
+T2_star=1d4
+n_star=0.1
+/
+
+&REFINE_PARAMS 
+mass_sph=4d-6
+interpol_var=1
+interpol_type=0
+m_refine=15*10.0
+/
+
+
+

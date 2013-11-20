@@ -1,0 +1,108 @@
+&RUN_PARAMS 
+hydro=.true.
+nrestart=0
+nremap=10
+nsubcycle=10*2
+verbose=.false.
+rt=.true.
+/
+
+&INIT_PARAMS
+nregion=2
+region_type(1)='square'
+region_type(2)='square'
+x_center=3.3, 5.
+y_center=3.3, 3.3
+z_center=3.3, 3.3
+length_x=10.0, 1.6
+length_y=10.0, 1.6
+length_z=10.0, 1.6
+exp_region=10.0, 2.
+d_region=2.d-4, 4.d-2			! (1=1e-3 cm-3)
+u_region=0.0, 0.0							
+v_region=0.0, 0.0     
+p_region= 1.391794d-08, 1.391795d-08	! 8000 K and 40 K
+/
+
+&AMR_PARAMS 
+levelmin=6
+levelmax=7
+ngridtot=1000000
+nexpand=1
+boxlen=6.6			!  6.6 kpc
+/
+
+&OUTPUT_PARAMS
+noutput=5
+tout=1,5,10,25,50
+/
+
+&HYDRO_PARAMS
+gamma=1.4
+courant_factor=0.8
+scheme='muscl'
+slope_type=1
+/
+
+&PHYSICS_PARAMS
+cooling=.true.
+units_density=1.66000d-24
+units_time=3.1556926d13		! 1 Myr in seconds
+units_length=3.08568025d21 	! 1 kpc in cm
+/
+
+&REFINE_PARAMS
+err_grad_d=0.3
+err_grad_p=0.3
+/
+
+&RT_PARAMS
+X=1d0                           ! Hydrogen mass fraction
+Y=0d0                           ! Helium mass fraction
+rt_output_coolstats=.true.
+rt_flux_scheme='hll'            ! HLL or GLF
+hll_evals_file='/Users/romain/ramses/trunk/ramses/rt/hll_evals.list'
+rt_courant_factor=0.8           ! Courant number for RT timesteps
+rt_c_fraction=0.01              ! Light speed fraction
+rt_smooth=.true.                ! Smoothed RT to battle operator splitting
+rt_otsa=.true.                  ! On-the-spot approximation?
+rt_err_grad_xHII=0.3
+rt_err_grad_xHI=0.3
+rt_is_init_xion=.true.
+rt_nsource=3                    !--Idealized radiation sources------------
+rt_source_type=3*'square'       ! Source geometry (point or square)
+rt_src_x_center=3*0.05            ! Source position [0, boxlen]
+rt_src_y_center=3*3.3
+rt_src_z_center=3*3.3
+rt_src_length_x=3*0.1             ! Source size [0, boxlen]
+rt_src_length_y=3*100.
+rt_src_length_z=3*100.
+rt_src_group=1,2,3                  ! Photon group emitted into
+rt_n_source=4.47d5,4.94d5,0.59d5 ! Source flux (photons per cm per sec)
+rt_u_source=1.,1.,1.            ! Reduced x-direction flux
+rt_v_source=0.,0.,0.            ! Reduced y-direction flux
+rt_w_source=0.,0.,0.            ! Reduced z-direction flux
+/
+
+
+&RT_GROUPS                                       ! Blackbody at T=1.d5 Kelvin
+group_csn(1,:)= 3.00d-18, 0.,       0.           ! pck 1-> HI, HeI, HeII
+group_cse(1,:)= 2.78d-18, 0.,       0.           ! pck 1-> HI, HeI, HeII
+group_csn(2,:)= 5.69d-19, 0.,       0.           ! pck 2-> HI, HeI, HeII
+group_cse(2,:)= 5.04d-19, 0.,       0.           ! pck 2-> HI, HeI, HeII
+group_csn(3,:)= 7.89d-20, 0.,       0.           ! pck 3-> HI, HeI, HeII
+group_cse(3,:)= 7.46d-20, 0.,       0.           ! pck 3-> HI, HeI, HeII
+group_egy     = 18.85,    35.08,     65.67
+spec2group    = 1,        2,        3            ! HI, HeI, HeII -> pck
+/
+
+&BOUNDARY_PARAMS
+nboundary=6
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+bound_type= 2, 2, 0, 0, 0, 0	! user-defined, flow-through, periodic
+/

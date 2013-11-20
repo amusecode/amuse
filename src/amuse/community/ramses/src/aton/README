@@ -1,0 +1,105 @@
+RAMSES/ATON
+===========
+
+Coupled hydro and radiation using the GPU for cosmological simulations.
+
+
+Compilation
+-----------
+
+The program is compiled in two parts: first libaton, then ramses.
+
+1. For libaton, edit aton/atonlib/Makefile and set the variables as
+described in the file. In particular, the grid size for aton has to be
+chosen at compile time by setting the NCELLX, NCELLY and NCELLZ variables.
+For the first test, use 32x32x32.
+
+$ cd aton/atonlib
+$ vim Makefile  # edit the options
+$ make
+
+This will produce a file called aton/atonlib/libaton.a.
+
+2. For ramses, edit bin/Makefile. Set the following variables:
+ATON_FLAGS = -DATON
+NVAR = 6
+LIBCUDA = flags for your CUDA libraries
+You may need to add -lmpi_cxx to LIBMPI.
+Then build the "ramses_aton" target:
+
+$ cd bin
+$ vim Makefile  # edit the options
+$ make ramses_aton
+
+This will produce a binary called bin/ramses3d
+
+
+Testing
+-------
+
+There is a small 32^3 test case to check that the program built correctly.
+
+
+1. First compile the amr2cell utility:
+
+$ cd utils/f90
+$ vim Makefile  # edit the options
+$ make amr2cell
+
+This will produce a binary called utils/f90/amr2cell
+
+
+2. Then run the test:
+
+$ aton/sims/testing/run_and_analyze.sh
+
+This runs the code on a 32^3 grid with 1 node.
+It takes about half an hour to run.
+It produces a  file called test/profile.txt.
+You should compare this to test/expected_profile.txt using a
+plotting program like gnuplot.
+
+
+Larger test
+-----------
+
+For a larger test, we can run Iliev Test 5 on a 256^3 grid with 16 nodes.
+
+1. Modify the aton grid size in aton/atonlib/Makefile:
+
+NCELLX=128
+NCELLY=128
+NCELLZ=64
+
+2. Recompile:
+
+$ cd aton/atonlib
+$ vim Makefile  # set the grid size
+$ make clean
+$ make
+$ cd ../../bin
+$ make ramses_aton
+$ cd ..
+
+This will produce a new bin/ramses3d binary.
+
+3. Launch the simulation:
+
+$ mkdir test5
+$ cd test5
+$ mpirun -n 16 ../bin/ramses3d ../aton/sims/iliev_tests/5/test5_aton.nml > log
+
+This will take several hours to run.
+It will produce 7 output directories and a file called "averages.txt".
+Follow the analysis commands in aton/sims/testing/run_and_analyze.sh
+to produce profile.txt. It can be compared to Fig. 11-15 of arXiv:0905.2920v1.
+It's a more accurate version of aton/sims/testing/expected_profile.txt.
+
+
+Cosmological simulation
+-----------------------
+
+Running a 256^3 cosmo simulation is similar to Iliev Test 5 from the
+previous section.
+Use this namelist: aton/sims/cosmo256/noamr/rad_aton.nml
+You need to generate initial conditions from grafic first.

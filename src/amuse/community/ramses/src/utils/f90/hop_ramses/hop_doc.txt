@@ -1,0 +1,622 @@
+                                     HOP
+
+What is HOP and what does it do?
+
+HOP is an algorithm for finding groups of particles based on their
+instantaneous densities. Roughly speaking, it works by connecting particles
+to nearby particles in the direction of increasing density. We have
+described the method in our paper "HOP: A new group finding algorithm for
+N-body simulations" to be published in ApJ.
+
+While our paper contains a full description of the method, a quick summary
+is:
+
+  1. Compute the density around each particle, using an adaptive kernel with
+     a length scale set by the distance to the N_dens nearest neighbor.
+
+  2. Now consider each particle and record the ID number of the neighboring
+     particle with the highest density. Consider N_hop neighbors in this
+     step. The particle with the highest density could be the chosen
+     particle itself.
+
+  3. Using these ID numbers and starting at each particle in turn, hop from
+     a particle to its densest neighbor until a particle that is its own
+     densest neighbor is found. The starting particle then becomes a member
+     of the group with the final particle as its center. The density of this
+     central particle is the peak density of the group, a quantity needed in
+     step 5.
+
+  4. As described in our paper, the above scheme tends to break large groups
+     into (probably unphysical) small ones due to the presence of local
+     density maxima. To correct this, we recombine the groups on the basis
+     of a dual density threshold. To set up for this, we need to catalog the
+     densest boundaries between groups. This is done by looking at each
+     particle in turn and asking whether the particle and any of its N_merge
+     nearest neighbors are members of different groups. If so, the particle
+     is a boundary between the two groups; the density of the boundary is
+     the average of the density of the two particles. We catalog the highest
+     density boundary found between each pair of groups and store the
+     result.
+
+  5. Groups are considered viable if their densest particle (found in step
+     3) is greater than some threshold delta_peak. Two viable groups are
+     merged if they share a boundary greater than delta_merge. An unviable
+     group is merged to the viable group with which it shares the highest
+     boundary. For the latter purpose, boundaries are transmitted by
+     intervening unviable groups; that is, if group A is viable and groups B
+     and C are not, but C does not touch A, C can still be joined to A if
+     the *lower* of the density of the AB boundary and the BC boundary is
+     greater than the threshold delta_merge. If this step is unclear to you,
+     you might look at our paper and especially Figure 1.
+
+  6. All particles whose density are less than a threshold delta_outer are
+     excluded from groups.
+
+In our implementation of HOP, steps (1), (2-4), and (5-6) are run separately
+and the needed output is saved to disk. Hence, one can vary certain
+parameters without repeating all 6 steps.
+
+Step (1) is the most CPU expensive. Steps (2) and (4) are also reasonably
+expensive. The others are quick. Moreover, steps (1), (2), and (4) are the
+most memory intensive as well, because they require more information about
+the particles.
+
+----------------------------------------------------------------------------
+
+Our implementation of HOP
+
+We are distributing our implementation of the HOP algorithm. Our version
+actually involves two programs that must be run sequentially. The first
+(hop.c) performs steps (1) through (4) above and requires three of the
+parameters (N_dens, N_hop, and N_merge). The second (regroup.c) performs
+steps (5) and (6) and requires the other three parameters (delta_peak,
+delta_merge, and delta_outer). The second program takes far less CPU time
+and a significantly less memory; hence, one can vary the second trio of
+parameters fairly inexpensively.
+
+How to compile these programs
+
+  1. First, you need to customize the input subroutine for hop.c so that it
+     can read your simulation format. All the instructions are in the file
+     hop_input.c along with an example.
+
+     You will also need to decide at this point if you are assigning equal
+     mass to each particle or not. This will affect how you store the mass
+     and will affect how you compile.
+
+  2. Next, you need to edit the file Makefile so as to set the proper
+     compiler optimization flags. You should be able to use fairly
+     aggressive optimizations. Set the flags in the CFLAGS variable and the
+     compiler (cc, gcc, whatever) in the CC variable. If you have some
+     library to replace , set it in the LIBS variable.
+
+     While still editing Makefile, if you decided in step 1 to give the
+     particles unequal masses, you need to set the flag -DDIFFERENT_MASSES
+     so as to communicate this definition to the preprocessor. Uncomment
+     this line in Makefile.
+
+  3. From the shell command line, type "make". This should compile both
+     hop.c and regroup.c, leaving you with the executables "hop" and
+     "regroup".
+
+     Type "make clean" if you want to delete the .o files.
+
+How to use these programs
+
+I've covered most of this in the sections entitled User Control, so here I
+will be more general. The HOP algorithm has six user-chosen parameters. In
+our paper, we discuss how varying these affects the mass function of groups
+in a cosmological simulation. In this case, variations in delta_outer
+mattered a fair bit, but the others mattered significantly less. We found
+that N_dens = 64, N_hop = 16, and N_merge = 4 with delta_outer =
+delta_saddle/2.5 = delta_peak/3 gave robust answers.
+
+Possible extensions
+
+The HOP algorithm is based solely on the instantaneous positions of the
+particles. An extension to this and similar approaches is to remove from
+these groups those particles whose velocities are large enough to escape the
+group. For example, see SKID (from the HPCC), or DENMAX [ Gelb &
+Bertschinger, Astroph. J., 436, 467 (1994)]. Typically, one removes the
+calculates the energies of all particles, removes the most unbound, updates
+the energies, and iterates. I haven't included such a scheme here, but I
+have included hooks for it in regroup.c. Or you can pipe the output of
+regroup to your own program.
+
+Another direction for customization is that one need not maximize the
+density field. Any scalar field attached to the set of particles could be
+inputed through the .den file.
+
+While we primarily had the case delta_outer < delta_saddle < delta_peak in
+mind, the code does not require this. It does require N_merge < N_hop,
+although this is due to my coding for an optimization not due to particular
+requirement of the algorithm.
+
+At heart, the hopping part of the HOP algorithm is a method for tracking the
+gradient of a scalar field on a discrete set, while the group merging part
+of the algorithm is a method for manipulating isodensity contours on such a
+set. There may well be other applications of such ideas, for example to
+genus statistics.
+
+----------------------------------------------------------------------------
+
+HOP.C
+
+The hop.c program performs all the hard work of finding and using the
+nearest neighbor lists. The main engine is the kd-tree search algorithm
+written by Joachim Stadel and the University of Washington NASA HPCC ESS.
+This engine was publically distributed as part of the SMOOTH program (which
+calculates adaptive densities and velocity fields from N-body simulations,
+available here). They have given us permission to redistribute this engine
+as part of the HOP program. Any compliments regarding the speed of hop.c
+should be directed to them.
+
+The source files involved in hop.c are:
+
+hop.c
+     The guts of HOP, plus all the input/output, written by DJE (although
+     main() was customized from that of SMOOTH).
+hop_input.c
+     Since each user will have a different format for their simulation data,
+     I've pulled the input routine into a separate file for the user to
+     customize.
+smooth.c
+     The kd-tree search engine, from SMOOTH v2.01, written by Joachim Stadel
+     and the HPCC. Note, however, that I have made some minor customizations
+     (regarding the treatment of the particle masses) and removed code not
+     needed in HOP. Fetch the latest version of SMOOTH from their web site
+     if you want the whole feature list.
+kd.c
+     Some utility routines for smooth.c. Again, part of SMOOTH v2.01. I have
+     removed unneeded code (e.g. the input/output routines).
+smooth.h, kd.h
+     The header files for the SMOOTH package. I've added and removed some
+     fields from their structures.
+
+Input
+
+Hop.c needs to read the number of particles, their positions, and perhaps
+their masses from an input file. Since I can't guess what format your
+simulation data files are in, you'll need to customize the input routine.
+I've extracted the input routine into the source file hop_input.c and
+included in that file instructions on how to customize the input routine.
+
+Hop.c can also read in a file containing all the densities. This avoids the
+most time-consuming step (namely calculating the smoothed densities from the
+particle positions). Since hop.c stores the densities IF it calculates them,
+you can save compute time when rerunning the code while varying parameters
+other than N_dens. Alternatively, if you wanted to supply your own density
+estimates or base your group-finding on a quantity other than density, you
+could supply the information this way. The required input format is the same
+as described for the density file (.den) in the Output section, directly
+below. Alternatively, you could alter it by changing the binInDensity()
+subroutine.
+
+Output
+
+Hop.c outputs three files. These are suffixed ".den", ".hop", and ".gbound".
+The first two are binary files of (approximate) size 4*N bytes; the last is
+ASCII and is generally smaller, although it varies in size according to
+N_merge and the details of the simulation data.
+
+Density File (".den")
+     This binary file contains the densities associated with each particle.
+     The format is:
+       1. Bytes 1-4 -- The number of particles, as a 4-byte integer.
+       2. Rest of file -- The densities of each of the particles, in order,
+          stored as 4-byte floats.
+
+Group Membership file (".hop")
+     This binary file contains the group ID number of each particle. This is
+     the "raw" group membership, in the sense that no merging of groups
+     according the density has been applied. Groups are numbered from 0 to
+     n_group-1 in order of decreasing group size (not that this necessarily
+     means much before the remerging the groups....); particles not assigned
+     to a group because their density is uninterestingly low are assigned
+     ID-1. The format is:
+       1. Bytes 1-4 -- The number of particles, as a 4-byte integer.
+       2. Bytes 5-8 -- The number of groups, as a 4-byte integer.
+       3. Rest of file -- The group ID numbers of each of the particles, in
+          order, stored as 4-byte integers.
+
+Group Boundary file (".gbound")
+     This ASCII file contains all the relevant information concerning how
+     groups may be merged according to their densities. The file actually
+     contains two lists of information separated by a line beginning with
+     "###". The format is:
+       1. Line 1 -- The number of groups
+       2. Next approximately n_groups lines -- These contain information on
+          the groups themselves, in space-separated columns.
+             + Column 1 -- The group ID number
+             + Column 2 -- The number of particles in the group
+             + Column 3 -- The particle ID number of densest particle in the
+               group.
+             + Column 4-6 -- The position of that particle
+             + Column 7 -- The density of that particle.
+          Only the last column is actually used by the regroup.c program,
+          although the first column is monitored to make sure that the
+          information is in order. Any lines that begin with a "#" are
+          ignored (but note that "###" is reserved!). This is used to place
+          some header information at the top of the file.
+       3. Some single line in the middle of the file -- Begins with "###" to
+          mark the end of the first section and the beginning of the second.
+       4. Next many lines -- Each line contains information on pairs of
+          groups that share a boundary. The information is carried in three
+          space-separated columns, such that:
+             + Column 1-2 -- The two group ID numbers
+             + Column 3 -- The density of the boundary, which is the highest
+               average density achieved by any pair of neighboring particles
+               that were split between the groups.
+
+User Control
+
+Hop.c uses command-line flags for user input. You can get a list of these by
+typing "hop" (or by giving illegal arguments....).
+
+Flags related to the calculation of densities:
+
+-den file
+     Specifies a file from which to read the density (.den) file. If
+     present, then the densities will not be recalculated. If not present,
+     densities will be calculated according to the following parameters:
+
+-nd int
+     Specifies N_dens, the number of particles to smooth over when
+     calculating the density. To be precise, the list of N_dens particles
+     includes the primary particle, while the outermost particle in the list
+     will be exactly at the edge of the cubic spline and will therefore
+     receive zero weight. Default: 64.
+
+-tophat/-th
+     Use a tophat smoothing kernel rather than a cubic spline. To be
+     precise, the list of N_dens particles includes the primary particle,
+     while outermost particle will be at the edge of the tophat, where it is
+     given full weight. Default: cubic spline
+
+-g
+     Use gather kernel rather than gather-scatter. Only available with the
+     cubic spline. Gather-scatter is more usual. Default: gather-scatter
+
+Flags related to hopping and group boundaries:
+
+-nh int
+     Specifies N_hop, the number of neighbors to look at when searching for
+     the highest density neighbor. To be precise, the list of N_hop
+     particles includes the primary particle; all are considered when
+     looking for the densest. Default: 16
+
+-nm int
+     Specifies N_merge, the number of neighbors to look at when searching
+     for boundaries. To be precise, the list of N_hop particles does NOT
+     include the primary particle. Note that this must be strictly less than
+     N_hop because of an optimization that I made. Default: 4
+
+-dt float
+     Particles below this density threshold are not included in the group
+     catalog. This doesn't save much CPU time, but it does substantially
+     reduce the size of the .gbound file, because we don't need to store
+     information on all those uninteresting very low density groups. Even a
+     few times the background density will make a substantial reduction in
+     the size of the .gbound file.
+
+     You should set this threshold to be lower than any of the density
+     thresholds (delta_outer, delta_saddle, or delta_peak) that you plan to
+     use in regroup.c, and at least a factor of two lower than delta_saddle
+     (since group boundaries are based on *average* densities). Default:
+     none
+
+Flags related to the input simulation file:
+
+-in file
+     The name of the input simulation file. If this is omitted, the
+     simulation data is read from stdin.
+
+-p float
+     The periodicity of the positions in the input file. I've hardwired
+     these to be the same in each direction, but if you look in main(),
+     you'll see where to change this assumption. Default: none (so for
+     cosmological simulations, you need to set this!).
+
+Flags related to the output:
+
+-o/-out file
+     The (root) name of the output files. Suffixes (".den", ".hop", and
+     ".gbound") will be attached.
+
+-nodensity
+     Don't write the ".den" output file. This is automatic if the densities
+     were not computed but rather read from file. But this doesn't stop the
+     densities from being computed.
+
+-nohop
+     Don't write the ".hop" output file. But this doesn't stop the hopping
+     from being computed, since the group boundaries step will need them.
+
+-nogbound
+     Don't write the ".gbound" output file. This does stop the group
+     boundaries from being computed, since they are not otherwise needed.
+
+-densityonly
+     This computes only the densities and quits. The ".hop" and ".gbound"
+     files are not written.
+
+Flags related to performance:
+
+-b int
+     This is left over from the SMOOTH program. It controls the number of
+     particles to be stored in each of the leaves of the kd-tree. Smaller
+     numbers would marginally improve the search time but would require
+     substantially more nodes in the tree and hence more memory. I kept this
+     at its default value of 16 and haven't played with it much. At b=16,
+     the tree takes about 15% of the memory demanded by the program.
+
+Hence, an example invocation of HOP would be:
+
+hop -in my_simulation_file -p 1 -nd 48 -nh 20 -nm 5 -dt 1 -out my_hop_out
+
+This would read from the simulation "my_simulation_file", placing the
+particles in a unit box, and perform HOP using N_dens=48, N_hop=20, and
+N_merge=5, and excluding particles with density less than two (useful if the
+particle mass has been normalized so that the total mass is 1). The output
+"my_hop_out.den", "my_hop_out.hop", and "my_hop_out.gbound" will be written.
+
+If one then wanted to change N_hop to 16, it would be computationally faster
+to use:
+
+hop -in my_simulation_file -p 1 -den my_hop_out.den -nh 16 -nm 5 -dt 1 -out
+my_hop_out2
+
+because this will avoid recalculating the densities.
+
+Performance
+
+Regarding memory consumption, hop.c requires 29 bytes per particle (33 if
+compiled with DIFFERENT_MASSES) for the particle information, plus
+approximately 6 bytes per particle to hold the tree (assuming that one
+hasn't used the -b flag; the number 6 is inversely proportional to the
+setting of -b). I was able to analyze a 256^3 particle simulation on a 512
+meg machine without being swamped by the swapping.
+
+Regarding CPU consumption, each of the three sweeps invoked by the HOP
+algorithm scales roughly as N*M, where N is the number of particles and M is
+the number of neighbors being requested. This scaling doesn't quite hold for
+small M. The runtime is fairly independent of the degree of clustering
+(unlike, say, a grid-based FOF code). Typically, N_dens is greater than
+N_hop or N_merge, hence the density calculation has the largest M and takes
+the most time.
+
+I found that with the default settings, the code took about 2 hours on an
+UltraSparc 170 for a 256^3 particle data set and 15 minutes on a 128^3 data
+set. Setting -b to 4 rather than 16 did not alter the performance.
+
+Warnings
+
+I have only tested the code for cases with periodic boundary conditions.
+Clearly in the non-periodic case, edge effects in the density estimation
+should be considered.
+
+----------------------------------------------------------------------------
+
+REGROUP.C
+
+The regroup.c program merges and prunes groups according the chosen density
+threshold parameters. The output is the new group membership (.tag) file, a
+sorted list of the group sizes, and a summary of which input groups were
+merged.
+
+This program was written by DJE and consists of the following source files:
+
+regroup.c
+     The program itself, including all the input/output.
+
+slice.c
+     Some utility routines for managing the main data structure.
+
+slice.h
+     The header file for the main data structure.
+
+Input
+
+Regroup.c requires three input files, all generated by hop.c. The densities
+at each particle must be supplied as a ".den" file, the group membership of
+each particle given as a ".hop" file, and the group boundary information
+given as a ".gbound" file. Alternatively, the latter file can be replaced by
+a ".gmerge" file, which simply instructs regroup.c as to which input groups
+to merge together.
+
+The formats of ".den", ".hop", and ".gbound" files are given in the hop.c
+information. The format of ".gmerge" files are given below.
+
+Output
+
+Regroup.c generates three output files. These are suffixed ".tag", ".sort",
+and ".gmerge". The first of these is a binary file of (approximate) size 4*N
+bytes. The last two are ASCII files and are considerably smaller.
+
+Group membership file (".tag")
+     This binary file contains the group ID numbers of all of the particles,
+     after the groups have been merged and pruned by density considerations.
+     The format is identical to that of the ".hop" file described above,
+     namely a sequence of N+2 4-byte integers consisting of the number of
+     particles, the number of groups, and then the group ID's of the N
+     particles. Groups are numbered 0 to n_group-1; particles not assigned
+     to any group are given the number -1.
+
+     If the -f77 flag has been set, the format of the ".tag" file is altered
+     so as to be compatible with FORTRAN unformatted I/O. The file should be
+     readable in the following manner
+
+     int*4 n_particles, n_groups
+     real*4 group_id(n_particles)
+     read (*) n_particles, n_groups
+     read (*) (group_id(j),j=1,n_particles)
+
+     where group_id's run from 0 to n_groups-1. In detail, the file format
+     is:
+       1. Bytes 1-4 -- The integer 8.
+       2. Bytes 5-8 -- The number of particles, N.
+       3. Bytes 9-12 -- The number of groups.
+       4. Bytes 13-16 -- The integer 8.
+       5. Bytes 17-20 -- The integer 4*N.
+       6. Next many bytes -- The group ID numbers for all the particles.
+       7. Last 4 bytes -- The integer 4*N.
+
+Group multiplicity file (".size")
+     This ASCII file contains the number of particles in each group. The
+     format is:
+       1. Line 1 -- The number of particles
+       2. Line 2 -- The total number of particles in groups
+       3. Line 3 -- The number of groups
+       4. Remaining lines -- Two space-separated columns
+             + Column 1 -- The ID number of the group
+             + Column 2 -- The number of particles in that group
+
+Group merging log file (".gmerge")
+     This ASCII file contains the mapping of the input group numbering
+     scheme to the output group numbering scheme.
+       1. Line 1 -- The number of particles
+       2. Line 2 -- The number of input groups
+       3. Line 3 -- The number of output groups
+       4. Line 4 -- delta_peak
+       5. Line 5 -- delta_saddle
+       6. Remaining lines -- Two space-separated columns
+             + Column 1 -- Input group ID number
+             + Column 2 -- Output group ID number
+
+User Control
+
+Regroup.c uses command-line flags for user input. You can get a list of
+these by typing "regroup" (or by giving illegal arguments....).
+
+Flags related to the input files:
+
+-hop file
+     The .hop input file containing the input group memberships.
+
+-den file
+     The .den input file containing all the particle densities.
+
+-gbound file
+     The .gbound input file containing the group boundary info.
+
+-root file
+     Sets all three of the above to a common root plus the default suffixs
+     (".hop", ".den", and ".gbound"). However, you can also override one or
+     more of these choices with an explicit setting of -hop, -den, -gbound,
+     or -gmerge.
+
+-gmerge file
+     Reads the group merging map from the given file rather than
+     constructing it from the .gbound file and density parameters.
+
+Flags related to the input parameters:
+
+-douter float
+     Sets delta_outer, the density required for a particle to be in a group.
+
+-nodens
+     This turns off the delta_outer cut, which means that the .den file is
+     not read and need not be given. Note, however, that if you use this
+     option, you should probably not use the -douter flag. See the Warnings
+     section, below.
+
+-dpeak float
+     Sets delta_peak, the central density needed for a group to be
+     independently viable.
+
+-dsaddle float
+     Sets delta_saddle, the boundary density needed two viable groups to be
+     merged.
+
+-nomerge
+     Turns off group merging. The input groups will be unchanged.
+
+-mingroup int
+     Only groups with this many particles or more will be outputted.
+     Default: 10
+
+-nosort
+     Don't sort the groups by size. Also don't output .size.
+
+Flags related to output:
+
+-o/-out file
+     Write the output files to the given root plus the default suffixes
+     (".tag", ".gmerge", and ".sort"). If not specied, this defaults to
+     "zregroup".
+
+-otag/-outtag file
+     Override the above choice with regard to the .tag file.
+
+-notagoutput
+     Don't write any .tag file. This is useful if you only want to track the
+     size of groups, rather than explicit particle membership.
+
+-pipe
+     Send the .tag output to stdout, but write the .gmerge and .sort files
+     as usual.
+
+-pipequiet
+     Send the .tag output to stdout and don't write the .gmerge or .sort
+     files at all.
+
+-f77
+     Write the output .tag file in a binary format compatible with FORTRAN
+     unformatted I/O.
+
+Piping the output of regroup.c is useful if you have another program that
+analyzes the properties of the set of groups. Having separate membership
+files for each choice of density thresholds can take a lot of disk space.
+Because regroup.c takes very little time to run, it may be easier to keep
+only the output of hop.c on disk and to re-generate the final, density-
+manipulated catalog on demand.
+
+Hence, an invocation of regroup.c might look like
+
+regroup -root my_hop_out -douter 80 -dsaddle 140 -dpeak 160 -mingroup 8 -out
+my_final_catalog
+
+This would read the input of my_hop_out.hop, my_hop_out.den, and
+my_hop_out.gbound, impose the density thresholds, sort the final catalog by
+group size, exclude any groups smaller than 8 particles, and write output as
+my_final_catalog.sort, my_final_catalog.gmerge, and my_final_catalog.tag.
+Adding a -pipe flag would dump the last of these to stdout rather than disk,
+so it could taken as input for an analysis program. Using -f77 would allow a
+simpler interface to a FORTRAN program.
+
+Performance
+
+Regroup.c runs in a manner of seconds and is essentially I/O-limited.
+reading the large ".den" and ".hop" files and writing the ".tag" file takes
+most of the time. Each of these files is 4*N bytes of memory.
+
+It takes 4*N bytes of memory, where N is the number of particles, plus some
+storage that scales with the number of groups.
+
+Warnings
+
+Remember that HOP is biased against finding groups smaller than N_dens or
+N_hop; hence, setting -mingroup to be tiny is usually pointless.
+
+The code assumes that all densities are greater than the internal quantity
+MINDENS, which I've set to be a large negative number close to the most
+negative representable number. But if you want to input some astronomically
+negative number, beware (i.e. choose more sensible units).
+
+If you specify -nodens, you most likely want to avoid setting delta_outer >
+0. Doing the latter will cause the merging section of the code to throw out
+low-density groups on the basis of the boundary densities, which is likely
+to produce strangely inconsistent group edges.
+
+----------------------------------------------------------------------------
+
+How to contact us
+
+The HOP algorithm was presented in a paper by Daniel J. Eisenstein
+(deisenstein@as.arizona.edu) and Piet Hut (piet@sns.ias.edu). We're at the
+Institute for Advanced Study.
+
+This is the documentation for version 1.0 of HOP. Version 1.1 fixes a 
+bug in regroup.c that may affect large particle numbers (code will
+crash if the bug is hit, so no results are corrupted).  Further information 
+and updates will be posted at cmb.as.arizona.edu/~eisenste/hop/hop.html.

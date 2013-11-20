@@ -1,0 +1,73 @@
+This namelist contains various input parameters for RAMSES runs
+
+&RUN_PARAMS 
+hydro=.true.
+poisson=.true.
+simple_boundary=.false.
+pic=.true.
+ncontrol=1
+nbackup=50
+nsubcycle=15*1
+nremap=10
+nrestart=0
+verbose=.false.
+/
+
+&AMR_PARAMS 
+levelmin=5
+levelmax=8
+ngridmax=100000
+npartmax=100000
+boxlen=20.0
+/
+
+&BOUNDARY_PARAMS
+nboundary = 6
+bound_type= 0, 0, 0, 0, 0, 0
+ibound_min=-1,+1,-1,-1,-1,-1
+ibound_max=-1,+1,+1,+1,+1,+1
+jbound_min= 0, 0,-1,+1,-1,-1
+jbound_max= 0, 0,-1,+1,+1,+1
+kbound_min= 0, 0, 0, 0,-1,+1
+kbound_max= 0, 0, 0, 0,-1,+1
+/
+
+&INIT_PARAMS
+filetype='ascii'
+initfile(1)='/tmp1/ydubois/halo_test_mpi'
+/
+
+&OUTPUT_PARAMS
+foutput=10
+noutput=6
+tout=0.0,0.4,0.6,1.0,2.0,4.0,7.0,10.0,15.0,20.0,30.,40.
+/
+
+&POISSON_PARAMS
+gravity_type=-4
+gravity_params=1e-2,10.,10.,10.,30.,10.
+/
+
+&HYDRO_PARAMS
+pressure_fix=.true.
+gamma=1.666666667
+courant_factor=0.8
+slope_type=1
+scheme='muscl'
+cooling=.true.
+t_star=3.
+n_star=0.1
+T2_star=1d4
+eta_sn=0.1
+t_delay=2.
+/
+
+&REFINE_PARAMS 
+interpol_var=1
+interpol_type=0
+mass_sph=5d-5
+m_refine=15*20.0
+/
+
+
+

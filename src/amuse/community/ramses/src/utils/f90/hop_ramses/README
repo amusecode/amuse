@@ -1,0 +1,37 @@
+
+This is version 1.0 of the HOP distribution.
+
+There are 9 source files and 2 additional documentation files in the
+HOP distribution.
+
+Documentation:
+
+hop_doc.html -- An HTML file of documentation on HOP in general and the
+		two programs, hop.c and regroup.c, in particular.
+
+hop_doc.txt -- A text version of the above.
+
+
+Source for hop.c:
+
+hop.c		-- The primary source code for hop.c
+hop_input.c	-- The user-customized code to read the simulation file
+
+hop.c uses the SMOOTH program of Joachim Stadel and the NASA HPCC ESS at
+the University of Washington Dept. of Astronomy as its central engine.
+These files are from SMOOTH v.2.01, but do include some modifications:
+
+smooth.c	-- Routines for searching the kd-tree
+smooth.h	-- Structures to manage the search
+kd.c		-- Routines to build the kd-tree
+kd.h		-- Structures to hold the kd-tree
+
+Source for regroup.c:
+
+regroup.c	-- The primary source code for regroup.c
+
+slice.c		-- Some utilities for managing simulation data
+slice.h
+
+
+For instructions on compiling and using HOP, see the documentation files.
