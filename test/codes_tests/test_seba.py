@@ -134,8 +134,8 @@ class TestSeBaInterface(TestWithMPI):
         print mass
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEqual(mass[0], 1.0, 6)
-        self.assertAlmostRelativeEqual(mass[1], 0.63151129, 6)
-        self.assertAlmostRelativeEqual(mass[2], 0.74066592, 6)
+        self.assertAlmostRelativeEqual(mass[1], 0.62973, 4)
+        self.assertAlmostRelativeEqual(mass[2], 0.75012, 4)
         
         
         instance.stop()  
@@ -156,7 +156,7 @@ class TestSeBaInterface(TestWithMPI):
         mass, error = instance.get_mass(index)
         print mass
         self.assertEquals(error, 0)
-        self.assertAlmostRelativeEqual(mass, [1.0, 0.63151, 0.74066], 4)
+        self.assertAlmostRelativeEqual(mass, [1.0, 0.62973, 0.75072], 4)
         
         instance.stop()
     
