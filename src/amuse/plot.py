@@ -73,13 +73,17 @@ class UnitlessArgs(object):
         return self.label(s, unit_name)
 
     @classmethod
+    def z_label(self, s=None):
+        unit_name = self.unitnames_of_args[2]
+
+        return self.label(s, unit_name)
+
+    @classmethod
     def label(self, s, unit_name):
         if s is None:
             return auto_label.format(unit_name)
         else:
             return custom_label.format(s, unit_name)
-
-
 
 def latex_support():
     from matplotlib import rc
@@ -195,6 +199,92 @@ def ylim(*args, **kwargs):
                 kwargs[name] = kwargs[name].value_in(y_unit)
 
     native_plot.ylim(*args, **kwargs)
+
+def fix_xyz_axes(X, Y, Z):
+    if not (X.shape == Z.shape and Y.shape == Z.shape):
+        X, Y = numpy.meshgrid(X, Y)
+    return X, Y, Z
+
+def log_norm(Z):
+    # for log scale, 0 is considered a missing value
+    masked_Z = numpy.ma.masked_equal(Z, 0.0, copy=False)
+    zmin, zmax = masked_Z.min(), masked_Z.max()
+
+    from matplotlib.colors import LogNorm
+    return LogNorm(vmin=zmin, vmax=zmax)
+
+def has_log_scaling(array):
+    diff = numpy.diff(array)
+    if numpy.all(diff - diff[0] < diff[0]/10.):
+        return False
+
+    logdiff = numpy.diff(numpy.log10(array))
+    if numpy.all(logdiff - logdiff[0] < logdiff[0]/10.):
+        return True
+
+    raise AmuseException("This method cannot be used for non regular arrays")
+
+def density_plot(x, y, z, label=None, add_colorbar=True, zlog=False, **kwargs):
+    """
+        Plot a density matrix as a color map, similar to pyplot.contour.
+        I don't understand why pyplot does not have this out of the box.
+        It only works if x and y are regular (linear or logarithmic).
+    """
+    X, Y, Z = UnitlessArgs.strip(x, y, z)
+    X, Y, Z = fix_xyz_axes(X, Y, Z)
+
+    xlow = X[0,0]
+    xhigh = X[-1,-1]
+    ylow = Y[0,0]
+    yhigh = Y[-1,-1]
+    extent = (xlow, xhigh, ylow, yhigh)
+
+    norm = log_norm(Z) if zlog else None
+
+    cax = native_plot.imshow(Z, origin='lower', aspect='auto', extent=extent, norm=norm, **kwargs)
+
+    if has_log_scaling(X[0,:]):
+        native_plot.gca().set_xscale('log')
+    if has_log_scaling(Y[:,0]):
+        native_plot.gca().set_yscale('log')
+
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
+
+    if add_colorbar:
+        bar = native_plot.colorbar(cax)
+        bar.set_label(UnitlessArgs.z_label(label))
+
+        return cax, bar
+    else:
+        return cax
+
+def contour(*args, **kwargs):
+    if len(args)%2 == 0:
+        stripped_args = UnitlessArgs.strip(*args[:-1])
+
+        levels = args[-1]
+        z_unit = UnitlessArgs.arg_units[-1]
+
+        if quantities.is_quantity(levels):
+            stripped_args.append(levels.value_in(z_unit))
+    else:
+        stripped_args = UnitlessArgs.strip(*args)
+
+
+    if 'levels' in kwargs:
+        levels = kwargs['levels']
+        z_unit = UnitlessArgs.arg_units[-1]
+
+        if quantities.is_quantity(levels):
+            kwargs['levels'] = levels.value_in(z_unit)
+
+    result = native_plot.contour(*stripped_args, **kwargs)
+
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
+
+    return result
 
 def smart_length_units_for_vector_quantity(quantity):
     length_units = [units.Mpc, units.kpc, units.parsec, units.AU, units.RSun, units.km]

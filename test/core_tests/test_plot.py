@@ -148,6 +148,47 @@ class TestPlot(amusetest.TestCase):
         self.assertAlmostEquals(1.43781452, pyplot.ylim()[0])
         self.assertEquals(110, pyplot.ylim()[1])
 
+    def test8(self):
+        """ Test the density plot """
+        if not HAS_MATPLOTLIB:
+            return self.skip()
+        pyplot.clf()
+
+        x = numpy.linspace(0, 100, 100) | units.m
+        y = numpy.linspace(0, 200, 100) | units.m
+        X, Y = quantities.meshgrid(x, y)
+        Z = X**2 + Y**2
+
+        figure, bar = aplot.density_plot(X, Y, Z)
+
+        self.assertEquals("[m]", self.xaxis().get_label_text())
+        self.assertEquals("[m]", self.yaxis().get_label_text())
+        self.assertEquals("[m**2]", bar._label)
+
+    def test9(self):
+        """ Test the contour plot """
+        if not HAS_MATPLOTLIB:
+            return self.skip()
+        pyplot.clf()
+
+        x = numpy.linspace(0, 100, 100) | units.m
+        y = numpy.linspace(0, 200, 100) | units.m
+        X, Y = quantities.meshgrid(x, y)
+        Z = X**2 + Y**2
+
+        aplot.contour(X, Y, Z)
+
+        self.assertEquals("[m]", self.xaxis().get_label_text())
+        self.assertEquals("[m]", self.yaxis().get_label_text())
+
+        con = aplot.contour(X, Y, Z, levels=[500000, 1000000]|units.cm**2)
+
+        self.assertEquals([50, 100], con.get_array())
+
+        con = aplot.contour(X, Y, Z, [0.0002, 0.0003]|units.km**2)
+
+        self.assertEquals([200, 300], con.get_array())
+
     def xaxis(self):
         return pyplot.gca().get_xaxis()
 

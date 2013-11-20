@@ -316,7 +316,7 @@ class ScalarQuantity(Quantity):
     amax=max
     def sorted(self):
         return self
-    
+
     def as_unit(self):
         return self.number * self.unit
 
@@ -430,8 +430,8 @@ class VectorQuantity(Quantity):
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))
         else:
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** self.number.shape[axis])
-    
-    
+
+
     def inner(self, other):
         """Calculate the inner product of self with other.
 
@@ -811,7 +811,7 @@ class VectorQuantity(Quantity):
     def dot(self, other, out=None):
         """
         Return the dot product of this vector quantity with the supplied vector (quantity).
-        
+
         >>> from amuse.units import units
         >>> v1 = [1.0, 2.0, 3.0] | units.m
         >>> v1.dot(v1)
@@ -1199,6 +1199,13 @@ def separate_numbers_and_units(values):
             unit.append(none)
 
     return number, unit
+
+def meshgrid(*xi, **kwargs):
+    unitless_xi, units = separate_numbers_and_units(xi)
+
+    result = numpy.meshgrid(*unitless_xi, **kwargs)
+
+    return [matrix | unit for matrix, unit in zip(result, units)]
 
 def polyfit(x, y, deg):
     (x_number, y_number), (x_unit, y_unit) = separate_numbers_and_units([x, y])
