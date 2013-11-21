@@ -6,6 +6,8 @@ AMUSE_DIR?=../../../..
 CC ?= gcc
 CFLAGS ?= -O3
 
+CFLAGS +=  -std=c99 -Wall -W -O3
+
 mameclot_worker:
 	make -C src CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" F77FLAGS="$(F77FLAGS)"
 	cp src/mameclot ./mameclot_worker
