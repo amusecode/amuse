@@ -46,14 +46,12 @@ def main():
     write_set_to_file(ss, filename, 'hdf5')
     
     sp_gravity = bridge.Bridge(use_threading=False)
-    sp_gravity.add_system(star_gravity, (planet_gravity,) )
-    sp_gravity.add_system(planet_gravity, (star_gravity,) )
+    sp_gravity.add_system(moon_gravity, (planet_gravity,) )
+    sp_gravity.add_system(planet_gravity, (moon_gravity,) )
 
     gravity = bridge.Bridge(use_threading=False)
-    gravity.add_system(sp_gravity, (moon_gravity,) )
-    gravity.add_system(moon_gravity, (sp_gravity,) )
-
-#    gravity.add_system(moon_gravity, (star_gravity,planet_gravity) )
+    gravity.add_system(sp_gravity, (star_gravity,) )
+    gravity.add_system(star_gravity, (sp_gravity,) )
 
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
