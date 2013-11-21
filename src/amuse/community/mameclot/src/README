@@ -1,0 +1,65 @@
+
+ MAMECLOT: MAke ME a CLuster Or Two
+
+ Construct initial conditions of 1 (or 2) cluster(s) for N-body simulations 
+
+ A 2 cluster system with orbit in the x-y plane is made if the mass ratio q>0 
+ Five equilibrium models are available, a cut-off radius can be provided
+ The velocities can be isotropic or radially anisotropic (a la Osipkov-Merritt)
+ Optional angular momentum by aligning the angular momentum vectors along z
+ System is scaled to N-body units with G = M = -4E = 1 (Heggie & Mathieu 1986)
+ In the case of a two-body system E = mu*e_orb + E_1 + E_2 (mu = reduced mass) 
+ The 2-body orbit is computed from input q, e_hat and l_hat (and eta if q<1):
+        e_hat = e_orb/0.5<sigma^2> 
+        l_hat = l_orb/<r_vir*sigma>
+        eta => defines the relative radii: r2/r1 = q^eta, for example:
+               eta=[-0.33/0/0.33/0.5] for equal [t_rh/r_h/rho_h/Sigma_h]
+
+ Mass, pos[3], vel[3] are written to standard output
+ System diagnostics are written to the standard error
+
+ Usage: mameclot [OPTIONS] 
+
+ Options: 
+          -N Total number of stars [10000]
+          -m Cluster model [3]
+             0: Dehnen (1993): gamma=0            =>     core, -4 halo
+             1: Hernquist (1990)                  =>  -1 cusp, -4 halo
+             2: Jaffe (1983)                      =>  -2 cusp, -4 halo
+             3: Henon (1959) "Isochrone" sphere   =>     core, -4 halo
+             4: Plummer (1911)                    =>     core, -5 halo
+          -q Mass ratio of the two clusters (q=m2/m1) [0] 
+             0: Make 1 cluster
+             0<q<=1: Make 2 clusters
+          -e eta: Relative cluster sizes: r2/r1 = q^eta [0.333] 
+          -i IMF [0] 
+             0: Single mass cluster
+             1: Kroupa (2001) between 0.1 Msun and 100 Msun
+          -l Angular momentum in z-direction, -, + or x [0] 
+              0: xx (both none)
+              1: ++ (both positive)
+              2: +x 
+              3: +- 
+              4: x+ 
+              5: x- 
+             -1: -- (both negative)
+             -2: -x 
+             -3: -+ 
+          -f Fraction of maximum rotational energy [1] 
+          -a Osipkov-Merritt anisotropy radius in units of r_0 [999] 
+          -c Cut-off radius in units of r_h [20] 
+          -r Physical scale in pc [1] 
+          -d Distance between 2 clusters in N-body units [20] 
+          -E Dimensionless orbital energy of two-cluster system [0] 
+          -L Dimensionless orbital angular momentum two-cluster system [4]
+             <0 : forces a circular orbit
+          -s Random seed [0=from clock] 
+
+ Example 1: Isochrone sphere with a Kroupa mass function and Osipkov-Merrit 
+            anisotropy radius equal to half-mass radius:
+            (./mameclot -m 3 -a 3.06 -i 1 > snap.tab)2> diag.txt
+
+ Example 2: Two Hernquist models with isotropic velocity distribution on a 
+            circular orbit and a mass ratio of 1/3:
+            (./mameclot -m 1 -q 0.333 -L -1 > snap.tab)2> diag.txt
+

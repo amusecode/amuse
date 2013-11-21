@@ -1,0 +1,17 @@
+
+Compile:
+
+make
+
+This create the executable mameclot
+
+For CUDA enabled GPU support compile as
+
+make gpu
+
+This creates the executable mameclot.gpu for fast energy scaling on a GPU 
+Perhaps necessary to change the paths of cuda and cuda libs in the Makefile
+
+For help run:
+
+./mameclot -h
