@@ -339,7 +339,7 @@ class Multiples(object):
 
         stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
-        stopping_condition.enable()
+        #stopping_condition.enable()  # allow user to set this; don't override
         
         time = self.gravity_code.model_time
         print "Evolve model to", end_time, " starting at", time
@@ -371,13 +371,7 @@ class Multiples(object):
 #                 print 'neighbor_veto =', \
 #                     self.neighbor_veto
 
-            print 'calling evolve_model'
-            sys.stdout.flush()
-
             self.gravity_code.evolve_model(end_time)
-            print 'back'
-            sys.stdout.flush()
-
             newtime = self.gravity_code.model_time
            
             #JB, modified this, in Bonsai we can take a 0 time-step to detect
@@ -388,23 +382,13 @@ class Multiples(object):
                 break
             
             self.gravity_code.evolve_model(end_time)
-            print 'back 2'
-            sys.stdout.flush()
-
             time = newtime
             
             if stopping_condition.is_set():
 
-                print 'stopping cond'
-                sys.stdout.flush()
-
                 star1 = stopping_condition.particles(0)[0]
                 star2 = stopping_condition.particles(1)[0]
                 ignore = 0
-
-                print star1
-                print star2
-                sys.stdout.flush()
 
                 # Note from Steve, 8/12: We can pick up a lot of
                 # encounters that are then ignored here.  I have
@@ -427,11 +411,7 @@ class Multiples(object):
                 # if angle > (numpy.pi * 0.44):
 
                 r = (star2.position-star1.position).length()
-                print 'r =', r
-                sys.stdout.flush()
                 v = (star2.velocity-star1.velocity).length()
-                print 'v =', v
-                sys.stdout.flush()
 
 
                 # Temporary numpy workaround - Steve.
@@ -444,13 +424,7 @@ class Multiples(object):
 		  | nbody_system.speed*nbody_system.length
 
 
-                print 'vr =', vr
-                sys.stdout.flush()
                 EPS = 0.001
-
-                print 'vr, EPS*r*v:', vr, EPS*r*v
-                sys.stdout.flush()
-                
                 if vr < EPS*r*v:
 
                     print '\n'+'~'*60
