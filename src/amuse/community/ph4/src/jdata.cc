@@ -72,9 +72,11 @@ void jdata::set_manage_encounters(int m)
     // conditions.  Use this instead of jd.manage_emcounters = ...
 
     // AMUSE STOPPING CONDITIONS SUPPORT
+
     int is_collision_detection_enabled;
     is_stopping_condition_enabled(COLLISION_DETECTION,
 				  &is_collision_detection_enabled);
+    // PRL(is_collision_detection_enabled);
 				  
     if (is_collision_detection_enabled) {
 	manage_encounters = 4;	// unnecessary
@@ -737,6 +739,8 @@ bool jdata::advance_and_check_encounter()
 
     is_stopping_condition_enabled(COLLISION_DETECTION,
 				  &collision_detection_enabled);
+    // PRL(collision_detection_enabled);
+
     if (collision_detection_enabled) {
         if (coll1 >= 0) {
 
