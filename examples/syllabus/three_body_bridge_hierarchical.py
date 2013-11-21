@@ -56,8 +56,8 @@ def main():
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
 
-    sp_gravity.timestep = 10|units.day
-    gravity.timestep = 1|units.day
+    sp_gravity.timestep = 1|units.day
+    gravity.timestep = 10|units.day
     time = zero
     dt = 3|units.day
     t_end = 1 | units.yr
