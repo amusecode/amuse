@@ -90,16 +90,16 @@ AMRLIB = $(AMROBJ) $(HYDROOBJ) $(PMOBJ) $(POISSONOBJ)
 ATON_MODOBJ = timing.o radiation_commons.o rad_step.o
 ATON_OBJ = observe.o init_radiation.o rad_init.o rad_boundary.o rad_stars.o rad_backup.o ../aton/atonlib/libaton.a
 #############################################################################
-ramses:	$(MODOBJ) $(AMRLIB) ramses.o
-	$(F90) $(MODOBJ) $(AMRLIB) ramses.o -o $(EXEC)$(NDIM)d $(LIBS)
-ramses_aton: $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) $(ATON_OBJ) ramses.o
-	$(F90) $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) $(ATON_OBJ) ramses.o -o $(EXEC)$(NDIM)d $(LIBS) $(LIBCUDA)
+ramses:	$(MODOBJ) $(AMRLIB) clean_stop.o ramses.o
+	$(F90) $(MODOBJ) $(AMRLIB) clean_stop.o ramses.o -o $(EXEC)$(NDIM)d $(LIBS)
+ramses_aton: $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) clean_stop.o $(ATON_OBJ) ramses.o
+	$(F90) $(MODOBJ) $(ATON_MODOBJ) $(AMRLIB) clean_stop.o $(ATON_OBJ) ramses.o -o $(EXEC)$(NDIM)d $(LIBS) $(LIBCUDA)
 
 # for amuse:
 RAMSESLIB = libramses.a
 all: ramses $(RAMSESLIB)
-$(RAMSESLIB): $(MODOBJ) $(AMRLIB)
-	ar crs $(RAMSESLIB) $(MODOBJ) $(AMRLIB)
+$(RAMSESLIB): $(MODOBJ) $(AMRLIB) clean_stop_amuse.o
+	ar crs $(RAMSESLIB) $(MODOBJ) $(AMRLIB) clean_stop_amuse.o
 
 #############################################################################
 %.o:%.f90
@@ -107,5 +107,5 @@ $(RAMSESLIB): $(MODOBJ) $(AMRLIB)
 #############################################################################
 clean :
 	rm -f $(RAMSESLIB)
-	rm *.o *.$(MOD)
+	rm -f *.o *.$(MOD)
 #############################################################################

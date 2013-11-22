@@ -166,19 +166,6 @@ subroutine update_time(ilevel)
 999 format(' Level ',I2,' has ',I10,' grids (',3(I8,','),')')
  
 end subroutine update_time
-  
-subroutine clean_stop
-  use amr_commons
-  implicit none
-#ifndef WITHOUTMPI
-  include 'mpif.h'
-#endif
-  integer::info
-#ifndef WITHOUTMPI
-  call MPI_FINALIZE(info)
-#endif
-  stop
-end subroutine clean_stop
 
 subroutine writemem(usedmem)
   real::usedmem

@@ -11,7 +11,9 @@ subroutine read_params
   ! Local variables
   !--------------------------------------------------
   integer::i,narg,iargc,ierr,levelmax
-  character(LEN=80)::infile
+  character(LEN=2048)::infile
+  character(LEN=2048)::commandname
+  integer::index_tail
   integer(kind=8)::ngridtot=0
   integer(kind=8)::nparttot=0
   real(kind=8)::delta_tout=0,tend=0
@@ -89,7 +91,18 @@ subroutine read_params
      write(*,*)'File input.nml should contain a parameter namelist'
      call clean_stop
   END IF
-  CALL getarg(1,infile)
+  
+  CALL getarg(0, commandname)
+  index_tail = index(commandname, '/', .TRUE.)
+  IF (commandname(index_tail+1:index_tail+13).EQ."ramses_worker") THEN
+     write(*,*) "This program was executed with:"
+     write(*,*) trim(commandname)
+     write(*,*) "Will pick a simple namelist to start with:"
+     write(*,*) commandname(:index_tail) // "src/namelist/sedov1d.nml"
+     infile = commandname(:index_tail) // "src/namelist/sedov1d.nml"
+  ELSE
+     CALL getarg(1,infile)
+  ENDIF
   endif
 #ifndef WITHOUTMPI
   call MPI_BCAST(infile,80,MPI_CHARACTER,0,MPI_COMM_WORLD,ierr)

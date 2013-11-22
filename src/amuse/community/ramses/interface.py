@@ -4,7 +4,7 @@ from amuse.community.interface.common import CommonCode
 from amuse.units.generic_unit_system import *
 
 class RamsesInterface(CodeInterface, HydrodynamicsInterface, 
-        StoppingConditionInterface, LiteratureReferencesMixIn):
+        StoppingConditionInterface, LiteratureReferencesMixIn, CodeWithDataDirectories):
     """
     Ramses is an AMR hydrodynamics code...
     
@@ -22,6 +22,14 @@ class RamsesInterface(CodeInterface, HydrodynamicsInterface,
             return 'ramses_worker_mpi'
         else:
             return 'ramses_worker'
+    
+#    @legacy_function
+#    def set_ramses_data_directory():
+#        function = LegacyFunctionSpecification()  
+#        function.addParameter('data_directory', dtype='string', direction=function.IN,
+#            description = "Name of the data directory")
+#        function.result_type = 'int32'
+#        return function
     
     @legacy_function   
     def setup_mesh():
@@ -384,6 +392,7 @@ class Ramses(CommonCode):
         self.stopping_conditions = StoppingConditions(self)
         
         CommonCode.__init__(self,  RamsesInterface(**options), **options)
+#        self.set_ramses_data_directory(self.data_directory)
     
 
     def define_converter(self, object):
