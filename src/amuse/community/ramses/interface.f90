@@ -73,6 +73,7 @@ end function
   
 function initialize_grid() result(ret)
     use amuse_globals
+    use amuse_error_code, only: error_code
 !  use amr_commons
 !  use hydro_commons
 !  use pm_commons
@@ -119,7 +120,8 @@ function initialize_grid() result(ret)
   end if
 
   nstep_coarse_old=nstep_coarse
-    ret = 0
+    
+    ret = error_code
 999 format(' Level ',I2,' has ',I10,' grids (',3(I8,','),')')
 end function  
 
@@ -265,19 +267,20 @@ end function
 
 function evolve_model(tend) result(ret)
     use amuse_globals
-    use amuse_error_code
-!  use amr_commons
-  use hydro_commons
-!  use pm_commons
-  use poisson_commons
-!  use cooling_module
+    use amuse_error_code, only: error_code
+!    use amr_commons
+    use hydro_commons
+!    use pm_commons
+    use poisson_commons
+!    use cooling_module
 #ifdef RT
-  use rt_hydro_commons
+    use rt_hydro_commons
 #endif
     implicit none
     integer :: ret
     real*8 :: tend
     
+    error_code = 0
     tout(noutput) = tend
     
   if(myid==1)write(*,*)'Starting time integration' 
@@ -398,17 +401,14 @@ function evolve_model(tend) result(ret)
      endif
 #endif
 
-     write(*,*) "Error code:", error_code
-     if (error_code.eq.1) then
-        error_code = 0
+     if (error_code.eq.-1) then
         if (t>=tout(noutput)) then
-            ret = 0
-        else
-            ret = -1
+            error_code = 0
         endif
         exit
      endif
   end do
+  ret = error_code
 end function
 
 function get_time(tnow) result(ret)

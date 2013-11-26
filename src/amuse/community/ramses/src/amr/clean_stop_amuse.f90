@@ -9,5 +9,6 @@ subroutine clean_stop
 #ifndef WITHOUTMPI
     include 'mpif.h'
 #endif
-    error_code = 1
+    write(*,*) "'clean_stop' was called, but we let AMUSE handle it"
+    error_code = -1
 end subroutine clean_stop

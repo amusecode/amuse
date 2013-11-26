@@ -84,14 +84,11 @@ subroutine read_params
 #endif
   write(*,*)' '
 
-  ! Read namelist filename from command line argument
-  narg = iargc()
-  IF(narg .LT. 1)THEN
-     write(*,*)'You should type: ramses3d input.nml'
-     write(*,*)'File input.nml should contain a parameter namelist'
-     call clean_stop
-  END IF
-  
+
+  !-----------------------------------------------------------------------------------
+  ! When called from the AMUSE interface pick a namelist and change parameters through 
+  ! interface, for stand-alone Ramses, pick the namelist from the command line.
+  !-----------------------------------------------------------------------------------
   CALL getarg(0, commandname)
   index_tail = index(commandname, '/', .TRUE.)
   IF (commandname(index_tail+1:index_tail+13).EQ."ramses_worker") THEN
@@ -101,6 +98,13 @@ subroutine read_params
      write(*,*) commandname(:index_tail) // "src/namelist/sedov1d.nml"
      infile = commandname(:index_tail) // "src/namelist/sedov1d.nml"
   ELSE
+     ! Read namelist filename from command line argument
+     narg = iargc()
+     IF(narg .LT. 1)THEN
+        write(*,*)'You should type: ramses3d input.nml'
+        write(*,*)'File input.nml should contain a parameter namelist'
+        call clean_stop
+     END IF
      CALL getarg(1,infile)
   ENDIF
   endif
