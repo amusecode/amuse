@@ -79,3 +79,4 @@ clean:
 	rm -Rf $(BUILDDIR)
 	rm -Rf $(BUILDDIR2D)
 	rm -Rf $(BUILDDIR1D)
+	make -C $(SRC) clean
