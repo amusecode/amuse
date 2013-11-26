@@ -25,20 +25,49 @@ end function
 function recommit_parameters() result(ret)
     implicit none
     integer :: ret
-    ret = 0
+    ret = -1
 end function  
 
 function setup_mesh(mx,my,mz,xlen,ylen,zlen) result(ret)
+    use amr_parameters
     implicit none
     integer :: ret,mx,my,mz
     real*8 :: xlen,ylen,zlen
+    select case (ndim)
+        case (1)
+            if (my.gt.1 .or. mz.gt.1) then
+                ret = -11
+                return
+            endif
+        case (2)
+            if (mz.gt.1 .or. ylen.ne.xlen) then
+                ret = -12
+                return
+            endif
+        case (3)
+            if (ylen.ne.xlen .or. zlen.ne.xlen) then
+                ret = -13
+                return
+            endif
+        case default
+            ret = -1
+            return
+    end select
+    boxlen = xlen
+    nx = mx
+    ny = my
+    nz = mz
     ret = 0
 end function
 
 
 function get_mesh_size(mx,my,mz) result(ret)
+    use amr_parameters
     implicit none
     integer :: ret,mx,my,mz
+    mx = nx
+    my = ny
+    mz = nz
     ret = 0
 end function
   
@@ -221,6 +250,7 @@ function get_position_of_index(i,j,k,xout,yout,zout,n) result(ret)
     integer :: ret,ii,i(n),j(n),k(n)
     real*8 :: xout(n),yout(n),zout(n)
     integer,allocatable :: retsum(:)
+    
     ret = 0
 end function
 

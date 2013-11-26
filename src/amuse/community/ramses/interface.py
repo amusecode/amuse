@@ -12,14 +12,24 @@ class RamsesInterface(CodeInterface, HydrodynamicsInterface,
         .. [#] ...
     """
     
+    MODE_3D = '3d'
+    MODE_2D = '2d'
+    MODE_1D = '1d'
+    modes = [MODE_3D, MODE_2D, MODE_1D]
     
-    def __init__(self, number_of_workers = 1, **options):
-        CodeInterface.__init__(self, self.name_of_the_worker(number_of_workers),number_of_workers = number_of_workers, **options)
+    def __init__(self, number_of_workers=1, mode=MODE_3D, **options):
+        CodeInterface.__init__(self, 
+            name_of_the_worker=self.name_of_the_worker(mode), 
+            number_of_workers=number_of_workers, **options)
         LiteratureReferencesMixIn.__init__(self)
     
-    def name_of_the_worker(self, number_of_workers):
-        if number_of_workers > 1:
-            return 'ramses_worker_mpi'
+    def name_of_the_worker(self, mode):
+        if mode == self.MODE_3D:
+            return 'ramses_worker'
+        elif mode == self.MODE_2D:
+            return 'ramses_worker_2d'
+        elif mode == self.MODE_1D:
+            return 'ramses_worker_1d'
         else:
             return 'ramses_worker'
     
@@ -387,6 +397,8 @@ class RamsesInterface(CodeInterface, HydrodynamicsInterface,
 
 class Ramses(CommonCode):
 
+    modes = RamsesInterface.modes
+        
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
         self.stopping_conditions = StoppingConditions(self)

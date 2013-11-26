@@ -19,9 +19,13 @@ class TestRamsesInterface(TestWithMPI):
         instance.stop()
         
     def test1(self):
-        instance=RamsesInterface(redirection="none")
+        instance=RamsesInterface(mode="1d", redirection="none")
         self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.setup_mesh(10, 1, 1, 1.0, 0.0, 0.0))
         self.assertEquals(0, instance.initialize_grid())
+        nx, ny, nz, error = instance.get_mesh_size()
+        self.assertEquals(0, error)
+        self.assertEqual((nx, ny, nz), (10, 1, 1))
         self.assertEquals(0, instance.evolve_model(0.1))
         time, error = instance.get_time()
         self.assertEquals(0, error)
