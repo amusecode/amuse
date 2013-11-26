@@ -149,7 +149,7 @@ class TestPlot(amusetest.TestCase):
         self.assertEquals(110, pyplot.ylim()[1])
 
     def test8(self):
-        """ Test the density plot """
+        """ Test the imshow color plot """
         if not HAS_MATPLOTLIB:
             return self.skip()
         pyplot.clf()
@@ -159,7 +159,7 @@ class TestPlot(amusetest.TestCase):
         X, Y = quantities.meshgrid(x, y)
         Z = X**2 + Y**2
 
-        figure, bar = aplot.density_plot(X, Y, Z)
+        figure, bar = aplot.imshow_color_plot(X, Y, Z, add_colorbar=True)
 
         self.assertEquals("[m]", self.xaxis().get_label_text())
         self.assertEquals("[m]", self.yaxis().get_label_text())

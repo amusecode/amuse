@@ -5,11 +5,22 @@ except ImportError:
     class FakePlotLibrary(object):
         def stub(self, *args, **kwargs):
             raise Exception("No plot library available")
+        figure = stub
         plot = stub
         scatter = stub
         hist = stub
+        semilogx = stub
+        semilogy = stub
+        loglog = stub
+        errorbar = stub
+        text = stub
+        imshow = stub
+        pcolor = stub
+        pcolormesh = stub
         xlabel = stub
         ylabel = stub
+        xlim = stub
+        ylim = stub
 
     native_plot = FakePlotLibrary()
 
@@ -211,7 +222,15 @@ def log_norm(Z):
     zmin, zmax = masked_Z.min(), masked_Z.max()
 
     from matplotlib.colors import LogNorm
-    return LogNorm(vmin=zmin, vmax=zmax)
+    return masked_Z, LogNorm(vmin=zmin, vmax=zmax)
+
+def fix_pcolor_norm(args, kwargs):
+
+    if 'zlog' in kwargs and kwargs['zlog']:
+        args[2], kwargs['norm']= log_norm(args[2])
+        del kwargs['zlog']
+
+    return args, kwargs
 
 def has_log_scaling(array):
     diff = numpy.diff(array)
@@ -224,10 +243,10 @@ def has_log_scaling(array):
 
     raise AmuseException("This method cannot be used for non regular arrays")
 
-def density_plot(x, y, z, label=None, add_colorbar=True, zlog=False, **kwargs):
+def imshow_color_plot(x, y, z, label=None, add_colorbar=False, **kwargs):
     """
-        Plot a density matrix as a color map, similar to pyplot.contour.
-        I don't understand why pyplot does not have this out of the box.
+        Plot a density matrix as a color map using imshow,
+        this gives a smoother image then pcolor(mesh)
         It only works if x and y are regular (linear or logarithmic).
     """
     X, Y, Z = UnitlessArgs.strip(x, y, z)
@@ -239,9 +258,12 @@ def density_plot(x, y, z, label=None, add_colorbar=True, zlog=False, **kwargs):
     yhigh = Y[-1,-1]
     extent = (xlow, xhigh, ylow, yhigh)
 
-    norm = log_norm(Z) if zlog else None
+    (X, Y, Z), kwargs = fix_pcolor_norm((X, Y, Z), kwargs)
 
-    cax = native_plot.imshow(Z, origin='lower', aspect='auto', extent=extent, norm=norm, **kwargs)
+    kwargs['origin'] = 'lower'
+    kwargs['aspect'] = 'auto'
+    kwargs['extent'] = extent
+    cax = native_plot.imshow(Z, **kwargs)
 
     if has_log_scaling(X[0,:]):
         native_plot.gca().set_xscale('log')
@@ -258,6 +280,28 @@ def density_plot(x, y, z, label=None, add_colorbar=True, zlog=False, **kwargs):
         return cax, bar
     else:
         return cax
+
+def pcolor(*args, **kwargs):
+    stripped_args = UnitlessArgs.strip(*args)
+    stripped_args, kwargs = fix_pcolor_norm(stripped_args, kwargs)
+
+    result = native_plot.pcolor(*stripped_args, **kwargs)
+
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
+
+    return result
+
+def pcolormesh(*args, **kwargs):
+    stripped_args = UnitlessArgs.strip(*args)
+    stripped_args, kwargs = fix_pcolor_norm(stripped_args, kwargs)
+
+    result = native_plot.pcolormesh(*stripped_args, **kwargs)
+
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
+
+    return result
 
 def contour(*args, **kwargs):
     if len(args)%2 == 0:
@@ -498,49 +542,3 @@ def set_contour_levels(potential, number_of_contours, fraction_screen_filled, qu
         levels = V_min + (V_max-V_min) * uniform
     return levels
 
-
-if __name__ == '__main__':
-    import numpy as np
-
-    latex_support()
-
-    x = np.pi/20.0 * (range(-10,10) | units.m)
-    y1 = units.m.new_quantity(np.sin(x.number))
-    y2 = x
-    native_plot.subplot(2,2,1)
-    plot(x, y1, label='model')
-    scatter(x, y2, label='data')
-    xlabel('x')
-    ylabel('$M_\odot y$')
-    native_plot.legend(loc=2)
-
-    x = range(50) | units.Myr
-    y1 = quantities.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
-    y2 = -(1e43 | units.J) - y1
-    native_plot.subplot(2,2,2)
-    plot(x, y1, label='$E_{kin}$')
-    plot(x, y2, label='$E_{pot}$')
-    xlabel('t')
-    ylabel('E')
-    native_plot.legend()
-
-    x = range(7) | units.day
-    y1 = [0, 4, 2, 3, 2, 5, 1]
-    y2 = [3, 0, 2, 2, 3, 0, 4]
-    native_plot.subplot(2,2,3)
-    plot(x, y1, 'ks', label='coffee')
-    plot(x, y2, 'yo', label='tea')
-    xlabel('time')
-    ylabel('consumption / day')
-    native_plot.legend()
-
-    y1 = units.N.new_quantity(np.random.normal(0.,1.,100))
-    x = (units.g * units.cm * units.s**-2).new_quantity(np.arange(-3.0e5, 3.0e5, 0.1e5))
-    y2 = np.exp(-np.arange(-3., 3., 0.1)**2)/np.sqrt(np.pi)
-    native_plot.subplot(2,2,4)
-    hist(y1, bins=12, range=(-3,3), normed=True, label='data')
-    plot(x, y2, 'y--', label='model')
-    xlabel('force')
-    ylabel('pdf')
-    native_plot.legend()
-    native_plot.show()
