@@ -77,9 +77,9 @@ The configure script looks for cuda and cudart libraries in
 ```$NVCC/../lib``` or ```$NVCC/../lib64```, if your libraries cannot 
 be found there you can override the library path with::
 
-    > ./configure --enable-cuda --with-cuda-libdirs=/path/to/cuda/lib
+    > ./configure --enable-cuda --with-cuda-libdir=/path/to/cuda/lib
     
-Using ```--with-cuda-libdirs``` will always override the local 
+Using ```--with-cuda-libdir``` will always override the local 
 search paths and should also work if you have an old version of cuda 
 in ```/usr/lib```.
 
