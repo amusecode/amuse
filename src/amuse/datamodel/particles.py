@@ -2355,11 +2355,11 @@ class ParticlesWithFilteredAttributes(AbstractParticleSet):
     >>> p1 = Particles(3)
     >>> p1.mass = [10.0, 20.0, 30.0] | units.kg
     >>> p1.radius = [10.0, 20.0, 30.0] | units.m
-    >>> p2 = ParticlesWithAttributesFiltered(p1, ["mass"])
+    >>> p2 = ParticlesWithFilteredAttributes(p1, ["mass"])
     >>> print p2.get_attribute_names_defined_in_store()
-    ["mass"]
+    ['mass']
     >>> print p1.get_attribute_names_defined_in_store()
-    ["mass", "radius"]
+    ['mass', 'radius']
     """
 
     def __init__(self, particles, attributes_names, new_names = []):
