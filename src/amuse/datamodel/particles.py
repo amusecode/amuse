@@ -2345,6 +2345,112 @@ class ParticlesOverlay(AbstractParticleSet):
 
     def _original_set(self):
         return self
+        
+
+class ParticlesWithFilteredAttributes(AbstractParticleSet):
+    """An overlaytof a particles set. The overlay
+    filters attributes for the particles in the
+    overlayed set.
+
+    >>> p1 = Particles(3)
+    >>> p1.mass = [10.0, 20.0, 30.0] | units.kg
+    >>> p1.radius = [10.0, 20.0, 30.0] | units.m
+    >>> p2 = ParticlesWithAttributesFiltered(p1, ["mass"])
+    >>> print p2.get_attribute_names_defined_in_store()
+    ["mass"]
+    >>> print p1.get_attribute_names_defined_in_store()
+    ["mass", "radius"]
+    """
+
+    def __init__(self, particles, attributes_names, new_names = []):
+        AbstractParticleSet.__init__(self)
+
+        self._private.base_set = particles
+        self._private.attribute_names = attributes_names
+        if len(new_names) == 0:
+            converted_names = attributes_names
+        else:
+            converted_names = []
+            for set_name, converted_name in zip(attributes_names, new_names):
+                if not converted_name:
+                    converted_names.append(set_name)
+                else:
+                    converted_names.append(converted_name)
+            
+        mapping_from_set_name_to_converted_name = {}
+        mapping_from_converted_name_to_set_name = {}
+        for set_name, converted_name in zip(attributes_names, converted_names):
+            mapping_from_set_name_to_converted_name[set_name] = converted_name
+            mapping_from_converted_name_to_set_name[converted_name] = set_name
+            
+        self._private.mapping_from_set_name_to_converted_name = mapping_from_set_name_to_converted_name
+        self._private.mapping_from_converted_name_to_set_name = mapping_from_converted_name_to_set_name
+        self._private.converted_names = converted_names
+        
+    def _convert_to_base_set(self, attributes):
+        result = []
+        for x in attributes:
+            if not x in self._private.mapping_from_converted_name_to_set_name:
+                raise exceptions.AmuseException("attribute '{0}' not defined for this set".format(x))
+            result.append(self._private.mapping_from_converted_name_to_set_name[x])
+        return result
+        
+    def _filter_and_convert_to_this(self, attributes):
+        return [self._private.mapping_from_set_name_to_converted_name[x] for x in attributes if x in self._private.mapping_from_set_name_to_converted_name]
+        
+    def can_extend_attributes(self):
+        return False
+
+    def __len__(self):
+        return len(self._private.base_set)
+
+    def _get_version(self):
+        return self._private.base_set._get_version()
+
+    def __getitem__(self, index):
+        keys = self.get_all_keys_in_store()[index]
+
+        if hasattr(keys, '__iter__'):
+            return self._subset(keys)
+        else:
+            return Particle(keys, self)
+
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        attributes_inbase = self._convert_to_base_set(attributes)
+        self._private.base_set.add_particles_to_store(keys, attributes_inbase, values)
+        
+    def remove_particles_from_store(self, indices):
+        self._private.base_set.remove_particles_from_store(indices)
+        
+    def get_values_in_store(self, indices, attributes):
+        attributes_inbase = self._convert_to_base_set(attributes)
+        return self._private.base_set.get_values_in_store(indices, attributes_inbase)
+        
+    def set_values_in_store(self, indices, attributes, values):
+        attributes_inbase = self._convert_to_base_set(attributes)
+        self._private.base_set.set_values_in_store(indices, attributes_inbase, values)
+
+    def get_attribute_names_defined_in_store(self):
+        return self._private.converted_names
+        
+    def get_settable_attribute_names_defined_in_store(self):
+        result = list(self._private.base_set.get_settable_attribute_names_defined_in_store())
+        return self._filter_and_convert_to_this(result)
+
+    def get_all_keys_in_store(self):
+        return self._private.base_set.get_all_keys_in_store()
+
+    def get_all_indices_in_store(self):
+        return self._private.base_set.get_all_indices_in_store()
+
+    def get_indices_of_keys(self, keys):
+        return self._private.base_set.get_indices_of_keys(keys)
+
+    def has_key_in_store(self, key):
+        return self._private.base_set.has_key_in_store(key)
+
+    def _original_set(self):
+        return self
 
 class ParticlesWithUnitsConverted(AbstractParticleSet):
     """

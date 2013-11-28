@@ -1,8 +1,6 @@
 from amuse.test import amusetest
 
 from amuse.support.exceptions import AmuseException, MissingAttributesAmuseException
-
-
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.interface import LinkMethodArgumentOrResultType
 
@@ -938,7 +936,42 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertEquals(superset.name[3], '12345')
         self.assertEquals(superset[4].name, '1234')
         self.assertEquals(superset.name[4], '1234')
-            
+
+
+class TestParticlesWithFilteredAttributes(amusetest.TestCase):
+
+    def test1(self):
+        particles = datamodel.Particles(3)
+        particles.mass = [1,2,3] | units.kg
+        particles.radius = [1,2,3] | units.m
+        particles1 = datamodel.ParticlesWithFilteredAttributes(particles, ["mass"])
+        self.assertEquals(particles1.get_attribute_names_defined_in_store(), ["mass"])
+        self.assertEquals(particles1.get_settable_attribute_names_defined_in_store(), ["mass"])
+        self.assertEquals(particles.get_attribute_names_defined_in_store(), ["mass", "radius"])
+        self.assertEquals(particles.get_settable_attribute_names_defined_in_store(), ["mass", "radius"])
+        
+        self.assertTrue(particles.can_extend_attributes())
+        self.assertFalse(particles1.can_extend_attributes())
+    
+    def test2(self):
+        particles = datamodel.Particles(3)
+        particles.mass = [1,2,3] | units.kg
+        particles.radius = [1,2,3] | units.m
+        particles1 = datamodel.ParticlesWithFilteredAttributes(particles, ["mass"])
+        particles1.mass  = [4,5,6] | units.kg
+        print particles1
+        self.assertAlmostRelativeEquals(particles.mass, [4,5,6] | units.kg)
+        
+    def test3(self):
+        particles = datamodel.Particles(3)
+        particles.mass = [1,2,3] | units.kg
+        particles.radius = [1,2,3] | units.m
+        particles1 = datamodel.ParticlesWithFilteredAttributes(particles, ["mass"])
+        
+        def set_mass():
+            particles1.radius  = [4,5,6] | units.m
+        self.assertRaises(Exception, set_mass)
+        
 class TestParticlesSupersetWithNames(amusetest.TestCase):
 
     def test1(self):

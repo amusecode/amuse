@@ -460,7 +460,7 @@ def main(**options):
         pyplot.xlim(0.3,0.7)
         pyplot.ylim(0.5,4.5)
         pyplot.savefig("riemann_shock_tube_rho_"+model.name_of_the_code+".png")
-
+        pyplot.show()
 
 if __name__ == "__main__":
     options, arguments  = new_option_parser().parse_args()
