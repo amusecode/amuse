@@ -27,6 +27,10 @@ class KeplerTests(amusetest.TestCase):
         )
         
         self.assertEquals(len(binary), 2)
+        
+        binary.position-=binary[0].position
+        binary.velocity-=binary[0].velocity
+        
         self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[1].position, [1,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
@@ -47,6 +51,10 @@ class KeplerTests(amusetest.TestCase):
         )
         
         self.assertEquals(len(binary), 2)
+
+        binary.position-=binary[0].position
+        binary.velocity-=binary[0].velocity
+
         self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[1].position, [0,1,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
@@ -61,6 +69,10 @@ class KeplerTests(amusetest.TestCase):
         )
         
         self.assertEquals(len(binary), 2)
+
+        binary.position-=binary[0].position
+        binary.velocity-=binary[0].velocity
+
         self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[1].position, [-1,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
@@ -75,6 +87,10 @@ class KeplerTests(amusetest.TestCase):
         )
         
         self.assertEquals(len(binary), 2)
+
+        binary.position-=binary[0].position
+        binary.velocity-=binary[0].velocity
+
         self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[1].position, [0,-1,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
@@ -89,7 +105,10 @@ class KeplerTests(amusetest.TestCase):
         )
         
         self.assertEquals(len(binary), 2)
-        print binary[1]
+
+        binary.position-=binary[0].position
+        binary.velocity-=binary[0].velocity
+
         self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[1].position, [0.5 * numpy.sqrt(2),0.5 * numpy.sqrt(2),0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
@@ -108,7 +127,6 @@ class KeplerTests(amusetest.TestCase):
         )
         
         self.assertEquals(len(binary), 2)
-        print binary[1], numpy.sqrt(2)
         self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[1].position, [0,0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
@@ -130,10 +148,7 @@ class KeplerTests(amusetest.TestCase):
         for arg in zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
                                   longitude_of_the_ascending_node,argument_of_periapsis):
           arg_=orbital_elements_from_binary(new_binary_from_orbital_elements(*arg))
-          print arg
-          print arg_
           for i,(copy,org) in enumerate(zip(arg_,arg)):
-            print i
             self.assertAlmostEquals(copy,org)
 
     def test5(self):

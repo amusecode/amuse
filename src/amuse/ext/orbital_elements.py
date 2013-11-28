@@ -3,52 +3,30 @@ import numpy
 from amuse.units import units,nbody_system,constants
 from amuse.datamodel import Particles,rotation
 
-# wrong??
-def new_binary_from_orbital_elements2(
-        mass1,
-        mass2,
-        semi_major_axis, 
-        eccentricity = 0,
-        true_anomaly = 0, 
-        inclination = 0,
-        longitude_of_the_ascending_node = 0,
-        argument_of_periapsis = 0,
-        G = nbody_system.G
-    ):
-    inclination = numpy.radians(inclination)
-    argument_of_periapsis = numpy.radians(argument_of_periapsis)
-    longitude_of_the_ascending_node = numpy.radians(longitude_of_the_ascending_node)
-    true_anomaly = numpy.radians(true_anomaly)
+def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
+    if fprime is None:
+        print "provide fprime"
+        return x0
+    i=0
+    x=x0
+    while (i<maxiter):
+        fv=f(x,*args)
+        dfv=fprime(x,*args)
+        if(dfv==0):
+            return x0,-2
+        delta=-fv/dfv
+        if(abs(delta)<tol):
+            return x+delta,0
+        x=x+delta
+        i=i+1
+    return x,-1    
 
-    q   = mass2 / mass1
-    mu  = G * (mass2 + mass1)
-    
-    semilatus_rectum  = semi_major_axis*(1-eccentricity**2)
-    radius            = semilatus_rectum/(1+eccentricity*numpy.cos(true_anomaly))
-    velocity          = numpy.sqrt(mu/semilatus_rectum)*eccentricity*numpy.sin(true_anomaly)
-    
-    specific_relative_angular_momentum = numpy.sqrt(mu*semilatus_rectum)
-    
-    r = radius.new_zeros_array(3)
-    v = velocity.new_zeros_array(3)
-    
-    r[0] = radius * numpy.cos(true_anomaly)
-    r[1] = radius * numpy.sin(true_anomaly) 
-    
-    v[0] = velocity * numpy.cos(true_anomaly) - specific_relative_angular_momentum / radius * numpy.sin(true_anomaly)
-    v[1] = velocity * numpy.sin(true_anomaly) + specific_relative_angular_momentum / radius * numpy.cos(true_anomaly)
 
-    result = Particles(2)
-    result.position = radius.new_zeros_array(3)
-    result.velocity = velocity.new_zeros_array(3)
-    result[0].mass = mass1
-    result[1].mass = mass2
+def true_anomaly_from_eccentric_anomaly(E,e):
+  return 2*numpy.arctan2((1+e)**0.5*numpy.sin(E/2),(1-e)**0.5*numpy.cos(E/2))
 
-    
-    result[1].position = r
-    result[1].velocity = v
-    rotation.rotate(result, argument_of_periapsis, inclination, longitude_of_the_ascending_node)
-    return result
+# E from M,e
+# newton solver for M=E-e sin E
 
 def new_binary_from_orbital_elements(
         mass1,
@@ -113,6 +91,8 @@ def new_binary_from_orbital_elements(
     
     result[1].position = position_vector
     result[1].velocity = velocity_vector
+    
+    result.move_to_center()
     return result
     
 def orbital_elements_from_binary( binary, G=nbody_system.G):
