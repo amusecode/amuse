@@ -58,7 +58,8 @@ AC_DEFUN([AX_CUDA],[
         
         
         AC_CHECK_FILE([$CUDA_TK/lib], [],
-        [AC_MSG_ERROR([cuda toolkit path is incorrect, must have lib directory])])
+        [AC_CHECK_FILE([$CUDA_TK/lib64], [],
+        [AC_MSG_ERROR([cuda toolkit path is incorrect, must have $CUDA_TK/lib or $CUDA_TK/lib64 directory])])])])
         
         
         

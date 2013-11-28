@@ -732,9 +732,6 @@ CL_LIBS
 CL_CFLAGS
 FOUND_CL
 SED
-CUDA_LIBS
-WITH_CUDA
-CUDA_TK
 OPENMP_FCFLAGS
 OPENMP_CFLAGS
 HAVE_OPENMP
@@ -825,7 +822,10 @@ PACKAGE_VERSION
 PACKAGE_TARNAME
 PACKAGE_NAME
 PATH_SEPARATOR
-SHELL'
+SHELL
+CUDA_LIBS
+CUDA_TK
+WITH_CUDA'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
@@ -6442,15 +6442,15 @@ $as_echo X"$CUDA_TK_BIN" |
 fi
 
 
-        as_ac_File=`$as_echo "ac_cv_file_$CUDA_TK/lib" | $as_tr_sh`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CUDA_TK/lib" >&5
-$as_echo_n "checking for $CUDA_TK/lib... " >&6; }
+        as_ac_File=`$as_echo "ac_cv_file_$CUDA_TK/aaaaa" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CUDA_TK/aaaaa" >&5
+$as_echo_n "checking for $CUDA_TK/aaaaa... " >&6; }
 if eval \${$as_ac_File+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   test "$cross_compiling" = yes &&
   as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
-if test -r "$CUDA_TK/lib"; then
+if test -r "$CUDA_TK/aaaaa"; then
   eval "$as_ac_File=yes"
 else
   eval "$as_ac_File=no"
@@ -6462,9 +6462,32 @@ $as_echo "$ac_res" >&6; }
 if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
 
 else
-  as_fn_error $? "cuda toolkit path is incorrect, must have lib directory" "$LINENO" 5
+  as_ac_File=`$as_echo "ac_cv_file_$CUDA_TK/lib64" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CUDA_TK/lib64" >&5
+$as_echo_n "checking for $CUDA_TK/lib64... " >&6; }
+if eval \${$as_ac_File+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  test "$cross_compiling" = yes &&
+  as_fn_error $? "cannot check for file existence when cross compiling" "$LINENO" 5
+if test -r "$CUDA_TK/lib64"; then
+  eval "$as_ac_File=yes"
+else
+  eval "$as_ac_File=no"
+fi
+fi
+eval ac_res=\$$as_ac_File
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+if eval test \"x\$"$as_ac_File"\" = x"yes"; then :
+
+else
+  as_fn_error $? "cuda toolkit path is incorrect, must have $CUDA_TK/lib or $CUDA_TK/lib64 directory" "$LINENO" 5
 fi
 
+fi
+
+fi
 
 
 
@@ -6625,15 +6648,6 @@ $as_echo "not found" >&6; }
         LIBS="$save_LIBS"
 
 fi
-
-fi
-
-
-
-
-
-
-
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for a sed that does not truncate output" >&5
