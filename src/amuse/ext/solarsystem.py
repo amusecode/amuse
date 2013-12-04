@@ -104,7 +104,7 @@ def new_solar_system():
     name, mass, radius, x, y, z, vx, vy, vz
     """
     sun = Particle()
-    sun.name = 'SUN                    '
+    sun.name = 'SUN'
     sun.mass = 1.0 | units.MSun
     sun.radius = 1.0 | units.RSun
     planets = _planets_only()
