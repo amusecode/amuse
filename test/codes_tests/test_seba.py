@@ -474,7 +474,8 @@ class TestSeBa(TestWithMPI):
         
         self.assertAlmostRelativeEquals(instance.binaries[0].child1.mass, 3.0 | units.MSun, 4)
         self.assertAlmostRelativeEquals(instance.binaries[0].child2.mass, 0.3 | units.MSun, 4)
-            
+
+           
     def xtest7(self):
         instance = self.new_instance_of_an_optional_code(SeBa)
         instance.parameters.metallicity = 0.03
@@ -486,3 +487,31 @@ class TestSeBa(TestWithMPI):
         print p.stellar_type
         self.assertEquals(str(p.stellar_type),'Black Hole')
         self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)
+
+    def test8(self):
+        instance = self.new_instance_of_an_optional_code(SeBa, redirection="none")
+        instance.parameters.supernova_kick_velocity = 0 | units.kms
+        instance.commit_parameters()
+        print "v_kick=", instance.parameters.supernova_kick_velocity
+        stars =  Particles(2)
+        stars[0].mass = 10.0 | units.MSun
+        stars[1].mass = 9 | units.MSun
+        
+        semi_major_axis = 10000|units.AU
+        
+        instance.particles.add_particles(stars)
+        
+        binaries =  Particles(1)
+        
+        binary = binaries[0]
+        binary.semi_major_axis = semi_major_axis
+        binary.eccentricity = 0
+        binary.child1 = stars[0]
+        binary.child2 = stars[1]
+        
+        instance.binaries.add_particles(binaries)
+        instance.evolve_model(30|units.Myr)
+        print instance.particles
+        print instance.binaries
+        
+        self.assertAlmostRelativeEquals(instance.binaries[0].eccentricity, 0.7872, 4)

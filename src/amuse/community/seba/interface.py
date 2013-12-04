@@ -144,6 +144,46 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             A binary with the given index was not found.
         """
         return function
+
+    @legacy_function   
+    def set_semi_major_axis():
+        """
+        Update the current semi major axis of the elliptical orbit of the parts in the binary star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.IN
+            , description="The new semi major axis.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function   
+    def set_eccentricity():
+        """
+        Update the current eccentricity of the elliptical orbit of the parts in the binary star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.IN
+            , description="The new eccentricity.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
         
     @legacy_function
     def get_children_of_binary():
@@ -287,6 +327,11 @@ class SeBa(se.StellarEvolution):
             (units.RSun, object.ERROR_CODE,)
         )
         object.add_method(
+            "set_semi_major_axis",
+            (object.INDEX, units.RSun,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_age", 
             (object.INDEX,), 
             (units.Myr, object.ERROR_CODE,)
@@ -363,3 +408,5 @@ class SeBa(se.StellarEvolution):
         object.add_getter('binaries', 'get_time_step', names = ('time_step',))
         object.add_getter('binaries', 'get_age', names = ('age',))
         object.add_getter("binaries", 'get_children_of_binary')
+        object.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
+        object.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))

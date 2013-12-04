@@ -662,6 +662,22 @@ int get_semi_major_axis(int index_of_the_star, double * value){
     return error_code;
 }
 
+int set_eccentricity(int index_of_the_star, double value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    seba_node->get_starbase()->set_eccentricity(value);
+    return error_code;
+}
+
+int set_semi_major_axis(int index_of_the_star, double value){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    seba_node->get_starbase()->set_semi(value);
+    return error_code;
+}
+
 
 
 
