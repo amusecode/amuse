@@ -553,7 +553,7 @@ class CodeCommand(Command):
             for name, value in self.environment_notset.items():
                 config.set('environment', name, '')
             
-            with open('amuse.cfg', 'wb') as f:
+            with open('amuse.cfg', 'w') as f:
                 config.write(f)
 
     
