@@ -444,6 +444,8 @@ class TestFi(TestWithMPI):
             setattr(instance.parameters, bool_par, False)
             self.assertEquals(False, getattr(instance.parameters, bool_par))
         
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
+        
         instance.cleanup_code()
         instance.stop()
     

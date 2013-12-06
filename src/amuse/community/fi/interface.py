@@ -1508,7 +1508,7 @@ class FiInterface(
         return function
     
     def get_periodic_boundaries_flag(self):
-        return self.mode == self.MODE_PERIODIC_BOUNDARIES, 0
+        return self.mode == self.MODE_PERIODIC_BOUNDARIES
         
     @legacy_function
     def get_number_of_sph_particles_removed():
