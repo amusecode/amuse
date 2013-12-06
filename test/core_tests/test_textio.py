@@ -1,5 +1,5 @@
 from amuse.test import amusetest
-import StringIO
+from StringIO import StringIO
 import textwrap
 import os
 from amuse import io
@@ -13,7 +13,7 @@ class CursorTests(amusetest.TestCase):
     
     def test1(self):
         contents = "1\n2\n3"
-        data_file = StringIO.StringIO(contents)
+        data_file = StringIO(contents)
         instance = text.LineBasedFileCursor(data_file)
         
         self.assertEquals("1", instance.line())
@@ -26,7 +26,7 @@ class CursorTests(amusetest.TestCase):
     
     def test2(self):
         contents = "1\n2\n3"
-        data_file = StringIO.StringIO(contents)
+        data_file = StringIO(contents)
         instance = text.LineBasedFileCursor(data_file)
         
         self.assertFalse(instance.is_at_end())
@@ -41,7 +41,7 @@ class TableFormattedTextTests(amusetest.TestCase):
     
     def test1(self):
         contents = "#header\n1 2 3\n4 5 6\n       \n7 8 9\n     "
-        data_file = StringIO.StringIO(contents)
+        data_file = StringIO(contents)
         instance = text.TableFormattedText("test.txt", data_file)
         instance.attribute_names = ['a', 'b', 'c']
         particles = instance.load()
@@ -56,7 +56,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         p.b = [2, 5] | units.m
         p.c = [3, 6] | units.m
         
-        data_file = StringIO.StringIO()
+        data_file = StringIO()
         instance = text.TableFormattedText("test.txt", data_file, p)
         instance.attribute_types = [units.m, units.m, units.m]
         instance.store()
@@ -81,7 +81,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         mass = [1.0,2.0,3.0] | generic_unit_system.mass
         length = [3.0,4.0,5.0] | generic_unit_system.length
         
-        stream = StringIO.StringIO()
+        stream = StringIO()
         output = text.TableFormattedText(stream = stream)
         output.quantities = (mass, length)
         output.store()
@@ -132,7 +132,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         p.b = [2, 5] | units.m
         p.c = [3, 6] | units.m
         
-        data_file = StringIO.StringIO()
+        data_file = StringIO()
         instance = text.TableFormattedText("test.txt", data_file, p)
         instance.attribute_types = [None, units.m, units.m]
         instance.store()
@@ -147,7 +147,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         p.b = [2, 5] | units.m
         p.c = [3, 6] | units.m
         
-        data_file = StringIO.StringIO()
+        data_file = StringIO()
         instance = text.TableFormattedText("test.txt", data_file, p)
         instance.store()
         
@@ -265,7 +265,7 @@ class CsvFileTextTests(amusetest.TestCase):
     def test1(self):
         print "Test 1: Read comma separated values (CSV) - specified attributes"
         contents = "#header\n1,2,3\n4,5,6\n7,8,9\n"
-        data_stream = StringIO.StringIO(contents)
+        data_stream = StringIO(contents)
         instance = text.CsvFileText(None, data_stream)
         instance.attribute_names = ['a', 'b', 'c']
         instance.attribute_types = [units.none, units.m, units.m/units.s]
@@ -280,7 +280,7 @@ class CsvFileTextTests(amusetest.TestCase):
         contents = ("#a, b, c\n#no_system.get('none'),system.get('S.I.').base('length'),"
             "(system.get('S.I.').base('length') / system.get('S.I.').base('time'))\n"
             "#none, m, m/s\n1,2,3\n4,5,6\n7,8,9\n")
-        data_stream = StringIO.StringIO(contents)
+        data_stream = StringIO(contents)
         instance = text.CsvFileText(None, data_stream)
         particles = instance.load()
         self.assertEquals(len(particles), 3)
@@ -295,7 +295,7 @@ class CsvFileTextTests(amusetest.TestCase):
             "(((system.get('generic').base('length')**2) * (system.get('generic').base('time')**-2)) * "
             "system.get('generic').base('mass'))\n"
             "#mass,length,length**2 * time**-2 * mass\n1.0,2.0,3.0\n4.0,5.0,6.0\n")
-        data_stream = StringIO.StringIO(contents)
+        data_stream = StringIO(contents)
         instance = text.CsvFileText(None, data_stream)
         particles = instance.load()
         self.assertEquals(len(particles), 2)
@@ -310,7 +310,7 @@ class CsvFileTextTests(amusetest.TestCase):
         particles.b = [2, 5] | units.m
         particles.c = [3, 6] | units.kg / units.m**3
         
-        data_stream = StringIO.StringIO()
+        data_stream = StringIO()
         instance = text.CsvFileText(None, data_stream, particles)
         instance.attribute_names = ['a', 'b']
         instance.attribute_types = [units.none, 100*units.cm]
@@ -328,7 +328,7 @@ class CsvFileTextTests(amusetest.TestCase):
         particles.b = [2, 5] | units.m
         particles.c = [3, 6] | units.kg / units.m**3
         
-        data_stream = StringIO.StringIO()
+        data_stream = StringIO()
         instance = text.CsvFileText(None, data_stream, particles)
         instance.store()
         
@@ -346,7 +346,7 @@ class CsvFileTextTests(amusetest.TestCase):
         particles.c = [3, 6] | generic_unit_system.energy
         particles.d = [4, 7] | generic_unit_system.temperature
         
-        data_stream = StringIO.StringIO()
+        data_stream = StringIO()
         instance = text.CsvFileText(None, data_stream, particles)
         instance.store()
         
@@ -362,7 +362,7 @@ class CsvFileTextTests(amusetest.TestCase):
         a = [1.0, 4] | units.none
         b = [2.0, 5] | units.m
         
-        data_stream = StringIO.StringIO()
+        data_stream = StringIO()
         instance = text.CsvFileText(None, data_stream)
         instance.quantities = [a, b]
         instance.store()
@@ -375,7 +375,7 @@ class CsvFileTextTests(amusetest.TestCase):
         a = [1.0, 4] | units.none
         b = [2.0, 5] | units.m
         
-        data_stream = StringIO.StringIO()
+        data_stream = StringIO()
         instance = text.CsvFileText(None, data_stream)
         instance.quantities = [a, b]
         instance.attribute_names = ['a', 'b']
@@ -390,7 +390,7 @@ class CsvFileTextTests(amusetest.TestCase):
         a = [1.0, 4] | units.none
         b = [2.0, 5] | units.m
         
-        data_stream = StringIO.StringIO()
+        data_stream = StringIO()
         instance = text.CsvFileText(None, data_stream)
         instance.quantities = [a, b]
         instance.attribute_names = ['a', 'b']
@@ -452,7 +452,7 @@ class Athena3DTextTests(amusetest.TestCase):
         #
           4  3.90625e-03  1.00000e+00 -8.66511e-07  4.08477e-07  1.44419e-07  6.00000e-01  2.52500e+00  1.00000e+00  1.41421e+00  5.00000e-01  1.00000e+00  1.41421e+00  5.00000e-01
         """
-        data_file = StringIO.StringIO(textwrap.dedent(contents))
+        data_file = StringIO(textwrap.dedent(contents))
         instance = text.Athena3DText("test.tab", data_file)
         particles = instance.load()
         

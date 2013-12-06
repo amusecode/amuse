@@ -329,7 +329,7 @@ class AbstractParticleSet(AbstractSet):
         else:
             return None
 
-    def _get_particle_unsave(self, key, index = -1):
+    def _get_particle_unsave(self, key, index = None):
         return Particle(
             key,
             self._original_set(),
@@ -1590,7 +1590,7 @@ class ParticlesSuperset(AbstractParticleSet):
                 else:
                     current_dtype = quantity.dtype
                     result_dtype = resultvalue.dtype
-                    if result_dtype.kind == 'S' and (current_dtype.itemsize > result_dtype.itemsize):
+                    if (result_dtype.kind == 'S' or result_dtype.kind == 'U') and (current_dtype.itemsize > result_dtype.itemsize):
                         resultvalue = numpy.asarray(resultvalue, dtype = current_dtype)     
                         values[valueindex] = resultvalue  
                     resultvalue[indices] = quantity
@@ -3095,7 +3095,7 @@ class Particle(object):
     __array_struct__ = UndefinedAttribute()
     __array__ = UndefinedAttribute()
 
-    def __init__(self, key = None, particles_set = None, set_index = -1, set_version = -1, **keyword_arguments):
+    def __init__(self, key = None, particles_set = None, set_index = None, set_version = -1, **keyword_arguments):
         if particles_set is None:
             if key == None:
                 particles_set = Particles(1)
@@ -3113,7 +3113,7 @@ class Particle(object):
             setattr(self, attribute_name, attribute_value)
 
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
-        if self._set_index < 0 or self._set_version != self.particles_set._get_version():
+        if self._set_index is None or self._set_version != self.particles_set._get_version():
             object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
             object.__setattr__(self, "_set_version", self.particles_set._get_version())
 
@@ -3126,7 +3126,7 @@ class Particle(object):
 
     def __getattr__(self, name_of_the_attribute):
         try:
-            if self._set_index < 0 or self._set_version != self.particles_set._get_version():
+            if self._set_index is None or self._set_version != self.particles_set._get_version():
                 object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
                 object.__setattr__(self, "_set_version", self.particles_set._get_version())
             return self.particles_set._get_value_of_attribute(self, self._set_index, name_of_the_attribute)
@@ -3204,7 +3204,7 @@ class Particle(object):
         >>> print p
         Particle(10, mass=5.0 kg, x=10.2 m)
         """
-        if self._set_index < 0 or self._set_version != self.particles_set._get_version():
+        if self._set_index is None or self._set_version != self.particles_set._get_version():
             object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
             object.__setattr__(self, "_set_version", self.particles_set._get_version())
 

@@ -21,11 +21,8 @@ class GlobalOptions(object):
     def load(self, preloadfp = None):
         if not pkg_resources is None:
             if pkg_resources.resource_exists('amuse', 'amuserc'):
-                install_ini_file = pkg_resources.resource_stream('amuse', 'amuserc') 
-                try:
-                    self.config.readfp(install_ini_file)   
-                finally:
-                    install_ini_file.close()
+                resourcerc = pkg_resources.resource_filename('amuse', 'amuserc') 
+                self.config.read(resourcerc)  
         
         rootrc = os.path.join(self.amuse_rootdirectory, self.rcfilename)
         homedirrc = os.path.join(self.homedirectory, '.' + self.rcfilename)

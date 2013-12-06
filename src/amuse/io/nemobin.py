@@ -10,6 +10,7 @@ from amuse.units import nbody_system
 from amuse.support.core import late, OrderedMultiDictionary
 
 from amuse import datamodel
+
 class NemoItemType(type):
     mapping = {}
     def __new__(metaclass, name, bases, dict):
@@ -87,7 +88,7 @@ class CharItem(NemoItem):
     datatype = numpy.character
     
     def postprocess(self):
-        self.data = ''.join(self.data[:-1])
+        self.data = self.data[:-1].tostring().decode('latin_1')
         
     def preprocess(self):
         result = numpy.array(list(self.data), numpy.character)
@@ -255,10 +256,10 @@ class NemoBinaryFile(object):
         return result
         
     def read_string(self):
-        return self.read_array('b').tostring()
+        return self.read_array('b').tostring().decode('latin_1')
 
     def read_fixed_array(self, datatype, count):
-        bytes = self.file.read(datatype.itemsize * count)
+        bytes = self.file.read(int(datatype.itemsize * count))
         return numpy.fromstring(bytes, dtype=datatype,)
 
 
@@ -327,7 +328,7 @@ class NemoBinaryFile(object):
         self.file.write(x.tostring())
         
     def write_string(self, string):
-        return self.write_array('b', string)
+        return self.write_array('b', string.encode('latin_1'))
         
     def write_item_header(self, item):
         self.write_magic_number(item.is_plural())

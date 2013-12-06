@@ -8,6 +8,8 @@ from amuse.support import console
 from amuse.support.console import set_printing_strategy
 from amuse.support.console import get_current_printing_strategy
 
+import sys
+
 class TestPrintingStrategy(amusetest.TestCase):
 
     def tearDown(self):
@@ -101,13 +103,19 @@ class TestPrintingStrategy(amusetest.TestCase):
         self.assertRaises(AmuseException, str, acc, expected_message = 
             "Unable to convert length / (s**2) to N-body units. No nbody_converter given")
         self.assertEqual(str(converter.to_nbody(acc * constants.G.number)), "9.8")
-        self.assertEqual(str(converter.to_nbody(position)), "[1, 2, 3]")
+        if sys.hexversion > 0x03000000:
+            self.assertEqual(str(converter.to_nbody(position)), "[1.0, 2.0, 3.0]")
+        else:
+            self.assertEqual(str(converter.to_nbody(position)), "[1, 2, 3]")
         self.assertEqual(str(pi), "3.14")
         
         set_printing_strategy("nbody", nbody_converter = converter)
         self.assertEqual(str(mass), "1.0")
         self.assertEqual(str(acc * constants.G.number), "9.8")
-        self.assertEqual(str(position), "[1, 2, 3]")
+        if sys.hexversion > 0x03000000:
+            self.assertEqual(str(position), "[1.0, 2.0, 3.0]")
+        else:
+            self.assertEqual(str(position), "[1, 2, 3]")
         set_printing_strategy("default")
     
     def test6(self):
@@ -127,7 +135,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         self.assertEqual(str(converter.to_si(acc)), "9.8")
         self.assertEqual(str(converter.to_si(position)), "[100.0, 200.0, 300.0]")
         self.assertEqual(str(energy), "10.0")
-        self.assertEqual(str(constants.G), "0.00449945056135")
+        self.assertEqual(str(constants.G)[:8], "0.00449945056135"[:8])
         self.assertEqual(str(temperature), "5000")
         self.assertEqual(str(pi), "3.14")
         
@@ -138,7 +146,7 @@ class TestPrintingStrategy(amusetest.TestCase):
     def test7(self):
         print "Testing astro printing strategy with units printed"
         mass     = 2.0 | 0.5 * units.MSun
-        acc      = (0.0098 | nbody_system.length) * (1 | units.Myr**-2).as_quantity_in(units.s**-2)
+        acc      = (0.0097 | nbody_system.length) * (1 | units.Myr**-2).as_quantity_in(units.s**-2)
         position = [0.1, 0.2, 0.3] | nbody_system.length
         energy   = 1e8 | units.erg
         temperature = 5000 | units.K
@@ -147,16 +155,19 @@ class TestPrintingStrategy(amusetest.TestCase):
         
         set_printing_strategy("astro")
         self.assertEqual(str(mass), "1.0 MSun")
-        self.assertEqual(str(acc), "0.0098 length * Myr**-2")
-        self.assertEqual(str(converter.to_si(acc)), "9.8 parsec * Myr**-2")
+        self.assertEqual(str(acc), "0.0097 length * Myr**-2")
+        self.assertEqual(str(converter.to_si(acc)), "9.7 parsec * Myr**-2")
         self.assertEqual(str(converter.to_si(position)), "[100.0, 200.0, 300.0] parsec")
         self.assertEqual(str(energy), "10.0 J")
-        self.assertEqual(str(constants.G), "0.00449945056135 parsec**3 * MSun**-1 * Myr**-2")
+        
+        
+        self.assertEqual(str(constants.G)[:8], "0.004499450561351174 parsec**3 * MSun**-1 * Myr**-2"[:8])
+        self.assertEqual(str(constants.G)[-30:], "parsec**3 * MSun**-1 * Myr**-2")
         self.assertEqual(str(temperature), "5000 K")
         self.assertEqual(str(pi), "3.14 none")
         
         set_printing_strategy("astro", nbody_converter = converter)
-        self.assertEqual(str(acc), "9.8 parsec * Myr**-2")
+        self.assertEqual(str(acc), "9.7 parsec * Myr**-2")
         set_printing_strategy("astro", ignore_converter_exceptions = False)
         self.assertRaises(AmuseException, str, acc, expected_message = 
             "Unable to convert length * s**-2 to SI units. No nbody_converter given")

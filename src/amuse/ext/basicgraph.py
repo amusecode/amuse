@@ -18,7 +18,7 @@ UnionFind and MinimumSpanningTree taken from PADS:
 
 """
 
-class UnionFind:
+class UnionFind(object):
     """Union-find data structure.
 
     Each unionFind instance X maintains a family of disjoint sets of
@@ -68,7 +68,7 @@ class UnionFind:
     def union(self, *objects):
         """Find the sets containing the objects and merge them all."""
         roots = [self[x] for x in objects]
-        heaviest = max([(self.weights[r],r) for r in roots])[1]
+        heaviest = max([(self.weights[r],r) for r in roots], key = lambda x: x[0])[1]
         for r in roots:
             if r != heaviest:
                 self.weights[heaviest] += self.weights[r]
@@ -109,7 +109,7 @@ def MinimumSpanningTree(G):
     subtrees = UnionFind()
     tree = []
     edges = [(G[u][v],u,v) for u in G for v in G[u]]
-    edges.sort()
+    edges.sort(key=lambda x:x[0])
     for W,u,v in edges:
         if subtrees[u] != subtrees[v]:
             tree.append((W,u,v))
@@ -130,7 +130,7 @@ def MinimumSpanningTreeFromEdges(edges):
     # part (the sort) is sped up by being built in to Python.
     subtrees = UnionFind()
     tree = []
-    edges.sort()
+    edges.sort(key=lambda x:x[0])
     for W,u,v in edges:
         if subtrees[u] != subtrees[v]:
             tree.append((W,u,v))

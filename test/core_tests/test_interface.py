@@ -950,7 +950,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler.set_delete('particles', 'delete_particle')
         handler.add_setter('particles', 'set_mass')
         handler.add_getter('particles', 'get_mass', names = ('mass',))
-        handler.add_getter('particles', 'get_next', names = ('next',))
+        handler.add_getter('particles', 'get_next', names = ('next_particle',))
         
         
         local_particles = datamodel.Particles(4)
@@ -961,10 +961,10 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         
         self.assertEquals(len(instance.particles), 4)
-        self.assertEquals(instance.particles[0].next, instance.particles[1])
-        self.assertEquals(instance.particles[1].next, instance.particles[2])
-        self.assertEquals(instance.particles[2].next, instance.particles[3])
-        self.assertEquals(instance.particles[3].next, None)
+        self.assertEquals(instance.particles[0].next_particle, instance.particles[1])
+        self.assertEquals(instance.particles[1].next_particle, instance.particles[2])
+        self.assertEquals(instance.particles[2].next_particle, instance.particles[3])
+        self.assertEquals(instance.particles[3].next_particle, None)
         
         
     def test4(self):

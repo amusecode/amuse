@@ -806,8 +806,8 @@ def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
     
     if len(particles) * len(other_particles) * 3 > max_array_length:
         neighbour_indices = []
-        particles_per_batch = max(1, max_array_length / (3 * len(other_particles)))
-        number_of_batches = (len(particles) - 1) / particles_per_batch + 1
+        particles_per_batch = max(1, max_array_length // (3 * len(other_particles)))
+        number_of_batches = (len(particles) - 1) // particles_per_batch + 1
         indices_in_each_batch = [numpy.arange(particles_per_batch) + i*particles_per_batch for i in range(number_of_batches-1)]
         indices_in_each_batch.append(numpy.arange(indices_in_each_batch[-1][-1]+1, len(particles)))
         for indices in indices_in_each_batch:

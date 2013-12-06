@@ -441,7 +441,7 @@ class MPIMessage(AbstractMessage):
             strings = []
             begin = 0
             for size in sizes:
-                strings.append(data_bytes[begin:begin + size].tostring())
+                strings.append(data_bytes[begin:begin + size].tostring().decode('latin_1'))
                 begin = begin + size + 1
                 
             logging.getLogger("channel").debug("got %d strings of size %s, data = %s", total, sizes, strings)
@@ -630,7 +630,7 @@ def pack_array(array, length, dtype):
 
 def unpack_array(array, length, dtype=None):
     result = []
-    total = len(array) / length
+    total = len(array) // length
     for i in range(total):
         offset = i * length
         result.append(array[offset:offset + length])
@@ -718,7 +718,6 @@ class AbstractMessageChannel(OptionalAttributes):
         if command is None :
             command = sys.executable
         
-            
         return command, arguments
     
     @classmethod
@@ -772,7 +771,7 @@ class AbstractMessageChannel(OptionalAttributes):
     def get_amuse_root_directory(self):
         return self.amuse_root_dir
     
-    @option(sections=('data',))
+    @option(type="string", sections=('data',))
     def amuse_root_dir(self):
         if 'AMUSE_DIR' in os.environ:
             return os.environ['AMUSE_DIR']    
@@ -1115,8 +1114,6 @@ class MpiChannel(AbstractMessageChannel):
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command=self.python_exe_for_redirection, interpreter_executable=self.interpreter_executable)
                 
-        # print arguments
-        # print command
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info=self.info)
             
         
@@ -1142,6 +1139,7 @@ class MpiChannel(AbstractMessageChannel):
                         return len(x[0])
                 except:
                     return 1
+            return 1
                
                
         

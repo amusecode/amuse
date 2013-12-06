@@ -43,16 +43,16 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.7.0b2' ,                  #version string
+            '1.8.0' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
             #'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
-            'http://downloads.sourceforge.net/project/numpy/NumPy/1.7.0b2/',
+            'http://downloads.sourceforge.net/project/numpy/NumPy/1.8.0/',
             self.numpy_build          #method to use for building
           ),
           (
             'nose', 
             [], 
-            '1.2.1', 
+            '1.3.0', 
             'nose-' , '.tar.gz', 
             'http://pypi.python.org/packages/source/n/nose/', 
             self.python_build
@@ -60,38 +60,38 @@ class InstallPrerequisites(object):
           (
             'hdf' ,
             [],  
-            '1.8.8',
+            '1.8.9',
             'hdf5-' , '.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.8/src/',
+            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.9/src/',
             self.hdf5_build
           ) ,
           (
             'h5py', 
             ['hdf'], 
-            '2.1.0', 
+            '2.2.0', 
             'h5py-' , '.tar.gz', 
             'http://h5py.googlecode.com/files/', self.h5py_build
           ) ,
           (
             'docutils', 
             [], 
-            '0.9.1', 
+            '0.11', 
             'docutils-','.tar.gz', 
             'http://pypi.python.org/packages/source/d/docutils/', 
             self.python_build
           ) ,
           (
-            'mpich2', 
+            'mpich', 
             [], 
-            '1.5', 
-            'mpich2-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/1.5/', 
+            '3.0.4', 
+            'mpich-', '.tar.gz', 
+            'http://www.mpich.org/static/downloads/3.0.4/', 
             self.mpich2_build
           ) ,
           (
             'mpi4py', 
-            ['mpich2'], 
-            '1.2.2', 
+            ['mpich'], 
+            '1.3.1', 
             'mpi4py-', '.tar.gz', 
             'http://mpi4py.googlecode.com/files/', 
             self.python_build
@@ -102,7 +102,7 @@ class InstallPrerequisites(object):
           (
             'fftw3' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '3.2.2' ,                  #version string
+            '3.3.3' ,                  #version string
             'fftw-', '.tar.gz',        #pre- and postfix for filename
             'http://www.fftw.org/',    #download url, filename is appended
             self.fftw_build            #method to use for building
@@ -110,7 +110,7 @@ class InstallPrerequisites(object):
           (
             'gsl' ,                    #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.14' ,                   #version string
+            '1.16' ,                   #version string
             'gsl-', '.tar.gz',         #pre- and postfix for filename
             'http://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
             self.fftw_build            #method to use for building - same as for FFTW should work
@@ -118,7 +118,7 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '2.8.8' ,                   #version string
+            '2.8.12' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
             'http://www.cmake.org/files/v2.8/', #download url, filename is appended
             self.cmake_build             #method to use for building
@@ -126,17 +126,17 @@ class InstallPrerequisites(object):
           (
             'gmp',                      #name to refer by
             [],                         #names of prerequisites (unused)
-            '5.0.3' ,                   #version string
+            '5.1.3' ,                   #version string
             'gmp-', '.tar.bz2',        #pre- and postfix for filename
-            'ftp://ftp.gmplib.org/pub/gmp-5.0.3/', #download url, filename is appended
+            'ftp://ftp.gmplib.org/pub/gmp-5.1.3/', #download url, filename is appended
             self.gmp_build             #method to use for building
           ) ,
           ( # NOTE: When library version is changed, url to 'allpatches' in self.mpfr_build must be changed too!
             'mpfr' ,                    #name to refer by
             ['gmp'],                    #names of prerequisites
-            '3.1.1' ,                   #version string
+            '3.1.2' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
-            'http://mpfr.loria.fr/mpfr-3.1.1/', #download url, filename is appended
+            'http://mpfr.loria.fr/mpfr-3.1.2/', #download url, filename is appended
             self.mpfr_build             #method to use for building
           ) ,
         ]
@@ -196,12 +196,12 @@ class InstallPrerequisites(object):
         print("finished " , ' '.join(args))
     
     def h5py_build(self, path):
-        self.run_application([
-            'patch', 
-            '-p1', 
-            '-i', 
-            os.path.abspath('h5py_imports_python33.patch')
-        ], cwd=path)
+        #self.run_application([
+        #    'patch', 
+        #    '-p1', 
+        #    '-i', 
+        #    os.path.abspath('h5py_imports_python33.patch')
+        #], cwd=path)
        
         self.run_application([PYTHON,'setup.py','build','--hdf5='+self.prefix], cwd=path)
         self.run_application([PYTHON,'setup.py','install'], cwd=path)

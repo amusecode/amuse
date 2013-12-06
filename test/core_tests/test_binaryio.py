@@ -1,5 +1,5 @@
 from amuse.test import amusetest
-from StringIO import StringIO
+from io import BytesIO
 from collections import namedtuple
 
 import os.path
@@ -12,30 +12,30 @@ from amuse.datamodel import Particles
 
 class GadgetFileFormatProcessorTests(amusetest.TestCase):
     header_parts = ( 
-        '\x00\x01\x00\x00 N\x00\x00 \xa1\x07\x00 N\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\xf6`Q\xc6#\xcc\x9c>\x8d',
-        '\xed\xb5\xa0\xf7\xc6\x90>\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 N\x00\x00 ',
-        '\xa1\x07\x00 N\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
-        '\x00\x00\x00\x00\x00\x00\x01\x00\x00',
+        b'\x00\x01\x00\x00 N\x00\x00 \xa1\x07\x00 N\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\xf6`Q\xc6#\xcc\x9c>\x8d',
+        b'\xed\xb5\xa0\xf7\xc6\x90>\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00 N\x00\x00 ',
+        b'\xa1\x07\x00 N\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+        b'\x00\x00\x00\x00\x00\x00\x01\x00\x00',
     )
 
     def test1(self):
-        header = ''.join(self.header_parts)
+        header = b''.join(self.header_parts)
         x = gadget.GadgetFileFormatProcessor()
-        file = StringIO(header)
+        file = BytesIO(header)
         x.load_header(file)
         print x.header_struct
         self.assertEquals(x.header_struct.Npart[0], 20000)
@@ -160,7 +160,7 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         set = (FakeList(20000), FakeList(500000), FakeList(20000), (), (), ())
         x = gadget.GadgetFileFormatProcessor(set = set)
         x.equal_mass_array=(0.0,4.291150104743886e-07, 2.5e-07,0.0,0.0,0.0) |nbody_system.mass
-        file = StringIO()
+        file = BytesIO()
         x.store_header(file)
         print x.header_struct
         self.assertEquals(x.header_struct.Npart[0], 20000)
@@ -171,8 +171,8 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(x.header_struct.Npart[5], 0)
         
         print repr(file.getvalue())
-        print repr(''.join(self.header_parts))
-        self.assertEquals(repr(file.getvalue()[0:30]), repr(''.join(self.header_parts)[0:30]))
+        print repr(b''.join(self.header_parts))
+        self.assertEquals(repr(file.getvalue()[0:30]), repr(b''.join(self.header_parts)[0:30]))
     
     def test10(self):
         p = Particles(2)
@@ -184,9 +184,9 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         p.rho = [5,6] | nbody_system.density
         p.mass = [5,6] | nbody_system.mass
         x = gadget.GadgetFileFormatProcessor(set = p)
-        file = StringIO()
+        file = BytesIO()
         x.store_body(file)
-        input = StringIO(file.getvalue())
+        input = BytesIO(file.getvalue())
         positions = x.read_fortran_block_float_vectors(input)
         self.assertEquals(positions[0] , [1.0, 2.0, 3.0])
         self.assertEquals(positions[1] , [4.0, 5.0, 6.0])
@@ -360,12 +360,12 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         data = nemofile.read()
         file.close()
         
-        outputfile =  StringIO()
+        outputfile =  BytesIO()
         nemooutputfile = nemobin.NemoBinaryFile(outputfile)
         nemooutputfile.write(data)
         string = outputfile.getvalue()
         outputfile.close()
-        inputfile =  StringIO(string)
+        inputfile =  BytesIO(string)
         nemoinputfile = nemobin.NemoBinaryFile(inputfile)
         tagcharacter, tagstring, dim, mustswap = nemoinputfile.get_item_header()
         self.assertEquals(tagcharacter, 'c')
@@ -376,7 +376,7 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         
     
     def test6(self):        
-        inputfile =  StringIO()
+        inputfile = BytesIO()
         nemoinputfile = nemobin.NemoBinaryFile(inputfile)
         data = nemoinputfile.read()
         self.assertEquals(len(data), 0)
@@ -390,7 +390,7 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         data = nemofile.read()
         file.close()
         
-        outputfile =  StringIO()
+        outputfile =  BytesIO()
         nemooutputfile = nemobin.NemoBinaryFile(outputfile)
         nemooutputfile.write(data)
         string = outputfile.getvalue()
@@ -413,7 +413,7 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         set = x.load_file(file)
         file.close()
         
-        outputfile =  StringIO()
+        outputfile =  BytesIO()
 
         y = nemobin.NemoBinaryFileFormatProcessor()
         y.set = set
@@ -421,7 +421,7 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         string = outputfile.getvalue()
         outputfile.close()
         
-        inputfile = StringIO(string)
+        inputfile = BytesIO(string)
         x = nemobin.NemoBinaryFileFormatProcessor()
         set = x.load_file(inputfile)
         inputfile.close()

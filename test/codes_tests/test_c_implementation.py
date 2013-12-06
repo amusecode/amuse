@@ -377,8 +377,8 @@ class TestCImplementationInterface(TestWithMPI):
             print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
 
-	print stdout
-	print stderr
+        print stdout
+        print stderr
             
     def c_build(self, exename, objectnames):
         
@@ -407,8 +407,8 @@ class TestCImplementationInterface(TestWithMPI):
             print "Could not compile {0}, error = {1}".format(exename, stderr)
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
 
-	print stdout
-	print stderr
+        print stdout
+        print stderr
     
     def build_worker(self):
         

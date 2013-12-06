@@ -99,16 +99,20 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 
     def test9(self):
         quantity = 1.3 | nbody_system.time
-        with open("test9.pickle", "w") as stream: 
+        with open("test9.pickle", "wb") as stream: 
             pickle.dump(quantity, stream)
         
         pythonpath = os.pathsep.join(sys.path)
         env = os.environ.copy()
         env['PYTHONPATH'] = pythonpath
+        code = "import pickle;stream = open('test9.pickle', 'rb'); print str(pickle.load(stream));stream.close()"
+        if sys.hexversion > 0x03000000:
+            code = "import pickle;stream = open('test9.pickle', 'rb'); print(str(pickle.load(stream)));stream.close()"
+       
         process = subprocess.Popen([
                 sys.executable,
                 "-c",
-                "import pickle;stream = open('test9.pickle', 'r'); print str(pickle.load(stream));stream.close()"
+                code
             ]
             , stdout=subprocess.PIPE
             , stderr=subprocess.PIPE
@@ -116,21 +120,25 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         )
         unpickled_quantity_string, error_string = process.communicate()
         self.assertEqual(process.returncode, 0)        
-        self.assertEqual(str(quantity),unpickled_quantity_string.strip())
+        self.assertEqual(str(quantity),unpickled_quantity_string.strip().decode('utf-8'))
         
         
     def test10(self):
         quantity = 1  | parsec
-        with open("test10.pickle", "w") as stream: 
+        with open("test10.pickle", "wb") as stream: 
             pickle.dump(quantity, stream)
                
         pythonpath = os.pathsep.join(sys.path)
         env = os.environ.copy()
         env['PYTHONPATH'] = pythonpath
+        code = "import pickle;stream = open('test10.pickle', 'rb'); print str(pickle.load(stream));stream.close()"
+        if sys.hexversion > 0x03000000:
+            code = "import pickle;stream = open('test10.pickle', 'rb'); print(str(pickle.load(stream)));stream.close()"
+       
         process = subprocess.Popen([
                 sys.executable,
                 "-c",
-                "import pickle; stream = open('test10.pickle', 'r'); print str(pickle.load(stream));stream.close()"
+               code
             ]
             , stdout=subprocess.PIPE
             , stderr=subprocess.PIPE
@@ -138,7 +146,7 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         )
         unpickled_quantity_string, error_string = process.communicate()
         self.assertEqual(process.returncode, 0)        
-        self.assertEqual(str(quantity),unpickled_quantity_string.strip())
+        self.assertEqual(str(quantity),unpickled_quantity_string.strip().decode('utf-8'))
         
     
     def test11(self):

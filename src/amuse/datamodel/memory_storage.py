@@ -83,6 +83,9 @@ class InMemoryAttributeStorage(AttributeStorage):
     def get_values_in_store(self, indices, attributes):            
         results = []
         for attribute in attributes:
+            if not attribute in self.mapping_from_attribute_to_quantities:
+                raise AttributeError('"{0}" not defined for grid'.format(attribute))
+                
             storage = self.mapping_from_attribute_to_quantities[attribute]
         
             selected_values = storage.get_values(indices)
@@ -215,6 +218,8 @@ class InMemoryGridAttributeStorage(object):
     def get_values_in_store(self, indices, attributes):
         results = []
         for attribute in attributes:
+            if not attribute in self.mapping_from_attribute_to_quantities:
+                raise AttributeError('"{0}" not defined for grid'.format(attribute))
             attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             #if indices is None:
             #    selected_values = attribute_values
@@ -436,7 +441,7 @@ class InMemoryAttribute(object):
             array = numpy.asanyarray(values_to_set)
             dtype = array.dtype
             shape = cls._determine_shape(shape, array)
-            if dtype.kind == 'S':
+            if dtype.kind == 'S' or dtype.kind == 'U':
                 return InMemoryStringAttribute(name, shape, dtype)
             elif dtype == numpy.object:
                 return InMemoryLinkedAttribute(name, shape)
@@ -559,9 +564,9 @@ class InMemoryStringAttribute(InMemoryUnitlessAttribute):
     
     def set_values(self, indices, values):
         if isinstance(values, basestring):
-            dtype=numpy.dtype('S'+str(len(values)))
+            dtype=numpy.dtype(self.values.dtype.kind+str(len(values)))
         else:
-            values_as_array = numpy.asarray(values, dtype=numpy.dtype('S'))
+            values_as_array = numpy.asarray(values, dtype=numpy.dtype(self.values.dtype.kind))
             dtype = values_as_array.dtype
        
         if dtype.itemsize > self.values.dtype.itemsize:

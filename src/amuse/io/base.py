@@ -495,11 +495,12 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
         result = self.read_fortran_block_floats(file)
         return result.reshape(len(result)/size,size)
         
-    def write_fortran_block(self, file, bytes):
+    def write_fortran_block(self, file, input):
         format = self.endianness+'I'
-        length_of_block = len(bytes)
+        input_bytes = bytearray(input)
+        length_of_block = len(input_bytes)
         file.write(struct.pack(format, length_of_block))
-        file.write(bytes)
+        file.write(input_bytes)
         file.write(struct.pack(format, length_of_block))
         
     

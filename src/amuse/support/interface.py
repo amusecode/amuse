@@ -173,6 +173,10 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
             result = CodeMethodWrapper(attribute, self)
         elif isinstance(attribute, parameters.Parameters):
             result = parameters.new_parameters_with_units_converted_instance_with_docs(attribute, self.converter)
+        elif isinstance(attribute, basestring):
+            result = attribute
+        elif isinstance(attribute, bytearray):
+            result = attribute
         elif hasattr(attribute, '__iter__'):
             result = list(self.convert_and_iterate(attribute))
         else:

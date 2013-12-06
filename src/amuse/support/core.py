@@ -8,7 +8,10 @@ import re
 def compare_version_strings(version1, version2):
     def normalize(v):
         return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")]
-    return cmp(normalize(version1), normalize(version2))
+    version1 = normalize(version1)
+    version2 = normalize(version2)
+    
+    return (version1 > version2) - (version1 < version2)
 
 class late(object):    
     """
@@ -270,6 +273,9 @@ class OrderedDictionary(object):
     
     def values(self):
         return [self.mapping[x] for x in self.orderedKeys]
+        
+    def items(self):
+        return [(x,self.mapping[x]) for x in self.orderedKeys]
         
     def copy(self):
         result = OrderedDictionary()

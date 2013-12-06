@@ -8,6 +8,7 @@ except ImportError as ex:
 import numpy
 import pickle
 import os.path
+import sys
 
 from amuse.units import si
 from amuse.units import units
@@ -19,6 +20,19 @@ from amuse.datamodel import Particles
 from amuse.datamodel import LinkedArray
 from amuse.datamodel import AttributeStorage
 
+if sys.hexversion > 0x03000000:
+    def pickle_to_string(value):
+        return numpy.void(pickle.dumps(value))
+        
+        
+    def unpickle_from_string(value):
+        return pickle.loads(value.tostring())
+else:
+    def pickle_to_string(value):
+        return pickle.dumps(value)
+        
+    def unpickle_from_string(value):
+        return pickle.loads(value)
 
 class HDF5Attribute(object):
     
@@ -572,7 +586,7 @@ class StoreHDF(object):
         
         
         group.attrs["number_of_particles"] = len(particles)
-        group.attrs["class_of_the_particles"] = pickle.dumps(particles._factory_for_new_collection())
+        group.attrs["class_of_the_particles"] = pickle_to_string(particles._factory_for_new_collection())
             
         keys = particles.get_all_keys_in_store()
         dataset = group.create_dataset("keys", data=keys)
@@ -602,7 +616,7 @@ class StoreHDF(object):
         group = self.new_group(parent)
         
         group.attrs["type"] = 'grid'
-        group.attrs["class_of_the_container"] = pickle.dumps(grid._factory_for_new_collection())
+        group.attrs["class_of_the_container"] = pickle_to_string(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
     
         self.store_collection_attributes(grid, group, extra_attributes)
@@ -691,7 +705,7 @@ class StoreHDF(object):
         return result
             
     def load_particles_from_group(self, group):
-        class_of_the_particles = pickle.loads(group.attrs["class_of_the_particles"])
+        class_of_the_particles = unpickle_from_string(group.attrs["class_of_the_particles"])
         dataset = group["keys"]
         keys = numpy.ndarray(len(dataset), dtype = dataset.dtype)
         if len(keys) == 0:
@@ -709,7 +723,7 @@ class StoreHDF(object):
         
         
     def load_grid_from_group(self, group):
-        class_of_the_container = pickle.loads(group.attrs["class_of_the_container"])
+        class_of_the_container = unpickle_from_string(group.attrs["class_of_the_container"])
         shape = tuple(group["shape"])
         
         container = class_of_the_container()

@@ -54,6 +54,7 @@ def get_amuse_root_dir():
     return _Defaults().amuse_root_dir
     
 def ensure_data_directory_exists(directory):
+    print directory
     directory = os.path.expanduser(directory)
     directory = os.path.expandvars(directory)
     

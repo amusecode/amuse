@@ -36,7 +36,7 @@ if __name__ == '__main__':
         stdout = stdout,
         stderr = stderr,    
         stdin = stdin,
-    #   close_fds = True
+        close_fds = False
     )
 
     stdin.close()

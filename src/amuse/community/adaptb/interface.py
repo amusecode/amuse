@@ -5,6 +5,7 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         StoppingConditionInterface, CodeWithDataDirectories):
     """
     Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
+    Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
     """
     include_headers = ['worker_code.h', 'stopcond.h']
 

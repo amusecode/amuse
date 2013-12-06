@@ -187,4 +187,4 @@ def natcmp(a, b):
 
 def natsort(seq, cmp=natcmp):
     "In-place natural string sort."
-    seq.sort(cmp)
+    seq.sort(key=natsort_key)

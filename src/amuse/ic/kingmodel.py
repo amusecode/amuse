@@ -38,7 +38,7 @@ class MakeKingModel(object):
     
     def compute_v33(self):
         v33 = []
-    	for i in range(self.NG+1):
+        for i in range(self.NG+1):
             v33.append(self.scale_fac * math.pow(((self.YMAX/self.NG) * i), 3) / 3.0)
         return v33
     
@@ -357,7 +357,7 @@ class MakeKingModel(object):
             ru = pfac * self.g_integral[iu] - self.v33[iu]
             rno = numpy.random.uniform(0.0, ru)
             while (iu - il > 1):
-                im = (il + iu) / 2
+                im = (il + iu) // 2
                 rm = pfac * self.g_integral[im] - self.v33[im]
                 if (rm > rno):
                     iu = im

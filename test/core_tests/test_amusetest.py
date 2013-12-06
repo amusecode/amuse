@@ -1,6 +1,7 @@
 from amuse.test.amusetest import TestCase
 from amuse.support.exceptions import AmuseException
 from amuse.units import units
+import sys
 
 class TestAmusetestTestCase(TestCase):
     
@@ -55,13 +56,23 @@ class TestAmusetestTestCase(TestCase):
         self.assertRaises(AmuseException, (1 | units.m).as_quantity_in, 1 | units.cm, 
             expected_message = "Cannot expres a unit in a quantity")
         # check that a failureException is raised, when we erroneously assert an exception:
+        
+        if sys.hexversion > 0x03000000:
+           error_message = "AmuseException not raised by as_quantity_in"
+        else:
+           error_message = "AmuseException not raised"
         self.assertRaises(self.failureException, self.assertRaises, AmuseException, 
-            (1 | units.m).as_quantity_in, units.cm, expected_message = 
-            "AmuseException not raised")
+            (1 | units.m).as_quantity_in, units.cm, expected_message = error_message)
         # the ultimate test... lol
+        
+        if sys.hexversion > 0x03000000:
+           error_message = "AssertionError not raised by assertRaises"
+        else:
+           error_message = "AssertionError not raised"
+        
         self.assertRaises(self.failureException, self.assertRaises, self.failureException, 
             self.assertRaises, AmuseException, (1 | units.m).as_quantity_in, 
-            1 | units.cm, expected_message = "AssertionError not raised")
+            1 | units.cm, expected_message = error_message)
         self.assertRaises(AmuseException, lambda: 1 + (1|units.m))
         self.assertRaises(ZeroDivisionError, lambda: 1|units.m/0)
     

@@ -65,9 +65,9 @@ class TestBonsai(TestWithMPI):
         print "Testing Bonsai initialization"
         instance = self.new_instance_of_an_optional_code(Bonsai, **default_options)
         instance.initialize_code()
-	print "cleaning the code"
+        print "cleaning the code"
         instance.cleanup_code()
-	print "done"
+        print "done"
         instance.stop()
     
     def test2(self):

@@ -694,7 +694,7 @@ class TestBHTree(TestWithMPI):
         self.assertAlmostEquals(final_direction[-1], initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
-        self.assertEquals(delta[len(final_direction)/2 -1], max(delta))
+        self.assertEquals(delta[len(final_direction)//2 -1], max(delta))
         
     
     def test16(self):
