@@ -454,7 +454,7 @@ class CodeCommand(Command):
                 # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
                 # MAKEFILE
                 #
-                if shortname == 'mocassin':
+                if shortname == 'mocassin' and os.path.exists(os.path.join(temp_builddir, 'src', 'mocassin.2.02.70')):
                     output_path = os.path.join(lib_builddir, 'src', 'mocassin.2.02.70')
                     input_path = os.path.join(temp_builddir, 'src', 'mocassin.2.02.70')
                     self.mkpath(output_path)
