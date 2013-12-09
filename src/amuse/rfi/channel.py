@@ -511,7 +511,6 @@ class MPIMessage(AbstractMessage):
         chars = ""
         for string in array:
             chars = string.join((chars, chr(0)))
-            
         chars = numpy.fromstring(chars, dtype='uint8')
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
@@ -606,7 +605,7 @@ MAPPING = {}
 
 def pack_array(array, length, dtype):
     if dtype == 'string':
-        if length == 1 and len(array) > 0 and isinstance(array[0], str):
+        if length == 1 and len(array) > 0 and isinstance(array[0], basestring):
             return array
         else:
             result = []
@@ -1135,7 +1134,7 @@ class MpiChannel(AbstractMessageChannel):
         def get_length(x):
             if x:
                 try:
-                    if not isinstance(x[0], str):
+                    if not isinstance(x[0], basestring):
                         return len(x[0])
                 except:
                     return 1
