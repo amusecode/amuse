@@ -708,5 +708,44 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertAlmostRelativeEquals(multiples_code.multiples[0].mass, 2.0 | nbody_system.mass)
         self.assertAlmostRelativeEquals(multiples_code.particles.mass.sum(), 2.6 | nbody_system.mass)
     
+    
+    def test12(self):
+        code = Hermite()
         
+        particles_in_binary = self.new_binary(
+            1 | nbody_system.mass,
+            1 | nbody_system.mass,
+            0.001 | nbody_system.length,
+            keyoffset = 10
+        )
+        particles_in_binary.radius = 0.01 | nbody_system.length
         
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+        )
+        binary = datamodel.Particle(key=20)
+        binary.child1 = particles_in_binary[0]
+        binary.child2 = particles_in_binary[1]
+        binary.position = [1,0,1] | nbody_system.length
+        particles_in_binary.position += [1,0,1] | nbody_system.length
+        
+        others = datamodel.Particles(keys = [4,5,6])
+        for i in range(3):
+            others[i].position = [i*10, 0, 0] | nbody_system.length
+            others[i].velocity = [0, 0, 0] | nbody_system.speed
+            others[i].mass = 0.2 | nbody_system.mass
+            others[i].radius  = 0.05 | nbody_system.length
+            
+            
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.particles.add_particles(others)
+        multiples_code.singles_in_binaries.add_particles(particles_in_binary)
+        multiples_code.binaries.add_particle(binary)
+        multiples_code.commit_particles()   
+        print multiples_code.particles
+        self.assertEquals(len(multiples_code.particles), 4)
+        self.assertAlmostRelativeEquals(multiples_code.particles[-1].position,  [1,0,1] | nbody_system.length)

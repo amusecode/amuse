@@ -593,6 +593,9 @@ class AbstractParticleSet(AbstractSet):
         >>> print particles1.x
         [1.0, 2.0, 3.0, 4.0] m
         """
+        if len(particles) == 0:
+            return ParticlesSubset(self._original_set(),[])
+            
         attributes = particles.get_attribute_names_defined_in_store()
         indices = particles.get_all_indices_in_store()
         keys =  particles.get_all_keys_in_store()
