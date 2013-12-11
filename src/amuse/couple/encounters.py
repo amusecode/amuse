@@ -505,7 +505,6 @@ class AbstractHandleEncounter(object):
             2. singles
         """
         tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
-        
         # TODO it would be nice to update a multiple
         # instead of dissolving and creating it
         # as we do now, we will assume that a multiple with the same
@@ -529,11 +528,10 @@ class AbstractHandleEncounter(object):
         #    key = tuples(leaves.key.sorted())
         #    multiples_lookup_table[key] = binary
         
-        # a branch in the tree is a node with two children
+        # a branch in the tree is a child node with two children
         for root_node in tree.iter_branches():
                 
             root_particle = root_node.particle
-            
             multiple_components = Particles()
             # descendant_leafs are all children and grandchildren and ... without children
             for child in root_node.iter_descendant_leafs():
@@ -552,6 +550,10 @@ class AbstractHandleEncounter(object):
             multiple_particle.components = multiple_components
             multiple_particle.radius = multiple_components.position.lengths().max() * 2
             self.new_multiples.add_particle(multiple_particle)
+        
+        # a leaft in the tree is a child node with no children
+        for root_node in tree.iter_leafs():
+            self.update_binaries_from_single(root_node.particle, binary_lookup_table)
             
     def determine_captured_singles_from_the_multiples(self):
         for particle in self.particles_in_encounter:
@@ -588,7 +590,6 @@ class AbstractHandleEncounter(object):
             if not found:
                 self.released_singles.add_particle(particle)
             
-        
     def determine_particles_after_encounter(self):
         particles_after_encounter = Particles()
         particles_after_encounter.add_particles(self.particles_in_encounter)
@@ -613,64 +614,72 @@ class AbstractHandleEncounter(object):
         channel = self.particles_after_encounter.new_channel_to(self.released_singles)
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
         
+        
+    def update_binaries_from_single(self, single, binary_lookup_table):
+        
+        key = single.key   
+        if key in binary_lookup_table:
+            binary = binary_lookup_table[key]
+            self.dissolved_binaries.add_particle(binary)
+            del binary_lookup_table[binary.child1.key]
+            del binary_lookup_table[binary.child2.key]
             
     def update_binaries(self, root_node, binary_lookup_table):
         # a binary tree node is a node with two children
         # the children are leafs (have no children of their own)
         if root_node.is_binary():
-            binary_found_in_encounter = root_node.particle
-            
-            children = list(root_node.iter_children())
-            key0 = children[0].particle.key
-            key1 = children[1].particle.key
-            
-            if key0 in binary_lookup_table:
-                if key1 in binary_lookup_table:
-                    binary0 = binary_lookup_table[key0]
-                    binary1 = binary_lookup_table[key1]
-                    if binary0 is binary1:
-                        binary_known_in_system = binary0
-                        self.update_binary(binary_found_in_encounter, binary_known_in_system)
-                    
-                    else:
-                        x = self.new_binaries.add_particle(binary_found_in_encounter)
-                        self.dissolved_binaries.add_particle(binary0)
-                        self.dissolved_binaries.add_particle(binary1)
-                        del binary_lookup_table[binary0.child1.key]
-                        del binary_lookup_table[binary0.child2.key]
-                        del binary_lookup_table[binary1.child1.key]
-                        del binary_lookup_table[binary1.child2.key]
-                        binary_lookup_table[key0] = x
-                        binary_lookup_table[key1] = x
-                else:
-                    x = self.new_binaries.add_particle(binary_found_in_encounter)
-                    binary0 = binary_lookup_table[key0]
-                    self.dissolved_binaries.add_particle(binary0)
-                    del binary_lookup_table[binary0.child1.key]
-                    del binary_lookup_table[binary0.child2.key]
-                    binary_lookup_table[key0] = x
-                    binary_lookup_table[key1] = x
-            elif key1 in binary_lookup_table:
-                x = self.new_binaries.add_particle(binary_found_in_encounter)
-                binary1 = binary_lookup_table[key1]
-                self.dissolved_binaries.add_particle(binary1)
-                del binary_lookup_table[binary1.child1.key]
-                del binary_lookup_table[binary1.child2.key]
-                binary_lookup_table[key0] = x
-                binary_lookup_table[key1] = x
-            else:
-                self.new_binaries.add_particle(binary_found_in_encounter)
+            self.lookup_and_update_binary(root_node, binary_lookup_table)
         else:
+            for single in root_node.iter_leafs():
+                self.update_binaries_from_single(single.particle, binary_lookup_table)
             for branch in root_node.iter_descendant_branches():
                 if branch.is_binary():
-                    binary_found_in_encounter = branch.particle
-                    key = tuple([x.particle.key for x in branch.iter_children()])
-                    if key in binary_lookup_table:
-                        binary_known_in_system = binary_lookup_table[key]
-                        self.update_binary(binary_found_in_encounter, binary_known_in_system)
-                    else:
-                        self.new_binaries.add_particle(binary_found_in_encounter)
-                
+                    self.lookup_and_update_binary(branch, binary_lookup_table)
+                else:
+                    for single in branch.iter_leafs():
+                        self.update_binaries_from_single(single.particle, binary_lookup_table)
+                        
+    def lookup_and_update_binary(self, root_node, binary_lookup_table):
+        binary_found_in_encounter = root_node.particle
+            
+        children = list(root_node.iter_children())
+        key0 = children[0].particle.key
+        key1 = children[1].particle.key
+        if key0 in binary_lookup_table:
+            if key1 in binary_lookup_table:
+                binary0 = binary_lookup_table[key0]
+                binary1 = binary_lookup_table[key1]
+                if binary0 is binary1:
+                    binary_known_in_system = binary0
+                    self.update_binary(binary_found_in_encounter, binary_known_in_system)
+                else:
+                    x = self.new_binaries.add_particle(binary_found_in_encounter)
+                    self.dissolved_binaries.add_particle(binary0)
+                    self.dissolved_binaries.add_particle(binary1)
+                    del binary_lookup_table[binary0.child1.key]
+                    del binary_lookup_table[binary0.child2.key]
+                    del binary_lookup_table[binary1.child1.key]
+                    del binary_lookup_table[binary1.child2.key]
+                    binary_lookup_table[key0] = x
+                    binary_lookup_table[key1] = x
+            else:
+                x = self.new_binaries.add_particle(binary_found_in_encounter)
+                binary0 = binary_lookup_table[key0]
+                self.dissolved_binaries.add_particle(binary0)
+                del binary_lookup_table[binary0.child1.key]
+                del binary_lookup_table[binary0.child2.key]
+                binary_lookup_table[key0] = x
+                binary_lookup_table[key1] = x
+        elif key1 in binary_lookup_table:
+            x = self.new_binaries.add_particle(binary_found_in_encounter)
+            binary1 = binary_lookup_table[key1]
+            self.dissolved_binaries.add_particle(binary1)
+            del binary_lookup_table[binary1.child1.key]
+            del binary_lookup_table[binary1.child2.key]
+            binary_lookup_table[key0] = x
+            binary_lookup_table[key1] = x
+        else:
+            self.new_binaries.add_particle(binary_found_in_encounter)
     
     def update_binary(self, binary_found_in_encounter, binary_known_in_system):
         binary_copy = self.updated_binaries.add_particle(binary_known_in_system)
@@ -1023,7 +1032,6 @@ class ScaleSystem(object):
         # special case, 2 bodies, we can use kepler to 
         # do the scaling in a consistent, energy perserving way
         if len(particles) == 2:
-            print distance, sum_of_radii, radius
             if distance < sum_of_radii:
                 scale = max(2*radius, sum_of_radii)
                 delta_p, delta_v = self.kepler_orbits.expand_binary(particles, scale, receeding = True)
@@ -1258,7 +1266,7 @@ class Multiples(options.OptionalAttributes):
             
             if self.stopping_condition.is_set():
                 
-                print "AMU", self.all_multiples_energy
+                print "all multples energy", self.all_multiples_energy
                 
                 initial_energy = self.gravity_code.get_total_energy()
                 
@@ -1365,10 +1373,47 @@ class Multiples(options.OptionalAttributes):
         
     def handle_stopping_condition(self):
         encounters = self.determine_encounters()
+        
+        new_binaries = Particles()
+        dissolved_binaries = Particles()
+        updated_binaries = Particles()
+        new_multiples = Particles()
+        dissolved_multiples = Particles()
+        
         for particles_in_encounter in encounters:
-            self.handle_encounter(particles_in_encounter)
+            self.handle_encounter(
+                particles_in_encounter,
+                new_binaries,
+                dissolved_binaries,
+                updated_binaries,
+                new_multiples,
+                dissolved_multiples
+            )
     
-    def handle_encounter(self, particles_in_encounter):
+        if self.stopping_conditions.multiples_change_detection.is_enabled():
+            if len(new_multiples) > 0 or len(dissolved_multiples) > 0:
+                self.stopping_conditions.multiples_change_detection.set(
+                    new_multiples,
+                    dissolved_multiples
+                )
+                
+        if self.stopping_conditions.binaries_change_detection.is_enabled():
+            if len(new_binaries) > 0 or len(dissolved_binaries) > 0 or len(updated_binaries) > 0 :
+                self.stopping_conditions.binaries_change_detection.set(
+                    new_binaries.get_intersecting_subset_in(self.binaries),
+                    dissolved_binaries,
+                    updated_binaries.get_intersecting_subset_in(self.binaries)                    
+                )
+                
+    def handle_encounter(
+            self, 
+            particles_in_encounter,
+            new_binaries,
+            dissolved_binaries,
+            updated_binaries,
+            new_multiples,
+            dissolved_multiples,
+        ):
         code = self.handle_encounter_code
     
         code.reset()
@@ -1382,18 +1427,20 @@ class Multiples(options.OptionalAttributes):
         code.execute()
         
         print "handling encounter done"
-        print "number of multiples: ", len(code.new_multiples)
+        print "number of new multiples: ", len(code.new_multiples)
+        print "number of dissolved multiples: ", len(code.dissolved_multiples)
+        
+        new_multiples.add_particles(code.new_multiples)
+        
+        dissolved_multiples.add_particles(code.dissolved_multiples)
+        for x in dissolved_multiples:
+            x.components = x.components.copy()
+        
+        
         # update particles (will have singles and multiples)
         self.singles.remove_particles(code.captured_singles)
         self.singles.add_particles(code.released_singles)
         
-        if self.stopping_conditions.multiples_change_detection.is_enabled():
-            if len(code.new_multiples) > 0 or len(code.dissolved_multiples) > 0:
-                self.stopping_conditions.multiples_change_detection.set(
-                    code.new_multiples,
-                    code.dissolved_multiples
-                )
-                
         # update multiples
         self.multiples.remove_particles(code.dissolved_multiples)
         for x in code.dissolved_multiples:
@@ -1421,7 +1468,7 @@ class Multiples(options.OptionalAttributes):
             child2.velocity = x.child2.velocity
             
         self.binaries.remove_particles(code.dissolved_binaries)
-        new_binaries = self.binaries.add_particles(code.new_binaries)
+        self.binaries.add_particles(code.new_binaries)
         
         self.singles_in_binaries_previous = self.singles_in_binaries.copy()
     
@@ -1441,14 +1488,10 @@ class Multiples(options.OptionalAttributes):
         
         channel = code.updated_binaries.new_channel_to(self.binaries)
          
+        new_binaries.add_particles(code.new_binaries) 
+        dissolved_binaries.add_particles(code.dissolved_binaries) 
+        updated_binaries.add_particles(code.updated_binaries) 
         
-        if self.stopping_conditions.binaries_change_detection.is_enabled():
-            if len(code.new_binaries) > 0 or len(code.dissolved_binaries) > 0 or len(code.updated_binaries) > 0 :
-                self.stopping_conditions.binaries_change_detection.set(
-                    new_binaries,
-                    code.dissolved_binaries,
-                    code.updated_binaries.get_intersecting_subset_in(self.binaries)                    
-                )
         
         channel = code.particles_after_encounter.new_channel_to(self.particles)
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])

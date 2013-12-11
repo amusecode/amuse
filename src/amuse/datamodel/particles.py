@@ -2,6 +2,7 @@ from amuse.support.core import CompositeDictionary
 from amuse.support.core import compare_version_strings
 from amuse.support import exceptions
 from amuse.datamodel.base import *
+from amuse.datamodel import base
 from amuse.datamodel.memory_storage import *
 from amuse.datamodel import trees
 from amuse.units import constants
@@ -379,7 +380,7 @@ class AbstractParticleSet(AbstractSet):
 
     def copy_to_new_particles(self, keys = None, keys_generator = None, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
         if keys_generator is None:
-            keys_generator = UniqueKeyGenerator
+            keys_generator = base.UniqueKeyGenerator
 
         my_keys = self.get_all_keys_in_store()
 
@@ -1018,7 +1019,7 @@ class Particles(AbstractParticleSet):
 
 
         if keys_generator is None:
-            keys_generator = UniqueKeyGenerator
+            keys_generator = base.UniqueKeyGenerator
 
         if not particles is None:
             if isinstance(particles,AbstractParticleSet):

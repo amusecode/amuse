@@ -66,7 +66,7 @@ class TestSimpleMultiples(TestWithMPI):
         if keyoffset >= 0:
             binary = datamodel.Particles(keys=range(keyoffset, keyoffset+2))
         else:
-            binary = datamodel.Particles()
+            binary = datamodel.Particles(2)
             
         binary[0].mass = mass1
         binary[1].mass = mass2
@@ -84,6 +84,29 @@ class TestSimpleMultiples(TestWithMPI):
 
         return binary
         
+    
+    def create_binaries(self, center_of_mass_particles, mass1, mass2, semi_major_axis,
+                   eccentricity = 0):
+        singles_in_binaries = datamodel.Particles()
+        for binary in center_of_mass_particles:
+            particles_in_binary = self.new_binary(
+                mass1,
+                mass2,
+                semi_major_axis
+            )
+                
+            particles_in_binary.radius = semi_major_axis
+            
+            binary.child1 = particles_in_binary[0]
+            binary.child2 = particles_in_binary[1]
+            binary.mass = mass1 + mass2
+           
+            particles_in_binary.position += binary.position
+            particles_in_binary.velocity += binary.velocity
+            singles_in_binaries.add_particles(particles_in_binary)
+        return center_of_mass_particles, singles_in_binaries
+        
+    
     def test0(self):
         code = Hermite()
         stars = datamodel.Particles(2)
@@ -749,3 +772,159 @@ class TestSimpleMultiples(TestWithMPI):
         print multiples_code.particles
         self.assertEquals(len(multiples_code.particles), 4)
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].position,  [1,0,1] | nbody_system.length)
+        
+        
+        
+    
+    def test13(self):
+        code = Hermite()
+        
+        
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+        )
+        center_of_mass_particles = datamodel.Particles(5)
+        center_of_mass_particles.position = (numpy.asarray(range(5))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
+        center_of_mass_particles.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
+        center_of_mass_particles.radius  = 0.05 | nbody_system.length
+        binaries, singles_in_binaries = self.create_binaries(
+            center_of_mass_particles, 
+            1 | nbody_system.mass,
+            0.01 | nbody_system.mass,
+            0.0001 | nbody_system.length
+        )
+            
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.singles_in_binaries.add_particles(singles_in_binaries)
+        multiples_code.binaries.add_particles(binaries)
+        multiples_code.commit_particles()   
+        
+        
+        
+        #stopping_condition = multiples_code.stopping_conditions.encounter_detection
+        #stopping_condition.enable()
+        stopping_condition = multiples_code.stopping_conditions.binaries_change_detection
+        stopping_condition.enable()
+        for x in multiples_code.binaries:
+            print x.key, x.child1.key, x.child2.key
+
+        multiples_code.evolve_model(1 | nbody_system.time)
+        self.assertTrue(stopping_condition.is_set())
+        for x in multiples_code.binaries:
+            print x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(0):
+            print "NEW:", x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(1):
+            print "REMOVED:", x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(2):
+            print "UPDATED:", x.key, x.child1.key, x.child2.key
+        for x in multiples_code.singles:
+            print x.key, x.mass
+        self.assertEquals(len(multiples_code.singles_in_binaries) + len(multiples_code.singles), 2*len(center_of_mass_particles))
+        self.assertEquals(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
+    
+    def test14(self):
+        code = Hermite()
+        
+        
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+        )
+        center_of_mass_particles = datamodel.Particles(5)
+        center_of_mass_particles.position = (numpy.asarray(range(5))).reshape(5,1) * ([1.0, 0.0, 0.0] | nbody_system.length)
+        center_of_mass_particles.velocity = [0.0, 0.0, 0.0] | nbody_system.speed
+        center_of_mass_particles.radius  = 0.05 | nbody_system.length
+        binaries, singles_in_binaries = self.create_binaries(
+            center_of_mass_particles, 
+            1 | nbody_system.mass,
+            0.1 | nbody_system.mass,
+            0.00000001 | nbody_system.length
+        )
+            
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.singles_in_binaries.add_particles(singles_in_binaries)
+        multiples_code.binaries.add_particles(binaries)
+        multiples_code.commit_particles()   
+        
+        
+        
+        #stopping_condition = multiples_code.stopping_conditions.encounter_detection
+        #stopping_condition.enable()
+        stopping_condition = multiples_code.stopping_conditions.binaries_change_detection
+        stopping_condition.enable()
+        for x in multiples_code.binaries:
+            print x.key, x.child1.key, x.child2.key
+
+        multiples_code.evolve_model(2 | nbody_system.time)
+        self.assertTrue(stopping_condition.is_set())
+        for x in multiples_code.binaries:
+            print x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(0):
+            print "NEW:", x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(1):
+            print "REMOVED:", x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(2):
+            print "UPDATED:", x.key, x.child1.key, x.child2.key
+        for x in multiples_code.singles:
+            print x.key, x.mass
+        self.assertEquals(len(multiples_code.singles_in_binaries) + len(multiples_code.singles), 2*len(center_of_mass_particles))
+        self.assertEquals(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
+        
+    def test15(self):
+        code = Hermite()
+        
+        
+        encounter_code = encounters.HandleEncounter(
+            kepler_code =  self.new_kepler(),
+            resolve_collision_code = self.new_smalln(),
+        )
+        n = 10
+        center_of_mass_particles = plummer.new_plummer_model(n, random=numpy.random.mtrand.RandomState(1))
+        center_of_mass_particles.radius  = 0.5 | nbody_system.length
+        center_of_mass_particles.velocity *= 0
+        binaries, singles_in_binaries = self.create_binaries(
+            center_of_mass_particles, 
+            0.999 * ((1.0 | nbody_system.mass) / n),
+            0.001 * ((1.0 | nbody_system.mass) / n),
+            0.00001 | nbody_system.length
+        )
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounter_code
+        )
+        multiples_code.singles_in_binaries.add_particles(singles_in_binaries)
+        multiples_code.binaries.add_particles(binaries)
+        multiples_code.commit_particles()   
+        
+        
+        
+        #stopping_condition = multiples_code.stopping_conditions.encounter_detection
+        #stopping_condition.enable()
+        stopping_condition = multiples_code.stopping_conditions.binaries_change_detection
+        stopping_condition.enable()
+        for x in multiples_code.binaries:
+            print x.key, x.child1.key, x.child2.key
+
+        multiples_code.evolve_model(2 | nbody_system.time)
+        self.assertTrue(stopping_condition.is_set())
+        for x in multiples_code.binaries:
+            print x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(0):
+            print "NEW:", x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(1):
+            print "REMOVED:", x.key, x.child1.key, x.child2.key
+        for x in stopping_condition.particles(2):
+            print "UPDATED:", x.key, x.child1.key, x.child2.key
+        for x in multiples_code.singles:
+            print x.key, x.mass
+        self.assertEquals(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
+        
+        
