@@ -1203,7 +1203,6 @@ class Multiples(options.OptionalAttributes):
         
         self.components_of_multiples = Particles()
         
-        
         self.gravity_code.reset()
         self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
         self.stopping_condition.enable()
@@ -1437,7 +1436,7 @@ class Multiples(options.OptionalAttributes):
             x.components = x.components.copy()
         
         
-        # update particles (will have singles and multiples)
+        # update the singles (will have singles and multiples)
         self.singles.remove_particles(code.captured_singles)
         self.singles.add_particles(code.released_singles)
         

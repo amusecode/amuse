@@ -27,7 +27,7 @@ CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
 CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
 CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
-CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
+CUDA_LIBS ?= -lcudart
 
 SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
 OPENMP_CFLAGS ?= 
@@ -36,7 +36,7 @@ GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
 
 BOOSTLIBS = -L/opt/local/lib -lboost_thread-mt
 LLIBSDIR =  $(GRAPE6_LIBDIRS)
-GPULIBS  =  $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread -L/usr/lib64 -lstdc++
+GPULIBS  =  $(CUDA_LIBDIRS) $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread -L/usr/lib64 -lstdc++
 GRAPE6LIBS  ?= -lg6lx
 LIBS     =  -lm -lpthread
 
