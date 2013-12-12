@@ -621,8 +621,12 @@ C====================================================================
 #include "src/general.inc"
 #include "stopcond.inc"
       INTEGER i,initialize_code
-      INTEGER set_support_for_condition, error
-
+      INTEGER error
+      INTEGER mpi_setup_stopping_conditions
+      INTEGER set_support_for_condition
+    
+      error = mpi_setup_stopping_conditions()
+      
 C     AMUSE STOPPING CONDITION SUPPORT
       error = set_support_for_condition(COLLISION_DETECTION)
       error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
@@ -1388,6 +1392,9 @@ C---  local vars
       INTEGER is_stopping_condition_enabled
       INTEGER is_number_of_steps_detection_enabled
       INTEGER is_timeout_detection_enabled
+      INTEGER mpi_distribute_stopping_conditions
+      INTEGER mpi_collect_stopping_conditions
+      
       INTEGER get_stopping_condition_number_of_steps_parameter 
       INTEGER get_stopping_condition_timeout_parameter 
       INTEGER max_number_of_steps
@@ -1411,7 +1418,9 @@ C--------------------------------------------------------------------
 C---  main loop begins here
 C--------------------------------------------------------------------
       CALL SYSTEM_CLOCK(clock_init, count_rate, count_max)
-
+    
+      error = mpi_distribute_stopping_conditions()
+      
       error = is_stopping_condition_enabled(
      $               NUMBER_OF_STEPS_DETECTION, 
      $               is_number_of_steps_detection_enabled)
@@ -1423,7 +1432,7 @@ C--------------------------------------------------------------------
       error = get_stopping_condition_timeout_parameter(
      $               timeout)
 
-
+      
 
  100  IF (time_cur.GE.t_end) GOTO 900
 
@@ -1512,15 +1521,18 @@ C timeout and number of steps detection goes here i quess...
              ENDIF
          ENDIF
     
-         CALL gather_collisions
-
+C---         CALL gather_collisions
+         error = mpi_collect_stopping_conditions()
+        
 C---  break if collision occured
 C--      IF (icollision.EQ.1) GOTO 900
          IF (is_any_condition_set().GT.0) GOTO 900
          GOTO 100   
  900  CONTINUE                  ! end of main loop
 
-C--------------------------------------------------------------------
+C----------------------------------
+
+C----------------------------------
 C---  synchronize system if flag is set
 C--------------------------------------------------------------------
 

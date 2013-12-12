@@ -286,6 +286,7 @@ C       Make sure each collision is reported only once:
         
         sc_idx = next_index_for_stopping_condition()
         err = set_stopping_condition_info(sc_idx, COLLISION_DETECTION)
+        write(*,*) "Set stopping condition", sc_idx
         if (err.LT.0) write(*,*) "Error in amuse_handle_collisions - 1"
         
         err = set_stopping_condition_particle_index(sc_idx, 0, id1)

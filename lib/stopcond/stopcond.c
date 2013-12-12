@@ -383,12 +383,15 @@ int mpi_setup_stopping_conditions() {
     return 0;
 }
 
+
+
 int mpi_distribute_stopping_conditions() {
     if(sc_mpi_size <= 1) {
 	return 0;
     }
     if(!enabled_conditions) {return 0;}
 }
+
 
 static int local_type_of_stopping_condition_set[MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET];
 static int local_index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET*MAX_NUMBER_OF_PARTICLES_PER_INDEX];
@@ -470,3 +473,17 @@ int mpi_collect_stopping_conditions() {return 0;}
 int mpi_distribute_stopping_conditions() {return 0;}
 
 #endif
+
+
+
+int mpi_setup_stopping_conditions_() {
+    return mpi_setup_stopping_conditions();
+}
+
+int mpi_distribute_stopping_conditions_() {
+    return mpi_distribute_stopping_conditions();
+}
+
+int mpi_collect_stopping_conditions_() {
+    return mpi_collect_stopping_conditions();
+}

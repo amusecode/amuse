@@ -808,4 +808,31 @@ class TestPhigrape(TestWithMPI):
                 (delete_order[:number_of_deletes] | nbody_system.mass).sum() + (number_of_deletes | nbody_system.mass))
         
         instance.stop()
+        
+    def test19(self):
+        converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
+        
+        particles = datamodel.Particles(2)
+        particles.mass = 100 | units.MSun
+        particles.radius = 200 | units.RSun
+        particles[0].position = [0,0,0] | units.parsec
+        particles[1].position = [1,0,0] | units.parsec
+        particles.velocity = [0,0,0] |  units.km / units.s
+
+
+        code = PhiGRAPE(
+            converter, 
+            PhiGRAPEInterface.MODE_G6LIB,
+            number_of_workers=2
+        )
+        code.initialize_code()
+        stop_cond = code.stopping_conditions.collision_detection
+        stop_cond.enable()
+       
+        code.particles.add_particles(particles)
+
+        code.evolve_model( 0.08 | nbody_system.time)
+        
+        self.assertTrue(stop_cond.is_set())
+
     
