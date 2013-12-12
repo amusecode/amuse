@@ -36,7 +36,7 @@ GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
 
 BOOSTLIBS = -L/opt/local/lib -lboost_thread-mt
 LLIBSDIR =  $(GRAPE6_LIBDIRS)
-GPULIBS  =  $(CUDA_LIBDIRS) $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread -L/usr/lib64 -lstdc++
+GPULIBS  =  $(SAPPORO_LIBS)  $(CUDA_LIBDIRS) $(CUDA_LIBS) -lpthread -L/usr/lib64 -lstdc++
 GRAPE6LIBS  ?= -lg6lx
 LIBS     =  -lm -lpthread
 
