@@ -136,7 +136,9 @@ class TestPlot(amusetest.TestCase):
         self.assertEquals(-10, pyplot.xlim()[0])
         self.assertEquals(80, pyplot.xlim()[1])
 
+        print pyplot.xlim()
         aplot.xlim(xmax=90)
+        print pyplot.xlim()
         self.assertEquals(-10, pyplot.xlim()[0])
         self.assertEquals(90, pyplot.xlim()[1])
 

@@ -72,6 +72,27 @@ class UnitlessArgs(object):
         self.unitnames_of_args = []
 
     @classmethod
+    def value_in(self, unit, *args):
+        if len(args) < 1:
+            return args
+
+        if unit is not None:
+            args = [arg.value_in(unit) for arg in args]
+
+        if len(args) > 1:
+            return args
+        else:
+            return args[0]
+
+    @classmethod
+    def value_in_x_unit(self, *args):
+        return self.value_in(UnitlessArgs.arg_units[0], *args)
+
+    @classmethod
+    def value_in_y_unit(self, *args):
+        return self.value_in(UnitlessArgs.arg_units[1], *args)
+
+    @classmethod
     def x_label(self, s=None):
         unit_name = self.unitnames_of_args[0]
 
@@ -185,14 +206,10 @@ def xlim(*args, **kwargs):
     if len(UnitlessArgs.arg_units) is 0:
         raise AmuseException("Cannot call xlim function before plotting")
 
-    x_unit = UnitlessArgs.arg_units[0]
-
-    if x_unit is not None:
-        args = [arg.value_in(x_unit) for arg in args]
-
-        for name in ("xmin", "xmax"):
-            if name in kwargs:
-                kwargs[name] = kwargs[name].value_in(x_unit)
+    args = UnitlessArgs.value_in_x_unit(*args)
+    for name in ("xmin", "xmax"):
+        if name in kwargs:
+            kwargs[name] = UnitlessArgs.value_in_x_unit(kwargs[name])
 
     native_plot.xlim(*args, **kwargs)
 
@@ -200,16 +217,19 @@ def ylim(*args, **kwargs):
     if len(UnitlessArgs.arg_units) is 0:
         raise AmuseException("Cannot call ylim function before plotting")
 
-    y_unit = UnitlessArgs.arg_units[1]
-
-    if y_unit is not None:
-        args = [arg.value_in(y_unit) for arg in args]
-
-        for name in ("ymin", "ymax"):
-            if name in kwargs:
-                kwargs[name] = kwargs[name].value_in(y_unit)
+    args = UnitlessArgs.value_in_y_unit(*args)
+    for name in ("ymin", "ymax"):
+        if name in kwargs:
+            kwargs[name] = UnitlessArgs.value_in_y_unit(kwargs[name])
 
     native_plot.ylim(*args, **kwargs)
+
+def circle_with_radius(x, y, radius, **kwargs):
+    x, y =  UnitlessArgs.strip(x, y)[:2]
+    radius = UnitlessArgs.value_in_x_unit(radius)
+
+    circle = native_plot.Circle((x, y), radius, **kwargs)
+    native_plot.gca().add_artist(circle)
 
 def fix_xyz_axes(X, Y, Z):
     if not (X.shape == Z.shape and Y.shape == Z.shape):
