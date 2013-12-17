@@ -204,7 +204,7 @@ class ParametersMemento(object):
     def __str__(self):
         output = ""
 
-        for name in self.names():
+        for name in sorted(self.names()):
             output += name + ": "
             output += str(getattr(self, name))+"\n"
 
@@ -315,7 +315,7 @@ class ParametersWithUnitsConverted(object):
     def __str__(self):
         output = ""
 
-        for name in self.names():
+        for name in sorted(self.names()):
             output += name + ": "
             output += str(getattr(self, name))
             output += " default: " + str(self.get_default_value_for(name))
