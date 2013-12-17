@@ -267,7 +267,7 @@ class TestGadget2Interface(TestWithMPI):
 
 
     def test9(self):
-        instance = Gadget2Interface(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES, 
+        instance = Gadget2Interface(mode = Gadget2Interface.MODE_PERIODIC_NOGRAVITY, 
             **few_particles_default_options)
         instance.initialize_code()
         instance.set_min_size_timestep(1.0)
@@ -735,13 +735,14 @@ class TestGadget2(TestWithMPI):
         instance.stop()
     
     def test15a(self):
-        print "Test Gadget2 in periodic mode"
-        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES, 
+        print "Test Gadget2 in periodic nogravity mode"
+        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_NOGRAVITY, 
             **few_particles_default_options)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         # 'False' is default, but getting parameters implicitly calls initialize_code()...
         self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEqual(instance.parameters.no_gravity_flag, True)
         instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length
         self.assertAlmostEqual(instance.parameters.periodic_box_size, 2.0 | units.kpc, places=6)
         instance.parameters.min_size_timestep = 1.0 | generic_unit_system.time
@@ -785,6 +786,42 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostEqual(instance.dm_particles.z, [ 0.0, 0.0,-0.5] | units.kpc, places=6)
         instance.stop()
         
+    def test15c(self):
+        print "Test Gadget2 in periodic mode"
+        converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(1.0|units.yr, 1.0|units.MSun, 1.0|units.AU)
+        instance = Gadget2(converter, mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
+            **few_particles_default_options)
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
+        self.assertEqual(instance.parameters.no_gravity_flag, False)
+        instance.parameters.periodic_box_size = 20.0 | generic_unit_system.length
+        self.assertAlmostEqual(instance.parameters.periodic_box_size, 20.0 | units.AU, places=6)
+        instance.parameters.max_size_timestep = 0.01 | units.yr
+        instance.parameters.epsilon_squared = 1.0e-16 | units.RSun**2
+        
+        binary = Particles(2)
+        binary.mass = 0.5 | units.MSun
+        binary[1].position = [1.0, 0, 0] | units.AU
+        binary.velocity = [0.0, 0, 0] | units.km / units.s
+        binary[1].vy = (constants.G * binary.total_mass() / binary[1].x).sqrt()
+        binary.move_to_center()
+        
+        binary.position += [7, -8, 3] | units.AU
+        binary.velocity += [10, -10, 10] | units.AU / units.yr
+        
+        primary, secondary = instance.dm_particles.add_particles(binary)
+        self.assertAlmostEqual(secondary.x - primary.x, 1.0 | units.AU, places=6)
+        self.assertAlmostEqual(instance.dm_particles.center_of_mass(), [7, -8, 3] | units.AU, places=4)
+        self.assertAlmostEqual(instance.dm_particles.center_of_mass_velocity(), [10, -10, 10] | units.AU / units.yr)
+        
+        instance.evolve_model(0.5 | units.yr)
+        self.assertAlmostEqual(secondary.x - primary.x, -1.0 | units.AU, places=2)
+        self.assertAlmostEqual(instance.dm_particles.center_of_mass(), [-8, 7, 8] | units.AU, places=4)
+        
+        instance.evolve_model(1.0 | units.yr)
+        self.assertAlmostEqual(secondary.x - primary.x, 1.0 | units.AU, places=2)
+        self.assertAlmostEqual(instance.dm_particles.center_of_mass(), [-3, 2, -7] | units.AU, places=4)
+        instance.stop()
+        
     def test16(self):
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
             **few_particles_default_options)
@@ -818,7 +855,7 @@ class TestGadget2(TestWithMPI):
     
     def test18(self):
         print "Testing Gadget parameters further"
-        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
+        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_NOGRAVITY,
             **few_particles_default_options)
         instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length # implicitly calls initialize_code()...
         instance.parameters.begin_time = 10.04 | generic_unit_system.time

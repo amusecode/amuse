@@ -40,6 +40,7 @@ class Gadget2Interface(
     
     MODE_NORMAL = 'normal'
     MODE_PERIODIC_BOUNDARIES   = 'periodic'
+    MODE_PERIODIC_NOGRAVITY   = 'periodic_nogravity'
     MODE_NOGRAVITY = 'nogravity'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
@@ -51,6 +52,8 @@ class Gadget2Interface(
             return 'gadget2_worker'
         elif mode == self.MODE_PERIODIC_BOUNDARIES:
             return 'gadget2_worker_periodic'
+        elif mode == self.MODE_PERIODIC_NOGRAVITY:
+            return 'gadget2_worker_periodic_nogravity'
         elif mode == self.MODE_NOGRAVITY:
             return 'gadget2_worker_nogravity'
         else:
@@ -1185,6 +1188,8 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
     def initialize_code(self):
         result = self.overridden().initialize_code()
         if self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES:
+            self.parameters.periodic_boundaries_flag = True
+        elif self.mode == self.legacy_interface.MODE_PERIODIC_NOGRAVITY:
             self.parameters.periodic_boundaries_flag = True
             
         ensure_data_directory_exists(self.get_output_directory())
