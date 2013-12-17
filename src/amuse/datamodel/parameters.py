@@ -70,7 +70,7 @@ class Parameters(object):
     def __str__(self):
         output = ""
 
-        for name in self.names():
+        for name in sorted(self.names()):
             output += name + ": "
             output += str(getattr(self, name))+"\n"
 
