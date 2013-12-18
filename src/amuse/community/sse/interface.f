@@ -153,3 +153,28 @@ cf2py intent(in) kw, mass, age, mt, tm, epoch
       return
       end
 
+
+      subroutine get_gyration_radius(kw, mass, mt, r, lum, epoch, tm, 
+     &                              tphys, rg)
+      implicit none
+      integer kw
+      real*8 mass, aj, mt, tm, epoch, r, lum, tphys, mc, rc, menv, renv
+      real*8 tscls(20), lums(10), GB(10), tn
+      real*8 z, zpars(20)
+      real*8 rg2,rg
+      common /SSE_init/ z, zpars
+
+!     Call star fuction to get stellar parameters
+      call star(kw, mass, mt, tm, tn, tscls, lums, GB, zpars)
+      
+      aj = tphys - epoch
+
+!     Call hrdiag fuction to get additional stellar parameters
+      CALL hrdiag(mass, aj, mt, tm, tn, tscls, lums, GB, zpars,
+     &               r, lum, kw, mc, rc, menv, renv, rg2)
+
+      rg = SQRT(rg2)
+
+      return
+      end
+

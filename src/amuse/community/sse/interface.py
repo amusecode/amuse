@@ -59,7 +59,7 @@ class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
         function.addParameter('rc', dtype='d', direction=function.INOUT, unit = units.RSun)
         function.addParameter('menv', dtype='d', direction=function.INOUT, unit = units.MSun)
         function.addParameter('renv', dtype='d', direction=function.INOUT, unit = units.RSun)
-        function.addParameter('ospin', dtype='d', direction=function.INOUT, unit = NO_UNIT)
+        function.addParameter('ospin', dtype='d', direction=function.INOUT, unit = units.yr**-1)
         function.addParameter('epoch', dtype='d', direction=function.INOUT, unit = units.Myr)
         function.addParameter('tm', dtype='d', direction=function.INOUT, unit = units.Myr)
         function.addParameter('tphys', dtype='d', direction=function.INOUT, unit = units.Myr)
@@ -90,6 +90,23 @@ class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
         function.addParameter('mt', dtype='d', direction=function.IN, unit =  units.MSun)
         function.addParameter('mc', dtype='d', direction=function.IN, unit = units.MSun)
         function.addParameter('mlout', dtype='d', direction=function.OUT, unit = units.MSun/units.yr)
+       
+        return function
+        
+
+    @legacy_function      
+    def get_gyration_radius():
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True  
+        function.addParameter('kw', dtype='i', direction=function.IN, unit = units.stellar_type)
+        function.addParameter('mass', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('mt', dtype='d', direction=function.IN, unit = units.MSun)
+        function.addParameter('r', dtype='d', direction=function.IN, unit = units.RSun)
+        function.addParameter('lum', dtype='d', direction=function.IN, unit = units.LSun)
+        function.addParameter('epoch', dtype='d', direction=function.IN, unit = units.Myr)
+        function.addParameter('tm', dtype='d', direction=function.IN, unit = units.Myr)
+        function.addParameter('tphys', dtype='d', direction=function.IN, unit = units.Myr)
+        function.addParameter('rg', dtype='d', direction=function.OUT, unit = NO_UNIT)
        
         return function
         
@@ -141,7 +158,7 @@ class SSEParticles(Particles):
             "envelope_mass": 0 | units.MSun,
             "envelope_radius": 0 | units.RSun,
             "epoch": 0 | units.Myr,
-            "spin": 0 | units.none,
+            "spin": 0 | units.yr**-1,
             "main_sequence_lifetime": 0 | units.Myr,
             "age": 0 | units.Myr
         }
@@ -329,6 +346,15 @@ class SSE(common.CommonCode):
             ('stellar_type', 'luminosity', 
              'radius', 'mass', 
              'CO_core_mass')
+        )
+        
+        object.add_attribute(
+            'particles',
+            'gyration_radius', 
+            'get_gyration_radius', 
+            ('stellar_type', 'initial_mass','mass','radius',
+             'luminosity','epoch','main_sequence_lifetime',
+             'age')
         )
         
     def _evolve_particles(self, particles, end_time):
