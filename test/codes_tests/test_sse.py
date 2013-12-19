@@ -792,3 +792,16 @@ class TestSSE(TestWithMPI):
     
         instance.stop()
     
+    def test22(self):
+        instance = SSE()
+        stars = instance.particles.add_particles(Particles(mass = [1.0, 10.0] | units.MSun))
+        gyration_radius = stars.gyration_radius
+        self.assertTrue(numpy.all(0.0 < gyration_radius))
+        self.assertTrue(numpy.all(gyration_radius < 1.0))
+        instance.evolve_model(12.4 | units.Gyr)
+        self.assertTrue(stars[0].gyration_radius < gyration_radius[0])
+        self.assertTrue(stars[1].gyration_radius > gyration_radius[1])
+        instance.evolve_model(14 | units.Gyr)
+        self.assertTrue(numpy.all(stars.gyration_radius > gyration_radius))
+        instance.stop()
+    
