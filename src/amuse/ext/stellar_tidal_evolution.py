@@ -54,6 +54,9 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
     def particles(self):
         return ParticlesSuperset([self.central_particle, self.orbiters])
 
+    def set_current_time(self, time):
+        self.current_time = time
+
     def orbital_evolution_time_scale(self):
         e = self.orbiters[0].eccentricity
         a = self.orbiters[0].semi_major_axis
