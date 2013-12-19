@@ -726,7 +726,7 @@ class TestSSE(TestWithMPI):
         self.assertAlmostEqual(evolved_star.core_mass, float(sse_final_result[7]) | units.MSun, 3)
         self.assertAlmostEqual(evolved_star.envelope_mass, float(sse_final_result[8]) | units.MSun, 3)
         self.assertAlmostEqual(evolved_star.epoch, float(sse_final_result[9]) | units.Myr, 3)
-        self.assertAlmostEqual(evolved_star.spin, float(sse_final_result[10]) | units.none, 3)
+        self.assertAlmostEqual(evolved_star.spin, float(sse_final_result[10]) | units.yr**-1, 3)
     
     def test19(self):
         print "SSE core_mass and CO_core_mass (high mass star)"
