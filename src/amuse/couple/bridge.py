@@ -99,12 +99,24 @@ class AbstractCalculateFieldForCodes(object):
     of other codes with the code provided.
     """
     
-    def __init__(self, input_codes, verbose=False):
+    def __init__(self, input_codes, verbose=False, required_attributes=None):
         """
-        verbose indicates whether to output some run info
+        'verbose' indicates whether to output some run info
+        
+        'required_attributes' specifies which particle attributes need to be 
+        transferred from the input_codes to the code that will calculate the 
+        field. For example, some codes don't need the velocity. Other codes 
+        may (wrongly) interpret the radius of the input code as gravitational 
+        softening. In the latter case 
+            required_attributes=['mass', 'x','y','z', 'vx','vy','vz']
+        should prevent the radius of the input codes from being used.
         """  
         self.codes_to_calculate_field_for = input_codes
         self.verbose=verbose
+        if required_attributes is None:
+            self.required_attributes = lambda p, attribute_name: True
+        else:
+            self.required_attributes = lambda p, attribute_name: attribute_name in required_attributes
       
     def evolve_model(self,tend,timestep=None):
         """
@@ -114,7 +126,8 @@ class AbstractCalculateFieldForCodes(object):
         code = self._setup_code()
         try:
             for input_code in self.codes_to_calculate_field_for:
-                code.particles.add_particles(input_code.particles)
+                particles = input_code.particles.copy(filter_attributes = self.required_attributes)
+                code.particles.add_particles(particles)
             code.commit_particles()
             return code.get_potential_at_point(radius,x,y,z)
         finally:
@@ -124,7 +137,8 @@ class AbstractCalculateFieldForCodes(object):
         code = self._setup_code()
         try:
             for input_code in self.codes_to_calculate_field_for:
-                code.particles.add_particles(input_code.particles)
+                particles = input_code.particles.copy(filter_attributes = self.required_attributes)
+                code.particles.add_particles(particles)
             code.commit_particles()
             return code.get_gravity_at_point(radius,x,y,z)
         finally:
@@ -144,8 +158,8 @@ class CalculateFieldForCodes(AbstractCalculateFieldForCodes):
     The code is created for every calculation.
     """
     
-    def __init__(self, code_factory_function, input_codes, verbose=False):
-        AbstractCalculateFieldForCodes.__init__(self, input_codes, verbose)
+    def __init__(self, code_factory_function, input_codes, *args, **kwargs):
+        AbstractCalculateFieldForCodes.__init__(self, input_codes, *args, **kwargs)
         self.code_factory_function = code_factory_function
       
     def _setup_code(self):
@@ -161,8 +175,8 @@ class CalculateFieldForCodesUsingReinitialize(AbstractCalculateFieldForCodes):
     The code is created for every calculation.
     """
     
-    def __init__(self, code, input_codes, verbose=False):
-        AbstractCalculateFieldForCodes.__init__(self, input_codes, verbose)
+    def __init__(self, code, input_codes, *args, **kwargs):
+        AbstractCalculateFieldForCodes.__init__(self, input_codes, *args, **kwargs)
         self.code = code
       
     def _setup_code(self):
@@ -178,8 +192,8 @@ class CalculateFieldForCodesUsingRemove(AbstractCalculateFieldForCodes):
     The code is created for every calculation.
     """
     
-    def __init__(self, code, input_codes, verbose=False):
-        AbstractCalculateFieldForCodes.__init__(self, input_codes, verbose)
+    def __init__(self, code, input_codes, *args, **kwargs):
+        AbstractCalculateFieldForCodes.__init__(self, input_codes, *args, **kwargs)
         self.code = code
       
     def _setup_code(self):
@@ -293,6 +307,14 @@ class GravityCodeInField(object):
         self.timestep=None
         self.radius_is_eps = radius_is_eps
         self.h_smooth_is_eps = h_smooth_is_eps
+        
+        required_attributes = ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']
+        if self.radius_is_eps:
+            required_attributes.append('radius')
+        elif self.h_smooth_is_eps:
+            required_attributes.append('h_smooth')
+        self.required_attributes = lambda p, x : x in required_attributes
+            
         if not hasattr(self.code,"parameters"):
             self.zero_smoothing=True
         elif not hasattr(self.code.parameters,"epsilon_squared"):
@@ -355,7 +377,7 @@ class GravityCodeInField(object):
             return quantities.zero
             
         result = self.code.potential_energy
-        particles=self.code.particles.copy()
+        particles = self.code.particles.copy(filter_attributes = self.required_attributes)
         
         for y in self.field_codes:
             energy = self.get_potential_energy_in_field_code(particles, y)
@@ -408,7 +430,7 @@ class GravityCodeInField(object):
         if not hasattr(self.code, 'particles') or len(self.code.particles)==0:
             return quantities.zero
         
-        particles=self.code.particles.copy()
+        particles = self.code.particles.copy(filter_attributes = self.required_attributes)
         kinetic_energy_before = particles.kinetic_energy()
         
         for field_code in self.field_codes:
