@@ -677,6 +677,7 @@ int cleanup_code()
     ds.clear();
     indexMap.clear();
     counter = 0;
+    return 0;
 }
 
 int get_identity_from_index(int i)
