@@ -968,6 +968,47 @@ def mass_segregation_ratio(particles, number_of_particles=20, number_of_random_s
     else:
         return msr
 
+def mass_segregation_from_nearest_neighbour(particles, number_of_particles=None,
+        fraction_of_particles=0.01, number_of_random_sets=None, also_compute_uncertainty=False):
+    """
+    Calculates the mass segregation ratio based on the average inverse distance 
+    to nearest neighbours.
+    
+    (1) Determine average inverse distances to the nearest neighbour for 
+        'number_of_random_sets' sets of 'number_of_particles' random stars; 
+        mean_idnn[number_of_random_sets]
+    (2) Determine the average inverse distance to the nearest neighbour of the 
+        'number_of_particles' most massive stars; mean_idnn_massive
+    (3) Determine with what statistical significance l_massive differs from l_norm:
+        MSR = mean_idnn_massive / <mean_idnn>  +/ - sigma(mean_idnn) / <mean_idnn>
+    
+    :argument number_of_particles:  the number of particles in each (random and massive) sample
+    :argument number_of_random_sets:  the number of randomly selected subsets for 
+        which the average inverse distances to the nearest neighbour are calculated
+    :argument also_compute_uncertainty: if True, a namedtuple is returned with (MSR, sigma) 
+    """
+    if number_of_particles is None:
+        number_of_particles = -int(-fraction_of_particles * len(particles))
+    if number_of_random_sets is None:
+        number_of_random_sets = -(-len(particles) // number_of_particles)
+    
+    mean_idnn = [] | particles.position.unit**-1
+    for i in range(number_of_random_sets):
+        sample = particles.random_sample(number_of_particles)
+        distances = (sample.position - sample.nearest_neighbour().position).lengths()
+        mean_idnn.append((1.0/distances).mean())
+    
+    massive = particles.sorted_by_attribute('mass')[-number_of_particles:]
+    distances = (massive.position - massive.nearest_neighbour().position).lengths()
+    mean_idnn_massive = (1.0/distances).mean()
+    
+    msr = mean_idnn_massive / mean_idnn.mean()
+    if also_compute_uncertainty:
+        sigma = mean_idnn.std() / mean_idnn.mean()
+        return MassSegregationRatioResults(mass_segregation_ratio=msr, uncertainty=sigma)
+    else:
+        return msr
+
 def correlation_dimension(particles, max_array_length=10000000):
     """
     Computes the correlation dimension, a measure of the fractal dimension of a 
@@ -979,8 +1020,8 @@ def correlation_dimension(particles, max_array_length=10000000):
     
     if 3 * len(particles)**2 > max_array_length:
         counts_per_batch = []
-        particles_per_batch = max(1, max_array_length / (3 * len(particles)))
-        number_of_batches = (len(particles) - 1) / particles_per_batch + 1
+        particles_per_batch = max(1, max_array_length // (3 * len(particles)))
+        number_of_batches = (len(particles) - 1) // particles_per_batch + 1
         indices_in_each_batch = [numpy.arange(particles_per_batch) + i*particles_per_batch for i in range(number_of_batches-1)]
         indices_in_each_batch.append(numpy.arange(indices_in_each_batch[-1][-1]+1, len(particles)))
         for indices in indices_in_each_batch:
@@ -1073,6 +1114,7 @@ AbstractParticleSet.add_global_function_attribute("Qparameter", Qparameter)
 AbstractParticleSet.add_global_function_attribute("connected_components", connected_components)
 AbstractParticleSet.add_global_function_attribute("minimum_spanning_tree_length", minimum_spanning_tree_length)
 AbstractParticleSet.add_global_function_attribute("mass_segregation_ratio", mass_segregation_ratio)
+AbstractParticleSet.add_global_function_attribute("mass_segregation_from_nearest_neighbour", mass_segregation_from_nearest_neighbour)
 AbstractParticleSet.add_global_function_attribute("correlation_dimension", correlation_dimension)
 AbstractParticleSet.add_global_function_attribute("box_counting_dimension", box_counting_dimension)
 

@@ -402,6 +402,35 @@ class TestParticlesAttributes(amusetest.TestCase):
         particles.position *= 1000
         self.assertAlmostRelativeEquals(dimension, particles.box_counting_dimension(), 10)
     
+    def test14(self):
+        print "Test mass_segregation_from_nearest_neighbour"
+        numpy.random.seed(123)
+        random.seed(4567)
+        number_of_particles = 1000
+        particles = new_plummer_sphere(number_of_particles)
+        particles.r_squared = particles.position.lengths_squared()
+        sorted = particles.sorted_by_attribute("r_squared")
+        
+        sorted.mass = numpy.random.uniform(1.0, 2.0, number_of_particles) | nbody_system.mass
+        MSR, sigma = sorted.mass_segregation_from_nearest_neighbour(number_of_particles=10, also_compute_uncertainty=True)
+        self.assertAlmostEquals(MSR, 1.7355, 3)
+        self.assertAlmostEquals(sigma, 0.3969, 3)
+        
+        random.seed(456)
+        MSR_of_nonsegregated_systems = []
+        for i in range(10):
+            sorted.mass = numpy.random.uniform(1.0, 2.0, number_of_particles) | nbody_system.mass
+            MSR = sorted.mass_segregation_from_nearest_neighbour(number_of_particles=10, number_of_random_sets=50)
+            MSR_of_nonsegregated_systems.append(MSR)
+        self.assertAlmostEquals((MSR_of_nonsegregated_systems|units.none).mean(), 1.0, 1)
+        self.assertAlmostEquals((MSR_of_nonsegregated_systems|units.none).std(), 0.3, 1)
+        
+        sorted.mass = numpy.linspace(2.0, 1.0, number_of_particles) | nbody_system.mass
+        MSR, sigma = sorted.mass_segregation_from_nearest_neighbour(number_of_particles=10, number_of_random_sets=20, 
+            also_compute_uncertainty=True)
+        self.assertTrue(MSR > 5.0)
+        self.assertAlmostEquals(sigma, 0.4, 1)
+    
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
     
