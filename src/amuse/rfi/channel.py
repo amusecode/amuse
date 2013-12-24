@@ -2209,7 +2209,8 @@ class DistributedChannel(AbstractMessageChannel):
         
         return message.to_result(handle_as_array)
     
-    def nonblocking_recv_message(self, tag, handle_as_array):
+    
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
         #       raise exceptions.CodeException("Nonblocking receive not supported by DistributedChannel")
         request = SocketMessage().nonblocking_receive(self.socket)
         
@@ -2218,12 +2219,20 @@ class DistributedChannel(AbstractMessageChannel):
         
             message = function()
             
-            if message.error:
-                raise exceptions.CodeException("Error in worker: " + message.strings[0])
-                
-            return message.to_result(handle_as_array)
+            if message.call_id != call_id:
+                self.stop()
+                raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
     
-        request.add_result_handler(handle_result)
+            if message.function_id != function_id:
+                self.stop()
+                raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
         
+            if message.error:
+                raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
+        
+            return message.to_result(handle_as_array)
+
+        request.add_result_handler(handle_result)
+            
         return request
     
