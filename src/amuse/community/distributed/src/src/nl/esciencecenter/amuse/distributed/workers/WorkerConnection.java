@@ -111,12 +111,16 @@ public class WorkerConnection extends Thread {
         AmuseMessage request = new AmuseMessage();
         AmuseMessage result = new AmuseMessage();
         long start, finish;
-
+        
         // finish initializing worker
         try {
 
-            // wait until job is running
-            job.waitUntilRunning();
+            // Wait until job is running. Will not wait for more than time requested
+            job.waitUntilRunning(workerDescription.getStartupTimeout() * 1000);
+            
+            if (!job.isRunning()) {
+                throw new Exception("Worker not started within set time (" + workerDescription.getStartupTimeout() + " seconds). Current state: " + job.getJobState());
+            }
             
             //read initial "hello" message with identifier
             ReadMessage helloMessage = receivePort.receive(CONNECT_TIMEOUT);
@@ -205,7 +209,7 @@ public class WorkerConnection extends Thread {
                 while (readMessage == null) {
                     try {
                         readMessage = receivePort.receive(1000);
-                    } catch (ReceiveTimedOutException timeout) {
+                    } catch (ReceiveTimedOutException exception) {
                         // IGNORE
                     }
 
@@ -249,11 +253,6 @@ public class WorkerConnection extends Thread {
                         logger.error("Error while returning error message to amuse", e1);
                     }
 
-                    try {
-                        job.cancel();
-                    } catch (Exception e2) {
-                        logger.error("Error cancelling job", e);
-                    }
                 } else {
                     logger.error("Error on handling call, lost connection to AMUSE", e);
                 }
@@ -275,6 +274,11 @@ public class WorkerConnection extends Thread {
             receivePort.close(1000);
         } catch (IOException e) {
             logger.error("Error closing receiveport", e);
+        }
+        try {
+            job.cancel();
+        } catch (Exception e2) {
+            logger.error("Error cancelling job", e2);
         }
     }
     

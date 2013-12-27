@@ -2105,7 +2105,7 @@ class DistributedChannel(AbstractMessageChannel):
         
         self.socket.sendall('TYPE_WORKER'.encode('utf-8'))
         
-        arguments = {'string': [self.executable, self.redirect_stdout_file, self.redirect_stderr_file, self.node_label], 'int32': [self.number_of_workers, self.number_of_nodes, self.number_of_threads]}
+        arguments = {'string': [self.executable, self.redirect_stdout_file, self.redirect_stderr_file, self.node_label], 'int32': [self.number_of_workers, self.number_of_nodes, self.number_of_threads, self.startup_timeout]}
         
         message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments);
 
@@ -2150,6 +2150,10 @@ class DistributedChannel(AbstractMessageChannel):
     @option(type="string", sections=("channel",))
     def node_label(self):
         return None
+    
+    @option(type="int", sections=("channel",))
+    def startup_timeout(self):
+        return 60
     
     def stop(self):
         if self.socket is not None:

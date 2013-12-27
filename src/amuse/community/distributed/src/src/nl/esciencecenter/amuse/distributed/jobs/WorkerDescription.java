@@ -40,8 +40,10 @@ public class WorkerDescription implements Serializable {
     private final int nrOfNodes;
     private final int nrOfThreads;
 
+    private final int startupTimeout;
+
     public WorkerDescription(String id, String executable, String stdoutFile, String stderrFile, String nodeLabel,
-            int nrOfWorkers, int nrOfNodes, int nrOfThreads) {
+            int nrOfWorkers, int nrOfNodes, int nrOfThreads, int startupTimeout) {
         this.id = id;
         this.executable = executable;
         this.stdoutFile = stdoutFile;
@@ -50,6 +52,7 @@ public class WorkerDescription implements Serializable {
         this.nrOfWorkers = nrOfWorkers;
         this.nrOfNodes = nrOfNodes;
         this.nrOfThreads = nrOfThreads;
+        this.startupTimeout = startupTimeout;
     }
 
     /**
@@ -73,8 +76,9 @@ public class WorkerDescription implements Serializable {
         nrOfWorkers = message.getInteger(0);
         nrOfNodes = message.getInteger(1);
         nrOfThreads = message.getInteger(2);
+        startupTimeout = message.getInteger(3);
     }
-    
+
     public String getID() {
         return id;
     }
@@ -110,11 +114,14 @@ public class WorkerDescription implements Serializable {
         return nrOfThreads;
     }
 
+    public int getStartupTimeout() {
+        return startupTimeout;
+    }
+    
     @Override
     public String toString() {
         return "WorkerDescription [executable=" + executable + ", stdoutFile=" + stdoutFile + ", stderrFile=" + stderrFile
                 + ", nodeLabel=" + nodeLabel + ", nrOfWorkers=" + nrOfWorkers + ", nrOfNodes=" + nrOfNodes + ", nrOfThreads="
-                + nrOfThreads + "]";
+                + nrOfThreads + ", startupTimeout=" + startupTimeout + "]";
     }
-
 }

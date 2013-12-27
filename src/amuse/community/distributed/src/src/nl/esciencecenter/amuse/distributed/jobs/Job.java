@@ -60,7 +60,7 @@ public abstract class Job extends Thread implements MessageUpcall {
     }
 
     private final Ibis ibis;
-    
+
     private final JobManager jobManager;
 
     private final ReceivePort resultReceivePort;
@@ -154,7 +154,16 @@ public abstract class Job extends Thread implements MessageUpcall {
         return state == State.FAILED;
     }
 
-    public synchronized void waitUntilRunning() throws Exception {
+    public synchronized void waitUntilRunning(long timeout) throws Exception {
+        long deadline;
+
+        if (timeout == 0) {
+            //wait for ever
+            deadline = Long.MAX_VALUE;
+        } else {
+            deadline = System.currentTimeMillis() + timeout;
+        }
+
         while (!isRunning()) {
             if (hasFailed()) {
                 throw getError();
@@ -162,10 +171,15 @@ public abstract class Job extends Thread implements MessageUpcall {
             if (isDone()) {
                 throw new DistributedAmuseException("Job already done while waiting until it is running");
             }
-            try {
-                wait();
-            } catch (InterruptedException e) {
+            long remaining = deadline - System.currentTimeMillis();
+            if (remaining <= 0) {
                 return;
+            } else {
+                try {
+                    wait(remaining);
+                } catch (InterruptedException e) {
+                    return;
+                }
             }
         }
     }
@@ -197,9 +211,9 @@ public abstract class Job extends Thread implements MessageUpcall {
             logger.error("Tried to run job {} that was not pending. Ignoring", this);
             return;
         }
-        
+
         logger.debug("Running job on target nodes {}", (Object) target);
-        
+
         //set state to initializing
         setState(State.INITIALIZING);
 
@@ -225,7 +239,7 @@ public abstract class Job extends Thread implements MessageUpcall {
             PilotNode master = target[0];
 
             logger.trace("sending start command for {} to pilot", this);
-            
+
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
             ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
@@ -270,7 +284,7 @@ public abstract class Job extends Thread implements MessageUpcall {
                 setState(State.RUNNING);
                 logger.trace("job {} started", this);
             }
-            
+
         } catch (IOException | ClassNotFoundException e) {
             logger.error("Job failed!", e);
             setError(e);
@@ -281,16 +295,20 @@ public abstract class Job extends Thread implements MessageUpcall {
      * Cancel a job by sending a message to the pilot
      */
     public void cancel() throws DistributedAmuseException {
-        PilotNode master = target[0];
-
         if (isDone()) {
             logger.trace("NOT Cancelling job as it is already done {}", this);
+            return;
+        } else if (isPending()) {
+            logger.trace("Cancelling pending job {}", this);
+            setError(new Exception("Job cancelled while pending"));
             return;
         } else {
             logger.debug("Cancelling job {}", this);
         }
 
         try {
+            PilotNode master = target[0];
+
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
             sendPort.connect(master.getIbisIdentifier(), Pilot.PORT_NAME);
@@ -328,7 +346,7 @@ public abstract class Job extends Thread implements MessageUpcall {
         } else {
             setState(State.DONE);
         }
-        
+
         jobManager.nudge();
 
         logger.debug("Status message received, state now: {}", this);

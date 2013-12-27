@@ -19,7 +19,6 @@ import ibis.ipl.IbisCapabilities;
 import ibis.ipl.PortType;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.jobs.JobManager;
