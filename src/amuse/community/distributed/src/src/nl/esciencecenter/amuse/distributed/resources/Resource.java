@@ -32,6 +32,8 @@ import nl.esciencecenter.xenon.credentials.Credential;
 import nl.esciencecenter.xenon.files.FileSystem;
 import nl.esciencecenter.xenon.files.Path;
 import nl.esciencecenter.xenon.files.RelativePath;
+import nl.esciencecenter.xenon.jobs.Scheduler;
+import nl.esciencecenter.xenon.util.Utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +43,10 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Resource {
+    
+    public static final String WHITESPACE_REGEX = ";";
+
+    public static final String EQUALS_REGEX = "\\s*=\\s*";
 
     private static final Logger logger = LoggerFactory.getLogger(Resource.class);
 
@@ -59,10 +65,36 @@ public class Resource {
 
     private final AmuseConfiguration configuration;
 
-    //null == auto
-    private final Boolean startHub;
+    private final boolean startHub;
+
+    private final Xenon xenon;
+    private final Scheduler scheduler;
+    private final Path home;
+    private final FileSystem filesystem;
+
+    //options for xenon
+    private final String options;
 
     private final Hub hub;
+    
+    private static Map<String, String> parseOptions(String options) throws DistributedAmuseException {
+        Map<String, String> result = new HashMap<String, String>();
+
+        if (options == null || options.isEmpty()) {
+            return result;
+        }
+
+        for (String option : options.split(WHITESPACE_REGEX)) {
+            String[] keyvalue = option.split(EQUALS_REGEX, 2);
+            if (keyvalue.length != 2) {
+                throw new DistributedAmuseException("Key-Value option " + "\"" + option + "\" not a valid key=value pair");
+            }
+            logger.debug("adding option \"{}\" = \"{}\"", keyvalue[0], keyvalue[1]);
+            result.put(keyvalue[0], keyvalue[1]);
+        }
+
+        return result;
+    }
 
     private static void waitUntilHubStarted(Server iplServer, String hubAddress, String name) throws DistributedAmuseException {
         logger.info("waiting for new remote hub on {} to connect to the local hub", name);
@@ -84,8 +116,8 @@ public class Resource {
         throw new DistributedAmuseException("Local and new remote Hub at " + name + " not able to communicate");
     }
 
-    public Resource(String name, String location, String gateway, String amuseDir, String schedulerType, Boolean startHub,
-            Xenon xenon, Server iplServer) throws DistributedAmuseException {
+    public Resource(String name, String location, String gateway, String amuseDir, String schedulerType, boolean startHub,
+            String options, Xenon xenon, Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
         this.location = location;
@@ -93,15 +125,40 @@ public class Resource {
         this.amuseDir = amuseDir;
         this.schedulerType = schedulerType;
         this.startHub = startHub;
+        this.options = options;
+        this.xenon = xenon;
 
-        this.configuration = downloadConfiguration(xenon);
+        home = getHome(xenon);
+        filesystem = home.getFileSystem();
+
+        try {
+            logger.debug("home exists 1: " + xenon.files().exists(home));
+        } catch (XenonException e) {
+            logger.error("Exist failed", e);
+        }
+
+        try {
+            logger.debug("home exists 2a: " + xenon.files().exists(home));
+        } catch (XenonException e) {
+            logger.error("Exist failed", e);
+        }
+
+        this.configuration = downloadConfiguration(filesystem, xenon);
+
+        try {
+            logger.debug("home exists 2b: " + xenon.files().exists(home));
+        } catch (XenonException e) {
+            logger.error("Exist failed", e);
+        }
 
         if (!configuration.isJavaEnabled()) {
             throw new DistributedAmuseException("Resource " + name
                     + " not suitable as target for distributed AMUSE, java not enabled in configuration");
         }
 
-        if (mustStartHub()) {
+        scheduler = createScheduler();
+
+        if (startHub) {
             this.hub = new Hub(this, this.configuration, iplServer.getHubs(), xenon);
             iplServer.addHubs(this.hub.getAddress());
 
@@ -113,52 +170,72 @@ public class Resource {
             this.hub = null;
         }
         logger.info("Created new resource {}", this);
+
+        try {
+            logger.debug("home exists 3: " + xenon.files().exists(home));
+        } catch (XenonException e) {
+            logger.error("Exist failed", e);
+        }
+
     }
 
-    private FileSystem openFileSystem(Xenon xenon) throws DistributedAmuseException {
+    private Scheduler createScheduler() throws DistributedAmuseException {
         try {
-
-            FileSystem filesystem;
-
-            if (this.name.equals("local")) {
-                filesystem = xenon.files().newFileSystem("local", "/", null, null);
-            } else {
-                Credential credential = xenon.credentials().getDefaultCredential("ssh");
-
-                Map<String, String> properties = new HashMap<String, String>();
-                String gateway = getGateway();
-                if (gateway != null && !gateway.isEmpty()) {
-                    properties.put(SshAdaptor.GATEWAY, gateway);
-                }
-
-                filesystem = xenon.files().newFileSystem("ssh", location, credential, properties);
+            if (isLocal()) {
+                return Utils.getLocalScheduler(xenon.jobs());
             }
 
-            return filesystem;
+            Credential credential = xenon.credentials().getDefaultCredential(getSchedulerType());
+
+            //start with options provided by user
+            Map<String, String> properties = parseOptions(options);
+            
+            //add gateway if provided
+            String gateway = getGateway();
+            if (gateway != null && !gateway.isEmpty()) {
+                properties.put(SshAdaptor.GATEWAY, gateway);
+            }
+
+            return xenon.jobs().newScheduler(getSchedulerType(), getLocation(), credential, properties);
+        } catch (XenonException e) {
+            throw new DistributedAmuseException("cannot create scheduler connection for resource " + this.name, e);
+        }
+    }
+
+    private Path getHome(Xenon xenon) throws DistributedAmuseException {
+        try {
+            if (isLocal()) {
+                return Utils.getLocalHome(xenon.files());
+            }
+
+            Credential credential = xenon.credentials().getDefaultCredential(getSchedulerType());
+
+            //start with options provided by user
+            Map<String, String> properties = parseOptions(options);
+            
+            //add gateway if provided
+            String gateway = getGateway();
+            if (gateway != null && !gateway.isEmpty()) {
+                properties.put(SshAdaptor.GATEWAY, gateway);
+            }
+
+            return xenon.files().newFileSystem("ssh", getLocation(), credential, properties).getEntryPath();
         } catch (XenonException e) {
             throw new DistributedAmuseException("cannot open filesystem for resource " + this.name, e);
         }
     }
 
-    private AmuseConfiguration downloadConfiguration(Xenon xenon) throws DistributedAmuseException {
-        FileSystem filesystem = openFileSystem(xenon);
-
+    private AmuseConfiguration downloadConfiguration(FileSystem filesystem, Xenon xenon) throws DistributedAmuseException {
         try {
             RelativePath amuseConfig = new RelativePath(this.amuseDir + "/config.mk");
 
             Path path = xenon.files().newPath(filesystem, amuseConfig);
 
-            try (InputStream in = xenon.files().newInputStream(path)) {
-                return new AmuseConfiguration(this.amuseDir, in);
-            }
+            InputStream in = xenon.files().newInputStream(path);
+
+            return new AmuseConfiguration(this.amuseDir, in);
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot download configuration file for resource " + this.name, e);
-        } finally {
-            try {
-                xenon.files().close(filesystem);
-            } catch (XenonException e) {
-                //IGNORE
-            }
         }
     }
 
@@ -190,6 +267,10 @@ public class Resource {
         return configuration;
     }
 
+    public String getOptions() {
+        return options;
+    }
+
     @Override
     public int hashCode() {
         return new Integer(id).hashCode();
@@ -208,24 +289,28 @@ public class Resource {
         return id == ((Resource) other).id;
     }
 
-    public boolean mustStartHub() {
-        if (startHub == null) {
-            return getSchedulerType() != null && (getSchedulerType().toLowerCase() != "local");
-        }
-        return startHub;
-    }
-
     public void stop() {
         logger.debug("Stopping resource {}", this);
         if (hub != null) {
             hub.stop();
         }
+        try {
+            xenon.jobs().close(scheduler);
+        } catch (XenonException e) {
+            logger.warn("Error while closing scheduler for " + this, e);
+        }
+        try {
+            xenon.files().close(filesystem);
+        } catch (XenonException e) {
+            logger.warn("Error while closing filesystem for " + this, e);
+        }
+
     }
 
     public Hub getHub() {
         return hub;
     }
-    
+
     public boolean hasHub() {
         return hub != null;
     }
@@ -237,7 +322,7 @@ public class Resource {
     @Override
     public String toString() {
         return "Resource [id=" + id + ", name=" + name + ", location=" + location + ", amuseDir=" + amuseDir + ", schedulerType="
-                + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub + "]";
+                + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub +  ", options=" + options + "]";
     }
 
     public Map<String, String> getStatusMap() throws DistributedAmuseException {
@@ -257,6 +342,14 @@ public class Resource {
         }
 
         return result;
+    }
+
+    public Path getHome() {
+        return home;
+    }
+
+    public Scheduler getScheduler() {
+        return scheduler;
     }
 
 }

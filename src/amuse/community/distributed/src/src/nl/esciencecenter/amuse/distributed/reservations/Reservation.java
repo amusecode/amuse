@@ -199,28 +199,12 @@ public class Reservation {
         this.uniqueID = UUID.randomUUID();
 
         try {
-            Scheduler scheduler;
-            Path resourceHome;
+            Scheduler scheduler = resource.getScheduler();
+            Path resourceHome = resource.getHome();
 
-            if (resource.isLocal()) {
-                scheduler = Utils.getLocalScheduler(xenon.jobs());
-                resourceHome = Utils.getLocalHome(xenon.files());
-
-            } else {
-                Credential credential = xenon.credentials().getDefaultCredential(resource.getSchedulerType());
-
-                Map<String, String> properties = new HashMap<String, String>();
-                String gateway = resource.getGateway();
-                if (gateway != null && !gateway.isEmpty()) {
-                    properties.put(SshAdaptor.GATEWAY, gateway);
-                }
-
-                scheduler = xenon.jobs()
-                        .newScheduler(resource.getSchedulerType(), resource.getLocation(), credential, properties);
-                resourceHome = xenon.files().newFileSystem("ssh", resource.getLocation(), credential, properties).getEntryPath();
-            }
-            
             Path logDir = Utils.resolveWithRoot(xenon.files(), resourceHome, "distributed-amuse-logs");
+            
+            logger.debug("logs will be put in dir: " + logDir);
 
             if (!xenon.files().exists(logDir)) { 
                 xenon.files().createDirectories(logDir);

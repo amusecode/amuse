@@ -36,47 +36,39 @@ public class AmuseConfiguration {
 
     private final Map<String, String> config;
 
-    private void parseConfig(BufferedReader reader) throws DistributedAmuseException {
-        try {
-            while (true) {
-                String line = reader.readLine();
+    private void parseConfig(BufferedReader reader) throws DistributedAmuseException, IOException {
+        while (true) {
+            String line = reader.readLine();
 
-                if (line == null) {
-                    return;
-                } else if (line.trim().isEmpty() || line.startsWith("#") || line.startsWith("export")) {
-                    //SKIP
-                } else {
-                    String[] elements = line.split("=", 2);
+            if (line == null) {
+                return;
+            } else if (line.trim().isEmpty() || line.startsWith("#") || line.startsWith("export")) {
+                //SKIP
+            } else {
+                String[] elements = line.split("=", 2);
 
-                    if (elements.length != 2) {
-                        throw new DistributedAmuseException("Could not parse config option \"" + line + "\"");
-                    }
-
-                    String option = elements[0].trim();
-                    String value = elements[1].trim();
-
-                    config.put(option, value);
+                if (elements.length != 2) {
+                    throw new DistributedAmuseException("Could not parse config option \"" + line + "\"");
                 }
-            }
-        } catch (Exception e) {
-            throw new DistributedAmuseException("cannot read configuration", e);
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                //IGNORE
+
+                String option = elements[0].trim();
+                String value = elements[1].trim();
+
+                config.put(option, value);
             }
         }
-
     }
 
     public AmuseConfiguration(String amuseHome, InputStream in) throws DistributedAmuseException {
         this.amuseHome = new File(amuseHome);
         config = new HashMap<String, String>();
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-        parseConfig(reader);
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+            parseConfig(reader);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
     }
 
@@ -86,15 +78,14 @@ public class AmuseConfiguration {
 
         File configFile = new File(amuseHome, "config.mk");
 
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(configFile));
+        try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
             parseConfig(reader);
 
         } catch (FileNotFoundException e) {
             throw new DistributedAmuseException("cannot find config file: " + configFile, e);
+        } catch (IOException e) {
+            throw new DistributedAmuseException("cannot read config file: " + configFile, e);
         }
-
     }
 
     String getConfigOption(String name) throws DistributedAmuseException {
@@ -118,7 +109,7 @@ public class AmuseConfiguration {
     public String getMpiexec() throws DistributedAmuseException {
         return getConfigOption("MPIEXEC");
     }
-    
+
     public boolean isJavaEnabled() throws DistributedAmuseException {
         return getConfigOption("JAVA_ENABLED").equals("yes");
     }
