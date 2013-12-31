@@ -56,7 +56,7 @@ public class WorkerProxy extends Thread {
     private static final int ACCEPT_TIMEOUT = 100; // ms
     private static final int ACCEPT_TRIES = 50;
 
-    private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_", "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_" };
+    private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_", "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_", "SLURM" };
 
     // local socket communication stuff
 
