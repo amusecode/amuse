@@ -114,19 +114,33 @@ public class ReservationManager {
 
     public void waitForAllReservations() throws DistributedAmuseException {
         logger.debug("waiting for all reservations to start");
+
+        long deadline = Long.MAX_VALUE;
+        long timeout = 100; //ms
         
-        //then wait until all the nodes are actually joined. This should take some fixed amount of time
-        long deadline = System.currentTimeMillis() + JOIN_WAIT_TIME;
         int[] reservations = getReservationIDs();
         while (!nodes.containsNodesFrom(reservations)) {
+            
             if (System.currentTimeMillis() > deadline) {
                 throw new DistributedAmuseException("Pilot nodes failed to join");
             }
             //check for errors
-            jobStatusMonitor.areAllRunning();
+            if (jobStatusMonitor.areAllRunning()) {
+                //all jobs are now running. We only wait a fixed amount of time
+                //until all the nodes are actually joined.
+                if (deadline == Long.MAX_VALUE) {
+                    logger.debug("All reservations running. Now waiting for all pilots to join");
+                    deadline =  System.currentTimeMillis() + JOIN_WAIT_TIME;
+                }
+            }
 
             try {
-                Thread.sleep(100);
+                logger.debug("Now waiting {} ms", timeout);
+                Thread.sleep(timeout);
+                //back-off waiting time to max 10 seconds
+                if (timeout < 10000) {
+                    timeout = timeout * 2;
+                }
             } catch (InterruptedException e) {
                 //IGNORE
             }
