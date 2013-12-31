@@ -90,6 +90,8 @@ public class Reservation {
 
         if (queueName != null && !queueName.isEmpty()) {
             result.setQueueName(queueName);
+        } else if (resource.isLocal() || resource.getSchedulerType().equals("ssh")) {
+            result.setQueueName("unlimited");
         }
 
         //parse and add job options
