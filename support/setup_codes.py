@@ -324,15 +324,11 @@ class CodeCommand(Command):
         if is_configured and hasattr(config, 'java') and hasattr(config.java, 'is_enabled') and config.java.is_enabled:
             self.environment['JAVA'] = config.java.java
             self.environment['JAVAC'] = config.java.javac
-            self.environment['JAVAH'] = config.java.javah
             self.environment['JAR'] = config.java.jar
-            self.environment['JAVA_FLAGS'] = config.java.flags
         else:
             self.environment['JAVA'] = ''
             self.environment['JAVAC'] = ''
-            self.environment['JAVAH'] = ''
             self.environment['JAR'] = ''
-            self.environment['JAVA_FLAGS'] = ''
         return
 
     def set_openmp_flags(self):

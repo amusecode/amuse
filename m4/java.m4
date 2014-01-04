@@ -45,10 +45,7 @@ AC_DEFUN([R_RUN_JAVA],
 ## JAVA to Java interpreter path
 ## JAVA_HOME to the home directory of the Java runtime/jdk
 ## JAVA_LD_LIBRARY_PATH to the path necessary for Java runtime
-## JAVA_LIBS to flags necessary to link JNI programs (*)
-## JAVA_FLAGS to cpp flags necessary to find Java includes (*)
 ## JAVAC to Java compiler path (optional)
-## JAVAH to Java header preprocessor path (optional)
 ## JAR to Java archiver (optional)
 ##
 ## (*) - those variables are modified for use in make files
@@ -74,7 +71,6 @@ AC_PATH_PROGS(JAVA,java,,${JAVA_PATH})
 ## FIXME: we may want to check for jikes, kaffe and others...
 ## (however, most of them have compatibility wrappers by now)
 AC_PATH_PROGS(JAVAC,javac,,${JAVA_PATH})
-AC_PATH_PROGS(JAVAH,javah,,${JAVA_PATH})
 AC_PATH_PROGS(JAR,jar,,${JAVA_PATH})
 
 ## we don't require a compiler, but it would be useful
@@ -122,181 +118,9 @@ if test ${r_cv_java_works} = yes; then
   ])
   JAVA_VERSION="${r_cv_java_version}"
 
-  # we have Java support, detect flags
-  if test -n "${JAVA_HOME}"; then
-    # find out whether all settings are already cached
-    r_java_settings_cached=yes
-    AC_MSG_CHECKING([for cached Java settings])
-    AC_CACHE_VAL([r_cv_cache_java_flags], [
-      r_cv_cache_java_flags=yes
-      r_java_settings_cached=no])
-    AC_MSG_RESULT([${r_java_settings_cached}])
-    # if so, fetch them from the cache
-    if test "${r_java_settings_cached}" = yes; then
-      AC_CACHE_CHECK([JAVA_LIBS], [r_cv_JAVA_LIBS])
-      JAVA_LIBS0="${r_cv_JAVA_LIBS}"
-      AC_CACHE_CHECK([JAVA_FLAGS],[r_cv_JAVA_FLAGS])
-      JAVA_FLAGS0="${r_cv_JAVA_FLAGS}"
-      AC_CACHE_CHECK([JAVA_LD_LIBRARY_PATH],[r_cv_JAVA_LD_LIBRARY_PATH])
-      JAVA_LD_LIBRARY_PATH="${r_cv_JAVA_LD_LIBRARY_PATH}"
-    else
-    # otherwise detect all Java-relevant flags
-
-    : ${JAVA_LIBS=~autodetect~}
-    : ${JAVA_FLAGS=~autodetect~}
-    : ${JAVA_LD_LIBRARY_PATH=~autodetect~}
-    custom_JAVA_LIBS="${JAVA_LIBS}"
-    custom_JAVA_FLAGS="${JAVA_FLAGS}"
-    custom_JAVA_LD_LIBRARY_PATH="${JAVA_LD_LIBRARY_PATH}"
-
-    case "${host_os}" in
-      darwin*)
-        JAVA_LIBS="-framework JavaVM"
-        JAVA_LIBS0="-framework JavaVM"
-	JAVA_FLAGS="-I${JAVA_HOME}/include"
-	JAVA_FLAGS0='-I$(JAVA_HOME)/include'
-        JAVA_LD_LIBRARY_PATH=
-        ;;
-      *)
-        R_RUN_JAVA(JAVA_LD_LIBRARY_PATH, [-classpath ${getsp_cp} getsp java.library.path])
-	JAVA_LD_LIBRARY_PATH=`echo ${JAVA_LD_LIBRARY_PATH} | ${SED-sed} -e 's/^://' -e 's/:$//'`
-
-	# unfortunately recent Oracle Java distributions ship with broken
-	# java.library.path so we try to see if that is the case
-	has_libjvm=no
-	save_IFS=$IFS; IFS=:
-	for dir in ${JAVA_LD_LIBRARY_PATH}; do
-	    if test -f "$dir/libjvm.so"; then
-	        has_libjvm=yes
-	       	break
-	    fi
-        done
-	# for broken java.library.path try some heuristic using sun.boot.library.path
-	if test ${has_libjvm} = no; then
-	     R_RUN_JAVA(boot_path, [-classpath ${getsp_cp} getsp sun.boot.library.path])
-	     if test -n "${boot_path}"; then
-	          for dir in "${boot_path}" "${boot_path}/client" "${boot_path}/server"; do
-	       	      if test -f "$dir/libjvm.so"; then
-		          has_libjvm=yes
-			  # NOTE: we decided to ignore java.library.path altogether since it was bogus
-			  #       we could just append the newly found paths, though
-			  if test "${dir}" = "${boot_path}"; then
-			      JAVA_LD_LIBRARY_PATH="${dir}"
-			  else
-			      JAVA_LD_LIBRARY_PATH="${boot_path}:${dir}"
-			  fi
-			  break
-		       fi
-		  done
-	    fi
-	fi
-	IFS=${save_IFS}
-
-	JAVA_LIBS=`echo ":${JAVA_LD_LIBRARY_PATH} -ljvm" | ${SED-sed} -e 's/:/ -L/g'`
-	JAVA_LIBS0=`echo ${JAVA_LIBS} | ${SED-sed} -e "s:${JAVA_HOME}:\$\(JAVA_HOME\):g"`
-	JAVA_LD_LIBRARY_PATH=`echo ${JAVA_LD_LIBRARY_PATH} | ${SED-sed} -e "s:${JAVA_HOME}:\$\(JAVA_HOME\):g"`
-
-	## includes consist of two parts - jni.h and machine-dependent jni_md.h
-	jinc=''
-	for pinc in include ../include jre/include; do 
-	  if test -f "${JAVA_HOME}/${pinc}/jni.h"; then jinc="${JAVA_HOME}/${pinc}"; break; fi
-	done
-	## only if we get jni.h we can try to find jni_md.h
-	if test -n "${jinc}"; then
-	   JAVA_FLAGS="-I${jinc}"
-	   mdinc=''
-	   jmdirs=''
-	   ## put the most probable locations for each system in the first place
-	   case "${host_os}" in
-	     linux*)   jmdirs=linux;;
-	     bsdi*)    jmdirs=bsdos;;
-	     osf*)     jmdirs=alpha;;
-	     solaris*) jmdirs=solaris;;
-	     freebsd*) jmdirs=freebsd;;
-	   esac
-	   ## prepend . and append less-likely ones
-	   jmdirs=". ${jmdirs} genunix ppc x86 iris hp-ux aix win32 cygwin openbsd"
-	   for pimd in ${jmdirs}; do
-	     if test -f "${jinc}/${pimd}/jni_md.h"; then jmdinc="${jinc}/${pimd}"; break; fi
-	   done
-	   if test -z "${jmdinc}"; then
-	     # ultima-ratio: use find and pray that it works
-	     jmdinc=`find "${jinc}/" -name jni_md.h 2>/dev/null |head -n 1 2>/dev/null`
-	     if test -n "${jmdinc}"; then jmdinc=`dirname "${jmdinc}"`; fi
-	   fi
-	   if test -n "${jmdinc}"; then
-	     if test "${jmdinc}" != "${jinc}/."; then
-	       JAVA_FLAGS="${JAVA_FLAGS} -I${jmdinc}"
-	     fi
-	   fi
-	fi
-	JAVA_FLAGS0=`echo ${JAVA_FLAGS} | ${SED-sed} -e "s:${JAVA_HOME}:\$\(JAVA_HOME\):g"`
-        ;;
-    esac
-
-    ## honor user overrides
-    acx_java_uses_custom_flags=no
-    if test "${custom_JAVA_LIBS}" != '~autodetect~'; then
-      JAVA_LIBS="${custom_JAVA_LIBS}"
-      JAVA_LIBS0=`echo ${JAVA_LIBS} | ${SED-sed} -e "s:${JAVA_HOME}:\$\(JAVA_HOME\):g"`
-      acx_java_uses_custom_flags=yes
-    fi
-    if test "${custom_JAVA_FLAGS}" != '~autodetect~'; then
-      JAVA_FLAGS="${custom_JAVA_FLAGS}"
-      JAVA_FLAGS0=`echo ${JAVA_FLAGS} | ${SED-sed} -e "s:${JAVA_HOME}:\$\(JAVA_HOME\):g"`
-      acx_java_uses_custom_flags=yes
-    fi
-    if test "${custom_JAVA_LD_LIBRARY_PATH}" != '~autodetect~'; then
-      JAVA_LD_LIBRARY_PATH="${custom_JAVA_LD_LIBRARY_PATH}"
-    fi
-
-    ## try to link a simple JNI program
-    AC_CACHE_CHECK([whether JNI programs can be compiled], [r_cv_jni],
-    [r_cv_jni=
-    j_save_LIBS="${LIBS}"
-    j_save_CPPF="${CPPFLAGS}"
-    LIBS="${JAVA_LIBS}"
-    CPPFLAGS="${JAVA_FLAGS}"
-    AC_LINK_IFELSE([AC_LANG_SOURCE([[
-#include <jni.h>
-int main(void) {
-    JNI_CreateJavaVM(0, 0, 0);
-    return 0;
-}
-]])],[r_cv_jni="yes"],[
-    if test "${acx_java_uses_custom_flags}" = yes; then
-      r_cv_jni=no
-      AC_MSG_ERROR([Failed to compile a JNI program with custom JAVA_LIBS/JAVA_FLAGS.
-See config.log for details.
-Do NOT set JAVA_LIBS/JAVA_FLAGS unless you are sure they are correct!
-Java/JNI support is optional unless you set either JAVA_LIBS or JAVA_FLAGS.])
-    fi
-    ## some OSes/Javas need -lpthread
-    LIBS="${LIBS} -lpthread"
-    AC_LINK_IFELSE([AC_LANG_SOURCE([[
-#include <jni.h>
-int main(void) {
-    JNI_CreateJavaVM(0, 0, 0);
-    return 0;
-}
-]])],[r_cv_jni="yes (with pthreads)"],[r_cv_jni="no"])])
-    LIBS="${j_save_LIBS}"
-    CPPFLAGS="${j_save_CPPF}"
-])
-    ##AC_MSG_RESULT([$r_cv_jni])
-    if test "${r_cv_jni}" = "yes (with pthreads)"; then
-      JAVA_LIBS0="${JAVA_LIBS0} -lpthread"
-    fi
-
-    # cache all detected flags
-      AC_CACHE_VAL([r_cv_JAVA_LIBS],[r_cv_JAVA_LIBS="${JAVA_LIBS0}"])
-      AC_CACHE_VAL([r_cv_JAVA_FLAGS],[r_cv_JAVA_FLAGS="${JAVA_FLAGS0}"])      
-      AC_CACHE_VAL([r_cv_JAVA_LD_LIBRARY_PATH],[r_cv_JAVA_LD_LIBRARY_PATH="${JAVA_LD_LIBRARY_PATH}"])
-    fi # cached flags
-
-    have_java=yes
-  fi
+  have_java="yes"
 else  ## not r_cv_java_works
+    have_java="no"
     AC_MSG_WARN([Java not found, Java codes disabled])
 fi
 
@@ -304,10 +128,6 @@ fi
 AC_SUBST(have_java)
 AC_SUBST(JAVA)
 AC_SUBST(JAVAC)
-AC_SUBST(JAVAH)
 AC_SUBST(JAR)
-AC_SUBST(JAVA_LD_LIBRARY_PATH)
-AC_SUBST(JAVA_LIBS)
-AC_SUBST(JAVA_FLAGS)
 AC_SUBST(JAVA_VERSION)
 ])
