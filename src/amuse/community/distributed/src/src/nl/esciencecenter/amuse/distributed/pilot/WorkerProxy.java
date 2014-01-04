@@ -177,6 +177,10 @@ public class WorkerProxy extends Thread {
             shell = "/bin/bash";
         }
         builder.command().add(shell);
+        //execute the command, if it is a shell script or not...
+        builder.command().add("-c");
+        
+        String command = "exec ";
         
         logger.info("using shell: " + shell);
 
@@ -188,24 +192,23 @@ public class WorkerProxy extends Thread {
             }
         } else {
             // use mpiexec
-            builder.command().add(amuseConfiguration.getMpiexec());
+            command += amuseConfiguration.getMpiexec() + " ";
 
             // set machine file, if needed
             if (description.getNrOfNodes() != 1) {
                 File hostFile = createHostFile(hostnames, tempDirectory);
-                builder.command().add("-machinefile");
-                builder.command().add(hostFile.getAbsolutePath());
+                command += "-machinefile " + hostFile.getAbsolutePath() + " ";
             }
             
             // set number of processes to start
-            builder.command().add("-n");
-            builder.command().add(Integer.toString(description.getNrOfWorkers()));
+            command += "-n " + Integer.toString(description.getNrOfWorkers()) + " ";
         }
 
         // executable and port options
-        builder.command().add(executable.toString());
-        builder.command().add(Integer.toString(localSocketPort));
+        command += executable.toString() + " " + Integer.toString(localSocketPort) + " ";
 
+        builder.command().add(command.trim());
+        
         logger.info("starting worker process, command = " + builder.command());
 
         //start process and return
