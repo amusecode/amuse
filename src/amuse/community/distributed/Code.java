@@ -81,12 +81,12 @@ public class Code implements CodeInterface {
    
 
     @Override
-    public int new_resource(int[] resource_id, String[] name, String[] location, String[] amuse_dir, String[] gateway, String[] scheduler_type, int[] start_hub, String[] options, int count) {
+    public int new_resource(int[] resource_id, String[] name, String[] location, String[] amuse_dir, String[] gateway, String[] scheduler_type, int[] start_hub, String[] boot_command, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 boolean startHub = integerToBoolean(start_hub[i]);
                 Resource resource = distributedAmuse.resourceManager().newResource(name[i], location[i], gateway[i],
-                        amuse_dir[i], scheduler_type[i], startHub, options[i]);
+                        amuse_dir[i], scheduler_type[i], startHub, boot_command[i]);
                 resource_id[i] = resource.getId();
             }
             return 0;
@@ -115,7 +115,7 @@ public class Code implements CodeInterface {
 
     @Override
     public int get_resource_state(int[] index_of_the_resource, String[] name, String[] location, String[] gateway,
-            String[] amuse_dir, String[] scheduler_type, int[] start_hub, String[] options, int count) {
+            String[] amuse_dir, String[] scheduler_type, int[] start_hub, String[] boot_command, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 Resource resource = distributedAmuse.resourceManager().getResource(index_of_the_resource[i]);
@@ -126,7 +126,7 @@ public class Code implements CodeInterface {
                 amuse_dir[i] = resource.getAmuseDir();
                 scheduler_type[i] = resource.getSchedulerType();
                 start_hub[i] = booleanToInteger(resource.hasHub());
-                options[i] = resource.getOptions();
+                boot_command[i] = resource.getBootCommand();
             }
             return 0;
         } catch (DistributedAmuseException e) {

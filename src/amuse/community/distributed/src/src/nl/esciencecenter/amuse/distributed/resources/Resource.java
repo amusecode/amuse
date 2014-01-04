@@ -72,30 +72,10 @@ public class Resource {
     private final Path home;
     private final FileSystem filesystem;
 
-    //options for xenon
-    private final String options;
+    private final String bootCommand;
 
     private final Hub hub;
     
-    private static Map<String, String> parseOptions(String options) throws DistributedAmuseException {
-        Map<String, String> result = new HashMap<String, String>();
-
-        if (options == null || options.isEmpty()) {
-            return result;
-        }
-
-        for (String option : options.split(WHITESPACE_REGEX)) {
-            String[] keyvalue = option.split(EQUALS_REGEX, 2);
-            if (keyvalue.length != 2) {
-                throw new DistributedAmuseException("Key-Value option " + "\"" + option + "\" not a valid key=value pair");
-            }
-            logger.debug("adding option \"{}\" = \"{}\"", keyvalue[0], keyvalue[1]);
-            result.put(keyvalue[0], keyvalue[1]);
-        }
-
-        return result;
-    }
-
     private static void waitUntilHubStarted(Server iplServer, String hubAddress, String name) throws DistributedAmuseException {
         logger.info("waiting for new remote hub on {} to connect to the local hub", name);
         for (int i = 0; i < 40; i++) {
@@ -117,7 +97,7 @@ public class Resource {
     }
 
     public Resource(String name, String location, String gateway, String amuseDir, String schedulerType, boolean startHub,
-            String options, Xenon xenon, Server iplServer) throws DistributedAmuseException {
+            String bootCommand, Xenon xenon, Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
         this.location = location;
@@ -125,7 +105,7 @@ public class Resource {
         this.amuseDir = amuseDir;
         this.schedulerType = schedulerType;
         this.startHub = startHub;
-        this.options = options;
+        this.bootCommand = bootCommand;
         this.xenon = xenon;
 
         home = getHome(xenon);
@@ -187,8 +167,7 @@ public class Resource {
 
             Credential credential = xenon.credentials().getDefaultCredential(getSchedulerType());
 
-            //start with options provided by user
-            Map<String, String> properties = parseOptions(options);
+            Map<String, String> properties = new HashMap<String, String>();
             
             //add gateway if provided
             String gateway = getGateway();
@@ -210,8 +189,7 @@ public class Resource {
 
             Credential credential = xenon.credentials().getDefaultCredential(getSchedulerType());
 
-            //start with options provided by user
-            Map<String, String> properties = parseOptions(options);
+           Map<String, String> properties = new HashMap<String, String>();
             
             //add gateway if provided
             String gateway = getGateway();
@@ -267,8 +245,8 @@ public class Resource {
         return configuration;
     }
 
-    public String getOptions() {
-        return options;
+    public String getBootCommand() {
+        return bootCommand;
     }
 
     @Override
@@ -322,7 +300,7 @@ public class Resource {
     @Override
     public String toString() {
         return "Resource [id=" + id + ", name=" + name + ", location=" + location + ", amuseDir=" + amuseDir + ", schedulerType="
-                + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub +  ", options=" + options + "]";
+                + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub +  ", bootCommand=" + bootCommand + "]";
     }
 
     public Map<String, String> getStatusMap() throws DistributedAmuseException {

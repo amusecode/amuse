@@ -133,6 +133,11 @@ public class Reservation {
         javaArguments.add("--slots");
         javaArguments.add(Integer.toString(slots));
 
+        if (resource.getBootCommand() != null && !resource.getBootCommand().isEmpty()) {
+            javaArguments.add("--boot-command");
+            javaArguments.add(resource.getBootCommand());
+        }
+
         String hubs = null;
 
         if (resource.getHub() != null) {
@@ -205,19 +210,19 @@ public class Reservation {
             Path resourceHome = resource.getHome();
 
             Path logDir = Utils.resolveWithRoot(xenon.files(), resourceHome, "distributed-amuse-logs");
-            
+
             logger.debug("logs will be put in dir: " + logDir);
 
-            if (!xenon.files().exists(logDir)) { 
+            if (!xenon.files().exists(logDir)) {
                 xenon.files().createDirectories(logDir);
             }
 
             stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "reservation-" + uniqueID + "-stdout.txt");
             stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "reservation-" + uniqueID + "-stderr.txt");
- 
-//            Path xenonTmpDir = Utils.fromLocalPath(xenon.files(), tmpDir.getAbsolutePath());
-//            stdoutPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stdout.txt");
-//            stderrPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stderr.txt");
+
+            //            Path xenonTmpDir = Utils.fromLocalPath(xenon.files(), tmpDir.getAbsolutePath());
+            //            stdoutPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stdout.txt");
+            //            stderrPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stderr.txt");
 
             JobDescription jobDescription = createJobDesciption(id, uniqueID, resource, queueName, nodeCount, timeMinutes, slots,
                     nodeLabel, options, serverAddress, hubAddresses, stdoutPath, stderrPath);
@@ -256,7 +261,7 @@ public class Reservation {
     public String getNodeLabel() {
         return nodeLabel;
     }
-    
+
     public String getOptions() {
         return options;
     }

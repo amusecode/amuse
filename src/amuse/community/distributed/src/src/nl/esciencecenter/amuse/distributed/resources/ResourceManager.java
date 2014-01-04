@@ -52,9 +52,9 @@ public class ResourceManager {
     }
 
     public synchronized Resource newResource(String name, String location, String gateway, String amuseDir, String schedulerType,
-            boolean startHub, String options) throws DistributedAmuseException {
+            boolean startHub, String bootCommand) throws DistributedAmuseException {
         logger.debug("creating new resource: name = " + name + " location = " + location + " scheduler type = " + schedulerType
-                + " amuse dir = " + amuseDir + " start hub = " + startHub);
+                + " amuse dir = " + amuseDir + " start hub = " + startHub + " boot command: " + bootCommand);
 
         for (Resource resource : resources) {
             if (resource.getName().equals(name)) {
@@ -67,7 +67,7 @@ public class ResourceManager {
             gatewayLocation = getResource(gateway).getLocation();
         }
 
-        Resource result = new Resource(name, location, gatewayLocation, amuseDir, schedulerType, startHub, options, xenon, iplServer);
+        Resource result = new Resource(name, location, gatewayLocation, amuseDir, schedulerType, startHub, bootCommand, xenon, iplServer);
 
         resources.add(result);
 

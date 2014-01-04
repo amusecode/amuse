@@ -31,6 +31,7 @@ import ibis.ipl.WriteMessage;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,6 +54,8 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
+    
+    public static final String WHITESPACE_REGEX = "\\s+";
 
     public static final String PORT_NAME = "pilot";
 
@@ -83,9 +86,38 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
         return result;
     }
+    
+    private static void runBootCommand(String command) throws IOException, InterruptedException {
+        ProcessBuilder builder = new ProcessBuilder();
+        
+        //use the shell to run commands
+        String shell = System.getenv("SHELL");
+        if (shell == null) {
+            shell = "/bin/bash";
+        }
+        builder.command().add(shell);
+        
+        logger.info("using shell for boot command: " + shell);
+        
+        for (String commandElement: command.split(WHITESPACE_REGEX)) {
+            builder.command().add(commandElement);
+        }
+        
+        builder.redirectError(Redirect.INHERIT);
+        builder.redirectOutput(Redirect.INHERIT);
+        
+        Process bootProcess = builder.start();
+        
+        int exitcode = bootProcess.waitFor();
+        
+        if (exitcode != 0) {
+            throw new IOException("Error (exit status " + exitcode + ") while running boot command: " + command);
+        }
+        
+    }
 
-    Pilot(AmuseConfiguration configuration, Properties properties, String reservationID, String nodeLabel, int slots)
-            throws IbisCreationFailedException, IOException {
+    Pilot(AmuseConfiguration configuration, Properties properties, String reservationID, String nodeLabel, int slots, String bootCommand)
+            throws IbisCreationFailedException, IOException, InterruptedException {
         this.configuration = configuration;
         jobs = new HashMap<Integer, JobRunner>();
 
@@ -99,6 +131,10 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         
         this.id = UUID.randomUUID();
         tmpDir = createTmpDir(id);
+        
+        if (bootCommand != null) {
+            runBootCommand(bootCommand);
+        }
         
     }
 
@@ -127,6 +163,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         String nodeLabel = "default";
         String reservationID = null;
         int slots = 1;
+        String bootCommand = null;
 
         Properties properties = new Properties();
         properties.put(IbisProperties.POOL_NAME, "amuse");
@@ -156,6 +193,9 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             } else if (arguments[i].equalsIgnoreCase("--slots")) {
                 i++;
                 slots = Integer.parseInt(arguments[i]);
+            } else if (arguments[i].equalsIgnoreCase("--boot-command")) {
+                i++;
+                bootCommand = arguments[i];
             } else {
                 System.err.println("Unknown command line option: " + arguments[i]);
                 System.exit(1);
@@ -169,7 +209,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             System.err.println(entry.getKey() + " = " + entry.getValue());
         }
         
-        Pilot pilot = new Pilot(configuration, properties, reservationID, nodeLabel, slots);
+        Pilot pilot = new Pilot(configuration, properties, reservationID, nodeLabel, slots, bootCommand);
 
         pilot.run();
 
