@@ -16,10 +16,15 @@ from matplotlib import pyplot
 
 from amuse import datamodel
 
+import webbrowser
+
 def start_distributed_amuse():
     print "Creating distributed amuse"
     distributed_amuse = DistributedAmuse(redirection='none')
     distributed_amuse.initialize_code()
+
+    #open the address of the webinterface in a brower window
+    #webbrowser.open(distributed_amuse.get_webinterface_url())
 
     #Add some resources
     #resource = Resource()
