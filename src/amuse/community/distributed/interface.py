@@ -108,6 +108,16 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("address", dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
+
+    @legacy_function
+    def enable_debugging():
+        """
+	Enable or disable debugging
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("enable", dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
     
     @legacy_function
     def new_resource():

@@ -51,13 +51,16 @@ public class ReservationManager {
     private final Xenon xenon;
 
     private final File tmpDir;
+    
+    private final boolean debug;
 
-    public ReservationManager(Xenon xenon, ResourceManager resourceManager, PilotNodes nodes, File tmpDir)
+    public ReservationManager(Xenon xenon, ResourceManager resourceManager, PilotNodes nodes, File tmpDir, boolean debug)
             throws DistributedAmuseException {
         this.xenon = xenon;
         this.resourceManager = resourceManager;
         this.nodes = nodes;
         this.tmpDir = tmpDir;
+        this.debug = debug;
         reservations = new ArrayList<Reservation>();
         jobStatusMonitor = new JobStatusMonitor(xenon);
     }
@@ -70,7 +73,7 @@ public class ReservationManager {
         Resource resource = resourceManager.getResource(resourceName);
 
         Reservation result = new Reservation(resource, queueName, nodeCount, timeMinutes, slots, nodeLabel, options,
-                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, tmpDir);
+                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, tmpDir, debug);
 
         reservations.add(result);
         jobStatusMonitor.addJob(result.getJob());

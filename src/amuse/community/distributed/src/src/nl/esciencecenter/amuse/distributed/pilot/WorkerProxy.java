@@ -30,6 +30,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Map;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
@@ -56,7 +57,8 @@ public class WorkerProxy extends Thread {
     private static final int ACCEPT_TIMEOUT = 100; // ms
     private static final int ACCEPT_TRIES = 50;
 
-    private static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_", "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_", "SLURM", "SBATCH", "SRUN"};
+    static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_", "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_", "SLURM",
+            "SBATCH", "SRUN", "HYDRA" };
 
     // local socket communication stuff
 
@@ -167,22 +169,18 @@ public class WorkerProxy extends Thread {
                 }
             }
         }
+
         if (description.getNrOfThreads() > 0) {
             builder.environment().put("OMP_NUM_THREADS", Integer.toString(description.getNrOfThreads()));
         }
-        
-        //use the shell to run commands
-        String shell = System.getenv("SHELL");
-        if (shell == null) {
-            shell = "/bin/bash";
+
+        if (logger.isDebugEnabled()) {
+            String message = "Environment for worker " + description.getID() + " (executable = " + executable + "):\n";
+            for (Map.Entry<String, String> entry : builder.environment().entrySet()) {
+                message += entry.getKey() + " = " + entry.getValue() + "\n";
+            }
+            logger.debug(message);
         }
-        builder.command().add(shell);
-        //execute the command, if it is a shell script or not...
-        builder.command().add("-c");
-        
-        String command = "exec ";
-        
-        logger.info("using shell: " + shell);
 
         if (!amuseConfiguration.isMpiexecEnabled()) {
             logger.info("not using mpiexec (as it is disabled)");
@@ -192,23 +190,24 @@ public class WorkerProxy extends Thread {
             }
         } else {
             // use mpiexec
-            command += amuseConfiguration.getMpiexec() + " ";
+            builder.command().add(amuseConfiguration.getMpiexec());
 
             // set machine file, if needed
             if (description.getNrOfNodes() != 1) {
                 File hostFile = createHostFile(hostnames, tempDirectory);
-                command += "-machinefile " + hostFile.getAbsolutePath() + " ";
+                builder.command().add("-machinefile");
+                builder.command().add(hostFile.getAbsolutePath());
             }
-            
+
             // set number of processes to start
-            command += "-n " + Integer.toString(description.getNrOfWorkers()) + " ";
+            builder.command().add("-n");
+            builder.command().add((Integer.toString(description.getNrOfWorkers())));
         }
 
         // executable and port options
-        command += executable.toString() + " " + Integer.toString(localSocketPort) + " ";
+        builder.command().add(executable.toString());
+        builder.command().add(Integer.toString(localSocketPort));
 
-        builder.command().add(command.trim());
-        
         logger.info("starting worker process, command = " + builder.command());
 
         //start process and return
@@ -230,7 +229,7 @@ public class WorkerProxy extends Thread {
     private static SocketChannel acceptConnection(ServerSocketChannel serverSocket, Process process) throws IOException,
             DistributedAmuseException {
         logger.debug("accepting connection");
-        
+
         serverSocket.configureBlocking(true);
         serverSocket.socket().setSoTimeout(ACCEPT_TIMEOUT);
 

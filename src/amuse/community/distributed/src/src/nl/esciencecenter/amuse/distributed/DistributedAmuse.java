@@ -33,6 +33,8 @@ import nl.esciencecenter.xenon.XenonFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.Level;
+
 /**
  * Main Distributed AMUSE class. Started by AMUSE via the "Code" interface. Mostly contains objects that do the actual work.
  * 
@@ -71,9 +73,22 @@ public class DistributedAmuse {
     //used to copy files, start jobs, etc.
     private final Xenon xenon;
 
-    private File tmpDir;
-    
+    private final File tmpDir;
+
+    private final boolean debug;
+
     private boolean ended = false;
+
+    private static void initializeLogger(boolean debug) {
+        if (debug) {
+            ch.qos.logback.classic.Logger amuseLogger = (ch.qos.logback.classic.Logger) LoggerFactory
+                    .getLogger("nl.esciencecenter.amuse");
+
+            amuseLogger.setLevel(Level.DEBUG);
+            
+            logger.debug("DEBUG Enabled");
+        }
+    }
 
     private static File createTmpDir() throws DistributedAmuseException {
         File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -88,12 +103,16 @@ public class DistributedAmuse {
 
         return result;
     }
-    
-    public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort) throws DistributedAmuseException {
+
+    public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort, boolean debug)
+            throws DistributedAmuseException {
+        this.debug = debug;
+        initializeLogger(debug);
+        
         logger.info("Initializing Distributed Amuse");
         try {
             xenon = XenonFactory.newXenon(null);
-        } catch (XenonException  e) {
+        } catch (XenonException e) {
             throw new DistributedAmuseException("could not create Xenon library object", e);
         }
 
@@ -102,8 +121,8 @@ public class DistributedAmuse {
         resourceManager = new ResourceManager(xenon, tmpDir, amuseRootDir);
 
         jobManager = new JobManager(resourceManager.getIplServerAddress(), tmpDir);
-        
-        reservationManager = new ReservationManager(xenon, resourceManager, jobManager.getNodes(), tmpDir);
+
+        reservationManager = new ReservationManager(xenon, resourceManager, jobManager.getNodes(), tmpDir, debug);
 
         workerConnectionServer = new WorkerConnectionServer(jobManager, tmpDir);
 
@@ -113,6 +132,10 @@ public class DistributedAmuse {
             throw new DistributedAmuseException("could not create web interface", e);
         }
         logger.info("Distributed Amuse Initialized");
+    }
+
+    public boolean debugEnabled() {
+        return debug;
     }
 
     public ResourceManager resourceManager() {
@@ -126,7 +149,7 @@ public class DistributedAmuse {
     public JobManager jobManager() {
         return jobManager;
     }
-    
+
     public WebInterface webInterface() {
         return webInterface;
     }
@@ -145,12 +168,12 @@ public class DistributedAmuse {
     private synchronized boolean hasEnded() {
         return ended;
     }
-    
+
     //to be on the safe side, synchronize this flag
     private synchronized void setEnded() {
         ended = true;
     }
-    
+
     /**
      * 
      */
@@ -159,30 +182,30 @@ public class DistributedAmuse {
             return;
         }
         setEnded();
-        
+
         logger.info("Ending distributed Amuse.");
-        
+
         logger.debug("Ending web interface");
         webInterface.end();
-        
+
         logger.debug("Ending worker connection server");
         workerConnectionServer.end();
-        
+
         logger.debug("Ending job manager");
         jobManager.end();
 
         logger.debug("Ending registry");
         resourceManager.endRegistry();
-        
+
         logger.debug("Ending reservation manager");
         reservationManager.end();
-        
+
         logger.debug("Ending resource manager");
         resourceManager.end();
-        
+
         logger.debug("Ending Xenon");
         XenonFactory.endAll();
         logger.info("Distributed Amuse ended.");
     }
-    
+
 }

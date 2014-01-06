@@ -83,8 +83,13 @@ public class Reservation {
             String[] hubAddresses, Path stdoutPath, Path stderrPath) throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
 
-        result.setStdout(stdoutPath.getRelativePath().getAbsolutePath());
-        result.setStderr(stderrPath.getRelativePath().getAbsolutePath());
+        if (stdoutPath != null) {
+            result.setStdout(stdoutPath.getRelativePath().getAbsolutePath());
+        }
+
+        if (stderrPath != null) {
+            result.setStderr(stderrPath.getRelativePath().getAbsolutePath());
+        }
 
         result.setInteractive(false);
 
@@ -190,7 +195,7 @@ public class Reservation {
      * @param nodeLabel
      */
     public Reservation(Resource resource, String queueName, int nodeCount, int timeMinutes, int slots, String nodeLabel,
-            String options, String serverAddress, String[] hubAddresses, Xenon xenon, File tmpDir)
+            String options, String serverAddress, String[] hubAddresses, Xenon xenon, File tmpDir, boolean debug)
             throws DistributedAmuseException {
         this.xenon = xenon;
         this.resource = resource;
@@ -207,18 +212,26 @@ public class Reservation {
 
         try {
             Scheduler scheduler = resource.getScheduler();
-            Path resourceHome = resource.getHome();
 
-            Path logDir = Utils.resolveWithRoot(xenon.files(), resourceHome, "distributed-amuse-logs");
+            if (debug) {
 
-            logger.debug("logs will be put in dir: " + logDir);
+                Path resourceHome = resource.getHome();
 
-            if (!xenon.files().exists(logDir)) {
-                xenon.files().createDirectories(logDir);
+                Path logDir = Utils.resolveWithRoot(xenon.files(), resourceHome, "distributed-amuse-logs");
+
+                logger.debug("logs will be put in dir: " + logDir);
+
+                if (!xenon.files().exists(logDir)) {
+                    xenon.files().createDirectories(logDir);
+                }
+
+                stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "reservation-" + uniqueID + "-stdout.txt");
+                stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "reservation-" + uniqueID + "-stderr.txt");
+
+            } else {
+                stdoutPath = null;
+                stderrPath = null;
             }
-
-            stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "reservation-" + uniqueID + "-stdout.txt");
-            stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "reservation-" + uniqueID + "-stderr.txt");
 
             //            Path xenonTmpDir = Utils.fromLocalPath(xenon.files(), tmpDir.getAbsolutePath());
             //            stdoutPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stdout.txt");

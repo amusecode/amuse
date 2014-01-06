@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessBuilder.Redirect;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -88,23 +89,21 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     }
     
     private static void runBootCommand(String command) throws IOException, InterruptedException {
-        ProcessBuilder builder = new ProcessBuilder();
+        ProcessBuilder builder = new ProcessBuilder(command.split(WHITESPACE_REGEX));
         
-        //use the shell to run commands
-        String shell = System.getenv("SHELL");
-        if (shell == null) {
-            shell = "/bin/bash";
+        for (String key : builder.environment().keySet().toArray(new String[0])) {
+            for (String blacklistedKey : WorkerProxy.ENVIRONMENT_BLACKLIST) {
+                if (key.startsWith(blacklistedKey)) {
+                    builder.environment().remove(key);
+                    logger.info("removed " + key + " from environment");
+                }
+            }
         }
-        builder.command().add(shell);
-        //execute the command, if it is a shell script or not...
-        builder.command().add("-c");
-        
-        logger.info("using shell for boot command: " + shell);
-        
-        builder.command().add("exec " + command);
         
         builder.redirectError(Redirect.INHERIT);
         builder.redirectOutput(Redirect.INHERIT);
+        
+        logger.info("running boot command: {}", builder.command());
         
         Process bootProcess = builder.start();
         

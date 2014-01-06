@@ -36,12 +36,24 @@ public class Code implements CodeInterface {
 
     private static final Logger logger = LoggerFactory.getLogger(Code.class);
 
-    private final DistributedAmuse distributedAmuse;
+    private final String codeDir;
+
+    private final String amuseRootDir;
+
+    private DistributedAmuse distributedAmuse;
 
     private String currentError = "";
 
+    private boolean debug = true;
+    
+    private int webinterfacePort = 0;
+
     public Code(String codeDir, String amuseRootDir) throws DistributedAmuseException {
-        distributedAmuse = new DistributedAmuse(codeDir, amuseRootDir, 0);
+        this.codeDir = codeDir;
+        this.amuseRootDir = amuseRootDir;
+        
+        //FIXME: this should move to initialize_code
+        this.distributedAmuse =  new DistributedAmuse(codeDir, amuseRootDir, webinterfacePort, debug);
     }
 
     @Override
@@ -57,8 +69,18 @@ public class Code implements CodeInterface {
 
     @Override
     public int initialize_code() {
-        //IGNORED
-        return 0;
+        if (distributedAmuse == null) {
+            try {
+                distributedAmuse = new DistributedAmuse(codeDir, amuseRootDir, webinterfacePort, debug);
+            } catch (DistributedAmuseException e) {
+                logger.error("Exception while initializing code", e);
+                return -10;
+            }
+            return 0;
+        } else {
+            return 0;
+            //return -10;
+        }
     }
 
     @Override
@@ -78,10 +100,16 @@ public class Code implements CodeInterface {
         return distributedAmuse.getWorkerPort();
     }
 
-   
+    @Override
+    public int enable_debugging(int enable) {
+        debug = integerToBoolean(enable);
+
+        return 0;
+    }
 
     @Override
-    public int new_resource(int[] resource_id, String[] name, String[] location, String[] amuse_dir, String[] gateway, String[] scheduler_type, int[] start_hub, String[] boot_command, int count) {
+    public int new_resource(int[] resource_id, String[] name, String[] location, String[] amuse_dir, String[] gateway,
+            String[] scheduler_type, int[] start_hub, String[] boot_command, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 boolean startHub = integerToBoolean(start_hub[i]);
@@ -104,7 +132,7 @@ public class Code implements CodeInterface {
             return 0;
         }
     }
-    
+
     private static boolean integerToBoolean(int value) {
         if (value <= 0) {
             return false;
@@ -397,7 +425,7 @@ public class Code implements CodeInterface {
         number_of_workers[0] = distributedAmuse.jobManager().getWorkerJobCount();
         return 0;
     }
-    
+
     // parameter "address" is an output parameter
     public int get_webinterface_url(String[] address) {
         address[0] = distributedAmuse.webInterface().getURL();
