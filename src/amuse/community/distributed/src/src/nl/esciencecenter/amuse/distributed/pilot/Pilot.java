@@ -48,6 +48,8 @@ import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ch.qos.logback.classic.Level;
+
 /**
  * Pilot job. Started when a reservations is made.
  * 
@@ -88,6 +90,17 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         return result;
     }
     
+    private static void initializeLogger(boolean debug) {
+        if (debug) {
+            ch.qos.logback.classic.Logger amuseLogger = (ch.qos.logback.classic.Logger) LoggerFactory
+                    .getLogger("nl.esciencecenter.amuse");
+
+            amuseLogger.setLevel(Level.DEBUG);
+            
+            logger.debug("DEBUG Enabled");
+        }
+    }
+    
     private static void runBootCommand(String command) throws IOException, InterruptedException {
         ProcessBuilder builder = new ProcessBuilder(command.split(WHITESPACE_REGEX));
         
@@ -115,11 +128,13 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         
     }
 
-    Pilot(AmuseConfiguration configuration, Properties properties, String reservationID, String nodeLabel, int slots, String bootCommand)
+    Pilot(AmuseConfiguration configuration, Properties properties, String reservationID, String nodeLabel, int slots, String bootCommand, boolean debug)
             throws IbisCreationFailedException, IOException, InterruptedException {
         this.configuration = configuration;
         jobs = new HashMap<Integer, JobRunner>();
 
+        initializeLogger(debug);
+        
         //reservation ID, label, slots, hostname
         String tag = reservationID + "," + nodeLabel + "," + slots + "," + InetAddress.getLocalHost().getHostAddress();
 
@@ -163,6 +178,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         String reservationID = null;
         int slots = 1;
         String bootCommand = null;
+        boolean debug = false;
 
         Properties properties = new Properties();
         properties.put(IbisProperties.POOL_NAME, "amuse");
@@ -195,6 +211,8 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             } else if (arguments[i].equalsIgnoreCase("--boot-command")) {
                 i++;
                 bootCommand = arguments[i];
+            } else if (arguments[i].equalsIgnoreCase("--debug")) {
+                debug = true;
             } else {
                 System.err.println("Unknown command line option: " + arguments[i]);
                 System.exit(1);
@@ -208,7 +226,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             System.err.println(entry.getKey() + " = " + entry.getValue());
         }
         
-        Pilot pilot = new Pilot(configuration, properties, reservationID, nodeLabel, slots, bootCommand);
+        Pilot pilot = new Pilot(configuration, properties, reservationID, nodeLabel, slots, bootCommand, debug);
 
         pilot.run();
 

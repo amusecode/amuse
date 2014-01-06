@@ -80,7 +80,7 @@ public class Reservation {
 
     private static JavaJobDescription createJobDesciption(int id, UUID uniqueID, Resource resource, String queueName,
             int nodeCount, int timeMinutes, int slots, String nodeLabel, String options, String serverAddress,
-            String[] hubAddresses, Path stdoutPath, Path stderrPath) throws DistributedAmuseException {
+            String[] hubAddresses, Path stdoutPath, Path stderrPath, boolean debug) throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
 
         if (stdoutPath != null) {
@@ -141,6 +141,10 @@ public class Reservation {
         if (resource.getBootCommand() != null && !resource.getBootCommand().isEmpty()) {
             javaArguments.add("--boot-command");
             javaArguments.add(resource.getBootCommand());
+        }
+        
+        if (debug) {
+            javaArguments.add("--debug");
         }
 
         String hubs = null;
@@ -238,7 +242,7 @@ public class Reservation {
             //            stderrPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stderr.txt");
 
             JobDescription jobDescription = createJobDesciption(id, uniqueID, resource, queueName, nodeCount, timeMinutes, slots,
-                    nodeLabel, options, serverAddress, hubAddresses, stdoutPath, stderrPath);
+                    nodeLabel, options, serverAddress, hubAddresses, stdoutPath, stderrPath, debug);
 
             logger.debug("starting reservation using scheduler {}", scheduler);
 
