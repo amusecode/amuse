@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import sys
+import webbrowser
 from amuse.lab import *
 from amuse.community.distributed.interface import DistributedAmuseInterface, DistributedAmuse
 from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
@@ -14,6 +15,9 @@ if (len(sys.argv) < 2):
 print "Setting up distributed code"
 instance = DistributedAmuse(redirection='none')
 instance.initialize_code()
+
+#open the address of the webinterface in a brower window
+#webbrowser.open(instance.get_webinterface_url())
 
 #Add some resources
 #resource = Resource()
