@@ -2137,7 +2137,8 @@ class ParticlesOverlay(AbstractParticleSet):
             overlay_set = Particles(keys = self._private.base_set.key)
         self._private.overlay_set = overlay_set
         self._private.base_version = self._private.base_set._get_version()
-
+        object.__setattr__(self, "_derived_attributes", particles._derived_attributes)
+    
     def _ensure_updated_set_properties(self):
         if self._private.base_version == self._private.base_set._get_version():
             return
@@ -2196,6 +2197,7 @@ class ParticlesOverlay(AbstractParticleSet):
 
     def _split_attributes(self, attributes):
         inbase = set(self._private.base_set.get_attribute_names_defined_in_store())
+        inbase |= set(self._private.base_set._derived_attributes)
         attributes_inbase = []
         attributes_inoverlay = []
         indices_inbase = []
