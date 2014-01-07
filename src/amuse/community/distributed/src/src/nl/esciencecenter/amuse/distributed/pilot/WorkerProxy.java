@@ -154,9 +154,9 @@ public class WorkerProxy extends Thread {
 
         ProcessBuilder builder = new ProcessBuilder();
 
-        File workingDirectory = new File(tempDirectory, "worker-" + description.getID());
-        workingDirectory.mkdirs();
-        builder.directory(workingDirectory);
+        //File workingDirectory = new File(tempDirectory, "worker-" + description.getID());
+        //workingDirectory.mkdirs();
+        //builder.directory(workingDirectory);
 
         // make sure there is an "output" directory for a code to put output in
         //new File(workingDirectory, "output").mkdir();

@@ -87,7 +87,7 @@ public class Code implements CodeInterface {
     @Override
     public int recommit_parameters() {
         //IGNORED
-        return 0;
+        return -1;
     }
 
     @Override
