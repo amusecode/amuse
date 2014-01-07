@@ -521,6 +521,29 @@ class DistributedAmuse(CommonCode):
         options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
         options.GlobalOptions.instance().override_value_for_option("port", port)
         
+    def define_state(self, object): 
+        common.CommonCode.define_state(self, object)   
+        object.add_transition('INITIALIZED','RUN','commit_parameters')
+        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        object.add_method('RUN', 'before_get_parameter')
+        
+        
+        object.add_method('RUN', 'new_resource')
+        object.add_method('RUN', 'new_reservation')
+        object.add_method('RUN', 'get_resource_state')
+        object.add_method('RUN', 'get_reservation_state')
+        object.add_method('RUN', 'get_reservation_status')
+        object.add_method('RUN', 'get_script_job_state')
+        object.add_method('RUN', 'get_script_job_status')
+        object.add_method('RUN', 'get_function_job_state')
+        object.add_method('RUN', 'get_function_job_status')
+        object.add_method('RUN', 'get_worker_state')
+        object.add_method('RUN', 'get_worker_status')
+    
     def define_parameters(self, object):
               
         object.add_boolean_parameter(
