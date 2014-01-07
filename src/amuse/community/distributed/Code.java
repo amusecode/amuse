@@ -44,16 +44,14 @@ public class Code implements CodeInterface {
 
     private String currentError = "";
 
-    private boolean debug = true;
-    
+    private boolean debug = false;
     private int webinterfacePort = 0;
 
     public Code(String codeDir, String amuseRootDir) throws DistributedAmuseException {
         this.codeDir = codeDir;
         this.amuseRootDir = amuseRootDir;
-        
-        //FIXME: this should move to initialize_code
-        this.distributedAmuse =  new DistributedAmuse(codeDir, amuseRootDir, webinterfacePort, debug);
+
+        distributedAmuse = null;
     }
 
     @Override
@@ -67,8 +65,12 @@ public class Code implements CodeInterface {
         currentError = message;
     }
 
-    @Override
     public int initialize_code() {
+        return 0;
+    }
+
+    @Override
+    public int commit_parameters() {
         if (distributedAmuse == null) {
             try {
                 distributedAmuse = new DistributedAmuse(codeDir, amuseRootDir, webinterfacePort, debug);
@@ -78,15 +80,8 @@ public class Code implements CodeInterface {
             }
             return 0;
         } else {
-            return 0;
-            //return -10;
+            return -10;
         }
-    }
-
-    @Override
-    public int commit_parameters() {
-        //IGNORED
-        return 0;
     }
 
     @Override
@@ -96,16 +91,47 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_worker_port() {
-        return distributedAmuse.getWorkerPort();
+    public int get_debug_enabled(int[] debug_enabled) {
+        debug_enabled[0] = booleanToInteger(this.debug);
+        return 0;
     }
 
     @Override
-    public int enable_debugging(int enable) {
-        debug = integerToBoolean(enable);
+    public int set_debug_enabled(int debug_enabled) {
+        this.debug = integerToBoolean(debug_enabled);
+        return 0;
+    }
+
+    @Override
+    public int get_worker_port(int[] result) {
+        logger.debug("Returning worker port.");
+        
+        result[0] = distributedAmuse.getWorkerPort();
 
         return 0;
     }
+    
+    @Override
+    public int get_webinterface_port(int[] result) {
+        logger.debug("Returning worker port.");
+        
+        if (distributedAmuse == null) {
+            //not initialized yet, return current value of parameter
+            result[0] = this.webinterfacePort;            
+        } else {
+            //return resulting port
+            result[0] = distributedAmuse.webInterface().getPort();
+        }
+
+        return 0;
+    }
+    
+    @Override
+    public int set_webinterface_port(int webinterface_port) {
+        this.webinterfacePort = webinterface_port;
+        return 0;
+    }
+
 
     @Override
     public int new_resource(int[] resource_id, String[] name, String[] location, String[] amuse_dir, String[] gateway,
@@ -426,11 +452,7 @@ public class Code implements CodeInterface {
         return 0;
     }
 
-    // parameter "address" is an output parameter
-    public int get_webinterface_url(String[] address) {
-        address[0] = distributedAmuse.webInterface().getURL();
-        return 0;
-    }
+
 
     @Override
     /**

@@ -72,18 +72,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="distributed_worker_java", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
-        
-        port = self.get_worker_port()
-        
-        #logging.basicConfig(level=logging.DEBUG)
-        
-        logger.debug("running on port %d", port)
 
-#        self.stdoutHandler = OutputHandler(sys.stdout, port)
-#        self.stderrHandler = OutputHandler(sys.stderr, port)
-
-        options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
-        options.GlobalOptions.instance().override_value_for_option("port", port)
 
 
     @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
@@ -96,26 +85,47 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         Returns the server socket port of the code. Used by the distributed channel
         """
         function = LegacyFunctionSpecification()
+        function.addParameter("worker_port", dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
     @legacy_function
-    def get_webinterface_url():
+    def get_debug_enabled():
         """
-        Returns the url of the webinterface running inside the distributed code
+	    Enable or disable debugging
         """
         function = LegacyFunctionSpecification()
-        function.addParameter("address", dtype='string', direction=function.OUT)
+        function.addParameter("debug_enabled", dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_debug_enabled():
+        """
+        Enable or disable debugging
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("debug_enabled", dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def enable_debugging():
+    def get_webinterface_port():
         """
-	Enable or disable debugging
+        Returns the port the webinterface is running on
         """
         function = LegacyFunctionSpecification()
-        function.addParameter("enable", dtype='int32', direction=function.IN)
+        function.addParameter("webinterface_port", dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_webinterface_port():
+        """
+        Set the port the webinterface is running on
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("webinterface_port", dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
     
@@ -476,8 +486,6 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     
     def delete_worker(self):
         raise exceptions.AmuseException("Can't remove from 'workers' directly. Stop community code instances in the usual way instead.")
-    
-    
 
 class DistributedAmuse(CommonCode):
 
@@ -492,6 +500,53 @@ class DistributedAmuse(CommonCode):
         result = self.overridden().get_function_job_result(*args, **kwargs)
         #un-pickle
         return result
+    
+    def get_webinterface_url(self):
+        return "http://localhost:" + str(self.parameters.webinterface_port)
+    
+    def commit_parameters(self):
+        self.parameters.send_not_set_parameters_to_code()
+        self.parameters.send_cached_parameters_to_code()
+        self.overridden().commit_parameters()
+        
+        port = self.get_worker_port()
+        
+        #logging.basicConfig(level=logging.DEBUG)
+        
+        logger.debug("running on port %d", port)
+
+#        self.stdoutHandler = OutputHandler(sys.stdout, port)
+#        self.stderrHandler = OutputHandler(sys.stderr, port)
+
+        options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
+        options.GlobalOptions.instance().override_value_for_option("port", port)
+        
+    def define_parameters(self, object):
+              
+        object.add_boolean_parameter(
+            "get_debug_enabled",
+            "set_debug_enabled",
+            "debug_enabled", 
+            "If enabled, will output additional debugging information and logs", 
+            default_value = False
+        )
+        
+        object.add_method_parameter(
+            "get_worker_port",
+            None,
+            "worker_port", 
+            "Port that the distributed code uses to handle new worker requests on from the distributed channel", 
+            default_value = 0
+        )
+        
+        object.add_method_parameter(
+            "get_webinterface_port",
+            "set_webinterface_port",
+            "webinterface_port", 
+            "Port for monitoring webinterface", 
+            default_value = 0
+        )
+
     
     def define_particle_sets(self, object):
         object.define_super_set('items', ['resources', 'reservations', 'script_jobs', 'function_jobs', '_workers'])
