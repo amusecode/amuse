@@ -522,7 +522,7 @@ class DistributedAmuse(CommonCode):
         options.GlobalOptions.instance().override_value_for_option("port", port)
         
     def define_state(self, object): 
-        common.CommonCode.define_state(self, object)   
+        CommonCode.define_state(self, object)   
         object.add_transition('INITIALIZED','RUN','commit_parameters')
         object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
         object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
