@@ -1,6 +1,7 @@
 # Equations for tidal evolution of binary/planetary orbits
 # From Hansen 2010, based on Eggleton et al. 1998
 
+import threading
 import numpy
 import math
 from scipy import integrate
@@ -84,8 +85,30 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
         if len(interacting_bodies):
             print "N tidal:", len(self.orbiters), "of which N=", len(interacting_bodies), "tidally interacting" 
         self.orbiters_with_error = Particles()
+
+        """
+        #Interestingly enough, integrate.quadpack is not thread-safe.
+        # AvanE and SPZ, 7 Jan 2014
+        #
+        threads = []
+        nproc = 3
+        Nper_proc = max(1, len(interacting_bodies)/nproc)
+        print "npp=", Nper_proc
+        for offset in range(0, len(interacting_bodies), Nper_proc):
+            subset = interacting_bodies[offset:offset+Nper_proc].copy()
+            print "lss=", len(subset)
+            thread = threading.Thread(target=self.evolve_multiple_orbiters, args=[subset, time, M, R, Os])
+            threads.append(thread)
+        for ti in threads:
+            ti.start()
+        for ti in threads:
+            ti.join()
+
+        """
         for pi in interacting_bodies:
             self.evolve_individual_orbiter(pi, time, M, R, Os)
+
+
         print "Central_particle:", self.central_particle.Omega
         self.current_time = time
         if len(interacting_bodies):
@@ -108,6 +131,11 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
             if math.isnan(xi):
                 has_nan = True
         return has_nan
+
+    def evolve_multiple_orbiters(self, interacting_bodies, time, M, R, Os):
+        for pi in interacting_bodies:
+            print "ev=", pi.key
+            self.evolve_individual_orbiter(pi, time, M, R, Os)
 
     def evolve_individual_orbiter(self, oi, time, M, R, Os):
         dOmega = zero
@@ -333,10 +361,10 @@ def tidal_interaction(M, m, a, e, Omega_s, tend):
 
     tidal = TidalEvolution(star)
     planet = Particles(1)
-    planet.mass = [1.]*m
-    planet.radius = [0.001] |units.RSun
-    planet.semi_major_axis = [1.] * a
-    planet.eccentricity = [e]
+    planet.mass = 1*m
+    planet.radius = 0.001 |units.RSun
+    planet.semi_major_axis = 1.*a
+    planet.eccentricity = e
     tidal.add_particles(planet)
     channel_from_tc_to_framework = tidal.central_particle.new_channel_to(star)
     channel_from_to_to_framework = tidal.orbiters.new_channel_to(planet)
