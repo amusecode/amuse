@@ -23,6 +23,7 @@ class HalogenInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="halogen_worker", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
     
     @legacy_function
     def generate_particles():
@@ -309,7 +310,6 @@ class Halogen(CommonCode):
     def initialize_code(self):
         result = self.overridden().initialize_code()
         self.parameters.set_defaults()
-        ensure_data_directory_exists(self.get_output_directory())
         self.parameters.output_directory = self.get_output_directory()
     
     def define_parameters(self, object):

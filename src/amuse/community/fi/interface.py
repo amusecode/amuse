@@ -54,6 +54,7 @@ class FiInterface(
         
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
                      
     
     def name_of_the_worker(self, mode):

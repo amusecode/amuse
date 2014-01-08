@@ -31,6 +31,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
     
     @property
     def default_path_to_inlist(self):
@@ -757,8 +758,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
         
         output_dir = self.get_output_directory()
-        if not ("channel_type" in options and options["channel_type"] == 'distributed'):
-            ensure_data_directory_exists(os.path.join(output_dir, 'star_data', 'starting_models'))
+        if not self.channel_type == 'distributed':
+            self.ensure_data_directory_exists(os.path.join(output_dir, 'star_data', 'starting_models'))
         
         self.set_MESA_paths(
             self.default_path_to_inlist, 

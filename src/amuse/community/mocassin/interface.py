@@ -15,15 +15,13 @@ class MocassinInterface(CodeInterface, CommonCodeInterface,
         if self.channel_type == 'distributed':
             raise exceptions.AmuseException("Distributed channel not (yet) supported by Mocassin")
         CodeInterface.__init__(self, name_of_the_worker="mocassin_worker", **keyword_arguments)
+        CodeWithDataDirectories.__init__(self)
         self._options = keyword_arguments
         self._abundancies_table = None
     
     def get_default_input_directory(self):
         return os.path.join(self.get_code_src_directory(), 'mocassin.{0}'.format(self.MOCASSIN_VERSION), '')
-        
-    def get_default_output_directory(self):
-        return self.output_directory + os.sep
-        
+    
     def setup_abundancies(self):
         print self.output_directory
         abundancies_file_name = os.path.join(self.output_directory, 'tmp_abundancies_file')
@@ -583,7 +581,6 @@ class Mocassin(InCodeComponentImplementation):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self,  MocassinInterface(**options), **options)
-        ensure_data_directory_exists(self.get_default_output_directory())
         
     def get_index_range_inclusive(self, index_of_grid = 1):
         ni, nj, nk = self.get_max_indices(index_of_grid)

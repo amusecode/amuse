@@ -382,6 +382,7 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
     def __init__(self, **options):
         PythonCodeInterface.__init__(self, GalactICsImplementation, **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
         self.set_src_bin_path(os.path.join(self.get_code_src_directory(), 'bin'))
     
     def _check_if_worker_is_up_to_date(self):
@@ -525,7 +526,6 @@ class GalactICs(CommonCode):
     def initialize_code(self):
         result = self.overridden().initialize_code()
         self.parameters.set_defaults()
-        ensure_data_directory_exists(self.get_output_directory())
         self.parameters.output_directory = self.get_output_directory()
     
     def define_parameters(self, object):

@@ -23,6 +23,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
     def __init__(self, **kwargs):
         CodeInterface.__init__(self, name_of_the_worker = "simplex_worker", **kwargs)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
     
     @legacy_function
     def set_simplex_output_directory():

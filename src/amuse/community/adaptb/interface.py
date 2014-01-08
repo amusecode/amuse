@@ -12,6 +12,7 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="adaptb_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
     
     @legacy_function
     def get_adaptb_output_directory():
@@ -148,7 +149,6 @@ class Adaptb(GravitationalDynamics):
     
     def initialize_code(self):
         result = self.overridden().initialize_code()
-        ensure_data_directory_exists(self.output_directory)
         self.parameters.adaptb_output_directory = self.output_directory
         return result
     

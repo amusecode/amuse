@@ -29,6 +29,7 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker = "mmams_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
     
     @legacy_function
     def new_particle():

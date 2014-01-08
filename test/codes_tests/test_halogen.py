@@ -96,7 +96,6 @@ class HalogenInterfaceTests(TestWithMPI):
         print "Testing HalogenInterface output file name and directory"
         instance = HalogenInterface(**default_options)
         self.assertEquals(instance.initialize_code(), 0)
-        ensure_data_directory_exists(instance.get_output_directory())
         
         self.assertEquals(instance.set_model_alpha(2.0), 0)
         self.assertEquals(instance.set_model_beta(5.0), 0)

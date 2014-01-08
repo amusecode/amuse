@@ -1,3 +1,4 @@
+import os
 from amuse.test.amusetest import TestWithMPI
 from amuse.units import units
 from amuse import datamodel
@@ -237,7 +238,7 @@ class TestMocassin(TestWithMPI):
         instance.initialize_code()
         instance.set_random_seed(1)
         instance.set_input_directory(instance.get_default_input_directory())
-        instance.set_mocassin_output_directory(instance.get_default_output_directory())
+        instance.set_mocassin_output_directory(instance.output_directory + os.sep)
         
         instance.set_initial_nebular_temperature(200.0 | units.K)
         

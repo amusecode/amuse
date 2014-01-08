@@ -22,6 +22,7 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
     def __init__(self,  **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(), **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
     
     def name_of_the_worker(self):
         return 'sphray_worker'

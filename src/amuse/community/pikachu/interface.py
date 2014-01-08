@@ -19,6 +19,7 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
     def __init__(self, mode=MODE_NORMAL, **options):
         CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
     
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:

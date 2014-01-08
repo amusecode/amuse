@@ -46,6 +46,7 @@ class Gadget2Interface(
     def __init__(self, mode = MODE_NORMAL,  **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
         
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:
@@ -1192,8 +1193,6 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         elif self.mode == self.legacy_interface.MODE_PERIODIC_NOGRAVITY:
             self.parameters.periodic_boundaries_flag = True
             
-        ensure_data_directory_exists(self.get_output_directory())
-        
         self.parameters.gadget_output_directory = self.get_output_directory()
         # The code's units are read-only, and set here to ensure they always match with the unit_converter
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))

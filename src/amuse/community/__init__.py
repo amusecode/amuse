@@ -53,31 +53,3 @@ class _Defaults(OptionalAttributes):
 def get_amuse_root_dir():
     return _Defaults().amuse_root_dir
     
-def ensure_data_directory_exists(directory):
-    print directory
-    directory = os.path.expanduser(directory)
-    directory = os.path.expandvars(directory)
-    
-    if os.path.exists(directory):
-        if os.path.isdir(directory):
-            return
-        else:
-            raise exceptions.AmuseException("Path exists but is not a directory {0}".format(directory))
-    
-    stack_to_make = [directory]
-    previous = None
-    current = os.path.dirname(directory)
-    while previous != current:
-        if not os.path.exists(current):
-            stack_to_make.append(current)
-        else:
-            if not os.path.isdir(current):
-                raise exceptions.AmuseException("Path exists but is not a directory {0}".format(current))
-            break
-        previous = current
-        current = os.path.dirname(current)
-    
-    for x in reversed(stack_to_make):
-        if(x):
-            os.mkdir(x)
-    

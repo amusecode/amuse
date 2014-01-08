@@ -18,6 +18,7 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
     
     def __init__(self, mode = MODE_NORMAL, **options):
         CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
+        CodeWithDataDirectories.__init__(self)
         self._mode = mode
         
     def name_of_the_worker(self, mode):

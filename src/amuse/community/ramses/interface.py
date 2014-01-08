@@ -22,6 +22,7 @@ class RamsesInterface(CodeInterface, HydrodynamicsInterface,
             name_of_the_worker=self.name_of_the_worker(mode), 
             number_of_workers=number_of_workers, **options)
         LiteratureReferencesMixIn.__init__(self)
+        CodeWithDataDirectories.__init__(self)
     
     def name_of_the_worker(self, mode):
         if mode == self.MODE_3D:
