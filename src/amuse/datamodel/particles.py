@@ -726,7 +726,16 @@ class AbstractParticleSet(AbstractSet):
                     converted.append(x.copy_with_link_transfer(self._original_set(), other_particles))
                 else:
                     converted.append(x)
-            other_particles.add_particles_to_store(added_keys, attributes, converted)
+            try:
+                other_particles.add_particles_to_store(added_keys, attributes, converted)
+            except exceptions.MissingAttributesAmuseException as caught_exception:
+                for attribute_name in caught_exception.missing_attributes:
+                    if attribute_name in self._derived_attributes:
+                        attributes.append(attribute_name)
+                        converted.append(getattr(self._subset(added_keys), attribute_name))
+                    else:
+                        raise
+                other_particles.add_particles_to_store(added_keys, attributes, converted)
 
         removed_keys = list(removed_keys)
         if removed_keys:
