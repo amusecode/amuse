@@ -83,7 +83,7 @@ $(ZAMS_DATA):
 	gunzip -c $(ZAMS_DATA).gz > $(ZAMS_DATA)
 
 mesa_worker:	worker_code.f90 interface.o $(STAR_WORK_OBJS)
-	$(MPIF90) $(FCFLAGS) $(FFLAGS) $(FCopenmp) $(FS_FLAGS) $^ -o $@ $(LOAD_MESA_STAR) $(FS_LIBS)
+	$(MPIF90) $(FCFLAGS) $(FFLAGS) $(FCopenmp) $(FS_FLAGS) $^ -o $@ $(LOAD_MESA_STAR) $(FS_LIBS)  $(LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@

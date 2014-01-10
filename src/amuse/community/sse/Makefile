@@ -32,7 +32,7 @@ clean:
 
 sse_worker:	worker_code.f90  interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN) FFLAGS="$(FCFLAGS) $(F77FLAGS)"
-	$(MPIF90) $(FS_FLAGS) $^ -o $@ $(FS_LIBS)
+	$(MPIF90) $(FS_FLAGS) $^ -o $@ $(FS_LIBS) $(LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py SSEInterface -o $@

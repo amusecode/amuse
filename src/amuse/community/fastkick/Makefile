@@ -19,10 +19,10 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py FastKickInterface -o $@
 
 fastkick_worker: worker_code.cc worker_code.h $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $< $(OBJ) -o $@ 
+	$(MPICXX) $(CXXFLAGS) $< $(OBJ) -o $@   $(LIBS)
 
 fastkick_worker_gpu: worker_code.cc worker_code.h  $(GPU_OBJ)
-	$(MPICXX) $(CXXFLAGS) $< $(GPU_OBJ) -o $@ $(CUDA_LIBS) -DGPU
+	$(MPICXX) $(CXXFLAGS) $< $(GPU_OBJ) -o $@ $(CUDA_LIBS) -DGPU  $(LIBS)
 
 interface.o: interface.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $<

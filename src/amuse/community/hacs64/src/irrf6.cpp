@@ -1,6 +1,10 @@
 #include "irrf6.h"
 #include <algorithm>
 
+#ifndef HUGE
+#define HUGE HUGE_VAL
+#endif
+
 namespace irrf6
 {
 	int ni_max;

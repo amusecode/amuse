@@ -64,10 +64,10 @@ interface.h: interface.py
 	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py ph4Interface -o $@
 
 ph4_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(CODELIB) $(LDFLAGS)
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(CODELIB) $(LDFLAGS)  $(LIBS)
 
 ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU  $(LIBS)
 
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 

@@ -83,7 +83,7 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MocassinInterface -o $@
 
 mocassin_worker:  worker_code.f90 $(CODELIB) $(OBJS) 
-	$(MPIFC) $(FFLAGS) $(FS_FLAGS) worker_code.f90 $(OBJS) $(OBJECTS) $(FS_LIBS) -o $@
+	$(MPIFC) $(FFLAGS) $(FS_FLAGS) worker_code.f90 $(OBJS) $(OBJECTS) $(FS_LIBS) -o $@  $(LIBS)
 	
 %.mod %.o: %.f90
 	$(MPIFC) $(FFLAGS) -c -o $@ $<

@@ -13,7 +13,7 @@ CUDA_TK ?= /usr/local/cuda/
 CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcuda 
 
 #CXXFLAGS += -I$(CUDA_TK)/include
-LIBS = $(CUDA_LIBS) $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia $(SC_MPI_CLIBS)
+LIBS += $(CUDA_LIBS) $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia $(SC_MPI_CLIBS)
 INCLUDES = -I$(CUDA_TK)/include $(SC_FLAGS)
 
 OBJS = libraryInterface.o

@@ -160,6 +160,13 @@ RECV_HEADER_WAIT_STRING = """
         call MPI_Wait(header_request, request_status, ioerror)
     END SUBROUTINE
 """
+
+EMPTY_RUN_LOOP_MPI_STRING = """
+    SUBROUTINE run_loop_mpi
+      implicit none
+    END SUBROUTINE
+"""
+
 RUN_LOOP_MPI_STRING = """
     SUBROUTINE run_loop_mpi
       implicit none
@@ -1154,10 +1161,15 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 self.out + RECV_HEADER_WAIT_STRING
                 
             self.out + RUN_LOOP_MPI_STRING
-
+        else:
+	    self.out + EMPTY_RUN_LOOP_MPI_STRING
         if self.use_iso_c_bindings:
             self.out.n() + RUN_LOOP_SOCKETS_STRING
-            self.out.n() + RUN_LOOP_SOCKETS_MPI_STRING
+
+            if self.must_generate_mpi:
+		self.out.n() + RUN_LOOP_SOCKETS_MPI_STRING
+	    else:
+		self.out.n() + EMPTY_RUN_LOOP_SOCKETS_MPI_STRING
         else:
             self.out.n() + EMPTY_RUN_LOOP_SOCKETS_STRING
             self.out.n() + EMPTY_RUN_LOOP_SOCKETS_MPI_STRING

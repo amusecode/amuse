@@ -11,10 +11,10 @@ OPENMP_CFLAGS?= -fopenmp
 ifneq (,$(findstring xlc, $(notdir $(CC))))
 CFLAGS += -qlanglvl=extc99
 else
-CFLAGS += -O2 -std=gnu99
+CFLAGS += -std=gnu99
 endif
-CFLAGS += $(SC_FLAGS)
-CXXFLAGS +=  -O2 $(SC_FLAGS)
+CFLAGS +=
+CXXFLAGS +=  
 LIBS += -lm
 INCLUDE =
 
@@ -54,7 +54,7 @@ $(BUILDDIR)/Makefile: $(SRCDIR)/Makefile
 	cp $(SRCDIR)/Makefile $(BUILDDIR)/Makefile
 	
 $(BUILDDIR)/libhuayno.a: $(BUILDDIR)/Makefile $(LIBFILES) src/Makefile
-	make -C $(BUILDDIR) all VPATH=../src CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" 
+	make -C $(BUILDDIR) all VPATH=../src 
 	
 	
 $(OPENMP_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
@@ -62,7 +62,7 @@ $(OPENMP_BUILDDIR)/Makefile: $(SRCDIR)/Makefile
 	cp $(SRCDIR)/Makefile $(OPENMP_BUILDDIR)/Makefile
 	
 $(OPENMP_BUILDDIR)/libhuayno.a: $(OPENMP_BUILDDIR)/Makefile $(LIBFILES) src/Makefile
-	make -C $(OPENMP_BUILDDIR) all VPATH=../src CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" 
+	make -C $(OPENMP_BUILDDIR) all VPATH=../src  CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" 
 	
 $(OPENCL_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
 	-mkdir $(OPENCL_BUILDDIR) 
@@ -79,12 +79,12 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py HuaynoInterface -o $@
 
 huayno_worker: __init__.py worker_code.cc worker_code.h  $(BUILDDIR)/libhuayno.a $(BUILDDIR)/interface.o
-	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(BUILDDIR)/interface.o $(BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
+	$(MPICXX) $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(BUILDDIR)/interface.o $(BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
 	
 huayno_worker_mp: CFLAGS   += $(OPENMP_CFLAGS) 
 huayno_worker_mp: CXXFLAGS   += $(OPENMP_CFLAGS)	
 huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OPENMP_BUILDDIR)/libhuayno.a $(OPENMP_BUILDDIR)/interface.o 
-	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENMP_BUILDDIR)/interface.o $(OPENMP_BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
+	$(MPICXX) $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENMP_BUILDDIR)/interface.o $(OPENMP_BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
 	
 
 huayno_worker_cl: CFLAGS   += -fopenmp -DEVOLVE_OPENCL
@@ -95,20 +95,20 @@ huayno_worker_cl: __init__.py worker_code.cc worker_code.h $(OPENCL_BUILDDIR)/li
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OPENCL_BUILDDIR)/interface.o $(OPENCL_BUILDDIR)/libhuayno_cl.a -o $@ $(LIBS) $(SC_CLIBS)
 
 .cc.o: $<
-	$(MPICXX) -I$(SRCDIR)  $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICXX) -I$(SRCDIR)  $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
 
 $(BUILDDIR)/%.o: %.c
-	$(MPICC) -I$(SRCDIR)  $(CFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
 	
 $(OPENMP_BUILDDIR)/%.o: %.c
-	$(MPICC) -I$(SRCDIR)  $(CFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
 	
 
 $(OPENCL_BUILDDIR)/%.o: %.c
-	$(MPICC) -I$(SRCDIR)  $(CFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
 	
 .c.o: $<
-	$(MPICC) -I$(SRCDIR)  $(CFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICC) -I$(SRCDIR)  $(SC_FLAGS) $(CFLAGS) $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
 	awk 'BEGIN{print "const char srcstr[]=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@

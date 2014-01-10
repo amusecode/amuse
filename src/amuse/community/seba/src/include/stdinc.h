@@ -91,6 +91,10 @@ href=mailto:steve@physics.drexel.edu>steve@physics.drexel.edu</a><br><br>
 // May not need include <cstdio> here??
 #include <cstdio>
 
+#ifdef WIN32
+#define NO_CPU_TIME
+#endif
+
 #if 0
 #if defined GNU_CPLUSPLUS
 #  ifdef GNU_POST_29
@@ -253,7 +257,7 @@ namespace Starlab {
   extern double erf(double);
   extern double erfc(double);
 
-  inline real      rint(real x)			{return floor((x) + 0.5);}
+  //inline real      rint(real x)			{return floor((x) + 0.5);}
 #endif
 
 #undef max

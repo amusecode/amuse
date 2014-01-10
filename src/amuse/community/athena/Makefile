@@ -82,7 +82,11 @@ $(BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(BUILDDIR)
 
 $(CODELIB): $(BUILDDIR)/Makefile
+ifneq (,$(findstring no,$(MPI_ENABLED)))
+	cd $(BUILDDIR); ./configure --with-gas=hydro --disable-mpi --enable-smr 
+else
 	cd $(BUILDDIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 
+endif
 	cd $(BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
 	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
@@ -90,7 +94,7 @@ $(CODELIB): $(BUILDDIR)/Makefile
 	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
 
 athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
 
 $(SELFGRAV_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(SELFGRAV_BUILDDIR)
@@ -104,13 +108,17 @@ $(SELFGRAV_CODELIB): $(SELFGRAV_BUILDDIR)/Makefile
 	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
 	
 athena_worker_selfgrav: worker_code.cc worker_code.h $(SELFGRAV_CODELIB) $(SELFGRAV_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(FFTW_FLAGS) $(SC_FLAGS) worker_code.cc $(SELFGRAV_AMUSE_OBJS) $(SELFGRAV_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(FFTWLIB)
+	$(MPICXX) $(CXXFLAGS) $(FFTW_FLAGS) $(SC_FLAGS) worker_code.cc $(SELFGRAV_AMUSE_OBJS) $(SELFGRAV_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(FFTWLIB)  $(LIBS)
 
 $(MHD_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(MHD_BUILDDIR)
 
 $(MHD_CODELIB): $(MHD_BUILDDIR)/Makefile
+ifneq (,$(findstring no,$(MPI_ENABLED)))
+	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --disable-mpi --enable-smr --with-order=3 --with-flux=hlld
+else
 	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld
+endif
 	cd $(MHD_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
 	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
@@ -118,7 +126,7 @@ $(MHD_CODELIB): $(MHD_BUILDDIR)/Makefile
 	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
 
 athena_worker_mhd: worker_code.cc worker_code.h $(MHD_CODELIB) $(MHD_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(MHD_AMUSE_OBJS) $(MHD_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(MHD_AMUSE_OBJS) $(MHD_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
 
 
 $(SCALAR_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
@@ -133,7 +141,7 @@ $(SCALAR_CODELIB): $(SCALAR_BUILDDIR)/Makefile
 	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
 
 athena_worker_scalar: worker_code.cc worker_code.h $(SCALAR_CODELIB) $(SCALAR_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(SCALAR_AMUSE_OBJS) $(SCALAR_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(SCALAR_AMUSE_OBJS) $(SCALAR_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
 
 $(BUILDDIR)/%.o: %.c
 	$(CC) $(CXXFLAGS) -I$(BUILDDIR)/src $(SC_FLAGS) -c -o $@ $< 

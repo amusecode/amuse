@@ -93,12 +93,12 @@ $(BUILDDIR)/libfi.a: $(BUILDDIR)/Makefile $(FILES) Makefile
 	make -C $(BUILDDIR) amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 
 fi_worker: worker_code.f90 $(BUILDDIR)/libfi.a interface.o 
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) worker_code.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) worker_code.f90 interface.o -o $@ $(BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 
 fi_worker_gl: worker_code-gl.f90 $(BUILDDIR)/libfi.a interface.o 
 	make -C $(BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) worker_code-gl.f90 interface.o -o $@  $(GLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
+	$(GLLIB)  $(X11LIB) $(THREADLIB) $(BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 
 $(PERIODIC_BUILDDIR)/Makefile:
 	mkdir -p $(PERIODIC_BUILDDIR)
@@ -110,12 +110,12 @@ $(PERIODIC_BUILDDIR)/libfi.a: $(PERIODIC_BUILDDIR)/Makefile
 	$(PYTHON) ./patch_globals_dot_h.py
 	
 fi_worker_periodic: worker_code.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
-	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)
+	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 interface.po -o $@  $(PERIODIC_BUILDDIR)/libfi.a $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)  $(LIBS)
 
 fi_worker_periodic_gl: worker_code-gl.f90 $(PERIODIC_BUILDDIR)/libfi.a interface.po 
 	make -C $(PERIODIC_BUILDDIR) gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)" VPATH=../src  F77FLAGS="$(F77FLAGS)"
 	$(MPIFC) -I./$(PERIODIC_BUILDDIR) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) worker_code-gl.f90 interface.po -o $@  $(PGLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)
+	$(GLLIB)  $(X11LIB) $(PTHREADLIB) $(PERIODIC_BUILDDIR)/libfi.a $(LIBS) $(SC_FCLIBS) $(FS_LIBS) $(FFTW_LIBS)  $(LIBS)
 
 $(OPENMP_BUILDDIR)/Makefile:
 	mkdir -p $(OPENMP_BUILDDIR)
@@ -126,7 +126,7 @@ $(OPENMP_BUILDDIR)/libfi.a: $(OPENMP_BUILDDIR)/Makefile
 
 fi_worker_mp: BUILDDIR = $(OPENMP_BUILDDIR)
 fi_worker_mp: worker_code.f90 $(OPENMP_BUILDDIR)/libfi.a interface.o 
-	$(MPIFC) $(FFLAGS) $(OPENMP_FCFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(OPENMP_BUILDDIR) worker_code.f90 interface.o -o $@ $(OPENMP_BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)
+	$(MPIFC) $(FFLAGS) $(OPENMP_FCFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(OPENMP_BUILDDIR) worker_code.f90 interface.o -o $@ $(OPENMP_BUILDDIR)/libfi.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 
 worker_code.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 --needs-mpi=false $< FiInterface -o $@

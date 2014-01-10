@@ -2,7 +2,10 @@
 #include "hacs64.h"
 
 #ifndef __APPLE__
+#ifdef WIN32
+#else
 #define __LINUX__
+#endif
 #endif
 
 #ifdef __APPLE__

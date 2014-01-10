@@ -44,7 +44,7 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py mmcInterface -o $@
 
 mmc_worker: worker_code.f90 $(OBJS) $(CODELIB) 
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $(OBJS) $(SRCINC) $< $(CODELIB) $(FS_LIBS) -o $@
+	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $(OBJS) $(SRCINC) $< $(CODELIB) $(FS_LIBS) -o $@  $(LIBS)
 
 interface.o: interface.f90 
 	$(FC) $(FCFLAGS) $(SRCINC) -c -o $@ $<

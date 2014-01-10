@@ -33,7 +33,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py SeiInterface -o $@
 
 sei_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(CXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@ -lm
+	$(CXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@ -lm $(LIBS)
 	
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

@@ -36,7 +36,7 @@ interface.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  SmallNInterface -o $@
 
 smallN_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS) $(LIBS)
 
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 

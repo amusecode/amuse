@@ -4,10 +4,14 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <netinet/tcp.h>
+#ifdef WIN32
+	#include <winsock2.h>
+#else
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <netdb.h>
+	#include <netinet/tcp.h>
+#endif
 
 int32_t socketfd;
 
@@ -18,8 +22,14 @@ void forsockets_send(void *buffer, int32_t length, int32_t file_descriptor) {
 	int32_t written;
 
 	while (total_written < length) {
+		
+#ifdef WIN32
+		written = send(file_descriptor, ((char *) buffer) + total_written,
+                        length - total_written, 0);
+#else
 		written = write(file_descriptor, ((char *) buffer) + total_written,
 				length - total_written);
+#endif
 
 		if (written == -1) {
 			fprintf(stderr, "could not write data\n");
@@ -36,8 +46,13 @@ void forsockets_receive(void *buffer, int32_t length, int32_t file_descriptor) {
 	int32_t bytes_read;
 
 	while (total_read < length) {
+#ifdef WIN32
+		bytes_read = recv(file_descriptor, ((char *) buffer) + total_read,
+				length - total_read, 0);
+#else
 		bytes_read = read(file_descriptor, ((char *) buffer) + total_read,
 				length - total_read);
+#endif
 
 //		fprintf(stderr, "received %d bytes, " + bytes_read);
 
@@ -115,6 +130,18 @@ void forsockets_init(int32_t port) {
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
 	int on = 1;
+	
+#ifdef WIN32
+	WSADATA wsaData;
+	int iResult;
+
+	// Initialize Winsock
+	iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+	if (iResult != 0) {
+	printf("WSAStartup failed: %d\n", iResult);
+	exit(1);
+	}
+#endif
 
 //	fprintf(stderr, "initializing forsockets\n");
 //
@@ -132,9 +159,9 @@ void forsockets_init(int32_t port) {
 
 //	fprintf(stderr, "connecting...\n");
 
-	bzero((char *) &serv_addr, sizeof(serv_addr));
+	memset((char *) &serv_addr, '\0', sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
-	bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr,
+	memcpy((char *) &serv_addr.sin_addr.s_addr, (char *) server->h_addr, 
 			server->h_length);
 	serv_addr.sin_port = htons(port);
 	if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
@@ -144,11 +171,15 @@ void forsockets_init(int32_t port) {
 
 	}
 	
-        setsockopt(socketfd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on));    
+        setsockopt(socketfd, IPPROTO_TCP, TCP_NODELAY, (const char *) &on, sizeof(on));    
 
 	/*fprintf(stderr, "finished initializing forsockets\n");*/
 }
 
 void forsockets_close() {
+#ifdef WIN32
+	closesocket(socketfd);
+#else
 	close(socketfd);
+#endif
 }

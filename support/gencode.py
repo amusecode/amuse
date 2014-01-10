@@ -123,7 +123,7 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-n",
             "--needs-mpi",
-            default="true",
+            default="false",
             dest="needs_mpi",
             help="If this boolean flag is set, the worker will initialize mpi, even in the sockets channel is used. Defaults to true")
         
@@ -280,6 +280,7 @@ def make_file(settings):
         builder.ignore_functions_from_specification_classes = settings.ignore_classes
         builder.underscore_functions_from_specification_classes = settings.underscore_classes
         builder.needs_mpi = settings.needs_mpi.lower() == 'true'
+        builder.is_mpi_enabled = config.mpi.is_enabled
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     

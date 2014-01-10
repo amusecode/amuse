@@ -19,7 +19,9 @@ inline double SQR(const double x) {return x*x;}
 static double begin_time = 0;
 
 #ifndef __APPLE__
+#ifndef WIN32
 #define __LINUX__
+#endif
 #endif
 
 #ifdef __APPLE__

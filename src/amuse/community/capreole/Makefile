@@ -73,10 +73,10 @@ $(MPILIBS): $(MPI_BUILDDIR)/Makefile
 	make -C $(MPI_BUILDDIR) amuse_interface_mpi  VPATH=../src F90FLAGS1="$(FFLAGS)" FC="$(FC)" MPIFC="$(MPIFC)"
 	
 capreole_worker: $(NOMPILIBS) worker_code.f90 $(BUILDDIR)/interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2)  -I$(BUILDDIR) $(SC_FLAGS) $(FS_FLAGS) $^ -o $@ $(NOMPILIBS) $(SC_CLIBS) $(FS_LIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2)  -I$(BUILDDIR) $(SC_FLAGS) $(FS_FLAGS) $^ -o $@ $(NOMPILIBS) $(SC_CLIBS) $(FS_LIBS)  $(LIBS)
 	
 capreole_worker_mpi: $(MPILIBS) worker_code-mpi.f90 $(MPI_BUILDDIR)/interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SC_FLAGS) $(FS_FLAGS) $^ -o $@ $(MPILIBS) $(SC_MPI_CLIBS) $(FS_LIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2) $(MPI_FLAGS) -I$(MPI_BUILDDIR) $(SC_FLAGS) $(FS_FLAGS) $^ -o $@ $(MPILIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
 
 #capreole_worker_gl: $(NOMPILIBS) glworker.f90 $(BUILDDIR)/interface.o
 #	make -C src clean

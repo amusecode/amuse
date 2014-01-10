@@ -9,7 +9,6 @@
 #ifndef __LOCALASSERT_H__
 #define __LOCALASSERT_H__ 1
 
-
 #ifdef USE_SYSTEM_ASSERT
 
 #include <cassert>
@@ -50,6 +49,10 @@ class assert_failed
         return output;
     }
 };
+
+#ifndef __STRING
+#define __STRING(x) #x
+#endif
 
 # define assert(expr)							\
   ((expr)								\

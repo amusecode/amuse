@@ -26,7 +26,10 @@ along with SimpleX.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SIMPLEX_H
 #define SIMPLEX_H
 
+#ifndef NOMPI
 #include "mpi.h"
+#endif
+
 #include "rates.h"
 #include "Common.h"
 #include "Structs.h"

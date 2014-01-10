@@ -40,7 +40,7 @@ worker_code.f90: interface.py
 
 mikkola_worker: worker_code.f90 $(CODELIB) $(OBJS)
 #	$(MPIFC) $(CXXFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(FS_LIBS)
-	$(MPIFC) $(FFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(FS_LIBS)
+	$(MPIFC) $(FFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(FS_LIBS)  $(LIBS)
 
 %.o: %.f90
 	$(FC) $(FFLAGS) -c -o $@ $<

@@ -57,11 +57,11 @@ $(CODELIB1D): $(BUILDDIR1D)/bin/Makefile
 	make -C $(BUILDDIR1D)/bin all F90="$(FC)" FFLAGS="$(FFLAGS1D)"
 
 ramses_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 -o $@ $(OBJS) $(CODELIB) $(SC_CLIBS) $(FS_LIBS)
+	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 -o $@ $(OBJS) $(CODELIB) $(SC_CLIBS) $(FS_LIBS)  $(LIBS)
 ramses_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D)
-	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 -o $@ $(OBJS2D) $(CODELIB2D) $(SC_CLIBS) $(FS_LIBS)
+	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 -o $@ $(OBJS2D) $(CODELIB2D) $(SC_CLIBS) $(FS_LIBS)  $(LIBS)
 ramses_worker_1d: worker_code.f90 $(CODELIB1D) $(OBJS1D)
-	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 -o $@ $(OBJS1D) $(CODELIB1D) $(SC_CLIBS) $(FS_LIBS)
+	$(MPIFC) -I$(SRC) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 -o $@ $(OBJS1D) $(CODELIB1D) $(SC_CLIBS) $(FS_LIBS)   $(LIBS)
 
 $(OBJS): interface.f90 $(CODELIB)
 	$(FC) -c -I$(BUILDDIR)/bin $(FFLAGS3D) $< -o $@

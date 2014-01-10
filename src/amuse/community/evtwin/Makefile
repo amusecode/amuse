@@ -48,7 +48,7 @@ distclean:
 
 evtwin_worker: worker_code.f90 $(SRC)
 	make -s --no-print-directory -C $(BUILDDIR)
-	$(MPIFC) -I$(BUILDDIR) $(FS_FLAGS) $< -o $@ $(EVTWINLIB) $(FS_LIBS)
+	$(MPIFC) -I$(BUILDDIR) $(FS_FLAGS) $< -o $@ $(EVTWINLIB) $(FS_LIBS)  $(LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@

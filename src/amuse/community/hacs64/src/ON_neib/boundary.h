@@ -1,5 +1,8 @@
 #include "vector3.h"
 
+#ifndef HUGE
+#define HUGE HUGE_VAL
+#endif
 template <typename REAL>
 struct boundary{
 	typedef vector3<REAL> vec;

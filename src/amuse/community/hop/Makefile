@@ -29,7 +29,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py HopInterface -o $@
 
 hop_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $< $(OBJ) $(CODELIB) -o $@
+	$(MPICXX) $(CXXFLAGS) $< $(OBJ) $(CODELIB) -o $@  $(LIBS)
 	
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 

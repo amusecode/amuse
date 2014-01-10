@@ -31,11 +31,15 @@ HEADER_CODE_STRING = """
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <netinet/tcp.h>
+#ifdef WIN32
+	#include <winsock2.h>
+#else
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+	#include <netdb.h>
+	#include <unistd.h>
+	#include <netinet/tcp.h>
+#endif
 """
 
 CONSTANTS_AND_GLOBAL_VARIABLES_STRING = """
@@ -110,8 +114,8 @@ int internal__set_message_polling_interval(int inval)
 }
 """
 
-
 RECV_HEADER_SLEEP_STRING = """
+#ifndef NOMPI
 #include <unistd.h>
 
 int mpi_recv_header(MPI_Comm & parent)
@@ -135,6 +139,7 @@ int mpi_recv_header(MPI_Comm & parent)
     }
     return 0;
 }
+#endif
 """
 
 FOOTER_CODE_STRING = """
@@ -173,7 +178,11 @@ void onexit_mpi(void) {
 }
 
 void onexit_sockets(void) {
-    close(socketfd);
+#ifdef WIN32
+	closesocket(socketfd);
+#else
+	close(socketfd);
+#endif
 }
 
 void send_array_sockets(void *buffer, int length, int file_descriptor, int rank) {
@@ -185,8 +194,15 @@ void send_array_sockets(void *buffer, int length, int file_descriptor, int rank)
     }
 
     while (total_written < length) {
+    
+#ifdef WIN32
+        bytes_written = send(file_descriptor, ((char *) buffer) + total_written,
+                        length - total_written, 0);
+#else
         bytes_written = write(file_descriptor, ((char *) buffer) + total_written,
                         length - total_written);
+#endif
+
 
         if (bytes_written == -1) {
             fprintf(stderr, "could not write data\\n");
@@ -206,8 +222,14 @@ void receive_array_sockets(void *buffer, int length, int file_descriptor, int ra
     }
 
     while (total_read < length) {
+    
+#ifdef WIN32
+        bytes_read = recv(file_descriptor, ((char *) buffer) + total_read,
+                        length - total_read, 0);
+#else
         bytes_read = read(file_descriptor, ((char *) buffer) + total_read,
                         length - total_read);
+#endif
 
         if (bytes_read == -1) {
             fprintf(stderr, "could not read data\\n");
@@ -444,9 +466,9 @@ void run_sockets_mpi(int argc, char *argv[], int port) {
     
     server = gethostbyname("localhost");
     
-    bzero((char *) &serv_addr, sizeof(serv_addr));
+    memset((char *) &serv_addr, '\\0', sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
-    bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr, server->h_length);
+    memcpy((char *) &serv_addr.sin_addr.s_addr, (char *) server->h_addr, server->h_length);
     serv_addr.sin_port = htons(port);
   
     if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
@@ -587,7 +609,12 @@ void run_sockets_mpi(int argc, char *argv[], int port) {
   delete_arrays();
   
   if (rank == 0) {
-    close(socketfd);
+  
+#ifdef WIN32
+	closesocket(socketfd);
+#else
+	close(socketfd);
+#endif
   }
   
   MPI_Finalize();
@@ -605,7 +632,18 @@ void run_sockets(int port) {
   struct sockaddr_in serv_addr;
   struct hostent *server;
   int on = 1;
-  
+
+#ifdef WIN32
+	WSADATA wsaData;
+	int iResult;
+
+	// Initialize Winsock
+	iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+	if (iResult != 0) {
+	printf("WSAStartup failed: %d\\n", iResult);
+	exit(1);
+	}
+#endif
   mpiIntercom = false;
 
   //fprintf(stderr, "C worker: running in sockets mode\\n");
@@ -618,13 +656,13 @@ void run_sockets(int port) {
   }
   
   //turn on no-delay option in tcp for huge speed improvement
-  setsockopt (socketfd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
+  setsockopt (socketfd, IPPROTO_TCP, TCP_NODELAY, (const char *)&on, sizeof (on));
     
   server = gethostbyname("localhost");
     
-  bzero((char *) &serv_addr, sizeof(serv_addr));
+  memset((char *) &serv_addr, '\\0', sizeof(serv_addr));
   serv_addr.sin_family = AF_INET;
-  bcopy((char *) server->h_addr, (char *) &serv_addr.sin_addr.s_addr, server->h_length);
+  memcpy((char *) &serv_addr.sin_addr.s_addr, (char *) server->h_addr, server->h_length);
   serv_addr.sin_port = htons(port);
   
   if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
@@ -747,7 +785,11 @@ void run_sockets(int port) {
   }
   delete_arrays();
   
-  close(socketfd);
+#ifdef WIN32
+	closesocket(socketfd);
+#else
+	close(socketfd);
+#endif
   //fprintf(stderr, "sockets done\\n");
 }
  

@@ -3,7 +3,8 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= mpif90
+MPIFC ?= mpif90
+MPIF90 ?= $(MPIFC)
 FORTRAN ?= gfortran
 FC ?= gfortran
 
@@ -11,7 +12,7 @@ SRC=src
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-LIBS=$(SRC)/libsphray.a
+CODE_LIBS=$(SRC)/libsphray.a
 
 PIC=#-fPIC
 
@@ -37,7 +38,7 @@ all: sphray_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
 
 sphray_worker: sphray_worker.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $^ -o $@ $(LIBS) $(SC_MPI_CLIBS) $(FS_LIBS)
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $^ -o $@ $(CODE_LIBS) $(SC_MPI_CLIBS) $(FS_LIBS) $(LIBS) 
 
 sphray_worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"

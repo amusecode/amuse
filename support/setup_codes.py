@@ -184,8 +184,10 @@ class CodeCommand(Command):
         self.set_libs_variables()
         self.save_cfgfile_if_not_exists()
         
-        
-        self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+        if 'MSYSCON' in os.environ:
+            pass
+        else:
+            self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
         
     
     def set_fortran_variables(self):
@@ -581,8 +583,6 @@ class CodeCommand(Command):
                     targetname = line[len(name + '_worker_'):index_of_the_colon]
                     result.append((line[:index_of_the_colon], targetname,))
                     
-        if not self.is_mpi_enabled():
-            return [x for x in result if x[-1].endswith('sockets')]
         return result
     
     def call(self, arguments, buildlogfile = None, **keyword_arguments):

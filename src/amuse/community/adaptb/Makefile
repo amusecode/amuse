@@ -6,7 +6,7 @@ AMUSE_DIR?=../../../..
 GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
 MPFR_LIBS ?= -L/home/boekholt/Packages/ -lmpfr
 MPFR_FLAGS ?= -I/home/boekholt/Packages/
-LIBS = $(MPFR_LIBS) $(GMP_LIBS)
+LIBS += $(MPFR_LIBS) $(GMP_LIBS)
 
 MPICXX   ?= mpicxx
 CXX ?= g++

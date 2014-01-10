@@ -12,9 +12,10 @@ OPENMP_CFLAGS?= -fopenmp
 ifneq (,$(findstring xlc, $(notdir $(CC))))
 CFLAGS += -qlanglvl=extc99
 else
-CFLAGS += -O2 -std=gnu99
+CFLAGS += -std=gnu99
 endif
-CXXFLAGS +=  -O2
+CXXFLAGS +=  $(SC_FLAGS)
+CFLAGS +=  $(SC_FLAGS)
 LIBS += -lm
 INCLUDE =
 

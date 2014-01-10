@@ -3,7 +3,8 @@
 AMUSE_DIR?=../../../..
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= mpif90
+MPIFC ?= mpif90
+MPIF90 ?= $(MPIFC)
 FORTRAN ?= gfortran
 FC ?= gfortran
 
@@ -11,7 +12,7 @@ SRC=src
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-LIBS=$(SRC)/libfractal.a
+LIBS+=$(SRC)/libfractal.a
 
 PIC=#-fPIC
 
@@ -37,7 +38,7 @@ all: fractal_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $<
 
 fractal_worker: fractal_worker.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $^ -o $@ $(LIBS) $(FS_LIBS)
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $^ -o $@ $(LIBS) $(FS_LIBS)  $(LIBS)
 
 fractal_worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"

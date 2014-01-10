@@ -18,7 +18,7 @@ GSL_LIBS ?= -lgsl -lgslcblas -lm
 
 #INCLUDES = -I/opt/local/include -Isrc/mmas2/src
 INCLUDES = $(GSL_FLAGS)  -Isrc/mmas2/src
-LIBS =  -L$(BUILDDIR)/src/mmas -l_mmas2 \
+LIBS +=  -L$(BUILDDIR)/src/mmas -l_mmas2 \
 	-L$(BUILDDIR)/src/eos -leos \
 	-L$(BUILDDIR)/src/usm -lusm \
 	-L$(BUILDDIR)/src/std -lstd \

@@ -32,7 +32,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py HalogenInterface -o $@
 
 halogen_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $< $(OBJ) $(CODELIB) -o $@
+	$(MPICXX) $(CXXFLAGS) $< $(OBJ) $(CODELIB) -o $@  $(LIBS)
 
 $(OBJ): interface.cc interface.h
 	$(CXX) $(CXXFLAGS) -c -o $(OBJ) $<

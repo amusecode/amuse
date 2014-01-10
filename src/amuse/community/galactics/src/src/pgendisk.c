@@ -1,5 +1,7 @@
 #include "main.h"
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 float rad;
 float Rc, zc;
@@ -54,10 +56,14 @@ char **argv;
 	FILE *infile, *rvfile;
 	char rvname[80];
 
+#ifndef NOMPI
 	MPI_Init(&argc,&argv);
 	MPI_Comm_size(MPI_COMM_WORLD,&numprocs);
 	MPI_Comm_rank(MPI_COMM_WORLD,&myid);
-
+#else
+	numprocs = 1;
+	myid = 0;
+#endif
 	if( argc == 3 ) {
 		infile = fopen(argv[1],"r");
 		if( myid == 0 )
@@ -238,6 +244,8 @@ char **argv;
 				fwrite(&mass,sizeof(float),1,rvfile);
 				fwrite(r+i,sizeof(phase),1,rvfile);
 			}
+
+#ifndef NOMPI
 			for(j=1; j<numprocs; j++) {
 				MPI_Status receive_status;
 
@@ -249,15 +257,20 @@ char **argv;
 					fwrite(r+i,sizeof(phase),1,rvfile);
 				}
 			}
+#endif
 			fclose(rvfile);
 		}
 		else {
+#ifndef NOMPI
 			fprintf(stderr,"Sending from %d\n",myid);
 			MPI_Send(r, nobj*sizeof(phase),MPI_BYTE,0,999,MPI_COMM_WORLD); 
+#endif
 		}
 	}
 #endif
+#ifndef NOMPI
 	MPI_Finalize();
+#endif
 	exit(0);
 }
 

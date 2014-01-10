@@ -85,10 +85,10 @@ $(CODELIB): $(BUILDDIR)/Makefile $(BUILDDIR)/makefile_options $(LIBFILES) $(SRCD
 	make -C $(BUILDDIR) all VPATH=../src
 
 gadget2_worker: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)  $(LIBS)
 	
 interface.o: interface.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)  $(LIBS)
 
 
 $(PERIODIC_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
@@ -103,10 +103,10 @@ $(PERIODIC_BUILDDIR)/libgadget.a:  $(PERIODIC_BUILDDIR)/Makefile $(PERIODIC_BUIL
 	make -C $(PERIODIC_BUILDDIR) all OPT="$(PERIODIC_OPT)" VPATH=../src
 	
 gadget2_worker_periodic: worker_code.cc worker_code.h interface.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SC_FLAGS) $(GSL_FLAGS) $< interface.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SC_FLAGS) $(GSL_FLAGS) $< interface.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o  $(LIBS)
 
 interface.po: interface.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DPERIODIC -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DPERIODIC -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)  $(LIBS)
 	
 
 $(PERIODIC_NOGRAVITY_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
@@ -121,10 +121,10 @@ $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a:  $(PERIODIC_NOGRAVITY_BUILDDIR)/Make
 	make -C $(PERIODIC_NOGRAVITY_BUILDDIR) all OPT="$(PERIODIC_NOGRAVITY_OPT)" VPATH=../src
 	
 gadget2_worker_periodic_nogravity: worker_code.cc worker_code.h interface.pngo $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC -DNOGRAVITY $(SC_FLAGS) $(GSL_FLAGS) $< interface.pngo -o $@  $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_NOGRAVITY_BUILDDIR)/allvars.o
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC -DNOGRAVITY $(SC_FLAGS) $(GSL_FLAGS) $< interface.pngo -o $@  $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas  $(LIBS) $(PERIODIC_NOGRAVITY_BUILDDIR)/allvars.o
 
 interface.pngo: interface.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DPERIODIC -DNOGRAVITY -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DPERIODIC -DNOGRAVITY -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)  $(LIBS)
 	
 
 $(NOGRAVITY_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
@@ -139,9 +139,9 @@ $(NOGRAVITY_BUILDDIR)/libgadget.a:  $(NOGRAVITY_BUILDDIR)/Makefile $(NOGRAVITY_B
 	make -C $(NOGRAVITY_BUILDDIR) all OPT="$(NOGRAVITY_OPT)" VPATH=../src
 
 gadget2_worker_nogravity: worker_code.cc worker_code.h interface.ngo $(NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DNOGRAVITY $(SC_FLAGS) $(GSL_FLAGS) $< interface.ngo -o $@  $(NOGRAVITY_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(NOGRAVITY_BUILDDIR)/allvars.o
+	$(MPICXX) $(CXXFLAGS) -DNOGRAVITY $(SC_FLAGS) $(GSL_FLAGS) $< interface.ngo -o $@  $(NOGRAVITY_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(NOGRAVITY_BUILDDIR)/allvars.o  $(LIBS)
 
 interface.ngo: interface.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DNOGRAVITY -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DNOGRAVITY -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)  $(LIBS)
 
 

@@ -755,7 +755,14 @@ class AbstractMessageChannel(OptionalAttributes):
     @option(type='string', sections=("channel",))
     def worker_code_directory(self):
         return ''
-    
+
+    @option(type="boolean", sections=("channel",))
+    def can_redirect_output(self):
+	return True
+        
+    @option(sections=("channel",))
+    def python_exe_for_redirection(self):
+        return None
     
     
         
@@ -1036,10 +1043,6 @@ class MpiChannel(AbstractMessageChannel):
     @option(type="int", sections=("channel",))
     def debugger_port(self):
         return 4343
-        
-    @option(sections=("channel",))
-    def python_exe_for_redirection(self):
-        return None
         
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
@@ -1494,7 +1497,7 @@ class SocketMessage(AbstractMessage):
         
         while nbytes > 0:
             chunk = min(nbytes, 10240)
-            data_bytes = thesocket.recv(chunk, socket.MSG_WAITALL)
+            data_bytes = thesocket.recv(chunk)
             
             if len(data_bytes) == 0:
                 raise exceptions.CodeException("lost connection to code")
@@ -1767,24 +1770,36 @@ class SocketChannel(AbstractMessageChannel):
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
         else:
-            if self.redirect_stdout_file is None  or self.redirect_stdout_file == "none":
-                self.stdout = None
+            if 0:
+                if self.redirect_stdout_file is None  or self.redirect_stdout_file == "none":
+                    self.stdout = None
+                else:
+                    self.stdout = open(self.redirect_stdout_file, "w")
+
+                if self.redirect_stderr_file is None or self.redirect_stderr_file == "none":
+                    self.stderr = None
+                elif self.redirect_stderr_file == self.redirect_stdout_file:
+                    # stderr same file as stdout, do not open file twice
+                    self.stderr = self.stdout
+                else:
+                    self.stderr = open(self.redirect_stderr_file, "w")
+
+                if not self.interpreter_executable is None:
+                    command = self.interpreter_executable
+                    arguments = [self.full_name_of_the_worker]
+                else:
+                    command = self.full_name_of_the_worker
+            if not self.can_redirect_output or (self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none'):
+                
+                if self.interpreter_executable is None:
+                    command = self.full_name_of_the_worker
+                    arguments = []
+                else:
+                    command = self.interpreter_executable
+                    arguments = [self.full_name_of_the_worker]
             else:
-                self.stdout = open(self.redirect_stdout_file, "w")
-    
-            if self.redirect_stderr_file is None or self.redirect_stderr_file == "none":
-                self.stderr = None
-            elif self.redirect_stderr_file == self.redirect_stdout_file:
-                # stderr same file as stdout, do not open file twice
-                self.stderr = self.stdout
-            else:
-                self.stderr = open(self.redirect_stderr_file, "w")
-            
-            if not self.interpreter_executable is None:
-                command = self.interpreter_executable
-                arguments = [self.full_name_of_the_worker]
-            else:
-                command = self.full_name_of_the_worker
+                command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command=self.python_exe_for_redirection, interpreter_executable=self.interpreter_executable)
+                
             
         arguments.insert(0, command)        
         arguments.append(str(server_socket.getsockname()[1]))

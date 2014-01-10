@@ -1,3 +1,6 @@
+AMUSE_DIR?=../..
+include ${AMUSE_DIR}/config.mk
+
 LIBNAME = libforsockets.a
 LIBFNAME = libforsocketsf.a
 OBJS = forsockets.o

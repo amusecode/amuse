@@ -39,7 +39,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py SeBaInterface -o $@
 
 seba_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $< $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@
+	$(MPICXX) $(CXXFLAGS) $< $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@  $(LIBS)
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

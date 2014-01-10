@@ -81,10 +81,10 @@ interface.h: interface.py
 	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py Hacs64Interface -o $@
 
 hacs64_worker: worker_code.cc interface.h $(CODELIBCPU) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIBCPU) -o $@  $(LDFLAGS)
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIBCPU) -o $@  $(LDFLAGS)  $(LIBS)
 
 hacs64_worker_gpu:  $(CUDA_TK) worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS_GPU) -DGPU
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS_GPU) -DGPU  $(LIBS)
 
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 

@@ -31,7 +31,7 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py AarsethZareInterface -o $@
 	
 aarsethzare_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) worker_code.f90 $(OBJS) $(CODELIB) $(FS_LIBS) -o $@
+	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) -cpp worker_code.f90 $(OBJS) $(CODELIB) $(FS_LIBS) -o $@  $(LIBS)
 	
 %.o: %.f90
 	$(FORTRAN) $(FFLAGS) -c -o $@ $<

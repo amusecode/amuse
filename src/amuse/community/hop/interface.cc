@@ -22,6 +22,9 @@ extern "C" {
 
 #define INFORM(string) printf(string); fflush(stdout)
 
+#ifndef HUGE
+#define HUGE 3.40282e+38
+#endif
 
 class AmuseParticle{
 

@@ -59,10 +59,10 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py PikachuInterface -o $@
 
 pikachu_worker: worker_code.cc worker_code.h $(CODELIB_GPU) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src $< -o $@ $(OBJ) $(CODELIB_GPU) $(SC_CLIBS) $(SEQUOIA_LIBS) $(CUDA_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src $< -o $@ $(OBJ) $(CODELIB_GPU) $(SC_CLIBS) $(SEQUOIA_LIBS) $(CUDA_LIBS)  $(LIBS)
 
 pikachu_worker_large_n: worker_code.cc worker_code.h $(CODELIB_GPU_LARGE_N) $(LARGE_N_OBJ)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src $< -o $@ $(LARGE_N_OBJ) $(CODELIB_GPU_LARGE_N) $(SC_CLIBS) $(SEQUOIA_LIBS) $(CUDA_LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src $< -o $@ $(LARGE_N_OBJ) $(CODELIB_GPU_LARGE_N) $(SC_CLIBS) $(SEQUOIA_LIBS) $(CUDA_LIBS)  $(LIBS)
 
 interface.o: interface.cc interface.h
 	$(MPICXX) $(CXXFLAGS) -DSMALL $(SEQUOIA_INC) $(CUDA_INC) $(SC_FLAGS) -I./src -c -o $@ $< 
