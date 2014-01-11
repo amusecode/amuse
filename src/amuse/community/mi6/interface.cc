@@ -126,10 +126,14 @@ int initialize_code() {
     cerr << setprecision(15);
     
     begin_time = 0;
-    
+
+#ifndef NOMPI
     MPI_Comm_rank (MPI_COMM_WORLD, &myrank);
     MPI_Comm_size (MPI_COMM_WORLD, &Nproc);
-    
+#else
+    myrank = 0;
+    Nproc = 1;
+#endif 
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
     return 0;
@@ -1036,9 +1040,12 @@ int get_potential_at_point(double *eps, double *x, double *y, double *z, double 
         tmp_acc_out, tmp_jrk_out,
         tmp_snp_out, tmp_crk_out, tmp_phi_out,
         tmp_nnb_out, tmp_nnb_r2_out);
-    
+#ifndef NOMPI
     MPI_Allreduce(tmp_phi_out, phi,
         length, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#else
+    memcpy(phi, tmp_phi_out, length * sizeof(double));
+#endif
     
     if (EX_FLAG == 1) {
         // use function from external_field.cc to get the current properties of the SMBH
@@ -1114,10 +1121,13 @@ int get_gravity_at_point(double *eps, double *x, double *y, double *z,
         tmp_acc_out, tmp_jrk_out,
         tmp_snp_out, tmp_crk_out, tmp_phi_out,
         tmp_nnb_out, tmp_nnb_r2_out);
-    
+
+#ifndef NOMPI
     MPI_Allreduce(tmp_acc_out, acc,
         3*length, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    
+#else
+    memcpy(acc, tmp_acc_out, 3 * length * sizeof(double));
+#endif
     if (EX_FLAG == 1) {
         // use function from external_field.cc to get the current properties of the SMBH
         double smbh_mass;

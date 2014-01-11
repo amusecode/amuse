@@ -1,4 +1,6 @@
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 #include <iostream>
 #include <string.h>
 #include <vector>
@@ -76,7 +78,7 @@ void set_default_parameters(){
     strcpy(All.InfoFile,    "info.txt");
     strcpy(All.TimingsFile, "timings.txt");
     strcpy(All.CpuFile,     "cpu.txt");
-    
+
     // parameters that are fixed for AMUSE:
     All.PartAllocFactor = 1.5; // Memory allocation parameter
     All.TreeAllocFactor = 0.8; // Memory allocation parameter
@@ -84,7 +86,7 @@ void set_default_parameters(){
     All.ResubmitOn = 0;              // Keep this turned off!
     All.OutputListOn = 0;            // Keep this turned off!
     All.GravityConstantInternal = 0; // Keep this turned off!
-    
+
     // parameters that are unused for AMUSE:
     strcpy(All.InitCondFile, "");
     strcpy(All.RestartFile, "");
@@ -104,8 +106,13 @@ void set_default_parameters(){
 
 int initialize_code(){
     double t0, t1;
+#ifndef NOMPI
     MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
     MPI_Comm_size(MPI_COMM_WORLD, &NTask);
+#else
+    ThisTask = 0;
+    NTask = 1;
+#endif
     for(PTask = 0; NTask > (1 << PTask); PTask++);
     RestartFlag = All.TotNumPart = All.TotN_gas = 0;
     All.CPU_TreeConstruction = All.CPU_TreeWalk = All.CPU_Gravity = All.CPU_Potential = All.CPU_Domain =
@@ -146,9 +153,12 @@ int cleanup_code(){
 
 
 int check_parameters(){
+#ifndef NOMPI
     MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
-    if (ThisTask)
+#endif
+    if (ThisTask){
         return 0;
+    }
     if(sizeof(long long) != 8){
         printf("\nType `long long' is not 64 bit on this platform. Stopping.\n\n");
         return -4;
@@ -218,7 +228,7 @@ int commit_parameters(){
 
     for(int i = 0; i < 6; i++)
         All.MassTable[i] = 0;
-    
+
     if(All.ComovingIntegrationOn){
         All.TimeBegin = 1.0 / (1.0 + redshift_begin_parameter);
         All.TimeMax = 1.0 / (1.0 + redshift_max_parameter);
@@ -336,7 +346,7 @@ int commit_particles(){
         SphP[i].FeedbackFlag = 0;
         for(j = 0; j < 3; j++)
             SphP[i].FeedAccel[j] = 0;
-#endif        
+#endif
     }
 
     ngb_treeallocate(MAX_NGB);
@@ -354,7 +364,9 @@ int commit_particles(){
     domain_Decomposition();        /* do initial domain decomposition (gives equal numbers of particles) */
     update_particle_map();
     index_of_highest_mapped_particle = local_index_map.rbegin()->first;
+#ifndef NOMPI
     MPI_Allreduce(MPI_IN_PLACE, &index_of_highest_mapped_particle, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
+#endif
     ngb_treebuild();                /* will build tree */
     setup_smoothinglengths();
     TreeReconstructFlag = 1;
@@ -452,16 +464,26 @@ bool drift_to_t_end(int ti_end){
     double t0, t1;
     t0 = second();
     timeold = All.Time;
-    for(n = 1, min = P[0].Ti_endstep; n < NumPart; n++)
-        if(min > P[n].Ti_endstep)
+    for(n = 1, min = P[0].Ti_endstep; n < NumPart; n++){
+        if(min > P[n].Ti_endstep){
             min = P[n].Ti_endstep;
+        }
+    }
+#ifndef NOMPI
     MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+#else
+    min_glob = min;
+#endif
     /* We check whether this is a full step where all particles are synchronized */
     flag = 1;
     for(n = 0; n < NumPart; n++)
         if(P[n].Ti_endstep > min_glob)
             flag = 0;
+#ifndef NOMPI
     MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+#else
+    Flag_FullStep = flag;
+#endif
 #ifdef PMGRID
     if(min_glob >= All.PM_Ti_endstep){
         min_glob = All.PM_Ti_endstep;
@@ -478,7 +500,12 @@ bool drift_to_t_end(int ti_end){
     }
     /* note: NumForcesSinceLastDomainDecomp has type "long long" */
     temp = (int*) malloc(NTask * sizeof(int));
+
+#ifndef NOMPI
     MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    temp[0] = NumForceUpdate;
+#endif
     for(n = 0; n < NTask; n++)
         All.NumForcesSinceLastDomainDecomp += temp[n];
     free(temp);
@@ -506,18 +533,18 @@ bool check_density_stopping_condition(){
     get_stopping_condition_minimum_density_parameter(&minimum_density_parameter);
     get_stopping_condition_maximum_density_parameter(&maximum_density_parameter);
     for (int i=0; i<N_gas; i++) {
-        if ( (SphP[i].Density < minimum_density_parameter) || 
+        if ( (SphP[i].Density < minimum_density_parameter) ||
              (SphP[i].Density > maximum_density_parameter)) {
             int stopping_index  = next_index_for_stopping_condition();
             if (stopping_index >= 0) {
-                cout << "set_stopping_condition_info returned: " << 
+                cout << "set_stopping_condition_info returned: " <<
                     set_stopping_condition_info(stopping_index, DENSITY_LIMIT_DETECTION) << endl;
-                cout << "set_stopping_condition_particle_index returned: " << 
+                cout << "set_stopping_condition_particle_index returned: " <<
                     set_stopping_condition_particle_index(stopping_index, 0, P[i].ID) << endl;
             }
         }
     }
-    
+
     mpi_collect_stopping_conditions();
     is_stopping_condition_set(DENSITY_LIMIT_DETECTION, &stopping_condition_is_set);
     return stopping_condition_is_set;
@@ -526,14 +553,14 @@ bool check_internal_energy_stopping_condition(){
     int stopping_condition_is_set;
     double internal_energy;
     double minimum_internal_energy_parameter, maximum_internal_energy_parameter;
-    get_stopping_condition_minimum_internal_energy_parameter(&minimum_internal_energy_parameter);    
-    get_stopping_condition_maximum_internal_energy_parameter(&maximum_internal_energy_parameter);    
-    
+    get_stopping_condition_minimum_internal_energy_parameter(&minimum_internal_energy_parameter);
+    get_stopping_condition_maximum_internal_energy_parameter(&maximum_internal_energy_parameter);
+
 #ifndef ISOTHERM_EQS
     double a3;
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
 #endif
-    
+
     for (int i=0; i<N_gas; i++) {
 #ifdef ISOTHERM_EQS
         internal_energy = SphP[i].Entropy;
@@ -541,18 +568,18 @@ bool check_internal_energy_stopping_condition(){
         internal_energy = SphP[i].Entropy *
                 pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
 #endif
-        if ( (internal_energy < minimum_internal_energy_parameter) || 
+        if ( (internal_energy < minimum_internal_energy_parameter) ||
              (internal_energy > maximum_internal_energy_parameter)) {
             int stopping_index  = next_index_for_stopping_condition();
             if (stopping_index > 0) {
-                cout << "set_stopping_condition_info returned: " << 
+                cout << "set_stopping_condition_info returned: " <<
                     set_stopping_condition_info(stopping_index, INTERNAL_ENERGY_LIMIT_DETECTION) << endl;
-                cout << "set_stopping_condition_particle_index returned: " << 
+                cout << "set_stopping_condition_particle_index returned: " <<
                     set_stopping_condition_particle_index(stopping_index, 0, P[i].ID) << endl;
             }
         }
     }
-    
+
     mpi_collect_stopping_conditions();
     is_stopping_condition_set(INTERNAL_ENERGY_LIMIT_DETECTION, &stopping_condition_is_set);
     return stopping_condition_is_set;
@@ -571,16 +598,16 @@ int evolve_model_generic(double t_end){
     int number_of_steps_innerloop = 0;
 
     reset_stopping_conditions();
-    is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
+    is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION,
         &is_number_of_steps_detection_enabled);
-    is_stopping_condition_enabled(DENSITY_LIMIT_DETECTION, 
+    is_stopping_condition_enabled(DENSITY_LIMIT_DETECTION,
         &is_density_limit_detection_enabled);
-    is_stopping_condition_enabled(INTERNAL_ENERGY_LIMIT_DETECTION, 
+    is_stopping_condition_enabled(INTERNAL_ENERGY_LIMIT_DETECTION,
         &is_internal_energy_limit_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
 
     // .......
-    
+
     if (t_end > All.TimeMax)
         return -7;
     ZeroTimestepEncountered = 0;
@@ -599,7 +626,7 @@ int evolve_model_generic(double t_end){
             particle_map_up_to_date = false;
             compute_accelerations(0);        /* compute accelerations for
                 * the particles that are to be advanced  */
-            
+
             // AMUSE stopping conditions: density and internal energy check
             // After compute_accelerations(), SPH particle densities are up to date
             if (is_density_limit_detection_enabled) {
@@ -608,7 +635,7 @@ int evolve_model_generic(double t_end){
             if (is_internal_energy_limit_detection_enabled) {
                 if (check_internal_energy_stopping_condition()) break;
             }
-            
+
             /* check whether we want a full energy statistics */
             if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics) {
 #ifdef COMPUTE_POTENTIAL_ENERGY
@@ -622,12 +649,14 @@ int evolve_model_generic(double t_end){
                             * timesteps for them  */
             done = drift_to_t_end(Ti_end);
             All.NumCurrentTiStep++;
-            
+
             /* Check whether we need to interrupt the run */
+#ifndef NOMPI
             MPI_Allreduce(MPI_IN_PLACE, &ZeroTimestepEncountered, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+#endif
             if(ZeroTimestepEncountered)
                 return -8;
-            
+
             if(ThisTask == 0) {
                 /* are we running out of CPU-time ? If yes, interrupt run. */
                 if(CPUThisRun > 0.85 * All.TimeLimitCPU){
@@ -635,10 +664,12 @@ int evolve_model_generic(double t_end){
                     stopflag = 2;
                 }
             }
+#ifndef NOMPI
             MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
+#endif
             if(stopflag)
                 return -5;
-            
+
             t1 = second();
             All.CPU_Total += timediff(t0, t1);
             CPUThisRun += timediff(t0, t1);
@@ -751,7 +782,9 @@ int delete_particle(int id){
         local_index_map.erase(it);
         found = 1 + P[(*it).second].Type; // 1 for sph; 2 for dm
     }
+#ifndef NOMPI
     MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+#endif
     if (found){
         if (found == 2)
             dm_particles_in_buffer--;
@@ -765,7 +798,9 @@ int delete_particle(int id){
         dm_states.erase(dyn_it);
         found = 1;
     }
+#ifndef NOMPI
     MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
+#endif
     if (found){
         dm_particles_in_buffer--;
         return 0;
@@ -776,7 +811,9 @@ int delete_particle(int id){
         sph_states.erase(sph_it);
         found = 1;
     }
+#ifndef NOMPI
     MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
+#endif
     if (found){
         sph_particles_in_buffer--;
         return 0;
@@ -874,9 +911,16 @@ int set_gadget_output_directory(char *output_directory){
     if (length >= MAXLEN_FILENAME)
         return -1;
     strcpy(All.OutputDir, output_directory);
-    if(length > 0)
-                if(All.OutputDir[length - 1] != '/')
-            strcat(All.OutputDir, "/");
+#ifdef WIN32
+    const char sep[] = "\\";
+#else
+    const char sep[] = "\/";
+#endif // WIN32
+    if(length > 0) {
+        if(All.OutputDir[length - 1] != sep[0]) {
+            strcat(All.OutputDir, sep);
+        }
+    }
     return 0;
 }
 int get_nogravity(int *no_gravity_flag){
@@ -1267,7 +1311,9 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
     }
 
     if (ThisTask == 0){
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, &next_local_index, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+#endif
         *index_of_the_next_particle = next_local_index;
         if (next_local_index < index_of_highest_mapped_particle){
             return 0;
@@ -1277,7 +1323,9 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
             return -1;
         }
     } else {
+#ifndef NOMPI
         MPI_Reduce(&next_local_index, NULL, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+#endif
         return 0;
     }
 }
@@ -1323,11 +1371,15 @@ int get_mass(int *index, double *mass, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1348,10 +1400,14 @@ int get_mass(int *index, double *mass, int length){
 int check_counts_and_free(int *count, int length){
     int errors = 0;
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         return 0;
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1)
                 errors++;
@@ -1411,11 +1467,15 @@ int get_position_comoving(int *index, double *x, double *y, double *z, int lengt
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
 #ifdef PERIODIC
         for (int i = 0; i < 3*length; i++){
             if (buffer[i] > boxHalf){
@@ -1503,11 +1563,15 @@ int get_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int le
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1633,11 +1697,15 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
 #ifdef PERIODIC
         for (int i = length; i < 4*length; i++){
             if (buffer[i] > boxHalf){
@@ -1804,11 +1872,15 @@ int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
 #ifdef PERIODIC
         for (int i = length; i < 4*length; i++){
             if (buffer[i] > boxHalf){
@@ -1898,7 +1970,7 @@ int set_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
             }
 #endif
 #ifdef TIMESTEP_LIMITER
-            if ((interpret_heat_as_feedback || interpret_kicks_as_feedback) && 
+            if ((interpret_heat_as_feedback || interpret_kicks_as_feedback) &&
                     P[local_index].Ti_endstep != All.Ti_Current) {
                 make_it_active(local_index);
             }
@@ -1949,11 +2021,15 @@ int get_acceleration_comoving(int *index, double * ax, double * ay, double * az,
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1998,7 +2074,7 @@ int get_internal_energy(int *index, double *internal_energy, int length){
     int local_index;
 #ifndef ISOTHERM_EQS
     double a3;
-    
+
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     if (!density_up_to_date){
         density();
@@ -2020,11 +2096,15 @@ int get_internal_energy(int *index, double *internal_energy, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2047,7 +2127,7 @@ int set_internal_energy(int *index, double *internal_energy, int length){
     int local_index;
 #ifndef ISOTHERM_EQS
     double a3;
-    
+
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     if (!density_up_to_date){
         density();
@@ -2100,11 +2180,15 @@ int get_smoothing_length_comoving(int *index, double *smoothing_length, int leng
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2137,7 +2221,7 @@ int get_density_comoving(int *index, double *density_out, int length){
     int *count = new int[length];
     int local_index;
     double a3;
-    
+
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     if (!density_up_to_date){
         density();
@@ -2154,11 +2238,15 @@ int get_density_comoving(int *index, double *density_out, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2192,7 +2280,7 @@ int get_pressure_comoving(int *index, double *pressure_out, int length){
     int *count = new int[length];
     int local_index;
     double a;
-    
+
     if(All.ComovingIntegrationOn){a = All.Time;}else{a = 1;}
     if (!density_up_to_date){
         density();
@@ -2209,11 +2297,15 @@ int get_pressure_comoving(int *index, double *pressure_out, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2246,7 +2338,7 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
     double *buffer = new double[length];
     int *count = new int[length];
     int local_index;
-    
+
     double hubble;
     if (All.ComovingIntegrationOn){
         hubble = All.Hubble * sqrt(All.Omega0 / (All.Time * All.Time * All.Time)
@@ -2254,7 +2346,7 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
     } else {
         hubble = 1;
     }
-    
+
 #ifndef ISOTHERM_EQS
     //~double a3;
     //~if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
@@ -2278,11 +2370,15 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2321,11 +2417,15 @@ int get_n_neighbours(int *index, double *n_neighbours, int length){
         }
     }
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2407,9 +2507,13 @@ int get_total_radius(double *radius){
     }
 
     if(ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+#endif
         if (All.ComovingIntegrationOn){
             *radius = All.Time * sqrt(local_max);
         } else {
@@ -2449,11 +2553,15 @@ int get_potential(int *index, double *potential, int length) {
     }
 
     if (ThisTask) {
+#ifndef NOMPI
         MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
     } else {
+#ifndef NOMPI
         MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
         MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+#endif
         double a2;
         if (All.ComovingIntegrationOn) {a2 = All.Time * All.Time;} else {a2 = 1;}
         for (int i = 0; i < length; i++) {
@@ -2546,10 +2654,10 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
     } else {
         a = a_inv = a3_inv = a4_inv = a5_inv = 1;
     }
-    
+
     error = construct_tree_if_needed();
     if (error) {return error;}
-    
+
     pos[0] = a_inv * x;
     pos[1] = a_inv * y;
     pos[2] = a_inv * z;

@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -94,11 +96,12 @@ void restart(int modus)
 	  if(ThisTask == 0 && modus > 0)
 	    all_task0 = All;
 
+#ifndef NOMPI
 	  if(modus > 0 && groupTask == 0)	/* read */
 	    {
 	      MPI_Bcast(&all_task0, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
 	    }
-
+#endif
 	  old_MaxPart = All.MaxPart;
 	  old_MaxNodes = All.TreeAllocFactor * All.MaxPart;
 
@@ -272,19 +275,23 @@ void restart(int modus)
 	}
       else			/* wait inside the group */
 	{
+#ifndef NOMPI
 	  if(modus > 0 && groupTask == 0)	/* read */
 	    {
 	      MPI_Bcast(&all_task0, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
 	    }
+#endif
 	}
 
-      MPI_Barrier(MPI_COMM_WORLD);
+#ifndef NOMPI
+	      MPI_Barrier(MPI_COMM_WORLD);
+#endif
     }
 }
 
 
 
-/*! reads/writes n bytes in restart routine 
+/*! reads/writes n bytes in restart routine
  */
 void byten(void *x, size_t n, int modus)
 {
@@ -295,7 +302,7 @@ void byten(void *x, size_t n, int modus)
 }
 
 
-/*! reads/writes one `int' variable in restart routine 
+/*! reads/writes one `int' variable in restart routine
  */
 void in(int *x, int modus)
 {

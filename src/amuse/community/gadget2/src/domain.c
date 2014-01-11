@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
@@ -102,9 +104,13 @@ void domain_Decomposition(void)
       list_loadsph = malloc(sizeof(int) * NTask);
       list_work = malloc(sizeof(double) * NTask);
 
+#ifndef NOMPI
       MPI_Allgather(&NumPart, 1, MPI_INT, list_NumPart, 1, MPI_INT, MPI_COMM_WORLD);
       MPI_Allgather(&N_gas, 1, MPI_INT, list_N_gas, 1, MPI_INT, MPI_COMM_WORLD);
-
+#else
+      list_NumPart[0] = NumPart;
+      list_N_gas[0] = N_gas;
+#endif
       maxload = All.MaxPart * REDUC_FAC;
       maxloadsph = All.MaxPartSph * REDUC_FAC;
 
@@ -166,10 +172,14 @@ void domain_decompose(void)
     NtypeLocal[P[i].Type]++;
 
   /* because Ntype[] is of type `long long', we cannot do a simple
-   * MPI_Allreduce() to sum the total particle numbers 
+   * MPI_Allreduce() to sum the total particle numbers
    */
   temp = malloc(NTask * 6 * sizeof(int));
+#ifndef NOMPI
   MPI_Allgather(NtypeLocal, 6, MPI_INT, temp, 6, MPI_INT, MPI_COMM_WORLD);
+#else
+    for(i = 0; i < 6; i++){temp[i] = NtypeLocal[i];}
+#endif
   for(i = 0; i < 6; i++)
     {
       Ntype[i] = 0;
@@ -595,7 +605,9 @@ void domain_findExchangeNumbers(int task, int partner, int sphflag, int *send, i
 void domain_exchangeParticles(int partner, int sphflag, int send_count, int recv_count)
 {
   int i, no, n, count, rep;
+#ifndef NOMPI
   MPI_Status status;
+#endif
 
   for(n = 0, count = 0; count < send_count && n < NumPart; n++)
     {
@@ -658,6 +670,7 @@ void domain_exchangeParticles(int partner, int sphflag, int send_count, int recv
 
   /* transmit */
 
+#ifndef NOMPI
   for(rep = 0; rep < 2; rep++)
     {
       if((rep == 0 && ThisTask < partner) || (rep == 1 && ThisTask > partner))
@@ -720,6 +733,7 @@ void domain_exchangeParticles(int partner, int sphflag, int send_count, int recv
 	    }
 	}
     }
+#endif
 }
 
 /*! This function determines how many particles that are currently stored
@@ -752,9 +766,13 @@ void domain_countToGo(void)
 	    local_toGoSph[DomainTask[no]] += 1;
 	}
     }
-
+#ifndef NOMPI
   MPI_Allgather(local_toGo, NTask, MPI_INT, toGo, NTask, MPI_INT, MPI_COMM_WORLD);
   MPI_Allgather(local_toGoSph, NTask, MPI_INT, toGoSph, NTask, MPI_INT, MPI_COMM_WORLD);
+#else
+    toGo[0] = local_toGo[0];
+    toGoSph[0] = local_toGoSph[0];
+#endif
 }
 
 
@@ -829,10 +847,17 @@ void domain_sumCost(void)
 	local_DomainCountSph[no] += 1;
     }
 
+#ifndef NOMPI
   MPI_Allreduce(local_DomainWork, DomainWork, NTopleaves, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
   MPI_Allreduce(local_DomainCount, DomainCount, NTopleaves, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
   MPI_Allreduce(local_DomainCountSph, DomainCountSph, NTopleaves, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-
+#else
+    for(i = 0; i < NTopleaves; i++){
+        DomainWork[i] = local_DomainWork[i];
+        DomainCount[i] = local_DomainCount[i];
+        DomainCountSph[i] = local_DomainCountSph[i];
+    }
+#endif
 
   free(local_DomainCountSph);
   free(local_DomainCount);
@@ -865,9 +890,15 @@ void domain_findExtent(void)
 	    xmax[j] = P[i].Pos[j];
 	}
     }
-
+#ifndef NOMPI
   MPI_Allreduce(xmin, xmin_glob, 3, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
   MPI_Allreduce(xmax, xmax_glob, 3, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+#else
+    for(j = 0; j < 3; j++){
+        xmin_glob[j] = xmin[j];
+        xmax_glob[j] = xmax[j];
+    }
+#endif
 
   len = 0;
   for(j = 0; j < 3; j++)
@@ -931,9 +962,11 @@ void domain_determineTopTree(void)
 
   ntopnodelist = malloc(sizeof(int) * NTask);
   ntopoffset = malloc(sizeof(int) * NTask);
-
+#ifndef NOMPI
   MPI_Allgather(&ntop_local, 1, MPI_INT, ntopnodelist, 1, MPI_INT, MPI_COMM_WORLD);
-
+#else
+   ntopnodelist[0] = ntop_local;
+#endif
   for(i = 0, ntop = 0, ntopoffset[0] = 0; i < NTask; i++)
     {
       ntop += ntopnodelist[i];
@@ -950,8 +983,15 @@ void domain_determineTopTree(void)
       ntopoffset[i] *= sizeof(struct topnode_exchange);
     }
 
+#ifndef NOMPI
   MPI_Allgatherv(toplist_local, ntop_local * sizeof(struct topnode_exchange), MPI_BYTE,
 		 toplist, ntopnodelist, ntopoffset, MPI_BYTE, MPI_COMM_WORLD);
+#else
+   for(i = 0; i < ntop; i++) {
+    toplist[i].Count = toplist_local[i].Count;
+    toplist[i].Startkey = toplist_local[i].Startkey;
+    }
+#endif
 
   qsort(toplist, ntop, sizeof(struct topnode_exchange), domain_compare_toplist);
 

@@ -3,7 +3,9 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 /*! \file pm_periodic.c
  *  \brief routines for periodic PM-force computation
@@ -62,11 +64,17 @@ void pm_init_periodic(void)
 
   /* Set up the FFTW plan files. */
 
+#ifndef NOMPI
   fft_forward_plan = rfftw3d_mpi_create_plan(MPI_COMM_WORLD, PMGRID, PMGRID, PMGRID,
 					     FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE | FFTW_IN_PLACE);
   fft_inverse_plan = rfftw3d_mpi_create_plan(MPI_COMM_WORLD, PMGRID, PMGRID, PMGRID,
 					     FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE | FFTW_IN_PLACE);
-
+#else
+  fft_forward_plan = rfftw3d_create_plan(PMGRID, PMGRID, PMGRID,
+					     FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE | FFTW_IN_PLACE);
+  fft_inverse_plan = rfftw3d_create_plan(PMGRID, PMGRID, PMGRID,
+					     FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE | FFTW_IN_PLACE);
+#endif
   /* Workspace out the ranges on each processor. */
 
   rfftwnd_mpi_local_sizes(fft_forward_plan, &nslab_x, &slabstart_x, &nslab_y, &slabstart_y, &fftsize);
@@ -77,13 +85,18 @@ void pm_init_periodic(void)
   for(i = 0; i < nslab_x; i++)
     slab_to_task_local[slabstart_x + i] = ThisTask;
 
+  slabs_per_task = malloc(NTask * sizeof(int));
+#ifndef NOMPI
   MPI_Allreduce(slab_to_task_local, slab_to_task, PMGRID, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
 
   MPI_Allreduce(&nslab_x, &smallest_slab, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
 
-  slabs_per_task = malloc(NTask * sizeof(int));
   MPI_Allgather(&nslab_x, 1, MPI_INT, slabs_per_task, 1, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    slab_to_task = slab_to_task_local;
+    smallest_slab = nslab_x;
+    slabs_per_task[0] = nslab_x;
+#endif
   if(ThisTask == 0)
     {
       for(i = 0; i < NTask; i++)
@@ -99,7 +112,11 @@ void pm_init_periodic(void)
 
   to_slab_fac = PMGRID / All.BoxSize;
 
+#ifndef NOMPI
   MPI_Allreduce(&fftsize, &maxfftsize, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+#else
+    maxfftsize = fftsize;
+#endif
 }
 
 
@@ -190,7 +207,9 @@ void pmforce_periodic(void)
   int meshmin[3], meshmax[3], sendmin, sendmax, recvmin, recvmax;
   int rep, ncont, cont_sendmin[2], cont_sendmax[2], cont_recvmin[2], cont_recvmax[2];
   int dimx, dimy, dimz, recv_dimx, recv_dimy, recv_dimz;
+#ifndef NOMPI
   MPI_Status status;
+#endif
 
 
   if(ThisTask == 0)
@@ -233,9 +252,15 @@ void pmforce_periodic(void)
 	}
     }
 
+#ifndef NOMPI
   MPI_Allgather(meshmin, 3, MPI_INT, meshmin_list, 3, MPI_INT, MPI_COMM_WORLD);
   MPI_Allgather(meshmax, 3, MPI_INT, meshmax_list, 3, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    for( i = 0; i < 3; i++){
+        mesmmin_list[0+i] = meshmin[i];
+        meshmax_list[0+i] = meshmax[i];
+    }
+#endif
   dimx = meshmax[0] - meshmin[0] + 2;
   dimy = meshmax[1] - meshmin[1] + 2;
   dimz = meshmax[2] - meshmin[2] + 2;
@@ -326,11 +351,16 @@ void pmforce_periodic(void)
 
 	      if(level > 0)
 		{
+#ifndef NOMPI
 		  MPI_Sendrecv(workspace + (sendmin - meshmin[0]) * dimy * dimz,
 			       (sendmax - sendmin + 1) * dimy * dimz * sizeof(fftw_real), MPI_BYTE, recvTask,
 			       TAG_PERIODIC_A, forcegrid,
 			       (recvmax - recvmin + 1) * recv_dimy * recv_dimz * sizeof(fftw_real), MPI_BYTE,
 			       recvTask, TAG_PERIODIC_A, MPI_COMM_WORLD, &status);
+#else
+		  memcpy(forcegrid, workspace + (sendmin - meshmin[0]) * dimy * dimz,
+			 (sendmax - sendmin + 1) * dimy * dimz * sizeof(fftw_real));
+#endif
 		}
 	      else
 		{
@@ -560,12 +590,18 @@ void pmforce_periodic(void)
 
 		  if(level > 0)
 		    {
+
+#ifndef NOMPI
 		      MPI_Sendrecv(forcegrid,
 				   (sendmax - sendmin + 1) * recv_dimy * recv_dimz * sizeof(fftw_real),
 				   MPI_BYTE, recvTask, TAG_PERIODIC_B,
 				   workspace + (recvmin - (meshmin[0] - 2)) * dimy * dimz,
 				   (recvmax - recvmin + 1) * dimy * dimz * sizeof(fftw_real), MPI_BYTE,
 				   recvTask, TAG_PERIODIC_B, MPI_COMM_WORLD, &status);
+#else
+		      memcpy(workspace + (recvmin - (meshmin[0] - 2)) * dimy * dimz,
+			     forcegrid, (recvmax - recvmin + 1) * dimy * dimz * sizeof(fftw_real));
+#endif
 		    }
 		  else
 		    {
@@ -703,7 +739,10 @@ void pmpotential_periodic(void)
   int meshmin[3], meshmax[3], sendmin, sendmax, recvmin, recvmax;
   int rep, ncont, cont_sendmin[2], cont_sendmax[2], cont_recvmin[2], cont_recvmax[2];
   int dimx, dimy, dimz, recv_dimx, recv_dimy, recv_dimz;
+
+#ifndef NOMPI
   MPI_Status status;
+#endif
 
   if(ThisTask == 0)
     {
@@ -742,9 +781,15 @@ void pmpotential_periodic(void)
 	}
     }
 
+#ifndef NOMPI
   MPI_Allgather(meshmin, 3, MPI_INT, meshmin_list, 3, MPI_INT, MPI_COMM_WORLD);
   MPI_Allgather(meshmax, 3, MPI_INT, meshmax_list, 3, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    for( i = 0; i < 3; i++){
+        mesmmin_list[0+i] = meshmin[i];
+        meshmax_list[0+i] = meshmax[i];
+    }
+#endif
   dimx = meshmax[0] - meshmin[0] + 2;
   dimy = meshmax[1] - meshmin[1] + 2;
   dimz = meshmax[2] - meshmin[2] + 2;
@@ -835,11 +880,16 @@ void pmpotential_periodic(void)
 
 	      if(level > 0)
 		{
+#ifndef NOMPI
 		  MPI_Sendrecv(workspace + (sendmin - meshmin[0]) * dimy * dimz,
 			       (sendmax - sendmin + 1) * dimy * dimz * sizeof(fftw_real), MPI_BYTE, recvTask,
 			       TAG_PERIODIC_C, forcegrid,
 			       (recvmax - recvmin + 1) * recv_dimy * recv_dimz * sizeof(fftw_real), MPI_BYTE,
 			       recvTask, TAG_PERIODIC_C, MPI_COMM_WORLD, &status);
+#else
+		  memcpy(forcegrid, workspace + (sendmin - meshmin[0]) * dimy * dimz,
+			 (sendmax - sendmin + 1) * dimy * dimz * sizeof(fftw_real))
+#endif
 		}
 	      else
 		{
@@ -1068,12 +1118,18 @@ void pmpotential_periodic(void)
 
 		  if(level > 0)
 		    {
+#ifndef NOMPI
 		      MPI_Sendrecv(forcegrid,
 				   (sendmax - sendmin + 1) * recv_dimy * recv_dimz * sizeof(fftw_real),
 				   MPI_BYTE, recvTask, TAG_PERIODIC_D,
 				   workspace + (recvmin - (meshmin[0] - 2)) * dimy * dimz,
 				   (recvmax - recvmin + 1) * dimy * dimz * sizeof(fftw_real), MPI_BYTE,
 				   recvTask, TAG_PERIODIC_D, MPI_COMM_WORLD, &status);
+#else
+		      memcpy(workspace + (recvmin - (meshmin[0] - 2)) * dimy * dimz,
+			     forcegrid, (recvmax - recvmin + 1) * dimy * dimz * sizeof(fftw_real));
+
+#endif
 		    }
 		  else
 		    {

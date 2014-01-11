@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
@@ -23,9 +25,14 @@ int main(int argc, char **argv)
 {
   double t0, t1;
 
+#ifndef NOMPI
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
   MPI_Comm_size(MPI_COMM_WORLD, &NTask);
+#else
+    ThisTask = 0;
+    NTask = 1;
+#endif
 
   if(NTask <= 1)
     {
@@ -70,8 +77,9 @@ int main(int argc, char **argv)
 
   run();			/* main simulation loop */
 
+#ifndef NOMPI
   MPI_Finalize();		/* clean up & finalize MPI */
-
+#endif
   return 0;
 }
 
@@ -89,7 +97,7 @@ int main(int argc, char **argv)
 \author Volker Springel \n
         Max-Planck-Institute for Astrophysics \n
         Karl-Schwarzschild-Str. 1 \n
-        85740 Garching \n 
+        85740 Garching \n
         Germany \n
         volker@mpa-garching.mpg.de \n
 
@@ -115,7 +123,7 @@ explanation of GADGET's parameterfile and a short guide to compile-time
 options of the code.
 
 
-\section install Compilation 
+\section install Compilation
 
 GADGET-2 needs the following non-standard libraries for compilation:
 
@@ -166,7 +174,7 @@ used to signal whether a continuation from a set of restart files, or from
 a snapshot file, is desired. A typical command to start the code looks like
 the following: \n \n
 
- <b> mpirun -np 8 ./Gadget2 <parameterfile> [restartflag]</b> \n \n 
+ <b> mpirun -np 8 ./Gadget2 <parameterfile> [restartflag]</b> \n \n
 
 This would start the code using 8 processors, assuming that the parallel
 environment uses the <em>mpirun</em> command to start MPI
@@ -209,7 +217,7 @@ each one needs to occur exactly one time, otherwise an error message will
 be produced. Empty lines, or lines beginning with a \%-sign, are ignored and
 treated as comments.
 
- 
+
 - \b InitCondFile \n The filename of the initial conditions file. If a
              restart from a snapshot with the "2" option is desired, one
              needs to specify the snapshot file here.
@@ -263,7 +271,7 @@ treated as comments.
 - \b ComovingIntegrationOn \n If set to "1", the code assumes that a
              cosmological integration in comoving coordinates is carried
              out, otherwise ordinary Newtonian dynamics is assumed.
-                                
+
 
 - \b TypeOfTimestepCriterion \n This parameter can in principle be used to
              select different kinds of timestep criteria for gravitational
@@ -418,7 +426,7 @@ treated as comments.
 - \b MaxRMSDisplacementFac \n This parameter is an additional timestep
              criterion for the long-range integration in case the TreePM
              algorithm is used. It limits the long-range timestep such that
-             the rms-displacement of particles per step is at most 
+             the rms-displacement of particles per step is at most
               <em>MaxRMSDisplacementFac</em> times the mean
              particle separation, or the mesh-scale, whichever is smaller.
 
@@ -670,7 +678,7 @@ compile the code and to run the simulation.
      the short-range tree-force is evaluated (in case the TreePM algorithm
      is used). The default value is 4.5, given in mesh-cells.
 
-\n 
+\n
 \section secmake4 Single or double precision
 - \b DOUBLEPRECISION \n This makes the code store and compute internal
      particle data in double precision. Note that output files are
@@ -759,7 +767,7 @@ compile the code and to run the simulation.
      accessed without type prefix (adopting whatever was chosen as default
      at compile-time of fftw). Otherwise, the type prefix 'd' for
      double-precision is used.
- 
+
 - \b LONG_X/Y/Z \n These options can be used together with PERIODIC and
      NOGRAVITY only.  When set, the options define numerical factors that
      can be used to distort the periodic simulation cube into a
@@ -809,7 +817,7 @@ compile the code and to run the simulation.
 - \b LONGIDS \n If this is set, the code assumes that particle-IDs are
      stored as 64-bit long integers. This is only really needed if you want
      to go beyond ~2 billion particles.
-     
+
 \n
 \section secmake8 Testing and Debugging options
 - \b FORCETEST=0.01 \n This can be set to check the force accuracy of the

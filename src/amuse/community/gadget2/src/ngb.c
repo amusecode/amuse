@@ -3,7 +3,9 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
@@ -53,9 +55,9 @@ static double boxSize_Z, boxHalf_Z;
 /*! This routine finds all neighbours `j' that can interact with the
  *  particle `i' in the communication buffer.
  *
- *  Note that an interaction can take place if 
- *  \f$ r_{ij} < h_i \f$  OR if  \f$ r_{ij} < h_j \f$. 
- * 
+ *  Note that an interaction can take place if
+ *  \f$ r_{ij} < h_i \f$  OR if  \f$ r_{ij} < h_j \f$.
+ *
  *  In the range-search this is taken into account, i.e. it is guaranteed that
  *  all particles are found that fulfil this condition, including the (more
  *  difficult) second part of it. For this purpose, each node knows the

@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
@@ -32,11 +34,11 @@ static double boxSize_Z, boxHalf_Z;
 
 const int debug = 0;
 
-static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3], FLOAT *numngb, 
+static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3], FLOAT *numngb,
     FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT
     *rhoe_out);
 
-void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_out, 
+void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_out,
     FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT *rhoe_out)
 {
     double low, up, h, dhsml, low_ngb, up_ngb, ngb;
@@ -67,16 +69,20 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
         else if (up < SphP[i].Hsml)
             up = SphP[i].Hsml;
     }
+#ifndef NOMPI
     MPI_Allreduce(MPI_IN_PLACE, &low, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
     MPI_Allreduce(MPI_IN_PLACE, &up,  1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+#endif
     low *= 1.26;
     up /= 1.26;
-    
+
     iter = 0;
     do {
         low /= 1.26;
         hydro_state_evaluate(low, pos, vel, &low_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
+#ifndef NOMPI
         MPI_Allreduce(MPI_IN_PLACE, &low_ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#endif
         if (iter > MAXITER)
             endrun(3210);
         if (debug) printf("%d - Searching for lower h boundary: %f (ngb: %f)\n",iter, low, low_ngb);
@@ -86,45 +92,51 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
     do {
         up *= 1.26;
         hydro_state_evaluate(up, pos, vel, &up_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
+#ifndef NOMPI
         MPI_Allreduce(MPI_IN_PLACE, &up_ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+#endif
         if (iter > MAXITER)
             endrun(3211);
         if (debug) printf("%d - Searching for upper h boundary: %f (ngb: %f)\n",iter, up, up_ngb);
         iter++;
     } while (up_ngb < All.DesNumNgb);
-    
+
     iter = 0;
     ngb = All.DesNumNgb + 2*All.MaxNumNgbDeviation; // Makes sure first evaluation of condition is true:
     while (fabs(All.DesNumNgb - ngb) > All.MaxNumNgbDeviation) {
         h = pow(0.5 * (pow(low, 3) + pow(up, 3)), 1.0 / 3);
         hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
+#ifndef NOMPI
         MPI_Allreduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    
+#endif
+
         if (ngb > All.DesNumNgb){
             up = h;
             if (up <= All.MinGasHsml)
                 break;
         } else
             low = h;
-    
+
         if(iter > MAXITER)
             endrun(3212);
         if (debug) printf("%d - Searching for h: %f (ngb: %f)\n",iter, h, ngb);
         iter++;
     }
-    
+
     if (h <= All.MinGasHsml)
         h = All.MinGasHsml;
-    
+
 //    ngb = dhsml = rho = rhov2 = rhoe = rhov[0] = rhov[1] = rhov[2] = 0;
     hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
+#ifndef NOMPI
     MPI_Allreduce(MPI_IN_PLACE, &ngb,   1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(MPI_IN_PLACE, &dhsml, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(MPI_IN_PLACE, &rho,   1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(MPI_IN_PLACE, &rhov,  3, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(MPI_IN_PLACE, &rhov2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(MPI_IN_PLACE, &rhoe,  1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    
+#endif
+
     *h_out      = h;
     *ngb_out    = ngb;
     *dhsml_out  = dhsml;
@@ -136,8 +148,8 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
     rhov_out[2] = rhov[2];
 }
 
-static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3], 
-    FLOAT *numngb_out, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, 
+static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3],
+    FLOAT *numngb_out, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out,
     FLOAT *rhov2_out, FLOAT *rhoe_out)
 {
   int j, n, startnode, numngb, numngb_inbox;
@@ -221,14 +233,14 @@ static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3],
               dvx = vel[0] - SphP[j].VelPred[0];
               dvy = vel[1] - SphP[j].VelPred[1];
               dvz = vel[2] - SphP[j].VelPred[2];
- 
+
               rhov[0] -= fac * dvx;
               rhov[1] -= fac * dvy;
               rhov[2] -= fac * dvz;
 
               rhoe  += fac * SphP[j].Entropy;
-                  
-              rhov2 += fac * (dvx*dvx + dvy*dvy + dvz*dvz);                   
+
+              rhov2 += fac * (dvx*dvx + dvy*dvy + dvz*dvz);
 	    }
 	}
     }

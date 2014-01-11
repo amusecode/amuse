@@ -180,11 +180,15 @@ int main(int argc, char *argv[]){
   cerr<<setprecision(15);
 
   int READ_FLAG = 0; // 0:read nemo_ascii, 1:read snap shot
-
+#ifndef NOMPI
   MPI_Init(&argc,&argv);
   MPI_Comm comm = MPI_COMM_WORLD;
   MPI_Comm_rank (comm, &myrank); 
   MPI_Comm_size (comm, &Nproc); 
+#else
+    Nproc = 1;
+    myrank = 0;
+#endif
 
   int snpid = 0;
   char sinput[1024];

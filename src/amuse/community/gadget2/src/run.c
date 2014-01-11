@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 #include <unistd.h>
 
 #include "allvars.h"
@@ -44,8 +46,8 @@ void run(void)
       domain_Decomposition();	/* do domain decomposition if needed */
 
 
-      compute_accelerations(0);	/* compute accelerations for 
-				 * the particles that are to be advanced  
+      compute_accelerations(0);	/* compute accelerations for
+				 * the particles that are to be advanced
 				 */
 
       /* check whether we want a full energy statistics */
@@ -83,12 +85,15 @@ void run(void)
 	    }
 	}
 
+#ifndef NOMPI
       MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
+#endif
       if(stopflag)
 	{
 	  restart(0);		/* write restart file */
-	  MPI_Barrier(MPI_COMM_WORLD);
+#ifndef NOMPI
+        MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 	  if(stopflag == 2 && ThisTask == 0)
 	    {
@@ -116,8 +121,9 @@ void run(void)
 	    stopflag = 0;
 	}
 
+#ifndef NOMPI
       MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
+#endif
       if(stopflag == 3)
 	{
 	  restart(0);		/* write an occasional restart file */
@@ -162,16 +168,22 @@ void find_next_sync_point_and_drift(void)
     if(min > P[n].Ti_endstep)
       min = P[n].Ti_endstep;
 
+#ifndef NOMPI
   MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-
+#else
+    min_glob = min;
+#endif
   /* We check whether this is a full step where all particles are synchronized */
   flag = 1;
   for(n = 0; n < NumPart; n++)
     if(P[n].Ti_endstep > min_glob)
       flag = 0;
 
+#ifndef NOMPI
   MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
-
+#else
+    Flag_FullStep = flag;
+#endif
 #ifdef PMGRID
   if(min_glob >= All.PM_Ti_endstep)
     {
@@ -192,7 +204,11 @@ void find_next_sync_point_and_drift(void)
 
   /* note: NumForcesSinceLastDomainDecomp has type "long long" */
   temp = malloc(NTask * sizeof(int));
+#ifndef NOMPI
   MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    temp[0] = NumForceUpdate;
+#endif
   for(n = 0; n < NTask; n++)
     All.NumForcesSinceLastDomainDecomp += temp[n];
   free(temp);

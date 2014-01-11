@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
@@ -125,7 +127,7 @@ void long_range_force(void)
     }
 
 
-  /* Finally, the following factor allows a computation of cosmological simulation 
+  /* Finally, the following factor allows a computation of cosmological simulation
      with vacuum energy in physical coordinates */
 
   if(All.ComovingIntegrationOn == 0)

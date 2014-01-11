@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
@@ -149,9 +151,9 @@ void init(void)
 
   TreeReconstructFlag = 1;
 
-  /* at this point, the entropy variable normally contains the 
+  /* at this point, the entropy variable normally contains the
    * internal energy, read in from the initial conditions file, unless the file
-   * explicitly signals that the initial conditions contain the entropy directly. 
+   * explicitly signals that the initial conditions contain the entropy directly.
    * Once the density has been computed, we can convert thermal energy to entropy.
    */
 #ifndef ISOTHERM_EQS
@@ -173,8 +175,11 @@ void check_omega(void)
   for(i = 0; i < NumPart; i++)
     mass += P[i].Mass;
 
+#ifndef NOMPI
   MPI_Allreduce(&mass, &masstot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
+#else
+  masstot = mass;
+#endif
   omega =
     masstot / (All.BoxSize * All.BoxSize * All.BoxSize) / (3 * All.Hubble * All.Hubble / (8 * M_PI * All.G));
 

@@ -15,19 +15,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 #include <time.h>
 #include <assert.h>
 
 #include "allvars.h"
 #include "proto.h"
 
-/*! \file timestep_limit.c 
+/*! \file timestep_limit.c
  *
- *  This file is a modified version of timestep.c, which include the routines 
+ *  This file is a modified version of timestep.c, which include the routines
  *  for 'kicking' particles in momentum space and assigning new timesteps.
  *
- *  This file now includes the Timestep Limiter routine for communication of 
+ *  This file now includes the Timestep Limiter routine for communication of
  *  the new timestep between neighbouring SPH particles
  */
 
@@ -63,9 +65,9 @@ static long long NTotDone;
 
 /*! This function advances the system in momentum space, i.e. it does apply
  *  the 'kick' operation after the forces have been computed. Additionally, it
- *  assigns new timesteps to particles following the Limiter criterion. 
- *  At start-up, a half-timestep is carried out, as well as at the end of the simulation. 
- *  In between, the half-step kick that ends the previous timestep and 
+ *  assigns new timesteps to particles following the Limiter criterion.
+ *  At start-up, a half-timestep is carried out, as well as at the end of the simulation.
+ *  In between, the half-step kick that ends the previous timestep and
  *  the half-step kick for the new timestep are combined into one operation.
  */
 
@@ -78,7 +80,9 @@ void advance_and_find_timesteps(void)
   double t0, t1;
   double sumt = 0, sumimbalance = 0, sumcomm = 0;
   double timecomp = 0, timeimbalance = 0, timecommsumm = 0;
+#ifndef NOMPI
   MPI_Status status;
+#endif
 
   int CptLimit = 0;
   int shrinkcount = 0, shrinktot = 0;
@@ -186,9 +190,13 @@ void advance_and_find_timesteps(void)
 	dispmax = disp;
     }
 
+#ifndef NOMPI
   MPI_Allreduce(&dispmax, &globmax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
   MPI_Allreduce(&disp2sum, &globdisp2sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-
+#else
+    globmax = dispmax;
+    globdisp2sum = disp2sum;
+#endif
   dmean = pow(P[0].Mass / (All.Omega0 * 3 * All.Hubble * All.Hubble / (8 * M_PI * All.G)), 1.0 / 3);
 
   if(globmax > dmean)
@@ -241,7 +249,12 @@ void advance_and_find_timesteps(void)
     }
 
   ti_step = All.PresentMinStep;
+
+#ifndef NOMPI
   MPI_Allreduce(&ti_step, &All.PresentMinStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+#else
+    All.PresentMinStep = ti_step;
+#endif
 #endif
 
 
@@ -328,7 +341,7 @@ void advance_and_find_timesteps(void)
     }
   t0 = second();
   NumSphUpdate = 0;
-  
+
   if(All.NumCurrentTiStep > 0)
     {
       for(n = 0; n < N_gas; n++)
@@ -340,40 +353,45 @@ void advance_and_find_timesteps(void)
     }
   t1 = second();
   timecomp += timediff(t0, t1);
-  
+
   t0 = second();
   numlist = (int*)malloc(NTask * sizeof(int) * NTask);
+
+#ifndef NOMPI
   MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    numlist[0] = NumSphUpdate;
+#endif
   for(i = 0, ntot = 0; i < NTask; i++)
     ntot += numlist[i];
   free(numlist);
   t1 = second();
   timeimbalance += timediff(t0, t1);
-  
+
   if(ThisTask == 0)
     {
       fprintf(stdout,"\n      ---> number of timestep active gas particles:    %6lld \n", ntot);
       fflush(stdout);
     }
-  
+
   if(ntot)
     NTotDone = 1;
   else
     NTotDone = 0;
-  
+
   /* loop for time-step limiter */
   while(NTotDone > 0)
     {
       NDone = 0;
-      
+
       i = 0;                        /* first particle for this task */
       ntotleft = ntot;              /* particles left for all tasks together */
-      
+
       while(ntotleft > 0)
 	{
 	  for(j = 0; j < NTask; j++)
 	    nsend_local[j] = 0;
-	  
+
 	  /* do local particles and prepare export list */
 	  t0 = second();
 	  for(nexport = 0, ndone = 0; i < N_gas && nexport < All.BunchSizeTime - NTask; i++)
@@ -382,14 +400,14 @@ void advance_and_find_timesteps(void)
 		if(P[i].Ti_endstep == All.Ti_Current)
 		  {
 		    ndone++;
-		    
+
 		    for(j = 0; j < NTask; j++)
 		      Exportflag[j] = 0;
-		    
+
 		    /* -------------------------------- */
 		    NDone += time_limiter_evaluate(i, 0);
 		    /* -------------------------------- */
-		    
+
 		    for(j = 0; j < NTask; j++)
 		      {
 			if(Exportflag[j])
@@ -410,19 +428,24 @@ void advance_and_find_timesteps(void)
 	      }
 	  t1 = second();
 	  timecomp += timediff(t0, t1);
-	  
+
 	  qsort(TimeDataIn, nexport, sizeof(struct timedata_in), time_compare_key);
-	  
+
 	  for(j = 1, noffset[0] = 0; j < NTask; j++)
 	    noffset[j] = noffset[j - 1] + nsend_local[j - 1];
-	  
+
 	  t0 = second();
+
+#ifndef NOMPI
 	  MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
+#else
+    nsend[0] = nsend_local[0];
+#endif
 	  t1 = second();
 	  timeimbalance += timediff(t0, t1);
-	  
+
 	  /* now do the particles that need to be exported */
-	  
+
 	  for(level = 1; level < (1 << PTask); level++)
 	    {
 	      t0 = second();
@@ -439,10 +462,11 @@ void advance_and_find_timesteps(void)
 		    }
 		  if(maxfill >= All.BunchSizeTime)
 		    break;
-		  
+
 		  sendTask = ThisTask;
 		  recvTask = ThisTask ^ ngrp;
-		  
+
+#ifndef NOMPI
 		  if(recvTask < NTask)
 		    {
 		      if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -456,14 +480,15 @@ void advance_and_find_timesteps(void)
 				       MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);
 			}
 		    }
-		  
+#endif
+
 		  for(j = 0; j < NTask; j++)
 		    if((j ^ ngrp) < NTask)
 		      nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
 		}
 	      t1 = second();
 	      timecommsumm += timediff(t0, t1);
-	      
+
 	      t0 = second();
 	      /* --------------------------------- */
 	      for(j = 0; j < nbuffer[ThisTask]; j++)
@@ -471,40 +496,52 @@ void advance_and_find_timesteps(void)
 	      /* --------------------------------- */
 	      t1 = second();
 	      timecomp += timediff(t0, t1);
-	      
+
 	      /* do a block to explicitly measure imbalance */
 	      t0 = second();
+#ifndef NOMPI
 	      MPI_Barrier(MPI_COMM_WORLD);
+#endif
 	      t1 = second();
 	      timeimbalance += timediff(t0, t1);
-	      
+
 	      level = ngrp - 1;
 	    }
-	  
+
 	  t0 = second();
+
+#ifndef NOMPI
 	  MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    ndonelist[0] = ndone;
+#endif
 	  for(j = 0; j < NTask; j++)
 	    ntotleft -= ndonelist[j];
 	  t1 = second();
 	  timeimbalance += timediff(t0, t1);
 	}
-      
+
       t0 = second();
       numlist = (int*)malloc(NTask * sizeof(int) * NTask);
+
+#ifndef NOMPI
       MPI_Allgather(&NDone, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    numlist[0] = NDone;
+#endif
       for(i = 0, NTotDone = 0; i < NTask; i++)
         NTotDone += numlist[i];
       free(numlist);
       t1 = second();
       timeimbalance += timediff(t0, t1);
-      
+
       if(ThisTask == 0)
 	{
 	  fprintf(stdout," %3d) ---> number of timestep shrinked gas neighbors:  %6lld \n", CptLimit++, NTotDone);
 	  fflush(stdout);
 	}
     }
-  
+
   /*   do final operations on results */
   t0 = second();
   for(i = 0; i < NumPart; i++)
@@ -512,13 +549,13 @@ void advance_and_find_timesteps(void)
       if(P[i].Ti_endstep == All.Ti_Current)
 	{
 	  ti_step =  P[i].Ti_sizestep;
-	  
+
 	  /*  ------------------------------------------------------------------------------------------------------------------  */
 #endif
-	  
+
 	  tstart  = (P[i].Ti_begstep + P[i].Ti_endstep) / 2;	/* midpoint of old step */
 	  tend    =  P[i].Ti_endstep + ti_step / 2;	        /* midpoint of new step */
-	  
+
 	  if(All.ComovingIntegrationOn)
 	    {
 	      dt_entr = (tend - tstart) * All.Timebase_interval;
@@ -672,12 +709,12 @@ void advance_and_find_timesteps(void)
 		SphP[i].VelPred[j] = P[i].Vel[j]
 		  + P[i].GravAccel[j] * dt_gravkickA
 		  + SphP[i].HydroAccel[j] * dt_hydrokick + P[i].GravPM[j] * dt_gravkickB;
-	      
+
 	    }
 	}
     }
 #endif
-  
+
 }
 
 
@@ -699,23 +736,23 @@ int get_timestep(int p,         /*!< particle index */
   double ax, ay, az, ac, csnd;
   double dt = 0, dt_courant = 0, dt_accel;
   int ti_step;
-  
+
 #ifdef CONDUCTION
   double dt_cond;
 #endif
-  
+
   if(flag == 0)
     {
       ax = fac1 * P[p].GravAccel[0] * 0;
       ay = fac1 * P[p].GravAccel[1] * 0;
       az = fac1 * P[p].GravAccel[2] * 0;
-      
+
 #ifdef PMGRID
       ax += fac1 * P[p].GravPM[0] * 0;
       ay += fac1 * P[p].GravPM[1] * 0;
       az += fac1 * P[p].GravPM[2] * 0;
 #endif
-      
+
       if(P[p].Type == 0)
         {
 #ifndef TIMESTEP_UPDATE
@@ -737,16 +774,16 @@ int get_timestep(int p,         /*!< particle index */
             }
 #endif
         }
-      
+
       ac = sqrt(ax * ax + ay * ay + az * az);   /* this is now the physical acceleration */
       *aphys = ac;
     }
   else
     ac = *aphys;
-  
+
   if(ac == 0)
     ac = 1.0e-30;
-  
+
   switch (All.TypeOfTimestepCriterion)
     {
     case 0:
@@ -758,12 +795,12 @@ int get_timestep(int p,         /*!< particle index */
           *aphys = ac;
           return flag;
 	}
-      
+
       if(P[p].Type == 0)
         dt = dt_accel = sqrt(2 * All.ErrTolIntAccuracy * atime * dmin(SphP[p].Hsml, All.SofteningTable[P[p].Type]) / ac);
       else
         dt = dt_accel = sqrt(2 * All.ErrTolIntAccuracy * atime * All.SofteningTable[P[p].Type] / ac);
-      
+
 #ifdef ADAPTIVE_GRAVSOFT_FORGAS
       if(P[p].Type == 0)
         dt = dt_accel = sqrt(2 * All.ErrTolIntAccuracy * atime * SphP[p].Hsml / 2.8 / ac);
@@ -773,34 +810,34 @@ int get_timestep(int p,         /*!< particle index */
       endrun(888);
       break;
     }
-  
+
   if(P[p].Type == 0)
     {
       csnd = sqrt(GAMMA * SphP[p].Pressure / SphP[p].Density);
-      
+
       if(All.ComovingIntegrationOn)
         dt_courant = 2 * All.CourantFac * All.Time * SphP[p].Hsml / (fac3 * SphP[p].MaxSignalVel);
       else
         dt_courant = 2 * All.CourantFac * SphP[p].Hsml / SphP[p].MaxSignalVel;
-      
+
       if(dt_courant < dt)
 	dt = dt_courant;
     }
-  
+
   dt *= hubble_a;
-  
+
   if(dt >= All.MaxSizeTimestep)
     dt = All.MaxSizeTimestep;
-  
+
   if(dt >= dt_displacement)
     dt = dt_displacement;
-  
-  
+
+
   if(dt < All.MinSizeTimestep)
     {
 #ifndef NOSTOP_WHEN_BELOW_MINTIMESTEP
       printf("warning: Timestep wants to be below the limit `MinSizeTimestep'\n");
-      
+
       if(P[p].Type == 0)
         {
           printf
@@ -820,9 +857,9 @@ int get_timestep(int p,         /*!< particle index */
 #endif
       dt = All.MinSizeTimestep;
     }
-  
+
   ti_step = dt / All.Timebase_interval;
-  
+
   if(!(ti_step > 0 && ti_step < TIMEBASE) && !ZeroTimestepEncountered)
     {
       printf("\nError: A timestep of size zero was assigned on the integer timeline!\n"
@@ -837,7 +874,7 @@ int get_timestep(int p,         /*!< particle index */
 	printf("hydro-frc=(%g|%g|%g)\n", SphP[p].HydroAccel[0], SphP[p].HydroAccel[1], SphP[p].HydroAccel[2]);
       if(P[p].Type == 0)
 	printf("feedback-flag=%d feedback-frc=(%g|%g|%g)\n", SphP[p].FeedbackFlag,SphP[p].FeedAccel[0], SphP[p].FeedAccel[1], SphP[p].FeedAccel[2]);
-      
+
       fflush(stdout);
       //endrun(818);
       ZeroTimestepEncountered = 1; // Do not terminate the run, but let AMUSE handle it
@@ -888,11 +925,23 @@ void find_dt_displacement_constraint(double hfac /*!<  should be  a^2*H(a)  */ )
 	  count[P[i].Type]++;
 	}
 
+#ifndef NOMPI
       MPI_Allreduce(v, v_sum, 6, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
       MPI_Allreduce(mim, min_mass, 6, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-
+#else
+    for(i = 0; i < 6; i++){
+        v_sum[i] = v[i];
+        min_mass[i] = mim[i];
+    }
+#endif
       temp = malloc(NTask * 6 * sizeof(int));
+#ifndef NOMPI
       MPI_Allgather(count, 6, MPI_INT, temp, 6, MPI_INT, MPI_COMM_WORLD);
+#else
+    for(i = 0; i < 6; i++){
+        temp[i] = count[i];
+    }
+#endif
       for(i = 0; i < 6; i++)
 	{
 	  count_sum[i] = 0;
@@ -1042,7 +1091,7 @@ int time_limiter_evaluate(int target, int mode)
 
 #ifdef SYNCHRONIZATION
                       for(k = 0; begstep_j + k * TIMESTEP_LIMITER * sizestep_i <= All.Ti_Current; k++);
-                      
+
 		      endstep_j  = begstep_j + k * TIMESTEP_LIMITER * sizestep_i;
                       sizestep_j = TIMESTEP_LIMITER * sizestep_i;
                       begstep_j  = endstep_j - sizestep_j;
@@ -1052,7 +1101,7 @@ int time_limiter_evaluate(int target, int mode)
 #endif
 
 		      /* ###################################################### */
-                      /* it's needed to synchronize mid-step quantities to the 
+                      /* it's needed to synchronize mid-step quantities to the
 			 new fictious time-step. */
                       tstart = begstep_j_old + sizestep_j_old / 2;
                       tend = (begstep_j + endstep_j) / 2;
@@ -1164,5 +1213,5 @@ void make_it_active(int target)
   P[target].Ti_endstep = All.Ti_Current;
   NumForceUpdate++;
 }
- 
+
 #endif

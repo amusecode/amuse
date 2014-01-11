@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 #include <sys/types.h>
 #include <unistd.h>
 #include <gsl/gsl_rng.h>
@@ -37,7 +39,7 @@ void begrun(void)
 
   read_parameter_file(ParameterFile);	/* ... read in parameters for this run */
 
-  allocate_commbuffers();	/* ... allocate buffer-memory for particle 
+  allocate_commbuffers();	/* ... allocate buffer-memory for particle
 				   exchange during force computation */
   set_units();
 
@@ -66,12 +68,12 @@ void begrun(void)
     {
       all = All;		/* save global variables. (will be read from restart file) */
 
-      restart(RestartFlag);	/* ... read restart file. Note: This also resets 
-				   all variables in the struct `All'. 
+      restart(RestartFlag);	/* ... read restart file. Note: This also resets
+				   all variables in the struct `All'.
 				   However, during the run, some variables in the parameter
-				   file are allowed to be changed, if desired. These need to 
+				   file are allowed to be changed, if desired. These need to
 				   copied in the way below.
-				   Note:  All.PartAllocFactor is treated in restart() separately.  
+				   Note:  All.PartAllocFactor is treated in restart() separately.
 				 */
 
       All.MinSizeTimestep = all.MinSizeTimestep;
@@ -674,18 +676,21 @@ void read_parameter_file(char *fname)
       else
 	All.OutputListLength = 0;
     }
-
+#ifndef NOMPI
   MPI_Bcast(&errorFlag, 1, MPI_INT, 0, MPI_COMM_WORLD);
-
+#endif
   if(errorFlag)
     {
+#ifndef NOMPI
       MPI_Finalize();
+#endif
       exit(0);
     }
 
   /* now communicate the relevant parameters to the other processes */
+#ifndef NOMPI
   MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
-
+#endif
 
   if(All.NumFilesWrittenInParallel < 1)
     {

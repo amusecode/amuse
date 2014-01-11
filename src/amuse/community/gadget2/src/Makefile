@@ -90,7 +90,7 @@ include makefile_options
 #--------------------------------------- Select some defaults
 
 CC       =  $(MPICC)  # sets the C-compiler
-OPTIMIZE =  -O2 -g # sets optimization and warning flags
+OPTIMIZE =  # sets optimization and warning flags
 MPICHLIB =  # will be included by the linker -lmpich
 
 
@@ -241,7 +241,7 @@ INCL   = allvars.h  proto.h  tags.h  Makefile
 
 CODELIB = libgadget.a
 
-CFLAGS = $(OPTIONS) $(GSL_INCL) $(FFTW_INCL) $(HDF5INCL)
+CFLAGS += $(OPTIONS) $(GSL_INCL) $(FFTW_INCL) $(HDF5INCL)
 
 
 ifeq (NOTYPEPREFIX_FFTW,$(findstring NOTYPEPREFIX_FFTW,$(OPT)))    # fftw installed with type prefix?

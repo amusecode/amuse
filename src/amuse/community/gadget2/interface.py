@@ -1192,7 +1192,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             self.parameters.periodic_boundaries_flag = True
         elif self.mode == self.legacy_interface.MODE_PERIODIC_NOGRAVITY:
             self.parameters.periodic_boundaries_flag = True
-            
+        print self.get_output_directory()
         self.parameters.gadget_output_directory = self.get_output_directory()
         # The code's units are read-only, and set here to ensure they always match with the unit_converter
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))

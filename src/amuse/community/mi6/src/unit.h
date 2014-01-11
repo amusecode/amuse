@@ -46,18 +46,36 @@ const double n4_5=4.0/5.0;
 
 const double LARGE_DOUBLE = 99999999999999999.9;
 const int LARGE_INT = 999999999;
-
+#ifndef NOMPI
 #include <mpi.h>
+#else
+#ifdef WIN32
+#include <windows.h>
+#endif
+#endif
 
 //#include"/data/iwasawa/work/amuse/prerequisites/include/mpi.h"
 
 inline double gettimeofday_sec(){
-  return MPI_Wtime();
-  /*
+  
+#ifndef NOMPI
+    return MPI_Wtime();
+#else
+#ifdef WIN32
+    FILETIME filetime;
+    GetSystemTimeAsFileTime(&filetime);
+    unsigned long long longtime = filetime.dwHighDateTime;
+    longtime <<=32;
+    longtime |= filetime.dwLowDateTime;
+    longtime /=10;
+    longtime -= 11644473600000000ULL;
+    return longtime / 1000000.0;
+#else
   struct timeval tv;
   gettimeofday(&tv, NULL);
   return tv.tv_sec;
-  */
+#endif
+#endif
 }
 
 

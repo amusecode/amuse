@@ -61,6 +61,12 @@ amuse:
 	cp mpif.null.h mpif.h
 	$(MAKE) $(CODELIB) "FC = $(MPIFC)" "FFLAGS = $(FCFLAGS)" "SOURCE = energy.f $(SOURCE)"
 
+# for now only seq, par does same as amuse
+amusepar: 
+	-rm -f mpif.h
+	cp mpif.null.h mpif.h
+	$(MAKE) $(CODELIB) "FC = $(MPIFC)" "FFLAGS = $(FCFLAGS)" "SOURCE = energy.f $(SOURCE)"
+
 gpu:
 	cp mpif.null.h mpif.h
 	$(MAKE) nbody6.gpu "CUDA_PATH=/usr/local/cuda" "SDK_PATH=/usr/local/cuda_sdk/C" "FC = gfortran" "LFLAGS = -o nbody6.gpu -L$(CUDA_PATH)/lib64 -lcudart" \

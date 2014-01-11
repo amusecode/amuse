@@ -55,17 +55,17 @@ all:	gadget2_worker
 
 
 clean:
-	rm -f *.o *.po *.pngo *.ngo *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
-	rm -f gadget2_worker gadget2_worker_periodic gadget2_worker_sockets worker_code-sockets.cc
-	rm -f gadget2_worker_periodic_sockets gadget2_worker_nogravity_sockets gadget2_worker_nogravity
-	rm -f gadget2_worker_periodic_nogravity
-	rm -rf *.dSYM
-	make -C $(SRCDIR) clean
-	rm -Rf $(PERIODIC_BUILDDIR)
-	rm -Rf $(PERIODIC_NOGRAVITY_BUILDDIR)
-	rm -Rf $(NOGRAVITY_BUILDDIR)
-	rm -Rf $(BUILDDIR)
-
+	-rm -f *.o *.po *.pngo *.ngo *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
+	-rm -f gadget2_worker gadget2_worker_periodic gadget2_worker_sockets worker_code-sockets.cc
+	-rm -f gadget2_worker_periodic_sockets gadget2_worker_nogravity_sockets gadget2_worker_nogravity
+	-rm -f gadget2_worker_periodic_nogravity gadget2_worker_*.exe
+	-rm -rf *.dSYM
+	-make -C $(SRCDIR) clean
+	-rm -Rf $(PERIODIC_BUILDDIR)
+	-rm -Rf $(PERIODIC_NOGRAVITY_BUILDDIR)
+	-rm -Rf $(NOGRAVITY_BUILDDIR)
+	-rm -Rf $(BUILDDIR)
+    
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c $^ Gadget2Interface -o $@ 
 

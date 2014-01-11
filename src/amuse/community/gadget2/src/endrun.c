@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 #include <signal.h>
 #include <unistd.h>
 
@@ -10,7 +12,7 @@
 #include "proto.h"
 
 
-/*! \file endrun.c 
+/*! \file endrun.c
  *  \brief Termination of simulation
  *
  *  This file contains routines for termination of the simulation.
@@ -45,11 +47,15 @@ void original_endrun(int ierr)
       raise(SIGABRT);
       sleep(60);
 #else
+#ifndef NOMPI
       MPI_Abort(MPI_COMM_WORLD, ierr);
+#endif
 #endif
       exit(0);
     }
 
+#ifndef NOMPI
   MPI_Finalize();
+#endif
   exit(0);
 }

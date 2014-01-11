@@ -3,13 +3,15 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
 
 
-/*! \file gravtree_forcetest.c 
+/*! \file gravtree_forcetest.c
  *  \brief routines for direct summation forces
  *
  *  The code in this file allows to compute checks of the force accuracy by
@@ -36,7 +38,9 @@ void gravity_forcetest(void)
   int k, nexport;
   int level, sendTask, recvTask;
   double fac1;
+#ifndef NOMPI
   MPI_Status status;
+#endif
 #endif
   double costtotal, *costtreelist;
   double maxt, sumt, *timetreelist;
@@ -64,8 +68,11 @@ void gravity_forcetest(void)
     }
 
   /* NumForceUpdate is the number of particles on this processor that want a force update */
-
+#ifndef NOMPI
   MPI_Allreduce(&NumForceUpdate, &ntot, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+#else
+  ntot = NumForceUpdate;
+#endif
 
   costtotal = 0;
 
@@ -129,8 +136,11 @@ void gravity_forcetest(void)
       for(j = 1, noffset[0] = 0; j < NTask; j++)
 	noffset[j] = noffset[j - 1] + nsend_local[j - 1];
 
+#ifndef NOMPI
       MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    nsend[0] = nsend_local[i];
+#endif
       /* now do the particles that need to be exported */
 
       for(level = 1; level < (1 << PTask); level++)
@@ -264,7 +274,7 @@ void gravity_forcetest(void)
 
 
 
-  /* Finally, the following factor allows a computation of cosmological simulation 
+  /* Finally, the following factor allows a computation of cosmological simulation
      with vacuum energy in physical coordinates */
 
   if(All.ComovingIntegrationOn == 0)
@@ -310,7 +320,10 @@ void gravity_forcetest(void)
 	      }
 	  fclose(FdForceTest);
 	}
-      MPI_Barrier(MPI_COMM_WORLD);
+
+#ifndef NOMPI
+	      MPI_Barrier(MPI_COMM_WORLD);
+#endif
     }
 
   for(i = 0; i < NumPart; i++)

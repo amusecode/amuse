@@ -2,13 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
 
 
-/*! \file density.c 
+/*! \file density.c
  *  \brief SPH density computation and smoothing length determination
  *
  *  This file contains the "first SPH loop", where the SPH densities and
@@ -62,7 +64,9 @@ void density(void)
   double dt_entr, tstart, tend, tstart_ngb = 0, tend_ngb = 0;
   double sumt, sumcomm, timengb, sumtimengb;
   double timecomp = 0, timeimbalance = 0, timecommsumm = 0, sumimbalance;
+#ifndef NOMPI
   MPI_Status status;
+#endif
 
 #ifdef PERIODIC
   boxSize = All.BoxSize;
@@ -97,7 +101,11 @@ void density(void)
     }
 
   numlist = malloc(NTask * sizeof(int) * NTask);
+#ifndef NOMPI
   MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+   numlist[0] = NumSphUpdate;
+#endif
   for(i = 0, ntot = 0; i < NTask; i++)
     ntot += numlist[i];
   free(numlist);
@@ -157,8 +165,11 @@ void density(void)
 
 	  tstart = second();
 
+#ifndef NOMPI
 	  MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    for(i = 0; i < NTask; i++) {nsend[i] = nsend_local[i];};
+#endif
 	  tend = second();
 	  timeimbalance += timediff(tstart, tend);
 
@@ -190,12 +201,17 @@ void density(void)
 		      if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
 			{
 			  /* get the particles */
+#ifndef NOMPI
 			  MPI_Sendrecv(&DensDataIn[noffset[recvTask]],
 				       nsend_local[recvTask] * sizeof(struct densdata_in), MPI_BYTE,
 				       recvTask, TAG_DENS_A,
 				       &DensDataGet[nbuffer[ThisTask]],
 				       nsend[recvTask * NTask + ThisTask] * sizeof(struct densdata_in),
 				       MPI_BYTE, recvTask, TAG_DENS_A, MPI_COMM_WORLD, &status);
+#else
+            fprintf(stderr, "NO MPI, SO NO SENDING");
+            exit(1);
+#endif
 			}
 		    }
 
@@ -215,7 +231,9 @@ void density(void)
 
 	      /* do a block to explicitly measure imbalance */
 	      tstart = second();
+#ifndef NOMPI
 	      MPI_Barrier(MPI_COMM_WORLD);
+#endif
 	      tend = second();
 	      timeimbalance += timediff(tstart, tend);
 
@@ -243,12 +261,17 @@ void density(void)
 		      if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
 			{
 			  /* send the results */
+#ifndef NOMPI
 			  MPI_Sendrecv(&DensDataResult[nbuffer[ThisTask]],
 				       nsend[recvTask * NTask + ThisTask] * sizeof(struct densdata_out),
 				       MPI_BYTE, recvTask, TAG_DENS_B,
 				       &DensDataPartialResult[noffset[recvTask]],
 				       nsend_local[recvTask] * sizeof(struct densdata_out),
 				       MPI_BYTE, recvTask, TAG_DENS_B, MPI_COMM_WORLD, &status);
+#else
+            fprintf(stderr, "NO MPI, SO NO SENDING");
+            exit(1);
+#endif
 
 			  /* add the result to the particles */
 			  for(j = 0; j < nsend_local[recvTask]; j++)
@@ -279,7 +302,11 @@ void density(void)
 	      level = ngrp - 1;
 	    }
 
+#ifndef NOMPI
 	  MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+	  for(j = 0; j < NTask; j++){ndonelist[j] = ndone;}
+#endif
 	  for(j = 0; j < NTask; j++)
 	    ntotleft -= ndonelist[j];
 	}
@@ -407,7 +434,12 @@ void density(void)
 
 
       numlist = malloc(NTask * sizeof(int) * NTask);
+
+#ifndef NOMPI
       MPI_Allgather(&npleft, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+     for(i = 0; i < NTask; i++){numlist[i] = npleft;}
+#endif
       for(i = 0, ntot = 0; i < NTask; i++)
 	ntot += numlist[i];
       free(numlist);
@@ -457,10 +489,17 @@ void density(void)
   else
     timengb = 0;
 
+#ifndef NOMPI
   MPI_Reduce(&timengb, &sumtimengb, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+#else
+    sumtimengb = timengb;
+    sumt = timecomp;
+    sumcomm = timecommsumm;
+    sumimbalance = timeimbalance;
+#endif
 
   if(ThisTask == 0)
     {

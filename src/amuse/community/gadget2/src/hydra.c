@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 #include <gsl/gsl_math.h>
 #include "allvars.h"
 #include "proto.h"
@@ -56,7 +58,9 @@ void hydro_force(void)
   double soundspeed_i;
   double tstart, tend, sumt, sumcomm;
   double timecomp = 0, timecommsumm = 0, timeimbalance = 0, sumimbalance;
+#ifndef NOMPI
   MPI_Status status;
+#endif
 
 #ifdef PERIODIC
   boxSize = All.BoxSize;
@@ -105,7 +109,11 @@ void hydro_force(void)
     }
 
   numlist = malloc(NTask * sizeof(int) * NTask);
+#ifndef NOMPI
   MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    numlist[0] = NumSphUpdate;
+#endif
   for(i = 0, ntot = 0; i < NTask; i++)
     ntot += numlist[i];
   free(numlist);
@@ -176,9 +184,11 @@ void hydro_force(void)
 	noffset[j] = noffset[j - 1] + nsend_local[j - 1];
 
       tstart = second();
-
+#ifndef NOMPI
       MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    nsend[0] = nsend_local[0];
+#endif
       tend = second();
       timeimbalance += timediff(tstart, tend);
 
@@ -210,6 +220,7 @@ void hydro_force(void)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
 		    {
+#ifndef NOMPI
 		      /* get the particles */
 		      MPI_Sendrecv(&HydroDataIn[noffset[recvTask]],
 				   nsend_local[recvTask] * sizeof(struct hydrodata_in), MPI_BYTE,
@@ -217,6 +228,10 @@ void hydro_force(void)
 				   &HydroDataGet[nbuffer[ThisTask]],
 				   nsend[recvTask * NTask + ThisTask] * sizeof(struct hydrodata_in), MPI_BYTE,
 				   recvTask, TAG_HYDRO_A, MPI_COMM_WORLD, &status);
+#else
+    fprintf(stderr, "NOT SUPPORTED");
+    exit(1);
+#endif
 		    }
 		}
 
@@ -236,7 +251,9 @@ void hydro_force(void)
 
 	  /* do a block to measure imbalance */
 	  tstart = second();
-	  MPI_Barrier(MPI_COMM_WORLD);
+#ifndef NOMPI
+      MPI_Barrier(MPI_COMM_WORLD);
+#endif
 	  tend = second();
 	  timeimbalance += timediff(tstart, tend);
 
@@ -263,6 +280,7 @@ void hydro_force(void)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
 		    {
+#ifndef NOMPI
 		      /* send the results */
 		      MPI_Sendrecv(&HydroDataResult[nbuffer[ThisTask]],
 				   nsend[recvTask * NTask + ThisTask] * sizeof(struct hydrodata_out),
@@ -270,7 +288,10 @@ void hydro_force(void)
 				   &HydroDataPartialResult[noffset[recvTask]],
 				   nsend_local[recvTask] * sizeof(struct hydrodata_out),
 				   MPI_BYTE, recvTask, TAG_HYDRO_B, MPI_COMM_WORLD, &status);
-
+#else
+    fprintf(stderr, "NOT SUPPORTED");
+    exit(1);
+#endif
 		      /* add the result to the particles */
 		      for(j = 0; j < nsend_local[recvTask]; j++)
 			{
@@ -298,7 +319,11 @@ void hydro_force(void)
 	  level = ngrp - 1;
 	}
 
+#ifndef NOMPI
       MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    ndonelist[0] = ndone;
+#endif
       for(j = 0; j < NTask; j++)
 	ntotleft -= ndonelist[j];
     }
@@ -333,10 +358,15 @@ void hydro_force(void)
 
   /* collect some timing information */
 
+#ifndef NOMPI
   MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
+#else
+    sumt = timecomp;
+    sumcomm = timecommsumm;
+    sumimbalance = timeimbalance;
+#endif
   if(ThisTask == 0)
     {
       All.CPU_HydCompWalk += sumt / NTask;

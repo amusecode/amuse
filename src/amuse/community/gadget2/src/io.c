@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 #include <errno.h>
 
 #ifdef HAVE_HDF5
@@ -77,10 +79,18 @@ void savepositions(int num)
     n_type[P[n].Type]++;
 
   /* because ntot_type_all[] is of type `long long', we cannot do a simple
-   * MPI_Allreduce() to sum the total particle numbers 
+   * MPI_Allreduce() to sum the total particle numbers
    */
   temp = malloc(NTask * 6 * sizeof(int));
+
+#ifndef NOMPI
   MPI_Allgather(n_type, 6, MPI_INT, temp, 6, MPI_INT, MPI_COMM_WORLD);
+#else
+
+  for(i = 0; i < 6; i++){
+    temp[i] = n_type[i];
+  }
+#endif
   for(i = 0; i < 6; i++)
     {
       ntot_type_all[i] = 0;
@@ -108,7 +118,9 @@ void savepositions(int num)
     {
       if((filenr / All.NumFilesWrittenInParallel) == gr)	/* ok, it's this processor's turn */
 	write_file(buf, masterTask, lastTask);
-      MPI_Barrier(MPI_COMM_WORLD);
+#ifndef NOMPI
+	      MPI_Barrier(MPI_COMM_WORLD);
+#endif
     }
 
 
@@ -676,7 +688,10 @@ void write_file(char *fname, int writeTask, int lastTask)
   int blockmaxlen, ntot_type[6], nn[6];
   enum iofields blocknr;
   int blksize;
+
+#ifndef NOMPI
   MPI_Status status;
+#endif
   FILE *fd = 0;
 
 #ifdef HAVE_HDF5
@@ -697,6 +712,7 @@ void write_file(char *fname, int writeTask, int lastTask)
       for(n = 0; n < 6; n++)
 	ntot_type[n] = n_type[n];
 
+#ifndef NOMPI
       for(task = writeTask + 1; task <= lastTask; task++)
 	{
 	  MPI_Recv(&nn[0], 6, MPI_INT, task, TAG_LOCALN, MPI_COMM_WORLD, &status);
@@ -706,12 +722,15 @@ void write_file(char *fname, int writeTask, int lastTask)
 
       for(task = writeTask + 1; task <= lastTask; task++)
 	MPI_Send(&ntot_type[0], 6, MPI_INT, task, TAG_N, MPI_COMM_WORLD);
+#endif
     }
+#ifndef NOMPI
   else
     {
       MPI_Send(&n_type[0], 6, MPI_INT, writeTask, TAG_LOCALN, MPI_COMM_WORLD);
       MPI_Recv(&ntot_type[0], 6, MPI_INT, writeTask, TAG_N, MPI_COMM_WORLD, &status);
     }
+#endif
 
 
 
@@ -888,14 +907,17 @@ void write_file(char *fname, int writeTask, int lastTask)
 			    {
 			      n_for_this_task = n_type[type];
 
+#ifndef NOMPI
 			      for(p = writeTask; p <= lastTask; p++)
 				if(p != ThisTask)
 				  MPI_Send(&n_for_this_task, 1, MPI_INT, p, TAG_NFORTHISTASK, MPI_COMM_WORLD);
+#endif
 			    }
+#ifndef NOMPI
 			  else
 			    MPI_Recv(&n_for_this_task, 1, MPI_INT, task, TAG_NFORTHISTASK, MPI_COMM_WORLD,
 				     &status);
-
+#endif
 			  while(n_for_this_task > 0)
 			    {
 			      pc = n_for_this_task;
@@ -905,7 +927,7 @@ void write_file(char *fname, int writeTask, int lastTask)
 
 			      if(ThisTask == task)
 				fill_write_buffer(blocknr, &offset, pc, type);
-
+#ifndef NOMPI
 			      if(ThisTask == writeTask && task != writeTask)
 				MPI_Recv(CommBuffer, bytes_per_blockelement * pc, MPI_BYTE, task,
 					 TAG_PDATA, MPI_COMM_WORLD, &status);
@@ -913,7 +935,7 @@ void write_file(char *fname, int writeTask, int lastTask)
 			      if(ThisTask != writeTask && task == ThisTask)
 				MPI_Ssend(CommBuffer, bytes_per_blockelement * pc, MPI_BYTE, writeTask,
 					  TAG_PDATA, MPI_COMM_WORLD);
-
+#endif
 			      if(ThisTask == writeTask)
 				{
 				  if(All.SnapFormat == 3)
@@ -1139,10 +1161,10 @@ size_t my_fwrite(void *ptr, size_t size, size_t nmemb, FILE * stream)
 size_t my_fread(void *ptr, size_t size, size_t nmemb, FILE * stream)
 {
   size_t nread;
-
+  printf("task=%d reading (%d, %d)\n", ThisTask, size, nmemb);
   if((nread = fread(ptr, size, nmemb, stream)) != nmemb)
     {
-      printf("I/O error (fread) on task=%d has occured: %s\n", ThisTask, strerror(errno));
+      printf("I/O error (fread) on task=%d has occured:  (%d, %d,%d) -- %s --\n", ThisTask, size, nmemb, nread, strerror(errno));
       fflush(stdout);
       endrun(778);
     }

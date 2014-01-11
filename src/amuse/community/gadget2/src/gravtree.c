@@ -2,12 +2,14 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
 
-/*! \file gravtree.c 
+/*! \file gravtree.c
  *  \brief main driver routines for gravitational (short-range) force computation
  *
  *  This file contains the code for the gravitational force computation by
@@ -43,7 +45,9 @@ void gravity_tree(void)
   int k, place;
   int level, sendTask, recvTask;
   double ax, ay, az;
+#ifndef NOMPI
   MPI_Status status;
+#endif // NOMPI
 #endif
 
   /* set new softening lengths */
@@ -72,7 +76,11 @@ void gravity_tree(void)
 
   /* Note: 'NumForceUpdate' has already been determined in find_next_sync_point_and_drift() */
   numlist = malloc(NTask * sizeof(int) * NTask);
+#ifndef NOMPI
   MPI_Allgather(&NumForceUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+  numlist[0] = NumForceUpdate;
+#endif
   for(i = 0, ntot = 0; i < NTask; i++)
     ntot += numlist[i];
   free(numlist);
@@ -156,8 +164,11 @@ void gravity_tree(void)
 
       tstart = second();
 
+#ifndef NOMPI
       MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    for(i = 0; i < NTask; i++){nsend[i]= nsend_local[i];}
+#endif
       tend = second();
       timeimbalance += timediff(tstart, tend);
 
@@ -183,6 +194,7 @@ void gravity_tree(void)
 	      sendTask = ThisTask;
 	      recvTask = ThisTask ^ ngrp;
 
+#ifndef NOMPI
 	      if(recvTask < NTask)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -196,7 +208,7 @@ void gravity_tree(void)
 				   recvTask, TAG_GRAV_A, MPI_COMM_WORLD, &status);
 		    }
 		}
-
+#endif
 	      for(j = 0; j < NTask; j++)
 		if((j ^ ngrp) < NTask)
 		  nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
@@ -218,7 +230,9 @@ void gravity_tree(void)
 	  timetree += timediff(tstart, tend);
 
 	  tstart = second();
-	  MPI_Barrier(MPI_COMM_WORLD);
+#ifndef NOMPI
+      MPI_Barrier(MPI_COMM_WORLD);
+#endif
 	  tend = second();
 	  timeimbalance += timediff(tstart, tend);
 
@@ -240,6 +254,7 @@ void gravity_tree(void)
 
 	      sendTask = ThisTask;
 	      recvTask = ThisTask ^ ngrp;
+#ifndef NOMPI
 	      if(recvTask < NTask)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -264,7 +279,7 @@ void gravity_tree(void)
 			}
 		    }
 		}
-
+#endif
 	      for(j = 0; j < NTask; j++)
 		if((j ^ ngrp) < NTask)
 		  nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
@@ -274,8 +289,11 @@ void gravity_tree(void)
 
 	  level = ngrp - 1;
 	}
-
+#ifndef NOMPI
       MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    ndonelist[0] = ndone;
+#endif
       for(j = 0; j < NTask; j++)
 	ntotleft -= ndonelist[j];
     }
@@ -328,7 +346,7 @@ void gravity_tree(void)
 	P[i].GravAccel[j] *= All.G;
 
 
-  /* Finally, the following factor allows a computation of a cosmological simulation 
+  /* Finally, the following factor allows a computation of a cosmological simulation
      with vacuum energy in physical coordinates */
 #ifndef PERIODIC
 #ifndef PMGRID
@@ -377,7 +395,7 @@ void gravity_tree(void)
   nrecv = malloc(sizeof(int) * NTask);
 
   numnodes = Numnodestree;
-
+#ifndef NOMPI
   MPI_Gather(&costtotal, 1, MPI_DOUBLE, costtreelist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
   MPI_Gather(&numnodes, 1, MPI_INT, numnodeslist, 1, MPI_INT, 0, MPI_COMM_WORLD);
   MPI_Gather(&timetree, 1, MPI_DOUBLE, timetreelist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -386,7 +404,16 @@ void gravity_tree(void)
   MPI_Gather(&ewaldcount, 1, MPI_DOUBLE, ewaldlist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
   MPI_Reduce(&nexportsum, &nexport, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
+#else
+    costtreelist[0] = costtotal;
+    numnodeslist[0] = numnodes;
+    timetreelist[0] = timetree;
+    timecommlist[0] = timecommsumm;
+    nrecv[0] = NumPart;
+    ewaldlist[0] = ewaldcount;
+    nexport  = nexportsum;
+    sumimbalance = timeimbalance;
+#endif
   if(ThisTask == 0)
     {
       All.TotNumOfForces += ntot;
@@ -461,27 +488,27 @@ void set_softenings(void)
         All.SofteningTable[0] = All.SofteningGasMaxPhys / All.Time;
       else
         All.SofteningTable[0] = All.SofteningGas;
-      
+
       if(All.SofteningHalo * All.Time > All.SofteningHaloMaxPhys)
         All.SofteningTable[1] = All.SofteningHaloMaxPhys / All.Time;
       else
         All.SofteningTable[1] = All.SofteningHalo;
-      
+
       if(All.SofteningDisk * All.Time > All.SofteningDiskMaxPhys)
         All.SofteningTable[2] = All.SofteningDiskMaxPhys / All.Time;
       else
         All.SofteningTable[2] = All.SofteningDisk;
-      
+
       if(All.SofteningBulge * All.Time > All.SofteningBulgeMaxPhys)
         All.SofteningTable[3] = All.SofteningBulgeMaxPhys / All.Time;
       else
         All.SofteningTable[3] = All.SofteningBulge;
-      
+
       if(All.SofteningStars * All.Time > All.SofteningStarsMaxPhys)
         All.SofteningTable[4] = All.SofteningStarsMaxPhys / All.Time;
       else
         All.SofteningTable[4] = All.SofteningStars;
-      
+
       if(All.SofteningBndry * All.Time > All.SofteningBndryMaxPhys)
         All.SofteningTable[5] = All.SofteningBndryMaxPhys / All.Time;
       else

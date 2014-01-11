@@ -15,7 +15,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 #include <gsl/gsl_math.h>
 #include "allvars.h"
 #include "proto.h"
@@ -58,8 +60,8 @@ static double boxSize_Z, boxHalf_Z;
 
 
 
-/*! This function is the driver routine for the update of the calculation 
- *  of hydrodynamical force due to the feedback impact 
+/*! This function is the driver routine for the update of the calculation
+ *  of hydrodynamical force due to the feedback impact
  *  from either SNe or BHs on active gas particles.
  */
 void get_sigvel(void)
@@ -71,7 +73,9 @@ void get_sigvel(void)
   double soundspeed_i;
   double tstart, tend, sumt, sumcomm;
   double timecomp = 0, timecommsumm = 0, timeimbalance = 0, sumimbalance;
+#ifndef NOMPI
   MPI_Status status;
+#endif
 
 #ifdef PERIODIC
   boxSize = All.BoxSize;
@@ -120,7 +124,12 @@ void get_sigvel(void)
     }
 
   numlist = malloc(NTask * sizeof(int) * NTask);
+
+#ifndef NOMPI
   MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    numlist[0] = NumSphUpdate;
+#endif
   for(i = 0, ntot = 0; i < NTask; i++)
     ntot += numlist[i];
   free(numlist);
@@ -194,9 +203,11 @@ void get_sigvel(void)
 	noffset[j] = noffset[j - 1] + nsend_local[j - 1];
 
       tstart = second();
-
+#ifndef NOMPI
       MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    nsend[0] = nsend_local[0];
+#endif
       tend = second();
       timeimbalance += timediff(tstart, tend);
 
@@ -223,7 +234,7 @@ void get_sigvel(void)
 
 	      sendTask = ThisTask;
 	      recvTask = ThisTask ^ ngrp;
-
+#ifndef NOMPI
 	      if(recvTask < NTask)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -237,7 +248,7 @@ void get_sigvel(void)
 				   recvTask, TAG_HYDRO_A, MPI_COMM_WORLD, &status);
 		    }
 		}
-
+#endif
 	      for(j = 0; j < NTask; j++)
 		if((j ^ ngrp) < NTask)
 		  nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
@@ -254,7 +265,9 @@ void get_sigvel(void)
 
 	  /* do a block to measure imbalance */
 	  tstart = second();
-	  MPI_Barrier(MPI_COMM_WORLD);
+#ifndef NOMPI
+	      MPI_Barrier(MPI_COMM_WORLD);
+#endif
 	  tend = second();
 	  timeimbalance += timediff(tstart, tend);
 
@@ -277,6 +290,7 @@ void get_sigvel(void)
 	      sendTask = ThisTask;
 	      recvTask = ThisTask ^ ngrp;
 
+#ifndef NOMPI
 	      if(recvTask < NTask)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -303,7 +317,7 @@ void get_sigvel(void)
 			}
 		    }
 		}
-
+#endif
 	      for(j = 0; j < NTask; j++)
 		if((j ^ ngrp) < NTask)
 		  nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
@@ -314,7 +328,11 @@ void get_sigvel(void)
 	  level = ngrp - 1;
 	}
 
+#ifndef NOMPI
       MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    ndonelist[0] = ndone;
+#endif
       for(j = 0; j < NTask; j++)
 	ntotleft -= ndonelist[j];
     }
@@ -327,11 +345,15 @@ void get_sigvel(void)
 
 
   /* collect some timing information */
-
+#ifndef NOMPI
   MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
+#else
+    sumt = timecomp;
+    sumcomm = timecommsumm;
+    sumimbalance = timeimbalance;
+#endif
   if(ThisTask == 0)
     {
       All.CPU_HydCompWalk += sumt / NTask;
@@ -344,7 +366,7 @@ void get_sigvel(void)
 /*! This function is the 'core' of the SPH force update. A target
  *  particle is specified which may either be local, or reside in the
  *  communication buffer.
- *  Note that only the acceleration due to feedback and the change 
+ *  Note that only the acceleration due to feedback and the change
  *  of signal velocity are updated, not the actual variation of Entropy rate.
  */
 void get_sigvel_evaluate(int target, int mode)
@@ -552,7 +574,7 @@ void get_sigvel_evaluate(int target, int mode)
       fflush(stdout);
     }
   while(startnode >= 0);
-  
+
   /* Now collect the result at the right place */
   if(mode == 0)
     {

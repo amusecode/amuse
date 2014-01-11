@@ -23,7 +23,11 @@ clean:
 	make -C src clean
 
 $(CODELIB):
+ifeq ($(MPI_ENABLED), no)
 	make -C src amuse
+else
+	make -C src amusepar
+endif
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py Nbody6xxInterface -o $@
@@ -32,4 +36,4 @@ nbody6xx_worker: worker_code.f90 $(CODELIB) $(OBJS)
 	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) $(FS_LIBS) -o $@  $(LIBS)
 
 %.o: %.f90 
-	$(FC) $(FCFLAGS) -ffixed-form -xf77-cpp-input -c -o $@ $<
+	$(FC) $(FCFLAGS) -Isrc/ -ffixed-form -xf77-cpp-input -c -o $@ $<

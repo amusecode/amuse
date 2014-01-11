@@ -3,7 +3,9 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
@@ -73,7 +75,7 @@ int force_treebuild(int npart)
 
 
 
-/*! Constructs the gravitational oct-tree.  
+/*! Constructs the gravitational oct-tree.
  *
  *  The index convention for accessing tree nodes is the following: the
  *  indices 0...NumPart-1 reference single particles, the indices
@@ -117,7 +119,7 @@ int force_treebuild_single(int npart)
   /* create a set of empty nodes corresponding to the top-level domain
    * grid. We need to generate these nodes first to make sure that we have a
    * complete top-level tree which allows the easy insertion of the
-   * pseudo-particles at the right place 
+   * pseudo-particles at the right place
    */
 
   force_create_empty_nodes(All.MaxPart, 0, 1, 0, 0, 0, &numnodes, &nfree);
@@ -386,8 +388,8 @@ void force_insert_pseudo_particles(void)
 		    }
 		  else
 		    {
-		      /* here we have found an empty slot where we can 
-		       * attach the pseudo particle as a leaf 
+		      /* here we have found an empty slot where we can
+		       * attach the pseudo particle as a leaf
 		       */
 		      Nodes[th].u.suns[subnode] = All.MaxPart + MaxNodes + i;
 
@@ -413,11 +415,11 @@ void force_insert_pseudo_particles(void)
  *  belongs to the top-level tree corresponding to the domain
  *  decomposition, while Bit 1 signals whether the top-level node is
  *  dependent on local mass.
- * 
+ *
  *  If UNEQUALSOFTENINGS is set, bits 2-4 give the particle type with
  *  the maximum softening among the particles in the node, and bit 5
  *  flags whether the node contains any particles with lower softening
- *  than that.  
+ *  than that.
  */
 void force_update_node_recursive(int no, int sib, int father)
 {
@@ -684,7 +686,9 @@ void force_update_pseudoparticles(void)
 void force_exchange_pseudodata(void)
 {
   int i, no;
+#ifndef NOMPI
   MPI_Status status;
+#endif
   int level, sendTask, recvTask;
 
   for(i = DomainMyStart; i <= DomainMyLast; i++)
@@ -710,6 +714,7 @@ void force_exchange_pseudodata(void)
 
   /* share the pseudo-particle data accross CPUs */
 
+#ifndef NOMPI
   for(level = 1; level < (1 << PTask); level++)
     {
       sendTask = ThisTask;
@@ -723,7 +728,7 @@ void force_exchange_pseudodata(void)
 		     (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * sizeof(struct DomainNODE),
 		     MPI_BYTE, recvTask, TAG_DMOM, MPI_COMM_WORLD, &status);
     }
-
+#endif
 }
 
 /*! This function updates the top-level tree after the multipole moments of
@@ -885,7 +890,9 @@ void force_flag_localnodes(void)
 void force_update_len(void)
 {
   int i, no;
+#ifndef NOMPI
   MPI_Status status;
+#endif
   int level, sendTask, recvTask;
 
   force_update_node_len_local();
@@ -898,6 +905,7 @@ void force_update_len(void)
       DomainTreeNodeLen[i] = Nodes[no].len;
     }
 
+#ifndef NOMPI
   for(level = 1; level < (1 << PTask); level++)
     {
       sendTask = ThisTask;
@@ -911,6 +919,7 @@ void force_update_len(void)
 		     (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * sizeof(FLOAT),
 		     MPI_BYTE, recvTask, TAG_NODELEN, MPI_COMM_WORLD, &status);
     }
+#endif
 
   /* Finally, we update the top-level tree. */
   force_update_node_len_toptree();
@@ -1014,7 +1023,9 @@ void force_update_node_len_toptree(void)
 void force_update_hmax(void)
 {
   int i, no;
+#ifndef NOMPI
   MPI_Status status;
+#endif
   int level, sendTask, recvTask;
 
   force_update_node_hmax_local();
@@ -1028,11 +1039,11 @@ void force_update_hmax(void)
 
   /* share the hmax-data of the pseudo-particles accross CPUs */
 
+#ifndef NOMPI
   for(level = 1; level < (1 << PTask); level++)
     {
       sendTask = ThisTask;
       recvTask = ThisTask ^ level;
-
       if(recvTask < NTask)
 	MPI_Sendrecv(&DomainHmax[DomainStartList[sendTask]],
 		     (DomainEndList[sendTask] - DomainStartList[sendTask] + 1) * sizeof(FLOAT),
@@ -1041,6 +1052,7 @@ void force_update_hmax(void)
 		     (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * sizeof(FLOAT),
 		     MPI_BYTE, recvTask, TAG_HMAX, MPI_COMM_WORLD, &status);
     }
+#endif
 
 
   force_update_node_hmax_toptree();
@@ -1664,7 +1676,7 @@ int force_treeevaluate_shortrange(int target, int mode)
                       if(((nop->u.d.bitflags >> 5) & 1))	/* bit-5 signals that there are particles of different softening in the node */
                         {
                           no = nop->u.d.nextnode;
-                          
+
                           continue;
                         }
                     }
@@ -1908,7 +1920,7 @@ int force_treeevaluate_ewald_correction(int target, int mode, double pos_x, doub
 		}
 
 	      /* if the cell is too large, we need to refine
-	       * it further 
+	       * it further
 	       */
 	      if(nop->len > 0.20 * boxsize)
 		{
@@ -2167,7 +2179,7 @@ void force_treeevaluate_potential(int target, int mode)
 	      if((nop->u.d.bitflags & 3) == 1)	/* if it's a top-level node
 						 * which does not contain
 						 * local particles we can make
-						 * a short-cut 
+						 * a short-cut
 						 */
 		{
 		  no = nop->u.d.sibling;
@@ -2888,7 +2900,7 @@ void ewald_init(void)
   sprintf(buf, "%sewald_spc_table_%d.dat", All.OutputDir, EN);
 #endif
 
-  if((fd = fopen(buf, "r")))
+  if((fd = fopen(buf, "rb")))
     {
       if(ThisTask == 0)
 	{
@@ -2961,7 +2973,7 @@ void ewald_init(void)
 	  len = size;
 	  if(task == (NTask - 1))
 	    len = (EN + 1) * (EN + 1) * (EN + 1) - beg;
-
+#ifndef NOMPI
 #ifdef DOUBLEPRECISION
 	  MPI_Bcast(&fcorrx[0][0][beg], len, MPI_DOUBLE, task, MPI_COMM_WORLD);
 	  MPI_Bcast(&fcorry[0][0][beg], len, MPI_DOUBLE, task, MPI_COMM_WORLD);
@@ -2972,6 +2984,7 @@ void ewald_init(void)
 	  MPI_Bcast(&fcorry[0][0][beg], len, MPI_FLOAT, task, MPI_COMM_WORLD);
 	  MPI_Bcast(&fcorrz[0][0][beg], len, MPI_FLOAT, task, MPI_COMM_WORLD);
 	  MPI_Bcast(&potcorr[0][0][beg], len, MPI_FLOAT, task, MPI_COMM_WORLD);
+#endif
 #endif
 	}
 

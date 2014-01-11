@@ -3,14 +3,16 @@
 #include <string.h>
 #include <math.h>
 #include <float.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 
 #include "allvars.h"
 #include "proto.h"
 
 
-/*! \file potential.c 
+/*! \file potential.c
  *  \brief Computation of the gravitational potential of particles
  */
 
@@ -31,7 +33,9 @@ void compute_potential(void)
   int *nsend, *noffset, *nsend_local, *nbuffer, *ndonelist, *numlist;
   double fac;
   double t0, t1, tstart, tend;
+#ifndef NOMPI
   MPI_Status status;
+#endif
   double r2;
 
   t0 = second();
@@ -63,7 +67,11 @@ void compute_potential(void)
   All.CPU_TreeConstruction += timediff(tstart, tend);
 
   numlist = malloc(NTask * sizeof(int) * NTask);
+#ifndef NOMPI
   MPI_Allgather(&NumPart, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+   numlist[0] = NumPart;
+#endif
   for(i = 0, ntot = 0; i < NTask; i++)
     ntot += numlist[i];
   free(numlist);
@@ -129,8 +137,11 @@ void compute_potential(void)
       for(j = 1, noffset[0] = 0; j < NTask; j++)
 	noffset[j] = noffset[j - 1] + nsend_local[j - 1];
 
+#ifndef NOMPI
       MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
-
+#else
+    nsend[0] = nsend_local[0];
+#endif
       /* now do the particles that need to be exported */
 
       for(level = 1; level < (1 << PTask); level++)
@@ -152,6 +163,7 @@ void compute_potential(void)
 	      sendTask = ThisTask;
 	      recvTask = ThisTask ^ ngrp;
 
+#ifndef NOMPI
 	      if(recvTask < NTask)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -165,6 +177,7 @@ void compute_potential(void)
 				   recvTask, TAG_POTENTIAL_A, MPI_COMM_WORLD, &status);
 		    }
 		}
+#endif
 
 	      for(j = 0; j < NTask; j++)
 		if((j ^ ngrp) < NTask)
@@ -199,6 +212,7 @@ void compute_potential(void)
 	      sendTask = ThisTask;
 	      recvTask = ThisTask ^ ngrp;
 
+#ifndef NOMPI
 	      if(recvTask < NTask)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -220,7 +234,7 @@ void compute_potential(void)
 			}
 		    }
 		}
-
+#endif
 	      for(j = 0; j < NTask; j++)
 		if((j ^ ngrp) < NTask)
 		  nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
@@ -229,7 +243,11 @@ void compute_potential(void)
 	  level = ngrp - 1;
 	}
 
+#ifndef NOMPI
       MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+#else
+    ndonelist[0] = ndone;
+#endif // NOMPI
       for(j = 0; j < NTask; j++)
 	ntotleft -= ndonelist[j];
     }

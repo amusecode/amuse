@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
 
-/*! \file peano.c 
+/*! \file peano.c
  *  \brief Routines to compute a Peano-Hilbert order
  *
  *  This file contains routines to compute Peano-Hilbert keys, and to put the

@@ -24,7 +24,7 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-default_options = dict(number_of_workers=2)
+default_options = dict(number_of_workers=1)
 #default_options = dict(number_of_workers=2, redirection="none")
 
 # ... but never use (number_of_workers>1) for tests with only a few particles:

@@ -58,8 +58,13 @@ void divide_proc(const int &Nprt,
   int Nproc = 0;
   int myrank = 0;
   first_address = 0;
+#ifndef NOMPI
   MPI_Comm_size(MPI_COMM_WORLD, &Nproc);
   MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+#else
+    Nproc = 1;
+    myrank = 0;
+#endif
   Njp_loc  = Nprt / Nproc;
   if(myrank < Nprt%Nproc){
     Njp_loc++;
@@ -76,6 +81,7 @@ void reduce_force(Particle prt[],
 		  const int &Ni0,
 		  const int &Ni,
 		  const MPI_Comm &icomm){
+#ifndef NOMPI
   int myrank;
   MPI_Comm_rank(icomm, &myrank);
   for(int i=Ni0; i<Ni0+Ni; i++){
@@ -110,18 +116,31 @@ void reduce_force(Particle prt[],
     prt[addi].r2min = dblint_list_recv0[i-Ni0].val;
     MPI_Bcast(&(prt[addi].ngb_index),  1,  MPI_INT,  dblint_list_recv0[i-Ni0].rank,  icomm);
   }
+#endif
 }
 
 void sum_double(double &x, 
 		double &xsum,
 		const int &nwords,
 		const MPI_Comm &comm){
+#ifndef NOMPI
   MPI_Allreduce(&x, &xsum, nwords, MPI_DOUBLE, MPI_SUM, comm); 
+#else
+    double * xsum_p = &xsum;
+    double * x_p = &x;
+    for(int i = 0; i < nwords; i++) {
+        *(xsum_p + i) = *(x_p + i);
+    }
+#endif
 }
 
 void mpi_abort(){
   int error = 0;
+#ifndef NOMPI
   MPI_Abort(MPI_COMM_WORLD, error);
+#else
+    exit(1);
+#endif
 }
 
 

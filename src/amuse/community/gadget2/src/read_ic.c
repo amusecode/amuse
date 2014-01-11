@@ -3,7 +3,9 @@
 #include <string.h>
 #include <math.h>
 #include <string.h>
+#ifndef NOMPI
 #include <mpi.h>
+#endif
 
 #include "allvars.h"
 #include "proto.h"
@@ -66,7 +68,10 @@ void read_ic(char *fname)
 	{
 	  if(ThisTask == (groupMaster + gr))	/* ok, it's this processor's turn */
 	    read_file(buf, ThisTask, ThisTask);
-	  MPI_Barrier(MPI_COMM_WORLD);
+
+#ifndef NOMPI
+	      MPI_Barrier(MPI_COMM_WORLD);
+#endif
 	}
 
       rest_files -= NTask;
@@ -98,7 +103,10 @@ void read_ic(char *fname)
 	{
 	  if((filenr / All.NumFilesWrittenInParallel) == gr)	/* ok, it's this processor's turn */
 	    read_file(buf, masterTask, lastTask);
-	  MPI_Barrier(MPI_COMM_WORLD);
+
+#ifndef NOMPI
+	      MPI_Barrier(MPI_COMM_WORLD);
+#endif
 	}
     }
 
@@ -145,7 +153,10 @@ void read_ic(char *fname)
   for(i = 0; i < N_gas; i++)
     SphP[i].Entropy = dmax(All.MinEgySpec, SphP[i].Entropy);
 
-  MPI_Barrier(MPI_COMM_WORLD);
+
+#ifndef NOMPI
+    MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
   if(ThisTask == 0)
     {
@@ -225,7 +236,7 @@ void empty_read_buffer(enum iofields blocknr, int offset, int pc, int type)
 
 
 
-      /* the other input fields (if present) are not needed to define the 
+      /* the other input fields (if present) are not needed to define the
          initial conditions of the code */
 
     case IO_POT:
@@ -246,7 +257,9 @@ void read_file(char *fname, int readTask, int lastTask)
   int blockmaxlen;
   int i, n_in_file, n_for_this_task, ntask, pc, offset = 0, task;
   int blksize1, blksize2;
+#ifndef NOMPI
   MPI_Status status;
+#endif
   FILE *fd = 0;
   int nall;
   int type;
@@ -316,12 +329,15 @@ void read_file(char *fname, int readTask, int lastTask)
 	}
 #endif
 
+#ifndef NOMPI
       for(task = readTask + 1; task <= lastTask; task++)
 	MPI_Ssend(&header, sizeof(header), MPI_BYTE, task, TAG_HEADER, MPI_COMM_WORLD);
+#endif
     }
+#ifndef NOMPI
   else
     MPI_Recv(&header, sizeof(header), MPI_BYTE, readTask, TAG_HEADER, MPI_COMM_WORLD, &status);
-
+#endif
 
   if(All.TotNumPart == 0)
     {
@@ -342,7 +358,7 @@ void read_file(char *fname, int readTask, int lastTask)
 	All.MassTable[i] = header.mass[i];
 
       All.MaxPart = All.PartAllocFactor * (All.TotNumPart / NTask);	/* sets the maximum number of particles that may */
-      All.MaxPartSph = All.PartAllocFactor * (All.TotN_gas / NTask);	/* sets the maximum number of particles that may 
+      All.MaxPartSph = All.PartAllocFactor * (All.TotN_gas / NTask);	/* sets the maximum number of particles that may
 									   reside on a processor */
       allocate_memory();
 
@@ -535,6 +551,7 @@ void read_file(char *fname, int readTask, int lastTask)
 #endif
 				}
 
+#ifndef NOMPI
 			      if(ThisTask == readTask && task != readTask)
 				MPI_Ssend(CommBuffer, bytes_per_blockelement * pc, MPI_BYTE, task, TAG_PDATA,
 					  MPI_COMM_WORLD);
@@ -542,7 +559,7 @@ void read_file(char *fname, int readTask, int lastTask)
 			      if(ThisTask != readTask && task == ThisTask)
 				MPI_Recv(CommBuffer, bytes_per_blockelement * pc, MPI_BYTE, readTask,
 					 TAG_PDATA, MPI_COMM_WORLD, &status);
-
+#endif
 			      if(ThisTask == task)
 				{
 				  empty_read_buffer(blocknr, nstart + offset, pc, type);
@@ -665,7 +682,9 @@ int find_files(char *fname)
 	}
     }
 
+#ifndef NOMPI
   MPI_Bcast(&header, sizeof(header), MPI_BYTE, 0, MPI_COMM_WORLD);
+#endif // NOMPI
 
   if(header.num_files > 0)
     return header.num_files;
@@ -698,7 +717,9 @@ int find_files(char *fname)
 	}
     }
 
+#ifndef NOMPI
   MPI_Bcast(&header, sizeof(header), MPI_BYTE, 0, MPI_COMM_WORLD);
+#endif
 
   if(header.num_files > 0)
     return header.num_files;
