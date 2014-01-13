@@ -729,8 +729,10 @@ class AbstractMessageChannel(OptionalAttributes):
             arguments.append(interpreter_executable)
             
         arguments.append(full_name_of_the_worker)
+        arguments.append(full_name_of_the_worker)
         
-        command = 'gdbserver'
+        command = channel.gdbserver_exe
+        print "command", command
         return command, arguments
         
     @classmethod
@@ -758,11 +760,20 @@ class AbstractMessageChannel(OptionalAttributes):
 
     @option(type="boolean", sections=("channel",))
     def can_redirect_output(self):
-	return True
+        return True
         
     @option(sections=("channel",))
     def python_exe_for_redirection(self):
         return None
+    
+        
+    @option(type="int", sections=("channel",))
+    def debugger_port(self):
+        return 4343
+    
+    @option(type="string", sections=("channel",))
+    def gdbserver_exe(self):
+        return 'gdbserver'
     
     
         
@@ -1038,11 +1049,6 @@ class MpiChannel(AbstractMessageChannel):
     @option(sections=("channel",))
     def hostname(self):
         return None
-    
-        
-    @option(type="int", sections=("channel",))
-    def debugger_port(self):
-        return 4343
         
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):

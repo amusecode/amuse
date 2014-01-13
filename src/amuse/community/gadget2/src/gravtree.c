@@ -167,13 +167,14 @@ void gravity_tree(void)
 #ifndef NOMPI
       MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
 #else
-    for(i = 0; i < NTask; i++){nsend[i]= nsend_local[i];}
+    nsend[0] = nsend_local[0];
 #endif
       tend = second();
       timeimbalance += timediff(tstart, tend);
 
       /* now do the particles that need to be exported */
 
+#ifndef NOMPI
       for(level = 1; level < (1 << PTask); level++)
 	{
 	  tstart = second();
@@ -194,7 +195,6 @@ void gravity_tree(void)
 	      sendTask = ThisTask;
 	      recvTask = ThisTask ^ ngrp;
 
-#ifndef NOMPI
 	      if(recvTask < NTask)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -208,7 +208,6 @@ void gravity_tree(void)
 				   recvTask, TAG_GRAV_A, MPI_COMM_WORLD, &status);
 		    }
 		}
-#endif
 	      for(j = 0; j < NTask; j++)
 		if((j ^ ngrp) < NTask)
 		  nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
@@ -230,9 +229,7 @@ void gravity_tree(void)
 	  timetree += timediff(tstart, tend);
 
 	  tstart = second();
-#ifndef NOMPI
       MPI_Barrier(MPI_COMM_WORLD);
-#endif
 	  tend = second();
 	  timeimbalance += timediff(tstart, tend);
 
@@ -254,7 +251,6 @@ void gravity_tree(void)
 
 	      sendTask = ThisTask;
 	      recvTask = ThisTask ^ ngrp;
-#ifndef NOMPI
 	      if(recvTask < NTask)
 		{
 		  if(nsend[ThisTask * NTask + recvTask] > 0 || nsend[recvTask * NTask + ThisTask] > 0)
@@ -279,7 +275,6 @@ void gravity_tree(void)
 			}
 		    }
 		}
-#endif
 	      for(j = 0; j < NTask; j++)
 		if((j ^ ngrp) < NTask)
 		  nbuffer[j] += nsend[(j ^ ngrp) * NTask + j];
@@ -289,6 +284,7 @@ void gravity_tree(void)
 
 	  level = ngrp - 1;
 	}
+#endif
 #ifndef NOMPI
       MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
 #else

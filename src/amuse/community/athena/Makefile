@@ -56,6 +56,7 @@ all: athena_worker
 clean:
 	$(RM) -f *.so *.o *.selfgrav_o *.pyc worker_code.cc worker_code.h 
 	$(RM) -f *~ athena_worker  athena_worker_selfgrav athena_worker_mhd
+	$(RM) -f athena_worker*.exe
 	$(RM) -f athena_worker_scalar
 	$(RM) -f worker_code-sockets.cc athena_worker_sockets
 	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
@@ -82,7 +83,7 @@ $(BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(BUILDDIR)
 
 $(CODELIB): $(BUILDDIR)/Makefile
-ifneq (,$(findstring no,$(MPI_ENABLED)))
+ifeq ($(MPI_ENABLED),no)
 	cd $(BUILDDIR); ./configure --with-gas=hydro --disable-mpi --enable-smr 
 else
 	cd $(BUILDDIR); ./configure --with-gas=hydro --enable-mpi --enable-smr 
@@ -100,7 +101,11 @@ $(SELFGRAV_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(SELFGRAV_BUILDDIR)
 
 $(SELFGRAV_CODELIB): $(SELFGRAV_BUILDDIR)/Makefile
+ifeq ($(MPI_ENABLED),no)
+	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --disable-mpi --with-gravity=fft --enable-fft --disable-cooling
+else
 	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --disable-cooling
+endif
 	cd $(SELFGRAV_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
 	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
@@ -114,7 +119,7 @@ $(MHD_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(MHD_BUILDDIR)
 
 $(MHD_CODELIB): $(MHD_BUILDDIR)/Makefile
-ifneq (,$(findstring no,$(MPI_ENABLED)))
+ifeq ($(MPI_ENABLED),no)
 	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --disable-mpi --enable-smr --with-order=3 --with-flux=hlld
 else
 	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld
@@ -133,7 +138,11 @@ $(SCALAR_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(SCALAR_BUILDDIR)
 
 $(SCALAR_CODELIB): $(SCALAR_BUILDDIR)/Makefile
+ifeq ($(MPI_ENABLED),no)
+	cd $(SCALAR_BUILDDIR); ./configure --with-gas=hydro --disable-mpi --enable-smr --with-nscalars=1
+else
 	cd $(SCALAR_BUILDDIR); ./configure --with-gas=hydro --enable-mpi --enable-smr --with-nscalars=1
+endif
 	cd $(SCALAR_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
 	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
