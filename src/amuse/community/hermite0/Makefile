@@ -26,7 +26,7 @@ cleanall: clean
 	$(RM) hermite_worker *~ worker_code hermite_worker_sockets
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c --needs-mpi=true interface.py HermiteInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py HermiteInterface -o $@
 
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py HermiteInterface -o $@

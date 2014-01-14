@@ -123,7 +123,7 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-n",
             "--needs-mpi",
-            default="false",
+            default="true",
             dest="needs_mpi",
             help="If this boolean flag is set, the worker will initialize mpi, even in the sockets channel is used. Defaults to true")
         

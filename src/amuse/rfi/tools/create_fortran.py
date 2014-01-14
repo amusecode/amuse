@@ -1110,13 +1110,10 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
     def output_needs_mpi(self):
         self.out.lf() + 'logical NEEDS_MPI'
         
-        if hasattr(self, 'needs_mpi'):
-            if self.needs_mpi:
+        if (not hasattr(self, 'needs_mpi') and self.needs_mpi) and self.must_generate_mpi:
                 self.out.lf() + 'parameter (NEEDS_MPI=.true.)'
-            else:
-                self.out.lf() + 'parameter (NEEDS_MPI=.false.)'
         else:
-            self.out.lf() + 'parameter (NEEDS_MPI=.true.)'
+                self.out.lf() + 'parameter (NEEDS_MPI=.false.)'
                 
         self.out.lf().lf()
    

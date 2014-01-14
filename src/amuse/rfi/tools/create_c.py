@@ -1076,7 +1076,7 @@ class GenerateACSourcecodeStringFromASpecificationClass\
 
         
     def output_needs_mpi(self):
-        if self.needs_mpi:
+        if self.needs_mpi and self.must_generate_mpi:
             self.out.lf() + 'static bool NEEDS_MPI = true;'
         else:
             self.out.lf() + 'static bool NEEDS_MPI = false;'
