@@ -41,7 +41,7 @@ CL_FLAGS?=-I$(OPENCL)/include -I$(STDCL)/include
 all:	huayno_worker
 
 clean:
-	rm -f *.o *.bck *.pyc *.clh
+	rm -f *.o *.bck *.pyc *.clh worker_code.cc worker_code.h
 	rm -Rf $(BUILDDIR)
 	rm -Rf $(OPENCL_BUILDDIR)
 	rm -Rf $(OPENMP_BUILDDIR)
