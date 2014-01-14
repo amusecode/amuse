@@ -132,8 +132,8 @@ public class AmuseMessage {
         stringHeaderBytes = ByteBuffer.allocateDirect(0);
         stringBytes = new ByteBuffer[0];
 
-        allButStringByteBuffers =
-                new ByteBuffer[] { headerBytes, intBytes, longBytes, floatBytes, doubleBytes, booleanBytes, stringHeaderBytes };
+        allButStringByteBuffers = new ByteBuffer[] { headerBytes, intBytes, longBytes, floatBytes, doubleBytes, booleanBytes,
+                stringHeaderBytes };
 
         // no string buffers yet
         byteBuffers = allButStringByteBuffers;
@@ -173,6 +173,25 @@ public class AmuseMessage {
         setFunctionID(functionID);
         setCallCount(count);
         setError(error);
+    }
+
+    /**
+     * @return the size of the data currently in this message (in bytes).
+     */
+    public long getDataSize() {
+        long result = 0;
+
+        result += getIntCount() * SIZEOF_INT;
+        result += getLongCount() * SIZEOF_LONG;
+        result += getFloatCount() * SIZEOF_FLOAT;
+        result += getDoubleCount() * SIZEOF_DOUBLE;
+        result += getBooleanCount() * SIZEOF_BOOLEAN;
+
+        for (int i = 0; i < getStringCount(); i++) {
+            result += stringHeader.get(i);
+        }
+
+        return result;
     }
 
     public void clear() {
@@ -562,8 +581,8 @@ public class AmuseMessage {
         }
 
         if (buffersUpdated) {
-            allButStringByteBuffers =
-                    new ByteBuffer[] { headerBytes, intBytes, longBytes, floatBytes, doubleBytes, booleanBytes, stringHeaderBytes };
+            allButStringByteBuffers = new ByteBuffer[] { headerBytes, intBytes, longBytes, floatBytes, doubleBytes, booleanBytes,
+                    stringHeaderBytes };
 
             // update byte buffers array
             ByteBuffer[] newByteBuffers = new ByteBuffer[allButStringByteBuffers.length + stringBytes.length];

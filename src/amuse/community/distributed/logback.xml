@@ -13,6 +13,8 @@
   <logger name="nl.esciencecenter.xenon" level="warn" />
   <logger name="nl.esciencecenter.amuse" level="info" />
   <logger name="ibis.smartsockets" level="error" />
+
+  <!--<logger name="amuse.profile" level="trace" />i -->
 <!--
 -->
 

@@ -364,7 +364,6 @@ public class WorkerProxy extends Thread {
             helloMessage.finish();
 
             while (running) {
-                start = System.currentTimeMillis();
                 logger.debug("Receiving call message");
                 ReadMessage readMessage = receivePort.receive();
 
@@ -392,25 +391,30 @@ public class WorkerProxy extends Thread {
 
                 // perform call. Will put result in result message
                 logger.debug("performing call with function ID " + requestMessage.getFunctionID());
+                start = System.currentTimeMillis();
                 requestMessage.writeTo(socket);
                 resultMessage.readFrom(socket);
+                finish = System.currentTimeMillis();
+
                 logger.debug("done performing call with function ID " + requestMessage.getFunctionID() + " error = "
                         + resultMessage.getError());
 
                 logger.debug("result: " + resultMessage);
-
+                
                 WriteMessage writeMessage = sendPort.newMessage();
 
                 resultMessage.writeTo(writeMessage);
+                
+                writeMessage.writeLong(finish - start);
 
                 writeMessage.finish();
 
                 logger.debug("Done performing call for function " + functionID);
-                finish = System.currentTimeMillis();
-
+                
                 if (logger.isDebugEnabled()) {
                     logger.debug("Call took " + (finish - start) + " ms");
                 }
+
 
             }
         } catch (Exception e) {

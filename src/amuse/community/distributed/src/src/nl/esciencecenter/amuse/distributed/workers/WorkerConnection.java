@@ -47,6 +47,8 @@ public class WorkerConnection extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(WorkerConnection.class);
 
+    private static final Logger PROFILE_LOGGER = LoggerFactory.getLogger("amuse.profile");
+
     public static final int CONNECT_TIMEOUT = 60000;
 
     private final SocketChannel socket;
@@ -62,7 +64,7 @@ public class WorkerConnection extends Thread {
     private final AmuseMessage initRequest;
 
     private final WorkerDescription workerDescription;
-    
+
     private final Job job;
 
     /*
@@ -107,26 +109,39 @@ public class WorkerConnection extends Thread {
         start();
     }
 
+    void logProfileDescription() {
+        PROFILE_LOGGER
+                .trace("worker-id worker-executable function-id call-id request-size(bytes) reply-size(bytes) start(epoch) stop(epoch) time(ms) time-at-remote(ms)");
+    }
+
+    void logProfile(AmuseMessage request, AmuseMessage result, long start, long stop, long remoteExecutionTime) {
+        long time = stop - start;
+        PROFILE_LOGGER.trace("{} {} {} {} {} {} {} {} {} {}", workerDescription.getID(), workerDescription.getExecutable(),
+                request.getFunctionID(), request.getCallID(), request.getDataSize(), result.getDataSize(), start, stop, time,
+                remoteExecutionTime);
+    }
+
     public void run() {
         AmuseMessage request = new AmuseMessage();
         AmuseMessage result = new AmuseMessage();
         long start, finish;
-        
+
         // finish initializing worker
         try {
 
             // Wait until job is running. Will not wait for more than time requested
             job.waitUntilRunning(workerDescription.getStartupTimeout() * 1000);
-            
+
             if (!job.isRunning()) {
-                throw new Exception("Worker not started within set time (" + workerDescription.getStartupTimeout() + " seconds). Current state: " + job.getJobState());
+                throw new Exception("Worker not started within set time (" + workerDescription.getStartupTimeout()
+                        + " seconds). Current state: " + job.getJobState());
             }
-            
+
             //read initial "hello" message with identifier
             ReadMessage helloMessage = receivePort.receive(CONNECT_TIMEOUT);
 
             ReceivePortIdentifier remotePort = (ReceivePortIdentifier) helloMessage.readObject();
-            
+
             String amuseHome = (String) helloMessage.readObject();
 
             helloMessage.finish();
@@ -178,14 +193,19 @@ public class WorkerConnection extends Thread {
 
         logger.info("New worker successfully started: " + this);
 
+        if (PROFILE_LOGGER.isTraceEnabled()) {
+            logProfileDescription();
+        }
+
         boolean running = true;
 
         while (running && socket.isOpen() && socket.isConnected()) {
-            start = System.currentTimeMillis();
 
             try {
                 // logger.debug("wating for request...");
                 request.readFrom(socket);
+                
+                start = System.currentTimeMillis();
 
                 // logger.debug("performing request " + request);
 
@@ -218,6 +238,7 @@ public class WorkerConnection extends Thread {
                     }
                 }
                 result.readFrom(readMessage);
+                long remoteExecutionTime = readMessage.readLong();
                 readMessage.finish();
 
                 if (result.isErrorState()) {
@@ -228,13 +249,17 @@ public class WorkerConnection extends Thread {
                     logger.trace("request " + request.getCallID() + " handled, result: " + result);
                 }
 
+                finish = System.currentTimeMillis();
+
                 // forward result to the channel
                 result.writeTo(socket);
 
-                finish = System.currentTimeMillis();
-
                 if (logger.isTraceEnabled()) {
                     logger.trace("call took " + (finish - start) + " ms");
+                }
+
+                if (PROFILE_LOGGER.isTraceEnabled()) {
+                    logProfile(request, result, start, finish, remoteExecutionTime);
                 }
             } catch (ConnectionClosedException e) {
                 logger.info("channel closed on receiving request");
@@ -281,15 +306,11 @@ public class WorkerConnection extends Thread {
             logger.error("Error cancelling job", e2);
         }
     }
-    
-    
 
     @Override
     public String toString() {
-        return "WorkerConnection [id=" + id + ", executable=" + workerDescription.getExecutable() + ", nodeLabel=" + workerDescription.getNodeLabel()+ "]";
+        return "WorkerConnection [id=" + id + ", executable=" + workerDescription.getExecutable() + ", nodeLabel="
+                + workerDescription.getNodeLabel() + "]";
     }
 
-    
-        
-    
 }
