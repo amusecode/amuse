@@ -15,18 +15,21 @@ def translate_filename_for_os(filename):
         return filename
 
 if __name__ == '__main__':
-
+    stdoutfname = None
     if sys.argv[1] == 'none':
         stdout = None
     else:
-        fname=translate_filename_for_os(sys.argv[1])
-        stdout = open(fname,'w')
+        stdoutfname=translate_filename_for_os(sys.argv[1])
+        stdout = open(stdoutfname,'w')
         
     if sys.argv[2] == 'none':
         stderr = None
     else:
-        fname=translate_filename_for_os(sys.argv[2])
-        stderr = open(fname,'w')
+        stderrfname=translate_filename_for_os(sys.argv[2])
+        if sys.argv[2] != '/dev/null' and stdoutfname == stderrfname:
+            stderr = open(stderrfname,'a')
+        else:
+            stderr = open(stderrfname,'w')
     
     
     stdin = open(translate_filename_for_os('/dev/null'),'r')

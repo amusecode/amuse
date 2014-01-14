@@ -1,9 +1,10 @@
 import numpy
+import os.path
+
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.gadget2.interface import Gadget2Interface, Gadget2
 from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere, body_centered_grid_unit_cube
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
-
 from amuse.support.exceptions import AmuseException
 
 from amuse.units import nbody_system
@@ -380,7 +381,7 @@ class TestGadget2(TestWithMPI):
         print "Testing Gadget initialization"
         instance = Gadget2(self.default_converter, **default_options)
         instance.initialize_code()
-        self.assertTrue("gadget2/output/" in str(instance.parameters.gadget_output_directory))
+        self.assertTrue(os.path.join("gadget2","output") in str(instance.parameters.gadget_output_directory))
         instance.commit_parameters()
         instance.cleanup_code()
         instance.stop()

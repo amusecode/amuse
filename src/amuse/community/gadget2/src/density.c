@@ -168,7 +168,7 @@ void density(void)
 #ifndef NOMPI
 	  MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
 #else
-    for(i = 0; i < NTask; i++) {nsend[i] = nsend_local[i];};
+    nsend[0] = nsend_local[0];
 #endif
 	  tend = second();
 	  timeimbalance += timediff(tstart, tend);
@@ -305,7 +305,7 @@ void density(void)
 #ifndef NOMPI
 	  MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
 #else
-	  for(j = 0; j < NTask; j++){ndonelist[j] = ndone;}
+	  ndonelist[0] = ndone;
 #endif
 	  for(j = 0; j < NTask; j++)
 	    ntotleft -= ndonelist[j];
@@ -438,7 +438,7 @@ void density(void)
 #ifndef NOMPI
       MPI_Allgather(&npleft, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
 #else
-     for(i = 0; i < NTask; i++){numlist[i] = npleft;}
+     numlist[0] = npleft;
 #endif
       for(i = 0, ntot = 0; i < NTask; i++)
 	ntot += numlist[i];

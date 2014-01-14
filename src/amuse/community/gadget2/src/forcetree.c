@@ -2849,7 +2849,7 @@ void dump_particles(void)
   int i;
 
   sprintf(buffer, "particles%d.dat", ThisTask);
-  fd = fopen(buffer, "w");
+  fd = fopen(buffer, "wb");
   my_fwrite(&NumPart, 1, sizeof(int), fd);
 
   for(i = 0; i < NumPart; i++)
@@ -2863,7 +2863,6 @@ void dump_particles(void)
 
   fclose(fd);
 }
-
 
 
 #ifdef PERIODIC
@@ -2993,7 +2992,7 @@ void ewald_init(void)
 	  printf("\nwriting Ewald tables to file `%s'\n", buf);
 	  fflush(stdout);
 
-	  if((fd = fopen(buf, "w")))
+	  if((fd = fopen(buf, "wb")))
 	    {
 	      my_fwrite(&fcorrx[0][0][0], sizeof(FLOAT), (EN + 1) * (EN + 1) * (EN + 1), fd);
 	      my_fwrite(&fcorry[0][0][0], sizeof(FLOAT), (EN + 1) * (EN + 1) * (EN + 1), fd);
