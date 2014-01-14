@@ -165,7 +165,12 @@ class ParametersMemento(object):
             mapping_from_name_to_value = {}
             
         object.__setattr__(self, '_mapping_from_name_to_value', mapping_from_name_to_value)
-    
+        
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self,state):
+        object.__setattr__(self, '__dict__', state)
 
     def __getattr__(self, name):
         if not name in self._mapping_from_name_to_value:

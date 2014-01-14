@@ -12,7 +12,7 @@ from amuse.units.quantities import zero
 from amuse.units.units import *
 from amuse.units.constants import *
 
-from amuse.datamodel import Particles
+from amuse.datamodel import Particles, parameters
 
 import subprocess
 import pickle
@@ -177,3 +177,43 @@ class TestPicklingOfParticleSets(amusetest.TestCase):
         self.assertAlmostRelativeEquals(unpickled_particles.mass, [1, 2, 3, 6] | kg)
         self.assertEqual(unpickled_particles.center_of_mass(), [2, 3, 0] | m)
     
+
+class BaseTestModule(object):
+    def before_get_parameter(self):
+        return
+        
+    def before_set_parameter(self):
+        return
+        
+class TestPicklingOfParameters(amusetest.TestCase):
+    
+    def test1(self):
+        definition = parameters.ModuleMethodParameterDefinition(
+            "get_test",
+            "set_test",
+            "test_name",
+            "a test parameter",
+            0.1 | m
+        )
+        class TestModule(BaseTestModule):
+            def get_test(self):
+                return self.x
+            def set_test(self, value):
+                self.x = value
+                
+        o = TestModule()
+        set = parameters.Parameters([definition,], o)
+        set.test_name = 10| m
+        
+        self.assertEqual(o.x, 10|m)
+        self.assertEqual(set.test_name, 10|m)
+        
+        memento = set.copy()
+        self.assertEqual(memento.test_name, 10|m)
+
+        pickled_memento=pickle.dumps(memento)
+        unpickled_memento=pickle.loads(pickled_memento)
+        
+        self.assertEqual(memento.test_name, unpickled_memento.test_name)
+        
+        
