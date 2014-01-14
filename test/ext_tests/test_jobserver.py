@@ -20,7 +20,7 @@ def example_parallel_jobs(N,Nhosts=1):
 
   return result
 
-class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
+class TestJobServer(amusetest.TestCase):
 
     def test1(self):
                   
