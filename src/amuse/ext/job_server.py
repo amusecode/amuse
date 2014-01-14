@@ -37,9 +37,9 @@ import threading
 from time import sleep
 
 def dump_and_encode(x):
-  return pickle.dumps(x,0)
+  return pickle.dumps(x,-1)
 def decode_and_load(x):
-  return pickle.loads(x)
+  return pickle.loads(x.encode("latin-1"))
 
 class CodeImplementation(object):
    def __init__(self):
