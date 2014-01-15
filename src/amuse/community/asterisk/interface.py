@@ -331,20 +331,6 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
         return function
     
     @legacy_function
-    def get_use_octree_for_gas_flag():
-        function = LegacyFunctionSpecification()
-        function.addParameter("use_octree_for_gas_flag", dtype='int32', direction=function.OUT)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def set_use_octree_for_gas_flag():
-        function = LegacyFunctionSpecification()
-        function.addParameter("use_octree_for_gas_flag", dtype='int32', direction=function.IN)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
     def set_x_rotation():
         function = LegacyFunctionSpecification()
         function.addParameter("x_rotation", dtype='float64', direction=function.IN)
@@ -610,15 +596,7 @@ class Asterisk(CommonCode):
             "Use-star-shader flag. False means: plain spheres.",
             True
         )
-        object.add_boolean_parameter(
-            "get_use_octree_for_gas_flag",
-            "set_use_octree_for_gas_flag",
-            "use_octree_for_gas",
-            "Use-octree-for-gas flag. True means: gas particles are divided over "
-                "octree cells, and these cells will be visualized instead.",
-            False
-        )
-        
+
         object.add_method_parameter(
             "get_x_rotation",
             "set_x_rotation", 

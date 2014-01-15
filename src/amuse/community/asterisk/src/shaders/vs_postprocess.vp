@@ -7,6 +7,10 @@ in vec3 MCtexCoord;
 uniform mat4 PMatrix;
 uniform mat4 MVMatrix;
 
-void main() {	    
+out vec2 tCoord;
+
+void main() {
+	tCoord = vec2(MCtexCoord.x, 1.0-MCtexCoord.y);
+	
     gl_Position = PMatrix * MVMatrix * MCvertex;
 }

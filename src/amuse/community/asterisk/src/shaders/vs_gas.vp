@@ -8,43 +8,25 @@ out vec4 pColor;
 uniform mat4 PMatrix;
 uniform mat4 MVMatrix;
 
-uniform vec3 CameraPos;
+uniform int PointSizeCameraDistDependant;
+uniform float PointSizeMultiplier;
 
-//uniform mat4 node_MVmatrix;
-//uniform float node_scale;
 
-void main() {
-	//mat4 scale_matrix = mat4(node_scale, 0, 0, 0, 0, node_scale, 0, 0, 0, 0, node_scale, 0, 0, 0, 0, 1);	
-    //gl_Position = PMatrix * global_MVMatrix * node_MVmatrix * scale_matrix * MCvertex;
-    
-    pColor = MCcolor;
-    
-    float distanceFactor = length(MCvertex - CameraPos) / 2.0;
-    
-    gl_PointSize = 1;
-    
-    /*
-    if (distanceFactor > 2) {    
-    	gl_PointSize = 1;
-    } else if (distanceFactor > 1.75) {      
-    	gl_PointSize = 2;
-    } else if (distanceFactor > 1.5) {    
-    	gl_PointSize = 3;
-    } else if (distanceFactor > 1.25) {    
-    	gl_PointSize = 4;
-    } else if (distanceFactor > 1.0) {      
-    	gl_PointSize = 5;
-    } else if (distanceFactor > 0.75) {      
-    	gl_PointSize = 6;
-    } else if (distanceFactor > 0.5) {      
-    	gl_PointSize = 7;
-    } else if (distanceFactor > 0.25) {      
-    	gl_PointSize = 8;
-    } else {
-    	gl_PointSize = 9;    
-    }
-    */
-    
+void main() {    
     gl_Position = PMatrix * MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);
         
+    vec4 cameraPos = vec4(0.0,0.0,1.0,1.0);
+    vec4 pointPos = PMatrix * MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);
+    
+    float cameraDist = length(cameraPos - pointPos);        
+    
+    pColor = vec4(MCcolor.rgb,1.0);    
+    
+    if (PointSizeCameraDistDependant == 1) {
+    	gl_PointSize = min(16.0, max(0,16.0-cameraDist)) * PointSizeMultiplier *0.2;
+	} else {
+		gl_PointSize = 3 * PointSizeMultiplier;
+	}
+    
+    
 }

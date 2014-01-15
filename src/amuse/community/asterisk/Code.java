@@ -9,7 +9,6 @@ public class Code implements CodeInterface {
 
     private ArrayList<CodeParticle> particles;
 
-    private boolean useOctreeForGas;
     private boolean useStarShader;
 
     public Code(String codeDir, String amuseRootDir) {
@@ -17,7 +16,6 @@ public class Code implements CodeInterface {
         settings.setFieldOfView(20.0f);
     
         useStarShader = true;
-        useOctreeForGas = false;
 
     }
 
@@ -108,14 +106,8 @@ public class Code implements CodeInterface {
     @Override
     public int new_gas_particle(int[] index_of_the_particle, double[] x, double[] y, double[] z, double[] radius, double[] red,
             double[] green, double[] blue, double[] opacity, int npoints) {
-        System.err.println("new gas particle: " + npoints + " new gas particles. use octree = " + useOctreeForGas);
-        if (useOctreeForGas) {
-            return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints,
-                    CodeParticle.TYPE_OCTREE_GAS);
-        } else {
             return newParticle(index_of_the_particle, x, y, z, radius, red, green, blue, opacity, npoints,
                     CodeParticle.TYPE_POINT_GAS);
-        }
     }
 
     @Override
@@ -369,26 +361,6 @@ public class Code implements CodeInterface {
             use_star_shader_flag[0] = 1;
         } else {
             use_star_shader_flag[0] = 0;
-        }
-        return 0;
-    }
-
-    @Override
-    public int set_use_octree_for_gas_flag(int use_octree_for_gas_flag) {
-        if (use_octree_for_gas_flag == 0) {
-            useOctreeForGas = false;
-        } else {
-            useOctreeForGas = true;
-        }
-        return 0;
-    }
-
-    @Override
-    public int get_use_octree_for_gas_flag(int[] use_octree_for_gas_flag) {
-        if (useOctreeForGas) {
-            use_octree_for_gas_flag[0] = 1;
-        } else {
-            use_octree_for_gas_flag[0] = 0;
         }
         return 0;
     }

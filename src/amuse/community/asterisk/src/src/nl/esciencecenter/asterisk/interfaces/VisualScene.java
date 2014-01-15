@@ -15,8 +15,6 @@ public interface VisualScene {
 
     public void drawStars(GL3 gl, ShaderProgram program, MatF4 mv);
 
-    public void drawGasOctree(GL3 gl, ShaderProgram program, MatF4 mv);
-
     public String getDescriptionString();
 
 }

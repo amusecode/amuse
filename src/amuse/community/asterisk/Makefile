@@ -19,8 +19,8 @@ JAR ?= jar
 MV ?= mv
 CP ?= cp
 
-UPDATE_URL = https://github.com/NLeSC/asterisk/archive/feature/additional-interactive-controls.zip
-UPDATE_ARCHIVE_DIR = asterisk-feature-additional-interactive-controls
+UPDATE_URL = https://github.com/NLeSC/asterisk/archive/develop.zip
+UPDATE_ARCHIVE_DIR = asterisk-develop
 
 #this target intentionally left blank
 ALL = 

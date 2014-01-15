@@ -14,5 +14,5 @@ void main() {
 
 	//fragColor = vec4(matColor,0.5-(dotP/2.0));
 	
-	fragColor = vec4(matColor, dotP*dotP*dotP);
+	fragColor = Color; //vec4(matColor, dotP*dotP*dotP);
 }

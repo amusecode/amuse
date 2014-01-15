@@ -12,11 +12,14 @@ uniform int blurType;
 uniform float Sigma;
 uniform float NumPixelsPerSide;
 uniform float Alpha;
+uniform float ColorMultiplier;
 
-const float pi = 3.14159265;
+const float pi = 3.14159265359;
 
 const vec2 vertical = vec2(0.0, 1.0);
 const vec2 horizontal = vec2(1.0, 0.0);
+
+in vec2 tCoord;
 
 out vec4 fragColor;
 
@@ -30,7 +33,7 @@ out vec4 fragColor;
 // 1.0f / texture_pixel_width for a horizontal blur, and
 // 1.0f / texture_pixel_height for a vertical blur.
 
-vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, int maxTexSize, float blurSize, float numPixelsPerSide, float sigma) {
+vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, float blurSize, float numPixelsPerSide, float sigma) {
 	// Incremental Gaussian Coefficent Calculation (See GPU Gems 3 pp. 877 - 889)
 	vec3 incrementalGaussian;
   	incrementalGaussian.x = 1.0 / (sqrt(2.0 * pi) * sigma);
@@ -48,15 +51,10 @@ vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, int maxTexSize, 
   	// Go through the remaining 8 vertical samples (4 on each side of the center)
   	
   	for (float i = 1.0; i <= numPixelsPerSide; i++) {
-  		vec2 offset = vec2((i * blurSize * multiplyVec/float(maxTexSize)));
-  		if (
-  		tCoord.x - offset.x < 0.0 || tCoord.x + offset.x > 1.0 ||
-  			tCoord.y - offset.y < 0.0 || tCoord.y + offset.y > 1.0) {
-  			avgValue += 2 * texture(tex, tCoord) * incrementalGaussian.x;
-  		} else {
-  			avgValue += texture(tex, tCoord - offset) * incrementalGaussian.x;  		         
-	    	avgValue += texture(tex, tCoord + offset) * incrementalGaussian.x;
-	    }
+  		vec2 offset = vec2(i * blurSize * multiplyVec);	    
+	    
+	    avgValue += texture(tex, tCoord - offset) * incrementalGaussian.x;  		         
+	    avgValue += texture(tex, tCoord + offset) * incrementalGaussian.x;
 	             
 	    coefficientSum += 2.0 * incrementalGaussian.x;
 	    incrementalGaussian.xy *= incrementalGaussian.yz;
@@ -65,12 +63,10 @@ vec4 gaussianBlur(sampler2D tex, vec2 tCoord, vec2 multiplyVec, int maxTexSize, 
   	return vec4(avgValue / coefficientSum);
 }
 
-void main() {
-	vec2 tCoord   = vec2(gl_FragCoord.x/float(scrWidth), gl_FragCoord.y/float(scrHeight));
-	
-	float sigma;
-	float numPixelsPerSide;
-	
+void main() {	
+	float sigma = 0.0;
+	float numPixelsPerSide = 0.0;
+
 	if (blurType == 0) {
 		sigma = Sigma;
 		numPixelsPerSide = NumPixelsPerSide;
@@ -97,14 +93,15 @@ void main() {
 		numPixelsPerSide = 10.0; // 21x21
 	}
 	
-	vec2 direction;
+	float calcBlurSize = 0.0;
+	vec2 direction = vec2(0.0, 0.0);
 	if (blurDirection == 0) {
 		direction = horizontal;
-		fragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrWidth, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
+		calcBlurSize = blurSize * 0.2 * 1.0 / float(scrWidth);		
 	} else {
 		direction = vertical;
-		fragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrHeight, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
+		calcBlurSize = blurSize * 0.2 * 1.0 / float(scrHeight);		
 	}
 	
-  	
+	fragColor = vec4(gaussianBlur(Texture, tCoord, direction, calcBlurSize, numPixelsPerSide, sigma).rgb, Alpha);
 }

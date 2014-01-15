@@ -15,8 +15,7 @@ import com.jogamp.newt.event.MouseListener;
  *         (left-click-drag, scrollwheel).
  * 
  */
-public class AsteriskInputHandler extends InputHandler implements
-        MouseListener, KeyListener {
+public class AsteriskInputHandler extends InputHandler implements MouseListener, KeyListener {
 
     /** Initial value for the rotation in the X direction */
     protected float rotationXorigin = 0;
@@ -165,10 +164,8 @@ public class AsteriskInputHandler extends InputHandler implements
             rotation.set(2, rotationZ);
             setCurrentOctant(rotation);
         } else if (e.isButtonDown(MouseEvent.BUTTON3)) {
-            translationX = (.01f * (e.getX() - dragLeftXorigin))
-                    + translationXorigin;
-            translationY = (-.01f * (e.getY() - dragLeftYorigin))
-                    + translationYorigin;
+            translationX = (.01f * (e.getX() - dragLeftXorigin)) + translationXorigin;
+            translationY = (-.01f * (e.getY() - dragLeftYorigin)) + translationYorigin;
 
             translation.set(0, translationX);
             translation.set(1, translationY);
@@ -257,7 +254,6 @@ public class AsteriskInputHandler extends InputHandler implements
         }
     }
 
-    @Override
     public void keyTyped(KeyEvent arg0) {
         if (arg0.getKeyCode() == KeyEvent.VK_SPACE) {
             reset();

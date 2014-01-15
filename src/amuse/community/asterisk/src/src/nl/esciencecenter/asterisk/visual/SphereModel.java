@@ -34,8 +34,7 @@ public class SphereModel {
             float[] rawColor = glueSphere.getColor();
 
             coords = new VecF3(rawCoords[0], rawCoords[1], rawCoords[2]);
-            color = new VecF4(rawColor[0], rawColor[1], rawColor[2],
-                    rawColor[3]);
+            color = new VecF4(rawColor[0], rawColor[1], rawColor[2], rawColor[3]);
             radius = glueSphere.getRadius();
 
             initialized = true;
@@ -59,7 +58,11 @@ public class SphereModel {
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
-        baseModel.draw(gl, program);
+        try {
+            baseModel.draw(gl, program);
+        } catch (UninitializedException e) {
+            e.printStackTrace();
+        }
     }
 
     public VecF4 getColor() {

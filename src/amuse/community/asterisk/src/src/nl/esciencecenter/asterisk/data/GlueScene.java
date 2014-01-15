@@ -6,9 +6,7 @@ import java.util.Collections;
 
 import javax.media.opengl.GL3;
 
-import nl.esciencecenter.asterisk.AsteriskSettings;
 import nl.esciencecenter.asterisk.PointGas;
-import nl.esciencecenter.asterisk.SPHGas;
 import nl.esciencecenter.asterisk.Snapshot;
 import nl.esciencecenter.asterisk.Sphere;
 import nl.esciencecenter.asterisk.Star;
@@ -16,7 +14,6 @@ import nl.esciencecenter.asterisk.interfaces.VisualScene;
 import nl.esciencecenter.asterisk.visual.DistanceComparator;
 import nl.esciencecenter.asterisk.visual.PlanetModel;
 import nl.esciencecenter.asterisk.visual.PointCloud;
-import nl.esciencecenter.asterisk.visual.SPHOctreeNode;
 import nl.esciencecenter.asterisk.visual.SphereModel;
 import nl.esciencecenter.asterisk.visual.StarModel;
 import nl.esciencecenter.esight.exceptions.InverseNotAvailableException;
@@ -24,7 +21,6 @@ import nl.esciencecenter.esight.exceptions.UninitializedException;
 import nl.esciencecenter.esight.math.MatF4;
 import nl.esciencecenter.esight.math.MatrixFMath;
 import nl.esciencecenter.esight.math.VecF3;
-import nl.esciencecenter.esight.math.VecF4;
 import nl.esciencecenter.esight.models.Model;
 import nl.esciencecenter.esight.shaders.ShaderProgram;
 
@@ -40,12 +36,10 @@ public class GlueScene implements Runnable, VisualScene {
     private ArrayList<SphereModel> spheres;
 
     private PointCloud gasParticles;
-    private SPHOctreeNode gasOctree;
 
     private boolean initialized = false;
 
-    public GlueScene(GlueSceneStorage sceneStore,
-            GlueSceneDescription description, Snapshot scene) {
+    public GlueScene(GlueSceneStorage sceneStore, GlueSceneDescription description, Snapshot scene) {
         this.sceneStore = sceneStore;
         this.description = description;
         this.scene = scene;
@@ -64,24 +58,12 @@ public class GlueScene implements Runnable, VisualScene {
             }
         }
 
-        // Planet[] gluePlanets = scene.getPlanets();
-        // Model planetBaseModel = sceneStore.getPlanetBaseModel();
-        // if (gluePlanets != null) {
-        // this.planets = new ArrayList<PlanetModel>();
-        // for (Planet gluePlanet : gluePlanets) {
-        // PlanetModel planetModel = new PlanetModel(planetBaseModel,
-        // gluePlanet);
-        // planets.add(planetModel);
-        // }
-        // }
-
         Sphere[] glueSpheres = scene.getSpheres();
         Model sphereBaseModel = sceneStore.getSphereBaseModel();
         if (glueSpheres != null) {
             this.spheres = new ArrayList<SphereModel>();
             for (Sphere glueSphere : glueSpheres) {
-                SphereModel sphereModel = new SphereModel(sphereBaseModel,
-                        glueSphere);
+                SphereModel sphereModel = new SphereModel(sphereBaseModel, glueSphere);
                 spheres.add(sphereModel);
             }
         }
@@ -90,10 +72,8 @@ public class GlueScene implements Runnable, VisualScene {
         if (pointGasses != null) {
             int numPointGasParticles = pointGasses.length;
 
-            FloatBuffer pointGasCoords = Buffers
-                    .newDirectFloatBuffer(numPointGasParticles * 3);
-            FloatBuffer pointGasColors = Buffers
-                    .newDirectFloatBuffer(numPointGasParticles * 4);
+            FloatBuffer pointGasCoords = Buffers.newDirectFloatBuffer(numPointGasParticles * 3);
+            FloatBuffer pointGasColors = Buffers.newDirectFloatBuffer(numPointGasParticles * 4);
 
             for (PointGas gluePointGas : pointGasses) {
                 float[] coords = gluePointGas.getCoordinates();
@@ -103,61 +83,25 @@ public class GlueScene implements Runnable, VisualScene {
                     pointGasCoords.put(coords[i]);
                 }
 
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 3; i++) {
                     pointGasColors.put(color[i]);
                 }
+                pointGasColors.put(1f);
             }
 
-            gasParticles = new PointCloud(numPointGasParticles, pointGasCoords,
-                    pointGasColors);
-        }
-
-        // PointGas[] pointGasses = scene.getPointGas();
-        // if (pointGasses != null) {
-        // VectorList coords = new VectorList(3, Vector.Type.FLOAT);
-        // VectorList colors = new VectorList(4, Vector.Type.FLOAT);
-        //
-        // for (PointGas gluePointGas : pointGasses) {
-        // float[] v = gluePointGas.getCoordinates();
-        // coords.add(new VecF3(v[0], v[1], v[2]));
-        //
-        // float[] c = gluePointGas.getColor();
-        // colors.add(new VecF4(c[0], c[1], c[2], c[3]));
-        // }
-        //
-        // gasParticles = new PointCloud(coords, colors);
-        // }
-
-        SPHGas[] sphGasses = scene.getSphGas();
-        if (sphGasses != null) {
-            Model octreeBaseModel = sceneStore.getSPHOctreeBaseModel();
-            this.gasOctree = new SPHOctreeNode(octreeBaseModel, 0, new VecF3(),
-                    AsteriskSettings.INITIAL_OCTREE_SIZE, description);
-            for (SPHGas glueSPHGas : sphGasses) {
-                float[] rawCoords = glueSPHGas.getCoordinates();
-                float[] rawColor = glueSPHGas.getColor();
-
-                VecF3 coords = new VecF3(rawCoords[0], rawCoords[1],
-                        rawCoords[2]);
-                VecF4 color = new VecF4(rawColor[0], rawColor[1], rawColor[2],
-                        rawColor[3]);
-
-                this.gasOctree.addElement(coords, color);
-            }
+            gasParticles = new PointCloud(numPointGasParticles, pointGasCoords, pointGasColors);
         }
 
         sceneStore.setScene(description, this);
     }
 
     @Override
-    public synchronized void drawStars(GL3 gl, ShaderProgram program,
-            MatF4 MVMatrix) {
+    public synchronized void drawStars(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         MatF4 viewModel;
         if (stars != null) {
             try {
                 viewModel = MatrixFMath.inverse(MVMatrix);
-                VecF3 cameraPos = new VecF3(viewModel.get(3), viewModel.get(7),
-                        viewModel.get(11));
+                VecF3 cameraPos = new VecF3(viewModel.get(3), viewModel.get(7), viewModel.get(11));
                 Collections.sort(stars, new DistanceComparator(cameraPos));
             } catch (InverseNotAvailableException e) {
                 e.printStackTrace();
@@ -169,8 +113,7 @@ public class GlueScene implements Runnable, VisualScene {
         }
     }
 
-    public synchronized void drawPlanets(GL3 gl, ShaderProgram program,
-            MatF4 MVMatrix) {
+    public synchronized void drawPlanets(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         if (planets != null) {
             for (PlanetModel p : planets) {
                 p.draw(gl, program, MVMatrix);
@@ -179,8 +122,7 @@ public class GlueScene implements Runnable, VisualScene {
     }
 
     @Override
-    public synchronized void drawSpheres(GL3 gl, ShaderProgram program,
-            MatF4 MVMatrix) {
+    public synchronized void drawSpheres(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         if (spheres != null) {
             for (SphereModel s : spheres) {
                 s.draw(gl, program, MVMatrix);
@@ -189,13 +131,11 @@ public class GlueScene implements Runnable, VisualScene {
     }
 
     @Override
-    public synchronized void drawGasPointCloud(GL3 gl, ShaderProgram program,
-            MatF4 MVMatrix) {
+    public synchronized void drawGasPointCloud(GL3 gl, ShaderProgram program, MatF4 MVMatrix) {
         VecF3 cameraPos;
         try {
             MatF4 viewModel = MatrixFMath.inverse(MVMatrix);
-            cameraPos = new VecF3(viewModel.get(3), viewModel.get(7),
-                    viewModel.get(11));
+            cameraPos = new VecF3(viewModel.get(3), viewModel.get(7), viewModel.get(11));
         } catch (InverseNotAvailableException e) {
             cameraPos = new VecF3();
             e.printStackTrace();
@@ -212,19 +152,6 @@ public class GlueScene implements Runnable, VisualScene {
             }
 
             gasParticles.draw(gl, program);
-        }
-    }
-
-    @Override
-    public synchronized void drawGasOctree(GL3 gl, ShaderProgram program,
-            MatF4 MVMatrix) {
-        if (gasOctree != null) {
-            program.setUniformMatrix("MVMatrix", MVMatrix);
-
-            program.setUniformMatrix("NormalMatrix",
-                    MatrixFMath.getNormalMatrix(MVMatrix));
-
-            gasOctree.draw(gl, program);
         }
     }
 
@@ -250,10 +177,6 @@ public class GlueScene implements Runnable, VisualScene {
 
             if (gasParticles != null) {
                 gasParticles.init(gl);
-            }
-
-            if (gasOctree != null) {
-                gasOctree.init();
             }
 
             initialized = true;
