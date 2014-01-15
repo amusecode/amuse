@@ -239,7 +239,8 @@ FUNCTION evolve_model(end_time)
   INTEGER :: evolve_model
   DOUBLE PRECISION :: end_time
   DOUBLE PRECISION :: POS(3,maximum_number_of_particles*3)
-  INTEGER :: mergers(3, maximum_number_of_particles*3), nmergers
+  INTEGER :: mergers(3, maximum_number_of_particles*3)
+  INTEGER :: nmergers
   DOUBLE PRECISION :: VEL(3,maximum_number_of_particles*3)
   DOUBLE PRECISION :: BODY(maximum_number_of_particles*3)
   INTEGER :: INDEX(maximum_number_of_particles*3), REVERSE_INDEX(maximum_number_of_particles*3)
@@ -295,7 +296,9 @@ FUNCTION evolve_model(end_time)
 &                mergers, nmergers) 
   
   j = 1
-  
+! this print statement is needed for gfortran 4.8.x 
+! otherwise nmergers seems to optimized out
+  PRINT *, "nmergers:", nmergers 
   DO i=1, nmergers
     idparent = mergers(1,i)
     idchild1 = mergers(2,i)

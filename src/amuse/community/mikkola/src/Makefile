@@ -6,7 +6,7 @@ AMUSE_DIR?=../../../../..
 MPIFC ?= mpif90
 FC    = $(MPIFC)
 
-FFLAGS   += -O3
+FFLAGS   += 
 FFLAGS   += $(F77FLAGS)
 LDFLAGS  += -lm 
 
