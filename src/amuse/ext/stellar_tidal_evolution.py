@@ -41,6 +41,7 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
     def __init__(self, central_particle=Particles()):
         literature.LiteratureReferencesMixIn.__init__(self)
         self.current_time = 0 | units.s
+        self.pericenter_interaction_factor = 4
         self.central_particle = central_particle
         if not hasattr(self.central_particle, "gyration_radius_sq"):
             self.central_particle.gyration_radius_sq = 0.2
@@ -50,17 +51,23 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
         if not hasattr(self.central_particle, "Omega"):
             self.central_particle.Omega = 2.6e-6|units.s**-1
         self.all_merged_orbiters = Particles()
-
+        
     @property
     def particles(self):
         return ParticlesSuperset([self.central_particle, self.orbiters])
 
     def set_current_time(self, time):
         self.current_time = time
+    def get_semimajor_axis(self):
+        return self.semimajor_axis
+    def get_eccentricity(self):
+        return self.eccentricity
+    def get_pericenter_interaction_factor(self):
+        return self.pericenter_interaction_factor
 
     def orbital_evolution_time_scale(self):
         e = self.orbiters[0].eccentricity
-        a = self.orbiters[0].semi_major_axis
+        a = self.orbiters[0].semimajor_axis
         m = self.orbiters[0].mass
         r = self.orbiters[0].radius
         M = self.central_particle[0].mass
@@ -81,7 +88,7 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
         R = self.central_particle.radius
         Os = self.central_particle.Omega
 
-        interacting_bodies = self.orbiters.select(lambda a, e: a*(1-e)<4*R,["semi_major_axis", "eccentricity"])
+        interacting_bodies = self.orbiters.select(lambda a, e: a*(1-e)<self.pericenter_interaction_factor*R,["semimajor_axis", "eccentricity"])
         if len(interacting_bodies):
             print "N tidal:", len(self.orbiters), "of which N=", len(interacting_bodies), "tidally interacting" 
         self.orbiters_with_error = Particles()
@@ -117,13 +124,12 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
             print "Error in N=", len(self.orbiters_with_error), "orbiters."
             print self.orbiters_with_error
 
-        merged_orbiters = interacting_bodies.select(lambda a, e, r: a*(1-e)<R+r,["semi_major_axis", "eccentricity", "radius"])
+        merged_orbiters = interacting_bodies.select(lambda a, e, r: a*(1-e)<R+r,["semimajor_axis", "eccentricity", "radius"])
         self.all_merged_orbiters = Particles()
         if len(merged_orbiters)>0:
             print "Merged orbiters N= ", len(merged_orbiters)
             print merged_orbiters
             self.all_merged_orbiters.add_particles(merged_orbiters-self.orbiters_with_error)
-
 
     def contains_nan(self, dO):
         has_nan = False
@@ -144,7 +150,7 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
         current_time = self.current_time
         while current_time<time:
             #print "Time=", oi.name, current_time, oi.semi_major_axis, oi.eccentricity, self.central_particle.Omega
-            a = oi.semi_major_axis
+            a = oi.semimajor_axis
             e = oi.eccentricity
             Op = angular_frequency(M, m, a)
 
@@ -167,7 +173,7 @@ class TidalEvolution(literature.LiteratureReferencesMixIn):
                 print "NAN's detectedm dO", dO
                 self.orbiters_with_error.add_particles(oi.as_set())
                 break
-            oi.semi_major_axis += da[0] | units.RSun
+            oi.semimajor_axis += da[0] | units.RSun
             oi.eccentricity += de[0]
             if oi.eccentricity<0:
                 oi.eccentricity = 0
@@ -301,7 +307,7 @@ class TestTidalInteraction(TestCase):
         planet = Particles(2)
         planet.mass = [1, 100] * m
         planet.radius = [0.001, 0.001] |units.RSun
-        planet.semi_major_axis = [1, 5.2] * a
+        planet.semimajor_axis = [1, 5.2] * a
         planet.eccentricity = [e, 0.1]
         tidal.add_particles(planet)
         channel_from_tc_to_framework = tidal.central_particle.new_channel_to(star)
@@ -319,19 +325,19 @@ class TestTidalInteraction(TestCase):
             adiabatic_expansion_factor = star[0].mass/stellar.particles[0].mass
             tidal.central_particle.mass = stellar.particles[0].mass
             star[0].Omega = star[0].Omega * (star[0].radius/stellar.particles[0].radius)**2
-            planet.semi_major_axis *= adiabatic_expansion_factor
+            planet.semimajor_axis *= adiabatic_expansion_factor
 
             channel_from_se_to_framework.copy_attributes(["age", "mass", "radius", "luminosity", "temperature", "stellar_type"])
 
             channel_from_framework_to_tc.copy_attributes(["mass", "radius", "Omega"])
-            channel_from_framework_to_to.copy_attributes(["semi_major_axis"])
+            channel_from_framework_to_to.copy_attributes(["semimajor_axis"])
 
 
             tidal.central_particle.Omega = star[0].Omega
             tidal.central_particle.radius = star[0].radius
             tidal.evolve_model(time)
 
-            channel_from_to_to_framework.copy_attributes(["semi_major_axis", "eccentricity"])
+            channel_from_to_to_framework.copy_attributes(["semimajor_axis", "eccentricity"])
 
             if len(tidal.orbiters_with_error)>0:
                 print "Remove orbiter with error:", len(tidal.orbiters_with_error)
@@ -363,7 +369,7 @@ def tidal_interaction(M, m, a, e, Omega_s, tend):
     planet = Particles(1)
     planet.mass = 1*m
     planet.radius = 0.001 |units.RSun
-    planet.semi_major_axis = 1.*a
+    planet.semimajor_axis = 1.*a
     planet.eccentricity = e
     tidal.add_particles(planet)
     channel_from_tc_to_framework = tidal.central_particle.new_channel_to(star)
@@ -388,19 +394,19 @@ def tidal_interaction(M, m, a, e, Omega_s, tend):
         tidal.central_particle.mass = stellar.particles[0].mass
         star[0].Omega = star[0].Omega * (star[0].radius/stellar.particles[0].radius)**2
         #expand planetary orbit due to stellar mass loss
-        planet.semi_major_axis *= adiabatic_expansion_factor
+        planet.semimajor_axis *= adiabatic_expansion_factor
 
         channel_from_se_to_framework.copy_attributes(["age", "mass", "radius", "luminosity", "temperature", "stellar_type"])
 
         channel_from_framework_to_tc.copy_attributes(["mass", "radius", "Omega"])
-        channel_from_framework_to_to.copy_attributes(["semi_major_axis"])
+        channel_from_framework_to_to.copy_attributes(["semimajor_axis"])
 
 
         tidal.central_particle.Omega = star[0].Omega
         tidal.central_particle.radius = star[0].radius
         tidal.evolve_model(time)
 
-        channel_from_to_to_framework.copy_attributes(["semi_major_axis", "eccentricity"])#, "merged_with_central_star"])
+        channel_from_to_to_framework.copy_attributes(["semimajor_axis", "eccentricity"])#, "merged_with_central_star"])
 
         if len(tidal.all_merged_orbiters)>0:
             print "Merged planets/asteroids: N=", len(tidal.all_merged_orbiters)
@@ -413,7 +419,7 @@ def tidal_interaction(M, m, a, e, Omega_s, tend):
         if len(tidal.orbiters)==0:
             return
 
-    print "current time=", tidal.current_time, tidal.orbiters.semi_major_axis, tidal.orbiters.eccentricity
+    print "current time=", tidal.current_time, tidal.orbiters.semimajor_axis, tidal.orbiters.eccentricity
 
 def new_option_parser():
 #    from optparse import OptionParser
