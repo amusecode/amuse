@@ -705,6 +705,7 @@ class TestSSE(TestWithMPI):
         instance.particles.add_particle(Particle(mass = 1.416 | units.MSun))
         instance.particles[0].evolve_for(7000.0 | units.Myr)
         evolved_star = instance.particles.copy()[0]
+	evolved_star.temperature = instance.particles[0].temperature
         instance.stop()
        
         testpath = get_path_to_results()

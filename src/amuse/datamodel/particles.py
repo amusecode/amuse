@@ -373,7 +373,6 @@ class AbstractParticleSet(AbstractSet):
         result.add_particles_to_store(keys, attributes, converted)
 
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
 
         return result
 
@@ -412,7 +411,6 @@ class AbstractParticleSet(AbstractSet):
         result.add_particles_to_store(particle_keys, attributes, converted)
 
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
 
         return result
 
@@ -443,7 +441,6 @@ class AbstractParticleSet(AbstractSet):
         keys = self.get_all_keys_in_store()
         result = Particles()
         result.add_particles_to_store(keys, [],[])
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
         return result
 
     def copy_values_of_attribute_to(self, attribute_name, particles):
@@ -1911,7 +1908,6 @@ class ParticlesSubset(AbstractParticleSet):
             result._private.set_of_keys = set(self._private.keys)
 
             result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
-            object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
 
             return result
         else:
@@ -2062,7 +2058,6 @@ class ParticlesMaskedSubset(ParticlesSubset):
                 converted.append(x)
         result.add_particles_to_store(keys, attributes, converted)
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
         return result
 
 
@@ -2101,7 +2096,6 @@ class ParticlesMaskedSubset(ParticlesSubset):
         result.add_particles_to_store(particle_keys, attributes, converted)
 
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
 
         return result
 
