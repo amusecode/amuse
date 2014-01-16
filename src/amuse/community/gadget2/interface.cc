@@ -914,7 +914,7 @@ int set_gadget_output_directory(char *output_directory){
 #ifdef WIN32
     const char sep[] = "\\";
 #else
-    const char sep[] = "\/";
+    const char sep[] = "/";
 #endif // WIN32
     if(length > 0) {
         if(All.OutputDir[length - 1] != sep[0]) {
