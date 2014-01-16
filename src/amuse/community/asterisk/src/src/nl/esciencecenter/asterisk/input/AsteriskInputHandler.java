@@ -164,9 +164,13 @@ public class AsteriskInputHandler extends InputHandler implements MouseListener,
             rotation.set(2, rotationZ);
             setCurrentOctant(rotation);
         } else if (e.isButtonDown(MouseEvent.BUTTON3)) {
-            translationX = (.01f * (e.getX() - dragLeftXorigin)) + translationXorigin;
-            translationY = (-.01f * (e.getY() - dragLeftYorigin)) + translationYorigin;
-
+            if (e.isShiftDown()) {
+                translationX = (.01f * (e.getX() - dragLeftXorigin)) / 10f + translationXorigin;
+                translationY = (-.01f * (e.getY() - dragLeftYorigin)) / 10f + translationYorigin;
+            } else {
+                translationX = (.01f * (e.getX() - dragLeftXorigin)) + translationXorigin;
+                translationY = (-.01f * (e.getY() - dragLeftYorigin)) + translationYorigin;
+            }
             translation.set(0, translationX);
             translation.set(1, translationY);
         }

@@ -263,7 +263,22 @@ public class AsteriskInterfaceWindow extends JPanel {
                 createPointCloudPanel(pointCloudConfig);
             }
         };
-        ActionListener prettyPresetListener = new ActionListener() {
+        ActionListener embellishedPresetListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                settings.setPointGasPointSizeDependantOnCameraDistance(false);
+                settings.setPointGasPointSizeSetting(1);
+                settings.setPointGasBlurPassSetting(3);
+                settings.setPointGasBlurSizeSetting(3);
+                settings.setPointGasBlurTypeSetting(6);
+                settings.setPostprocessingPointGasBrightness(25);
+
+                pointCloudConfig.removeAll();
+                createPointCloudPanel(pointCloudConfig);
+
+            }
+        };
+        ActionListener gaseousPresetListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 settings.setPointGasPointSizeDependantOnCameraDistance(false);
@@ -279,8 +294,9 @@ public class AsteriskInterfaceWindow extends JPanel {
             }
         };
 
-        targetPanel.add(GoggleSwing.buttonBox("Presets", new GoggleSwing.ButtonBoxItem("Scientific",
-                scientificPresetListener), new GoggleSwing.ButtonBoxItem("Pretty", prettyPresetListener)));
+        targetPanel.add(GoggleSwing.buttonBox("Presets", new GoggleSwing.ButtonBoxItem("Points",
+                scientificPresetListener), new GoggleSwing.ButtonBoxItem("Blobs", embellishedPresetListener),
+                new GoggleSwing.ButtonBoxItem("Gaseous", gaseousPresetListener)));
 
         targetPanel.add(GoggleSwing.checkboxBox("", new GoggleSwing.CheckBoxItem("Size Dependant on camera Distance",
                 settings.isPointgasSizeDependantOnCameraDistance(), pointGasDistanceDependantSizeListener)));
