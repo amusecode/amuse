@@ -8,6 +8,7 @@ are write_set_to_file and read_set_from_file, explained below.
 from amuse.io.base import *
 from amuse.io import text
 from amuse.io.nemotsf import NemoFileFormatProcessor
+from amuse.io.nemobin import NemoBinaryFileFormatProcessor
 from amuse.io.starlab import StarlabFileFormatProcessor
 from amuse.io.store import HDF5FileFormatProcessor
 from amuse.io.gadget import GadgetFileFormatProcessor
@@ -18,6 +19,7 @@ text.TableFormattedText.register()
 text.CsvFileText.register()
 
 NemoFileFormatProcessor.register()
+NemoBinaryFileFormatProcessor.register()
 StarlabFileFormatProcessor.register()
 HDF5FileFormatProcessor.register()
 GadgetFileFormatProcessor.register()

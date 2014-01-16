@@ -428,4 +428,13 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(len(set), 128)
         self.assertAlmostRelativeEquals(set.kinetic_energy(), 0.230214395174 | nbody_system.energy, 8)
         self.assertAlmostRelativeEquals(set.potential_energy(G=nbody_system.G), -0.473503040144  | nbody_system.energy, 8)        
- 
+    
+    def test9(self):
+        filename = os.path.join(os.path.dirname(__file__), 'plummer128.nemo')
+        particles = io.read_set_from_file(filename, format="nemobin")
+        self.assertEquals(len(particles), 128)
+        self.assertAlmostEquals(particles.total_mass(), 1.0 | nbody_system.mass)
+        self.assertAlmostEquals(particles.center_of_mass(), 0.0 | nbody_system.length)
+        self.assertAlmostEquals(particles.center_of_mass_velocity(), 0.0 | nbody_system.speed)
+        self.assertAlmostEquals(particles.kinetic_energy(), 0.230214395174 | nbody_system.energy)
+    
