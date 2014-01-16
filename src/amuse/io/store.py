@@ -30,20 +30,30 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         self.append_to_file = append_to_file
     
     def load(self):
-        processor = store_v1.StoreHDF(
-            self.filename, 
-            False, 
-            open_for_writing = False, 
-            copy_history = self.copy_history
-        )
-        if not processor.is_correct_version():
-            processor = store_v2.StoreHDF(
+        if self.version == '1.0':
+            processor = store_v1.StoreHDF(
                 self.filename, 
                 False, 
                 open_for_writing = False, 
-                copy_history = self.copy_history,
-                return_working_copy = self.return_working_copy
+                copy_history = self.copy_history
             )
+            if not processor.is_correct_version():
+                processor = store_v2.StoreHDF(
+                    self.filename, 
+                    False, 
+                    open_for_writing = False, 
+                    copy_history = self.copy_history,
+                    return_working_copy = self.return_working_copy
+                )
+        else:
+                processor = store_v2.StoreHDF(
+                    self.filename, 
+                    False, 
+                    open_for_writing = False, 
+                    copy_history = self.copy_history,
+                    return_working_copy = self.return_working_copy
+                )
+	    
         if len(self.names) > 0:
             result = processor.load_sets(self.names)
             if self.close_file:
