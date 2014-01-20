@@ -37,23 +37,44 @@ import threading
 from time import sleep
 
 def dump_and_encode(x):
-  return pickle.dumps(x,-1)
+  return pickle.dumps(x,0) # -1 does not work with sockets channel
 def decode_and_load(x):
   return pickle.loads(x.encode("latin-1"))
 
-class CodeImplementation(object):
+class RemoteCodeException(Exception):
+    def __init__(self,ex=None):
+        self.ex=ex
+    def __str__(self):
+        return "["+self.ex.__class__.__name__+"] "+str(self.ex)    
+
+class RemoteCodeImplementation(object):
    def __init__(self):
      self.scope={}
      self.scope['dump_and_encode']=dump_and_encode
      self.scope['decode_and_load']=decode_and_load
-   
-   def exec_(self,arg):
+
+   def _exec(self,express):
      try:
-       exec arg in self.scope
-       return 0
-     except Exception as ex:  
-       print ex
-       return -1
+       exec express in self.scope
+       return dump_and_encode(None)
+     except Exception as ex:
+       return dump_and_encode(RemoteCodeException(ex))
+   def _eval(self,express,argout):
+     try:
+       self.scope.update(dict(express=express))
+       exec "argout="+express in self.scope
+       argout.value=eval("dump_and_encode(argout)",self.scope)
+       return dump_and_encode(None)
+     except Exception as ex:
+       argout.value=dump_and_encode("")
+       return dump_and_encode(RemoteCodeException(ex))
+   def _assign(self,lhs,argin):
+     try:
+       self.scope.update(dict(argin=argin))
+       exec lhs+"=decode_and_load(argin)" in self.scope
+       return dump_and_encode(None)
+     except Exception as ex:
+       return dump_and_encode(RemoteCodeException(ex))
    def _func(self,f,argin,kwargin,argout):
      try:
        self.scope.update(dict(f=f,argin=argin,kwargin=kwargin))
@@ -62,14 +83,14 @@ class CodeImplementation(object):
        exec "kwarg=decode_and_load(kwargin)" in self.scope
        exec "result=func(*arg,**kwarg)" in self.scope
        argout.value=eval("dump_and_encode(result)",self.scope)
-       return 0
+       return dump_and_encode(None)
      except Exception as ex:
-       argout.value=dump_and_encode(ex)
-       return -1
+       argout.value=dump_and_encode(None)
+       return dump_and_encode(RemoteCodeException(ex))
 
-class CodeInterface(PythonCodeInterface):    
+class RemoteCodeInterface(PythonCodeInterface):    
     def __init__(self, **options):
-        PythonCodeInterface.__init__(self, CodeImplementation, **options)
+        PythonCodeInterface.__init__(self, RemoteCodeImplementation, **options)
     
     @legacy_function
     def _func():
@@ -78,21 +99,57 @@ class CodeInterface(PythonCodeInterface):
         function.addParameter('argin', dtype='string', direction=function.IN)
         function.addParameter('kwargin', dtype='string', direction=function.IN)
         function.addParameter('argout', dtype='string', direction=function.OUT)
-        function.result_type = 'int32'
+        function.result_type = 'string'
         return function
 
     @legacy_function
-    def exec_():
+    def _exec():
         function = LegacyFunctionSpecification()
         function.addParameter('arg', dtype='string', direction=function.IN)
-        function.result_type = 'int32'
+        function.result_type = 'string'
         return function
+
+    @legacy_function
+    def _eval():
+        function = LegacyFunctionSpecification()
+        function.addParameter('arg', dtype='string', direction=function.IN)
+        function.addParameter('argout', dtype='string', direction=function.OUT)
+        function.result_type = 'string'
+        return function
+
+    @legacy_function
+    def _assign():
+        function = LegacyFunctionSpecification()
+        function.addParameter('lhs', dtype='string', direction=function.IN)
+        function.addParameter('argin', dtype='string', direction=function.IN)
+        function.result_type = 'string'
+        return function
+
+    def execute(self,express):
+        err=decode_and_load( self._exec(express)[0] )
+        if err:
+          raise err
+
+    def assign(self,lhs,arg):
+        err=decode_and_load( self._assign(lhs, dump_and_encode(arg))[0] )
+        if err:
+          raise err
+
+    def evaluate(self,express):
+        result,err=self._eval(express)
+        err=decode_and_load( err[0])
+        if err :
+          raise err
+        return decode_and_load(result[0]) 
 
     def func(self,f,*args,**kwargs):
         result,err=self._func( dump_and_encode(f),
                                dump_and_encode(args),
                                dump_and_encode(kwargs) )
-        return decode_and_load(result[0]),err
+        err=decode_and_load( err[0])
+        if err :
+          raise err
+        return decode_and_load(result[0])
 
     def async_func(self,f,*args,**kwargs):
         request=self._func.async(dump_and_encode(f),
@@ -100,26 +157,32 @@ class CodeInterface(PythonCodeInterface):
                                  dump_and_encode(kwargs) )
         def f(x):
           result,err=x()
-          return decode_and_load(result[0]),err
+          err=decode_and_load( err[0])
+          if err :
+            raise err
+          return decode_and_load(result[0])
         request.add_result_handler( f )
         return request
 
+
 class Job(object):
-    def __init__(self, f, args, kwargs):
+    def __init__(self, f, args, kwargs,retries=0):
       self.f=f
       self.args=args
       self.kwargs=kwargs
       self.result=None
       self.request=None
       self.err=None
+      self.retries=retries
 
 class JobServer(object):
     def __init__(self,hosts=[],channel_type="mpi",preamble=None, retry_jobs=True, 
-                   no_wait=True,verbose=True):
+                   no_wait=True,verbose=True,max_retries=2):
       self.hosts=[]
       self.job_list=deque()
       self.idle_codes=[]
       self.retry_jobs=retry_jobs
+      self.max_retries=max_retries
       self._finished_jobs=deque()
       self.preamble=preamble
       self.pool=AsyncRequestsPool()
@@ -138,7 +201,7 @@ class JobServer(object):
       self.hosts.append(hosts)
       if self.verbose:
         print "JobServer: connecting %i hosts"%len(hosts),
-      if channel_type=="mpi":
+      if channel_type=="mpi" or channel_type=="sockets":
         for host in hosts:
           self.number_starting_codes+=1
           self._startup( channel_type=channel_type,hostname=host,
@@ -172,14 +235,14 @@ class JobServer(object):
     
     def _startup(self, *args,**kwargs):
       try: 
-        code=CodeInterface(*args,**kwargs) 
+        code=RemoteCodeInterface(*args,**kwargs) 
       except Exception as ex:
         self.number_starting_codes-=1
         print "JobServer: startup failed on", kwargs['hostname']
         print ex
       else:
         if self.preamble is not None:
-          code.exec_(self.preamble)
+          code.execute(self.preamble)
            
         self.number_available_codes+=1
         if self.no_wait:
@@ -200,7 +263,7 @@ class JobServer(object):
         sleep(0.1)
       self.waitall()  
       for code in self.idle_codes:
-        code.exec_(arg)
+        code.execute(arg)
     
     def submit_job(self,f,args=(),kwargs={}):
       if len(self.pool)==0 and not self.job_list:
@@ -222,7 +285,6 @@ class JobServer(object):
         return False
       else:
         while len(self.pool)==0 and self.job_list:
-          sleep(0.1)
           if self.number_available_codes>0:
             raise Exception("JobServer: this should not happen")    
           if self.number_starting_codes==0:
@@ -241,22 +303,25 @@ class JobServer(object):
          yield self._finished_jobs.popleft()
     
     def _finalize_job(self,request,job,code):
-      try: 
-        job.result,job.err=request.result()
+      try:
+        job.result=request.result()
+        job.err=None
       except Exception as ex:
-        job.result,job.err=ex,-2
-        if self.retry_jobs:
-          self.job_list.append( job)
+        job.result=None
+        job.err=ex
+      if job.err and not isinstance(job.err,RemoteCodeException):
         del code
         self.number_available_codes-=1
+        if self.retry_jobs and job.retries<self.max_retries:
+          retry=Job(job.f,job.args,job.kwargs,job.retries+1)
+          self.job_list.append(retry)
       else:
-        if self.job_list:
-          self._add_job( self.job_list.popleft(), code)
-          if not self.job_list:
-            if self.verbose:
-              print "JobServer: last job dispatched"
-        else:
-          self.idle_codes.append(code)
+        self.idle_codes.append(code)
+      if self.job_list and self.idle_codes:
+        self._add_job( self.job_list.popleft(), self.idle_codes.pop())
+        if not self.job_list:
+          if self.verbose:
+            print "JobServer: last job dispatched"
       self._finished_jobs.append(job)
     
     def _add_job(self,job,code):
