@@ -10,20 +10,43 @@ uniform mat4 MVMatrix;
 
 uniform int PointSizeCameraDistDependant;
 uniform float PointSizeMultiplier;
+uniform float CameraDistance;
 
 
 void main() {    
-    gl_Position = PMatrix * MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);
-        
-    vec4 cameraPos = vec4(0.0,0.0,1.0,1.0);
-    vec4 pointPos = PMatrix * MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);
+    gl_Position = PMatrix * MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);        
     
-    float cameraDist = length(cameraPos - pointPos);        
+    vec4 pointPos = MVMatrix * vec4(MCvertex.x, MCvertex.y, MCvertex.z, 1.0);       
     
     pColor = vec4(MCcolor.rgb,1.0);    
     
     if (PointSizeCameraDistDependant == 1) {
-    	gl_PointSize = min(16.0, max(0,16.0-cameraDist)) * PointSizeMultiplier *0.2;
+    	float relativePointDist = 1.0 - ((pointPos.z - CameraDistance) / CameraDistance);
+    	float pointSize = max(0.0, PointSizeMultiplier * 0.5 * relativePointDist); 
+    	
+    	gl_PointSize = pointSize;
+    	/*
+    	if (relativePointDist > 2.0 || relativePointDist < 0.0) {
+    		pColor = vec4(1.0, 0.0 ,0.0 ,1.0);
+    	} else if (relativePointDist > 1.75) {
+    		pColor = vec4(1.0, 0.5 ,0.0 ,1.0);
+    	} else if (relativePointDist > 1.5) {
+    		pColor = vec4(1.0, 1.0 ,0.0 ,1.0);
+    	} else if (relativePointDist > 1.25) {
+    		pColor = vec4(0.0, 1.0 ,0.0 ,1.0);
+    	} else if (relativePointDist > 1.0) {
+    		pColor = vec4(0.0, 0.5 ,1.0 ,1.0);
+    	} else if (relativePointDist > 0.75) {
+    		pColor = vec4(0.0, 0.0 ,1.0 ,1.0);
+    	} else if (relativePointDist > 0.5) {
+    		pColor = vec4(0.5, 0.0 ,1.0 ,1.0);
+    	} else if (relativePointDist > 0.25) {
+    		pColor = vec4(1.0, 0.0 ,1.0 ,1.0);
+    	} else if (relativePointDist > 0.0) {
+    		pColor = vec4(1.0, 1.0 ,1.0 ,1.0);
+    	}
+    	*/
+    	 
 	} else {
 		gl_PointSize = 3 * PointSizeMultiplier;
 	}

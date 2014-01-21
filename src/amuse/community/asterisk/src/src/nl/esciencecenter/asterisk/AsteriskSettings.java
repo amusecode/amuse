@@ -102,10 +102,17 @@ public class AsteriskSettings extends Settings {
     private final String currentExtension = "bin";
     private final int timeStep = 1;
 
-    private final float SLIDER_MIN_POINT_SIZE = 0f;
+    private final float SLIDER_MIN_POINT_SIZE = 1f;
     private final float SLIDER_MAX_POINT_SIZE = 10f;
 
     private boolean pointgasSizeDependantOnCameraDistance = false;
+
+    private boolean doOrbit = false;
+    private boolean orbitLinkedToPlayback = false;
+    private float orbitSpeed = 0.1f;
+    private float xOrbitSpeed = 0f;
+    private float yOrbitSpeed = 1f;
+    private float zOrbitSpeed = 0f;
 
     private AsteriskSettings() {
         super();
@@ -613,6 +620,54 @@ public class AsteriskSettings extends Settings {
      */
     public boolean isPointgasSizeDependantOnCameraDistance() {
         return pointgasSizeDependantOnCameraDistance;
+    }
+
+    public void setDoOrbit(boolean selected) {
+        this.doOrbit = selected;
+    }
+
+    public boolean isDoOrbit() {
+        return doOrbit;
+    }
+
+    public void setOrbitLinkedToPlayback(boolean selected) {
+        this.orbitLinkedToPlayback = selected;
+    }
+
+    public boolean isOrbitLinkedToPlayback() {
+        return orbitLinkedToPlayback;
+    }
+
+    public void setOrbitSpeed(float value) {
+        this.orbitSpeed = value;
+    }
+
+    public float getOrbitSpeed() {
+        return orbitSpeed;
+    }
+
+    public void setXOrbitSpeed(float value) {
+        this.xOrbitSpeed = value;
+    }
+
+    public void setYOrbitSpeed(float value) {
+        this.yOrbitSpeed = value;
+    }
+
+    public void setZOrbitSpeed(float value) {
+        this.zOrbitSpeed = value;
+    }
+
+    public float getXOrbitSpeed() {
+        return xOrbitSpeed;
+    }
+
+    public float getYOrbitSpeed() {
+        return yOrbitSpeed;
+    }
+
+    public float getZOrbitSpeed() {
+        return zOrbitSpeed;
     }
 
 }

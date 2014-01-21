@@ -83,7 +83,7 @@ public class AsteriskGLEventListener implements GLEventListener {
 
     private SceneStorage sceneStore;
 
-    private TimedPlayer timer;
+    private GlueTimedPlayer timer;
 
     private IntPBO finalPBO;
 
@@ -106,6 +106,8 @@ public class AsteriskGLEventListener implements GLEventListener {
     protected final float zFar;
 
     private final boolean test = false;
+
+    int lastTime;
 
     public AsteriskGLEventListener(AsteriskInputHandler inputHandler) {
         this.loader = new ShaderProgramLoader();
@@ -143,7 +145,7 @@ public class AsteriskGLEventListener implements GLEventListener {
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
+        GlueTimedPlayer timer = AsteriskInterfaceWindow.getTimer();
 
         if (timer.isInitialized()) {
             this.timer = timer;
@@ -181,6 +183,25 @@ public class AsteriskGLEventListener implements GLEventListener {
                 finalPBO.makeScreenshotPNG(gl, timer.getScreenshotFileName());
 
                 timer.setScreenshotNeeded(false);
+            }
+
+            if (settings.isDoOrbit()) {
+                if (settings.isOrbitLinkedToPlayback()) {
+                    if (timer.getFrameNumber() != lastTime) {
+                        VecF3 rotation = inputHandler.getRotation();
+                        VecF3 change = (new VecF3(settings.getXOrbitSpeed(), settings.getYOrbitSpeed(),
+                                settings.getZOrbitSpeed())).mul(settings.getOrbitSpeed());
+                        rotation = rotation.add(change);
+                        inputHandler.setRotation(rotation);
+                    }
+                    lastTime = timer.getFrameNumber();
+                } else {
+                    VecF3 rotation = inputHandler.getRotation();
+                    VecF3 change = (new VecF3(settings.getXOrbitSpeed(), settings.getYOrbitSpeed(),
+                            settings.getZOrbitSpeed())).mul(settings.getOrbitSpeed());
+                    rotation = rotation.add(change);
+                    inputHandler.setRotation(rotation);
+                }
             }
 
             contextOff(drawable);
@@ -291,6 +312,7 @@ public class AsteriskGLEventListener implements GLEventListener {
         pointGasShader.setUniform("PointSizeCameraDistDependant",
                 settings.isPointgasSizeDependantOnCameraDistance() ? 1 : 0);
         pointGasShader.setUniform("PointSizeMultiplier", (settings.getPointGasPointSizeSetting()));
+        pointGasShader.setUniform("CameraDistance", (inputHandler.getViewDist()));
 
         newScene.drawGasPointCloud(gl, pointGasShader, mv);
 

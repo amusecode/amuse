@@ -11,6 +11,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -28,15 +29,12 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
 import nl.esciencecenter.asterisk.data.GlueTimedPlayer;
-import nl.esciencecenter.asterisk.interfaces.TimedPlayer;
+import nl.esciencecenter.asterisk.input.AsteriskInputHandler;
+import nl.esciencecenter.esight.math.VecF3;
 import nl.esciencecenter.esight.swing.CustomJSlider;
 import nl.esciencecenter.esight.swing.GoggleSwing;
 
 public class AsteriskInterfaceWindow extends JPanel {
-    public static enum TweakState {
-        NONE, DATA, VISUAL
-    }
-
     private final AsteriskSettings settings = AsteriskSettings.getInstance();
 
     private static final long serialVersionUID = 1L;
@@ -45,13 +43,74 @@ public class AsteriskInterfaceWindow extends JPanel {
 
     protected JFormattedTextField frameCounter;
 
-    public static TimedPlayer timer;
+    public static GlueTimedPlayer timer;
 
     private final JTabbedPane configPanel;
 
-    private final JPanel starConfig, pointCloudConfig, miscConfig;
+    private final JPanel starConfig, pointCloudConfig, miscConfig, viewConfig, recordingConfig;
+
+    private final AsteriskInputHandler inputHandler = AsteriskInputHandler.getInstance();
+
+    public class KeyFrame {
+        private Component uiElement;
+        private final int frameNumber;
+        private VecF3 rotation;
+        private float viewDist;
+
+        public KeyFrame(int frameNumber) {
+            this.frameNumber = frameNumber;
+        }
+
+        public Component getUiElement() {
+            return uiElement;
+        }
+
+        public void setUiElement(Component uiElement) {
+            this.uiElement = uiElement;
+        }
+
+        public int getFrameNumber() {
+            return frameNumber;
+        }
+
+        public VecF3 getRotation() {
+            return rotation;
+        }
+
+        public void setRotation(VecF3 rotation) {
+            this.rotation = rotation;
+        }
+
+        public float getViewDist() {
+            return viewDist;
+        }
+
+        public void setViewDist(float viewDist) {
+            this.viewDist = viewDist;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 1;
+            hash = hash * 17 + frameNumber;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof KeyFrame && ((KeyFrame) other).hashCode() == this.hashCode()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    private final ArrayList<KeyFrame> keyFrames;
 
     public AsteriskInterfaceWindow() {
+        keyFrames = new ArrayList<KeyFrame>();
+
         setLayout(new BorderLayout(0, 0));
 
         timeBar = new CustomJSlider(new BasicSliderUI(timeBar));
@@ -64,6 +123,8 @@ public class AsteriskInterfaceWindow extends JPanel {
         timeBar.setSnapToTicks(true);
 
         timer = new GlueTimedPlayer(timeBar, frameCounter);
+        timer.setScreenshotDirectory(System.getProperty("user.dir") + "/screenshots/");
+        settings.setScreenshotPath(System.getProperty("user.dir") + "/screenshots/");
 
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
@@ -114,6 +175,18 @@ public class AsteriskInterfaceWindow extends JPanel {
         createPointCloudPanel(pointCloudConfig);
         configPanel.addTab("Point Gas", pointCloudConfig);
 
+        viewConfig = new JPanel();
+        viewConfig.setLayout(new BoxLayout(viewConfig, BoxLayout.Y_AXIS));
+        viewConfig.setMinimumSize(configPanel.getPreferredSize());
+        createViewPanel(viewConfig);
+        configPanel.addTab("View", viewConfig);
+
+        recordingConfig = new JPanel();
+        recordingConfig.setLayout(new BoxLayout(recordingConfig, BoxLayout.Y_AXIS));
+        recordingConfig.setMinimumSize(configPanel.getPreferredSize());
+        createRecordingPanel(recordingConfig);
+        configPanel.addTab("Recording", recordingConfig);
+
         configPanel.setVisible(true);
 
         add(bottomPanel, BorderLayout.SOUTH);
@@ -121,9 +194,189 @@ public class AsteriskInterfaceWindow extends JPanel {
         // Read command line file information
         makeTimer();
 
-        // setTweakState(TweakState.VISUAL);
-
         setVisible(true);
+    }
+
+    private void createRecordingPanel(JPanel targetPanel) {
+        ActionListener addKeyFrameListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int frameNumber = settings.getCurrentDescription().getFrameNumber();
+                final KeyFrame newKeyFrame = new KeyFrame(frameNumber);
+
+                if (keyFrames.contains(newKeyFrame)) {
+                    keyFrames.remove(newKeyFrame);
+                }
+
+                ActionListener removeKeyFrameListener = new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        keyFrames.remove(newKeyFrame);
+                        recordingConfig.removeAll();
+                        createRecordingPanel(recordingConfig);
+                        validate();
+                        repaint();
+                    }
+                };
+
+                ArrayList<Component> axesVboxList = new ArrayList<Component>();
+                ArrayList<Component> axesHboxList2 = new ArrayList<Component>();
+
+                VecF3 rotation = inputHandler.getRotation().clone();
+                newKeyFrame.setRotation(rotation);
+                float viewDist = inputHandler.getViewDist();
+                newKeyFrame.setViewDist(viewDist);
+
+                axesHboxList2.add(new JLabel("#: " + frameNumber + " Axes: " + (int) rotation.get(0) + " "
+                        + (int) rotation.get(1) + " " + (int) rotation.get(2)));
+                axesHboxList2.add(Box.createHorizontalGlue());
+                JButton removeButton = new JButton(new ImageIcon("images/RemoveIcon15.png"));
+                removeButton.addActionListener(removeKeyFrameListener);
+                axesHboxList2.add(removeButton);
+
+                axesVboxList.add(GoggleSwing.hBoxedComponents(axesHboxList2, false));
+                newKeyFrame.setUiElement(GoggleSwing.vBoxedComponents(axesVboxList, true));
+
+                keyFrames.add(newKeyFrame);
+
+                recordingConfig.removeAll();
+                createRecordingPanel(recordingConfig);
+                validate();
+                repaint();
+            }
+        };
+
+        ActionListener playSequenceListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                timer.startSequence(keyFrames, false);
+            }
+        };
+
+        ActionListener recordSequenceListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                timer.startSequence(keyFrames, true);
+            }
+        };
+
+        ActionListener clearListListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                keyFrames.clear();
+                recordingConfig.removeAll();
+                createRecordingPanel(recordingConfig);
+                validate();
+                repaint();
+            }
+        };
+
+        for (KeyFrame keyFrame : keyFrames) {
+            targetPanel.add(keyFrame.getUiElement());
+        }
+
+        targetPanel.add(GoggleSwing.buttonBox("", new GoggleSwing.ButtonBoxItem("Add current", addKeyFrameListener),
+                new GoggleSwing.ButtonBoxItem("Play Sequence", playSequenceListener), new GoggleSwing.ButtonBoxItem(
+                        "Record Sequence", recordSequenceListener), new GoggleSwing.ButtonBoxItem("Clear All",
+                        clearListListener)));
+
+    }
+
+    private void createViewPanel(JPanel targetPanel) {
+        final ItemListener orbitCheckboxListener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                final JCheckBox source = (JCheckBox) e.getSource();
+                settings.setDoOrbit(source.isSelected());
+            }
+        };
+
+        targetPanel.add(GoggleSwing.checkboxBox("", new GoggleSwing.CheckBoxItem("Orbit?", settings.isDoOrbit(),
+                orbitCheckboxListener)));
+
+        final ItemListener orbitLinkedToPlaybackListener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                final JCheckBox source = (JCheckBox) e.getSource();
+                settings.setOrbitLinkedToPlayback(source.isSelected());
+            }
+        };
+
+        targetPanel.add(GoggleSwing.checkboxBox("",
+                new GoggleSwing.CheckBoxItem("Orbit Linked to Playback?", settings.isOrbitLinkedToPlayback(),
+                        orbitLinkedToPlaybackListener)));
+
+        final ChangeListener orbitSpeedSliderListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    settings.setOrbitSpeed(source.getValue() / 10f);
+                }
+            }
+        };
+        targetPanel.add(GoggleSwing.sliderBox("Orbit Speed", orbitSpeedSliderListener, 0f, 10f, 1f,
+                settings.getOrbitSpeed() * 10f, new JLabel("")));
+
+        JFormattedTextField xOrbit = new JFormattedTextField();
+        xOrbit.setValue(new Float(0f));
+        xOrbit.setColumns(4);
+        xOrbit.setMaximumSize(new Dimension(40, 20));
+        xOrbit.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                final JFormattedTextField source = (JFormattedTextField) e.getSource();
+                settings.setXOrbitSpeed((Float) (source.getValue()));
+            }
+        });
+
+        JFormattedTextField yOrbit = new JFormattedTextField();
+        yOrbit.setValue(new Float(1f));
+        yOrbit.setColumns(4);
+        yOrbit.setMaximumSize(new Dimension(40, 20));
+        yOrbit.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                final JFormattedTextField source = (JFormattedTextField) e.getSource();
+                settings.setYOrbitSpeed((Float) source.getValue());
+            }
+        });
+
+        JFormattedTextField zOrbit = new JFormattedTextField();
+        zOrbit.setValue(new Float(0f));
+        zOrbit.setColumns(4);
+        zOrbit.setMaximumSize(new Dimension(40, 20));
+        zOrbit.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                final JFormattedTextField source = (JFormattedTextField) e.getSource();
+                settings.setZOrbitSpeed((Float) source.getValue());
+            }
+        });
+
+        ArrayList<Component> axesVboxList = new ArrayList<Component>();
+        ArrayList<Component> axesHboxList1 = new ArrayList<Component>();
+        ArrayList<Component> axesHboxList2 = new ArrayList<Component>();
+        axesHboxList1.add(Box.createHorizontalGlue());
+
+        axesHboxList1.add(new JLabel("X:"));
+        axesHboxList1.add(xOrbit);
+        axesHboxList1.add(GoggleSwing.horizontalStrut(3));
+        axesHboxList1.add(new JLabel("Y:"));
+        axesHboxList1.add(yOrbit);
+        axesHboxList1.add(GoggleSwing.horizontalStrut(3));
+        axesHboxList1.add(new JLabel("Z:"));
+        axesHboxList1.add(zOrbit);
+
+        axesHboxList1.add(Box.createHorizontalGlue());
+
+        axesHboxList2.add(new JLabel("Orbit direction:"));
+        axesHboxList2.add(Box.createHorizontalGlue());
+
+        axesVboxList.add(GoggleSwing.hBoxedComponents(axesHboxList2, false));
+        axesVboxList.add(GoggleSwing.hBoxedComponents(axesHboxList1, false));
+        targetPanel.add(GoggleSwing.vBoxedComponents(axesVboxList, true));
+
     }
 
     private void createMiscPanel(JPanel targetPanel) {
@@ -261,6 +514,8 @@ public class AsteriskInterfaceWindow extends JPanel {
 
                 pointCloudConfig.removeAll();
                 createPointCloudPanel(pointCloudConfig);
+                validate();
+                repaint();
             }
         };
         ActionListener embellishedPresetListener = new ActionListener() {
@@ -275,6 +530,8 @@ public class AsteriskInterfaceWindow extends JPanel {
 
                 pointCloudConfig.removeAll();
                 createPointCloudPanel(pointCloudConfig);
+                validate();
+                repaint();
 
             }
         };
@@ -290,6 +547,8 @@ public class AsteriskInterfaceWindow extends JPanel {
 
                 pointCloudConfig.removeAll();
                 createPointCloudPanel(pointCloudConfig);
+                validate();
+                repaint();
 
             }
         };
@@ -563,7 +822,7 @@ public class AsteriskInterfaceWindow extends JPanel {
 
     }
 
-    public static TimedPlayer getTimer() {
+    public static GlueTimedPlayer getTimer() {
         return timer;
     }
 }

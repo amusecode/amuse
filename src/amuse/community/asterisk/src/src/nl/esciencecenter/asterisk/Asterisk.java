@@ -95,7 +95,7 @@ public class Asterisk {
         int SPHERES = 0;
         int STARS = 100;
         int SPH = 1000;
-        int POINTS = 5000000;
+        int POINTS = 500000;
 
         float COORD_DELTA_MAX = .3f;
         float COLOR_DELTA_MAX = .2f;
@@ -301,14 +301,14 @@ public class Asterisk {
     }
 
     public void makePNGScreenshot(String fileName) {
-//        TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
-//        ((GlueTimedPlayer) timer).setScreenshotFileName(fileName);
-//        ((GlueTimedPlayer) timer).setScreenshotNeeded(true);
-        
-        TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
+        // TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
+        // ((GlueTimedPlayer) timer).setScreenshotFileName(fileName);
+        // ((GlueTimedPlayer) timer).setScreenshotNeeded(true);
+
+        GlueTimedPlayer timer = AsteriskInterfaceWindow.getTimer();
         timer.makeScreenShot(fileName);
     }
-    
+
     public int getSceneNumber() {
         TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
         return ((GlueTimedPlayer) timer).getFrameNumber();
@@ -321,7 +321,7 @@ public class Asterisk {
     public VecF3 getTranslation() {
         return amuseInputHandler.getTranslation();
     }
-  
+
     public void setSceneNumber(int sceneNumber) {
         TimedPlayer timer = AsteriskInterfaceWindow.getTimer();
         ((GlueTimedPlayer) timer).setFrame(sceneNumber, true);

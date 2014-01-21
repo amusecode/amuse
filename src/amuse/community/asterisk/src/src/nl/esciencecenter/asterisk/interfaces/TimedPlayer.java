@@ -1,10 +1,14 @@
 package nl.esciencecenter.asterisk.interfaces;
 
+import java.util.ArrayList;
+
 import javax.media.opengl.GL3;
+
+import nl.esciencecenter.asterisk.AsteriskInterfaceWindow.KeyFrame;
 
 public interface TimedPlayer extends Runnable {
     public static enum states {
-        UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
+        UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING, REVIEW
     }
 
     public void delete(GL3 gl);
@@ -33,6 +37,8 @@ public interface TimedPlayer extends Runnable {
 
     public void movieMode();
 
+    public void reviewMode();
+
     public boolean isScreenshotNeeded();
 
     public String getScreenshotFileName();
@@ -44,5 +50,7 @@ public interface TimedPlayer extends Runnable {
     public void init();
 
     public void makeScreenShot(String fileName);
+
+    public void startSequence(ArrayList<KeyFrame> keyFrames, boolean record);
 
 }

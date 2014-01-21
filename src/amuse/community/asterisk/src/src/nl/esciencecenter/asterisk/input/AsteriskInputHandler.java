@@ -279,7 +279,7 @@ public class AsteriskInputHandler extends InputHandler implements MouseListener,
      */
     @Override
     public void setRotation(VecF3 rotation) {
-        reset();
+        // reset();
         this.rotation = rotation;
     }
 
