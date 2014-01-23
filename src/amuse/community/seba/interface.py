@@ -16,7 +16,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     
         .. [#] ** Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
         .. [#] ... "Population synthesis of high-mass binaries"
-        .. [#] Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012 submitted to A&A (arXiv 1101.2787)
+        .. [#] Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
         .. [#] ... "New population synthesis model: Preliminary results for close double white dwarf populations"
     """
 
