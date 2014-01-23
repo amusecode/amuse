@@ -39,13 +39,32 @@ class StarsWithSimpleWind(object):
         self.stev_channel.copy()
         self.stars.lost_mass = self.stars.init_mass - self.stars.mass - self.stars.released_mass
 
-        """
-            TODO: get the right formula for the terminal wind velocity.
-            This one taken from Simon's example
-        """
-        t4 = numpy.log10(self.stars.temperature.value_in(units.K))-4
-        t4 = t4.clip(0.,1.)
-        self.stars.terminal_wind_velocity = (30. | units.kms) + ((4000. | units.kms)*t4)
+        #t4 = numpy.log10(self.stars.temperature.value_in(units.K))-4
+        #t4 = t4.clip(0.,1.)
+        #self.stars.terminal_wind_velocity = (30. | units.kms) + ((4000. | units.kms)*t4)
+        self.stars.terminal_wind_velocity = self.calculate_terminal_wind_velocity()
+
+    def calculate_terminal_wind_velocity(self, Y=0.25, I_He = 2):
+    	"""
+    		This routine calculates the escape and terminal wind velocity. The Equations are taken
+    		from Kudritzki & Puls, Annual Reviews of Astronomy and Astrophysics, 2000, Vol. 38, p. 613-666 Equation (8) and (9) and Kudritzki et al., 1989, A&A 219, 205 Equation (64) and
+    		(65).
+    		
+    		I_He:		Number of electrons per He nucleus (= 2 in O-Stars)
+    		sigma_e: 	Thomson absorption coefficient
+    		Gamma: 		Ratio of radiative Thomson to gravitational acceleration
+    	"""
+   		T_eff = self.stars.temperature
+   		
+   		sigma_e = 0.398 * (1 + I_He*Y)/(1 + 4*Y)
+   		Gamma = 7.66E-5 * sigma_e * self.stars.luminosity.value_in(units.LSun)/ self.stars.mass.value_in(units.MSun)
+   		g_star = constants.G * self.stars.mass / self.stars.radius**2
+   		v_esc = (2*g_star*self.stars.radius*(1 - Gamma))**0.5
+   		
+		condlist = [T_eff >= 21000. | units.K, (10000. | units.K  < T_eff) &  (T_eff < 21000. | units.K), T_eff <= 10000. | units.K]
+		choicelist = [2.65, 1.4, 1.0]
+		
+		return v_esc * numpy.select(condlist, choicelist)
 
     def setup_stars(self, stars, evolving_stars):
         if stars.can_extend_attributes():
