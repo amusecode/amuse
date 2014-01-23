@@ -56,11 +56,11 @@ def fill_grid_with_spherical_cloud(
     position = subgrid.position
     centers = center - grid.position[selection]
     
-    subgrid_rho = rho * numpy.ones_like(subgrid.x)
-    subgrid_rhovx = rhovx * numpy.ones_like(subgrid.x)
-    subgrid_rhovy = rhovy * numpy.ones_like(subgrid.x)
-    subgrid_rhovz = rhovz * numpy.ones_like(subgrid.x) 
-    subgrid_energy = energy * numpy.ones_like(subgrid.x)
+    subgrid_rho = rho * numpy.ones_like(subgrid.x.number)
+    subgrid_rhovx = rhovx * numpy.ones_like(subgrid.x.number)
+    subgrid_rhovy = rhovy * numpy.ones_like(subgrid.x.number)
+    subgrid_rhovz = rhovz * numpy.ones_like(subgrid.x.number) 
+    subgrid_energy = energy * numpy.ones_like(subgrid.x.number)
     
     update_grid_rho = grid.rho[selection]
     update_grid_rhovx = grid.rhovx[selection]
