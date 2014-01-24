@@ -40,7 +40,7 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.6.2' ,                  #version string
+            '1.8.0' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
             'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
@@ -56,9 +56,9 @@ class InstallPrerequisites(object):
           (
             'hdf' ,
             [],  
-            '1.8.8',
+            '1.8.11',
             'hdf5-' , '.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.8/src/',
+            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.11/src/',
             self.hdf5_build
           ) ,
           (
