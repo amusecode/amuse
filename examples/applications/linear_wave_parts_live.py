@@ -110,38 +110,43 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
         after_channels = []
         for index in range(0, len(self.codes)):
             instance = self.codes[index]
+            nx,ny,nz = instance.grid.shape
+            print nx,ny,nz
             xbound1 = instance.get_boundary_grid('xbound1')
             xbound2 = instance.get_boundary_grid('xbound2')
-            
+            xbound1_nghost_x,_,ybound1_nghost_z = xbound1.shape
+            xbound2_nghost_x,_,ybound2_nghost_z = xbound2.shape
+            print xbound1_nghost_x,xbound2_nghost_x
             ybound1 = instance.get_boundary_grid('ybound1')
             ybound2 = instance.get_boundary_grid('ybound2')
+            ybound1_nghost_x,ybound1_nghost_y,ybound1_nghost_z = ybound1.shape
+            ybound2_nghost_x,ybound2_nghost_y,ybound2_nghost_z = ybound2.shape
+            ybound1_nghost_x = (ybound1_nghost_x - nx) / 2
+            ybound2_nghost_x = (ybound2_nghost_x - nx) / 2
             
-            xbound1_bottom = xbound1[0:self.nghost,0:self.nghost,...]
-            xbound1_top = xbound1[0:self.nghost,self.number_of_grid_points - self.nghost:,...]
             
-            xbound1_channel = instance.grid[self.number_of_grid_points - self.nghost:,..., ...].new_channel_to(xbound1)
-            xbound2_channel = instance.grid[0: self.nghost,..., ...].new_channel_to(xbound2)
-
+            xbound1_channel = instance.grid[nx - xbound1_nghost_x:,..., ...].new_channel_to(xbound1)
+            xbound2_channel = instance.grid[0:xbound2_nghost_x,..., ...].new_channel_to(xbound2)
             if index == 0:
                 instance11 = self.codes[-1]
             else:
                 instance11 = self.codes[index-1]
-            ybound1_channel = instance11.grid[...,self.number_of_grid_points_per_code-self.nghost:, ...].new_channel_to(ybound1[self.nghost:self.number_of_grid_points+self.nghost,...,...])
-            xbound1prev = instance11.get_boundary_grid('xbound1')
-            xbound2prev = instance11.get_boundary_grid('xbound2')
-            ybound1_left_channel = xbound1prev[...,self.number_of_grid_points_per_code-self.nghost:, ...].new_channel_to(ybound1[0:self.nghost,...,...])
-            ybound1_right_channel = xbound2prev[...,self.number_of_grid_points_per_code-self.nghost:, ...].new_channel_to(ybound1[self.number_of_grid_points+self.nghost:,...,...])
+            print ybound1[ybound1_nghost_x:nx+ybound1_nghost_x,...,...].shape
+            print instance11.grid[...,ny-ybound1_nghost_y:, ...].shape
+            ybound1_channel = instance11.grid[...,ny-ybound1_nghost_y:, ...].new_channel_to(ybound1[ybound1_nghost_x:nx+ybound1_nghost_x,...,...])
+            nx11,ny11,nz11 = instance11.grid.shape
+            ybound1_left_channel = instance11.grid[0:ybound1_nghost_x,ny11-ybound1_nghost_y:, ...].new_channel_to(ybound1[0:ybound1_nghost_x,...,...])
+            ybound1_right_channel = instance11.grid[nx11-ybound1_nghost_x:,ny11-ybound1_nghost_y:, ...].new_channel_to(ybound1[nx+ybound1_nghost_x:,...,...])
             
             if index == len(self.codes)-1:
                 instance12 = self.codes[0]
             else:
                 instance12 = self.codes[index+1]
-            ybound2_channel = instance12.grid[...,0:self.nghost, ...].new_channel_to(ybound2[self.nghost:self.number_of_grid_points+self.nghost,...,...])
+            ybound2_channel = instance12.grid[...,0:ybound2_nghost_y, ...].new_channel_to(ybound2[ybound2_nghost_x:nx+ybound2_nghost_x,...,...])
+            nx12,ny12,nz12 = instance12.grid.shape
         
-            xbound1next = instance12.get_boundary_grid('xbound1')
-            xbound2next = instance12.get_boundary_grid('xbound2')
-            ybound2_left_channel = xbound1next[...,0:self.nghost, ...].new_channel_to(ybound2[0:self.nghost,...,...])
-            ybound2_right_channel = xbound2next[...,0:self.nghost, ...].new_channel_to(ybound2[self.number_of_grid_points+self.nghost:,...,...])
+            ybound2_left_channel = instance12.grid[0:ybound2_nghost_x,0:ybound2_nghost_y, ...].new_channel_to(ybound2[0:ybound2_nghost_x,...,...])
+            ybound2_right_channel = instance12.grid[nx12-ybound2_nghost_x:,0:ybound2_nghost_y, ...].new_channel_to(ybound2[nx+ybound2_nghost_x:,...,...])
             
             channels.append(xbound1_channel)
             channels.append(xbound2_channel)
@@ -175,12 +180,13 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
             if (min_timestep + code.model_time) >= time and time == endtime:
                 for x in self.codes:
                     x.parameters.must_evolve_to_exact_time = True
-            
+            print min_timestep
             for x in self.codes:
                 x.set_timestep(min_timestep)
                 
             for x in self.codes:
                 x.evolve_model(time)
+                print x.model_time
                 
             self.copy_to_boundary_cells()
             
@@ -224,10 +230,8 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodesWithDifferentGr
             else:
                 instance11 = self.codes[index-1]
             ybound1_channel = instance11.grid[...,self.number_of_grid_points_per_code-self.nghost:, ...].new_channel_to(ybound1[self.nghost:self.number_of_grid_points+self.nghost,...,...])
-            xbound1prev = instance11.get_boundary_grid('xbound1')
-            xbound2prev = instance11.get_boundary_grid('xbound2')
-            ybound1_left_channel = xbound1prev[...,self.number_of_grid_points_per_code-self.nghost:, ...].new_channel_to(ybound1[0:self.nghost,...,...])
-            ybound1_right_channel = xbound2prev[...,self.number_of_grid_points_per_code-self.nghost:, ...].new_channel_to(ybound1[self.number_of_grid_points+self.nghost:,...,...])
+            ybound1_left_channel = instance11.grid[0:self.nghost,self.number_of_grid_points_per_code-self.nghost:, ...].new_channel_to(ybound1[0:self.nghost,...,...])
+            ybound1_right_channel = instance11.grid[-self.nghost:,self.number_of_grid_points_per_code-self.nghost:, ...].new_channel_to(ybound1[self.number_of_grid_points+self.nghost:,...,...])
             
             if index == len(self.codes)-1:
                 instance12 = self.codes[0]
@@ -331,12 +335,18 @@ class CalculateLinearWave1D(object):
         self.dimensions_of_mesh = (
             self.number_of_grid_points, 
             self.number_of_grid_points, 
-            1
+            4
         )
         self.nghost = 4
         self.use_boundaries = use_boundaries
         
     def new_instance_of_code(self):
+        if 1:
+            if self.name_of_the_code == 'athena':
+                self.name_of_the_code = 'capreole'
+            else:
+                self.name_of_the_code = 'athena'
+            
         attribute = "new_instance_of_{0}_code".format(self.name_of_the_code.lower())
         return getattr(self,attribute)()
         
@@ -345,7 +355,7 @@ class CalculateLinearWave1D(object):
         self.dimensions_of_mesh =  (
             self.number_of_grid_points, 
             self.number_of_grid_points, 
-            3
+            4
         )
         self.nghost = 2
         return result
@@ -354,7 +364,7 @@ class CalculateLinearWave1D(object):
         from amuse.community.athena.interface import Athena
         result=Athena(number_of_workers=self.number_of_workers)
         result.parameters.gamma = self.gamma
-        result.parameters.courant_number=0.8
+        result.parameters.courant_number=0.4
         self.nghost = 4
         return result
         
@@ -545,8 +555,8 @@ class CalculateLinearWave1D(object):
 
 import sys
 def main():
-    number_of_grid_points = 120
-    name_of_the_code = 'athena'
+    number_of_grid_points = 30
+    name_of_the_code = 'capreole'
     number_of_steps = 1000
     vflow_factor = -1.0
     pertubation_amplitude = 1e-4 | speed
@@ -623,14 +633,17 @@ def main():
         variables[0] = t
         variables[1] = step
         return lines
-    
-    process = animation.FuncAnimation(
-        figure, 
-        update, 
-        numpy.arange(1, 200), 
-        interval=25,
-        blit=False
-    )
+    if 0:
+        process = animation.FuncAnimation(
+            figure, 
+            update, 
+            numpy.arange(1, 200), 
+            interval=25,
+            blit=False
+        )
+    else:
+        update(0)
+        pass
     
         
     pyplot.show()
