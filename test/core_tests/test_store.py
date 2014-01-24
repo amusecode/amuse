@@ -28,9 +28,10 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
     def get_version_in_store(self, container):
         raise NotImplementedError
+        
     def test1(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test.hdf5")
+        output_file = os.path.join(test_results_path, "test1."+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
         instance = self.store_factory()(output_file)
@@ -48,10 +49,12 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         previous_mass_in_kg = p.mass.value_in(units.kg)
         for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
             self.assertEquals(expected, actual)
+        
+        instance.close()
 
     def test2(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test.hdf5")
+        output_file = os.path.join(test_results_path, "test2."+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -72,10 +75,11 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         masses = loaded_particles[1].get_timeline_of_attribute("mass")
         self.assertEquals(len(masses), 2)
 
+        instance.close()
 
     def test3(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test.hdf5")
+        output_file = os.path.join(test_results_path, "test3"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -91,12 +95,13 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         loaded_particles = instance.load()
         self.assertAlmostRelativeEquals(p.mass[1], 2.0 | nbody_system.mass)
 
+        instance.close()
 
 
 
     def test4(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test.hdf5")
+        output_file = os.path.join(test_results_path, "test4"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -107,7 +112,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         io.write_set_to_file(x,output_file, format='amuse', version = self.store_version())
 
-        particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version())
+        particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version(), close_file = True)
         particles_in_memory = particles_from_file.copy()
 
         self.assertAlmostRelativeEquals(particles_in_memory.mass[1], 1.0 | units.kg)
@@ -118,7 +123,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     
     def test5(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "testgrid.hdf5")
+        output_file = os.path.join(test_results_path, "test5_grid"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
         instance = self.store_factory()(output_file)
@@ -138,10 +143,12 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         previous_mass_in_kg = p.mass.value_in(units.kg)
         for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
             self.assertEquals(expected, actual)
+        
+        instance.close()
     
     def test6(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "testgrid.hdf5")
+        output_file = os.path.join(test_results_path, "test6_grid"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
         instance = self.store_factory()(output_file)
@@ -161,9 +168,11 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         self.assertEquals(loaded_grid[0][0][0].mass, 0 | units.kg)
         self.assertAlmostRelativeEquals(loaded_grid[...,1,1].mass, p[...,1,1].mass)
 
+        instance.close()
+        
     def test7(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test.hdf5")
+        output_file = os.path.join(test_results_path, "test7"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
         instance = self.store_factory()(output_file)
@@ -202,7 +211,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
     def test8(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test.hdf5")
+        output_file = os.path.join(test_results_path, "test8"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -217,12 +226,12 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         instance = self.store_factory()(output_file)
         loaded_particles = instance.load()
         self.assertAlmostRelativeEquals(p.mass[1], 2.0)
-        
+        instance.close()
     
 
     def test9(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test9.hdf5")
+        output_file = os.path.join(test_results_path, "test9"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -237,7 +246,8 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
             "hdf5", 
             timestamp = 2 | units.Myr,
             scale = 1 | units.kg,
-            version = self.store_version()
+            version = self.store_version(),
+            close_file = True
         )
         
         loaded_particles = io.read_set_from_file(
@@ -255,7 +265,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
     def test10(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test10.hdf5")
+        output_file = os.path.join(test_results_path, "test10"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -276,7 +286,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
     def test11(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test11.hdf5")
+        output_file = os.path.join(test_results_path, "test11"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -296,7 +306,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     
     def test12(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test12.hdf5")
+        output_file = os.path.join(test_results_path, "test12"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -316,7 +326,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     
     def test13(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test13.hdf5")
+        output_file = os.path.join(test_results_path, "test13"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -340,7 +350,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
       
     def test14(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test14.hdf5")
+        output_file = os.path.join(test_results_path, "test14"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -361,7 +371,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     def test15(self):
         
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test15.hdf5")
+        output_file = os.path.join(test_results_path, "test15"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -386,7 +396,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         print h5py.version.version
         print h5py
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test16.hdf5")
+        output_file = os.path.join(test_results_path, "test16"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -413,7 +423,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     def test17(self):
         
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test17.hdf5")
+        output_file = os.path.join(test_results_path, "test17"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -444,7 +454,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     def test18(self):
         
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test18.hdf5")
+        output_file = os.path.join(test_results_path, "test18"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -478,7 +488,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     
     def test19(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test18.hdf5")
+        output_file = os.path.join(test_results_path, "test19"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -513,7 +523,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     def test20(self):
         
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test19.hdf5")
+        output_file = os.path.join(test_results_path, "test20"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -533,7 +543,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     def test21(self):
         
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test21.hdf5")
+        output_file = os.path.join(test_results_path, "test21"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -556,7 +566,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     def test22(self):
         
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test22.hdf5")
+        output_file = os.path.join(test_results_path, "test22"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -577,7 +587,7 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
     
     def test23(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test23.hdf5")
+        output_file = os.path.join(test_results_path, "test23"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -615,7 +625,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         
     def test52(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test22.hdf5")
+        output_file = os.path.join(test_results_path, "test52"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -640,7 +650,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         
     def test53(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test23.hdf5")
+        output_file = os.path.join(test_results_path, "test53"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -662,7 +672,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
 
     def test54(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test23.hdf5")
+        output_file = os.path.join(test_results_path, "test23"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -687,7 +697,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
 
     def test54(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test24.hdf5")
+        output_file = os.path.join(test_results_path, "test24"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -725,7 +735,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
     
     def test55(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test25.hdf5")
+        output_file = os.path.join(test_results_path, "test25"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
@@ -752,7 +762,7 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
 
     def test56(self):
         test_results_path = self.get_path_to_results()
-        output_file = os.path.join(test_results_path, "test26.hdf5")
+        output_file = os.path.join(test_results_path, "test26"+self.store_version()+".hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
 
