@@ -711,9 +711,8 @@ function get_timestep(outputvalue) result(ret)
   use amuse_helpers
   implicit none
   integer :: ret
-  integer, intent(out) :: outputvalue
-  ret = 0
-  outputvalue = dt
+  DOUBLE PRECISION, intent(out) :: outputvalue
+  ret = amuse_get_timestep(outputvalue)
 end function get_timestep
 
 
@@ -721,8 +720,8 @@ function set_timestep(inputvalue) result(ret)
   use amuse_helpers
   implicit none
   integer :: ret
-  integer, intent(in) :: inputvalue
-  ret = 0
+  DOUBLE PRECISION, intent(in) :: inputvalue
+  ret = amuse_set_timestep(inputvalue)
 end function set_timestep
 
 

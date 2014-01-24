@@ -14,6 +14,11 @@ module amuse_helpers
   
   integer, private, save :: nstep
   
+  real(kind=dp) :: timestep_specified
+  real(kind=dp) :: timestep_used
+  LOGICAL :: use_specified_timestep
+  
+  
   contains
 
   function amuse_init() result(ret)
@@ -32,10 +37,92 @@ module amuse_helpers
     gamma = 5.0_dp/3.0_dp
     gamma1 = gamma - 1.0_dp
     nstep = 0
+    use_specified_timestep = .FALSE.
+    timestep_specified = 0.0_dp
+    timestep_used = 0.0_dp
     ret=0    
   end function
 
 
+  function amuse_evolve_step (nstep, nexttime)
+    IMPLICIT NONE
+    ! This routine handles the basic integration frame work
+    integer, intent(inout) :: nstep
+    integer :: amuse_evolve_step
+    integer :: inegative,istop ! various control integers
+    real(kind=dp)    :: dtlocal    ! processor local time step
+    real(kind=dp)    :: nexttime   ! timer for output
+    integer :: nframe              ! integers for output
+
+#ifdef MPI
+    integer :: mpi_ierror
+#endif
+
+
+
+    
+    istop=0            ! initialize stop flag
+    inegative=0        ! initialize negative density/energy flag
+    
+    ! Make stold and stnew equal to start with
+    ! This assumes that the initialization routines
+    ! worked with stold.
+!    stnew=stold
+    ! Integration loop
+    
+   nstep=nstep+1 ! count the integration loops
+   
+   ! To avoid costly data copying, we flip pointers
+   ! between state1 and state2.
+   ! The integrate routine als does this. If any changes
+   ! have to be made also check there.
+   if (mod(nstep,2) == 0) then
+      stold => state2
+      stnew => state1
+   else
+      stold => state1
+      stnew => state2
+   endif
+   
+   ! Determine the time step on the local grid;
+   ! the timestep function has to be supplied
+   state => stold ! make sure state points to stold
+   if(use_specified_timestep .AND. timestep_specified .GT. 0.0) THEN
+        dtlocal=timestep_specified
+   ELSE
+        dtlocal=timestep(cfl,OLD)
+   END IF
+   use_specified_timestep = .FALSE.
+   dt=dtlocal
+#ifdef MPI
+   ! communicate with all other processors to find
+   ! the global minimal time step
+   call MPI_ALLREDUCE(dtlocal,dt,1,MPI_DOUBLE_PRECISION,MPI_MIN, &
+        MPI_COMM_NEW,mpi_ierror)
+#endif
+   ! Make sure that dt does not take us beyond nexttime
+   dt=min(nexttime-time,dt)
+   timestep_used = dt
+   ! Integrate one time step
+   ! istop will be non-zero in case of severe problems
+   call integrate(nstep,istop)
+
+   time=time+dt ! update time
+   ! Report time step info
+   write(log_unit,"(A,I6,3(X,1PE10.3))") "Time info: ",&
+        nstep,time*sctime,dt*sctime,nexttime*sctime
+   call flush(log_unit)
+
+  
+
+   ! if (nframe > LastFrame .or. istop /= 0) exit ! end the integration loop
+
+   ! Update clocks (not to loose precision in clock counters)
+   call update_clocks ()
+    
+   amuse_evolve_step = istop
+    
+  end function amuse_evolve_step
 
   function amuse_evolve(tend) result(ret)
     include 'stopcond.inc'
@@ -87,7 +174,7 @@ module amuse_helpers
       nframe=nframe+1    ! update output counter
     
       do
-        error = evolve_step(nstep, nexttime)
+        error = amuse_evolve_step(nstep, nexttime)
         if (time >= nexttime) then
           state => stold
           nstep = 0
@@ -475,6 +562,7 @@ module amuse_helpers
   function amuse_initialize_grid(t0) result(ret)
     integer :: ret
     real*8 :: t0
+    REAL*8 :: dtlocal
 
     state(:,:,:,RHO)=state(:,:,:,RHO)/scdens
     state(:,:,:,RHVX)=state(:,:,:,RHVX)/scmome
@@ -484,13 +572,21 @@ module amuse_helpers
 
   ! Fill boundary conditions
     call boundaries(OLD,domainboundaryconditions,problemboundary) 
-
+    
   ! Initialize the ionic concentrations
     ret=amuse_init_ionic()
     if(ret.NE.0) return
 
     ret=amuse_init_time(t0)
-
+    dtlocal=timestep(cfl,OLD)
+    dt = dtlocal
+#ifdef MPI
+   ! communicate with all other processors to find
+   ! the global minimal time step
+   call MPI_ALLREDUCE(dtlocal,dt,1,MPI_DOUBLE_PRECISION,MPI_MIN, &
+        MPI_COMM_NEW,mpi_ierror)
+#endif
+    timestep_used = dt
   end function
 
   function amuse_init_ionic() result(ret)
@@ -664,6 +760,26 @@ module amuse_helpers
         integer :: ret
         double precision :: outputvalue
         outputvalue = gamma
+        ret = 0   
+    end function
+    
+    function amuse_set_timestep(inputvalue) result(ret)
+        use atomic
+        implicit none
+        integer :: ret
+        double precision :: inputvalue
+        timestep_specified = inputvalue
+        timestep_used = timestep_specified
+        use_specified_timestep = .TRUE.
+        ret = 0   
+    end function
+    
+    function amuse_get_timestep(outputvalue) result(ret)
+        use atomic
+        implicit none
+        integer :: ret
+        double precision :: outputvalue
+        outputvalue = timestep_used
         ret = 0   
     end function
 end module

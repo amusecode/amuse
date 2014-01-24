@@ -185,8 +185,8 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
                 x.set_timestep(min_timestep)
                 
             for x in self.codes:
-                x.evolve_model(time)
-                print x.model_time
+                x.evolve_model(x.model_time + (min_timestep *2))
+                print "MODEL_TIME:", x.model_time
                 
             self.copy_to_boundary_cells()
             
@@ -526,6 +526,8 @@ class CalculateLinearWave1D(object):
             offset += self.grid_length / self.number_of_codes
             
             
+        for x in self.codes:
+            x.initialize_grid()
         self.evolve.init_channels()
         
     def evolve_model(self,time, endtime):
@@ -555,9 +557,9 @@ class CalculateLinearWave1D(object):
 
 import sys
 def main():
-    number_of_grid_points = 30
-    name_of_the_code = 'capreole'
-    number_of_steps = 1000
+    number_of_grid_points = 60
+    name_of_the_code = 'athena'
+    number_of_steps = 2000
     vflow_factor = -1.0
     pertubation_amplitude = 1e-4 | speed
     grid_length = 1.0 | length
@@ -575,25 +577,27 @@ def main():
         use_boundaries = True,
         number_of_codes = number_of_codes
     )
-    model2 = CalculateLinearWave1D(
-        number_of_grid_points = number_of_grid_points,
-        number_of_workers = 1,
-        name_of_the_code = name_of_the_code,
-        amplitude = pertubation_amplitude,
-        vflow_factor = vflow_factor,
-        grid_length = grid_length,
-        number_of_steps = number_of_steps,
-        use_boundaries = False,
-        number_of_codes = number_of_codes
-    )
+    if 0:
+        model2 = CalculateLinearWave1D(
+            number_of_grid_points = number_of_grid_points,
+            number_of_workers = 1,
+            name_of_the_code = name_of_the_code,
+            amplitude = pertubation_amplitude,
+            vflow_factor = vflow_factor,
+            grid_length = grid_length,
+            number_of_steps = number_of_steps,
+            use_boundaries = False,
+            number_of_codes = number_of_codes
+        )
+        
     if not IS_PLOT_AVAILABLE:
         return
     model1.initialize()
-    model2.initialize()
+    #model2.initialize()
     
     
     grids1 = model1.get_grids()
-    grids2 = model2.get_grids()
+    #grids2 = model2.get_grids()
 
     
     figure = pyplot.figure(figsize=(10,5))
@@ -618,22 +622,23 @@ def main():
         t, step = variables
         title.set_text('{0:.3f}'.format(t.value_in(time)))
         model1.evolve_model(t, end_time)
-        model2.evolve_model(t, end_time)
+        #model2.evolve_model(t, end_time)
         t += dt
         grids1 = model1.get_grids()
-        grids2 = model2.get_grids()
+        #grids2 = model2.get_grids()
         
         for line, grid in zip(lines, grids1):
             y = grid.y[0,...,0].value_in(length)
             rho = grid.rho[0,...,0].value_in(density)
             line.set_data(y,rho)
-            lines.append(line)
+            #line = plot1.plot(y,rho)[0]
+            #lines.append(line)
         print t
         step += 1
         variables[0] = t
         variables[1] = step
         return lines
-    if 0:
+    if 1:
         process = animation.FuncAnimation(
             figure, 
             update, 
@@ -643,12 +648,13 @@ def main():
         )
     else:
         update(0)
+        update(0)
         pass
     
         
     pyplot.show()
     model1.stop()
-    model2.stop()
+    #model2.stop()
     
 if __name__ == "__main__":
     main()

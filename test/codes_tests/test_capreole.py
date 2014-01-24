@@ -793,6 +793,40 @@ class TestCapreoleInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(gamma, 1.3)
         instance.stop()
         
+    
+    def test28(self):
+        instance=CapreoleInterface()
+        instance.initialize_code()
+        timestep, error = instance.get_timestep()
+        self.assertEquals(timestep, 0.0)
+        self.assertEquals(error, 0)
+        instance.setup_mesh(10,10,10,1.,1.,1.)
+        instance.commit_parameters()
+        x,y,z=numpy.indices( (10,10,10) )
+        x=x.flatten()+1
+        y=y.flatten()+1
+        z=z.flatten()+1
+        rho=0.1*numpy.ones_like(x)
+        rhvx=0.*numpy.ones_like(x)
+        rhvy=0.*numpy.ones_like(x)
+        rhvz=0.*numpy.ones_like(x)
+        en=0.1*numpy.ones_like(x)
+        instance.set_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
+        timestep, error = instance.get_timestep()
+        self.assertEquals(timestep, 0.0)
+        self.assertEquals(error, 0)
+        instance.initialize_grid()
+        timestep, error = instance.get_timestep()
+        self.assertAlmostRelativeEquals(timestep, 0.03795, 4)
+        self.assertEquals(error, 0)
+        error = instance.set_timestep(0.25)
+        self.assertEquals(error, 0)
+        timestep, error = instance.get_timestep()
+        self.assertEquals(timestep, 0.25)
+        self.assertEquals(error, 0)
+        
+        instance.stop()
+        
 class TestSodShocktube(TestWithMPI):
     
     def test0(self):
@@ -846,6 +880,8 @@ class TestSodShocktube(TestWithMPI):
         
         for i in range(len(rho)):
             self.assertAlmostEqual(rhoexp[i],rho[i],2)
+            
+    
     
 
 class TestCapreole(TestWithMPI):

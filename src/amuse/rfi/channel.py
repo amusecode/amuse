@@ -667,15 +667,20 @@ class AbstractMessageChannel(OptionalAttributes):
         
     @classmethod
     def DDD(cls, full_name_of_the_worker, channel, interpreter_executable=None):
-        arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd', '--args']
-        
-        if not interpreter_executable is None:
-            arguments.append(interpreter_executable)
-        
-        arguments.append(full_name_of_the_worker)
-        
-        command = 'xterm'
-        return command, arguments
+        if os.name == 'nt':
+            arguments = [full_name_of_the_worker, "--args",full_name_of_the_worker]
+            command = 'c:\\Program Files (x86)\\Affinic Debugger GUI\\adg.exe'
+            return command, arguments
+        else:
+            arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd', '--args']
+            
+            if not interpreter_executable is None:
+                arguments.append(interpreter_executable)
+            
+            arguments.append(full_name_of_the_worker)
+            
+            command = 'xterm'
+            return command, arguments
         
     @classmethod
     def VALGRIND(cls, full_name_of_the_worker, channel, interpreter_executable=None):
