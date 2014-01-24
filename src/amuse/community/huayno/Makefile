@@ -46,6 +46,7 @@ clean:
 	rm -Rf $(OPENCL_BUILDDIR)
 	rm -Rf $(OPENMP_BUILDDIR)
 	rm -f huayno_worker huayno_worker_cl huayno_worker_mp huayno_worker_sockets
+	-make -C $(SRCDIR) clean
 
 distclean: clean
 
