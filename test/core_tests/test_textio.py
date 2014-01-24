@@ -2,10 +2,12 @@ from amuse.test import amusetest
 from StringIO import StringIO
 import textwrap
 import os
+import numpy
+
 from amuse import io
 from amuse.io import text
 from amuse.units import units
-from amuse.units import quantities
+from amuse.units import quantities, core
 from amuse.units import generic_unit_system
 from amuse import datamodel
 
@@ -259,6 +261,44 @@ class TableFormattedTextTests(amusetest.TestCase):
         self.assertEquals(p2.key, p.key)
         self.assertAlmostRelativeEquals(p2.a, p.a)
         
+    def test12(self):
+        print "Test Text IO with specific data types (string, int, float)"
+        daltons = datamodel.Particles(keys=[30,31,32,33])
+        daltons.name = ["Joe", "William", "Jack", "Averell"]
+        daltons.length = [1.1, 1.4, 1.7, 2.0] | core.unit_with_specific_dtype(units.m, "float32")
+        daltons.age = [21, 20, 19, 18] | core.unit_with_specific_dtype(units.yr, "int32")
+        io.write_set_to_file(
+            daltons, 
+            "daltons.txt",
+            "txt", 
+            attribute_names = ('name', 'length', 'age'),
+            attribute_types = (None, units.m, units.yr),
+            maximum_number_of_lines_buffered = 2,
+            key_in_column = 0
+        )
+        with open("daltons.txt", "r") as f:
+            contents = f.read()
+        expected_contents = '#name length age\n#- m yr\n30 Joe 1.1 21\n31 William 1.4 20\n32 Jack 1.7 19\n33 Averell 2.0 18\n'
+        self.assertEquals(expected_contents, contents)
+        
+        read = io.read_set_from_file(
+            "daltons.txt",
+            "txt", 
+            attribute_names = ('name', 'length', 'age'),
+            attribute_types = (None, units.m, units.yr),
+            attribute_dtypes = ("str", "float32", "int32"),
+            maximum_number_of_lines_buffered = 2,
+            key_in_column = 0
+        )
+        self.assertEquals(read.key, daltons.key)
+        self.assertEquals(read.name, daltons.name)
+        self.assertEquals(read.length, daltons.length)
+        self.assertEquals(read.age, daltons.age)
+        self.assertEquals(read.name.dtype.kind, "S")
+        self.assertEquals(str(read.length.value_in(units.m).dtype), "float32")
+        self.assertEquals(str(read.age.value_in(units.yr).dtype), "int32")
+    
+
 class CsvFileTextTests(amusetest.TestCase):
     
     

@@ -1074,3 +1074,20 @@ def get_base_unit_with_name(system, name):
     return system.base(name)
 
 
+
+class UnitWithSpecificDtype(named_unit):
+    
+    def __init__(self, unit, dtype):
+        self.specific_dtype = dtype
+        symbol = str(unit) + "_" + str(dtype)
+        named_unit.__init__(self, symbol, symbol, unit)
+    
+    @property
+    def dtype(self):
+        return self.specific_dtype
+
+def unit_with_specific_dtype(unit, dtype):
+    if unit is None or dtype is None:
+        return unit
+    return UnitWithSpecificDtype(unit, dtype)
+

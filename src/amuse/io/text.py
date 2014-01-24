@@ -1,5 +1,5 @@
+import numpy
 from amuse.support.core import late
-
 from amuse.io import base
 from amuse.units import units
 from amuse.units import core
@@ -129,6 +129,28 @@ class TableFormattedText(base.FileFormatProcessor):
             return [None] * len(self.attribute_names)
     
     @base.format_option
+    def attribute_dtypes(self):
+        """
+        List of the data types of the attributes. If not given, the 
+        data types will be float64.
+        """
+        return self._get_attribute_types()
+    
+    def _get_attribute_dtypes(self):
+        return [None] * len(self.attribute_names)
+    
+    def _new_converter_from_string_to_dtype(self, dtype):
+        if dtype is None:
+            return self.convert_string_to_number
+        kind = numpy.array([], dtype=dtype).dtype.kind
+        if kind == 'f':
+            return self.convert_string_to_number
+        elif kind == 'S' or kind == 'U':
+            return lambda string_value: string_value
+        else:
+            return self.convert_string_to_long
+    
+    @base.format_option
     def header_prefix_string(self):
         """
         Lines starting with this character will be handled as part of the header
@@ -181,6 +203,8 @@ class TableFormattedText(base.FileFormatProcessor):
         keys = []
         
         self.set = None
+        string_converters = map(self._new_converter_from_string_to_dtype, self.attribute_dtypes)
+        units_with_dtype = map(core.unit_with_specific_dtype, self.attribute_types, self.attribute_dtypes)
         
         while not self.cursor.is_at_end() and not self.cursor.line().startswith(self.footer_prefix_string):
             columns = self.split_into_columns(self.cursor.line())
@@ -201,17 +225,16 @@ class TableFormattedText(base.FileFormatProcessor):
                     raise base.IoException(
                         "Number of values on line '{0}' is {1}, expected {2}".format(self.cursor.line(), len(columns), len(self.attribute_names)))
             
-                for value_string, list_of_values in zip(columns, values):
-                    list_of_values.append(self.convert_string_to_number(value_string))
-                
+                map(lambda value_string, list_of_values, conv: list_of_values.append(conv(value_string)), 
+                    columns, values, string_converters)
                 
                 number_of_particles += 1
             self.cursor.forward()
-            if number_of_particles > self.maximum_number_of_lines_buffered:
+            if number_of_particles >= self.maximum_number_of_lines_buffered:
                 quantities = map(
                     lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
                     values, 
-                    self.attribute_types
+                    units_with_dtype
                 )
                 if self.set is None:
                     self.set = self.new_set(number_of_particles, keys = keys)
@@ -229,7 +252,7 @@ class TableFormattedText(base.FileFormatProcessor):
             quantities = map(
                 lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
                 values, 
-                self.attribute_types
+                units_with_dtype
             )
             if self.set is None:
                 self.set = self.new_set(number_of_particles, keys = keys)
@@ -238,7 +261,7 @@ class TableFormattedText(base.FileFormatProcessor):
                 tmp_set = self.new_set(number_of_particles, keys = keys)
                 tmp_set.set_values_in_store(tmp_set.get_all_indices_in_store(), self.attribute_names, quantities)
                 self.set.add_particles(tmp_set)
-        else:
+        elif self.set is None:
             self.set = self.new_set(0)
             
         self.cursor.forward()
