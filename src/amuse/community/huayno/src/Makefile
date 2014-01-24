@@ -14,8 +14,6 @@ CFLAGS += -qlanglvl=extc99
 else
 CFLAGS += -std=gnu99
 endif
-CXXFLAGS +=  $(SC_FLAGS)
-CFLAGS +=  $(SC_FLAGS)
 LIBS += -lm
 INCLUDE =
 
@@ -55,10 +53,10 @@ libhuayno_cl.a: evolve_kern.clh $(OBJS) evolve_cl.o
 	$(RANLIB) $@
 	
 .cc.o: $<
-	$(MPICXX) $(CXXFLAGS) $(INCLUDE) -c -o $@ $< 
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(INCLUDE) -c -o $@ $< 
 
 .c.o: $<
-	$(MPICC) $(CFLAGS) -I../build_cl $(INCLUDE) -c -o $@ $< 
+	$(MPICC) $(CFLAGS) $(SC_FLAGS) -I../build_cl $(INCLUDE) -c -o $@ $< 
 
 %.clh: %.cl
 	awk 'BEGIN{print "const char srcstr[]=" } {if(substr($$0,length($0))=="\\"){$$0=$$0"\\"};print "\""$$0"\\n\""} END{print ";"}' $< > $@
