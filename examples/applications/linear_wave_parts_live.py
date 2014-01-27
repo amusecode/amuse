@@ -603,12 +603,14 @@ def main():
     figure = pyplot.figure(figsize=(10,5))
     plot1 = figure.add_subplot(1,1,1)
     lines = []
+    ys = []
     for grid in grids1:
         y = grid.y[0,...,0].value_in(length)
+        ys.append(y)
         rho = grid.rho[0,...,0].value_in(density)
         line = plot1.plot(y,rho)[0]
         lines.append(line)
-     
+    
     end_time = 10.0 | time
     dt = end_time / number_of_steps
     

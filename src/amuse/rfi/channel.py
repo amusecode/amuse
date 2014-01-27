@@ -669,7 +669,7 @@ class AbstractMessageChannel(OptionalAttributes):
     def DDD(cls, full_name_of_the_worker, channel, interpreter_executable=None):
         if os.name == 'nt':
             arguments = [full_name_of_the_worker, "--args",full_name_of_the_worker]
-            command = 'c:\\Program Files (x86)\\Affinic Debugger GUI\\adg.exe'
+            command = channel.adg_exe
             return command, arguments
         else:
             arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd', '--args']
@@ -737,7 +737,6 @@ class AbstractMessageChannel(OptionalAttributes):
         arguments.append(full_name_of_the_worker)
         
         command = channel.gdbserver_exe
-        print "command", command
         return command, arguments
         
     @classmethod
@@ -779,6 +778,10 @@ class AbstractMessageChannel(OptionalAttributes):
     @option(type="string", sections=("channel",))
     def gdbserver_exe(self):
         return 'gdbserver'
+        
+    @option(type="string", sections=("channel",))
+    def adg_exe(self):
+        return 'adg.exe'
     
     
         
