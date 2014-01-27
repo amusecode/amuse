@@ -104,6 +104,10 @@ class TestSSECode(_TestStellarEvolutionCodes):
 
 class TestMESACode(_TestStellarEvolutionCodes):
     def code_factory(self):
+        try:
+            MESA()
+        except Exception as message:
+            self.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(MESA))
         return MESA
 
 class TestSeBaCode(_TestStellarEvolutionCodes):
