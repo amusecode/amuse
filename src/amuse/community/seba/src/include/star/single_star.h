@@ -44,6 +44,9 @@ class  single_star : public star
         real  relative_age;
         real  last_update_age;
         real  next_update_age;
+// AMUSE
+        real time_offset;
+// AMUSE
 
 	real  relative_mass;
         real  envelope_mass;         
@@ -453,7 +456,10 @@ class  single_star : public star
                         const real z); //Eq.37
       real dredge_up_time(const real mass, const real z);// Eq.70
       real dredge_up_luminosity(const real mass, const real z);
-  
+        // AMUSE
+        real  get_time_offset() 		{return time_offset;}
+        void  set_time_offset(real t) 		{time_offset=t;}
+        //AMUSE
     };
 
 // Shorthand for conversion from node pointer to star pointer:

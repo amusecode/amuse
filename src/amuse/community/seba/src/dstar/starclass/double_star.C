@@ -43,6 +43,7 @@ double_star::double_star(node* n) : star(n) {
            identity = donor_identity=0;
            donor_type=NAS;
            first_contact=FALSE;
+        time_offset = 0;
 }
 
 void double_star::initialize(binary_type type, real sma, 
@@ -53,6 +54,7 @@ void double_star::initialize(binary_type type, real sma,
       bin_type     = type;
       binary_age   = age;
       identity     = id;
+      time_offset  = age;
 
       initial.semi         = semi;
       initial.q            = mass_ratio();

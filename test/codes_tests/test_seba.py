@@ -243,7 +243,7 @@ class TestSeBaInterface(TestWithMPI):
         index,error = instance.new_particle([5.0])
         self.assertEquals(error, 0)
         
-        error = instance.evolve_model(5000);
+        error = instance.evolve_model(10000);
 
         mass, error = instance.get_mass(index)
         self.assertEquals(error, 0)
@@ -489,7 +489,7 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)
 
     def test8(self):
-        instance = self.new_instance_of_an_optional_code(SeBa, redirection="none")
+        instance = self.new_instance_of_an_optional_code(SeBa)
         instance.parameters.supernova_kick_velocity = 0 | units.kms
         instance.commit_parameters()
         print "v_kick=", instance.parameters.supernova_kick_velocity
@@ -515,3 +515,30 @@ class TestSeBa(TestWithMPI):
         print instance.binaries
         
         self.assertAlmostRelativeEquals(instance.binaries[0].eccentricity, 0.7872, 4)
+
+    def test9(self):
+        instance = self.new_instance_of_an_optional_code(SeBa)
+        stars =  Particles(2)
+        stars[0].mass = 10.0 | units.MSun
+        stars[1].mass = 9 | units.MSun
+        
+        instance.particles.add_particles(stars)
+        instance.evolve_model(30|units.Myr)
+        
+        self.assertAlmostRelativeEquals(instance.particles.age, [30,30] |units.Myr)
+        self.assertAlmostRelativeEquals(instance.model_time, 30 | units.Myr)
+        self.assertAlmostRelativeEquals(instance.particles[0].mass, 1.2263 | units.MSun, 4)
+        self.assertAlmostRelativeEquals(instance.particles[1].mass, 8.8682 | units.MSun, 4)
+        stars =  Particles(2)
+        stars[0].mass = 10.0 | units.MSun
+        stars[1].mass = 9 | units.MSun
+        
+        instance.particles.add_particles(stars)
+        instance.evolve_model(60|units.Myr)
+        print instance.particles.age
+        print instance.particles.mass
+        self.assertAlmostRelativeEquals(instance.model_time, 60 | units.Myr)
+        self.assertAlmostRelativeEquals(instance.particles.age, [60,60,30,30] |units.Myr)
+        self.assertAlmostRelativeEquals(instance.particles[2].mass, 1.2263 | units.MSun, 4)
+        self.assertAlmostRelativeEquals(instance.particles[3].mass, 8.8682 | units.MSun, 4)
+        

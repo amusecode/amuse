@@ -55,7 +55,7 @@ class double_star : public star
         int identity;
         real  binary_age;
         real  minimal_timestep;
-
+        real  time_offset;
         real  velocity;
 
         int  donor_identity;
@@ -98,7 +98,7 @@ class double_star : public star
         void set_current_mass_transfer_type(mass_transfer_type type)	{current_mass_transfer_type = type;}
 
         real get_evolve_timestep();
- 
+        
         void set_bin_type(binary_type type)	{bin_type = type;}
         void set_eccentricity(real e)	{eccentricity = e;}
         void set_velocity(const real v)		{velocity = v;}
@@ -252,6 +252,13 @@ class double_star : public star
         real orbital_timescale();
 
 	void detect_spectral_features() {}
+        
+        // AMUSE
+        
+        real  get_time_offset() 		{return time_offset;}
+        void  set_time_offset(real t) 		{time_offset=t;}
+        
+        //AMUSE
     };
 
 double_star * new_double_star(node*,

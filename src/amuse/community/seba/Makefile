@@ -9,6 +9,7 @@ CFLAGS   += -Isrc/include -Isrc/include/star
 CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -Lsrc/node -lnode -Lsrc/std -lstd -lm
 
+# so that seba build process works
 unexport CFLAGS CXXFLAGS LDFLAGS
 
 AMUSE_OBJS = interface.o
@@ -33,7 +34,7 @@ $(CODELIB): src
 	cd src; make -C. CXX="$(CXX) $(CXXFLAGS)"
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py SeBaInterface -o $@
+	CFLAGS="$(CFLAGS)" $(CODE_GENERATOR) --type=c interface.py SeBaInterface -o $@
 
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py SeBaInterface -o $@

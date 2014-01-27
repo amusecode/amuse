@@ -338,6 +338,10 @@ int set_is_logging_of_evolve_enabled(int value){
     return 0;
 }
 
+int get_time(double * value) {
+    *value = seba_time;
+    return 0;
+}
 
 
 int new_particle(int * index_of_the_star, double mass){
@@ -358,6 +362,7 @@ int new_particle(int * index_of_the_star, double mass){
     }
     
     addstar(new_node, seba_time, start_type, seba_metallicity, 0, false);
+    new_node->get_starbase()->set_time_offset(seba_time);
     *index_of_the_star = next_seba_id;
     
     next_seba_id++;
@@ -440,7 +445,7 @@ int get_age(int index_of_the_star, double * age){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
-    *age= seba_node->get_starbase()->get_current_time() ;
+    *age= seba_node->get_starbase()->get_current_time() - seba_node->get_starbase()->get_time_offset();
     return error_code;
 }
 
@@ -503,6 +508,7 @@ int evolve_system(double end_time) {
         }
         while(out_time < end_time);
     }
+    seba_time = end_time;
     return 0;
 }
 
@@ -555,6 +561,8 @@ int new_binary(
     child2->set_parent(new_node);
     
     addbinary(new_node, seba_time, binary_start_type, semi_major_axis, eccentricity);
+    
+    new_node->get_starbase()->set_time_offset(seba_time);
     *index_of_the_star = next_seba_id;
     
     next_seba_id++;

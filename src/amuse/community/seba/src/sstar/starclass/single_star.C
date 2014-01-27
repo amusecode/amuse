@@ -97,6 +97,7 @@ single_star::single_star(node* n) : star(n) {
     wind_constant=0;
     magnetic_field = rotation_period = 0;
     birth_mass=0;
+    time_offset=0;
 }
 
 
@@ -129,7 +130,9 @@ single_star::single_star(single_star & rv) : star(rv) {
   magnetic_field  = rv.magnetic_field;
   rotation_period = rv.rotation_period;
   birth_mass      = rv.birth_mass;
-			
+  
+  time_offset     = rv.time_offset;
+  
   //              copy stellar history.
   previous.current_time    = rv.previous.current_time;
   previous.last_update_age = rv.previous.last_update_age;
@@ -145,6 +148,7 @@ single_star::single_star(single_star & rv) : star(rv) {
   previous.magnetic_field  = rv.previous.magnetic_field;
   previous.rotation_period = rv.previous.rotation_period;
   previous.birth_mass      = rv.previous.birth_mass;
+  //previous.time_offset     = rv.previous.time_offset;
 
 }
 
@@ -257,7 +261,8 @@ void single_star::initialize(int id, real z, real t_cur,
   previous.envelope_mass = envelope_mass = m_env;
   core_mass = m_core;
   COcore_mass = co_core;
-
+  time_offset = t_cur;
+  
   instantaneous_element();
 
   // (SPZ+GN: 26 Jul 2000) 

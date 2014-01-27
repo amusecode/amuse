@@ -103,6 +103,11 @@ class  starbase
         virtual void set_semi(real);
         virtual real get_eccentricity();
         virtual void set_eccentricity(real);
+        
+// AMUSE
+        
+        virtual real get_time_offset();
+        virtual void set_time_offset(real value);
 
 //	Scaling:
 

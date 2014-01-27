@@ -95,6 +95,10 @@ real starbase::get_current_time() {return 0;}
 real starbase::get_relative_age() {return 0;}
 real starbase::get_evolve_timestep() {return 0;}
 
+
+real starbase::get_time_offset() {return 0;}
+void starbase::set_time_offset(real t) {}
+
 real starbase::temperature() {return 0;}
 real starbase::get_luminosity() {return 0;}
 

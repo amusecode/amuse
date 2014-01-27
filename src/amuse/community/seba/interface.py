@@ -273,6 +273,25 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             The code does not have support for updating the metallicity
         """
         return function
+        
+    @legacy_function
+    def get_time():
+        """
+        Retrieve the model time. This time should be close to the end time specified
+        in the evolve code. Or, when a collision was detected, it will be the
+        model time of the collision.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.OUT,
+            description = "The current model time")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the time was retrieved
+        -1 - ERROR
+            The code does not have support for querying the time
+        """
+        return function
 
     def evolve_model(self, time):
         return self.evolve_system(time)
@@ -282,11 +301,15 @@ class SeBa(se.StellarEvolution):
     def __init__(self, **options):
         se.StellarEvolution.__init__(self,  SeBaInterface(**options), **options)
     
-        self.model_time = 0.0 | units.yr
 
     
     def evolve_model(self, end_time):
         return self.evolve_system(end_time);
+        
+    def define_properties(self, object):
+        se.StellarEvolution.define_properties(self, object)
+        object.add_property('get_time', public_name = "model_time")
+
 
     def define_methods(self, object):
         se.StellarEvolution.define_methods(self, object)
@@ -350,6 +373,11 @@ class SeBa(se.StellarEvolution):
             "set_supernova_kick_velocity", 
             (units.kms,), 
             (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_time",
+            (),
+            (units.Myr,object.ERROR_CODE,)
         )
     
     def update_time_steps(self):
