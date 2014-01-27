@@ -8,6 +8,12 @@ from amuse.ext.stellar_wind import StarsWithSimpleWind, StarsWithAcceleratingWin
 
 class TestStellarWind(amusetest.TestCase):
 
+    def assertGreaterEqual(self, value, expected):
+        self.assertTrue(value >= expected, "Expected {0} >= {1}".format(value, expected))
+    
+    def assertLessEqual(self, value, expected):
+        self.assertTrue(value <= expected, "Expected {0} <= {1}".format(value, expected))
+        
     def test1(self):
         """ Test the particles created for a simple wind """
         star = self.create_star()
