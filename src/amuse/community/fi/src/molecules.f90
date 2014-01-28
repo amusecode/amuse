@@ -77,7 +77,13 @@ subroutine h2fraction(fh2,dt,n,T,g0,disp,z,xe)
  if(debug) print*,'*1*',fh2,dt,n,T,g0,disp,lz
  
  fh2=max(fmin,fh2)
-  
+
+ if(dt.LE.0) return
+
+ if(n.GT.1.e10.AND.T.LE.Tform) then
+  fh2=1.
+  return
+ endif    
  if(T.GT.T4) then
   fh2=fmin
   return
@@ -105,19 +111,21 @@ subroutine h2fraction(fh2,dt,n,T,g0,disp,z,xe)
   ipar=g0*k0*ficonstant/n/Rf
   if(debug) print*,'*5*',Rf,dtau,ipar
   if(poly.EQ.0) then
-   j=INT(10*dtau)+1
-   do i=1,j
-    call solveh2(ipar,dtau/j,afuv)
-   enddo 
+   call solveh2_explicit(ipar,dtau,afuv)   
+!   j=INT(10*dtau)+1
+!   do i=1,j
+!    call solveh2(ipar,dtau/j,afuv)
+!   enddo 
    if(debug) print*,'*6*',j,afuv
   endif
   if(poly.EQ.1) then
    dtau=dtau*2./3.
    snzero=2./3.*nzero*n0con*(ptot/pzero)**.5
-   j=INT(10*dtau)+1
-   do i=1,j
-    call solveh2log(ipar,dtau/j,snzero,afuv)
-   enddo 
+   call solveh2log_explicit(ipar,dtau,snzero,afuv)   
+!   j=INT(10*dtau)+1
+!   do i=1,j
+!    call solveh2log(ipar,dtau/j,snzero,afuv)
+!   enddo 
    if(debug) print*,'*6*',j,afuv,snzero
   endif
  endif
@@ -222,6 +230,61 @@ subroutine solveh2log(alphaG,dbeta,snzero,sn)
  if(i.gt.imax) return
  if(ABS(sn2-sn1).GT.precision*sn1) goto 10
  sn=sn2
+end subroutine
+
+subroutine solveh2log_explicit(alphaG,dbeta,snzero,sn)
+ real, intent(in) :: alphaG, dbeta,snzero
+ real, intent(inout) :: sn
+ real, parameter :: fac=0.001
+ real :: fi,dfi,sn1, sn2,esn,esn1,dtau,tau
+
+ sn1=sn
+ tau=0
+ do while(tau.LT.dbeta)
+   esn=exp(-sn1)
+   esn1=exp(sn1/snzero)
+   dfi=(alphaG*esn-snzero*(esn1-1))
+   dtau=abs(fac*sn1/dfi)
+   if(sn1.EQ.0) dtau=abs(1.e-8/dfi)
+   if((dbeta-tau).LT.dtau) then
+     dtau=dbeta-tau
+     tau=dbeta
+   else
+     tau=tau+dtau
+   endif
+   if(dfi.EQ.0) then 
+     exit
+   endif
+   sn1=sn1+dtau*dfi
+ enddo
+ sn=sn1
+end subroutine
+
+subroutine solveh2_explicit(alphaG,dbeta,sn)
+ real, intent(in) :: alphaG, dbeta
+ real, intent(inout) :: sn
+ real, parameter :: fac=0.001
+ real :: fi,dfi,sn1, sn2,esn,esn1,dtau,tau
+
+ sn1=sn
+ tau=0
+ do while(tau.LT.dbeta)
+   esn=exp(-sn1)
+   dfi=(alphaG*esn-sn1)
+   dtau=abs(fac*sn1/dfi)
+   if(sn1.EQ.0) dtau=abs(1.e-8/dfi)
+   if((dbeta-tau).LT.dtau) then
+     dtau=dbeta-tau
+     tau=dbeta
+   else
+     tau=tau+dtau
+   endif
+   if(dfi.EQ.0) then 
+     exit
+   endif  
+   sn1=sn1+dtau*dfi
+ enddo
+ sn=sn1
 end subroutine
 
 subroutine fh2des(beta,fh2) ! collissional h2 destruction (gamma2=gamma1/20)
