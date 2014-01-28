@@ -591,6 +591,7 @@ def main():
         )
         
     if not IS_PLOT_AVAILABLE:
+        print "Plot is not available. stop now"
         return
     model1.initialize()
     #model2.initialize()
