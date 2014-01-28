@@ -1041,6 +1041,46 @@ Eccentricity 0.0    1.0
     
         .. autoparametersattribute:: parameters
 
+.. _seba:
+
+seba
+----
+
+Single-star and binary evolution is performed by the **rapid** stellar evolution algorithm SeBa. Stars are evolved fromthe zero-age main sequence until remnant formation and beyond.
+Single stellar evolution is modeled with **analytical formulae** based on fits to detailed single star tracks at different metallicities (Hurley, Pols & Tout, 2000, 315, 543). Stars are parametrised by mass, radius, luminosity, core mass, etc. as functions of time and initial mass. Massloss from winds, which is substantial e.g. for massive stars andpost main-sequence stars, is included.
+
+Furthermore, the SeBa package contains an algorithm for **rapid** binary evolution calculations. 
+Binary interactions such as wind accretion, tidal interaction and angular momentum loss through (wind) mass loss, magnetic braking, or gravitational radiation are taken into account at every timestep with appropriate recipes. 
+The stability and rate of mass transfer are dependent on the reaction to masschange of the stellar radii and the corresponding Roche lobes. If the mass transfer takes place on the dynamical timescale of the donor star, the mass transfer becomes quickly unstable, and a common-envelope phase follows. If mass transfer occurs in a stable way, SeBa models the response of the companion star and possible mass loss and angular momentum loss at every timestep.  
+After mass transfer ceases in a binary system, the donor star turns into a remnant or a helium-burningstar without a hydrogen envelope. When instead, the mass transfer leads to a merger between the binary stars, the resulting stellar product is estimated and the subsequent evolution is followed. 
+  
+More information on SeBa can be found in the papers:    
+
+Relevant papers:
+* "Population synthesis of high-mass binaries"
+  Portegies Zwart, S.F., Verbunt, F. 1996, 309, 179P
+* "Population synthesis for double white dwarfs . I. Close detached systems"
+  Nelemans, G., Yungelson, L.R., Portegies Zwart, S.F., Verbunt, F. 2001, 365, 491N
+* "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model"
+  Toonen, S., Nelemans, G., Portegies Zwart, S. 2012, 546A, 70T  
+* "The effect of common-envelope evolution on the visible population of post-common-envelope binaries"
+  Toonen, S., Nelemans, G. 2013, 557A, 87T
+
+============ ====== ==== =========================
+..           min    max  unit
+============ ====== ==== =========================
+Mass         0.1    100  Msun
+Metallicity  0.0001 0.03 fraction (0.02 is solar)
+Period       all    all
+Eccentricity 0.0    1.0
+============ ====== ==== =========================
+
+.. automodule:: amuse.community.seba.interface
+    
+    .. autoclass:: SeBa
+    
+        .. autoparametersattribute:: parameters
+
 .. _evtwin:
 
 evtwin
