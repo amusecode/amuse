@@ -66,6 +66,52 @@ class _TestStellarEvolutionCodes(TestWithMPI):
         self.assertGreaterEqual(p2.age,(1. | units.Gyr) )
         self.assertLess(p2.age, (2. | units.Gyr) )
 
+    def test6(self):
+        instance1=self.code_factory()()
+        p1=datamodel.Particle(mass=1. | units.MSun)
+        p2=datamodel.Particle(mass=1. | units.MSun)
+        p3=datamodel.Particle(mass=1. | units.MSun)
+        p1=instance1.particles.add_particle(p1)
+        instance1.evolve_model( 1.|units.Gyr)
+        p2=instance1.particles.add_particle(p2)
+        instance1.evolve_model( 2.|units.Gyr)
+        
+        instance2=self.code_factory()()
+        p3=instance2.particles.add_particle(p3)
+        instance2.evolve_model(1.|units.Gyr)
+        
+        self.assertAlmostEqual(p2.mass,p3.mass)
+        self.assertAlmostEqual(p2.radius,p3.radius)
+        self.assertAlmostEqual(p2.luminosity,p3.luminosity)
+
+    def test7(self):
+        instance1=self.code_factory()()
+        instance2=self.code_factory()()
+        p1=datamodel.Particle(mass=1. | units.MSun)
+        p1=instance1.particles.add_particle(p1)
+        p1.evolve_one_step()
+        p2=datamodel.Particle(mass=1. | units.MSun)
+        p2=instance2.particles.add_particle(p2)
+        instance2.evolve_model( p1.age)
+        self.assertAlmostEqual(p1.mass,p2.mass)
+        self.assertAlmostEqual(p1.radius,p2.radius)
+        self.assertAlmostEqual(p1.luminosity,p2.luminosity)
+
+    def test8(self):
+        instance1=self.code_factory()()
+        instance2=self.code_factory()()
+        p1=datamodel.Particle(mass=1. | units.MSun)
+        p1=instance1.particles.add_particle(p1)
+        p1.evolve_for(1. | units.Gyr)
+        p2=datamodel.Particle(mass=1. | units.MSun)
+        p2=instance2.particles.add_particle(p2)
+        instance2.evolve_model( 1.|units.Gyr)
+        self.assertAlmostEqual(p1.mass,p2.mass)
+        self.assertAlmostEqual(p1.radius,p2.radius)
+        self.assertAlmostEqual(p1.luminosity,p2.luminosity)
+
+        
+
 
 """
 the following two tests will not work - this is to be fixed.
