@@ -17,7 +17,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         .. [#] ** Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
         .. [#] ... "Population synthesis of high-mass binaries"
         .. [#] Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
-        .. [#] ... "New population synthesis model: Preliminary results for close double white dwarf populations"
+        .. [#] ... "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model"
     """
 
     include_headers = ['worker_code.h']
