@@ -158,7 +158,7 @@
         
         N = last_index - 1
         amusein = 1
-        last_index = 1
+        last_index = 1 + 2*NBIN0
         nb6_init_called = 0
         initialize_code = 0
       END FUNCTION
@@ -206,14 +206,14 @@
         DOUBLE PRECISION :: epsilon_squared
         INTEGER :: get_eps2
         epsilon_squared = 0
-        get_eps2 = -1
+        get_eps2 = 0
       END FUNCTION
       
       FUNCTION set_eps2(epsilon_squared)
         INCLUDE 'src/common6.h'
         DOUBLE PRECISION :: epsilon_squared
         INTEGER :: set_eps2
-        set_eps2 = -1
+        set_eps2 = 0
       END FUNCTION
       
       FUNCTION set_radius(id_amuse, r_amuse)
@@ -337,6 +337,7 @@
         INCLUDE 'src/common6.h'
         DOUBLE PRECISION :: input
         INTEGER :: set_being_time
+        set_begin_time = 0
       END FUNCTION
       
       FUNCTION get_acceleration(index_of_the_particle, ax_amuse, 
@@ -366,6 +367,8 @@
         INTEGER :: index_of_the_particle
         DOUBLE PRECISION :: potential
         INTEGER :: get_potential
+        potential = PHIDBL(index_of_the_particle)
+        get_potential = 0
       END FUNCTION
       
       FUNCTION commit_particles()
@@ -407,6 +410,8 @@
         INCLUDE 'src/common6.h'
         DOUBLE PRECISION :: time_step
         INTEGER :: get_time_step
+        time_step = 0
+        get_time_step = -1
       END FUNCTION
       
       FUNCTION get_kinetic_energy(kinetic_energy)
@@ -422,10 +427,24 @@
         potential_energy = POT
       END FUNCTION
       
-      FUNCTION get_center_of_mass_velocity(vx, vy, vz)
+      FUNCTION get_center_of_mass_velocity(cm_vx, cm_vy, cm_vz)
         INCLUDE 'src/common6.h'
-        DOUBLE PRECISION :: vx, vy, vz
+        DOUBLE PRECISION :: cm_vx, cm_vy, cm_vz
         INTEGER :: get_center_of_mass_velocity
+        DOUBLE PRECISION :: total_mass
+        total_mass = ZMASS
+        cm_vx = 0
+        cm_vy = 0 
+        cm_vz = 0
+        DO idx = IFIRST, NTOT
+            cm_vx = cm_vx + XDOT(1, idx) * BODY(idx)
+            cm_vy = cm_vy + XDOT(2, idx) * BODY(idx)
+            cm_vz = cm_vz + XDOT(3, idx) * BODY(idx)
+        ENDDO
+        cm_vx = cm_vx / total_mass
+        cm_vy = cm_vy / total_mass
+        cm_vz = cm_vz / total_mass
+        get_center_of_mass_velocity = 0
       END FUNCTION
       
       FUNCTION get_velocity(id_particle, vx_amuse, vy_amuse, vz_amuse)
@@ -439,9 +458,24 @@
         get_velocity = 0
       END FUNCTION
       
-      FUNCTION get_center_of_mass_position(x, y, z)
-        DOUBLE PRECISION :: x, y, z
+      FUNCTION get_center_of_mass_position(cm_x, cm_y, cm_z)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: cm_x, cm_y, cm_z
         INTEGER :: get_center_of_mass_position
+        DOUBLE PRECISION :: total_mass
+        total_mass = ZMASS
+        cm_x = 0
+        cm_y = 0
+        cm_z = 0
+        DO idx = IFIRST, NTOT
+            cm_x = cm_x + X(1, idx) * BODY(idx)
+            cm_y = cm_y + X(2, idx) * BODY(idx)
+            cm_z = cm_z + X(3, idx) * BODY(idx)
+        ENDDO
+        cm_x = cm_x / total_mass
+        cm_y = cm_y / total_mass
+        cm_z = cm_z / total_mass
+        get_center_of_mass_position = 0
       END FUNCTION
       
       FUNCTION get_total_mass(mass_amuse)
@@ -487,6 +521,8 @@
         INCLUDE 'src/common6.h'
         DOUBLE PRECISION :: output
         INTEGER :: get_begin_time
+        output = 0
+        get_begin_time = 0
       END FUNCTION
       
       FUNCTION get_radius(id, r_amuse)
@@ -511,6 +547,107 @@
 *            print *, pid_body, BODY(pid_body)
 *        end do
         body_print = 0
+      END FUNCTION
+
+      FUNCTION set_kz(kz_option, val)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: val
+        INTEGER :: set_kz, kz_option
+        IF (kz_option.GT.0 .AND. kz_option.LE.50) THEN
+            KZ(kz_option) = val
+        ENDIF
+        set_kz = 0
+      END FUNCTION
+
+      FUNCTION get_kz(kz_option, val)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: val, get_kz
+        INTEGER :: kz_option
+        IF (kz_option.GT.0 .AND. kz_option.LE.50) THEN
+            val = KZ(kz_option)
+        ENDIF
+        get_kz = 0
+      END FUNCTION
+
+      FUNCTION get_eta(timestep_parameter)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: timestep_parameter
+        INTEGER :: get_eta
+        timestep_parameter = ETAI
+        get_eta = 0
+      END FUNCTION
+
+      FUNCTION set_eta(timestep_parameter)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: timestep_parameter
+        INTEGER :: set_eta
+        ETAI = timestep_parameter
+        ETAR = timestep_parameter
+        set_eta = 0
+      END FUNCTION
+
+      FUNCTION get_etai(timestep_parameter)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: timestep_parameter
+        INTEGER :: get_etai
+        timestep_parameter = ETAI
+        get_etai = 0
+      END FUNCTION
+
+      FUNCTION set_etai(timestep_parameter)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: timestep_parameter
+        INTEGER :: set_etai
+        ETAI = timestep_parameter
+        set_etai = 0
+      END FUNCTION
+
+      FUNCTION get_etar(timestep_parameter)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: timestep_parameter
+        INTEGER :: get_etar
+        timestep_parameter = ETAR
+        get_etar = 0
+      END FUNCTION
+
+      FUNCTION set_etar(timestep_parameter)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: timestep_parameter
+        INTEGER :: set_etar
+        ETAR = timestep_parameter
+        set_etar = 0
+      END FUNCTION
+
+      FUNCTION set_rbar(val)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: val
+        INTEGER :: set_rbar
+        RBAR = val
+        set_rbar = 0
+      END FUNCTION
+
+      FUNCTION get_rbar(val)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: val
+        INTEGER :: get_rbar
+        val = RBAR
+        get_rbar = 0
+      END FUNCTION
+
+      FUNCTION set_zmbar(val)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: val
+        INTEGER :: set_zmbar
+        ZMBAR = val
+        set_zmbar = 0
+      END FUNCTION
+
+      FUNCTION get_zmbar(val)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: val
+        INTEGER :: get_zmbar
+        val = ZMBAR
+        get_zmbar = 0
       END FUNCTION
 
       END MODULE AMUSE_INTERFACE
