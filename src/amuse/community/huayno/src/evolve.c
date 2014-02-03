@@ -431,7 +431,8 @@ inline FLOAT timestep_ij(struct particle *i, struct particle *j,int dir) {
   dx[1]=i->pos[1] - j->pos[1];
   dx[2]=i->pos[2] - j->pos[2];
   dr2=dx[0]*dx[0]+dx[1]*dx[1]+dx[2]*dx[2]+eps2;
-  if(dr2>0) 
+  mu=i->mass + j->mass;
+  if(dr2>0 && mu>0) 
   {
     dr=sqrt(dr2);
     dr3=dr*dr2;
@@ -440,7 +441,6 @@ inline FLOAT timestep_ij(struct particle *i, struct particle *j,int dir) {
     dv[2]=i->vel[2] - j->vel[2];
     vdotdr2=(dv[0]*dx[0]+dv[1]*dx[1]+dv[2]*dx[2])/dr2;
     dv2=dv[0]*dv[0]+dv[1]*dv[1]+dv[2]*dv[2];
-    mu=i->mass + j->mass;
 #ifdef RATIMESTEP
     tau=RARVRATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
     dtau=3/2.*dir*tau*vdotdr2;

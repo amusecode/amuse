@@ -97,7 +97,8 @@ __kernel void timestep_kernel(
       FLOAT4 v2 = vblock[j];
       FLOAT4 d = p2-p;
       FLOAT dr2=d.x*d.x + d.y*d.y + d.z*d.z;
-      if(dr2 > 0)
+      FLOAT mu=p.w+p2.w;
+      if(dr2 > 0 && mu > 0)
       {
         dr2+=eps2;
         FLOAT dr = sqrt(dr2);
@@ -105,7 +106,6 @@ __kernel void timestep_kernel(
         FLOAT4 dv = v2-v;
         FLOAT vdotdr2=(dv.x*d.x + dv.y*d.y + dv.z*d.z)/dr2;
         FLOAT dv2=dv.x*dv.x + dv.y*dv.y + dv.z*dv.z;
-        FLOAT mu=p.w+p2.w;
         
 #ifdef RATIMESTEP
         FLOAT tau=RARVRATIO*dt_param/M_SQRT2*sqrt(dr3/mu);
