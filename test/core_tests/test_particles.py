@@ -191,15 +191,15 @@ class TestParticles(amusetest.TestCase):
         number_of_overlapping_particles = len(subset2.get_intersecting_subset_in(subset))
         self.assertTrue(number_of_overlapping_particles >  975)
         self.assertTrue(number_of_overlapping_particles < 1025)
-        
-    
+
+
     def test17(self):
         names = ('123','1234', '12345')
         particles = datamodel.Particles(3)
         particles.name = names
         for i in range(3):
             self.assertEquals(particles[i].name, names[i])
-        
+
         particles[1].name = '123456'
         self.assertEquals(particles[1].name, '123456')
 
@@ -330,8 +330,8 @@ class TestParticle(amusetest.TestCase):
 
         self.assertAlmostRelativeEquals(particles[-3].mass, 4 | units.kg)
         self.assertAlmostRelativeEquals(particles[-1].mass, 21 | units.kg)
-        
-        
+
+
     def test1(self):
         particles = datamodel.Particles(keys = [10,11])
         particles.mass = [1,2] | units.kg
@@ -508,7 +508,7 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(subset.x, [1.0, 2.0] | units.kg)
         set1.remove_particle(set1[0])
         self.assertAlmostRelativeEquals(subset.x, [2.0] | units.kg)
-        
+
 class TestParticlesChannel(amusetest.TestCase):
 
     def test1(self):
@@ -748,6 +748,71 @@ class TestParticlesChannel(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles2.x,[13,11] | units.kg)
         self.assertAlmostRelativeEquals(particles1.x,[10,12] | units.kg)
 
+    def test12(self):
+        """ Test Channels add channel"""
+        channel1, channel2, p1, p2 = self.setup_test_channels()
+
+        channels = datamodel.Channels()
+        channels.add_channel(channel1)
+        channels.add_channel(channel2)
+
+        channels.copy()
+
+        self.assertAlmostRelativeEquals(p2.mass, [1, 2] | units.kg)
+        self.assertAlmostRelativeEquals(p1.x, [11, 13] | units.m)
+
+    def test13(self):
+        """ Test Channels add channels"""
+        channel1, channel2, p1, p2 = self.setup_test_channels()
+
+        channels = datamodel.Channels()
+        channels.add_channels([channel1, channel2])
+
+        channels.copy()
+
+        self.assertAlmostRelativeEquals(p2.mass, [1, 2] | units.kg)
+        self.assertAlmostRelativeEquals(p1.x, [11, 13] | units.m)
+
+    def test14(self):
+        """ Test Channels add channels"""
+        channel1, channel2, p1, p2 = self.setup_test_channels()
+
+        channels = datamodel.Channels([channel1, channel2])
+
+        channels.copy()
+
+        self.assertAlmostRelativeEquals(p2.mass, [1, 2] | units.kg)
+        self.assertAlmostRelativeEquals(p1.x, [11, 13] | units.m)
+
+    def test15(self):
+        """ Test Channels add channels"""
+        channel1, channel2, p1, p2 = self.setup_test_channels()
+
+        channels = datamodel.Channels()
+        channels.add_channel(channel1)
+        channels2 = datamodel.Channels()
+        channels2.add_channel(channel2)
+        channels2.add_channels(channels)
+
+        channels2.copy()
+
+        self.assertAlmostRelativeEquals(p2.mass, [1, 2] | units.kg)
+        self.assertAlmostRelativeEquals(p1.x, [11, 13] | units.m)
+
+    def setup_test_channels(self):
+        particles1 = datamodel.Particles(keys=[10,11])
+        particles1.mass = [1,2] | units.kg
+        particles1.x = [10,12] | units.m
+
+        particles2 = datamodel.Particles(keys=[10,11])
+        particles2.mass = [3,4] | units.kg
+        particles2.x = [11,13] | units.m
+
+        channel1 = particles1.new_channel_to(particles2, attributes=['mass'])
+        channel2 = particles2.new_channel_to(particles1, attributes=['x'])
+
+        return channel1, channel2, particles1, particles2
+
 class TestParticlesSuperset(amusetest.TestCase):
 
     def test1(self):
@@ -905,7 +970,7 @@ class TestParticlesSuperset(amusetest.TestCase):
         particles2 = datamodel.Particles()
         superset = particles1  | particles2
         self.assertEquals(superset.get_attribute_names_defined_in_store(), ["mass"])
-        
+
     def test13(self):
         particles1 = datamodel.Particles(keys=[9,10,11,12])
         particles1.mass = [1,2,3,4] | units.kg
@@ -927,7 +992,7 @@ class TestParticlesSuperset(amusetest.TestCase):
             self.assertEquals(superset.name[i], '123')
             self.assertEquals(superset[i+3].name, '1234')
             self.assertEquals(superset.name[i+3], '1234')
-        superset[2:4].name = '12345'        
+        superset[2:4].name = '12345'
         self.assertEquals(superset[1].name, '123')
         self.assertEquals(superset.name[1], '123')
         self.assertEquals(superset[2].name, '12345')
@@ -949,10 +1014,10 @@ class TestParticlesWithFilteredAttributes(amusetest.TestCase):
         self.assertEquals(particles1.get_settable_attribute_names_defined_in_store(), ["mass"])
         self.assertEquals(particles.get_attribute_names_defined_in_store(), ["mass", "radius"])
         self.assertEquals(particles.get_settable_attribute_names_defined_in_store(), ["mass", "radius"])
-        
+
         self.assertTrue(particles.can_extend_attributes())
         self.assertFalse(particles1.can_extend_attributes())
-    
+
     def test2(self):
         particles = datamodel.Particles(3)
         particles.mass = [1,2,3] | units.kg
@@ -961,17 +1026,17 @@ class TestParticlesWithFilteredAttributes(amusetest.TestCase):
         particles1.mass  = [4,5,6] | units.kg
         print particles1
         self.assertAlmostRelativeEquals(particles.mass, [4,5,6] | units.kg)
-        
+
     def test3(self):
         particles = datamodel.Particles(3)
         particles.mass = [1,2,3] | units.kg
         particles.radius = [1,2,3] | units.m
         particles1 = datamodel.ParticlesWithFilteredAttributes(particles, ["mass"])
-        
+
         def set_mass():
             particles1.radius  = [4,5,6] | units.m
         self.assertRaises(Exception, set_mass)
-        
+
 class TestParticlesSupersetWithNames(amusetest.TestCase):
 
     def test1(self):
@@ -1387,7 +1452,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
                 masses.append(1)
                 errors.append(0)
             return ( masses, errors, )
-        
+
         def get_link(self, id):
             result = []
             errors = []
@@ -1868,7 +1933,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         local_particles.add_calculated_attribute("mass", lambda m2: m2.sqrt(), attributes_names=["mass_squared"])
         interface.particles.add_particles(local_particles)
         self.assertAlmostRelativeEquals(interface.particles.mass , [3.0, 4.0] | units.kg)
-        
+
     class TestInterface2(InCodeComponentImplementation):
 
         def __init__(self):
@@ -1891,7 +1956,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
             handler.add_setter('particles', 'set_mass')
             handler.add_getter('particles', 'get_mass', names = ('mass',))
             handler.add_getter('particles', 'get_radius', names = ('radius',))
-            
+
     def test17(self):
         interface = self.TestInterface2()
         interface.particles.add_particles_to_store(
@@ -1909,7 +1974,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         local_particles.radius = 10 | units.m
         local_particles.mass = 3.5 | units.kg
         channel.copy()
-        
+
         self.assertEquals(remote_particles[0].mass.value_in(units.kg), 3.5)
 
 class TestParticlesWithUnitsConverted(amusetest.TestCase):
@@ -2022,7 +2087,7 @@ class TestParticlesWithTransformedAttributes(amusetest.TestCase):
 
         def get_function(attribute, quantity):
             return quantity * 2
-            
+
         def set_function(attribute, quantity):
             return quantity / 2
 
@@ -2043,19 +2108,19 @@ class TestParticlesWithTransformedAttributes(amusetest.TestCase):
 
 
     def test4(self):
-        
+
         stars = datamodel.Particles(2)
         stars[0].mass = 1 | units.MSun
         stars[0].position = [0,0,0] | units.AU
         stars[0].velocity = [0,1,0] | units.kms
-        
+
         stars[1].mass = 1 | units.MSun
         stars[1].position = [1,0,0] | units.AU
         stars[1].velocity = [0,2,0] | units.kms
-        
+
         com = stars.center_of_mass()
         cov = stars.center_of_mass_velocity()
-        
+
         converted_stars = datamodel.ParticlesWithAttributesTransformed.translate(
             stars,
             -com,
@@ -2070,8 +2135,8 @@ class TestParticlesWithTransformedAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(converted_stars[1].position, [0.5,0,0] | units.AU)
         self.assertAlmostRelativeEquals(converted_stars[0].velocity, [0,-0.5,0] | units.kms)
         self.assertAlmostRelativeEquals(converted_stars[1].velocity, [0,0.5,0] | units.kms)
-        
-        
+
+
 
 class TestParticlesWithChildren(amusetest.TestCase):
 
@@ -2392,23 +2457,23 @@ class TestParticlesWithChildren(amusetest.TestCase):
 
         children = datamodel.Particles(keys=(10,11))
         parent = particles[0]
-        
+
         child1 = children[0]
         child2 = children[1]
-        
+
         child1.mass = 1 | units.kg
         child2.mass = 2 | units.kg
 
         parent.child1 = child1
         parent.child2 = child2
-        
+
         copy_of_parent = parent.copy()
         self.assertEquals(copy_of_parent.child1.key,10)
         self.assertEquals(copy_of_parent.child2.key,11)
         self.assertAlmostRelativeEquals(copy_of_parent.child1.mass,1 | units.kg)
         self.assertAlmostRelativeEquals(copy_of_parent.child2.mass,2 | units.kg)
-        
-    
+
+
     def test9(self):
 
         particles = datamodel.Particles(keys=(1,10,11))
@@ -2417,19 +2482,19 @@ class TestParticlesWithChildren(amusetest.TestCase):
         child1 = particles[1]
         child2 = particles[2]
 
-        
+
         child1.mass = 1 | units.kg
         child2.mass = 2 | units.kg
 
         parent.child1 = child1
         parent.child2 = child2
-        
+
         copy_of_parent = parent.copy()
         self.assertEquals(copy_of_parent.child1.key,10)
         self.assertEquals(copy_of_parent.child2.key,11)
         self.assertAlmostRelativeEquals(copy_of_parent.child1.mass,1 | units.kg)
         self.assertAlmostRelativeEquals(copy_of_parent.child2.mass,2 | units.kg)
-        
+
 class TestParticlesSupersetComplex(amusetest.TestCase):
 
     def test1(self):
@@ -4468,9 +4533,9 @@ class TestParticlesOverlay(amusetest.TestCase):
         set2 = datamodel.ParticlesOverlay(set1)
         set2.y = [4.0, 5.0] | units.m
         set1.remove_particle(set1[0])
-        
+
         self.assertAlmostRelativeEquals(set2.y, [5.0] | units.m)
-        
+
     def test8(self):
         set1 = datamodel.Particles(10)
         set1.x = range(10) | units.kg
@@ -4482,6 +4547,6 @@ class TestParticlesOverlay(amusetest.TestCase):
         set1.add_particle(datamodel.Particle(x = 10 | units.kg))
         set1.add_particle(datamodel.Particle(x = 10 | units.kg))
         set1.remove_particle(set1[-2])
-        
+
         print set2
         self.assertAlmostRelativeEquals(set1.x, set2.x)
