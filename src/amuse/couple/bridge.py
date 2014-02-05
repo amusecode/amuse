@@ -425,9 +425,12 @@ class GravityCodeInField(object):
         if(self.verbose):
             print ".. done"
 
+    def cannot_kick(self):
+        return not (hasattr(self, 'particles') and hasattr(self.particles, 'vx'))
+
     def kick(self, dt):
 
-        if not hasattr(self.code, 'particles') or len(self.code.particles)==0:
+        if self.cannot_kick() or len(self.code.particles)==0:
             return quantities.zero
 
         particles = self.code.particles.copy(filter_attributes = self.required_attributes)

@@ -6,9 +6,11 @@ import os
 
 from amuse.units.optparse import OptionParser
 from amuse.units import units, nbody_system
+from amuse.datamodel.particles import Channels
 
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.seba.interface import SeBa
+from amuse.couple.bridge import Bridge
 
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
@@ -62,26 +64,30 @@ def gravity_and_stellar_evolution(number_of_stars, size, end_time, sync_timestep
 
     gravity = Hermite(converter)
     stellar = SeBa()
+    bridge = Bridge()
 
     gravity.particles.add_particles(stars)
     stellar.particles.add_particles(stars)
 
-    channels = []
-    channels.append(stellar.particles.new_channel_to(gravity.particles, attributes=["mass", "radius"]))
-    channels.append(stellar.particles.new_channel_to(stars))
-    channels.append(gravity.particles.new_channel_to(stars))
+    bridge.add_system(gravity)
+    bridge.add_system(stellar)
+    bridge.channels.add_channel(stellar.particles.new_channel_to(gravity.particles, attributes=["mass", "radius"]))
+
+    bridge.timestep = sync_timestep
+
+    plot_channels = Channels()
+    plot_channels.add_channel(stellar.particles.new_channel_to(stars))
+    plot_channels.add_channel(gravity.particles.new_channel_to(stars))
 
     time = 0 | units.Myr
     while time <= end_time:
-        for channel in channels:
-            channel.copy()
 
-        time += sync_timestep
-        gravity.evolve_model(time)
-        stellar.evolve_model(time)
+        bridge.evolve_model(time)
 
-        if time % plot_timestep < sync_timestep:
-            plot_results(stars, time)
+        plot_channels.copy()
+        plot_results(stars, time)
+
+        time += plot_timestep
 
 def parse_arguments():
     parser = OptionParser()
