@@ -3,21 +3,23 @@ from amuse.test import amusetest
 from amuse.units import units, quantities
 from amuse.datamodel.particles import Particles
 
-from amuse.ext.stellar_wind import new_stellar_wind
+from amuse.community.seba.interface import SeBa
+
+from amuse.ext import stellar_wind
 
 
 class TestStellarWind(amusetest.TestCase):
 
     def assertGreaterEqual(self, value, expected):
         self.assertTrue(value >= expected, "Expected {0} >= {1}".format(value, expected))
-    
+
     def assertLessEqual(self, value, expected):
         self.assertTrue(value <= expected, "Expected {0} <= {1}".format(value, expected))
-        
+
     def test1(self):
         """ Test the particles created for a simple wind """
         star = self.create_star()
-        star_wind = new_stellar_wind(1e-8|units.MSun)
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun)
         star_wind.particles.add_particles(star)
 
         star_wind.evolve_model(1|units.yr)
@@ -50,7 +52,7 @@ class TestStellarWind(amusetest.TestCase):
     def test2(self):
         """ Test the accelerating wind """
         star = self.create_star()
-        star_wind = new_stellar_wind(1e-8|units.MSun, accelerate=True)
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, accelerate=True)
         star_wind.init_v_wind_ratio = 0.1
         star_wind.particles.add_particles(star)
 
@@ -85,7 +87,7 @@ class TestStellarWind(amusetest.TestCase):
         """ Test the wind acceleration """
         star = self.create_star()
         star.position = [1, 1, 1] | units.RSun
-        star_wind = new_stellar_wind(1e-8|units.MSun, accelerate=True)
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, accelerate=True)
         star_wind.particles.add_particles(star)
 
         # unaffected points
@@ -112,7 +114,7 @@ class TestStellarWind(amusetest.TestCase):
         """ Test the transfer to a target gas particle set """
         star = self.create_star()
         gas = Particles()
-        star_wind = new_stellar_wind(1e-8|units.MSun, target_gas=gas, timestep=1|units.day)
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, target_gas=gas, timestep=1|units.day)
         star_wind.particles.add_particles(star)
 
         star_wind.evolve_model(1|units.yr)
@@ -125,7 +127,7 @@ class TestStellarWind(amusetest.TestCase):
         """ Test adding an additional star later """
         star1 = self.create_star()
         gas = Particles()
-        star_wind = new_stellar_wind(1e-8|units.MSun, target_gas=gas, timestep=1|units.day)
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, target_gas=gas, timestep=1|units.day)
         star_wind.particles.add_particles(star1)
 
         star_wind.evolve_model(1|units.yr)
@@ -144,6 +146,39 @@ class TestStellarWind(amusetest.TestCase):
 
     def test6(self):
         """ Test deriving wind from stellar evolution """
+        stars = self.create_stars_without_wind_attributes()
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, derive_from_evolution=True)
+
+
+
+    def test7(self):
+        """ Test deriving static wind from stellar evolution """
+        stars = Particles(mass=[1,2]|units.MSun)
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, derive_from_evolution=True)
+        stev = SeBa()
+        stev.particles.add_particles(stars)
+
+        stellar_wind.static_wind_from_stellar_evolution(star_wind, stev,
+                1.49|units.Gyr, 1.495|units.Gyr)
+
+        self.assertAlmostRelativeEquals(star_wind.particles.wind_mass_loss_rate,
+                                        [0., 2.43765e-8]|units.MSun/units.yr, places=5)
+
+        self.assertAlmostRelativeEquals(star_wind.particles.terminal_wind_velocity,
+                                        [646317., 50921.7]|units.ms, places=5)
+
+    def create_star(self):
+        star = Particles(1)
+        star.mass = 2|units.MSun
+        star.radius = 2|units.RSun
+        star.temperature = 5000|units.K
+        star.position = [1, 1, 1] | units.parsec
+        star.velocity = [-1000, 0, 1000] | units.ms
+        star.wind_mass_loss_rate = 1e-6 | units.MSun / units.yr
+        star.terminal_wind_velocity = 500 | units.ms
+        return star
+
+    def create_stars_without_wind_attributes(self):
         stars = Particles(2)
         stars.mass = 2|units.MSun
         stars.radius = 2|units.RSun
@@ -155,26 +190,5 @@ class TestStellarWind(amusetest.TestCase):
         stars[0].velocity = [-1000, 0, 1000] | units.ms
         stars[1].velocity = [0, 0, 0] | units.ms
 
-        star_wind = new_stellar_wind(1e-8|units.MSun, derive_from_evolution=True)
-        star_wind.particles.add_particles(stars)
+        return stars
 
-        star_wind.evolve_model(1|units.yr)
-        wind = star_wind.create_wind_particles()
-        self.assertEqual(len(wind), 0)
-
-        star_wind.particles.age += 1|units.yr
-        star_wind.particles.mass -= [1e-6, 2e-6] | units.MSun
-        star_wind.evolve_model(2|units.yr)
-        wind = star_wind.create_wind_particles()
-        self.assertEqual(len(wind), 299)
-
-    def create_star(self):
-        star = Particles(1)
-        star.mass = 2|units.MSun
-        star.radius = 2|units.RSun
-        star.temperature = 5000|units.K
-        star.position = [1, 1, 1] | units.parsec
-        star.velocity = [-1000, 0, 1000] | units.ms
-        star.wind_mass_loss = 1e-6 | units.MSun / units.yr
-        star.terminal_wind_velocity = 500 | units.ms
-        return star

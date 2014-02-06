@@ -30,9 +30,9 @@ class StarsWithMassLoss(Particles):
         return new_particles
 
     def evolve_mass_loss(self, time):
-        if self.collection_attributes.previous_time < time:
+        if self.collection_attributes.previous_time <= time:
             elapsed_time = time - self.collection_attributes.previous_time
-            self.lost_mass += elapsed_time * self.wind_mass_loss
+            self.lost_mass += elapsed_time * self.wind_mass_loss_rate
 
             self.collection_attributes.timestamp = time
 
@@ -62,14 +62,14 @@ class EvolvingStarsWithMassLoss(StarsWithMassLoss):
     """
     def add_particles(self, *args, **kwargs):
         new_particles = super(EvolvingStarsWithMassLoss, self).add_particles(*args, **kwargs)
-        new_particles.wind_mass_loss = 0. | units.MSun/units.yr
+        new_particles.wind_mass_loss_rate = 0. | units.MSun/units.yr
         new_particles.terminal_wind_velocity = 0. | units.ms
         new_particles.previous_age = new_particles.age
         new_particles.previous_mass = new_particles.mass
         return new_particles
 
     def evolve_mass_loss(self, time):
-        if self.collection_attributes.previous_time < time:
+        if self.collection_attributes.previous_time <= time:
             self.update_from_evolution()
             StarsWithMassLoss.evolve_mass_loss(self, time)
 
@@ -100,7 +100,7 @@ class EvolvingStarsWithMassLoss(StarsWithMassLoss):
         if (self.age != self.previous_age).any():
             mass_loss = self.previous_mass - self.mass
             timestep = self.age - self.previous_age
-            self.wind_mass_loss = mass_loss / timestep
+            self.wind_mass_loss_rate = mass_loss / timestep
 
             self.terminal_wind_velocity = self.calculate_terminal_wind_velocity()
 
@@ -126,14 +126,14 @@ class SimpleWind(object):
         self.target_gas = self.timestep = None
 
         self.set_global_mu()
-        self.internal_energy_formula = self.calculate_internal_energy_from_temperature
+        self.internal_energy_formula = self.internal_energy_from_temperature
 
     def initial_wind_velocity(self, stars):
         return stars.terminal_wind_velocity
 
     def evolve_model(self, time):
         if self.has_target():
-            while self.system_time < time:
+            while self.system_time <= time:
                 self.particles.evolve_mass_loss(self.system_time)
                 if self.has_new_wind_particles():
                     wind_gas = self.create_wind_particles()
@@ -181,8 +181,17 @@ class SimpleWind(object):
         mu = constants.proton_mass / (X*(1.0+x_ion) + Y*(1.0+2.0*x_ion)/4.0 + Z*x_ion/2.0)
         self.particles.set_global_mu(mu)
 
-    def calculate_internal_energy_from_temperature(self, star, wind):
+    def internal_energy_from_temperature(self, star, wind):
+        """
+            set the internal energy from the terminal wind stellar surface temperature.
+        """
         return (3./2. * constants.kB * star.temperature / star.mu ) * 0.8
+
+    def internal_energy_from_velocity(self, star, wind):
+        """
+            set the internal energy from the terminal wind velocity.
+        """
+        return 0.5 * star.terminal_wind_velocity**2
 
     def create_wind_particles_for_one_star(self, star):
         Ngas = int(star.lost_mass/self.sph_particle_mass)
@@ -234,7 +243,7 @@ class SimpleWind(object):
         """
         if not number is None:
             required_mass = number * self.sph_particle_mass
-            total_mass_loss = self.particles.wind_mass_loss.sum()
+            total_mass_loss = self.particles.wind_mass_loss_rate.sum()
             time = 1.1 * required_mass/total_mass_loss
 
         if self.has_target():
@@ -250,10 +259,13 @@ class SimpleWind(object):
         if check_length and len(wind) < 1:
             raise AmuseException("create_initial_wind time was too small to create any particles.")
 
-        self.particles.reset()
-        self.system_time = 0.0|units.yr
+        self.reset()
 
         return wind
+
+    def reset(self):
+        self.particles.reset()
+        self.system_time = 0.0|units.yr
 
     def get_gravity_at_point(self, eps, x, y, z):
         return [0, 0, 0]|units.m/units.s**2
@@ -318,8 +330,6 @@ def new_stellar_wind(sph_particle_mass, target_gas=None, timestep=None, derive_f
         timestep: the timestep at which the wind particles should be generated.
         derive_from_evolution: derive the wind parameters from stellar evolution (you still need to update the stellar parameters)
         accelerate: start at subterminal velocity and accelerate the gas near the star (requires a bridge coupling)
-
-        TODO: add option to setup non evolving wind from stellar evolution.
     """
     if (target_gas is None) ^ (timestep is None):
         raise AmuseException("Must specify both target_gas and timestep (or neither)")
@@ -331,5 +341,22 @@ def new_stellar_wind(sph_particle_mass, target_gas=None, timestep=None, derive_f
 
     if target_gas is not None:
         stellar_wind.set_target_gas(target_gas, timestep)
+
+    return stellar_wind
+
+def static_wind_from_stellar_evolution(stellar_wind, stellar_evolution, start_time, end_time):
+    """
+        Convenience method that sets up the stellar wind parameters using a stellar evolution code.
+        The change in the stars between start_time and end_time determines the stellar wind.
+        Do not add the star particles to the stellar_wind code before this.
+    """
+    stellar_evolution.evolve_model(start_time)
+    stellar_wind.particles.add_particles(stellar_evolution.particles)
+
+    stellar_evolution.evolve_model(end_time)
+    chan = stellar_evolution.particles.new_channel_to(stellar_wind.particles)
+    chan.copy_attributes(["age", "radius", "mass", "luminosity", "temperature"])
+
+    stellar_wind.evolve_model(0|units.yr)
 
     return stellar_wind
