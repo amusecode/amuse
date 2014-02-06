@@ -119,6 +119,10 @@ class StellarModel2SPH(object):
         min_enclosed_mass_residual = self.construct_model_with_core(min_i, enclosed_mass_edge, self.gamma)
         enclosed_mass_edge = interpolator.enclosed_mass[max_i+1]
         max_enclosed_mass_residual = self.construct_model_with_core(max_i, enclosed_mass_edge, self.gamma)
+        while (max_enclosed_mass_residual < zero) and (max_i > min_i + 20):
+            max_i -= 20
+            enclosed_mass_edge = interpolator.enclosed_mass[max_i+1]
+            max_enclosed_mass_residual = self.construct_model_with_core(max_i, enclosed_mass_edge, self.gamma)
 
         if (min_enclosed_mass_residual > zero) or (max_enclosed_mass_residual < zero):
             raise AmuseException("Requested target_core_mass of {0} is out of range.".format(self.target_core_mass))
@@ -354,7 +358,7 @@ def pickle_stellar_model(particle, pickle_file_name):
     :argument particle: Star particle to be converted to an SPH model later
     :argument pickle_file_name: Name of the pickle file in which to store the stellar structure
     """
-    if os.path.isdir(os.path.dirname(pickle_file_name)) and not os.path.exists(pickle_file_name):
+    if os.path.isdir(os.path.dirname(os.path.abspath(pickle_file_name))) and not os.path.exists(pickle_file_name):
         outfile = open(pickle_file_name, 'wb')
     else:
         raise AmuseWarning("Incorrect file name '{0}'; directory must exist and "
