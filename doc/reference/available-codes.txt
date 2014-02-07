@@ -985,6 +985,7 @@ Stellar Evolution
 
 * sse_
 * bse_
+* seba_
 * evtwin_
 * mesa_
 
@@ -1086,7 +1087,7 @@ Eccentricity 0.0    1.0
 evtwin
 ------
 
-Evtwin is based on Peter Eggleton's stellar evolution code, and actually solves the differential equations that apply to the interior of a star. Therefore it is more accurate, but also much slower than the analytic fits-based sse_ algorithm explained above.
+Evtwin is based on Peter Eggleton's stellar evolution code, and actually solves the differential equations that apply to the interior of a star. Therefore it is more accurate, but also much slower than the analytic fits-based sse_ and seba_ algorithm explained above.
 Binaries are not yet supported in the AMUSE interface to evtwin, neither is the work-around for the helium flash. Currently only solar metallicity.
 
 Relevant papers:
