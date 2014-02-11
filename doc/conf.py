@@ -40,6 +40,7 @@ extensions = [
  'gen_gallery', 
  'io_directive',
  'autodoc_parameters',
+ 'rst2pdf.pdfbuilder',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -226,4 +227,17 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+pdf_documents = [
+#  ('index', 'AMUSE.tex', u'AMUSE Documentation',
+#   u'The AMUSE Team', 'manual'),
+  ('reference/index', 'reference-doc', u'Reference Documentation',
+   u'The AMUSE Team', 'manual'),
+  ('design/index', 'design-doc', u'Design Documentation',
+   u'The AMUSE Team', 'manual'),
+  ('tutorial/index', 'tutorial', u'Tutorials',
+   u'The AMUSE Team', 'howto'),
+  ('install/index', 'installation', u'Installing AMUSE',
+   u'The AMUSE Team', 'howto'),
+]
 
