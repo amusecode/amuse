@@ -4,7 +4,7 @@
 
 // todo: DOUBLE <-> TOLERANCE if DOUBLE=float ?
 
-#define TOLERANCE  1.e-15
+#define TOLERANCE  (sizeof(DOUBLE)<8? 1.e-6:1.e-15)
 #define ORDER  4
 #define MAXITER 60
 
@@ -195,8 +195,8 @@ int findroot(DOUBLE x0, DOUBLE *x, DOUBLE *arg,DOUBLE xtol,DOUBLE ytol,
  DOUBLE x1,x2;
  err=laguerre(x0, x, arg,xtol,ytol, f, fprime, fprimeprime);
  if(err==0) return err;
- if(x0==0)x0=1.;
- x1=x0;x2=2*x1;
+ if(x0==0) x0=1.;
+ x1=0.5*x0;x2=x0;
  err=bracketroot(&x1,&x2,arg,f);
  if(err!=0) return err;
  return saferoot(x,x1,x2,arg,xtol,ytol,f,fprime);
@@ -226,12 +226,12 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
   DOUBLE v0=sqrt(vel0[0]*vel0[0]+vel0[1]*vel0[1]+vel0[2]*vel0[2]);
   DOUBLE vr0=(pos0[0]*vel0[0]+pos0[1]*vel0[1]+pos0[2]*vel0[2])/r0;
   DOUBLE alpha=2./r0-v0*v0/mu;
-  DOUBLE xi0,arg[5],xi,xtol,ytol; //dxi0
+  DOUBLE xi0,arg[5],xi,xtol,ytol,dxi0;
   int err;
-/*
+
   if(alpha > 0)
   {
-    xi0=smu*alpha*dt;
+    xi0=smu*dt/r0;
   } else
   {
     xi0=SIGN(dt)/sqrt(-alpha)*log(1-2*mu*dt*alpha/((vr0*r0)+  
@@ -241,8 +241,8 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
     dxi0=smu/r0*dt;
     if(fabs(alpha*dxi0*dxi0)<1) xi0=dxi0;
   }
-*/
-  xi0=smu*dt/r0;
+
+//  xi0=smu*dt/r0;
   
   arg[0]=smu*dt;
   arg[1]=r0;
@@ -250,11 +250,12 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
   arg[3]=smu;
   arg[4]=alpha;
   ytol=fabs(TOLERANCE*smu*dt);
-  xtol=fabs(TOLERANCE*xi0);
+  xtol=fabs(TOLERANCE*smu*dt/r0);
 
   err=findroot(xi0, &xi, arg, xtol,ytol,&f,&fprime,&fprimeprime);
   if(err !=0 || SIGN(xi)!=SIGN(dt)) {
-   printf("%20.16Lg %20.16Lg arg: %20.16Lg %20.16Lg %20.16Lg %20.16Lg %20.16Lg\n", 
+   printf("err: %d %g %g\n",err,smu*dt/r0,alpha); 
+   printf("%20.16g %20.16g arg: %20.16g %20.16g %20.16g %20.16g %20.16g\n", 
             xi, xi0, arg[0], arg[1], arg[2], arg[3], arg[4]);
 
   return err;
