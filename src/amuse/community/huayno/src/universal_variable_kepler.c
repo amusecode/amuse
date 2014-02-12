@@ -2,8 +2,6 @@
 #include <tgmath.h>
 #include "evolve.h"
 
-// todo: DOUBLE <-> TOLERANCE if DOUBLE=float ?
-
 #define TOLERANCE  (sizeof(DOUBLE)<8? 1.e-6:1.e-15)
 #define ORDER  4
 #define MAXITER 60
@@ -231,7 +229,7 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
 
   if(alpha > 0)
   {
-    xi0=smu*dt/r0;
+    xi0=smu*dt*alpha;
   } else
   {
     xi0=SIGN(dt)/sqrt(-alpha)*log(1-2*mu*dt*alpha/((vr0*r0)+  
