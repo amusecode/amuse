@@ -4,7 +4,7 @@ AMUSE_DIR?=../../../..
 PYTHON ?= python
 
 PYOPENGL_AVAILABLE := $(shell $(PYTHON) -c "import OpenGL"  1>&2 2> /dev/null && echo "yes" || echo "no")
-PYIMAGE_AVAILABLE := $(shell $(PYTHON) -c "import Image"  1>&2 2> /dev/null && echo "yes" || echo "no")
+PYIMAGE_AVAILABLE := $(shell $(PYTHON) -c "from PIL import Image"  1>&2 2> /dev/null && echo "yes" || echo "no")
 PYOPENCL_AVAILABLE := $(shell $(PYTHON) -c "import pyopencl"  1>&2 2> /dev/null && echo "yes" || echo "no")
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
