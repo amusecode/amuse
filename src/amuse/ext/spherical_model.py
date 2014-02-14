@@ -1,7 +1,7 @@
 import numpy
 
 from amuse.support.exceptions import AmuseException, AmuseWarning
-from amuse.units import units, nbody_system
+from amuse.units import units, nbody_system, generic_unit_system, constants
 from amuse.datamodel import Particles
 from amuse.ext.sobol import i4_sobol_generate
 
@@ -63,28 +63,27 @@ class UniformSphericalDistribution(object):
     "cubic":  'crystal' composed of cubes with particles on each corner
     "bcc":    as cubic but with additional particles at the center of each cube
     "body_centered_cubic": same as "bcc"
+    "fcc":    as cubic but with additional particles at the face of each cube
+    "face_centered_cubic": same as "fcc"
     "random": particles are randomly distributed using numpy.random.uniform
     "glass":  like random, but stabilised using hydro pressure and no gravity
     "sobol":  3D sobol sequence (low discrepancy, quasi-random)
     
-    "offset" is only used for the regular grids ("cubic", "bcc"), and 
+    "offset" is only used for the regular grids ("cubic", "bcc", "fcc"), and 
     should contain three numbers in the half-open interval [0, 1). These 
     define the offset between the origin of the grid and the corner 
     of the unit cell, normalized to the unit cell size.
-    The result can optionally be rotated around "rotate" = (theta, phi).
     "target_rms" is only used for "glass" as the density criterion for convergence
     """
     def __init__(self, number_of_particles, type = "bcc", 
             offset = (0.82832951,  0.27237167,  0.37096327), 
-            rotate = None, target_rms = 0.01):
+            mass_cutoff = 1, target_rms = 0.01):
         if not hasattr(self, type):
             raise TypeError("Unknown grid type option: {0}".format(type))
         self.number_of_particles = number_of_particles
         self.type = type
         self.offset = offset
-        self.rotate = rotate
-        if rotate:
-            raise AmuseWarning("rotate is not yet supported")
+        self.mass_cutoff = mass_cutoff
         self.target_rms = target_rms
     
     def cubic(self):
@@ -137,9 +136,9 @@ class UniformSphericalDistribution(object):
     face_centered_cubic = fcc
     
     def _random_cube(self, number_of_particles):
-        x = numpy.random.uniform(-1., 1., number_of_particles)
-        y = numpy.random.uniform(-1., 1., number_of_particles)
-        z = numpy.random.uniform(-1., 1., number_of_particles)
+        x = numpy.random.uniform(-1.0, 1.0, number_of_particles)
+        y = numpy.random.uniform(-1.0, 1.0, number_of_particles)
+        z = numpy.random.uniform(-1.0, 1.0, number_of_particles)
         return x, y, z
     
     def random(self, number_of_particles = None):
@@ -147,7 +146,7 @@ class UniformSphericalDistribution(object):
             number_of_particles = self.number_of_particles
         x, y, z = self._random_cube(2*number_of_particles)
         r_squared = x*x + y*y + z*z
-        select_sphere = numpy.where( r_squared < 1.)
+        select_sphere = numpy.where( r_squared < self.mass_cutoff**(2.0/3.0))
         if len(select_sphere[0]) < self.number_of_particles:
             return self.random( numpy.ceil(number_of_particles*1.1) )
         else:
@@ -230,14 +229,34 @@ class UniformSphericalDistribution(object):
     
     def _cutout_sphere(self, x, y, z):
         r_squared = x*x + y*y + z*z
-        indices = numpy.argsort(r_squared)[:self.number_of_particles]
-        r_max = numpy.sqrt(r_squared[indices[-1]])
+        sorted_indices = numpy.argsort(r_squared)
+        massfrac_edge = r_squared[sorted_indices[self.number_of_particles-1]]**(1.5)
+        massfrac_next = r_squared[sorted_indices[self.number_of_particles]]**(1.5)
+        r_max = (0.5*(massfrac_edge+massfrac_next) / self.mass_cutoff)**(1.0/3.0)
+        indices = sorted_indices[:self.number_of_particles]
         return x[indices]/r_max, y[indices]/r_max, z[indices]/r_max
     
     @property
     def result(self):
         return getattr(self, self.type)()
     
+
+keyword_arguments_doc = """    :argument keyword_arguments:    Optional arguments to UniformSphericalDistribution:
+        :argument type:             Type of the basegrid. Can be:
+            "cubic":  'crystal' composed of cubes with particles on each corner
+            "bcc":    as cubic but with additional particles at the center of each cube
+            "body_centered_cubic": same as "bcc"
+            "fcc":    as cubic but with additional particles at the face of each cube
+            "face_centered_cubic": same as "fcc"
+            "random": particles are randomly distributed using numpy.random.uniform
+            "glass":  like random, but stabilised using hydro pressure and no gravity
+            "sobol":  3D sobol sequence (low discrepancy, quasi-random)
+        :argument offset:           only used for the regular grids ("cubic", "bcc", "fcc"), and 
+            should contain three numbers in the half-open interval [0, 1). These 
+            define the offset between the origin of the grid and the corner 
+            of the unit cell, normalized to the unit cell size.
+        :argument target_rms        only used for "glass" as the density criterion for convergence
+"""
 
 def new_uniform_spherical_particle_distribution(number_of_particles, size, total_mass, **keyword_arguments):
     """
@@ -248,20 +267,6 @@ def new_uniform_spherical_particle_distribution(number_of_particles, size, total
     :argument number_of_particles:  Number of particles in the resulting model
     :argument size:                 Radius of the sphere enclosing the model
     :argument total_mass:           Total mass of the Particles set
-    :argument keyword_arguments:    Optional arguments to UniformSphericalDistribution:
-        :argument type:             Type of the basegrid. Can be:
-            "cubic":  'crystal' composed of cubes with particles on each corner
-            "bcc":    as cubic but with additional particles at the center of each cube
-            "body_centered_cubic": same as "bcc"
-            "random": particles are randomly distributed using numpy.random.uniform
-            "glass":  like random, but stabilised using hydro pressure and no gravity
-            "sobol":  3D sobol sequence (low discrepancy, quasi-random)
-        :argument offset:           only used for the regular grids ("cubic", "bcc"), and 
-            should contain three numbers in the half-open interval [0, 1). These 
-            define the offset between the origin of the grid and the corner 
-            of the unit cell, normalized to the unit cell size.
-        :argument rotate:           The result can optionally be rotated around rotate = (theta, phi).
-        :argument target_rms        only used for "glass" as the density criterion for convergence
     """
     particles = Particles(number_of_particles)
     particles.mass = total_mass * 1.0 / number_of_particles
@@ -270,12 +275,12 @@ def new_uniform_spherical_particle_distribution(number_of_particles, size, total
     particles.y = size * y
     particles.z = size * z
     return particles
+new_uniform_spherical_particle_distribution.__doc__ += keyword_arguments_doc
 
 def new_spherical_particle_distribution(number_of_particles, 
         radial_density_func = None,     # not yet supported, specify radii and densities tables:
         radii = None, densities = None, 
         total_mass = None, size = None, # if total_mass is not given, it will be deduced from size or max(radii)
-        core_radius = None,             # no particles inside core_radius, in case one wants to model the core in a different way
         **keyword_arguments):           # optional arguments for UniformSphericalDistribution
     """
     Returns a Particles set with positions following a spherical 
@@ -294,28 +299,13 @@ def new_spherical_particle_distribution(number_of_particles,
     :argument total_mass:           Total mass of the Particles set (optional, will be 
                                     deduced from size or max(radii) otherwise)
     :argument size:                 Radius of the sphere enclosing the model (optional)
-    :argument core_radius:          No particles inside core_radius (optional)
-    :argument keyword_arguments:    Optional arguments to UniformSphericalDistribution:
-        :argument type:             Type of the basegrid. Can be:
-            "cubic":  'crystal' composed of cubes with particles on each corner
-            "bcc":    as cubic but with additional particles at the center of each cube
-            "body_centered_cubic": same as "bcc"
-            "random": particles are randomly distributed using numpy.random.uniform
-            "glass":  like random, but stabilised using hydro pressure and no gravity
-            "sobol":  3D sobol sequence (low discrepancy, quasi-random)
-        :argument offset:           only used for the regular grids ("cubic", "bcc"), and 
-            should contain three numbers in the half-open interval [0, 1). These 
-            define the offset between the origin of the grid and the corner 
-            of the unit cell, normalized to the unit cell size.
-        :argument rotate:           The result can optionally be rotated around rotate = (theta, phi).
-        :argument target_rms        only used for "glass" as the density criterion for convergence
     """
     if (radii is None) or (densities is None):
         raise AmuseException("Using an arbitrary radial density function is not yet "
             "supported. Radius and density tables must be passed instead.")
     
     interpolator = EnclosedMassInterpolator()
-    interpolator.initialize(radii, densities, core_radius = core_radius)
+    interpolator.initialize(radii, densities)
     if total_mass is None:
         total_mass = interpolator.get_enclosed_mass(size or max(radii))
     particles = Particles(number_of_particles)
@@ -324,14 +314,112 @@ def new_spherical_particle_distribution(number_of_particles,
     x, y, z = UniformSphericalDistribution(number_of_particles, **keyword_arguments).result
     # Now scale the uniformly distributed particle positions to match the radial density profile
     r_old = numpy.sqrt(x*x + y*y + z*z)
-    dtype = [('r_old', 'float64'), ('x', 'float64'), ('y', 'float64'), ('z', 'float64')]
-    sorted = numpy.sort(numpy.array(zip(r_old, x, y, z), dtype=dtype), order='r_old')
-    if sorted['r_old'][0] == 0.0:
-        sorted['r_old'][0] = 1.0
+    indices = numpy.argsort(r_old)
+    if r_old[indices[0]] == 0.0:
+        r_old[indices[0]] = 1.0
     f_scale = interpolator.get_radius_for_enclosed_mass(
-        (numpy.arange(0.5, number_of_particles + 0.5) | units.none) * particle_mass) / sorted['r_old']
-    particles.x = (f_scale * sorted['x']).as_quantity_in(radii.unit)
-    particles.y = (f_scale * sorted['y']).as_quantity_in(radii.unit)
-    particles.z = (f_scale * sorted['z']).as_quantity_in(radii.unit)
+        (numpy.arange(0.5, number_of_particles + 0.5) | units.none) * particle_mass) / r_old[indices]
+    particles.x = (f_scale * x[indices]).as_quantity_in(radii.unit)
+    particles.y = (f_scale * y[indices]).as_quantity_in(radii.unit)
+    particles.z = (f_scale * z[indices]).as_quantity_in(radii.unit)
     return particles
+new_spherical_particle_distribution.__doc__ += keyword_arguments_doc
+
+plummer_arguments_doc = """
+    :argument number_of_particles:  Number of particles in the resulting model
+    :argument total_mass:           Total mass of the Particles set 
+    :argument virial_radius:        Virial radius of the Plummer model
+""" + keyword_arguments_doc
+
+def new_plummer_spatial_distribution(number_of_particles, 
+        total_mass = 1.0|nbody_system.mass, 
+        virial_radius = 1.0|nbody_system.length,
+        mass_cutoff = 0.999,
+        **keyword_arguments):           # optional arguments for UniformSphericalDistribution
+    """
+    Returns a Particles set with positions following a Plummer 
+    distribution. 
+    Only the positions and masses (equal-mass system) are set.
+    """
+    particles = Particles(number_of_particles)
+    particle_mass = total_mass * 1.0 / number_of_particles
+    particles.mass = particle_mass
+    x, y, z = UniformSphericalDistribution(
+        number_of_particles, mass_cutoff=mass_cutoff, **keyword_arguments).result
     
+    # Now scale the uniformly distributed particle positions to match the radial density profile
+    r_old = numpy.sqrt(x*x + y*y + z*z)
+    scale_factor = (0.1875 * numpy.pi * virial_radius.number) / numpy.sqrt(1.0 - r_old**2)
+    particles.x = scale_factor * x | virial_radius.unit
+    particles.y = scale_factor * y | virial_radius.unit
+    particles.z = scale_factor * z | virial_radius.unit
+    return particles
+new_plummer_spatial_distribution.__doc__ += plummer_arguments_doc
+
+def new_gas_plummer_distribution(number_of_particles, 
+        total_mass = 1.0|nbody_system.mass, 
+        virial_radius = 1.0|nbody_system.length,
+        G = None,
+        **keyword_arguments):           # optional arguments for UniformSphericalDistribution
+    """
+    Create a plummer gas model with the given number of particles. Returns a set 
+    of SPH particles with equal masses and positions distributed to fit a plummer 
+    distribution model. Velocities are set to zero, and internal energies are set 
+    to balance the gravitational forces between the gas particles.
+    """
+    particles = new_plummer_spatial_distribution(number_of_particles, total_mass=total_mass, 
+        virial_radius=virial_radius, **keyword_arguments)
+    
+    if G is None:
+        G = nbody_system.G if generic_unit_system.is_generic_unit(total_mass.unit) else constants.G
+    velocity_unit = (G*total_mass/virial_radius).sqrt().unit.base_unit()
+    particles.velocity = [0.0, 0.0, 0.0] | velocity_unit
+    
+    plummer_radius = 0.1875 * numpy.pi * virial_radius
+    u_unit = (velocity_unit**2).base_unit()
+    particles.u = (1 + particles.position.lengths_squared()/plummer_radius**2)**(-0.5) | u_unit
+    particles.u *= 0.25 * (G*total_mass**2/virial_radius) / particles.thermal_energy()
+    return particles
+new_gas_plummer_distribution.__doc__ += plummer_arguments_doc
+
+def sample_from_velocity_distribution(number_of_particles):
+    x = numpy.random.uniform(0.0, 1.0, number_of_particles)
+    y = numpy.random.uniform(0.0, 0.1, number_of_particles)
+    selected = x[y <= (x**2) * (1.0 - x**2)**3.5]
+    if len(selected) < number_of_particles:
+        return numpy.concatenate((selected, sample_from_velocity_distribution(number_of_particles-len(selected))))
+    return selected
+
+def random_direction(number_of_particles):
+    z = numpy.random.uniform(-1.0, 1.0, number_of_particles)
+    sine_theta = numpy.sqrt(1-z*z)
+    phi = numpy.random.uniform(0.0, 2*numpy.pi, number_of_particles)
+    return numpy.array([sine_theta * numpy.cos(phi), sine_theta * numpy.sin(phi), z]).transpose()
+
+def new_plummer_distribution(number_of_particles, 
+        total_mass = 1.0|nbody_system.mass, 
+        virial_radius = 1.0|nbody_system.length,
+        mass_cutoff = 0.999,
+        G = None,
+        **keyword_arguments):           # optional arguments for UniformSphericalDistribution
+    """
+    Create a plummer model with the given number of particles. Returns a set 
+    of particles with equal masses and positions distributed to fit a plummer 
+    distribution model. Velocities are sampled using von Neumann's rejection 
+    method (Aarseth et al. 1974), balancing the gravitational forces between 
+    the particles.
+    """
+    particles = new_plummer_spatial_distribution(number_of_particles, total_mass=total_mass, 
+        virial_radius=virial_radius, **keyword_arguments)
+    
+    if G is None:
+        G = nbody_system.G if generic_unit_system.is_generic_unit(total_mass.unit) else constants.G
+    velocity_unit = (G*total_mass/virial_radius).sqrt().unit.base_unit()
+    plummer_radius = 0.1875 * numpy.pi * virial_radius
+    
+    escape_velocity = (1 + particles.position.lengths_squared()/plummer_radius**2)**(-0.25) | velocity_unit
+    velocity = escape_velocity * sample_from_velocity_distribution(number_of_particles)
+    velocity *= numpy.sqrt((G*total_mass*number_of_particles) / (2*virial_radius*velocity.length_squared()))
+    particles.velocity = velocity.reshape((-1,1)) * random_direction(number_of_particles)
+    return particles
+new_plummer_distribution.__doc__ += plummer_arguments_doc

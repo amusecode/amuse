@@ -12,14 +12,14 @@ class TestUniformSphericalDistribution(TestCase):
         x, y, z = instance.result
         self.assertEqual(len(x), 4200)
         r_squared = x*x + y*y + z*z
-        self.assertAlmostEqual(r_squared.max(), 1.0)
-        self.assertAlmostEqual(r_squared.min(), 0.0, 1)
+        self.assertAlmostEqual(r_squared.max(), 1.0, places=4)
+        self.assertAlmostEqual(r_squared.min(), 0.0, places=1)
     
     def test2(self):
+        numpy.random.seed(12345)
         for n_i in [1003, 3210]:
             for type_i in ["cubic", "bcc", "body_centered_cubic", "random"]:
                 for offset_i in [(0.406645, 0.879611, 0.573737), (0.939868, 0.796048, 0.236403)]:
-                    numpy.random.seed(12345)
                     instance = UniformSphericalDistribution(n_i, type=type_i, offset=offset_i)
                     x, y, z = instance.result
                     self.assertEqual(len(x), n_i)
@@ -54,19 +54,12 @@ class TestUniformSphericalDistribution(TestCase):
         )
         self.assertAlmostEqual(min(r_squared), min_r_squared)
     
-    def test5(self):
-        numpy.random.seed(12345)
-        theta = numpy.arccos(numpy.random.uniform(-1.0, 1.0))
-        phi   = numpy.random.uniform(0.0, 2.0*numpy.pi)
-        self.assertRaises(AmuseWarning, UniformSphericalDistribution, 1234, type="bcc", rotate=(theta, phi), 
-            expected_message = "rotate is not yet supported")
-    
     def test6(self):
         print "Test new_uniform_spherical_particle_distribution"
         particles = new_uniform_spherical_particle_distribution(14321, 1 | units.m, 1 | units.kg, type="cubic")
         self.assertEqual(len(particles), 14321)
         r_squared = particles.position.lengths_squared()
-        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2)
+        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2, places=4)
         self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, 2)
         self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
         select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
@@ -125,15 +118,15 @@ class TestUniformSphericalDistribution(TestCase):
             type="glass", target_rms=0.3)
         self.assertEqual(len(particles), 1421)
         r_squared = particles.position.lengths_squared()
-        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2)
-        self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, 1)
+        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2, places=4)
+        self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, places=1)
     
     def test11(self):
         print "Test new_uniform_spherical_particle_distribution, sobol sequence"
         particles = new_uniform_spherical_particle_distribution(14321, 1 | units.m, 1 | units.kg, type="sobol")
         self.assertEqual(len(particles), 14321)
         r_squared = particles.position.lengths_squared()
-        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2)
+        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2, places=4)
         self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, 2)
         self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
         select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
@@ -145,12 +138,123 @@ class TestUniformSphericalDistribution(TestCase):
         particles = new_uniform_spherical_particle_distribution(14321, 1|units.m, 1|units.kg, type="fcc")
         self.assertEqual(len(particles), 14321)
         r_squared = particles.position.lengths_squared()
-        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2)
+        self.assertAlmostEqual(r_squared.amax(), 1.0 | units.m**2, places=4)
         self.assertAlmostEqual(r_squared.amin(), 0.0 | units.m**2, 2)
         self.assertAlmostEqual(particles.total_mass(), 1 | units.kg)
         select_half_radius = numpy.where(r_squared < (0.5 | units.m)**2)
         self.assertAlmostEqual(particles.mass[select_half_radius].sum(), 1.0/8.0 | units.kg, places=2)
         self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
+    
+    def test13(self):
+        print "Test new_spherical_particle_distribution, particle at the origin"
+        particles = new_spherical_particle_distribution(14321, radii = [2,4,3,1] | units.m, 
+            densities = [80, 30, 50, 100] | (units.kg/units.m**3), 
+            type="bcc", offset=[0,0,0])
+        r_squared = particles.position.lengths_squared()
+        self.assertAlmostEqual(r_squared.amax(), 16.0 | units.m**2, 2)
+        self.assertEqual(r_squared.amin(), 0.0 | units.m**2)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=2)
+        self.assertEqual(particles[0].position, [0.0, 0.0, 0.0] | units.m)
+    
+    def test14(self):
+        print "Test new_plummer_spatial_distribution"
+        particles = new_plummer_spatial_distribution(1401, type="fcc")
+        self.assertEqual(len(particles), 1401)
+        r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 | nbody_system.length
+        self.assertAlmostEqual(particles[700].position.length(), r_halfmass_plummer, places=1)
+        self.assertAlmostEqual(particles.total_mass(), 1 | nbody_system.mass)
+        self.assertAlmostEqual(particles.virial_radius(), 1 | nbody_system.length, places=2)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | nbody_system.length, places=1)
+    
+    def test15(self):
+        print "Test new_plummer_spatial_distribution, SI units"
+        particles = new_plummer_spatial_distribution(1401, 
+            virial_radius = 3 | units.m, 
+            total_mass = 7 | units.kg, 
+            type="fcc")
+        self.assertEqual(len(particles), 1401)
+        r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 * (3|units.m)
+        self.assertAlmostEqual(particles[700].position.length(), r_halfmass_plummer, places=1)
+        self.assertAlmostEqual(particles.total_mass(), 7|units.kg)
+        self.assertAlmostEqual(particles.virial_radius(), 3|units.m, places=2)
+    
+    def test16(self):
+        print "Test new_plummer_spatial_distribution, mass_cutoff"
+        numpy.random.seed(12345)
+        particles = new_plummer_spatial_distribution(1001, mass_cutoff=0.5, type="random")
+        r_squared = particles.position.lengths_squared()
+        r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 | nbody_system.length
+        # With mass_cutoff=0.5, the outermost particle should be close to the (uncut) half-mass radius:
+        self.assertAlmostEqual(r_squared.amax().sqrt(), r_halfmass_plummer, places=2)
+        particles = new_plummer_spatial_distribution(1001, mass_cutoff=0.5, type="fcc")
+        r_squared = particles.position.lengths_squared()
+        self.assertAlmostEqual(r_squared.amax().sqrt(), r_halfmass_plummer, places=2)
+        
+        self.assertAlmostEqual(particles.total_mass(), 1 | nbody_system.mass)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | nbody_system.length, places=1)
+    
+    def test17(self):
+        print "Test new_gas_plummer_distribution"
+        particles = new_gas_plummer_distribution(1401, type="fcc")
+        self.assertEqual(len(particles), 1401)
+        r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 | nbody_system.length
+        self.assertAlmostEqual(particles[700].position.length(), r_halfmass_plummer, places=1)
+        self.assertAlmostEqual(particles.total_mass(), 1 | nbody_system.mass)
+        self.assertAlmostEqual(particles.virial_radius(), 1 | nbody_system.length, places=2)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | nbody_system.length, places=1)
+        self.assertAlmostEqual(particles.kinetic_energy(), 0 | nbody_system.energy)
+        self.assertAlmostEqual(particles.thermal_energy(), 0.25 | nbody_system.energy)
+    
+    def test18(self):
+        print "Test new_gas_plummer_distribution, SI units"
+        particles = new_gas_plummer_distribution(1801,
+            virial_radius = 0.36 | units.m, 
+            total_mass = 6 | units.kg, 
+            type="sobol")
+        self.assertEqual(len(particles), 1801)
+        r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 * (0.36|units.m)
+        self.assertAlmostEqual(particles[900].position.length(), r_halfmass_plummer, places=1)
+        self.assertAlmostEqual(particles.total_mass(), 6|units.kg)
+        self.assertAlmostEqual(particles.virial_radius(), 0.36|units.m, places=2)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | units.m, places=1)
+        self.assertAlmostEqual(particles.kinetic_energy(), 0 | units.J)
+        self.assertAlmostEqual(particles.thermal_energy()/constants.G, 0.25 | (units.kg**2 / units.cm))
+    
+    def test19(self):
+        print "Test new_plummer_distribution"
+        numpy.random.seed(12345)
+        particles = new_plummer_distribution(1401, type="fcc")
+        self.assertEqual(len(particles), 1401)
+        r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 | nbody_system.length
+        self.assertAlmostEqual(particles[700].position.length(), r_halfmass_plummer, places=1)
+        self.assertAlmostEqual(particles.total_mass(), 1 | nbody_system.mass)
+        self.assertAlmostEqual(particles.virial_radius(), 1 | nbody_system.length, places=2)
+        self.assertAlmostEqual(particles.center_of_mass(), [0.0, 0.0, 0.0] | nbody_system.length, places=1)
+        self.assertAlmostEqual(particles.center_of_mass_velocity(), [0.0, 0.0, 0.0] | nbody_system.speed, places=1)
+        self.assertAlmostEqual(particles.kinetic_energy(), 0.25 | nbody_system.energy)
+    
+    def test20(self):
+        print "Test new_plummer_distribution, SI units"
+        numpy.random.seed(12345)
+        particles = new_plummer_distribution(1401, 
+            virial_radius = 0.025 | units.kpc, 
+            total_mass = 5 | units.MSun, 
+            type="sobol")
+        self.assertEqual(len(particles), 1401)
+        r_halfmass_plummer = 3*numpy.pi/16.0*(0.5**(-2/3.)-1)**-0.5 * (0.025|units.kpc)
+        self.assertAlmostEqual(particles[700].position.length(), r_halfmass_plummer, places=1)
+        self.assertAlmostEqual(particles.total_mass(), 5|units.MSun)
+        self.assertAlmostEqual(particles.virial_radius(), (0.025|units.kpc), places=2)
+        self.assertAlmostEqual(particles.center_of_mass_velocity(), [0.0, 0.0, 0.0]|units.kms, places=2)
+        self.assertAlmostEqual(particles.kinetic_energy()/constants.G, 0.25 | (units.MSun**2 / units.parsec))
+    
+    def test21(self):
+        print "Test docs"
+        self.assertTrue("face_centered_cubic" in new_uniform_spherical_particle_distribution.__doc__)
+        self.assertTrue("face_centered_cubic" in new_spherical_particle_distribution.__doc__)
+        self.assertTrue("face_centered_cubic" in new_plummer_spatial_distribution.__doc__)
+        self.assertTrue("face_centered_cubic" in new_gas_plummer_distribution.__doc__)
+        self.assertTrue("face_centered_cubic" in new_plummer_distribution.__doc__)
     
 
 class TestEnclosedMassInterpolator(TestCase):
