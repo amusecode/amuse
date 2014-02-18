@@ -36,3 +36,12 @@ def rotate(particles, phi, theta, psi):
     particles.position = rotated(particles.position,  phi, theta, psi)
     particles.velocity = rotated(particles.velocity,  theta, phi, psi)
 
+def add_spin(particles, omega):
+    """
+    Add solid-body rotation to the velocity of the particles, relative to the 
+    center-of-mass position.
+    """
+    if not omega.is_vector():
+        omega = omega * [0.0, 0.0, 1.0]
+    particles.velocity += omega.cross(particles.position - particles.center_of_mass())
+
