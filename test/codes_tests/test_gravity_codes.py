@@ -177,6 +177,23 @@ class _TestGravityCodes(TestWithMPI):
         print (instance.particles.position - instance.particles.center_of_mass()).lengths()
         self.assertTrue(stopping_condition.is_set())
         instance.stop()
+    
+    def test10(self):
+        factory = self.gravity_code_factory()
+        instance = self.new_instance_of_an_optional_code(factory)
+        particle = datamodel.Particle()
+        particle.position = [0, 0, 0] | self.length_unit
+        particle.velocity = [1, -2, 3.0] | self.speed_unit
+        particle.mass = 1 | self.mass_unit
+        particle.radius = 0.0 | self.length_unit
+        
+        instance.particles.add_particle(particle)
+        instance.evolve_model(1 | self.time_unit)
+        self.assertAlmostEqual(instance.model_time, 1 | self.time_unit)
+        self.assertAlmostEqual(instance.kinetic_energy, 7.0 | self.mass_unit * self.speed_unit**2)
+        self.assertAlmostEqual(instance.potential_energy, 0.0 | self.mass_unit * self.speed_unit**2)
+        self.assertAlmostEqual(instance.particles[0].position, [1.0, -2.0, 3.0] | self.length_unit)
+        instance.stop()
 
     def new_gravity_code(self):
         self.gravity_code_factory()
@@ -195,6 +212,8 @@ class TestHermiteGravityCode(_TestGravityCodes):
     def gravity_code_factory(self):
         return Hermite
         
+    def test10(self):
+        self.skip("no support for single particle")
     
 class TestPH4GravityCode(_TestGravityCodes):
     
@@ -213,6 +232,8 @@ class TestMI6GravityCode(_TestGravityCodes):
         self.skip("MI6 crashes on removal and addition of particles")
     def test9(self):
         self.skip("no support for out of box detection")
+    def test10(self):
+        self.skip("no support for single particle")
 
 
         
@@ -271,6 +292,10 @@ class TestFiGravityCode(_TestGravityCodes):
         
     def test9(self):
         self.skip("no support for out of box detection")
+    
+    def test10(self):
+        self.skip("no support for single particle")
+    
 
 class TestGadget2GravityCode(_TestGravityCodes):
     length_unit = units.parsec
@@ -294,3 +319,6 @@ class TestGadget2GravityCode(_TestGravityCodes):
     
     def test9(self):
         self.skip("no support for out of box detection")
+    
+    def test10(self):
+        self.skip("no support for single particle")
