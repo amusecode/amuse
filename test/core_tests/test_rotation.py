@@ -111,4 +111,36 @@ class TestRotations(amusetest.TestCase):
         potential_energy1 = particles.potential_energy(G=nbody_system.G)
         self.assertAlmostRelativeEquals(kinetic_energy1, kinetic_energy0)
         self.assertAlmostRelativeEquals(potential_energy1, potential_energy0)
-
+    
+    def test09(self):
+        print "Test add_spin particle attribute, to add rigid body rotation"
+        numpy.random.seed(123456)
+        particles = new_plummer_model(1000)
+        kinetic_energy0 = particles.kinetic_energy()
+        potential_energy0 = particles.potential_energy(G=nbody_system.G)
+        
+        particles.position += [3, 0, 2] | nbody_system.length
+        particles.velocity += [1, 10, 100] | nbody_system.speed
+        particles.add_spin(3.0 | nbody_system.time**-1)
+        
+        self.assertAlmostRelativeEquals(particles.center_of_mass(), [3, 0, 2] | nbody_system.length, 12)
+        self.assertAlmostRelativeEquals(particles.potential_energy(G=nbody_system.G), potential_energy0, 12)
+        self.assertAlmostRelativeEquals(particles.center_of_mass_velocity(), [1, 10, 100] | nbody_system.speed, 12)
+        
+        r = particles.position - particles.center_of_mass()
+        v = particles.velocity - particles.center_of_mass_velocity()
+        spin_direction = (r).cross(v).mean(axis=0)
+        spin_direction /= spin_direction.length()
+        R = r - r*spin_direction
+        omega = ((R).cross(v) / R.lengths_squared().reshape((-1,1))).mean(axis=0).length()
+        self.assertAlmostEquals(spin_direction, [0, 0, 1.0], 1)
+        self.assertAlmostEquals(omega, 3.0 | nbody_system.time**-1, 1)
+        
+        particles.add_spin([1.0, 0, -3.0] | nbody_system.time**-1)
+        v = particles.velocity - particles.center_of_mass_velocity()
+        spin_direction = (r).cross(v).mean(axis=0)
+        spin_direction /= spin_direction.length()
+        R = r - r*spin_direction
+        omega = ((R).cross(v) / R.lengths_squared().reshape((-1,1))).mean(axis=0).length()
+        self.assertAlmostEquals(omega, 1.0 | nbody_system.time**-1, 1)
+ 
