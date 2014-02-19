@@ -100,14 +100,12 @@ def center_of_mass(particles):
     """
 
     masses = particles.mass
-    x_values = particles.x
-    y_values = particles.y
-    z_values = particles.z
+    pos=particles.position
 
     total_mass = masses.sum()
-    massx = (masses * x_values).sum()
-    massy = (masses * y_values).sum()
-    massz = (masses * z_values).sum()
+    massx = (masses * pos[:,0]).sum()
+    massy = (masses * pos[:,1]).sum()
+    massz = (masses * pos[:,2]).sum()
 
     return quantities.VectorQuantity.new_from_scalar_quantities(massx/total_mass,
         massy/total_mass,
@@ -131,14 +129,12 @@ def center_of_mass_velocity(particles):
 
 
     masses = particles.mass
-    x_values = particles.vx
-    y_values = particles.vy
-    z_values = particles.vz
+    vel=particles.velocity
 
     total_mass = masses.sum()
-    massx = (masses * x_values).sum()
-    massy = (masses * y_values).sum()
-    massz = (masses * z_values).sum()
+    massx = (masses * vel[:,0]).sum()
+    massy = (masses * vel[:,1]).sum()
+    massz = (masses * vel[:,2]).sum()
 
     return quantities.VectorQuantity.new_from_scalar_quantities(massx/total_mass,
         massy/total_mass,
@@ -158,13 +154,11 @@ def total_momentum(particles):
     quantity<[0.0, 0.0, 0.0] m * kg * s**-1>
     """
     masses = particles.mass
-    x_values = particles.vx
-    y_values = particles.vy
-    z_values = particles.vz
+    vel=particles.velocity
 
-    momx = (masses * x_values).sum()
-    momy = (masses * y_values).sum()
-    momz = (masses * z_values).sum()
+    momx = (masses * vel[:,0]).sum()
+    momy = (masses * vel[:,1]).sum()
+    momz = (masses * vel[:,2]).sum()
 
     return quantities.VectorQuantity.new_from_scalar_quantities(momx,
         momy, momz)
@@ -219,6 +213,9 @@ def kinetic_energy(particles):
     quantity<1.0 m**2 * kg * s**-2>
     """
 
+    if len(particles) < 1:
+        return zero
+
     mass = particles.mass
     vx = particles.vx
     vy = particles.vy
@@ -246,7 +243,7 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     """
 
     if len(particles) < 2:
-        return zero * G
+        return zero
 
     mass = particles.mass
     x_vector = particles.x
