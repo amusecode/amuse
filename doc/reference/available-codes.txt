@@ -1058,6 +1058,7 @@ After mass transfer ceases in a binary system, the donor star turns into a remna
 More information on SeBa can be found in the papers:    
 
 Relevant papers:
+
 * "Population synthesis of high-mass binaries"
   Portegies Zwart, S.F., Verbunt, F. 1996, 309, 179P
 * "Population synthesis for double white dwarfs . I. Close detached systems"
