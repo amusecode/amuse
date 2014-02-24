@@ -251,7 +251,8 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
   xtol=fabs(TOLERANCE*smu*dt/r0);
 
   err=findroot(xi0, &xi, arg, xtol,ytol,&f,&fprime,&fprimeprime);
-  if(err !=0 || SIGN(xi)!=SIGN(dt)) 
+  if(SIGN(xi)!=SIGN(dt)) err-=100;
+  if(err !=0) 
   {
    printf("xtol,ytol: %g %g\n",xtol,ytol);
    printf("err: %d %g %g\n",err,smu*dt/r0,alpha); 
