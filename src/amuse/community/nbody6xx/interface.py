@@ -6,7 +6,8 @@ from amuse.community.interface.gd import GravityFieldCode
 
 class Nbody6xxInterface(
         CodeInterface,
-        GravitationalDynamicsInterface
+        GravitationalDynamicsInterface,
+        GravityFieldInterface
     ):
     use_modules = ['AMUSE_INTERFACE']
 

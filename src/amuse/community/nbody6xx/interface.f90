@@ -650,4 +650,65 @@
         get_zmbar = 0
       END FUNCTION
 
+      FUNCTION get_gravity_at_point(eps1, x1, y1, z1, fx, fy, fz,
+     &      number_of_points)
+        INCLUDE 'src/common6.h'
+        INTEGER, intent(IN) :: number_of_points
+        DOUBLE PRECISION :: eps1
+        DOUBLE PRECISION ::  x1, y1, z1
+        DOUBLE PRECISION :: fx, fy, fz
+        DOUBLE PRECISION :: r2, r2i, ri, mri, mr3i
+        INTEGER get_gravity_at_point 
+        INTEGER idx
+
+        r2 = 0
+        r2i = 0
+        ri = 0
+        mri = 0
+        mr3i = 0
+        fx = 0
+        fy = 0 
+        fz = 0
+
+        DO idx = IFIRST, NTOT 
+           r2 = X(1,idx)**2 + X(2,idx)**2 + X(3,idx)**2
+           r2i = 1.0/(r2 + eps1)
+           ri = sqrt(r2i)
+           mri = BODY(idx) * ri
+           mr3i = mri * r2i
+           fx = fx + mr3i * (X(1,idx)-x1)
+           fy = fy + mr3i * (X(2,idx)-x1)
+           fz = fz + mr3i * (X(3,idx)-x1)
+        ENDDO
+        PRINT *, "fx=", fx, "fy=", fy, "fz=", fz
+        get_gravity_at_point = 0 
+      END FUNCTION
+
+
+      FUNCTION get_potential_at_point(eps1, x1, y1, z1, phi,
+     &     number_of_points)
+        INCLUDE 'src/common6.h'
+        INTEGER, intent(IN) :: number_of_points
+        DOUBLE PRECISION :: eps1, x1, y1, z1
+        DOUBLE PRECISION :: phi
+        DOUBLE PRECISION :: r2, r2i, ri
+        INTEGER get_potential_at_point
+        INTEGER idx
+
+        phi = 0
+        r2 = 0
+        r2i = 0
+        ri = 0
+
+        DO idx = IFIRST, NTOT
+           r2 = X(1,idx)**2 + X(2,idx)**2 + X(3,idx)**2
+           r2i = 1.0/(r2 + eps1)
+           ri = sqrt(r2i)
+           phi = phi - BODY(idx) * ri
+        ENDDO
+        PRINT *, "potential phi = ", phi
+        get_potential_at_point = 0
+      END FUNCTION
+
+
       END MODULE AMUSE_INTERFACE
