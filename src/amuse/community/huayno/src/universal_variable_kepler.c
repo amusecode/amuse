@@ -251,14 +251,18 @@ int universal_variable_kepler_solver(DOUBLE dt,DOUBLE mu,DOUBLE pos0[3],
   xtol=fabs(TOLERANCE*smu*dt/r0);
 
   err=findroot(xi0, &xi, arg, xtol,ytol,&f,&fprime,&fprimeprime);
-  if(err !=0 || SIGN(xi)!=SIGN(dt)) {
+  if(err !=0 || SIGN(xi)!=SIGN(dt)) 
+  {
    printf("xtol,ytol: %g %g\n",xtol,ytol);
    printf("err: %d %g %g\n",err,smu*dt/r0,alpha); 
    printf("%20.16g %20.16g arg: %20.16g %20.16g %20.16g %20.16g %20.16g\n", 
             xi, xi0, arg[0], arg[1], arg[2], arg[3], arg[4]);
-   printf("%20.16g %20.16g %20.16g %20.16g %20.16g %20.16g\n", 
-            pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2]);
-
+   if( ! (sizeof(mu) == sizeof(long double)))
+     printf("input (hex): %a %a\n %a %a %a\n %a %a %a\n", 
+       mu, dt, pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2]);
+   else
+     printf("input (hex): %La %La\n %La %La %La\n %La %La %La\n",
+       mu, dt, pos0[0], pos0[1], pos0[2], vel0[0], vel0[1], vel0[2]);   
   return err;
   }
   {
