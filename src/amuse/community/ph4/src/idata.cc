@@ -37,7 +37,7 @@ void idata::set_ni(int n)
 	cleanup();
 	iid = new int[n];
 	ilist = new int[n];
-	inn = new int[n];
+	inn = new int[n]();
 	pnn = new int[n];
 	lnn = NULL;	// force recomuptation in get_partial_acc_and_jerk()
 	imass = new real[n];
