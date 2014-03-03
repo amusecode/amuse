@@ -1836,7 +1836,7 @@ class SocketChannel(AbstractMessageChannel):
             arguments.append('false')
 
         logging.getLogger("channel").info("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
-        self.process = Popen(arguments, executable=command, stdout=None, stderr=None, close_fds=False)
+        self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=False)
         logging.getLogger("channel").debug("waiting for connection from worker")
 
              
