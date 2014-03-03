@@ -1728,7 +1728,7 @@ class SocketChannel(AbstractMessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, **options):
         AbstractMessageChannel.__init__(self, **options)
         
-        
+        #logging.getLogger().setLevel(logging.DEBUG)
         
         logging.getLogger("channel").debug("initializing SocketChannel with options %s", options)
        
@@ -1741,14 +1741,6 @@ class SocketChannel(AbstractMessageChannel):
             raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
             
         self.id = 0
-
-        if not config is None and config.mpi.mpiexec_enabled:
-            self.mpiexec = config.mpi.mpiexec
-        else:
-            self.mpiexec = None
-            if self.number_of_workers != 0 and self.number_of_workers != 1:
-                raise exceptions.CodeException("Multiple workers requested, but mpiexec not configured in amuse");
-
         
         if not legacy_interface_type is None:
             self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
@@ -1764,10 +1756,30 @@ class SocketChannel(AbstractMessageChannel):
     @late
     def debugger_method(self):
         return self.DEBUGGERS[self.debugger]
-        
+    
+    def accept_worker_connection(self, server_socket, process):
+        #wait for the worker to connect. check if the process is still running once in a while
+
+        for i in range(0, 60):
+            #logging.getLogger("channel").error("accepting connection")
+
+            try:
+                server_socket.settimeout(1.0)
+                return server_socket.accept()
+            except socket.timeout:
+                #update and read returncode
+                if process.poll() is not None:
+                    raise exceptions.CodeException('could not connect to worker, worker process terminated')
+                #logging.getLogger("channel").error("worker not connecting, waiting...")
+                
+        raise exceptions.CodeException('worker still not started after 60 seconds')
+
+
     def start(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        
         server_socket.bind(('', 0))
+        server_socket.settimeout(1.0)
         server_socket.listen(1)
         
         # logging.getLogger("channel").debug("starting socket worker process")
@@ -1784,26 +1796,7 @@ class SocketChannel(AbstractMessageChannel):
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
         else:
-            if 0:
-                if self.redirect_stdout_file is None  or self.redirect_stdout_file == "none":
-                    self.stdout = None
-                else:
-                    self.stdout = open(self.redirect_stdout_file, "w")
-
-                if self.redirect_stderr_file is None or self.redirect_stderr_file == "none":
-                    self.stderr = None
-                elif self.redirect_stderr_file == self.redirect_stdout_file:
-                    # stderr same file as stdout, do not open file twice
-                    self.stderr = self.stdout
-                else:
-                    self.stderr = open(self.redirect_stderr_file, "w")
-
-                if not self.interpreter_executable is None:
-                    command = self.interpreter_executable
-                    arguments = [self.full_name_of_the_worker]
-                else:
-                    command = self.full_name_of_the_worker
-            if not self.can_redirect_output or (self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none'):
+            if self.redirect_stdout_file == 'none' and self.redirect_stderr_file == 'none':
                 
                 if self.interpreter_executable is None:
                     command = self.full_name_of_the_worker
@@ -1813,37 +1806,41 @@ class SocketChannel(AbstractMessageChannel):
                     arguments = [self.full_name_of_the_worker]
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command=self.python_exe_for_redirection, interpreter_executable=self.interpreter_executable)
-                
-            
-        arguments.insert(0, command)        
-        arguments.append(str(server_socket.getsockname()[1]))
-        
-        environment = os.environ
-        
-        if self.number_of_workers > 1:
-            logging.getLogger("channel").info("multiple workers instances for socket worker not properly tested yet")
-            
+
+        #start arguments with command        
+        arguments.insert(0, command)
+
+        logging.getLogger("channel").info("suggestion to start process with command `%s`, arguments `%s`", command, arguments)
+
+        if self.initialize_mpi:
             # prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
             arguments.insert(0, "-np")
-            arguments.insert(0, self.mpiexec)
-            
-            command = self.mpiexec
+            arguments.insert(0, config.mpi.mpiexec)
+            command = config.mpi.mpiexec
 
-            # limit environment to bare minimum
-            keys = ['HOME', 'PATH', 'LD_LIBRARY_PATH', 'USER', 'SHELL', 'LANG', 'PYTHONPATH', 'PYTHONHOME']
-
-            environment = dict()
-            for key in keys:
-                if os.environ.has_key(key):
-                    environment[key] = os.environ.get(key)
-
-        logging.getLogger("channel").info("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, environment)
+            #append with port and hostname where the worker should connect            
+            arguments.append(str(server_socket.getsockname()[1]))
+            #hostname of this machine
+            arguments.append(str(socket.gethostname()))
         
-        self.process = Popen(arguments, executable=command, stdout=self.stdout, stderr=self.stderr, close_fds=False, env=environment)
+            #initialize MPI inside worker executable
+            arguments.append('true')
+        else:
+            #append arguments with port and socket where the worker should connect            
+            arguments.append(str(server_socket.getsockname()[1]))
+            #local machine
+            arguments.append('localhost')
+        
+            #do not initialize MPI inside worker executable
+            arguments.append('false')
+
+        logging.getLogger("channel").info("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
+        self.process = Popen(arguments, executable=command, stdout=None, stderr=None, close_fds=False)
         logging.getLogger("channel").debug("waiting for connection from worker")
-     
-        self.socket, address = server_socket.accept()
+
+             
+        self.socket, address = self.accept_worker_connection(server_socket, self.process)
         
         self.socket.setblocking(1)
         
@@ -1863,6 +1860,11 @@ class SocketChannel(AbstractMessageChannel):
     @option(sections=("channel",))
     def hostname(self):
         return None
+    
+    @option(type="boolean", sections=("channel",))
+    def initialize_mpi(self):
+        """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
+        return config.mpi.is_enabled
        
     def stop(self):
         if (self.socket == None):

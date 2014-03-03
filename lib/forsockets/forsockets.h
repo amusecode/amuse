@@ -1,5 +1,5 @@
 // public methods
-void forsockets_init(int32_t port);
+void forsockets_init(char *host, int32_t port);
 void forsockets_close();
 
 void forsockets_receive_integers(int32_t *integers, int32_t length);

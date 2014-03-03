@@ -36,15 +36,12 @@ class mpi(object):
     mpicc  = '@MPICC@'
     mpif95 = '@MPIFC@'
     mpiexec = '@MPIEXEC@'
-    mpiexec_enabled = '@WITH_MPIEXEC@'=='yes'
 
 class java(object):
     is_enabled = '@have_java@'=='yes'
     java = '@JAVA@'
     javac = '@JAVAC@'
-    javah = '@JAVAH@'
     jar = '@JAR@'
-    flags = '@JAVA_FLAGS@'
 
 class cuda(object):
     is_enabled   = '@WITH_CUDA@'=='yes'

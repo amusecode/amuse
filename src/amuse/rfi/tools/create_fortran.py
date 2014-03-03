@@ -368,6 +368,7 @@ RUN_LOOP_SOCKETS_STRING = """
       integer :: must_run_loop
       integer i, call_count, port
       character(len=32) :: port_string
+      character(kind=c_char, len=64) :: host
       logical (c_bool), allocatable, target :: c_booleans_in(:)
       logical (c_bool), allocatable, target :: c_booleans_out(:)
       
@@ -393,10 +394,14 @@ RUN_LOOP_SOCKETS_STRING = """
       ALLOCATE(string_sizes_out(max(1, max_call_count * MAX_STRINGS_OUT)))
       
       call get_command_argument(1, port_string)
+      call get_command_argument(2, host)
 
       read (port_string,*) port
+      !add a null character to the end of the string so c knows when the string ends
+      host = trim(host) // c_null_char
 
-      call forsockets_init(port)
+
+      call forsockets_init(host, port)
       
       must_run_loop = 1
       
@@ -567,6 +572,7 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
       integer :: must_run_loop
       integer i, call_count, port, rank, ioerror
       character(len=32) :: port_string
+      character(kind=c_char, len=64) :: host
       logical (c_bool), allocatable, target :: c_booleans_in(:)
       logical (c_bool), allocatable, target :: c_booleans_out(:)
 
@@ -596,10 +602,13 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
 
       if (rank .eq. 0) then
         call get_command_argument(1, port_string)
+        call get_command_argument(2, host)
 
         read (port_string,*) port
+        !add a null character to the end of the string so c knows when the string ends
+        host = trim(host) // c_null_char
 
-        call forsockets_init(port)
+        call forsockets_init(host, port)
       end if
       
       must_run_loop = 1
@@ -807,17 +816,16 @@ MAIN_STRING = """
 
   if (count .eq. 0) then
     call run_loop_mpi()
-  else
-    if (count .eq. 2) then
-      call get_command_argument(2, use_mpi_string)
+  else if (count .eq. 3) then
+    call get_command_argument(3, use_mpi_string)
       
-      if (use_mpi_string .eq. 'no_mpi') then
-        use_mpi = .false.
-      else if (use_mpi_string .eq. 'mpi') then
-        use_mpi = .true.
-      else
-        use_mpi = NEEDS_MPI
-      end if
+    if (use_mpi_string .eq. 'true') then
+      use_mpi = .true.
+    else if (use_mpi_string .eq. 'false') then
+      use_mpi = .false.
+    else
+      print*, 'fortran worker: need either true or false as mpi enable arguments, not', use_mpi_string
+      return
     end if
   
     if (use_mpi) then
@@ -825,6 +833,9 @@ MAIN_STRING = """
     else 
       call run_loop_sockets()
     end if
+  else
+    print*, 'fortran worker: need either 0 or 3 arguments, not', count
+    return
   end if
 """
         
@@ -1159,14 +1170,14 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 
             self.out + RUN_LOOP_MPI_STRING
         else:
-	    self.out + EMPTY_RUN_LOOP_MPI_STRING
+            self.out + EMPTY_RUN_LOOP_MPI_STRING
         if self.use_iso_c_bindings:
             self.out.n() + RUN_LOOP_SOCKETS_STRING
 
             if self.must_generate_mpi:
-		self.out.n() + RUN_LOOP_SOCKETS_MPI_STRING
-	    else:
-		self.out.n() + EMPTY_RUN_LOOP_SOCKETS_MPI_STRING
+                self.out.n() + RUN_LOOP_SOCKETS_MPI_STRING
+            else:
+                self.out.n() + EMPTY_RUN_LOOP_SOCKETS_MPI_STRING
         else:
             self.out.n() + EMPTY_RUN_LOOP_SOCKETS_STRING
             self.out.n() + EMPTY_RUN_LOOP_SOCKETS_MPI_STRING

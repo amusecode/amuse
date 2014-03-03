@@ -126,7 +126,7 @@ void forsockets_send_string(char *string, int32_t length) {
 	forsockets_send((void *) string, length * sizeof(char), socketfd);
 }
 
-void forsockets_init(int32_t port) {
+void forsockets_init(char *host, int32_t port) {
 	struct sockaddr_in serv_addr;
 	struct hostent *server;
 	int on = 1;
@@ -145,6 +145,8 @@ void forsockets_init(int32_t port) {
 
 //	fprintf(stderr, "initializing forsockets\n");
 //
+//	fprintf(stderr, "host: %s %d\n", host, strlen(host));
+//
 //	fprintf(stderr, "sizeof float = %u\n", sizeof(float));
 //	fprintf(stderr, "sizeof double = %u\n", sizeof(double));
 
@@ -155,7 +157,7 @@ void forsockets_init(int32_t port) {
 		exit(0);
 	}
 
-	server = gethostbyname("127.0.0.1");
+	server = gethostbyname(host);
 
 //	fprintf(stderr, "connecting...\n");
 

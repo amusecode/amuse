@@ -1029,9 +1029,9 @@ FOOTER_CODE_STRING = """
       code = new Code(codeDir, amuseRootDir);
   }
 
-  private void runSockets(int port) {
+  private void runSockets(int port, String host) {
         try {
-            SocketChannel channel = SocketChannel.open(new InetSocketAddress(port));
+            SocketChannel channel = SocketChannel.open(new InetSocketAddress(host, port));
             channel.socket().setTcpNoDelay(true);
 
             boolean keepRunning = true;
@@ -1089,8 +1089,9 @@ FOOTER_CODE_STRING = """
         
 
         int port = Integer.parseInt(arguments[0]);
+        String hostname = arguments[1];
 
-        new Worker(codeDir, amuseRootDir).runSockets(port);
+        new Worker(codeDir, amuseRootDir).runSockets(port, hostname);
     }    
 
 

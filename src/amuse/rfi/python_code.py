@@ -77,8 +77,8 @@ class PythonImplementation(object):
         parent.Disconnect()
         
     
-    def start_socket(self, port):
-        client_socket = socket.create_connection(('localhost', port,))
+    def start_socket(self, port, host):
+        client_socket = socket.create_connection((host, port))
         
         self.must_run = True
         while self.must_run:

@@ -437,7 +437,7 @@ void run_mpi(int argc, char *argv[]) {
 #endif
 }
 
-void run_sockets_mpi(int argc, char *argv[], int port) {
+void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
 #ifndef NOMPI
  bool must_run_loop = true;
   int max_call_count = 10;
@@ -626,7 +626,7 @@ void run_sockets_mpi(int argc, char *argv[], int port) {
 #endif
 }
 
-void run_sockets(int port) {
+void run_sockets(int port, char *host) {
   bool must_run_loop = true;
   int max_call_count = 10;
   struct sockaddr_in serv_addr;
@@ -795,34 +795,39 @@ void run_sockets(int port) {
  
 int main(int argc, char *argv[]) {
   int port;
-  bool use_mpi = NEEDS_MPI;
+  bool use_mpi;
+  char *host;
   
   for(int i = 0 ; i < argc; i++) {
-    //fprintf(stderr, "argument %d is %s\\n", i, argv[i]);
+    fprintf(stderr, "argument %d is %s\\n", i, argv[i]);
   }
 
   if (argc == 1) {
     run_mpi(argc, argv);
-  } else {
+  } else if (argc == 4) {
     port = atoi(argv[1]);
+    host = argv[2];
     
-    if (argc >= 3) {
-       if (strcmp(argv[2], "no_mpi") == 0) {
-         use_mpi = false;
-       } else if (strcmp(argv[2], "mpi") == 0) {
-         use_mpi = true;
-       } else if (strcmp(argv[2], "auto") == 0) {
-         use_mpi = NEEDS_MPI;
-       }
-
-    }
+    if (strcmp(argv[3], "true") == 0) {
+      use_mpi = true;
+    } else if (strcmp(argv[3], "false") == 0) {
+      use_mpi = false;
+    } else {
+      fprintf(stderr, "mpi enabled setting must be either 'true' or 'false', not %s\\n", argv[2]);
+      fprintf(stderr, "usage: %s [PORT HOST MPI_ENABLED]\\n", argv[0]);
+      exit(1);
+    }    
     
     if (use_mpi) {
-      run_sockets_mpi(argc, argv, port);
+      run_sockets_mpi(argc, argv, port, host);
     } else {
-      run_sockets(port);
+      run_sockets(port, host);
     }
-  }  
+  } else {
+    fprintf(stderr, "%s need either 0 or 4 arguments, not %d\\n", argv[0], argc);
+    fprintf(stderr, "usage: %s [PORT HOST MPI_ENABLED]\\n", argv[0]);
+    exit(1);
+  }
 
   return 0;
 }   

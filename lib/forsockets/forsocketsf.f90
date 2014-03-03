@@ -120,10 +120,11 @@ module FortranSocketsInterface
         end subroutine send_string
 
         subroutine forsockets_init &
-            (port) &
+            (host, port) &
             bind(c, name='forsockets_init')
             use iso_c_binding
             implicit none
+            character(kind=c_char) :: host(*)
             integer (c_int32_t), value :: port
         end subroutine forsockets_init
 

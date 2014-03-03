@@ -14,6 +14,7 @@ if __name__ == '__main__':
 	if len(sys.argv) > 1:
     
 	    portnumber = int(sys.argv[1])
+	    host = sys.argv[2]
 	    
 	    syspath = ({syspath})
     	    existing_syspath = set(sys.path)
@@ -32,7 +33,7 @@ if __name__ == '__main__':
     
     	    x = PythonImplementation(instance, {interface})
     	
-    	    x.start_socket(portnumber)
+    	    x.start_socket(portnumber, host)
 
 	else:
     
