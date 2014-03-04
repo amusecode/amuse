@@ -52,7 +52,7 @@ if [ -e ${APPFILE} ] ; then
 	echo "...File already downloaded";
 else
 	if which curl >/dev/null; then
-		curl -O ${URL} ;
+		curl -L -O ${URL} ;
 	else
 		wget ${URL};		
 	fi
@@ -62,7 +62,7 @@ if [ -e ${OPENSSLFILE} ] ; then
 	echo "...openssl file already downloaded";
 else
 	if which curl >/dev/null; then
-		curl -O ${OPENSSLURL} ;
+		curl -L -O ${OPENSSLURL} ;
 	else
 		wget ${OPENSSLURL};
 	fi
