@@ -1064,6 +1064,14 @@ def box_counting_dimension(particles):
     fit_coefficients = numpy.polyfit(x, y, 1)
     return fit_coefficients[0]
 
+def dynamical_timescale(particles, G=constants.G):
+    """
+    Compute the dynamical (i.e. free-fall) timescale of the particles set. This is 
+    the time it would take for a pressureless homogeneous sphere of this size and
+    average density to collapse.
+    """
+    return numpy.pi * (particles.total_radius()**3 / (8.0 * G * particles.total_mass())).sqrt()
+
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
@@ -1076,6 +1084,7 @@ AbstractParticleSet.add_global_function_attribute("total_radius", total_radius)
 AbstractParticleSet.add_global_function_attribute("total_momentum", total_momentum)
 AbstractParticleSet.add_global_function_attribute("total_angular_momentum", total_angular_momentum)
 AbstractParticleSet.add_global_function_attribute("moment_of_inertia", moment_of_inertia)
+AbstractParticleSet.add_global_function_attribute("dynamical_timescale", dynamical_timescale)
 
 AbstractParticleSet.add_global_function_attribute("potential_energy_in_field", potential_energy_in_field)
 
