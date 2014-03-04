@@ -182,12 +182,22 @@ public class WorkerProxy extends Thread {
             logger.debug(message);
         }
 
-        if (!amuseConfiguration.isMpiexecEnabled()) {
-            logger.info("not using mpiexec (as it is disabled)");
+        if (!amuseConfiguration.isMPIEnabled()) {
+            logger.info("not using mpiexec (as MPI is disabled in this AMUSE installation)");
             if (description.getNrOfWorkers() > 1) {
                 throw new DistributedAmuseException("multiple workers (" + description.getNrOfWorkers()
-                        + ") requested, but mpiexec disabled in this AMUSE installation");
+                        + ") requested, but MPI disabled in this AMUSE installation");
             }
+            
+            // executable and port options
+            builder.command().add(executable.toString());
+            builder.command().add(Integer.toString(localSocketPort));
+            
+            //worker will connect to localhost
+            builder.command().add("localhost");
+            
+            //mpi will _not_ be initialized in worker
+            builder.command().add("false");
         } else {
             // use mpiexec
             builder.command().add(amuseConfiguration.getMpiexec());
@@ -202,11 +212,23 @@ public class WorkerProxy extends Thread {
             // set number of processes to start
             builder.command().add("-n");
             builder.command().add((Integer.toString(description.getNrOfWorkers())));
+            
+            // executable and port options
+            builder.command().add(executable.toString());
+            builder.command().add(Integer.toString(localSocketPort));
+
+            //worker will connect to this machine (possibly from another machine)
+            
+            String localHostName = InetAddress.getLocalHost().getHostName();
+            
+            builder.command().add(localHostName);
+            
+            //mpi will be initialized in worker
+            builder.command().add("true");
         }
 
-        // executable and port options
-        builder.command().add(executable.toString());
-        builder.command().add(Integer.toString(localSocketPort));
+        
+        
 
         logger.info("starting worker process, command = " + builder.command());
 

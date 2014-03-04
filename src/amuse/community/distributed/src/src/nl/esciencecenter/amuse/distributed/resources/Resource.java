@@ -314,10 +314,8 @@ public class Resource {
         result.put("Scheduler type", schedulerType);
 
         result.put("Java path", configuration.getJava());
-        result.put("Mpiexec enabled", Boolean.toString(configuration.isMpiexecEnabled()));
-        if (configuration.isMpiexecEnabled()) {
-            result.put("Mpiexec", configuration.getMpiexec());
-        }
+        result.put("MPI enabled", Boolean.toString(configuration.isMPIEnabled()));
+        result.put("Mpiexec", configuration.getMpiexec());
 
         return result;
     }

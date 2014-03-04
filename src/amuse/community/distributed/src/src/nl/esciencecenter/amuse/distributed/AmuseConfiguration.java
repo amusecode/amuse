@@ -102,8 +102,8 @@ public class AmuseConfiguration {
         return amuseHome;
     }
 
-    public boolean isMpiexecEnabled() throws DistributedAmuseException {
-        return getConfigOption("MPIEXEC_ENABLED").equals("yes");
+    public boolean isMPIEnabled() throws DistributedAmuseException {
+        return getConfigOption("MPI_ENABLED").equals("yes");
     }
 
     public String getMpiexec() throws DistributedAmuseException {
