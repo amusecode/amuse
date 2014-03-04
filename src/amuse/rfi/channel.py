@@ -13,10 +13,9 @@ import time
 
 import socket
 import array
-
 import logging
 
-#logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 try:
     from mpi4py import rc
@@ -429,7 +428,7 @@ class MPIMessage(AbstractMessage):
             
             self.mpi_receive(comm, [sizes, MPI.INT])
             
-            logging.getLogger("channel").debug("got %d strings of size %s", total, sizes)
+            logger.debug("got %d strings of size %s", total, sizes)
             
             byte_size = 0
             for size in sizes:
@@ -444,7 +443,7 @@ class MPIMessage(AbstractMessage):
                 strings.append(data_bytes[begin:begin + size].tostring().decode('latin_1'))
                 begin = begin + size + 1
                 
-            logging.getLogger("channel").debug("got %d strings of size %s, data = %s", total, sizes, strings)
+            logger.debug("got %d strings of size %s, data = %s", total, sizes, strings)
             return strings
         else:
             return []
@@ -981,7 +980,7 @@ class MpiChannel(AbstractMessageChannel):
         AbstractMessageChannel.__init__(self, **options)
         
         # logging.basicConfig(level=logging.WARN)
-        # logging.getLogger("channel").setLevel(logging.DEBUG)
+        # logger.setLevel(logging.DEBUG)
         # logging.getLogger("code").setLevel(logging.DEBUG)
         
         self.ensure_mpi_initialized()
@@ -1264,7 +1263,7 @@ class MpiChannel(AbstractMessageChannel):
             raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
         
         if message.error:
-                logging.getLogger("channel").info("error message!")
+                logger.info("error message!")
                 raise exceptions.CodeException("Error in code: " + message.strings[0])
 #        if message.tag == -1:
 #            raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
@@ -1505,7 +1504,7 @@ class SocketMessage(AbstractMessage):
       
     def _receive_all(self, nbytes, thesocket):
 
-        # logging.getLogger("channel").debug("receiving %d bytes", nbytes)
+        # logger.debug("receiving %d bytes", nbytes)
         
         result = []
         
@@ -1518,13 +1517,13 @@ class SocketMessage(AbstractMessage):
             
             result.append(data_bytes)
             nbytes -= len(data_bytes)
-            # logging.getLogger("channel").debug("got %d bytes, result length = %d", len(data_bytes), len(result))
+            # logger.debug("got %d bytes, result length = %d", len(data_bytes), len(result))
             
         return "".join(result)
      
     def receive(self, socket):
         
-        # logging.getLogger("channel").debug("receiving message")
+        # logger.debug("receiving message")
         
         header_bytes = self._receive_all(40, socket)
 
@@ -1540,7 +1539,7 @@ class SocketMessage(AbstractMessage):
         
         header = numpy.copy(numpy.frombuffer(header_bytes, dtype="i", offset=0))
         
-        # logging.getLogger("channel").debug("receiving message with flags %s and header %s", flags, header)
+        # logger.debug("receiving message with flags %s and header %s", flags, header)
 
         # id of this call
         self.call_id = header[1]
@@ -1566,7 +1565,7 @@ class SocketMessage(AbstractMessage):
         self.booleans = self.receive_booleans(socket, number_of_booleans)
         self.strings = self.receive_strings(socket, number_of_strings)
         
-        # logging.getLogger("channel").debug("message received")
+        # logger.debug("message received")
         
     def receive_ints(self, socket, count):
         if count > 0:
@@ -1666,7 +1665,7 @@ class SocketMessage(AbstractMessage):
             len(self.strings),
         ], dtype='i')
         
-        # logging.getLogger("channel").debug("sending message with flags %s and header %s", flags, header)
+        # logger.debug("sending message with flags %s and header %s", flags, header)
         
         socket.sendall(flags.tostring())
         
@@ -1679,7 +1678,7 @@ class SocketMessage(AbstractMessage):
         self.send_booleans(socket, self.booleans)
         self.send_strings(socket, self.strings)
         
-        # logging.getLogger("channel").debug("message send")
+        # logger.debug("message send")
     
     def send_doubles(self, socket, array):
         if len(array) > 0:
@@ -1702,7 +1701,7 @@ class SocketMessage(AbstractMessage):
         
         for i in range(len(array)):
             
-            logging.getLogger("channel").info("sending string %s", array[i])
+            #logger.debug("sending string %s", array[i])
             
             utf8_string = array[i].encode('utf-8')
             header.append(len(utf8_string))
@@ -1730,7 +1729,7 @@ class SocketChannel(AbstractMessageChannel):
         
         #logging.getLogger().setLevel(logging.DEBUG)
         
-        logging.getLogger("channel").debug("initializing SocketChannel with options %s", options)
+        logger.debug("initializing SocketChannel with options %s", options)
        
         # self.name_of_the_worker = name_of_the_worker + "_sockets"
         self.name_of_the_worker = name_of_the_worker
@@ -1747,7 +1746,7 @@ class SocketChannel(AbstractMessageChannel):
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
             
-        logging.getLogger("channel").debug("full name of worker is %s", self.full_name_of_the_worker)
+        logger.debug("full name of worker is %s", self.full_name_of_the_worker)
         
         self._is_inuse = False
         self.socket = None
@@ -1761,7 +1760,7 @@ class SocketChannel(AbstractMessageChannel):
         #wait for the worker to connect. check if the process is still running once in a while
 
         for i in range(0, 60):
-            #logging.getLogger("channel").error("accepting connection")
+            #logger.debug("accepting connection")
 
             try:
                 server_socket.settimeout(1.0)
@@ -1770,7 +1769,7 @@ class SocketChannel(AbstractMessageChannel):
                 #update and read returncode
                 if process.poll() is not None:
                     raise exceptions.CodeException('could not connect to worker, worker process terminated')
-                #logging.getLogger("channel").error("worker not connecting, waiting...")
+                #logger.error("worker not connecting, waiting...")
                 
         raise exceptions.CodeException('worker still not started after 60 seconds')
 
@@ -1782,7 +1781,7 @@ class SocketChannel(AbstractMessageChannel):
         server_socket.settimeout(1.0)
         server_socket.listen(1)
         
-        # logging.getLogger("channel").debug("starting socket worker process")
+        # logger.debug("starting socket worker process")
     
         
         # set arguments to name of the worker, and port number we listen on 
@@ -1810,8 +1809,6 @@ class SocketChannel(AbstractMessageChannel):
         #start arguments with command        
         arguments.insert(0, command)
 
-        logging.getLogger("channel").info("suggestion to start process with command `%s`, arguments `%s`", command, arguments)
-
         if self.initialize_mpi:
             # prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
@@ -1835,9 +1832,9 @@ class SocketChannel(AbstractMessageChannel):
             #do not initialize MPI inside worker executable
             arguments.append('false')
 
-        logging.getLogger("channel").info("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
+        logger.debug("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
         self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=False)
-        logging.getLogger("channel").debug("waiting for connection from worker")
+        logger.debug("waiting for connection from worker")
 
              
         self.socket, address = self.accept_worker_connection(server_socket, self.process)
@@ -1848,9 +1845,9 @@ class SocketChannel(AbstractMessageChannel):
         
         server_socket.close()
         
-        # logging.getLogger("channel").debug("got connection from %s", address)
+        # logger.debug("got connection from %s", address)
         
-        # logging.getLogger("channel").info("worker %s initialized", self.name_of_the_worker)
+        # logger.info("worker %s initialized", self.name_of_the_worker)
         
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
@@ -1870,7 +1867,7 @@ class SocketChannel(AbstractMessageChannel):
         if (self.socket == None):
             return
         
-        logging.getLogger("channel").info("stopping socket worker %s", self.name_of_the_worker)
+        logger.debug("stopping socket worker %s", self.name_of_the_worker)
         self.socket.close()
         
         self.socket = None
@@ -1918,7 +1915,7 @@ class SocketChannel(AbstractMessageChannel):
         
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
-        # logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", id, tag, length)
+        # logger.info("sending message for call id %d, function %d, length %d", id, tag, length)
         
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
@@ -1946,7 +1943,7 @@ class SocketChannel(AbstractMessageChannel):
             raise exceptions.CodeException('Received reply for function id {0} but expected {1}'.format(message.function_id, function_id))
         
         if message.error:
-            logging.getLogger("channel").info("error message!")
+            logger.info("error message!")
             raise exceptions.CodeException("Error in code: " + message.strings[0])
 
         return message.to_result(handle_as_array)
@@ -1982,7 +1979,7 @@ class OutputHandler(threading.Thread):
         threading.Thread.__init__(self)
         self.stream = stream
 
-        logging.getLogger("channel").debug("output handler connecting to daemon at %d", port)
+        logger.debug("output handler connecting to daemon at %d", port)
         
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
@@ -2004,21 +2001,21 @@ class OutputHandler(threading.Thread):
         
         self.id = result.strings[0]
         
-        logging.getLogger("channel").debug("output handler successfully connected to daemon at %d", port)
+        logger.debug("output handler successfully connected to daemon at %d", port)
         self.daemon = True
         self.start()
         
     def run(self):
         
         while True:
-            # logging.getLogger("channel").debug("receiving data for output")
+            # logger.debug("receiving data for output")
             data = self.socket.recv(1024)
             
             if len(data) == 0:
-                # logging.getLogger("channel").debug("end of output", len(data))
+                # logger.debug("end of output", len(data))
                 return
             
-            # logging.getLogger("channel").debug("got %d bytes", len(data))
+            # logger.debug("got %d bytes", len(data))
             
             self.stream.write(data)
 
@@ -2047,9 +2044,9 @@ class DistributedChannel(AbstractMessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, **options):
         AbstractMessageChannel.__init__(self, **options)
         
-        #logging.getLogger("channel").setLevel(logging.INFO)
+        #logger.setLevel(logging.INFO)
         
-        logging.getLogger("channel").info("initializing DistributedChannel with options %s", options)
+        logger.info("initializing DistributedChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker
         self.interpreter_executable = interpreter_executable
@@ -2060,12 +2057,12 @@ class DistributedChannel(AbstractMessageChannel):
         if self.node_label == None:
             self.node_label = ""
             
-        logging.getLogger("channel").debug("number of workers is %d, number of nodes is %s", self.number_of_workers, self.number_of_nodes)
+        logger.debug("number of workers is %d, number of nodes is %s", self.number_of_workers, self.number_of_nodes)
         
         self.daemon_host = 'localhost'  # Distributed process always running on the local machine
         self.daemon_port = self.port  # Port number for the Distributed process
 
-        logging.getLogger("channel").debug("port is %d", self.daemon_port)
+        logger.debug("port is %d", self.daemon_port)
         
         self.id = 0
         
@@ -2088,8 +2085,8 @@ class DistributedChannel(AbstractMessageChannel):
             
         self.worker_dir = os.path.dirname(self.executable)
             
-        logging.getLogger("channel").debug("name of the worker is %s", self.name_of_the_worker)
-        logging.getLogger("channel").debug("worker dir is %s", self.worker_dir)
+        logger.debug("name of the worker is %s", self.name_of_the_worker)
+        logger.debug("worker dir is %s", self.worker_dir)
             
         self._is_inuse = False
       
@@ -2098,14 +2095,14 @@ class DistributedChannel(AbstractMessageChannel):
 #         if self.hostname != 'localhost':
 #             return
 #         
-#         logging.getLogger("channel").debug("hostname = %s, checking for worker", self.hostname)
+#         logger.debug("hostname = %s, checking for worker", self.hostname)
 #         
 #         AbstractMessageChannel.check_if_worker_is_up_to_date(self, object)
    
         pass
    
     def start(self):
-        logging.getLogger("channel").debug("connecting to daemon")
+        logger.debug("connecting to daemon")
         
         # if redirect = none, set output file to console stdout stream ID, otherwise make absolute
         if (self.redirect_stdout_file == 'none'):
@@ -2119,9 +2116,9 @@ class DistributedChannel(AbstractMessageChannel):
         else:
             self.redirect_stderr_file = os.path.abspath(self.redirect_stderr_file)
         
-        logging.getLogger("channel").debug("output send to = " + self.redirect_stdout_file)
+        logger.debug("output send to = " + self.redirect_stdout_file)
         
-        logging.getLogger("channel").debug("error send to = " + self.redirect_stderr_file)
+        logger.debug("error send to = " + self.redirect_stderr_file)
         
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -2142,20 +2139,20 @@ class DistributedChannel(AbstractMessageChannel):
 
         message.send(self.socket)
         
-        logging.getLogger("channel").info("waiting for worker %s to be initialized", self.name_of_the_worker)
+        logger.info("waiting for worker %s to be initialized", self.name_of_the_worker)
 
         result = SocketMessage()
         result.receive(self.socket)
         
         if result.error:
-            logging.getLogger("channel").error("Could not start worker: %s", result.strings[0])
+            logger.error("Could not start worker: %s", result.strings[0])
             self.stop()
             raise exceptions.CodeException("Could not start worker for " + self.name_of_the_worker + ": " + result.strings[0])
         
         self.remote_amuse_dir = result.strings[0]
         
-        logging.getLogger("channel").info("worker %s initialized", self.name_of_the_worker)
-        logging.getLogger("channel").info("worker remote amuse dir = %s", self.remote_amuse_dir)
+        logger.info("worker %s initialized", self.name_of_the_worker)
+        logger.info("worker remote amuse dir = %s", self.remote_amuse_dir)
         
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
@@ -2188,7 +2185,7 @@ class DistributedChannel(AbstractMessageChannel):
     
     def stop(self):
         if self.socket is not None:
-            logging.getLogger("channel").info("stopping worker %s", self.name_of_the_worker)
+            logger.info("stopping worker %s", self.name_of_the_worker)
             self.socket.close()
             self.socket = None
 
@@ -2219,7 +2216,7 @@ class DistributedChannel(AbstractMessageChannel):
         
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
-        logging.getLogger("channel").info("sending message for call id %d, function %d, length %d", call_id, function_id, call_count)
+        logger.debug("sending message for call id %d, function %d, length %d", call_id, function_id, call_count)
         
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
