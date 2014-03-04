@@ -1730,7 +1730,7 @@ class SocketChannel(AbstractMessageChannel):
         #logging.getLogger().setLevel(logging.DEBUG)
         
         logger.debug("initializing SocketChannel with options %s", options)
-       
+        
         # self.name_of_the_worker = name_of_the_worker + "_sockets"
         self.name_of_the_worker = name_of_the_worker
 
@@ -1781,8 +1781,10 @@ class SocketChannel(AbstractMessageChannel):
         server_socket.settimeout(1.0)
         server_socket.listen(1)
         
-        # logger.debug("starting socket worker process")
+        logger.debug("starting socket worker process, listening for worker connection on %s", server_socket.getsockname())
     
+        #this option set by CodeInterface
+        logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
         
         # set arguments to name of the worker, and port number we listen on 
     
@@ -1836,7 +1838,6 @@ class SocketChannel(AbstractMessageChannel):
         self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=False)
         logger.debug("waiting for connection from worker")
 
-             
         self.socket, address = self.accept_worker_connection(server_socket, self.process)
         
         self.socket.setblocking(1)
@@ -1857,11 +1858,6 @@ class SocketChannel(AbstractMessageChannel):
     @option(sections=("channel",))
     def hostname(self):
         return None
-    
-    @option(type="boolean", sections=("channel",))
-    def initialize_mpi(self):
-        """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
-        return config.mpi.is_enabled
        
     def stop(self):
         if (self.socket == None):

@@ -22,6 +22,7 @@ from amuse.rfi.channel import MultiprocessingMPIChannel
 from amuse.rfi.channel import DistributedChannel
 from amuse.rfi.channel import SocketChannel
 from amuse.rfi.channel import is_mpd_running
+from amuse import config
 
 CODE_LOG = logging.getLogger("code")
 if CODE_LOG.level == logging.NOTSET:
@@ -576,10 +577,11 @@ class CodeInterface(OptionalAttributes):
         self.channel = self.channel_factory(name_of_the_worker, type(self), interpreter_executable = interpreter_executable, **options)
         
         self._check_if_worker_is_up_to_date()
-        
+
         self.channel.redirect_stdout_file = self.redirection_filenames[0]
         self.channel.redirect_stderr_file = self.redirection_filenames[1]
         self.channel.polling_interval_in_milliseconds = self.polling_interval_in_milliseconds
+        self.channel.initialize_mpi = self.initialize_mpi
         
         self.channel.start()
         
@@ -644,6 +646,11 @@ class CodeInterface(OptionalAttributes):
     @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
+    
+    @option(type="boolean", sections=("channel",))
+    def initialize_mpi(self):
+        """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
+        return config.mpi.is_enabled
         
     @option(choices=("none","null","file"), sections=("channel",))
     def redirection(self):
