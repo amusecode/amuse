@@ -798,9 +798,9 @@ int main(int argc, char *argv[]) {
   bool use_mpi;
   char *host;
   
-  for(int i = 0 ; i < argc; i++) {
-    fprintf(stderr, "argument %d is %s\\n", i, argv[i]);
-  }
+  //for(int i = 0 ; i < argc; i++) {
+  //  fprintf(stderr, "argument %d is %s\\n", i, argv[i]);
+  //}
 
   if (argc == 1) {
     run_mpi(argc, argv);
