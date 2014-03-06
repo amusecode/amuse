@@ -306,6 +306,19 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
     
     @legacy_function
+    def get_brunt_vaisala_frequency_squared_at_zone():
+        """
+        Retrieve the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN, unit=INDEX)
+        function.addParameter('zone', dtype='int32', direction=function.IN, unit=NO_UNIT)
+        function.addParameter('brunt_N2', dtype='float64', direction=function.OUT, unit=units.s**-2)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def get_id_of_species():
         """
         Retrieve the chem_ID of the chemical abundance variable of the star.
@@ -928,6 +941,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_method(particle_set_name, 'get_cumulative_mass_profile')
             object.add_method(particle_set_name, 'get_luminosity_profile')
             object.add_method(particle_set_name, 'set_luminosity_profile')
+            object.add_method(particle_set_name, 'get_brunt_vaisala_frequency_squared_profile')
             object.add_method(particle_set_name, 'get_IDs_of_species')
             object.add_method(particle_set_name, 'get_masses_of_species')
             object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
@@ -1243,6 +1257,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.set_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
+    
+    def get_brunt_vaisala_frequency_squared_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying brunt-vaisala-frequency-squared profiles") 
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_brunt_vaisala_frequency_squared_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_IDs_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance IDs")

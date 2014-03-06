@@ -973,6 +973,61 @@
          endif
       end function
 
+! Return the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star
+      integer function get_brunt_vaisala_frequency_squared_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         use const_def, only: cgrav
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_brunt_vaisala_frequency_squared_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_brunt_vaisala_frequency_squared_at_zone = -2
+            else
+                AMUSE_value = brunt_N2(s% nz - AMUSE_zone)
+               get_brunt_vaisala_frequency_squared_at_zone = 0
+            endif
+         endif
+         
+         contains
+         
+         double precision function brunt_N2(k)
+            ! reminder: gradB(k) and gradT(k) are the values at face(k)
+            integer, intent(in) :: k
+            double precision :: T_face, rho_face, P_face, chiT_face, chiRho_face, grada_face
+            double precision :: g, tmp
+            g = cgrav*s% mstar*s% q(k)/s% r(k)**2
+            if (k == 1) then
+               rho_face = s% rho(1)
+               P_face = s% P(1)
+               T_face = s% T(1)
+               chiT_face = s% chiT(1)         
+               chiRho_face = s% chiRho(1)         
+               grada_face = s% grada(1)
+            else
+               tmp = 1.0d0 / (s% dq(k-1) + s% dq(k))
+               rho_face = (s%rho(k)*s%dq(k-1) + s%rho(k-1)*s%dq(k)) * tmp
+               P_face = (s%P(k)*s%dq(k-1) + s%P(k-1)*s%dq(k)) * tmp
+               T_face = (s%T(k)*s%dq(k-1) + s%T(k-1)*s%dq(k)) * tmp
+               chiT_face = (s%chiT(k)*s%dq(k-1) + s%chiT(k-1)*s%dq(k)) * tmp
+               chiRho_face = (s%chiRho(k)*s%dq(k-1) + s%chiRho(k-1)*s%dq(k)) * tmp
+               grada_face = (s%grada(k)*s%dq(k-1) + s%grada(k-1)*s%dq(k)) * tmp
+            endif
+            brunt_N2 = &
+               (g**2*rho_face/P_face)* &
+               (chiT_face/chiRho_face)* &
+               (grada_face - s% gradT(k) + s% gradB(k))
+         end function brunt_N2
+      end function
+
 ! Return the mean molecular weight per particle (ions + free electrons) at the specified zone/mesh-cell of the star
       integer function get_mu_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
