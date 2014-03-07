@@ -1,9 +1,12 @@
 #!/usr/bin/python
 import nose
+
+
+
 from amuse.lab import *
 
 from amuse.community.distributed.interface import DistributedAmuseInterface, DistributedAmuse
-from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
+from amuse.community.distributed.interface import Resource, Resources, Pilot, Pilots
 
 #Simple script to run nosetests using the distributed code. Should work for any existing amuse test.
 #This example only runs the tests on the local machine.
@@ -11,6 +14,9 @@ from amuse.community.distributed.interface import Resource, Resources, Reservati
 print "Setting up distributed code"
 instance = DistributedAmuse(redirection='none')
 instance.initialize_code()
+instance.parameters.debug_enabled = True
+instance.parameters.webinterface_port = 4556
+instance.commit_parameters()
 
 #Add some resources
 #resource = Resource()
@@ -23,18 +29,18 @@ print "Resources:"
 print instance.resources
 
 #Claim nodes on the resources. In this example simply the "local" machine
-reservation = Reservation()
-reservation.resource_name='local'
-reservation.node_count=1
-reservation.time= 2|units.hour
-reservation.slots_per_node=2
-reservation.node_label='local'
-instance.reservations.add_reservation(reservation)
-print "Reservations:"
-print instance.reservations
+pilot = Pilot()
+pilot.resource_name='local'
+pilot.node_count=1
+pilot.time= 2|units.hour
+pilot.slots_per_node=32
+pilot.node_label='local'
+instance.pilots.add_pilot(pilot)
+print "Pilots:"
+print instance.pilots
 
-print "Waiting for reservations"
-instance.wait_for_reservations()
+print "Waiting for pilots"
+instance.wait_for_pilots()
 
 print "Running tests"
 

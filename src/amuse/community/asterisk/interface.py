@@ -20,6 +20,11 @@ class AsteriskInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
     def channel_type(self):
         return 'sockets'
     
+    @option(type="boolean", sections=("channel",))
+    def initialize_mpi(self):
+        """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
+        return False
+    
     @legacy_function
     def new_star_particle():
         """

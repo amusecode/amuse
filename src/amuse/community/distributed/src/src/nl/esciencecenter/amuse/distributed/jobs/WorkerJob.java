@@ -29,7 +29,7 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
  * @author Niels Drost
  * 
  */
-public class WorkerJob extends Job {
+public class WorkerJob extends AmuseJob {
 
     private final WorkerDescription description;
 
@@ -37,8 +37,8 @@ public class WorkerJob extends Job {
     private ReceivePortIdentifier remoteWorkerPort = null;
 
     
-    public WorkerJob(WorkerDescription description, Ibis ibis, JobManager jobManager) throws DistributedAmuseException {
-        super(description.getNodeLabel(), description.getNrOfNodes(), ibis, jobManager);
+    public WorkerJob(WorkerDescription description, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
+        super(description.getNodeLabel(), description.getNrOfWorkers(), ibis, jobManager);
         this.description = description;
     }
 
@@ -50,29 +50,9 @@ public class WorkerJob extends Job {
         this.remoteWorkerPort = port;
     }
 
-    /**
-     * @return
-     */
-    private synchronized IbisIdentifier[] getTargetIbisIdentifiers() {
-        PilotNode [] target = getTarget();
-        
-        if (target == null) {
-            return null;
-        }
-
-        IbisIdentifier[] result = new IbisIdentifier[target.length];
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = target[i].getIbisIdentifier();
-        }
-
-        return result;
-    }
-
     @Override
     void writeJobDetails(WriteMessage writeMessage) throws IOException {
         writeMessage.writeObject(description);
-        writeMessage.writeObject(getTargetIbisIdentifiers());
     }
 
     @Override

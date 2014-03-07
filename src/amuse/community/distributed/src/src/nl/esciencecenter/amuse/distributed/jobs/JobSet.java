@@ -29,6 +29,8 @@ import java.util.Properties;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.pilots.PilotManager;
+import nl.esciencecenter.amuse.distributed.pilots.PilotSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,29 +38,30 @@ import org.slf4j.LoggerFactory;
 /**
  * @author Niels Drost
  */
-public class JobManager extends Thread {
+public class JobSet extends Thread {
 
-    private static final Logger logger = LoggerFactory.getLogger(JobManager.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobSet.class);
 
     public static final String PORT_NAME = "job.manager";
 
     private final Ibis ibis;
 
-    private final PilotNodes nodes;
-
     //all pending jobs.
-    private final LinkedList<Job> queue;
+    private final LinkedList<AmuseJob> queue;
 
     private final List<WorkerJob> workers;
     private final List<ScriptJob> scriptJobs;
     private final List<FunctionJob> functionJobs;
+    
+    private final PilotSet pilots;
 
-    public JobManager(String serverAddress, File tmpDir) throws DistributedAmuseException {
-        nodes = new PilotNodes(this);
+    public JobSet(String serverAddress, PilotSet pilots, File tmpDir) throws DistributedAmuseException {
         workers = new ArrayList<WorkerJob>();
         scriptJobs = new ArrayList<ScriptJob>();
         functionJobs = new ArrayList<FunctionJob>();
 
+        this.pilots = pilots;
+        
         try {
             Properties properties = new Properties();
             properties.put("ibis.server.address", serverAddress);
@@ -67,7 +70,7 @@ public class JobManager extends Thread {
             //properties.put("ibis.managementclient", "true");
             //properties.put("ibis.bytescount", "true");
 
-            ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, nodes,
+            ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, pilots.getStatusMonitor(),
                     DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
             //label this ibis as the master node by running an election with us as the only 
@@ -79,7 +82,7 @@ public class JobManager extends Thread {
             throw new DistributedAmuseException("failed to create ibis", e);
         }
 
-        queue = new LinkedList<Job>();
+        queue = new LinkedList<AmuseJob>();
 
         //start a thread to run the scheduling
         setName("Job Manager");
@@ -90,26 +93,21 @@ public class JobManager extends Thread {
     public Ibis getIbis() {
         return ibis;
     }
-
-  
-    public PilotNodes getNodes() {
-        return nodes;
-    }
     
-    public synchronized Job getJob(int jobID) throws DistributedAmuseException {
-        for (Job job : workers) {
+    public synchronized AmuseJob getJob(int jobID) throws DistributedAmuseException {
+        for (AmuseJob job : workers) {
             if (jobID == job.getJobID()) {
                 return job;
             }
         }
 
-        for (Job job : functionJobs) {
+        for (AmuseJob job : functionJobs) {
             if (jobID == job.getJobID()) {
                 return job;
             }
         }
 
-        for (Job job : scriptJobs) {
+        for (AmuseJob job : scriptJobs) {
             if (jobID == job.getJobID()) {
                 return job;
             }
@@ -262,21 +260,21 @@ public class JobManager extends Thread {
     public void end() {
         this.interrupt();
         
-        for (Job job : getWorkerJobs()) {
+        for (AmuseJob job : getWorkerJobs()) {
             try {
                 job.cancel();
             } catch (DistributedAmuseException e) {
                 logger.error("Failed to cancel job: " + job, e);
             }
         }
-        for (Job job : getScriptJobs()) {
+        for (AmuseJob job : getScriptJobs()) {
             try {
                 job.cancel();
             } catch (DistributedAmuseException e) {
                 logger.error("Failed to cancel job: " + job, e);
             }
         }
-        for (Job job : getFunctionJobs()) {
+        for (AmuseJob job : getFunctionJobs()) {
             try {
                 job.cancel();
             } catch (DistributedAmuseException e) {
@@ -290,8 +288,6 @@ public class JobManager extends Thread {
         } catch (IOException e) {
             logger.error("Failed to terminate ibis pool", e);
         }
-        
-        nodes.waitUntilEmpty(60000);
         
         try {
             ibis.end();
@@ -314,13 +310,13 @@ public class JobManager extends Thread {
     public synchronized void run() {
         while (true) {
             //find nodes for jobs to run on
-            Iterator<Job> iterator = queue.iterator();
+            Iterator<AmuseJob> iterator = queue.iterator();
             while (iterator.hasNext()) {
-                Job job = iterator.next();
+                AmuseJob job = iterator.next();
 
                 if (job.isPending()) {
-                    //find nodes to run this job on. Usually only a single node, but worker jobs may require multiple nodes.
-                    PilotNode[] target = nodes.getSuitableNodes(job);
+                    //find nodes to run this job on. Always only a single pilot, but may contain multiple nodes per pilot.
+                    PilotManager target = pilots.getSuitablePilot(job);
 
                     //If suitable nodes are found
                     if (target != null) {

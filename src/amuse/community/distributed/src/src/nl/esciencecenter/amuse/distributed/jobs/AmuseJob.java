@@ -25,13 +25,13 @@ import ibis.ipl.WriteMessage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.pilot.Pilot;
+import nl.esciencecenter.amuse.distributed.pilots.PilotManager;
+import nl.esciencecenter.amuse.distributed.remote.Pilot;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public abstract class Job extends Thread implements MessageUpcall {
+public abstract class AmuseJob extends Thread implements MessageUpcall {
 
     private enum State {
         PENDING, INITIALIZING, RUNNING, DONE, FAILED;
@@ -51,7 +51,7 @@ public abstract class Job extends Thread implements MessageUpcall {
     //how long we keep jobs which have finished.
     public static int TIMEOUT = 60000; //ms
 
-    private static final Logger logger = LoggerFactory.getLogger(Job.class);
+    private static final Logger logger = LoggerFactory.getLogger(AmuseJob.class);
 
     private static int nextID = 0;
 
@@ -61,28 +61,28 @@ public abstract class Job extends Thread implements MessageUpcall {
 
     private final Ibis ibis;
 
-    private final JobManager jobManager;
+    private final JobSet jobManager;
 
     private final ReceivePort resultReceivePort;
 
     private final int jobID;
 
-    private final String nodeLabel;
+    private final String label;
 
-    private final int numberOfNodes;
+    private final int numberOfSlots;
 
     private State state;
 
-    private PilotNode[] target = null;
+    private PilotManager target = null;
 
     private Exception error = null;
 
     //will never timeout until timeout set
     private long expirationDate = Long.MAX_VALUE;
 
-    public Job(String nodeLabel, int numberOfNodes, Ibis ibis, JobManager jobManager) throws DistributedAmuseException {
-        this.nodeLabel = nodeLabel;
-        this.numberOfNodes = numberOfNodes;
+    public AmuseJob(String label, int numberOfSlots, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
+        this.label = label;
+        this.numberOfSlots = numberOfSlots;
 
         this.ibis = ibis;
         this.jobManager = jobManager;
@@ -108,18 +108,18 @@ public abstract class Job extends Thread implements MessageUpcall {
         }
     }
 
-    public int getNumberOfNodes() {
-        return numberOfNodes;
+    public int getNumberOfSlots() {
+        return numberOfSlots;
     }
 
-    public String getNodeLabel() {
-        return nodeLabel;
+    public String getLabel() {
+        return label;
     }
 
     public int getJobID() {
         return jobID;
     }
-
+    
     private synchronized void setState(State newState) {
         state = newState;
         notifyAll();
@@ -198,7 +198,7 @@ public abstract class Job extends Thread implements MessageUpcall {
         return error;
     }
 
-    protected synchronized PilotNode[] getTarget() {
+    protected synchronized PilotManager getTarget() {
         return target;
     }
 
@@ -206,23 +206,21 @@ public abstract class Job extends Thread implements MessageUpcall {
      * @param target
      *            the nodes to run this job on.
      */
-    public synchronized void start(PilotNode[] target) {
+    public synchronized void start(PilotManager target) {
         if (!isPending()) {
             logger.error("Tried to run job {} that was not pending. Ignoring", this);
             return;
         }
 
-        logger.debug("Running job on target nodes {}", (Object) target);
+        logger.debug("Running job on target node {}", target);
 
         //set state to initializing
         setState(State.INITIALIZING);
 
         this.target = target;
 
-        //report that this job will be run on the target nodes
-        for (PilotNode node : target) {
-            node.addJob(this);
-        }
+        target.addAmuseJob(this);
+        
 
         //send out messages to the nodes in a separate thread (see run function below)
         setName("Job " + jobID + " starting thread");
@@ -236,7 +234,7 @@ public abstract class Job extends Thread implements MessageUpcall {
     @Override
     public void run() {
         try {
-            PilotNode master = target[0];
+            PilotManager master = target;
 
             logger.trace("sending start command for {} to pilot", this);
 
@@ -307,7 +305,7 @@ public abstract class Job extends Thread implements MessageUpcall {
         }
 
         try {
-            PilotNode master = target[0];
+            PilotManager master = target;
 
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
@@ -355,17 +353,17 @@ public abstract class Job extends Thread implements MessageUpcall {
 
     @Override
     public String toString() {
-        return "Job [jobID=" + jobID + ", label=" + getNodeLabel() + ", state=" + getJobState() + ", target="
-                + Arrays.toString(target) + ", error=" + error + ", expirationDate=" + expirationDate + "]";
+        return "Job [jobID=" + jobID + ", label=" + getLabel() + ", state=" + getJobState() + ", target="
+                + target + ", error=" + error + ", expirationDate=" + expirationDate + "]";
     }
 
     public Map<String, String> getStatusMap() {
         Map<String, String> result = new LinkedHashMap<String, String>();
 
         result.put("ID", Integer.toString(jobID));
-        result.put("Label", getNodeLabel());
+        result.put("Label", getLabel());
         result.put("State", getJobState().toString());
-        result.put("Target", Arrays.toString(target));
+        result.put("Target", target.toString());
 
         Exception error = getError();
 
@@ -384,5 +382,6 @@ public abstract class Job extends Thread implements MessageUpcall {
     abstract void readJobStatus(ReadMessage readMessage) throws ClassNotFoundException, IOException;
 
     abstract void readJobResult(ReadMessage readMessage) throws ClassNotFoundException, IOException;
+
 
 }

@@ -21,9 +21,9 @@ import ibis.ipl.PortType;
 import java.io.File;
 import java.util.UUID;
 
-import nl.esciencecenter.amuse.distributed.jobs.JobManager;
-import nl.esciencecenter.amuse.distributed.reservations.ReservationManager;
-import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
+import nl.esciencecenter.amuse.distributed.jobs.JobSet;
+import nl.esciencecenter.amuse.distributed.pilots.PilotSet;
+import nl.esciencecenter.amuse.distributed.resources.ResourceSet;
 import nl.esciencecenter.amuse.distributed.web.WebInterface;
 import nl.esciencecenter.amuse.distributed.workers.WorkerConnectionServer;
 import nl.esciencecenter.xenon.Xenon;
@@ -55,16 +55,16 @@ public class DistributedAmuse {
 
     private static final Logger logger = LoggerFactory.getLogger(DistributedAmuse.class);
 
-    //resources potentially available for starting reservations on. Also starts hub on each resource, if required.
-    private final ResourceManager resourceManager;
+    //resources potentially available for starting pilots on. Also starts hub on each resource, if required.
+    private final ResourceSet resources;
 
-    //starts pilots on resources. 
-    private final ReservationManager reservationManager;
+    //pilots on resources available to run jobs 
+    private final PilotSet pilots;
 
-    //takes care of job queue, communicates with remote pilots
-    private final JobManager jobManager;
+    //jobs running on some pilot running some worker or script.
+    private final JobSet jobs;
 
-    //talks to AMUSE, handling any worker requests and messages
+    //talks to AMUSE, handling any requests to start workers.
     private final WorkerConnectionServer workerConnectionServer;
 
     //monitoring web interface
@@ -118,13 +118,13 @@ public class DistributedAmuse {
 
         tmpDir = createTmpDir();
 
-        resourceManager = new ResourceManager(xenon, tmpDir, amuseRootDir);
+        resources = new ResourceSet(xenon, tmpDir, amuseRootDir);
 
-        jobManager = new JobManager(resourceManager.getIplServerAddress(), tmpDir);
+        pilots = new PilotSet(xenon, resources, tmpDir, debug);
 
-        reservationManager = new ReservationManager(xenon, resourceManager, jobManager.getNodes(), tmpDir, debug);
+        jobs = new JobSet(resources.getIplServerAddress(), pilots, tmpDir);
 
-        workerConnectionServer = new WorkerConnectionServer(jobManager, tmpDir);
+        workerConnectionServer = new WorkerConnectionServer(jobs, tmpDir);
 
         try {
             webInterface = new WebInterface(this, webInterfacePort);
@@ -138,16 +138,16 @@ public class DistributedAmuse {
         return debug;
     }
 
-    public ResourceManager resourceManager() {
-        return resourceManager;
+    public ResourceSet resources() {
+        return resources;
     }
 
-    public ReservationManager reservationManager() {
-        return reservationManager;
+    public PilotSet pilots() {
+        return pilots;
     }
 
-    public JobManager jobManager() {
-        return jobManager;
+    public JobSet jobs() {
+        return jobs;
     }
 
     public WebInterface webInterface() {
@@ -192,17 +192,17 @@ public class DistributedAmuse {
         workerConnectionServer.end();
 
         logger.debug("Ending job manager");
-        jobManager.end();
-
-        logger.debug("Ending registry");
-        resourceManager.endRegistry();
-
+        jobs.end();
+        
+        //wait until all pilots have quit
+        resources.endRegistry();
+        
         logger.debug("Ending reservation manager");
-        reservationManager.end();
+        pilots.end();
 
         logger.debug("Ending resource manager");
-        resourceManager.end();
-
+        resources.end();
+        
         logger.debug("Ending Xenon");
         XenonFactory.endAll();
         logger.info("Distributed Amuse ended.");

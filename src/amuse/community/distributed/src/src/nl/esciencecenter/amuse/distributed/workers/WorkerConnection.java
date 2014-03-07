@@ -30,8 +30,8 @@ import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.jobs.Job;
-import nl.esciencecenter.amuse.distributed.jobs.JobManager;
+import nl.esciencecenter.amuse.distributed.jobs.AmuseJob;
+import nl.esciencecenter.amuse.distributed.jobs.JobSet;
 import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
 
 import org.slf4j.Logger;
@@ -53,7 +53,7 @@ public class WorkerConnection extends Thread {
 
     private final SocketChannel socket;
 
-    private final JobManager jobManager;
+    private final JobSet jobManager;
 
     private final String id;
 
@@ -65,14 +65,14 @@ public class WorkerConnection extends Thread {
 
     private final WorkerDescription workerDescription;
 
-    private final Job job;
+    private final AmuseJob job;
 
     /*
      * Initializes worker by reading settings from amuse, deploying the worker
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    WorkerConnection(SocketChannel socket, Ibis ibis, JobManager jobManager) throws Exception {
+    WorkerConnection(SocketChannel socket, Ibis ibis, JobSet jobManager) throws Exception {
         this.socket = socket;
         this.jobManager = jobManager;
 

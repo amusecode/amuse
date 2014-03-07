@@ -27,10 +27,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.jobs.Job;
+import nl.esciencecenter.amuse.distributed.jobs.AmuseJob;
 import nl.esciencecenter.amuse.distributed.jobs.WorkerJob;
-import nl.esciencecenter.amuse.distributed.reservations.Reservation;
-import nl.esciencecenter.amuse.distributed.resources.Resource;
+import nl.esciencecenter.amuse.distributed.pilots.PilotManager;
+import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -114,16 +114,16 @@ public class WebInterface extends AbstractHandler {
                 writeOverview(response.getWriter());
             } else if (target.equals("/resources")) {
                 writeResourceTable(response.getWriter());
-            } else if (target.equals("/reservations")) {
-                writeReservationTable(response.getWriter());
+            } else if (target.equals("/pilots")) {
+                writePilotTable(response.getWriter());
             } else if (target.equals("/jobs")) {
                 writeJobTable(response.getWriter());
             } else if (target.startsWith("/resources/")) {
                 String resourceID = target.substring("/resources/".length());
                 writeResourceDetailsResponse(response.getWriter(), resourceID);
-            } else if (target.startsWith("/reservations/")) {
-                String reservationID = target.substring("/reservations/".length());
-                writeReservationDetailsResponse(response.getWriter(), reservationID);
+            } else if (target.startsWith("/pilots/")) {
+                String pilotID = target.substring("/pilots/".length());
+                writePilotDetailsResponse(response.getWriter(), pilotID);
             } else if (target.startsWith("/jobs/")) {
                 String jobID = target.substring("/jobs/".length());
                 writeJobDetailsResponse(response.getWriter(), jobID);
@@ -160,8 +160,8 @@ public class WebInterface extends AbstractHandler {
         writer.println("<h2>Resources</h2>");
         writeResourceTable(writer);
 
-        writer.println("<h2>Reservations</h2>");
-        writeReservationTable(writer);
+        writer.println("<h2>Pilots</h2>");
+        writePilotTable(writer);
 
         writer.println("<h2>Jobs</h2>");
         writeJobTable(writer);
@@ -172,22 +172,22 @@ public class WebInterface extends AbstractHandler {
         writer.println("<table border=\"1px\">");
 
         writer.println("<tr><th>ID</th><th>Name</th><th>Hostname</th><th>Type</th></tr>");
-        for (Resource resource : distributedAmuse.resourceManager().getResources()) {
+        for (ResourceManager resource : distributedAmuse.resources().getResources()) {
             writer.printf("<tr><td><a href=/resources/%s>%s</a></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", resource.getId(),
                     resource.getId(), resource.getName(), resource.getLocation(), resource.getSchedulerType());
         }
         writer.println("</table>");
     }
 
-    private void writeReservationTable(PrintWriter writer) throws DistributedAmuseException {
+    private void writePilotTable(PrintWriter writer) throws DistributedAmuseException {
         writer.println("<table border=\"1px\">");
 
         writer.println("<tr><th>ID</th><th>Node Label</th><th>Resource Name</th><th>Node Count</th><th>Status</th></tr>");
-        for (Reservation reservation : distributedAmuse.reservationManager().getReservations()) {
-            String state = distributedAmuse.reservationManager().getState(reservation);
-            writer.printf("<tr><td><a href=/reservations/%s>%s</a></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",
-                    reservation.getID(), reservation.getID(), reservation.getNodeLabel(), reservation.getResourceName(),
-                    reservation.getNodeCount(), state);
+        for (PilotManager pilot : distributedAmuse.pilots().getPilots()) {
+            String state = pilot.getStateString();
+            writer.printf("<tr><td><a href=/pilots/%s>%s</a></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",
+                    pilot.getAmuseID(), pilot.getAmuseID(), pilot.getNodeLabel(), pilot.getResourceName(),
+                    pilot.getNodeCount(), state);
         }
         writer.println("</table>");
     }
@@ -196,9 +196,9 @@ public class WebInterface extends AbstractHandler {
         writer.println("<table border=\"1px\">");
 
         writer.println("<tr><th>ID</th><th>Job State</th><th>Job Type</th><th>Job Label</th></tr>");
-        for (WorkerJob job : distributedAmuse.jobManager().getWorkerJobs()) {
+        for (WorkerJob job : distributedAmuse.jobs().getWorkerJobs()) {
             writer.printf("<tr><td><a href=/jobs/%d>%d</a></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", job.getJobID(),
-                    job.getJobID(), job.getJobState(), "worker", job.getNodeLabel());
+                    job.getJobID(), job.getJobState(), "worker", job.getLabel());
         }
         writer.println("</table>");
     }
@@ -206,32 +206,32 @@ public class WebInterface extends AbstractHandler {
     private void writeResourceDetailsResponse(PrintWriter writer, String resourceID) throws DistributedAmuseException {
         int id = Integer.parseInt(resourceID);
 
-        Resource resource = distributedAmuse.resourceManager().getResource(id);
+        ResourceManager resource = distributedAmuse.resources().getResource(id);
 
         writer.println("<h1>Resource " + resourceID + "</h1>");
         writeMapAsTable(resource.getStatusMap(), writer);
     }
 
-    private void writeReservationDetailsResponse(PrintWriter writer, String reservationID) throws DistributedAmuseException {
-        int id = Integer.parseInt(reservationID);
+    private void writePilotDetailsResponse(PrintWriter writer, String pilotID) throws DistributedAmuseException {
+        int id = Integer.parseInt(pilotID);
 
-        Reservation reservation = distributedAmuse.reservationManager().getReservation(id);
+        PilotManager pilot = distributedAmuse.pilots().getPilot(id);
 
-        writer.println("<h1>Reservation " + reservationID + "</h1>");
+        writer.println("<h1>Pilot " + pilotID + "</h1>");
 
-        Map<String, String> statusMap = reservation.getStatusMap();
+        Map<String, String> statusMap = pilot.getStatusMap();
 
-        String resourceID = statusMap.get("Resource");
+        String resourceID = statusMap.get("Resource ID");
 
         //make resource value into a link
-        statusMap.put("Resource", "<a href=../resources/" + resourceID + ">" + resourceID + "</a>");
+        statusMap.put("Resource ID", "<a href=../resources/" + resourceID + ">" + resourceID + "</a>");
 
         writeMapAsTable(statusMap, writer);
 
         writer.println("<h3> Standard output</h3>");
         writer.println("<p>");
         try {
-            for (String line : reservation.getStdout()) {
+            for (String line : pilot.getStdout()) {
                 writer.println(line + "<br>");
             }
         } catch (DistributedAmuseException e) {
@@ -246,7 +246,7 @@ public class WebInterface extends AbstractHandler {
         writer.println("<h3> Standard error</h3>");
         writer.println("<p>");
         try {
-            for (String line : reservation.getStderr()) {
+            for (String line : pilot.getStderr()) {
                 writer.println(line + "<br>");
             }
         } catch (DistributedAmuseException e) {
@@ -263,7 +263,7 @@ public class WebInterface extends AbstractHandler {
     private void writeJobDetailsResponse(PrintWriter writer, String jobID) throws DistributedAmuseException {
         int id = Integer.parseInt(jobID);
 
-        Job job = distributedAmuse.jobManager().getJob(id);
+        AmuseJob job = distributedAmuse.jobs().getJob(id);
         writer.println("<h1>Job " + jobID + "</h1>");
         writeMapAsTable(job.getStatusMap(), writer);
     }

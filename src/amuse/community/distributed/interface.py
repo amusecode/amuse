@@ -11,7 +11,7 @@ from amuse.units import units
 from amuse.support import options
 
 from distributed_datamodel import Resources, Resource
-from distributed_datamodel import Reservations, Reservation
+from distributed_datamodel import Pilots, Pilot
 
 logger = logging.getLogger(__name__)
 
@@ -198,13 +198,13 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     @legacy_function
-    def new_reservation():
+    def new_pilot():
         """
         Reserve one or more nodes for later use by the simulation.
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('reservation_id', dtype='int32', direction=function.OUT)
+        function.addParameter('pilot_id', dtype='int32', direction=function.OUT)
         function.addParameter("resource_name", dtype='string', direction=function.IN)
         function.addParameter("queue_name", dtype='string', direction=function.IN, default=[""])
         function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
@@ -220,13 +220,13 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
  
 
     @legacy_function
-    def get_reservation_state():
+    def get_pilot_state():
         """
-        Get all attributes of a reservation
+        Get all attributes of a pilot
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('reservation_id', dtype='int32', direction=function.IN)
+        function.addParameter('pilot_id', dtype='int32', direction=function.IN)
         function.addParameter("resource_name", dtype='string', direction=function.OUT)
         function.addParameter("queue_name", dtype='string', direction=function.OUT)
         function.addParameter("node_count", dtype='int32', direction=function.OUT)
@@ -242,31 +242,31 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
 
     
     @legacy_function
-    def get_reservation_status():
+    def get_pilot_status():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('resource_id', dtype='int32', direction=function.IN)
+        function.addParameter('pilot_id', dtype='int32', direction=function.IN)
         function.addParameter('status', dtype='string', direction=function.OUT)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
     
     @legacy_function
-    def delete_reservation():
+    def delete_pilot():
         """
-        Delete a reservation.
+        Delete (stop) a pilot.
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('reservation_id', dtype='int32', direction=function.IN)
+        function.addParameter('pilot_id', dtype='int32', direction=function.IN)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
     
     @legacy_function
-    def wait_for_reservations():
+    def wait_for_pilots():
         """
-        Wait until all reservations are started, and all nodes are available to run jobs and/or workers
+        Wait until all pilots are started, and all nodes are available to run jobs and/or workers
         """
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
@@ -352,7 +352,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
-    
+     
     @legacy_function
     def get_function_job_state():
         """
@@ -366,9 +366,9 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
-    
-    
-    
+     
+     
+     
     @legacy_function
     def get_function_job_status():
         """
@@ -381,7 +381,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
-    
+     
     @legacy_function
     def get_function_job_result():
         """
@@ -394,7 +394,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
-    
+     
     @legacy_function
     def delete_function_job():
         """
@@ -406,7 +406,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
-    
+     
     @legacy_function
     def get_worker_state():
         """
@@ -419,7 +419,6 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('executable', dtype='string', direction=function.OUT)
         function.addParameter("node_label", dtype='string', direction=function.OUT)
         function.addParameter("worker_count", dtype='int32', direction=function.OUT)
-        function.addParameter("node_count", dtype='int32', direction=function.OUT)
         function.addParameter("thread_count", dtype='int32', direction=function.OUT)
         function.addParameter("status", dtype='string', direction=function.OUT)
         
@@ -431,7 +430,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     @legacy_function
     def get_worker_status():
         """
-        Get all attributes of a pickled job
+        Get all attributes of a worker
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
@@ -475,7 +474,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     @legacy_function
     def end_all():
         """
-        Stop all jobs, resources and reservations
+        Stop all jobs, resources and pilots
         """
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
@@ -538,10 +537,10 @@ class DistributedAmuse(CommonCode):
         
         
         object.add_method('RUN', 'new_resource')
-        object.add_method('RUN', 'new_reservation')
+        object.add_method('RUN', 'new_pilot')
         object.add_method('RUN', 'get_resource_state')
-        object.add_method('RUN', 'get_reservation_state')
-        object.add_method('RUN', 'get_reservation_status')
+        object.add_method('RUN', 'get_pilot_state')
+        object.add_method('RUN', 'get_pilot_status')
         object.add_method('RUN', 'get_script_job_state')
         object.add_method('RUN', 'get_script_job_status')
         object.add_method('RUN', 'get_function_job_state')
@@ -577,7 +576,7 @@ class DistributedAmuse(CommonCode):
 
     
     def define_particle_sets(self, object):
-        object.define_super_set('items', ['resources', 'reservations', 'script_jobs', 'function_jobs', '_workers'])
+        object.define_super_set('items', ['resources', 'pilots', 'script_jobs', 'function_jobs', '_workers'])
         
         #resources
         object.define_set('resources', 'resource_id')
@@ -586,13 +585,13 @@ class DistributedAmuse(CommonCode):
         object.add_getter('resources', 'get_resource_state')
         object.mapping_from_name_to_set_definition['resources'].particles_factory = Resources
         
-        #reservations
-        object.define_set('reservations', 'reservation_id')
-        object.set_new('reservations', 'new_reservation')
-        object.set_delete('reservations', 'delete_reservation')
-        object.add_getter('reservations', 'get_reservation_state')
-        object.add_getter('reservations', 'get_reservation_status', names = ('status',))
-        object.mapping_from_name_to_set_definition['reservations'].particles_factory = Reservations
+        #pilots
+        object.define_set('pilots', 'pilot_id')
+        object.set_new('pilots', 'new_pilot')
+        object.set_delete('pilots', 'delete_pilot')
+        object.add_getter('pilots', 'get_pilot_state')
+        object.add_getter('pilots', 'get_pilot_status', names = ('status',))
+        object.mapping_from_name_to_set_definition['pilots'].particles_factory = Pilots
         
         #script jobs
         object.define_set('script_jobs', 'job_id')

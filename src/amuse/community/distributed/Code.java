@@ -19,8 +19,8 @@ import nl.esciencecenter.amuse.distributed.jobs.FunctionJob;
 import nl.esciencecenter.amuse.distributed.jobs.ScriptJob;
 import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
 import nl.esciencecenter.amuse.distributed.jobs.WorkerJob;
-import nl.esciencecenter.amuse.distributed.reservations.Reservation;
-import nl.esciencecenter.amuse.distributed.resources.Resource;
+import nl.esciencecenter.amuse.distributed.pilots.PilotManager;
+import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,7 +139,7 @@ public class Code implements CodeInterface {
         try {
             for (int i = 0; i < count; i++) {
                 boolean startHub = integerToBoolean(start_hub[i]);
-                Resource resource = distributedAmuse.resourceManager().newResource(name[i], location[i], gateway[i],
+                ResourceManager resource = distributedAmuse.resources().newResource(name[i], location[i], gateway[i],
                         amuse_dir[i], scheduler_type[i], startHub, boot_command[i]);
                 resource_id[i] = resource.getId();
             }
@@ -172,7 +172,7 @@ public class Code implements CodeInterface {
             String[] amuse_dir, String[] scheduler_type, int[] start_hub, String[] boot_command, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                Resource resource = distributedAmuse.resourceManager().getResource(index_of_the_resource[i]);
+                ResourceManager resource = distributedAmuse.resources().getResource(index_of_the_resource[i]);
 
                 name[i] = resource.getName();
                 location[i] = resource.getLocation();
@@ -193,8 +193,8 @@ public class Code implements CodeInterface {
     public int delete_resource(int[] index_of_the_resource, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                Resource resource = distributedAmuse.resourceManager().getResource(index_of_the_resource[i]);
-                distributedAmuse.resourceManager().deleteResource(resource);
+                ResourceManager resource = distributedAmuse.resources().getResource(index_of_the_resource[i]);
+                distributedAmuse.resources().deleteResource(resource);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -204,38 +204,38 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int new_reservation(int[] reservation_id, String[] resource_name, String[] queue_name, int[] node_count,
+    public int new_pilot(int[] pilot_id, String[] resource_name, String[] queue_name, int[] node_count,
             int[] time_minutes, int[] slots, String[] node_label, String[] options, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                Reservation result = distributedAmuse.reservationManager().newReservation(resource_name[i], queue_name[i],
+                PilotManager result = distributedAmuse.pilots().newPilot(resource_name[i], queue_name[i],
                         node_count[i], time_minutes[i], slots[i], node_label[i], options[i]);
 
-                reservation_id[i] = result.getID();
+                pilot_id[i] = result.getAmuseID();
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            reportError("Error on creating new reservation: " + e, e);
+            reportError("Error on creating new pilot: " + e, e);
             return -10;
         }
 
     }
 
     @Override
-    public int get_reservation_state(int[] reservation_id, String[] resource_name, String[] queue_name, int[] node_count,
+    public int get_pilot_state(int[] pilot_id, String[] resource_name, String[] queue_name, int[] node_count,
             int[] time, int[] slots_per_node, String[] node_label, String[] status, String[] options, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                Reservation reservation = distributedAmuse.reservationManager().getReservation(reservation_id[i]);
+                PilotManager pilot = distributedAmuse.pilots().getPilot(pilot_id[i]);
 
-                resource_name[i] = reservation.getResourceName();
-                queue_name[i] = reservation.getQueueName();
-                node_count[i] = reservation.getNodeCount();
-                time[i] = reservation.getTimeMinutes();
-                slots_per_node[i] = reservation.getSlotsPerNode();
-                node_label[i] = reservation.getNodeLabel();
-                options[i] = reservation.getOptions();
-                status[i] = distributedAmuse.reservationManager().getState(reservation);
+                resource_name[i] = pilot.getResourceName();
+                queue_name[i] = pilot.getQueueName();
+                node_count[i] = pilot.getNodeCount();
+                time[i] = pilot.getTimeMinutes();
+                slots_per_node[i] = pilot.getSlotsPerNode();
+                node_label[i] = pilot.getNodeLabel();
+                options[i] = pilot.getOptions();
+                status[i] = pilot.getStateString();
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -245,12 +245,12 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_reservation_status(int[] reservation_id, String[] status, int count) {
+    public int get_pilot_status(int[] pilot_id, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                Reservation reservation = distributedAmuse.reservationManager().getReservation(reservation_id[i]);
+                PilotManager pilot = distributedAmuse.pilots().getPilot(pilot_id[i]);
 
-                status[i] = distributedAmuse.reservationManager().getState(reservation);
+                status[i] = pilot.getStateString();
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -260,25 +260,25 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int delete_reservation(int[] reservation_id, int count) {
+    public int delete_pilot(int[] pilot_id, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                distributedAmuse.reservationManager().deleteReservation(reservation_id[i]);
+                distributedAmuse.pilots().deletePilot(pilot_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            reportError("Error on deleting reservation: " + e, e);
+            reportError("Error on deleting pilot: " + e, e);
             return -10;
         }
     }
 
     @Override
-    public int wait_for_reservations() {
+    public int wait_for_pilots() {
         try {
-            distributedAmuse.reservationManager().waitForAllReservations();
+            distributedAmuse.pilots().waitForAllPilots();
             return 0;
         } catch (DistributedAmuseException e) {
-            reportError("Error on waiting for reservations: " + e, e);
+            reportError("Error on waiting for pilots: " + e, e);
             return -10;
         }
     }
@@ -289,7 +289,7 @@ public class Code implements CodeInterface {
         try {
             for (int i = 0; i < count; i++) {
                 boolean useCodeCache = re_use_code_files[i] != 0;
-                ScriptJob job = distributedAmuse.jobManager().submitScriptJob(script_name[i], arguments[i], script_dir[i],
+                ScriptJob job = distributedAmuse.jobs().submitScriptJob(script_name[i], arguments[i], script_dir[i],
                         node_label[i], useCodeCache);
                 job_id[i] = job.getJobID();
             }
@@ -306,12 +306,12 @@ public class Code implements CodeInterface {
             String[] node_label, int[] re_use_code_files, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                ScriptJob job = distributedAmuse.jobManager().getScriptJob(job_id[i]);
+                ScriptJob job = distributedAmuse.jobs().getScriptJob(job_id[i]);
 
                 script_name[i] = job.getScriptName();
                 arguments[i] = job.getArguments();
                 script_dir[i] = job.getScriptDir();
-                node_label[i] = job.getNodeLabel();
+                node_label[i] = job.getLabel();
                 re_use_code_files[i] = booleanToInteger(job.useCodeCache());
 
                 status[i] = job.getJobState();
@@ -327,7 +327,7 @@ public class Code implements CodeInterface {
     public int get_script_job_status(int[] job_id, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                ScriptJob job = distributedAmuse.jobManager().getScriptJob(job_id[i]);
+                ScriptJob job = distributedAmuse.jobs().getScriptJob(job_id[i]);
 
                 status[i] = job.getJobState();
             }
@@ -343,15 +343,15 @@ public class Code implements CodeInterface {
         try {
             for (int i = 0; i < count; i++) {
                 //first cancel job
-                ScriptJob job = distributedAmuse.jobManager().getScriptJob(job_id[i]);
+                ScriptJob job = distributedAmuse.jobs().getScriptJob(job_id[i]);
                 job.cancel();
 
                 //then delete from manager list
-                distributedAmuse.jobManager().removeScriptJob(job_id[i]);
+                distributedAmuse.jobs().removeScriptJob(job_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
-            reportError("Error on deleting reservation: " + e, e);
+            reportError("Error on deleting pilot: " + e, e);
             return -10;
         }
     }
@@ -359,7 +359,7 @@ public class Code implements CodeInterface {
     @Override
     public int wait_for_script_jobs() {
         try {
-            distributedAmuse.jobManager().waitForScriptJobs();
+            distributedAmuse.jobs().waitForScriptJobs();
             return 0;
         } catch (DistributedAmuseException e) {
             reportError("Error on waiting for jobs: " + e, e);
@@ -372,7 +372,7 @@ public class Code implements CodeInterface {
     public int submit_function_job(int[] job_id, String[] function, String[] arguments, String[] node_label, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                FunctionJob job = distributedAmuse.jobManager().submitFunctionJob(function[i], arguments[i], node_label[i]);
+                FunctionJob job = distributedAmuse.jobs().submitFunctionJob(function[i], arguments[i], node_label[i]);
 
                 job_id[i] = job.getJobID();
             }
@@ -388,7 +388,7 @@ public class Code implements CodeInterface {
     public int get_function_job_status(int[] job_id, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                FunctionJob job = distributedAmuse.jobManager().getFunctionJob(job_id[i]);
+                FunctionJob job = distributedAmuse.jobs().getFunctionJob(job_id[i]);
 
                 status[i] = job.getJobState();
             }
@@ -403,9 +403,9 @@ public class Code implements CodeInterface {
     public int get_function_job_state(int[] job_id, String[] node_label, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                FunctionJob job = distributedAmuse.jobManager().getFunctionJob(job_id[i]);
+                FunctionJob job = distributedAmuse.jobs().getFunctionJob(job_id[i]);
 
-                node_label[i] = job.getNodeLabel();
+                node_label[i] = job.getLabel();
                 status[i] = job.getJobState();
             }
             return 0;
@@ -419,7 +419,7 @@ public class Code implements CodeInterface {
     public int get_function_job_result(int[] job_id, String[] result, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                FunctionJob job = distributedAmuse.jobManager().getFunctionJob(job_id[i]);
+                FunctionJob job = distributedAmuse.jobs().getFunctionJob(job_id[i]);
                 result[i] = job.getResult();
             }
             return 0;
@@ -434,11 +434,11 @@ public class Code implements CodeInterface {
         try {
             for (int i = 0; i < count; i++) {
                 //first cancel job
-                FunctionJob job = distributedAmuse.jobManager().getFunctionJob(job_id[i]);
+                FunctionJob job = distributedAmuse.jobs().getFunctionJob(job_id[i]);
                 job.cancel();
 
                 //then delete from manager list
-                distributedAmuse.jobManager().removeFunctionJob(job_id[i]);
+                distributedAmuse.jobs().removeFunctionJob(job_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -448,7 +448,7 @@ public class Code implements CodeInterface {
     }
 
     public int get_number_of_workers(int[] number_of_workers) {
-        number_of_workers[0] = distributedAmuse.jobManager().getWorkerJobCount();
+        number_of_workers[0] = distributedAmuse.jobs().getWorkerJobCount();
         return 0;
     }
 
@@ -462,13 +462,13 @@ public class Code implements CodeInterface {
      * @return
      */
     public int get_worker_ids(int[] index, int[] id_of_the_worker, int count) {
-        if (distributedAmuse.jobManager().getWorkerJobCount() != count) {
+        if (distributedAmuse.jobs().getWorkerJobCount() != count) {
             reportError("Error on getting worker IDs: number of indexes requested " + count
-                    + " does not match number of workers " + distributedAmuse.jobManager().getWorkerJobCount(), null);
+                    + " does not match number of workers " + distributedAmuse.jobs().getWorkerJobCount(), null);
             return -10;
         }
 
-        int[] workerIDs = distributedAmuse.jobManager().getWorkerIDs();
+        int[] workerIDs = distributedAmuse.jobs().getWorkerIDs();
         for (int i = 0; i < count; i++) {
             id_of_the_worker[i] = workerIDs[i];
         }
@@ -479,7 +479,7 @@ public class Code implements CodeInterface {
     public int get_worker_status(int[] worker_id, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                WorkerJob worker = distributedAmuse.jobManager().getWorkerJob(worker_id[i]);
+                WorkerJob worker = distributedAmuse.jobs().getWorkerJob(worker_id[i]);
 
                 status[i] = worker.getJobState();
             }
@@ -491,18 +491,17 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_worker_state(int[] worker_id, String[] executable, String[] node_label, int[] worker_count, int[] node_count,
+    public int get_worker_state(int[] worker_id, String[] executable, String[] node_label, int[] worker_count, 
             int[] thread_count, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                WorkerJob worker = distributedAmuse.jobManager().getWorkerJob(worker_id[i]);
+                WorkerJob worker = distributedAmuse.jobs().getWorkerJob(worker_id[i]);
 
                 WorkerDescription description = worker.getDescription();
 
                 executable[i] = description.getExecutable();
                 node_label[i] = description.getNodeLabel();
                 worker_count[i] = description.getNrOfWorkers();
-                node_count[i] = description.getNrOfNodes();
                 thread_count[i] = description.getNrOfThreads();
 
                 status[i] = worker.getJobState();

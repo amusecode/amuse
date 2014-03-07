@@ -27,9 +27,9 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
  * @author Niels Drost
  *
  */
-public class FunctionJob extends Job {
+public class FunctionJob extends AmuseJob {
     
-    public FunctionJob(String function, String arguments, String nodeLabel, Ibis ibis, JobManager jobManager) throws DistributedAmuseException {
+    public FunctionJob(String function, String arguments, String nodeLabel, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
         super(nodeLabel, 1, ibis, jobManager);
     }
 

@@ -10,7 +10,7 @@ from amuse.units import quantities
 from amuse.community.hermite0.interface import Hermite
 
 from amuse.community.distributed.interface import DistributedAmuseInterface, DistributedAmuse
-from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
+from amuse.community.distributed.interface import Resource, Resources, Pilot, Pilots
 
 from matplotlib import pyplot
 
@@ -21,10 +21,12 @@ import webbrowser
 def start_distributed_amuse():
     print "Creating distributed amuse"
     distributed_amuse = DistributedAmuse(redirection='none')
-    distributed_amuse.initialize_code()
+    distributed_amuse.parameters.debug_enabled = True
+    distributed_amuse.parameters.webinterface_port = 4556
+    distributed_amuse.commit_parameters()
 
     #open the address of the webinterface in a brower window
-    #webbrowser.open(distributed_amuse.get_webinterface_url())
+    webbrowser.open(distributed_amuse.get_webinterface_url())
 
     #Add some resources
     #resource = Resource()
@@ -37,19 +39,19 @@ def start_distributed_amuse():
     print distributed_amuse.resources
 
     #Claim nodes on the resources. In this example simply the "local" machine
-    reservation = Reservation()
-    reservation.resource_name='local'
-    reservation.node_count=1
-    reservation.time= 2|units.hour
-    reservation.slots_per_node=22
-    reservation.node_label='local'
-    distributed_amuse.reservations.add_reservation(reservation)
+    pilot = Pilot()
+    pilot.resource_name='local'
+    pilot.node_count=1
+    pilot.time= 2|units.hour
+    pilot.slots_per_node=22
+    pilot.node_label='local'
+    distributed_amuse.pilots.add_pilot(pilot)
 
-    print "Reservations:"
-    print distributed_amuse.reservations
+    print "Pilots:"
+    print distributed_amuse.pilots
 
-    print "Waiting for reservations"
-    distributed_amuse.wait_for_reservations()
+    print "Waiting for pilots"
+    distributed_amuse.wait_for_pilots()
 
     return distributed_amuse
 

@@ -47,7 +47,7 @@ class Resource(Particle):
 
 
 
-class Reservations(Particles):
+class Pilots(Particles):
     
     def __getitem__(self, index):
 
@@ -57,7 +57,7 @@ class Reservations(Particles):
         if hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:
-            return Reservation(keys, self, index, self._get_version())
+            return Pilot(keys, self, index, self._get_version())
     
     def __iter__(self):
         keys =  self.get_all_keys_in_store()
@@ -65,21 +65,21 @@ class Reservations(Particles):
         version = self._get_version()
 
         for i in range(len(keys)):
-            yield Reservation(keys[i], self,  indices[i], version)
+            yield Pilot(keys[i], self,  indices[i], version)
     
-    add_reservation = Particles.add_particle
-    add_reservations = Particles.add_particles
+    add_pilot = Particles.add_particle
+    add_pilots = Particles.add_particles
 
 
-class Reservation(Particle):
+class Pilot(Particle):
     
     def __init__(self, key = None, particles_set = None, set_index = -1, set_version = -1, **keyword_arguments):
         if particles_set is None:
             if key == None:
-                particles_set = Reservations(1)
+                particles_set = Pilots(1)
                 key = particles_set.get_all_keys_in_store()[0]
             else:
-                particles_set = Reservations(1, keys = [key])
+                particles_set = Pilots(1, keys = [key])
 
         object.__setattr__(self, "key", key)
         object.__setattr__(self, "particles_set", particles_set)

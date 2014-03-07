@@ -27,7 +27,7 @@ import java.nio.channels.SocketChannel;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.jobs.JobManager;
+import nl.esciencecenter.amuse.distributed.jobs.JobSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +55,9 @@ public class WorkerConnectionServer extends Thread {
 
     private final Ibis ibis;
 
-    private final JobManager scheduler;
+    private final JobSet scheduler;
 
-    public WorkerConnectionServer(JobManager scheduler, File tmpDir) throws DistributedAmuseException {
+    public WorkerConnectionServer(JobSet scheduler, File tmpDir) throws DistributedAmuseException {
         this.scheduler = scheduler;
         this.ibis = scheduler.getIbis();
 

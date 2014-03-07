@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.pilot;
+package nl.esciencecenter.amuse.distributed.remote;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
@@ -79,70 +79,64 @@ public class WorkerProxy extends Thread {
 
     private Exception error = null;
 
-    /**
-     * List of all hosts used, to give to MPI. Contains duplicates for all machines running multiple worker processes
-     */
-    private static String[] createHostnameList(WorkerDescription description, IbisIdentifier[] nodes)
-            throws DistributedAmuseException {
-        String[] hostnames = new String[description.getNrOfWorkers()];
-        int next = 0;
+//    /**
+//     * List of all hosts used, to give to MPI. Contains duplicates for all machines running multiple worker processes
+//     */
+//    private static String[] createHostnameList(WorkerDescription description, IbisIdentifier[] nodes)
+//            throws DistributedAmuseException {
+//        String[] hostnames = new String[description.getNrOfWorkers()];
+//        int next = 0;
+//
+//        int nrOfProcesses = description.getNrOfWorkers();
+//        int nrOfNodes = description.getNrOfNodes();
+//
+//        if (nrOfNodes != nodes.length) {
+//            throw new DistributedAmuseException("number of nodes used (" + nodes.length
+//                    + ") not equals to number of nodes required (" + nrOfNodes + ")");
+//        }
+//
+//        hostnames = new String[nrOfProcesses];
+//
+//        for (int i = 0; i < nodes.length; i++) {
+//            String tags[] = nodes[i].tagAsString().split(",");
+//            if (tags.length != 4) {
+//                throw new DistributedAmuseException("Cannot get tag from node identifier: " + nodes[i].tagAsString());
+//            }
+//            String hostname = tags[3];
+//
+//            // number of processes per node
+//            int ppn = nrOfProcesses / nrOfNodes;
+//            // nrOfWorkers not dividable by nrOfNodes. see if this is
+//            // a "remainder" node with an extra worker
+//            if (i < nrOfProcesses % nrOfNodes) {
+//                ppn++;
+//            }
+//            for (int j = 0; j < ppn; j++) {
+//                hostnames[next] = hostname;
+//                next++;
+//            }
+//        }
+//        if (next != nrOfProcesses) {
+//            logger.error("error in setting hostnames. List is of length " + next + " but should be " + nrOfProcesses);
+//        }
+//        
+//        return hostnames;
+//    }
 
-        int nrOfProcesses = description.getNrOfWorkers();
-        int nrOfNodes = description.getNrOfNodes();
-
-        if (nrOfNodes != nodes.length) {
-            throw new DistributedAmuseException("number of nodes used (" + nodes.length
-                    + ") not equals to number of nodes required (" + nrOfNodes + ")");
-        }
-
-        hostnames = new String[nrOfProcesses];
-
-        if (nodes.length == 1) {
-            //just us, job done.
-            for (int i = 0; i < nrOfProcesses; i++) {
-                hostnames[i] = "localhost";
-            }
-        } else {
-            for (int i = 0; i < nodes.length; i++) {
-                String tags[] = nodes[i].tagAsString().split(",");
-                if (tags.length != 4) {
-                    throw new DistributedAmuseException("Cannot get tag from node identifier: " + nodes[i].tagAsString());
-                }
-                String hostname = tags[3];
-
-                // number of processes per node
-                int ppn = nrOfProcesses / nrOfNodes;
-                // nrOfWorkers not dividable by nrOfNodes. see if this is
-                // a "remainder" node with an extra worker
-                if (i < nrOfProcesses % nrOfNodes) {
-                    ppn++;
-                }
-                for (int j = 0; j < ppn; j++) {
-                    hostnames[next] = hostname;
-                    next++;
-                }
-            }
-            if (next != nrOfProcesses) {
-                logger.error("error in setting hostnames. List is of length " + next + " but should be " + nrOfProcesses);
-            }
-        }
-        return hostnames;
-    }
-
-    private static File createHostFile(String[] hostnames, File tempDirectory) throws IOException {
-        File result = File.createTempFile("host", "file", tempDirectory).getAbsoluteFile();
-
-        FileWriter hostFileWriter = new FileWriter(result);
-        for (String hostname : hostnames) {
-            hostFileWriter.write(hostname + "\n");
-        }
-        hostFileWriter.flush();
-        hostFileWriter.close();
-
-        logger.info("host file = " + result);
-
-        return result;
-    }
+//    private static File createHostFile(String[] hostnames, File tempDirectory) throws IOException {
+//        File result = File.createTempFile("host", "file", tempDirectory).getAbsoluteFile();
+//
+//        FileWriter hostFileWriter = new FileWriter(result);
+//        for (String hostname : hostnames) {
+//            hostFileWriter.write(hostname + "\n");
+//        }
+//        hostFileWriter.flush();
+//        hostFileWriter.close();
+//
+//        logger.info("host file = " + result);
+//
+//        return result;
+//    }
 
     private static Process startWorkerProcess(WorkerDescription description, AmuseConfiguration amuseConfiguration,
             int localSocketPort, String[] hostnames, File tempDirectory) throws Exception {
@@ -161,26 +155,26 @@ public class WorkerProxy extends Thread {
         // make sure there is an "output" directory for a code to put output in
         //new File(workingDirectory, "output").mkdir();
 
-        for (String key : builder.environment().keySet().toArray(new String[0])) {
-            for (String blacklistedKey : ENVIRONMENT_BLACKLIST) {
-                if (key.startsWith(blacklistedKey)) {
-                    builder.environment().remove(key);
-                    logger.info("removed " + key + " from environment");
-                }
-            }
-        }
+//        for (String key : builder.environment().keySet().toArray(new String[0])) {
+//            for (String blacklistedKey : ENVIRONMENT_BLACKLIST) {
+//                if (key.startsWith(blacklistedKey)) {
+//                    builder.environment().remove(key);
+//                    logger.info("removed " + key + " from environment");
+//                }
+//            }
+//        }
 
         if (description.getNrOfThreads() > 0) {
             builder.environment().put("OMP_NUM_THREADS", Integer.toString(description.getNrOfThreads()));
         }
 
-        if (logger.isDebugEnabled()) {
-            String message = "Environment for worker " + description.getID() + " (executable = " + executable + "):\n";
-            for (Map.Entry<String, String> entry : builder.environment().entrySet()) {
-                message += entry.getKey() + " = " + entry.getValue() + "\n";
-            }
-            logger.debug(message);
-        }
+//        if (logger.isDebugEnabled()) {
+//            String message = "Environment for worker " + description.getID() + " (executable = " + executable + "):\n";
+//            for (Map.Entry<String, String> entry : builder.environment().entrySet()) {
+//                message += entry.getKey() + " = " + entry.getValue() + "\n";
+//            }
+//            logger.debug(message);
+//        }
 
         if (!amuseConfiguration.isMPIEnabled()) {
             logger.info("not using mpiexec (as MPI is disabled in this AMUSE installation)");
@@ -188,47 +182,44 @@ public class WorkerProxy extends Thread {
                 throw new DistributedAmuseException("multiple workers (" + description.getNrOfWorkers()
                         + ") requested, but MPI disabled in this AMUSE installation");
             }
-            
+
             // executable and port options
             builder.command().add(executable.toString());
             builder.command().add(Integer.toString(localSocketPort));
-            
+
             //worker will connect to localhost
             builder.command().add("localhost");
-            
+
             //mpi will _not_ be initialized in worker
             builder.command().add("false");
         } else {
             // use mpiexec
             builder.command().add(amuseConfiguration.getMpiexec());
 
-            // set machine file, if needed
-            if (description.getNrOfNodes() != 1) {
-                File hostFile = createHostFile(hostnames, tempDirectory);
-                builder.command().add("-machinefile");
-                builder.command().add(hostFile.getAbsolutePath());
-            }
+//            // set machine file, if needed
+//            if (description.getNrOfNodes() != 1) {
+//                File hostFile = createHostFile(hostnames, tempDirectory);
+//                builder.command().add("-machinefile");
+//                builder.command().add(hostFile.getAbsolutePath());
+//            }
 
             // set number of processes to start
             builder.command().add("-n");
             builder.command().add((Integer.toString(description.getNrOfWorkers())));
-            
+
             // executable and port options
             builder.command().add(executable.toString());
             builder.command().add(Integer.toString(localSocketPort));
 
             //worker will connect to this machine (possibly from another machine)
-            
+
             String localHostName = InetAddress.getLocalHost().getHostName();
-            
+
             builder.command().add(localHostName);
-            
+
             //mpi will be initialized in worker
             builder.command().add("true");
         }
-
-        
-        
 
         logger.info("starting worker process, command = " + builder.command());
 
@@ -282,13 +273,14 @@ public class WorkerProxy extends Thread {
     /**
      * Starts a worker proxy. Make take a while.
      */
-    public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, IbisIdentifier[] nodes, Ibis ibis,
+    public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, Ibis ibis,
             File tempDirectory, int jobID) throws Exception {
         this.description = description;
         this.amuseConfiguration = amuseConfiguration;
         this.ibis = ibis;
 
-        String[] hostnames = createHostnameList(description, nodes);
+        //String[] hostnames = createHostnameList(description, nodes);
+        String[] hostnames = null;
 
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
         serverSocket.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
@@ -422,21 +414,20 @@ public class WorkerProxy extends Thread {
                         + resultMessage.getError());
 
                 logger.debug("result: " + resultMessage);
-                
+
                 WriteMessage writeMessage = sendPort.newMessage();
 
                 resultMessage.writeTo(writeMessage);
-                
+
                 writeMessage.writeLong(finish - start);
 
                 writeMessage.finish();
 
                 logger.debug("Done performing call for function " + functionID);
-                
+
                 if (logger.isDebugEnabled()) {
                     logger.debug("Call took " + (finish - start) + " ms");
                 }
-
 
             }
         } catch (Exception e) {

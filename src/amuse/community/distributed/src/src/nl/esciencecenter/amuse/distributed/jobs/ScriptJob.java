@@ -27,10 +27,10 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
  * @author Niels Drost
  *
  */
-public class ScriptJob extends Job {
+public class ScriptJob extends AmuseJob {
 
    
-    public ScriptJob(String scriptName, String arguments, String scriptDir, String nodeLabel, boolean reUseCodeFiles, Ibis ibis, JobManager jobManager)
+    public ScriptJob(String scriptName, String arguments, String scriptDir, String nodeLabel, boolean reUseCodeFiles, Ibis ibis, JobSet jobManager)
             throws DistributedAmuseException {
         super(nodeLabel, 1, ibis, jobManager);
     }

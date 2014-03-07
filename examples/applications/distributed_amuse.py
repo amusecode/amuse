@@ -3,7 +3,7 @@ import sys
 import webbrowser
 from amuse.lab import *
 from amuse.community.distributed.interface import DistributedAmuseInterface, DistributedAmuse
-from amuse.community.distributed.interface import Resource, Resources, Reservation, Reservations
+from amuse.community.distributed.interface import Resource, Resources, Pilot, Pilots
 
 #Example on how to use the distributed code. This example should run most (if not all) existing scripts.
 #This example only uses local resources to run on. Add remote resources to get it to do something interesting.
@@ -30,19 +30,19 @@ print "Resources:"
 print instance.resources
 
 #Claim nodes on the resources. In this example simply the "local" machine
-reservation = Reservation()
-reservation.resource_name='local'
-reservation.node_count=1
-reservation.time= 2|units.hour
-reservation.slots_per_node=22
-reservation.node_label='local'
-instance.reservations.add_reservation(reservation)
+pilot = Pilot()
+pilot.resource_name='local'
+pilot.node_count=1
+pilot.time= 2|units.hour
+pilot.slots_per_node=22
+pilot.node_label='local'
+instance.pilots.add_pilot(pilot)
 
-print "Reservations:"
-print instance.reservations
+print "Pilots:"
+print instance.pilots
 
-print "Waiting for reservations"
-instance.wait_for_reservations()
+print "Waiting for pilots"
+instance.wait_for_pilots()
 
 print "Running script"
 

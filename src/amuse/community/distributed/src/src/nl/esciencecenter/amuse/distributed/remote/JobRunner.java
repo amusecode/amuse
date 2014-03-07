@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.esciencecenter.amuse.distributed.pilot;
+package nl.esciencecenter.amuse.distributed.remote;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
@@ -54,7 +54,7 @@ public class JobRunner extends Thread {
      * @param resultPort 
      * @throws Exception
      */
-    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, IbisIdentifier[] nodes, ReceivePortIdentifier resultPort, Ibis ibis, File tmpDir)
+    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, ReceivePortIdentifier resultPort, Ibis ibis, File tmpDir)
             throws Exception {
         this.jobID = jobID;
         this.resultPort = resultPort;
@@ -62,7 +62,7 @@ public class JobRunner extends Thread {
         
         logger.debug("Starting job runner....");
 
-        workerProxy = new WorkerProxy(description, configuration, nodes, ibis, tmpDir, jobID);
+        workerProxy = new WorkerProxy(description, configuration, ibis, tmpDir, jobID);
 
         setName("Job Runner for " + jobID);
     }

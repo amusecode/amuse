@@ -35,7 +35,7 @@ public class Hub {
 
     private final String address;
 
-    private static JavaJobDescription createJobDesciption(Resource resource, String[] hubAddresses)
+    private static JavaJobDescription createJobDesciption(ResourceManager resource, String[] hubAddresses)
             throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
 
@@ -77,7 +77,7 @@ public class Hub {
         return result;
     }
 
-    public Hub(Resource resource, AmuseConfiguration config, String[] hubs, Xenon xenon) throws DistributedAmuseException {
+    public Hub(ResourceManager resource, AmuseConfiguration config, String[] hubs, Xenon xenon) throws DistributedAmuseException {
         try {
             resourceName = resource.getName();
             
