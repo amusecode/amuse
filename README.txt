@@ -4,7 +4,7 @@ different domains.
 
 AMUSE documentation and software can be found at:
 
-    http://castle.strw.leidenuniv.nl/trac/amuse
+    http://www.amusecode.org
 
 
 Getting Started
@@ -28,13 +28,12 @@ In Ubuntu you can setup the environment with (as root):
 
     apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
 
-
 In Fedora you can setup the environment with (as root)::
 
     yum groupinstall "Development Tools" "Development Libraries"
     
-In OS X you can install fink or the Apple Developer Tools. 
-The Apple Developer Tools do not include a gfortran compiler, 
+In OS X you can install fink or  macports and the Apple Developer 
+Tools. The Apple Developer Tools do not include a gfortran compiler, 
 you can find one at:
 
     http://r.research.att.com/tools/
@@ -88,9 +87,9 @@ export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 Building AMUSE
 ==============
 
-All modules can be build with a configure and make command. Start make
-from the main amuse directory (directory this README file lives in).
-The main task of the configure script is to check if the
+All modules can be build with a configure and make command. Start 
+make from the main amuse directory (directory this README file lives 
+in). The main task of the configure script is to check if the 
 prerequisite packages have been installed.
 
 1. Configure the source code 
@@ -104,10 +103,9 @@ prerequisite packages have been installed.
 
 Starting the MPI daemon process
 ===============================
-For MPICH2, you need to start the mpd daemon process. If run for
-the firt time, the damon will complain about a .mpd.conf file. 
-If so, please create the .mpd.conf file as instructed by the 
-mpd command.
+For MPICH2, you need to start the mpd daemon process. If run for the 
+firt time, the daemon will complain about a .mpd.conf file. If so, 
+please create the .mpd.conf file as instructed by the mpd command.
 
 1. Start the mpd daemon
 
