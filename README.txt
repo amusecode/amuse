@@ -10,11 +10,11 @@ AMUSE documentation and software can be found at:
 Getting Started
 ===============
 
-To build amuse you need a working build environment and
-install some prerequisites. This documet contains 
-the quick install instructions, if these fail please look
-at the detailed descriptions of the installation 
-procedure in the documents in the 'doc/install' directory. 
+To build amuse you need a working build environment and install some 
+prerequisites. This documet contains the quick install instructions, 
+if these fail please look at the detailed descriptions of the 
+installation procedure in the documents in the 'doc/install' 
+directory. 
 
 Compilers
 =========
