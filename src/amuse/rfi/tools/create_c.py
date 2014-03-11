@@ -668,6 +668,8 @@ void run_sockets(int port, char *host) {
   serv_addr.sin_port = htons(port);
   
   if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+    fprintf(stderr, "cannot connect socket to host %s, port %d\\n", host, port);
+
     perror("ERROR connecting socket");
     //fprintf(stderr, "cannot connect socket\\n");
     exit(1);

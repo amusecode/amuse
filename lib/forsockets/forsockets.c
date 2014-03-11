@@ -32,7 +32,8 @@ void forsockets_send(void *buffer, int32_t length, int32_t file_descriptor) {
 #endif
 
 		if (written == -1) {
-			fprintf(stderr, "could not write data\n");
+			perror("could not write data");
+			//fprintf(stderr, "could not write data\n");
 			exit(1);
 		}
 
@@ -57,7 +58,8 @@ void forsockets_receive(void *buffer, int32_t length, int32_t file_descriptor) {
 //		fprintf(stderr, "received %d bytes, " + bytes_read);
 
 		if (bytes_read == -1) {
-			fprintf(stderr, "could not read data\n");
+			perror("could not read data");
+			//fprintf(stderr, "could not read data\n");
 			exit(1);
 		}
 
@@ -153,7 +155,8 @@ void forsockets_init(char *host, int32_t port) {
 	socketfd = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (socketfd < 0) {
-		fprintf(stderr, "cannot open socket\n");
+		perror("could not open socket");
+		//fprintf(stderr, "cannot open socket\n");
 		exit(0);
 	}
 
@@ -168,7 +171,8 @@ void forsockets_init(char *host, int32_t port) {
 	serv_addr.sin_port = htons(port);
 	if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))
 			< 0) {
-		fprintf(stderr, "cannot connect socket\n");
+	    fprintf(stderr, "cannot connect socket to host %s, port %d\n", host, port);
+		perror("could not connect socket");
 		exit(0);
 
 	}
