@@ -139,7 +139,7 @@ public class WorkerProxy extends Thread {
 //    }
 
     private static Process startWorkerProcess(WorkerDescription description, AmuseConfiguration amuseConfiguration,
-            int localSocketPort, String[] hostnames, File tempDirectory) throws Exception {
+            int localSocketPort, File tempDirectory) throws Exception {
         File executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getExecutable());
 
         if (!executable.canExecute()) {
@@ -279,22 +279,22 @@ public class WorkerProxy extends Thread {
         this.amuseConfiguration = amuseConfiguration;
         this.ibis = ibis;
 
-        //String[] hostnames = createHostnameList(description, nodes);
-        String[] hostnames = null;
-
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
-        serverSocket.bind(new InetSocketAddress(InetAddress.getByName(null), 0), 10);
+        //serverSocket.bind(new InetSocketAddress(InetAddress.getByName(null), 0), 10);
+        serverSocket.bind(null);
         serverSocket.configureBlocking(true);
         //serverSocket.socket().setSoTimeout(ACCEPT_TIMEOUT);
+        
+        logger.debug("Bound server socket to " + serverSocket.socket().getLocalSocketAddress());
 
         //create process
-        process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(), hostnames,
+        process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(),
                 tempDirectory);
 
         //attach streams
         out = new OutputForwarder(process.getInputStream(), description.getStdoutFile(), ibis);
         err = new OutputForwarder(process.getErrorStream(), description.getStderrFile(), ibis);
-
+        
         logger.info("process started");
 
         socket = acceptConnection(serverSocket, process);
