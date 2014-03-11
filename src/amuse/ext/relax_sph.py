@@ -2,17 +2,37 @@ import numpy
 from amuse.units import units, nbody_system
 from amuse.couple.bridge import Bridge
 
+from amuse.plot import native_plot, semilogy, loglog, xlabel, ylabel
 
-def no_monitoring(system, i_step, time):
+def no_monitoring(system, i_step, time, n_steps):
     pass
 
-def monitor_energy(system, i_step, time):
+def monitor_energy(system, i_step, time, n_steps):
     unit = units.J
     U = system.potential_energy.value_in(unit)
     Q = system.thermal_energy.value_in(unit)
     K = system.kinetic_energy.value_in(unit)
     print "Step {0}, t={1}: U={2:.2e}, Q={3:.2e}, K={4:.2e} {5}".format(
         i_step, time.as_quantity_in(units.yr), U, Q, K, unit)
+
+class Memory:
+    pass
+
+def monitor_density_profile(system, i_step, time, n_steps, memory=Memory()):
+    if i_step == 0:
+        memory.xlimits = (None, None)
+        memory.ylimits = (None, None)
+    position = system.gas_particles.position - system.gas_particles.center_of_mass()
+    loglog(position.lengths_squared(), system.gas_particles.density, 'gs')
+    native_plot.title("{0}: t={1}".format(i_step, time.as_quantity_in(units.yr)))
+    native_plot.xlim(memory.xlimits)
+    native_plot.ylim(memory.ylimits)
+    native_plot.pause(0.0001)
+    memory.xlimits = native_plot.gca().get_xlim()
+    memory.ylimits = native_plot.gca().get_ylim()
+    if i_step == n_steps-1:
+        native_plot.show(block=True)
+    native_plot.cla()
 
 def relax(gas_particles, hydro, gravity_field=None, monitor_func=no_monitoring,
         bridge_options=dict()):
@@ -29,10 +49,8 @@ def relax(gas_particles, hydro, gravity_field=None, monitor_func=no_monitoring,
     if monitor_func == "energy":
         monitor_func = monitor_energy
     t_end_in_t_dyn = 2.5 # Relax for this many dynamical timescales
-    t_end_in_t_dyn = .25 # Relax for this many dynamical timescales
-    t_end = t_end_in_t_dyn * gas_particles.dynamical_timescale()
+    t_end = t_end_in_t_dyn * gas_particles.dynamical_timescale(mass_fraction=0.9)
     n_steps = 250
-    n_steps = 20
     velocity_damp_factor = 1.0 - (2.0*numpy.pi*t_end_in_t_dyn)/n_steps # Critical damping
     
     in_hydro = hydro.gas_particles.add_particles(gas_particles)
@@ -45,7 +63,7 @@ def relax(gas_particles, hydro, gravity_field=None, monitor_func=no_monitoring,
     for i_step, time in enumerate(t_end * numpy.linspace(1.0/n_steps, 1.0, n_steps)):
         system.evolve_model(time)
         hydro.gas_particles.velocity = velocity_damp_factor * hydro.gas_particles.velocity
-        monitor_func(system, i_step, time)
+        monitor_func(system, i_step, time, n_steps)
     
     return in_hydro.copy()
 

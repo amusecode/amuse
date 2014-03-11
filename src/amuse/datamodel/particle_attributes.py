@@ -1064,13 +1064,20 @@ def box_counting_dimension(particles):
     fit_coefficients = numpy.polyfit(x, y, 1)
     return fit_coefficients[0]
 
-def dynamical_timescale(particles, G=constants.G):
+def dynamical_timescale(particles, mass_fraction=None, G=constants.G):
     """
     Compute the dynamical (i.e. free-fall) timescale of the particles set. This is 
     the time it would take for a pressureless homogeneous sphere of this size and
-    average density to collapse.
+    average density to collapse. If 'mass_fraction' is supplied, only the inner 
+    particles are considered in the computation of the size of the sphere. For 
+    example, 'mass_fraction=0.95' ignores the positions of the outer particles 
+    comprising 5% by mass (useful for density profiles with long tails).
     """
-    return numpy.pi * (particles.total_radius()**3 / (8.0 * G * particles.total_mass())).sqrt()
+    if mass_fraction is None:
+        total_radius = particles.total_radius()
+    else:
+        total_radius = particles.LagrangianRadii(mf=[mass_fraction], cm=particles.center_of_mass())[0][0]
+    return numpy.pi * (total_radius**3 / (8.0 * G * particles.total_mass())).sqrt()
 
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
