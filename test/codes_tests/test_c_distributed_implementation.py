@@ -1,6 +1,6 @@
 from amuse.support.interface import InCodeComponentImplementation
 
-from amuse.community.distributed.interface import DistributedAmuse, Reservation
+from amuse.community.distributed.interface import DistributedAmuse, Pilot
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.support import exceptions
@@ -29,18 +29,18 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         print "Resources:"
         print self.distinstance.resources
 
-        reservation = Reservation()
-        reservation.resource_name='local'
-        reservation.node_count=1
-        reservation.time= 2|units.hour
-        reservation.slots_per_node=2
-        reservation.node_label='local'
-        self.distinstance.reservations.add_reservation(reservation)
-        print "Reservations:"
-        print self.distinstance.reservations
+        pilot = Pilot()
+        pilot.resource_name='local'
+        pilot.node_count=1
+        pilot.time= 2|units.hour
+        pilot.slots_per_node=2
+        pilot.node_label='local'
+        self.distinstance.pilots.add_pilot(pilot)
+        print "Pilots:"
+        print self.distinstance.pilots
 
-        print "Waiting for reservations"
-        self.distinstance.wait_for_reservations()
+        print "Waiting for pilots"
+        self.distinstance.wait_for_pilots()
 
     def tearDown(self):
         print "Stopping distributed code"
