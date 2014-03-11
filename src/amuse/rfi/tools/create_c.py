@@ -205,7 +205,7 @@ void send_array_sockets(void *buffer, int length, int file_descriptor, int rank)
 
 
         if (bytes_written == -1) {
-            fprintf(stderr, "could not write data\\n");
+            perror("could not write data");
             exit(1);
         }
 
@@ -232,7 +232,7 @@ void receive_array_sockets(void *buffer, int length, int file_descriptor, int ra
 #endif
 
         if (bytes_read == -1) {
-            fprintf(stderr, "could not read data\\n");
+            perror("could not read data");
             exit(1);
         }
 
@@ -457,7 +457,8 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     socketfd = socket(AF_INET, SOCK_STREAM, 0);
     
     if (socketfd < 0) {
-      fprintf(stderr, "cannot open socket\\n");
+      perror("ERROR opening socket");
+      //fprintf(stderr, "cannot open socket\\n");
       exit(1);
     }
 
@@ -472,7 +473,8 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     serv_addr.sin_port = htons(port);
   
     if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-      fprintf(stderr, "cannot connect socket\\n");
+      perror("ERROR connecting socket");
+      //fprintf(stderr, "cannot connect socket\\n");
       exit(1);
     }
     
@@ -666,7 +668,8 @@ void run_sockets(int port, char *host) {
   serv_addr.sin_port = htons(port);
   
   if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
-    fprintf(stderr, "cannot connect socket\\n");
+    perror("ERROR connecting socket");
+    //fprintf(stderr, "cannot connect socket\\n");
     exit(1);
   }
     
