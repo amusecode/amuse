@@ -283,7 +283,9 @@ public class WorkerProxy extends Thread {
         String[] hostnames = null;
 
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
-        serverSocket.bind(new InetSocketAddress(InetAddress.getByName(null), 0));
+        serverSocket.bind(new InetSocketAddress(InetAddress.getByName(null), 0), 10);
+        serverSocket.configureBlocking(true);
+        //serverSocket.socket().setSoTimeout(ACCEPT_TIMEOUT);
 
         //create process
         process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(), hostnames,
