@@ -56,10 +56,13 @@ public class XenonJobStatusMonitor extends Thread {
 
             //Only add jobs for pilots which are still running.
             for (int i = 0; i < pilots.length; i++) {
-                if (!pilots[i].isDone()) {
-                    jobs[i] = pilots[i].getXenonJob();
-                } else {
+                JobStatus oldStatus = pilots[i].getXenonJobStatus();
+                
+                if (oldStatus != null && oldStatus.isDone()) {
+                    //this job is already done
                     jobs[i] = null;
+                } else {
+                    jobs[i] = pilots[i].getXenonJob();
                 }
             }
 
