@@ -2200,7 +2200,7 @@ class ParticlesOverlay(AbstractParticleSet):
 
     def _split_attributes(self, attributes):
         inbase = set(self._private.base_set.get_attribute_names_defined_in_store())
-        inbase |= set(self._private.base_set._derived_attributes)
+        inbase |= set(self._private.base_set._derived_attributes.keys())
         attributes_inbase = []
         attributes_inoverlay = []
         indices_inbase = []
