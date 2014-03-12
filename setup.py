@@ -50,10 +50,10 @@ class Install(install):
             
         install.run(self)
 
+#'build_codes':ConfigureCodes,
 mapping_from_command_name_to_command_class = {
     'build_latex':build_latex, 
     'build_codes':BuildCodes,
-    #'build_codes':ConfigureCodes,
     'build_code':BuildOneCode,
     'clean_codes':CleanCodes,
     'dist_clean':DistCleanCodes,
@@ -68,7 +68,7 @@ mapping_from_command_name_to_command_class = {
 if sys.hexversion > 0x03000000:
     mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
     
-build.sub_commands.append(('configure_codes', None))
+#build.sub_commands.append(('configure_codes', None))
 build.sub_commands.append(('build_codes', None))
 Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))
