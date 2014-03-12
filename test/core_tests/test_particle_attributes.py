@@ -216,7 +216,10 @@ class TestParticlesAttributes(amusetest.TestCase):
         sorted.mass = numpy.random.uniform(1.0, 2.0, number_of_particles) | nbody_system.mass
         MSR = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=10)
         
-        self.assertAlmostEquals(MSR, 0.8877, 3)
+        if sys.hexversion > 0x03000000:
+            self.assertAlmostEquals(MSR, 0.7160, 3)
+        else:
+            self.assertAlmostEquals(MSR, 0.8877, 3)
                 
         random.seed(456)
         result = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=10, also_compute_uncertainty=True)
