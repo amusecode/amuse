@@ -19,6 +19,7 @@ if sys.hexversion > 0x03000000:
     from support3.generate_main import generate_main
     from support3.build_latex import build_latex
     from support3.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode
+    from support3.setup_codes import ConfigureCodes
     from support3.setup_codes import GenerateInstallIni
     from support3.run_tests import run_tests
     from distutils.command.build_py import build_py_2to3
@@ -27,6 +28,7 @@ else:
     from support.generate_main import generate_main
     from support.build_latex import build_latex
     from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode
+    from support.setup_codes import ConfigureCodes
     from support.setup_codes import GenerateInstallIni
     from support.run_tests import run_tests
     from os.path import walk
@@ -50,11 +52,11 @@ class Install(install):
             
         install.run(self)
 
-#'build_codes':ConfigureCodes,
 mapping_from_command_name_to_command_class = {
     'build_latex':build_latex, 
     'build_codes':BuildCodes,
     'build_code':BuildOneCode,
+    'configure_codes':ConfigureCodes,
     'clean_codes':CleanCodes,
     'dist_clean':DistCleanCodes,
     'clean_python':clean,
@@ -68,7 +70,7 @@ mapping_from_command_name_to_command_class = {
 if sys.hexversion > 0x03000000:
     mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
     
-#build.sub_commands.append(('configure_codes', None))
+build.sub_commands.append(('configure_codes', None))
 build.sub_commands.append(('build_codes', None))
 Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))

@@ -33,6 +33,7 @@ except ImportError:
 
 DEFAULT_VERSION = "0.6"
 DEFAULT_URL = "https://pypi.python.org/packages/source/s/setuptools/"
+DOWNLOAD_VERSION = "3.1"
 
 def _python_cmd(*args):
     """
@@ -118,7 +119,7 @@ def _do_download(version, download_base, to_dir, download_delay):
 
 
 def use_setuptools(version=DEFAULT_VERSION, download_base=DEFAULT_URL,
-        to_dir=os.curdir, download_delay=15):
+        to_dir=os.curdir, download_delay=15, download_version=DOWNLOAD_VERSION):
     to_dir = os.path.abspath(to_dir)
     rep_modules = 'pkg_resources', 'setuptools'
     imported = set(sys.modules).intersection(rep_modules)
@@ -130,7 +131,7 @@ def use_setuptools(version=DEFAULT_VERSION, download_base=DEFAULT_URL,
         pkg_resources.require("setuptools>=" + version)
         return
     except pkg_resources.DistributionNotFound:
-        return _do_download(version, download_base, to_dir, download_delay)
+        return _do_download(download_version, download_base, to_dir, download_delay)
     except pkg_resources.VersionConflict as VC_err:
         if imported:
             msg = textwrap.dedent("""
@@ -140,13 +141,13 @@ def use_setuptools(version=DEFAULT_VERSION, download_base=DEFAULT_URL,
                 'easy_install -U setuptools'.
 
                 (Currently using {VC_err.args[0]!r})
-                """).format(VC_err=VC_err, version=version)
+                """).format(VC_err=VC_err, version=download_version)
             sys.stderr.write(msg)
             sys.exit(2)
 
         # otherwise, reload ok
         del pkg_resources, sys.modules['pkg_resources']
-        return _do_download(version, download_base, to_dir, download_delay)
+        return _do_download(download_version, download_base, to_dir, download_delay)
 
 def _clean_check(cmd, target):
     """
