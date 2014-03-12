@@ -69,6 +69,7 @@ public class Lighthouse extends Thread {
             } catch (InterruptedException e) {
                 //IGNORE
             }
+            //return;
         }
     }
 

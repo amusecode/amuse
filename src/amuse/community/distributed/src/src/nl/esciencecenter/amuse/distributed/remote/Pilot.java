@@ -160,6 +160,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         }
         
     }
+    
 
     /**
      * Small run function. Waits until the "main" distributed amuse node declares it is time to go.
@@ -178,6 +179,18 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         boolean cleanExit = watchdog.waitUntilExpired();
 
         logger.info("Pool terminated, ending pilot");
+
+        removeFinishedJobs();
+        for (JobRunner job: getJobRunners()) {
+            logger.info("Ending job: " + job);
+            job.interrupt();
+            try {
+                job.join(1000);
+            } catch (InterruptedException e) {
+                //IGNORE
+            }
+            logger.info("Job {} ended", job);
+        }
         
         if (cleanExit) {
             ibis.end();
@@ -190,6 +203,10 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
     private synchronized JobRunner getJobRunner(int jobID) {
         return jobs.get(jobID);
+    }
+    
+    private synchronized JobRunner[] getJobRunners() {
+        return jobs.values().toArray(new JobRunner[0]);
     }
 
     private synchronized void removeFinishedJobs() {

@@ -25,12 +25,17 @@ import ibis.ipl.WriteMessage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.Map;
+
+import javax.swing.event.ListSelectionEvent;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
@@ -79,65 +84,6 @@ public class WorkerProxy extends Thread {
 
     private Exception error = null;
 
-//    /**
-//     * List of all hosts used, to give to MPI. Contains duplicates for all machines running multiple worker processes
-//     */
-//    private static String[] createHostnameList(WorkerDescription description, IbisIdentifier[] nodes)
-//            throws DistributedAmuseException {
-//        String[] hostnames = new String[description.getNrOfWorkers()];
-//        int next = 0;
-//
-//        int nrOfProcesses = description.getNrOfWorkers();
-//        int nrOfNodes = description.getNrOfNodes();
-//
-//        if (nrOfNodes != nodes.length) {
-//            throw new DistributedAmuseException("number of nodes used (" + nodes.length
-//                    + ") not equals to number of nodes required (" + nrOfNodes + ")");
-//        }
-//
-//        hostnames = new String[nrOfProcesses];
-//
-//        for (int i = 0; i < nodes.length; i++) {
-//            String tags[] = nodes[i].tagAsString().split(",");
-//            if (tags.length != 4) {
-//                throw new DistributedAmuseException("Cannot get tag from node identifier: " + nodes[i].tagAsString());
-//            }
-//            String hostname = tags[3];
-//
-//            // number of processes per node
-//            int ppn = nrOfProcesses / nrOfNodes;
-//            // nrOfWorkers not dividable by nrOfNodes. see if this is
-//            // a "remainder" node with an extra worker
-//            if (i < nrOfProcesses % nrOfNodes) {
-//                ppn++;
-//            }
-//            for (int j = 0; j < ppn; j++) {
-//                hostnames[next] = hostname;
-//                next++;
-//            }
-//        }
-//        if (next != nrOfProcesses) {
-//            logger.error("error in setting hostnames. List is of length " + next + " but should be " + nrOfProcesses);
-//        }
-//        
-//        return hostnames;
-//    }
-
-//    private static File createHostFile(String[] hostnames, File tempDirectory) throws IOException {
-//        File result = File.createTempFile("host", "file", tempDirectory).getAbsoluteFile();
-//
-//        FileWriter hostFileWriter = new FileWriter(result);
-//        for (String hostname : hostnames) {
-//            hostFileWriter.write(hostname + "\n");
-//        }
-//        hostFileWriter.flush();
-//        hostFileWriter.close();
-//
-//        logger.info("host file = " + result);
-//
-//        return result;
-//    }
-
     private static Process startWorkerProcess(WorkerDescription description, AmuseConfiguration amuseConfiguration,
             int localSocketPort, File tempDirectory) throws Exception {
         File executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getExecutable());
@@ -148,33 +94,9 @@ public class WorkerProxy extends Thread {
 
         ProcessBuilder builder = new ProcessBuilder();
 
-        //File workingDirectory = new File(tempDirectory, "worker-" + description.getID());
-        //workingDirectory.mkdirs();
-        //builder.directory(workingDirectory);
-
-        // make sure there is an "output" directory for a code to put output in
-        //new File(workingDirectory, "output").mkdir();
-
-//        for (String key : builder.environment().keySet().toArray(new String[0])) {
-//            for (String blacklistedKey : ENVIRONMENT_BLACKLIST) {
-//                if (key.startsWith(blacklistedKey)) {
-//                    builder.environment().remove(key);
-//                    logger.info("removed " + key + " from environment");
-//                }
-//            }
-//        }
-
         if (description.getNrOfThreads() > 0) {
             builder.environment().put("OMP_NUM_THREADS", Integer.toString(description.getNrOfThreads()));
         }
-
-//        if (logger.isDebugEnabled()) {
-//            String message = "Environment for worker " + description.getID() + " (executable = " + executable + "):\n";
-//            for (Map.Entry<String, String> entry : builder.environment().entrySet()) {
-//                message += entry.getKey() + " = " + entry.getValue() + "\n";
-//            }
-//            logger.debug(message);
-//        }
 
         if (!amuseConfiguration.isMPIEnabled()) {
             logger.info("not using mpiexec (as MPI is disabled in this AMUSE installation)");
@@ -195,13 +117,6 @@ public class WorkerProxy extends Thread {
         } else {
             // use mpiexec
             builder.command().add(amuseConfiguration.getMpiexec());
-
-//            // set machine file, if needed
-//            if (description.getNrOfNodes() != 1) {
-//                File hostFile = createHostFile(hostnames, tempDirectory);
-//                builder.command().add("-machinefile");
-//                builder.command().add(hostFile.getAbsolutePath());
-//            }
 
             // set number of processes to start
             builder.command().add("-n");
@@ -273,8 +188,8 @@ public class WorkerProxy extends Thread {
     /**
      * Starts a worker proxy. Make take a while.
      */
-    public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, Ibis ibis,
-            File tempDirectory, int jobID) throws Exception {
+    public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, Ibis ibis, File tempDirectory,
+            int jobID) throws Exception {
         this.description = description;
         this.amuseConfiguration = amuseConfiguration;
         this.ibis = ibis;
@@ -284,17 +199,16 @@ public class WorkerProxy extends Thread {
         serverSocket.bind(null);
         serverSocket.configureBlocking(true);
         //serverSocket.socket().setSoTimeout(ACCEPT_TIMEOUT);
-        
+
         logger.debug("Bound server socket to " + serverSocket.socket().getLocalSocketAddress());
 
         //create process
-        process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(),
-                tempDirectory);
+        process = startWorkerProcess(description, amuseConfiguration, serverSocket.socket().getLocalPort(), tempDirectory);
 
         //attach streams
         out = new OutputForwarder(process.getInputStream(), description.getStdoutFile(), ibis);
         err = new OutputForwarder(process.getErrorStream(), description.getStderrFile(), ibis);
-        
+
         logger.info("process started");
 
         socket = acceptConnection(serverSocket, process);
@@ -316,6 +230,38 @@ public class WorkerProxy extends Thread {
         return error;
     }
 
+    private synchronized void nativeKill() {
+        if (process == null) {
+            return;
+        }
+
+        try {
+            Field f = process.getClass().getDeclaredField("pid");
+            f.setAccessible(true);
+
+            Object pid = f.get(process);
+
+            ProcessBuilder builder = new ProcessBuilder("/bin/sh", "-c", "kill -9 " + pid.toString());
+            
+            builder.redirectError(Redirect.INHERIT);
+            //builder.redirectInput();
+            builder.redirectOutput(Redirect.INHERIT);
+
+            logger.info("Killing process using command: " + Arrays.toString(builder.command().toArray()));
+            
+            Process killProcess = builder.start();
+            
+            killProcess.getOutputStream().close();
+            
+            int exitcode = killProcess.waitFor();
+            
+            logger.info("native kill done, result is " + exitcode);
+
+        } catch (Throwable t) {
+            logger.error("Error on (forcibly) killing process", t);
+        }
+    }
+
     public synchronized void end() {
         if (process != null) {
             process.destroy();
@@ -324,7 +270,14 @@ public class WorkerProxy extends Thread {
                 exitcode = process.exitValue();
                 logger.info("Process ended with result " + exitcode);
             } catch (IllegalThreadStateException e) {
-                logger.error("Process not ended after process.destroy()!");
+                logger.error("Process not ended after process.destroy()! Trying native kill");
+                nativeKill();
+                try {
+                    exitcode = process.exitValue();
+                    logger.info("Process ended with result " + exitcode);
+                } catch (IllegalThreadStateException e2) {
+                    logger.error("Process not ended after native kill");
+                }
             }
         }
 
