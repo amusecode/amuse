@@ -35,7 +35,6 @@ class StarsWithMassLoss(Particles):
             self.lost_mass += elapsed_time * self.wind_mass_loss_rate
 
             self.collection_attributes.timestamp = time
-
             self.collection_attributes.previous_time = time
 
     def set_global_mu(self, mu):
@@ -44,9 +43,12 @@ class StarsWithMassLoss(Particles):
 
     def reset(self):
         self.lost_mass = 0.0|units.MSun
-        self.wind_release_time = 0.0|units.yr
-        self.collection_attributes.timestamp = 0. | units.yr
-        self.collection_attributes.previous_time = 0. | units.yr
+        self.set_begin_time(0.|units.yr)
+
+    def set_begin_time(self, time):
+        self.wind_release_time = time
+        self.collection_attributes.timestamp = time
+        self.collection_attributes.previous_time = time
 
 class EvolvingStarsWithMassLoss(StarsWithMassLoss):
     """
@@ -104,9 +106,7 @@ class EvolvingStarsWithMassLoss(StarsWithMassLoss):
 
             self.terminal_wind_velocity = self.calculate_terminal_wind_velocity()
 
-    def reset(self):
-        super(EvolvingStarsWithMassLoss, self).reset()
-        self.previous_age = 0|units.yr
+            self.previous_age = self.age
 
 class SimpleWind(object):
     """
@@ -231,7 +231,7 @@ class SimpleWind(object):
     def has_new_wind_particles(self):
         return self.particles.lost_mass.max() > self.sph_particle_mass
 
-    def create_initial_wind(self, time=None, number=None, check_length=True):
+    def create_initial_wind(self, number=None, time=None, check_length=True):
         """
             This is a convenience method that creates some initial particles.
             They are created as if the wind has already been blowing for 'time'.
@@ -246,26 +246,29 @@ class SimpleWind(object):
             total_mass_loss = self.particles.wind_mass_loss_rate.sum()
             time = 1.1 * required_mass/total_mass_loss
 
-        if self.has_target():
-            start_target_gas = self.target_gas.copy()
+        self.system_time = time
+        self.particles.evolve_mass_loss(self.system_time)
 
-        self.evolve_model(time)
-
-        if self.has_target():
-            wind = self.target_gas - start_target_gas
-        else:
-            wind = self.create_wind_particles()
-
-        if check_length and len(wind) < 1:
+        if self.has_new_wind_particles():
+            wind_gas = self.create_wind_particles()
+            if self.has_target():
+                self.target_gas.add_particles(wind_gas)
+        elif check_length :
             raise AmuseException("create_initial_wind time was too small to create any particles.")
+        else:
+            wind_gas = Particles()
 
         self.reset()
 
-        return wind
+        return wind_gas
 
     def reset(self):
         self.particles.reset()
         self.system_time = 0.0|units.yr
+
+    def set_begin_time(self, time):
+        self.system_time = time
+        self.particles.set_begin_time(time)
 
     def get_gravity_at_point(self, eps, x, y, z):
         return [0, 0, 0]|units.m/units.s**2
@@ -287,6 +290,10 @@ class AcceleratingWind(SimpleWind):
         self.r_max_ratio = 5
 
     def initial_wind_velocity(self, stars):
+        """
+            TODO: set the initial velocity using the wind velocity formula if the
+            particles are created in the middle of or outside the acceleration zone.
+        """
         return self.init_v_wind_ratio * stars.terminal_wind_velocity
 
     def wind_accelation_formula(self, star, distance):
