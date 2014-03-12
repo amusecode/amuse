@@ -1,7 +1,7 @@
 Index: mesa/src/mesa/atm/preprocessor/src/create_table_atm.f
 ===================================================================
---- mesa.orig/src/mesa/atm/preprocessor/src/create_table_atm.f	2010-03-03 06:03:05.000000000 +0100
-+++ mesa/src/mesa/atm/preprocessor/src/create_table_atm.f	2011-12-08 11:41:22.000000000 +0100
+--- mesa.orig/src/mesa/atm/preprocessor/src/create_table_atm.f
++++ mesa/src/mesa/atm/preprocessor/src/create_table_atm.f
 @@ -38,7 +38,7 @@
           integer, parameter :: which_atm_option = atm_Eddington_grey
           integer :: chem_id(num_isos)
@@ -13,8 +13,8 @@ Index: mesa/src/mesa/atm/preprocessor/src/create_table_atm.f
           double precision :: M, R, L, X, Y, Z, XC, XN, XO, XNe, XMg, abar, zbar, z2bar
 Index: mesa/src/mesa/atm/private/table_atm.f
 ===================================================================
---- mesa.orig/src/mesa/atm/private/table_atm.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/atm/private/table_atm.f	2011-12-08 11:40:45.000000000 +0100
+--- mesa.orig/src/mesa/atm/private/table_atm.f
++++ mesa/src/mesa/atm/private/table_atm.f
 @@ -30,7 +30,7 @@
  
        character(len=8):: atm_mix(nZ) !not used currently -- nor is alphaFe
@@ -44,8 +44,8 @@ Index: mesa/src/mesa/atm/private/table_atm.f
           integer :: iounit, i, j, ibound_tmp(ng), ibcTmin, ibcTmax, ibcgmin, ibcgmax, ilinT, iling
 Index: mesa/src/mesa/atm/test/src/test_atm_support.f
 ===================================================================
---- mesa.orig/src/mesa/atm/test/src/test_atm_support.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/atm/test/src/test_atm_support.f	2011-12-08 11:41:17.000000000 +0100
+--- mesa.orig/src/mesa/atm/test/src/test_atm_support.f
++++ mesa/src/mesa/atm/test/src/test_atm_support.f
 @@ -17,7 +17,7 @@
        subroutine do_test_atm
           use const_lib
@@ -84,8 +84,8 @@ Index: mesa/src/mesa/atm/test/src/test_atm_support.f
           
 Index: mesa/src/mesa/chem/private/chem_isos_io.f
 ===================================================================
---- mesa.orig/src/mesa/chem/private/chem_isos_io.f	2010-03-01 19:11:17.000000000 +0100
-+++ mesa/src/mesa/chem/private/chem_isos_io.f	2011-12-08 11:22:41.000000000 +0100
+--- mesa.orig/src/mesa/chem/private/chem_isos_io.f
++++ mesa/src/mesa/chem/private/chem_isos_io.f
 @@ -35,7 +35,7 @@
           character (len=*), intent(in) :: data_dir
        	integer, intent(out) :: ierr
@@ -104,8 +104,8 @@ Index: mesa/src/mesa/chem/private/chem_isos_io.f
 +      end module chem_isos_io
 Index: mesa/src/mesa/chem/public/chem_lib.f
 ===================================================================
---- mesa.orig/src/mesa/chem/public/chem_lib.f	2010-03-02 23:17:47.000000000 +0100
-+++ mesa/src/mesa/chem/public/chem_lib.f	2011-12-08 11:23:40.000000000 +0100
+--- mesa.orig/src/mesa/chem/public/chem_lib.f
++++ mesa/src/mesa/chem/public/chem_lib.f
 @@ -142,7 +142,7 @@
           integer :: nnuc, iounit
        	character(len=iso_name_length), pointer :: names(:)
@@ -117,9 +117,9 @@ Index: mesa/src/mesa/chem/public/chem_lib.f
           iounit = alloc_iounit(ierr)
 Index: mesa/src/mesa/colors/private/mod_colors.f
 ===================================================================
---- mesa.orig/src/mesa/colors/private/mod_colors.f	2010-03-02 19:43:27.000000000 +0100
-+++ mesa/src/mesa/colors/private/mod_colors.f	2011-12-08 11:33:40.000000000 +0100
-@@ -279,7 +279,7 @@
+--- mesa.orig/src/mesa/colors/private/mod_colors.f
++++ mesa/src/mesa/colors/private/mod_colors.f
+@@ -279,7 +279,7 @@ c **************************************
  
  			! read file and build lists
  			integer :: ios, cnt
@@ -130,8 +130,8 @@ Index: mesa/src/mesa/colors/private/mod_colors.f
  			type (lgt_list), pointer :: tlist
 Index: mesa/src/mesa/colors/test/src/test_colors.f
 ===================================================================
---- mesa.orig/src/mesa/colors/test/src/test_colors.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/colors/test/src/test_colors.f	2011-12-08 11:33:52.000000000 +0100
+--- mesa.orig/src/mesa/colors/test/src/test_colors.f
++++ mesa/src/mesa/colors/test/src/test_colors.f
 @@ -12,7 +12,7 @@
  
        subroutine do_test_colors
@@ -152,8 +152,8 @@ Index: mesa/src/mesa/colors/test/src/test_colors.f
  			double precision :: read_junk, log_g, fe_h, results(n_colors)
 Index: mesa/src/mesa/diffusion/test/src/test_diffusion.f
 ===================================================================
---- mesa.orig/src/mesa/diffusion/test/src/test_diffusion.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/diffusion/test/src/test_diffusion.f	2011-12-08 11:12:05.000000000 +0100
+--- mesa.orig/src/mesa/diffusion/test/src/test_diffusion.f
++++ mesa/src/mesa/diffusion/test/src/test_diffusion.f
 @@ -130,7 +130,7 @@
           
           integer :: i, j, k, nmid
@@ -183,8 +183,8 @@ Index: mesa/src/mesa/diffusion/test/src/test_diffusion.f
           double precision :: tau0  
 Index: mesa/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f	2011-12-08 11:34:28.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f
++++ mesa/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f
 @@ -76,7 +76,7 @@
              Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
              mu, log_free_e, gamma1, gamma3, grad_ad, eta, logT_guess
@@ -205,8 +205,8 @@ Index: mesa/src/mesa/eos/eosDE_builder/src/create_eosDE_files.f
           
 Index: mesa/src/mesa/eos/eosDE_builder/src/make_DEplots.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDE_builder/src/make_DEplots.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDE_builder/src/make_DEplots.f	2011-12-08 11:34:38.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosDE_builder/src/make_DEplots.f
++++ mesa/src/mesa/eos/eosDE_builder/src/make_DEplots.f
 @@ -44,7 +44,7 @@
              logRho, Rho, logE, energy, logS, chiRho, chiT, &
              Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
@@ -236,8 +236,8 @@ Index: mesa/src/mesa/eos/eosDE_builder/src/make_DEplots.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f	2011-12-08 11:38:06.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f
++++ mesa/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f
 @@ -76,7 +76,7 @@
              Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
              mu, log_free_e, gamma1, gamma3, grad_ad, eta, logT_guess
@@ -258,8 +258,8 @@ Index: mesa/src/mesa/eos/eosDP_builder/src/create_eosDP_files.f
           
 Index: mesa/src/mesa/eos/eosDP_builder/src/make_DPplots.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDP_builder/src/make_DPplots.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDP_builder/src/make_DPplots.f	2011-12-08 11:38:17.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosDP_builder/src/make_DPplots.f
++++ mesa/src/mesa/eos/eosDP_builder/src/make_DPplots.f
 @@ -44,7 +44,7 @@
              logRho, Rho, logPgas, Pgas, logE, logS, chiRho, chiT, &
              Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
@@ -289,9 +289,9 @@ Index: mesa/src/mesa/eos/eosDP_builder/src/make_DPplots.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f	2011-12-08 11:40:19.000000000 +0100
-@@ -455,7 +455,7 @@
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f
++++ mesa/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f
+@@ -455,7 +455,7 @@ c***************************************
        subroutine readcoeos_hhe(filename)
  c..... The purpose of this subroutine is to read the data tables
        save
@@ -302,8 +302,8 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/EOS5_xtrin_H-He.f
        character*1 blank
 Index: mesa/src/mesa/eos/eosDT_builder/src/create_eos_files.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDT_builder/src/create_eos_files.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/eos/eosDT_builder/src/create_eos_files.f	2011-12-08 11:39:39.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/create_eos_files.f
++++ mesa/src/mesa/eos/eosDT_builder/src/create_eos_files.f
 @@ -78,7 +78,7 @@
  		
        double precision, intent(in) :: Z_in, X_in
@@ -315,9 +315,9 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/create_eos_files.f
        double precision :: del_logT, logT_min, logT_max, del_logQ, logQ_min, logQ_max, logRho_min
 Index: mesa/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f	2011-12-08 11:40:26.000000000 +0100
-@@ -24,7 +24,7 @@
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f
++++ mesa/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f
+@@ -24,7 +24,7 @@ c **************************************
        implicit none
        
        
@@ -328,8 +328,8 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/helm_opal_scvh_driver.f
        
 Index: mesa/src/mesa/eos/eosDT_builder/src/make_DTplots.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDT_builder/src/make_DTplots.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDT_builder/src/make_DTplots.f	2011-12-08 11:39:30.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/make_DTplots.f
++++ mesa/src/mesa/eos/eosDT_builder/src/make_DTplots.f
 @@ -51,7 +51,7 @@
              Rho, logE, logS, chiRho, chiT, chiY, &
              Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
@@ -359,9 +359,9 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/make_DTplots.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/eos/eosDT_builder/src/opal_core.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDT_builder/src/opal_core.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDT_builder/src/opal_core.f	2011-12-08 11:40:09.000000000 +0100
-@@ -26,7 +26,7 @@
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/opal_core.f
++++ mesa/src/mesa/eos/eosDT_builder/src/opal_core.f
+@@ -26,7 +26,7 @@ c            results(9) is gamma2/(gaamm
  c            results(10) is mu_M
  c            results(11) is log_Ne
  		integer info ! returned = 0 if AOK
@@ -370,7 +370,7 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/opal_core.f
        parameter (mx=5,mv=12,nr=169,nt=197)
        common/eeos/esact,eos(mv)
        double precision xh_in,ztab_in,t6_in,r_in,results_out(iorder),pgas_out,prad_out
-@@ -495,7 +495,7 @@
+@@ -495,7 +495,7 @@ c
        subroutine readcoeos(filename)
  !..... The purpose of this subroutine is to read the data tables
        save
@@ -381,8 +381,8 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/opal_core.f
        character*1 blank
 Index: mesa/src/mesa/eos/eosDT_builder/src/scvh_core.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDT_builder/src/scvh_core.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDT_builder/src/scvh_core.f	2011-12-08 11:39:58.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/scvh_core.f
++++ mesa/src/mesa/eos/eosDT_builder/src/scvh_core.f
 @@ -149,7 +149,7 @@
       >      dddt_tab, dddp_tab, dsdt_tab, dsdp_tab, dtdp_tab
           integer :: i, j, jj, nps, k
@@ -403,9 +403,9 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/scvh_core.f
        double precision :: output_values(np,nt)
 Index: mesa/src/mesa/eos/eosDT_builder/src/xtrin.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosDT_builder/src/xtrin.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosDT_builder/src/xtrin.f	2011-12-08 11:39:17.000000000 +0100
-@@ -70,7 +70,7 @@
+--- mesa.orig/src/mesa/eos/eosDT_builder/src/xtrin.f
++++ mesa/src/mesa/eos/eosDT_builder/src/xtrin.f
+@@ -70,7 +70,7 @@ c
  c
        save
  		integer info ! returned = 0 if AOK
@@ -414,7 +414,7 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/xtrin.f
        real moles
        parameter (mx=5,mv=12,nr=169,nt=197)
        character blank*1
-@@ -452,7 +452,7 @@
+@@ -452,7 +452,7 @@ c
        subroutine readcoeos(filename)
  !..... The purpose of this subroutine is to read the data tables
        save
@@ -425,8 +425,8 @@ Index: mesa/src/mesa/eos/eosDT_builder/src/xtrin.f
        character*1 blank
 Index: mesa/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f	2011-12-08 11:37:19.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f
++++ mesa/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f
 @@ -76,7 +76,7 @@
              Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
              mu, log_free_e, gamma1, gamma3, grad_ad, eta, logRho_guess
@@ -447,8 +447,8 @@ Index: mesa/src/mesa/eos/eosPT_builder/src/create_eosPT_files.f
           
 Index: mesa/src/mesa/eos/eosPT_builder/src/make_PTplots.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosPT_builder/src/make_PTplots.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosPT_builder/src/make_PTplots.f	2011-12-08 11:37:44.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosPT_builder/src/make_PTplots.f
++++ mesa/src/mesa/eos/eosPT_builder/src/make_PTplots.f
 @@ -48,7 +48,7 @@
              logRho, logE, logS, chiRho, chiT, &
              Cp, Cv, dE_dRho, dS_dT, dS_dRho, &
@@ -478,8 +478,8 @@ Index: mesa/src/mesa/eos/eosPT_builder/src/make_PTplots.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/eos/eosPT_builder/src/scvh_eval.f
 ===================================================================
---- mesa.orig/src/mesa/eos/eosPT_builder/src/scvh_eval.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/eosPT_builder/src/scvh_eval.f	2011-12-08 11:37:33.000000000 +0100
+--- mesa.orig/src/mesa/eos/eosPT_builder/src/scvh_eval.f
++++ mesa/src/mesa/eos/eosPT_builder/src/scvh_eval.f
 @@ -165,7 +165,7 @@
              dddt_tab, dddp_tab, dsdt_tab, dsdp_tab, dtdp_tab
           integer :: i, j, jj, nps, k
@@ -500,8 +500,8 @@ Index: mesa/src/mesa/eos/eosPT_builder/src/scvh_eval.f
        double precision :: output_values(np,nt)
 Index: mesa/src/mesa/eos/private/eosDE_load_tables.f
 ===================================================================
---- mesa.orig/src/mesa/eos/private/eosDE_load_tables.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/private/eosDE_load_tables.f	2011-12-08 11:35:01.000000000 +0100
+--- mesa.orig/src/mesa/eos/private/eosDE_load_tables.f
++++ mesa/src/mesa/eos/private/eosDE_load_tables.f
 @@ -114,7 +114,7 @@
           
           subroutine read_sizes
@@ -549,8 +549,8 @@ Index: mesa/src/mesa/eos/private/eosDE_load_tables.f
           
 Index: mesa/src/mesa/eos/private/eosDP_load_tables.f
 ===================================================================
---- mesa.orig/src/mesa/eos/private/eosDP_load_tables.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/private/eosDP_load_tables.f	2011-12-08 11:36:57.000000000 +0100
+--- mesa.orig/src/mesa/eos/private/eosDP_load_tables.f
++++ mesa/src/mesa/eos/private/eosDP_load_tables.f
 @@ -114,7 +114,7 @@
           
           subroutine read_sizes
@@ -598,9 +598,9 @@ Index: mesa/src/mesa/eos/private/eosDP_load_tables.f
           
 Index: mesa/src/mesa/eos/private/eosDT_load_tables.f
 ===================================================================
---- mesa.orig/src/mesa/eos/private/eosDT_load_tables.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/private/eosDT_load_tables.f	2011-12-08 11:36:30.000000000 +0100
-@@ -113,7 +113,7 @@
+--- mesa.orig/src/mesa/eos/private/eosDT_load_tables.f
++++ mesa/src/mesa/eos/private/eosDT_load_tables.f
+@@ -113,7 +113,7 @@ c **************************************
           
           subroutine read_sizes
  
@@ -609,7 +609,7 @@ Index: mesa/src/mesa/eos/private/eosDT_load_tables.f
              integer :: iounit
              
              iounit = alloc_iounit(ierr); if (ierr /= 0) return
-@@ -155,7 +155,7 @@
+@@ -155,7 +155,7 @@ c **************************************
              integer, intent(in) :: ix, iz
              integer, intent(out) :: ierr
  
@@ -618,7 +618,7 @@ Index: mesa/src/mesa/eos/private/eosDT_load_tables.f
              integer :: iounit1, iounit2
              
              iounit1 = alloc_iounit(ierr); if (ierr /= 0) return
-@@ -177,7 +177,7 @@
+@@ -177,7 +177,7 @@ c **************************************
  
           double precision, intent(in) :: Z, X
           character (*), intent(in) :: data_dir
@@ -627,7 +627,7 @@ Index: mesa/src/mesa/eos/private/eosDT_load_tables.f
              
           if (X < 0.005) then
              write(fname,'(a,a,i1,a)') trim(data_dir), 
-@@ -213,7 +213,7 @@
+@@ -213,7 +213,7 @@ c **************************************
       >         logQ_min_in, logQ_max_in, del_logQ_in, X_in, Z_in, logQ, logT
           integer :: j,i,k,iQ,ios,status
           real, dimension(:,:,:), pointer :: tbl2
@@ -636,7 +636,7 @@ Index: mesa/src/mesa/eos/private/eosDT_load_tables.f
           double precision, parameter :: tiny = 1e-6
  
           info = 0            
-@@ -371,7 +371,7 @@
+@@ -371,7 +371,7 @@ c **************************************
           real :: fval(num_eos_file_vals), df_dx(num_eos_file_vals), df_dy(num_eos_file_vals)
           
           integer :: v, vlist(3), var, i, j
@@ -647,8 +647,8 @@ Index: mesa/src/mesa/eos/private/eosDT_load_tables.f
           
 Index: mesa/src/mesa/eos/private/eosPT_load_tables.f
 ===================================================================
---- mesa.orig/src/mesa/eos/private/eosPT_load_tables.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/private/eosPT_load_tables.f	2011-12-08 11:36:09.000000000 +0100
+--- mesa.orig/src/mesa/eos/private/eosPT_load_tables.f
++++ mesa/src/mesa/eos/private/eosPT_load_tables.f
 @@ -114,7 +114,7 @@
           
           subroutine read_sizes
@@ -696,9 +696,9 @@ Index: mesa/src/mesa/eos/private/eosPT_load_tables.f
           
 Index: mesa/src/mesa/eos/private/eos_initialize.f
 ===================================================================
---- mesa.orig/src/mesa/eos/private/eos_initialize.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/private/eos_initialize.f	2011-12-08 11:35:42.000000000 +0100
-@@ -61,7 +61,7 @@
+--- mesa.orig/src/mesa/eos/private/eos_initialize.f
++++ mesa/src/mesa/eos/private/eos_initialize.f
+@@ -61,7 +61,7 @@ c **************************************
           integer, parameter :: imax = 261, jmax = 101  ! dimensions of our version of helm table
           
           ! helm table lives in eosDT_data
@@ -707,7 +707,7 @@ Index: mesa/src/mesa/eos/private/eos_initialize.f
           
           if (eos_root_is_initialized) return
           
-@@ -97,4 +97,4 @@
+@@ -97,4 +97,4 @@ c **************************************
        
        
        end module eos_initialize
@@ -716,9 +716,9 @@ Index: mesa/src/mesa/eos/private/eos_initialize.f
 +      
 Index: mesa/src/mesa/eos/private/helm_alloc.f
 ===================================================================
---- mesa.orig/src/mesa/eos/private/helm_alloc.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/private/helm_alloc.f	2011-12-08 11:36:37.000000000 +0100
-@@ -126,7 +126,7 @@
+--- mesa.orig/src/mesa/eos/private/helm_alloc.f
++++ mesa/src/mesa/eos/private/helm_alloc.f
+@@ -126,7 +126,7 @@ c **************************************
  !..must be called once before the helmeos routine is invoked.
  
  !..declare local variables
@@ -729,8 +729,8 @@ Index: mesa/src/mesa/eos/private/helm_alloc.f
       1                 dd,dd2,ddi,dd2i,dd3i
 Index: mesa/src/mesa/eos/public/eos_def.f
 ===================================================================
---- mesa.orig/src/mesa/eos/public/eos_def.f	2011-12-06 13:23:07.000000000 +0100
-+++ mesa/src/mesa/eos/public/eos_def.f	2011-12-08 11:37:53.000000000 +0100
+--- mesa.orig/src/mesa/eos/public/eos_def.f
++++ mesa/src/mesa/eos/public/eos_def.f
 @@ -868,7 +868,7 @@
        logical :: eosDE_is_initialized = .false.
        logical :: eosDP_is_initialized = .false.
@@ -742,8 +742,8 @@ Index: mesa/src/mesa/eos/public/eos_def.f
        
 Index: mesa/src/mesa/eos/test/src/eos_support.f
 ===================================================================
---- mesa.orig/src/mesa/eos/test/src/eos_support.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/eos/test/src/eos_support.f	2011-12-08 11:38:35.000000000 +0100
+--- mesa.orig/src/mesa/eos/test/src/eos_support.f
++++ mesa/src/mesa/eos/test/src/eos_support.f
 @@ -98,7 +98,7 @@
           use alert_lib,only:alert_message
           !..allocate and load the eos tables
@@ -755,8 +755,8 @@ Index: mesa/src/mesa/eos/test/src/eos_support.f
           
 Index: mesa/src/mesa/eos/test/src/plot_eosDE.f
 ===================================================================
---- mesa.orig/src/mesa/eos/test/src/plot_eosDE.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/test/src/plot_eosDE.f	2011-12-08 11:46:04.000000000 +0100
+--- mesa.orig/src/mesa/eos/test/src/plot_eosDE.f
++++ mesa/src/mesa/eos/test/src/plot_eosDE.f
 @@ -15,7 +15,7 @@
        
        subroutine Build_DE_Plots
@@ -779,8 +779,8 @@ Index: mesa/src/mesa/eos/test/src/plot_eosDE.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/eos/test/src/plot_eosDP.f
 ===================================================================
---- mesa.orig/src/mesa/eos/test/src/plot_eosDP.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/test/src/plot_eosDP.f	2011-12-08 11:39:04.000000000 +0100
+--- mesa.orig/src/mesa/eos/test/src/plot_eosDP.f
++++ mesa/src/mesa/eos/test/src/plot_eosDP.f
 @@ -15,7 +15,7 @@
        
        subroutine Build_DP_Plots
@@ -803,8 +803,8 @@ Index: mesa/src/mesa/eos/test/src/plot_eosDP.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/eos/test/src/plot_eosDT.f
 ===================================================================
---- mesa.orig/src/mesa/eos/test/src/plot_eosDT.f	2010-02-10 03:12:06.000000000 +0100
-+++ mesa/src/mesa/eos/test/src/plot_eosDT.f	2011-12-08 11:38:49.000000000 +0100
+--- mesa.orig/src/mesa/eos/test/src/plot_eosDT.f
++++ mesa/src/mesa/eos/test/src/plot_eosDT.f
 @@ -15,7 +15,7 @@
        
        subroutine Build_DT_Plots
@@ -827,8 +827,8 @@ Index: mesa/src/mesa/eos/test/src/plot_eosDT.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/eos/test/src/plot_eosPT.f
 ===================================================================
---- mesa.orig/src/mesa/eos/test/src/plot_eosPT.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/eos/test/src/plot_eosPT.f	2011-12-08 11:38:29.000000000 +0100
+--- mesa.orig/src/mesa/eos/test/src/plot_eosPT.f
++++ mesa/src/mesa/eos/test/src/plot_eosPT.f
 @@ -16,7 +16,7 @@
        
        subroutine Build_PT_Plots
@@ -851,8 +851,8 @@ Index: mesa/src/mesa/eos/test/src/plot_eosPT.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/eos/test/src/sample_eos.f
 ===================================================================
---- mesa.orig/src/mesa/eos/test/src/sample_eos.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/eos/test/src/sample_eos.f	2011-12-08 11:38:56.000000000 +0100
+--- mesa.orig/src/mesa/eos/test/src/sample_eos.f
++++ mesa/src/mesa/eos/test/src/sample_eos.f
 @@ -37,7 +37,7 @@
           double precision :: Z, X, abar, zbar, Rho, T, Pgas,log10Rho
           double precision :: dlnRho_dlnPgas_const_T, dlnRho_dlnT_const_Pgas, d_dlnRho_const_T, d_dlnT_const_Rho
@@ -873,9 +873,9 @@ Index: mesa/src/mesa/eos/test/src/sample_eos.f
           
 Index: mesa/src/mesa/interp_1d/private/interp_1d_mp.f
 ===================================================================
---- mesa.orig/src/mesa/interp_1d/private/interp_1d_mp.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/interp_1d/private/interp_1d_mp.f	2011-12-08 11:41:33.000000000 +0100
-@@ -49,7 +49,7 @@
+--- mesa.orig/src/mesa/interp_1d/private/interp_1d_mp.f
++++ mesa/src/mesa/interp_1d/private/interp_1d_mp.f
+@@ -49,7 +49,7 @@ c **************************************
       >         spL, spR, t, tmax, tmp, tmp1, tmp2
           double precision, parameter :: tiny = 1e-20
           integer :: i
@@ -886,8 +886,8 @@ Index: mesa/src/mesa/interp_1d/private/interp_1d_mp.f
           
 Index: mesa/src/mesa/interp_1d/test/src/plot_interp_1d.f
 ===================================================================
---- mesa.orig/src/mesa/interp_1d/test/src/plot_interp_1d.f	2010-01-06 16:42:19.000000000 +0100
-+++ mesa/src/mesa/interp_1d/test/src/plot_interp_1d.f	2011-12-08 11:46:32.000000000 +0100
+--- mesa.orig/src/mesa/interp_1d/test/src/plot_interp_1d.f
++++ mesa/src/mesa/interp_1d/test/src/plot_interp_1d.f
 @@ -42,8 +42,8 @@
        subroutine write_points(nx, xpts, f, ix, dir)
           integer, intent(in) :: nx, ix
@@ -921,8 +921,8 @@ Index: mesa/src/mesa/interp_1d/test/src/plot_interp_1d.f
           fname = trim(dir) // '/arg.data'
 Index: mesa/src/mesa/interp_2d/test/src/plot_interp_2d.f
 ===================================================================
---- mesa.orig/src/mesa/interp_2d/test/src/plot_interp_2d.f	2010-01-06 16:42:19.000000000 +0100
-+++ mesa/src/mesa/interp_2d/test/src/plot_interp_2d.f	2011-12-08 11:20:47.000000000 +0100
+--- mesa.orig/src/mesa/interp_2d/test/src/plot_interp_2d.f
++++ mesa/src/mesa/interp_2d/test/src/plot_interp_2d.f
 @@ -16,7 +16,7 @@
  
           integer :: io_first, io_last, io_xs, io_ys, io, x_points, y_points, i, j
@@ -945,8 +945,8 @@ Index: mesa/src/mesa/interp_2d/test/src/plot_interp_2d.f
           fname = trim(dir) // '/x.data'
 Index: mesa/src/mesa/jina/private/reaclib_input.f
 ===================================================================
---- mesa.orig/src/mesa/jina/private/reaclib_input.f	2010-03-12 06:24:17.000000000 +0100
-+++ mesa/src/mesa/jina/private/reaclib_input.f	2011-12-08 11:32:17.000000000 +0100
+--- mesa.orig/src/mesa/jina/private/reaclib_input.f
++++ mesa/src/mesa/jina/private/reaclib_input.f
 @@ -82,7 +82,7 @@
        	character(len=*), parameter :: line2 = '(4es13.6)'
        	character(len=*), parameter :: line3 = '(3es13.6)'
@@ -958,8 +958,8 @@ Index: mesa/src/mesa/jina/private/reaclib_input.f
        	reaclib_unitno = alloc_iounit(ierr)
 Index: mesa/src/mesa/jina/public/jina_def.f
 ===================================================================
---- mesa.orig/src/mesa/jina/public/jina_def.f	2011-12-06 13:23:07.000000000 +0100
-+++ mesa/src/mesa/jina/public/jina_def.f	2011-12-08 11:32:33.000000000 +0100
+--- mesa.orig/src/mesa/jina/public/jina_def.f
++++ mesa/src/mesa/jina/public/jina_def.f
 @@ -226,7 +226,7 @@
        integer, parameter :: max_jina_burn_handles = 1000 ! make this as large as you want
        type (Jina_Info), dimension(:), target :: jina_burn_handles(max_jina_burn_handles)
@@ -971,8 +971,8 @@ Index: mesa/src/mesa/jina/public/jina_def.f
     	integer :: nreaclib
 Index: mesa/src/mesa/jina/test/src/test_jina.f
 ===================================================================
---- mesa.orig/src/mesa/jina/test/src/test_jina.f	2010-03-12 06:24:17.000000000 +0100
-+++ mesa/src/mesa/jina/test/src/test_jina.f	2011-12-08 11:32:48.000000000 +0100
+--- mesa.orig/src/mesa/jina/test/src/test_jina.f
++++ mesa/src/mesa/jina/test/src/test_jina.f
 @@ -1362,7 +1362,7 @@
              jsi27, jsi28, jsi29, jsi30, jsi31, jsi32, jp29, jp30, jp31, jp32, js31, js32
           double precision :: category_factors(num_categories)
@@ -991,10 +991,19 @@ Index: mesa/src/mesa/jina/test/src/test_jina.f
        data_dir = '../../data'   	
  
     	call const_init
+@@ -1778,7 +1778,7 @@
+    	
+    	!call test_burn(10)
+    	!call test_burn(25)
+-   	call test_burn(100)  ! use this for testing
++!~   	call test_burn(100)  ! use this for testing
+    	!call test_burn(200)
+    	!call test_burn(430)
+    	!call test_burn(686)
 Index: mesa/src/mesa/kap/preprocessor/src/co_enhanced.f
 ===================================================================
---- mesa.orig/src/mesa/kap/preprocessor/src/co_enhanced.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/kap/preprocessor/src/co_enhanced.f	2011-12-08 11:17:42.000000000 +0100
+--- mesa.orig/src/mesa/kap/preprocessor/src/co_enhanced.f
++++ mesa/src/mesa/kap/preprocessor/src/co_enhanced.f
 @@ -223,7 +223,7 @@
           integer, parameter :: num_dXCOs = 8
           double precision :: dXCOs(num_dXCOs), Y, dXC, dXO, mid, XC_base, XO_base
@@ -1006,8 +1015,8 @@ Index: mesa/src/mesa/kap/preprocessor/src/co_enhanced.f
           integer, parameter :: file_type = 2
 Index: mesa/src/mesa/kap/preprocessor/src/create_tables.f
 ===================================================================
---- mesa.orig/src/mesa/kap/preprocessor/src/create_tables.f	2010-01-25 01:37:43.000000000 +0100
-+++ mesa/src/mesa/kap/preprocessor/src/create_tables.f	2011-12-08 11:18:54.000000000 +0100
+--- mesa.orig/src/mesa/kap/preprocessor/src/create_tables.f
++++ mesa/src/mesa/kap/preprocessor/src/create_tables.f
 @@ -29,7 +29,7 @@
        
        double precision :: which_z
@@ -1019,8 +1028,8 @@ Index: mesa/src/mesa/kap/preprocessor/src/create_tables.f
        logical :: do_kappa_test = .false.
 Index: mesa/src/mesa/kap/preprocessor/src/ferg.f
 ===================================================================
---- mesa.orig/src/mesa/kap/preprocessor/src/ferg.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/kap/preprocessor/src/ferg.f	2011-12-08 11:16:47.000000000 +0100
+--- mesa.orig/src/mesa/kap/preprocessor/src/ferg.f
++++ mesa/src/mesa/kap/preprocessor/src/ferg.f
 @@ -50,7 +50,7 @@
        subroutine init_ferg(Z, X, data_dir, prefix)
  			double precision, intent(in) :: Z, X
@@ -1032,8 +1041,8 @@ Index: mesa/src/mesa/kap/preprocessor/src/ferg.f
  			call get_ferg_filename(Z, X, data_dir, prefix, fname)
 Index: mesa/src/mesa/kap/preprocessor/src/ferg_logP.f
 ===================================================================
---- mesa.orig/src/mesa/kap/preprocessor/src/ferg_logP.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/kap/preprocessor/src/ferg_logP.f	2011-12-08 11:17:29.000000000 +0100
+--- mesa.orig/src/mesa/kap/preprocessor/src/ferg_logP.f
++++ mesa/src/mesa/kap/preprocessor/src/ferg_logP.f
 @@ -61,8 +61,8 @@
  		
        subroutine Init_ferg_logP(Z, X, dir, logP_dir)
@@ -1060,8 +1069,8 @@ Index: mesa/src/mesa/kap/preprocessor/src/ferg_logP.f
  			real :: logP, dlogP, lPs(logP_num_logRs)
 Index: mesa/src/mesa/kap/preprocessor/src/fixed_metal.f
 ===================================================================
---- mesa.orig/src/mesa/kap/preprocessor/src/fixed_metal.f	2010-01-24 23:43:39.000000000 +0100
-+++ mesa/src/mesa/kap/preprocessor/src/fixed_metal.f	2011-12-08 11:18:14.000000000 +0100
+--- mesa.orig/src/mesa/kap/preprocessor/src/fixed_metal.f
++++ mesa/src/mesa/kap/preprocessor/src/fixed_metal.f
 @@ -157,7 +157,7 @@
        
        double precision :: Y, Z, logR, logT, T, logRho, Rho, logK_pot, logK_not, abar, zbar, w4, w5, w6, logK, opac_rad, opac_cond
@@ -1073,8 +1082,8 @@ Index: mesa/src/mesa/kap/preprocessor/src/fixed_metal.f
  
 Index: mesa/src/mesa/kap/preprocessor/src/kap_support.f
 ===================================================================
---- mesa.orig/src/mesa/kap/preprocessor/src/kap_support.f	2010-01-25 01:37:43.000000000 +0100
-+++ mesa/src/mesa/kap/preprocessor/src/kap_support.f	2011-12-08 11:17:54.000000000 +0100
+--- mesa.orig/src/mesa/kap/preprocessor/src/kap_support.f
++++ mesa/src/mesa/kap/preprocessor/src/kap_support.f
 @@ -226,7 +226,7 @@
           double precision :: dXC, dXO, T6, R, frac, opac, Y,  &
                    logK_lowT, logK_highT, fac, logK_Compton
@@ -1095,9 +1104,9 @@ Index: mesa/src/mesa/kap/preprocessor/src/kap_support.f
           if(co_enhanced) then
 Index: mesa/src/mesa/kap/preprocessor/src/opal_type2.f
 ===================================================================
---- mesa.orig/src/mesa/kap/preprocessor/src/opal_type2.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/kap/preprocessor/src/opal_type2.f	2011-12-08 11:16:16.000000000 +0100
-@@ -61,7 +61,7 @@
+--- mesa.orig/src/mesa/kap/preprocessor/src/opal_type2.f
++++ mesa/src/mesa/kap/preprocessor/src/opal_type2.f
+@@ -61,7 +61,7 @@ c***************************************
  		subroutine open_unit2(m,z)
  			integer, intent(IN) :: m
  			real, intent(IN) :: z
@@ -1108,8 +1117,8 @@ Index: mesa/src/mesa/kap/preprocessor/src/opal_type2.f
  			zstr = ''
 Index: mesa/src/mesa/kap/preprocessor/src/plot.f
 ===================================================================
---- mesa.orig/src/mesa/kap/preprocessor/src/plot.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/kap/preprocessor/src/plot.f	2011-12-08 11:18:32.000000000 +0100
+--- mesa.orig/src/mesa/kap/preprocessor/src/plot.f
++++ mesa/src/mesa/kap/preprocessor/src/plot.f
 @@ -19,7 +19,7 @@
  
           integer, parameter :: io_unit0 = 40
@@ -1132,8 +1141,8 @@ Index: mesa/src/mesa/kap/preprocessor/src/plot.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/kap/private/load_co_kap.f
 ===================================================================
---- mesa.orig/src/mesa/kap/private/load_co_kap.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/kap/private/load_co_kap.f	2011-12-08 11:13:22.000000000 +0100
+--- mesa.orig/src/mesa/kap/private/load_co_kap.f
++++ mesa/src/mesa/kap/private/load_co_kap.f
 @@ -77,7 +77,7 @@
           logical, intent(in) :: read_later
           integer, intent(out) :: ierr
@@ -1181,8 +1190,8 @@ Index: mesa/src/mesa/kap/private/load_co_kap.f
           integer :: ibcxmax                   ! bc flag for x=xmax
 Index: mesa/src/mesa/kap/private/load_kap.f
 ===================================================================
---- mesa.orig/src/mesa/kap/private/load_kap.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/kap/private/load_kap.f	2011-12-08 11:13:44.000000000 +0100
+--- mesa.orig/src/mesa/kap/private/load_kap.f
++++ mesa/src/mesa/kap/private/load_kap.f
 @@ -94,7 +94,7 @@
           logical, intent(in) :: read_later
           integer, intent(out) :: ierr
@@ -1221,8 +1230,8 @@ Index: mesa/src/mesa/kap/private/load_kap.f
           integer :: ibcxmax                   ! bc flag for x=xmax
 Index: mesa/src/mesa/kap/public/kap_def.f
 ===================================================================
---- mesa.orig/src/mesa/kap/public/kap_def.f	2011-12-06 13:23:07.000000000 +0100
-+++ mesa/src/mesa/kap/public/kap_def.f	2011-12-08 11:14:36.000000000 +0100
+--- mesa.orig/src/mesa/kap/public/kap_def.f
++++ mesa/src/mesa/kap/public/kap_def.f
 @@ -187,7 +187,7 @@
        
        
@@ -1234,8 +1243,8 @@ Index: mesa/src/mesa/kap/public/kap_def.f
  
 Index: mesa/src/mesa/kap/test/src/plot_kap_model.f
 ===================================================================
---- mesa.orig/src/mesa/kap/test/src/plot_kap_model.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/kap/test/src/plot_kap_model.f	2011-12-08 11:15:13.000000000 +0100
+--- mesa.orig/src/mesa/kap/test/src/plot_kap_model.f
++++ mesa/src/mesa/kap/test/src/plot_kap_model.f
 @@ -97,7 +97,7 @@
        
        
@@ -1254,8 +1263,8 @@ Index: mesa/src/mesa/kap/test/src/plot_kap_model.f
 +      end program plot_kap_model
 Index: mesa/src/mesa/kap/test/src/sample_kap.f
 ===================================================================
---- mesa.orig/src/mesa/kap/test/src/sample_kap.f	2010-01-06 16:42:19.000000000 +0100
-+++ mesa/src/mesa/kap/test/src/sample_kap.f	2011-12-08 11:14:58.000000000 +0100
+--- mesa.orig/src/mesa/kap/test/src/sample_kap.f
++++ mesa/src/mesa/kap/test/src/sample_kap.f
 @@ -36,7 +36,7 @@
        !multiple core CPUs. the loop that calls the opacity routine kap_get for
        !each gridpoint in the sample model makes use of this via OpenMP.
@@ -1267,8 +1276,8 @@ Index: mesa/src/mesa/kap/test/src/sample_kap.f
        integer, parameter :: maxpts = 2000, maxspec = 31
 Index: mesa/src/mesa/kap/test/src/test_kap_support.f
 ===================================================================
---- mesa.orig/src/mesa/kap/test/src/test_kap_support.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/kap/test/src/test_kap_support.f	2011-12-08 11:42:50.000000000 +0100
+--- mesa.orig/src/mesa/kap/test/src/test_kap_support.f
++++ mesa/src/mesa/kap/test/src/test_kap_support.f
 @@ -165,7 +165,7 @@
           logical, intent(in) :: quietly
           !..allocate and load the opacity tables
@@ -1310,8 +1319,8 @@ Index: mesa/src/mesa/kap/test/src/test_kap_support.f
           fname = trim(dir) // '/params.data'
 Index: mesa/src/mesa/karo/private/karo.f
 ===================================================================
---- mesa.orig/src/mesa/karo/private/karo.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/karo/private/karo.f	2011-12-08 11:32:04.000000000 +0100
+--- mesa.orig/src/mesa/karo/private/karo.f
++++ mesa/src/mesa/karo/private/karo.f
 @@ -548,7 +548,7 @@
           integer, intent(out) :: ierr
           
@@ -1332,8 +1341,8 @@ Index: mesa/src/mesa/karo/private/karo.f
           real :: logRs_in(nr), lgT_in
 Index: mesa/src/mesa/karo/test/src/test_karo.f
 ===================================================================
---- mesa.orig/src/mesa/karo/test/src/test_karo.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/karo/test/src/test_karo.f	2011-12-08 11:32:10.000000000 +0100
+--- mesa.orig/src/mesa/karo/test/src/test_karo.f
++++ mesa/src/mesa/karo/test/src/test_karo.f
 @@ -89,7 +89,7 @@
        integer :: ierr, kap_handle, iounit
        logical, parameter :: use_kap_cache = .true.
@@ -1345,9 +1354,9 @@ Index: mesa/src/mesa/karo/test/src/test_karo.f
        mesa_data_dir = '../../data'
 Index: mesa/src/mesa/mlt/private/mlt.f
 ===================================================================
---- mesa.orig/src/mesa/mlt/private/mlt.f	2010-03-05 00:45:47.000000000 +0100
-+++ mesa/src/mesa/mlt/private/mlt.f	2011-12-08 11:40:32.000000000 +0100
-@@ -157,7 +157,7 @@
+--- mesa.orig/src/mesa/mlt/private/mlt.f
++++ mesa/src/mesa/mlt/private/mlt.f
+@@ -157,7 +157,7 @@ c **************************************
           double precision :: d_omega_dvb(nvbs), d_theta_dvb(nvbs) !, d_a0_dvb(nvbs)
  
           double precision, parameter :: tiny = 1d-30
@@ -1358,9 +1367,9 @@ Index: mesa/src/mesa/mlt/private/mlt.f
       >      dlnmu_dlnT, dlnmu_dlnd         
 Index: mesa/src/mesa/mtx/blas_src/mtx_lib.f
 ===================================================================
---- mesa.orig/src/mesa/mtx/blas_src/mtx_lib.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/mtx/blas_src/mtx_lib.f	2011-12-08 11:20:31.000000000 +0100
-@@ -67,13 +67,13 @@
+--- mesa.orig/src/mesa/mtx/blas_src/mtx_lib.f
++++ mesa/src/mesa/mtx/blas_src/mtx_lib.f
+@@ -67,13 +67,13 @@ c **************************************
  			! form == 1 means log10(max(1d-99,data)))
  			! form == 2 means sign(1d0,data)*log10(1+data**2)
       		double precision, intent(in) :: jac(ldj,sz), out_of_bounds
@@ -1376,7 +1385,7 @@ Index: mesa/src/mesa/mtx/blas_src/mtx_lib.f
  			
  			ierr = 0
  			
-@@ -134,12 +134,13 @@
+@@ -134,12 +134,13 @@ c **************************************
  			! form == 1 means log10(max(1d-99,data)))
  			! form == 2 means sign(1d0,data)*log10(1+data**2)
       		double precision, intent(in) :: jac(ldj,sz), out_of_bounds
@@ -1392,7 +1401,7 @@ Index: mesa/src/mesa/mtx/blas_src/mtx_lib.f
  			
  			io_unit = 56
  			ierr = 0
-@@ -253,10 +254,10 @@
+@@ -253,10 +254,10 @@ c **************************************
           use alert_lib
           integer, intent(in) :: n, m, io_unit, var, eqn
           double precision, dimension(m,m,n), intent(in) :: em2, em1, e00, ep1, ep2
@@ -1407,8 +1416,8 @@ Index: mesa/src/mesa/mtx/blas_src/mtx_lib.f
           if (ierr /= 0) then
 Index: mesa/src/mesa/net/private/net_initialize.f
 ===================================================================
---- mesa.orig/src/mesa/net/private/net_initialize.f	2010-03-03 20:03:23.000000000 +0100
-+++ mesa/src/mesa/net/private/net_initialize.f	2011-12-08 11:21:58.000000000 +0100
+--- mesa.orig/src/mesa/net/private/net_initialize.f
++++ mesa/src/mesa/net/private/net_initialize.f
 @@ -41,7 +41,7 @@
           character (len=*), intent(in) :: data_dir, reaction_filename
           integer, intent(out) :: ierr
@@ -1438,8 +1447,8 @@ Index: mesa/src/mesa/net/private/net_initialize.f
       >            // ' ' // trim(string)
 Index: mesa/src/mesa/net/public/net_def.f
 ===================================================================
---- mesa.orig/src/mesa/net/public/net_def.f	2011-12-06 13:23:07.000000000 +0100
-+++ mesa/src/mesa/net/public/net_def.f	2011-12-08 11:22:08.000000000 +0100
+--- mesa.orig/src/mesa/net/public/net_def.f
++++ mesa/src/mesa/net/public/net_def.f
 @@ -288,7 +288,7 @@
        integer, parameter :: max_net_handles = 1000
        type (Net_General_Info), target :: net_handles(max_net_handles)
@@ -1451,9 +1460,9 @@ Index: mesa/src/mesa/net/public/net_def.f
        contains
 Index: mesa/src/mesa/net/test/src/plot_net.f
 ===================================================================
---- mesa.orig/src/mesa/net/test/src/plot_net.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/net/test/src/plot_net.f	2011-12-08 11:43:42.000000000 +0100
-@@ -30,7 +30,7 @@
+--- mesa.orig/src/mesa/net/test/src/plot_net.f
++++ mesa/src/mesa/net/test/src/plot_net.f
+@@ -30,7 +30,7 @@ c **************************************
        implicit none
        
        integer :: ierr
@@ -1464,9 +1473,9 @@ Index: mesa/src/mesa/net/test/src/plot_net.f
        call const_init
 Index: mesa/src/mesa/net/test/src/test_net.f
 ===================================================================
---- mesa.orig/src/mesa/net/test/src/test_net.f	2010-03-06 20:39:41.000000000 +0100
-+++ mesa/src/mesa/net/test/src/test_net.f	2011-12-08 11:22:20.000000000 +0100
-@@ -31,7 +31,7 @@
+--- mesa.orig/src/mesa/net/test/src/test_net.f
++++ mesa/src/mesa/net/test/src/test_net.f
+@@ -31,7 +31,7 @@ c **************************************
        implicit none
        
        integer :: ierr
@@ -1477,8 +1486,8 @@ Index: mesa/src/mesa/net/test/src/test_net.f
        call const_init
 Index: mesa/src/mesa/net/test/src/test_net_support.f
 ===================================================================
---- mesa.orig/src/mesa/net/test/src/test_net_support.f	2010-03-06 20:39:41.000000000 +0100
-+++ mesa/src/mesa/net/test/src/test_net_support.f	2011-12-08 11:44:04.000000000 +0100
+--- mesa.orig/src/mesa/net/test/src/test_net_support.f
++++ mesa/src/mesa/net/test/src/test_net_support.f
 @@ -318,7 +318,7 @@
           double precision :: logRho_min, logRho_max, dlogT, dlogRho
           integer :: logT_points, logRho_points
@@ -1501,8 +1510,8 @@ Index: mesa/src/mesa/net/test/src/test_net_support.f
           
 Index: mesa/src/mesa/num/private/mod_newton.f
 ===================================================================
---- mesa.orig/src/mesa/num/private/mod_newton.f	2010-01-27 02:08:56.000000000 +0100
-+++ mesa/src/mesa/num/private/mod_newton.f	2011-12-08 11:50:37.000000000 +0100
+--- mesa.orig/src/mesa/num/private/mod_newton.f
++++ mesa/src/mesa/num/private/mod_newton.f
 @@ -282,7 +282,7 @@
           integer :: iiter, ndiag, zone, neq, idiag, tiny_corr_cnt, ldAF, ldA, i, j, k, info,
       >      last_jac_iter, max_iterations_for_jacobian, lsvar_lo, lsvar_hi, force_iter_value,
@@ -1541,8 +1550,8 @@ Index: mesa/src/mesa/num/private/mod_newton.f
              i = num_work_params+1
 Index: mesa/src/mesa/num/test/src/test_support.f
 ===================================================================
---- mesa.orig/src/mesa/num/test/src/test_support.f	2010-01-06 02:27:30.000000000 +0100
-+++ mesa/src/mesa/num/test/src/test_support.f	2011-12-08 11:33:32.000000000 +0100
+--- mesa.orig/src/mesa/num/test/src/test_support.f
++++ mesa/src/mesa/num/test/src/test_support.f
 @@ -250,7 +250,7 @@
           double precision :: xend ! ending value for the interval of integration
           double precision :: y(nv), expect(nv), yprime(nv)
@@ -1563,8 +1572,8 @@ Index: mesa/src/mesa/num/test/src/test_support.f
           integer :: io_unit, i, ipar(lipar), lout, iout, idid, itol, j
 Index: mesa/src/mesa/pulse/private/ctrls_io.f
 ===================================================================
---- mesa.orig/src/mesa/pulse/private/ctrls_io.f	2010-02-10 05:01:25.000000000 +0100
-+++ mesa/src/mesa/pulse/private/ctrls_io.f	2011-12-08 11:21:10.000000000 +0100
+--- mesa.orig/src/mesa/pulse/private/ctrls_io.f
++++ mesa/src/mesa/pulse/private/ctrls_io.f
 @@ -37,19 +37,19 @@
        
        
@@ -1610,8 +1619,8 @@ Index: mesa/src/mesa/pulse/private/ctrls_io.f
           ierr = 0        
 Index: mesa/src/mesa/rates/private/rates_initialize.f
 ===================================================================
---- mesa.orig/src/mesa/rates/private/rates_initialize.f	2010-01-24 23:43:39.000000000 +0100
-+++ mesa/src/mesa/rates/private/rates_initialize.f	2011-12-08 11:45:30.000000000 +0100
+--- mesa.orig/src/mesa/rates/private/rates_initialize.f
++++ mesa/src/mesa/rates/private/rates_initialize.f
 @@ -27,7 +27,7 @@
        
        implicit none
@@ -1661,8 +1670,8 @@ Index: mesa/src/mesa/rates/private/rates_initialize.f
           iounit = alloc_iounit(ierr)
 Index: mesa/src/mesa/rates/test/src/test_rates.f
 ===================================================================
---- mesa.orig/src/mesa/rates/test/src/test_rates.f	2010-03-13 18:46:55.000000000 +0100
-+++ mesa/src/mesa/rates/test/src/test_rates.f	2011-12-08 11:31:52.000000000 +0100
+--- mesa.orig/src/mesa/rates/test/src/test_rates.f
++++ mesa/src/mesa/rates/test/src/test_rates.f
 @@ -22,7 +22,7 @@
           integer, parameter :: max_nrates_to_eval = 500
           integer :: nrates_to_eval, irs(max_nrates_to_eval)
@@ -1674,8 +1683,8 @@ Index: mesa/src/mesa/rates/test/src/test_rates.f
           
 Index: mesa/src/mesa/screen/test/src/test_screen.f
 ===================================================================
---- mesa.orig/src/mesa/screen/test/src/test_screen.f	2010-03-06 20:39:41.000000000 +0100
-+++ mesa/src/mesa/screen/test/src/test_screen.f	2011-12-08 11:41:27.000000000 +0100
+--- mesa.orig/src/mesa/screen/test/src/test_screen.f
++++ mesa/src/mesa/screen/test/src/test_screen.f
 @@ -24,7 +24,7 @@
           double precision, dimension(:), pointer :: zs13, zhat, zhat2, lzav, aznut, zs13inv ! (max jscr)
           double precision, pointer :: graboske_cache(:,:,:) ! (3,max_z_to_cache,max_z_to_cache)
@@ -1687,8 +1696,8 @@ Index: mesa/src/mesa/screen/test/src/test_screen.f
           include 'formats.dek'
 Index: mesa/src/mesa/star/private/adjust_xyz.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/adjust_xyz.f	2010-03-08 19:17:15.000000000 +0100
-+++ mesa/src/mesa/star/private/adjust_xyz.f	2011-12-08 11:49:04.000000000 +0100
+--- mesa.orig/src/mesa/star/private/adjust_xyz.f
++++ mesa/src/mesa/star/private/adjust_xyz.f
 @@ -477,7 +477,7 @@
           integer, intent(out) :: ierr
           
@@ -1700,8 +1709,8 @@ Index: mesa/src/mesa/star/private/adjust_xyz.f
           ierr = 0
 Index: mesa/src/mesa/star/private/ctrls_io.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/ctrls_io.f	2010-03-04 02:31:00.000000000 +0100
-+++ mesa/src/mesa/star/private/ctrls_io.f	2011-12-08 11:24:34.000000000 +0100
+--- mesa.orig/src/mesa/star/private/ctrls_io.f
++++ mesa/src/mesa/star/private/ctrls_io.f
 @@ -32,19 +32,19 @@
        
        
@@ -1747,8 +1756,8 @@ Index: mesa/src/mesa/star/private/ctrls_io.f
           ierr = 0        
 Index: mesa/src/mesa/star/private/do_one_utils.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/do_one_utils.f	2010-03-06 20:39:41.000000000 +0100
-+++ mesa/src/mesa/star/private/do_one_utils.f	2011-12-08 11:25:35.000000000 +0100
+--- mesa.orig/src/mesa/star/private/do_one_utils.f
++++ mesa/src/mesa/star/private/do_one_utils.f
 @@ -107,7 +107,7 @@
  
           integer, pointer, dimension(:) :: model_numbers, model_priorities, model_logs
@@ -1760,8 +1769,8 @@ Index: mesa/src/mesa/star/private/do_one_utils.f
           include 'formats.dek'
 Index: mesa/src/mesa/star/private/evolve_support.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/evolve_support.f	2010-03-02 19:43:27.000000000 +0100
-+++ mesa/src/mesa/star/private/evolve_support.f	2011-12-08 11:27:18.000000000 +0100
+--- mesa.orig/src/mesa/star/private/evolve_support.f
++++ mesa/src/mesa/star/private/evolve_support.f
 @@ -257,7 +257,7 @@
           end interface
           integer, intent(in) :: id
@@ -1773,8 +1782,8 @@ Index: mesa/src/mesa/star/private/evolve_support.f
           if (ierr /= 0) return
 Index: mesa/src/mesa/star/private/hydro_newton.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/hydro_newton.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/star/private/hydro_newton.f	2011-12-08 11:23:49.000000000 +0100
+--- mesa.orig/src/mesa/star/private/hydro_newton.f
++++ mesa/src/mesa/star/private/hydro_newton.f
 @@ -711,7 +711,7 @@
           integer, intent(out) :: ierr
  
@@ -1786,8 +1795,8 @@ Index: mesa/src/mesa/star/private/hydro_newton.f
            
 Index: mesa/src/mesa/star/private/log.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/log.f	2010-03-12 19:35:19.000000000 +0100
-+++ mesa/src/mesa/star/private/log.f	2011-12-08 11:26:51.000000000 +0100
+--- mesa.orig/src/mesa/star/private/log.f
++++ mesa/src/mesa/star/private/log.f
 @@ -61,7 +61,7 @@
           integer, intent(out) :: ierr
  
@@ -1799,8 +1808,8 @@ Index: mesa/src/mesa/star/private/log.f
           logical, parameter :: dbg = .false.
 Index: mesa/src/mesa/star/private/profile.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/profile.f	2010-03-02 19:43:27.000000000 +0100
-+++ mesa/src/mesa/star/private/profile.f	2011-12-08 11:27:09.000000000 +0100
+--- mesa.orig/src/mesa/star/private/profile.f
++++ mesa/src/mesa/star/private/profile.f
 @@ -69,7 +69,7 @@
           integer, intent(out) :: ierr
  
@@ -1830,8 +1839,8 @@ Index: mesa/src/mesa/star/private/profile.f
  
 Index: mesa/src/mesa/star/private/read_model.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/read_model.f	2010-03-01 19:11:17.000000000 +0100
-+++ mesa/src/mesa/star/private/read_model.f	2011-12-08 11:24:19.000000000 +0100
+--- mesa.orig/src/mesa/star/private/read_model.f
++++ mesa/src/mesa/star/private/read_model.f
 @@ -154,7 +154,7 @@
           integer :: iounit, n, i, t, file_type, year_month_day_when_created, nz, species, nvar
           logical :: do_read_prev
@@ -1843,8 +1852,8 @@ Index: mesa/src/mesa/star/private/read_model.f
        	integer, pointer :: perm(:) ! (species)
 Index: mesa/src/mesa/star/private/star_private_def.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/star_private_def.f	2010-03-01 19:11:17.000000000 +0100
-+++ mesa/src/mesa/star/private/star_private_def.f	2011-12-08 11:44:43.000000000 +0100
+--- mesa.orig/src/mesa/star/private/star_private_def.f
++++ mesa/src/mesa/star/private/star_private_def.f
 @@ -245,7 +245,7 @@
              ppn_rate_numbers_fname, kappa_file_prefix
           integer, intent(out) :: ierr
@@ -1856,8 +1865,8 @@ Index: mesa/src/mesa/star/private/star_private_def.f
           ierr = 0
 Index: mesa/src/mesa/star/private/star_utils.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/star_utils.f	2010-03-01 19:11:17.000000000 +0100
-+++ mesa/src/mesa/star/private/star_utils.f	2011-12-08 11:26:01.000000000 +0100
+--- mesa.orig/src/mesa/star/private/star_utils.f
++++ mesa/src/mesa/star/private/star_utils.f
 @@ -630,7 +630,7 @@
        
        subroutine std_write_internals_to_file(id, num)
@@ -1878,8 +1887,8 @@ Index: mesa/src/mesa/star/private/star_utils.f
           write(fname, '(a, i1)') 'n', mod(abs(num), 10)
 Index: mesa/src/mesa/star/private/winds.f
 ===================================================================
---- mesa.orig/src/mesa/star/private/winds.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/star/private/winds.f	2011-12-08 11:24:47.000000000 +0100
+--- mesa.orig/src/mesa/star/private/winds.f
++++ mesa/src/mesa/star/private/winds.f
 @@ -391,7 +391,7 @@
           integer, intent(out) :: ierr
  
@@ -1891,8 +1900,8 @@ Index: mesa/src/mesa/star/private/winds.f
           integer :: LF,CF
 Index: mesa/src/mesa/star/public/star_def.f
 ===================================================================
---- mesa.orig/src/mesa/star/public/star_def.f	2011-12-06 13:23:07.000000000 +0100
-+++ mesa/src/mesa/star/public/star_def.f	2011-12-08 11:54:22.000000000 +0100
+--- mesa.orig/src/mesa/star/public/star_def.f
++++ mesa/src/mesa/star/public/star_def.f
 @@ -73,7 +73,7 @@
  
        integer, parameter :: star_def_version = 14
@@ -1913,8 +1922,8 @@ Index: mesa/src/mesa/star/public/star_def.f
        ! debugging storage
 Index: mesa/src/mesa/star/test/src/calibrate.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/calibrate.f	2010-03-08 01:39:53.000000000 +0100
-+++ mesa/src/mesa/star/test/src/calibrate.f	2011-12-08 11:30:04.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/calibrate.f
++++ mesa/src/mesa/star/test/src/calibrate.f
 @@ -47,7 +47,7 @@
        double precision, dimension(max_tries) :: alphas, Ys, Zs, log_Ls, log_Rs, surface_ZXs
           
@@ -1953,8 +1962,8 @@ Index: mesa/src/mesa/star/test/src/calibrate.f
           11 format(a30, f16.6)
 Index: mesa/src/mesa/star/test/src/create_zams.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/create_zams.f	2011-12-06 13:23:07.000000000 +0100
-+++ mesa/src/mesa/star/test/src/create_zams.f	2011-12-08 11:29:31.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/create_zams.f
++++ mesa/src/mesa/star/test/src/create_zams.f
 @@ -35,7 +35,7 @@
  
           
@@ -2011,8 +2020,8 @@ Index: mesa/src/mesa/star/test/src/create_zams.f
           11 format(a30, f16.6)
 Index: mesa/src/mesa/star/test/src/isochrone.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/isochrone.f	2010-03-01 22:01:48.000000000 +0100
-+++ mesa/src/mesa/star/test/src/isochrone.f	2011-12-08 11:31:43.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/isochrone.f
++++ mesa/src/mesa/star/test/src/isochrone.f
 @@ -30,7 +30,7 @@
  
        implicit none
@@ -2051,8 +2060,8 @@ Index: mesa/src/mesa/star/test/src/isochrone.f
           
 Index: mesa/src/mesa/star/test/src/pgstar.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/pgstar.f	2010-03-13 17:07:44.000000000 +0100
-+++ mesa/src/mesa/star/test/src/pgstar.f	2011-12-08 11:29:41.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/pgstar.f
++++ mesa/src/mesa/star/test/src/pgstar.f
 @@ -59,7 +59,7 @@
           
           subroutine clear_file(fname0)
@@ -2064,8 +2073,8 @@ Index: mesa/src/mesa/star/test/src/pgstar.f
              inquire(file=trim(fname), exist=fexist)
 Index: mesa/src/mesa/star/test/src/pgstar_hr.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/pgstar_hr.f	2010-03-12 18:38:38.000000000 +0100
-+++ mesa/src/mesa/star/test/src/pgstar_hr.f	2011-12-08 11:30:48.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/pgstar_hr.f
++++ mesa/src/mesa/star/test/src/pgstar_hr.f
 @@ -52,7 +52,7 @@
           real :: HR_logL_last, HR_logTeff_last
           real :: del, dx, dy
@@ -2077,8 +2086,8 @@ Index: mesa/src/mesa/star/test/src/pgstar_hr.f
           ! Spectral types for the top axis (ajc = Annie Jump Cannon!)
 Index: mesa/src/mesa/star/test/src/pgstar_summary.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/pgstar_summary.f	2010-03-13 17:07:44.000000000 +0100
-+++ mesa/src/mesa/star/test/src/pgstar_summary.f	2011-12-08 11:31:03.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/pgstar_summary.f
++++ mesa/src/mesa/star/test/src/pgstar_summary.f
 @@ -46,7 +46,7 @@
           type (star_info), pointer :: s
           integer :: screenid
@@ -2090,8 +2099,8 @@ Index: mesa/src/mesa/star/test/src/pgstar_summary.f
           logical :: flag, vary 
 Index: mesa/src/mesa/star/test/src/pgstar_support.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/pgstar_support.f	2010-03-13 17:07:44.000000000 +0100
-+++ mesa/src/mesa/star/test/src/pgstar_support.f	2011-12-08 11:30:37.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/pgstar_support.f
++++ mesa/src/mesa/star/test/src/pgstar_support.f
 @@ -66,19 +66,19 @@
           prev_TRho_Profile_win_size, prev_TRho_Profile_win_ratio
  
@@ -2146,8 +2155,8 @@ Index: mesa/src/mesa/star/test/src/pgstar_support.f
           if (level >= 10) then
 Index: mesa/src/mesa/star/test/src/pgstar_trho.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/pgstar_trho.f	2010-03-12 18:38:38.000000000 +0100
-+++ mesa/src/mesa/star/test/src/pgstar_trho.f	2011-12-08 11:30:44.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/pgstar_trho.f
++++ mesa/src/mesa/star/test/src/pgstar_trho.f
 @@ -52,7 +52,7 @@
           real :: TRho_logT_last, TRho_logRho_last
           real :: del, dx, dy
@@ -2159,8 +2168,8 @@ Index: mesa/src/mesa/star/test/src/pgstar_trho.f
           logical, parameter :: dbg = .false.
 Index: mesa/src/mesa/star/test/src/run_star_support.f
 ===================================================================
---- mesa.orig/src/mesa/star/test/src/run_star_support.f	2010-03-02 19:43:27.000000000 +0100
-+++ mesa/src/mesa/star/test/src/run_star_support.f	2011-12-08 11:50:02.000000000 +0100
+--- mesa.orig/src/mesa/star/test/src/run_star_support.f
++++ mesa/src/mesa/star/test/src/run_star_support.f
 @@ -32,9 +32,9 @@
  
        implicit none
@@ -2298,8 +2307,8 @@ Index: mesa/src/mesa/star/test/src/run_star_support.f
           if (.not. associated(masses)) then
 Index: mesa/src/mesa/star/test_suite/rlo/src/rlo_exp.f
 ===================================================================
---- mesa.orig/src/mesa/star/test_suite/rlo/src/rlo_exp.f	2010-03-01 22:01:48.000000000 +0100
-+++ mesa/src/mesa/star/test_suite/rlo/src/rlo_exp.f	2011-12-08 11:27:37.000000000 +0100
+--- mesa.orig/src/mesa/star/test_suite/rlo/src/rlo_exp.f
++++ mesa/src/mesa/star/test_suite/rlo/src/rlo_exp.f
 @@ -474,7 +474,7 @@
           type (star_info), pointer :: s
           integer, intent(out) :: ierr
@@ -2329,8 +2338,8 @@ Index: mesa/src/mesa/star/test_suite/rlo/src/rlo_exp.f
           if (ierr /= 0) return
 Index: mesa/src/mesa/utils/public/utils_lib.f
 ===================================================================
---- mesa.orig/src/mesa/utils/public/utils_lib.f	2010-03-09 06:25:26.000000000 +0100
-+++ mesa/src/mesa/utils/public/utils_lib.f	2011-12-08 11:19:07.000000000 +0100
+--- mesa.orig/src/mesa/utils/public/utils_lib.f
++++ mesa/src/mesa/utils/public/utils_lib.f
 @@ -103,7 +103,7 @@
        subroutine append_line(n, arry, filename, format_str, initialize, ierr)
           integer, intent(in) :: n
@@ -2351,8 +2360,8 @@ Index: mesa/src/mesa/utils/public/utils_lib.f
           integer :: iounit, i
 Index: mesa/src/mesa/utils/test/src/test_utils.f
 ===================================================================
---- mesa.orig/src/mesa/utils/test/src/test_utils.f	2010-02-16 04:43:43.000000000 +0100
-+++ mesa/src/mesa/utils/test/src/test_utils.f	2011-12-08 11:19:21.000000000 +0100
+--- mesa.orig/src/mesa/utils/test/src/test_utils.f
++++ mesa/src/mesa/utils/test/src/test_utils.f
 @@ -72,7 +72,7 @@
        
        subroutine test_token_read
@@ -2364,8 +2373,8 @@ Index: mesa/src/mesa/utils/test/src/test_utils.f
           write(*,*) 'test_token_read'
 Index: mesa/src/mesa/weaklib/private/load_weak.f
 ===================================================================
---- mesa.orig/src/mesa/weaklib/private/load_weak.f	2010-03-06 02:30:58.000000000 +0100
-+++ mesa/src/mesa/weaklib/private/load_weak.f	2011-12-08 11:34:01.000000000 +0100
+--- mesa.orig/src/mesa/weaklib/private/load_weak.f
++++ mesa/src/mesa/weaklib/private/load_weak.f
 @@ -56,7 +56,7 @@
           integer, intent(out) :: ierr
           
@@ -2377,8 +2386,8 @@ Index: mesa/src/mesa/weaklib/private/load_weak.f
  
 Index: mesa/src/mesa/weaklib/public/weak_def.f
 ===================================================================
---- mesa.orig/src/mesa/weaklib/public/weak_def.f	2010-03-06 02:30:58.000000000 +0100
-+++ mesa/src/mesa/weaklib/public/weak_def.f	2011-12-08 11:34:11.000000000 +0100
+--- mesa.orig/src/mesa/weaklib/public/weak_def.f
++++ mesa/src/mesa/weaklib/public/weak_def.f
 @@ -26,7 +26,7 @@
        
        implicit none
@@ -2390,8 +2399,8 @@ Index: mesa/src/mesa/weaklib/public/weak_def.f
        
 Index: mesa/src/mesa/weaklib/test/src/test_weak.f
 ===================================================================
---- mesa.orig/src/mesa/weaklib/test/src/test_weak.f	2010-03-07 00:33:28.000000000 +0100
-+++ mesa/src/mesa/weaklib/test/src/test_weak.f	2011-12-08 11:34:20.000000000 +0100
+--- mesa.orig/src/mesa/weaklib/test/src/test_weak.f
++++ mesa/src/mesa/weaklib/test/src/test_weak.f
 @@ -32,7 +32,7 @@
  		   double precision :: logT, T, T9, dT9, dlnT, YeRho, &
  		      ye, rho, logRho, dlogRho, eta, d_eta_dlnT, d_eta_dlnRho

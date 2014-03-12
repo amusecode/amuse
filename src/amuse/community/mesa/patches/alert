@@ -15,7 +15,7 @@ Index: mesa/src/mesa/alert/public/alert_lib.f
        contains
        
        subroutine alert(info, message)
-+         INCLUDE 'mpif.h'
++         use mpi
           integer, intent(in) :: info
 +         integer :: parent, ierr
 +         integer, dimension(8) :: header
