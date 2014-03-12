@@ -16,7 +16,6 @@
 package nl.esciencecenter.amuse.distributed.pilots;
 
 import ibis.ipl.Ibis;
-import ibis.ipl.Registry;
 import ibis.ipl.IbisIdentifier;
 
 import java.io.IOException;

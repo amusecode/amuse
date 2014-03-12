@@ -16,7 +16,6 @@
 package nl.esciencecenter.amuse.distributed.remote;
 
 import ibis.ipl.Ibis;
-import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
@@ -46,14 +45,6 @@ public class JobRunner extends Thread {
     private final ReceivePortIdentifier resultPort;
     private final Ibis ibis;
 
-    /**
-     * @param jobID
-     * @param description
-     * @param nodes
-     * @param configuration
-     * @param resultPort 
-     * @throws Exception
-     */
     public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, ReceivePortIdentifier resultPort, Ibis ibis, File tmpDir)
             throws Exception {
         this.jobID = jobID;

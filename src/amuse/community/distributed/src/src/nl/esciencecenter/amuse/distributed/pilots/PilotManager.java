@@ -484,10 +484,6 @@ public class PilotManager {
         return result;
     }
 
-    /**
-     * @param job
-     * @return
-     */
     public boolean canRun(AmuseJob job) {
         //check if we are running
         if (!isRunning()) {

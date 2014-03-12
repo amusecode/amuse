@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class ResourceManager {
-    
+
     public static final String WHITESPACE_REGEX = ";";
 
     public static final String EQUALS_REGEX = "\\s*=\\s*";
@@ -77,7 +77,7 @@ public class ResourceManager {
     private final String bootCommand;
 
     private final Hub hub;
-    
+
     private static void waitUntilHubStarted(Server iplServer, String hubAddress, String name) throws DistributedAmuseException {
         logger.info("waiting for new remote hub on {} to connect to the local hub", name);
         for (int i = 0; i < 40; i++) {
@@ -170,7 +170,7 @@ public class ResourceManager {
             Credential credential = xenon.credentials().getDefaultCredential(getSchedulerType());
 
             Map<String, String> properties = new HashMap<String, String>();
-            
+
             //add gateway if provided
             String gateway = getGateway();
             if (gateway != null && !gateway.isEmpty()) {
@@ -191,8 +191,8 @@ public class ResourceManager {
 
             Credential credential = xenon.credentials().getDefaultCredential(getSchedulerType());
 
-           Map<String, String> properties = new HashMap<String, String>();
-            
+            Map<String, String> properties = new HashMap<String, String>();
+
             //add gateway if provided
             String gateway = getGateway();
             if (gateway != null && !gateway.isEmpty()) {
@@ -207,13 +207,23 @@ public class ResourceManager {
 
     private AmuseConfiguration downloadConfiguration(FileSystem filesystem, Xenon xenon) throws DistributedAmuseException {
         try {
-            RelativePath amuseConfig = new RelativePath(this.amuseDir + "/config.mk");
+            RelativePath amuseHome;
+            if (this.amuseDir.startsWith("/")) {
+                amuseHome = new RelativePath(this.amuseDir);
+            } else {
+                RelativePath userHome = filesystem.getEntryPath().getRelativePath();
+
+                amuseHome = userHome.resolve(this.amuseDir);
+            }
+            RelativePath amuseConfig = amuseHome.resolve("config.mk");
+            
+            logger.debug("Downloading amuse config for " + getName() + " from " + amuseConfig);
 
             Path path = xenon.files().newPath(filesystem, amuseConfig);
 
             InputStream in = xenon.files().newInputStream(path);
 
-            return new AmuseConfiguration(this.amuseDir, in);
+            return new AmuseConfiguration(amuseHome.getAbsolutePath(), in);
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot download configuration file for resource " + this.name, e);
         }
@@ -302,7 +312,8 @@ public class ResourceManager {
     @Override
     public String toString() {
         return "Resource [id=" + id + ", name=" + name + ", location=" + location + ", amuseDir=" + amuseDir + ", schedulerType="
-                + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub +  ", bootCommand=" + bootCommand + "]";
+                + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub
+                + ", bootCommand=" + bootCommand + "]";
     }
 
     public Map<String, String> getStatusMap() throws DistributedAmuseException {

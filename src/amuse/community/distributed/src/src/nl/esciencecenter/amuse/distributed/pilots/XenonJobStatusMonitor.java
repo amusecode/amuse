@@ -79,7 +79,7 @@ public class XenonJobStatusMonitor extends Thread {
 
             synchronized (this) {
                 try {
-                    wait(5000);
+                    wait(JOB_UPDATE_DELAY);
                 } catch (InterruptedException e) {
                     //thread interrupted, end status monitor
                     return;
