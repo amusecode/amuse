@@ -113,7 +113,7 @@ public class Watchdog implements RegistryEventHandler {
     /**
      * Waits until the pool is terminated, or the watchdog timer expires.
      */
-    public synchronized void waitUntilExpired() {
+    public synchronized boolean waitUntilExpired() {
         long now = System.currentTimeMillis();
 
         //reset deadline
@@ -142,6 +142,8 @@ public class Watchdog implements RegistryEventHandler {
         } else {
             logger.info("Pool terminated");
         }
+        
+        return terminated;
     }
 
 }

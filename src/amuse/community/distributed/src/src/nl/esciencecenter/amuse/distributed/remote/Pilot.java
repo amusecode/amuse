@@ -175,11 +175,13 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
         //Wait until the pool is terminated by the DistributedAmuse master node, or the master node leaves, or the
         //watchdog expires
-        watchdog.waitUntilExpired();
+        boolean cleanExit = watchdog.waitUntilExpired();
 
         logger.info("Pool terminated, ending pilot");
-
-        ibis.end();
+        
+        if (cleanExit) {
+            ibis.end();
+        }
     }
 
     private synchronized void addJobRunner(int jobID, JobRunner jobRunner) {
