@@ -504,8 +504,19 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             setPrimitiveLimitsFromHeader();
             setStringLimitsFromHeader();
 
-            // write to channel
-            channel.write(byteBuffers);
+            // write all bufferd to channel
+            boolean done = false;
+            
+            while(!done) {
+                channel.write(byteBuffers);
+                
+                done = true;
+                for (ByteBuffer buffer : byteBuffers) {
+                    if (buffer.hasRemaining()) {
+                       done = false;
+                    }
+                }
+            }
 
             // alternative, debugging version of writing buffers
             // for (ByteBuffer buffer : byteBuffers) {
