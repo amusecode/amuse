@@ -22,7 +22,12 @@ from amuse.rfi.channel import MultiprocessingMPIChannel
 from amuse.rfi.channel import DistributedChannel
 from amuse.rfi.channel import SocketChannel
 from amuse.rfi.channel import is_mpd_running
-from amuse import config
+
+try:
+    from amuse import config
+except ImportError as ex:
+    class config(object):
+        is_mpi_enabled = False
 
 CODE_LOG = logging.getLogger("code")
 if CODE_LOG.level == logging.NOTSET:

@@ -5,7 +5,6 @@ except ImportError as ex:
     warnings.warn("could not load h5py, hdf5 files not supported", ImportWarning)
     h5py = None
     
-import h5py
 import numpy
 import pickle
 import os.path
