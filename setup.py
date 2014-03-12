@@ -1,10 +1,13 @@
-from distutils.core import setup
+from ez_setup import use_setuptools
+use_setuptools()
+    
 from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
 from distutils.util import convert_path
 from distutils.cmd import Command
 from distutils.extension import Extension
+from setuptools import setup
 
 import sys
 import os
@@ -46,14 +49,11 @@ class Install(install):
             self.run_command(cmd_name)
             
         install.run(self)
-        
-            
-        
-            
-            
+
 mapping_from_command_name_to_command_class = {
     'build_latex':build_latex, 
     'build_codes':BuildCodes,
+    #'build_codes':ConfigureCodes,
     'build_code':BuildOneCode,
     'clean_codes':CleanCodes,
     'dist_clean':DistCleanCodes,
@@ -68,6 +68,7 @@ mapping_from_command_name_to_command_class = {
 if sys.hexversion > 0x03000000:
     mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
     
+build.sub_commands.append(('configure_codes', None))
 build.sub_commands.append(('build_codes', None))
 Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))
@@ -181,5 +182,10 @@ setup(
     url = 'http://www.amusecode.org/',
     author_email = 'info@amusecode.org',
     author = 'The Amuse Team',
+    install_requires = [
+        'docutils>=0.6',
+        'numpy>=1.2.2',
+        'nose>=0.11.1'
+    ]
 )
 

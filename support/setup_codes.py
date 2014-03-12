@@ -450,7 +450,7 @@ class CodeCommand(Command):
                 # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
                 # MAKEFILE
                 #
-                if shortname == 'mocassin':
+                if shortname == 'mocassin' and os.path.exists(os.path.join(temp_builddir, 'src', 'mocassin.2.02.70')):
                     output_path = os.path.join(lib_builddir, 'src', 'mocassin.2.02.70')
                     input_path = os.path.join(temp_builddir, 'src', 'mocassin.2.02.70')
                     self.mkpath(output_path)
@@ -886,6 +886,21 @@ class BuildCodes(CodeCommand):
                 "Your configuration is out of date, please rerun configure",
                 level = level
             )
+        
+ 
+class ConfigrueCodes(CodeCommand):
+
+    description = "run configure for amuse"
+
+    def run (self):
+        if os.path.exists('config.mk'):
+            self.announce("Already configured, not running configure", level = 2)
+            return
+            
+        environment = self.environment
+        environment.update(os.environ)
+        self.announce("Running configure for AMUSE", level = 2)
+        self.call(['configure', '--nompi'], env=environment)
         
  
 class CleanCodes(CodeCommand):

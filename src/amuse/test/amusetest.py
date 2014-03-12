@@ -142,7 +142,13 @@ class TestCase(unittest.TestCase):
                 raise self.failureException("Exception '{0}' was not raised.".format(exception))
         else:
             unittest.TestCase.assertRaises(self, exception, callable, *list_args, **keyword_args)
-    
+            
+    def assertGreaterEqual(self, a, b, msg=None):
+        """Just like self.assertTrue(a >= b), but with a nicer default message."""
+        if not a >= b:
+            standardMsg = '%s not greater than or equal to %s' % (safe_repr(a), safe_repr(b))
+            self.fail(self._formatMessage(msg, standardMsg))
+
     def run(self, result=None):
         if hasattr(unittest, 'SkipTest'):
             return unittest.TestCase.run(self, result)
