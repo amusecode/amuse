@@ -217,11 +217,16 @@ class TestParticlesAttributes(amusetest.TestCase):
         MSR = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=10)
         
         self.assertAlmostEquals(MSR, 0.8877, 3)
+                
         random.seed(456)
         result = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=10, also_compute_uncertainty=True)
         self.assertTrue(isinstance(result, particle_attributes.MassSegregationRatioResults))
-        self.assertAlmostEquals(result.mass_segregation_ratio, 0.8877, 3)
-        self.assertAlmostEquals(result.uncertainty, 0.2482, 3)
+        if sys.hexversion > 0x03000000:
+            self.assertAlmostEquals(result.mass_segregation_ratio, 0.7160, 3)
+            self.assertAlmostEquals(result.uncertainty, 0.2321, 3)
+        else:
+            self.assertAlmostEquals(result.mass_segregation_ratio, 0.8877, 3)
+            self.assertAlmostEquals(result.uncertainty, 0.2482, 3)
         MSR, sigma = sorted.mass_segregation_ratio(number_of_particles=10, number_of_random_sets=50, also_compute_uncertainty=True)
         self.assertTrue(MSR - sigma < 1.0 < MSR + sigma)
         
@@ -413,9 +418,14 @@ class TestParticlesAttributes(amusetest.TestCase):
         
         sorted.mass = numpy.random.uniform(1.0, 2.0, number_of_particles) | nbody_system.mass
         MSR, sigma = sorted.mass_segregation_from_nearest_neighbour(number_of_particles=10, also_compute_uncertainty=True)
-        self.assertAlmostEquals(MSR, 1.7355, 3)
-        self.assertAlmostEquals(sigma, 0.3969, 3)
         
+        if sys.hexversion > 0x03000000:
+            self.assertAlmostEquals(MSR, 1.72632, 3)
+            self.assertAlmostEquals(sigma, 0.4127, 3)
+        else:
+            self.assertAlmostEquals(MSR, 1.7355, 3)
+            self.assertAlmostEquals(sigma, 0.3969, 3)
+                
         random.seed(456)
         MSR_of_nonsegregated_systems = []
         for i in range(10):
@@ -429,7 +439,11 @@ class TestParticlesAttributes(amusetest.TestCase):
         MSR, sigma = sorted.mass_segregation_from_nearest_neighbour(number_of_particles=10, number_of_random_sets=20, 
             also_compute_uncertainty=True)
         self.assertTrue(MSR > 5.0)
-        self.assertAlmostEquals(sigma, 0.4, 1)
+        
+        if sys.hexversion > 0x03000000:
+            self.assertAlmostEquals(sigma, 0.3, 1)
+        else:
+            self.assertAlmostEquals(sigma, 0.4, 1)
     
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
