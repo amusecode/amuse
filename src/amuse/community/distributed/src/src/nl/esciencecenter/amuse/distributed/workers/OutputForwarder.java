@@ -50,7 +50,7 @@ public class OutputForwarder extends Thread {
         this.file = file;
         this.ibis = ibis;
 
-        setDaemon(false);
+        setDaemon(true);
         setName("output forwarder");
         start();
     }

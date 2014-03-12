@@ -70,7 +70,7 @@ public class JobSet extends Thread {
             //properties.put("ibis.managementclient", "true");
             //properties.put("ibis.bytescount", "true");
 
-            ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, pilots.getStatusMonitor(),
+            ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, pilots.getStatusMonitor(), null, "master",
                     DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
             //label this ibis as the master node by running an election with us as the only 

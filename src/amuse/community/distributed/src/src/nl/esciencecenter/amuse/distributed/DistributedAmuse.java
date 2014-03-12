@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.jobs.JobSet;
+import nl.esciencecenter.amuse.distributed.pilots.Lighthouse;
 import nl.esciencecenter.amuse.distributed.pilots.PilotSet;
 import nl.esciencecenter.amuse.distributed.resources.ResourceSet;
 import nl.esciencecenter.amuse.distributed.web.WebInterface;
@@ -125,6 +126,8 @@ public class DistributedAmuse {
         jobs = new JobSet(resources.getIplServerAddress(), pilots, tmpDir);
 
         workerConnectionServer = new WorkerConnectionServer(jobs, tmpDir);
+        
+        new Lighthouse(jobs.getIbis(), pilots);
 
         try {
             webInterface = new WebInterface(this, webInterfacePort);

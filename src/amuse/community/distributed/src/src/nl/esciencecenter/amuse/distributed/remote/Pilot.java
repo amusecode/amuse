@@ -71,10 +71,13 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     private final HashMap<Integer, JobRunner> jobs;
 
     private final AmuseConfiguration configuration;
+
+    private final Watchdog watchdog;
     
     private UUID id;
     
     private File tmpDir;
+    
 
     private static File createTmpDir(UUID id) throws IOException {
         File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -140,8 +143,10 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         String tag = id.toString();
         
         logger.debug("Creating Ibis");
+        
+        watchdog = new Watchdog();
 
-        ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, null, null, tag,
+        ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, watchdog, null, tag,
                 DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
         logger.debug("Creating Receive port");
@@ -164,14 +169,13 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     private void run() throws IOException {
         receivePort.enableConnections();
         receivePort.enableMessageUpcalls();
-        
-        //ibis.registry().enableEvents();
+        ibis.registry().enableEvents();
         
         logger.info("Pilot fully initialized, waiting for commands...");
 
-        //Wait until the pool is terminated by the DistributedAmuse master node
-        //FIXME: no way to interrupt this wait.
-        ibis.registry().waitUntilTerminated();
+        //Wait until the pool is terminated by the DistributedAmuse master node, or the master node leaves, or the
+        //watchdog expires
+        watchdog.waitUntilExpired();
 
         logger.info("Pool terminated, ending pilot");
 

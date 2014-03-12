@@ -34,7 +34,7 @@ public class PilotStatusMonitor implements RegistryEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(PilotStatusMonitor.class);
 
     private final PilotSet pilots;
-
+    
     public PilotStatusMonitor(PilotSet pilots) {
         this.pilots = pilots;
     }
