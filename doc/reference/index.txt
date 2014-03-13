@@ -25,6 +25,7 @@ Reference documentation
    interface_specification
    message-protocol
    distributed
+   cartesius
    style_guide
    code_management
    glossary
