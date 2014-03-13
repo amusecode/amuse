@@ -126,7 +126,7 @@ def use_setuptools(version=DEFAULT_VERSION, download_base=DEFAULT_URL,
     try:
         import pkg_resources
     except ImportError:
-        return _do_download(version, download_base, to_dir, download_delay)
+        return _do_download(download_version, download_base, to_dir, download_delay)
     try:
         pkg_resources.require("setuptools>=" + version)
         return
