@@ -263,7 +263,7 @@ def get_best_downloader():
         if dl.viable():
             return dl
 
-def download_setuptools(version=DEFAULT_VERSION, download_base=DEFAULT_URL,
+def download_setuptools(version=DOWNLOAD_VERSION, download_base=DEFAULT_URL,
         to_dir=os.curdir, delay=15, downloader_factory=get_best_downloader):
     """
     Download setuptools from a specified location and return its filename
@@ -313,7 +313,7 @@ def _parse_args():
     )
     parser.add_option(
         '--version', help="Specify which version to download",
-        default=DEFAULT_VERSION,
+        default=DOWNLOAD_VERSION,
     )
     options, args = parser.parse_args()
     # positional arguments are ignored

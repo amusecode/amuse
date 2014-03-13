@@ -294,7 +294,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         self.assertEquals(read.name, daltons.name)
         self.assertEquals(read.length, daltons.length)
         self.assertEquals(read.age, daltons.age)
-        self.assertEquals(read.name.dtype.kind, "S")
+        self.assertTrue(read.name.dtype.kind in ["S", "U"])
         self.assertEquals(str(read.length.value_in(units.m).dtype), "float32")
         self.assertEquals(str(read.age.value_in(units.yr).dtype), "int32")
     
