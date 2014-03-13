@@ -105,6 +105,11 @@ public class PilotManager {
         } else if (resource.isLocal() || resource.getSchedulerType().equals("ssh")) {
             result.setQueueName("unlimited");
         }
+        
+        if (resource.getSchedulerType().equals("slurm")) {
+            result.addJobOption("single.process", "true");
+            result.setProcessesPerNode(slots);
+        }
 
         //parse and add job options
         for (Map.Entry<String, String> option : parseOptions(options).entrySet()) {
