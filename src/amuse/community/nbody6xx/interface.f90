@@ -654,12 +654,14 @@
      &      number_of_points)
         INCLUDE 'src/common6.h'
         INTEGER, intent(IN) :: number_of_points
-        DOUBLE PRECISION :: eps1
-        DOUBLE PRECISION ::  x1, y1, z1
-        DOUBLE PRECISION :: fx, fy, fz
+        DOUBLE PRECISION :: eps1(number_of_points)
+        DOUBLE PRECISION :: x1(number_of_points), y1(number_of_points)
+        DOUBLE PRECISION :: z1(number_of_points)
+        DOUBLE PRECISION :: fx(number_of_points), fy(number_of_points)
+        DOUBLE PRECISION :: fz(number_of_points)
         DOUBLE PRECISION :: r2, r2i, ri, mri, mr3i
         INTEGER get_gravity_at_point 
-        INTEGER idx
+        INTEGER idx, ipart
 
         r2 = 0
         r2i = 0
@@ -669,18 +671,20 @@
         fx = 0
         fy = 0 
         fz = 0
-
+        print *, 'number_of_points', number_of_points
+        DO ipart = 1, number_of_points
         DO idx = IFIRST, NTOT 
            r2 = X(1,idx)**2 + X(2,idx)**2 + X(3,idx)**2
-           r2i = 1.0/(r2 + eps1)
+           r2i = 1.0/(r2 + eps1(ipart))
            ri = sqrt(r2i)
            mri = BODY(idx) * ri
            mr3i = mri * r2i
-           fx = fx + mr3i * (X(1,idx)-x1)
-           fy = fy + mr3i * (X(2,idx)-x1)
-           fz = fz + mr3i * (X(3,idx)-x1)
+           fx(ipart) = fx(ipart) + mr3i * (X(1,idx)-x1(ipart))
+           fy(ipart) = fy(ipart) + mr3i * (X(2,idx)-x1(ipart))
+           fz(ipart) = fz(ipart) + mr3i * (X(3,idx)-x1(ipart))
         ENDDO
-        PRINT *, "fx=", fx, "fy=", fy, "fz=", fz
+        PRINT *, "fx=", fx(ipart), "fy=", fy(ipart), "fz=", fz(ipart)
+        ENDDO
         get_gravity_at_point = 0 
       END FUNCTION
 
@@ -689,24 +693,28 @@
      &     number_of_points)
         INCLUDE 'src/common6.h'
         INTEGER, intent(IN) :: number_of_points
-        DOUBLE PRECISION :: eps1, x1, y1, z1
-        DOUBLE PRECISION :: phi
+        DOUBLE PRECISION :: eps1(number_of_points)
+        DOUBLE PRECISION :: x1(number_of_points), y1(number_of_points)
+        DOUBLE PRECISION :: z1(number_of_points)
+        DOUBLE PRECISION :: phi(number_of_points)
         DOUBLE PRECISION :: r2, r2i, ri
         INTEGER get_potential_at_point
-        INTEGER idx
+        INTEGER idx, ipart
 
         phi = 0
         r2 = 0
         r2i = 0
         ri = 0
 
+        DO ipart = 1, number_of_points
         DO idx = IFIRST, NTOT
            r2 = X(1,idx)**2 + X(2,idx)**2 + X(3,idx)**2
-           r2i = 1.0/(r2 + eps1)
+           r2i = 1.0/(r2 + eps1(ipart))
            ri = sqrt(r2i)
-           phi = phi - BODY(idx) * ri
+           phi(ipart) = phi(ipart) - BODY(idx) * ri
         ENDDO
-        PRINT *, "potential phi = ", phi
+        PRINT *, "potential phi = ", phi(ipart)
+        ENDDO
         get_potential_at_point = 0
       END FUNCTION
 
