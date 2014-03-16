@@ -91,14 +91,14 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_debug_enabled(int[] debug_enabled) {
-        debug_enabled[0] = booleanToInteger(this.debug);
+    public int get_debug(int[] debug) {
+        debug[0] = booleanToInteger(this.debug);
         return 0;
     }
 
     @Override
-    public int set_debug_enabled(int debug_enabled) {
-        this.debug = integerToBoolean(debug_enabled);
+    public int set_debug(int debug) {
+        this.debug = integerToBoolean(debug);
         return 0;
     }
 

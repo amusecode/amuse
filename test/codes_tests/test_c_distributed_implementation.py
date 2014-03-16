@@ -24,7 +24,7 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         print "Setting up distributed code"
         #instance = DistributedAmuse(redirection='none')
         self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse, redirection='none')
-        self.distinstance.initialize_code()
+        #self.distinstance.parameters.debug = True
 
         print "Resources:"
         print self.distinstance.resources

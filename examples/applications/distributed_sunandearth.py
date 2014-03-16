@@ -21,7 +21,7 @@ import webbrowser
 def start_distributed_amuse():
     print "Creating distributed amuse"
     distributed_amuse = DistributedAmuse(redirection='none')
-    distributed_amuse.parameters.debug_enabled = True
+    distributed_amuse.parameters.debug = True
     distributed_amuse.parameters.webinterface_port = 4556
     distributed_amuse.commit_parameters()
 

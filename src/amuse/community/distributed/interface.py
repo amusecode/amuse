@@ -1,64 +1,15 @@
-import threading
-import sys
 import logging
-import socket
 
 
 from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface
 from amuse.community.interface.common import CommonCode
-from amuse.units import units
 from amuse.support import options
 
 from distributed_datamodel import Resources, Resource
 from distributed_datamodel import Pilots, Pilot
 
 logger = logging.getLogger(__name__)
-
-class OutputHandler(threading.Thread):
-    
-    def __init__(self, stream, port):
-        threading.Thread.__init__(self)
-        self.stream = stream
-
-        logging.getLogger("channel").debug("output handler connecting to distributed code")
-        
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
-        address = ('localhost', port)
-        
-        try:
-            self.socket.connect(address)
-        except:
-            raise exceptions.CodeException("Could not connect to distributed code at " + str(address))
-        
-        self.socket.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
-        
-        self.socket.sendall('TYPE_OUTPUT'.encode('utf-8'))
-
-        #fetch ID of this connection
-        
-        result = SocketMessage()
-        result.receive(self.socket)
-        
-        self.id = result.strings[0]
-        
-        self.daemon = True
-        self.start()
-        
-    def run(self):
-        
-        while True:
-            logging.getLogger("channel").debug("receiving data for output")
-            data = self.socket.recv(1024)
-            
-            if len(data) == 0:
-                logging.getLogger("channel").debug("end of output", len(data))
-                return
-            
-            logging.getLogger("channel").debug("got %d bytes", len(data))
-            
-            self.stream.write(data)
 
 class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
@@ -95,22 +46,22 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     @legacy_function
-    def get_debug_enabled():
+    def get_debug():
         """
 	    Enable or disable debugging
         """
         function = LegacyFunctionSpecification()
-        function.addParameter("debug_enabled", dtype='int32', direction=function.OUT)
+        function.addParameter("debug", dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
     @legacy_function
-    def set_debug_enabled():
+    def set_debug():
         """
         Enable or disable debugging
         """
         function = LegacyFunctionSpecification()
-        function.addParameter("debug_enabled", dtype='int32', direction=function.IN)
+        function.addParameter("debug", dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
 
@@ -551,10 +502,10 @@ class DistributedAmuse(CommonCode):
     def define_parameters(self, object):
               
         object.add_boolean_parameter(
-            "get_debug_enabled",
-            "set_debug_enabled",
-            "debug_enabled", 
-            "If enabled, will output additional debugging information and logs", 
+            "get_debug",
+            "set_debug",
+            "debug", 
+            "If true/enabled, will output additional debugging information and logs", 
             default_value = False
         )
         

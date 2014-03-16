@@ -13,8 +13,7 @@ from amuse.community.distributed.interface import Resource, Resources, Pilot, Pi
 
 print "Setting up distributed code"
 instance = DistributedAmuse(redirection='none')
-instance.initialize_code()
-instance.parameters.debug_enabled = True
+instance.parameters.debug = True
 instance.parameters.webinterface_port = 4556
 instance.commit_parameters()
 
