@@ -65,5 +65,5 @@ clean:
 	rm -f tupan_worker tupan_worker_sockets
 
 distclean: clean
-	rm -f *.pyc; rm -rf tupan
+	rm -f *.pyc; rm -rf tupan; rm -rf ~/.tupan/
 
