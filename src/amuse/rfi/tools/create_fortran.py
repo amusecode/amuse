@@ -825,7 +825,7 @@ MAIN_STRING = """
       use_mpi = .false.
     else
       print*, 'fortran worker: need either true or false as mpi enable arguments, not', use_mpi_string
-      return
+      stop
     end if
   
     if (use_mpi) then
@@ -835,7 +835,7 @@ MAIN_STRING = """
     end if
   else
     print*, 'fortran worker: need either 0 or 3 arguments, not', count
-    return
+    stop
   end if
 """
         
