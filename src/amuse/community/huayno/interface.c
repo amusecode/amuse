@@ -8,21 +8,70 @@
 static struct sys mainsys;
 
 static int nmax;
-static int max_pcounter;
 
 static int pcounter;
-static int *pindex;
 static double t_now;
 static int inttype;
 static double dtime;
 static double begin_time = 0;
 
+
+static int max_id;
+static int *pindex;
+
+static int init_pindex(int n)
+{
+  max_id=n;
+  pindex=(int *) malloc(n*sizeof(int));
+  if(pindex==NULL) return -1;
+  return 0;
+}
+
+static void clean_pindex()
+{
+  free(pindex);
+}
+
+static inline int set_pindex(int id,int p)
+{
+  if(id<0 || id>max_id-1) return -1;
+  pindex[id]=p;
+  return 0;
+}
+
+static int new_pindex(int id,int p)
+{
+ while(id>=max_id)
+ {
+   int *new;
+   max_id*=2;
+   new=(int *) realloc( pindex, max_id*sizeof(int) );  
+   if(new == NULL) return -2;
+   pindex=new;
+ }
+ return set_pindex(id,p);
+}
+
+static int remove_pindex(int id)
+{
+  if(id<0 || id>max_id-1) return -1;
+  pindex[id]=-1;
+}
+
+static inline int get_pindex(int id,int *p)
+{
+  if(id<0 || id>max_id-1) return -1;
+  *p=pindex[id];
+  if(*p<0  || *p>mainsys.n-1) return -2;
+  return 0; 
+}
+
+
 int initialize_code()
 {
-  nmax=NMAX;
-  max_pcounter=nmax*sizeof(struct particle)/sizeof(int);
   pcounter=0;
-  pindex=(int *) malloc(max_pcounter*sizeof(int));
+  nmax=NMAX;
+  init_pindex( nmax*sizeof(struct particle)/sizeof(int));
   mainsys.n=0;
   mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
   mainsys.last=NULL;
@@ -38,9 +87,8 @@ int initialize_code()
 
 int cleanup_code()
 { 
-    for(int i = 0; i < pcounter; i++) pindex[i] = -1;
     pcounter=0;
-    free(pindex);
+    clean_pindex();
     mainsys.n=0;
     free(mainsys.part);
     mainsys.last=NULL;
@@ -58,7 +106,7 @@ int new_particle(int *id, double mass,
                  double vx, double vy, double vz,
                  double radius)
 {
- int p;
+ int p,err;
  p=mainsys.n;
  if(p>=nmax)
  {
@@ -68,17 +116,10 @@ int new_particle(int *id, double mass,
    if(new == NULL) return -1;
    mainsys.part=new;
  }
- if(pcounter>=max_pcounter)
- {
-   int *new;
-   max_pcounter*=2;
-   new=(int *) realloc( pindex, max_pcounter*sizeof(int) );  
-   if(new == NULL) return -2;
-   pindex=new;
- }
- pindex[pcounter]=p;
  *id=pcounter;
- mainsys.part[p].id=pcounter;
+ err=new_pindex(*id,p);
+ if(err!=0) return err;
+ mainsys.part[p].id=*id;
  mainsys.part[p].mass=mass;
  mainsys.part[p].radius=radius;
  mainsys.part[p].pos[0]=x;
@@ -96,21 +137,12 @@ int new_particle(int *id, double mass,
  return 0;
 }
 
-static inline int get_pindex(int id,int *p)
-{
-  if(id<0 || id>pcounter-1) return -1;
-  *p=pindex[id];
-  if(*p<0  || *p>mainsys.n-1) return -2;
-  return 0; 
-}
-
-
 int delete_particle(int id)
 {
   int p,err;
   err=get_pindex(id,&p);
   if(err!=0) return err;
-  pindex[id]=-1;
+  remove_pindex(id);  
   mainsys.n--;
   if(mainsys.n==0)
   {
@@ -119,7 +151,7 @@ int delete_particle(int id)
   }
   mainsys.last--;
   mainsys.part[p]=mainsys.part[mainsys.n];
-  pindex[mainsys.part[p].id]=p;
+  set_pindex(mainsys.part[p].id,p);
   return 0; 
 }
                  
@@ -339,8 +371,8 @@ int evolve_model(double t_end)
       t_now+=dt;
     }
   }
-  for(p=0;p<pcounter;p++) pindex[p]=-1;
-  for(p=0;p<mainsys.n;p++) pindex[mainsys.part[p].id]=p;
+  for(p=0;p<pcounter;p++) remove_pindex(p);
+  for(p=0;p<mainsys.n;p++) set_pindex(mainsys.part[p].id,p);
   return 0;
 }
 
@@ -484,7 +516,7 @@ int get_gravity_at_point(double * eps, double * x, double * y, double * z,
 #endif
     tmpsys.part[p].radius=eps[p]; /* not used */
   }
-  kick(0,tmpsys,mainsys,(double) 1.);
+  kick(0,tmpsys,mainsys,1.);
   for(int p=0;p<n;p++) 
   {
     ax[p]=tmpsys.part[p].vel[0];
