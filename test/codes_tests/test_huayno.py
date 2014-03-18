@@ -530,7 +530,7 @@ class TestHuayno(TestWithMPI):
         sun_and_earth = self.new_system_of_sun_and_earth()
         period = (4.0 * math.pi**2 * (1.0 | units.AU)**3 / (constants.G * sun_and_earth.total_mass())).sqrt()
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        huayno = Huayno(convert_nbody, redirection="none")
+        huayno = Huayno(convert_nbody)
         huayno.parameters.epsilon_squared = 0.0 | units.AU**2
         huayno.parameters.inttype_parameter = huayno.inttypes.SHARED8
         
@@ -546,3 +546,26 @@ class TestHuayno(TestWithMPI):
         self.assertAlmostRelativeEqual(huayno.particles.x, sun_and_earth.x, 8)
         huayno.stop()
     
+    def test23(self):
+        print "testing removing and adding particles repeatedly"
+        N=1100
+        p1=plummer.new_plummer_model(N)
+        p2=plummer.new_plummer_model(N)
+        h1=Huayno()
+        h1.particles.add_particles(p1[:N/2])
+        h1.particles.add_particles(p2[-N/2:])
+
+        h2=Huayno()
+        h2.particles.add_particles(p1)
+        h2.particles.remove_particles(p1[N/2:])
+        h2.particles.add_particles(p2)
+        h2.particles.remove_particles(p2[:-N/2])
+        
+        self.assertEqual(len(h1.particles),len(h2.particles))
+        self.assertAlmostEqual(h1.kinetic_energy,h2.kinetic_energy,15)
+        self.assertAlmostEqual(h1.potential_energy,h2.potential_energy,15)
+        
+        
+        
+        
+        
