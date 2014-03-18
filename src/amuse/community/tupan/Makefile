@@ -6,6 +6,9 @@ PYTHON ?= python
 PYOPENGL_AVAILABLE := $(shell $(PYTHON) -c "import OpenGL"  1>&2 2> /dev/null && echo "yes" || echo "no")
 PYIMAGE_AVAILABLE := $(shell $(PYTHON) -c "from PIL import Image"  1>&2 2> /dev/null && echo "yes" || echo "no")
 PYOPENCL_AVAILABLE := $(shell $(PYTHON) -c "import pyopencl"  1>&2 2> /dev/null && echo "yes" || echo "no")
+CFFI_AVAILABLE := $(shell $(PYTHON) -c "import cffi"  1>&2 2> /dev/null && echo "yes" || echo "no")
+
+
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -42,7 +45,7 @@ install:
 
 test:
 	@echo
-	@echo "Testing import of modules required for tupan (OpenGL, PIL, pyopencl):"
+	@echo "Testing import of modules required for tupan (OpenGL, PIL, pyopencl, cffi):"
 ifeq ($(PYOPENGL_AVAILABLE),no)
 	$(error "Python imports not available: OpenGL")
 endif
@@ -51,6 +54,9 @@ ifeq ($(PYIMAGE_AVAILABLE),no)
 endif
 ifeq ($(PYOPENCL_AVAILABLE),no)
 	$(error "Python imports not available: pyopencl")
+endif
+ifeq ($(CFFI_AVAILABLE),no)
+	$(error "Python imports not available: cffi")
 endif
 	@echo "Tests successful!"
 	@echo
