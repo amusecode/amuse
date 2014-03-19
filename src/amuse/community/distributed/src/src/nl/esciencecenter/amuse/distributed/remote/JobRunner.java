@@ -25,7 +25,7 @@ import java.io.IOException;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.WorkerJobDescription;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class JobRunner extends Thread {
     private final ReceivePortIdentifier resultPort;
     private final Ibis ibis;
 
-    public JobRunner(int jobID, WorkerDescription description, AmuseConfiguration configuration, ReceivePortIdentifier resultPort, Ibis ibis, File tmpDir)
+    public JobRunner(int jobID, WorkerJobDescription description, AmuseConfiguration configuration, ReceivePortIdentifier resultPort, Ibis ibis, File tmpDir)
             throws Exception {
         this.jobID = jobID;
         this.resultPort = resultPort;

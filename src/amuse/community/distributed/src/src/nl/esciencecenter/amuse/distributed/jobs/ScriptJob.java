@@ -25,78 +25,37 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 
 /**
  * @author Niels Drost
- *
+ * 
  */
 public class ScriptJob extends AmuseJob {
 
-   
-    public ScriptJob(String scriptName, String arguments, String scriptDir, String nodeLabel, boolean reUseCodeFiles, Ibis ibis, JobSet jobManager)
-            throws DistributedAmuseException {
-        super(nodeLabel, 1, ibis, jobManager);
+    private final ScriptJobDescription description;
+
+    public ScriptJob(ScriptJobDescription description, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
+        super(description.getNodeLabel(), 1, ibis, jobManager);
+        this.description = description;
     }
 
-    /**
-     * @param writeMessage
-     * @throws IOException
-     */
+    public ScriptJobDescription getDescription() {
+        return description;
+    }
+
     @Override
-    void writeJobDetails(WriteMessage writeMessage) throws IOException {
-        //FIXME: transfer files etc
-        // TODO Auto-generated method stub
+    void writeJobData(WriteMessage writeMessage) throws IOException {
+        writeMessage.writeObject(description);
+
+        FileTransfers.writeDirectory(description.getScriptDir(), writeMessage);
+
+        if (description.getInputDir() != null) {
+            FileTransfers.writeDirectory(description.getInputDir(), writeMessage);
+        }
     }
 
-    /**
-     * @param readMessage
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    @Override
-    void readJobStatus(ReadMessage readMessage) throws ClassNotFoundException, IOException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /**
-     * @param readMessage
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
     @Override
     void readJobResult(ReadMessage readMessage) throws ClassNotFoundException, IOException {
-        // TODO Auto-generated method stub
-        
-    }
-
-    /**
-     * @return
-     */
-    public boolean useCodeCache() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    /**
-     * @return
-     */
-    public String getScriptName() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * @return
-     */
-    public String getArguments() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /**
-     * @return
-     */
-    public String getScriptDir() {
-        // TODO Auto-generated method stub
-        return null;
+        if (description.getOutputDir() != null) {
+            FileTransfers.readDirectory(description.getOutputDir(), readMessage);
+        }
     }
 
 }

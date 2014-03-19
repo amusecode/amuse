@@ -17,7 +17,9 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.jobs.FunctionJob;
 import nl.esciencecenter.amuse.distributed.jobs.ScriptJob;
-import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.ScriptJobDescription;
+import nl.esciencecenter.amuse.distributed.jobs.WorkerJobDescription;
+import nl.esciencecenter.amuse.distributed.jobs.WorkerJob;
 import nl.esciencecenter.amuse.distributed.jobs.WorkerJob;
 import nl.esciencecenter.amuse.distributed.pilots.PilotManager;
 import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
@@ -45,6 +47,7 @@ public class Code implements CodeInterface {
     private String currentError = "";
 
     private boolean debug = false;
+    private boolean startHubs = true;
     private int webinterfacePort = 0;
 
     public Code(String codeDir, String amuseRootDir) throws DistributedAmuseException {
@@ -73,7 +76,7 @@ public class Code implements CodeInterface {
     public int commit_parameters() {
         if (distributedAmuse == null) {
             try {
-                distributedAmuse = new DistributedAmuse(codeDir, amuseRootDir, webinterfacePort, debug);
+                distributedAmuse = new DistributedAmuse(codeDir, amuseRootDir, webinterfacePort, debug, startHubs);
             } catch (DistributedAmuseException e) {
                 logger.error("Exception while initializing code", e);
                 return -10;
@@ -105,19 +108,40 @@ public class Code implements CodeInterface {
     @Override
     public int get_worker_port(int[] result) {
         logger.debug("Returning worker port.");
-        
+
         result[0] = distributedAmuse.getWorkerPort();
 
         return 0;
     }
     
+    /**
+     * @param start_hubs
+     * @return
+     */
+    @Override
+    public int get_start_hubs(int[] start_hubs) {
+        start_hubs[0] = booleanToInteger(this.startHubs);
+        return 0;
+    }
+
+    /**
+     * @param start_hubs
+     * @return
+     */
+    @Override
+    public int set_start_hubs(int start_hubs) {
+        this.startHubs = integerToBoolean(start_hubs);
+        return 0;
+    }
+
+
     @Override
     public int get_webinterface_port(int[] result) {
         logger.debug("Returning worker port.");
-        
+
         if (distributedAmuse == null) {
             //not initialized yet, return current value of parameter
-            result[0] = this.webinterfacePort;            
+            result[0] = this.webinterfacePort;
         } else {
             //return resulting port
             result[0] = distributedAmuse.webInterface().getPort();
@@ -125,22 +149,20 @@ public class Code implements CodeInterface {
 
         return 0;
     }
-    
+
     @Override
     public int set_webinterface_port(int webinterface_port) {
         this.webinterfacePort = webinterface_port;
         return 0;
     }
 
-
     @Override
     public int new_resource(int[] resource_id, String[] name, String[] location, String[] amuse_dir, String[] gateway,
-            String[] scheduler_type, int[] start_hub, String[] boot_command, int count) {
+            String[] scheduler_type, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                boolean startHub = integerToBoolean(start_hub[i]);
                 ResourceManager resource = distributedAmuse.resources().newResource(name[i], location[i], gateway[i],
-                        amuse_dir[i], scheduler_type[i], startHub, boot_command[i]);
+                        amuse_dir[i], scheduler_type[i]);
                 resource_id[i] = resource.getId();
             }
             return 0;
@@ -169,7 +191,7 @@ public class Code implements CodeInterface {
 
     @Override
     public int get_resource_state(int[] index_of_the_resource, String[] name, String[] location, String[] gateway,
-            String[] amuse_dir, String[] scheduler_type, int[] start_hub, String[] boot_command, int count) {
+            String[] amuse_dir, String[] scheduler_type, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 ResourceManager resource = distributedAmuse.resources().getResource(index_of_the_resource[i]);
@@ -179,8 +201,6 @@ public class Code implements CodeInterface {
                 gateway[i] = resource.getGateway();
                 amuse_dir[i] = resource.getAmuseDir();
                 scheduler_type[i] = resource.getSchedulerType();
-                start_hub[i] = booleanToInteger(resource.hasHub());
-                boot_command[i] = resource.getBootCommand();
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -204,12 +224,12 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int new_pilot(int[] pilot_id, String[] resource_name, String[] queue_name, int[] node_count,
-            int[] time_minutes, int[] slots, String[] node_label, String[] options, int count) {
+    public int new_pilot(int[] pilot_id, String[] resource_name, String[] queue_name, int[] node_count, int[] time_minutes,
+            int[] slots, String[] node_label, String[] options, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                PilotManager result = distributedAmuse.pilots().newPilot(resource_name[i], queue_name[i],
-                        node_count[i], time_minutes[i], slots[i], node_label[i], options[i]);
+                PilotManager result = distributedAmuse.pilots().newPilot(resource_name[i], queue_name[i], node_count[i],
+                        time_minutes[i], slots[i], node_label[i], options[i]);
 
                 pilot_id[i] = result.getAmuseID();
             }
@@ -222,8 +242,8 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_pilot_state(int[] pilot_id, String[] resource_name, String[] queue_name, int[] node_count,
-            int[] time, int[] slots_per_node, String[] node_label, String[] status, String[] options, int count) {
+    public int get_pilot_state(int[] pilot_id, String[] resource_name, String[] queue_name, int[] node_count, int[] time,
+            int[] slots_per_node, String[] node_label, String[] status, String[] options, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 PilotManager pilot = distributedAmuse.pilots().getPilot(pilot_id[i]);
@@ -284,13 +304,13 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int submit_script_job(int[] job_id, String[] script_name, String[] arguments, String[] script_dir,
-            String[] node_label, int[] re_use_code_files, int count) {
+    public int submit_script_job(int[] job_id, String[] script_name, String[] arguments, String[] script_dir, String[] input_dir,
+            String[] output_dir, String[] node_label, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                boolean useCodeCache = re_use_code_files[i] != 0;
-                ScriptJob job = distributedAmuse.jobs().submitScriptJob(script_name[i], arguments[i], script_dir[i],
-                        node_label[i], useCodeCache);
+                ScriptJobDescription description = new ScriptJobDescription(script_name[i], arguments[i], script_dir[i], input_dir[i], output_dir[i], node_label[i]);
+                
+                ScriptJob job = distributedAmuse.jobs().submitScriptJob(description);
                 job_id[i] = job.getJobID();
             }
             return 0;
@@ -303,16 +323,19 @@ public class Code implements CodeInterface {
 
     @Override
     public int get_script_job_state(int[] job_id, String[] script_name, String[] arguments, String[] script_dir,
-            String[] node_label, int[] re_use_code_files, String[] status, int count) {
+            String[] input_dir, String[] output_dir, String[] node_label, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 ScriptJob job = distributedAmuse.jobs().getScriptJob(job_id[i]);
+                
+                ScriptJobDescription description = job.getDescription();
 
-                script_name[i] = job.getScriptName();
-                arguments[i] = job.getArguments();
-                script_dir[i] = job.getScriptDir();
-                node_label[i] = job.getLabel();
-                re_use_code_files[i] = booleanToInteger(job.useCodeCache());
+                script_name[i] = description.getScriptName();
+                arguments[i] = description.getArguments();
+                script_dir[i] = description.getScriptDir();
+                input_dir[i] = description.getInputDir();
+                output_dir[i] = description.getOutputDir();
+                node_label[i] = description.getNodeLabel();
 
                 status[i] = job.getJobState();
             }
@@ -452,8 +475,6 @@ public class Code implements CodeInterface {
         return 0;
     }
 
-
-
     @Override
     /**
      * @param index only here to force AMUSE to generate the count parameter
@@ -491,13 +512,13 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_worker_state(int[] worker_id, String[] executable, String[] node_label, int[] worker_count, 
+    public int get_worker_state(int[] worker_id, String[] executable, String[] node_label, int[] worker_count,
             int[] thread_count, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 WorkerJob worker = distributedAmuse.jobs().getWorkerJob(worker_id[i]);
 
-                WorkerDescription description = worker.getDescription();
+                WorkerJobDescription description = worker.getDescription();
 
                 executable[i] = description.getExecutable();
                 node_label[i] = description.getNodeLabel();
@@ -521,7 +542,10 @@ public class Code implements CodeInterface {
 
     @Override
     public void end() {
-        distributedAmuse.end();
+        if (distributedAmuse != null) {
+            distributedAmuse.end();
+        }
     }
+
 
 }

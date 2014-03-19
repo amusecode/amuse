@@ -41,7 +41,7 @@ import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.WorkerJobDescription;
 import nl.esciencecenter.amuse.distributed.workers.OutputForwarder;
 
 import org.slf4j.Logger;
@@ -75,7 +75,7 @@ public class WorkerProxy extends Thread {
     private final OutputForwarder out;
     private final OutputForwarder err;
 
-    private final WorkerDescription description;
+    private final WorkerJobDescription description;
     private final AmuseConfiguration amuseConfiguration;
 
     //connection back to AMUSE
@@ -84,7 +84,7 @@ public class WorkerProxy extends Thread {
 
     private Exception error = null;
 
-    private static Process startWorkerProcess(WorkerDescription description, AmuseConfiguration amuseConfiguration,
+    private static Process startWorkerProcess(WorkerJobDescription description, AmuseConfiguration amuseConfiguration,
             int localSocketPort, File tempDirectory) throws Exception {
         File executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getExecutable());
 
@@ -188,7 +188,7 @@ public class WorkerProxy extends Thread {
     /**
      * Starts a worker proxy. Make take a while.
      */
-    public WorkerProxy(WorkerDescription description, AmuseConfiguration amuseConfiguration, Ibis ibis, File tempDirectory,
+    public WorkerProxy(WorkerJobDescription description, AmuseConfiguration amuseConfiguration, Ibis ibis, File tempDirectory,
             int jobID) throws Exception {
         this.description = description;
         this.amuseConfiguration = amuseConfiguration;

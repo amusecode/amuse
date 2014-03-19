@@ -16,9 +16,7 @@
 package nl.esciencecenter.amuse.distributed.jobs;
 
 import ibis.ipl.Ibis;
-import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReadMessage;
-import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
@@ -31,35 +29,20 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
  */
 public class WorkerJob extends AmuseJob {
 
-    private final WorkerDescription description;
+    private final WorkerJobDescription description;
 
-    //only for worker jobs
-    private ReceivePortIdentifier remoteWorkerPort = null;
-
-    
-    public WorkerJob(WorkerDescription description, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
+    public WorkerJob(WorkerJobDescription description, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
         super(description.getNodeLabel(), description.getNrOfWorkers(), ibis, jobManager);
         this.description = description;
     }
 
-    public WorkerDescription getDescription() {
+    public WorkerJobDescription getDescription() {
         return description;
     }
     
-    private synchronized void setRemoteWorkerPort(ReceivePortIdentifier port) {
-        this.remoteWorkerPort = port;
-    }
-
     @Override
-    void writeJobDetails(WriteMessage writeMessage) throws IOException {
+    void writeJobData(WriteMessage writeMessage) throws IOException {
         writeMessage.writeObject(description);
-    }
-
-    @Override
-    void readJobStatus(ReadMessage readMessage) throws ClassNotFoundException, IOException {
-//        ReceivePortIdentifier workerPort = (ReceivePortIdentifier) readMessage.readObject();
-//        
-//        setRemoteWorkerPort(workerPort);
     }
 
     /**

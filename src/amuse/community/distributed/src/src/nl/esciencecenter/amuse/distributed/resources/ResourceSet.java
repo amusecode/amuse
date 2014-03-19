@@ -29,9 +29,12 @@ public class ResourceSet {
 
     private final ArrayList<ResourceManager> resources;
 
-    public ResourceSet(Xenon xenon, File tmpDir, String amuseRootDir) throws DistributedAmuseException {
+    private final boolean startHubs;
+
+    public ResourceSet(Xenon xenon, File tmpDir, String amuseRootDir, boolean startHubs) throws DistributedAmuseException {
         resources = new ArrayList<ResourceManager>();
         this.xenon = xenon;
+        this.startHubs = startHubs;
 
         try {
             Properties properties = new Properties();
@@ -45,13 +48,12 @@ public class ResourceSet {
         //add local resource by default
 
         logger.debug("local amuse dir = " + amuseRootDir);
-        newResource("local", null, null, amuseRootDir, "local", false, "");
+        newResource("local", null, null, amuseRootDir, "local");
     }
 
-    public synchronized ResourceManager newResource(String name, String location, String gateway, String amuseDir, String schedulerType,
-            boolean startHub, String bootCommand) throws DistributedAmuseException {
+    public synchronized ResourceManager newResource(String name, String location, String gateway, String amuseDir, String schedulerType) throws DistributedAmuseException {
         logger.debug("creating new resource: name = " + name + " location = " + location + " scheduler type = " + schedulerType
-                + " amuse dir = " + amuseDir + " start hub = " + startHub + " boot command: " + bootCommand);
+                + " amuse dir = " + amuseDir);
 
         for (ResourceManager resource : resources) {
             if (resource.getName().equals(name)) {
@@ -64,7 +66,7 @@ public class ResourceSet {
             gatewayLocation = getResource(gateway).getLocation();
         }
 
-        ResourceManager result = new ResourceManager(name, location, gatewayLocation, amuseDir, schedulerType, startHub, bootCommand, xenon, iplServer);
+        ResourceManager result = new ResourceManager(name, location, gatewayLocation, amuseDir, schedulerType, this.startHubs, xenon, iplServer);
 
         resources.add(result);
 

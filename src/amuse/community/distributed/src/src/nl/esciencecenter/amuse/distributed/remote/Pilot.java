@@ -30,7 +30,6 @@ import ibis.ipl.WriteMessage;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ProcessBuilder.Redirect;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,7 +39,7 @@ import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.jobs.WorkerDescription;
+import nl.esciencecenter.amuse.distributed.jobs.WorkerJobDescription;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,35 +99,8 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             logger.debug("DEBUG Enabled");
         }
     }
-    
-    private static void runBootCommand(String command) throws IOException, InterruptedException {
-        ProcessBuilder builder = new ProcessBuilder(command.split(WHITESPACE_REGEX));
-        
-        for (String key : builder.environment().keySet().toArray(new String[0])) {
-            for (String blacklistedKey : WorkerProxy.ENVIRONMENT_BLACKLIST) {
-                if (key.startsWith(blacklistedKey)) {
-                    builder.environment().remove(key);
-                    logger.info("removed " + key + " from environment");
-                }
-            }
-        }
-        
-        builder.redirectError(Redirect.INHERIT);
-        builder.redirectOutput(Redirect.INHERIT);
-        
-        logger.info("running boot command: {}", builder.command());
-        
-        Process bootProcess = builder.start();
-        
-        int exitcode = bootProcess.waitFor();
-        
-        if (exitcode != 0) {
-            throw new IOException("Error (exit status " + exitcode + ") while running boot command: " + command);
-        }
-        
-    }
 
-    Pilot(AmuseConfiguration configuration, Properties properties, UUID id, String bootCommand, boolean debug)
+    Pilot(AmuseConfiguration configuration, Properties properties, UUID id, boolean debug)
             throws IbisCreationFailedException, IOException, InterruptedException {
         this.configuration = configuration;
         this.id = id;
@@ -151,10 +123,6 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, PORT_NAME, this, this, null);
         
         tmpDir = createTmpDir(id);
-        
-        if (bootCommand != null) {
-            runBootCommand(bootCommand);
-        }
         
     }
     
@@ -243,7 +211,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             ReceivePortIdentifier resultPort = (ReceivePortIdentifier) readMessage.readObject();
 
             //hard coded worker job info
-            WorkerDescription description = (WorkerDescription) readMessage.readObject();
+            WorkerJobDescription description = (WorkerJobDescription) readMessage.readObject();
 
             readMessage.finish();
 
@@ -314,7 +282,6 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         File amuseHome = null;
         UUID pilotID = null;
         int slots = 1;
-        String bootCommand = null;
         boolean debug = false;
     
         Properties properties = new Properties();
@@ -342,9 +309,6 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             } else if (arguments[i].equalsIgnoreCase("--slots")) {
                 i++;
                 slots = Integer.parseInt(arguments[i]);
-            } else if (arguments[i].equalsIgnoreCase("--boot-command")) {
-                i++;
-                bootCommand = arguments[i];
             } else if (arguments[i].equalsIgnoreCase("--debug")) {
                 debug = true;
             } else {
@@ -360,7 +324,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             System.err.println(entry.getKey() + " = " + entry.getValue());
         }
         
-        Pilot pilot = new Pilot(configuration, properties, pilotID, bootCommand, debug);
+        Pilot pilot = new Pilot(configuration, properties, pilotID, debug);
     
         pilot.run();
     

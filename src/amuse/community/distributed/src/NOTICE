@@ -1,0 +1,54 @@
+Distributed-AMUSE
+Copyright 2014 The Netherlands eScience Center
+
+This product includes the Jetty library, which is Copyright (c)
+1995-2014 Mort Bay Consulting Pty Ltd. See "notices/LICENSE.jetty.txt"
+for the license information of the Jetty library.
+
+This product includes the IPL library, which is Copyright (c) 2004-2012
+Vrije Universiteit. See "notices/LICENSE.ipl.txt" for the
+license information of the IPL library.
+
+This product includes the Xenon library, which is Copyright (c) 2013
+Netherlands eScience Center. See "notices/LICENSE.xenon.txt" for the
+license information of the Xenon library.
+
+This product includes the SLF4J library, which is Copyright (c) 2004-2013
+QOS.ch See "notices/LICENSE.slf4j.txt" for the licence information of
+the SLF4J library.
+
+This product includes the JSch library, which is Copyright (c) 2002-2012
+Atsuhiko Yamanaka, JCraft,Inc. See "notices/LICENSE.jsch.txt" for the
+licence information of the JSch library.
+
+This product includes the Logback library, which is Copyright (c)
+1999-2012, QOS.ch. See "notices/LICENSE.logback.txt" for the licence
+information of the Logback library.
+
+This project includes the JUnit library. See "notices/LICENSE.junit.txt"
+for the licence information of the JUnit library.
+
+This project includes the Java CoG Kit, which is Copyright (c) 1999-2006 
+University of Chicago. See "notices/LICENSE.cog-jglobus.txt" for the 
+licence information of the Java CoG Kit.
+
+This project includes the Commons-logging library, which is Copyright (c)
+Apache Software Foundation. See "notices/LICENSE.commons-logging.txt"
+for the licence information of the Commons-logging library.
+
+This project includes the log4j library, which is Copyright (c) Apache 
+Software Foundation. See "notices/LICENSE.log4j.txt" for the licence 
+information of the log4j library.
+
+This project includes the Legion of the Bouncy Castle Java cryptography 
+APIs, which are Copyright (c) 2000-2013 The Legion Of The Bouncy Castle. 
+See "notices/LICENSE.bouncycastle.txt" for the licence information of this 
+library.
+
+This project includes the pureTLS library, which is Copyright (c) Claymore 
+Systems, Inc. See "notices/LICENSE.puretls.txt" for the licence information 
+of the pureTLS library.
+
+This project includes libraries produced by the Cryptix Project. See 
+"notices/LICENSE.cryptix.txt" for the licence information of these libraries.
+

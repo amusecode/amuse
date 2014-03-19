@@ -261,7 +261,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
             writeMessage.writeInt(jobID);
             writeMessage.writeObject(this.resultReceivePort.identifier());
 
-            writeJobDetails(writeMessage);
+            writeJobData(writeMessage);
 
             writeMessage.finish();
 
@@ -273,9 +273,6 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
             ReadMessage readMessage = receivePort.receive(60000);
 
             Exception error = (Exception) readMessage.readObject();
-
-            //implemented by job subtype (worker, pickled, script)
-            readJobStatus(readMessage);
 
             readMessage.finish();
             receivePort.close();
@@ -388,9 +385,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
         return result;
     }
 
-    abstract void writeJobDetails(WriteMessage writeMessage) throws IOException;
-
-    abstract void readJobStatus(ReadMessage readMessage) throws ClassNotFoundException, IOException;
+    abstract void writeJobData(WriteMessage writeMessage) throws IOException;
 
     abstract void readJobResult(ReadMessage readMessage) throws ClassNotFoundException, IOException;
 

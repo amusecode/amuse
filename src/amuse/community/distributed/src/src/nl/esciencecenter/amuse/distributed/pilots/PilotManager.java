@@ -109,6 +109,10 @@ public class PilotManager {
         if (resource.getSchedulerType().equals("slurm")) {
             result.addJobOption("single.process", "true");
             result.setProcessesPerNode(slots);
+            
+            //disable processor affinity
+            result.addEnvironment("SLURM_CPU_BIND", "no");
+            result.addEnvironment("SBATCH_CPU_BIND", "no");
         }
 
         //parse and add job options
@@ -143,11 +147,6 @@ public class PilotManager {
 
         javaArguments.add("--amuse-home");
         javaArguments.add(configuration.getAmuseHome().getAbsolutePath());
-
-        if (resource.getBootCommand() != null && !resource.getBootCommand().isEmpty()) {
-            javaArguments.add("--boot-command");
-            javaArguments.add(resource.getBootCommand());
-        }
 
         if (debug) {
             javaArguments.add("--debug");

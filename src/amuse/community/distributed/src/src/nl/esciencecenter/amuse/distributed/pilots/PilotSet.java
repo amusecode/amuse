@@ -116,6 +116,7 @@ public class PilotSet {
     //check if all pilots are running. will throw an error if any pilots are done/failed
     private boolean allPilotsRunning() throws DistributedAmuseException {
         PilotManager[] pilots = getPilots();
+        int running = 0;
 
         boolean result = true;
 
@@ -127,9 +128,12 @@ public class PilotSet {
             if (pilot.isDone()) {
                 throw new DistributedAmuseException("Pilot " + pilot + " done while waiting for it to start");
             }
-            if (!pilot.isRunning()) {
+            if (pilot.isRunning()) {
+                running++;
+            } else {
                 result = false;
             }
+            logger.info("Now {} out of {} pilots running.", running, pilots.length);
         }
         return result;
     }
@@ -143,11 +147,9 @@ public class PilotSet {
 
         long timeout = 100; //ms
 
-        int[] pilots = getPilotIDs();
         while (!allPilotsRunning()) {
-
             try {
-                logger.debug("Now waiting {} ms", timeout);
+                logger.debug("Now waiting {} ms for more pilots to start", timeout);
                 
                 synchronized(this) {
                     wait(timeout);
@@ -160,8 +162,6 @@ public class PilotSet {
                 return;
             }
         }
-
-        logger.debug("All {} pilots started.", pilots.length);
     }
 
     public synchronized void end() {

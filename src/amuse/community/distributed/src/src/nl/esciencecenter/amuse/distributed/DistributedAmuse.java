@@ -86,7 +86,7 @@ public class DistributedAmuse {
                     .getLogger("nl.esciencecenter.amuse");
 
             amuseLogger.setLevel(Level.DEBUG);
-            
+
             logger.debug("DEBUG Enabled");
         }
     }
@@ -105,12 +105,13 @@ public class DistributedAmuse {
         return result;
     }
 
-    public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort, boolean debug)
+    public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort, boolean debug, boolean startHubs)
             throws DistributedAmuseException {
         this.debug = debug;
         initializeLogger(debug);
-        
-        logger.info("Initializing Distributed Amuse");
+
+        logger.info("Initializing Distributed Amuse with web interface on port {}, debug {}, and starting hubs {}",
+                webInterfacePort, debug ? "enabled" : "disabled", startHubs ? "enabled" : "disabled");
         try {
             xenon = XenonFactory.newXenon(null);
         } catch (XenonException e) {
@@ -119,14 +120,14 @@ public class DistributedAmuse {
 
         tmpDir = createTmpDir();
 
-        resources = new ResourceSet(xenon, tmpDir, amuseRootDir);
+        resources = new ResourceSet(xenon, tmpDir, amuseRootDir, startHubs);
 
         pilots = new PilotSet(xenon, resources, tmpDir, debug);
 
         jobs = new JobSet(resources.getIplServerAddress(), pilots, tmpDir);
 
         workerConnectionServer = new WorkerConnectionServer(jobs, tmpDir);
-        
+
         new Lighthouse(jobs.getIbis(), pilots);
 
         try {
@@ -196,16 +197,16 @@ public class DistributedAmuse {
 
         logger.debug("Ending job manager");
         jobs.end();
-        
+
         //wait until all pilots have quit
         resources.endRegistry();
-        
+
         logger.debug("Ending reservation manager");
         pilots.end();
 
         logger.debug("Ending resource manager");
         resources.end();
-        
+
         logger.debug("Ending Xenon");
         XenonFactory.endAll();
         logger.info("Distributed Amuse ended.");

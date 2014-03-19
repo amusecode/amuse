@@ -74,8 +74,6 @@ public class ResourceManager {
     private final Path home;
     private final FileSystem filesystem;
 
-    private final String bootCommand;
-
     private final Hub hub;
 
     private static void waitUntilHubStarted(Server iplServer, String hubAddress, String name) throws DistributedAmuseException {
@@ -99,7 +97,7 @@ public class ResourceManager {
     }
 
     public ResourceManager(String name, String location, String gateway, String amuseDir, String schedulerType, boolean startHub,
-            String bootCommand, Xenon xenon, Server iplServer) throws DistributedAmuseException {
+           Xenon xenon, Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
         this.location = location;
@@ -107,7 +105,6 @@ public class ResourceManager {
         this.amuseDir = amuseDir;
         this.schedulerType = schedulerType;
         this.startHub = startHub;
-        this.bootCommand = bootCommand;
         this.xenon = xenon;
 
         home = getHome(xenon);
@@ -257,10 +254,6 @@ public class ResourceManager {
         return configuration;
     }
 
-    public String getBootCommand() {
-        return bootCommand;
-    }
-
     @Override
     public int hashCode() {
         return new Integer(id).hashCode();
@@ -313,7 +306,7 @@ public class ResourceManager {
     public String toString() {
         return "Resource [id=" + id + ", name=" + name + ", location=" + location + ", amuseDir=" + amuseDir + ", schedulerType="
                 + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub
-                + ", bootCommand=" + bootCommand + "]";
+                + "]";
     }
 
     public Map<String, String> getStatusMap() throws DistributedAmuseException {

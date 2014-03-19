@@ -15,14 +15,6 @@
 
 	<target name="build" depends="clean, compile" description="build everything" />
 
-	<target name="test" description="run the unit tests with coverage" depends="build">
-		<ant dir="test" target="test" />
-	</target>
-
-	<target name="test-integration" description="run the integration tests" depends="build">
-		<ant dir="test" target="test-integration" />
-	</target>
-
 	<target name="compile" description="compile the source ">
 		<mkdir dir="build/classes" />
 		<mkdir dir="dist"/>
@@ -62,8 +54,6 @@
 	<target name="clean" description="clean up">
 		<delete dir="build" />
 		<delete dir="dist" />
-
-		<ant dir="test" target="clean" />
 	</target>
 
 	<target name="allclean" depends="clean" description="clean up everything">

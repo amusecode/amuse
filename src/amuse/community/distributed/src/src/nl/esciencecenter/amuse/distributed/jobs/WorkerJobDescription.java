@@ -26,7 +26,7 @@ import nl.esciencecenter.amuse.distributed.AmuseMessage;
  * 
  * @author Niels Drost
  */
-public class WorkerDescription implements Serializable {
+public class WorkerJobDescription implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -41,7 +41,7 @@ public class WorkerDescription implements Serializable {
 
     private final int startupTimeout;
 
-    public WorkerDescription(String id, String executable, String stdoutFile, String stderrFile, String nodeLabel,
+    public WorkerJobDescription(String id, String executable, String stdoutFile, String stderrFile, String nodeLabel,
             int nrOfWorkers, int nrOfThreads, int startupTimeout) {
         this.id = id;
         this.executable = executable;
@@ -59,7 +59,7 @@ public class WorkerDescription implements Serializable {
      * @throws IOException
      *             if the message cannot be read
      */
-    public WorkerDescription(AmuseMessage message, String id) throws IOException {
+    public WorkerJobDescription(AmuseMessage message, String id) throws IOException {
         this.id = id;
         executable = message.getString(0);
         stdoutFile = message.getString(1);

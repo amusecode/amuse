@@ -59,19 +59,7 @@ public class FunctionJob extends AmuseJob {
      * @throws IOException
      */
     @Override
-    void writeJobDetails(WriteMessage writeMessage) throws IOException {
-        // TODO Auto-generated method stub
-        
-    }
-
-
-    /**
-     * @param readMessage
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    @Override
-    void readJobStatus(ReadMessage readMessage) throws ClassNotFoundException, IOException {
+    void writeJobData(WriteMessage writeMessage) throws IOException {
         // TODO Auto-generated method stub
         
     }

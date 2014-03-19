@@ -57,7 +57,9 @@ public class Lighthouse extends Thread {
             }
 
             try {
-                logger.debug("Sending ping signal to " + Arrays.toString(addresses.toArray(new IbisIdentifier[0])));
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Sending ping signal to " + Arrays.toString(addresses.toArray(new IbisIdentifier[0])));
+                }
                 ibis.registry().signal("ping", addresses.toArray(new IbisIdentifier[0]));
             } catch (IOException e) {
                 logger.error("Failed to send ping signal to pilots", e);
