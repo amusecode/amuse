@@ -1070,7 +1070,10 @@ FOOTER_CODE_STRING = """
             code.end();
         } catch (IOException e) {
             System.err.println("Error running worker: " + e.getMessage());
+        } finally {
+            code.end();
         }
+        
     }
 
     public static void main(String[] arguments) throws Exception {

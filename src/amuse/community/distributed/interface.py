@@ -20,11 +20,14 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
 
     classpath = ['.', 'worker.jar', 'src/dist/*']
     
+    instances = []
+    
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="distributed_worker_java", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
-
-
+        
+        #keep a refence to all distributed amuse instances to keep them from being cleaned up
+        self.instances.append(self)
 
     @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
     def channel_type(self):

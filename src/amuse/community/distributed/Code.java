@@ -536,7 +536,9 @@ public class Code implements CodeInterface {
 
     @Override
     public int end_all() {
-        distributedAmuse.end();
+        if (distributedAmuse != null) {
+            distributedAmuse.end();
+        }
         return 0;
     }
 
