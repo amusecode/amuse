@@ -106,9 +106,7 @@ To test your AMUSE installation, run nosetests.
 	# go to the amuse directory
 	> cd ~/amuse
 	
-	> mpiexec.hydra -n 1 nosetests -v
-	
-	
+	> mpiexec.hydra -n 1 nosetests -v tests
 
 	
 Running on a Cartesius node
