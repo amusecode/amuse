@@ -465,7 +465,7 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     //turn on no-delay option in tcp for huge speed improvement
     setsockopt (socketfd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
     
-    server = gethostbyname("localhost");
+    server = gethostbyname(host);
     
     memset((char *) &serv_addr, '\\0', sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -660,7 +660,7 @@ void run_sockets(int port, char *host) {
   //turn on no-delay option in tcp for huge speed improvement
   setsockopt (socketfd, IPPROTO_TCP, TCP_NODELAY, (const char *)&on, sizeof (on));
     
-  server = gethostbyname("localhost");
+  server = gethostbyname(host);
     
   memset((char *) &serv_addr, '\\0', sizeof(serv_addr));
   serv_addr.sin_family = AF_INET;
