@@ -7,11 +7,18 @@ from amuse.community.interface.gd import SinglePointGravityFieldInterface
 from amuse.community.interface.gd import GravityFieldCode
 from amuse.rfi.core import PythonCodeInterface
 
+import sys
+import os.path
+
+dirname=os.path.dirname(__file__)
+sys.path.append(os.path.join(dirname,"install","lib","python"+sys.version[:3],"site-packages"))
+
 try:
     from tupan.integrator import Integrator
     from tupan.particles.allparticles import ParticleSystem
     MODULES_MISSING = False
-except ImportError:
+except ImportError as ex:
+    print(ex)
     MODULES_MISSING = True
 
 """

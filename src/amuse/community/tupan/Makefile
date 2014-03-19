@@ -41,7 +41,8 @@ build:
 	(cd tupan; python setup.py build)
 
 install:
-	(cd tupan; python setup.py install --user)
+	mkdir install
+	(cd tupan; python setup.py install --prefix=../install)
 
 test:
 	@echo
@@ -67,9 +68,11 @@ tupan_worker: interface.py
 	
 
 clean:
-	rm -f *.pyc; (cd tupan; python setup.py clean -a)
+	-(cd tupan; python setup.py clean -a)
+	rm -f *.pyc; 
 	rm -f tupan_worker tupan_worker_sockets
+	rm -rf install
 
 distclean: clean
-	rm -f *.pyc; rm -rf tupan; rm -rf ~/.tupan/
+	rm -f *.pyc; rm -rf tupan;
 
