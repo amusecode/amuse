@@ -1,3 +1,15 @@
+"""
+placeholder
+
+this is not the proper way to distribute a code.
+
+for now we keep it until Tjarda's version of Sakura is ready to be copied here
+
+FIP-19032014
+
+"""
+
+
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.rfi.core import PythonCodeInterface
 
