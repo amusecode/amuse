@@ -4,6 +4,8 @@
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
 
+#include "simple_map.h"
+
 #define NMAX 10000
 static struct sys mainsys;
 
@@ -15,63 +17,13 @@ static int inttype;
 static double dtime;
 static double begin_time = 0;
 
-
-static int max_id;
-static int *pindex;
-
-static int init_pindex(int n)
-{
-  max_id=n;
-  pindex=(int *) malloc(n*sizeof(int));
-  if(pindex==NULL) return -1;
-  return 0;
-}
-
-static void clean_pindex()
-{
-  free(pindex);
-}
-
-static inline int set_pindex(int id,int p)
-{
-  if(id<0 || id>max_id-1) return -1;
-  pindex[id]=p;
-  return 0;
-}
-
-static int new_pindex(int id,int p)
-{
- while(id>=max_id)
- {
-   int *new;
-   max_id*=2;
-   new=(int *) realloc( pindex, max_id*sizeof(int) );  
-   if(new == NULL) return -2;
-   pindex=new;
- }
- return set_pindex(id,p);
-}
-
-static int remove_pindex(int id)
-{
-  if(id<0 || id>max_id-1) return -1;
-  pindex[id]=-1;
-}
-
-static inline int get_pindex(int id,int *p)
-{
-  if(id<0 || id>max_id-1) return -1;
-  *p=pindex[id];
-  if(*p<0  || *p>mainsys.n-1) return -2;
-  return 0; 
-}
-
+struct simple_map map;
 
 int initialize_code()
 {
   pcounter=0;
   nmax=NMAX;
-  init_pindex( nmax*sizeof(struct particle)/sizeof(int));
+  init_map(&map, nmax*sizeof(struct particle)/sizeof(int));
   mainsys.n=0;
   mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
   mainsys.last=NULL;
@@ -88,7 +40,7 @@ int initialize_code()
 int cleanup_code()
 { 
     pcounter=0;
-    clean_pindex();
+    clear_map(&map);
     mainsys.n=0;
     free(mainsys.part);
     mainsys.last=NULL;
@@ -117,7 +69,7 @@ int new_particle(int *id, double mass,
    mainsys.part=new;
  }
  *id=pcounter;
- err=new_pindex(*id,p);
+ err=map_insert(&map,*id,p);
  if(err!=0) return err;
  mainsys.part[p].id=*id;
  mainsys.part[p].mass=mass;
@@ -139,10 +91,11 @@ int new_particle(int *id, double mass,
 
 int delete_particle(int id)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup(&map, id,&p);
   if(err!=0) return err;
-  remove_pindex(id);  
+  map_delete(&map,id);  
   mainsys.n--;
   if(mainsys.n==0)
   {
@@ -151,7 +104,7 @@ int delete_particle(int id)
   }
   mainsys.last--;
   mainsys.part[p]=mainsys.part[mainsys.n];
-  set_pindex(mainsys.part[p].id,p);
+  map_update(&map,mainsys.part[p].id,p);
   return 0; 
 }
                  
@@ -160,8 +113,9 @@ int get_state(int id, double *mass,
         double *vx, double *vy, double *vz,
         double *radius)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
  *mass=mainsys.part[p].mass; 
  *radius=mainsys.part[p].radius;
@@ -176,8 +130,9 @@ int get_state(int id, double *mass,
 
 int get_mass(int id, double *mass)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
  *mass=mainsys.part[p].mass; 
  return 0;
@@ -185,8 +140,9 @@ int get_mass(int id, double *mass)
 
 int get_radius(int id, double *radius)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
  *radius=mainsys.part[p].radius;
  return 0;
@@ -194,8 +150,9 @@ int get_radius(int id, double *radius)
 
 int get_position(int id, double *x, double *y, double *z)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
  *x=mainsys.part[p].pos[0]; 
  *y=mainsys.part[p].pos[1]; 
@@ -205,8 +162,9 @@ int get_position(int id, double *x, double *y, double *z)
 
 int get_velocity(int id, double *vx, double *vy, double *vz)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
  *vx=mainsys.part[p].vel[0]; 
  *vy=mainsys.part[p].vel[1]; 
@@ -219,8 +177,9 @@ int set_state(int id, double mass,
         double vx, double vy, double vz, 
         double radius)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
   mainsys.part[p].mass=mass; 
   mainsys.part[p].radius=radius; 
@@ -235,8 +194,9 @@ int set_state(int id, double mass,
 
 int set_mass(int id, double mass)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
   mainsys.part[p].mass=mass; 
   return 0;
@@ -244,8 +204,9 @@ int set_mass(int id, double mass)
 
 int set_radius(int id, double radius)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
   mainsys.part[p].radius=radius; 
   return 0;
@@ -254,8 +215,9 @@ int set_radius(int id, double radius)
 
 int set_position(int id, double x, double y, double z)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
   mainsys.part[p].pos[0]=x; 
   mainsys.part[p].pos[1]=y; 
@@ -265,8 +227,9 @@ int set_position(int id, double x, double y, double z)
 
 int set_velocity(int id, double vx, double vy, double vz)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
   mainsys.part[p].vel[0]=vx; 
   mainsys.part[p].vel[1]=vy; 
@@ -289,8 +252,9 @@ int get_index_of_first_particle(int  *id)
 
 int get_index_of_next_particle(int  id, int *nout)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
   if(p ==mainsys.n-1) return 1;
   *nout=mainsys.part[p+1].id;
@@ -360,19 +324,20 @@ int evolve_model(double t_end)
       // COLLISION_DETECTION is currently the only supported stopping condition,
       // so we know that the first one set should be a collision:
       if ((get_stopping_condition_info(0, &type, &number_of_particles) < 0) || (type != COLLISION_DETECTION)) {
+        size_t p;
+        map_lookup( &map, id,&p);
         printf("get_stopping_condition_info error: %d\n", get_stopping_condition_info(0, &type, &number_of_particles));
-        printf("id: %d, index: %d (%d ?= %d) (%d ?= 2)\n", id, pindex[id], type, COLLISION_DETECTION, number_of_particles);
+        printf("id: %d, index: %d (%d ?= %d) (%d ?= 2)\n", id, p, type, COLLISION_DETECTION, number_of_particles);
         return -1;
       }
       get_stopping_condition_particle_index(0, 0, &id);
-      t_now += mainsys.part[pindex[id]].postime;
+      t_now += mainsys.part[p].postime;
       break;
     } else {
       t_now+=dt;
     }
   }
-  for(p=0;p<pcounter;p++) remove_pindex(p);
-  for(p=0;p<mainsys.n;p++) set_pindex(mainsys.part[p].id,p);
+  for(p=0;p<mainsys.n;p++) map_update(&map, mainsys.part[p].id,p);
   return 0;
 }
 
@@ -472,8 +437,9 @@ int commit_parameters()
 
 int get_potential(int id, double *pot)
 {
-  int p,err;
-  err=get_pindex(id,&p);
+  size_t p;
+  int err;
+  err=map_lookup( &map, id,&p);
   if(err!=0) return err;
   *pot=mainsys.part[p].pot;
   return 0;
