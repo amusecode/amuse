@@ -5,6 +5,7 @@
 #include <stopcond.h>
 
 #include "simple_map.h"
+#include "simple_hash.h"
 
 #define NMAX 10000
 static struct sys mainsys;
@@ -17,13 +18,15 @@ static int inttype;
 static double dtime;
 static double begin_time = 0;
 
-struct simple_map map;
+// for pedagogical reasons: map can be changed to hash or vv
+#define  LOOKUPSYMBOL(x,y)  x##hash##y
+struct LOOKUPSYMBOL(simple_,) lookup;
 
 int initialize_code()
 {
   pcounter=0;
   nmax=NMAX;
-  init_map(&map, nmax*sizeof(struct particle)/sizeof(int));
+  LOOKUPSYMBOL(init_,)(&lookup, nmax*sizeof(struct particle)/sizeof(int));
   mainsys.n=0;
   mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
   mainsys.last=NULL;
@@ -40,7 +43,7 @@ int initialize_code()
 int cleanup_code()
 { 
     pcounter=0;
-    clear_map(&map);
+    LOOKUPSYMBOL(clear_,)(&lookup);
     mainsys.n=0;
     free(mainsys.part);
     mainsys.last=NULL;
@@ -69,7 +72,7 @@ int new_particle(int *id, double mass,
    mainsys.part=new;
  }
  *id=pcounter;
- err=map_insert(&map,*id,p);
+ err=LOOKUPSYMBOL(,_insert)(&lookup,*id,p);
  if(err!=0) return err;
  mainsys.part[p].id=*id;
  mainsys.part[p].mass=mass;
@@ -93,9 +96,9 @@ int delete_particle(int id)
 {
   size_t p;
   int err;
-  err=map_lookup(&map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)(&lookup, id,&p);
   if(err!=0) return err;
-  map_delete(&map,id);  
+  LOOKUPSYMBOL(,_delete)(&lookup,id);  
   mainsys.n--;
   if(mainsys.n==0)
   {
@@ -104,7 +107,7 @@ int delete_particle(int id)
   }
   mainsys.last--;
   mainsys.part[p]=mainsys.part[mainsys.n];
-  map_update(&map,mainsys.part[p].id,p);
+  LOOKUPSYMBOL(,_update)(&lookup,mainsys.part[p].id,p);
   return 0; 
 }
                  
@@ -115,7 +118,7 @@ int get_state(int id, double *mass,
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
  *mass=mainsys.part[p].mass; 
  *radius=mainsys.part[p].radius;
@@ -132,7 +135,7 @@ int get_mass(int id, double *mass)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
  *mass=mainsys.part[p].mass; 
  return 0;
@@ -142,7 +145,7 @@ int get_radius(int id, double *radius)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
  *radius=mainsys.part[p].radius;
  return 0;
@@ -152,7 +155,7 @@ int get_position(int id, double *x, double *y, double *z)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
  *x=mainsys.part[p].pos[0]; 
  *y=mainsys.part[p].pos[1]; 
@@ -164,7 +167,7 @@ int get_velocity(int id, double *vx, double *vy, double *vz)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
  *vx=mainsys.part[p].vel[0]; 
  *vy=mainsys.part[p].vel[1]; 
@@ -179,7 +182,7 @@ int set_state(int id, double mass,
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
   mainsys.part[p].mass=mass; 
   mainsys.part[p].radius=radius; 
@@ -196,7 +199,7 @@ int set_mass(int id, double mass)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
   mainsys.part[p].mass=mass; 
   return 0;
@@ -206,7 +209,7 @@ int set_radius(int id, double radius)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
   mainsys.part[p].radius=radius; 
   return 0;
@@ -217,7 +220,7 @@ int set_position(int id, double x, double y, double z)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
   mainsys.part[p].pos[0]=x; 
   mainsys.part[p].pos[1]=y; 
@@ -229,7 +232,7 @@ int set_velocity(int id, double vx, double vy, double vz)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
   mainsys.part[p].vel[0]=vx; 
   mainsys.part[p].vel[1]=vy; 
@@ -254,7 +257,7 @@ int get_index_of_next_particle(int  id, int *nout)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
   if(p ==mainsys.n-1) return 1;
   *nout=mainsys.part[p+1].id;
@@ -325,7 +328,7 @@ int evolve_model(double t_end)
       // so we know that the first one set should be a collision:
       if ((get_stopping_condition_info(0, &type, &number_of_particles) < 0) || (type != COLLISION_DETECTION)) {
         size_t p;
-        map_lookup( &map, id,&p);
+        LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
         printf("get_stopping_condition_info error: %d\n", get_stopping_condition_info(0, &type, &number_of_particles));
         printf("id: %d, index: %d (%d ?= %d) (%d ?= 2)\n", id, p, type, COLLISION_DETECTION, number_of_particles);
         return -1;
@@ -337,7 +340,7 @@ int evolve_model(double t_end)
       t_now+=dt;
     }
   }
-  for(p=0;p<mainsys.n;p++) map_update(&map, mainsys.part[p].id,p);
+  for(p=0;p<mainsys.n;p++) LOOKUPSYMBOL(,_update)(&lookup, mainsys.part[p].id,p);
   return 0;
 }
 
@@ -439,7 +442,7 @@ int get_potential(int id, double *pot)
 {
   size_t p;
   int err;
-  err=map_lookup( &map, id,&p);
+  err=LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
   if(err!=0) return err;
   *pot=mainsys.part[p].pot;
   return 0;
