@@ -44,7 +44,7 @@ all: $(CODELIB) $(TARGET)
 cpu: $(CODELIBCPU) $(TARGETCPU)
 
 $(TARGET): $(CODELIB) integrate.o
-	$(CXX) -o $(TARGET) integrate.o $(LDFLAGS)  $(CUDA_LIBS) ./$(CODELIB) 
+	$(CXX) -o $(TARGET) integrate.o $(LDFLAGS)  ./$(CODELIB)  $(CUDA_LIBS)
 
 $(CODELIB): $(OBJS)
 	/bin/rm -f $@
