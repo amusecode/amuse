@@ -269,7 +269,8 @@ void do_evolve(struct sys s, double dt, int inttype)
       evolve_ok2(clevel,s, zeroforces, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     case KEPLER:
-      evolve_kepler(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      if(s.n==2) evolve_kepler(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      else evolve_kepler_test(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
     case FOURTH_M4:
       evolve_sf_4m4(clevel,s,(DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
@@ -558,7 +559,7 @@ static void report(struct sys s,DOUBLE etime, int inttype)
     }
     printf(" total, total j, mean j: %18li %18li %f\n",totalbs,totalj,totalj/(1.*totalbs));
   }
-  if(inttype==CC_KEPLER || inttype==CCC_KEPLER)
+  if(inttype==KEPLER || inttype==CC_KEPLER || inttype==CCC_KEPLER)
   {
     unsigned long totalcefail=0,totalcecount=0;
     printf("kepler solver counts:\n");

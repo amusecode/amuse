@@ -49,3 +49,32 @@ void evolve_kepler(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
   } 
   diag->cecount[clevel]++;
 }
+
+// special solver to test kepler
+void evolve_kepler_test(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
+  struct particle *central=s.part;
+  struct particle p1,p2;
+  struct sys s2;
+
+  if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+
+  for(struct particle *i=s.part+1;i<=s.last;i++) if(central->mass<i->mass) central=i;
+
+  for(struct particle *i=s.part;i<=s.last;i++)
+  {
+    if(i==central) continue;
+    p1=*central;
+    p2=*i;
+
+    p1.mass=central->mass+i->mass;
+    p2.mass=0;
+
+    s2.n=2;
+    s2.part=&p1;
+    s2.last=&p2;
+    evolve_kepler(clevel,s2,stime,etime,dt);
+    p2.mass=i->mass;
+    *i=p2;
+  }
+  for(int k=0;k<3;k++) central->pos[k]+=central->vel[k]*dt;
+}
