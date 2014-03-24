@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include "evolve.h"
 #include "evolve_shared.h"
-#include "universal_variable_kepler.h"
+#include "universal_kepler_solver.h"
 
 void evolve_kepler(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
   if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
@@ -29,20 +29,17 @@ void evolve_kepler(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
     // evolve center of mass for dt
     for(k=0;k<3;k++) pos_cm[k] += vel_cm[k] * dt;
     // call kepler solver
-    int err = universal_variable_kepler_solver(dt,mtot,dpos0,dvel0,dpos,dvel);
-    if (err != 0) {
-      // failsafe kepler solver
-      LOG("Kepler solver failed\n");
-      diag->cefail[clevel]++;
-      evolve_shared4(clevel,s, stime, etime, dt, 1);
-    } else {
-      // translate coordinates from 2-body frame to original frame
-      for(k=0;k<3;k++) s.part->pos[k] = pos_cm[k] + f1 * dpos[k];
-      for(k=0;k<3;k++) s.part->vel[k] = vel_cm[k] + f1 * dvel[k];
-      for(k=0;k<3;k++) s.last->pos[k] = pos_cm[k] - f2 * dpos[k];
-      for(k=0;k<3;k++) s.last->vel[k] = vel_cm[k] - f2 * dvel[k];
-      // update statistics
-    }
+    int err=universal_kepler_solver(dt,mtot,eps2,
+                                    dpos0[0],dpos0[1],dpos0[2],
+                                    dvel0[0],dvel0[1],dvel0[2],
+                                    &dpos[0],&dpos[1],&dpos[2],
+                                    &dvel[0],&dvel[1],&dvel[2]);
+    if (err != 0) ENDRUN("kepler solver failure"); // failure of the kepler solver should be very rare now
+    // translate coordinates from 2-body frame to original frame
+    for(k=0;k<3;k++) s.part->pos[k] = pos_cm[k] + f1 * dpos[k];
+    for(k=0;k<3;k++) s.part->vel[k] = vel_cm[k] + f1 * dvel[k];
+    for(k=0;k<3;k++) s.last->pos[k] = pos_cm[k] - f2 * dpos[k];
+    for(k=0;k<3;k++) s.last->vel[k] = vel_cm[k] - f2 * dvel[k];
   } else {
     for(k=0;k<3;k++) s.part->pos[k]+=s.part->vel[k]*dt;
     for(k=0;k<3;k++) s.last->pos[k]+=s.last->vel[k]*dt;
