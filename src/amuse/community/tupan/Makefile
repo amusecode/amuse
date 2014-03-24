@@ -46,15 +46,9 @@ install:
 
 test:
 	@echo
-	@echo "Testing import of modules required for tupan (OpenGL, PIL, pyopencl, cffi):"
-ifeq ($(PYOPENGL_AVAILABLE),no)
-	$(error "Python imports not available: OpenGL")
-endif
-ifeq ($(PYIMAGE_AVAILABLE),no)
-	$(error "Python imports not available: Image")
-endif
+	@echo "Testing import of modules required for tupan (pyopencl, cffi):"
 ifeq ($(PYOPENCL_AVAILABLE),no)
-	$(error "Python imports not available: pyopencl")
+	$(warning "Python import (optional) not available: pyopencl")
 endif
 ifeq ($(CFFI_AVAILABLE),no)
 	$(error "Python imports not available: cffi")
