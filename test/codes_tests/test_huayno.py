@@ -627,9 +627,9 @@ class TestHuayno(TestWithMPI):
         self.assertAlmostEqual(pos[20][1],pos[14][1],12)
         self.assertAlmostEqual(pos[20][2],pos[14][2],12)
 
-    def test25(self):
+    def xtest25(self):
         print "test massless particles/ kepler integrator, smoothed"
-        N=20        
+        N=10        
         tend=20.| units.yr
         numpy.random.seed(12345)
         conv=nbody_system.nbody_to_si(4.| units.MSun, 5.|units.AU)
