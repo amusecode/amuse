@@ -211,5 +211,5 @@ struct sys join(struct sys s1,struct sys s2);
     ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel); \
   } else { \
   if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) \
-    ENDRUN("timestep too small: etime=%le stime=%le dt=%le clevel=%u\n", etime, stime, dt, clevel); \
+    ENDRUN("timestep too small: etime=%le stime=%le dt=%le clevel=%u\n", (double) etime, (double) stime, (double) dt, clevel); \
   }  

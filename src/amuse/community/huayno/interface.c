@@ -314,10 +314,10 @@ int get_timestep(double *t)
 
 int evolve_model(double t_end)
 {
-  double dt=dtime;
+  double dt=SIGN(t_end-t_now)*dtime;
   if(dt==0.) dt=t_end-t_now;
   reset_stopping_conditions();
-  while(t_now < t_end - dt/2) 
+  while(SIGN(dt)*(t_end - t_now) > SIGN(dt)*dt/2) 
   {
     if(mainsys.n > 0) do_evolve(mainsys,dt,inttype);
     if (set_conditions & enabled_conditions) {

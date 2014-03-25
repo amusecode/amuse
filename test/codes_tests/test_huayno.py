@@ -660,7 +660,7 @@ class TestHuayno(TestWithMPI):
         self.assertAlmostEqual(pos[20][2],pos[14][2],6)
 
 
-    def xtest26(self):
+    def test26(self):
         print "test massless particles (negative time)"
         N=10        
         tend=-5.| units.yr
@@ -689,13 +689,36 @@ class TestHuayno(TestWithMPI):
           da=abs((a-a0)/a0)
           deps=abs(eps-eps0)/eps0
 
-          dev=numpy.where(da > 1.e-10)[0]
+          dev=numpy.where(da > 1.e-12)[0]
           self.assertEqual( len(dev),0)
-          dev=numpy.where(deps > 1.e-10)[0]
+          dev=numpy.where(deps > 1.e-12)[0]
           self.assertEqual( len(dev),0)
           pos[inttype]=[orbiters.x.value_in(units.AU),orbiters.y.value_in(units.AU),orbiters.z.value_in(units.AU)]
-        self.assertAlmostEqual(pos[20][0],pos[14][0],8)
-        self.assertAlmostEqual(pos[20][1],pos[14][1],8)
-        self.assertAlmostEqual(pos[20][2],pos[14][2],8)
+        self.assertAlmostEqual(pos[20][0],pos[14][0],12)
+        self.assertAlmostEqual(pos[20][1],pos[14][1],12)
+        self.assertAlmostEqual(pos[20][2],pos[14][2],12)
         
+    def test27(self):
+        particles = plummer.new_plummer_model(31)
+
+        tend=0.25| nbody_system.time
+
+        instance = Huayno()
+        instance.particles.add_particles(particles)        
+        instance.evolve_model(tend)
+        expected_positions = instance.particles.position
+        self.assertEqual(instance.model_time, tend)
+        instance.stop()
         
+        particles2=particles.copy()
+        particles2.velocity*=-1
+
+        instance = Huayno()
+        instance.particles.add_particles(particles2)        
+        instance.evolve_model(-tend)
+        positions = instance.particles.position
+        self.assertEqual(instance.model_time, -tend)
+        instance.stop()
+
+        self.assertAlmostEqual(positions,expected_positions)
+
