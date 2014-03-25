@@ -80,9 +80,8 @@ static void evolve_shared_collision_detection(struct sys s, DOUBLE dt, void (*dk
     int *step_at_level = (int*) calloc (MAXLEVEL, sizeof(int));
     int is_collision_detection_enabled;
     
-    printf("evolve_shared_collision_detection, dt: %Le \n", dt);
     if (dt == 0.0L) {
-        ENDRUN("timestep too small: dt=%Le\n", dt);
+        ENDRUN("timestep too small: dt=%Le\n", (long double) dt);
     }
     is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
     set_dt_levels(dt_levels, dt);
@@ -94,7 +93,7 @@ static void evolve_shared_collision_detection(struct sys s, DOUBLE dt, void (*dk
             if (current_level >= MAXLEVEL) {
                 stime = time_from_steps(step_at_level, dt_levels);
                 ENDRUN("timestep too small: stime=%Le dt=%Le clevel=%u\n", 
-                    stime, dt_levels[current_level], current_level);
+                    (long double) stime, (long double) dt_levels[current_level], current_level);
             }
         }
         diag->deepsteps++;

@@ -10,7 +10,7 @@
 #include "universal_kepler_solver.h"
 
 void evolve_kepler(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt) {
-  if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if (s.n != 2) ENDRUN("two-body solver was called with sys.n=%u\n", s.n);
   // translate coordinates original frame to 2-body frame
   int k;
@@ -53,7 +53,7 @@ void evolve_kepler_test(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOU
   struct particle p1,p2;
   struct sys s2;
 
-  if (etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small\n");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
 
   for(struct particle *i=s.part+1;i<=s.last;i++) if(central->mass<i->mass) central=i;
 

@@ -11,8 +11,7 @@
 void evolve_shared2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   FLOAT dtsys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys=global_timestep(s);
   if(dtsys < fabs(dt))
@@ -30,8 +29,7 @@ void evolve_shared2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE 
 
 void evolve_shared4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {
@@ -46,8 +44,7 @@ void evolve_shared4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE 
 
 void evolve_shared6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {
@@ -62,8 +59,7 @@ void evolve_shared6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE 
 
 void evolve_shared8(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {
@@ -78,8 +74,7 @@ void evolve_shared8(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE 
 
 void evolve_shared10(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   FLOAT dtsys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys = global_timestep(s);
   if(dtsys < fabs(dt)) {

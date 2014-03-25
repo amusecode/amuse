@@ -39,8 +39,7 @@ void evolve_bs_adaptive(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOU
 {
   FLOAT dtsys;
   int done=0;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%d/%d\n", etime, stime, dt, clevel,MAXLEVEL);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s,SIGN(dt));
   dtsys=global_timestep(s);
   if(dtsys > fabs(dt))
@@ -63,8 +62,7 @@ void evolve_bs(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   FLOAT dtsys;
   int done=0;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%d/%d\n", etime, stime, dt, clevel,MAXLEVEL);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   done=BulirschStoer(clevel,s, stime, etime, dt, 1);
   if(done==0)
   {

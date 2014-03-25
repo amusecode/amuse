@@ -131,8 +131,7 @@ static void ok_kick(int clevel,struct forces f, DOUBLE dt) {
 
 void evolve_ok2(int clevel,struct sys s, struct forces f, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep) {
   if (IS_ZEROFORCES(f) && clevel == 0) { f = ok_main_forces; }
-  if ((etime == stime) || (dt == 0) || (clevel >= MAXLEVEL))
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   // all particles are drifted together
   if (f.n == 0) {
     diag->deepsteps++;

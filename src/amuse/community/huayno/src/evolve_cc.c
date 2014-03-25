@@ -257,8 +257,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
   DOUBLE cmpos[3],cmvel[3];
   int recentersub=0;
 	struct sys c = zerosys, r = zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
 
   if (s.n == 2 && (inttype==CCC_KEPLER || inttype==CC_KEPLER)) {
     evolve_kepler(clevel,s, stime, etime, dt);
@@ -294,7 +293,7 @@ void evolve_cc2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, 
         dt_step = dt_step / 2;
         clevel++;
       }
-      LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", clevel, dt / dt_step);
+      LOG("CC2_SPLIT_SHORTCUTS clevel=%d dt/dt_step=%Le\n", clevel,(long double) (dt / dt_step));
       for (DOUBLE dt_now = 0; dir*dt_now < dir*(dt-dt_step/2); dt_now += dt_step)
         evolve_cc2(clevel,s, dt_now, dt_now + dt_step, dt_step,inttype,0);
       return;

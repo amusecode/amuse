@@ -204,3 +204,12 @@ struct sys join(struct sys s1,struct sys s2);
     err=(t-sum)-y; \
     sum=t; \
   }
+
+#define CHECK_TIMESTEP(etime,stime,dt,clevel) \
+  if(sizeof(dt)==sizeof(long double)) { \
+  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) \
+    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel); \
+  } else { \
+  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) \
+    ENDRUN("timestep too small: etime=%le stime=%le dt=%le clevel=%u\n", etime, stime, dt, clevel); \
+  }  

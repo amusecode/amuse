@@ -10,7 +10,7 @@ void evolve_split_pass(int clevel,struct sys sys1,struct sys sys2,
                          DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,sys1, join(sys1,sys2), SIGN(dt));
 //  if(calc_timestep) timestep(clevel,sys1, sys1, SIGN(dt));
   split((FLOAT) dt, sys1, &slow, &fast);
@@ -28,7 +28,7 @@ void evolve_split_naive(int clevel,struct sys sys1,struct sys sys2,
                           DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,sys1, join(sys1,sys2), SIGN(dt));
 //  if(calc_timestep) timestep(clevel,sys1, sys1, SIGN(dt));
   split((FLOAT) dt, sys1, &slow, &fast);
@@ -48,7 +48,7 @@ void evolve_split_naive(int clevel,struct sys sys1,struct sys sys2,
 void evolve_split_bridge(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
@@ -68,7 +68,7 @@ void evolve_split_bridge(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DO
 void evolve_split_bridge_dkd(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
@@ -88,7 +88,7 @@ void evolve_split_bridge_dkd(int clevel,struct sys s, DOUBLE stime, DOUBLE etime
 void evolve_split_hold(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
@@ -104,7 +104,7 @@ void evolve_split_hold(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUB
 void evolve_split_hold_dkd(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
@@ -121,7 +121,7 @@ void evolve_split_pass_dkd(int clevel,struct sys sys1,struct sys sys2,
                          DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,sys1, join(sys1,sys2), SIGN(dt));
 //  if(calc_timestep) timestep(clevel,sys1, sys1, SIGN(dt));
   split((FLOAT) dt, sys1, &slow, &fast);
@@ -139,7 +139,7 @@ void evolve_split_ppass_dkd(int clevel,struct sys sys1,struct sys sys2,
                          DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
 {
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,sys1, join(sys1,sys2), SIGN(dt));
 //  if(calc_timestep) timestep(clevel,sys1, sys1, SIGN(dt));
   split((FLOAT) dt, sys1, &slow, &fast);
@@ -188,7 +188,7 @@ void evolve_sf_4m5(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
 {
   int i;
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 
@@ -262,7 +262,7 @@ void evolve_sf_4m4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE d
 {
   int i;
   struct sys slow=zerosys,fast=zerosys;
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL) ENDRUN("timestep too small");
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   if(calc_timestep) timestep(clevel,s,s, SIGN(dt));
   split((FLOAT) dt, s, &slow, &fast);
   if(fast.n==0) 

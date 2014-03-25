@@ -118,8 +118,7 @@ void init_evolve(struct sys s,int inttype)
 
 void evolve_constant(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
-  if(etime == stime ||  dt==0 || clevel>=MAXLEVEL)
-    ENDRUN("timestep too small: etime=%Le stime=%Le dt=%Le clevel=%u\n", etime, stime, dt, clevel);
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
   diag->deepsteps++;
   diag->simtime+=dt;
   dkd(clevel,s,zerosys, stime, etime, dt);

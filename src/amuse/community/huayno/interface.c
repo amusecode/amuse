@@ -314,7 +314,6 @@ int get_timestep(double *t)
 
 int evolve_model(double t_end)
 {
-  int p; 
   double dt=dtime;
   if(dt==0.) dt=t_end-t_now;
   reset_stopping_conditions();
@@ -323,23 +322,28 @@ int evolve_model(double t_end)
     if(mainsys.n > 0) do_evolve(mainsys,dt,inttype);
     if (set_conditions & enabled_conditions) {
       printf("Stopping condition set!\n");
-      int type, number_of_particles, id;
-      size_t p;
-      // COLLISION_DETECTION is currently the only supported stopping condition,
-      // so we know that the first one set should be a collision:
-      if ((get_stopping_condition_info(0, &type, &number_of_particles) < 0) || (type != COLLISION_DETECTION)) {
-        printf("get_stopping_condition_info error: %d\n", get_stopping_condition_info(0, &type, &number_of_particles));
-        return -1;
-      }
-      get_stopping_condition_particle_index(0, 0, &id);
-      LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
-      t_now += mainsys.part[p].postime;
       break;
     } else {
       t_now+=dt;
     }
   }
-  for(p=0;p<mainsys.n;p++) LOOKUPSYMBOL(,_update)(&lookup, mainsys.part[p].id,p);
+  for(int p=0;p<mainsys.n;p++) LOOKUPSYMBOL(,_update)(&lookup, mainsys.part[p].id,p);
+
+  if (set_conditions & enabled_conditions) {
+    int err,type, number_of_particles, id;
+    size_t p;
+    // COLLISION_DETECTION is currently the only supported stopping condition,
+    // so we know that the first one set should be a collision:
+    err=get_stopping_condition_info(0, &type, &number_of_particles);
+    if ((err < 0) || (type != COLLISION_DETECTION)) {
+      printf("get_stopping_condition_info error: %d\n", err);
+      return -1;
+    }
+    get_stopping_condition_particle_index(0, 0, &id);
+    LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
+    t_now += mainsys.part[p].postime;
+  }
+
   return 0;
 }
 
