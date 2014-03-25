@@ -324,16 +324,15 @@ int evolve_model(double t_end)
     if (set_conditions & enabled_conditions) {
       printf("Stopping condition set!\n");
       int type, number_of_particles, id;
+      size_t p;
       // COLLISION_DETECTION is currently the only supported stopping condition,
       // so we know that the first one set should be a collision:
       if ((get_stopping_condition_info(0, &type, &number_of_particles) < 0) || (type != COLLISION_DETECTION)) {
-        size_t p;
-        LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
         printf("get_stopping_condition_info error: %d\n", get_stopping_condition_info(0, &type, &number_of_particles));
-        printf("id: %d, index: %d (%d ?= %d) (%d ?= 2)\n", id, p, type, COLLISION_DETECTION, number_of_particles);
         return -1;
       }
       get_stopping_condition_particle_index(0, 0, &id);
+      LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
       t_now += mainsys.part[p].postime;
       break;
     } else {

@@ -606,7 +606,7 @@ class TestHuayno(TestWithMPI):
 
         pos=dict()
         for inttype in [20,14]:
-          code=Huayno(conv,redirection="none",channel_type="sockets")
+          code=Huayno(conv)
           code.parameters.inttype_parameter=inttype
           code.parameters.timestep_parameter=0.1
           code.particles.add_particle(sun)
@@ -623,11 +623,44 @@ class TestHuayno(TestWithMPI):
           dev=numpy.where(deps > 1.e-12)[0]
           self.assertEqual( len(dev),0)
           pos[inttype]=[orbiters2.x.value_in(units.AU),orbiters2.y.value_in(units.AU),orbiters2.z.value_in(units.AU)]
-        self.assertAlmostEqual(pos[20][0],pos[14][0],14)
-        self.assertAlmostEqual(pos[20][1],pos[14][1],14)
-        self.assertAlmostEqual(pos[20][2],pos[14][2],14)
+        self.assertAlmostEqual(pos[20][0],pos[14][0],12)
+        self.assertAlmostEqual(pos[20][1],pos[14][1],12)
+        self.assertAlmostEqual(pos[20][2],pos[14][2],12)
 
-    def xtest25(self):
+    def test25(self):
+        print "test massless particles/ kepler integrator, smoothed"
+        N=20        
+        tend=20.| units.yr
+        numpy.random.seed(12345)
+        conv=nbody_system.nbody_to_si(4.| units.MSun, 5.|units.AU)
+        orbiters=plummer.new_plummer_model(N,conv)
+        sun=datamodel.Particle(mass=1.|units.MSun)
+        sun.position=[0,0,0]|units.AU
+        sun.velocity=[0,0,0]|units.kms
+        orbiters.mass*=0.
+        
+        a0,eps0=elements(sun.mass,orbiters.x,orbiters.y,orbiters.z,
+                      orbiters.vx,orbiters.vy,orbiters.vz)
+
+        pos=dict()
+        for inttype in [20,14]:
+          code=Huayno(conv,redirection="none")
+          code.parameters.inttype_parameter=inttype
+          code.parameters.timestep_parameter=0.1
+          code.parameters.epsilon_squared=(5 | units.AU)**2
+          code.particles.add_particle(sun)
+          orbiters2=code.particles.add_particles(orbiters)
+          code.evolve_model(tend)
+          a,eps=elements(sun.mass,orbiters2.x,orbiters2.y,orbiters2.z,
+                    orbiters2.vx,orbiters2.vy,orbiters2.vz)
+
+          pos[inttype]=[orbiters2.x.value_in(units.AU),orbiters2.y.value_in(units.AU),orbiters2.z.value_in(units.AU)]
+        self.assertAlmostEqual(pos[20][0],pos[14][0],6)
+        self.assertAlmostEqual(pos[20][1],pos[14][1],6)
+        self.assertAlmostEqual(pos[20][2],pos[14][2],6)
+
+
+    def xtest26(self):
         print "test massless particles (negative time)"
         N=10        
         tend=-5.| units.yr
@@ -644,7 +677,7 @@ class TestHuayno(TestWithMPI):
 
         pos=dict()
         for inttype in [20,14]:
-          code=Huayno(conv,redirection="none",channel_type="sockets")
+          code=Huayno(conv)
           code.parameters.inttype_parameter=inttype
           code.parameters.timestep_parameter=0.1
           code.particles.add_particle(sun)
