@@ -38,6 +38,7 @@ download:
 	git clone -b master https://github.com/ggf84/tupan.git
 
 build:
+	cp tupan.cfg ./tupan/tupan/
 	(cd tupan; python setup.py build)
 
 install:
@@ -62,7 +63,7 @@ tupan_worker: interface.py
 	
 
 clean:
-	-(cd tupan; python setup.py clean -a)
+	(cd tupan; python setup.py clean -a)
 	rm -f *.pyc; 
 	rm -f tupan_worker tupan_worker_sockets
 	rm -rf install
