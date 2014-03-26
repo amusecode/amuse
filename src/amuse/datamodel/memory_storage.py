@@ -1,6 +1,8 @@
 import numpy
 from numpy import ma
 
+from itertools import izip
+
 from amuse.units import quantities
 from amuse.units.quantities import VectorQuantity
 from amuse.units.quantities import is_quantity
@@ -307,14 +309,12 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
     
         mapping_from_particle_to_index = self.mapping_from_particle_to_index
         result = numpy.zeros(len(particles),dtype='int32')
-        index = 0
         notfoundkeys = []
         for index, particle_key in enumerate(particles):
             try:
                 result[index] = mapping_from_particle_to_index[particle_key]
             except KeyError:
                 notfoundkeys.append(particle_key)
-            index += 1
         
         if not len(notfoundkeys) == 0:
             if len(notfoundkeys) == 1:
@@ -326,12 +326,7 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
         return result
 
     def reindex(self):
-        new_index = {}
-        index = 0
-        for particle_key in self.particle_keys:
-            new_index[particle_key] = index
-            index += 1
-        
+        new_index=dict(izip(self.particle_keys,xrange(len(self.particle_keys))))
         self.mapping_from_particle_to_index = new_index
 
 
@@ -342,10 +337,10 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         
         self.sorted_keys = []
         self.sorted_indices = []
-        self.keys_set = set([])
     
     def has_key_in_store(self, key):
-        return key in self.keys_set
+        i=numpy.searchsorted(self.sorted_keys, key)
+        return i<len(self.sorted_keys) and self.sorted_keys[i]==key
         
     def copy(self):
         copy = type(self)()
@@ -382,10 +377,7 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         
     def reindex(self):
         self.sorted_indices = numpy.argsort(self.particle_keys, kind='mergesort')
-        self.sorted_keys = self.particle_keys[self.sorted_indices]       
-        self.keys_set = set(self.particle_keys)
-        
-
+        self.sorted_keys = self.particle_keys[self.sorted_indices]
         
 
 
