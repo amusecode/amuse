@@ -9,6 +9,14 @@ from amuse.units.quantities import is_quantity
 from amuse.datamodel.base import *
 from amuse.support import exceptions
 
+try:
+  from simple_hash import SimpleHash
+  _SIMPLE_HASH_PRESENT_=True
+except:  
+  _SIMPLE_HASH_PRESENT_=False
+
+_PREFER_SORTED_KEYS_=True
+
 class InMemoryAttributeStorage(AttributeStorage):
     
     def __init__(self):
@@ -379,13 +387,56 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         self.sorted_indices = numpy.argsort(self.particle_keys, kind='mergesort')
         self.sorted_keys = self.particle_keys[self.sorted_indices]
         
+class InMemoryAttributeStorageUseSimpleHash(InMemoryAttributeStorage):
+    
+    def __init__(self):
+        InMemoryAttributeStorage.__init__(self)
+        self._hash=SimpleHash()
+    
+    def has_key_in_store(self, key):
+        return self._hash.key_present(key)
+        
+    def copy(self):
+        copy = type(self)()
+        copy.particle_keys = self.particle_keys.copy()
+        copy.index_array = self.index_array.copy()
+        copy._hash.reindex(copy.particle_keys)
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+            copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
+        return copy
+   
+    def get_indices_of(self, keys):
+        if keys is None:
+            return self.index_array
+
+        if len(self.particle_keys) == 0:
+            return ()
+        
+        return self._hash.lookup(keys)
+        
+    def reindex(self):
+        self._hash.reindex(self.particle_keys)
+
+    def __getstate__(self):
+        state=self.__dict__
+        state.pop("_hash")
+        return state
+      
+    def __setstate__(self,state):
+        self.__dict__=state
+        self._hash=SimpleHash()
+        if len(self.particle_keys):
+          self._hash.reindex(self.particle_keys)
 
 
 def get_in_memory_attribute_storage_factory():
-    if False:
-        return InMemoryAttributeStorageUseDictionaryForKeySet
-    else:
+    if _SIMPLE_HASH_PRESENT_:
+       return InMemoryAttributeStorageUseSimpleHash
+    elif _PREFER_SORTED_KEYS_:
         return InMemoryAttributeStorageUseSortedKeys
+    else:   
+        return InMemoryAttributeStorageUseDictionaryForKeySet
+
 
 
 class InMemoryAttribute(object):
