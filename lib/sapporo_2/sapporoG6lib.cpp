@@ -43,7 +43,7 @@ extern "C" {
     if ((fd = fopen("sapporo2.config", "r"))) {
       char line[256];
       fprintf(stderr, "sapporo2::open - config file is found\n");
-      for(int i = 0; i < id; i++) {
+      for(int i = 0; i < *id; i++) {
           int n_how = 0;
           fgets(line, 256, fd);
           sscanf(line, "%d", &n_how);
