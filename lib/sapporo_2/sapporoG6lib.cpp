@@ -43,9 +43,17 @@ extern "C" {
     if ((fd = fopen("sapporo2.config", "r"))) {
       char line[256];
       fprintf(stderr, "sapporo2::open - config file is found\n");
+      for(int i = 0; i < id; i++) {
+          int n_how = 0;
+          fgets(line, 256, fd);
+          sscanf(line, "%d", &n_how);
+          for (int i = 0; i < n_how; i++) {
+             fgets(line, 256, fd);
+          }
+      }
+      
       fgets(line, 256, fd);
       sscanf(line, "%d", &how_many);
-
       //Read the devices we want to use
       if(how_many > 0)
       {
