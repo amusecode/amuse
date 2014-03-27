@@ -1,3 +1,5 @@
+#!/bin/env python
+
 import collections
 import getopt
 import numpy
@@ -83,6 +85,8 @@ def run_ph4(infile = None, number_of_stars = 40,
     #	2. use the GPU code but disable GPU use (-g)
     #	3. use the non-GPU code (-G)
 
+    #print "1"; sys.stdout.flush()
+    
     if gpu_worker == 1:
         try:
             gravity = grav(number_of_workers = n_workers,
@@ -92,11 +96,15 @@ def run_ph4(infile = None, number_of_stars = 40,
     else:
         gravity = grav(number_of_workers = n_workers, redirection = "none")
 
+    #print "2"; sys.stdout.flush()
     gravity.initialize_code()
+
+    #print "3"; sys.stdout.flush()
     gravity.parameters.set_defaults()
 
     #-----------------------------------------------------------------
 
+    #print "4"; sys.stdout.flush()
     if infile == None:
 
         print "making a Plummer model"
@@ -162,12 +170,14 @@ def run_ph4(infile = None, number_of_stars = 40,
 
     #-----------------------------------------------------------------
 
+    #print "5"; sys.stdout.flush()
     if softening_length == -1 | nbody_system.length:
         eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
 			| nbody_system.length**2
     else:
         eps2 = softening_length*softening_length
 
+    #print "6"; sys.stdout.flush()
     gravity.parameters.timestep_parameter = accuracy_parameter
     gravity.parameters.epsilon_squared = eps2
     gravity.parameters.use_gpu = use_gpu
@@ -254,7 +264,7 @@ if __name__ == '__main__':
     N = 100
     t_end = 5.0 | nbody_system.time
     delta_t = 1.0 | nbody_system.time
-    n_workers = 2
+    n_workers = 1
     use_gpu = 1
     gpu_worker = 1
     accuracy_parameter = 0.1
@@ -301,7 +311,11 @@ if __name__ == '__main__':
     numpy.random.seed(random_seed)
     print "random seed =", random_seed
 
-    assert is_mpd_running()
+
+    #os.system('env')
+
+
+    # assert is_mpd_running()
     run_ph4(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
              accuracy_parameter, softening_length,
