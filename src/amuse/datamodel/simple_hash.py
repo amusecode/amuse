@@ -44,7 +44,7 @@ class SimpleHash(object):
     def insert(self,keys,values=None):
         N=len(keys)
         keys=numpy.ascontiguousarray(keys, dtype="uintp")
-        if not values:
+        if values is None:
             values=numpy.arange(N)
         else:
             assert len(keys)==len(values)
