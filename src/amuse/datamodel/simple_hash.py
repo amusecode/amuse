@@ -32,8 +32,8 @@ class SimpleHash(object):
 
     def lookup(self,keys):
         N=len(keys)
-        keys=numpy.array(keys, dtype="uintp")
-        values=numpy.zeros(N,dtype="uintp")
+        keys=numpy.ascontiguousarray(keys, dtype="uintp")
+        values=numpy.ascontiguousarray(numpy.zeros(N),dtype="uintp")
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
         err=self._lib.hash_lookups(ctypes.byref(self._map),N,ckeys,cvalues)
@@ -43,11 +43,12 @@ class SimpleHash(object):
 
     def insert(self,keys,values=None):
         N=len(keys)
-        keys=numpy.array(keys, dtype="uintp")
+        keys=numpy.ascontiguousarray(keys, dtype="uintp")
         if not values:
-            values=numpy.arange(N,dtype="uintp")
+            values=numpy.arange(N)
         else:
             assert len(keys)==len(values)
+        values=numpy.ascontiguousarray(values,dtype="uintp")
       
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
