@@ -16,7 +16,8 @@ class simple_hash(ctypes.Structure):
               ("m_zeroUsed",ctypes.c_bool),
               ("m_zeroCell",cell)]
 
-librarypath=os.path.join(os.getenv("AMUSE_DIR"),"lib","simple_hash","libsimplehash.so")
+from amuse.community import get_amuse_root_dir
+librarypath=os.path.join(get_amuse_root_dir(),"lib","simple_hash","libsimplehash.so")
 
 lib_simple_hash=ctypes.CDLL(librarypath)
 
@@ -55,11 +56,11 @@ class SimpleHash(object):
 
         self._lib.hash_inserts(ctypes.byref(self._map),N,ckeys,cvalues)
 
-    def reindex(self, keys):
+    def reindex(self, keys,values=None):
 
         self._lib.end_hash(ctypes.byref(self._map))
         self._lib.init_hash(ctypes.byref(self._map),len(keys))
-        self.insert(keys)
+        self.insert(keys,values)
 
     def key_present(self,key):
         return self._lib.hash_lookup(ctypes.byref(self._map),ctypes.c_size_t(key),ctypes.byref(self._dummy))==0
