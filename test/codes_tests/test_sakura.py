@@ -11,7 +11,6 @@ try:
 except ImportError:
     MODULES_MISSING = True
 
-
 class TestSakuraInterface(TestWithMPI):
 
     def test01(self):
@@ -99,28 +98,32 @@ class TestSakuraInterface(TestWithMPI):
         instance = SakuraInterface()
         self.assertEquals(0, instance.initialize_code())
 
-        self.assertEquals([0.03125, 0], instance.get_eta().values())
-        self.assertEquals(0, instance.set_eta(0.001))
-        self.assertEquals([0.001, 0], instance.get_eta().values())
+        self.assertEquals([0.001, 0], instance.get_dt().values())
+        self.assertEquals(0, instance.set_dt(0.01))
+        self.assertEquals([0.01, 0], instance.get_dt().values())
 
-        self.assertEquals([0.0, 0], instance.get_begin_time().values())
-        self.assertEquals(0, instance.set_begin_time(1.0))
-        self.assertEquals([1.0, 0], instance.get_begin_time().values())
+        self.assertEquals([0.0, 0], instance.get_t_begin().values())
+        self.assertEquals(0, instance.set_t_begin(1.0))
+        self.assertEquals([1.0, 0], instance.get_t_begin().values())
 
-        self.assertEquals(["sakura", 0], instance.get_integrator_method().values())
-        self.assertEquals(0, instance.set_integrator_method("bogus"))
-        self.assertEquals(["bogus", 0], instance.get_integrator_method().values())
-        self.assertEquals(-1, instance.commit_parameters())
-        self.assertEquals(0, instance.set_integrator_method("asakura"))
-        self.assertEquals(["asakura", 0], instance.get_integrator_method().values())
+        self.assertEquals([0.0, 0], instance.get_t().values())
+        self.assertEquals(0, instance.set_t(1.0))
+        self.assertEquals([1.0, 0], instance.get_t().values())
+
+        #self.assertEquals(["sakura", 0], instance.get_integrator_method().values())
+        #self.assertEquals(0, instance.set_integrator_method("bogus"))
+        #self.assertEquals(["bogus", 0], instance.get_integrator_method().values())
+        #self.assertEquals(-1, instance.commit_parameters())
+        #self.assertEquals(0, instance.set_integrator_method("asakura"))
+        #self.assertEquals(["asakura", 0], instance.get_integrator_method().values())
 
         self.assertEquals(0, instance.commit_parameters())
 
-        self.assertEquals(0, instance.set_pn_order(7))
-        self.assertEquals([7, 0], instance.get_pn_order().values())
-        self.assertEquals(-1, instance.commit_parameters())
-        self.assertEquals(0, instance.set_clight(1024))
-        self.assertEquals([1024, 0], instance.get_clight().values())
+        #self.assertEquals(0, instance.set_pn_order(7))
+        #self.assertEquals([7, 0], instance.get_pn_order().values())
+        #self.assertEquals(-1, instance.commit_parameters())
+        #self.assertEquals(0, instance.set_clight(1024))
+        #self.assertEquals([1024, 0], instance.get_clight().values())
 
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
@@ -130,7 +133,7 @@ class TestSakuraInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print "Test SakuraInterface evolve_model, binary"
-        instance = SakuraInterface()
+        instance = SakuraInterface(redirection='none')#,debugger="gdb")
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
 
@@ -142,15 +145,11 @@ class TestSakuraInterface(TestWithMPI):
         self.assertEquals(0, instance.evolve_model(P / 2)) # half an orbit
         for result, expected in zip(instance.get_position(0).values(), [-0.5, 0.0, 0.0, 0]):
             self.assertAlmostEquals(result, expected, 2)
-
         self.assertEquals(0, instance.evolve_model(P)) # full orbit
         for result, expected in zip(instance.get_position(0).values(), [0.5, 0.0, 0.0, 0]):
             self.assertAlmostEquals(result, expected, 2)
-
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
-
-
 
 class TestSakura(TestWithMPI):
 
@@ -298,7 +297,7 @@ class TestSakura(TestWithMPI):
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = Sakura(converter, )
         instance.initialize_code()
-        instance.parameters.integrator_method = "asakura"
+#        instance.parameters.integrator_method = "asakura"
         instance.commit_parameters()
         instance.particles.add_particles(particles)
         instance.commit_particles()
@@ -345,7 +344,7 @@ class TestSakura(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
 
-    def test07(self):
+    def xtest07(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print "Testing effect of Sakura parameter epsilon_squared"
@@ -426,7 +425,7 @@ class TestSakura(TestWithMPI):
         print "Testing Sakura evolve_model and getters energy, plummer sphere, no SMBH"
         converter = nbody_system.nbody_to_si(1.0e2 | units.MSun, 1.0 | units.parsec)
         instance = Sakura(converter, )
-        instance.parameters.timestep_parameter = 1.0/256
+#        instance.parameters.timestep_parameter = 1.0/256
         instance.initialize_code()
 #        instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()
@@ -511,7 +510,8 @@ class TestSakura(TestWithMPI):
             self.skip("Failed to import a module required for Sakura")
         print "Testing Sakura properties"
         numpy.random.seed(12345)
-        particles = new_plummer_model(100, do_scale=True)
+        particles = new_plummer_model(10, do_scale=True)
+
         particles.position += [1, 2, 3] | nbody_system.length
         cluster_velocity = [4, 5, 6] | nbody_system.speed
         particles.velocity += cluster_velocity
@@ -519,6 +519,7 @@ class TestSakura(TestWithMPI):
 
         instance = Sakura()
         instance.particles.add_particles(particles)
+        instance.set_dt(1e-3 | nbody_system.time)
 
         kinetic_energy = instance.kinetic_energy - external_kinetic_energy
         potential_energy = instance.potential_energy
@@ -532,6 +533,7 @@ class TestSakura(TestWithMPI):
         initial_total_energy = kinetic_energy + potential_energy
 
         instance.evolve_model(0.1 | nbody_system.time)
+
         self.assertAlmostRelativeEqual(instance.model_time, 0.1 | nbody_system.time, 3)
         kinetic_energy = instance.kinetic_energy - external_kinetic_energy
         potential_energy = instance.potential_energy
@@ -544,4 +546,8 @@ class TestSakura(TestWithMPI):
 
         instance.cleanup_code()
         instance.stop()
+
+
+
+
 
