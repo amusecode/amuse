@@ -159,16 +159,20 @@ def orbital_elements_from_binary( binary, G=nbody_system.G):
     else:
         e_vector_unit = e_vector/e_vector.lengths()
         
-        cos_arg_per = e_vector_unit.dot(ascending_node_vector_unit)
+        cos_arg_per = numpy.dot(e_vector_unit,ascending_node_vector_unit)
+        #cos_arg_per = e_vector_unit.dot(ascending_node_vector_unit)
         e_cross_an=numpy.cross(e_vector_unit,ascending_node_vector_unit)
-        ss=-numpy.sign(specific_angular_momentum_unit.dot(e_cross_an))
+        ss=-numpy.sign(numpy.dot(specific_angular_momentum_unit,e_cross_an))
+        #ss=-numpy.sign(specific_angular_momentum_unit.dot(e_cross_an))
         sin_arg_per = ss*(e_cross_an**2).sum()**0.5
         arg_per=numpy.degrees(numpy.arctan2(sin_arg_per,cos_arg_per))
 
 
-        cos_true_anomaly = e_vector_unit.dot(position_unit)
+        cos_true_anomaly = numpy.dot(e_vector_unit,position_unit)
+        #cos_true_anomaly = e_vector_unit.dot(position_unit)
         e_cross_pos=numpy.cross(e_vector_unit,position_unit)
-        ss=numpy.sign(specific_angular_momentum_unit.dot(e_cross_pos))
+        ss=numpy.sign(numpy.dot(specific_angular_momentum_unit,e_cross_pos))
+        #ss=numpy.sign(specific_angular_momentum_unit.dot(e_cross_pos))
         sin_true_anomaly = ss*(e_cross_pos**2).sum()**0.5
         true_anomaly=numpy.degrees(numpy.arctan2(sin_true_anomaly,cos_true_anomaly))
 

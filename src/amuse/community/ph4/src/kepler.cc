@@ -10,12 +10,12 @@
 
 #include "hdyn.h"
 
-#define  ITERAC	   1.0e-12	// iteration accuracy for Kepler's equation
+#define  ITERAC	   1.0e-6	// iteration accuracy for Kepler's equation
 #define  MAXITER   100		// maximum number of iterations
-#define  TRIG_TOL  1.e-12       // tolerance in sine and cosine functions
+#define  TRIG_TOL  1.e-6       // tolerance in sine and cosine functions
 				//   _______________________________________
 #define  SQRT_TRIG_TOL  1.e-6   // \/ tolerance in sine and cosine functions
-#define	 ECC_TOL   1.0e-12	// problems with nearly linear orbits;
+#define	 ECC_TOL   1.0e-6	// problems with nearly linear orbits;
 				// best to treat them as linear
 
 //----------------------------------------------------------------------------
