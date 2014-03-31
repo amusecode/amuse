@@ -539,7 +539,7 @@ static inline INT __universal_kepler_solver(
         REAL u1sqr = 2 * m / r1;
         REAL lagr1 = v1sqr + u1sqr;
         REAL alpha1 = v1sqr - u1sqr;
-        if (2 * fabs(alpha1 - alpha0) > TOLERANCE * fabs(lagr1 + lagr0)) return -11;
+        if (fabs(alpha1 - alpha0) > TOLERANCE * fabs(lagr1 + lagr0)) return -11;
     }
 
     return err;
