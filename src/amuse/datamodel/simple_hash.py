@@ -16,7 +16,7 @@ class simple_hash(ctypes.Structure):
               ("m_zeroUsed",ctypes.c_bool),
               ("m_zeroCell",cell)]
 
-from amuse.community import get_amuse_root_dir
+from amuse.support import get_amuse_root_dir
 librarypath=os.path.join(get_amuse_root_dir(),"lib","simple_hash","libsimplehash.so")
 
 lib_simple_hash=ctypes.CDLL(librarypath)
@@ -26,7 +26,8 @@ class SimpleHash(object):
         self._map=simple_hash()
         self._dummy=ctypes.c_size_t()
         self._lib=lib_simple_hash
-        self._lib.init_hash(ctypes.byref(self._map),128)
+        if self._lib.init_hash(ctypes.byref(self._map),128)!=0:
+          raise MemoryError("allocation of SimpleHash")
         
     def __del__(self):
         self._lib.end_hash(ctypes.byref(self._map))
@@ -59,7 +60,8 @@ class SimpleHash(object):
     def reindex(self, keys,values=None):
 
         self._lib.end_hash(ctypes.byref(self._map))
-        self._lib.init_hash(ctypes.byref(self._map),len(keys))
+        if self._lib.init_hash(ctypes.byref(self._map),len(keys))!=0:
+          raise MemoryError("allocation of SimpleHash")
         self.insert(keys,values)
 
     def key_present(self,key):
