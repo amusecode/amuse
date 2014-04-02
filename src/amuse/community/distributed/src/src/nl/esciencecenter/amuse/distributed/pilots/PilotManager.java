@@ -306,8 +306,13 @@ public class PilotManager {
     public Job getXenonJob() {
         return xenonJob;
     }
-
+    
     public List<String> getStdout() throws DistributedAmuseException {
+        if (stdoutPath == null) {
+            ArrayList<String> result = new ArrayList<>();
+            result.add("Disabled");
+            return result;
+        }
         try {
             return Utils.readAllLines(xenon.files(), stdoutPath, StandardCharsets.UTF_8);
         } catch (XenonException e) {
@@ -316,6 +321,11 @@ public class PilotManager {
     }
 
     public List<String> getStderr() throws DistributedAmuseException {
+        if (stderrPath == null) {
+            ArrayList<String> result = new ArrayList<>();
+            result.add("Disabled");
+            return result;
+        }
         try {
             return Utils.readAllLines(xenon.files(), stderrPath, StandardCharsets.UTF_8);
         } catch (XenonException e) {

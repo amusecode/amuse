@@ -241,7 +241,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
             if (jobRunner != null) {
                 //signal the thread it is time to cancel the job
-                jobRunner.killProcess();
+                jobRunner.cancel();
             }
         } else {
             logger.error("Failed to handle message, unknown command: " + command);

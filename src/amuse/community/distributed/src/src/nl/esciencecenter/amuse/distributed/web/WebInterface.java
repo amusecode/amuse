@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -209,6 +210,19 @@ public class WebInterface extends AbstractHandler {
         writer.println("<h1>Resource " + resourceID + "</h1>");
         writeMapAsTable(resource.getStatusMap(), writer);
     }
+    
+    private static void printTail(List<String> lines, PrintWriter writer) {
+        if (lines.size() > 1000) {
+            int from = lines.size() - 1000;
+            int till = lines.size();
+            lines = lines.subList(from, till);
+            writer.println("<strong>Showing lines from " + from + " till " + till + "...</strong><br>");
+        }
+        
+        for (String line : lines) {
+            writer.println(line + "<br>");
+        }
+    }
 
     private void writePilotDetailsResponse(PrintWriter writer, String pilotID) throws DistributedAmuseException {
         int id = Integer.parseInt(pilotID);
@@ -229,9 +243,7 @@ public class WebInterface extends AbstractHandler {
         writer.println("<h3> Standard output</h3>");
         writer.println("<p>");
         try {
-            for (String line : pilot.getStdout()) {
-                writer.println(line + "<br>");
-            }
+            printTail(pilot.getStdout(), writer);
         } catch (DistributedAmuseException e) {
             writer.println("Failed to get standard output: " + e.getMessage());
             writer.println("<pre>");
@@ -244,9 +256,7 @@ public class WebInterface extends AbstractHandler {
         writer.println("<h3> Standard error</h3>");
         writer.println("<p>");
         try {
-            for (String line : pilot.getStderr()) {
-                writer.println(line + "<br>");
-            }
+            printTail(pilot.getStderr(), writer);
         } catch (DistributedAmuseException e) {
             writer.println("Failed to get standard error: " + e.getMessage());
             writer.println("<pre>");

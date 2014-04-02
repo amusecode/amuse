@@ -132,12 +132,6 @@ public class ResourceManager {
         }
         logger.info("Created new resource {}", this);
 
-        try {
-            logger.debug("home exists 3: " + xenon.files().exists(home));
-        } catch (XenonException e) {
-            logger.error("Exist failed", e);
-        }
-
     }
 
     private Scheduler createScheduler() throws DistributedAmuseException {

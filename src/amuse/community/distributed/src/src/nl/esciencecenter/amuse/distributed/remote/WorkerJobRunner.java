@@ -185,7 +185,7 @@ public class WorkerJobRunner extends JobRunner {
         logger.info("connection with local worker process established");
 
         //start a thread to start handling amuse requests
-        setName("Worker Job Runner for " + description);
+        setName("Worker Job Runner for job " + description.getID());
         setDaemon(true);
         start();
     }

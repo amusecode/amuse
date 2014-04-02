@@ -70,13 +70,17 @@ public abstract class JobRunner extends Thread {
         this.sandbox = tmpDir.resolve("job-" + description.getID());
         Files.createDirectory(this.sandbox);
     }
-    
+
     protected synchronized void setError(Exception error) {
         if (this.error == null) {
             this.error = error;
         } else {
             logger.warn("Masked error in running job: " + error);
         }
+    }
+
+    protected synchronized Exception getError() {
+        return error;
     }
 
     private synchronized Process getProcess() {
@@ -91,7 +95,7 @@ public abstract class JobRunner extends Thread {
         err = new OutputForwarder(process.getErrorStream(), description.getStderrFile(), ibis);
 
     }
-    
+
     int getExitCode() {
         return getProcess().exitValue();
     }
@@ -103,13 +107,12 @@ public abstract class JobRunner extends Thread {
             int result = process.waitFor();
 
             if (result != 0) {
-                error = new Exception("Script ended with non-zero exit code: " + result);
+                setError(new Exception("Process ended with non-zero exit code: " + result));
             }
         } catch (InterruptedException e) {
-            setError(new Exception("Job Interrupted", e));
-            killProcess();
+            //IGNORE
         }
-        
+
         out.waitFor(1000);
         err.waitFor(1000);
     }
@@ -141,7 +144,7 @@ public abstract class JobRunner extends Thread {
 
             int exitcode = killProcess.waitFor();
 
-            logger.info("native kill done, result is " + exitcode);
+            logger.info("native kill done, kill exit code is " + exitcode);
 
         } catch (Throwable t) {
             logger.error("Error on (forcibly) killing process", t);
@@ -168,14 +171,16 @@ public abstract class JobRunner extends Thread {
             logger.error("Error while cleaning up sandbox at: " + sandbox, e);
         }
     }
-    
+
     //small utility to figure out if the process is still running.
     protected boolean hasEnded() {
         Process process = getProcess();
-        
+
         try {
-            process.exitValue();
+            int exitcode = process.exitValue();
             //we only end up here if the process is done
+            
+            logger.info("Process ended with value " + exitcode);
             return true;
         } catch (IllegalThreadStateException e) {
             //we got this exception as the process is not done yet
@@ -184,7 +189,7 @@ public abstract class JobRunner extends Thread {
     }
 
     protected void sendResult() {
-        logger.debug("worker done. Sending result to main amuse node.");
+        logger.debug("Job done. Sending result to main amuse node.");
 
         //send result message to job
         try {
@@ -194,7 +199,7 @@ public abstract class JobRunner extends Thread {
 
             WriteMessage message = sendPort.newMessage();
 
-            message.writeObject(error);
+            message.writeObject(getError());
 
             writeResultData(message);
 
@@ -209,18 +214,38 @@ public abstract class JobRunner extends Thread {
 
     }
 
-    public synchronized void killProcess() {
-        if (process != null) {
-            process.destroy();
-
-            try {
-                int exitcode = process.exitValue();
-                logger.info("Process ended with result " + exitcode);
-            } catch (IllegalThreadStateException e) {
-                logger.error("Process not ended after process.destroy()! Trying native kill");
-                nativeKill();
-            }
+    
+    
+    /**
+     * This function will cancel the job by killing the process running the job. Since it is a common case to cancel a job when a
+     * normally finishing job is cleaned up, we give the process a short while to finish on its own.
+     */
+    public synchronized void cancel() {
+        if (process == null) {
+            return;
         }
+
+        //wait a little while for the process (or actually the streams connected to the process) to finish by itself
+        out.waitFor(50);
+        err.waitFor(50);
+
+        //check if the process is finished
+        if (hasEnded()) {
+            return;
+        };
+
+        process.destroy();
+        
+        //wait a little while for the process (or actually the streams connected to the process) to finish.
+        out.waitFor(50);
+        err.waitFor(50);
+
+        if (hasEnded()) {
+            return;
+        };
+
+        logger.error("Process not ended after process.destroy()! Performing native kill");
+        nativeKill();
     }
 
     abstract void writeResultData(WriteMessage message) throws IOException;
