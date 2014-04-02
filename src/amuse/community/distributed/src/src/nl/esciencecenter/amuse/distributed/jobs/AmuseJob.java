@@ -65,11 +65,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
 
     private final ReceivePort resultReceivePort;
 
-    private final int jobID;
-
-    private final String label;
-
-    private final int numberOfSlots;
+    private final AmuseJobDescription description;
 
     private State state;
 
@@ -80,19 +76,17 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
     //will never timeout until timeout set
     private long expirationDate = Long.MAX_VALUE;
 
-    public AmuseJob(String label, int numberOfSlots, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
-        this.label = label;
-        this.numberOfSlots = numberOfSlots;
+    public AmuseJob(AmuseJobDescription description, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
+        this.description = description;
 
         this.ibis = ibis;
         this.jobManager = jobManager;
 
-        this.jobID = getNextID();
-
         this.state = State.PENDING;
 
         try {
-            resultReceivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, "job-" + jobID, this);
+            resultReceivePort = ibis
+                    .createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, "job-" + description.getID(), this);
             resultReceivePort.enableConnections();
             resultReceivePort.enableMessageUpcalls();
         } catch (IOException e) {
@@ -108,18 +102,14 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
         }
     }
 
-    public int getNumberOfSlots() {
-        return numberOfSlots;
-    }
-
-    public String getLabel() {
-        return label;
+    public AmuseJobDescription getDescription() {
+        return description;
     }
 
     public int getJobID() {
-        return jobID;
+        return description.getID();
     }
-    
+
     private synchronized void setState(State newState) {
         state = newState;
         notifyAll();
@@ -220,24 +210,23 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
         this.target = target;
 
         target.addAmuseJob(this);
-        
 
         //send out messages to the nodes in a separate thread (see run function below)
-        setName("Job " + jobID + " starting thread");
+        setName("Job " + description.getID() + " starting thread");
         setDaemon(true);
         start();
     }
 
     /**
-     * Function that starts the job. Only communicates with first node used.
+     * Function that starts the job.
      */
     @Override
     public void run() {
         try {
             PilotManager master = target;
 
-            logger.trace("sending start command for {} to pilot", this);
-            
+            logger.debug("sending start command for {} to pilot", this);
+
             if (!master.isRunning()) {
                 setError(new DistributedAmuseException("Pilot no longer running, cannot start job"));
                 return;
@@ -256,10 +245,8 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
 
             //where to send the reply for this message
             writeMessage.writeObject(receivePort.identifier());
-
-            //details of job
-            writeMessage.writeInt(jobID);
             writeMessage.writeObject(this.resultReceivePort.identifier());
+            writeMessage.writeObject(description);
 
             writeJobData(writeMessage);
 
@@ -267,7 +254,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
 
             sendPort.close();
 
-            logger.trace("receiving reply from pilot");
+            logger.debug("receiving reply from pilot");
 
             //FIXME: we should use some kind of rpc mechanism
             ReadMessage readMessage = receivePort.receive(60000);
@@ -279,10 +266,10 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
 
             if (error != null) {
                 setError(new DistributedAmuseException("Remote node reported error:" + error, error));
-                logger.trace("job {} ERROR", this);
+                logger.debug("job {} ERROR", this);
             } else {
                 setState(State.RUNNING);
-                logger.trace("job {} started", this);
+                logger.debug("job {} started", this);
             }
 
         } catch (IOException | ClassNotFoundException e) {
@@ -305,7 +292,6 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
         } else {
             logger.debug("Cancelling job {}", this);
         }
-        
 
         try {
             PilotManager master = target;
@@ -314,7 +300,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
                 setError(new DistributedAmuseException("Pilot no longer running, cannot cancel job"));
                 return;
             }
-            
+
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
             sendPort.connect(master.getIbisIdentifier(), Pilot.PORT_NAME);
@@ -324,7 +310,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
             //command
             writeMessage.writeString("cancel");
 
-            writeMessage.writeInt(jobID);
+            writeMessage.writeInt(description.getID());
 
             writeMessage.finish();
 
@@ -339,37 +325,38 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
      * Handles incoming result message from Pilots
      */
     @Override
-    public void upcall(ReadMessage message) throws IOException, ClassNotFoundException {
-        logger.debug("Reading status message");
+    public void upcall(ReadMessage message) {
+        logger.debug("Reading result message");
 
-        Exception error = (Exception) message.readObject();
+        Exception error;
+        try {
+            error = (Exception) message.readObject();
 
-        //implemented by job sub type
-        readJobResult(message);
+            //implemented by job sub type
+            readJobResult(message);
+
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("Error while reading result", e);
+            error = e;
+        }
 
         if (error != null) {
-            setError(new DistributedAmuseException("Remote node reported error", error));
+            setError(new DistributedAmuseException("Remote node reported error: " + error, error));
         } else {
             setState(State.DONE);
         }
 
         jobManager.nudge();
 
-        logger.debug("Status message received, state now: {}", this);
+        logger.debug("Result received, state now: {}", this);
 
-    }
-
-    @Override
-    public String toString() {
-        return "Job [jobID=" + jobID + ", label=" + getLabel() + ", state=" + getJobState() + ", target="
-                + target + ", error=" + error + ", expirationDate=" + expirationDate + "]";
     }
 
     public Map<String, String> getStatusMap() {
         Map<String, String> result = new LinkedHashMap<String, String>();
 
-        result.put("ID", Integer.toString(jobID));
-        result.put("Label", getLabel());
+        result.put("ID", Integer.toString(description.getID()));
+        result.put("Label", description.getLabel());
         result.put("State", getJobState().toString());
         result.put("Target", target.toString());
 
@@ -389,5 +376,10 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
 
     abstract void readJobResult(ReadMessage readMessage) throws ClassNotFoundException, IOException;
 
+    @Override
+    public String toString() {
+        return "AmuseJob [jobManager=" + jobManager + ", description=" + description + ", state=" + state + ", target=" + target
+                + ", error=" + error + ", expirationDate=" + expirationDate + "]";
+    }
 
 }

@@ -417,6 +417,15 @@ public class AmuseMessage {
         return header.get(HEADER_STRING_COUNT_INDEX);
     }
 
+    public String getString(int index, boolean convertEmptyToNull) throws IOException {
+        String result = getString(index);
+
+        if (convertEmptyToNull && result.isEmpty()) {
+            result = null;
+        }
+        return result;
+    }
+
     public String getString(int index) throws IOException {
         if (getStringCount() <= index) {
             throw new IOException("cannot get string at index " + index + " in call" + this);

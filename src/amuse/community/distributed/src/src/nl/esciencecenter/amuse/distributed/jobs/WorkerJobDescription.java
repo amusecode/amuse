@@ -15,10 +15,7 @@
  */
 package nl.esciencecenter.amuse.distributed.jobs;
 
-import java.io.IOException;
 import java.io.Serializable;
-
-import nl.esciencecenter.amuse.distributed.AmuseMessage;
 
 /**
  * Description of a worker.
@@ -26,58 +23,20 @@ import nl.esciencecenter.amuse.distributed.AmuseMessage;
  * 
  * @author Niels Drost
  */
-public class WorkerJobDescription implements Serializable {
+public class WorkerJobDescription extends AmuseJobDescription implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final String id;
     private final String executable;
-    private final String stdoutFile;
-    private final String stderrFile;
-    private final String nodeLabel;
-
     private final int nrOfWorkers;
     private final int nrOfThreads;
 
-    private final int startupTimeout;
-
-    public WorkerJobDescription(String id, String executable, String stdoutFile, String stderrFile, String nodeLabel,
-            int nrOfWorkers, int nrOfThreads, int startupTimeout) {
-        this.id = id;
+    public WorkerJobDescription(String stdoutFile, String stderrFile, String nodeLabel, String executable, int nrOfWorkers,
+            int nrOfThreads) {
+        super(stdoutFile, stderrFile, nodeLabel);
         this.executable = executable;
-        this.stdoutFile = stdoutFile;
-        this.stderrFile = stderrFile;
-        this.nodeLabel = nodeLabel;
         this.nrOfWorkers = nrOfWorkers;
         this.nrOfThreads = nrOfThreads;
-        this.startupTimeout = startupTimeout;
-    }
-
-    /**
-     * @param message
-     *            a message containing all required fields of a worker description
-     * @throws IOException
-     *             if the message cannot be read
-     */
-    public WorkerJobDescription(AmuseMessage message, String id) throws IOException {
-        this.id = id;
-        executable = message.getString(0);
-        stdoutFile = message.getString(1);
-        stderrFile = message.getString(2);
-
-        if (message.getString(3).isEmpty()) {
-            nodeLabel = null;
-        } else {
-            nodeLabel = message.getString(3);
-        }
-
-        nrOfWorkers = message.getInteger(0);
-        nrOfThreads = message.getInteger(2);
-        startupTimeout = message.getInteger(3);
-    }
-
-    public String getID() {
-        return id;
     }
 
     /**
@@ -87,18 +46,6 @@ public class WorkerJobDescription implements Serializable {
         return executable;
     }
 
-    public String getStdoutFile() {
-        return stdoutFile;
-    }
-
-    public String getStderrFile() {
-        return stderrFile;
-    }
-
-    public String getNodeLabel() {
-        return nodeLabel;
-    }
-
     public int getNrOfWorkers() {
         return nrOfWorkers;
     }
@@ -106,15 +53,23 @@ public class WorkerJobDescription implements Serializable {
     public int getNrOfThreads() {
         return nrOfThreads;
     }
-
-    public int getStartupTimeout() {
-        return startupTimeout;
-    }
     
     @Override
-    public String toString() {
-        return "WorkerDescription [executable=" + executable + ", stdoutFile=" + stdoutFile + ", stderrFile=" + stderrFile
-                + ", nodeLabel=" + nodeLabel + ", nrOfWorkers=" + nrOfWorkers + ", nrOfThreads="
-                + nrOfThreads + ", startupTimeout=" + startupTimeout + "]";
+    public int getNrOfSlots() {
+        return getNrOfWorkers();
     }
+
+    @Override
+    public String getType() {
+        return "worker";
+    }
+
+    @Override
+    public String toString() {
+        return "WorkerJobDescription [executable=" + executable + ", nrOfWorkers=" + nrOfWorkers + ", nrOfThreads=" + nrOfThreads
+                + ", ID=" + id + ", stdoutFile=" + stdoutFile + ", stderrFile=" + stderrFile + ", label=" + label + "]";
+    }
+
+  
+
 }

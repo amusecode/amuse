@@ -122,7 +122,7 @@ public class WorkerOutputManager extends Thread {
                     out.flush();
                     out.close();
                 } else {
-                    logger.trace("Got {} bytes for stream {}" , count, fileID);
+                    logger.trace("Got {} bytes for stream {}", count, fileID);
                     // This file is specified using a UUID
                     // There should be an output connection to write it to
                     SocketChannel out = getOutputConnection(fileID);

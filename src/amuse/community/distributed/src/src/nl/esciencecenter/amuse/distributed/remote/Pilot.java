@@ -30,16 +30,17 @@ import ibis.ipl.WriteMessage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.jobs.WorkerJobDescription;
+import nl.esciencecenter.amuse.distributed.jobs.AmuseJobDescription;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ import ch.qos.logback.classic.Level;
  * 
  */
 public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
-    
+
     public static final String WHITESPACE_REGEX = "\\s+";
 
     public static final String PORT_NAME = "pilot";
@@ -69,63 +70,43 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     private final AmuseConfiguration configuration;
 
     private final Watchdog watchdog;
-    
-    private UUID id;
-    
-    private File tmpDir;
-    
 
-    private static File createTmpDir(UUID id) throws IOException {
-        File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
-        String userName = System.getProperty("user.name");
+    private Path tmpDir;
 
-        if (!systemTmpDir.exists()) {
-            throw new IOException("Java tmpdir does not exist " + systemTmpDir);
-        }
-
-        File result = new File(systemTmpDir, "distributed-amuse-" + userName + "/pilot-" + id.toString());
-        result.mkdirs();
-
-        return result;
-    }
-    
     private static void initializeLogger(boolean debug) {
         if (debug) {
             ch.qos.logback.classic.Logger amuseLogger = (ch.qos.logback.classic.Logger) LoggerFactory
                     .getLogger("nl.esciencecenter.amuse");
 
             amuseLogger.setLevel(Level.DEBUG);
-            
+
             logger.debug("DEBUG Enabled");
         }
     }
-
-    Pilot(AmuseConfiguration configuration, Properties properties, UUID id, boolean debug)
-            throws IbisCreationFailedException, IOException, InterruptedException {
+    
+    Pilot(AmuseConfiguration configuration, Properties properties, int id, boolean debug) throws IbisCreationFailedException,
+            IOException, InterruptedException {
         this.configuration = configuration;
-        this.id = id;
         jobs = new HashMap<Integer, JobRunner>();
 
         initializeLogger(debug);
-        
+
         //ID of this pilot
-        String tag = id.toString();
-        
+        String tag = Integer.toString(id);
+
         logger.debug("Creating Ibis");
-        
+
         watchdog = new Watchdog();
 
         ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, watchdog, null, tag,
                 DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
         logger.debug("Creating Receive port");
-        
+
         receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, PORT_NAME, this, this, null);
         
-        tmpDir = createTmpDir(id);
-        
+        tmpDir = Files.createTempDirectory("distributed-amuse-pilot-" + id + "-");
     }
-    
 
     /**
      * Small run function. Waits until the "main" distributed amuse node declares it is time to go.
@@ -136,7 +117,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         receivePort.enableConnections();
         receivePort.enableMessageUpcalls();
         ibis.registry().enableEvents();
-        
+
         logger.info("Pilot fully initialized, waiting for commands...");
 
         //Wait until the pool is terminated by the DistributedAmuse master node, or the master node leaves, or the
@@ -146,7 +127,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         logger.info("Pool terminated, ending pilot");
 
         removeFinishedJobs();
-        for (JobRunner job: getJobRunners()) {
+        for (JobRunner job : getJobRunners()) {
             logger.info("Ending job: " + job);
             job.interrupt();
             try {
@@ -156,7 +137,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             }
             logger.info("Job {} ended", job);
         }
-        
+
         if (cleanExit) {
             ibis.end();
         }
@@ -169,7 +150,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     private synchronized JobRunner getJobRunner(int jobID) {
         return jobs.get(jobID);
     }
-    
+
     private synchronized JobRunner[] getJobRunners() {
         return jobs.values().toArray(new JobRunner[0]);
     }
@@ -204,26 +185,34 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
         if (command.equals("start")) {
             ReceivePortIdentifier replyPort = (ReceivePortIdentifier) readMessage.readObject();
-
-            //details of job
-            int jobID = readMessage.readInt();
-
             ReceivePortIdentifier resultPort = (ReceivePortIdentifier) readMessage.readObject();
-
-            //hard coded worker job info
-            WorkerJobDescription description = (WorkerJobDescription) readMessage.readObject();
-
-            readMessage.finish();
-
-            //FIXME: transfer files etc
+            AmuseJobDescription description = (AmuseJobDescription) readMessage.readObject();
+            
+            logger.debug("Running job " + description);
+            
+            String type = description.getType();
 
             try {
-                JobRunner jobRunner = new JobRunner(jobID, description, configuration, resultPort, ibis, tmpDir);
+                JobRunner jobRunner;
 
-                addJobRunner(jobID, jobRunner);
+                switch (type) {
+                case "worker":
+                    jobRunner = new WorkerJobRunner(description, configuration, resultPort, ibis, tmpDir, readMessage);
 
-                //start a thread to run job.
-                jobRunner.start();
+                    addJobRunner(description.getID(), jobRunner);
+                    break;
+                case "script":
+                    jobRunner = new ScriptJobRunner(description, configuration, resultPort, ibis, tmpDir, readMessage);
+
+                    addJobRunner(description.getID(), jobRunner);
+                    break;
+                case "function":
+                    throw new Exception("Function jobs not supported yet");
+                    //break;
+                default:
+                    throw new Exception("Unknown job type: " + type);
+
+                }
             } catch (Exception e) {
                 logger.error("Error starting job", e);
                 replyException = new Exception("Error starting job:" + e, e);
@@ -238,7 +227,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             WriteMessage reply = sendPort.newMessage();
 
             reply.writeObject(replyException);
-            
+
             reply.finish();
 
             sendPort.close();
@@ -252,11 +241,11 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
             if (jobRunner != null) {
                 //signal the thread it is time to cancel the job
-                jobRunner.interrupt();
+                jobRunner.killProcess();
             }
         } else {
             logger.error("Failed to handle message, unknown command: " + command);
-            
+
         }
 
     }
@@ -280,20 +269,19 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
     public static void main(String[] arguments) throws Exception {
         File amuseHome = null;
-        UUID pilotID = null;
-        int slots = 1;
+        int pilotID = 0;
         boolean debug = false;
-    
+
         Properties properties = new Properties();
         properties.put(IbisProperties.POOL_NAME, "amuse");
         properties.put(IbisProperties.SERVER_IS_HUB, "false");
         //properties.put("ibis.managementclient", "true");
         //properties.put("ibis.bytescount", "true");
-    
+
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equalsIgnoreCase("--pilot-id")) {
                 i++;
-                pilotID = UUID.fromString(arguments[i]);
+                pilotID = Integer.parseInt(arguments[i]);
             } else if (arguments[i].equalsIgnoreCase("--resource-name")) {
                 i++;
                 properties.put(IbisProperties.LOCATION, arguments[i]);
@@ -306,9 +294,6 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             } else if (arguments[i].equalsIgnoreCase("--hub-addresses")) {
                 i++;
                 properties.put(IbisProperties.HUB_ADDRESSES, arguments[i]);
-            } else if (arguments[i].equalsIgnoreCase("--slots")) {
-                i++;
-                slots = Integer.parseInt(arguments[i]);
             } else if (arguments[i].equalsIgnoreCase("--debug")) {
                 debug = true;
             } else {
@@ -316,18 +301,18 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
                 System.exit(1);
             }
         }
-    
+
         AmuseConfiguration configuration = new AmuseConfiguration(amuseHome);
-    
+
         System.err.println("running Pilot using properties:");
         for (Entry<Object, Object> entry : properties.entrySet()) {
             System.err.println(entry.getKey() + " = " + entry.getValue());
         }
-        
+
         Pilot pilot = new Pilot(configuration, properties, pilotID, debug);
-    
+
         pilot.run();
-    
+
         logger.debug("Main pilot thread ended");
     }
 

@@ -85,9 +85,9 @@ public class PilotManager {
         return result;
     }
 
-    private static JavaJobDescription createJobDesciption(int id, UUID uniqueID, ResourceManager resource, String queueName,
-            int nodeCount, int timeMinutes, int slots, String nodeLabel, String options, String serverAddress,
-            String[] hubAddresses, Path stdoutPath, Path stderrPath, boolean debug) throws DistributedAmuseException {
+    private static JavaJobDescription createJobDesciption(int id, ResourceManager resource, String queueName, int nodeCount,
+            int timeMinutes, int slots, String nodeLabel, String options, String serverAddress, String[] hubAddresses,
+            Path stdoutPath, Path stderrPath, boolean debug) throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
 
         if (stdoutPath != null) {
@@ -105,11 +105,11 @@ public class PilotManager {
         } else if (resource.isLocal() || resource.getSchedulerType().equals("ssh")) {
             result.setQueueName("unlimited");
         }
-        
+
         if (resource.getSchedulerType().equals("slurm")) {
             result.addJobOption("single.process", "true");
             result.setProcessesPerNode(slots);
-            
+
             //disable processor affinity
             result.addEnvironment("SLURM_CPU_BIND", "no");
             result.addEnvironment("SBATCH_CPU_BIND", "no");
@@ -137,7 +137,7 @@ public class PilotManager {
         List<String> javaArguments = result.getJavaArguments();
 
         javaArguments.add("--pilot-id");
-        javaArguments.add(uniqueID.toString());
+        javaArguments.add(Integer.toString(id));
 
         javaArguments.add("--resource-name");
         javaArguments.add(resource.getName());
@@ -177,9 +177,6 @@ public class PilotManager {
     //ID in amuse
     private final int id;
 
-    //unique ID for log files and such
-    private final UUID uniqueID;
-
     private final String queueName;
     private final int nodeCount;
     private final int timeMinutes;
@@ -201,7 +198,7 @@ public class PilotManager {
     private IbisIdentifier ibisIdentifier;
 
     private JobStatus xenonJobStatus;
-    
+
     private boolean left = false;
 
     /**
@@ -212,7 +209,7 @@ public class PilotManager {
      * @param nodeLabel
      */
     public PilotManager(ResourceManager resource, String queueName, int nodeCount, int timeMinutes, int slots, String nodeLabel,
-            String options, String serverAddress, String[] hubAddresses, Xenon xenon, File tmpDir, boolean debug)
+            String options, String serverAddress, String[] hubAddresses, Xenon xenon, File tmpDir, UUID amuseID, boolean debug)
             throws DistributedAmuseException {
         this.jobs = new ArrayList<AmuseJob>();
         ibisIdentifier = null;
@@ -228,7 +225,6 @@ public class PilotManager {
         this.options = options;
 
         this.id = getNextID();
-        this.uniqueID = UUID.randomUUID();
 
         try {
             Scheduler scheduler = resource.getScheduler();
@@ -245,8 +241,8 @@ public class PilotManager {
                     xenon.files().createDirectories(logDir);
                 }
 
-                stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "pilot-" + uniqueID + "-stdout.txt");
-                stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "pilot-" + uniqueID + "-stderr.txt");
+                stdoutPath = Utils.resolveWithRoot(xenon.files(), logDir, "amuse-" + amuseID + "-pilot-" + id + "-stdout.txt");
+                stderrPath = Utils.resolveWithRoot(xenon.files(), logDir, "amuse-" + amuseID + "-pilot-" + id + "-stderr.txt");
 
             } else {
                 stdoutPath = null;
@@ -257,7 +253,7 @@ public class PilotManager {
             //            stdoutPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stdout.txt");
             //            stderrPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stderr.txt");
 
-            JobDescription jobDescription = createJobDesciption(id, uniqueID, resource, queueName, nodeCount, timeMinutes, slots,
+            JobDescription jobDescription = createJobDesciption(id, resource, queueName, nodeCount, timeMinutes, slots,
                     nodeLabel, options, serverAddress, hubAddresses, stdoutPath, stderrPath, debug);
 
             logger.debug("starting reservation using scheduler {}", scheduler);
@@ -271,14 +267,9 @@ public class PilotManager {
         }
     }
 
-    public int getAmuseID() {
+    public int getID() {
         return id;
     }
-    
-    public UUID getUniqueID() {
-        return uniqueID;
-    }
-
 
     public String getQueueName() {
         return queueName;
@@ -336,7 +327,7 @@ public class PilotManager {
         if (isDone()) {
             return;
         }
-        
+
         logger.debug("cancelling xenon job for pilot: {}", this);
         try {
             xenon.jobs().cancelJob(xenonJob);
@@ -374,7 +365,6 @@ public class PilotManager {
         Map<String, String> result = new LinkedHashMap<String, String>();
 
         result.put("ID", Integer.toString(id));
-        result.put("Unique ID", uniqueID.toString());
         result.put("Queue", queueName);
         result.put("Node Count", Integer.toString(nodeCount));
         result.put("Time(minutes)", Integer.toString(timeMinutes));
@@ -382,25 +372,23 @@ public class PilotManager {
         result.put("Node Label", label);
         result.put("Resource Name", getResourceName());
         result.put("Resource ID", Integer.toString(getResourceID()));
-        
+
         result.put("Ibis Identifier", String.valueOf(getIbisIdentifier()));
-        result.put("Running",  Boolean.toString(isRunning()));
+        result.put("Running", Boolean.toString(isRunning()));
         result.put("Left", Boolean.toString(hasLeft()));
         result.put("Done", Boolean.toString(isDone()));
-        
+
         result.put("Xenon Job Status", String.valueOf(getXenonJobStatus()));
 
         return result;
     }
-
-    
 
     //ibis identifier, set by status monitor
     synchronized void setIbisIdentifier(IbisIdentifier ibis) {
         this.ibisIdentifier = ibis;
         notifyAll();
     }
-    
+
     public synchronized IbisIdentifier getIbisIdentifier() {
         return this.ibisIdentifier;
     }
@@ -410,7 +398,7 @@ public class PilotManager {
         this.xenonJobStatus = status;
         notifyAll();
     }
-    
+
     //status, set by Xenon job monitor
     synchronized JobStatus getXenonJobStatus() {
         return this.xenonJobStatus;
@@ -421,14 +409,13 @@ public class PilotManager {
         this.left = true;
         notifyAll();
     }
-    
+
     synchronized boolean hasLeft() {
         return this.left;
     }
-    
 
     public synchronized boolean isRunning() {
-        return !this.left && this.ibisIdentifier != null;  
+        return !this.left && this.ibisIdentifier != null;
     }
 
     public synchronized boolean hasException() {
@@ -454,7 +441,7 @@ public class PilotManager {
         if (isRunning()) {
             return "RUNNING";
         }
-        
+
         return xenonJobStatus.getState();
     }
 
@@ -462,9 +449,6 @@ public class PilotManager {
         jobs.add(amuseJob);
     }
 
-
-    
-    
     private synchronized int availableSlots() {
         int usedSlotCount = 0;
 
@@ -477,10 +461,10 @@ public class PilotManager {
             if (job.isDone()) {
                 iterator.remove();
             } else {
-                usedSlotCount += job.getNumberOfSlots();
+                usedSlotCount += job.getDescription().getNrOfSlots();
             }
         }
-        
+
         int result = slots - usedSlotCount;
 
         logger.debug("pilot {} currently running {} jobs, has {} slots available", this, jobs.size(), result);
@@ -493,14 +477,14 @@ public class PilotManager {
         if (!isRunning()) {
             return false;
         }
-        
+
         //check if the label matches (if given)
-        if (job.getLabel() != null && !job.getLabel().equals(this.label)) {
+        if (job.getDescription().getLabel() != null && !job.getDescription().getLabel().equals(this.label)) {
             return false;
         }
-        
+
         //check if we have enough slots available
-        return job.getNumberOfSlots() <= availableSlots();
+        return job.getDescription().getNrOfSlots() <= availableSlots();
     }
 
 }

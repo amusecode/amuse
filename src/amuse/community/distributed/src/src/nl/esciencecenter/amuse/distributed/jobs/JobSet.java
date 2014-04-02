@@ -52,7 +52,7 @@ public class JobSet extends Thread {
     private final List<WorkerJob> workers;
     private final List<ScriptJob> scriptJobs;
     private final List<FunctionJob> functionJobs;
-    
+
     private final PilotSet pilots;
 
     public JobSet(String serverAddress, PilotSet pilots, File tmpDir) throws DistributedAmuseException {
@@ -61,7 +61,7 @@ public class JobSet extends Thread {
         functionJobs = new ArrayList<FunctionJob>();
 
         this.pilots = pilots;
-        
+
         try {
             Properties properties = new Properties();
             properties.put("ibis.server.address", serverAddress);
@@ -70,8 +70,8 @@ public class JobSet extends Thread {
             //properties.put("ibis.managementclient", "true");
             //properties.put("ibis.bytescount", "true");
 
-            ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, pilots.getStatusMonitor(), null, "master",
-                    DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
+            ibis = IbisFactory.createIbis(DistributedAmuse.IPL_CAPABILITIES, properties, true, pilots.getStatusMonitor(), null,
+                    "master", DistributedAmuse.ONE_TO_ONE_PORT_TYPE, DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
             //label this ibis as the master node by running an election with us as the only 
             ibis.registry().elect("amuse");
@@ -93,7 +93,7 @@ public class JobSet extends Thread {
     public Ibis getIbis() {
         return ibis;
     }
-    
+
     public synchronized AmuseJob getJob(int jobID) throws DistributedAmuseException {
         for (AmuseJob job : workers) {
             if (jobID == job.getJobID()) {
@@ -115,10 +115,9 @@ public class JobSet extends Thread {
 
         throw new DistributedAmuseException("Unknown job: " + jobID);
     }
-    
+
     //FUNCTION JOBS
 
-    
     private synchronized void addFunctionJob(FunctionJob job) {
         queue.add(job);
 
@@ -127,19 +126,19 @@ public class JobSet extends Thread {
         //run scheduler thread now
         notifyAll();
     }
-    
-    public FunctionJob submitFunctionJob(String function, String arguments, String nodeLabel) throws DistributedAmuseException {
-        FunctionJob result = new FunctionJob(function, arguments, nodeLabel, ibis, this);
-        
+
+    public FunctionJob submitFunctionJob(FunctionJobDescription description) throws DistributedAmuseException {
+        FunctionJob result = new FunctionJob(description, ibis, this);
+
         addFunctionJob(result);
-        
+
         return result;
     }
-    
+
     public synchronized FunctionJob[] getFunctionJobs() {
         return functionJobs.toArray(new FunctionJob[0]);
     }
-    
+
     public synchronized FunctionJob getFunctionJob(int jobID) throws DistributedAmuseException {
         for (FunctionJob job : functionJobs) {
             if (jobID == job.getJobID()) {
@@ -148,7 +147,7 @@ public class JobSet extends Thread {
         }
         throw new DistributedAmuseException("Unknown job: " + jobID);
     }
-    
+
     public void removeFunctionJob(int jobID) throws DistributedAmuseException {
         for (int i = 0; i < functionJobs.size(); i++) {
             if (functionJobs.get(i).getJobID() == jobID) {
@@ -158,9 +157,9 @@ public class JobSet extends Thread {
         }
         throw new DistributedAmuseException("Unknown job: " + jobID);
     }
-    
+
     //SCRIPT JOBS
-    
+
     private synchronized void addScriptJob(ScriptJob job) {
         queue.add(job);
 
@@ -172,9 +171,9 @@ public class JobSet extends Thread {
 
     public ScriptJob submitScriptJob(ScriptJobDescription description) throws DistributedAmuseException {
         ScriptJob result = new ScriptJob(description, ibis, this);
-        
+
         addScriptJob(result);
-        
+
         return result;
 
     }
@@ -212,7 +211,7 @@ public class JobSet extends Thread {
     }
 
     //WORKER JOBS
-    
+
     private synchronized void addWorkerJob(WorkerJob job) {
         queue.add(job);
 
@@ -222,7 +221,6 @@ public class JobSet extends Thread {
         notifyAll();
     }
 
-
     public WorkerJob submitWorkerJob(WorkerJobDescription jobDescription) throws DistributedAmuseException {
         WorkerJob result = new WorkerJob(jobDescription, ibis, this);
 
@@ -230,11 +228,11 @@ public class JobSet extends Thread {
 
         return result;
     }
-    
+
     public synchronized WorkerJob[] getWorkerJobs() {
         return workers.toArray(new WorkerJob[0]);
     }
-    
+
     public synchronized WorkerJob getWorkerJob(int jobID) throws DistributedAmuseException {
         for (WorkerJob job : workers) {
             if (jobID == job.getJobID()) {
@@ -243,8 +241,6 @@ public class JobSet extends Thread {
         }
         throw new DistributedAmuseException("Unknown job: " + jobID);
     }
-
-  
 
     public synchronized void waitForScriptJobs() throws DistributedAmuseException {
         while (!allScriptJobsDone()) {
@@ -258,7 +254,7 @@ public class JobSet extends Thread {
 
     public void end() {
         this.interrupt();
-        
+
         for (AmuseJob job : getWorkerJobs()) {
             try {
                 job.cancel();
@@ -280,14 +276,14 @@ public class JobSet extends Thread {
                 logger.error("Failed to cancel job: " + job, e);
             }
         }
-        
+
         try {
             logger.debug("Terminating ibis pool");
             ibis.registry().terminate();
         } catch (IOException e) {
             logger.error("Failed to terminate ibis pool", e);
         }
-        
+
         try {
             ibis.end();
         } catch (IOException e) {
@@ -338,8 +334,6 @@ public class JobSet extends Thread {
             }
         }
     }
-
-
 
     public synchronized int getWorkerJobCount() {
         return workers.size();

@@ -28,7 +28,7 @@ public class Hub {
     private static final Logger logger = LoggerFactory.getLogger(Hub.class);
 
     private final String resourceName;
-    
+
     private final Job job;
 
     private final ServerConnection serverConnection;
@@ -80,11 +80,11 @@ public class Hub {
     public Hub(ResourceManager resource, AmuseConfiguration config, String[] hubs, Xenon xenon) throws DistributedAmuseException {
         try {
             resourceName = resource.getName();
-            
+
             JobDescription jobDescription = createJobDesciption(resource, hubs);
 
-            logger.debug("starting hub on {} with job description {} with arguments {}",
-                     resourceName, jobDescription, jobDescription.getArguments());
+            logger.debug("starting hub on {} with job description {} with arguments {}", resourceName, jobDescription,
+                    jobDescription.getArguments());
 
             Scheduler scheduler;
 
@@ -92,8 +92,8 @@ public class Hub {
                 scheduler = xenon.jobs().newScheduler("local", null, null, null);
             } else {
                 Credential credential = xenon.credentials().getDefaultCredential("ssh");
-                
-                Map<String,String> properties = new HashMap<String, String>();
+
+                Map<String, String> properties = new HashMap<String, String>();
                 String gateway = resource.getGateway();
                 if (gateway != null && !gateway.isEmpty()) {
                     properties.put(SshAdaptor.GATEWAY, gateway);
@@ -117,7 +117,7 @@ public class Hub {
 
             address = serverConnection.getAddress();
 
-            logger.debug("hub on {} has address {}", resource.getName() , address);
+            logger.debug("hub on {} has address {}", resource.getName(), address);
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start hub on " + resource.getName() + ": " + e, e);
         }

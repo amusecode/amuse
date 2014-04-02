@@ -51,7 +51,8 @@ public class ResourceSet {
         newResource("local", null, null, amuseRootDir, "local");
     }
 
-    public synchronized ResourceManager newResource(String name, String location, String gateway, String amuseDir, String schedulerType) throws DistributedAmuseException {
+    public synchronized ResourceManager newResource(String name, String location, String gateway, String amuseDir,
+            String schedulerType) throws DistributedAmuseException {
         logger.debug("creating new resource: name = " + name + " location = " + location + " scheduler type = " + schedulerType
                 + " amuse dir = " + amuseDir);
 
@@ -66,7 +67,8 @@ public class ResourceSet {
             gatewayLocation = getResource(gateway).getLocation();
         }
 
-        ResourceManager result = new ResourceManager(name, location, gatewayLocation, amuseDir, schedulerType, this.startHubs, xenon, iplServer);
+        ResourceManager result = new ResourceManager(name, location, gatewayLocation, amuseDir, schedulerType, this.startHubs,
+                xenon, iplServer);
 
         resources.add(result);
 

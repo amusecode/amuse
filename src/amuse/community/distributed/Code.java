@@ -13,9 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.UUID;
+
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.jobs.AmuseJobDescription;
 import nl.esciencecenter.amuse.distributed.jobs.FunctionJob;
+import nl.esciencecenter.amuse.distributed.jobs.FunctionJobDescription;
 import nl.esciencecenter.amuse.distributed.jobs.ScriptJob;
 import nl.esciencecenter.amuse.distributed.jobs.ScriptJobDescription;
 import nl.esciencecenter.amuse.distributed.jobs.WorkerJobDescription;
@@ -49,10 +53,15 @@ public class Code implements CodeInterface {
     private boolean debug = false;
     private boolean startHubs = true;
     private int webinterfacePort = 0;
+    private int workerStartupTimeout = 60;
+
+    private final UUID id;
 
     public Code(String codeDir, String amuseRootDir) throws DistributedAmuseException {
         this.codeDir = codeDir;
         this.amuseRootDir = amuseRootDir;
+
+        id = UUID.randomUUID();
 
         distributedAmuse = null;
     }
@@ -76,7 +85,8 @@ public class Code implements CodeInterface {
     public int commit_parameters() {
         if (distributedAmuse == null) {
             try {
-                distributedAmuse = new DistributedAmuse(codeDir, amuseRootDir, webinterfacePort, debug, startHubs);
+                distributedAmuse = new DistributedAmuse(id, codeDir, amuseRootDir, webinterfacePort, debug, startHubs,
+                        workerStartupTimeout);
             } catch (DistributedAmuseException e) {
                 logger.error("Exception while initializing code", e);
                 return -10;
@@ -113,7 +123,7 @@ public class Code implements CodeInterface {
 
         return 0;
     }
-    
+
     /**
      * @param start_hubs
      * @return
@@ -124,16 +134,26 @@ public class Code implements CodeInterface {
         return 0;
     }
 
-    /**
-     * @param start_hubs
-     * @return
-     */
     @Override
     public int set_start_hubs(int start_hubs) {
         this.startHubs = integerToBoolean(start_hubs);
         return 0;
     }
 
+    @Override
+    public int get_worker_startup_timeout(int[] result) {
+        logger.debug("Returning worker port.");
+
+        result[0] = this.workerStartupTimeout;
+
+        return 0;
+    }
+
+    @Override
+    public int set_worker_startup_timeout(int worker_startup_timeout) {
+        this.workerStartupTimeout = worker_startup_timeout;
+        return 0;
+    }
 
     @Override
     public int get_webinterface_port(int[] result) {
@@ -231,7 +251,7 @@ public class Code implements CodeInterface {
                 PilotManager result = distributedAmuse.pilots().newPilot(resource_name[i], queue_name[i], node_count[i],
                         time_minutes[i], slots[i], node_label[i], options[i]);
 
-                pilot_id[i] = result.getAmuseID();
+                pilot_id[i] = result.getID();
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -304,12 +324,41 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int submit_script_job(int[] job_id, String[] script_name, String[] arguments, String[] script_dir, String[] input_dir,
-            String[] output_dir, String[] node_label, int count) {
+    public int submit_script_job(int[] job_id, String[] script_dir, String[] script_name, String[] arguments, String[] input_dir, String[] output_dir, String[] stdout_file, String[] stderr_file, String[] label, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                ScriptJobDescription description = new ScriptJobDescription(script_name[i], arguments[i], script_dir[i], input_dir[i], output_dir[i], node_label[i]);
+                String stdoutFile = stdout_file[i];
+
+                if (stdoutFile.isEmpty()) {
+                    stdoutFile = null;
+                }
+
+                String stderrFile = stderr_file[i];
+
+                if (stderrFile.isEmpty()) {
+                    stderrFile = null;
+                }
+
+                String theLabel = label[i];
+
+                if (theLabel.equals("")) {
+                    theLabel = null;
+                }
                 
+                String inputDir = input_dir[i];
+                if (inputDir.isEmpty()) {
+                    inputDir = null;
+                }
+                
+                String outputDir = output_dir[i];
+                if (outputDir.isEmpty()) {
+                    outputDir = null;
+                }
+
+
+                ScriptJobDescription description = new ScriptJobDescription(stdoutFile, stderrFile, theLabel, script_name[i],
+                        arguments[i], script_dir[i], inputDir, outputDir);
+
                 ScriptJob job = distributedAmuse.jobs().submitScriptJob(description);
                 job_id[i] = job.getJobID();
             }
@@ -322,20 +371,21 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_script_job_state(int[] job_id, String[] script_name, String[] arguments, String[] script_dir,
-            String[] input_dir, String[] output_dir, String[] node_label, String[] status, int count) {
+    public int get_script_job_state(int[] job_id, String[] script_dir, String[] script_name, String[] arguments, String[] input_dir, String[] output_dir, String[] stdout_file, String[] stderr_file, String[] label, String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 ScriptJob job = distributedAmuse.jobs().getScriptJob(job_id[i]);
-                
+
                 ScriptJobDescription description = job.getDescription();
 
+                script_dir[i] = description.getScriptDir();
                 script_name[i] = description.getScriptName();
                 arguments[i] = description.getArguments();
-                script_dir[i] = description.getScriptDir();
                 input_dir[i] = description.getInputDir();
                 output_dir[i] = description.getOutputDir();
-                node_label[i] = description.getNodeLabel();
+                stdout_file[i] = description.getStdoutFile();
+                stderr_file[i] = description.getStderrFile();
+                label[i] = description.getLabel();
 
                 status[i] = job.getJobState();
             }
@@ -392,10 +442,14 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int submit_function_job(int[] job_id, String[] function, String[] arguments, String[] node_label, int count) {
+    public int submit_function_job(int[] job_id, String[] function, String[] arguments, String[] kwarguments, String[] stdout_file,
+            String[] stderr_file, String[] label, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                FunctionJob job = distributedAmuse.jobs().submitFunctionJob(function[i], arguments[i], node_label[i]);
+                FunctionJobDescription description = new FunctionJobDescription(function[i], arguments[i], kwarguments[i], stdout_file[i],
+                        stderr_file[i], label[i]);
+
+                FunctionJob job = distributedAmuse.jobs().submitFunctionJob(description);
 
                 job_id[i] = job.getJobID();
             }
@@ -423,12 +477,17 @@ public class Code implements CodeInterface {
     }
 
     @Override
-    public int get_function_job_state(int[] job_id, String[] node_label, String[] status, int count) {
+    public int get_function_job_state(int[] job_id, String[] stdout_file, String[] stderr_file, String[] node_label,
+            String[] status, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 FunctionJob job = distributedAmuse.jobs().getFunctionJob(job_id[i]);
 
-                node_label[i] = job.getLabel();
+                AmuseJobDescription description = job.getDescription();
+
+                stdout_file[i] = description.getStdoutFile();
+                stderr_file[i] = description.getStderrFile();
+                node_label[i] = description.getLabel();
                 status[i] = job.getJobState();
             }
             return 0;
@@ -521,7 +580,7 @@ public class Code implements CodeInterface {
                 WorkerJobDescription description = worker.getDescription();
 
                 executable[i] = description.getExecutable();
-                node_label[i] = description.getNodeLabel();
+                node_label[i] = description.getLabel();
                 worker_count[i] = description.getNrOfWorkers();
                 thread_count[i] = description.getNrOfThreads();
 
@@ -548,6 +607,5 @@ public class Code implements CodeInterface {
             distributedAmuse.end();
         }
     }
-
 
 }

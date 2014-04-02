@@ -20,54 +20,171 @@ import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
-import java.io.File;
 import java.io.IOException;
+import java.lang.ProcessBuilder.Redirect;
+import java.lang.reflect.Field;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Arrays;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
-import nl.esciencecenter.amuse.distributed.jobs.WorkerJobDescription;
+import nl.esciencecenter.amuse.distributed.jobs.AmuseJobDescription;
+import nl.esciencecenter.amuse.distributed.workers.OutputForwarder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A job running on a pilot node.S
- * 
  * @author Niels Drost
  * 
  */
-public class JobRunner extends Thread {
+public abstract class JobRunner extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(JobRunner.class);
 
-    private final int jobID;
-    private final WorkerProxy workerProxy;
-    private final ReceivePortIdentifier resultPort;
-    private final Ibis ibis;
+    protected final AmuseJobDescription description;
+    protected final AmuseConfiguration amuseConfiguration;
+    protected final Ibis ibis;
+    protected final ReceivePortIdentifier resultPort;
+    protected final Path tmpDir;
+    protected final Path sandbox;
 
-    public JobRunner(int jobID, WorkerJobDescription description, AmuseConfiguration configuration, ReceivePortIdentifier resultPort, Ibis ibis, File tmpDir)
-            throws Exception {
-        this.jobID = jobID;
+    private Process process = null;
+    private OutputForwarder out;
+    private OutputForwarder err;
+
+    private Exception error = null;
+
+    public JobRunner(AmuseJobDescription description, AmuseConfiguration amuseConfiguration, ReceivePortIdentifier resultPort,
+            Ibis ibis, Path tmpDir) throws IOException {
+        this.description = description;
+        this.amuseConfiguration = amuseConfiguration;
         this.resultPort = resultPort;
         this.ibis = ibis;
-        
-        logger.debug("Starting job runner....");
+        this.tmpDir = tmpDir;
 
-        workerProxy = new WorkerProxy(description, configuration, ibis, tmpDir, jobID);
-
-        setName("Job Runner for " + jobID);
+        this.sandbox = tmpDir.resolve("job-" + description.getID());
+        Files.createDirectory(this.sandbox);
+    }
+    
+    protected synchronized void setError(Exception error) {
+        if (this.error == null) {
+            this.error = error;
+        } else {
+            logger.warn("Masked error in running job: " + error);
+        }
     }
 
-    public void run() {
-        logger.debug("waiting for worker job {} to finish", jobID);
+    private synchronized Process getProcess() {
+        return process;
+    }
+
+    synchronized void startProcess(ProcessBuilder builder) throws IOException {
+        process = builder.start();
+
+        //attach streams
+        out = new OutputForwarder(process.getInputStream(), description.getStdoutFile(), ibis);
+        err = new OutputForwarder(process.getErrorStream(), description.getStderrFile(), ibis);
+
+    }
+    
+    int getExitCode() {
+        return getProcess().exitValue();
+    }
+
+    void waitForProcess() {
+        Process process = getProcess();
 
         try {
-            workerProxy.join();
+            int result = process.waitFor();
+
+            if (result != 0) {
+                error = new Exception("Script ended with non-zero exit code: " + result);
+            }
         } catch (InterruptedException e) {
-            workerProxy.end();
+            setError(new Exception("Job Interrupted", e));
+            killProcess();
+        }
+        
+        out.waitFor(1000);
+        err.waitFor(1000);
+    }
+
+    private void nativeKill() {
+        Process process = getProcess();
+
+        if (process == null) {
+            return;
         }
 
-        logger.debug("worker {} done. Sending result to main amuse node.", jobID);
+        try {
+            Field f = process.getClass().getDeclaredField("pid");
+            f.setAccessible(true);
+
+            Object pid = f.get(process);
+
+            ProcessBuilder builder = new ProcessBuilder("/bin/sh", "-c", "kill -9 " + pid.toString());
+
+            builder.redirectError(Redirect.INHERIT);
+            //builder.redirectInput();
+            builder.redirectOutput(Redirect.INHERIT);
+
+            logger.info("Killing process using command: " + Arrays.toString(builder.command().toArray()));
+
+            Process killProcess = builder.start();
+
+            killProcess.getOutputStream().close();
+
+            int exitcode = killProcess.waitFor();
+
+            logger.info("native kill done, result is " + exitcode);
+
+        } catch (Throwable t) {
+            logger.error("Error on (forcibly) killing process", t);
+        }
+    }
+
+    protected void deleteSandbox() {
+        try {
+            Files.walkFileTree(sandbox, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+
+            });
+        } catch (IOException e) {
+            logger.error("Error while cleaning up sandbox at: " + sandbox, e);
+        }
+    }
+    
+    //small utility to figure out if the process is still running.
+    protected boolean hasEnded() {
+        Process process = getProcess();
+        
+        try {
+            process.exitValue();
+            //we only end up here if the process is done
+            return true;
+        } catch (IllegalThreadStateException e) {
+            //we got this exception as the process is not done yet
+            return false;
+        }
+    }
+
+    protected void sendResult() {
+        logger.debug("worker done. Sending result to main amuse node.");
 
         //send result message to job
         try {
@@ -77,15 +194,35 @@ public class JobRunner extends Thread {
 
             WriteMessage message = sendPort.newMessage();
 
-            message.writeObject(workerProxy.getError());
+            message.writeObject(error);
+
+            writeResultData(message);
+
             message.finish();
 
             sendPort.close();
 
+            logger.debug("result sent.");
         } catch (IOException e) {
             logger.error("Failed to report status to main node", e);
         }
 
     }
+
+    public synchronized void killProcess() {
+        if (process != null) {
+            process.destroy();
+
+            try {
+                int exitcode = process.exitValue();
+                logger.info("Process ended with result " + exitcode);
+            } catch (IllegalThreadStateException e) {
+                logger.error("Process not ended after process.destroy()! Trying native kill");
+                nativeKill();
+            }
+        }
+    }
+
+    abstract void writeResultData(WriteMessage message) throws IOException;
 
 }

@@ -30,11 +30,11 @@ import org.slf4j.LoggerFactory;
  * 
  */
 public class Lighthouse extends Thread {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(Lighthouse.class);
 
     private final Ibis ibis;
-    
+
     private final PilotSet pilotSet;
 
     public Lighthouse(Ibis ibis, PilotSet pilotSet) {
@@ -49,8 +49,8 @@ public class Lighthouse extends Thread {
     public void run() {
         while (true) {
             ArrayList<IbisIdentifier> addresses = new ArrayList<IbisIdentifier>();
-            
-            for (PilotManager pilot: pilotSet.getPilots()) {
+
+            for (PilotManager pilot : pilotSet.getPilots()) {
                 if (pilot.isRunning()) {
                     addresses.add(pilot.getIbisIdentifier());
                 }

@@ -32,17 +32,17 @@ public class WorkerJob extends AmuseJob {
     private final WorkerJobDescription description;
 
     public WorkerJob(WorkerJobDescription description, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
-        super(description.getNodeLabel(), description.getNrOfWorkers(), ibis, jobManager);
+        super(description, ibis, jobManager);
         this.description = description;
     }
 
     public WorkerJobDescription getDescription() {
         return description;
     }
-    
+
     @Override
     void writeJobData(WriteMessage writeMessage) throws IOException {
-        writeMessage.writeObject(description);
+        //NOTHING, NO DATA ATTACHED TO WORKER JOB
     }
 
     /**
@@ -54,7 +54,5 @@ public class WorkerJob extends AmuseJob {
     void readJobResult(ReadMessage readMessage) throws ClassNotFoundException, IOException {
         //NOTHING
     }
-
-
 
 }

@@ -23,7 +23,7 @@ import java.io.Serializable;
  * 
  * @author Niels Drost
  */
-public class ScriptJobDescription implements Serializable {
+public class ScriptJobDescription extends AmuseJobDescription implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -32,35 +32,26 @@ public class ScriptJobDescription implements Serializable {
     private final String scriptDir;
     private final String inputDir;
     private final String outputDir;
-    private final String nodeLabel;
 
-    public ScriptJobDescription(String scriptName, String arguments, String scriptDir, String inputDir, String outputDir,
-            String nodeLabel) {
+    public ScriptJobDescription(String stdoutFile, String stderrFile, String nodeLabel, String scriptName, String arguments,
+            String scriptDir, String inputDir, String outputDir) {
+        super(stdoutFile, stderrFile, nodeLabel);
+
         this.scriptName = scriptName;
         this.arguments = arguments;
         this.scriptDir = scriptDir;
-        
-        if (inputDir.equals("")) {
-            this.inputDir = null;
-        } else {
-            this.inputDir = inputDir;
-        }
-        
-        if (outputDir.equals("")) {
-            this.outputDir = null;
-        } else {
-            this.outputDir = outputDir;
-        }
-
-        if (nodeLabel.equals("")) {
-            this.nodeLabel = null;
-        } else {
-            this.nodeLabel = nodeLabel;
-        }
+        this.inputDir = inputDir;
+        this.outputDir = outputDir;
     }
 
-    public static long getSerialversionuid() {
-        return serialVersionUID;
+    @Override
+    public int getNrOfSlots() {
+        return 1;
+    }
+
+    @Override
+    public String getType() {
+        return "script";
     }
 
     public String getScriptName() {
@@ -83,13 +74,11 @@ public class ScriptJobDescription implements Serializable {
         return outputDir;
     }
 
-    public String getNodeLabel() {
-        return nodeLabel;
-    }
-
     @Override
     public String toString() {
         return "ScriptJobDescription [scriptName=" + scriptName + ", arguments=" + arguments + ", scriptDir=" + scriptDir
-                + ", inputDir=" + inputDir + ", outputDir=" + outputDir + ", nodeLabel=" + nodeLabel + "]";
+                + ", inputDir=" + inputDir + ", outputDir=" + outputDir + ", ID=" + id + ", stdoutFile=" + stdoutFile
+                + ", stderrFile=" + stderrFile + ", label=" + label + "]";
     }
+
 }

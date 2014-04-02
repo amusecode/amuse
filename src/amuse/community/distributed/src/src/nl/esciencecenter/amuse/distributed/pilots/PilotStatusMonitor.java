@@ -17,8 +17,7 @@ package nl.esciencecenter.amuse.distributed.pilots;
 
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.RegistryEventHandler;
-
-import java.util.UUID;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,7 @@ public class PilotStatusMonitor implements RegistryEventHandler {
     private static final Logger logger = LoggerFactory.getLogger(PilotStatusMonitor.class);
 
     private final PilotSet pilots;
-    
+
     public PilotStatusMonitor(PilotSet pilots) {
         this.pilots = pilots;
     }
@@ -44,25 +43,26 @@ public class PilotStatusMonitor implements RegistryEventHandler {
         //handle like it left
         left(ibis);
     }
-    
+
     @Override
     public void joined(IbisIdentifier ibis) {
         logger.debug("new Ibis joined: " + ibis);
 
-         if (ibis.location().toString().equals("daemon@local")) {
-             //ingore local deamon process
-             return;
-         }
-         UUID id = UUID.fromString(ibis.tagAsString());
+        if (ibis.location().toString().equals("daemon@local")) {
+            //ingore local deamon process
+            return;
+        }
+        int id = Integer.parseInt(ibis.tagAsString());
 
-         PilotManager pilot = pilots.getPilot(id);
-         
-         if (pilot != null) {
-             pilot.setIbisIdentifier(ibis);
-         }
-         
-         //wake up PilotSet to re-check if all pilots are now running
-         pilots.nudge();
+        try {
+            PilotManager pilot = pilots.getPilot(id);
+            pilot.setIbisIdentifier(ibis);
+        } catch (DistributedAmuseException e) {
+            logger.error("Could not find matching PilotManager for joining Pilot " + id);
+        }
+
+        //wake up PilotSet to re-check if all pilots are now running
+        pilots.nudge();
     }
 
     @Override
@@ -71,12 +71,13 @@ public class PilotStatusMonitor implements RegistryEventHandler {
             //ingore local deamon process
             return;
         }
-        UUID id = UUID.fromString(ibis.tagAsString());
+        int id = Integer.parseInt(ibis.tagAsString());
 
-        PilotManager pilot = pilots.getPilot(id);
-        
-        if (pilot != null) {
+        try {
+            PilotManager pilot = pilots.getPilot(id);
             pilot.setLeft();
+        } catch (DistributedAmuseException e) {
+            logger.warn("Could not find matching PilotManager for leaving Pilot " + id);
         }
     }
 

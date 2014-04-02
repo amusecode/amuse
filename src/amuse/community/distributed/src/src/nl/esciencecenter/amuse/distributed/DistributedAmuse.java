@@ -91,7 +91,7 @@ public class DistributedAmuse {
         }
     }
 
-    private static File createTmpDir() throws DistributedAmuseException {
+    private static File createTmpDir(UUID id) throws DistributedAmuseException {
         File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
         String userName = System.getProperty("user.name");
 
@@ -99,34 +99,34 @@ public class DistributedAmuse {
             throw new DistributedAmuseException("Java tmpdir does not exist " + systemTmpDir);
         }
 
-        File result = new File(systemTmpDir, "distributed-amuse-" + userName + "/daemon-" + UUID.randomUUID().toString());
+        File result = new File(systemTmpDir, "distributed-amuse-" + userName + "/daemon-" + id.toString());
         result.mkdirs();
 
         return result;
     }
 
-    public DistributedAmuse(String codeDir, String amuseRootDir, int webInterfacePort, boolean debug, boolean startHubs)
-            throws DistributedAmuseException {
+    public DistributedAmuse(UUID id, String codeDir, String amuseRootDir, int webInterfacePort, boolean debug, boolean startHubs,
+            int workerStartupTimeout) throws DistributedAmuseException {
         this.debug = debug;
         initializeLogger(debug);
 
-        logger.info("Initializing Distributed Amuse with web interface on port {}, debug {}, and starting hubs {}",
-                webInterfacePort, debug ? "enabled" : "disabled", startHubs ? "enabled" : "disabled");
+        logger.info("Initializing Distributed Amuse {} with web interface on port {}, debug {}, and starting hubs {}",
+                id.toString(), webInterfacePort, debug ? "enabled" : "disabled", startHubs ? "enabled" : "disabled");
         try {
             xenon = XenonFactory.newXenon(null);
         } catch (XenonException e) {
             throw new DistributedAmuseException("could not create Xenon library object", e);
         }
 
-        tmpDir = createTmpDir();
+        tmpDir = createTmpDir(id);
 
         resources = new ResourceSet(xenon, tmpDir, amuseRootDir, startHubs);
 
-        pilots = new PilotSet(xenon, resources, tmpDir, debug);
+        pilots = new PilotSet(xenon, resources, tmpDir, id, debug);
 
         jobs = new JobSet(resources.getIplServerAddress(), pilots, tmpDir);
 
-        workerConnectionServer = new WorkerConnectionServer(jobs, tmpDir);
+        workerConnectionServer = new WorkerConnectionServer(jobs, tmpDir, workerStartupTimeout);
 
         new Lighthouse(jobs.getIbis(), pilots);
 

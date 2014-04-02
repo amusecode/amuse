@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * Forwards output of a worker to the "master" Ibis process.
  * 
  * @author Niels Drost
- *
+ * 
  */
 public class OutputForwarder extends Thread {
 
@@ -53,6 +53,14 @@ public class OutputForwarder extends Thread {
         setDaemon(true);
         setName("output forwarder");
         start();
+    }
+    
+    public void waitFor(long timeout) {
+        try {
+            this.join(timeout);
+        } catch (InterruptedException e) {
+            //IGNORE
+        }
     }
 
     /**

@@ -25,16 +25,15 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 
 /**
  * @author Niels Drost
- *
+ * 
  */
 public class FunctionJob extends AmuseJob {
-    
-    public FunctionJob(String function, String arguments, String nodeLabel, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
-        super(nodeLabel, 1, ibis, jobManager);
+
+    public FunctionJob(FunctionJobDescription description, Ibis ibis, JobSet jobManager) throws DistributedAmuseException {
+        super(description, ibis, jobManager);
     }
 
     private String result = null;
-
 
     /**
      * @return the result
@@ -43,16 +42,15 @@ public class FunctionJob extends AmuseJob {
      *             in case the job failed for some reason
      */
     public synchronized String getResult() throws DistributedAmuseException {
- 
+
         waitUntilDone();
 
-         if (hasFailed()) {
+        if (hasFailed()) {
             throw new DistributedAmuseException("Error while running job " + this, getError());
         }
 
         return result;
     }
-
 
     /**
      * @param writeMessage
@@ -60,10 +58,8 @@ public class FunctionJob extends AmuseJob {
      */
     @Override
     void writeJobData(WriteMessage writeMessage) throws IOException {
-        // TODO Auto-generated method stub
-        
+        //NOTHING, NO DATA ATTACHED TO FUNCTION JOB
     }
-
 
     /**
      * @param readMessage
@@ -73,7 +69,8 @@ public class FunctionJob extends AmuseJob {
     @Override
     void readJobResult(ReadMessage readMessage) throws ClassNotFoundException, IOException {
         // TODO Auto-generated method stub
-        
+
     }
-    
+
+
 }

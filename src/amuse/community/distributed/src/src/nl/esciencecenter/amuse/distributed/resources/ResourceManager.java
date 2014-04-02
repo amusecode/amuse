@@ -97,7 +97,7 @@ public class ResourceManager {
     }
 
     public ResourceManager(String name, String location, String gateway, String amuseDir, String schedulerType, boolean startHub,
-           Xenon xenon, Server iplServer) throws DistributedAmuseException {
+            Xenon xenon, Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
         this.location = location;
@@ -110,25 +110,7 @@ public class ResourceManager {
         home = getHome(xenon);
         filesystem = home.getFileSystem();
 
-        try {
-            logger.debug("home exists 1: " + xenon.files().exists(home));
-        } catch (XenonException e) {
-            logger.error("Exist failed", e);
-        }
-
-        try {
-            logger.debug("home exists 2a: " + xenon.files().exists(home));
-        } catch (XenonException e) {
-            logger.error("Exist failed", e);
-        }
-
         this.configuration = downloadConfiguration(filesystem, xenon);
-
-        try {
-            logger.debug("home exists 2b: " + xenon.files().exists(home));
-        } catch (XenonException e) {
-            logger.error("Exist failed", e);
-        }
 
         if (!configuration.isJavaEnabled()) {
             throw new DistributedAmuseException("Resource " + name
@@ -213,7 +195,7 @@ public class ResourceManager {
                 amuseHome = userHome.resolve(this.amuseDir);
             }
             RelativePath amuseConfig = amuseHome.resolve("config.mk");
-            
+
             logger.debug("Downloading amuse config for " + getName() + " from " + amuseConfig);
 
             Path path = xenon.files().newPath(filesystem, amuseConfig);
@@ -305,8 +287,7 @@ public class ResourceManager {
     @Override
     public String toString() {
         return "Resource [id=" + id + ", name=" + name + ", location=" + location + ", amuseDir=" + amuseDir + ", schedulerType="
-                + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub
-                + "]";
+                + schedulerType + ", configuration=" + configuration + ", startHub=" + startHub + ", hub=" + hub + "]";
     }
 
     public Map<String, String> getStatusMap() throws DistributedAmuseException {

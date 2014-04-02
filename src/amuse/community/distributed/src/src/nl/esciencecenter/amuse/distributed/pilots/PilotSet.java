@@ -50,12 +50,16 @@ public class PilotSet {
 
     private final File tmpDir;
 
+    private final UUID amuseID;
+
     private final boolean debug;
 
-    public PilotSet(Xenon xenon, ResourceSet resourceManager, File tmpDir, boolean debug) throws DistributedAmuseException {
+    public PilotSet(Xenon xenon, ResourceSet resourceManager, File tmpDir, UUID amuseID, boolean debug)
+            throws DistributedAmuseException {
         this.xenon = xenon;
         this.resourceManager = resourceManager;
         this.tmpDir = tmpDir;
+        this.amuseID = amuseID;
         this.debug = debug;
         pilots = new ArrayList<PilotManager>();
         jobStatusMonitor = new XenonJobStatusMonitor(this, xenon);
@@ -70,23 +74,23 @@ public class PilotSet {
         ResourceManager resource = resourceManager.getResource(resourceName);
 
         PilotManager result = new PilotManager(resource, queueName, nodeCount, timeMinutes, slots, nodeLabel, options,
-                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, tmpDir, debug);
+                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, tmpDir, amuseID, debug);
 
         pilots.add(result);
-        
+
         //trigger an update in the job statuses
         jobStatusMonitor.nudge();
 
         return result;
     }
 
-    public synchronized PilotManager getPilot(int reservationID) throws DistributedAmuseException {
+    public synchronized PilotManager getPilot(int id) throws DistributedAmuseException {
         for (PilotManager reservation : pilots) {
-            if (reservation.getAmuseID() == reservationID) {
+            if (reservation.getID() == id) {
                 return reservation;
             }
         }
-        throw new DistributedAmuseException("Reservation with ID " + reservationID + " not found");
+        throw new DistributedAmuseException("Reservation with ID " + id + " not found");
     }
 
     public synchronized void deletePilot(int pilotID) throws DistributedAmuseException {
@@ -94,23 +98,13 @@ public class PilotSet {
 
         for (int i = 0; i < pilots.size(); i++) {
             PilotManager pilot = pilots.get(i);
-            if (pilotID == pilot.getAmuseID()) {
+            if (pilotID == pilot.getID()) {
                 pilots.remove(i);
                 pilot.stop();
                 return;
             }
         }
         throw new DistributedAmuseException("Pilot " + pilotID + " not found");
-    }
-
-    private synchronized int[] getPilotIDs() {
-        int[] result = new int[pilots.size()];
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = pilots.get(i).getAmuseID();
-        }
-
-        return result;
     }
 
     //check if all pilots are running. will throw an error if any pilots are done/failed
@@ -137,7 +131,7 @@ public class PilotSet {
         }
         return result;
     }
-    
+
     public synchronized void nudge() {
         notifyAll();
     }
@@ -150,8 +144,8 @@ public class PilotSet {
         while (!allPilotsRunning()) {
             try {
                 logger.debug("Now waiting {} ms for more pilots to start", timeout);
-                
-                synchronized(this) {
+
+                synchronized (this) {
                     wait(timeout);
                 }
                 //back-off waiting time to max 10 seconds
@@ -176,15 +170,6 @@ public class PilotSet {
 
     public synchronized PilotManager[] getPilots() {
         return pilots.toArray(new PilotManager[pilots.size()]);
-    }
-
-    public synchronized PilotManager getPilot(UUID id) {
-        for (PilotManager pilot : pilots) {
-            if (pilot.getUniqueID().equals(id)) {
-                return pilot;
-            }
-        }
-        return null;
     }
 
     public PilotStatusMonitor getStatusMonitor() {

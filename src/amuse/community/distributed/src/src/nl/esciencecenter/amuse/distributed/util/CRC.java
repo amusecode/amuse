@@ -20,19 +20,18 @@ import java.util.zip.CRC32;
 
 /**
  * @author Niels Drost
- *
+ * 
  */
 public class CRC {
 
-    
     public static int getFunctionID(String name) {
         CRC32 crc = new CRC32();
-        
+
         crc.update(name.getBytes(StandardCharsets.US_ASCII));
-        
+
         long result = crc.getValue();
 
         return Math.abs((int) result);
     }
-    
+
 }

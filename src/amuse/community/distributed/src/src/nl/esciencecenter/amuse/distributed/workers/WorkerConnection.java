@@ -26,7 +26,6 @@ import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
-import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
@@ -45,6 +44,12 @@ import org.slf4j.LoggerFactory;
  */
 public class WorkerConnection extends Thread {
 
+    private static int nextID = 0;
+
+    private static int getNextID() {
+        return nextID++;
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(WorkerConnection.class);
 
     private static final Logger PROFILE_LOGGER = LoggerFactory.getLogger("amuse.profile");
@@ -53,9 +58,7 @@ public class WorkerConnection extends Thread {
 
     private final SocketChannel socket;
 
-    private final JobSet jobManager;
-
-    private final String id;
+    private final int id;
 
     private final ReceivePort receivePort;
 
@@ -67,20 +70,22 @@ public class WorkerConnection extends Thread {
 
     private final AmuseJob job;
 
+    private final int startupTimeout;
+
     /*
      * Initializes worker by reading settings from amuse, deploying the worker
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    WorkerConnection(SocketChannel socket, Ibis ibis, JobSet jobManager) throws Exception {
+    WorkerConnection(SocketChannel socket, Ibis ibis, JobSet jobManager, int startupTimeout) throws Exception {
         this.socket = socket;
-        this.jobManager = jobManager;
-
-        this.id = UUID.randomUUID().toString();
+        this.startupTimeout = startupTimeout;
 
         if (logger.isDebugEnabled()) {
             logger.debug("New worker connection from " + socket.socket().getRemoteSocketAddress());
         }
+
+        id = getNextID();
 
         // read initialization call
 
@@ -91,11 +96,33 @@ public class WorkerConnection extends Thread {
             throw new IOException("first call to worker must be init function");
         }
 
+        String executable = initRequest.getString(0);
+        String stdoutFile = initRequest.getString(1);
+
+        if (stdoutFile.equals("")) {
+            stdoutFile = null;
+        }
+
+        String stderrFile = initRequest.getString(2);
+
+        if (stderrFile.equals("")) {
+            stderrFile = null;
+        }
+
+        String nodeLabel = initRequest.getString(3);
+
+        if (nodeLabel.equals("")) {
+            nodeLabel = null;
+        }
+
+        int nrOfWorkers = initRequest.getInteger(0);
+        int nrOfThreads = initRequest.getInteger(1);
+
         //description of the worker, used for both the scheduler and the code proxy to start the worker properly
-        workerDescription = new WorkerJobDescription(initRequest, id);
+        workerDescription = new WorkerJobDescription(stdoutFile, stderrFile, nodeLabel, executable, nrOfWorkers, nrOfThreads);
 
         // initialize ibis ports
-        receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, id);
+        receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, Integer.toString(id));
         receivePort.enableConnections();
 
         sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
@@ -130,11 +157,11 @@ public class WorkerConnection extends Thread {
         try {
 
             // Wait until job is running. Will not wait for more than time requested
-            job.waitUntilRunning(workerDescription.getStartupTimeout() * 1000);
+            job.waitUntilRunning(startupTimeout * 1000);
 
             if (!job.isRunning()) {
-                throw new Exception("Worker not started within set time (" + workerDescription.getStartupTimeout()
-                        + " seconds). Current state: " + job.getJobState());
+                throw new Exception("Worker not started within set time (" + startupTimeout + " seconds). Current state: "
+                        + job.getJobState());
             }
 
             //read initial "hello" message with identifier
@@ -147,24 +174,6 @@ public class WorkerConnection extends Thread {
             helloMessage.finish();
 
             sendPort.connect(remotePort, CONNECT_TIMEOUT, true);
-
-            //            // do init function at remote worker so it can initialize the code
-            //
-            //            // write init message
-            //            WriteMessage initWriteMessage = sendPort.newMessage();
-            //            initRequest.writeTo(initWriteMessage);
-            //            initWriteMessage.finish();
-            //
-            //            // read reply
-            //            AmuseMessage initReply = new AmuseMessage();
-            //            ReadMessage initReadMessage = receivePort.receive();
-            //            initReply.readFrom(initReadMessage);
-            //            initReadMessage.finish();
-            //
-            //            if (initReply.getError() != null) {
-            //                throw new IOException(initReply.getError());
-            //            }
-            //
 
             //send a reply
             AmuseMessage initReply = new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(),
@@ -204,7 +213,7 @@ public class WorkerConnection extends Thread {
             try {
                 // logger.debug("wating for request...");
                 request.readFrom(socket);
-                
+
                 start = System.currentTimeMillis();
 
                 // logger.debug("performing request " + request);
@@ -310,7 +319,7 @@ public class WorkerConnection extends Thread {
     @Override
     public String toString() {
         return "WorkerConnection [id=" + id + ", executable=" + workerDescription.getExecutable() + ", nodeLabel="
-                + workerDescription.getNodeLabel() + "]";
+                + workerDescription.getLabel() + "]";
     }
 
 }

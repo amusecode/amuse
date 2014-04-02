@@ -71,15 +71,14 @@ public class WebInterface extends AbstractHandler {
 
         QueuedThreadPool threadPool = new QueuedThreadPool(100);
         threadPool.setDaemon(true);
-        
+
         server = new Server(threadPool);
-        
-        
+
         ServerConnector http = new ServerConnector(server);
         //http.setHost("localhost");
         http.setPort(port);
         //http.setIdleTimeout(30000);
-        
+
         server.addConnector(http);
         server.setHandler(this);
 
@@ -93,7 +92,7 @@ public class WebInterface extends AbstractHandler {
     public int getPort() {
         return port;
     }
-    
+
     public String getURL() {
         try {
             InetAddress localAddress = InetAddress.getLocalHost();
@@ -186,8 +185,7 @@ public class WebInterface extends AbstractHandler {
         for (PilotManager pilot : distributedAmuse.pilots().getPilots()) {
             String state = pilot.getStateString();
             writer.printf("<tr><td><a href=/pilots/%s>%s</a></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",
-                    pilot.getAmuseID(), pilot.getAmuseID(), pilot.getNodeLabel(), pilot.getResourceName(),
-                    pilot.getNodeCount(), state);
+                    pilot.getID(), pilot.getID(), pilot.getNodeLabel(), pilot.getResourceName(), pilot.getNodeCount(), state);
         }
         writer.println("</table>");
     }
@@ -198,7 +196,7 @@ public class WebInterface extends AbstractHandler {
         writer.println("<tr><th>ID</th><th>Job State</th><th>Job Type</th><th>Job Label</th></tr>");
         for (WorkerJob job : distributedAmuse.jobs().getWorkerJobs()) {
             writer.printf("<tr><td><a href=/jobs/%d>%d</a></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", job.getJobID(),
-                    job.getJobID(), job.getJobState(), "worker", job.getLabel());
+                    job.getJobID(), job.getJobState(), "worker", job.getDescription().getLabel());
         }
         writer.println("</table>");
     }

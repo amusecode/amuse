@@ -8,6 +8,8 @@ from amuse.support import options
 
 from distributed_datamodel import Resources, Resource
 from distributed_datamodel import Pilots, Pilot
+from distributed_datamodel import ScriptJobs, ScriptJob
+import pickle
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +111,26 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     @legacy_function
+    def get_worker_startup_timeout():
+        """
+        Returns the port the webinterface is running on
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("worker_startup_timeout", dtype='int32', unit=units.s, direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_worker_startup_timeout():
+        """
+        Set the port the webinterface is running on
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("worker_startup_timeout", dtype='int32', unit=units.s, direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def new_resource():
         """
         Define a new resource. This function returns an index that can be used to refer
@@ -180,7 +202,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
         function.addParameter("slots_per_node", dtype='int32', direction=function.IN, default = 1)
-        function.addParameter("node_label", dtype='string', direction=function.IN, default = ["default"])
+        function.addParameter("label", dtype='string', direction=function.IN, default = ["default"])
         function.addParameter("options", dtype='string', direction=function.IN, default = [""])
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
 
@@ -202,7 +224,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("node_count", dtype='int32', direction=function.OUT)
         function.addParameter("time", dtype='int32', direction=function.OUT, unit = units.minute)
         function.addParameter("slots_per_node", dtype='int32', direction=function.OUT)
-        function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter("label", dtype='string', direction=function.OUT)
         function.addParameter("options", dtype='string', direction=function.OUT)
         function.addParameter('status', dtype='string', direction=function.OUT)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
@@ -250,12 +272,14 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         function.addParameter('job_id', dtype='int32', direction=function.OUT)
-        function.addParameter('script_name', dtype='string', direction=function.IN)
-        function.addParameter('arguments', dtype='string', direction=function.IN)
         function.addParameter('script_dir', dtype='string', direction=function.IN)
-        function.addParameter('input_dir', dtype='string', direction=function.IN)
-        function.addParameter('output_dir', dtype='string', direction=function.IN)
-        function.addParameter("node_label", dtype='string', direction=function.IN, default = [""])
+        function.addParameter('script_name', dtype='string', direction=function.IN)
+        function.addParameter('arguments', dtype='string', direction=function.IN, default = [""])
+        function.addParameter('input_dir', dtype='string', direction=function.IN, default = [""])
+        function.addParameter('output_dir', dtype='string', direction=function.IN, default = [""])
+        function.addParameter('stdout_file', dtype='string', direction=function.IN, default = [""])
+        function.addParameter('stderr_file', dtype='string', direction=function.IN, default = [""])
+        function.addParameter("label", dtype='string', direction=function.IN, default = [""])
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -268,12 +292,14 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         function.addParameter('job_id', dtype='int32', direction=function.IN)
+        function.addParameter('script_dir', dtype='string', direction=function.OUT)
         function.addParameter('script_name', dtype='string', direction=function.OUT)
         function.addParameter('arguments', dtype='string', direction=function.OUT)
-        function.addParameter('script_dir', dtype='string', direction=function.OUT)
         function.addParameter('input_dir', dtype='string', direction=function.OUT)
         function.addParameter('output_dir', dtype='string', direction=function.OUT)
-        function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter('stdout_file', dtype='string', direction=function.OUT)
+        function.addParameter('stderr_file', dtype='string', direction=function.OUT)
+        function.addParameter("label", dtype='string', direction=function.OUT)
         function.addParameter("status", dtype='string', direction=function.OUT)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
@@ -320,7 +346,10 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('job_id', dtype='int32', direction=function.OUT)
         function.addParameter('function', dtype='string', direction=function.IN)
         function.addParameter('arguments', dtype='string', direction=function.IN)
-        function.addParameter("node_label", dtype='string', direction=function.IN, default = ["default"])
+        function.addParameter('kwarguments', dtype='string', direction=function.IN)
+        function.addParameter('stdout_file', dtype='string', direction=function.IN)
+        function.addParameter('stderr_file', dtype='string', direction=function.IN)
+        function.addParameter("label", dtype='string', direction=function.IN, default = ["default"])
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -333,7 +362,9 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         function.addParameter('job_id', dtype='int32', direction=function.IN)
-        function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter('stdout_file', dtype='string', direction=function.OUT)
+        function.addParameter('stderr_file', dtype='string', direction=function.OUT)
+        function.addParameter("label", dtype='string', direction=function.OUT)
         function.addParameter("status", dtype='string', direction=function.OUT)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
@@ -389,7 +420,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('worker_id', dtype='int32', direction=function.IN)
 
         function.addParameter('executable', dtype='string', direction=function.OUT)
-        function.addParameter("node_label", dtype='string', direction=function.OUT)
+        function.addParameter("label", dtype='string', direction=function.OUT)
         function.addParameter("worker_count", dtype='int32', direction=function.OUT)
         function.addParameter("thread_count", dtype='int32', direction=function.OUT)
         function.addParameter("status", dtype='string', direction=function.OUT)
@@ -468,12 +499,20 @@ class DistributedAmuse(CommonCode):
     def __init__(self, **options):
         CommonCode.__init__(self,  DistributedAmuseInterface(**options), **options)
     
-    def submit_function_job(self, function, *args, **kwargs):
+    def submit_function_job(self, label, stdout_file, stderr_file, function, *args, **kwargs):
         # pickle the input function
-        return self.overridden().submit_function_job(*args, **kwargs)
+        
+        pickled_function = pickle.dumps(function,0)
+        pickled_arguments = pickle.dumps(args,0)
+        pickled_kwarguments = pickle.dumps(kwargs,0)
+        
+        return self.overridden().submit_function_job(function=pickled_function, arguments=pickled_arguments, kwarguments=pickled_kwarguments, label=label, stdout_file=stdout_file, stderr_file=stderr_file)
     
-    def get_function_job_result(self, function, *args, **kwargs):
-        result = self.overridden().get_function_job_result(*args, **kwargs)
+    def get_function_job_result(self, job_id):
+        pickled_result = self.overridden().get_function_job_result(job_id)
+        
+        result = pickle.load(pickled_result)
+        
         #un-pickle
         return result
     
@@ -510,6 +549,8 @@ class DistributedAmuse(CommonCode):
         
         object.add_method('RUN', 'new_resource')
         object.add_method('RUN', 'new_pilot')
+        object.add_method('RUN', 'submit_script_job')
+        object.add_method('RUN', 'submit_function_job')
         object.add_method('RUN', 'get_resource_state')
         object.add_method('RUN', 'get_pilot_state')
         object.add_method('RUN', 'get_pilot_status')
@@ -553,6 +594,14 @@ class DistributedAmuse(CommonCode):
             "Port for monitoring webinterface", 
             default_value = 0
         )
+        
+        object.add_method_parameter(
+            "get_worker_startup_timeout",
+            "set_worker_startup_timeout",
+            "worker_startup_timeout", 
+            "Port for monitoring webinterface", 
+            default_value = 60 | units.s
+        )
 
     
     def define_particle_sets(self, object):
@@ -579,6 +628,8 @@ class DistributedAmuse(CommonCode):
         object.set_delete('script_jobs', 'delete_script_job')
         object.add_getter('script_jobs', 'get_script_job_state')
         object.add_getter('script_jobs', 'get_script_job_status', names = ('status',))
+        object.mapping_from_name_to_set_definition['script_jobs'].particles_factory = ScriptJobs
+
         
         #function jobs
         object.define_set('function_jobs', 'job_id')
