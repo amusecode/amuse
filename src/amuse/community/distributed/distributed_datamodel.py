@@ -132,5 +132,47 @@ class ScriptJob(Particle):
         for attribute_name in keyword_arguments:
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)
+            
+class FunctionJobs(Particles):
+    
+    def __getitem__(self, index):
+
+        keys = self.get_all_keys_in_store()[index]
+        index = self.get_all_indices_in_store()[index]
+
+        if hasattr(keys, '__iter__'):
+            return self._subset(keys)
+        else:
+            return FunctionJob(keys, self, index, self._get_version())
+    
+    def __iter__(self):
+        keys =  self.get_all_keys_in_store()
+        indices = self.get_all_indices_in_store()
+        version = self._get_version()
+
+        for i in range(len(keys)):
+            yield FunctionJob(keys[i], self,  indices[i], version)
+    
+    submit_function_job = Particles.add_particle
+    submit_function_jobs = Particles.add_particles
+
+class FunctionJob(Particle):
+    
+    def __init__(self, key = None, particles_set = None, set_index = -1, set_version = -1, **keyword_arguments):
+        if particles_set is None:
+            if key == None:
+                particles_set = FunctionJobs(1)
+                key = particles_set.get_all_keys_in_store()[0]
+            else:
+                particles_set = FunctionJobs(1, keys = [key])
+
+        object.__setattr__(self, "key", key)
+        object.__setattr__(self, "particles_set", particles_set)
+        object.__setattr__(self, "_set_index", set_index)
+        object.__setattr__(self, "_set_version", set_version)
+
+        for attribute_name in keyword_arguments:
+            attribute_value = keyword_arguments[attribute_name]
+            setattr(self, attribute_name, attribute_value)
 
 

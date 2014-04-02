@@ -9,6 +9,8 @@ from amuse.support import options
 from distributed_datamodel import Resources, Resource
 from distributed_datamodel import Pilots, Pilot
 from distributed_datamodel import ScriptJobs, ScriptJob
+from distributed_datamodel import FunctionJobs, FunctionJob
+
 import pickle
 
 logger = logging.getLogger(__name__)
@@ -513,7 +515,6 @@ class DistributedAmuse(CommonCode):
         
         result = pickle.load(pickled_result)
         
-        #un-pickle
         return result
     
     def get_webinterface_url(self):
@@ -637,6 +638,7 @@ class DistributedAmuse(CommonCode):
         object.set_delete('function_jobs', 'delete_function_job')
         object.add_getter('function_jobs', 'get_function_job_state')
         object.add_getter('function_jobs', 'get_function_job_status')
+        object.mapping_from_name_to_set_definition['function_jobs'].particles_factory = FunctionJobs
         
         #workers
         object.define_set('_workers', 'worker_id')

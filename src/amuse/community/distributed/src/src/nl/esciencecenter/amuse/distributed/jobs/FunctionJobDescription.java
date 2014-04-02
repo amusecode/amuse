@@ -42,8 +42,8 @@ public class FunctionJobDescription extends AmuseJobDescription {
 
     @Override
     public String toString() {
-        return "FunctionJobDescription [id=" + id + ", stdoutFile=" + stdoutFile + ", stderrFile=" + stderrFile + ", label="
-                + label + "]";
+        return "FunctionJobDescription [function length=" + function.length() + ", arguments length=" + arguments.length() + ", kwarguments length=" + kwarguments.length()
+                + ", id=" + id + ", stdoutFile=" + stdoutFile + ", stderrFile=" + stderrFile + ", label=" + label + "]";
     }
 
 }

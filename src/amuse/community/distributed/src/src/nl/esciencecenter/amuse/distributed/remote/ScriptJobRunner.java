@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
+import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.jobs.AmuseJobDescription;
 import nl.esciencecenter.amuse.distributed.jobs.ScriptJobDescription;
 import nl.esciencecenter.amuse.distributed.util.FileTransfers;
@@ -68,15 +69,23 @@ public class ScriptJobRunner extends JobRunner {
         start();
     }
 
-    private ProcessBuilder buildProcessBuilder() throws IOException {
+    private ProcessBuilder buildProcessBuilder() throws IOException, DistributedAmuseException {
         ProcessBuilder builder = new ProcessBuilder();
 
         builder.directory(sandbox.toFile());
 
+        if (amuseConfiguration.isMPIEnabled()) {
+            // use mpiexec
+            builder.command().add(amuseConfiguration.getMpiexec());
+            builder.command().add("-n");
+            builder.command().add("1");
+        }
+        
         Path scriptPath = sandbox.resolve(description.getScriptDir()).resolve(description.getScriptName());
 
         Path amuseScriptPath = amuseConfiguration.getAmuseHome().getAbsoluteFile().toPath().resolve("amuse.sh");
 
+        
         builder.command().add(amuseScriptPath.toString());
 
         builder.command().add(scriptPath.toString());
