@@ -34,7 +34,7 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         pilot.node_count=1
         pilot.time= 2|units.hour
         pilot.slots_per_node=2
-        pilot.node_label='local'
+        pilot.label='local'
         self.distinstance.pilots.add_pilot(pilot)
         print "Pilots:"
         print self.distinstance.pilots
