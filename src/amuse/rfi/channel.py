@@ -2050,10 +2050,10 @@ class DistributedChannel(AbstractMessageChannel):
         if self.number_of_workers == 0:
             self.number_of_workers = 1
             
-        if self.node_label == None:
-            self.node_label = ""
+        if self.label == None:
+            self.label = ""
             
-        logger.debug("number of workers is %d, number of nodes is %s", self.number_of_workers, self.number_of_nodes)
+        logger.debug("number of workers is %d, number of threads is %s, label is %s", self.number_of_workers, self.number_of_threads, self.label)
         
         self.daemon_host = 'localhost'  # Distributed process always running on the local machine
         self.daemon_port = self.port  # Port number for the Distributed process
@@ -2129,7 +2129,7 @@ class DistributedChannel(AbstractMessageChannel):
         
         self.socket.sendall('TYPE_WORKER'.encode('utf-8'))
         
-        arguments = {'string': [self.executable, self.redirect_stdout_file, self.redirect_stderr_file, self.node_label], 'int32': [self.number_of_workers, self.number_of_nodes, self.number_of_threads]}
+        arguments = {'string': [self.executable, self.redirect_stdout_file, self.redirect_stderr_file, self.label], 'int32': [self.number_of_workers, self.number_of_threads]}
         
         message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments);
 
@@ -2160,10 +2160,6 @@ class DistributedChannel(AbstractMessageChannel):
         return self.remote_amuse_dir
         
     @option(type="int", sections=("channel",))
-    def number_of_nodes(self):
-        return 1
-    
-    @option(type="int", sections=("channel",))
     def port(self):
         return 61575
     
@@ -2172,7 +2168,7 @@ class DistributedChannel(AbstractMessageChannel):
         return 0
     
     @option(type="string", sections=("channel",))
-    def node_label(self):
+    def label(self):
         return None
     
     def stop(self):
