@@ -35,7 +35,7 @@ pilot.resource_name='local'
 pilot.node_count=1
 pilot.time= 2|units.hour
 pilot.slots_per_node=22
-pilot.node_label='local'
+pilot.label='local'
 instance.pilots.add_pilot(pilot)
 
 print "Pilots:"

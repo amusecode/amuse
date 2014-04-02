@@ -13,8 +13,8 @@ from amuse.community.distributed.interface import Resource, Resources, Pilot, Pi
 
 print "Setting up distributed code"
 instance = DistributedAmuse(redirection='none')
-instance.parameters.debug = True
-instance.parameters.webinterface_port = 4556
+#instance.parameters.debug = True
+#instance.parameters.webinterface_port = 4556
 instance.commit_parameters()
 
 #Add some resources
@@ -33,7 +33,7 @@ pilot.resource_name='local'
 pilot.node_count=1
 pilot.time= 2|units.hour
 pilot.slots_per_node=32
-pilot.node_label='local'
+pilot.label='local'
 instance.pilots.add_pilot(pilot)
 print "Pilots:"
 print instance.pilots

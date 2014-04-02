@@ -44,7 +44,7 @@ def start_distributed_amuse():
     pilot.node_count=1
     pilot.time= 2|units.hour
     pilot.slots_per_node=22
-    pilot.node_label='local'
+    pilot.label='local'
     distributed_amuse.pilots.add_pilot(pilot)
 
     print "Pilots:"
