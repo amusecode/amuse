@@ -8,47 +8,104 @@ It is possible to run AMUSE on multiple machines simultaneously. The AMUSE scrip
 Installation
 ------------
 
-Deploying workers one remote machines requires a full installation of AMUSE on each machine. For each code used the ``sockets`` worker needs to build. This is done by default, and should be available for all codes.
+Deploying workers one remote machines requires a full installation of AMUSE on each machine. For each code "sockets" support needs to be present. This is done by default, and should be available for all codes. Note that older versions of Fortran lack the necessary features to support sockets workers.
 
-On the local machine, the Ibis library also needs to be build. Ibis requires a Java Development Kit (JDK), preferably Sun Java version 6. The ``configure`` script tries to locate the JDK, but you may need to specify it by hand. For details, see::
+On each machine, the distributed code also needs to be build. Distributed AMUSE requires a Java Development Kit (JDK), preferably Oracle Java version 7. The ``configure`` script tries to locate the JDK, but you may need to specify it by hand. For details, see:
 
-./configure --help
+.. code-block:: sh
 
-AMUSE will build the Ibis library by default if a JDK is found. However, it needs to download some code to build it, so the ``DOWNLOAD_CODES=1`` option needs be specified as well. Building the Ibis library manually can be done by running::
+	> ./configure --help
 
-    make ibis.code DOWNLOAD_CODES=1
+To build distributed amuse run the following at the amuse root:
+	
+.. code-block:: sh
 
-in the root of AMUSE.
+	> make distributed.code
 
-Specifying resources using Jungle files
+To check if the installation is set-up properly, run all the tests related to the worker interface:
+
+.. code-block:: sh
+
+	> cd $AMUSE_DIR
+	> nosetests -v test/codes_tests/test*implementation.py
+	
+Note that Distributed AMUSE is mostly tested with the version of MPI includes in the amuse "prerequisites". If you get MPI errors while running remote (parallel) workers, try using the install.py script included in AMUSE to install the prerequisites.  
+
+Overview
+-----------
+
+Usage of Distributed Amuse is (by design) very close to the usage of any other code in AMUSE. The main difference being it contains resources, pilots, and jobs, instead of particles.
+
+TODO: add overview image(s)
+
+Resource
+	Description of a machine capable of running jobs. For each resource distributed AMUSE will launch a support process (HUB) to facilitate communication and coordination between the workers and AMUSE
+	
+Pilot
+	Process running on a resource (often within a reservation on a resource) waiting for jobs to run on behalf of AMUSE. Can consist of multiple machines.
+	
+Job
+	Worker process. Will search for a suitable pilot to run on.
+
+In general, a user will first define resources, then deploy pilots on these resources, and finally create codes that make use of the machines offered by the pilots.
+
+
+Initializing the Distributed AMUSE code
 ---------------------------------------
 
-In order to use a remote machine (resource) for a worker, AMUSE needs to know information about this resource such as hostname, type of machine, username to gain access, etc. This is specified in so-called Jungle files. AMUSE comes with a set of jungle files for the Observatory machines, the LGM, the DAS, etc, in ``lib/ibis``.
+Distributed Amuse can be initialized like any other code:
 
-Users should not need to change the jungle files themselves. On exception is the ``user.name`` option, which may need to be set for each machine. By default, AMUSE assumes the username on each machine is equal to the users' username on the local machine.
+    >>> from amuse.community.distributed.interface import DistributedAmuseInterface, DistributedAmuse
+    >>> from amuse.community.distributed.interface import Resource, Resources, Pilot, Pilots
+    >>> 
+    >>> #initialize code, print output of code to console
+    >>> instance = DistributedAmuse(redirection='none')
 
-The format of the jungle files is still under active development, and changes in the format will occur from time to time. Currently supported options are listed at the beginning of each file.
 
+Parameters
+----------
 
-Starting Ibis Deploy
+Distributed AMUSE supports a few parameters to adjust settings. All parameters need to be set before any resource, pilot or job is made to have effect.
+
+Overview of settings:
+
+debug
+	Boolean parameters, defaults to False. If true/enabled, will output additional debugging information and logs, both in the code output, and in a `distributed-amuse-logs` folder on any target machine used.
+webinterface_port
+	Port on which a simple webinterface is available for monitoring. Defaults to "0", for a port determined automatically.
+start_hubs
+	To facilitate communication across different networks (with for instance firewalls), as hub is by default started on  
+	
+    >>> instance.parameters.debug = True
+    >>> instance.parameters.webinterface_port = 5555
+    >>> instance.commit_parameters()
+    >>>
+    >>> print instance.parameters.webinterface_port
+    
+
+Monitoring
+----------
+
+Distributed Amuse has a small build-in webinterface for monitoring. A utility function is available to get the url:
+
+    >>> import webbrowser
+    >>>
+    >>> webbrowser.open(instance.get_webinterface_url())
+
+Specifying resources
 --------------------
 
-To run workers on remote machine a special support process needs to be started on the local machine. The script to start this is created automatically by AMUSE, and is called ``ibis-deploy.sh``. It has several options, see::
+In order to use a remote machine, AMUSE needs to have some information about this resource such as the host name, type of machine, username to gain access, etc.
+This can be specified by creating a "Resource" in Distributed AMUSE:
 
-./ibis-deploy.sh --help
+    >>> resource = Resource()
+    >>> resource.name = "some.resource"
+    >>> resource.location = "user@machine.example.com"
+    >>> resource.scheduler = "ssh"
+    >>> resource.amuse_dir = "/home/user/amuse"
+    >>>
+    >>> instance.resources.add_resource(resource)
 
-Jungle files can be passed to the deployment program with the ``--jungle-file`` option.
 
-If preferred, the status of the deployment application can also be monitored by specifying the ``--gui`` option. This will create a window showing monitoring information.
-
-Running workers remotely
----------------------------
-
-To run a worker on a remote machine, some additional options need to be given to AMUSE when creating a worker. First the special `ibis` channel implementation needs to be specified. Also the name of the resource, number of nodes, and number of processes to start in total needs to be specified. For instance, to run an instant of Gadget on node06 of the LGM cluster, and using 8 processes for this one worker, use::
-
-	instance = Gadget2Interface(channel_type='ibis', hostname='lgm06',
-		number_of_nodes=1, number_of_processes=8)
-
-An easy way to start all workers remotely on some resource is to use the generic configuration file system of AMUSE, see :ref:`options-label`.
 
 
