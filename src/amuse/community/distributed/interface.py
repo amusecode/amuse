@@ -537,6 +537,9 @@ class DistributedAmuse(CommonCode):
 
     def set_as_default(self):
         DistributedChannel.defaultDistributedInstance=self
+        
+    def set_as_default_for_all_workers(self):
+        DistributedChannel.defaultDistributedInstance=self
         options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
 
     def cleanup_code(self):
@@ -571,6 +574,7 @@ class DistributedAmuse(CommonCode):
         object.add_method('RUN', 'get_worker_state')
         object.add_method('RUN', 'get_worker_status')
         object.add_method('RUN', 'set_as_default')
+        object.add_method('RUN', 'set_as_default_for_all_workers')
     
     def define_parameters(self, object):
               
