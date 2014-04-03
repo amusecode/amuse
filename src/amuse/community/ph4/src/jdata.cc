@@ -244,9 +244,9 @@ int jdata::add_particle(real pmass, real pradius,
 
     UpdatedParticles.push_back(UpdatedParticle(pid, 2));
 
-    if (1)  {
+    if (0)  {
 
-	// Consistency check:
+	// Consistency check: O(N) work!
 
 	check_inverse_id(in_function);
     }

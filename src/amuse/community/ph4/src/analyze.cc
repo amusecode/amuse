@@ -4,7 +4,7 @@
 // externally visible functions are
 //
 //	int  check_structure(hdyn *bin, bool verbose = true)
-//	hdyn *get_tre(hdyn *bin)
+//	hdyn *get_tree(hdyn *bin)
 //
 // NOTES: The original code code used Starlab stories to track
 // critical information.  Stories are handy, but maybe too much to
@@ -309,7 +309,7 @@ local bool is_lightly_perturbed(hdyn2 *b, hdyn2 *bi, hdyn2 *bj)
 local void decompose(hdyn2 *b)
 {
     // Construct a binary tree by recursively pairing the top-level
-    // particles with the greatest mutual potential.  Don't pair if
+    // particles with the greatest binding energy.  Don't pair if
     // strongly perturbed.
   
     while (true) {
