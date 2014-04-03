@@ -90,6 +90,8 @@ void starbase::set_use_hdyn(bool u) {use_hdyn = u;}
 
 void starbase::dump(ostream&, bool) {} 
 real starbase::get_total_mass() {return 0;}
+real starbase::get_core_mass() {return 0;}
+real starbase::get_envelope_mass() {return 0;}
 real starbase::get_effective_radius() {return 0;}
 real starbase::get_current_time() {return 0;}
 real starbase::get_relative_age() {return 0;}
@@ -113,6 +115,9 @@ void starbase::set_semi(real a) {}
 real starbase::get_eccentricity()    {return 0;}
 void starbase::set_eccentricity(real e)    {}
 binary_type starbase::get_bin_type() {return Unknown_Binary_Type;}
+
+real starbase::add_mass_to_accretor(real, bool, const real) {return 0;}
+star* starbase::subtrac_mass_from_donor(const real, real&){return NULL;}
 
 //     -----  Scaling:  -----
 

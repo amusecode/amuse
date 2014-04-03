@@ -416,6 +416,38 @@ int get_mass(int index_of_the_star, double * mass){
     return error_code;
 }
 
+int get_core_mass(int index_of_the_star, double * mass){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *mass= seba_node->get_starbase()->get_core_mass() ;
+    return error_code;
+}
+
+int change_mass(int index_of_the_star, double mass, double dt){
+  cout << "Enter change mass:"<< mass<< dt<<endl;
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    //    *mass= seba_node->get_starbase()->get_core_mass() ;
+    if (mass>0) {
+      seba_node->get_starbase()->add_mass_to_accretor(mass, true, dt);
+    }
+    else {
+      star *star = seba_node->get_starbase()->subtrac_mass_from_donor(dt, mass);
+      PRL(star);
+    }
+    return error_code;
+}
+
+int get_envelope_mass(int index_of_the_star, double * mass){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *mass= seba_node->get_starbase()->get_envelope_mass() ;
+    return error_code;
+}
+
 int get_temperature(int index_of_the_star, double * temperature){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);

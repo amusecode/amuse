@@ -146,6 +146,68 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         return function
 
     @legacy_function   
+    def get_core_mass():
+        """
+        Retrieve the current core mass of a star
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current core_mass.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function   
+    def change_mass():
+        """
+        Set the add_mass increase (positive) or decrease (negative) of a star
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('value', dtype='float64', direction=function.IN
+            , description="The current change_mass.")
+        function.addParameter('dt', dtype='float64', direction=function.IN
+            , description="The time in which the mass was changed.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function   
+    def get_envelope_mass():
+        """
+        Retrieve the current envelope mass of a star
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The current envelope_mass.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function   
     def set_semi_major_axis():
         """
         Update the current semi major axis of the elliptical orbit of the parts in the binary star.
@@ -293,8 +355,12 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
-    def evolve_model(self, time):
-        return self.evolve_system(time)
+    def evolve_model(self, end_time=None, keep_synchronous=True):
+        if not keep_synchronous:
+            raise Exception("non_synchronous evolution not implemented")
+        if end_time is None:
+            end_time = self.model_time + min(self.particles.time_step)
+        return self.evolve_system(end_time)
 
 class SeBa(se.StellarEvolution):
 
@@ -303,8 +369,12 @@ class SeBa(se.StellarEvolution):
     
 
     
-    def evolve_model(self, end_time):
-        return self.evolve_system(end_time);
+    def evolve_model(self, end_time=None, keep_synchronous=True):
+        if not keep_synchronous:
+            raise Exception("non_synchronous evolution not implemented")
+        if end_time is None:
+            end_time = self.model_time + min(self.particles.time_step)
+        return self.evolve_system(end_time)
         
     def define_properties(self, object):
         se.StellarEvolution.define_properties(self, object)
@@ -348,6 +418,21 @@ class SeBa(se.StellarEvolution):
             "get_semi_major_axis",
             (object.INDEX,),
             (units.RSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_core_mass",
+            (object.INDEX,),
+            (units.MSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "change_mass",
+            (object.INDEX,units.MSun,units.Myr),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_envelope_mass",
+            (object.INDEX,),
+            (units.MSun, object.ERROR_CODE,)
         )
         object.add_method(
             "set_semi_major_axis",
@@ -417,6 +502,8 @@ class SeBa(se.StellarEvolution):
         object.add_getter('particles', 'get_radius', names = ('radius',))
         object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
         object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_getter('particles', 'get_core_mass', names = ('core_mass',))
+        object.add_getter('particles', 'get_envelope_mass', names = ('envelope_mass',))
         object.add_getter('particles', 'get_age', names = ('age',))
         object.add_getter('particles', 'get_time_step', names = ('time_step',))
         #object.add_getter('particles', 'get_spin', names = ('spin',))
@@ -424,7 +511,7 @@ class SeBa(se.StellarEvolution):
         object.add_getter('particles', 'get_temperature', names = ('temperature',))
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
-    
+        object.add_method('particles', 'change_mass')
 
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')

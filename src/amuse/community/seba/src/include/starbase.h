@@ -83,6 +83,8 @@ class  starbase
 	//              REMOVE for standard STAREV
         virtual stellar_type get_element_type();
         virtual real get_total_mass();
+        virtual real get_envelope_mass();
+        virtual real get_core_mass();
         virtual real get_effective_radius();
         virtual real get_current_time();
         virtual real get_relative_age();
@@ -105,6 +107,9 @@ class  starbase
         virtual void set_eccentricity(real);
         
 // AMUSE
+
+        virtual real add_mass_to_accretor(real, bool, const real);
+        virtual star* subtrac_mass_from_donor(const real, real&);
         
         virtual real get_time_offset();
         virtual void set_time_offset(real value);
