@@ -2016,33 +2016,39 @@ class OutputHandler(threading.Thread):
             self.stream.write(data)
 
 class DistributedChannel(AbstractMessageChannel):
-    
-    stdoutHandler = None
-    
-    stderrHandler = None
-    
-    socket = None
-    
-    @classmethod
-    def getStdoutID(cls, port):
-        if DistributedChannel.stdoutHandler is None:
-            DistributedChannel.stdoutHandler = OutputHandler(sys.stdout, port)
             
-        return DistributedChannel.stdoutHandler.id
+    defaultDistributedInstance = None
     
-    @classmethod
-    def getStderrID(cls, port):
-        if DistributedChannel.stderrHandler is None:
-            DistributedChannel.stderrHandler = OutputHandler(sys.stderr, port)
+    @staticmethod
+    def getStdoutID(instance):
+        if not hasattr(instance, "_stdoutHandler") or instance._stdoutHandler is None:
+            instance._stdoutHandler = OutputHandler(sys.stdout, instance.port)
             
-        return DistributedChannel.stderrHandler.id
+        return instance._stdoutHandler.id
     
-    def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, **options):
+    @staticmethod
+    def getStderrID(instance):
+        if not hasattr(instance, "_stderrHandler") or instance._stderrHandler is None:
+            instance._stderrHandler = OutputHandler(sys.stderr, instance.port)
+            
+        return instance._stderrHandler[instance].id
+    
+    def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None,
+                   distributedInstance=None, **options):
         AbstractMessageChannel.__init__(self, **options)
+        
+        if distributedInstance is None:
+            if self.defaultDistributedInstance is None:
+                raise Exception("No default distributed instance present")  
+            self.distributedInstance=self.defaultDistributedInstance
+        else:
+            self.distributedInstance=distributedInstance
         
         #logger.setLevel(logging.INFO)
         
         logger.info("initializing DistributedChannel with options %s", options)
+       
+        self.socket=None
        
         self.name_of_the_worker = name_of_the_worker
         self.interpreter_executable = interpreter_executable
@@ -2056,7 +2062,7 @@ class DistributedChannel(AbstractMessageChannel):
         logger.debug("number of workers is %d, number of threads is %s, label is %s", self.number_of_workers, self.number_of_threads, self.label)
         
         self.daemon_host = 'localhost'  # Distributed process always running on the local machine
-        self.daemon_port = self.port  # Port number for the Distributed process
+        self.daemon_port = self.distributedInstance.port  # Port number for the Distributed process
 
         logger.debug("port is %d", self.daemon_port)
         
@@ -2102,13 +2108,13 @@ class DistributedChannel(AbstractMessageChannel):
         
         # if redirect = none, set output file to console stdout stream ID, otherwise make absolute
         if (self.redirect_stdout_file == 'none'):
-            self.redirect_stdout_file = DistributedChannel.getStdoutID(self.port)
+            self.redirect_stdout_file = self.getStdoutID(self.distributedInstance)
         else:
             self.redirect_stdout_file = os.path.abspath(self.redirect_stdout_file)
 
         # if redirect = none, set error file to console stderr stream ID, otherwise make absolute
         if (self.redirect_stderr_file == 'none'):
-            self.redirect_stderr_file = DistributedChannel.getStderrID(self.port)
+            self.redirect_stderr_file = self.getStderrID(self.distributedInstance)
         else:
             self.redirect_stderr_file = os.path.abspath(self.redirect_stderr_file)
         
@@ -2155,14 +2161,9 @@ class DistributedChannel(AbstractMessageChannel):
         """Name of the debugger to use when starting the code"""
         return "none"
     
-    
     def get_amuse_root_directory(self):
         return self.remote_amuse_dir
-        
-    @option(type="int", sections=("channel",))
-    def port(self):
-        return 61575
-    
+            
     @option(type="int", sections=("channel",))
     def number_of_threads(self):
         return 0

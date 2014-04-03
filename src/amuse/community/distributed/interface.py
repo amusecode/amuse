@@ -5,6 +5,7 @@ from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface
 from amuse.community.interface.common import CommonCode
 from amuse.support import options
+from amuse.rfi.channel import DistributedChannel
 
 from distributed_datamodel import Resources, Resource
 from distributed_datamodel import Pilots, Pilot
@@ -23,15 +24,13 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     """
 
     classpath = ['.', 'worker.jar', 'src/dist/*']
-    
-    instances = []
-    
+
+# keeping a reference is no longer necessary
+        
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="distributed_worker_java", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
-        
-        #keep a refence to all distributed amuse instances to keep them from being cleaned up
-        self.instances.append(self)
+
 
     @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
     def channel_type(self):
@@ -486,7 +485,6 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         return function
     
     def cleanup_code(self):
-        del options.GlobalOptions.instance().overriden_options["channel_type"]
         self.end_all()
         return 0
     
@@ -524,18 +522,29 @@ class DistributedAmuse(CommonCode):
         self.parameters.send_not_set_parameters_to_code()
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
-        
-        port = self.get_worker_port()
+
+        self.port = self.get_worker_port()
+
+        if  DistributedChannel.defaultDistributedInstance is None:
+          DistributedChannel.defaultDistributedInstance=self
         
         #logging.basicConfig(level=logging.DEBUG)
         
-        logger.debug("running on port %d", port)
+        logger.debug("running on port %d", self.port)
 
 #        self.stdoutHandler = OutputHandler(sys.stdout, port)
 #        self.stderrHandler = OutputHandler(sys.stderr, port)
 
+    def set_as_default(self):
+        DistributedChannel.defaultDistributedInstance=self
         options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
-        options.GlobalOptions.instance().override_value_for_option("port", port)
+
+    def cleanup_code(self):
+        if DistributedChannel.defaultDistributedInstance is self:
+            DistributedChannel.defaultDistributedInstance=None
+            if options.GlobalOptions.instance().overriden_options.has_key("channel_type"):
+              del options.GlobalOptions.instance().overriden_options["channel_type"]
+        self.overridden().cleanup_code()
         
     def define_state(self, object): 
         CommonCode.define_state(self, object)   
@@ -561,6 +570,7 @@ class DistributedAmuse(CommonCode):
         object.add_method('RUN', 'get_function_job_status')
         object.add_method('RUN', 'get_worker_state')
         object.add_method('RUN', 'get_worker_status')
+        object.add_method('RUN', 'set_as_default')
     
     def define_parameters(self, object):
               
@@ -661,6 +671,8 @@ class DistributedAmuse(CommonCode):
         number_of_workers = self.get_number_of_workers()
         if not number_of_workers == 0:
             new_ids = set(self.get_worker_ids(range(number_of_workers)))
+        else:
+            new_ids=set()
         
         ids_to_remove = old_ids - new_ids
         ids_to_add = new_ids - old_ids

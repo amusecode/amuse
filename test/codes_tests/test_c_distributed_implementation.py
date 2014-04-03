@@ -23,8 +23,8 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         super(TestCDistributedImplementationInterface, self).setUp()
         print "Setting up distributed code"
         #instance = DistributedAmuse(redirection='none')
-        self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse, redirection='none')
-        #self.distinstance.parameters.debug = True
+        self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
+        self.distinstance.parameters.debug = False
 
         print "Resources:"
         print self.distinstance.resources
@@ -41,6 +41,7 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
 
         print "Waiting for pilots"
         self.distinstance.wait_for_pilots()
+        self.distinstance.set_as_default()
 
     def tearDown(self):
         print "Stopping distributed code"
