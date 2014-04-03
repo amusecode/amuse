@@ -487,6 +487,9 @@ class GravityCodeInField(object):
         particles.vx += dt * ax
         particles.vy += dt * ay
         particles.vz += dt * az
+    
+    def stop(self):
+        self.code.stop()
 
 class Bridge(object):
     def __init__(self, timestep = None, verbose=False, use_threading=True,method=None):
