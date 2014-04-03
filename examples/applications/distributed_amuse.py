@@ -44,6 +44,9 @@ print instance.pilots
 print "Waiting for pilots"
 instance.wait_for_pilots()
 
+print "setting distributed as default channel"
+instance.set_as_default()
+
 print "Running script"
 
 script = sys.argv[1]
