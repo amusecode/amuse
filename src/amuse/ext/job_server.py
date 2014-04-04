@@ -200,7 +200,7 @@ class JobServer(object):
     def add_hosts(self,hosts=[],channel_type="mpi"):
       self.hosts.append(hosts)
       if self.verbose:
-        print "JobServer: connecting %i hosts"%len(hosts),
+        print "JobServer: connecting %i hosts"%len(hosts)
       if channel_type=="mpi" or channel_type=="sockets":
         for host in hosts:
           self.number_starting_codes+=1
@@ -238,18 +238,18 @@ class JobServer(object):
         code=RemoteCodeInterface(*args,**kwargs) 
       except Exception as ex:
         self.number_starting_codes-=1
-        print "JobServer: startup failed on", kwargs['hostname']
+        print "JobServer: startup failed on", kwargs['hostname'] or "default"
         print ex
       else:
         if self.preamble is not None:
           code.execute(self.preamble)
            
         self.number_available_codes+=1
+        self.number_starting_codes-=1
         if self.no_wait:
           if self.number_available_codes & (self.number_available_codes-1) ==0:
             if self.verbose:
               print "JobServer: hosts now available:",self.number_available_codes
-          self.number_starting_codes-=1
           if self.number_starting_codes==0:
             if self.verbose:
               print "JobServer: hosts in total:", self.number_available_codes
