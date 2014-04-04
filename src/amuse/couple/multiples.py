@@ -1606,9 +1606,10 @@ def print_simple_multiple(node, kep):
         if level == 0: output += 'Multiple '
         output += '    ' * level
         particle = x
-        output += "{0} id = {1} mass = {2}".format(particle.key,
+        output += "{0} id = {1} mass = {2} radius = {3}".format(particle.key,
                                                    particle.id,
-                                                   particle.mass.number)
+                                                   particle.mass.number,
+                                                   particle.radius.number)
         if not particle.child1 is None:
             child1 = particle.child1
             child2 = particle.child2
