@@ -2031,7 +2031,7 @@ class DistributedChannel(AbstractMessageChannel):
         if not hasattr(instance, "_stderrHandler") or instance._stderrHandler is None:
             instance._stderrHandler = OutputHandler(sys.stderr, instance.port)
             
-        return instance._stderrHandler[instance].id
+        return instance._stderrHandler.id
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None,
                    distributedInstance=None, **options):
