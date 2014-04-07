@@ -2014,12 +2014,13 @@ class ParticlesMaskedSubset(ParticlesSubset):
 
     def get_all_indices_in_store(self):
         if not self._private.version == self._private.particles._get_version():
-            self._private.indices = -1 * numpy.ones(len(self._private.keys), dtype = numpy.int64)
-            self._private.indices = numpy.ma.array(self._private.indices, dtype = numpy.int64)
+            indices = self._private.particles.get_indices_of_keys(self._private.keys[mask])
+            self._private.indices = -1 * numpy.ones(len(self._private.keys), dtype = indices.dtype)
+            self._private.indices = numpy.ma.array(self._private.indices, dtype = indices.dtype)
             self._private.indices.mask = self._private.keys.mask
             mask = self._private.keys.mask
             mask = ~mask
-            self._private.indices[mask] = self._private.particles.get_indices_of_keys(self._private.keys[mask])
+            self._private.indices[mask] = indices
             self._private.version = self._private.particles._get_version()
 
         return self._private.indices
