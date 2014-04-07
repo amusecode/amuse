@@ -41,6 +41,9 @@ print instance.pilots
 print "Waiting for pilots"
 instance.wait_for_pilots()
 
+print "setting distributed as default channel"
+instance.set_as_default_for_all_workers()
+
 print "Running tests"
 
 nose.run()

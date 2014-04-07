@@ -24,6 +24,7 @@ def start_distributed_amuse():
     distributed_amuse.parameters.debug = True
     distributed_amuse.parameters.webinterface_port = 4556
     distributed_amuse.commit_parameters()
+    distributed_amuse.set_as_default_for_all_workers()
 
     #open the address of the webinterface in a brower window
     webbrowser.open(distributed_amuse.get_webinterface_url())
@@ -52,6 +53,9 @@ def start_distributed_amuse():
 
     print "Waiting for pilots"
     distributed_amuse.wait_for_pilots()
+
+    print "setting distributed as default channel"
+    distributed_amuse.set_as_default_for_all_workers()
 
     return distributed_amuse
 
