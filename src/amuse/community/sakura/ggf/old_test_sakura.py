@@ -92,7 +92,7 @@ class TestSakuraInterface(TestWithMPI):
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
-    def test04(self):
+    def xtest04(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print "Test SakuraInterface parameters"
@@ -345,7 +345,7 @@ class TestSakura(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
 
-    def test07(self):
+    def xtest07(self):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Sakura")
         print "Testing effect of Sakura parameter epsilon_squared"
