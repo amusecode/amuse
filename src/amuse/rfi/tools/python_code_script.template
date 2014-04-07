@@ -16,7 +16,7 @@ if __name__ == '__main__':
         host = sys.argv[2]
         usempi= sys.argv[3]
 
-        if usempi:
+        if usempi=="true":
             MPI.Init()
 
         try:
