@@ -6,7 +6,6 @@ AMUSE documentation and software can be found at:
 
     http://www.amusecode.org
 
-
 Getting Started
 ===============
 
