@@ -67,8 +67,7 @@ public class WorkerJobRunner extends JobRunner {
 
     //connection back to AMUSE
 
-    private static ProcessBuilder createProcessBuilder(WorkerJobDescription description, AmuseConfiguration amuseConfiguration,
-            int localSocketPort, Path tmpDir) throws Exception {
+    private ProcessBuilder createProcessBuilder(int localSocketPort) throws Exception {
         File executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getExecutable());
 
         if (!executable.canExecute()) {
@@ -76,6 +75,8 @@ public class WorkerJobRunner extends JobRunner {
         }
 
         ProcessBuilder builder = new ProcessBuilder();
+
+        builder.directory(sandbox.toFile());
 
         if (description.getNrOfThreads() > 0) {
             builder.environment().put("OMP_NUM_THREADS", Integer.toString(description.getNrOfThreads()));
@@ -125,10 +126,7 @@ public class WorkerJobRunner extends JobRunner {
         return builder;
     }
 
-   
-
-    private SocketChannel acceptConnection(ServerSocketChannel serverSocket) throws IOException,
-            DistributedAmuseException {
+    private SocketChannel acceptConnection(ServerSocketChannel serverSocket) throws IOException, DistributedAmuseException {
         logger.debug("accepting connection");
 
         serverSocket.configureBlocking(true);
@@ -177,7 +175,7 @@ public class WorkerJobRunner extends JobRunner {
         logger.debug("Bound server socket to " + serverSocket.socket().getLocalSocketAddress());
 
         //create process
-        startProcess(createProcessBuilder(this.description, amuseConfiguration, serverSocket.socket().getLocalPort(), tmpDir));
+        startProcess(createProcessBuilder(serverSocket.socket().getLocalPort()));
 
         socket = acceptConnection(serverSocket);
         serverSocket.close();
@@ -293,9 +291,9 @@ public class WorkerJobRunner extends JobRunner {
                 //IGNORE
             }
         }
-        
+
         waitForProcess();
-        
+
         logger.debug("Worker job done, sending result to amuse");
 
         sendResult();
