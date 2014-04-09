@@ -287,7 +287,7 @@ public class PilotManager {
         return slots;
     }
 
-    public String getNodeLabel() {
+    public String getLabel() {
         return label;
     }
 

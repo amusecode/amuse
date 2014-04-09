@@ -68,7 +68,13 @@ public class WorkerJobRunner extends JobRunner {
     //connection back to AMUSE
 
     private ProcessBuilder createProcessBuilder(int localSocketPort) throws Exception {
-        File executable = new File(amuseConfiguration.getAmuseHome() + File.separator + description.getExecutable());
+
+        File executable = new File(description.getExecutable());
+
+        //make absolute by prepending with amuse home
+        if (!executable.isAbsolute()) {
+            executable = new File(amuseConfiguration.getAmuseHome(), description.getExecutable());
+        }
 
         if (!executable.canExecute()) {
             throw new DistributedAmuseException(executable + " is not executable, or does not exist");

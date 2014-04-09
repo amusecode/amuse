@@ -88,6 +88,8 @@ public abstract class JobRunner extends Thread {
     }
 
     synchronized void startProcess(ProcessBuilder builder) throws IOException {
+        logger.debug("Running process in cwd: " + builder.directory());
+        
         process = builder.start();
 
         //attach streams

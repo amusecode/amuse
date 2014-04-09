@@ -186,7 +186,7 @@ public class WebInterface extends AbstractHandler {
         for (PilotManager pilot : distributedAmuse.pilots().getPilots()) {
             String state = pilot.getStateString();
             writer.printf("<tr><td><a href=/pilots/%s>%s</a></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n",
-                    pilot.getID(), pilot.getID(), pilot.getNodeLabel(), pilot.getResourceName(), pilot.getNodeCount(), state);
+                    pilot.getID(), pilot.getID(), pilot.getLabel(), pilot.getResourceName(), pilot.getNodeCount(), state);
         }
         writer.println("</table>");
     }
@@ -195,7 +195,7 @@ public class WebInterface extends AbstractHandler {
         writer.println("<table border=\"1px\">");
 
         writer.println("<tr><th>ID</th><th>Job State</th><th>Job Type</th><th>Job Label</th></tr>");
-        for (WorkerJob job : distributedAmuse.jobs().getWorkerJobs()) {
+        for (AmuseJob job : distributedAmuse.jobs().getJobs()) {
             writer.printf("<tr><td><a href=/jobs/%d>%d</a></td><td>%s</td><td>%s</td><td>%s</td></tr>\n", job.getJobID(),
                     job.getJobID(), job.getJobState(), "worker", job.getDescription().getLabel());
         }

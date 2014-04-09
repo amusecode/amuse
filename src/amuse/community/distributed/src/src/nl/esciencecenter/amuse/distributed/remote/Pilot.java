@@ -207,8 +207,10 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
                     addJobRunner(description.getID(), jobRunner);
                     break;
                 case "function":
-                    throw new Exception("Function jobs not supported yet");
-                    //break;
+                    jobRunner = new ScriptJobRunner(description, configuration, resultPort, ibis, tmpDir, readMessage);
+
+                    addJobRunner(description.getID(), jobRunner);
+                    break;
                 default:
                     throw new Exception("Unknown job type: " + type);
 

@@ -66,7 +66,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
     private final ReceivePort resultReceivePort;
 
     private final AmuseJobDescription description;
-
+    
     private State state;
 
     private PilotManager target = null;
@@ -92,6 +92,10 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
         } catch (IOException e) {
             throw new DistributedAmuseException("Cannot create receive port for job", e);
         }
+    }
+    
+    public String getType() {
+        return description.getType();
     }
 
     public void end() {
@@ -176,8 +180,9 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
 
     public synchronized void waitUntilDone() {
         while (!isDone()) {
+            logger.info("Waiting for {} job {} to finish, state now {}", getType(), getJobID(), getJobState());
             try {
-                wait();
+                wait(5000);
             } catch (InterruptedException e) {
                 return;
             }
@@ -202,7 +207,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
             return;
         }
 
-        logger.debug("Running job on target node {}", target);
+        logger.debug("Running job {} on pilot {} with label {}", getJobID(), target.getID(), target.getLabel());
 
         //set state to initializing
         setState(State.INITIALIZING);
@@ -375,7 +380,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
     abstract void writeJobData(WriteMessage writeMessage) throws IOException;
 
     abstract void readJobResult(ReadMessage readMessage) throws ClassNotFoundException, IOException;
-
+    
     @Override
     public String toString() {
         return "AmuseJob [jobManager=" + jobManager + ", description=" + description + ", state=" + state + ", target=" + target

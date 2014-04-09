@@ -49,16 +49,13 @@ public class JobSet extends Thread {
     //all pending jobs.
     private final LinkedList<AmuseJob> queue;
 
-    private final List<WorkerJob> workers;
-    private final List<ScriptJob> scriptJobs;
-    private final List<FunctionJob> functionJobs;
+    //all pending/running/completed jobs.
+    private final List<AmuseJob> jobs;
 
     private final PilotSet pilots;
 
     public JobSet(String serverAddress, PilotSet pilots, File tmpDir) throws DistributedAmuseException {
-        workers = new ArrayList<WorkerJob>();
-        scriptJobs = new ArrayList<ScriptJob>();
-        functionJobs = new ArrayList<FunctionJob>();
+        jobs = new ArrayList<AmuseJob>();
 
         this.pilots = pilots;
 
@@ -95,19 +92,7 @@ public class JobSet extends Thread {
     }
 
     public synchronized AmuseJob getJob(int jobID) throws DistributedAmuseException {
-        for (AmuseJob job : workers) {
-            if (jobID == job.getJobID()) {
-                return job;
-            }
-        }
-
-        for (AmuseJob job : functionJobs) {
-            if (jobID == job.getJobID()) {
-                return job;
-            }
-        }
-
-        for (AmuseJob job : scriptJobs) {
+        for (AmuseJob job : jobs) {
             if (jobID == job.getJobID()) {
                 return job;
             }
@@ -118,10 +103,10 @@ public class JobSet extends Thread {
 
     //FUNCTION JOBS
 
-    private synchronized void addFunctionJob(FunctionJob job) {
+    private synchronized void addJob(AmuseJob job) {
         queue.add(job);
 
-        functionJobs.add(job);
+        jobs.add(job);
 
         //run scheduler thread now
         notifyAll();
@@ -130,71 +115,43 @@ public class JobSet extends Thread {
     public FunctionJob submitFunctionJob(FunctionJobDescription description) throws DistributedAmuseException {
         FunctionJob result = new FunctionJob(description, ibis, this);
 
-        addFunctionJob(result);
+        addJob(result);
 
         return result;
-    }
-
-    public synchronized FunctionJob[] getFunctionJobs() {
-        return functionJobs.toArray(new FunctionJob[0]);
-    }
-
-    public synchronized FunctionJob getFunctionJob(int jobID) throws DistributedAmuseException {
-        for (FunctionJob job : functionJobs) {
-            if (jobID == job.getJobID()) {
-                return job;
-            }
-        }
-        throw new DistributedAmuseException("Unknown job: " + jobID);
-    }
-
-    public void removeFunctionJob(int jobID) throws DistributedAmuseException {
-        for (int i = 0; i < functionJobs.size(); i++) {
-            if (functionJobs.get(i).getJobID() == jobID) {
-                functionJobs.remove(i);
-                return;
-            }
-        }
-        throw new DistributedAmuseException("Unknown job: " + jobID);
     }
 
     //SCRIPT JOBS
 
-    private synchronized void addScriptJob(ScriptJob job) {
-        queue.add(job);
-
-        scriptJobs.add(job);
-
-        //run scheduler thread now
-        notifyAll();
-    }
-
     public ScriptJob submitScriptJob(ScriptJobDescription description) throws DistributedAmuseException {
         ScriptJob result = new ScriptJob(description, ibis, this);
 
-        addScriptJob(result);
+        addJob(result);
 
         return result;
 
     }
+    
+    public WorkerJob submitWorkerJob(WorkerJobDescription jobDescription) throws DistributedAmuseException {
+        WorkerJob result = new WorkerJob(jobDescription, ibis, this);
 
-    public synchronized ScriptJob[] getScriptJobs() {
-        return scriptJobs.toArray(new ScriptJob[0]);
+        addJob(result);
+
+        return result;
     }
 
-    public synchronized ScriptJob getScriptJob(int jobID) throws DistributedAmuseException {
-        for (ScriptJob job : scriptJobs) {
-            if (jobID == job.getJobID()) {
-                return job;
+    public synchronized void removeJob(int jobID) throws DistributedAmuseException {
+        //remove from queue
+        for (int i = 0; i < queue.size(); i++) {
+            if (queue.get(i).getJobID() == jobID) {
+                queue.remove(i);
             }
         }
-        throw new DistributedAmuseException("Unknown job: " + jobID);
-    }
-
-    public synchronized void removeScriptJob(int jobID) throws DistributedAmuseException {
-        for (int i = 0; i < scriptJobs.size(); i++) {
-            if (scriptJobs.get(i).getJobID() == jobID) {
-                scriptJobs.remove(i);
+        
+        for (int i = 0; i < jobs.size(); i++) {
+            if (jobs.get(i).getJobID() == jobID) {
+                AmuseJob result = jobs.remove(i);
+                
+                result.cancel();
                 return;
             }
         }
@@ -202,44 +159,12 @@ public class JobSet extends Thread {
     }
 
     private synchronized boolean allScriptJobsDone() {
-        for (ScriptJob job : scriptJobs) {
-            if (!job.isDone()) {
+        for (AmuseJob job : jobs) {
+            if (job.getType() == "script" && !job.isDone()) {
                 return false;
             }
         }
         return true;
-    }
-
-    //WORKER JOBS
-
-    private synchronized void addWorkerJob(WorkerJob job) {
-        queue.add(job);
-
-        workers.add(job);
-
-        //run scheduler thread now
-        notifyAll();
-    }
-
-    public WorkerJob submitWorkerJob(WorkerJobDescription jobDescription) throws DistributedAmuseException {
-        WorkerJob result = new WorkerJob(jobDescription, ibis, this);
-
-        addWorkerJob(result);
-
-        return result;
-    }
-
-    public synchronized WorkerJob[] getWorkerJobs() {
-        return workers.toArray(new WorkerJob[0]);
-    }
-
-    public synchronized WorkerJob getWorkerJob(int jobID) throws DistributedAmuseException {
-        for (WorkerJob job : workers) {
-            if (jobID == job.getJobID()) {
-                return job;
-            }
-        }
-        throw new DistributedAmuseException("Unknown job: " + jobID);
     }
 
     public synchronized void waitForScriptJobs() throws DistributedAmuseException {
@@ -255,28 +180,14 @@ public class JobSet extends Thread {
     public void end() {
         this.interrupt();
 
-        for (AmuseJob job : getWorkerJobs()) {
+        for (AmuseJob job : getJobs()) {
             try {
                 job.cancel();
             } catch (DistributedAmuseException e) {
                 logger.error("Failed to cancel job: " + job, e);
             }
         }
-        for (AmuseJob job : getScriptJobs()) {
-            try {
-                job.cancel();
-            } catch (DistributedAmuseException e) {
-                logger.error("Failed to cancel job: " + job, e);
-            }
-        }
-        for (AmuseJob job : getFunctionJobs()) {
-            try {
-                job.cancel();
-            } catch (DistributedAmuseException e) {
-                logger.error("Failed to cancel job: " + job, e);
-            }
-        }
-
+        
         try {
             logger.debug("Terminating ibis pool");
             ibis.registry().terminate();
@@ -289,6 +200,10 @@ public class JobSet extends Thread {
         } catch (IOException e) {
             logger.error("Failed to end ibis", e);
         }
+    }
+
+    public synchronized AmuseJob[] getJobs() {
+        return jobs.toArray(new AmuseJob[jobs.size()]);
     }
 
     /**
@@ -304,6 +219,7 @@ public class JobSet extends Thread {
     @Override
     public synchronized void run() {
         while (true) {
+            int nodesInQueue = 0;
             //find nodes for jobs to run on
             Iterator<AmuseJob> iterator = queue.iterator();
             while (iterator.hasNext()) {
@@ -318,12 +234,18 @@ public class JobSet extends Thread {
                         job.start(target);
                         //remove this job from the queue
                         iterator.remove();
+                    } else {
+                        nodesInQueue++;
                     }
                 } else {
                     //remove this job from the queue
                     iterator.remove();
                 }
 
+            }
+
+            if (nodesInQueue > 0) {
+                logger.info("Now " + nodesInQueue + " waiting in queue");
             }
 
             try {
@@ -335,17 +257,47 @@ public class JobSet extends Thread {
         }
     }
 
-    public synchronized int getWorkerJobCount() {
-        return workers.size();
-    }
-
-    public synchronized int[] getWorkerIDs() {
-        int[] result = new int[workers.size()];
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = workers.get(i).getJobID();
+    public synchronized List<Integer> getWorkerIDs() {
+        ArrayList<Integer> result = new ArrayList<Integer>();
+        
+        for (AmuseJob job: getJobs()) {
+            if (job.getType() == "worker") {
+                result.add(job.getJobID());
+            }
         }
+        
         return result;
     }
+
+    public FunctionJob getFunctionJob(int jobID) throws DistributedAmuseException {
+        AmuseJob result = getJob(jobID);
+        
+        if (result.getType() != "function") {
+            throw new DistributedAmuseException("Found job not a function job, instead found type " + result.getType()); 
+        }
+        
+        return (FunctionJob) result;
+    }
+
+    public ScriptJob getScriptJob(int jobID) throws DistributedAmuseException {
+        AmuseJob result = getJob(jobID);
+        
+        if (result.getType() != "function") {
+            throw new DistributedAmuseException("Found job not a function job, instead found type " + result.getType()); 
+        }
+        
+        return (ScriptJob) result;
+    }
+    
+    public WorkerJob getWorkerJob(int jobID) throws DistributedAmuseException {
+        AmuseJob result = getJob(jobID);
+        
+        if (result.getType() != "function") {
+            throw new DistributedAmuseException("Found job not a function job, instead found type " + result.getType()); 
+        }
+        
+        return (WorkerJob) result;
+    }
+
 
 }

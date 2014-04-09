@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.util.List;
 import java.util.UUID;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.jobs.AmuseJob;
 import nl.esciencecenter.amuse.distributed.jobs.AmuseJobDescription;
 import nl.esciencecenter.amuse.distributed.jobs.FunctionJob;
 import nl.esciencecenter.amuse.distributed.jobs.FunctionJobDescription;
@@ -273,7 +275,7 @@ public class Code implements CodeInterface {
                 node_count[i] = pilot.getNodeCount();
                 time[i] = pilot.getTimeMinutes();
                 slots_per_node[i] = pilot.getSlotsPerNode();
-                node_label[i] = pilot.getNodeLabel();
+                node_label[i] = pilot.getLabel();
                 options[i] = pilot.getOptions();
                 status[i] = pilot.getStateString();
             }
@@ -415,12 +417,8 @@ public class Code implements CodeInterface {
     public int delete_script_job(int[] job_id, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                //first cancel job
-                ScriptJob job = distributedAmuse.jobs().getScriptJob(job_id[i]);
-                job.cancel();
-
-                //then delete from manager list
-                distributedAmuse.jobs().removeScriptJob(job_id[i]);
+                //Delete from manager list. Will also cancel job
+                distributedAmuse.jobs().removeJob(job_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -515,12 +513,8 @@ public class Code implements CodeInterface {
     public int delete_function_job(int[] job_id, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                //first cancel job
-                FunctionJob job = distributedAmuse.jobs().getFunctionJob(job_id[i]);
-                job.cancel();
-
-                //then delete from manager list
-                distributedAmuse.jobs().removeFunctionJob(job_id[i]);
+                //delete from manager list, will also cancel job if needed
+                distributedAmuse.jobs().removeJob(job_id[i]);
             }
             return 0;
         } catch (DistributedAmuseException e) {
@@ -530,7 +524,7 @@ public class Code implements CodeInterface {
     }
 
     public int get_number_of_workers(int[] number_of_workers) {
-        number_of_workers[0] = distributedAmuse.jobs().getWorkerJobCount();
+        number_of_workers[0] = distributedAmuse.jobs().getWorkerIDs().size();
         return 0;
     }
 
@@ -542,15 +536,16 @@ public class Code implements CodeInterface {
      * @return
      */
     public int get_worker_ids(int[] index, int[] id_of_the_worker, int count) {
-        if (distributedAmuse.jobs().getWorkerJobCount() != count) {
+        List<Integer> workerIDs = distributedAmuse.jobs().getWorkerIDs();
+        
+        if (workerIDs.size() != count) {
             reportError("Error on getting worker IDs: number of indexes requested " + count
-                    + " does not match number of workers " + distributedAmuse.jobs().getWorkerJobCount(), null);
+                    + " does not match number of workers " + workerIDs.size(), null);
             return -10;
         }
-
-        int[] workerIDs = distributedAmuse.jobs().getWorkerIDs();
+        
         for (int i = 0; i < count; i++) {
-            id_of_the_worker[i] = workerIDs[i];
+            id_of_the_worker[i] = workerIDs.get(i);
         }
         return 0;
     }
