@@ -828,12 +828,14 @@ class PythonCodeInterface(CodeInterface):
             if self.implementation_factory is None:
                 raise exceptions.CodeException("Must provide the name of a worker script or the implementation_factory class")
             name_of_the_worker = self.make_executable_script_for(self.implementation_factory)
+            if not options.setdefault("dynamic_python_code",True):
+                raise exceptions.CodeException("dynamic code set to false, but python code generated")
         
         if self.use_python_interpreter:
             CodeInterface._start(self, name_of_the_worker = name_of_the_worker, interpreter_executable = self.python_interpreter, **options)
         else:
             CodeInterface._start(self, name_of_the_worker = name_of_the_worker, **options)
-        
+
     def _check_if_worker_is_up_to_date(self):
         pass
         
