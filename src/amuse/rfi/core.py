@@ -818,7 +818,7 @@ class PythonCodeInterface(CodeInterface):
     
     def __init__(self, implementation_factory = None, name_of_the_worker = None, **options):
         if self.channel_type == 'distributed':
-            raise exceptions.AmuseException("Distributed channel not supported by PythonCodeInterface")
+            print "Warning! Distributed channel not fully supported by PythonCodeInterface yet"
         self.implementation_factory = implementation_factory
         
         CodeInterface.__init__(self, name_of_the_worker, **options)

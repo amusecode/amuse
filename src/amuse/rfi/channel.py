@@ -2034,7 +2034,7 @@ class DistributedChannel(AbstractMessageChannel):
         return instance._stderrHandler.id
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None,
-                   distributedInstance=None, **options):
+                   distributedInstance=None, dynamic_python_code=False, **options):
         AbstractMessageChannel.__init__(self, **options)
         
         if distributedInstance is None:
@@ -2044,7 +2044,7 @@ class DistributedChannel(AbstractMessageChannel):
         else:
             self.distributedInstance=distributedInstance
         
-        #logger.setLevel(logging.INFO)
+        #logger.setLevel(logging.DEBUG)
         
         logger.info("initializing DistributedChannel with options %s", options)
        
@@ -2052,6 +2052,8 @@ class DistributedChannel(AbstractMessageChannel):
        
         self.name_of_the_worker = name_of_the_worker
         self.interpreter_executable = interpreter_executable
+        
+        self.dynamic_python_code = dynamic_python_code
         
         if self.number_of_workers == 0:
             self.number_of_workers = 1
@@ -2085,9 +2087,11 @@ class DistributedChannel(AbstractMessageChannel):
         
         self.executable = os.path.relpath(self.full_name_of_the_worker, global_options.amuse_rootdirectory)
             
-        self.worker_dir = os.path.dirname(self.executable)
+        self.worker_dir = os.path.dirname(self.full_name_of_the_worker)
             
-        logger.debug("name of the worker is %s", self.name_of_the_worker)
+        logger.debug("executable is %s", self.executable)
+        logger.debug("full name of the worker is %s", self.full_name_of_the_worker)
+        
         logger.debug("worker dir is %s", self.worker_dir)
             
         self._is_inuse = False
@@ -2135,7 +2139,7 @@ class DistributedChannel(AbstractMessageChannel):
         
         self.socket.sendall('TYPE_WORKER'.encode('utf-8'))
         
-        arguments = {'string': [self.executable, self.redirect_stdout_file, self.redirect_stderr_file, self.label], 'int32': [self.number_of_workers, self.number_of_threads]}
+        arguments = {'string': [self.executable, self.redirect_stdout_file, self.redirect_stderr_file, self.label, self.worker_dir], 'int32': [self.number_of_workers, self.number_of_threads], 'bool': [ self.dynamic_python_code]}
         
         message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments);
 
