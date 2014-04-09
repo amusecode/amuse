@@ -20,8 +20,11 @@ import ibis.ipl.ReadMessage;
 import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
+import nl.esciencecenter.amuse.distributed.util.FileTransfers;
 
 /**
  * @author Niels Drost
@@ -42,7 +45,14 @@ public class WorkerJob extends AmuseJob {
 
     @Override
     void writeJobData(WriteMessage writeMessage) throws IOException {
-        //NOTHING, NO DATA ATTACHED TO WORKER JOB
+        if (description.isDynamicPythonCode()) {
+            Path workerDir = Paths.get(description.getWorkerDir());
+            
+            Path executablePath = Paths.get(description.getExecutable());
+            String executableFileName = executablePath.getFileName().toString();
+            
+            FileTransfers.writeFilesInDirectory(workerDir, writeMessage, executableFileName + "|.*py");
+        }
     }
 
     /**

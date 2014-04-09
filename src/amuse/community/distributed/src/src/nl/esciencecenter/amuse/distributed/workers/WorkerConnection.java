@@ -109,17 +109,25 @@ public class WorkerConnection extends Thread {
             stderrFile = null;
         }
 
-        String nodeLabel = initRequest.getString(3);
+        String label = initRequest.getString(3);
 
-        if (nodeLabel.equals("")) {
-            nodeLabel = null;
+        if (label.equals("")) {
+            label = null;
+        }
+        
+        String workerDir = initRequest.getString(4);
+
+        if (workerDir.equals("")) {
+            workerDir = null;
         }
 
         int nrOfWorkers = initRequest.getInteger(0);
         int nrOfThreads = initRequest.getInteger(1);
+        
+        boolean dynamicPythonCode = initRequest.getBoolean(0);
 
         //description of the worker, used for both the scheduler and the code proxy to start the worker properly
-        workerDescription = new WorkerJobDescription(stdoutFile, stderrFile, nodeLabel, executable, nrOfWorkers, nrOfThreads);
+        workerDescription = new WorkerJobDescription(stdoutFile, stderrFile, label, executable, workerDir, nrOfWorkers, nrOfThreads, dynamicPythonCode);
 
         // initialize ibis ports
         receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, Integer.toString(id));

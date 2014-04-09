@@ -28,22 +28,35 @@ public class WorkerJobDescription extends AmuseJobDescription implements Seriali
     private static final long serialVersionUID = 1L;
 
     private final String executable;
+    private final String workerDir;
+    
     private final int nrOfWorkers;
     private final int nrOfThreads;
+    private final boolean dynamicPythonCode;
 
-    public WorkerJobDescription(String stdoutFile, String stderrFile, String nodeLabel, String executable, int nrOfWorkers,
-            int nrOfThreads) {
+    public WorkerJobDescription(String stdoutFile, String stderrFile, String nodeLabel, String executable, String workerDir, int nrOfWorkers,
+            int nrOfThreads, boolean dynamicPythonCode) {
         super(stdoutFile, stderrFile, nodeLabel);
         this.executable = executable;
+        this.workerDir = workerDir;
         this.nrOfWorkers = nrOfWorkers;
         this.nrOfThreads = nrOfThreads;
+        this.dynamicPythonCode = dynamicPythonCode;
+    }
+    
+    public boolean isDynamicPythonCode() {
+        return dynamicPythonCode;
     }
 
     /**
-     * Executable relative to AMUSE distribution root.
+     * Executable relative to AMUSE distribution root, absolute path in filesystem, or name of dynamic python code script
      */
     public String getExecutable() {
         return executable;
+    }
+    
+    public String getWorkerDir() {
+        return workerDir;
     }
 
     public int getNrOfWorkers() {
@@ -67,9 +80,9 @@ public class WorkerJobDescription extends AmuseJobDescription implements Seriali
     @Override
     public String toString() {
         return "WorkerJobDescription [executable=" + executable + ", nrOfWorkers=" + nrOfWorkers + ", nrOfThreads=" + nrOfThreads
-                + ", ID=" + id + ", stdoutFile=" + stdoutFile + ", stderrFile=" + stderrFile + ", label=" + label + "]";
+                + ", dynamicPythonCode=" + dynamicPythonCode + ", id=" + id + ", stdoutFile=" + stdoutFile + ", stderrFile="
+                + stderrFile + ", label=" + label + "]";
     }
-
   
 
 }

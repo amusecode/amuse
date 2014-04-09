@@ -113,6 +113,28 @@ public class FileTransfers {
         writeMessage.writeLong(-1);
     }
 
+    public static void writeFilesInDirectory(Path directory, WriteMessage writeMessage, String filePattern) throws IOException {
+        logger.debug("Writing directory {}", directory);
+
+        ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
+
+        if (!Files.isDirectory(directory)) {
+            throw new IOException("Directory \"" + directory + "\" not found");
+        }
+
+        //write all files in this directory
+        for (Path child : Files.newDirectoryStream(directory)) {
+            if (Files.isRegularFile(child) && child.getFileName().toString().matches(filePattern)) {
+                writeFile(child, directory, writeMessage, buffer);
+            }
+        }
+
+        //signal this was the last file
+        writeMessage.writeBoolean(false);
+        writeMessage.writeString("end");
+        writeMessage.writeLong(-1);
+    }
+
     private static void readFile(Path path, long size, ReadMessage readMessage, ByteBuffer buffer) throws IOException {
         logger.debug("Reading file with path {} and size {}", path, size);
 

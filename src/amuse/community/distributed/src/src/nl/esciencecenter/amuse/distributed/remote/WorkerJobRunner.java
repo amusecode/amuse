@@ -29,7 +29,9 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
@@ -37,6 +39,7 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuse;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.jobs.AmuseJobDescription;
 import nl.esciencecenter.amuse.distributed.jobs.WorkerJobDescription;
+import nl.esciencecenter.amuse.distributed.util.FileTransfers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,18 +71,30 @@ public class WorkerJobRunner extends JobRunner {
     //connection back to AMUSE
 
     private ProcessBuilder createProcessBuilder(int localSocketPort) throws Exception {
+        Path executable;
 
-        File executable = new File(description.getExecutable());
+        if (description.isDynamicPythonCode()) {
+            //executable is the name of the worker without any directories.
+            executable = sandbox.resolve(Paths.get(description.getExecutable()).getFileName());
+            
+            if (!Files.exists(executable)) {
+                throw new DistributedAmuseException(executable + " does not exist");
+            }
+            
+        } else {
+            executable = Paths.get(description.getExecutable());
 
-        //make absolute by prepending with amuse home
-        if (!executable.isAbsolute()) {
-            executable = new File(amuseConfiguration.getAmuseHome(), description.getExecutable());
+            //make absolute by prepending with amuse home
+            if (!executable.isAbsolute()) {
+                executable = amuseConfiguration.getAmuseHome().toPath().resolve(executable);
+            }
+
+            if (!Files.isExecutable(executable)) {
+                throw new DistributedAmuseException(executable + " is not executable, or does not exist");
+            }
+
         }
-
-        if (!executable.canExecute()) {
-            throw new DistributedAmuseException(executable + " is not executable, or does not exist");
-        }
-
+        
         ProcessBuilder builder = new ProcessBuilder();
 
         builder.directory(sandbox.toFile());
@@ -93,6 +108,11 @@ public class WorkerJobRunner extends JobRunner {
             if (description.getNrOfWorkers() > 1) {
                 throw new DistributedAmuseException("multiple workers (" + description.getNrOfWorkers()
                         + ") requested, but MPI disabled in this AMUSE installation");
+            }
+
+            if (description.isDynamicPythonCode()) {
+                Path amuseScriptPath = amuseConfiguration.getAmuseHome().getAbsoluteFile().toPath().resolve("amuse.sh");
+                builder.command().add(amuseScriptPath.toString());
             }
 
             // executable and port options
@@ -112,6 +132,11 @@ public class WorkerJobRunner extends JobRunner {
             builder.command().add("-n");
             builder.command().add((Integer.toString(description.getNrOfWorkers())));
 
+            if (description.isDynamicPythonCode()) {
+                Path amuseScriptPath = amuseConfiguration.getAmuseHome().getAbsoluteFile().toPath().resolve("amuse.sh");
+                builder.command().add(amuseScriptPath.toString());
+            }
+            
             // executable and port options
             builder.command().add(executable.toString());
             builder.command().add(Integer.toString(localSocketPort));
@@ -170,6 +195,11 @@ public class WorkerJobRunner extends JobRunner {
         super(description, configuration, resultPort, ibis, tmpDir);
 
         this.description = (WorkerJobDescription) description;
+
+        if (this.description.isDynamicPythonCode()) {
+            FileTransfers.readDirectory(sandbox, message);
+        }
+
         message.finish();
 
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
