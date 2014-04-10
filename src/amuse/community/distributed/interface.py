@@ -143,8 +143,8 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("name", dtype='string', direction=function.IN)
         function.addParameter("location", dtype='string', direction=function.IN)
         function.addParameter("amuse_dir", dtype='string', direction=function.IN)
-        function.addParameter("gateway", dtype='string', direction=function.IN, default=[""])
-        function.addParameter("scheduler_type", dtype='string', direction=function.IN, default=["ssh"])
+        function.addParameter("gateway", dtype='string', direction=function.IN, default="")
+        function.addParameter("scheduler_type", dtype='string', direction=function.IN, default="ssh")
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -199,12 +199,12 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.must_handle_array = True
         function.addParameter('pilot_id', dtype='int32', direction=function.OUT)
         function.addParameter("resource_name", dtype='string', direction=function.IN)
-        function.addParameter("queue_name", dtype='string', direction=function.IN, default=[""])
+        function.addParameter("queue_name", dtype='string', direction=function.IN, default="")
         function.addParameter("node_count", dtype='int32', direction=function.IN, default = 1)
         function.addParameter("time", dtype='int32', direction=function.IN, unit = units.minute, default = 60)
         function.addParameter("slots_per_node", dtype='int32', direction=function.IN, default = 1)
-        function.addParameter("label", dtype='string', direction=function.IN, default = ["default"])
-        function.addParameter("options", dtype='string', direction=function.IN, default = [""])
+        function.addParameter("label", dtype='string', direction=function.IN, default = "default")
+        function.addParameter("options", dtype='string', direction=function.IN, default = "")
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
 
         function.result_type = 'int32'
@@ -275,12 +275,12 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('job_id', dtype='int32', direction=function.OUT)
         function.addParameter('script_dir', dtype='string', direction=function.IN)
         function.addParameter('script_name', dtype='string', direction=function.IN)
-        function.addParameter('arguments', dtype='string', direction=function.IN, default = [""])
-        function.addParameter('input_dir', dtype='string', direction=function.IN, default = [""])
-        function.addParameter('output_dir', dtype='string', direction=function.IN, default = [""])
-        function.addParameter('stdout_file', dtype='string', direction=function.IN, default = [""])
-        function.addParameter('stderr_file', dtype='string', direction=function.IN, default = [""])
-        function.addParameter("label", dtype='string', direction=function.IN, default = [""])
+        function.addParameter('arguments', dtype='string', direction=function.IN, default = "")
+        function.addParameter('input_dir', dtype='string', direction=function.IN, default = "")
+        function.addParameter('output_dir', dtype='string', direction=function.IN, default = "")
+        function.addParameter('stdout_file', dtype='string', direction=function.IN, default = "")
+        function.addParameter('stderr_file', dtype='string', direction=function.IN, default = "")
+        function.addParameter("label", dtype='string', direction=function.IN, default = "")
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -350,7 +350,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter('kwarguments', dtype='string', direction=function.IN)
         function.addParameter('stdout_file', dtype='string', direction=function.IN)
         function.addParameter('stderr_file', dtype='string', direction=function.IN)
-        function.addParameter("label", dtype='string', direction=function.IN, default = ["default"])
+        function.addParameter("label", dtype='string', direction=function.IN, default = "default")
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
