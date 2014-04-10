@@ -872,19 +872,24 @@ int get_timestep(int p,         /*!< particle index */
 #endif
       if(P[p].Type == 0)
 	printf("hydro-frc=(%g|%g|%g)\n", SphP[p].HydroAccel[0], SphP[p].HydroAccel[1], SphP[p].HydroAccel[2]);
+
+#ifdef TIMESTEP_UPDATE
       if(P[p].Type == 0)
 	printf("feedback-flag=%d feedback-frc=(%g|%g|%g)\n", SphP[p].FeedbackFlag,SphP[p].FeedAccel[0], SphP[p].FeedAccel[1], SphP[p].FeedAccel[2]);
+#endif
 
       fflush(stdout);
       //endrun(818);
       ZeroTimestepEncountered = 1; // Do not terminate the run, but let AMUSE handle it
       ti_step = 1;
     }
+#ifdef TIMESTEP_UPDATE
   if(P[p].Type == 0)
     if(SphP[p].FeedbackFlag<0 || SphP[p].FeedbackFlag>2)
       {
       printf("invalid feedback-flag, Task=%d p=%d Part-ID=%d\n", ThisTask, p, (int) P[p].ID);
     }
+#endif
   return ti_step;
 }
 
