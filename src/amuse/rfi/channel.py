@@ -603,7 +603,6 @@ class ClientSideMPIMessage(MPIMessage):
 MAPPING = {}
 
 def pack_array(array, length, dtype):
-    print dtype, array
     if dtype == 'string':
         if length == 1 and len(array) > 0 and isinstance(array[0], basestring):
             return array
