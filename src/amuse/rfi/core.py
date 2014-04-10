@@ -397,6 +397,9 @@ class LegacyFunctionSpecification(object):
         self.can_handle_array = False
         self.must_handle_array = False
         self.result_doc = ''
+
+    def set_name(self, name):
+        self.name = name
         
     def addParameter(self, name, dtype = 'i', direction = IN, description = "", default = None, unit = None):
         """

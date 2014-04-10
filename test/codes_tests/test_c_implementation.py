@@ -1,4 +1,5 @@
 from amuse.support.interface import InCodeComponentImplementation
+from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.support import exceptions
@@ -47,6 +48,11 @@ int echo_string(char * in, char ** out) {
     return 0;
 }
 
+int echo_string_int(int inint, char * in, char ** out) {
+    *out = in;
+    return 0;
+}
+
 int print_string(char * in) {
     fprintf(stdout, "%s\\n", in);
     return 0;
@@ -65,6 +71,7 @@ int echo_strings(char ** inout1, char ** inout2) {
     
     return 0;
 }
+
 
 void echo_array(int * in, int * out, int len) {
     int i = 0;
@@ -178,6 +185,17 @@ class ForTestingInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('string_inout1', dtype='string', direction=function.INOUT)
         function.addParameter('string_inout2', dtype='string', direction=function.INOUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+        
+        
+    @legacy_function
+    def echo_string_int():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('inint', dtype='int32', direction=function.IN)
+        function.addParameter('in', dtype='string', direction=function.IN, default = "echo")
+        function.addParameter('out', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         function.can_handle_array = True
         return function  
@@ -743,5 +761,49 @@ class TestCImplementationInterface(TestWithMPI):
         print t1 - t0, t3 - t2
         self.assertTrue((t3 - t2) > 0.25)
 
+
+    def test23(self):
+        
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string_int(1)
+        instance.stop()
+        self.assertEquals(error, 0)
+        self.assertEquals(out[0], "echo")
+
+    def test24(self):
+        
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string_int(1, "abc")
+        instance.stop()
+        self.assertEquals(error, 0)
+        self.assertEquals(out[0], "abc")
+
+    def test25(self):
+        
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string_int([1,2])
+        instance.stop()
+        self.assertEquals(error, 0)
+        self.assertEquals(out[0], "echo")
+        self.assertEquals(out[1], "echo")
+        
+    def test26(self):
+        
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string_int([1,2],["abc","def"])
+        instance.stop()
+        self.assertEquals(error, 0)
+        self.assertEquals(out[0], "abc")
+        self.assertEquals(out[1], "def")
+        
+        
+    def test27(self):
+        
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string_int([1,2], "abc")
+        instance.stop()
+        self.assertEquals(error, 0)
+        self.assertEquals(out[0], "abc")
+        self.assertEquals(out[1], "abc")
 
     
