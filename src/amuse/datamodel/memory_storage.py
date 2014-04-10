@@ -12,7 +12,8 @@ from amuse.support import exceptions
 try:
   from simple_hash import SimpleHash
   _SIMPLE_HASH_PRESENT_=True
-except:  
+except Exception as ex:
+  raise ex
   _SIMPLE_HASH_PRESENT_=False
 
 _PREFER_SORTED_KEYS_=True
@@ -607,7 +608,7 @@ class InMemoryStringAttribute(InMemoryUnitlessAttribute):
     
     def set_values(self, indices, values):
         if isinstance(values, basestring):
-            dtype=numpy.dtype(self.values.dtype.kind+str(len(values)))
+            dtype=numpy.dtype(self.values.dtype.kind+str(max(1,len(values))))
         else:
             values_as_array = numpy.asarray(values, dtype=numpy.dtype(self.values.dtype.kind))
             dtype = values_as_array.dtype
