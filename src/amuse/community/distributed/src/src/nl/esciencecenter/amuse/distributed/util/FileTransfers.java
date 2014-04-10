@@ -62,7 +62,7 @@ public class FileTransfers {
                 }
 
                 buffer.flip();
-                writeMessage.writeByteBuffer(buffer);
+                writeMessage.writeArray(buffer.array(), 0, read);
                 writeMessage.flush();
             }
         }
@@ -143,13 +143,13 @@ public class FileTransfers {
             long bytesLeft = size;
 
             while (bytesLeft > 0) {
+                int bytesToRead = (int) Math.min(buffer.capacity(), bytesLeft);
+
+                readMessage.readArray(buffer.array(), 0, bytesToRead);
+
                 buffer.clear();
-                buffer.limit((int) Math.min(buffer.capacity(), bytesLeft));
-
-                readMessage.readByteBuffer(buffer);
-
-                buffer.flip();
-
+                buffer.limit(bytesToRead);
+                
                 while (buffer.hasRemaining()) {
                     int written = channel.write(buffer);
                     bytesLeft -= written;
