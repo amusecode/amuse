@@ -606,14 +606,16 @@ def pack_array(array, length, dtype):
     if dtype == 'string':
         if length == 1 and len(array) > 0 and isinstance(array[0], basestring):
             return array
-        if len(array) == 1 and isinstance(array[0], basestring):
-            result = []
-            for x in range(length):
-                result.append(array[0])
-            return result
         result = []
         for x in array:
-            result.extend(x)
+            if isinstance(x, basestring):
+                for _ in range(length):
+                    result.append(x)
+            elif len(x) == 1 and length > 1:
+                for _ in range(length):
+                    result.append(x[0])
+            else:
+                result.extend(x)
         return result
     else:
         total_length = length * len(array)

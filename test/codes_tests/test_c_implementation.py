@@ -53,6 +53,12 @@ int echo_string_int(int inint, char * in, char ** out) {
     return 0;
 }
 
+int echo_string_two(char * in1, char * in2, char ** out1, char ** out2) {
+    *out1 = in1;
+    *out2 = in2;
+    return 0;
+}
+
 int print_string(char * in) {
     fprintf(stdout, "%s\\n", in);
     return 0;
@@ -199,6 +205,19 @@ class ForTestingInterface(CodeInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function  
+        
+    @legacy_function
+    def echo_string_two():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('in1', dtype='string', direction=function.IN)
+        function.addParameter('in2', dtype='string', direction=function.IN, default = "echo")
+        function.addParameter('out1', dtype='string', direction=function.OUT)
+        function.addParameter('out2', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+        
+        
         
     @legacy_function
     def echo_array():
@@ -805,5 +824,15 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertEquals(error, 0)
         self.assertEquals(out[0], "abc")
         self.assertEquals(out[1], "abc")
+        
+    def test28(self):
+        instance = ForTestingInterface(self.exefile)
+        out1, out2, error = instance.echo_string_two(["one","two"], "three")
+        instance.stop()
+        self.assertEquals(error, 0)
+        self.assertEquals(out1[0], "one")
+        self.assertEquals(out1[1], "two")
+        self.assertEquals(out2[0], "three")
+        self.assertEquals(out2[1], "three")
 
     
