@@ -422,12 +422,40 @@ int get_total_radius(double *r)
 
 int get_center_of_mass_position(double *x,double *y,double *z)
 {
-  return -2;
+  int p;
+  double m=0;
+  *x=0;*y=0;*z=0;
+  for(p=0;p<mainsys.n;p++) 
+  {
+    m+=mainsys.part[p].mass;
+    *x+=mainsys.part[p].mass*mainsys.part[p].pos[0];
+    *y+=mainsys.part[p].mass*mainsys.part[p].pos[1];
+    *z+=mainsys.part[p].mass*mainsys.part[p].pos[2];
+  }
+  if(m>0)
+  {
+    *x/=m;*y/=m;*z/=m;
+  }
+  return 0;
 }
 
 int get_center_of_mass_velocity(double *vx,double *vy,double *vz)
 {
-  return -2;
+  int p;
+  double m=0;
+  *vx=0;*vy=0;*vz=0;
+  for(p=0;p<mainsys.n;p++) 
+  {
+    m+=mainsys.part[p].mass;
+    *vx+=mainsys.part[p].mass*mainsys.part[p].vel[0];
+    *vy+=mainsys.part[p].mass*mainsys.part[p].vel[1];
+    *vz+=mainsys.part[p].mass*mainsys.part[p].vel[2];
+  }
+  if(m>0)
+  {
+    *vx/=m;*vy/=m;*vz/=m;
+  }
+  return 0;
 }
 
 int recommit_parameters()

@@ -597,12 +597,15 @@ class TestHuayno(TestWithMPI):
         conv=nbody_system.nbody_to_si(4.| units.MSun, 5.|units.AU)
         orbiters=plummer.new_plummer_model(N,conv)
         sun=datamodel.Particle(mass=1.|units.MSun)
-        sun.position=[0,0,0]|units.AU
-        sun.velocity=[0,0,0]|units.kms
+        sun.position=[12.3,1.,-.2]|units.AU
+        sun.velocity=[10,50.,-20.]|units.kms
         orbiters.mass*=0.
         
         a0,eps0=elements(sun.mass,orbiters.x,orbiters.y,orbiters.z,
                       orbiters.vx,orbiters.vy,orbiters.vz)
+
+        orbiters.position+=sun.position
+        orbiters.velocity+=sun.velocity
 
         pos=dict()
         for inttype in [20,14]:
@@ -610,7 +613,9 @@ class TestHuayno(TestWithMPI):
           code.parameters.inttype_parameter=inttype
           code.parameters.timestep_parameter=0.1
           code.particles.add_particle(sun)
-          orbiters2=code.particles.add_particles(orbiters)
+          orbiters2=code.particles.add_particles(orbiters).copy()
+          orbiters2.position-=sun.position
+          orbiters2.velocity-=sun.velocity
           code.evolve_model(tend)
           a,eps=elements(sun.mass,orbiters2.x,orbiters2.y,orbiters2.z,
                     orbiters2.vx,orbiters2.vy,orbiters2.vz)
@@ -647,7 +652,7 @@ class TestHuayno(TestWithMPI):
           code=Huayno(conv,redirection="none")
           code.parameters.inttype_parameter=inttype
           code.parameters.timestep_parameter=0.1
-          code.parameters.epsilon_squared=(5 | units.AU)**2
+          code.parameters.epsilon_squared=(5. | units.AU)**2
           code.particles.add_particle(sun)
           orbiters2=code.particles.add_particles(orbiters)
           code.evolve_model(tend)
@@ -655,9 +660,9 @@ class TestHuayno(TestWithMPI):
                     orbiters2.vx,orbiters2.vy,orbiters2.vz)
 
           pos[inttype]=[orbiters2.x.value_in(units.AU),orbiters2.y.value_in(units.AU),orbiters2.z.value_in(units.AU)]
-        self.assertAlmostEqual(pos[20][0],pos[14][0],6)
-        self.assertAlmostEqual(pos[20][1],pos[14][1],6)
-        self.assertAlmostEqual(pos[20][2],pos[14][2],6)
+        self.assertAlmostRelativeEqual(pos[20][0],pos[14][0],6)
+        self.assertAlmostRelativeEqual(pos[20][1],pos[14][1],6)
+        self.assertAlmostRelativeEqual(pos[20][2],pos[14][2],6)
 
 
     def test26(self):
@@ -721,4 +726,13 @@ class TestHuayno(TestWithMPI):
         instance.stop()
 
         self.assertAlmostEqual(positions,expected_positions)
+
+    def test28(self):
+        particles = plummer.new_plummer_model(31)
+
+        instance = Huayno()
+        instance.particles.add_particles(particles)        
+        self.assertAlmostEqual(particles.total_mass(),instance.total_mass)
+        self.assertAlmostEqual(particles.center_of_mass(),instance.center_of_mass_position)
+        self.assertAlmostEqual(particles.center_of_mass_velocity(),instance.center_of_mass_velocity)
 
