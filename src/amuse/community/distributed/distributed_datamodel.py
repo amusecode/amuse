@@ -23,6 +23,8 @@ class Resources(Particles):
     
     add_resource = Particles.add_particle
     add_resources = Particles.add_particles
+    remove_resource = Particles.remove_particle
+    remove_resources = Particles.remove_particles
 
 
 class Resource(Particle):
@@ -69,6 +71,8 @@ class Pilots(Particles):
     
     add_pilot = Particles.add_particle
     add_pilots = Particles.add_particles
+    remove_pilot = Particles.remove_particle
+    remove_pilots = Particles.remove_particles
 
 
 class Pilot(Particle):
@@ -113,6 +117,10 @@ class ScriptJobs(Particles):
     
     submit_script_job = Particles.add_particle
     submit_script_jobs = Particles.add_particles
+    cancel_script_job = Particles.remove_particle
+    cancel_script_jobs = Particles.remove_particles
+    remove_script_job = Particles.remove_particle
+    remove_script_jobs = Particles.remove_particles
 
 class ScriptJob(Particle):
     
@@ -155,6 +163,10 @@ class FunctionJobs(Particles):
     
     submit_function_job = Particles.add_particle
     submit_function_jobs = Particles.add_particles
+    cancel_function_job = Particles.remove_particle
+    cancel_function_jobs = Particles.remove_particles
+    remove_function_job = Particles.remove_particle
+    remove_function_jobs = Particles.remove_particles
 
 class FunctionJob(Particle):
     
