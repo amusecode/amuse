@@ -126,6 +126,7 @@ class AbstractHandleEncounter(object):
         
         self.particles_in_encounter = Particles()
         self.particles_close_to_encounter = Particles()
+        self.multiples_in_encounter = Particles()
         
         self.all_particles_in_encounter = ParticlesSuperset([self.particles_in_encounter, self.particles_close_to_encounter])
         
@@ -136,6 +137,7 @@ class AbstractHandleEncounter(object):
         self.new_multiples = Particles()
         
         self.updated_binaries = Particles()
+        self.updated_multiples = Particles()
         
         self.dissolved_binaries = Particles()
         self.dissolved_multiples = Particles()
@@ -335,7 +337,7 @@ class AbstractHandleEncounter(object):
             result.position += particle.position
             result.velocity += particle.velocity
             
-            self.dissolved_multiples.add_particle(multiple)
+            self.multiples_in_encounter.add_particle(multiple)
             return result
         else:
             return particle.as_set()
@@ -505,28 +507,17 @@ class AbstractHandleEncounter(object):
             2. singles
         """
         tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
-        # TODO it would be nice to update a multiple
-        # instead of dissolving and creating it
-        # as we do now, we will assume that a multiple with the same
-        # singles in it is the same multiple
-        #    for multiple in self.dissolved_multiples:
-        #       look_up_table[keys of all singles] = multiple
         
+        multiple_lookup_table = {}
+        for multiple in self.existing_multiples:
+            for particle in self.singles_of_a_multiple(multiple):
+                multiple_lookup_table[particle.key] = multiple
+                
         binary_lookup_table = {}
         for binary in self.existing_binaries:
             binary_lookup_table[binary.child1.key] = binary
             binary_lookup_table[binary.child2.key] = binary
             
-        
-        #multiples_lookup_table = {}
-        #for multiples in self.existing_multiples:
-        #    subtree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
-        #    tree = components.new_binary_tree_wrapper()
-        #    leaves = Particles()
-        #    for node in tree.iter_descendant_leafs():
-        #        leaves.add_particle(node.particle)
-        #    key = tuples(leaves.key.sorted())
-        #    multiples_lookup_table[key] = binary
         
         # a branch in the tree is a child node with two children
         for root_node in tree.iter_branches():
@@ -543,18 +534,53 @@ class AbstractHandleEncounter(object):
             multiple_components.position -= root_particle.position
             multiple_components.velocity -= root_particle.velocity
             
-            # create multiple partice and store it
-            multiple_particle = root_particle.copy()
+            existing_multiple = self.lookup_existing_multiple_with_components(multiple_components, multiple_lookup_table)
+            
+            # create or copy multiple particle and store it
+            if existing_multiple is None:
+                multiple_particle = root_particle.copy()
+                multiples_set = self.new_multiples
+            else:
+                multiple_particle = existing_multiple.copy()
+                multiple_particle.position = root_particle.position
+                multiple_particle.velocity = root_particle.velocity
+                multiple_particle.mass = root_particle.mass
+                multiples_set = self.updated_multiples
+                
             multiple_particle.child1 = None
             multiple_particle.child2 = None
             multiple_particle.components = multiple_components
             multiple_particle.radius = multiple_components.position.lengths().max() * 2
-            self.new_multiples.add_particle(multiple_particle)
+            multiples_set.add_particle(multiple_particle)
         
+        for multiple in self.multiples_in_encounter:
+            if not multiple in self.updated_multiples:
+                self.dissolved_multiples.add_particle(multiple)
+                
         # a leaft in the tree is a child node with no children
         for root_node in tree.iter_leafs():
             self.update_binaries_from_single(root_node.particle, binary_lookup_table)
             
+    def singles_of_a_multiple(self, multiple):
+        components = multiple.components
+        tree = components.new_binary_tree_wrapper()
+        singles = Particles()
+        for node in tree.iter_descendant_leafs():
+            singles.add_particle(node.particle)
+        return singles
+        
+    def lookup_existing_multiple_with_components(self, components, multiple_lookup_table):
+        found_multiple = None
+        if components[0].key in multiple_lookup_table:
+            found_multiple = multiple_lookup_table[components[0].key]
+        else:
+            return None
+        for x in components[1:]:
+            if x.key in multiple_lookup_table:
+                if not found_multiple == multiple_lookup_table[x.key]:
+                    return None
+        return found_multiple
+        
     def determine_captured_singles_from_the_multiples(self):
         for particle in self.particles_in_encounter:
             if particle in self.existing_multiples:
@@ -1378,6 +1404,7 @@ class Multiples(options.OptionalAttributes):
         updated_binaries = Particles()
         new_multiples = Particles()
         dissolved_multiples = Particles()
+        updated_multiples = Particles()
         
         for particles_in_encounter in encounters:
             self.handle_encounter(
@@ -1386,14 +1413,16 @@ class Multiples(options.OptionalAttributes):
                 dissolved_binaries,
                 updated_binaries,
                 new_multiples,
-                dissolved_multiples
+                dissolved_multiples,
+                updated_multiples
             )
     
         if self.stopping_conditions.multiples_change_detection.is_enabled():
             if len(new_multiples) > 0 or len(dissolved_multiples) > 0:
                 self.stopping_conditions.multiples_change_detection.set(
                     new_multiples,
-                    dissolved_multiples
+                    dissolved_multiples,
+                    updated_multiples
                 )
                 
         if self.stopping_conditions.binaries_change_detection.is_enabled():
@@ -1412,6 +1441,7 @@ class Multiples(options.OptionalAttributes):
             updated_binaries,
             new_multiples,
             dissolved_multiples,
+            updated_multiples
         ):
         code = self.handle_encounter_code
     
@@ -1428,11 +1458,16 @@ class Multiples(options.OptionalAttributes):
         print "handling encounter done"
         print "number of new multiples: ", len(code.new_multiples)
         print "number of dissolved multiples: ", len(code.dissolved_multiples)
+        print "number of updated multiples: ", len(code.updated_multiples)
         
         new_multiples.add_particles(code.new_multiples)
         
         dissolved_multiples.add_particles(code.dissolved_multiples)
         for x in dissolved_multiples:
+            x.components = x.components.copy()
+            
+        updated_multiples.add_particles(code.updated_multiples)
+        for x in updated_multiples:
             x.components = x.components.copy()
         
         
