@@ -521,12 +521,11 @@ class DistributedAmuse(CommonCode):
     def commit_parameters(self):
         self.parameters.send_not_set_parameters_to_code()
         self.parameters.send_cached_parameters_to_code()
+        
+        #initialization of java code
         self.overridden().commit_parameters()
 
         self.port = self.get_worker_port()
-
-        if  DistributedChannel.defaultDistributedInstance is None:
-          DistributedChannel.defaultDistributedInstance=self
         
         #logging.basicConfig(level=logging.DEBUG)
         
@@ -534,6 +533,17 @@ class DistributedAmuse(CommonCode):
 
 #        self.stdoutHandler = OutputHandler(sys.stdout, port)
 #        self.stderrHandler = OutputHandler(sys.stderr, port)
+
+        if DistributedChannel.defaultDistributedInstance is None:
+            DistributedChannel.defaultDistributedInstance=self
+
+        #add local resource            
+        resource = Resource()
+        resource.name = "local"
+        resource.location = ""
+        resource.amuse_dir = options.GlobalOptions.instance().amuse_rootdirectory
+        resource.scheduler_type = "local"
+        self.resources.add_resource(resource)
 
     def set_as_default(self):
         DistributedChannel.defaultDistributedInstance=self
@@ -558,8 +568,7 @@ class DistributedAmuse(CommonCode):
         object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
         object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
         object.add_method('RUN', 'before_get_parameter')
-        
-        
+
         object.add_method('RUN', 'new_resource')
         object.add_method('RUN', 'new_pilot')
         object.add_method('RUN', 'submit_script_job')
@@ -620,7 +629,7 @@ class DistributedAmuse(CommonCode):
 
     
     def define_particle_sets(self, object):
-        object.define_super_set('items', ['resources', 'pilots', 'script_jobs', 'function_jobs', '_workers'])
+        object.define_super_set('items', ['_resources', 'pilots', 'script_jobs', 'function_jobs', '_workers'])
         
         #resources
         object.define_set('resources', 'resource_id')

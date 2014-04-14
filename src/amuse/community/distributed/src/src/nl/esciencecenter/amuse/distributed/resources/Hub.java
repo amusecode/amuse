@@ -38,6 +38,8 @@ public class Hub {
     private static JavaJobDescription createJobDesciption(ResourceManager resource, String[] hubAddresses)
             throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
+        
+        result.setQueueName("unlimited");
 
         result.setInteractive(true);
 

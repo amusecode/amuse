@@ -126,10 +126,6 @@ public class Code implements CodeInterface {
         return 0;
     }
 
-    /**
-     * @param start_hubs
-     * @return
-     */
     @Override
     public int get_start_hubs(int[] start_hubs) {
         start_hubs[0] = booleanToInteger(this.startHubs);
@@ -183,7 +179,19 @@ public class Code implements CodeInterface {
             String[] scheduler_type, int count) {
         try {
             for (int i = 0; i < count; i++) {
-                ResourceManager resource = distributedAmuse.resources().newResource(name[i], location[i], gateway[i],
+                String locationString = location[i];
+                
+                if (locationString.isEmpty()) {
+                    locationString = null;
+                }
+                
+                String gatewayString = gateway[i];
+                
+                if (gatewayString.isEmpty()) {
+                    gatewayString = null;
+                }
+                
+                ResourceManager resource = distributedAmuse.resources().newResource(name[i], locationString, gatewayString,
                         amuse_dir[i], scheduler_type[i]);
                 resource_id[i] = resource.getId();
             }
@@ -247,11 +255,11 @@ public class Code implements CodeInterface {
 
     @Override
     public int new_pilot(int[] pilot_id, String[] resource_name, String[] queue_name, int[] node_count, int[] time_minutes,
-            int[] slots, String[] node_label, String[] options, int count) {
+            int[] slots, String[] label, String[] options, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 PilotManager result = distributedAmuse.pilots().newPilot(resource_name[i], queue_name[i], node_count[i],
-                        time_minutes[i], slots[i], node_label[i], options[i]);
+                        time_minutes[i], slots[i], label[i], options[i]);
 
                 pilot_id[i] = result.getID();
             }

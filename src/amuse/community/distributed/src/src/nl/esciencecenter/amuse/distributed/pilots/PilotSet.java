@@ -78,9 +78,6 @@ public class PilotSet {
 
         pilots.add(result);
 
-        //trigger an update in the job statuses
-        jobStatusMonitor.nudge();
-
         return result;
     }
 
@@ -127,8 +124,8 @@ public class PilotSet {
             } else {
                 result = false;
             }
-            logger.info("Now {} out of {} pilots running.", running, pilots.length);
         }
+        logger.debug("Now {} out of {} pilots running.", running, pilots.length);
         return result;
     }
 
@@ -137,7 +134,7 @@ public class PilotSet {
     }
 
     public void waitForAllPilots() throws DistributedAmuseException {
-        logger.debug("waiting for all reservations to start");
+        logger.info("Waiting for all {} pilots to start", getPilots().length);
 
         long timeout = 100; //ms
 

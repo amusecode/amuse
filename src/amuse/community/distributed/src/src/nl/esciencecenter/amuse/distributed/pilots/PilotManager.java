@@ -259,8 +259,11 @@ public class PilotManager {
             logger.debug("starting reservation using scheduler {}", scheduler);
 
             this.xenonJob = xenon.jobs().submitJob(scheduler, jobDescription);
-
+            
             logger.debug("submitted reservation: {}", xenonJob);
+
+            //get initial job status
+            this.xenonJobStatus = xenon.jobs().getJobStatus(this.xenonJob);
 
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start reservation on " + resource.getName() + ": " + e, e);
@@ -392,11 +395,12 @@ public class PilotManager {
 
         return result;
     }
-
+    
     //ibis identifier, set by status monitor
     synchronized void setIbisIdentifier(IbisIdentifier ibis) {
         this.ibisIdentifier = ibis;
         notifyAll();
+        logger.info("State for pilot {} on resource {} now {}", getID(), getResourceName(), getStateString());
     }
 
     public synchronized IbisIdentifier getIbisIdentifier() {
@@ -407,6 +411,7 @@ public class PilotManager {
     synchronized void setXenonJobStatus(JobStatus status) {
         this.xenonJobStatus = status;
         notifyAll();
+        logger.info("State for pilot {} on resource {} now {}", getID(), getResourceName(), getStateString());
     }
 
     //status, set by Xenon job monitor
@@ -418,6 +423,7 @@ public class PilotManager {
     synchronized void setLeft() {
         this.left = true;
         notifyAll();
+        logger.info("State for pilot {} on resource {} now {}", getID(), getResourceName(), getStateString());
     }
 
     synchronized boolean hasLeft() {
@@ -429,25 +435,19 @@ public class PilotManager {
     }
 
     public synchronized boolean hasException() {
-        return xenonJobStatus != null && xenonJobStatus.hasException();
+        return xenonJobStatus.hasException();
     }
 
     public synchronized boolean isDone() {
-        return this.left && xenonJobStatus != null && xenonJobStatus.isDone();
+        //done if xenon job is done and either this pilot has left, or it has never started in the first place.
+        return xenonJobStatus.isDone() && (this.left || this.ibisIdentifier == null) ;
     }
 
     public synchronized Exception getException() {
-        if (xenonJobStatus == null) {
-            return null;
-        }
         return xenonJobStatus.getException();
     }
 
     public synchronized String getStateString() {
-        if (xenonJobStatus == null) {
-            return "UNKNOWN";
-        }
-
         if (isRunning()) {
             return "RUNNING";
         }

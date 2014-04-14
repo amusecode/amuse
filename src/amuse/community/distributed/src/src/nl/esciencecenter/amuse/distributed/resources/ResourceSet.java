@@ -48,7 +48,7 @@ public class ResourceSet {
         //add local resource by default
 
         logger.debug("local amuse dir = " + amuseRootDir);
-        newResource("local", null, null, amuseRootDir, "local");
+        //newResource("local", null, null, amuseRootDir, "local");
     }
 
     public synchronized ResourceManager newResource(String name, String location, String gateway, String amuseDir,

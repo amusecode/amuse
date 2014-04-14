@@ -74,8 +74,10 @@ public class XenonJobStatusMonitor extends Thread {
                 if (statuses[i] != null) {
                     pilots[i].setXenonJobStatus(statuses[i]);
                 }
-
             }
+            
+            //notify the pilot set, in case it is waiting for the pilots to start
+            pilotSet.nudge();
 
             synchronized (this) {
                 try {
