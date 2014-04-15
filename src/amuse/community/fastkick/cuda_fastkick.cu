@@ -10,7 +10,7 @@
     } \
 }
 
-#define THREADS_PER_BLOCK 128
+#define THREADS_PER_BLOCK 512
 
 __global__ void dev_get_gravity_at_point(
         float eps2, float *eps, float *xh, float *yh, float *zh, float *xt, float *yt, float *zt, 
@@ -72,10 +72,15 @@ int cuda_initialize_code() {
 }
 
 int cuda_commit_particles(vector<double>& m, vector<double>& x, vector<double>& y, vector<double>& z) {
+    cerr << "cuda_commit_particles" << endl;
     int N = x.size();
-    float x_head[N], y_head[N], z_head[N];
-    float x_tail[N], y_tail[N], z_tail[N];
-    float m_float[N];
+    float *x_head = new float[N];
+    float *y_head = new float[N];
+    float *z_head = new float[N];
+    float *x_tail = new float[N];
+    float *y_tail = new float[N];
+    float *z_tail = new float[N];
+    float *m_float = new float[N];
     for (int i=0; i<N; i++) {
         x_head[i] = (float) x[i];
         y_head[i] = (float) y[i];
@@ -100,8 +105,16 @@ int cuda_commit_particles(vector<double>& m, vector<double>& x, vector<double>& 
     HANDLE_CUDA_ERROR(cudaMemcpy(dev_y_tail, y_tail, N*sizeof(float), cudaMemcpyHostToDevice));
     HANDLE_CUDA_ERROR(cudaMemcpy(dev_z_tail, z_tail, N*sizeof(float), cudaMemcpyHostToDevice));
     HANDLE_CUDA_ERROR(cudaMemcpy(dev_m, m_float, N*sizeof(float), cudaMemcpyHostToDevice));
+    delete[] x_head;
+    delete[] y_head;
+    delete[] z_head;
+    delete[] x_tail;
+    delete[] y_tail;
+    delete[] z_tail;
+    delete[] m_float;
     number_of_field_particles = N;
     particle_data_allocated_on_device = 1;
+    cerr << "cuda_commit_particles finished successfully" << endl;
     return 0;
 }
 
@@ -131,9 +144,14 @@ int cuda_cleanup_code() {
 }
 
 int cuda_get_gravity_at_point(double eps2, double *eps, double *x, double *y, double *z, double *ax, double *ay, double *az, int N) {
-    float x_head[N], y_head[N], z_head[N];
-    float x_tail[N], y_tail[N], z_tail[N];
-    float eps_float[N], resultx[N], resulty[N], resultz[N];
+    cerr << "cuda_get_gravity_at_point" << endl;
+    float *x_head = new float[N];
+    float *y_head = new float[N];
+    float *z_head = new float[N];
+    float *x_tail = new float[N];
+    float *y_tail = new float[N];
+    float *z_tail = new float[N];
+    float *eps_float = new float[N];
     for (int i=0; i<N; i++) {
         x_head[i] = (float) x[i];
         y_head[i] = (float) y[i];
@@ -168,13 +186,13 @@ int cuda_get_gravity_at_point(double eps2, double *eps, double *x, double *y, do
         dev_ax, dev_ay, dev_az, N,
         dev_m, dev_x_head, dev_y_head, dev_z_head, dev_x_tail, dev_y_tail, dev_z_tail, number_of_field_particles);
     
-    HANDLE_CUDA_ERROR(cudaMemcpy(resultx, dev_ax, N*sizeof(float), cudaMemcpyDeviceToHost));
-    HANDLE_CUDA_ERROR(cudaMemcpy(resulty, dev_ay, N*sizeof(float), cudaMemcpyDeviceToHost));
-    HANDLE_CUDA_ERROR(cudaMemcpy(resultz, dev_az, N*sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_CUDA_ERROR(cudaMemcpy(x_head, dev_ax, N*sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_CUDA_ERROR(cudaMemcpy(y_head, dev_ay, N*sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_CUDA_ERROR(cudaMemcpy(z_head, dev_az, N*sizeof(float), cudaMemcpyDeviceToHost));
     for (int i=0; i<N; i++) {
-        ax[i] = resultx[i];
-        ay[i] = resulty[i];
-        az[i] = resultz[i];
+        ax[i] = x_head[i];
+        ay[i] = y_head[i];
+        az[i] = z_head[i];
     }
     HANDLE_CUDA_ERROR(cudaFree(dev_eps));
     HANDLE_CUDA_ERROR(cudaFree(dev_px_head));
@@ -186,13 +204,26 @@ int cuda_get_gravity_at_point(double eps2, double *eps, double *x, double *y, do
     HANDLE_CUDA_ERROR(cudaFree(dev_ax));
     HANDLE_CUDA_ERROR(cudaFree(dev_ay));
     HANDLE_CUDA_ERROR(cudaFree(dev_az));
+    delete[] x_head;
+    delete[] y_head;
+    delete[] z_head;
+    delete[] x_tail;
+    delete[] y_tail;
+    delete[] z_tail;
+    delete[] eps_float;
+    cerr << "cuda_get_gravity_at_point finished successfully" << endl;
     return 0;
 }
 
 int cuda_get_potential_at_point(double eps2, double *eps, double *x, double *y, double *z, double *phi, int N) {
-    float x_head[N], y_head[N], z_head[N];
-    float x_tail[N], y_tail[N], z_tail[N];
-    float eps_float[N], result[N];
+    cerr << "cuda_get_potential_at_point" << endl;
+    float *x_head = new float[N];
+    float *y_head = new float[N];
+    float *z_head = new float[N];
+    float *x_tail = new float[N];
+    float *y_tail = new float[N];
+    float *z_tail = new float[N];
+    float *eps_float = new float[N];
     for (int i=0; i<N; i++) {
         x_head[i] = (float) x[i];
         y_head[i] = (float) y[i];
@@ -225,9 +256,9 @@ int cuda_get_potential_at_point(double eps2, double *eps, double *x, double *y, 
         dev_phi, N,
         dev_m, dev_x_head, dev_y_head, dev_z_head, dev_x_tail, dev_y_tail, dev_z_tail, number_of_field_particles);
     
-    HANDLE_CUDA_ERROR(cudaMemcpy(result, dev_phi, N*sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_CUDA_ERROR(cudaMemcpy(x_head, dev_phi, N*sizeof(float), cudaMemcpyDeviceToHost));
     for (int i=0; i<N; i++) {
-        phi[i] = result[i];
+        phi[i] = x_head[i];
     }
     HANDLE_CUDA_ERROR(cudaFree(dev_eps));
     HANDLE_CUDA_ERROR(cudaFree(dev_px_head));
@@ -237,5 +268,13 @@ int cuda_get_potential_at_point(double eps2, double *eps, double *x, double *y, 
     HANDLE_CUDA_ERROR(cudaFree(dev_py_tail));
     HANDLE_CUDA_ERROR(cudaFree(dev_pz_tail));
     HANDLE_CUDA_ERROR(cudaFree(dev_phi));
+    delete[] x_head;
+    delete[] y_head;
+    delete[] z_head;
+    delete[] x_tail;
+    delete[] y_tail;
+    delete[] z_tail;
+    delete[] eps_float;
+    cerr << "cuda_get_potential_at_point finished successfully" << endl;
     return 0;
 }

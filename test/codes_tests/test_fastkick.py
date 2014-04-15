@@ -13,10 +13,10 @@ from amuse.community.fastkick.interface import FastKickInterface, FastKick
 class TestFastKickInterface(TestWithMPI):
 
     number_of_workers = 2
-    mode = "cpu"
+    mode = "gpu"
     
     def test1(self):
-        instance = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers, redirection="none")
+        instance = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers)
         instance.initialize_code()
         id1, error1 = instance.new_particle(mass = 11.0, x = 0.0, y = 0.0, z = 0.0)
         id2, error2 = instance.new_particle(mass = 21.0, x = 10.0, y = 0.0, z = 0.0)
@@ -29,7 +29,7 @@ class TestFastKickInterface(TestWithMPI):
         instance.stop()
     
     def test2(self):
-        fastkick = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers, redirection="none")
+        fastkick = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers)
         self.assertEquals(0, fastkick.set_eps2(0.101))
         self.assertEquals([0.101, 0], fastkick.get_eps2().values())
         self.assertEquals(0, fastkick.set_eps2(0.2))
@@ -38,7 +38,7 @@ class TestFastKickInterface(TestWithMPI):
         fastkick.stop()
     
     def test3(self):
-        fastkick = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers, redirection="none")
+        fastkick = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers)
         fastkick.initialize_code()
         fastkick.new_particle([10,10],[-1,1],[0,0], [0,0])
         self.assertEquals(0, fastkick.commit_particles())
@@ -50,7 +50,7 @@ class TestFastKickInterface(TestWithMPI):
     def test4(self):
         numpy.random.seed(12345)
         plummer = new_plummer_model(100)
-        fastkick = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers, redirection="none")
+        fastkick = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers)
         fastkick.initialize_code()
         fastkick.new_particle([1]*100, plummer.x.number, plummer.y.number, plummer.z.number)
         self.assertEquals(0, fastkick.commit_particles())
@@ -92,8 +92,9 @@ class TestFastKickInterface(TestWithMPI):
 
 class TestFastKick(TestWithMPI):
     
-    number_of_workers = 2
     mode = "cpu"
+    def new_fastkick_instance(self, convert_nbody=None, number_of_workers=2, **kwargs):
+        return FastKick(convert_nbody, mode=self.mode, number_of_workers=number_of_workers, **kwargs)
     
     def test1(self):
         print "Testing FastKick (SI)"
@@ -101,7 +102,7 @@ class TestFastKick(TestWithMPI):
         sun.mass = 1.0|units.MSun
         sun.position = [0, 0, 0] | units.m
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        fastkick = FastKick(convert_nbody, mode=self.mode, number_of_workers=self.number_of_workers)
+        fastkick = self.new_fastkick_instance(convert_nbody)
         fastkick.particles.add_particle(sun)
         ax, ay, az = fastkick.get_gravity_at_point(0|units.AU, 1|units.AU, 0|units.AU, 0|units.AU)
         fastkick.stop()
@@ -112,7 +113,7 @@ class TestFastKick(TestWithMPI):
     def test2(self):
         print "Testing FastKick reset"
         particles = new_plummer_model(50)
-        instance = FastKick(mode=self.mode, number_of_workers=self.number_of_workers)
+        instance = self.new_fastkick_instance()
         instance.parameters.epsilon_squared = 0.12345 | nbody_system.length**2
         instance.particles.add_particles(particles)
         self.assertEquals(len(instance.particles), 50)
@@ -127,7 +128,7 @@ class TestFastKick(TestWithMPI):
     def test3(self):
         print "Testing FastKick parameters"
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
-        instance = FastKick(convert_nbody, mode=self.mode, number_of_workers=self.number_of_workers)
+        instance = self.new_fastkick_instance(convert_nbody)
         
         self.assertAlmostEquals(0.0 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         for x in [0.01, 0.1, 0.2]:
@@ -139,7 +140,7 @@ class TestFastKick(TestWithMPI):
     def test4(self):
         numpy.random.seed(12345)
         plummer = new_plummer_model(100)
-        fastkick = FastKick(mode=self.mode, number_of_workers=self.number_of_workers)
+        fastkick = self.new_fastkick_instance()
         fastkick.initialize_code()
         fastkick.particles.add_particles(plummer)
         points = new_plummer_model(73)
@@ -171,7 +172,7 @@ class TestFastKick(TestWithMPI):
         plummer = new_plummer_model(100)
         
         print "First do everything manually:"
-        instance = FastKick(mode=self.mode, number_of_workers=self.number_of_workers)
+        instance = self.new_fastkick_instance()
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
@@ -186,7 +187,7 @@ class TestFastKick(TestWithMPI):
 
         print "commit_parameters(), (re)commit_particles(), and cleanup_code() should be called " \
             "automatically before new_xx_particle(), get_xx(), and stop():"
-        instance = FastKick(mode=self.mode, number_of_workers=self.number_of_workers)
+        instance = self.new_fastkick_instance()
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         eps = instance.parameters.epsilon_squared
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
@@ -204,7 +205,7 @@ class TestFastKick(TestWithMPI):
     def test6(self):
         plummer = new_plummer_model(100)
         points = new_plummer_model(73)
-        instance = FastKick(mode=self.mode, number_of_workers=1)
+        instance = self.new_fastkick_instance(number_of_workers=1)
         instance.particles.add_particles(plummer)
         potential1 = instance.get_potential_at_point(0*points.x, points.x, points.y, points.z)
         ax1, ay1, az1 = instance.get_gravity_at_point(0*points.x, points.x, points.y, points.z)
@@ -213,7 +214,7 @@ class TestFastKick(TestWithMPI):
         expected_accuracy = 13 if self.mode == "cpu" else 5
         number_of_workers_range = [2, 3, 4, 5] if self.mode == "cpu" else [2]
         for n in number_of_workers_range:
-            instance = FastKick(mode=self.mode, number_of_workers=n)
+            instance = self.new_fastkick_instance(number_of_workers=n)
             instance.particles.add_particles(plummer)
             potential = instance.get_potential_at_point(0*points.x, points.x, points.y, points.z)
             ax, ay, az = instance.get_gravity_at_point(0*points.x, points.x, points.y, points.z)
@@ -225,7 +226,7 @@ class TestFastKick(TestWithMPI):
             self.assertAlmostEqual(az, az1, expected_accuracy)
     
     def test7(self):
-        instance = FastKick(mode=self.mode, number_of_workers=self.number_of_workers)
+        instance = self.new_fastkick_instance()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         
         particles = Particles(2)
@@ -268,8 +269,8 @@ class TestFastKick(TestWithMPI):
         second_half = stars - first_half
         cluster1 = new_gravity_code(first_half)
         cluster2 = new_gravity_code(second_half)
-        kick_from_cluster1 = CalculateFieldForCodesUsingReinitialize(FastKick(mode=self.mode, redirection='none'), (cluster1,))
-        kick_from_cluster2 = CalculateFieldForCodesUsingReinitialize(FastKick(mode=self.mode, redirection='none'), (cluster2,))
+        kick_from_cluster1 = CalculateFieldForCodesUsingReinitialize(self.new_fastkick_instance(), (cluster1,))
+        kick_from_cluster2 = CalculateFieldForCodesUsingReinitialize(self.new_fastkick_instance(), (cluster2,))
         bridgesys = Bridge()
         bridgesys.add_system(cluster1, (kick_from_cluster2,))
         bridgesys.add_system(cluster2, (kick_from_cluster1,))
@@ -296,8 +297,8 @@ class TestFastKick(TestWithMPI):
         P = 2 * math.pi * primary.x / primary.vy
         
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        kick_from_primary = CalculateFieldForCodesUsingReinitialize(FastKick(converter, mode=self.mode), (primary_sys,))
-        kick_from_secondary = CalculateFieldForCodesUsingReinitialize(FastKick(converter, mode=self.mode), (secondary_sys,))
+        kick_from_primary = CalculateFieldForCodesUsingReinitialize(self.new_fastkick_instance(converter), (primary_sys,))
+        kick_from_secondary = CalculateFieldForCodesUsingReinitialize(self.new_fastkick_instance(converter), (secondary_sys,))
         
         bridgesys = Bridge(timestep = P / 64.0)
         bridgesys.add_system(primary_sys, (kick_from_secondary,))
@@ -315,6 +316,30 @@ class TestFastKick(TestWithMPI):
         kick_from_secondary.code.stop()
         self.assertAlmostRelativeEqual(position_at_start, primary.position.x, 2)
     
+    def test10(self):
+        number_of_sources = 10
+        number_of_points = 1000000
+        mass, length, G = nbody_system.mass, nbody_system.length, nbody_system.G
+        sources = Particles(mass=numpy.ones(number_of_sources)|mass, x=0|length, y=0|length, z=0|length)
+        points = Particles(x=0|length, y=0|length, z=numpy.arange(number_of_points)+1.0|length)
+        
+        instance = self.new_fastkick_instance()
+        instance.particles.add_particles(sources)
+        potential = instance.get_potential_at_point(0*points.x, points.x, points.y, points.z)
+        ax, ay, az = instance.get_gravity_at_point(0*points.x, points.x, points.y, points.z)
+        self.assertAlmostEqual(ax, G * (0 | mass/length**2), 5)
+        self.assertAlmostEqual(ay, G * (0 | mass/length**2), 5)
+        self.assertAlmostRelativeEqual(az, -G*sources.total_mass()/points.z**2, 3)
+        self.assertAlmostRelativeEqual(potential, -G*sources.total_mass()/points.z, 3)
+        instance.stop()
+    
+
+class TestFastKickGPU(TestFastKick):
+
+    mode = "gpu"
+    def new_fastkick_instance(self, convert_nbody=None, number_of_workers=1, **kwargs):
+        return self.new_instance_of_an_optional_code(FastKick, convert_nbody, 
+            mode=self.mode, number_of_workers=number_of_workers, **kwargs)
 
 class GravityCodeForTesting(object):
     
@@ -340,3 +365,4 @@ def new_gravity_code(particles):
     instance = GravityCodeForTesting()
     instance.particles.add_particles(particles)
     return instance
+

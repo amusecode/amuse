@@ -33,6 +33,7 @@ double eps2 = 0;
 
 
 int initialize_code() {
+    cerr << "initialize_code" << endl;
 #ifndef NOMPI
     int error;
     error = MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
@@ -56,14 +57,18 @@ int initialize_code() {
 }
 
 int commit_parameters() {
+    cerr << "commit_parameters" << endl;
     return 0;
 }
 int recommit_parameters() {
     return 0;
 }
 int commit_particles() {
+    cerr << "commit_particles" << endl;
 #ifdef GPU
-    return cuda_commit_particles(m, x, y, z);
+    int result = cuda_commit_particles(m, x, y, z);
+    cerr << "commit_particles done" << endl;
+    return result;
 #else
     return 0;
 #endif
@@ -172,7 +177,9 @@ int get_gravity_at_point(double *eps_in, double *x_in, double *y_in, double *z_i
     double dx, dy, dz, r2, tmp;
     
 #ifdef GPU
+    cerr << "get_gravity_at_point: start cuda_get_gravity_at_point with " << length << " points and " << n_local << " particles." << endl;
     int result = cuda_get_gravity_at_point(eps2, eps_in, x_in, y_in, z_in, ax, ay, az, length);
+    cerr << "get_gravity_at_point: cuda_get_gravity_at_point returned: " << result << endl;
     // communicate errors for MPI
 #else
     for (int j = 0; j < length; j++) {
