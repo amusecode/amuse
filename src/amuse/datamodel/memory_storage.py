@@ -10,9 +10,9 @@ from amuse.datamodel.base import *
 from amuse.support import exceptions
 
 try:
-  from simple_hash import SimpleHash
+  from amuse.datamodel.simple_hash import SimpleHash
   _SIMPLE_HASH_PRESENT_=True
-except Exception as ex:
+except BaseException as ex:
   raise ex
   _SIMPLE_HASH_PRESENT_=False
 
