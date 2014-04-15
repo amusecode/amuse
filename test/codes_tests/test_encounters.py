@@ -1053,7 +1053,7 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         binary1 = new_binary(
             1 | nbody_system.mass, 
-            1 | nbody_system.mass, 
+            1 | nbody_system.mass,
             0.01 | nbody_system.length,
             keyoffset = 30
         )
@@ -1294,16 +1294,18 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
         
         x.execute()
-        self.assertEquals(len(x.new_multiples), 1)
+        self.assertEquals(len(x.new_multiples), 0)
+        self.assertEquals(len(x.updated_multiples), 1)
         self.assertEquals(len(x.new_binaries), 0)
         self.assertEquals(len(x.captured_singles), 0)
         self.assertEquals(len(x.released_singles), 0)
         
-        multiple = x.new_multiples[0]
+        multiple = x.updated_multiples[0]
         self.assertEquals(len(multiple.components), 2)
+        self.assertEquals(multiple.key, multiples[0].key)
     
-        self.assertAlmostRelativeEqual(multiple.components[0].key, binaries[0].child1.key)
-        self.assertAlmostRelativeEqual(multiple.components[1].key, binaries[0].child2.key)
+        self.assertEquals(multiple.components[0].key, binaries[0].child1.key)
+        self.assertEquals(multiple.components[1].key, binaries[0].child2.key)
         self.assertAlmostRelativeEqual(x.initial_multiple_energy, -50 | nbody_system.energy)
         self.assertAlmostRelativeEqual(x.final_multiple_energy, -56.0615226817 | nbody_system.energy, 4)
         

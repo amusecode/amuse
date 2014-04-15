@@ -363,20 +363,22 @@ class AbstractHandleEncounter(object):
     def get_final_energy_of_a_multiple(self, particle):
         if particle in self.new_multiples:
             multiple = particle.as_particle_in_set(self.new_multiples)
-            components = multiple.components
-            tree = components.new_binary_tree_wrapper()
-            singles = Particles()
-            for node in tree.iter_descendant_leafs():
-                singles.add_particle(node.particle)
-            
-            # tree is stored in rest state,
-            # no energy of central particle
-            energy  = singles.kinetic_energy()
-            energy += singles.potential_energy(G = self.G)
-            
-            return  energy
+        elif particle in self.updated_multiples:
+            multiple = particle.as_particle_in_set(self.updated_multiples)
         else:
             return zero
+        components = multiple.components
+        tree = components.new_binary_tree_wrapper()
+        singles = Particles()
+        for node in tree.iter_descendant_leafs():
+            singles.add_particle(node.particle)
+        
+        # tree is stored in rest state,
+        # no energy of central particle
+        energy  = singles.kinetic_energy()
+        energy += singles.potential_energy(G = self.G)
+        
+        return  energy
         
 
     def determine_initial_sphere_of_particles_in_encounter(self):
@@ -579,6 +581,8 @@ class AbstractHandleEncounter(object):
             if x.key in multiple_lookup_table:
                 if not found_multiple == multiple_lookup_table[x.key]:
                     return None
+            else:
+                return None
         return found_multiple
         
     def determine_captured_singles_from_the_multiples(self):
@@ -635,6 +639,9 @@ class AbstractHandleEncounter(object):
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
         
         channel = self.particles_after_encounter.new_channel_to(self.new_multiples)
+        channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
+        
+        channel = self.particles_after_encounter.new_channel_to(self.updated_multiples)
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
         
         channel = self.particles_after_encounter.new_channel_to(self.released_singles)
@@ -1418,7 +1425,7 @@ class Multiples(options.OptionalAttributes):
             )
     
         if self.stopping_conditions.multiples_change_detection.is_enabled():
-            if len(new_multiples) > 0 or len(dissolved_multiples) > 0:
+            if len(new_multiples) > 0 or len(dissolved_multiples) > 0 or len(updated_multiples) > 0:
                 self.stopping_conditions.multiples_change_detection.set(
                     new_multiples,
                     dissolved_multiples,
@@ -1508,7 +1515,6 @@ class Multiples(options.OptionalAttributes):
     
         if self.stopping_conditions.encounter_detection.is_enabled():
             model = Particles()
-            print len(new_multiples)
             particles_before_encounter = Particles()
             particles_before_encounter.add_particles(code.all_particles_in_encounter)
             particles_after_encounter = Particles()
