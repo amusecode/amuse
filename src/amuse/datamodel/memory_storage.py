@@ -13,7 +13,6 @@ try:
   from amuse.datamodel.simple_hash import SimpleHash
   _SIMPLE_HASH_PRESENT_=True
 except BaseException as ex:
-  raise ex
   _SIMPLE_HASH_PRESENT_=False
 
 _PREFER_SORTED_KEYS_=True
