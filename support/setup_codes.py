@@ -68,7 +68,7 @@ class GenerateInstallIni(Command):
             data_dir = os.path.relpath(data_dir,self.root)
             data_dir =  os.path.join('/',data_dir)
         else:
-            data_dir = os.path.abspath(datadir)
+            data_dir = os.path.abspath(data_dir)
         installinilines = []
         installinilines.append('[channel]')
         installinilines.append('must_check_if_worker_is_up_to_date=0')
