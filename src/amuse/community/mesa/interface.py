@@ -114,7 +114,8 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             A star with the given index was not found.
         """
         return function
-        
+    
+    
     @legacy_function   
     def get_core_mass():
         """
@@ -168,6 +169,129 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
             , description="The index of the star to get the value of")
         function.addParameter('mass_change', dtype='float64', direction=function.IN
             , description="The new user-specified mass transfer rate of the star. (negative for winds, positive for accretion)")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_accrete_same_as_surface():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('accrete_same_as_surface_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_accrete_same_as_surface():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('accrete_same_as_surface_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_accrete_composition_non_metals():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('h1', dtype='float64', direction=function.OUT)
+        function.addParameter('h2', dtype='float64', direction=function.OUT)
+        function.addParameter('he3', dtype='float64', direction=function.OUT)
+        function.addParameter('he4', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_accrete_composition_non_metals():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('h1', dtype='float64', direction=function.IN)
+        function.addParameter('h2', dtype='float64', direction=function.IN)
+        function.addParameter('he3', dtype='float64', direction=function.IN)
+        function.addParameter('he4', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_accrete_composition_metals_identifier():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('accrete_composition_metals_identifier', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_accrete_composition_metals_identifier():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('accrete_composition_metals_identifier', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_accrete_composition_metals():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('be', dtype='float64', direction=function.OUT)
+        function.addParameter('b', dtype='float64', direction=function.OUT)
+        function.addParameter('c', dtype='float64', direction=function.OUT)
+        function.addParameter('n', dtype='float64', direction=function.OUT)
+        function.addParameter('o', dtype='float64', direction=function.OUT)
+        function.addParameter('f', dtype='float64', direction=function.OUT)
+        function.addParameter('ne', dtype='float64', direction=function.OUT)
+        function.addParameter('na', dtype='float64', direction=function.OUT)
+        function.addParameter('mg', dtype='float64', direction=function.OUT)
+        function.addParameter('al', dtype='float64', direction=function.OUT)
+        function.addParameter('si', dtype='float64', direction=function.OUT)
+        function.addParameter('p', dtype='float64', direction=function.OUT)
+        function.addParameter('s', dtype='float64', direction=function.OUT)
+        function.addParameter('cl', dtype='float64', direction=function.OUT)
+        function.addParameter('ar', dtype='float64', direction=function.OUT)
+        function.addParameter('k', dtype='float64', direction=function.OUT)
+        function.addParameter('ca', dtype='float64', direction=function.OUT)
+        function.addParameter('sc', dtype='float64', direction=function.OUT)
+        function.addParameter('ti', dtype='float64', direction=function.OUT)
+        function.addParameter('v', dtype='float64', direction=function.OUT)
+        function.addParameter('cr', dtype='float64', direction=function.OUT)
+        function.addParameter('mn', dtype='float64', direction=function.OUT)
+        function.addParameter('fe', dtype='float64', direction=function.OUT)
+        function.addParameter('co', dtype='float64', direction=function.OUT)
+        function.addParameter('ni', dtype='float64', direction=function.OUT)
+        function.addParameter('cu', dtype='float64', direction=function.OUT)
+        function.addParameter('zn', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_accrete_composition_metals():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('be', dtype='float64', direction=function.IN)
+        function.addParameter('b', dtype='float64', direction=function.IN)
+        function.addParameter('c', dtype='float64', direction=function.IN)
+        function.addParameter('n', dtype='float64', direction=function.IN)
+        function.addParameter('o', dtype='float64', direction=function.IN)
+        function.addParameter('f', dtype='float64', direction=function.IN)
+        function.addParameter('ne', dtype='float64', direction=function.IN)
+        function.addParameter('na', dtype='float64', direction=function.IN)
+        function.addParameter('mg', dtype='float64', direction=function.IN)
+        function.addParameter('al', dtype='float64', direction=function.IN)
+        function.addParameter('si', dtype='float64', direction=function.IN)
+        function.addParameter('p', dtype='float64', direction=function.IN)
+        function.addParameter('s', dtype='float64', direction=function.IN)
+        function.addParameter('cl', dtype='float64', direction=function.IN)
+        function.addParameter('ar', dtype='float64', direction=function.IN)
+        function.addParameter('k', dtype='float64', direction=function.IN)
+        function.addParameter('ca', dtype='float64', direction=function.IN)
+        function.addParameter('sc', dtype='float64', direction=function.IN)
+        function.addParameter('ti', dtype='float64', direction=function.IN)
+        function.addParameter('v', dtype='float64', direction=function.IN)
+        function.addParameter('cr', dtype='float64', direction=function.IN)
+        function.addParameter('mn', dtype='float64', direction=function.IN)
+        function.addParameter('fe', dtype='float64', direction=function.IN)
+        function.addParameter('co', dtype='float64', direction=function.IN)
+        function.addParameter('ni', dtype='float64', direction=function.IN)
+        function.addParameter('cu', dtype='float64', direction=function.IN)
+        function.addParameter('zn', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
     
@@ -928,6 +1052,15 @@ class MESA(StellarEvolution, InternalStellarStructure):
             
             object.add_getter(particle_set_name, 'get_manual_mass_transfer_rate', names = ('mass_change',))
             object.add_setter(particle_set_name, 'set_manual_mass_transfer_rate', names = ('mass_change',))
+            
+            object.add_method(particle_set_name, 'get_accrete_same_as_surface')
+            object.add_method(particle_set_name, 'set_accrete_same_as_surface')
+            object.add_method(particle_set_name, 'get_accrete_composition_non_metals')
+            object.add_method(particle_set_name, 'set_accrete_composition_non_metals')
+            object.add_method(particle_set_name, 'get_accrete_composition_metals_identifier')
+            object.add_method(particle_set_name, 'set_accrete_composition_metals_identifier')
+            object.add_method(particle_set_name, 'get_accrete_composition_metals')
+            object.add_method(particle_set_name, 'set_accrete_composition_metals')
             
             object.add_method(particle_set_name, 'evolve_one_step')
             object.add_method(particle_set_name, 'evolve_for')

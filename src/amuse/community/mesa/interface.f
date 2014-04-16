@@ -27,16 +27,16 @@
          double precision :: AMUSE_overshoot_f_below_burn_he = 0
          double precision :: AMUSE_overshoot_f_above_burn_z = 0
          double precision :: AMUSE_overshoot_f_below_burn_z = 0
-         
+
          double precision, allocatable :: target_times(:)
          integer :: number_of_particles ! Dead or alive...
-         
+
          logical :: new_model_defined = .false.
          integer :: id_new_model
-         
+
          logical :: debugging = .false.
          logical :: do_stabilize_new_stellar_model = .true.
-         
+
          contains
          logical function failed(str, ierr)
             character (len=*), intent(in) :: str
@@ -86,7 +86,7 @@
          AMUSE_local_data_dir = AMUSE_local_data_dir_in
          set_MESA_paths = 0
       end function set_MESA_paths
-    
+
 ! Initialize the stellar evolution code
       integer function initialize_code()
          use amuse_support, only: failed, AMUSE_mesa_data_dir, AMUSE_inlist_path
@@ -114,19 +114,19 @@
          initialize_code = 0
       end function initialize_code
 
-      
+
       integer function commit_parameters()
          commit_parameters = 0
       end function commit_parameters
-      
+
       integer function recommit_parameters()
          recommit_parameters = 0
       end function recommit_parameters
-      
+
       integer function cleanup_code()
          cleanup_code = 0
       end function cleanup_code
-      
+
 ! Create new ZAMS model for a different metallicity
    subroutine new_zams_model(ierr)
       use create_zams, only: AMUSE_do_create_zams
@@ -140,7 +140,7 @@
       call AMUSE_do_create_zams(AMUSE_metallicity, AMUSE_zams_filename, &
          AMUSE_inlist_path, &
          AMUSE_dmass, AMUSE_mlo, AMUSE_mhi, ierr)
-      if (failed('AMUSE_do_create_zams', ierr)) return      
+      if (failed('AMUSE_do_create_zams', ierr)) return
       call flush()
       ierr = 0
    end subroutine new_zams_model
@@ -564,6 +564,207 @@
          if (failed('get_star_ptr', ierr)) return
          s% dt_next = AMUSE_value*secyer
          set_time_step = 0
+      end function
+
+! if true, composition of accreted material is identical to the current surface composition.
+      function get_accrete_same_as_surface(AMUSE_id, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer, intent(out) :: AMUSE_value
+         integer :: get_accrete_same_as_surface, ierr
+         type (star_info), pointer :: s
+         get_accrete_same_as_surface = -1
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         if (s% accrete_same_as_surface) then
+            AMUSE_value = 1
+         else
+            AMUSE_value = 0
+         endif
+         get_accrete_same_as_surface = 0
+      end function
+      function set_accrete_same_as_surface(AMUSE_id, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer, intent(in) :: AMUSE_value
+         integer :: set_accrete_same_as_surface, ierr
+         type (star_info), pointer :: s
+         set_accrete_same_as_surface = -1
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         if (AMUSE_value > 0) then
+            s% accrete_same_as_surface = .true.
+         else
+            s% accrete_same_as_surface = .false.
+         endif
+         set_accrete_same_as_surface = 0
+      end function
+
+! otherwise, then use the following parameters
+      function get_accrete_composition_non_metals(AMUSE_id, h1, h2, he3, he4)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         double precision, intent(out) :: h1, h2, he3, he4
+         integer :: get_accrete_composition_non_metals, ierr
+         type (star_info), pointer :: s
+         get_accrete_composition_non_metals = -1
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         h1 = s% accretion_h1
+         h2 = s% accretion_h2
+         he3 = s% accretion_he3
+         he4 = s% accretion_he4
+         get_accrete_composition_non_metals = 0
+      end function
+      function set_accrete_composition_non_metals(AMUSE_id, h1, h2, he3, he4)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         double precision, intent(in) :: h1, h2, he3, he4
+         integer :: set_accrete_composition_non_metals, ierr
+         type (star_info), pointer :: s
+         set_accrete_composition_non_metals = -1
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         s% accretion_h1 = h1 ! mass fraction
+         s% accretion_h2 = h2 ! if no h2 in current net, then this is automatically added to h1
+         s% accretion_he3 = he3
+         s% accretion_he4 = he4
+         set_accrete_composition_non_metals = 0
+      end function
+
+! one of the identifiers for different Z fractions from chem_def
+! AG89_zfracs = 1, Anders & Grevesse 1989
+! GN93_zfracs = 2, Grevesse & Noels 1993
+! GS98_zfracs = 3, Grevesse & Sauval 1998
+! L03_zfracs = 4, Lodders 2003
+! AGS04_zfracs = 5, Asplund, Grevesse & Sauval 2004
+! or set accretion_zfracs = 0 to use special list of z fractions
+      function get_accrete_composition_metals_identifier(AMUSE_id, zfracs_identifier)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer, intent(out) :: zfracs_identifier
+         integer :: get_accrete_composition_metals_identifier, ierr
+         type (star_info), pointer :: s
+         get_accrete_composition_metals_identifier = -1
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         zfracs_identifier = s% accretion_zfracs
+         get_accrete_composition_metals_identifier = 0
+      end function
+      function set_accrete_composition_metals_identifier(AMUSE_id, zfracs_identifier)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer, intent(in) :: zfracs_identifier
+         integer :: set_accrete_composition_metals_identifier, ierr
+         type (star_info), pointer :: s
+         set_accrete_composition_metals_identifier = -1
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         if (zfracs_identifier > 5 .or. zfracs_identifier < 0) then
+
+         endif
+         s% accretion_zfracs = zfracs_identifier
+         set_accrete_composition_metals_identifier = 0
+      end function
+
+! special list of z fractions -- if you use these, they should add to 1.0
+      function get_accrete_composition_metals(AMUSE_id, be, b, c, n, o, f, ne, &
+      na, mg, al, si, p, s, cl, ar, k, ca, sc, ti, v, cr, mn, fe, co, ni, cu, zn)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         double precision, intent(out) :: be, b, c, n, o, f, ne, na, mg, al, si
+         double precision, intent(out) :: p, s, cl, ar, k, ca, sc, ti, v, cr, mn
+         double precision, intent(out) :: fe, co, ni, cu, zn
+         integer :: get_accrete_composition_metals, ierr
+         type (star_info), pointer :: star_pointer
+         get_accrete_composition_metals = -1
+         call get_star_ptr(AMUSE_id, star_pointer, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         be = star_pointer% z_fraction_be
+         b = star_pointer% z_fraction_b
+         c = star_pointer% z_fraction_c
+         n = star_pointer% z_fraction_n
+         o = star_pointer% z_fraction_o
+         f = star_pointer% z_fraction_f
+         ne = star_pointer% z_fraction_ne
+         na = star_pointer% z_fraction_na
+         mg = star_pointer% z_fraction_mg
+         al = star_pointer% z_fraction_al
+         si = star_pointer% z_fraction_si
+         p = star_pointer% z_fraction_p
+         s = star_pointer% z_fraction_s
+         cl = star_pointer% z_fraction_cl
+         ar = star_pointer% z_fraction_ar
+         k = star_pointer% z_fraction_k
+         ca = star_pointer% z_fraction_ca
+         sc = star_pointer% z_fraction_sc
+         ti = star_pointer% z_fraction_ti
+         v = star_pointer% z_fraction_v
+         cr = star_pointer% z_fraction_cr
+         mn = star_pointer% z_fraction_mn
+         fe = star_pointer% z_fraction_fe
+         co = star_pointer% z_fraction_co
+         ni = star_pointer% z_fraction_ni
+         cu = star_pointer% z_fraction_cu
+         zn = star_pointer% z_fraction_zn
+         get_accrete_composition_metals = 0
+      end function
+      function set_accrete_composition_metals(AMUSE_id, be, b, c, n, o, f, ne, &
+      na, mg, al, si, p, s, cl, ar, k, ca, sc, ti, v, cr, mn, fe, co, ni, cu, zn)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         double precision, intent(in) :: be, b, c, n, o, f, ne, na, mg, al, si
+         double precision, intent(in) :: p, s, cl, ar, k, ca, sc, ti, v, cr, mn
+         double precision, intent(in) :: fe, co, ni, cu, zn
+         integer :: set_accrete_composition_metals, ierr
+         type (star_info), pointer :: star_pointer
+         set_accrete_composition_metals = -1
+         call get_star_ptr(AMUSE_id, star_pointer, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         star_pointer% z_fraction_be = be
+         star_pointer% z_fraction_b = b
+         star_pointer% z_fraction_c = c
+         star_pointer% z_fraction_n = n
+         star_pointer% z_fraction_o = o
+         star_pointer% z_fraction_f = f
+         star_pointer% z_fraction_ne = ne
+         star_pointer% z_fraction_na = na
+         star_pointer% z_fraction_mg = mg
+         star_pointer% z_fraction_al = al
+         star_pointer% z_fraction_si = si
+         star_pointer% z_fraction_p = p
+         star_pointer% z_fraction_s = s
+         star_pointer% z_fraction_cl = cl
+         star_pointer% z_fraction_ar = ar
+         star_pointer% z_fraction_k = k
+         star_pointer% z_fraction_ca = ca
+         star_pointer% z_fraction_sc = sc
+         star_pointer% z_fraction_ti = ti
+         star_pointer% z_fraction_v = v
+         star_pointer% z_fraction_cr = cr
+         star_pointer% z_fraction_mn = mn
+         star_pointer% z_fraction_fe = fe
+         star_pointer% z_fraction_co = co
+         star_pointer% z_fraction_ni = ni
+         star_pointer% z_fraction_cu = cu
+         star_pointer% z_fraction_zn = zn
+         set_accrete_composition_metals = 0
       end function
 
 ! Return the current radius of the star
@@ -996,9 +1197,9 @@
                get_brunt_vaisala_frequency_squared_at_zone = 0
             endif
          endif
-         
+
          contains
-         
+
          double precision function brunt_N2(k)
             ! reminder: gradB(k) and gradT(k) are the values at face(k)
             integer, intent(in) :: k
@@ -1009,8 +1210,8 @@
                rho_face = s% rho(1)
                P_face = s% P(1)
                T_face = s% T(1)
-               chiT_face = s% chiT(1)         
-               chiRho_face = s% chiRho(1)         
+               chiT_face = s% chiT(1)
+               chiRho_face = s% chiRho(1)
                grada_face = s% grada(1)
             else
                tmp = 1.0d0 / (s% dq(k-1) + s% dq(k))
@@ -1033,7 +1234,7 @@
          use star_private_def, only: star_info, get_star_ptr
 !         use micro, only: do_eos_for_cell
          use chem_def, only: ih1, ihe3, ihe4
-         
+
          use eos_lib, only: eosDT_get
          use eos_def, only: num_eos_basic_results, i_mu
          use const_def, only: ln10
@@ -1079,9 +1280,9 @@
             endif
          endif
 !      end function
-         
+
          contains
-         
+
          subroutine get_abar_zbar(s, k, abar, zbar)
 !            use star_private_def, only: star_info
             use chem_lib, only: composition_info
@@ -1094,7 +1295,7 @@
             call composition_info(species, s% chem_id, s% xa_old(1:species,k), &
                 abar, zbar, z2bar, ye, xsum, dabar_dx, dzbar_dx)
          end subroutine get_abar_zbar
-         
+
       end function
 
 
@@ -1106,7 +1307,7 @@
          use eos_def, only: num_eos_basic_results, i_lnPgas
          use const_def, only: ln10, crad
          use amuse_support, only: failed, debugging
-         
+
          implicit none
          integer, intent(in) :: AMUSE_id, AMUSE_zone
          double precision, intent(out) :: AMUSE_value
@@ -1115,7 +1316,7 @@
          type (star_info), pointer :: s
          double precision, dimension(num_eos_basic_results) :: res, d_dlnd, d_dlnT
          double precision :: z, xh, xhe, abar, zbar
-         
+
          call get_star_ptr(AMUSE_id, s, ierr)
          if (failed('get_star_ptr', ierr)) then
             AMUSE_value = -1.0
@@ -1144,13 +1345,13 @@
 !                  s% mu(k) = res(i_mu)
                   s% lnPgas(k) = res(i_lnPgas)
                   s% Pgas(k) = exp(s% lnPgas(k))
-                  
+
                   s% Prad(k) = crad * s% T(k)**4 / 3
                   s% P(k) = s% Prad(k) + s% Pgas(k)
 !               get_pressure_at_zone = -1
 !               return
             endif
-            
+
             if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
                 AMUSE_value = -1.0
                 get_pressure_at_zone = -2
@@ -1159,9 +1360,9 @@
                get_pressure_at_zone = 0
             endif
          endif
-         
+
          contains
-         
+
          subroutine get_abar_zbar(s, k, abar, zbar)
 !            use star_private_def, only: star_info
             use chem_lib, only: composition_info
@@ -1174,7 +1375,7 @@
             call composition_info(species, s% chem_id, s% xa_old(1:species,k), &
                 abar, zbar, z2bar, ye, xsum, dabar_dx, dzbar_dx)
          end subroutine get_abar_zbar
-         
+
       end function
 
 ! Return the current number of chemical abundance variables per zone of the star
@@ -1275,7 +1476,7 @@
       endif
    end function
 
-! Return the mass fraction of species 'AMUSE_species' at the specified 
+! Return the mass fraction of species 'AMUSE_species' at the specified
 ! zone/mesh-cell of the star
    integer function get_mass_fraction_of_species_at_zone(AMUSE_id, &
          AMUSE_species, AMUSE_zone, AMUSE_value)
@@ -1305,7 +1506,7 @@
          get_mass_fraction_of_species_at_zone = 0
       endif
    end function
-! Set the mass fraction of species 'AMUSE_species' at the specified 
+! Set the mass fraction of species 'AMUSE_species' at the specified
 ! zone/mesh-cell of the star
    integer function set_mass_fraction_of_species_at_zone(AMUSE_id, &
          AMUSE_species, AMUSE_zone, AMUSE_value)
@@ -1339,7 +1540,7 @@
       integer, intent(in) :: AMUSE_id
       integer :: ierr
       type (star_info), pointer :: s
-      
+
       erase_memory = -1
       call get_star_ptr(AMUSE_id, s, ierr)
       if (failed('get_star_ptr', ierr)) return
@@ -1374,9 +1575,9 @@
          end if
       end if
       erase_memory = 0
-      
+
       contains
-      
+
       subroutine realloc1d_if_necessary(ptr,new_size,ierr)
          double precision, pointer :: ptr(:)
          integer, intent(in) :: new_size
@@ -1388,7 +1589,7 @@
          end if
          allocate(ptr(new_size),stat=ierr)
       end subroutine realloc1d_if_necessary
-      
+
       subroutine realloc2d_if_necessary(ptr,ld,new_size,ierr)
          double precision, pointer :: ptr(:,:)
          integer, intent(in) :: ld, new_size
@@ -1400,7 +1601,7 @@
          end if
          allocate(ptr(ld,new_size),stat=ierr)
       end subroutine realloc2d_if_necessary
-  
+
    end function erase_memory
 
 ! Evolve the star for one step (for internal calls)
@@ -1488,11 +1689,11 @@
       type (star_info), pointer :: s
       integer :: ierr, evolve_one_step
       integer :: do_evolve_one_step
-      
+
       evolve_one_step = 0
       call get_star_ptr(AMUSE_id, s, ierr)
       if (evolve_failed('get_star_ptr', ierr, evolve_one_step, -1)) return
-      
+
       evolve_one_step = do_evolve_one_step(AMUSE_id)
       target_times(AMUSE_id) = s% time
    end function evolve_one_step
@@ -1508,13 +1709,13 @@
       type (star_info), pointer :: s
       integer :: ierr
       integer :: do_evolve_one_step
-      
+
       evolve_for = 0
       call get_star_ptr(AMUSE_id, s, ierr)
       if (evolve_failed('get_star_ptr', ierr, evolve_for, -1)) return
-      
+
       target_times(AMUSE_id) = target_times(AMUSE_id) + AMUSE_delta_t * secyer
-      
+
       evolve_loop: do while(evolve_for == 0 .and. &
             (s% time + s% min_timestep_limit < target_times(AMUSE_id))) ! evolve one step per loop
          evolve_for = do_evolve_one_step(AMUSE_id)
@@ -1796,7 +1997,7 @@
       use do_one_utils, only: set_phase_of_evolution
       use evolve_support, only: yrs_for_init_timestep
       use const_def, only: secyer, Msun, Lsun
-      
+
       implicit none
       integer, intent(in) :: n
       double precision, intent(in) :: d_mass(n), radius(n), rho(n), &
@@ -1805,12 +2006,12 @@
       double precision :: x(n)
       integer :: ierr, k
       type (star_info), pointer :: s
-      
+
       if (new_model_defined) then
          new_specified_stellar_model = -30
          return
       endif
-      
+
       new_specified_stellar_model = -1
       id_new_model = alloc_star(ierr)
       if (failed('alloc_star', ierr)) return
@@ -1841,7 +2042,7 @@
       s% overshoot_f_below_burn_he = AMUSE_overshoot_f_below_burn_he
       s% overshoot_f_above_burn_z = AMUSE_overshoot_f_above_burn_z
       s% overshoot_f_below_burn_z = AMUSE_overshoot_f_below_burn_z
-      
+
       s% doing_first_model_of_run = .true.
       s% dt = 0
       s% dt_old = 0
@@ -1854,7 +2055,7 @@
       call set_var_info(s, ierr)
       call init_mesa_micro(s, ierr) ! uses s% net_name
       s% generations = 1
-      
+
       if (n > s% max_allowed_nz) s% max_allowed_nz = n
       s% nz = n
       call allocate_star_info_arrays(s, ierr)
@@ -1888,7 +2089,7 @@
       call set_qs(s% nz, s% q, s% dq, ierr)
       if (failed('set_qs', ierr)) return
       if (s% q_flag) call set_q_vars(s)
-      
+
       s% dt_next = yrs_for_init_timestep(s)*secyer
       s% dxs(:,:) = 0
       !
@@ -1897,7 +2098,7 @@
       call finish_load_model(s, ierr)
       call set_phase_of_evolution(s)
       if (s% q_flag) call set_q_flag(s% id, s% q_flag, ierr)
-      
+
       call setup_for_run_star(id_new_model, s, .false., ierr)
       if (failed('setup_for_run_star', ierr)) return
       call before_evolve(id_new_model, ierr)
@@ -1932,7 +2133,7 @@
       use hydro_vars, only: set_vars
       use const_def, only: secyer, Msun, Lsun
       use star_utils, only: set_xqs
-      
+
       implicit none
       integer, intent(in) :: n
       double precision, intent(in) :: d_mass(n), radius(n), rho(n), &
@@ -1946,17 +2147,17 @@
       logical :: do_T = .false.
       logical :: do_restore_timestep = .false.
       type (star_info), pointer :: s, s_tmp
-      
+
       if (new_model_defined) then
          new_stellar_model = -30
          return
       endif
-      
+
       ! *** Define a temporary star with the target 'new' structure: ***
       new_stellar_model = new_specified_stellar_model(d_mass, radius, rho, &
          temperature, luminosity, XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
       if (failed('new_specified_stellar_model', new_stellar_model)) return
-      
+
       if (do_stabilize_new_stellar_model) then
          new_stellar_model = -1
          if (debugging) write(*,*) 'tmp1_id_new_model', tmp1_id_new_model
@@ -1965,7 +2166,7 @@
          call get_star_ptr(tmp1_id_new_model, s_tmp, ierr)
          if (failed('get_star_ptr', ierr)) return
          if (debugging) write(*,*) 'CHECK:', s_tmp% nz, n
-         
+
          ! *** Now, first create a normal ZAMS star ***
          total_mass = sum(d_mass)
          ierr = new_particle(tmp2_id_new_model, total_mass)
@@ -1974,11 +2175,11 @@
          if (debugging) write(*,*) 'id_new_model', id_new_model
          call get_star_ptr(id_new_model, s, ierr)
          if (failed('get_star_ptr', ierr)) return
-         
+
          ! *** Match the mesh containing the target structure to the mesh of the new particle ***
          ierr = match_mesh(tmp1_id_new_model, s% nz, s% dq)
          if (failed('match_mesh', ierr)) return
-         
+
          ! *** Copy the relevant variables (chemical fractions only, or also hydro vars...)
          original_timestep_limit = s% min_timestep_limit
          s% min_timestep_limit = 1.0d-12
@@ -2015,18 +2216,18 @@
                f = 1.5d0 * f
             endif
          end do
-         
+
          ! *** Give the model the opportunity to remesh ***
          s% mesh_delta_coeff = 0.5
-         ierr = remesh(s, .true., .false., .false.) 
-         if (failed('remesh', ierr)) return 
+         ierr = remesh(s, .true., .false., .false.)
+         if (failed('remesh', ierr)) return
          ierr = erase_memory(id_new_model)
          if (failed('erase_memory', ierr)) return
          ierr = match_mesh(tmp1_id_new_model, s% nz, s% dq)
          if (failed('match_mesh', ierr)) return
          s% number_of_backups_in_a_row = 0
          s% mesh_delta_coeff = 1
-         
+
          ! *** Optionally, also do hydro vars ***
          if (do_T) then
             f = 1.0d-8
@@ -2048,7 +2249,7 @@
                f = min(1.5d0 * f, 1.0d0)
             end do
          end if
-         
+
          ! *** Restore the original timestep ***
          if (debugging) write(*,*) 'timesteps', s% dt_old, s% dt, s% dt_next, original_timestep
          s% dt_next = 10.0 * s% min_timestep_limit
@@ -2072,7 +2273,7 @@
                if (s% number_of_backups_in_a_row > 0) exit
             end do
          end if
-         
+
          call check_remeshed(s% nz, s_tmp% nz, s% dq, s_tmp% dq, ierr)
          if (failed('check_remeshed', ierr)) then
             ierr = match_mesh(tmp1_id_new_model, s% nz, s% dq)
@@ -2083,15 +2284,15 @@
          if (do_T) s% xs(s% i_lnT,index_low:) = s_tmp% xs(s_tmp% i_lnT,index_low:)
          ierr = erase_memory(id_new_model)
          if (failed('erase_memory', ierr)) return
-         
+
          s% dxdt_nuc_factor = original_dxdt_nuc_f
-         
+
          if (s% dt_next > 10.0 * original_timestep_limit) then
             s% min_timestep_limit = original_timestep_limit
          else
             s% min_timestep_limit = s% dt_next / 10.0
          endif
-         
+
          if (debugging) write(*,*) 'Backups:', s% number_of_backups_in_a_row
          s% number_of_backups_in_a_row = 0
          if (debugging) write(*,*) 'Backups reset:', s% number_of_backups_in_a_row
@@ -2101,9 +2302,9 @@
          new_model_defined = .true.
          new_stellar_model = 0
       end if
-      
+
       contains
-      
+
       subroutine check_remeshed(nz, nz_orig, dq, dq_orig, ierr)
          implicit none
          integer, intent(in) :: nz, nz_orig
@@ -2122,7 +2323,7 @@
          end do
          ierr = 0
       end subroutine check_remeshed
-      
+
    end function new_stellar_model
 
    function finalize_stellar_model(star_id, age_tag)
@@ -2132,19 +2333,19 @@
       integer :: finalize_stellar_model, ierr
       integer, intent(out) :: star_id
       double precision, intent(in) :: age_tag
-      
+
       if (.not. new_model_defined) then
          finalize_stellar_model = -35
          return
       endif
-      
+
       finalize_stellar_model = -1
       star_id = id_new_model
       number_of_particles = star_id
       call set_age(id_new_model, age_tag, ierr)
       if (failed('set_age', ierr)) return
       call flush()
-      
+
       new_model_defined = .false.
       finalize_stellar_model = 0
    end function
@@ -2165,10 +2366,10 @@
       use star_utils, only: set_q_vars, report_xa_bad_nums, &
          std_dump_model_info_for_ndiff, set_qs, set_xqs
       use chem_def
-      
+
       integer, intent(in) :: model_id, nz_target
       double precision, intent(inout) :: dq_target(nz_target)
-      
+
       type (star_info), pointer :: s_tmp
       logical, parameter :: dbg_remesh = .true.
       logical, parameter :: skip_net = .false., check_for_bad_nums = .true.
@@ -2182,41 +2383,41 @@
       double precision, parameter :: xsum_tol = 1d-2
       double precision, parameter :: h_cntr_limit = 0.5d0 ! for pre-MS decision
       double precision, parameter :: he_cntr_limit = 0.1d0 ! for RGB vs AGB decision
-      
+
  3       format(a40,2i6,99(1pe26.16))
-      
+
       call get_star_ptr(model_id, s_tmp, ierr)
       if (failed('get_star_ptr', ierr)) return
       if (debugging) write(*,*) 'enter match_mesh'
       ierr = 0
       match_mesh = -1
-      
+
       species = s_tmp% species
       nz_old = s_tmp% nz
       nz = nz_old
       nz_new = nz_target
-      
+
       call clean_up_fractions(1, nz, species, nz, s_tmp% xa, max_sum_abs, xsum_tol, ierr)
       if (failed('clean_up_fractions', ierr)) return
-      
+
       nullify(xq_old, xq_new)
       allocate(energy(nz), stat=ierr)
-      
+
       energy(1:nz) = exp(s_tmp% lnE(1:nz))
-      
+
       s_tmp% mesh_call_number = s_tmp% mesh_call_number + 1
-      
+
       ! save pointers to arrays that will need to be updated for new mesh
       prv => prev_info
       prv = s_tmp ! this makes copies of pointers and scalars
-      
+
       if (associated(s_tmp% comes_from)) deallocate(s_tmp% comes_from)
       allocate(s_tmp% comes_from(nz_target), xq_old(nz), xq_new(nz_target), stat=ierr)
       if (failed('allocate', ierr)) return
-      
+
       call check_validity(s_tmp, ierr)
       if (failed('check_validity', ierr)) return
-      
+
       if (check_for_bad_nums) then
          if (has_bad_num(species*nz, s_tmp% xa)) then
             write(*,*) 'bad num in xa before calling mesh_plan: model_number', s_tmp% model_number
@@ -2224,12 +2425,12 @@
             stop 'remesh'
          end if
       end if
-      
+
       call set_xqs(nz, xq_old, s_tmp% dq, ierr)
       if (failed('set_xqs xq_old', ierr)) return
       call set_xqs(nz_target, xq_new, dq_target, ierr)
       if (failed('set_xqs xq_new', ierr)) return
-      
+
       ! Set comes_from
       !      ! xq_old(comes_from(k)+1) > xq_new(k) >= xq_old(comes_from(k)), if comes_from(k) < nz_old.
       s_tmp% comes_from(:) = 0
@@ -2249,21 +2450,21 @@
       nz = nz_new
       s_tmp% nz = nz
       nvar = s_tmp% nvar
-      
+
       call allocate_star_info_arrays(s_tmp, ierr)
       if (failed('allocate_star_info_arrays', ierr)) return
-      
+
       if (associated(s_tmp% cell_type)) deallocate(s_tmp% cell_type)
       allocate(s_tmp% cell_type(nz))
       call set_types_of_new_cells(s_tmp% cell_type)
-      
+
       s_tmp% rate_factors(1:prv% num_reactions) = prv% rate_factors(1:prv% num_reactions)
-      
+
       ! store new q and dq
       s_tmp% dq(:) = dq_target(:)
       call set_qs(nz, s_tmp% q, s_tmp% dq, ierr)
       if (failed('set_qs', ierr)) return
-      
+
       ! testing -- check for q strictly decreasing
       do k = 2, nz
          if (xq_new(k) <= xq_new(k-1)) then
@@ -2274,7 +2475,7 @@
       end do
 
       if (s_tmp% q_flag) call set_q_vars(s_tmp)
-      
+
       if (dbg_remesh) write(*,*) 'call do_mesh_adjust'
       call do_mesh_adjust( &
          nz, nz_old, prv% xs, prv% xa, energy, prv% eta, prv% dq, xq_old, &
@@ -2285,7 +2486,7 @@
          prv% mstar, s_tmp% comes_from, s_tmp% cell_type, ierr)
       if (failed('do_mesh_adjust', ierr)) return
       if (dbg_remesh) write(*,*) 'back from do_mesh_adjust'
-      
+
       ! testing
       do k = 2, nz
          if (xq_new(k) <= xq_new(k-1)) then
@@ -2301,16 +2502,16 @@
          write(*,*) 's_tmp% nz', s_tmp% nz
          write(*,*) 's_tmp% num_retries', s_tmp% num_retries
          write(*,*) 's_tmp% num_backups', s_tmp% num_backups
-         write(*,*) 
+         write(*,*)
       end if
-      
+
       if (check_for_bad_nums) then
          if (has_bad_num(species*nz, s_tmp% xa)) then
             write(*,*) 'bad num in xa after calling mesh_adjust: model_number', s_tmp% model_number
             stop 'remesh'
          end if
       end if
-      
+
       if (s_tmp% prev_cdc_tau > 0) then ! interpolate cdc
          call set_prev_cdc(ierr)
          if (ierr /= 0 .and. s_tmp% report_ierr) &
@@ -2323,7 +2524,7 @@
       match_mesh = 0
 
       contains
-      
+
       subroutine set_prev_cdc(ierr)
          use interp_1d_def
          use interp_1d_lib
@@ -2338,16 +2539,16 @@
          deallocate(work)
       end subroutine set_prev_cdc
 
-      
+
       subroutine set_types_of_new_cells(cell_type)
          use mesh_adjust, only: split_type, unchanged_type, merged_type
          integer, pointer :: cell_type(:)
          integer :: k, k_old, new_type
-         
+
  2       format(a40,2i6,99(1pe26.16))
-         
+
          unchanged=0; split=0; merged=0
-      
+
          do k=1,nz_new
             k_old = s_tmp% comes_from(k)
             new_type = -111
@@ -2389,13 +2590,13 @@
                   stop 'set_types_of_new_cells'
             end select
          end do
-         
+
          if (unchanged + split + merged /= nz_new) then
             write(*,2) 'unchanged + split + merged', unchanged + split + merged
             write(*,2) 'nz_new', nz_new
             stop 'set_types_of_new_cells'
          end if
-      
+
       end subroutine set_types_of_new_cells
 
       subroutine dealloc
