@@ -333,6 +333,32 @@ class TestFastKick(TestWithMPI):
         self.assertAlmostRelativeEqual(potential, -G*sources.total_mass()/points.z, 3)
         instance.stop()
     
+    def test11(self):
+        print "Test that a source is not included when calculating gravity on itself."
+        number_of_sources = 100
+        mass, length, G = nbody_system.mass, nbody_system.length, nbody_system.G
+        sources = Particles(mass=numpy.ones(number_of_sources)|mass, x=0|length, y=0|length, z=0|length)
+        point = Particle(x=0|length, y=0|length, z=1.0|length)
+        
+        instance = self.new_fastkick_instance()
+        instance.particles.add_particles(sources)
+        potential = instance.get_potential_at_point(0|length, point.x, point.y, point.z)
+        ax, ay, az = instance.get_gravity_at_point(0|length, point.x, point.y, point.z)
+        self.assertAlmostEqual(ax, G * (0 | mass/length**2), 5)
+        self.assertAlmostEqual(ay, G * (0 | mass/length**2), 5)
+        self.assertAlmostRelativeEqual(az, -G*sources.total_mass()/point.z**2, 3)
+        self.assertAlmostRelativeEqual(potential, -G*sources.total_mass()/point.z, 3)
+        
+        point.mass = 1e6 | mass
+        instance.particles.add_particle(point)
+        potential = instance.get_potential_at_point(0|length, point.x, point.y, point.z)
+        ax, ay, az = instance.get_gravity_at_point(0|length, point.x, point.y, point.z)
+        self.assertAlmostEqual(ax, G * (0 | mass/length**2), 5)
+        self.assertAlmostEqual(ay, G * (0 | mass/length**2), 5)
+        self.assertAlmostRelativeEqual(az, -G*sources.total_mass()/point.z**2, 3)
+        self.assertAlmostRelativeEqual(potential, -G*sources.total_mass()/point.z, 3)
+        instance.stop()
+    
 
 class TestFastKickGPU(TestFastKick):
 

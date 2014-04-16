@@ -145,14 +145,19 @@ int get_potential_at_point(double *eps_in, double *x_in, double *y_in, double *z
     int result = cuda_get_potential_at_point(eps2, eps_in, x_in, y_in, z_in, phi, length);
     // communicate errors for MPI
 #else
+    double dr2, eps2_total;
     for (int j = 0; j < length; j++) {
+        eps2_total = eps2 + eps_in[j]*eps_in[j];
         phi[j] = 0;
         for (int i = 0; i < n_local; i++) {
             dx = x[i] - x_in[j];
             dy = y[i] - y_in[j];
             dz = z[i] - z_in[j];
-            r = sqrt(dx*dx + dy*dy + dz*dz + eps2 + eps_in[j]*eps_in[j]);
-            phi[j] -= m[i]/r;
+            dr2 = dx*dx + dy*dy + dz*dz;
+            if (dr2 > 0) {
+                r = sqrt(dr2 + eps2_total);
+                phi[j] -= m[i]/r;
+            }
         }
     }
 #endif
@@ -182,7 +187,9 @@ int get_gravity_at_point(double *eps_in, double *x_in, double *y_in, double *z_i
     cerr << "get_gravity_at_point: cuda_get_gravity_at_point returned: " << result << endl;
     // communicate errors for MPI
 #else
+    double dr2, eps2_total;
     for (int j = 0; j < length; j++) {
+        eps2_total = eps2 + eps_in[j]*eps_in[j];
         ax[j] = 0;
         ay[j] = 0;
         az[j] = 0;
@@ -190,11 +197,14 @@ int get_gravity_at_point(double *eps_in, double *x_in, double *y_in, double *z_i
             dx = x[i] - x_in[j];
             dy = y[i] - y_in[j];
             dz = z[i] - z_in[j];
-            r2 = (dx*dx + dy*dy + dz*dz + eps2 + eps_in[j]*eps_in[j]);
-            tmp = m[i] / (r2 * sqrt(r2));
-            ax[j] += tmp * dx;
-            ay[j] += tmp * dy;
-            az[j] += tmp * dz;
+            dr2 = dx*dx + dy*dy + dz*dz;
+            if (dr2 > 0) {
+                r2 = dr2 + eps2_total;
+                tmp = m[i] / (r2 * sqrt(r2));
+                ax[j] += tmp * dx;
+                ay[j] += tmp * dy;
+                az[j] += tmp * dz;
+            }
         }
     }
 #endif
