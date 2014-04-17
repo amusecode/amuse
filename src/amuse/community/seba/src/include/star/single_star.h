@@ -187,7 +187,8 @@ class  single_star : public star
 	void  update_relative_mass(const real);
         void  lose_envelope_decent();
         star*  merge_elements(star*);
-	
+
+        real mdot_limit(const real, real);
         real mass_ratio_mdot_limit(real);
         real accretion_limit(const real, const real);
         real expansionA(const real);

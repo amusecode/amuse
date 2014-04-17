@@ -227,20 +227,10 @@ star* horizontal_branch::reduce_mass(const real mdot) {
     return this;
    }
    
-   
-//used by subtrac_mass_from_donor and double_star::perform_mass_transfer
-real horizontal_branch::mdot_limit(const real dt){
-    //real mdot = relative_mass*dt/get_binary()->get_donor_timescale();
-    real mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
-    return mass_ratio_mdot_limit(mdot);
-    
-}
-   
-
 star* horizontal_branch::subtrac_mass_from_donor(const real dt,
 						 real& mdot) {
 
-      mdot = mdot_limit(dt);
+    mdot = mdot_limit(dt, mdot);
       
       if (envelope_mass<=mdot) {
          mdot = envelope_mass;

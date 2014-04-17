@@ -98,19 +98,9 @@ real brown_dwarf::brown_dwarf_core_mass() {
         return 0.01 * get_total_mass();
      }
 
-
-//used by subtrac_mass_from_donor and double_star::perform_mass_transfer
-real brown_dwarf::mdot_limit(const real dt){
-    //real mdot = relative_mass*dt/get_binary()->get_donor_timescale();
-    real mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
-    return mass_ratio_mdot_limit(mdot);
-    
-}
-
-
 star* brown_dwarf::subtrac_mass_from_donor(const real dt, real& mdot) {
 
-    mdot = mdot_limit(dt);
+    mdot = mdot_limit(dt, mdot);
     
         if (mdot<=envelope_mass)
 	  envelope_mass -= mdot;

@@ -239,9 +239,7 @@ void hyper_giant::stellar_wind(const real dt) {
 
 star* hyper_giant::subtrac_mass_from_donor(const real dt, real& mdot) {
 
-      //mdot = relative_mass*dt/get_binary()->get_donor_timescale();
-      mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
-      mdot = mass_ratio_mdot_limit(mdot);
+    mdot = mdot_limit(dt, mdot);
 	
       if (mdot<=envelope_mass)
 	envelope_mass -= mdot;

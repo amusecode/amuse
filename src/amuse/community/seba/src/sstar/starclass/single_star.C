@@ -661,6 +661,15 @@ void single_star::recall_memory() {
 // Mass transfer timescale is checked and updated at the moment the
 // mass-ratio is reversed.
 
+//used by subtrac_mass_from_donor and double_star::perform_mass_transfer
+real single_star::mdot_limit(const real dt, real mdot){
+
+    if (is_binary_component()) {
+        mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
+    }
+    return mass_ratio_mdot_limit(mdot);
+}
+
 // in version 3.3, the mass transfer timescale is updated each
 // timestep in ::recursive(), therefore this function is not required.
 // It hangs the code
