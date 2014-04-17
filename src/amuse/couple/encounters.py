@@ -45,7 +45,7 @@ class AbstractHandleEncounter(object):
        This radius is used to scale back (or forward) all particles 
        after the interaction calculation is done. 
        
-    After an interaction the following should be True of the particles:
+    After an interaction the following should be true of the particles:
     
     1. The particles are moving apart.
     
@@ -475,7 +475,6 @@ class AbstractHandleEncounter(object):
                 children[0],
                 children[1]
             )
-            print "semimajor_axis", semimajor_axis, _, hard_binary_radius,  semimajor_axis < hard_binary_radius
             if semimajor_axis < hard_binary_radius:
                 continue
             nodes_to_break_up.append(root_node.particle)
@@ -747,8 +746,6 @@ class HandleEncounter(AbstractHandleEncounter):
     def evolve_singles_in_encounter_until_end_state(self):
         code = self.resolve_collision_code
         code.reset()
-        
-        print self.all_singles_in_evolve.key
         code.particles.add_particles(self.all_singles_in_evolve)
         
         initial_scatter_energy = code.get_total_energy()
@@ -759,8 +756,9 @@ class HandleEncounter(AbstractHandleEncounter):
         end_time = 10000 | nbody_system.time
         if len(self.all_singles_in_evolve) == 2:
             end_time = 100 | nbody_system.time
+        LOG_ENCOUNTER.info("evolving singles in encounter")
         code.evolve_model(end_time)
-        print "evolve done", code.model_time,  interaction_over.is_set()
+        LOG_ENCOUNTER.info("evolving singles in encounter finished")
             
         if interaction_over.is_set():
             # Create a tree in the module representing the binary structure.
@@ -1292,16 +1290,12 @@ class Multiples(options.OptionalAttributes):
         previous_time = None
         while self.model_time < time:
             self.gravity_code.evolve_model(time)
-            print "so far..."
             self.model_time = self.gravity_code.model_time
             self.channel_from_code_to_model.copy()
             
             if self.stopping_condition.is_set():
                 
-                print "all multples energy", self.all_multiples_energy
-                
                 initial_energy = self.gravity_code.get_total_energy()
-                
                 self.handle_stopping_condition()
                 self.particles.synchronize_to(self.gravity_code.particles)
                 self.channel_from_model_to_code.copy()
@@ -1376,7 +1370,6 @@ class Multiples(options.OptionalAttributes):
         self.multiples_integration_energy_error += self.handle_encounter_code.scatter_energy_error
         
         self.all_multiples_energy = self.get_total_energy_of_all_multiples()
-        print "AMU", self.all_multiples_energy, self.handle_encounter_code.delta_multiple_energy
         self.total_energy = final_energy + self.all_multiples_energy
         self.corrected_total_energy = (
             self.total_energy
@@ -1458,14 +1451,15 @@ class Multiples(options.OptionalAttributes):
         code.particles_in_field.add_particles(self.particles - particles_in_encounter)
         code.existing_binaries.add_particles(self.binaries)
         code.existing_multiples.add_particles(self.multiples)
-        print "handling encounter"
-        print code.particles_in_encounter.key
+        LOG_ENCOUNTER.info("handling encounter, {0} particles in encounter", len(code.particles_in_encounter))
         code.execute()
+        LOG_ENCOUNTER.info(
+            "handling encounter, finished, {0} new multiples, {1} dissolved multiples, {2} updated multiples", 
+            len(code.new_multiples),
+            len(code.dissolved_multiples),
+            len(code.updated_multiples)
+        )
         
-        print "handling encounter done"
-        print "number of new multiples: ", len(code.new_multiples)
-        print "number of dissolved multiples: ", len(code.dissolved_multiples)
-        print "number of updated multiples: ", len(code.updated_multiples)
         
         new_multiples.add_particles(code.new_multiples)
         
@@ -1540,7 +1534,6 @@ class Multiples(options.OptionalAttributes):
     def determine_encounters(self):
         particles0 = self.stopping_condition.particles(0)
         particles1 = self.stopping_condition.particles(1)
-        print (particles0.position - particles1.position).lengths()
         encounters = []
         
         from_key_to_encounter = {}
@@ -1612,8 +1605,6 @@ class Multiples(options.OptionalAttributes):
             multiple.mass = components.mass.sum()
             center_of_mass = components.center_of_mass()
             center_of_mass_velocity = components.center_of_mass_velocity()
-            print "center_of_mass", center_of_mass
-            print "center_of_mass", center_of_mass_velocity, multiple.velocity 
             multiple.position += center_of_mass
             multiple.velocity += center_of_mass_velocity
             components.position -= center_of_mass
