@@ -13,7 +13,7 @@ from amuse.community.fastkick.interface import FastKickInterface, FastKick
 class TestFastKickInterface(TestWithMPI):
 
     number_of_workers = 2
-    mode = "gpu"
+    mode = "cpu"
     
     def test1(self):
         instance = FastKickInterface(mode=self.mode, number_of_workers=self.number_of_workers)
