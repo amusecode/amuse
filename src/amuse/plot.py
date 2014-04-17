@@ -446,7 +446,9 @@ def convert_particles_to_pynbody_data(particles, length_unit=units.kpc, pynbody_
     if hasattr(particles, "rho"):
         pynbody_data['rho'] = SimArray(particles.rho.value_in(units.g / units.cm**3),
             "g cm^-3")
-    if hasattr(particles, "u"):
+    if hasattr(particles, "temp"):
+        pynbody_data['temp'] = SimArray(particles.temp.value_in(units.K), "K")
+    elif hasattr(particles, "u"):
 #        pynbody_data['u'] = SimArray(particles.u.value_in(units.km**2 / units.s**2), "km^2 s^-2")
         temp = 2.0/3.0 * particles.u * mu() / constants.kB
         pynbody_data['temp'] = SimArray(temp.value_in(units.K), "K")
