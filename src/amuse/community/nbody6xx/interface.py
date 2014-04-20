@@ -157,11 +157,32 @@ class Nbody6xxInterface(
 
 
 
-class Nbody6xx(GravitationalDynamics):
+class Nbody6xx(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **kargs):
         GravitationalDynamics.__init__(self,  Nbody6xxInterface(**kargs), convert_nbody, **kargs)
 
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        object.add_method('RUN', 'get_particle_timestep')
+        GravityFieldCode.define_state(self, object)
+
+        object.add_method('EDIT', 'set_state')
+        object.add_method('EDIT', 'set_velocity')
+        object.add_method('EDIT', 'set_mass')
+        object.add_method('EDIT', 'set_position')
+        object.add_method('CHANGED','before_get_parameter')
+
+        object.add_transition('RUN', 'CHANGED', 'set_state', False)
+        object.add_transition('RUN', 'CHANGED', 'set_velocity', False)
+        object.add_transition('RUN', 'CHANGED', 'set_mass', False)
+        object.add_transition('RUN', 'CHANGED', 'set_position', False)
+        object.add_transition('CHANGED', 'RUN', 'synchronize_model')
+        object.add_method('CHANGED', 'get_state')
+        object.add_method('CHANGED', 'get_mass')
+        object.add_method('CHANGED', 'get_position')
+        object.add_method('CHANGED', 'get_velocity')
+        object.add_method('CHANGED', 'get_particle_timestep')
 
     def define_parameters(self, object):
 

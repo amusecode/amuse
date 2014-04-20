@@ -410,8 +410,8 @@
         INCLUDE 'src/common6.h'
         DOUBLE PRECISION :: time_step
         INTEGER :: get_time_step
-        time_step = 0
-        get_time_step = -1
+        time_step = ETAI
+        get_time_step = 0
       END FUNCTION
       
       FUNCTION get_kinetic_energy(kinetic_energy)
@@ -504,17 +504,16 @@
         INCLUDE 'src/common6.h'
         DOUBLE PRECISION :: t_end
         INTEGER :: evolve_model
-        print *, "toff = ", toff
         if(nb6_init_called.eq.0) then
             nb6_init_called = 1
             CALL NBODY6
         end if
-        IF(t_end.gt.0) THEN
+        DO WHILE(TTOT.lt.t_end)
 *            TCRIT = t_end
 *            amusein = 1
 *            PRINT *, "CALLING integration"
             CALL INTAMUSE
-        END IF
+        END DO
       END FUNCTION
       
       FUNCTION get_begin_time(output)
