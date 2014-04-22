@@ -1451,13 +1451,14 @@ class Multiples(options.OptionalAttributes):
         code.particles_in_field.add_particles(self.particles - particles_in_encounter)
         code.existing_binaries.add_particles(self.binaries)
         code.existing_multiples.add_particles(self.multiples)
-        LOG_ENCOUNTER.info("handling encounter, {0} particles in encounter", len(code.particles_in_encounter))
+        LOG_ENCOUNTER.info("handling encounter, {0} particles in encounter".format(len(code.particles_in_encounter)))
         code.execute()
         LOG_ENCOUNTER.info(
-            "handling encounter, finished, {0} new multiples, {1} dissolved multiples, {2} updated multiples", 
-            len(code.new_multiples),
-            len(code.dissolved_multiples),
-            len(code.updated_multiples)
+            "handling encounter, finished, {0} new multiples, {1} dissolved multiples, {2} updated multiples".format(
+                len(code.new_multiples),
+                len(code.dissolved_multiples),
+                len(code.updated_multiples
+            ))
         )
         
         

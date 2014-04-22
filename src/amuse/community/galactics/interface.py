@@ -202,7 +202,7 @@ class GalactICsImplementation(object):
             index_file = open(index_filename, "rb")
             dbh_index = pickle.load(index_file)
             index_file.close()
-            if in_dbh in dbh_index and os.path.exists(os.path.join(self._output_directory, dbh_index[in_dbh])):
+            if in_dbh in dbh_index and os.path.exists(os.path.join(self._output_directory, dbh_index[in_dbh])) and os.path.exists(os.path.join(self._output_directory, dbh_index[in_dbh], 'dbh.dat')):
                 dbh_dir, is_new = dbh_index[in_dbh], False
             else:
                 dbh_dir, is_new = self._new_dbh_dir(in_dbh)
@@ -225,7 +225,7 @@ class GalactICsImplementation(object):
             in_diskdf = self.generate_in_diskdf_string()
             dbh_dir, is_new = self._location_dbh_dat(in_dbh + in_diskdf)
             self._cwd = dbh_dir
-            
+            print dbh_dir
             if not is_new:
                 return 0
             print "Writing output to:", self._cwd
