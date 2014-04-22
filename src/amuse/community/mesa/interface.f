@@ -680,13 +680,13 @@
       end function
 
 ! special list of z fractions -- if you use these, they should add to 1.0
-      function get_accrete_composition_metals(AMUSE_id, be, b, c, n, o, f, ne, &
+      function get_accrete_composition_metals(AMUSE_id, li, be, b, c, n, o, f, ne, &
       na, mg, al, si, p, s, cl, ar, k, ca, sc, ti, v, cr, mn, fe, co, ni, cu, zn)
          use star_private_def, only: star_info, get_star_ptr
          use amuse_support, only: failed
          implicit none
          integer, intent(in) :: AMUSE_id
-         double precision, intent(out) :: be, b, c, n, o, f, ne, na, mg, al, si
+         double precision, intent(out) :: li, be, b, c, n, o, f, ne, na, mg, al, si
          double precision, intent(out) :: p, s, cl, ar, k, ca, sc, ti, v, cr, mn
          double precision, intent(out) :: fe, co, ni, cu, zn
          integer :: get_accrete_composition_metals, ierr
@@ -694,6 +694,7 @@
          get_accrete_composition_metals = -1
          call get_star_ptr(AMUSE_id, star_pointer, ierr)
          if (failed('get_star_ptr', ierr)) return
+         li = star_pointer% z_fraction_li
          be = star_pointer% z_fraction_be
          b = star_pointer% z_fraction_b
          c = star_pointer% z_fraction_c
@@ -723,13 +724,13 @@
          zn = star_pointer% z_fraction_zn
          get_accrete_composition_metals = 0
       end function
-      function set_accrete_composition_metals(AMUSE_id, be, b, c, n, o, f, ne, &
+      function set_accrete_composition_metals(AMUSE_id, li, be, b, c, n, o, f, ne, &
       na, mg, al, si, p, s, cl, ar, k, ca, sc, ti, v, cr, mn, fe, co, ni, cu, zn)
          use star_private_def, only: star_info, get_star_ptr
          use amuse_support, only: failed
          implicit none
          integer, intent(in) :: AMUSE_id
-         double precision, intent(in) :: be, b, c, n, o, f, ne, na, mg, al, si
+         double precision, intent(in) :: li, be, b, c, n, o, f, ne, na, mg, al, si
          double precision, intent(in) :: p, s, cl, ar, k, ca, sc, ti, v, cr, mn
          double precision, intent(in) :: fe, co, ni, cu, zn
          integer :: set_accrete_composition_metals, ierr
@@ -737,6 +738,7 @@
          set_accrete_composition_metals = -1
          call get_star_ptr(AMUSE_id, star_pointer, ierr)
          if (failed('get_star_ptr', ierr)) return
+         star_pointer% z_fraction_li = li
          star_pointer% z_fraction_be = be
          star_pointer% z_fraction_b = b
          star_pointer% z_fraction_c = c

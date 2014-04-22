@@ -231,6 +231,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('li', dtype='float64', direction=function.OUT)
         function.addParameter('be', dtype='float64', direction=function.OUT)
         function.addParameter('b', dtype='float64', direction=function.OUT)
         function.addParameter('c', dtype='float64', direction=function.OUT)
@@ -265,6 +266,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN)
+        function.addParameter('li', dtype='float64', direction=function.IN)
         function.addParameter('be', dtype='float64', direction=function.IN)
         function.addParameter('b', dtype='float64', direction=function.IN)
         function.addParameter('c', dtype='float64', direction=function.IN)

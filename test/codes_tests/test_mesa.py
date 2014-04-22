@@ -1053,5 +1053,40 @@ class TestMESA(TestWithMPI):
         self.assertEqual(core_mass_by_species[3], carbon_mass_in_core)
         self.assertEqual(core_mass_by_species[5], oxygen_mass_in_core)
     
+    def test25(self):
+        print "Testing MESA accretion"
+        instance = self.new_instance_of_an_optional_code(MESA)
+        instance.parameters.RGB_wind_scheme = 0
+        instance.parameters.AGB_wind_scheme = 0
+        star = instance.particles.add_particle(Particle(mass=2|units.MSun))
+        
+        self.assertEqual(star.get_accrete_same_as_surface(), 1)
+        star.set_accrete_same_as_surface(0)
+        self.assertEqual(star.get_accrete_same_as_surface(), 0)
+        
+        self.assertEqual(star.get_accrete_composition_non_metals(), [-1.0, -1.0, -1.0, -1.0])
+        self.assertEqual(star.get_accrete_composition_metals_identifier(), -1)
+        self.assertEqual(star.get_accrete_composition_metals(), [-1.0]*28)
+        print "Accreting 75% deuterium",
+        composition_light = [0, 0.75, 0, 0]
+        print "and 25% iron"
+        composition_metals = [0]*23 + [1.0] + [0]*4
+        star.set_accrete_composition_non_metals(*composition_light)
+        star.set_accrete_composition_metals_identifier(0) # i.e. specified below:
+        star.set_accrete_composition_metals(*composition_metals)
+        self.assertEqual(star.get_accrete_composition_non_metals(), composition_light)
+        self.assertEqual(star.get_accrete_composition_metals_identifier(), 0)
+        self.assertEqual(star.get_accrete_composition_metals(), composition_metals)
+        
+        star.mass_change = 1.0e-8 | units.MSun / units.yr
+        star.time_step = 0.1 | units.yr
+        instance.evolve_model(1 | units.yr)
+        composition = star.get_chemical_abundance_profiles()
+        species = star.get_names_of_species()
+        print "Both deuterium and iron are not in the current net,"
+        print "so have been added to {0} and {1}".format(species[0], species[-1])
+        self.assertEqual(composition[:, -1], [0.75, 0, 0, 0, 0, 0, 0, 0.25])
+        instance.stop()
+    
 
 
