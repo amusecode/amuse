@@ -26,6 +26,7 @@ import ibis.ipl.WriteMessage;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -169,6 +170,7 @@ public class WorkerJobRunner extends JobRunner {
                 //will timeout if this takes too long.
                 //Note we do an accept on the socket, not the channel.
                 //This is required as a workaround, otherwise the timeout on the accept is ignored
+                logger.debug("Waiting for connection");
                 SocketChannel result = serverSocket.socket().accept().getChannel();
 
                 logger.debug("connection accepted");
@@ -202,9 +204,14 @@ public class WorkerJobRunner extends JobRunner {
 
         message.finish();
 
+        
+        InetSocketAddress wildcardAddress = new InetSocketAddress(0);
+        
         ServerSocketChannel serverSocket = ServerSocketChannel.open();
         //serverSocket.bind(new InetSocketAddress(InetAddress.getByName(null), 0), 10);
-        serverSocket.bind(null);
+        //serverSocket.bind(null);
+
+        serverSocket.bind(wildcardAddress);
         serverSocket.configureBlocking(true);
         //serverSocket.socket().setSoTimeout(ACCEPT_TIMEOUT);
 

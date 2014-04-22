@@ -241,19 +241,20 @@ public class JobSet extends Thread {
                     //remove this job from the queue
                     iterator.remove();
                 }
-
             }
 
             if (nodesInQueue > 0) {
                 logger.info("Now " + nodesInQueue + " waiting in queue");
             }
-
+            
             try {
                 wait(5000);
             } catch (InterruptedException e) {
                 logger.debug("Scheduler thread interrupted, time to quit");
                 return;
             }
+            
+            
         }
     }
 
@@ -282,8 +283,8 @@ public class JobSet extends Thread {
     public ScriptJob getScriptJob(int jobID) throws DistributedAmuseException {
         AmuseJob result = getJob(jobID);
         
-        if (result.getType() != "function") {
-            throw new DistributedAmuseException("Found job not a function job, instead found type " + result.getType()); 
+        if (result.getType() != "script") {
+            throw new DistributedAmuseException("Found job not a script job, instead found type " + result.getType()); 
         }
         
         return (ScriptJob) result;
@@ -292,8 +293,8 @@ public class JobSet extends Thread {
     public WorkerJob getWorkerJob(int jobID) throws DistributedAmuseException {
         AmuseJob result = getJob(jobID);
         
-        if (result.getType() != "function") {
-            throw new DistributedAmuseException("Found job not a function job, instead found type " + result.getType()); 
+        if (result.getType() != "worker") {
+            throw new DistributedAmuseException("Found job not a worker job, instead found type " + result.getType()); 
         }
         
         return (WorkerJob) result;

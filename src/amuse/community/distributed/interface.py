@@ -28,11 +28,14 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
 # keeping a reference is no longer necessary
         
     def __init__(self, **keyword_arguments):
+        if self.channel_type != 'sockets':
+            raise Exception("Distributed Amuse must be started with sockets channel, not '%s'" % self.channel_type)
+        
         CodeInterface.__init__(self, name_of_the_worker="distributed_worker_java", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
 
 
-    @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
+    @option(choices=['sockets'], sections=("channel",))
     def channel_type(self):
         return 'sockets'
     
@@ -534,9 +537,6 @@ class DistributedAmuse(CommonCode):
 #        self.stdoutHandler = OutputHandler(sys.stdout, port)
 #        self.stderrHandler = OutputHandler(sys.stderr, port)
 
-        if DistributedChannel.defaultDistributedInstance is None:
-            DistributedChannel.defaultDistributedInstance=self
-
         #add local resource            
         resource = Resource()
         resource.name = "local"
@@ -545,18 +545,29 @@ class DistributedAmuse(CommonCode):
         resource.scheduler_type = "local"
         self.resources.add_resource(resource)
 
-    def set_as_default(self):
-        DistributedChannel.defaultDistributedInstance=self
+    def use_for_distributed_workers(self, enable=True):
+        if enable:
+            DistributedChannel.default_distributed_instance=self
+        elif DistributedChannel.default_distributed_instance is self:
+            DistributedChannel.default_distributed_instance=None
         
-    def set_as_default_for_all_workers(self):
-        DistributedChannel.defaultDistributedInstance=self
-        options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
+    def use_for_all_workers(self, enable=True):
+        if enable:
+            DistributedChannel.default_distributed_instance=self
+            options.GlobalOptions.instance().override_value_for_option("channel_type", "distributed")
+        else:
+            if DistributedChannel.default_distributed_instance is self \
+                     and options.GlobalOptions.instance().overriden_options.has_key("channel_type"):
+                DistributedChannel.default_distributed_instance=None
+                del options.GlobalOptions.instance().overriden_options["channel_type"]
+            
 
     def cleanup_code(self):
-        if DistributedChannel.defaultDistributedInstance is self:
-            DistributedChannel.defaultDistributedInstance=None
+        if DistributedChannel.default_distributed_instance is self:
+            DistributedChannel.default_distributed_instance=None
             if options.GlobalOptions.instance().overriden_options.has_key("channel_type"):
-              del options.GlobalOptions.instance().overriden_options["channel_type"]
+                del options.GlobalOptions.instance().overriden_options["channel_type"]
+                
         self.overridden().cleanup_code()
         
     def define_state(self, object): 
@@ -582,8 +593,8 @@ class DistributedAmuse(CommonCode):
         object.add_method('RUN', 'get_function_job_status')
         object.add_method('RUN', 'get_worker_state')
         object.add_method('RUN', 'get_worker_status')
-        object.add_method('RUN', 'set_as_default')
-        object.add_method('RUN', 'set_as_default_for_all_workers')
+        object.add_method('RUN', 'use_for_distributed_workers')
+        object.add_method('RUN', 'use_for_all_workers')
     
     def define_parameters(self, object):
               

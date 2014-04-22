@@ -41,7 +41,7 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
 
         print "Waiting for pilots"
         self.distinstance.wait_for_pilots()
-        self.distinstance.set_as_default_for_all_workers()
+        self.distinstance.use_for_all_workers()
 
     def tearDown(self):
         print "Stopping distributed code"

@@ -77,7 +77,7 @@ public class WorkerConnection extends Thread {
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    WorkerConnection(SocketChannel socket, Ibis ibis, JobSet jobManager, int startupTimeout) throws Exception {
+    WorkerConnection(SocketChannel socket, Ibis ibis, JobSet jobSet, int startupTimeout) throws Exception {
         this.socket = socket;
         this.startupTimeout = startupTimeout;
 
@@ -136,7 +136,7 @@ public class WorkerConnection extends Thread {
         sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
 
         // start deployment of worker (possibly on remote machine)
-        job = jobManager.submitWorkerJob(workerDescription);
+        job = jobSet.submitWorkerJob(workerDescription);
 
         logger.info("New worker submitted : {} with description : {}", this, workerDescription);
 

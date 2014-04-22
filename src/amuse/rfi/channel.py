@@ -2023,7 +2023,7 @@ class OutputHandler(threading.Thread):
 
 class DistributedChannel(AbstractMessageChannel):
             
-    defaultDistributedInstance = None
+    default_distributed_instance = None
     
     @staticmethod
     def getStdoutID(instance):
@@ -2040,15 +2040,15 @@ class DistributedChannel(AbstractMessageChannel):
         return instance._stderrHandler.id
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None,
-                   distributedInstance=None, dynamic_python_code=False, **options):
+                   distributed_instance=None, dynamic_python_code=False, **options):
         AbstractMessageChannel.__init__(self, **options)
         
-        if distributedInstance is None:
-            if self.defaultDistributedInstance is None:
-                raise Exception("No default distributed instance present")  
-            self.distributedInstance=self.defaultDistributedInstance
+        if distributed_instance is None:
+            if self.default_distributed_instance is None:
+                raise Exception("No default distributed instance present, and none explicitly passed to code")  
+            self.distributed_instance = self.default_distributed_instance
         else:
-            self.distributedInstance=distributedInstance
+            self.distributed_instance = distributed_instance
         
         #logger.setLevel(logging.DEBUG)
         
@@ -2070,7 +2070,7 @@ class DistributedChannel(AbstractMessageChannel):
         logger.debug("number of workers is %d, number of threads is %s, label is %s", self.number_of_workers, self.number_of_threads, self.label)
         
         self.daemon_host = 'localhost'  # Distributed process always running on the local machine
-        self.daemon_port = self.distributedInstance.port  # Port number for the Distributed process
+        self.daemon_port = self.distributed_instance.port  # Port number for the Distributed process
 
         logger.debug("port is %d", self.daemon_port)
         
@@ -2118,13 +2118,13 @@ class DistributedChannel(AbstractMessageChannel):
         
         # if redirect = none, set output file to console stdout stream ID, otherwise make absolute
         if (self.redirect_stdout_file == 'none'):
-            self.redirect_stdout_file = self.getStdoutID(self.distributedInstance)
+            self.redirect_stdout_file = self.getStdoutID(self.distributed_instance)
         else:
             self.redirect_stdout_file = os.path.abspath(self.redirect_stdout_file)
 
         # if redirect = none, set error file to console stderr stream ID, otherwise make absolute
         if (self.redirect_stderr_file == 'none'):
-            self.redirect_stderr_file = self.getStderrID(self.distributedInstance)
+            self.redirect_stderr_file = self.getStderrID(self.distributed_instance)
         else:
             self.redirect_stderr_file = os.path.abspath(self.redirect_stderr_file)
         

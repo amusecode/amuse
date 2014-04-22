@@ -200,6 +200,8 @@ public class PilotManager {
     private JobStatus xenonJobStatus;
 
     private boolean left = false;
+    
+    private String lastState = null;
 
     /**
      * @param resource
@@ -264,6 +266,8 @@ public class PilotManager {
 
             //get initial job status
             this.xenonJobStatus = xenon.jobs().getJobStatus(this.xenonJob);
+            
+            logState();
 
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start reservation on " + resource.getName() + ": " + e, e);
@@ -396,11 +400,21 @@ public class PilotManager {
         return result;
     }
     
+    
+    private synchronized void logState() {
+        String state = getStateString();
+        
+        if (!state.equals(this.lastState)) {
+            this.lastState = state;
+            logger.info("State for pilot {} on resource {} now {}", getID(), getResourceName(), getStateString());    
+        }
+    }
+    
     //ibis identifier, set by status monitor
     synchronized void setIbisIdentifier(IbisIdentifier ibis) {
         this.ibisIdentifier = ibis;
         notifyAll();
-        logger.info("State for pilot {} on resource {} now {}", getID(), getResourceName(), getStateString());
+        logState();
     }
 
     public synchronized IbisIdentifier getIbisIdentifier() {
@@ -411,7 +425,7 @@ public class PilotManager {
     synchronized void setXenonJobStatus(JobStatus status) {
         this.xenonJobStatus = status;
         notifyAll();
-        logger.info("State for pilot {} on resource {} now {}", getID(), getResourceName(), getStateString());
+        logState();
     }
 
     //status, set by Xenon job monitor
@@ -423,7 +437,7 @@ public class PilotManager {
     synchronized void setLeft() {
         this.left = true;
         notifyAll();
-        logger.info("State for pilot {} on resource {} now {}", getID(), getResourceName(), getStateString());
+        logState();
     }
 
     synchronized boolean hasLeft() {
