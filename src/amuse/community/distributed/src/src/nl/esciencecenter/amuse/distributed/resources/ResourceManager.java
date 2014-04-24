@@ -63,6 +63,7 @@ public class ResourceManager {
     private final String location;
     private final String gateway;
     private final String amuseDir;
+    private final String tmpDir;
     private final String schedulerType;
 
     private final AmuseConfiguration configuration;
@@ -96,13 +97,14 @@ public class ResourceManager {
         throw new DistributedAmuseException("Local and new remote Hub at " + name + " not able to communicate");
     }
 
-    public ResourceManager(String name, String location, String gateway, String amuseDir, String schedulerType, boolean startHub,
+    public ResourceManager(String name, String location, String gateway, String amuseDir, String tmpDir, String schedulerType, boolean startHub,
             Xenon xenon, Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
         this.location = location;
         this.gateway = gateway;
         this.amuseDir = amuseDir;
+        this.tmpDir = tmpDir;
         this.schedulerType = schedulerType;
         this.startHub = startHub;
         this.xenon = xenon;
@@ -221,6 +223,11 @@ public class ResourceManager {
     public String getAmuseDir() {
         return amuseDir;
     }
+    
+    public String getTmpDir() {
+        return tmpDir;
+    }
+
 
     public String getSchedulerType() {
         return schedulerType;

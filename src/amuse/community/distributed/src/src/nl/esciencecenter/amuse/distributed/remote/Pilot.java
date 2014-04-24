@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -84,7 +85,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         }
     }
     
-    Pilot(AmuseConfiguration configuration, Properties properties, int id, boolean debug) throws IbisCreationFailedException,
+    Pilot(AmuseConfiguration configuration, Properties properties, int id, boolean debug, String tmpDir) throws IbisCreationFailedException,
             IOException, InterruptedException {
         this.configuration = configuration;
         jobs = new HashMap<Integer, JobRunner>();
@@ -105,7 +106,14 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
         receivePort = ibis.createReceivePort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE, PORT_NAME, this, this, null);
         
-        tmpDir = Files.createTempDirectory("distributed-amuse-pilot-" + id + "-");
+        Path tmpPath = Paths.get(tmpDir);
+        
+        Files.createDirectories(tmpPath);
+        
+        this.tmpDir = Files.createTempDirectory(tmpPath, "distributed-amuse-pilot-" + id + "-");
+        
+        logger.debug("Saving temporary files in " + this.tmpDir);
+
     }
 
     /**
@@ -273,6 +281,8 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
         File amuseHome = null;
         int pilotID = 0;
         boolean debug = false;
+        String tmpDir = System.getProperty("java.io.tmpdir") + File.separator + "distributed-amuse-pilots-" + System.getProperty("user.name");
+                
 
         Properties properties = new Properties();
         properties.put(IbisProperties.POOL_NAME, "amuse");
@@ -298,6 +308,9 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
                 properties.put(IbisProperties.HUB_ADDRESSES, arguments[i]);
             } else if (arguments[i].equalsIgnoreCase("--debug")) {
                 debug = true;
+            } else if (arguments[i].equalsIgnoreCase("--tmp-dir")) {
+                i++;
+                tmpDir = arguments[i];
             } else {
                 System.err.println("Unknown command line option: " + arguments[i]);
                 System.exit(1);
@@ -311,7 +324,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             System.err.println(entry.getKey() + " = " + entry.getValue());
         }
 
-        Pilot pilot = new Pilot(configuration, properties, pilotID, debug);
+        Pilot pilot = new Pilot(configuration, properties, pilotID, debug, tmpDir);
 
         pilot.run();
 

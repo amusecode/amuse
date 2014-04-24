@@ -89,7 +89,7 @@ public abstract class JobRunner extends Thread {
 
     synchronized void startProcess(ProcessBuilder builder) throws IOException {
         logger.debug("Running process in cwd: " + builder.directory());
-        
+
         process = builder.start();
 
         //attach streams
@@ -154,6 +154,13 @@ public abstract class JobRunner extends Thread {
     }
 
     protected void deleteSandbox() {
+        if (!Files.exists(sandbox)) {
+            logger.debug("Sandbox does not exist, not cleaning up");
+            return;
+        }
+
+        logger.debug("Cleaning up Sandbox");
+
         try {
             Files.walkFileTree(sandbox, new SimpleFileVisitor<Path>() {
                 @Override
@@ -181,7 +188,7 @@ public abstract class JobRunner extends Thread {
         try {
             int exitcode = process.exitValue();
             //we only end up here if the process is done
-            
+
             logger.info("Process ended with value " + exitcode);
             return true;
         } catch (IllegalThreadStateException e) {
@@ -216,38 +223,43 @@ public abstract class JobRunner extends Thread {
 
     }
 
-    
-    
     /**
      * This function will cancel the job by killing the process running the job. Since it is a common case to cancel a job when a
      * normally finishing job is cleaned up, we give the process a short while to finish on its own.
      */
     public synchronized void cancel() {
-        if (process == null) {
-            return;
+        try {
+
+            if (process == null) {
+                return;
+            }
+
+            //wait a little while for the process (or actually the streams connected to the process) to finish by itself
+            out.waitFor(50);
+            err.waitFor(50);
+
+            //check if the process is finished
+            if (hasEnded()) {
+                return;
+            }
+            ;
+
+            process.destroy();
+
+            //wait a little while for the process (or actually the streams connected to the process) to finish.
+            out.waitFor(50);
+            err.waitFor(50);
+
+            if (hasEnded()) {
+                return;
+            }
+            ;
+
+            logger.error("Process not ended after process.destroy()! Performing native kill");
+            nativeKill();
+        } finally {
+            deleteSandbox();
         }
-
-        //wait a little while for the process (or actually the streams connected to the process) to finish by itself
-        out.waitFor(50);
-        err.waitFor(50);
-
-        //check if the process is finished
-        if (hasEnded()) {
-            return;
-        };
-
-        process.destroy();
-        
-        //wait a little while for the process (or actually the streams connected to the process) to finish.
-        out.waitFor(50);
-        err.waitFor(50);
-
-        if (hasEnded()) {
-            return;
-        };
-
-        logger.error("Process not ended after process.destroy()! Performing native kill");
-        nativeKill();
     }
 
     abstract void writeResultData(WriteMessage message) throws IOException;

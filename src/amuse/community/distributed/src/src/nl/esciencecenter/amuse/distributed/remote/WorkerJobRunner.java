@@ -320,6 +320,7 @@ public class WorkerJobRunner extends JobRunner {
             logger.error("Error while handling request, stopping worker", e);
             setError(e);
         }
+        logger.debug("Closing sendport");
         if (sendPort != null) {
             try {
                 sendPort.close();
@@ -327,6 +328,7 @@ public class WorkerJobRunner extends JobRunner {
                 //IGNORE
             }
         }
+        logger.debug("Closing receiveport");
         if (receivePort != null) {
             try {
                 receivePort.close();
@@ -335,11 +337,16 @@ public class WorkerJobRunner extends JobRunner {
             }
         }
 
+        logger.debug("Waiting for process to end");
         waitForProcess();
 
         logger.debug("Worker job done, sending result to amuse");
 
         sendResult();
+        
+        logger.debug("Deleting sandbox");
+        
+        deleteSandbox();
     }
 
     @Override

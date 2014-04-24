@@ -147,6 +147,11 @@ public class PilotManager {
 
         javaArguments.add("--amuse-home");
         javaArguments.add(configuration.getAmuseHome().getAbsolutePath());
+        
+        if (resource.getTmpDir() != null) {
+            javaArguments.add("--tmp-dir");
+            javaArguments.add(resource.getTmpDir());
+        }
 
         if (debug) {
             javaArguments.add("--debug");
