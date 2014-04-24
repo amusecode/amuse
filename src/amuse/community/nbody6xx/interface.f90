@@ -12,7 +12,8 @@
 *       ............................................
 *       Message Passing Version NBODY6++ for Massively Parallel Systems
 *       Developed by Rainer Spurzem, ARI, Heidelberg
-*       Ported to AMUSE by Maxwell X. Tsai, NAOC, Beijing
+*       Ported to AMUSE by Maxwell X. TSAI/CAI, NAOC/KIAA, Beijing
+*       (2013, 2014)
 *
       MODULE AMUSE_INTERFACE
       integer :: last_index
@@ -647,6 +648,22 @@
         INTEGER :: get_zmbar
         val = ZMBAR
         get_zmbar = 0
+      END FUNCTION
+
+      FUNCTION set_qe(val)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: val
+        INTEGER :: set_qe
+        QE = val
+        set_qe = 0
+      END FUNCTION
+
+      FUNCTION get_qe(val)
+        INCLUDE 'src/common6.h'
+        DOUBLE PRECISION :: val
+        INTEGER :: get_qe
+        val = QE
+        get_qe = 0
       END FUNCTION
 
       FUNCTION get_gravity_at_point(eps1, x1, y1, z1, fx, fy, fz,

@@ -154,6 +154,27 @@ class Nbody6xxInterface(
         return function
 
 
+    @legacy_function
+    def set_qe():
+        """
+        Set the relative energy error tolerance.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('val', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_qe():
+        """
+        Get the relative energy error tolerance.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('val', dtype='float64',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
 
 
 
@@ -217,6 +238,31 @@ class Nbody6xx(GravitationalDynamics, GravityFieldCode):
             "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
+
+        object.add_method_parameter(
+            "get_qe",
+            "set_qe",
+            "QE",
+            "Relative energy error tolerance",
+            default_value = 2.0E-4
+        )
+
+        object.add_method_parameter(
+            "get_rbar",
+            "set_rbar",
+            "RBAR",
+            "The scaling unit in parsec for one N-body unit of length",
+            default_value = 1.0 | units.parsec
+        )
+
+        object.add_method_parameter(
+            "get_zmbar",
+            "set_zmbar",
+            "ZMBAR",
+            "The scaling unit for average particle mass in solar masses",
+            default_value = 0.7 | units.MSun
+        )
+
         #self.stopping_conditions.define_parameters(object)
 
     def define_methods(self, object):
