@@ -521,7 +521,7 @@ def stop_interfaces(exceptions = []):
     All instantiated interfaces will become unstable
     after this call!
     """
-    for reference in CodeInterface.instances:
+    for reference in reversed(CodeInterface.instances):
         x = reference()
         if not x is None and x.__class__.__name__ not in exceptions:
             try:
