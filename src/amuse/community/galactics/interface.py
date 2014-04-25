@@ -297,7 +297,7 @@ class GalactICsImplementation(object):
                         stderr = PIPE)
                 stdout, stderr = process.communicate(in_halo)
                 if process.returncode != 0:
-                    print "error:", error
+                    print "error:", stderror
                     return -1 
                 halo_file.close()
                 
@@ -310,7 +310,7 @@ class GalactICsImplementation(object):
                         stderr = PIPE)
                 stdout, stderr = process.communicate()
                 if process.returncode != 0:
-                    print "error:", error
+                    print "error:", stderr
                     return -1 
                 halo1_file.close()
                 concatenation_cmd.append("halo1")
