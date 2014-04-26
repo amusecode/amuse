@@ -315,7 +315,7 @@ if __name__ == '__main__':
     #os.system('env')
 
 
-    # assert is_mpd_running()
+    assert is_mpd_running()
     run_ph4(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
              accuracy_parameter, softening_length,
