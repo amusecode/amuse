@@ -395,6 +395,12 @@ class FiInterface(
         function.result_type = 'i'
         return function
 
+    @legacy_function
+    def trigger_partremoval():
+        function = LegacyFunctionSpecification()  
+        return function
+
+
 # setting/ getting parameters
 # logicals
     @legacy_function   

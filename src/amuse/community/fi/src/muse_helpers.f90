@@ -438,7 +438,7 @@ subroutine muse_stepsys(tend,sync)
    if (is_any_condition_set().GT.0) exit
    n=n+1
  enddo
- call outstate(n)
+! call outstate(n)
  if(sync.EQ.1) then 
    call activateparts
    call corrpos(itimestp,'sync')
