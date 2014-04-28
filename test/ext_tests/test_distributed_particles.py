@@ -476,7 +476,7 @@ class TestDistributedParticles(TestWithMPI):
         
         x = DistributedParticles(
             size = 10,
-            number_of_workers = 1
+            number_of_workers = 2
         )
         x.set_from_generator(generate_set)
         self.assertEqual(y.index,x.index)
