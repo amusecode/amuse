@@ -19,6 +19,10 @@ try:
 except ImportError:
     MPI = None
     
+def dump_and_encode(x):
+  return pickle.dumps(x,0) # -1 does not work with sockets channel
+def decode_and_load(x):
+  return pickle.loads(x.encode("latin-1"))
 
 class DistributedParticlesInterface(PythonCodeInterface):
     
@@ -68,7 +72,16 @@ class DistributedParticlesInterface(PythonCodeInterface):
         function.addParameter('reference', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
-        
+
+    @legacy_function
+    def set_from_generator():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('reference_in', dtype='int64', direction=function.IN)
+        function.addParameter('pickled_generator', dtype='string', direction=function.IN)
+        function.addParameter('pickled_args', dtype='string', direction=function.IN)
+        function.addParameter('pickled_kwargs', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function        
   
 class DistributedParticlesCode(InCodeComponentImplementation):
     
@@ -102,16 +115,16 @@ class DistributedParticles(object):
         self.code.do_set_attribute(
             self.reference,
             name_of_the_attribute, 
-            pickle.dumps(value)
+            dump_and_encode(value)
         )
         
     def __getattr__(self, name_of_the_attribute):
-        return pickle.loads(self.code.do_get_attribute(self.reference,name_of_the_attribute)[0])
+        return decode_and_load(self.code.do_get_attribute(self.reference,name_of_the_attribute)[0])
         
     def __getitem__(self, index):
         is_particle, reference = self.code.do_getitem(
             self.reference,
-            pickle.dumps(index)
+            dump_and_encode(index)
         )
         if is_particle:
             return DistributedParticle(
@@ -123,6 +136,10 @@ class DistributedParticles(object):
                 code = self.code,
                 reference = reference
             )
+
+    def set_from_generator(self,func, args=(),kwargs={}):        
+        self.code.set_from_generator(self.reference, dump_and_encode(func),
+                dump_and_encode(args),dump_and_encode(kwargs))
             
 class DistributedParticle(object):
     
@@ -134,11 +151,11 @@ class DistributedParticle(object):
         self.code.do_set_attribute(
             self.reference,
             name_of_the_attribute, 
-            pickle.dumps(value)
+            dump_and_encode(value)
         )
         
     def __getattr__(self, name_of_the_attribute):
-        return pickle.loads(self.code.do_get_attribute(self.reference,name_of_the_attribute)[0])
+        return decode_and_load(self.code.do_get_attribute(self.reference,name_of_the_attribute)[0])
         
 ReferencedParticles = namedtuple('ReferencedParticles', ['particles', 'local_offset', 'local_size', 'global_size'])
 
@@ -194,7 +211,7 @@ class DistributedParticlesImplementation(object):
         
     def do_set_attribute(self, reference, name_of_the_attribute, pickled_value):
         real_particles,local_offset, local_size, global_size = self.references_to_particles[reference]
-        value = pickle.loads(pickled_value)
+        value = decode_and_load(pickled_value)
         if not real_particles is None:
             if (is_quantity(value) and not value.is_scalar()) or hasattr(value, '__iter__'):
                 setattr(real_particles, name_of_the_attribute, value[local_offset:local_offset + local_size])
@@ -242,12 +259,12 @@ class DistributedParticlesImplementation(object):
            value = self._merge_results(quantities)
         else:
             value = None
-        output.value = pickle.dumps(value)
+        output.value = dump_and_encode(value)
         return 0
         
     def do_getitem(self, reference_in, pickled_index, is_particle_out, reference_out):
         real_particles, local_offset, local_size, global_size  = self.references_to_particles[reference_in]
-        index = pickle.loads(pickled_index)
+        index = decode_and_load(pickled_index)
         self.references_to_particles[self.reference_counter] = self.EmptyReference
         if isinstance(index, int):
             if index >= local_offset and index < local_offset + local_size:
@@ -297,7 +314,33 @@ class DistributedParticlesImplementation(object):
         self.reference_counter += 1
         return 0
         
-        
+    def set_from_generator(self,reference, pickled_generator, pickled_args=None,pickled_kwargs=None):
+        generator=decode_and_load(pickled_generator)
+        args=()
+        if pickled_args is not None:
+          args=decode_and_load(pickled_args)
+        kwargs={}
+        if pickled_kwargs is not None:
+          kwargs=decode_and_load(pickled_kwargs)
+
+        real_particles,local_offset, local_size, global_size = self.references_to_particles[reference]
+        particles=generator(local_offset,local_offset+local_size,*args,**kwargs)
+        keys = real_particles.get_all_keys_in_store()
+        real_particles.remove_particles(real_particles[:])
+        attributes = particles.get_attribute_names_defined_in_store()
+        indices = particles.get_all_indices_in_store()
+        values =  particles.get_values_in_store(indices, attributes)
+        result = datamodel.Particles()
+        result.add_particles_to_store(keys, attributes, values)
+        real_particles.add_particles(result)
+        return 0
+
+def generate_set(start,end,*args,**kwargs):
+    from amuse.datamodel import Particles
+    p=Particles(end-start)
+    p.index=range(start,end)
+    return p
+    
 class TestDistributedParticles(TestWithMPI):
 
     def setUp(self):
@@ -427,7 +470,16 @@ class TestDistributedParticles(TestWithMPI):
         x[15:25].mass = range(10)
         self.assertEquals(x[15:25].mass, range(10))
             
+    def test11(self):
+        from test_distributed_particles import generate_set
+        y=generate_set(0,10)
         
-        
+        x = DistributedParticles(
+            size = 10,
+            number_of_workers = 1
+        )
+        x.set_from_generator(generate_set)
+        self.assertEqual(y.index,x.index)
+
 
         
