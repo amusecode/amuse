@@ -391,13 +391,13 @@ class DistributedParticlesImplementation(object):
         return 0
 
 
-def generate_set_test_function(start,end,*args,**kwargs):
+def generate_set_example_function(start,end,*args,**kwargs):
     from amuse.datamodel import Particles
     p=Particles(end-start)
     p.index=range(start,end)
     return p
 
-def select_test_function(x):
+def select_example_function(x):
     return x > 5
     
 class TestDistributedParticles(TestWithMPI):
@@ -530,30 +530,30 @@ class TestDistributedParticles(TestWithMPI):
         self.assertEquals(x[15:25].mass, range(10))
             
     def test11(self):
-        from test_distributed_particles import generate_set_test_function
-        y=generate_set_test_function(0,10)
+        from test_distributed_particles import generate_set_example_function
+        y=generate_set_example_function(0,10)
         
         x = DistributedParticles(
             size = 10,
             number_of_workers = 2
         )
-        x.set_from_generator(generate_set_test_function)
+        x.set_from_generator(generate_set_example_function)
         self.assertEqual(y.index,x.index)
 
     def test12(self):
-        from test_distributed_particles import generate_set_test_function
-        from test_distributed_particles import select_test_function
-        y=generate_set_test_function(0,10)
+        from test_distributed_particles import generate_set_example_function
+        from test_distributed_particles import select_example_function
+        y=generate_set_example_function(0,10)
         
         x = DistributedParticles(
             size = 10,
             number_of_workers = 2
         )
-        x.set_from_generator(generate_set_test_function)
+        x.set_from_generator(generate_set_example_function)
         self.assertEqual(y.index,x.index)        
 
-        highy=y.select_array( select_test_function, ("index",))
-        highx=x.select_array( select_test_function, ("index",))
+        highy=y.select_array( select_example_function, ("index",))
+        highx=x.select_array( select_example_function, ("index",))
         self.assertEqual(highy.index,highx.index)        
   
     def test13(self):
@@ -563,5 +563,5 @@ class TestDistributedParticles(TestWithMPI):
         )
         x.index= [0,10,10,10,0,0,10,0]
         x.mass = [1, 2, 3, 4,5,6, 7,8] | units.MSun
-        highx=x.select_array( select_test_function, ("index",))
+        highx=x.select_array( select_example_function, ("index",))
         self.assertEqual(highx.mass, [2,3,4,7] | units.MSun)
