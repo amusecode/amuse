@@ -143,26 +143,41 @@ class DistributedParticle(object):
 ReferencedParticles = namedtuple('ReferencedParticles', ['particles', 'local_offset', 'local_size', 'global_size'])
 
 class DistributedParticlesImplementation(object):
+    EmptyReference = ReferencedParticles(
+        None,
+        0,
+        0,
+        0
+    )
     
     def do_init(self, size, reference_out):
         
         self.mpi_comm = MPI.COMM_WORLD
         self.rank =  MPI.COMM_WORLD.Get_rank()
         self.number_of_processes = MPI.COMM_WORLD.Get_size()
-        self.local_size  = size / self.number_of_processes 
-        self.local_offset = self.local_size * self.rank
+        local_size  = size / self.number_of_processes 
+        left_over = size - (local_size * self.number_of_processes)
+        if self.rank == 0:
+            local_size += left_over
+            local_offset = 0
+        else:
+            local_offset = (local_size * self.rank) + left_over
         self.size = size
         self.reference_counter = 0
         self.references_to_particles = {}
-        real_particles = datamodel.Particles(self.local_size)
-        self.references_to_particles[self.reference_counter] = real_particles
+        real_particles = datamodel.Particles(local_size)
+        self.references_to_particles[self.reference_counter] = ReferencedParticles(
+            real_particles,
+            local_offset,
+            local_size,
+            size
+        )
         reference_out.value = self.reference_counter
         self.reference_counter += 1
         return 0
     
     def get_length(self, reference, len_out):
-        real_particles = self.references_to_particles[reference]
-        particles_len = len(real_particles)
+        particles_len = self.references_to_particles[reference].local_size
         
         input = numpy.zeros(1,  dtype='int64')
         output = numpy.zeros(1,  dtype='int64')
@@ -170,8 +185,8 @@ class DistributedParticlesImplementation(object):
         input[0] = particles_len
             
         self.mpi_comm.Reduce(
-            [input, MPI.DOUBLE], 
-            [output, MPI.DOUBLE],
+            [input, MPI.INTEGER], 
+            [output, MPI.INTEGER],
             op=MPI.SUM, 
             root=0
         )
@@ -179,23 +194,23 @@ class DistributedParticlesImplementation(object):
         return 0
         
     def do_set_attribute(self, reference, name_of_the_attribute, pickled_value):
-        real_particles = self.references_to_particles[reference]
+        real_particles,local_offset, local_size, global_size = self.references_to_particles[reference]
         value = pickle.loads(pickled_value)
         if not real_particles is None:
             if (is_quantity(value) and not value.is_scalar()) or hasattr(value, '__iter__'):
-                setattr(real_particles, name_of_the_attribute, value[self.local_offset:self.local_offset + self.local_size])
+                setattr(real_particles, name_of_the_attribute, value[local_offset:local_offset + local_size])
             else:
                 setattr(real_particles, name_of_the_attribute, value)
         return 0
         
     def do_get_attribute(self, reference, name_of_the_attribute, output):
-        real_particles = self.references_to_particles[reference]
+        real_particles,local_offset, local_size, global_size = self.references_to_particles[reference]
         
         if self.number_of_processes > 1:
             if not real_particles is None:
-                quantity = [self.local_offset, getattr(real_particles, name_of_the_attribute)]
+                quantity = [local_offset, getattr(real_particles, name_of_the_attribute)]
             else:
-                quantity = [self.local_offset, None]
+                quantity = [local_offset, None]
             
             quantities = self.mpi_comm.gather(quantity, root = 0)
             if self.rank  == 0:
@@ -213,23 +228,50 @@ class DistributedParticlesImplementation(object):
         return 0
         
     def do_getitem(self, reference_in, pickled_index, is_particle_out, reference_out):
-        real_particles = self.references_to_particles[reference_in]
+        real_particles, local_offset, local_size, global_size  = self.references_to_particles[reference_in]
         index = pickle.loads(pickled_index)
         if self.number_of_processes > 1:
-            self.references_to_particles[self.reference_counter] = None
+            self.references_to_particles[self.reference_counter] = self.EmptyReference
             if isinstance(index, int):
-                if index >= self.local_offset and index < self.local_offset + self.local_size:
-                    output_particles = real_particles.__getitem__(index - self.local_offset)
-                    self.references_to_particles[self.reference_counter] = output_particles
+                if index >= local_offset and index < local_offset + local_size:
+                    output_particles = real_particles[index - local_offset]
+                    self.references_to_particles[self.reference_counter] = ReferencedParticles(
+                        output_particles,
+                        0,
+                        0,
+                        0
+                    )
                 is_particle_out.value = True
             elif isinstance(index, slice):
                 start, stop, step = index.indices(self.size)
-                start -= self.local_offset
-                stop -= self.local_offset
-                start = min(max(0, start), self.local_size)
-                stop = min(max(0, stop), self.local_size)
+                start -= local_offset
+                stop -= local_offset
+                start = min(max(0, start), local_size)
+                stop = min(max(0, stop), local_size)
                 output_particles = real_particles[start:stop]
-                self.references_to_particles[self.reference_counter] = output_particles
+                input = numpy.zeros(1,  dtype='int64')
+                output = numpy.zeros(self.number_of_processes,  dtype='int64')
+                
+                input[0] = len(output_particles)
+                    
+                self.mpi_comm.Allgather(
+                    [input, MPI.INTEGER], 
+                    [output, MPI.INTEGER]
+                )
+                total_size = 0
+                local_offset = 0
+                for i,current_size in enumerate(output):
+                    if i < self.rank:
+                        local_offset += current_size
+                    total_size += current_size
+                referenced_particles = ReferencedParticles(
+                    output_particles,
+                    local_offset,
+                    len(output_particles),
+                    total_size
+                )
+                self.references_to_particles[self.reference_counter] = referenced_particles
+                
                 is_particle_out.value = False # check, a slice could still result in 1 particle!!!
             else:
                 raise Exception("need to parse index and do smart things here!!")
@@ -239,16 +281,27 @@ class DistributedParticlesImplementation(object):
         else:
             output_particles = real_particles.__getitem__(index)
             is_particle_out.value = isinstance(output_particles, datamodel.Particle)
-            self.references_to_particles[self.reference_counter] = output_particles
+            if is_particle_out.value:
+                output_len = 0
+            else:
+                output_len = len(output_particles)
+                
+            self.references_to_particles[self.reference_counter] = ReferencedParticles(
+                output_particles,
+                0,
+                output_len,
+                output_len
+            )   
             reference_out.value = self.reference_counter
             self.reference_counter += 1
         return 0
         
         
-class TestMPIConcurrentProcesses(TestWithMPI):
+class TestDistributedParticles(TestWithMPI):
 
     def setUp(self):
-        pass
+        if MPI is None or CodeInterface(must_start_worker=False).channel_type != 'mpi':
+            self.skip("test needs mpi")
         
     def test1(self):
         x = DistributedParticles(
@@ -312,16 +365,27 @@ class TestMPIConcurrentProcesses(TestWithMPI):
         x.mass = [1,2,3,4,5,6,7,8] | units.MSun
         for index in range(len(x)):
             self.assertEquals(x[index].mass, (index+1)| units.MSun)
+            
+    
+    def test6(self):
+        x = DistributedParticles(
+            size = 9,
+            number_of_workers = 2
+        )
+        self.assertEquals(len(x) , 9)
+        x.mass = [1,2,3,4,5,6,7,8,9] | units.MSun
+        for index in range(len(x)):
+            self.assertEquals(x[index].mass, (index+1)| units.MSun)
         
-    def xtest6(self):
+    def test7(self):
         x = DistributedParticles(
             size = 8,
             number_of_workers = 2
         )
         self.assertEquals(len(x) , 8)
         x.mass = [1,2,3,4,5,6,7,8] | units.MSun
-        x[3:7].mass = [10,11,12,13] | units.MSun
         self.assertEquals(len(x[3:7]), 4)
+        x[3:7].mass = [10,11,12,13] | units.MSun
         expected = [1,2,3,10,11,12,13,8]| units.MSun
         for index in range(len(x)):
             self.assertEquals(x[index].mass, expected[index] )
