@@ -82,6 +82,16 @@ class DistributedParticlesInterface(PythonCodeInterface):
         function.addParameter('pickled_kwargs', dtype='string', direction=function.IN)
         function.result_type = 'int32'
         return function        
+
+    @legacy_function
+    def select_array():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('reference_in', dtype='int64', direction=function.IN)
+        function.addParameter('pickled_function', dtype='string', direction=function.IN)
+        function.addParameter('pickled_attributes', dtype='string', direction=function.IN)
+        function.addParameter('reference_out', dtype='int64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
   
 class DistributedParticlesCode(InCodeComponentImplementation):
     
@@ -140,6 +150,18 @@ class DistributedParticles(object):
     def set_from_generator(self,func, args=(),kwargs={}):        
         self.code.set_from_generator(self.reference, dump_and_encode(func),
                 dump_and_encode(args),dump_and_encode(kwargs))
+
+    def select_array(self, function, attributes):
+        
+        reference=self.code.select_array(self.reference,
+                                         dump_and_encode(function),
+                                         dump_and_encode(attributes)
+        )
+
+        return DistributedParticles(
+            code = self.code,
+            reference = reference
+        )
             
 class DistributedParticle(object):
     
@@ -335,11 +357,48 @@ class DistributedParticlesImplementation(object):
         real_particles.add_particles(result)
         return 0
 
-def generate_set(start,end,*args,**kwargs):
+    def select_array(self, reference_in, pickled_function, pickled_attributes, reference_out):
+        real_particles, local_offset, local_size, global_size  = self.references_to_particles[reference_in]
+        function = decode_and_load(pickled_function)
+        attributes = decode_and_load(pickled_attributes)
+        
+        output_particles = real_particles.select_array(function, attributes)
+        
+        input = numpy.zeros(1,  dtype='int64')
+        output = numpy.zeros(self.number_of_processes,  dtype='int64')
+            
+        input[0] = len(output_particles)
+                
+        self.mpi_comm.Allgather(
+                [input, MPI.INTEGER], 
+                [output, MPI.INTEGER]
+        )
+        total_size = 0
+        local_offset = 0
+        for i,current_size in enumerate(output):
+            if i < self.rank:
+                local_offset += current_size
+            total_size += current_size
+        referenced_particles = ReferencedParticles(
+            output_particles,
+            local_offset,
+            len(output_particles),
+            total_size
+        )
+        self.references_to_particles[self.reference_counter] = referenced_particles
+        reference_out.value = self.reference_counter
+        self.reference_counter += 1
+        return 0
+
+
+def generate_set_test_function(start,end,*args,**kwargs):
     from amuse.datamodel import Particles
     p=Particles(end-start)
     p.index=range(start,end)
     return p
+
+def select_test_function(x):
+    return x > 5
     
 class TestDistributedParticles(TestWithMPI):
 
@@ -471,15 +530,38 @@ class TestDistributedParticles(TestWithMPI):
         self.assertEquals(x[15:25].mass, range(10))
             
     def test11(self):
-        from test_distributed_particles import generate_set
-        y=generate_set(0,10)
+        from test_distributed_particles import generate_set_test_function
+        y=generate_set_test_function(0,10)
         
         x = DistributedParticles(
             size = 10,
             number_of_workers = 2
         )
-        x.set_from_generator(generate_set)
+        x.set_from_generator(generate_set_test_function)
         self.assertEqual(y.index,x.index)
 
-
+    def test12(self):
+        from test_distributed_particles import generate_set_test_function
+        from test_distributed_particles import select_test_function
+        y=generate_set_test_function(0,10)
         
+        x = DistributedParticles(
+            size = 10,
+            number_of_workers = 2
+        )
+        x.set_from_generator(generate_set_test_function)
+        self.assertEqual(y.index,x.index)        
+
+        highy=y.select_array( select_test_function, ("index",))
+        highx=x.select_array( select_test_function, ("index",))
+        self.assertEqual(highy.index,highx.index)        
+  
+    def test13(self):
+        x = DistributedParticles(
+            size = 8,
+            number_of_workers = 2
+        )
+        x.index= [0,10,10,10,0,0,10,0]
+        x.mass = [1, 2, 3, 4,5,6, 7,8] | units.MSun
+        highx=x.select_array( select_test_function, ("index",))
+        self.assertEqual(highx.mass, [2,3,4,7] | units.MSun)
