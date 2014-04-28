@@ -370,6 +370,10 @@ class VectorQuantity(Quantity):
     @property
     def shape(self):
         return self.number.shape
+        
+    @property
+    def dtype(self):
+        return self.number.dtype
 
     def flatten(self):
         return new_quantity(self.number.flatten(), self.unit)
