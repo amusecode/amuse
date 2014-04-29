@@ -306,9 +306,9 @@ class DistributedParticlesImplementation(object):
     def do_get_attribute(self, reference, name_of_the_attribute, output):
         real_particles,local_offset, local_size, global_size = self.references_to_particles[reference]
         
-        if not real_particles is None:
+        try:
             quantity = [local_size, local_offset, getattr(real_particles, name_of_the_attribute)]
-        else:
+        except:
             quantity = [0, 0, None]
         
         quantities = self.mpi_comm.gather(quantity, root = 0)
@@ -761,7 +761,7 @@ class TestDistributedParticles(TestWithMPI):
 
 # number of workers > number of files
 # still problematic, because of non-existing attributes if nothing read
-    def xtest18(self):
+    def test18(self):
         test_results_path = self.get_path_to_results()
         filebase=os.path.join(test_results_path, "test_distributed_sets")
         for i in [0,1]:
