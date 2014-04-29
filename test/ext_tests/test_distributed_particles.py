@@ -11,6 +11,8 @@ from amuse.units import units
 from amuse.community import *
 from amuse.support.interface import InCodeComponentImplementation
 
+from amuse.io import read_set_from_file, write_set_to_file
+
 from collections import namedtuple
 import numpy
 import pickle
@@ -92,6 +94,17 @@ class DistributedParticlesInterface(PythonCodeInterface):
         function.addParameter('reference_out', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         return function
+
+    @legacy_function
+    def write_set_to_file():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('reference_in', dtype='int64', direction=function.IN)
+        function.addParameter('filebase', dtype='string', direction=function.IN)
+        function.addParameter('fileformat', dtype='string', direction=function.IN)
+        function.addParameter('pickled_filenames', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
   
 class DistributedParticlesCode(InCodeComponentImplementation):
     
@@ -162,6 +175,13 @@ class DistributedParticles(object):
             code = self.code,
             reference = reference
         )
+
+    def write_set_to_file(self, filebase, fileformat):
+      
+        filenames=self.code.write_set_to_file(self.reference,filebase,fileformat)[0]
+        
+        return decode_and_load(filenames)
+
             
 class DistributedParticle(object):
     
@@ -390,6 +410,19 @@ class DistributedParticlesImplementation(object):
         self.reference_counter += 1
         return 0
 
+    def write_set_to_file(self, reference_in, filebase, fileformat, filenames_out):
+        real_particles, local_offset, local_size, global_size  = self.references_to_particles[reference_in]
+        filename=filebase+"_%6.6i"%self.rank
+        write_set_to_file(real_particles, filename, fileformat, 
+           local_offset=local_offset, local_size=local_size, global_size=global_size)
+        filenames = self.mpi_comm.gather(filename, root = 0)
+        if self.rank==0:
+          value= filenames
+        else:
+          value = None
+        filenames_out.value = dump_and_encode(value) 
+        return 0        
+
 
 def generate_set_example_function(start,end,*args,**kwargs):
     from amuse.datamodel import Particles
@@ -565,3 +598,57 @@ class TestDistributedParticles(TestWithMPI):
         x.mass = [1, 2, 3, 4,5,6, 7,8] | units.MSun
         highx=x.select_array( select_example_function, ("index",))
         self.assertEqual(highx.mass, [2,3,4,7] | units.MSun)
+
+    def test14(self):
+        test_results_path = self.get_path_to_results()
+        output_files=[]
+        filebase=os.path.join(test_results_path, "test_distributed_sets")
+        for i in [0,1]:
+          output_file = filebase+"_%6.6i"%i
+          output_files.append(output_file)
+        
+          if os.path.exists(output_file):
+            os.remove(output_file)
+
+        x = DistributedParticles(
+            size = 8,
+            number_of_workers = 2
+        )
+        x.index= [0,10,10,10,0,0,10,0]
+        x.mass = [1, 2, 3, 4,5,6, 7,8] | units.MSun
+        files=x.write_set_to_file(filebase,"amuse")
+        self.assertEqual(files,output_files)
+        for i,f in enumerate(files):
+          self.assertTrue( os.path.isfile(f) )
+          p=read_set_from_file(f,"amuse")
+          self.assertEqual(len(p),4)
+          self.assertEqual(p.collection_attributes.global_size,8)          
+          self.assertEqual(p.collection_attributes.local_size,4)          
+
+    def test15(self):
+        test_results_path = self.get_path_to_results()
+        output_files=[]
+        filebase=os.path.join(test_results_path, "test_distributed_sets")
+        for i in [0,1]:
+          output_file = filebase+"_%6.6i"%i
+          output_files.append(output_file)
+        
+          if os.path.exists(output_file):
+            os.remove(output_file)
+
+        x = DistributedParticles(
+            size = 8,
+            number_of_workers = 2
+        )
+        x.index= [0,10,10,10,0,0,10,0]
+        x.mass = [1, 2, 3, 4,5,6, 7,8] | units.MSun
+        highx=x.select_array( select_example_function, ("index",))        
+        files=highx.write_set_to_file(filebase,"amuse")
+        self.assertEqual(files,output_files)
+        expected_local_sizes=[3,1]
+        for i,f in enumerate(files):
+          self.assertTrue( os.path.isfile(f) )
+          p=read_set_from_file(f,"amuse")
+          self.assertEqual(len(p),expected_local_sizes[i])
+          self.assertEqual(p.collection_attributes.global_size,4)          
+          self.assertEqual(p.collection_attributes.local_size,expected_local_sizes[i])
