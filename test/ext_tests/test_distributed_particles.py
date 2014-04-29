@@ -104,6 +104,15 @@ class DistributedParticlesInterface(PythonCodeInterface):
         function.addParameter('pickled_filenames', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
+
+    @legacy_function
+    def read_set_from_file():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('reference_in', dtype='int64', direction=function.IN)
+        function.addParameter('pickled_filenames', dtype='string', direction=function.IN)
+        function.addParameter('fileformat', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function        
         
   
 class DistributedParticlesCode(InCodeComponentImplementation):
@@ -182,6 +191,13 @@ class DistributedParticles(object):
         
         return decode_and_load(filenames)
 
+    def read_set_from_file(self, filenames, fileformat):
+        if self.reference!=0:
+            raise Exception("read only allowed to root set") 
+        
+        self.code.read_set_from_file(self.reference,
+                                     dump_and_encode(filenames), 
+                                     fileformat )
             
 class DistributedParticle(object):
     
@@ -423,6 +439,42 @@ class DistributedParticlesImplementation(object):
         filenames_out.value = dump_and_encode(value) 
         return 0        
 
+    def read_set_from_file(self, reference_in, filenames_in, fileformat):
+        ceil=lambda x,y: (x/y+(x%y>0))
+        
+        filenames=decode_and_load(filenames_in)
+        if reference_in!=0:
+          raise Exception("reference_in hould be zero here!")
+        real_particles, local_offset, local_size, global_size  = self.references_to_particles[reference_in]
+        start=self.rank*ceil(len(filenames),self.number_of_processes)
+        end=(self.rank+1)*ceil(len(filenames),self.number_of_processes)
+        for i in range(start,end):
+          if i< len(filenames):
+            p=read_set_from_file(filenames[i],fileformat)
+            real_particles.add_particles(p)
+
+        input = numpy.zeros(1,  dtype='int64')
+        output = numpy.zeros(self.number_of_processes,  dtype='int64')
+            
+        input[0] = len(real_particles)
+        self.mpi_comm.Allgather(
+                [input, MPI.INTEGER], 
+                [output, MPI.INTEGER]
+        )
+        total_size = 0
+        local_offset = 0
+        for i,current_size in enumerate(output):
+            if i < self.rank:
+                local_offset += current_size
+            total_size += current_size
+        referenced_particles = ReferencedParticles(
+            real_particles,
+            local_offset,
+            len(real_particles),
+            total_size
+        )
+        self.references_to_particles[reference_in] = referenced_particles
+        return 0
 
 def generate_set_example_function(start,end,*args,**kwargs):
     from amuse.datamodel import Particles
@@ -652,3 +704,88 @@ class TestDistributedParticles(TestWithMPI):
           self.assertEqual(len(p),expected_local_sizes[i])
           self.assertEqual(p.collection_attributes.global_size,4)          
           self.assertEqual(p.collection_attributes.local_size,expected_local_sizes[i])
+
+    def test16(self):
+        test_results_path = self.get_path_to_results()
+        filebase=os.path.join(test_results_path, "test_distributed_sets")
+        for i in [0,1]:
+          output_file = filebase+"_%6.6i"%i
+        
+          if os.path.exists(output_file):
+            os.remove(output_file)
+
+        x = DistributedParticles(
+            size = 8,
+            number_of_workers = 2
+        )
+        x.index= [0,10,10,10,0,0,10,0]
+        x.mass = [1, 2, 3, 4,5,6, 7,8] | units.MSun
+        files=x.write_set_to_file(filebase,"amuse")
+
+        y= DistributedParticles(
+            size = 0,
+            number_of_workers = 2
+        )
+
+        y.read_set_from_file(files,"amuse")
+        self.assertEqual(len(y), len(x) )
+        self.assertEqual(y.index, x.index )        
+        self.assertEqual(y.mass, x.mass )        
+        
+    def test17(self):
+        test_results_path = self.get_path_to_results()
+        filebase=os.path.join(test_results_path, "test_distributed_sets")
+        for i in [0,1]:
+          output_file = filebase+"_%6.6i"%i
+        
+          if os.path.exists(output_file):
+            os.remove(output_file)
+
+        x = DistributedParticles(
+            size = 8,
+            number_of_workers = 4
+        )
+        x.index= [0,10,10,10,0,0,10,0]
+        x.mass = [1, 2, 3, 4,5,6, 7,8] | units.MSun
+        files=x.write_set_to_file(filebase,"amuse")
+
+        y= DistributedParticles(
+            size = 0,
+            number_of_workers = 2
+        )
+
+        y.read_set_from_file(files,"amuse")
+        self.assertEqual(len(y), len(x) )
+        self.assertEqual(y.index, x.index )        
+        self.assertEqual(y.mass, x.mass )        
+
+# number of workers > number of files
+# still problematic, because of non-existing attributes if nothing read
+    def xtest18(self):
+        test_results_path = self.get_path_to_results()
+        filebase=os.path.join(test_results_path, "test_distributed_sets")
+        for i in [0,1]:
+          output_file = filebase+"_%6.6i"%i
+        
+          if os.path.exists(output_file):
+            os.remove(output_file)
+
+        x = DistributedParticles(
+            size = 8,
+            number_of_workers = 2
+        )
+        x.index= [0,10,10,10,0,0,10,0]
+        x.mass = [1, 2, 3, 4,5,6, 7,8] | units.MSun
+        files=x.write_set_to_file(filebase,"amuse")
+
+        z= DistributedParticles(
+            size = 0,
+            number_of_workers = 4
+        )
+
+        z.read_set_from_file(files,"amuse")
+        self.assertEqual(len(z), len(z) )
+        self.assertEqual(z.index, z.index )        
+        self.assertEqual(z.mass, z.mass )        
+
+
