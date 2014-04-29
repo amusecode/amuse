@@ -482,6 +482,22 @@ def generate_set_example_function(start,end,*args,**kwargs):
     p.index=range(start,end)
     return p
 
+def distributed_king_generator(start,end,*args,**kwargs):
+    from amuse.ic.kingmodel import MakeKingModel
+    import numpy
+    numpy.random.seed(1234567)
+    numpy.random.uniform(size=start*6)
+    total_number_of_particles=args[0]
+    class PartialKingModel(MakeKingModel):
+        def makeking(self):
+            m,p,v=MakeKingModel.makeking(self)
+            m=0.*m+(1.0 / total_number_of_particles)
+            return m,p,v
+    kwargs['center_model']=False
+    kwargs['do_scale']=False
+    args=(end-start,)+args[1:]
+    return PartialKingModel(*args,**kwargs).result
+
 def select_example_function(x):
     return x > 5
     
@@ -788,4 +804,25 @@ class TestDistributedParticles(TestWithMPI):
         self.assertEqual(z.index, z.index )        
         self.assertEqual(z.mass, z.mass )        
 
+    def test19(self):
+        from test_distributed_particles import distributed_king_generator
+        from amuse.ic.kingmodel import MakeKingModel
+        
+        N=100
+        W0=7.
+        numpy.random.seed(1234567)
+        y=MakeKingModel(N,W0,center_model=False).result
+        
+        x = DistributedParticles(
+            size = N,
+            number_of_workers = 2
+        )
+        x.set_from_generator(distributed_king_generator,args=(N,W0))
+        self.assertEqual(y.mass,x.mass)
+        self.assertEqual(y.x,x.x)
+        self.assertEqual(y.y,x.y)
+        self.assertEqual(y.z,x.z)
+        self.assertEqual(y.vx,x.vx)
+        self.assertEqual(y.vy,x.vy)
+        self.assertEqual(y.vz,x.vz)
 

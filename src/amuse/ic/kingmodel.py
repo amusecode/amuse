@@ -15,9 +15,10 @@ __all__ = ["new_king_model"]
 
 class MakeKingModel(object):
     def __init__(self, number_of_particles, W0, convert_nbody = None, do_scale = False, 
-            beta = 0.0, verbose = False):
+            beta = 0.0, verbose = False,center_model=True):
         self.number_of_particles = number_of_particles
         self.convert_nbody = convert_nbody
+        self.center_model=center_model
         self.do_scale = do_scale
         self.verbose = verbose
         self.beta = beta
@@ -468,7 +469,8 @@ class MakeKingModel(object):
         result.position = nbody_system.length.new_quantity(positions)
         result.velocity = nbody_system.speed.new_quantity(velocities)
         result.radius = 0 | nbody_system.length
-        result.move_to_center()
+        if self.center_model:
+            result.move_to_center()
         if self.do_scale:
             result.scale_to_standard()
         
