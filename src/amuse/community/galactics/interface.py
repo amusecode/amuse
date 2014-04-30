@@ -297,7 +297,7 @@ class GalactICsImplementation(object):
                         stderr = PIPE)
                 stdout, stderr = process.communicate(in_halo)
                 if process.returncode != 0:
-                    print "error:", stderror
+                    print "error:", stderr
                     return -1 
                 halo_file.close()
                 
