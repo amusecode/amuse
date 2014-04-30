@@ -1380,6 +1380,39 @@
 
       end function
 
+! Return the specific entropy at the specified zone/mesh-cell of the star
+      integer function get_entropy_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed, debugging
+         
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr, k
+         type (star_info), pointer :: s
+         
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_entropy_at_zone = -1
+         else
+            k = s% nz - AMUSE_zone
+            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+               get_entropy_at_zone = -1
+               return
+            endif
+            
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_entropy_at_zone = -2
+            else
+               AMUSE_value = exp(s% lnS(k))
+               get_entropy_at_zone = 0
+            endif
+         endif         
+      end function
+
+
 ! Return the current number of chemical abundance variables per zone of the star
    integer function get_number_of_species(AMUSE_id, AMUSE_value)
       use star_private_def, only: star_info, get_star_ptr

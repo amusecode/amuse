@@ -432,6 +432,30 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
     
     @legacy_function
+    def get_entropy_at_zone():
+        """
+        Retrieve the entropy at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter('S_i', dtype='float64', direction=function.OUT
+            , description="The specific entropy at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function    
+    
+    @legacy_function
     def get_brunt_vaisala_frequency_squared_at_zone():
         """
         Retrieve the Brunt-Vaisala frequency squared at the specified zone/mesh-cell of the star.
@@ -1076,6 +1100,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_method(particle_set_name, 'get_cumulative_mass_profile')
             object.add_method(particle_set_name, 'get_luminosity_profile')
             object.add_method(particle_set_name, 'set_luminosity_profile')
+            object.add_method(particle_set_name, 'get_entropy_profile')
             object.add_method(particle_set_name, 'get_brunt_vaisala_frequency_squared_profile')
             object.add_method(particle_set_name, 'get_IDs_of_species')
             object.add_method(particle_set_name, 'get_masses_of_species')
@@ -1164,6 +1189,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (object.INDEX, object.NO_UNIT, units.erg/units.s,), 
             (object.ERROR_CODE,)
         )
+        object.add_method(
+            "get_entropy_at_zone", 
+            (object.INDEX,object.NO_UNIT,), 
+            (units.erg/units.K, object.ERROR_CODE,)
+        )        
         object.add_method(
             "get_id_of_species", 
             (object.INDEX,object.NO_UNIT,), 
@@ -1392,6 +1422,12 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.set_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
         if hasattr(self, "_erase_memory"):
             self._erase_memory(indices_of_the_stars)
+
+    def get_entropy_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying entropy profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
+        return self.get_entropy_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_brunt_vaisala_frequency_squared_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying brunt-vaisala-frequency-squared profiles") 
