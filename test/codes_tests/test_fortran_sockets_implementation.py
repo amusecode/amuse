@@ -415,8 +415,8 @@ class TestInterface(TestWithMPI):
         print "building"
         self.check_can_compile_modules()
         self.check_fortran_version()
-        self.build_worker()
         self.check_not_in_mpiexec()
+        self.build_worker()
         
     def check_fortran_version(self):
         if not self.is_fortan_version_up_to_date():

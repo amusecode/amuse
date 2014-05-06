@@ -241,8 +241,8 @@ class ForTesting(InCodeComponentImplementation):
             
 class TestInterface(TestWithMPI):
     def setUp(self):
-        super(TestInterface, self).setUp()
         self.check_not_in_mpiexec()
+        super(TestInterface, self).setUp()
         
     def check_not_in_mpiexec(self):
         """
