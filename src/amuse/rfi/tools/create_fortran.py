@@ -26,13 +26,13 @@ CONSTANTS_STRING = """
   integer HEADER_FLAGS, HEADER_CALL_ID, HEADER_FUNCTION_ID, HEADER_CALL_COUNT, & 
         HEADER_INTEGER_COUNT, HEADER_LONG_COUNT, HEADER_FLOAT_COUNT, & 
         HEADER_DOUBLE_COUNT, HEADER_BOOLEAN_COUNT, HEADER_STRING_COUNT, & 
-        HEADER_SIZE
+        HEADER_SIZE, MAX_COMMUNICATORS
 
   parameter (HEADER_FLAGS=1, HEADER_CALL_ID=2, HEADER_FUNCTION_ID=3, & 
         HEADER_CALL_COUNT=4, HEADER_INTEGER_COUNT=5, HEADER_LONG_COUNT=6, & 
         HEADER_FLOAT_COUNT=7, HEADER_DOUBLE_COUNT=8, & 
         HEADER_BOOLEAN_COUNT=9, HEADER_STRING_COUNT=10, & 
-        HEADER_SIZE=10)
+        HEADER_SIZE=10, MAX_COMMUNICATORS = 2048)
 """
 
 ARRAY_DEFINES_STRING = """
@@ -95,7 +95,119 @@ ISO_ARRAY_DEFINES_STRING = """
 
 MODULE_GLOBALS_STRING = """
   integer, save :: polling_interval = 0
+  integer, save :: lastid = -1
+  INTEGER, save  :: communicators(MAX_COMMUNICATORS)
 """
+
+NOMPI_MODULE_GLOBALS_STRING = """
+  integer, save :: polling_interval = 0
+  integer, save :: lastid = 0
+"""
+
+INTERNAL_FUNCTIONS_STRING = """
+FUNCTION internal__open_port(outval)
+    IMPLICIT NONE
+    INCLUDE 'mpif.h'
+    character(len=MPI_MAX_PORT_NAME+1), intent(out) :: outval
+    INTEGER :: internal__open_port
+    INTEGER :: ierror
+    call MPI_Open_port(MPI_INFO_NULL, outval, ierror);
+    internal__open_port = 0
+END FUNCTION
+
+FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
+    IMPLICIT NONE
+    INCLUDE 'mpif.h'
+    character(len=*), intent(in) :: port_identifier
+    INTEGER, intent(out) :: comm_identifier
+    INTEGER :: internal__accept_on_port
+    INTEGER :: ierror, rank
+    INTEGER :: merged, communicator
+    lastid = lastid + 1
+    IF (lastid .GE. MAX_COMMUNICATORS) THEN
+        lastid = lastid - 1
+        comm_identifier = -1
+        internal__accept_on_port = -1
+        return;
+    END IF
+    call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror);
+    IF (rank .EQ. 0) THEN
+        call MPI_Comm_accept(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
+        call MPI_Intercomm_merge(communicator, 0, merged, ierror)
+        call MPI_Intercomm_create(MPI_COMM_WORLD, 0, merged, 1, 65, communicators(lastid), ierror)
+        call MPI_Comm_disconnect(merged, ierror)
+        call MPI_Comm_disconnect(communicator, ierror)
+    ELSE
+        call MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, communicators(lastid), ierror)
+    END IF
+    comm_identifier = lastid;
+    
+    internal__accept_on_port = 0
+END FUNCTION
+
+FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
+    IMPLICIT NONE
+    INCLUDE 'mpif.h'
+    character(len=*), intent(in) :: port_identifier
+    INTEGER, intent(out) :: comm_identifier
+    INTEGER :: internal__connect_to_port
+    INTEGER :: ierror, rank
+    INTEGER :: merged, communicator
+    lastid = lastid + 1
+    IF (lastid .GE. MAX_COMMUNICATORS) THEN
+        lastid = lastid - 1
+        comm_identifier = -1
+        internal__connect_to_port = -1
+        return;
+    END IF
+    call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror);
+    
+    IF (rank .EQ. 0) THEN
+        call MPI_Comm_connect(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
+        call MPI_Intercomm_merge(communicator, 1, merged, ierror)
+        call MPI_Intercomm_create(MPI_COMM_WORLD, 0, merged, 0, 65, communicators(lastid), ierror)
+        call MPI_Comm_disconnect(merged, ierror)
+        call MPI_Comm_disconnect(communicator, ierror)
+    ELSE
+        call MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, communicators(lastid), ierror)
+    END IF
+    comm_identifier = lastid;
+    
+    internal__connect_to_port = 0
+END FUNCTION
+
+"""
+
+
+NOMPI_INTERNAL_FUNCTIONS_STRING = """
+FUNCTION internal__open_port(outval)
+    IMPLICIT NONE
+    character(len=MPI_MAX_PORT_NAME+1), intent(out) :: outval
+    INTEGER :: internal__open_port
+    internal__open_port = 0
+END FUNCTION
+
+FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
+    IMPLICIT NONE
+    character(len=*), intent(in) :: port_identifier
+    INTEGER, intent(out) :: comm_identifier
+    INTEGER :: internal__accept_on_port
+    
+    comm_identifier = -1;
+    internal__accept_on_port = 0
+END FUNCTION
+
+FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
+    IMPLICIT NONE
+    character(len=*), intent(in) :: port_identifier
+    INTEGER, intent(out) :: comm_identifier
+    INTEGER :: internal__connect_to_port
+    comm_identifier = -1
+    internal__connect_to_port = 0
+END FUNCTION
+
+"""
+
 
 POLLING_FUNCTIONS_STRING = """
     FUNCTION internal__get_message_polling_interval(outval)
@@ -350,7 +462,10 @@ RUN_LOOP_MPI_STRING = """
       DEALLOCATE(string_sizes_out)
       DEALLOCATE(strings_in)
       DEALLOCATE(strings_out)
-
+      
+      do i = 1, lastid, 1
+            call MPI_COMM_DISCONNECT(communicators(i));
+      end do
       call MPI_COMM_DISCONNECT(parent, ioerror)
       call MPI_FINALIZE(ioerror)
       return
@@ -1147,7 +1262,10 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
 
         self.output_maximum_constants()
 
-        self.out.lf().lf() + MODULE_GLOBALS_STRING
+        if self.must_generate_mpi:
+            self.out.lf().lf() + MODULE_GLOBALS_STRING
+        else:
+            self.out.lf().lf() + NOMPI_MODULE_GLOBALS_STRING
             
         if self.use_iso_c_bindings:
             self.out.n() + ISO_ARRAY_DEFINES_STRING
@@ -1162,6 +1280,7 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
         self.out + POLLING_FUNCTIONS_STRING
             
         if self.must_generate_mpi:
+            self.out + INTERNAL_FUNCTIONS_STRING
             
             if self.use_iso_c_bindings:    
                 self.out + RECV_HEADER_SLEEP_STRING
@@ -1170,6 +1289,8 @@ class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecod
                 
             self.out + RUN_LOOP_MPI_STRING
         else:
+            self.out + NOMPI_INTERNAL_FUNCTIONS_STRING
+            
             self.out + EMPTY_RUN_LOOP_MPI_STRING
         if self.use_iso_c_bindings:
             self.out.n() + RUN_LOOP_SOCKETS_STRING

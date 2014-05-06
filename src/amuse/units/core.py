@@ -11,6 +11,7 @@ class system(object):
         self.bases = []
         self.mapping_from_base_name_to_base = {}
         self.ALL[self.name] = self
+        self.index = len(self.ALL)
     
     def reference_string(self):
         return "{0}.get({1!r})".format('system', self.name)
@@ -401,6 +402,12 @@ class unit(object):
     def append_result_value(self, method, definition, value, result):
         result.append(self.convert_result_value(method, definition, value))
     
+    def to_array(self):
+        result = [self.factor]
+        for n, unit in sorted(self.base, key=lambda x: x[1].index):
+            result.append(n)
+            result.append(unit.system.index)
+        return result
     
 class base_unit(unit):
     """

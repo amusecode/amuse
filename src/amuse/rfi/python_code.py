@@ -6,6 +6,7 @@ import numpy
 import sys
 import os
 import socket
+import traceback
 
 
 from amuse.rfi.channel import ClientSideMPIMessage
@@ -15,6 +16,7 @@ from amuse.rfi.channel import pack_array
 from amuse.rfi.channel import unpack_array
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
+
 class ValueHolder(object):
     
     def __init__(self, value = None):
@@ -42,6 +44,8 @@ class PythonImplementation(object):
         self.interface = interface
         self.must_run = False
         self.polling_interval = 0
+        self.communicators = []
+        self.lastid = -1
         
     def start(self):
         parent = MPI.Comm.Get_parent()
@@ -65,7 +69,7 @@ class PythonImplementation(object):
                     try:
                         self.handle_message(message, result_message)
                     except Exception as ex:
-                        print ex
+                        traceback.print_exc()
                         result_message.set_error(ex.__str__())
                         
                 else:
@@ -74,6 +78,9 @@ class PythonImplementation(object):
             if rank == 0:
                 result_message.send(parent)
         
+        for x in self.communicators:
+            x.Disconnect()
+            
         parent.Disconnect()
         
     
@@ -235,6 +242,44 @@ class PythonImplementation(object):
     def internal__get_message_polling_interval(self, outval):
         outval.value = self.polling_interval 
         return 0
+        
+    def internal__open_port(self, outportname):
+        outportname.value = MPI.Open_port(None)
+        return 0
+        
+    def internal__accept_on_port(self, portname, outval):
+        new_communicator = None
+        rank = MPI.COMM_WORLD.Get_rank()
+        if rank == 0:
+            communicator = MPI.COMM_SELF.Accept(portname, None, 0)
+            merged = communicator.Merge(False)
+            new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
+        else:
+            new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
+        
+        self.communicators.append(new_communicator)
+        self.lastid += 1
+        outval.value = self.lastid
+        return 0
+    
+    
+    def internal__connect_to_port(self, portname, outval):
+        new_communicator = None
+        rank = MPI.COMM_WORLD.Get_rank()
+        if rank == 0:
+            communicator = MPI.COMM_SELF.Connect(portname, None, 0)
+            merged = communicator.Merge(True)
+            new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
+            merged.Disconnect()
+            communicator.Disconnect()
+        else:
+            new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 0, 65)
+        
+        self.communicators.append(new_communicator)
+        self.lastid += 1
+        outval.value = self.lastid
+        return 0
+    
     
     def internal__redirect_outputs(self, stdoutfile, stderrfile):
         mpi_rank = MPI.COMM_WORLD.rank

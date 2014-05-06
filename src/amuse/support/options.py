@@ -1,6 +1,7 @@
 import ConfigParser
 import os.path
 import os
+import platform
 from StringIO import StringIO
 
 from amuse.support.core import late
@@ -33,6 +34,7 @@ class GlobalOptions(object):
             self.config.readfp(preloadfp, "<amuserc>")
             
         self.config.read(homedirrc)  
+        self.config.read(os.path.join(self.homedirectory, '.' + platform.node() + '_' + self.rcfilename))
         self.config.read(self.rcfilepath)
         
         

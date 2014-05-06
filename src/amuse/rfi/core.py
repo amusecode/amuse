@@ -647,6 +647,29 @@ class CodeInterface(OptionalAttributes):
         function.result_type = 'int32'
         return function
         
+    @legacy_function
+    def internal__open_port():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('port_identifier', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def internal__accept_on_port():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('port_identifier', dtype='string', direction=function.IN)
+        function.addParameter('comm_identifier', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def internal__connect_to_port():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('port_identifier', dtype='string', direction=function.IN)
+        function.addParameter('comm_identifier', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
         
     def stop(self):
         self._stop()

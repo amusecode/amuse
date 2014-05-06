@@ -98,6 +98,14 @@ static char * characters_out = 0;
 
 POLLING_FUNCTIONS_STRING = """
 static int polling_interval = 0;
+#ifndef NOMPI
+#define MAX_COMMUNICATORS 2048
+static char portname_buffer[MPI_MAX_PORT_NAME+1];
+static MPI_Comm communicators[MAX_COMMUNICATORS];
+static int lastid = -1;
+#else
+static const char * empty_string = "";
+#endif
 
 int internal__get_message_polling_interval(int * outval)
 {
@@ -112,6 +120,73 @@ int internal__set_message_polling_interval(int inval)
     
     return 0;
 }
+int internal__open_port(char ** output)
+{
+#ifndef NOMPI
+    MPI_Open_port(MPI_INFO_NULL, portname_buffer);
+    *output = portname_buffer;
+#else
+    *output = empty_string;
+#endif
+    return 0;
+}
+int internal__accept_on_port(char * port_identifier, int * comm_identifier)
+{
+#ifndef NOMPI
+    int rank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    lastid++;
+    if(lastid >= MAX_COMMUNICATORS) {
+        lastid--;
+        return -1;
+    }
+    if(rank == 0){
+        MPI_Comm merged;
+        MPI_Comm communicator;
+        MPI_Comm_accept(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, &communicator);
+        MPI_Intercomm_merge(communicator, 0, &merged);
+        MPI_Intercomm_create(MPI_COMM_WORLD,0,merged, 1, 65, &communicators[lastid]);
+        MPI_Comm_disconnect(&merged);
+        MPI_Comm_disconnect(&communicator);
+    } else {
+        MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, &communicators[lastid]);
+    }
+    *comm_identifier = lastid;
+#else
+    *comm_identifier = -1;
+#endif
+    return 0;
+}
+
+
+int internal__connect_to_port(char * port_identifier, int * comm_identifier)
+{
+#ifndef NOMPI
+    int rank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    lastid++;
+    if(lastid >= MAX_COMMUNICATORS) {
+        lastid--;
+        return -1;
+    }
+    if(rank == 0){
+        MPI_Comm merged;
+        MPI_Comm communicator;
+        MPI_Comm_connect(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, &communicator);
+        MPI_Intercomm_merge(communicator, 1, &merged);
+        MPI_Intercomm_create(MPI_COMM_WORLD, 0, merged, 0, 65, &communicators[lastid]);
+        MPI_Comm_disconnect(&merged);
+        MPI_Comm_disconnect(&communicator);
+    } else {
+        MPI_Intercomm_create(MPI_COMM_WORLD, 0, MPI_COMM_NULL, 1, 65, &communicators[lastid]);
+    }
+    *comm_identifier = lastid;
+#else
+    *comm_identifier = -1;
+#endif
+    return 0;
+}
+
 """
 
 RECV_HEADER_SLEEP_STRING = """
@@ -170,6 +245,9 @@ void onexit_mpi(void) {
 
         MPI_Send(header_out, HEADER_SIZE, MPI_INT, 0, 999, parent);
         
+        for(int i = 0; i < lastid + 1; i++) {
+            MPI_Comm_disconnect(&communicators[i]);
+        }
         MPI_Comm_disconnect(&parent);
         
         MPI_Finalize();
