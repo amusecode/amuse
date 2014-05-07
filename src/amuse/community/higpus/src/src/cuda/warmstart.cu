@@ -13,7 +13,7 @@ HostError CheckHDDMemory(bool *cleanstop __attribute__((unused)), string path){
    double conv = (1024. * 1024.) * 1024.; //GB
 
    double total = (buffer->f_blocks*buffer->f_frsize) / conv;
-   double sys_space = 0.05*total;
+   double sys_space = 0.0*total;
    double available = (buffer->f_bfree*buffer->f_frsize)/conv - sys_space;
    double used = total - sys_space - available;
    double perc = (used/(total-sys_space))*100.;
@@ -39,7 +39,7 @@ HostError CheckHDDMemory(bool *cleanstop __attribute__((unused)), string path){
    out<<" --------------------------------------------------------------------------"<<endl;
 
 
-   if(available < 5.0){ //less than 5 GB
+   if(available < 1.0){ //less than 5 GB
       out<<" NO HD SPACE !!!! PLEASE FREE YOUR HD "<<endl;
       out<<" This program is going to terminate its execution now ! "<<endl;
 		out.close();
