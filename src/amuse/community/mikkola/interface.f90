@@ -237,15 +237,15 @@ END FUNCTION
 FUNCTION evolve_model(end_time)
   IMPLICIT NONE
   INTEGER :: evolve_model
-  DOUBLE PRECISION :: end_time
-  DOUBLE PRECISION :: POS(3,maximum_number_of_particles*3)
+  REAL*8 :: end_time
+  REAL*8  :: POS(3,maximum_number_of_particles*3)
   INTEGER :: mergers(3, maximum_number_of_particles*3)
   INTEGER :: nmergers
-  DOUBLE PRECISION :: VEL(3,maximum_number_of_particles*3)
-  DOUBLE PRECISION :: BODY(maximum_number_of_particles*3)
+  REAL*8  :: VEL(3,maximum_number_of_particles*3)
+  REAL*8  :: BODY(maximum_number_of_particles*3)
   INTEGER :: INDEX(maximum_number_of_particles*3), REVERSE_INDEX(maximum_number_of_particles*3)
-  DOUBLE PRECISION :: IWRR, DELTAT, TEND, soft, cmet(3), tolerance
-  DOUBLE PRECISION :: BHspin(3)
+  REAL*8  :: IWRR, DELTAT, TEND, soft, cmet(3)
+  REAL*8  :: BHspin(3)
   INTEGER :: stepr, i, j, Mikkola_ARWV
   INTEGER :: Np, Nbh, Ixc, error
   INTEGER :: idparent, idchild1, idchild2, new_index
@@ -289,16 +289,14 @@ FUNCTION evolve_model(end_time)
     Ixc=1
   endif
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
-  
   evolve_model = Mikkola_ARWV(current_time, BODY, POS,VEL,INDEX, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance, &
 &                mergers, nmergers) 
-  
   j = 1
 ! this print statement is needed for gfortran 4.8.x 
 ! otherwise nmergers seems to optimized out
-  PRINT *, "nmergers:", nmergers 
+!  PRINT *, "nmergers:", nmergers 
   DO i=1, nmergers
     idparent = mergers(1,i)
     idchild1 = mergers(2,i)

@@ -89,22 +89,21 @@ ISO_ARRAY_DEFINES_STRING = """
   character (c_char), allocatable, target :: strings_in(:) * 256
   character (c_char), allocatable, target :: strings_out(:) * 256
   
-  character (kind=c_char, len=100000), target :: characters_in
-  character (kind=c_char, len=100000), target :: characters_out
+  character (kind=c_char, len=1000000), target :: characters_in
+  character (kind=c_char, len=1000000), target :: characters_out
 """
 
 MODULE_GLOBALS_STRING = """
   integer, save :: polling_interval = 0
-  integer, save :: lastid = -1
-  INTEGER, save  :: communicators(MAX_COMMUNICATORS)
+  integer, save :: last_communicator_id = -1
+  integer, save  :: communicators(MAX_COMMUNICATORS)
 """
 
 NOMPI_MODULE_GLOBALS_STRING = """
   integer, save :: polling_interval = 0
-  integer, save :: lastid = 0
 """
 
-INTERNAL_FUNCTIONS_STRING = """
+MPI_INTERNAL_FUNCTIONS_STRING = """
 FUNCTION internal__open_port(outval)
     IMPLICIT NONE
     INCLUDE 'mpif.h'
@@ -122,10 +121,10 @@ FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
     INTEGER, intent(out) :: comm_identifier
     INTEGER :: internal__accept_on_port
     INTEGER :: ierror, rank
-    INTEGER :: merged, communicator
-    lastid = lastid + 1
-    IF (lastid .GE. MAX_COMMUNICATORS) THEN
-        lastid = lastid - 1
+    INTEGER :: mcommunicator, communicator
+    last_communicator_id = last_communicator_id + 1
+    IF (last_communicator_id .GE. MAX_COMMUNICATORS) THEN
+        last_communicator_id = last_communicator_id - 1
         comm_identifier = -1
         internal__accept_on_port = -1
         return;
@@ -133,14 +132,14 @@ FUNCTION internal__accept_on_port(port_identifier, comm_identifier)
     call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierror);
     IF (rank .EQ. 0) THEN
         call MPI_Comm_accept(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
-        call MPI_Intercomm_merge(communicator, 0, merged, ierror)
-        call MPI_Intercomm_create(MPI_COMM_WORLD, 0, merged, 1, 65, communicators(lastid), ierror)
-        call MPI_Comm_disconnect(merged, ierror)
+        call MPI_Intercomm_merge(communicator, 0, mcommunicator, ierror)
+        call MPI_Intercomm_create(MPI_COMM_WORLD, 0, mcommunicator, 1, 65, communicators(last_communicator_id), ierror)
+        call MPI_Comm_disconnect(mcommunicator, ierror)
         call MPI_Comm_disconnect(communicator, ierror)
     ELSE
-        call MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, communicators(lastid), ierror)
+        call MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, communicators(last_communicator_id), ierror)
     END IF
-    comm_identifier = lastid;
+    comm_identifier = last_communicator_id;
     
     internal__accept_on_port = 0
 END FUNCTION
@@ -152,10 +151,10 @@ FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
     INTEGER, intent(out) :: comm_identifier
     INTEGER :: internal__connect_to_port
     INTEGER :: ierror, rank
-    INTEGER :: merged, communicator
-    lastid = lastid + 1
-    IF (lastid .GE. MAX_COMMUNICATORS) THEN
-        lastid = lastid - 1
+    INTEGER :: mcommunicator, communicator
+    last_communicator_id = last_communicator_id + 1
+    IF (last_communicator_id .GE. MAX_COMMUNICATORS) THEN
+        last_communicator_id = last_communicator_id - 1
         comm_identifier = -1
         internal__connect_to_port = -1
         return;
@@ -164,14 +163,14 @@ FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
     
     IF (rank .EQ. 0) THEN
         call MPI_Comm_connect(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, communicator, ierror)
-        call MPI_Intercomm_merge(communicator, 1, merged, ierror)
-        call MPI_Intercomm_create(MPI_COMM_WORLD, 0, merged, 0, 65, communicators(lastid), ierror)
-        call MPI_Comm_disconnect(merged, ierror)
+        call MPI_Intercomm_merge(communicator, 1, mcommunicator, ierror)
+        call MPI_Intercomm_create(MPI_COMM_WORLD, 0, mcommunicator, 0, 65, communicators(last_communicator_id), ierror)
+        call MPI_Comm_disconnect(mcommunicator, ierror)
         call MPI_Comm_disconnect(communicator, ierror)
     ELSE
-        call MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, communicators(lastid), ierror)
+        call MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, communicators(last_communicator_id), ierror)
     END IF
-    comm_identifier = lastid;
+    comm_identifier = last_communicator_id;
     
     internal__connect_to_port = 0
 END FUNCTION
@@ -182,8 +181,9 @@ END FUNCTION
 NOMPI_INTERNAL_FUNCTIONS_STRING = """
 FUNCTION internal__open_port(outval)
     IMPLICIT NONE
-    character(len=MPI_MAX_PORT_NAME+1), intent(out) :: outval
+    character(len=*), intent(out) :: outval
     INTEGER :: internal__open_port
+    outval = ""
     internal__open_port = 0
 END FUNCTION
 
@@ -208,7 +208,7 @@ END FUNCTION
 
 """
 
-
+INTERNAL_FUNCTIONS_STRING = MPI_INTERNAL_FUNCTIONS_STRING
 POLLING_FUNCTIONS_STRING = """
     FUNCTION internal__get_message_polling_interval(outval)
         INTEGER,intent(out) :: outval
@@ -463,7 +463,7 @@ RUN_LOOP_MPI_STRING = """
       DEALLOCATE(strings_in)
       DEALLOCATE(strings_out)
       
-      do i = 1, lastid, 1
+      do i = 1, last_communicator_id, 1
             call MPI_COMM_DISCONNECT(communicators(i));
       end do
       call MPI_COMM_DISCONNECT(parent, ioerror)

@@ -5,7 +5,7 @@ AMUSE_DIR?=../../../..
 
 MPIFC ?= mpif90
 FC    = $(MPIFC)
-
+FFLAGS = -g
 #FFLAGS   += 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 

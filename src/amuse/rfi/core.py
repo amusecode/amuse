@@ -744,6 +744,8 @@ class CodeInterface(OptionalAttributes):
         """
         pass
         
+    
+    
 
 class CodeWithDataDirectories(object):
     
@@ -833,8 +835,6 @@ class CodeWithDataDirectories(object):
         """
         return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', self.module_name, 'src')
         
-    
-
 class PythonCodeInterface(CodeInterface):
     """
     Base class for codes having a python implementation
@@ -891,6 +891,5 @@ class PythonCodeInterface(CodeInterface):
     def python_interpreter(self):
         return sys.executable
 
-        
 
 

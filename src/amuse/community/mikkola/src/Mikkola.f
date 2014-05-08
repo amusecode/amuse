@@ -36,16 +36,19 @@
         common/justforfun/Tkin,Upot,dSkin,dSpot ! used in diagno
         common/outputindex/index4output(200),N_ini
         INTEGER Mikkola_ARWV
-        INTEGER INDEX(Np)
+        INTEGER Np
+        INTEGER INDEX(Np), Nbh
         REAL*8 BODY(Np), POS(3,Np), VEL(3,Np), BHspin(3)
         INTEGER Mergers(3, Np),nmergers
-        real*8 lightspeed
+        real*8 lightspeed, tolerance
         REAL*8 G0(3),G(3),cmet(3),xw(3),vw(3),xwr(NMX3)!,dum(3)
      &   ,ai(NMX),ei(NMX),unci(NMX),Omi(NMX),ooi(NMX),cmxx(3),cmvx(3)
         LOGICAL NEWREG
         CHARACTER*22 outfile
         common/collision/icollision,ione,itwo,iwarning
         Mikkola_ARWV = 0
+        EPS=tolerance
+        sp0 = 0
 666     CONTINUE ! jump here to start a new simulation in the same run. 
           outfile = "orbit.data"
           icollision=0
@@ -2134,6 +2137,7 @@ c       eccentricity vector (ex,ey,ez)
         end
         function atn2(s,c)
         implicit real*8 (a-h,o-z)
+        real*8 twopi                                   
         parameter(twopi=2*3.141592653589793d0)
         save
         atn2=atan2(s,c)

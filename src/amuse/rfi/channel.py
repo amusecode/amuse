@@ -1312,6 +1312,16 @@ class MpiChannel(AbstractMessageChannel):
     def is_polling_supported(self):
         return True
         
+    def __getstate__(self):
+        return {'state':'empty'}
+        
+    def __setstate__(self, state):
+        self.info = MPI.INFO_NULL
+        self.cached = None
+        self.intercomm = None
+        self._is_inuse = False
+        self._communicated_splitted_message = False
+        
 
 
 class MultiprocessingMPIChannel(AbstractMessageChannel):

@@ -9,6 +9,7 @@ import parser
 import sys
 import os
 import time
+import pickle
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
@@ -149,6 +150,24 @@ class ForTestingInterface(PythonCodeInterface):
         function.result_type = 'int32'
         function.must_handle_array = True
         return function
+        
+        
+    @legacy_function
+    def copy_over_interface():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('encoded_interface', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = False
+        return function  
+        
+    @legacy_function
+    def deep_echo_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.addParameter('string_out', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
     
 
 basic_python_exe = """#!{executable}
@@ -249,6 +268,16 @@ class ForTestingImplementation(object):
             return 0
         except:        
             return -1
+            
+            
+    def copy_over_interface(self, encoded_interface):
+        self._other = pickle.loads(encoded_interface.encode("latin-1"))
+        return 0
+    
+    def deep_echo_string(self, string_in, string_out):
+        result, errorcode = self._other.echo_string(string_in)
+        string_out.value = result[::-1]
+        return errorcode
     
 
 class ForTesting(InCodeComponentImplementation):
@@ -758,3 +787,31 @@ class TestInterface(TestWithMPI):
         self.assertTrue(port_id2 >= 0)
         self.assertEquals(error1, 0)
         self.assertEquals(error2, 0)
+        
+        
+        
+    def test27(self):
+        instance1 = ForTestingInterface()
+        instance2 = ForTestingInterface()
+        print type(instance1)
+        encoded_interface = pickle.dumps(instance1,0)
+        decoded_interface = pickle.loads(encoded_interface)
+        #pickle.loads(pickle.dumps(instance1,0))
+        instance2.copy_over_interface(pickle.dumps(instance1,0))
+        portname, error = instance2.internal__open_port()
+        print portname
+        request1 = instance2.internal__accept_on_port.async(portname)
+        request2 = instance1.internal__connect_to_port.async(portname)
+        request1.wait()
+        request2.wait()
+        port_id1, error1 = request1.result() 
+        port_id2, error2 = request2.result()
+        print "a"
+        self.skip("not finished")
+        result, errorcode = instance2.deep_echo_string("hello")
+        self.assertEquals(errorcode, 0)
+        self.assertEquals(result, "olleh")
+        result, errorcode = instance2.deep_echo_string("world")
+        self.assertEquals(errorcode, 0)
+        self.assertEquals(result, "dlrow")
+

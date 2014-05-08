@@ -648,7 +648,7 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
             setters,
             getters,
             extra_keyword_arguments_for_getters_and_setters = {},
-):
+    ):
         
         self.code_interface = code_interface
         
