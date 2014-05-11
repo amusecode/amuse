@@ -589,7 +589,51 @@ static inline INT _universal_kepler_solver(
         if (n > MAXITER * MAXITER) return err;
         n *= 2;
     } while (err != 0);
+    return err;
+}
 
+static INT _universal_kepler_solver_recursive(
+    const INT n,
+    const REAL dt,
+    const REAL m,
+    const REAL e2,
+    const REAL r0x,
+    const REAL r0y,
+    const REAL r0z,
+    const REAL v0x,
+    const REAL v0y,
+    const REAL v0z,
+    REAL *r1x,
+    REAL *r1y,
+    REAL *r1z,
+    REAL *v1x,
+    REAL *v1y,
+    REAL *v1z)
+{
+    INT err = __universal_kepler_solver(dt, m, e2,
+                                        r0x, r0y, r0z,
+                                        v0x, v0y, v0z,
+                                        &(*r1x), &(*r1y), &(*r1z),
+                                        &(*v1x), &(*v1y), &(*v1z));
+    if (err == 0) return err;
+    if (n < MAXITER) {
+        REAL r2x;
+        REAL r2y;
+        REAL r2z;
+        REAL v2x;
+        REAL v2y;
+        REAL v2z;
+        err =_universal_kepler_solver_recursive(n+1, dt/2, m, e2,
+                                        r0x, r0y, r0z,
+                                        v0x, v0y, v0z,
+                                        &r2x, &r2y, &r2z,
+                                        &v2x, &v2y, &v2z);
+        err =_universal_kepler_solver_recursive(n+1, dt/2, m, e2,
+                                        r2x, r2y, r2z,
+                                        v2x, v2y, v2z,
+                                        &(*r1x), &(*r1y), &(*r1z),
+                                        &(*v1x), &(*v1y), &(*v1z));
+    }
     return err;
 }
 
@@ -611,7 +655,7 @@ static inline INT universal_kepler_solver(
     REAL *v1y,
     REAL *v1z)
 {
-    INT err = _universal_kepler_solver(dt, m, e2,
+    INT err = _universal_kepler_solver_recursive(0,dt, m, e2,
                                        r0x, r0y, r0z,
                                        v0x, v0y, v0z,
                                        &(*r1x), &(*r1y), &(*r1z),
