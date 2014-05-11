@@ -41,6 +41,12 @@ def elements(starmass,x,y,z,vx,vy,vz,G=constants.G):
 
     return a,eps
 
+def energy(mass,eps,orbiters):
+   return (0.5*orbiters.velocity.lengths()**2-constants.G*mass/(orbiters.position.lengths()**2+eps**2)**0.5)
+
+def angular_momentum(orbiters):
+   return orbiters.position.cross(orbiters.velocity).lengths()
+
 class TestHuaynoInterface(TestWithMPI):
     
     def test1(self):
@@ -632,7 +638,7 @@ class TestHuayno(TestWithMPI):
         self.assertAlmostEqual(pos[20][1],pos[14][1],12)
         self.assertAlmostEqual(pos[20][2],pos[14][2],12)
 
-    def xtest25(self):
+    def test25(self):
         print "test massless particles/ kepler integrator, smoothed"
         N=10        
         tend=20.| units.yr
@@ -643,26 +649,31 @@ class TestHuayno(TestWithMPI):
         sun.position=[0,0,0]|units.AU
         sun.velocity=[0,0,0]|units.kms
         orbiters.mass*=0.
-        
-        a0,eps0=elements(sun.mass,orbiters.x,orbiters.y,orbiters.z,
-                      orbiters.vx,orbiters.vy,orbiters.vz)
+        eps=(5. | units.AU)
 
+        e0=energy(sun.mass,eps,orbiters)
+        l0=angular_momentum(orbiters)
+        
         pos=dict()
         for inttype in [20,14]:
-          code=Huayno(conv,redirection="none")
+          code=Huayno(conv)
           code.parameters.inttype_parameter=inttype
           code.parameters.timestep_parameter=0.1
-          code.parameters.epsilon_squared=(5. | units.AU)**2
+          code.parameters.epsilon_squared=eps**2
           code.particles.add_particle(sun)
           orbiters2=code.particles.add_particles(orbiters)
           code.evolve_model(tend)
-          a,eps=elements(sun.mass,orbiters2.x,orbiters2.y,orbiters2.z,
-                    orbiters2.vx,orbiters2.vy,orbiters2.vz)
+
+          e1=energy(sun.mass,eps,orbiters2)
+          l1=angular_momentum(orbiters2)
+          de,dl=abs((e1-e0)/e0).max(),abs((l1-l0)/l1).max()
+          self.assertTrue( numpy.all(de< 1.e-8))
+          self.assertTrue( numpy.all(dl< 1.e-8))
 
           pos[inttype]=[orbiters2.x.value_in(units.AU),orbiters2.y.value_in(units.AU),orbiters2.z.value_in(units.AU)]
-        self.assertAlmostRelativeEqual(pos[20][0],pos[14][0],6)
-        self.assertAlmostRelativeEqual(pos[20][1],pos[14][1],6)
-        self.assertAlmostRelativeEqual(pos[20][2],pos[14][2],6)
+        self.assertAlmostRelativeEqual(pos[20][0],pos[14][0],4) # still not clear why 4
+        self.assertAlmostRelativeEqual(pos[20][1],pos[14][1],4)
+        self.assertAlmostRelativeEqual(pos[20][2],pos[14][2],4)
 
 
     def test26(self):
