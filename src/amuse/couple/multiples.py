@@ -458,7 +458,7 @@ class Multiples(object):
                     # Do the scattering.
 
                     veto, dE_top_level_scatter, dphi_top, dE_mul, \
-                        dphi_int, dE_int \
+                        dphi_int, dE_int, final_particles \
                         = self.manage_encounter(star1, star2, 
                                                 self._inmemory_particles,
                                                 self.gravity_code.particles,
@@ -580,7 +580,12 @@ class Multiples(object):
                         
                         # Print all multiples currently in the system.
 
-                        self.print_multiples()
+                        #self.print_multiples()
+                        for x in final_particles:
+                            if hasattr(x, "child1") and not (getattr(x, "child1") is None):
+                                print_simple_multiple(trees.BinaryTreeOnParticle(x), self.kepler)
+
+
                         count_resolve_encounter += 1
 
                     else:
@@ -1076,7 +1081,7 @@ class Multiples(object):
                     ' distance/scale =', dxminmin/initial_scale
         #-------------------------------------------------------
 
-        return False, dE_top, dphi_top, dEmul, dphi_int, dE_int
+        return False, dE_top, dphi_top, dEmul, dphi_int, dE_int, particles_in_encounter
 
     def resolve_collision(self,
                           particles,
