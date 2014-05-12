@@ -315,17 +315,27 @@ class Multiples(object):
         return Nmul, Nbin, Emul
 
     def print_multiples(self):
-        for x in self.root_to_tree.values():
-            print_simple_multiple(x, self.kepler)
-    #--------------------------------------------------------------
 
-    def pretty_print_multiples(self, pre, kT, dcen):
+        # Print basic information on all multiples in the system,
+        # using the root_to_tree database.  This version uses
+        # print_multiple_simple() to format the output.
+
+        for x in self.root_to_tree.values():
+            print_multiple_simple(x, self.kepler)
+
+    def print_multiples2(self, pre, kT, dcen):
+
+        # Print information on all multiples in the system, using the
+        # root_to_tree database.  This version uses
+        # print_multiple_detailed() to format the output, and returns
+        # the numbers and energies of multiples found.
+
         Nbin = 0
         Nmul = 0
         Emul = 0.0 | nbody_system.energy
         for x in self.root_to_tree.values():
             Nmul += 1
-            nb,E = another_print_multiple(x, self.kepler, pre, kT, dcen)
+            nb,E = print_multiple_detailed(x, self.kepler, pre, kT, dcen)
             Nbin += nb
             Emul += E
         return Nmul, Nbin, Emul
@@ -578,13 +588,14 @@ class Multiples(object):
                                 - self.multiples_internal_tidal_correction \
                                 - self.multiples_integration_energy_error
                         
-                        # Print all multiples currently in the system.
+                        # Print info on all multiples associated with
+                        # the current interaction.
 
-                        #self.print_multiples()
                         for x in final_particles:
-                            if hasattr(x, "child1") and not (getattr(x, "child1") is None):
-                                print_simple_multiple(trees.BinaryTreeOnParticle(x), self.kepler)
-
+                            if hasattr(x, "child1") \
+                               and not (getattr(x, "child1") is None):
+                                print_multiple_simple(
+                                    trees.BinaryTreeOnParticle(x), self.kepler)
 
                         count_resolve_encounter += 1
 
@@ -1081,7 +1092,8 @@ class Multiples(object):
                     ' distance/scale =', dxminmin/initial_scale
         #-------------------------------------------------------
 
-        return False, dE_top, dphi_top, dEmul, dphi_int, dE_int, particles_in_encounter
+        return False, dE_top, dphi_top, dEmul, dphi_int, dE_int, \
+               particles_in_encounter
 
     def resolve_collision(self,
                           particles,
@@ -1574,12 +1586,25 @@ def compress_nodes(node_list, scale):
             n.position = cmpos + fac*(n.position-cmpos)
             n.velocity = cmvel + vfac*(n.velocity-cmvel)
 
+#------------------------------------------------------------------
+
 def print_elements(s, a, e, r, Emu, E):
+
+    # Print binary elements in standard form.
+
     print '{0} elements  a = {1}  e = {2}  r = {3}  E/mu = {4}  E = {5}'\
 	.format(s, a, e, r, Emu, E)
     sys.stdout.flush()
 
-def print_multiple(m, kep, level=0):		##### not working? #####
+def print_pair_of_stars(s, star1, star2, kep):
+    m1 = star1.mass
+    m2 = star2.mass
+    M,a,e,r,E,t = get_component_binary_elements(star1, star2, kep)
+    print_elements(s, a, e, r, E, E*m1*m2/(m1+m2))
+    print_multiple_recursive(star1)
+    print_multiple_recursive(star2)
+    
+def print_multiple_recursive(m, kep, level=0):	  ##### not working? #####
 
     # Recursively print the structure of (multiple) node m.
 
@@ -1593,19 +1618,11 @@ def print_multiple(m, kep, level=0):		##### not working? #####
         print_elements('   '+'    '*level+'binary', a, e, r, E,
                        (E*m.child1.mass*m.child2.mass/M))
     if not m.child1 is None:
-        print_multiple(m.child1, kep, level+1)
+        print_multiple_recursive(m.child1, kep, level+1)
     if not m.child2 is None:
-        print_multiple(m.child2, kep, level+1)
+        print_multiple_recursive(m.child2, kep, level+1)
 
-def print_pair_of_stars(s, star1, star2, kep):
-    m1 = star1.mass
-    m2 = star2.mass
-    M,a,e,r,E,t = get_component_binary_elements(star1, star2, kep)
-    print_elements(s, a, e, r, E, E*m1*m2/(m1+m2))
-    print_multiple(star1)
-    print_multiple(star2)
-    
-def print_simple_multiple(node, kep):
+def print_multiple_simple(node, kep):
     for level, x in node.iter_levels():
         output = ''
         if level == 0: output += 'Multiple '
@@ -1625,7 +1642,7 @@ def print_simple_multiple(node, kep):
         print output
         sys.stdout.flush()
 
-def another_print_multiple(node, kep, pre, kT, dcen):
+def print_multiple_detailed(node, kep, pre, kT, dcen):
     is_bin = 1
     Etot = 0.0 | nbody_system.energy
     for level, x in node.iter_levels():
@@ -1660,6 +1677,8 @@ def another_print_multiple(node, kep, pre, kT, dcen):
             sys.stdout.flush()
 
     return is_bin, Etot
+
+#------------------------------------------------------------------
 
 def get_multiple_energy(node, kep):
 
@@ -1875,7 +1894,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
 
             print "scale_top_level_list: bound binary node"
             #print '\nunscaled binary node:'
-            #print_multiple(root)
+            #print_multiple_recursive(root)
             comp1 = root.child1
             comp2 = root.child2
             #print "scale:", scale
@@ -1883,7 +1902,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
             #true, mean = kep.get_angles()
             #print 'true =', true, 'mean =', mean
             #print 'scaled binary node:'
-            #print_multiple(root, kep)
+            #print_multiple_recursive(root, kep)
 
     elif lt == 2:
 
