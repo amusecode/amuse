@@ -78,7 +78,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     for r in lagr.number: print "%.8f" % (r),
     print ''
     kT = T/N
-    Nmul,Nbin,Emul = gravity.pretty_print_multiples(pre, kT, dcen)
+    Nmul,Nbin,Emul = gravity.print_multiples2(pre, kT, dcen)
     print pre+"Nmul=", Nmul
     print pre+"Nbin=", Nbin
     print pre+"Emul= %.5f" % (Emul.number)
@@ -355,6 +355,12 @@ def run_ph4(infile = None, outfile = None,
 
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
+
+    # Debugging: prevent the multiples code from being called.
+    if 0:
+        stopping_condition.disable()
+        print 'stopping condition disabled'
+        sys.stdout.flush()
 
     # -----------------------------------------------------------------
     # Create the coupled code and integrate the system to the desired
