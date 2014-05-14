@@ -18,7 +18,7 @@ import glob
 if sys.hexversion > 0x03000000:
     from support3.generate_main import generate_main
     from support3.build_latex import build_latex
-    from support3.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode
+    from support3.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries
     from support3.setup_codes import ConfigureCodes
     from support3.setup_codes import GenerateInstallIni
     from support3.run_tests import run_tests
@@ -27,7 +27,7 @@ if sys.hexversion > 0x03000000:
 else:
     from support.generate_main import generate_main
     from support.build_latex import build_latex
-    from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode
+    from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries
     from support.setup_codes import ConfigureCodes
     from support.setup_codes import GenerateInstallIni
     from support.run_tests import run_tests
@@ -55,6 +55,7 @@ class Install(install):
 mapping_from_command_name_to_command_class = {
     'build_latex':build_latex, 
     'build_codes':BuildCodes,
+    'build_libraries':BuildLibraries,
     'build_code':BuildOneCode,
     'configure_codes':ConfigureCodes,
     'clean_codes':CleanCodes,

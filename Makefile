@@ -22,6 +22,15 @@ else
 	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
 endif
 
+framework: build.py
+	@-mkdir -p test_results
+	$(PYTHON) setup.py generate_main
+ifneq ($(python_version_major),3)
+	$(PYTHON) setup.py build_libraries --inplace
+else
+	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
+endif
+
 build.py:
 	$(error the code is not configured, please run configure first)
 
