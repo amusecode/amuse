@@ -174,6 +174,13 @@ void integrate_1d_vl(DomainS *pD)
 #endif
     }
   }
+  
+    Real accl, accc1, accr;
+    if(1) {
+        accc = pG->AccX[i];
+        accl = pG->AccX[i-1];
+        accr = pG->AccX[i+1];
+    }
 
 /*--- Step 6b ------------------------------------------------------------------
  * Add source terms for self gravity for 0.5*dt to predict step.

@@ -476,8 +476,50 @@ int commit_parameters(){
 
   init_mesh(&mesh);
   init_grid(&mesh);
+  int n1z, n2z, n3z;
   
-  
+    for (nl=0; nl<(mesh.NLevels); nl++){
+        for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+            if (mesh.Domain[nl][nd].Grid != NULL){
+                
+                GridS * currentGrid = mesh.Domain[nl][nd].Grid;
+                if (currentGrid->Nx[0] > 1) {
+                    n1z = currentGrid->Nx[0] + 2*nghost;
+                } else {
+                    n1z = 1;
+                }
+                if (currentGrid->Nx[1] > 1) {
+                    n2z = currentGrid->Nx[1] + 2*nghost;
+                } else {
+                    n2z = 1;
+                }
+                
+                if (currentGrid->Nx[2] > 1) {
+                    n3z = currentGrid->Nx[2] + 2*nghost;
+                } else {
+                    n3z = 1;
+                }
+                currentGrid->AccX = (Real***)calloc_3d_array(
+                    n3z,
+                    n2z,
+                    n1z,
+                    sizeof(Real));
+                if (currentGrid->AccX == NULL) {return -1;}
+                currentGrid->AccY = (Real***)calloc_3d_array(
+                    n3z,
+                    n2z,
+                    n1z,
+                    sizeof(Real));
+                if (currentGrid->AccY == NULL) {return -1;}
+                currentGrid->AccZ = (Real***)calloc_3d_array(
+                    n3z,
+                    n2z,
+                    n1z,
+                    sizeof(Real));
+                if (currentGrid->AccZ == NULL) {return -1;}
+            }
+        }
+    }
     
   for (nl=0; nl<(mesh.NLevels); nl++){
     for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
@@ -1024,11 +1066,11 @@ int get_grid_state(
         k0 = k[l];
         
         
-        rho[l] = 0;
-        rhovx[l] = 0;
-        rhovy[l] = 0;
-        rhovz[l] = 0;
-        en[l] = 0;
+        rho[l] = 0.0;
+        rhovx[l] = 0.0;
+        rhovy[l] = 0.0;
+        rhovz[l] = 0.0;
+        en[l] = 0.0;
                 
         current_index_of_grid = index_of_grid[l];
         if (current_index_of_grid != previous_index_of_grid)
@@ -1282,6 +1324,126 @@ int get_grid_gravitational_acceleration(
     return 0;
 }
 
+
+int get_grid_acceleration(
+    int * i, int * j, int * k,
+    int * index_of_grid,
+    double * ax, double * ay, double * az,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    int ii = 0;
+    DomainS * dom = 0;
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        current_index_of_grid = index_of_grid[l];
+        
+        ax[l] = 0;
+        ay[l] = 0;
+        az[l] = 0;
+        
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+                ax[l] = grid->AccX[k0][j0][i0];
+                ay[l] = grid->AccY[k0][j0][i0];
+                az[l] = grid->AccZ[k0][j0][i0];
+            }
+
+        }
+    }
+
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(ax, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(ay, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(az, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+     } else {
+        MPI_Reduce(MPI_IN_PLACE, ax, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, ay, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, az, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    return 0;
+}
+
+
+
+int set_grid_acceleration(
+    int * i, int * j, int * k,
+    double * ax, double * ay, double * az,
+    int * index_of_grid,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    int ii = 0;
+    DomainS * dom = 0;
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        current_index_of_grid = index_of_grid[l];
+        
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+                grid->AccX[k0][j0][i0] = ax[l];
+                grid->AccY[k0][j0][i0] = ay[l];
+                grid->AccZ[k0][j0][i0] = az[l];
+            }
+
+        }
+    }
+
+
+    return 0;
+}
 int get_grid_density(
     int * i, int * j, int * k,
     int * index_of_grid,

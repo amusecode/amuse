@@ -166,9 +166,20 @@ void integrate_1d_ctu(DomainS *pD)
 
       Wl[i].Vx -= dtodx1*(phifc - phicl);
       Wr[i].Vx -= dtodx1*(phicr - phifc);
+      
 #endif /* CYLINDRICAL */
     }
   }
+    Real accl, accc, accr;
+    if(1) {
+        for (i=il+1; i<=iu; i++) {
+            Real acc_mean = (pG->AccX[ks][js][i] + pG->AccX[ks][js][i-1]) / 2;
+            //Real acc_mean = pG->AccX[ks][js][i];
+            
+            Wl[i].Vx += 0.5 * pG->dt * acc_mean;
+            Wr[i].Vx += 0.5 * pG->dt * acc_mean;
+        }
+    }
 
 /*--- Step 1c (cont) -----------------------------------------------------------
  * Add source terms for self-gravity for 0.5*dt to L/R states
@@ -307,7 +318,7 @@ void integrate_1d_ctu(DomainS *pD)
  */
 
 #ifndef PARTICLES
-  if ((StaticGravPot != NULL) || (CoolingFunc != NULL))
+  if (1 || (StaticGravPot != NULL) || (CoolingFunc != NULL))
 #endif
   {
     for (i=il+1; i<=iu-1; i++) {
@@ -456,13 +467,28 @@ void integrate_1d_ctu(DomainS *pD)
 #else
       pG->U[ks][js][i].M1 -= dtodx1*dhalf[i]*(phir-phil);
 #endif
-
+      
 #ifndef BAROTROPIC
       pG->U[ks][js][i].E -= dtodx1*(lsf*x1Flux[i  ].d*(phic - phil) +
                                     rsf*x1Flux[i+1].d*(phir - phic));
 #endif
     }
   }
+  
+            
+    if(1) {
+        for (i=is; i<=ie; i++) {
+            accc = pG->AccX[ks][js][i];
+            accr = pG->AccX[ks][js][i+1];
+            accl = pG->AccX[ks][js][i-1];
+            pG->U[ks][js][i].M1 += pG->dt*dhalf[i]*accc;
+            
+#ifndef BAROTROPIC
+            pG->U[ks][js][i].E += 0.5 * pG->dt *(lsf*x1Flux[i  ].d*(accl + accc)/2.0 +
+                                        rsf*x1Flux[i+1].d*(accr + accc)/2.0);
+#endif
+        }
+    }
 
 /*--- Step 11b -----------------------------------------------------------------
  * Add source terms for self-gravity.
@@ -658,7 +684,7 @@ void integrate_init_1d(MeshS *pM)
   if ((Wr = (Prim1DS*)malloc(size1*sizeof(Prim1DS))) == NULL) goto on_error;
 
 #ifdef CYLINDRICAL
-  if((StaticGravPot != NULL) || (CoolingFunc != NULL))
+  if(1 || (StaticGravPot != NULL) || (CoolingFunc != NULL))
 #endif
   {
     if ((dhalf  = (Real*)malloc(size1*sizeof(Real))) == NULL) goto on_error;

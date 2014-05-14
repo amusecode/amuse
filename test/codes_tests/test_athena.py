@@ -1243,7 +1243,43 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(rhovy, 3.0 * (all_i+1))
         self.assertAlmostRelativeEquals(rhovz, 4.0 * (all_i+1))
         self.assertAlmostRelativeEquals(rhoen, 5.0 * (all_i+1))
-                        
+                       
+    def test36(self):
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.3)
+        instance.setup_mesh(4, 3, 2, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        
+        instance.commit_parameters()
+        instance.initialize_grid()
+        
+        ax_in = [1.,2.,3.,4.]
+        ay_in = [3,4,5,6]
+        az_in = [5,6,7,8]
+            
+        instance.set_grid_acceleration(
+            [0,1,2,3],
+            [0,0,0,0],
+            [0,1,0,1],
+            ax_in,
+            ay_in,
+            az_in,
+            [1,1,1,1],
+        )
+        ax_out, ay_out, az_out, error = instance.get_grid_acceleration(
+            [0,1,2,3],
+            [0,0,0,0],
+            [0,1,0,1],
+            [1,1,1,1]
+        )
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(ax_in, ax_out)
+        self.assertAlmostRelativeEquals(ay_in, ay_out)
+        self.assertAlmostRelativeEquals(az_in, az_out)
+        instance.stop() 
+        
 class TestAthena(TestWithMPI):
     
         

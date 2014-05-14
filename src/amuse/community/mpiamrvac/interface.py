@@ -12,9 +12,12 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
     use_modules = ['mpiamrvac_interface', 'StoppingConditions']
     
     MODE_NORMAL = 'normal'
+    MODE_3D = '3d'
+    MODE_3D_ACC = '3d-acc'
     MODE_2D   = '2d'
     MODE_2D_ACC   = '2d-acc'
     MODE_1D   = '1d'
+    MODE_1D_ACC   = '1d-acc'
     
     def __init__(self, mode = MODE_NORMAL, **options):
         CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
@@ -22,14 +25,18 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
         self._mode = mode
         
     def name_of_the_worker(self, mode):
-        if mode == self.MODE_NORMAL:
+        if mode == self.MODE_NORMAL or mode == self.MODE_3D:
             return 'mpiamrvac_worker'
+        elif mode == self.MODE_3D_ACC:
+            return 'mpiamrvac_worker_acc'
         elif mode == self.MODE_2D:
             return 'mpiamrvac_worker_2d'
         elif mode == self.MODE_2D_ACC:
             return 'mpiamrvac_worker_2dacc'
         elif mode == self.MODE_1D:
             return 'mpiamrvac_worker_1d'
+        elif mode == self.MODE_1D_ACC:
+            return 'mpiamrvac_worker_1dacc'
         else:
             return 'mpiamrvac_worker'
     
@@ -49,6 +56,10 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
             return os.path.join(self.data_directory, 'amrvac_2d-acc.par')
         elif self._mode == self.MODE_1D:
             return os.path.join(self.data_directory, 'amrvac_1d.par')
+        elif self._mode == self.MODE_1D_ACC:
+            return os.path.join(self.data_directory, 'amrvac_1d-acc.par')
+        elif self._mode == self.MODE_3D_ACC:
+            return os.path.join(self.data_directory, 'amrvac-acc.par')
         else:
             return os.path.join(self.data_directory, 'amrvac.par')
     
@@ -2058,12 +2069,30 @@ class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface, StoppingConditio
     
     
     @legacy_function    
-    def set_boundary():
+    def set_boundary_in_code():
         function = LegacyFunctionSpecification()  
         for x in ["xbound1","xbound2","ybound1","ybound2","zbound1","zbound2"]:
             function.addParameter(x, dtype='string', direction=function.IN)
         function.result_type = 'i'
         return function
+        
+    
+    def set_boundary(self, xbound1, xbound2, ybound1, ybound2, zbound1, zbound2):
+        map_from_amuse_to_mpiamrvac= {
+            "reflective": "symm", 
+            "outflow":"limitinflow", 
+            "periodic":"periodic",
+            "interface": "special",
+        }
+        
+        return self.set_boundary_in_code(
+            map_from_amuse_to_mpiamrvac.setdefault(xbound1, xbound1),
+            map_from_amuse_to_mpiamrvac.setdefault(xbound2, xbound2),
+            map_from_amuse_to_mpiamrvac.setdefault(ybound1, ybound1),
+            map_from_amuse_to_mpiamrvac.setdefault(ybound2, ybound2),
+            map_from_amuse_to_mpiamrvac.setdefault(zbound1, zbound1),
+            map_from_amuse_to_mpiamrvac.setdefault(zbound2, zbound2)
+        )
         
     #
     #

@@ -3268,10 +3268,10 @@ CONTAINS
         get_time = 0
     end function
     
-    function set_boundary(lowx,highx,lowy,highy,lowz,highz)
+    function set_boundary_in_code(lowx,highx,lowy,highy,lowz,highz)
         IMPLICIT NONE
         
-        integer :: set_boundary
+        integer :: set_boundary_in_code
         integer :: idim
         character(len=25), intent(in) :: lowx,highx,lowy,highy,lowz,highz
         
@@ -3292,12 +3292,12 @@ CONTAINS
                 -1:2*idim)/="periodic")))) then
                 write(unitterm,*)"Each dimension should either have all",&
                 " or no variables periodic"
-                set_boundary = -2
+                set_boundary_in_code = -2
                 return
             end if
         end do
         
-        set_boundary = 0
+        set_boundary_in_code = 0
     end function  
 
 

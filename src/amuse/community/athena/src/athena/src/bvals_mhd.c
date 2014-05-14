@@ -137,6 +137,15 @@ static void conduct_ox2(GridS *pG);
 static void conduct_ix3(GridS *pG);
 static void conduct_ox3(GridS *pG);
 
+#ifdef AMUSE
+static void outflow_iacc1(GridS *pG);
+static void outflow_oacc1(GridS *pG);
+static void outflow_iacc2(GridS *pG);
+static void outflow_oacc2(GridS *pG);
+static void outflow_iacc3(GridS *pG);
+static void outflow_oacc3(GridS *pG);
+#endif
+
 static void ProlongateLater(GridS *pG);
 
 #ifdef MPI_PARALLEL
@@ -187,7 +196,11 @@ void bvals_mhd(DomainS *pD)
   if (pGrid->Nx[0] > 1){
 
 #ifdef MPI_PARALLEL
+#ifdef AMUSE
+    cnt = nghost*(pGrid->Nx[1])*(pGrid->Nx[2])*(NVAR + 3);
+#else
     cnt = nghost*(pGrid->Nx[1])*(pGrid->Nx[2])*(NVAR);
+#endif
 #ifdef MHD
     cnt2 = (pGrid->Nx[1] > 1) ? (pGrid->Nx[1] + 1) : 1;
     cnt3 = (pGrid->Nx[2] > 1) ? (pGrid->Nx[2] + 1) : 1;
@@ -195,6 +208,7 @@ void bvals_mhd(DomainS *pD)
     cnt += nghost*cnt2*(pGrid->Nx[2]);
     cnt += nghost*(pGrid->Nx[1])*cnt3;
 #endif
+    
 
 /* MPI blocks to both left and right */
     if (pGrid->rx1_id >= 0 && pGrid->lx1_id >= 0) {
@@ -290,7 +304,11 @@ void bvals_mhd(DomainS *pD)
   if (pGrid->Nx[1] > 1){
 
 #ifdef MPI_PARALLEL
+#ifdef AMUSE
+    cnt = (pGrid->Nx[0] + 2*nghost)*nghost*(pGrid->Nx[2])*(NVAR + 3);
+#else
     cnt = (pGrid->Nx[0] + 2*nghost)*nghost*(pGrid->Nx[2])*(NVAR);
+#endif
 #ifdef MHD
     cnt3 = (pGrid->Nx[2] > 1) ? (pGrid->Nx[2] + 1) : 1;
     cnt += (pGrid->Nx[0] + 2*nghost - 1)*nghost*(pGrid->Nx[2]);
@@ -407,7 +425,11 @@ void bvals_mhd(DomainS *pD)
   if (pGrid->Nx[2] > 1){
 
 #ifdef MPI_PARALLEL
+#ifdef AMUSE
+    cnt = (pGrid->Nx[0] + 2*nghost)*(pGrid->Nx[1] + 2*nghost)*nghost*(NVAR + 3);
+#else
     cnt = (pGrid->Nx[0] + 2*nghost)*(pGrid->Nx[1] + 2*nghost)*nghost*(NVAR);
+#endif
 #ifdef MHD
     cnt += (pGrid->Nx[0] + 2*nghost - 1)*(pGrid->Nx[1] + 2*nghost)*nghost;
     cnt += (pGrid->Nx[0] + 2*nghost)*(pGrid->Nx[1] + 2*nghost - 1)*nghost;
@@ -883,11 +905,20 @@ void bvals_mhd_init(MeshS *pM)
   size = x1cnt > x2cnt ? x1cnt : x2cnt;
   size = x3cnt >  size ? x3cnt : size;
 
+
+#ifdef AMUSE /* AMUSE add 3 for acc field */
 #ifdef MHD
-  size *= nghost*((NVAR)+3);
+  size *= nghost*((NVAR) + 3 + 3);
+#else
+  size *= nghost*(NVAR + 3);
+#endif
+#else /* AMUSE */
+#ifdef MHD
+  size *= nghost*((NVAR) + 3);
 #else
   size *= nghost*(NVAR);
 #endif
+#endif  /* AMUSE */
 
   if (size > 0) {
     if((send_buf = (double**)calloc_2d_array(2,size,sizeof(double))) == NULL)
@@ -975,6 +1006,10 @@ static void reflect_ix1(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_iacc1(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* reflect normal component of B field, B1i not set at i=is-nghost */
@@ -1034,6 +1069,10 @@ static void reflect_ox1(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_oacc1(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* reflect normal component of B field */
@@ -1093,6 +1132,10 @@ static void reflect_ix2(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_iacc2(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1154,6 +1197,10 @@ static void reflect_ox2(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_oacc2(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1212,6 +1259,10 @@ static void reflect_ix3(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_iacc3(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1272,6 +1323,10 @@ static void reflect_ox3(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_oacc3(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1331,6 +1386,9 @@ static void outflow_ix1(GridS *pGrid)
       }
     }
   }
+#ifdef AMUSE
+    outflow_iacc1(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1386,6 +1444,10 @@ static void outflow_ox1(GridS *pGrid)
     }
   }
 
+#ifdef AMUSE
+    outflow_oacc1(pGrid);
+#endif /*AMUSE*/
+
 #ifdef MHD
 /* i=ie+1 is not a boundary condition for the interface field B1i */
   for (k=ks; k<=ke; k++) {
@@ -1439,6 +1501,12 @@ static void outflow_ix2(GridS *pGrid)
       }
     }
   }
+  
+  
+#ifdef AMUSE
+    outflow_iacc2(pGrid);
+#endif /*AMUSE*/
+
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1494,6 +1562,10 @@ static void outflow_ox2(GridS *pGrid)
     }
   }
 
+#ifdef AMUSE
+    outflow_oacc2(pGrid);
+#endif /*AMUSE*/
+
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
   for (k=ks; k<=ke; k++) {
@@ -1544,6 +1616,10 @@ static void outflow_ix3(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_iacc3(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1577,6 +1653,129 @@ static void outflow_ix3(GridS *pGrid)
   return;
 }
 
+#ifdef AMUSE
+static void outflow_iacc1(GridS *pGrid)
+{
+  int is = pGrid->is, ie = pGrid->ie;
+  int js = pGrid->js, je = pGrid->je;
+  int ks = pGrid->ks, ke = pGrid->ke;
+  int i,j,k;
+
+  for (k=ks; k<=ke; k++) {
+    for (j=js; j<=je; j++) {
+      for (i=1; i<=nghost; i++) {
+        pGrid->AccX[k][j][is-i] = pGrid->AccX[k][j][is];
+        pGrid->AccY[k][j][is-i] = pGrid->AccY[k][j][is];
+        pGrid->AccZ[k][j][is-i] = pGrid->AccZ[k][j][is];
+      }
+    }
+  }
+  return;
+}
+static void outflow_oacc1(GridS *pGrid)
+{
+  int is = pGrid->is, ie = pGrid->ie;
+  int js = pGrid->js, je = pGrid->je;
+  int ks = pGrid->ks, ke = pGrid->ke;
+  int i,j,k;
+
+  for (k=ks; k<=ke; k++) {
+    for (j=js; j<=je; j++) {
+      for (i=1; i<=nghost; i++) {
+        pGrid->AccX[k][j][ie+i] = pGrid->AccX[k][j][ie];
+        pGrid->AccY[k][j][ie+i] = pGrid->AccY[k][j][ie];
+        pGrid->AccZ[k][j][ie+i] = pGrid->AccZ[k][j][ie];
+      }
+    }
+  }
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void outflow_iacc2(GridS *pGrid)
+{
+  int is = pGrid->is, ie = pGrid->ie;
+  int js = pGrid->js, je = pGrid->je;
+  int ks = pGrid->ks, ke = pGrid->ke;
+  int i,j,k;
+
+  for (k=ks; k<=ke; k++) {
+    for (j=1; j<=nghost; j++) {
+      for (i=is-nghost; i<=ie+nghost; i++) {
+        pGrid->AccX[k][js-j][i] = pGrid->AccX[k][js][i];
+        pGrid->AccY[k][js-j][i] = pGrid->AccY[k][js][i];
+        pGrid->AccZ[k][js-j][i] = pGrid->AccZ[k][js][i];
+      }
+    }
+  }
+
+  return;
+}
+
+static void outflow_oacc2(GridS *pGrid)
+{
+  int is = pGrid->is, ie = pGrid->ie;
+  int js = pGrid->js, je = pGrid->je;
+  int ks = pGrid->ks, ke = pGrid->ke;
+  int i,j,k;
+
+  for (k=ks; k<=ke; k++) {
+    for (j=1; j<=nghost; j++) {
+      for (i=is-nghost; i<=ie+nghost; i++) {
+        pGrid->AccX[k][je+j][i] = pGrid->AccX[k][je][i];
+        pGrid->AccY[k][je+j][i] = pGrid->AccY[k][je][i];
+        pGrid->AccZ[k][je+j][i] = pGrid->AccZ[k][je][i];
+      }
+    }
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------------*/
+static void outflow_iacc3(GridS *pGrid)
+{
+  int is = pGrid->is, ie = pGrid->ie;
+  int js = pGrid->js, je = pGrid->je;
+  int ks = pGrid->ks, ke = pGrid->ke;
+  int i,j,k;
+
+  for (k=1; k<=nghost; k++) {
+    for (j=js-nghost; j<=je+nghost; j++) {
+      for (i=is-nghost; i<=ie+nghost; i++) {
+        pGrid->AccX[ks-k][j][i] = pGrid->AccX[ks][j][i];
+        pGrid->AccY[ks-k][j][i] = pGrid->AccY[ks][j][i];
+        pGrid->AccZ[ks-k][j][i] = pGrid->AccZ[ks][j][i];
+      }
+    }
+  }
+
+  return;
+}
+
+static void outflow_oacc3(GridS *pGrid)
+{
+  int is = pGrid->is, ie = pGrid->ie;
+  int js = pGrid->js, je = pGrid->je;
+  int ks = pGrid->ks, ke = pGrid->ke;
+  int i,j,k;
+
+  for (k=1; k<=nghost; k++) {
+    for (j=js-nghost; j<=je+nghost; j++) {
+      for (i=is-nghost; i<=ie+nghost; i++) {
+        pGrid->AccX[ke+k][j][i] = pGrid->AccX[ke][j][i];
+        pGrid->AccY[ke+k][j][i] = pGrid->AccY[ke][j][i];
+        pGrid->AccZ[ke+k][j][i] = pGrid->AccZ[ke][j][i];
+      }
+    }
+  }
+
+  return;
+}
+
+
+#endif
+  
 /*----------------------------------------------------------------------------*/
 /*! \fn static void outflow_ox3(GridS *pGrid)
  *  \brief OUTFLOW boundary conditions, Outer x3 boundary (bc_ox3=2) */
@@ -1595,6 +1794,10 @@ static void outflow_ox3(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_oacc3(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1650,6 +1853,18 @@ static void periodic_ix1(GridS *pGrid)
     }
   }
 
+#ifdef AMUSE
+  for (k=ks; k<=ke; k++) {
+    for (j=js; j<=je; j++) {
+      for (i=1; i<=nghost; i++) {
+        pGrid->AccX[k][j][is-i] = pGrid->AccX[k][j][ie-(i-1)];
+        pGrid->AccY[k][j][is-i] = pGrid->AccY[k][j][ie-(i-1)];
+        pGrid->AccZ[k][j][is-i] = pGrid->AccZ[k][j][ie-(i-1)];
+      }
+    }
+  }
+#endif /*AMUSE*/
+
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
   for (k=ks; k<=ke; k++) {
@@ -1703,6 +1918,18 @@ static void periodic_ox1(GridS *pGrid)
       }
     }
   }
+#ifdef AMUSE
+  for (k=ks; k<=ke; k++) {
+    for (j=js; j<=je; j++) {
+      for (i=1; i<=nghost; i++) {
+        pGrid->AccX[k][j][ie+i] = pGrid->AccX[k][j][is+(i-1)];
+        pGrid->AccY[k][j][ie+i] = pGrid->AccY[k][j][is+(i-1)];
+        pGrid->AccZ[k][j][ie+i] = pGrid->AccZ[k][j][is+(i-1)];
+      }
+    }
+  }
+#endif /*AMUSE*/
+
 
 #ifdef MHD
 /* B1i is not set at i=ie+1 */
@@ -1757,6 +1984,18 @@ static void periodic_ix2(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+  for (k=ks; k<=ke; k++) {
+    for (j=1; j<=nghost; j++) {
+      for (i=is-nghost; i<=ie+nghost; i++) {
+        pGrid->AccX[k][js-j][i] = pGrid->AccX[k][je-(j-1)][i];
+        pGrid->AccY[k][js-j][i] = pGrid->AccY[k][je-(j-1)][i];
+        pGrid->AccZ[k][js-j][i] = pGrid->AccZ[k][je-(j-1)][i];
+      }
+    }
+  }
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1811,6 +2050,17 @@ static void periodic_ox2(GridS *pGrid)
       }
     }
   }
+#ifdef AMUSE
+  for (k=ks; k<=ke; k++) {
+    for (j=1; j<=nghost; j++) {
+      for (i=is-nghost; i<=ie+nghost; i++) {
+        pGrid->AccX[k][je+j][i] = pGrid->AccX[k][js+(j-1)][i];
+        pGrid->AccY[k][je+j][i] = pGrid->AccY[k][js+(j-1)][i];
+        pGrid->AccZ[k][je+j][i] = pGrid->AccZ[k][js+(j-1)][i];
+      }
+    }
+  }
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1863,6 +2113,18 @@ static void periodic_ix3(GridS *pGrid)
     }
   }
 
+#ifdef AMUSE
+  for (k=1; k<=nghost; k++) {
+    for (j=js-nghost; j<=je+nghost; j++) {
+      for (i=is-nghost; i<=ie+nghost; i++) {
+        pGrid->AccX[ks-k][j][i] = pGrid->AccX[ke-(k-1)][j][i];
+        pGrid->AccY[ks-k][j][i] = pGrid->AccY[ke-(k-1)][j][i];
+        pGrid->AccZ[ks-k][j][i] = pGrid->AccZ[ke-(k-1)][j][i];
+      }
+    }
+  }
+#endif /*AMUSE*/
+
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
   for (k=1; k<=nghost; k++) {
@@ -1913,6 +2175,18 @@ static void periodic_ox3(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+  for (k=1; k<=nghost; k++) {
+    for (j=js-nghost; j<=je+nghost; j++) {
+      for (i=is-nghost; i<=ie+nghost; i++) {
+        pGrid->AccX[ke+k][j][i] = pGrid->AccX[ks+(k-1)][j][i];
+        pGrid->AccY[ke+k][j][i] = pGrid->AccY[ks+(k-1)][j][i];
+        pGrid->AccZ[ke+k][j][i] = pGrid->AccZ[ks+(k-1)][j][i];
+      }
+    }
+  }
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -1972,6 +2246,10 @@ static void conduct_ix1(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_iacc1(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i not set at i=is-nghost */
@@ -2032,6 +2310,10 @@ static void conduct_ox1(GridS *pGrid)
     }
   }
 
+#ifdef AMUSE
+    outflow_oacc1(pGrid);
+#endif /*AMUSE*/
+
 #ifdef MHD
 /* i=ie+1 is not set for the interface field B1i */
   for (k=ks; k<=ke; k++) {
@@ -2090,6 +2372,9 @@ static void conduct_ix2(GridS *pGrid)
       }
     }
   }
+#ifdef AMUSE
+    outflow_iacc2(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -2150,6 +2435,10 @@ static void conduct_ox2(GridS *pGrid)
     }
   }
 
+#ifdef AMUSE
+    outflow_oacc2(pGrid);
+#endif /*AMUSE*/
+
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
   for (k=ks; k<=ke; k++) {
@@ -2206,6 +2495,10 @@ static void conduct_ix3(GridS *pGrid)
     }
   }
 
+#ifdef AMUSE
+    outflow_iacc3(pGrid);
+#endif /*AMUSE*/
+
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
   for (k=1; k<=nghost; k++) {
@@ -2261,6 +2554,10 @@ static void conduct_ox3(GridS *pGrid)
       }
     }
   }
+  
+#ifdef AMUSE
+    outflow_oacc3(pGrid);
+#endif /*AMUSE*/
 
 #ifdef MHD
 /* B1i is not set at i=is-nghost */
@@ -2345,6 +2642,11 @@ static void pack_ix1(GridS *pG)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) *(pSnd++) = pG->U[k][j][i].s[n];
 #endif
+#ifdef AMUSE   
+        *(pSnd++) = pG->AccX[k][j][i];
+        *(pSnd++) = pG->AccY[k][j][i];
+        *(pSnd++) = pG->AccZ[k][j][i];
+#endif
       }
     }
   }
@@ -2418,6 +2720,11 @@ static void pack_ox1(GridS *pG)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) *(pSnd++) = pG->U[k][j][i].s[n];
 #endif
+#ifdef AMUSE
+        *(pSnd++) = pG->AccX[k][j][i];
+        *(pSnd++) = pG->AccY[k][j][i];
+        *(pSnd++) = pG->AccZ[k][j][i];
+#endif
       }
     }
   }
@@ -2489,6 +2796,11 @@ static void pack_ix2(GridS *pG)
 #endif /* MHD */
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) *(pSnd++) = pG->U[k][j][i].s[n];
+#endif
+#ifdef AMUSE
+        *(pSnd++) = pG->AccX[k][j][i];
+        *(pSnd++) = pG->AccY[k][j][i];
+        *(pSnd++) = pG->AccZ[k][j][i];
 #endif
       }
     }
@@ -2563,6 +2875,11 @@ static void pack_ox2(GridS *pG)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) *(pSnd++) = pG->U[k][j][i].s[n];
 #endif
+#ifdef AMUSE
+        *(pSnd++) = pG->AccX[k][j][i];
+        *(pSnd++) = pG->AccY[k][j][i];
+        *(pSnd++) = pG->AccZ[k][j][i];
+#endif
       }
     }
   }
@@ -2633,6 +2950,11 @@ static void pack_ix3(GridS *pG)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) *(pSnd++) = pG->U[k][j][i].s[n];
 #endif
+#ifdef AMUSE
+        *(pSnd++) = pG->AccX[k][j][i];
+        *(pSnd++) = pG->AccY[k][j][i];
+        *(pSnd++) = pG->AccZ[k][j][i];
+#endif
       }
     }
   }
@@ -2702,6 +3024,11 @@ static void pack_ox3(GridS *pG)
 #endif /* MHD */
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) *(pSnd++) = pG->U[k][j][i].s[n];
+#endif
+#ifdef AMUSE
+        *(pSnd++) = pG->AccX[k][j][i];
+        *(pSnd++) = pG->AccY[k][j][i];
+        *(pSnd++) = pG->AccZ[k][j][i];
 #endif
       }
     }
@@ -2776,6 +3103,11 @@ static void unpack_ix1(GridS *pG)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] = *(pRcv++);
 #endif
+#ifdef AMUSE
+        pG->AccX[k][j][i] = *(pRcv++);
+        pG->AccY[k][j][i] = *(pRcv++);
+        pG->AccZ[k][j][i] = *(pRcv++);
+#endif
       }
     }
   }
@@ -2848,6 +3180,11 @@ static void unpack_ox1(GridS *pG)
 #endif /* MHD */
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] = *(pRcv++);
+#endif
+#ifdef AMUSE
+        pG->AccX[k][j][i] = *(pRcv++);
+        pG->AccY[k][j][i] = *(pRcv++);
+        pG->AccZ[k][j][i] = *(pRcv++);
 #endif
       }
     }
@@ -2922,6 +3259,11 @@ static void unpack_ix2(GridS *pG)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] = *(pRcv++);
 #endif
+#ifdef AMUSE
+        pG->AccX[k][j][i] = *(pRcv++);
+        pG->AccY[k][j][i] = *(pRcv++);
+        pG->AccZ[k][j][i] = *(pRcv++);
+#endif
       }
     }
   }
@@ -2995,6 +3337,11 @@ static void unpack_ox2(GridS *pG)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] = *(pRcv++);
 #endif
+#ifdef AMUSE
+        pG->AccX[k][j][i] = *(pRcv++);
+        pG->AccY[k][j][i] = *(pRcv++);
+        pG->AccZ[k][j][i] = *(pRcv++);
+#endif
       }
     }
   }
@@ -3065,6 +3412,11 @@ static void unpack_ix3(GridS *pG)
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] = *(pRcv++);
 #endif
+#ifdef AMUSE
+        pG->AccX[k][j][i] = *(pRcv++);
+        pG->AccY[k][j][i] = *(pRcv++);
+        pG->AccZ[k][j][i] = *(pRcv++);
+#endif
       }
     }
   }
@@ -3134,6 +3486,11 @@ static void unpack_ox3(GridS *pG)
 #endif /* MHD */
 #if (NSCALARS > 0)
         for (n=0; n<NSCALARS; n++) pG->U[k][j][i].s[n] = *(pRcv++);
+#endif
+#ifdef AMUSE
+        pG->AccX[k][j][i] = *(pRcv++);
+        pG->AccY[k][j][i] = *(pRcv++);
+        pG->AccZ[k][j][i] = *(pRcv++);
 #endif
       }
     }

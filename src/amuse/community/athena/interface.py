@@ -461,6 +461,35 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         return function
     
     
+    
+
+    @legacy_function
+    def get_grid_acceleration():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['fx', 'fy', 'fz']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        
+        return function
+        
+    @legacy_function
+    def set_grid_acceleration():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['fx', 'fy', 'fz']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        
+        return function
 
     @legacy_function
     def get_grid_gravitational_acceleration():
@@ -782,6 +811,19 @@ class Athena(CommonCode):
         )
         
         object.add_method(
+            'get_grid_acceleration',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX,),
+            (acceleration,acceleration,acceleration,
+            object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_grid_acceleration',
+            (object.INDEX, object.INDEX, object.INDEX,
+            acceleration,acceleration,acceleration, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
             'get_gravity_at_point',
             (length, length, length, length),
             (acceleration, acceleration, acceleration, object.ERROR_CODE)
@@ -936,6 +978,9 @@ class Athena(CommonCode):
         
         definition.add_getter('get_grid_gravitational_potential', names=('gravitational_potential',))
         definition.add_getter('get_grid_gravitational_acceleration', names=('gravitational_acceleration_x','gravitational_acceleration_y','gravitational_acceleration_z',))
+        
+        definition.add_getter('get_grid_acceleration', names=('ax','ay','az'))
+        definition.add_setter('set_grid_acceleration', names=('ax','ay','az'))
         
         definition.define_extra_keywords({'index_of_grid':index_of_grid})
         

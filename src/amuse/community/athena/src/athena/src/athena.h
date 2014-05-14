@@ -331,6 +331,9 @@ typedef struct Grid_s{
 
 #ifdef AMUSE
   BoundaryCellS * boundary;
+  Real ***AccX;
+  Real ***AccY;
+  Real ***AccZ;
 #endif
 }GridS;
 

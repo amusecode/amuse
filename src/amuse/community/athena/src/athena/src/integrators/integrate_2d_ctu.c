@@ -266,6 +266,15 @@ void integrate_2d_ctu(DomainS *pD)
 #endif
       }
     }
+    if(1) {
+        for (i=il+1; i<=iu; i++) {
+            Real acc_mean = (pG->AccX[ks][j][i] + pG->AccX[ks][j][i-1]) / 2;
+            
+            Wl[i].Vx += 0.5 * pG->dt * acc_mean;
+            Wr[i].Vx += 0.5 * pG->dt * acc_mean;
+        }
+    }
+
 
 /*--- Step 1c (cont) -----------------------------------------------------------
  * Add source terms for self-gravity for 0.5*dt to L/R states
@@ -520,6 +529,14 @@ void integrate_2d_ctu(DomainS *pD)
         Wr[j].Vx -= dtodx2*(phicr - phifc);
       }
     }
+    if(1) {
+        for (j=jl+1; j<=ju; j++) {
+            Real acc_mean = (pG->AccY[ks][j][i] + pG->AccY[ks][j-1][i]) / 2;
+            
+            Wl[j].Vx += 0.5 * pG->dt * acc_mean;
+            Wr[j].Vx += 0.5 * pG->dt * acc_mean;
+        }
+    }
 
 /*--- Step 2c (cont) -----------------------------------------------------------
  * Add source terms for self-gravity for 0.5*dt to L/R states
@@ -762,6 +779,38 @@ void integrate_2d_ctu(DomainS *pD)
       }
     }
   }
+  
+  
+  
+  
+    Real accl, accc, accr;
+  if (1){
+    for (j=jl+1; j<=ju; j++) {
+      for (i=il+1; i<=iu-1; i++) {
+        accc = pG->AccY[ks][j][i];
+        accr = pG->AccY[ks][j+1][i];
+        accl = pG->AccY[ks][j-1][i];
+
+        Ur_x1Face[j][i].My += 0.5 * pG->dt*pG->U[ks][j][i].d*accc;
+            
+#ifndef BAROTROPIC
+        Ur_x1Face[j][i].E += 0.5 * pG->dt*(x2Flux[j  ][i  ].d*(accc+accl) / 2.0 +
+                                           x2Flux[j+1][i  ].d*(accc+accr) / 2.0);
+#endif
+
+        accc = pG->AccY[ks][j][i-1];
+        accr = pG->AccY[ks][j+1][i-1];
+        accl = pG->AccY[ks][j-1][i-1];
+
+        Ur_x1Face[j][i].My += 0.5 * pG->dt*pG->U[ks][j][i-1].d*accc;
+#ifndef BAROTROPIC
+        Ul_x1Face[j][i].E += 0.5 * pG->dt*(x2Flux[j  ][i-1].d*(accc+accl) / 2.0 +
+                                           x2Flux[j+1][i-1].d*(accc+accr) / 2.0);
+#endif
+      }
+    }
+  }
+
 
 /*--- Step 5d (cont) -----------------------------------------------------------
  * Add source terms for self gravity arising from x2-Flux gradient
@@ -923,6 +972,34 @@ void integrate_2d_ctu(DomainS *pD)
       }
     }
   }
+  
+  
+  if (1){
+    for (j=jl+1; j<=ju; j++) {
+      for (i=il+1; i<=iu-1; i++) {
+        accc = pG->AccX[ks][j][i];
+        accr = pG->AccX[ks][j][i+1];
+        accl = pG->AccX[ks][j][i-1];
+
+        Ur_x2Face[j][i].Mz += 0.5 * pG->dt*pG->U[ks][j][i].d*accc;
+            
+#ifndef BAROTROPIC
+        Ur_x2Face[j][i].E += 0.5 * pG->dt*(lsf*x1Flux[j  ][i  ].d*(accc+accl) / 2.0 +
+                                           rsf*x1Flux[j  ][i+1].d*(accc+accr) / 2.0);
+#endif
+
+        accc = pG->AccX[ks][j-1][i];
+        accr = pG->AccX[ks][j-1][i+1];
+        accl = pG->AccX[ks][j-1][i-1];
+
+        Ur_x2Face[j][i].Mz += 0.5 * pG->dt*pG->U[ks][j-1][i].d*accc;
+#ifndef BAROTROPIC
+        Ul_x2Face[j][i].E += 0.5 * pG->dt*(lsf*x1Flux[j-1][i  ].d*(accc+accl) / 2.0 +
+                                           rsf*x1Flux[j-1][i+1].d*(accc+accr) / 2.0);
+#endif
+      }
+    }
+  }
 
 /*--- Step 6d (cont) -----------------------------------------------------------
  * Add source terms for self gravity arising from x1-Flux gradients
@@ -1048,7 +1125,7 @@ void integrate_2d_ctu(DomainS *pD)
 
 #ifndef MHD
 #ifndef PARTICLES
-  if ((StaticGravPot != NULL) || (CoolingFunc != NULL)) 
+  if (1 || (StaticGravPot != NULL) || (CoolingFunc != NULL)) 
 #endif
 #endif
   {
@@ -1523,6 +1600,33 @@ void integrate_2d_ctu(DomainS *pD)
       }
     }
   }
+  
+   if (1){
+    for (j=js; j<=je; j++) {
+      for (i=is; i<=ie; i++) {
+        accc = pG->AccX[ks][j][i];
+        accr = pG->AccX[ks][j][i+1];
+        accl = pG->AccX[ks][j][i-1];
+
+        pG->U[ks][j][i].M1 += pG->dt*dhalf[j][i]*accc;
+
+#ifndef BAROTROPIC
+        pG->U[ks][j][i].E += pG->dt *(lsf*x1Flux[j][i  ].d*(accl + accc)/2.0 +
+                                      rsf*x1Flux[j][i+1].d*(accr + accc)/2.0);
+#endif
+        accc = pG->AccY[ks][j][i];
+        accr = pG->AccY[ks][j+1][i];
+        accl = pG->AccY[ks][j-1][i];
+
+        pG->U[ks][j][i].M2 += pG->dt*dhalf[j][i]*accc;
+
+#ifndef BAROTROPIC
+        pG->U[ks][j][i].E += pG->dt *(x2Flux[j  ][i].d*(accl + accc)/2.0 +
+                                      x2Flux[j+1][i].d*(accr + accc)/2.0);
+#endif
+      }
+    }
+  }
 
 
 /*--- Step 11b -----------------------------------------------------------------
@@ -1951,7 +2055,7 @@ void integrate_init_2d(MeshS *pM)
 #ifndef CYLINDRICAL
 #ifndef MHD
 #ifndef PARTICLES
-  if((StaticGravPot != NULL) || (CoolingFunc != NULL))
+  if(1 || (StaticGravPot != NULL) || (CoolingFunc != NULL))
 #endif
 #endif
 #endif
