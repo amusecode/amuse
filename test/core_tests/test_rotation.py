@@ -164,9 +164,14 @@ class TestRotations(amusetest.TestCase):
 
     def test11(self):
         print "test conservation of dot, transformation of cross with units"
-        p=particles.Particles(1)
+        p=particles.Particles(5)
         p.position=[1.,2.,3.] | units.km
         p.velocity=[-4,5,6.] | units.kms
+        
+        p[1:].position*=0
+        p[1:].velocity*=0
+        
+        print p
         
         dot1=p[0].position.dot(p[0].velocity)
         cross1=p[0].position.cross(p[0].velocity)
