@@ -159,8 +159,26 @@ class TestRotations(amusetest.TestCase):
         dot2=p[0].position.dot(p[0].velocity)
         cross2=numpy.cross(p[0].position,p[0].velocity)
         
-        self.assertAlmostEquals(dot1,dot2,12)
-        self.assertAlmostEquals(cross2,cross1.dot(numpy.linalg.inv(rm)),12)
+        self.assertAlmostEquals(dot1,dot2,14)
+        self.assertAlmostEquals(cross2,cross1.dot(numpy.linalg.inv(rm)),14)
+
+    def test11(self):
+        print "test conservation of dot, transformation of cross with units"
+        p=particles.Particles(1)
+        p.position=[1.,2.,3.] | units.km
+        p.velocity=[-4,5,6.] | units.kms
+        
+        dot1=p[0].position.dot(p[0].velocity)
+        cross1=p[0].position.cross(p[0].velocity)
+        
+        rm=rotation.new_rotation_matrix(0.1,0.5,3.5)
+        p.rotate(0.1,0.5,3.5)
+        
+        dot2=p[0].position.dot(p[0].velocity)
+        cross2=p[0].position.cross(p[0].velocity)
+                
+        self.assertAlmostEquals(dot1.value_in(units.km**2/units.s),dot2.value_in(units.km**2/units.s),14)
+        self.assertAlmostEquals(cross2.value_in(units.km**2/units.s),cross1.dot(numpy.linalg.inv(rm)).value_in(units.km**2/units.s),14)
         
         
         
