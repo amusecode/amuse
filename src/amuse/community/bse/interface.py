@@ -157,7 +157,7 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
             dt = t1 - t0
             t0 = t1
             if dt.value_in(units.Myr) == 0.0:
-                print t, t0, t1, dt, "BREAK BREAK BREAK!"
+                #print t, t0, t1, dt, "BREAK BREAK BREAK!"
                 return
             if particle.stellar_type == 15:
                 return
