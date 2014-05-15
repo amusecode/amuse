@@ -1756,7 +1756,6 @@ class ParticlesSubset(AbstractParticleSet):
 
     def __init__(self, particles, keys):
         AbstractParticleSet.__init__(self, particles)
-
         self._private.particles = particles
         self._private.keys = numpy.array(keys, dtype='uint64')
         self._private.set_of_keys = set(keys)
@@ -1864,14 +1863,15 @@ class ParticlesSubset(AbstractParticleSet):
         return self._private.particles.get_indices_of_keys(keys)
         
     def _sync_with_set(self):
-        
+        if self._private.particles is None:
+            return
         if not self._private.version == self._private.particles._get_version():
             try:
                 self._private.indices = self._private.particles.get_indices_of_keys(self._private.keys)
                 self._private.version = self._private.particles._get_version()
             except exceptions.KeysNotInStorageException as ex:
                 self._private.indices = ex.found_indices
-                self._private.keys = ex.found_keys
+                self._private.keys = numpy.array(keys, dtype='uint64')
                 self._private.set_of_keys = set(self._private.keys)
                 self._private.version = self._private.particles._get_version()
 
@@ -1938,7 +1938,6 @@ class ParticlesMaskedSubset(ParticlesSubset):
 
     def __init__(self, particles, keys):
         AbstractParticleSet.__init__(self, particles)
-
         self._private.particles = particles
 
         self._private.keys = numpy.ma.array(keys, dtype='uint64').copy()
