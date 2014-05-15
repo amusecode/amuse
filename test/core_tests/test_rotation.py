@@ -144,3 +144,27 @@ class TestRotations(amusetest.TestCase):
         omega = ((R).cross(v) / R.lengths_squared().reshape((-1,1))).mean(axis=0).length()
         self.assertAlmostEquals(omega, 1.0 | nbody_system.time**-1, 1)
  
+    def test10(self):
+        print "test conservation of dot, transformation of cross"
+        p=particles.Particles(1)
+        p.position=[1.,2.,3.]
+        p.velocity=[-4,5,6.]
+        
+        dot1=p[0].position.dot(p[0].velocity)
+        cross1=numpy.cross(p[0].position,p[0].velocity)
+        
+        rm=rotation.new_rotation_matrix(0.1,0.5,3.5)
+        p.rotate(0.1,0.5,3.5)
+        
+        dot2=p[0].position.dot(p[0].velocity)
+        cross2=numpy.cross(p[0].position,p[0].velocity)
+        
+        self.assertAlmostEquals(dot1,dot2,12)
+        self.assertAlmostEquals(cross2,cross1.dot(numpy.linalg.inv(rm)),12)
+        
+        
+        
+        
+      
+      
+

@@ -18,23 +18,17 @@ def rotated(positions, phi, theta, psi):
     """
     Return the positions, rotated by phi, theta and psi around the x, y and z axes
     """
-    print phi, theta, psi
+#    print phi, theta, psi
     rotation_matrix = new_rotation_matrix(phi, theta, psi)
-    print "RT=", rotation_matrix
-    units = positions.unit
-    value = positions.value_in(units)
-    
-    result = []
-    for x in value:
-        result.append(numpy.dot(rotation_matrix, x))
-    return units.new_quantity(result)
+#    print "RT=", rotation_matrix
+    return positions.dot(rotation_matrix.transpose())
 
 def rotate(particles, phi, theta, psi):
     """
     Rotate the positions and the velocities around 0,0,0.
     """
     particles.position = rotated(particles.position,  phi, theta, psi)
-    particles.velocity = rotated(particles.velocity,  theta, phi, psi)
+    particles.velocity = rotated(particles.velocity,  phi, theta, psi)
 
 def add_spin(particles, omega):
     """
