@@ -357,7 +357,7 @@ int commit_particles(){
     ngb_treeallocate(MAX_NGB);
     if((All.MaxPart < 1000) && (All.TreeAllocFactor <= 1.0)){
         if (ThisTask == 0){
-            cout << "Gadget takes "<< All.PartAllocFactor " times the number of particles on a processors as a maximum"<<endl;
+            cout << "Gadget takes "<< All.PartAllocFactor  << " times the number of particles on a processors as a maximum"<<endl;
             cout << "For large numbers of particles some room is always available for storing nodes from other processors. " << endl;
             cout << "For smalle numbers, this assumption is incorrect"<<endl;
             cout << "Changed allocation of tree to include a fixed number of extra particles"<<endl;
