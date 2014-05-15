@@ -9,6 +9,7 @@ from amuse.support import exceptions
 
 from amuse.test import amusetest
 import numpy
+import pickle
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse import datamodel
@@ -243,48 +244,50 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         self.assertRaises(AmuseException, instance.get_state_error, 1, 
             expected_message = "Error when calling 'get_state_error' of a 'InCodeComponentImplementation', errorcode is -1.0")
             
-class CodeInterfaceTests(amusetest.TestCase):
-    class TestClass(object):
-        def __init__(self):
-            self.state = 0
-            self.number_of_times_move_to_state_1_called = 0
-            self.number_of_times_move_to_state_2_called = 0
-            self.number_of_times_move_to_state_3_called = 0
-            self.number_of_times_move_to_state_4_called = 0
-            
-        def always_works(self):
-            return True
+
+class ClassWithState(object):
+    
+    def __init__(self):
+        self.state = 0
+        self.number_of_times_move_to_state_1_called = 0
+        self.number_of_times_move_to_state_2_called = 0
+        self.number_of_times_move_to_state_3_called = 0
+        self.number_of_times_move_to_state_4_called = 0
         
-        def move_to_state_1(self):
-            self.number_of_times_move_to_state_1_called += 1
-            self.state = 1
-            
-        def move_to_state_2(self):
-            self.number_of_times_move_to_state_2_called += 1
-            self.state = 2
-            
-        def move_to_state_3(self):
-            self.number_of_times_move_to_state_3_called += 1
-            self.state = 3
-            
-        def move_to_state_4(self):
-            self.number_of_times_move_to_state_4_called += 1
-            self.state = 4
-            
-        def returns_1(self):
-            return self.state
-            
-        def returns_2(self):
-            return self.state
-            
-        def returns_3(self):
-            return self.state
-            
-        def returns_4(self):
-            return self.state
+    def always_works(self):
+        return True
+    
+    def move_to_state_1(self):
+        self.number_of_times_move_to_state_1_called += 1
+        self.state = 1
+        
+    def move_to_state_2(self):
+        self.number_of_times_move_to_state_2_called += 1
+        self.state = 2
+        
+    def move_to_state_3(self):
+        self.number_of_times_move_to_state_3_called += 1
+        self.state = 3
+        
+    def move_to_state_4(self):
+        self.number_of_times_move_to_state_4_called += 1
+        self.state = 4
+        
+    def returns_1(self):
+        return self.state
+        
+    def returns_2(self):
+        return self.state
+        
+    def returns_3(self):
+        return self.state
+        
+    def returns_4(self):
+        return self.state
+class CodeInterfaceTests(amusetest.TestCase):
             
     def test1(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -293,7 +296,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(1, instance.returns_1())
         
     def test2(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         handler = instance.get_handler('STATE')
@@ -318,7 +321,7 @@ class CodeInterfaceTests(amusetest.TestCase):
                 self.overridden().move_to_state_1()
                 self.traced = True
                 
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = TestCodeInterface(original)
         instance.traced = False
@@ -337,7 +340,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         
         
     def test4(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -353,7 +356,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(instance.get_name_of_current_state(), 'ONE')
         
     def test5(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -370,7 +373,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(instance.get_name_of_current_state(), 'TWO')
         
     def test6(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -402,7 +405,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         
     
     def test7(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -437,7 +440,7 @@ class CodeInterfaceTests(amusetest.TestCase):
             
     
     def test8(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -457,7 +460,7 @@ class CodeInterfaceTests(amusetest.TestCase):
             expected_message = "No transition from current state state 'TWO' to state 'THREE' possible")
         
     def test9(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -490,7 +493,7 @@ class CodeInterfaceTests(amusetest.TestCase):
 
 
     def test10(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -516,7 +519,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(instance.get_name_of_current_state(), 'ONE')
         
     def test11(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         handler = instance.get_handler('STATE')
@@ -538,7 +541,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     
         
     def test12(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original, log_transitions = True)
         handler = instance.get_handler('STATE')
@@ -563,7 +566,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     
         
     def test13(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original, log_transitions = True)
         handler = instance.get_handler('STATE')
@@ -590,7 +593,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(instance.get_name_of_current_state(), 'TWO')
     
     def test14(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -611,7 +614,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(instance.get_name_of_current_state(), 'TWO')
     
     def test15(self):
-        original = self.TestClass()
+        original = ClassWithState()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -630,6 +633,35 @@ class CodeInterfaceTests(amusetest.TestCase):
         
         self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
         self.assertEquals(instance.returns_1(), 1)    
+        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        
+    
+    def test9(self):
+        original = ClassWithState()
+        instance = interface.InCodeComponentImplementation(original)
+        
+        
+        handler = instance.get_handler('STATE')
+        handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
+        handler.add_transition('ONE', 'TWO', 'move_to_state_2')
+        handler.add_transition('TWO', 'THREE', 'move_to_state_3')
+        handler.add_transition('TWO', 'FOUR', 'move_to_state_4')
+        handler.add_transition('THREE', 'ONE', 'move_to_state_1')
+        
+        handler.add_method('THREE', 'returns_3')
+        handler.add_method('TWO', 'returns_2')
+        handler.add_method('ONE', 'returns_1')
+        handler.set_initial_state('ZERO')
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEquals(instance.returns_1(), 1)    
+        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        
+        pickled_instance = pickle.dumps(instance)
+        unpickled_instance = pickle.loads(pickled_instance)
+        self.assertEquals(unpickled_instance.get_name_of_current_state(), 'ONE')
+        self.assertEquals(unpickled_instance.returns_2(), 2)    
+        self.assertEquals(unpickled_instance.get_name_of_current_state(), 'TWO')
         self.assertEquals(instance.get_name_of_current_state(), 'ONE')
         
 class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
@@ -750,115 +782,115 @@ class CodeInterfaceWithParticlesTests(amusetest.TestCase):
         handler.set_nbody_converter(convert_nbody)
         
         
+class ParticlesWithBindingInterface(object):
 
+    def __init__(self):
+        self.masses = {}
+        
+    def get_mass(self, id):
+        masses = []
+        errors = []
+        for x in id:
+            masses.append(self.masses[x])
+            errors.append(0)
+        result = OrderedDictionary()
+        result["mass"] = masses
+        result["__result"] = errors
+        return result
+    
+    def set_mass(self, id, mass):
+        for i,m in zip(id,mass):
+            self.masses[i] = m
+            
+        return ( [0] * len(id),)
+        
+    def new_particle(self, mass):
+        ids = []
+        errors = []
+        
+        for x in mass:
+            id = len(self.masses)
+            self.masses[len(self.masses)]  = x
+            ids.append(id)
+            errors.append(0)
+            
+        return (ids, errors)
+    
+    def delete_particle(self, id):
+        errors = []
+        for x in id:
+            self.masses[x].stop()
+            errors.append(0)
+        return errors
+        
+    def get_number_of_particles(self):
+        return (len(self.masses), 0)
+        
+    def get_colliding_indices(self):
+        return (1,2,0)
+        
+    
+    def get_next(self, id):
+        return (map(lambda x : x+1, id), map(lambda x : 0, id))
+        
+    def add_1_to_mass(self, id):
+        if isinstance(id, int):
+            self.masses[id] += 1.0
+            return [0]
+        for i in id:
+            self.masses[i] += 1.0
+        return map(lambda x : 0, id)
+    
+    def get_heaviest_particle(self):
+        max = -1
+        id = -1
+        for index, mass in self.masses.iteritems():
+            if mass > max:
+                id = index
+                max = mass
+        return id
+        
+    def get_number_of_lightest_particles(self):
+        return 2
+        
+    def get_lightest_particles(self, offset):
+        sorted_masses = sorted(list(self.masses.iteritems()), key = lambda x : x[1])
+        return [sorted_masses[x][0] for x in offset]
+        
+    def get_number_of_particles_with_same_mass(self, id):
+        result = []
+        for index in id:
+            mass = self.masses[index]
+            count = 0
+        
+            for otherindex, m in self.masses.iteritems():
+                if otherindex == index:
+                    continue
+                if abs(m - mass) < 1.0:
+                    count += 1
+            result.append(count)
+        return result
+        
+    def get_particle_with_same_mass(self, id, offset):
+        result = []
+        for index, index_in_list in zip(id, offset):
+            mass = self.masses[index]
+            count = 0
+            for otherindex, m in self.masses.iteritems():
+                if otherindex == index:
+                    continue
+                if abs(m - mass) < 1.0:
+                    count += 1
+                    if count == (index_in_list + 1):
+                        result.append(otherindex)
+                        break
+        return result
 class TestParticlesWithBinding(amusetest.TestCase):
-    class TestInterface(object):
-
-        def __init__(self):
-            self.masses = {}
-            
-        def get_mass(self, id):
-            masses = []
-            errors = []
-            for x in id:
-                masses.append(self.masses[x])
-                errors.append(0)
-            result = OrderedDictionary()
-            result["mass"] = masses
-            result["__result"] = errors
-            return result
-        
-        def set_mass(self, id, mass):
-            for i,m in zip(id,mass):
-                self.masses[i] = m
-                
-            return ( [0] * len(id),)
-            
-        def new_particle(self, mass):
-            ids = []
-            errors = []
-            
-            for x in mass:
-                id = len(self.masses)
-                self.masses[len(self.masses)]  = x
-                ids.append(id)
-                errors.append(0)
-                
-            return (ids, errors)
-        
-        def delete_particle(self, id):
-            errors = []
-            for x in id:
-                self.masses[x].stop()
-                errors.append(0)
-            return errors
-            
-        def get_number_of_particles(self):
-            return (len(self.masses), 0)
-            
-        def get_colliding_indices(self):
-            return (1,2,0)
-            
-        
-        def get_next(self, id):
-            return (map(lambda x : x+1, id), map(lambda x : 0, id))
-            
-        def add_1_to_mass(self, id):
-            if isinstance(id, int):
-                self.masses[id] += 1.0
-                return [0]
-            for i in id:
-                self.masses[i] += 1.0
-            return map(lambda x : 0, id)
-        
-        def get_heaviest_particle(self):
-            max = -1
-            id = -1
-            for index, mass in self.masses.iteritems():
-                if mass > max:
-                    id = index
-                    max = mass
-            return id
-            
-        def get_number_of_lightest_particles(self):
-            return 2
-            
-        def get_lightest_particles(self, offset):
-            sorted_masses = sorted(list(self.masses.iteritems()), key = lambda x : x[1])
-            return [sorted_masses[x][0] for x in offset]
-            
-        def get_number_of_particles_with_same_mass(self, id):
-            result = []
-            for index in id:
-                mass = self.masses[index]
-                count = 0
-            
-                for otherindex, m in self.masses.iteritems():
-                    if otherindex == index:
-                        continue
-                    if abs(m - mass) < 1.0:
-                        count += 1
-                result.append(count)
-            return result
-            
-        def get_particle_with_same_mass(self, id, offset):
-            result = []
-            for index, index_in_list in zip(id, offset):
-                mass = self.masses[index]
-                count = 0
-                for otherindex, m in self.masses.iteritems():
-                    if otherindex == index:
-                        continue
-                    if abs(m - mass) < 1.0:
-                        count += 1
-                        if count == (index_in_list + 1):
-                            result.append(otherindex)
-                            break
-            return result
+    
             
             
     def test1(self):
-        original = self.TestInterface()
+        original = ParticlesWithBindingInterface()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -891,7 +923,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)
         
     def test2(self):
-        original = self.TestInterface()
+        original = ParticlesWithBindingInterface()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -932,7 +964,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertTrue('get_colliding_indices' in attribute_names)
         
     def test3(self):
-        original = self.TestInterface()
+        original = ParticlesWithBindingInterface()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -959,7 +991,6 @@ class TestParticlesWithBinding(amusetest.TestCase):
         remote_particles = instance.particles
         remote_particles.add_particles(local_particles)
         
-        
         self.assertEquals(len(instance.particles), 4)
         self.assertEquals(instance.particles[0].next_particle, instance.particles[1])
         self.assertEquals(instance.particles[1].next_particle, instance.particles[2])
@@ -968,7 +999,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         
     def test4(self):
-        original = self.TestInterface()
+        original = ParticlesWithBindingInterface()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -1006,7 +1037,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         
     def test5(self):
-        original = self.TestInterface()
+        original = ParticlesWithBindingInterface()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -1047,7 +1078,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         
     def test6(self):
-        original = self.TestInterface()
+        original = ParticlesWithBindingInterface()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -1092,7 +1123,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     
 
     def test7(self):
-        original = self.TestInterface()
+        original = ParticlesWithBindingInterface()
         
         instance = interface.InCodeComponentImplementation(original)
         
@@ -1130,6 +1161,62 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(subset[0], local_particles[0])
         self.assertEquals(subset[1], local_particles[3])
     
+    def test8(self):
+        original = ParticlesWithBindingInterface()
+        original.masses[1] = 10
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
+        handler.add_method('get_next',(handler.INDEX,), (handler.LINK("particles"), handler.ERROR_CODE))
+        pickled_handler = pickle.dumps(handler)
+        unpickled_handler = pickle.loads(pickled_handler)
+        method1 = handler.get_attribute('get_mass', original.get_mass)
+        method2 = unpickled_handler.get_attribute('get_mass', unpickled_handler.interface.legacy_interface.get_mass)
+        self.assertTrue(method1 is not None)
+        self.assertTrue(method2 is not None)
+        self.assertAlmostRelativeEquals(method1([1])[0], 10 | units.kg)
+        self.assertAlmostRelativeEquals(method2([1])[0], 10 | units.kg)
+        original.masses[1] = 20
+        self.assertAlmostRelativeEquals(method1([1]), 20 | units.kg)
+        self.assertAlmostRelativeEquals(method2([1]), 10 | units.kg)
+        
+    def xtest9(self):
+        original = ParticlesWithBindingInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
+        handler.add_method('set_mass',(handler.NO_UNIT, units.kg,), (handler.ERROR_CODE,))
+        handler.add_method('new_particle',(units.kg,), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        
+        local_particles = datamodel.Particles(4)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
+        
+        remote_particles = instance.particles
+        remote_particles.add_particles(local_particles)
+        
+        self.assertEquals(len(original.masses), 4)
+        self.assertEquals(original.masses[0], 3.0)
+        self.assertEquals(original.masses[3], 6.0)
+        
+        pickled_instance = pickle.dumps(instance)
+        unpickled_instance = pickle.loads(pickled_instance)
+       
+        self.assertEquals(len(unpickled_instance.particles), 4)
+        self.assertEquals(unpickled_instance.particles[1].mass, 4.0 | units.kg)
+        
+        
 class TestGridWithBinding(amusetest.TestCase):
     class TestInterface(object):
         

@@ -670,6 +670,13 @@ class CodeInterface(OptionalAttributes):
         function.result_type = 'int32'
         return function
         
+    @legacy_function
+    def internal__activate_communicator():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('comm_identifier', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+        
         
     def stop(self):
         self._stop()

@@ -1840,12 +1840,12 @@ class ParticlesSubset(AbstractParticleSet):
         return self._private.particles.get_settable_attribute_names_defined_in_store()
 
     def get_all_keys_in_store(self):
+        self._sync_with_set()
+            
         return self._private.keys
 
     def get_all_indices_in_store(self):
-        if not self._private.version == self._private.particles._get_version():
-            self._private.indices = self._private.particles.get_indices_of_keys(self._private.keys)
-            self._private.version = self._private.particles._get_version()
+        self._sync_with_set()
 
         return self._private.indices
 
@@ -1859,16 +1859,28 @@ class ParticlesSubset(AbstractParticleSet):
         return self._original_set().get_timestamp()
 
     def get_indices_of_keys(self, keys):
-        if not self._private.version == self._private.particles._get_version():
-            self._private.indices = self._private.particles.get_indices_of_keys(self._private.keys)
-            self._private.version = self._private.particles._get_version()
-
+        self._sync_with_set()
+        
         return self._private.particles.get_indices_of_keys(keys)
+        
+    def _sync_with_set(self):
+        
+        if not self._private.version == self._private.particles._get_version():
+            try:
+                self._private.indices = self._private.particles.get_indices_of_keys(self._private.keys)
+                self._private.version = self._private.particles._get_version()
+            except exceptions.KeysNotInStorageException as ex:
+                self._private.indices = ex.found_indices
+                self._private.keys = ex.found_keys
+                self._private.set_of_keys = set(self._private.keys)
+                self._private.version = self._private.particles._get_version()
 
     def previous_state(self):
         return ParticlesSubset(self._private.particles.previous_state(), self._private.keys)
 
     def difference(self, other):
+        self._sync_with_set()
+        
         new_set_of_keys = self._private.set_of_keys.difference(other.as_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
 
@@ -1888,6 +1900,7 @@ class ParticlesSubset(AbstractParticleSet):
         [10.0, 30.0]
         """
 
+        self._sync_with_set()
         new_set_of_keys = self._private.set_of_keys.union(other.as_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
 
@@ -1895,6 +1908,7 @@ class ParticlesSubset(AbstractParticleSet):
         return self
 
     def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+        self._sync_with_set()
         if keep_structure:
             result = ParticlesSubset(None, [])
             if memento is None:

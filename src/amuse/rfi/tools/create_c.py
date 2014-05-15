@@ -103,6 +103,8 @@ static int polling_interval = 0;
 static char portname_buffer[MPI_MAX_PORT_NAME+1];
 static MPI_Comm communicators[MAX_COMMUNICATORS];
 static int lastid = -1;
+static int activeid = -1;
+static int id_to_activate = -1;
 #else
 static const char * empty_string = "";
 #endif
@@ -187,6 +189,16 @@ int internal__connect_to_port(char * port_identifier, int * comm_identifier)
     return 0;
 }
 
+int internal__activate_communicator(int comm_identifier){
+#ifndef NOMPI
+    if(comm_identifier < 0 || comm_identifier > lastid) {
+        return -1;
+    }
+    id_to_activate = comm_identifier;
+#endif
+    return 0;
+}
+
 """
 
 RECV_HEADER_SLEEP_STRING = """
@@ -248,7 +260,6 @@ void onexit_mpi(void) {
         for(int i = 0; i < lastid + 1; i++) {
             MPI_Comm_disconnect(&communicators[i]);
         }
-        MPI_Comm_disconnect(&parent);
         
         MPI_Finalize();
     }
@@ -361,7 +372,6 @@ void delete_arrays() {
 void run_mpi(int argc, char *argv[]) {
 #ifndef NOMPI
   int provided;
-  MPI_Comm parent;
   int rank = 0;
   
   mpiIntercom = true;
@@ -369,7 +379,11 @@ void run_mpi(int argc, char *argv[]) {
   //fprintf(stderr, "C worker: running in mpi mode\\n");
   
   MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-  MPI_Comm_get_parent(&parent);
+  MPI_Comm parent;
+  MPI_Comm_get_parent(&communicators[0]);
+  lastid += 1;
+  activeid = 0;
+  parent = communicators[activeid];
   MPI_Comm_rank(parent, &rank);
   atexit(onexit_mpi);
   
@@ -384,6 +398,13 @@ void run_mpi(int argc, char *argv[]) {
 
   while(must_run_loop) {
     //fprintf(stderr, "receiving header\\n");
+    if(id_to_activate >= 0 && id_to_activate != activeid){
+        activeid = id_to_activate;
+        id_to_activate = -1;
+        parent = communicators[activeid];
+        MPI_Comm_rank(parent, &rank);
+    }
+    
     mpi_recv_header(parent);
     
     //fprintf(stderr, "C worker code: got header %d %d %d %d %d %d %d %d %d %d\\n", header_in[0], header_in[1], header_in[2], header_in[3], header_in[4], header_in[5], header_in[6], header_in[7], header_in[8], header_in[9]);
@@ -506,8 +527,11 @@ void run_mpi(int argc, char *argv[]) {
   }
   delete_arrays();
   
-  MPI_Comm_disconnect(&parent);
-  MPI_Finalize();
+    for(int i = 0; i < lastid + 1; i++) {
+        MPI_Comm_disconnect(&communicators[i]);
+    }
+    
+    MPI_Finalize();
   //fprintf(stderr, "mpi finalized\\n");
 #else
   fprintf(stderr, "mpi support not compiled into worker\\n");

@@ -200,8 +200,9 @@ int hash_insert(struct simple_hash *hash, size_t key, size_t value)
   if(cell_) {
     cell_->value=value;
     return 0;
-  } else 
+  } else {
     return -1;
+  }
 }
 
 int hash_cell_delete(struct simple_hash *hash, struct cell* cell_)
@@ -276,12 +277,12 @@ int clear_hash(struct simple_hash *hash)
     return 0;
 }
 
-int hash_lookups(struct simple_hash *hash,size_t n, size_t *key, size_t *value)
+int hash_lookups(struct simple_hash *hash,size_t n, size_t *key, size_t *value, int * errors)
 {
-  int err;
+  int err = 0;
   for(size_t i=0;i<n;i++) {
-    err=hash_lookup(hash, *(key+i), value+i); 
-    if(err!=0) break;
+    errors[i]=hash_lookup(hash, *(key+i), value+i); 
+    if(errors[i]) {err = errors[i];}
   }
   return err;
 }

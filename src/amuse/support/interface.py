@@ -45,7 +45,8 @@ class MethodArgumentOrResultType(object):
          return value
 
 class NoUnitMethodArgumentOrResultType(MethodArgumentOrResultType):
-    pass
+    def __reduce__(self):
+        return (_get_result_type, ("NO_UNIT",))
 
 class ErrorCodeMethodArgumentOrResultType(MethodArgumentOrResultType):
 
@@ -61,6 +62,10 @@ class ErrorCodeMethodArgumentOrResultType(MethodArgumentOrResultType):
                 definition.handle_errorcode(x)
         else:
             definition.handle_errorcode(errorcode)
+            
+    def __reduce__(self):
+        return (_get_result_type, ("ERROR_CODE",))
+        
 
 
 class IndexMethodArgumentOrResultType(MethodArgumentOrResultType):
@@ -70,7 +75,19 @@ class IndexMethodArgumentOrResultType(MethodArgumentOrResultType):
      
     def convert_argument_value(self, method, definition, value):
         return value
+        
+    def __reduce__(self):
+        return (_get_result_type, ("INDEX",))
 
+def _get_result_type(name):
+    if name == "NO_UNIT":
+        return MethodWithUnitsDefinition.NO_UNIT
+    elif name == "ERROR_CODE":
+        return MethodWithUnitsDefinition.ERROR_CODE
+    elif name == "INDEX":
+        return MethodWithUnitsDefinition.INDEX
+        
+    
 class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
     
     def __init__(self, linked_set_name):
@@ -79,7 +96,11 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
     def get_linked_set(self, method, definition):
         # method might provide a shorter path to the interface object
         # and is cleaner as definition might move to interface class later
-        return getattr(definition.handler.interface, self.linked_set_name)
+        try:
+            return getattr(definition.wrapped_object, self.linked_set_name)
+        except Exception as ex:
+            print ex
+            rais
         
     def convert_result_value(self, method, definition, value):
         linked_set = self.get_linked_set(method, definition)
@@ -444,7 +465,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
     INDEX = IndexMethodArgumentOrResultType()
     LINK = LinkMethodArgumentOrResultType
 
-    def __init__(self, handler, function_name, units, return_units, name):
+    def __init__(self, wrapped_object, function_name, units, return_units, name):
         self.function_name = function_name
 
         if hasattr(units, '__iter__'):
@@ -453,13 +474,27 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             self.units = (units,)
 
         self.return_units = return_units
-        self.handler = handler
+        self.wrapped_object = wrapped_object
         self.name = name
-        if return_units is None:
+        if self.return_units is None:
             self.handle_return_value = self.handle_as_errorcode
         else:
             self.handle_return_value = self.handle_as_unit
-
+            
+    def __getstate__(self):
+        result = {}
+        result.update(self.__dict__)
+        del result['handle_return_value']
+        return result
+        
+    def __setstate__(self, state):
+        self.__dict__ = state
+        if self.return_units is None:
+            self.handle_return_value = self.handle_as_errorcode
+        else:
+            self.handle_return_value = self.handle_as_unit
+            
+        
     def check_wrapped_method(self, method):
         if method.method_is_legacy or method.method_is_code:
             self.check_outputs_of_method(method)
@@ -469,13 +504,13 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         if self.has_same_name_as_original:
             return MethodWithUnits(original_method, self)
         else:
-            return MethodWithUnits(getattr(self.handler.interface, self.function_name), self)
+            return MethodWithUnits(getattr(self.wrapped_object, self.function_name), self)
 
     def handle_errorcode(self, errorcode):
-        if errorcode in self.handler.interface.errorcodes:
-            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}, error is '{3}'".format(self.name, type(self.handler.interface).__name__, errorcode,  self.handler.interface.errorcodes[errorcode]), errorcode)
+        if errorcode in self.wrapped_object.errorcodes:
+            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}, error is '{3}'".format(self.name, type(self.wrapped_object).__name__, errorcode,  self.wrapped_object.errorcodes[errorcode]), errorcode)
         elif errorcode < 0:
-            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self.name, type(self.handler.interface).__name__, errorcode), errorcode)
+            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self.name, type(self.wrapped_object).__name__, errorcode), errorcode)
         else:
             return errorcode
 
@@ -595,7 +630,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             number_specified_inputs = 0
             
         if number_expected_inputs != number_specified_inputs:
-            raise IncorrectMethodDefinition(self.name, type(self.handler.interface).__name__, number_expected_inputs, number_specified_inputs, 'inputs')
+            raise IncorrectMethodDefinition(self.name, type(self.wrapped_object).__name__, number_expected_inputs, number_specified_inputs, 'inputs')
     
     
 
@@ -621,7 +656,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             return#defualt error checks for one output
             
         if number_expected_outputs != number_specified_outputs:
-            raise IncorrectMethodDefinition(self.name, type(self.handler.interface).__name__, number_expected_outputs, number_specified_outputs, 'outputs')
+            raise IncorrectMethodDefinition(self.name, type(self.wrapped_object).__name__, number_expected_outputs, number_specified_outputs, 'outputs')
     
     
 class HandleMethodsWithUnits(object):
@@ -651,7 +686,7 @@ class HandleMethodsWithUnits(object):
             return_units = [ default_to_nounit(x) for x in return_units]
             units = [default_to_nounit(x) for x in units]
             definition = MethodWithUnitsDefinition(
-                self,
+                self.interface,
                 name,
                 units,
                 return_units,
@@ -687,7 +722,7 @@ class HandleMethodsWithUnits(object):
             public_name = original_name
 
         definition = MethodWithUnitsDefinition(
-            self,
+            self.interface,
             original_name,
             units,
             return_unit,
@@ -1296,9 +1331,11 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
     def __init__(self, legacy_interface, **options):
         OptionalAttributes.__init__(self, **options)
         self.legacy_interface = legacy_interface
+        self._options = options
         self._handlers = []
+        self.__init_handlers__(legacy_interface, options)
 
-
+    def __init_handlers__(self, legacy_interface, options):
         self._handlers.append(LegacyInterfaceHandler(legacy_interface))
         self._handlers.append(HandleMethodsWithUnits(self))
         self._handlers.append(HandlePropertiesWithUnits(self))
@@ -1375,8 +1412,10 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         definition = GridDefinition(handler)
         builder_function(definition, **extra_arguments)
         return definition.new_set_instance(handler)
-
-
+        
+    def __setstate__(self, state):
+        self.__dict__ = state
+    
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
     formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
 

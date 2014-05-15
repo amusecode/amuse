@@ -1,6 +1,7 @@
 import os
 import ctypes
 import numpy
+from amuse.support import exceptions
 
 class cell(ctypes.Structure):
     _fields_=[("key", ctypes.c_size_t),
@@ -8,6 +9,7 @@ class cell(ctypes.Structure):
 
 cell_pointer=ctypes.POINTER(cell)
 c_size_t_pointer=ctypes.POINTER(ctypes.c_size_t)
+c_int_pointer=ctypes.POINTER(ctypes.c_int)
 
 class simple_hash(ctypes.Structure):
     _fields_=[("m_cells", cell_pointer),
@@ -36,11 +38,14 @@ class SimpleHash(object):
         N=len(keys)
         keys=numpy.ascontiguousarray(keys, dtype="uintp")
         values=numpy.ascontiguousarray(numpy.zeros(N),dtype="uintp")
+        errors=numpy.ascontiguousarray(numpy.zeros(N),dtype="int")
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
-        err=self._lib.hash_lookups(ctypes.byref(self._map),N,ckeys,cvalues)
+        cerrors=errors.ctypes.data_as(c_int_pointer)
+        err=self._lib.hash_lookups(ctypes.byref(self._map),N,ckeys,cvalues, cerrors)
         if err!=0:
-          raise Exception("map lookup error")
+            missing_keys = keys[errors != 0]
+            raise exceptions.KeysNotInStorageException(keys[errors==0], values[errors==0], missing_keys)
         return values
 
     def insert(self,keys,values=None):

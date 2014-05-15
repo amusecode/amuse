@@ -790,18 +790,20 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             keys = self.particle_keys
         
         notfoundkeys = []
+        foundkeys = []
         for particle_key in keys:
             try:
                 indices_in_the_code.append(self.mapping_from_particle_key_to_index_in_the_code[particle_key])
+                foundkeys.append(particle_key)
             except KeyError:
                 notfoundkeys.append(particle_key)
           
         if not len(notfoundkeys) == 0:
-            if len(notfoundkeys) == 1:
-                raise Exception("Key not found in storage: {0}".format(notfoundkeys[0]))
-            else:
-                notfoundkeys = numpy.asarray(notfoundkeys)
-                raise Exception("Keys not found in storage: {0}".format(notfoundkeys))
+            raise exceptions.KeysNotInStorageException(
+                numpy.asarray(foundkeys), 
+                numpy.asarray(indices_in_the_code), 
+                numpy.asarray(notfoundkeys)
+            )
                 
         return indices_in_the_code
         

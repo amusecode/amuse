@@ -16,6 +16,7 @@ from amuse.units import constants
 from amuse.units import nbody_system
 from amuse import datamodel
 from amuse.datamodel import incode_storage
+from amuse.datamodel import memory_storage
 
 class TestParticles(amusetest.TestCase):
 
@@ -501,14 +502,39 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles[-3:-1].mass, [4,20] | units.kg)
         self.assertAlmostRelativeEquals(particles[::-1].mass, [21,20,4,3,2,1] | units.kg)
 
-    def xtest15(self):
+    def test15(self):
         set1 = datamodel.Particles(3)
-        set1.x = [1.0, 2.0, 3.0] | units.kg
-        subset = set1[0:2]
-        self.assertAlmostRelativeEquals(subset.x, [1.0, 2.0] | units.kg)
-        set1.remove_particle(set1[0])
-        self.assertAlmostRelativeEquals(subset.x, [2.0] | units.kg)
-
+        set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
+        subset1 = set1[0:2]
+        subset2 = set1[1:3]
+        self.assertAlmostRelativeEquals(subset1.x, [1.0, 2.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset2.x, [2.0, 3.0] | units.kg)
+        subset1.remove_particle(subset1[1])
+        self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
+        
+    def test15(self):
+        set1 = datamodel.Particles(3, storage = memory_storage.InMemoryAttributeStorageUseSortedKeys())
+        set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
+        subset1 = set1[0:2]
+        subset2 = set1[1:3]
+        self.assertAlmostRelativeEquals(subset1.x, [1.0, 2.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset2.x, [2.0, 3.0] | units.kg)
+        subset1.remove_particle(subset1[1])
+        self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
+    
+    def test15(self):
+        set1 = datamodel.Particles(3, storage = memory_storage.InMemoryAttributeStorageUseDictionaryForKeySet())
+        set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
+        subset1 = set1[0:2]
+        subset2 = set1[1:3]
+        self.assertAlmostRelativeEquals(subset1.x, [1.0, 2.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset2.x, [2.0, 3.0] | units.kg)
+        subset1.remove_particle(subset1[1])
+        self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
+    
 class TestParticlesChannel(amusetest.TestCase):
 
     def test1(self):
@@ -1613,8 +1639,6 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(local_particles[0].mass.value_in(units.kg), 3.5)
 
 
-
-
     def test2(self):
         interface = self.TestInterface()
         interface.particles.add_particles_to_store(
@@ -1933,6 +1957,8 @@ class TestParticlesWithBinding(amusetest.TestCase):
         local_particles.add_calculated_attribute("mass", lambda m2: m2.sqrt(), attributes_names=["mass_squared"])
         interface.particles.add_particles(local_particles)
         self.assertAlmostRelativeEquals(interface.particles.mass , [3.0, 4.0] | units.kg)
+        
+    
 
     class TestInterface2(InCodeComponentImplementation):
 
@@ -1976,6 +2002,22 @@ class TestParticlesWithBinding(amusetest.TestCase):
         channel.copy()
 
         self.assertEquals(remote_particles[0].mass.value_in(units.kg), 3.5)
+        
+    def test18(self):
+        interface = self.TestInterface()
+        local_set = datamodel.Particles(5)
+        local_set.mass = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
+        
+        interface.particles.add_particles(local_set)
+
+        set1 = interface.particles
+        subset1 = set1[0:2]
+        subset2 = set1[1:3]
+        self.assertAlmostRelativeEquals(subset1.mass, [1.0, 2.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset2.mass, [2.0, 3.0] | units.kg)
+        subset1.remove_particle(subset1[1])
+        self.assertAlmostRelativeEquals(subset1.mass, [1.0] | units.kg)
+        self.assertAlmostRelativeEquals(subset2.mass, [3.0] | units.kg)
 
 class TestParticlesWithUnitsConverted(amusetest.TestCase):
 
@@ -2291,6 +2333,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
                 self.number_of_particles = 0
                 self.link_type = LinkMethodArgumentOrResultType("particles")
                 self.definition = Dummy()
+                self.definition.wrapped_object = self
                 self.definition._interface = self
 
             def get_number_of_particles(self):
@@ -2378,6 +2421,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
                 self.link_type = LinkMethodArgumentOrResultType("particles")
                 self.definition = Dummy()
                 self.definition._interface = self
+                self.definition.wrapped_object = self
 
             def get_number_of_particles(self):
                 return  self.number_of_particles

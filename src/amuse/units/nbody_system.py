@@ -91,6 +91,21 @@ def is_nbody_unit(unit):
             return True
     return False
     
+class SiToNBodyConverter(object):
+    def __init__(self, nbody_to_si):
+        self.nbody_to_si = nbody_to_si
+    
+    def from_source_to_target(self, quantity):
+        if hasattr(quantity, 'unit'):
+            return self.nbody_to_si.to_nbody(quantity)
+        else:
+            return quantity
+        
+    def from_target_to_source(self, quantity):
+        if hasattr(quantity, 'unit'):
+            return self.nbody_to_si.to_si(quantity)
+        else:
+            return quantity
     
 class nbody_to_si(generic_unit_converter.ConvertBetweenGenericAndSiUnits): 
     def __init__(self, value1, value2):
@@ -122,22 +137,5 @@ class nbody_to_si(generic_unit_converter.ConvertBetweenGenericAndSiUnits):
 
 
     def as_converter_from_si_to_generic(self):
-        class SiToNBodyConverter(object):
-            def __init__(self, nbody_to_si):
-                self.nbody_to_si = nbody_to_si
-            
-            def from_source_to_target(self, quantity):
-                if hasattr(quantity, 'unit'):
-                    return self.nbody_to_si.to_nbody(quantity)
-                else:
-                    return quantity
-                
-            def from_target_to_source(self, quantity):
-                if hasattr(quantity, 'unit'):
-                    return self.nbody_to_si.to_si(quantity)
-                else:
-                    return quantity
-                    
-                
         return SiToNBodyConverter(self)
         

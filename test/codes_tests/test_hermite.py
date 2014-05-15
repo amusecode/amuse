@@ -789,3 +789,12 @@ class TestHermite(TestWithMPI):
         
         hermite.stop()
         
+    def test21(self):
+        import pickle
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+    
+        hermite = Hermite(convert_nbody)
+        encoded_interface = pickle.dumps(hermite,0)
+        decoded_interface = pickle.loads(encoded_interface)
+        
+        

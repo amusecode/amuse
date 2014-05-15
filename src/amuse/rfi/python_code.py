@@ -46,17 +46,27 @@ class PythonImplementation(object):
         self.polling_interval = 0
         self.communicators = []
         self.lastid = -1
+        self.activeid = -1
+        self.id_to_activate = -1
+        self.implementation._interface = self
         
     def start(self):
         parent = MPI.Comm.Get_parent()
-        parent = MPI.Comm.Get_parent()
+        self.communicators.append(parent)
+        self.activeid = 0
+        self.lastid += 1
         
-        rank = MPI.COMM_WORLD.rank
+        rank = parent.Get_rank()
         
         
         self.must_run = True
         while self.must_run:
-            
+            if self.id_to_activate >= 0 and self.id_to_activate != self.activeid:
+                self.activeid = self.id_to_activate
+                self.id_to_activate = -1
+                parent = self.communicators[self.activeid]
+                rank = parent.Get_rank()
+                
             message = ClientSideMPIMessage(polling_interval = self.polling_interval)
             message.receive(parent)
                 
@@ -81,7 +91,6 @@ class PythonImplementation(object):
         for x in self.communicators:
             x.Disconnect()
             
-        parent.Disconnect()
         
     
     def start_socket(self, port, host):
@@ -279,6 +288,13 @@ class PythonImplementation(object):
         self.lastid += 1
         outval.value = self.lastid
         return 0
+        
+    def internal__activate_communicator(self, commid):
+        if commid > self.lastid or commid < 0:
+            return -1
+        self.id_to_activate = commid
+        return 0
+        
     
     
     def internal__redirect_outputs(self, stdoutfile, stderrfile):

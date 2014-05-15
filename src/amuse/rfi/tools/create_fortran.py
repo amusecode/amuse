@@ -95,8 +95,10 @@ ISO_ARRAY_DEFINES_STRING = """
 
 MODULE_GLOBALS_STRING = """
   integer, save :: polling_interval = 0
-  integer, save :: last_communicator_id = -1
+  integer, save :: last_communicator_id = 0
   integer, save  :: communicators(MAX_COMMUNICATORS)
+  integer, save  :: id_to_activate = -1
+  integer, save  :: active_communicator_id = -1
 """
 
 NOMPI_MODULE_GLOBALS_STRING = """
@@ -175,6 +177,20 @@ FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
     internal__connect_to_port = 0
 END FUNCTION
 
+
+FUNCTION  internal__activate_communicator(comm_identifier)
+    IMPLICIT NONE
+    INCLUDE 'mpif.h'
+    INTEGER, intent(in) :: comm_identifier
+    INTEGER :: internal__activate_communicator
+    
+    if ((comm_identifier .LT. 0) .OR. (comm_identifier .GT. last_communicator_id)) then
+        internal__activate_communicator = -1
+        return 
+    end if
+    internal__activate_communicator = 0
+    id_to_activate = comm_identifier
+END FUNCTION
 """
 
 
@@ -204,6 +220,13 @@ FUNCTION internal__connect_to_port(port_identifier, comm_identifier)
     INTEGER :: internal__connect_to_port
     comm_identifier = -1
     internal__connect_to_port = 0
+END FUNCTION
+
+FUNCTION  internal__activate_communicator(comm_identifier)
+    IMPLICIT NONE
+    INTEGER, intent(in) :: comm_identifier
+    INTEGER :: internal__activate_communicator
+    internal__activate_communicator = 0
 END FUNCTION
 
 """
@@ -311,10 +334,20 @@ RUN_LOOP_MPI_STRING = """
       
       call MPI_COMM_GET_PARENT(parent, ioerror)
       call MPI_COMM_RANK(parent, rank, ioerror)
+      last_communicator_id = last_communicator_id + 1
+      communicators(1) = parent
+      active_communicator_id = 1
       
       must_run_loop = 1
       
       do while (must_run_loop .eq. 1)
+        if ((id_to_activate .GE. 0) .AND. (id_to_activate .NE. active_communicator_id)) then
+            active_communicator_id = id_to_activate
+            id_to_activate = -1
+            parent = communicators(active_communicator_id)
+            call MPI_COMM_RANK(parent, rank, ioerror)
+        end if
+      
         call mpi_recv_header(parent, ioerror)
         
         !print*, 'fortran: got header ', header_in
@@ -464,9 +497,8 @@ RUN_LOOP_MPI_STRING = """
       DEALLOCATE(strings_out)
       
       do i = 1, last_communicator_id, 1
-            call MPI_COMM_DISCONNECT(communicators(i));
+            call MPI_COMM_DISCONNECT(communicators(i), ioerror);
       end do
-      call MPI_COMM_DISCONNECT(parent, ioerror)
       call MPI_FINALIZE(ioerror)
       return
     end subroutine

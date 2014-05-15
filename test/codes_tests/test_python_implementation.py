@@ -154,7 +154,8 @@ class ForTestingInterface(PythonCodeInterface):
         
     @legacy_function
     def copy_over_interface():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
+        function.addParameter('comm_identifier', dtype='int32', direction=function.IN)
         function.addParameter('encoded_interface', dtype='string', direction=function.IN)
         function.result_type = 'int32'
         function.can_handle_array = False
@@ -167,6 +168,13 @@ class ForTestingInterface(PythonCodeInterface):
         function.addParameter('string_out', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         function.can_handle_array = True
+        return function 
+         
+    @legacy_function
+    def return_control():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'int32'
+        function.can_handle_array = False
         return function  
     
 
@@ -270,14 +278,19 @@ class ForTestingImplementation(object):
             return -1
             
             
-    def copy_over_interface(self, encoded_interface):
+    def copy_over_interface(self, communicator_id, encoded_interface):
         self._other = pickle.loads(encoded_interface.encode("latin-1"))
+        self._other.channel.intercomm = self._interface.communicators[communicator_id]
         return 0
     
     def deep_echo_string(self, string_in, string_out):
         result, errorcode = self._other.echo_string(string_in)
-        string_out.value = result[::-1]
+        string_out.value = result[0][::-1]
         return errorcode
+        
+    def return_control(self):
+        self._other.internal__activate_communicator(0)
+        return 0
     
 
 class ForTesting(InCodeComponentImplementation):
@@ -797,7 +810,6 @@ class TestInterface(TestWithMPI):
         encoded_interface = pickle.dumps(instance1,0)
         decoded_interface = pickle.loads(encoded_interface)
         #pickle.loads(pickle.dumps(instance1,0))
-        instance2.copy_over_interface(pickle.dumps(instance1,0))
         portname, error = instance2.internal__open_port()
         print portname
         request1 = instance2.internal__accept_on_port.async(portname)
@@ -806,12 +818,17 @@ class TestInterface(TestWithMPI):
         request2.wait()
         port_id1, error1 = request1.result() 
         port_id2, error2 = request2.result()
-        print "a"
-        self.skip("not finished")
+        print "P1, P2", port_id1, port_id2
+        instance2.copy_over_interface(port_id2, pickle.dumps(instance1,0))
+        instance1.internal__activate_communicator(port_id1)
         result, errorcode = instance2.deep_echo_string("hello")
-        self.assertEquals(errorcode, 0)
-        self.assertEquals(result, "olleh")
+        self.assertEquals(errorcode[0], 0)
+        self.assertEquals(result[0], "olleh")
         result, errorcode = instance2.deep_echo_string("world")
-        self.assertEquals(errorcode, 0)
-        self.assertEquals(result, "dlrow")
-
+        self.assertEquals(errorcode[0], 0)
+        self.assertEquals(result[0], "dlrow")
+        instance2.return_control()
+        result, errorcode = instance1.echo_string("world")
+        self.assertEquals(errorcode[0], 0)
+        self.assertEquals(result[0], "world")
+        

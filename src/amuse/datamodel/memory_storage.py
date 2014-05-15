@@ -316,22 +316,23 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
             return numpy.arange(0,len(self.particle_keys))
     
         mapping_from_particle_to_index = self.mapping_from_particle_to_index
-        result = numpy.zeros(len(particles),dtype='int32')
+        result = []
         notfoundkeys = []
+        foundkeys = []
         for index, particle_key in enumerate(particles):
             try:
-                result[index] = mapping_from_particle_to_index[particle_key]
+                result.append(mapping_from_particle_to_index[particle_key])
+                foundkeys.append(particle_key)
             except KeyError:
                 notfoundkeys.append(particle_key)
         
         if not len(notfoundkeys) == 0:
-            if len(notfoundkeys) == 1:
-                raise Exception("Key not found in storage: {0}".format(notfoundkeys[0]))
-            else:
-                notfoundkeys = numpy.asarray(notfoundkeys)
-                raise Exception("Keys not found in storage: {0}".format(notfoundkeys))
-        
-        return result
+            raise exceptions.KeysNotInStorageException(
+                numpy.asarray(foundkeys), 
+                numpy.asarray(result), 
+                numpy.asarray(notfoundkeys)
+            )
+        return numpy.asarray(result)
 
     def reindex(self):
         new_index=dict(izip(self.particle_keys,xrange(len(self.particle_keys))))
@@ -376,10 +377,11 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         if not are_all_found:
             arrayedkeys = numpy.asarray(keys)
             notfoundkeys = arrayedkeys[numpy.logical_not(are_found)]
-            if len(notfoundkeys) == 1:
-                raise Exception("Key not found in storage: {0}".format(notfoundkeys[0]))
-            else:
-                raise Exception("Keys not found in storage: {0}".format(notfoundkeys))
+            raise exceptions.KeysNotInStorageException(
+                arrayedkeys[are_found], 
+                self.sorted_indices[indices[are_found]], 
+                notfoundkeys
+            )
         return self.sorted_indices[indices]
         
         

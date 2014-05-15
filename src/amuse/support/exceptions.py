@@ -47,4 +47,29 @@ class CoreException(AmuseException):
 class CodeException(AmuseException):
     majorcode = 1
     errorcode = ErrorCode(majorcode,-1, "legacy code error")
+    
+    
 
+class KeysNotInStorageException(AmuseException):
+    
+    def __init__(self, found_keys, found_indices, missing_keys):
+        AmuseException.__init__(self)
+        self.found_keys = found_keys
+        self.found_indices = found_indices
+        self.missing_keys = missing_keys
+        
+    def get_found_keys(self):
+        return self.found_keys
+        
+    def get_found_indices(self):
+        return self.found_indices
+        
+    def get_missing_keys(self):
+        return self.missing_keys
+
+    def __str__(self):
+        if len(self.missing_keys) == 1:
+            return "Key not found in storage: {0}".format(self.missing_keys[0])
+        else:
+            return "Keys not found in storage: {0}".format(self.missing_keys)
+            
