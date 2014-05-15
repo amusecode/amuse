@@ -1871,7 +1871,7 @@ class ParticlesSubset(AbstractParticleSet):
                 self._private.version = self._private.particles._get_version()
             except exceptions.KeysNotInStorageException as ex:
                 self._private.indices = ex.found_indices
-                self._private.keys = numpy.array(keys, dtype='uint64')
+                self._private.keys = numpy.array(ex.found_keys, dtype='uint64')
                 self._private.set_of_keys = set(self._private.keys)
                 self._private.version = self._private.particles._get_version()
 
