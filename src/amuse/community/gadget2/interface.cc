@@ -350,14 +350,14 @@ int commit_particles(){
     }
 
     ngb_treeallocate(MAX_NGB);
-    if((All.MaxPart < 1000) && (All.TreeAllocFactor <= 1.0)){
+    /*if((All.MaxPart < 1000) && (All.TreeAllocFactor <= 1.0)){
         All.TreeAllocFactor = 4000.0/All.MaxPart;
         if (ThisTask == 0){
             cout << "Gadget assumes large numbers of particles while allocating memory. " << endl << "Changed "
                 "TreeAllocFactor to " << All.TreeAllocFactor << " to allocate enough memory" << endl <<
                 "for this run with " << All.TotNumPart << " particles only." << endl;
         }
-    }
+    }*/
     force_treeallocate(All.TreeAllocFactor * All.MaxPart, All.MaxPart);
     All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
     Flag_FullStep = 1;                /* to ensure that Peano-Hilber order is done */
