@@ -170,9 +170,7 @@ class TestRotations(amusetest.TestCase):
         
         p[1:].position*=0
         p[1:].velocity*=0
-        
-        print p
-        
+                
         dot1=p[0].position.dot(p[0].velocity)
         cross1=p[0].position.cross(p[0].velocity)
         
