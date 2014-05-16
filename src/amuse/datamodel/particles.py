@@ -1675,8 +1675,25 @@ class ParticlesSuperset(AbstractParticleSet):
 
     def get_indices_of_keys(self, keys):
         self._ensure_updated_set_properties()
-
-        return numpy.array([self._private.key_to_index[x] for x in keys])
+        
+        mapping_from_particle_to_index = self._private.key_to_index
+        result = []
+        notfoundkeys = []
+        foundkeys = []
+        for x in keys:
+            try:
+                result.append(mapping_from_particle_to_index[x])
+                foundkeys.append(x)
+            except KeyError:
+                notfoundkeys.append(x)
+        
+        if not len(notfoundkeys) == 0:
+            raise exceptions.KeysNotInStorageException(
+                numpy.asarray(foundkeys), 
+                numpy.asarray(result), 
+                numpy.asarray(notfoundkeys)
+            )
+        return numpy.array(result)
 
 
     def has_key_in_store(self, key):
