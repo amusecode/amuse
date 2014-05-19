@@ -13,7 +13,7 @@ subroutine initparameters
         CHARACTER*200 datadir
  
         COMMON/io_param/input(128),output(128),firstsnap,stepout,        &
-     &	  steplog,verbosity,datadir,inputfile,outputfile,halofile 
+     &    steplog,verbosity,datadir,inputfile,outputfile,halofile 
         COMMON/sim_param/pboxsize,usesph,radiate,starform,cosmo
         COMMON/units_param/unitl_in_kpc, unitm_in_msun
         COMMON/step_param/dtime, tstepcrit, tstpcr2, freev, freea,       &
@@ -29,8 +29,8 @@ subroutine initparameters
      &    heat_par2,cool_par,optdepth,tcollfac,masscrit,sfeff,           &
      &    tbubble,sne_eff, tsnbeg, rhomax
         INTEGER nsmooth
-	LOGICAL smoothinput, consph, sphinit, uentropy, isotherm,        &
-     &    eps_is_h,balsara
+        LOGICAL smoothinput, consph, sphinit, uentropy, isotherm,        &
+     &    eps_is_h,mingaseps,balsara
         CHARACTER*4 feedback
         CHARACTER*10 sfmode
         CHARACTER*4 hupdatemethod
@@ -38,7 +38,7 @@ subroutine initparameters
 
         COMMON/sph_param/epsgas, gamma, alpha, beta, epssph, courant,    & 
      &    removgas,consthsm, nsmtol, nsmooth, smoothinput, consph,       &
-     &    sphinit, uentropy, isotherm,eps_is_h,balsara,                  &
+     &    sphinit, uentropy, isotherm,eps_is_h,mingaseps,balsara,        &
      &    hupdatemethod,sph_visc
         COMMON/rad_param/graineff,crionrate,heat_par1,heat_par2,         &
      &    cool_par, optdepth

@@ -705,6 +705,22 @@ function get_balsara(flag) result(ret)
   ret=0
 end function
 
+function set_mingaseps(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_mingaseps(.TRUE.)
+  if(flag.EQ.0) call amuse_set_mingaseps(.FALSE.)
+  ret=0
+end function
+function get_mingaseps(flag) result(ret)
+  integer :: ret,flag
+  logical :: x
+  flag=0
+  call amuse_get_mingaseps(x) 
+  if(x) flag=1
+  ret=0
+end function
+
+
 ! integers
 
 function set_firstsnap(i) result(ret)

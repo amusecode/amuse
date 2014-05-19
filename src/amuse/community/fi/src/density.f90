@@ -332,7 +332,13 @@ subroutine densnhsmooth
         nntot=nntot+nneigh
         imax=MAX(i,imax)
         jtot=jtot+j 
-        if(eps_is_h) epsgrav(p)=hsmooth(p)
+        if(eps_is_h) then
+          if(mingaseps) then 
+            epsgrav(p)=max(epsgas,hsmooth(p))
+          else
+            epsgrav(p)=hsmooth(p)
+          endif  
+        endif
       enddo
     enddo
   enddo

@@ -68,6 +68,7 @@ subroutine postprocessread
         else
           epsgrav(1:nsph)=hsmooth(1:nsph)
         endif
+        if(mingaseps) epsgrav(1:nsph)=max(epsgas,epsgrav(1:nsph))
       else
         call initepsgas
       endif

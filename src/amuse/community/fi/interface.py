@@ -712,6 +712,22 @@ class FiInterface(
         function.result_type = 'i'
         return function;
 
+    @legacy_function   
+    def set_mingaseps():
+        """ set_mingaseps([0,1]): enforce minimum gas grav eps if 1"""        
+        function = LegacyFunctionSpecification()  
+        function.addParameter('mingaseps_flag', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_mingaseps():
+        """ set_mingaseps([0,1]): enforce minimum gas grav eps if 1"""        
+        function = LegacyFunctionSpecification()  
+        function.addParameter('mingaseps_flag', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+
+
 
 # integers
     @legacy_function
@@ -1842,6 +1858,14 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             "set_balsara",
             "balsara_flag",
             "balsara flag. True means: use Balsara viscosity limiter.",
+            False
+        )
+
+        object.add_boolean_parameter(
+            "get_mingaseps",
+            "set_mingaseps",
+            "enforce_mingaseps_flag",
+            "mingaseps flag. True means: enforce minimum gas grav eps.",
             False
         )
         

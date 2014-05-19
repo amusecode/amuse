@@ -1355,6 +1355,17 @@ subroutine amuse_get_balsara(x)
   x=balsara
 end subroutine
 
+subroutine amuse_set_mingaseps(x)
+  include 'globals.h'
+  logical,intent(in) :: x
+  mingaseps=x
+end subroutine
+subroutine amuse_get_mingaseps(x)
+  include 'globals.h'
+  logical, intent(out) :: x
+  x=mingaseps
+end subroutine
+
 
 
 ! integer
