@@ -1864,7 +1864,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         object.add_boolean_parameter(
             "get_mingaseps",
             "set_mingaseps",
-            "enforce_mingaseps_flag",
+            "enforce_min_sph_grav_softening_flag",
             "mingaseps flag. True means: enforce minimum gas grav eps.",
             False
         )

@@ -432,7 +432,7 @@ class TestFi(TestWithMPI):
         for bool_par in ['radiation_flag','star_formation_flag',
             'square_root_timestep_flag','freeform_timestep_flag','quadrupole_moments_flag',
             'direct_sum_flag','fixed_halo_flag','adaptive_smoothing_flag','smooth_input_flag',
-            'isothermal_flag','balsara_flag','enforce_mingaseps_flag']:
+            'isothermal_flag','balsara_flag','enforce_min_sph_grav_softening_flag']:
             self.assertEquals(False, getattr(instance.parameters, bool_par))
             setattr(instance.parameters, bool_par, True)
             self.assertEquals(True, getattr(instance.parameters, bool_par))
