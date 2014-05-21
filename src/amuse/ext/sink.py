@@ -36,19 +36,16 @@ class SinkParticles(ParticlesOverlay):
         self.sink_radius = sink_radius or original_particles.radius
 
         if not hasattr(original_particles, "mass"):
-            self.mass = mass or (0 | units.kg)
+            self.mass = mass or (([0.]*len(self)) | units.kg)
 
         if not hasattr(original_particles, "x"):
-            for attribute, value in zip(["x","y","z"], position or ([0, 0, 0] | units.m)):
-                setattr(self, attribute, value)
+            self.position=position  or (([[0.,0.,0.]]*len(self)) | units.m)
 
         if not hasattr(original_particles, "vx"):
-            for attribute, value in zip(["vx","vy","vz"], velocity or ([0, 0, 0] | units.m / units.s)):
-                setattr(self, attribute, value)
+            self.velocity=velocity  or (([[0.,0.,0.]]*len(self)) | units.m/units.s)
 
         if not hasattr(original_particles, "lx"):
-            for attribute, value in zip(["lx","ly","lz"], angular_momentum or ([0, 0, 0] | units.kg * units.m**2 / units.s)):
-                setattr(self, attribute, value)
+            self.angular_momentum=angular_momentum  or (([[0.,0.,0.]]*len(self)) | units.g*units.m**2/units.s)
 
     def accrete(self,orgparticles):
         if self._private.looping_over=="sinks":
@@ -77,20 +74,18 @@ class SinkParticles(ParticlesOverlay):
 
         new_sinks = self.add_particles(original_particles)
         new_sinks.sink_radius = sink_radius or original_particles.radius
+
         if not hasattr(original_particles, "mass"):
-            new_sinks.mass = mass or (0 | units.kg)
+            new_sinks.mass = mass or (([0.]*len(new_sinks)) | units.kg)
 
         if not hasattr(original_particles, "x"):
-            for attribute, value in zip(["x","y","z"], position or ([0, 0, 0] | units.m)):
-                setattr(new_sinks, attribute, value)
+            new_sinks.position=position or (([[0.,0.,0.]]*len(new_sinks)) | units.m)
 
         if not hasattr(original_particles, "vx"):
-            for attribute, value in zip(["vx","vy","vz"], velocity or ([0, 0, 0] | units.m / units.s)):
-                setattr(new_sinks, attribute, value)
+            new_sinks.velocity=velocity or (([[0.,0.,0.]]*len(new_sinks)) | units.m/units.s)
 
         if not hasattr(original_particles, "lx"):
-            for attribute, value in zip(["lx","ly","lz"], angular_momentum or ([0, 0, 0] | units.kg * units.m**2 / units.s)):
-                setattr(self, attribute, value)
+            new_sinks.angular_momentum=angular_momentum or (([[0.,0.,0.]]*len(new_sinks)) | units.g*units.m**2/units.s)
 
     def add_sink(self, particle):
         self.add_sinks(particle.as_set())
@@ -187,6 +182,7 @@ class SinkParticles(ParticlesOverlay):
                 corrected_positions.append(pos)
                 corrected_velocities.append(vel)
                 corrected_angular_momenta.append(Lin)
+
         self.mass = corrected_masses
         self.position = corrected_positions
         self.velocity = corrected_velocities
