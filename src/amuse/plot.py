@@ -164,9 +164,9 @@ def scatter(x, y, **kwargs):
     native_plot.ylabel(UnitlessArgs.y_label())
     return result
 
-def hist(x, bins=10, range=None, normed=False, weights=None, cumulative=False, bottom=None, histtype='bar', align='mid', orientation='vertical', rwidth=None, log=False, hold=None, **kwargs):
+def hist(x, **kwargs):
     args = UnitlessArgs.strip(x)
-    result = native_plot.hist(args[0], bins, range, normed, weights, cumulative, bottom, histtype, align, orientation, rwidth, log, hold, **kwargs)
+    result = native_plot.hist(args[0], **kwargs)
     UnitlessArgs.unitnames_of_args.append("")
     return result
 
