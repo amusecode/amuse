@@ -11,11 +11,6 @@
 //AMUSE STOPPING CONDITIONS
 #include "stopcond.h"
 
-/* extra nodes to allocate, to allow
- * for space to exchange nodes of other processors
- * and somehow other nodes needed by gadget
- */
-#define NEXTRA 4000
 using namespace std;
 
 const bool debug = false;
@@ -357,15 +352,16 @@ int commit_particles(){
     ngb_treeallocate(MAX_NGB);
     if((All.MaxPart < 1000) && (All.TreeAllocFactor <= 1.0)){
         if (ThisTask == 0){
-            cout << "Gadget takes "<< All.PartAllocFactor  << " times the number of particles on a processors as a maximum"<<endl;
-            cout << "For large numbers of particles some room is always available for storing nodes from other processors. " << endl;
-            cout << "For smalle numbers, this assumption is incorrect"<<endl;
-            cout << "Changed allocation of tree to include more nodes"<<endl;
+            cout << "Gadget takes "<< All.PartAllocFactor  << " times the number of particles on a processors as a maximum."<<endl;
+            cout << "For large numbers of particles some room is always available for storing nodes from other processors." << endl;
+            cout << "For smaller numbers, this assumption is incorrect."<<endl;
+            cout << "Changed allocation of tree to include more nodes."<<endl;
         }
         All.TreeAllocFactor = 6000 / All.MaxPart;
-       // force_treeallocate(All.TreeAllocFactor * (All.MaxPart + NEXTRA), All.MaxPart);
-    } 
-    force_treeallocate(All.TreeAllocFactor * All.MaxPart, All.MaxPart);
+        force_treeallocate(All.TreeAllocFactor * 10*All.MaxPart, 10*All.MaxPart);
+    } else {
+        force_treeallocate(All.TreeAllocFactor * All.MaxPart, All.MaxPart);
+    }
     
     All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
     Flag_FullStep = 1;                /* to ensure that Peano-Hilber order is done */
