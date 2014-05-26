@@ -193,8 +193,8 @@ public class WorkerJobRunner extends JobRunner {
      * Starts a worker proxy. Make take a while.
      */
     public WorkerJobRunner(AmuseJobDescription description, AmuseConfiguration configuration, ReceivePortIdentifier resultPort,
-            Ibis ibis, Path tmpDir, ReadMessage message) throws Exception {
-        super(description, configuration, resultPort, ibis, tmpDir);
+            Ibis ibis, Path tmpDir, boolean debug, ReadMessage message) throws Exception {
+        super(description, configuration, resultPort, ibis, tmpDir, debug);
 
         this.description = (WorkerJobDescription) description;
 

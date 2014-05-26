@@ -74,8 +74,6 @@ public class DistributedAmuse {
     //used to copy files, start jobs, etc.
     private final Xenon xenon;
 
-    private final File tmpDir;
-
     private final boolean debug;
 
     private boolean ended = false;
@@ -91,20 +89,6 @@ public class DistributedAmuse {
         }
     }
 
-    private static File createTmpDir(UUID id) throws DistributedAmuseException {
-        File systemTmpDir = new File(System.getProperty("java.io.tmpdir"));
-        String userName = System.getProperty("user.name");
-
-        if (!systemTmpDir.exists()) {
-            throw new DistributedAmuseException("Java tmpdir does not exist " + systemTmpDir);
-        }
-
-        File result = new File(systemTmpDir, "distributed-amuse-" + userName + "/code-" + id.toString());
-        result.mkdirs();
-
-        return result;
-    }
-
     public DistributedAmuse(UUID id, String codeDir, String amuseRootDir, int webInterfacePort, boolean debug, boolean startHubs,
             int workerStartupTimeout) throws DistributedAmuseException {
         this.debug = debug;
@@ -118,15 +102,13 @@ public class DistributedAmuse {
             throw new DistributedAmuseException("could not create Xenon library object", e);
         }
 
-        tmpDir = createTmpDir(id);
+        resources = new ResourceSet(xenon, amuseRootDir, startHubs);
 
-        resources = new ResourceSet(xenon, tmpDir, amuseRootDir, startHubs);
+        pilots = new PilotSet(xenon, resources,  id, debug);
 
-        pilots = new PilotSet(xenon, resources, tmpDir, id, debug);
+        jobs = new JobSet(resources.getIplServerAddress(), pilots);
 
-        jobs = new JobSet(resources.getIplServerAddress(), pilots, tmpDir);
-
-        workerConnectionServer = new WorkerConnectionServer(jobs, tmpDir, workerStartupTimeout);
+        workerConnectionServer = new WorkerConnectionServer(jobs, workerStartupTimeout);
 
         new Lighthouse(jobs.getIbis(), pilots);
 

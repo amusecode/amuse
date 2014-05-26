@@ -149,6 +149,8 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("tmp_dir", dtype='string', direction=function.IN, default="")
         function.addParameter("gateway", dtype='string', direction=function.IN, default="")
         function.addParameter("scheduler_type", dtype='string', direction=function.IN, default="ssh")
+        function.addParameter("hub_queue_name", dtype='string', direction=function.IN, default="")
+        function.addParameter("hub_time_minutes", dtype='int32', direction=function.IN, unit = units.minute, default = 1)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -167,6 +169,8 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function.addParameter("amuse_dir", dtype='string', direction=function.OUT)
         function.addParameter("tmp_dir", dtype='string', direction=function.OUT)
         function.addParameter("scheduler_type", dtype='string', direction=function.OUT)
+        function.addParameter("hub_queue_name", dtype='string', direction=function.OUT)
+        function.addParameter("hub_time_minutes", dtype='int32', direction=function.OUT)
         function.addParameter('count', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         return function

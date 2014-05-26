@@ -31,7 +31,7 @@ public class ResourceSet {
 
     private final boolean startHubs;
 
-    public ResourceSet(Xenon xenon, File tmpDir, String amuseRootDir, boolean startHubs) throws DistributedAmuseException {
+    public ResourceSet(Xenon xenon, String amuseRootDir, boolean startHubs) throws DistributedAmuseException {
         resources = new ArrayList<ResourceManager>();
         this.xenon = xenon;
         this.startHubs = startHubs;
@@ -52,7 +52,7 @@ public class ResourceSet {
     }
 
     public synchronized ResourceManager newResource(String name, String location, String gateway, String amuseDir, String tmpDir,
-            String schedulerType) throws DistributedAmuseException {
+            String schedulerType, String queueName, int timeMinutes) throws DistributedAmuseException {
         logger.debug("creating new resource: name = " + name + " location = " + location + " scheduler type = " + schedulerType
                 + " amuse dir = " + amuseDir);
 
@@ -67,7 +67,7 @@ public class ResourceSet {
             gatewayLocation = getResource(gateway).getLocation();
         }
 
-        ResourceManager result = new ResourceManager(name, location, gatewayLocation, amuseDir, tmpDir, schedulerType, this.startHubs,
+        ResourceManager result = new ResourceManager(name, location, gatewayLocation, amuseDir, tmpDir, schedulerType, queueName, timeMinutes, this.startHubs,
                 xenon, iplServer);
 
         resources.add(result);

@@ -54,7 +54,7 @@ public class JobSet extends Thread {
 
     private final PilotSet pilots;
 
-    public JobSet(String serverAddress, PilotSet pilots, File tmpDir) throws DistributedAmuseException {
+    public JobSet(String serverAddress, PilotSet pilots) throws DistributedAmuseException {
         jobs = new ArrayList<AmuseJob>();
 
         this.pilots = pilots;

@@ -86,7 +86,7 @@ public class PilotManager {
     }
 
     private static JavaJobDescription createJobDesciption(int id, ResourceManager resource, String queueName, int nodeCount,
-            int timeMinutes, int slots, String nodeLabel, String options, String serverAddress, String[] hubAddresses,
+            int timeMinutes, int slotsPerNode, String nodeLabel, String options, String serverAddress, String[] hubAddresses,
             Path stdoutPath, Path stderrPath, boolean debug) throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
 
@@ -108,7 +108,7 @@ public class PilotManager {
 
         if (resource.getSchedulerType().equals("slurm")) {
             result.addJobOption("single.process", "true");
-            result.setProcessesPerNode(slots);
+            result.setProcessesPerNode(slotsPerNode);
 
             //disable processor affinity
             result.addEnvironment("SLURM_CPU_BIND", "no");
@@ -184,6 +184,7 @@ public class PilotManager {
 
     private final String queueName;
     private final int nodeCount;
+    private final int slotsPerNode;
     private final int timeMinutes;
     private final int slots;
     private final String label;
@@ -215,8 +216,8 @@ public class PilotManager {
      * @param timeMinutes
      * @param nodeLabel
      */
-    public PilotManager(ResourceManager resource, String queueName, int nodeCount, int timeMinutes, int slots, String nodeLabel,
-            String options, String serverAddress, String[] hubAddresses, Xenon xenon, File tmpDir, UUID amuseID, boolean debug)
+    public PilotManager(ResourceManager resource, String queueName, int nodeCount, int timeMinutes, int slotsPerNode, String nodeLabel,
+            String options, String serverAddress, String[] hubAddresses, Xenon xenon, UUID amuseID, boolean debug)
             throws DistributedAmuseException {
         this.jobs = new ArrayList<AmuseJob>();
         ibisIdentifier = null;
@@ -227,10 +228,12 @@ public class PilotManager {
         this.queueName = queueName;
         this.nodeCount = nodeCount;
         this.timeMinutes = timeMinutes;
-        this.slots = slots;
+        this.slotsPerNode = slotsPerNode;
         this.label = nodeLabel;
         this.options = options;
 
+        this.slots = nodeCount * slotsPerNode;
+        
         this.id = getNextID();
 
         try {
@@ -260,7 +263,7 @@ public class PilotManager {
             //            stdoutPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stdout.txt");
             //            stderrPath = Utils.resolveWithRoot(xenon.files(), xenonTmpDir, "reservation-" + uniqueID + "-stderr.txt");
 
-            JobDescription jobDescription = createJobDesciption(id, resource, queueName, nodeCount, timeMinutes, slots,
+            JobDescription jobDescription = createJobDesciption(id, resource, queueName, nodeCount, timeMinutes, slotsPerNode,
                     nodeLabel, options, serverAddress, hubAddresses, stdoutPath, stderrPath, debug);
 
             logger.debug("starting reservation using scheduler {}", scheduler);
@@ -390,7 +393,8 @@ public class PilotManager {
         result.put("Queue", queueName);
         result.put("Node Count", Integer.toString(nodeCount));
         result.put("Time(minutes)", Integer.toString(timeMinutes));
-        result.put("Slots", Integer.toString(slots));
+        result.put("Slots Per Node", Integer.toString(slotsPerNode));
+        result.put("Total Slots", Integer.toString(slots));
         result.put("Node Label", label);
         result.put("Resource Name", getResourceName());
         result.put("Resource ID", Integer.toString(getResourceID()));

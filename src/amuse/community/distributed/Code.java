@@ -176,7 +176,7 @@ public class Code implements CodeInterface {
 
     @Override
     public int new_resource(int[] resource_id, String[] name, String[] location, String[] amuse_dir, String[] tmp_dir, String[] gateway,
-            String[] scheduler_type, int count) {
+            String[] scheduler_type, String[] hub_queue_name, int[] hub_time_minutes,  int count) {
         try {
             for (int i = 0; i < count; i++) {
                 String locationString = location[i];
@@ -197,8 +197,14 @@ public class Code implements CodeInterface {
                     tmpDirString = null;
                 }
                 
+                String hubQueueNameString = hub_queue_name[i];
+                
+                if (hubQueueNameString.isEmpty()) {
+                    hubQueueNameString = null;
+                }
+                
                 ResourceManager resource = distributedAmuse.resources().newResource(name[i], locationString, gatewayString,
-                        amuse_dir[i], tmpDirString, scheduler_type[i]);
+                        amuse_dir[i], tmpDirString, scheduler_type[i], hubQueueNameString, hub_time_minutes[i]);
                 resource_id[i] = resource.getId();
             }
             return 0;
@@ -227,7 +233,7 @@ public class Code implements CodeInterface {
 
     @Override
     public int get_resource_state(int[] index_of_the_resource, String[] name, String[] location, String[] gateway,
-            String[] amuse_dir, String[] tmp_dir, String[] scheduler_type, int count) {
+            String[] amuse_dir, String[] tmp_dir, String[] scheduler_type, String[] hub_queue_name, int[] hub_time_minutes, int count) {
         try {
             for (int i = 0; i < count; i++) {
                 ResourceManager resource = distributedAmuse.resources().getResource(index_of_the_resource[i]);
@@ -238,6 +244,8 @@ public class Code implements CodeInterface {
                 amuse_dir[i] = resource.getAmuseDir();
                 tmp_dir[i] = resource.getTmpDir();
                 scheduler_type[i] = resource.getSchedulerType();
+                hub_queue_name[i] = resource.getHubQueueName();
+                hub_time_minutes[i] = resource.getHubTimeMinutes();
             }
             return 0;
         } catch (DistributedAmuseException e) {

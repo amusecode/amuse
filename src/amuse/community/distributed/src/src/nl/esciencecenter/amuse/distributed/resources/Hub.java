@@ -9,11 +9,13 @@ import java.util.Map;
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.xenon.Xenon;
+import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.xenon.adaptors.ssh.SshAdaptor;
 import nl.esciencecenter.xenon.credentials.Credential;
 import nl.esciencecenter.xenon.engine.util.StreamForwarder;
 import nl.esciencecenter.xenon.jobs.Job;
 import nl.esciencecenter.xenon.jobs.JobDescription;
+import nl.esciencecenter.xenon.jobs.JobStatus;
 import nl.esciencecenter.xenon.jobs.Scheduler;
 import nl.esciencecenter.xenon.jobs.Streams;
 import nl.esciencecenter.xenon.util.JavaJobDescription;
@@ -21,7 +23,7 @@ import nl.esciencecenter.xenon.util.JavaJobDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Hub {
+public class Hub extends Thread {
 
     private static final long TIMEOUT = 60000;
 
@@ -35,17 +37,15 @@ public class Hub {
 
     private final String address;
 
+    private final Xenon xenon;
+
     private static JavaJobDescription createJobDesciption(ResourceManager resource, String[] hubAddresses)
             throws DistributedAmuseException {
         JavaJobDescription result = new JavaJobDescription();
-        
-        result.setQueueName("unlimited");
 
         result.setInteractive(true);
 
         AmuseConfiguration configuration = resource.getConfiguration();
-
-        result.setExecutable(configuration.getJava());
 
         //classpath
         List<String> classpath = result.getJavaClasspath();
@@ -80,6 +80,8 @@ public class Hub {
     }
 
     public Hub(ResourceManager resource, AmuseConfiguration config, String[] hubs, Xenon xenon) throws DistributedAmuseException {
+        this.xenon = xenon;
+
         try {
             resourceName = resource.getName();
 
@@ -92,7 +94,17 @@ public class Hub {
 
             if (resource.isLocal()) {
                 scheduler = xenon.jobs().newScheduler("local", null, null, null);
+
+                jobDescription.setQueueName("unlimited");
+                jobDescription.setMaxTime(0);
+            } else if (resource.getHubQueueName() != null) {
+                scheduler = resource.getScheduler();
+
+                jobDescription.setQueueName(resource.getHubQueueName());
+                jobDescription.setMaxTime(resource.getHubTimeMinutes());
+
             } else {
+
                 Credential credential = xenon.credentials().getDefaultCredential("ssh");
 
                 Map<String, String> properties = new HashMap<String, String>();
@@ -103,12 +115,16 @@ public class Hub {
 
                 scheduler = xenon.jobs().newScheduler("ssh", resource.getLocation(), credential, properties);
 
-                logger.debug("starting hub on {} using scheduler {}", resourceName, scheduler);
+                jobDescription.setQueueName("unlimited");
+                jobDescription.setMaxTime(0);
             }
+            logger.debug("starting hub on {} using scheduler {}", resourceName, scheduler);
 
             job = xenon.jobs().submitJob(scheduler, jobDescription);
 
             logger.debug("started job " + job);
+
+            xenon.jobs().waitUntilRunning(job, 0);
 
             Streams streams = xenon.jobs().getStreams(job);
 
@@ -120,17 +136,48 @@ public class Hub {
             address = serverConnection.getAddress();
 
             logger.debug("hub on {} has address {}", resource.getName(), address);
+
+            setDaemon(true);
+            start();
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot start hub on " + resource.getName() + ": " + e, e);
         }
+    }
+
+    public void run() {
+        try {
+            JobStatus status = xenon.jobs().getJobStatus(job);
+
+            while (true) {
+                JobStatus oldStatus = status;
+                status = xenon.jobs().getJobStatus(job);
+
+                if (oldStatus.getState() != status.getState()) {
+                    logger.info("Status of {} now {}", this, status);
+                } else {
+                    logger.debug("Status of {} now {}", this, status);
+                }
+                
+                Thread.sleep(10000);
+            }
+        } catch (XenonException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            return;
+        }
+
     }
 
     public String getAddress() {
         return address;
     }
 
-    void stop() {
+    void stopHub() {
         serverConnection.closeConnection();
+        
+        //interrupt status thread
+        interrupt();
     }
 
     @Override

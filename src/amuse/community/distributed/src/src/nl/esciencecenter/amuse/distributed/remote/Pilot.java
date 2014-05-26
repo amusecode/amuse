@@ -72,7 +72,9 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
     private final Watchdog watchdog;
 
-    private Path tmpDir;
+    private final boolean debug;
+    
+    private final Path tmpDir;
 
     private static void initializeLogger(boolean debug) {
         if (debug) {
@@ -88,6 +90,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
     Pilot(AmuseConfiguration configuration, Properties properties, int id, boolean debug, String tmpDir) throws IbisCreationFailedException,
             IOException, InterruptedException {
         this.configuration = configuration;
+        this.debug = debug;
         jobs = new HashMap<Integer, JobRunner>();
 
         initializeLogger(debug);
@@ -205,17 +208,17 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
 
                 switch (type) {
                 case "worker":
-                    jobRunner = new WorkerJobRunner(description, configuration, resultPort, ibis, tmpDir, readMessage);
+                    jobRunner = new WorkerJobRunner(description, configuration, resultPort, ibis, tmpDir, debug, readMessage);
 
                     addJobRunner(description.getID(), jobRunner);
                     break;
                 case "script":
-                    jobRunner = new ScriptJobRunner(description, configuration, resultPort, ibis, tmpDir, readMessage);
+                    jobRunner = new ScriptJobRunner(description, configuration, resultPort, ibis, tmpDir, debug, readMessage);
 
                     addJobRunner(description.getID(), jobRunner);
                     break;
                 case "function":
-                    jobRunner = new ScriptJobRunner(description, configuration, resultPort, ibis, tmpDir, readMessage);
+                    jobRunner = new FunctionJobRunner(description, configuration, resultPort, ibis, tmpDir, debug, readMessage);
 
                     addJobRunner(description.getID(), jobRunner);
                     break;

@@ -48,17 +48,14 @@ public class PilotSet {
 
     private final Xenon xenon;
 
-    private final File tmpDir;
-
     private final UUID amuseID;
 
     private final boolean debug;
 
-    public PilotSet(Xenon xenon, ResourceSet resourceManager, File tmpDir, UUID amuseID, boolean debug)
+    public PilotSet(Xenon xenon, ResourceSet resourceManager, UUID amuseID, boolean debug)
             throws DistributedAmuseException {
         this.xenon = xenon;
         this.resourceManager = resourceManager;
-        this.tmpDir = tmpDir;
         this.amuseID = amuseID;
         this.debug = debug;
         pilots = new ArrayList<PilotManager>();
@@ -74,7 +71,7 @@ public class PilotSet {
         ResourceManager resource = resourceManager.getResource(resourceName);
 
         PilotManager result = new PilotManager(resource, queueName, nodeCount, timeMinutes, slots, nodeLabel, options,
-                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, tmpDir, amuseID, debug);
+                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, amuseID, debug);
 
         pilots.add(result);
 

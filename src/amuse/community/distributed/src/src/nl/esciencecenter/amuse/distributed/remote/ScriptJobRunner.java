@@ -44,8 +44,8 @@ public class ScriptJobRunner extends JobRunner {
     private final ScriptJobDescription description;
     
     public ScriptJobRunner(AmuseJobDescription description, AmuseConfiguration configuration, ReceivePortIdentifier resultPort,
-            Ibis ibis, Path tmpDir, ReadMessage message) throws Exception {
-        super(description, configuration, resultPort, ibis, tmpDir);
+            Ibis ibis, Path tmpDir, boolean debug, ReadMessage message) throws Exception {
+        super(description, configuration, resultPort, ibis, tmpDir, debug);
 
         this.description = (ScriptJobDescription) description;
 

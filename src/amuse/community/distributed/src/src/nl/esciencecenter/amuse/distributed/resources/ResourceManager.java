@@ -65,6 +65,8 @@ public class ResourceManager {
     private final String amuseDir;
     private final String tmpDir;
     private final String schedulerType;
+    private final String hubQueueName;
+    private final int hubTimeMinutes;
 
     private final AmuseConfiguration configuration;
 
@@ -97,7 +99,7 @@ public class ResourceManager {
         throw new DistributedAmuseException("Local and new remote Hub at " + name + " not able to communicate");
     }
 
-    public ResourceManager(String name, String location, String gateway, String amuseDir, String tmpDir, String schedulerType, boolean startHub,
+    public ResourceManager(String name, String location, String gateway, String amuseDir, String tmpDir, String schedulerType, String hubQueueName, int hubTimeMinutes, boolean startHub,
             Xenon xenon, Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
@@ -106,9 +108,13 @@ public class ResourceManager {
         this.amuseDir = amuseDir;
         this.tmpDir = tmpDir;
         this.schedulerType = schedulerType;
-        this.startHub = startHub;
+        this.hubQueueName = hubQueueName;
+        this.hubTimeMinutes = hubTimeMinutes;
         this.xenon = xenon;
-
+        
+        //local resources _never_ have a hub
+        this.startHub = (schedulerType.equals("local")) ? false : startHub;
+        
         home = getHome(xenon);
         filesystem = home.getFileSystem();
 
@@ -121,7 +127,7 @@ public class ResourceManager {
 
         scheduler = createScheduler();
 
-        if (startHub) {
+        if (this.startHub) {
             this.hub = new Hub(this, this.configuration, iplServer.getHubs(), xenon);
             iplServer.addHubs(this.hub.getAddress());
 
@@ -258,7 +264,7 @@ public class ResourceManager {
     public void stop() {
         logger.debug("Stopping resource {}", this);
         if (hub != null) {
-            hub.stop();
+            hub.stopHub();
         }
         try {
             xenon.jobs().close(scheduler);
@@ -316,4 +322,11 @@ public class ResourceManager {
         return scheduler;
     }
 
+    public int getHubTimeMinutes() {
+        return this.hubTimeMinutes;
+    }
+
+    public String getHubQueueName() {
+        return this.hubQueueName;
+    }
 }

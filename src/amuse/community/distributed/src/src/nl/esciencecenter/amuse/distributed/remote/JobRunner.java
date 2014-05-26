@@ -52,6 +52,7 @@ public abstract class JobRunner extends Thread {
     protected final ReceivePortIdentifier resultPort;
     protected final Path tmpDir;
     protected final Path sandbox;
+    protected final boolean debug;
 
     private Process process = null;
     private OutputForwarder out;
@@ -60,12 +61,13 @@ public abstract class JobRunner extends Thread {
     private Exception error = null;
 
     public JobRunner(AmuseJobDescription description, AmuseConfiguration amuseConfiguration, ReceivePortIdentifier resultPort,
-            Ibis ibis, Path tmpDir) throws IOException {
+            Ibis ibis, Path tmpDir,boolean debug) throws IOException {
         this.description = description;
         this.amuseConfiguration = amuseConfiguration;
         this.resultPort = resultPort;
         this.ibis = ibis;
         this.tmpDir = tmpDir;
+        this.debug = debug;
 
         this.sandbox = tmpDir.resolve("job-" + description.getID());
         Files.createDirectory(this.sandbox);
@@ -156,6 +158,11 @@ public abstract class JobRunner extends Thread {
     protected void deleteSandbox() {
         if (!Files.exists(sandbox)) {
             logger.debug("Sandbox does not exist, not cleaning up");
+            return;
+        }
+        
+        if (debug) {
+            logger.debug("Not cleaning up sandbox because we are in debug mode");
             return;
         }
 

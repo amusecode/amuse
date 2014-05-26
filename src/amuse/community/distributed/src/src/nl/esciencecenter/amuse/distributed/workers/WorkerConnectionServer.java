@@ -59,7 +59,7 @@ public class WorkerConnectionServer extends Thread {
 
     private final int startupTimeout;
 
-    public WorkerConnectionServer(JobSet scheduler, File tmpDir, int startupTimeout) throws DistributedAmuseException {
+    public WorkerConnectionServer(JobSet scheduler, int startupTimeout) throws DistributedAmuseException {
         this.scheduler = scheduler;
         this.startupTimeout = startupTimeout;
         this.ibis = scheduler.getIbis();
