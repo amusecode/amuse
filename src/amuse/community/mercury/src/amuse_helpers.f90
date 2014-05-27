@@ -20,7 +20,8 @@ module amuse_mercuryMod
     get_initial_timestep_src, &
     mercury_time,set_central_body,get_central_body, &
     mercury_set_begin_time, mercury_get_begin_time, &
-    mercury_commit_parameters
+    mercury_commit_parameters,amuse_get_gravity_at_point, &
+    amuse_get_potential_at_point
 
   include 'amuse_mercury.inc'
 
@@ -520,6 +521,81 @@ subroutine energy_angular_momentum_deviation(delta_e,delta_am)
   if(present(delta_e)) delta_e=en(3)/K2
   if(present(delta_am)) delta_am=am(3)/K2  
 end subroutine
+
+! get acceleration at (heliocentric) positions x1,y1,z1 smoothed with eps1
+function amuse_get_gravity_at_point(eps1, x1, y1, z1, ax,ay,az, number_of_points) result(ret)
+      implicit none
+      integer :: ret, i,ipart
+      integer, intent(in) :: number_of_points
+      real*8, intent(in) :: eps1(number_of_points)
+      real*8, intent(in) :: x1(number_of_points), y1(number_of_points)
+      real*8, intent(in) :: z1(number_of_points)
+      real*8, intent(out) :: ax(number_of_points),ay(number_of_points),az(number_of_points)
+      real*8 :: mass,x,y,z,f
+      real*8 :: r2
+
+        do ipart = 1, number_of_points
+            r2=x1(ipart)**2+x1(ipart)**2+x1(ipart)**2
+            mass=m(1)/K2
+            if(r2.LT.rcen**2) then
+              f=-mass/rcen**3
+            else
+              f=-mass/(r2*sqrt(r2))            
+            endif
+            ax(ipart)=-f*x1(ipart)
+            ay(ipart)=-f*y1(ipart)
+            az(ipart)=-f*z1(ipart)
+            do i = 1, nbig
+                mass=m(i+1)/K2
+                x=xh(1,i+1)
+                y=xh(2,i+1)
+                z=xh(3,i+1)                
+                r2 = (x-x1(ipart))**2 + (y-y1(ipart))**2 + (z-z1(ipart))**2 + eps1(ipart)**2
+                if (r2.GT.0) then 
+                  f=mass/(r2*sqrt(r2))
+                  ax(ipart) = ax(ipart) - (x1(ipart)-x)*f
+                  ay(ipart) = ay(ipart) - (y1(ipart)-y)*f
+                  az(ipart) = az(ipart) - (z1(ipart)-z)*f
+                endif  
+            enddo
+        enddo
+        ret = 0
+end function
+
+
+! get potential at (heliocentric) positions x1,y1,z1 smoothed with eps1
+function amuse_get_potential_at_point(eps1, x1, y1, z1, phi, number_of_points) result(ret)
+      implicit none
+      integer :: ret, i,ipart
+      integer, intent(in) :: number_of_points
+      real*8, intent(in) :: eps1(number_of_points)
+      real*8, intent(in) :: x1(number_of_points), y1(number_of_points)
+      real*8, intent(in) :: z1(number_of_points)
+      real*8, intent(out) :: phi(number_of_points)
+      real*8 :: mass,x,y,z
+      real*8 :: r2
+
+        do ipart = 1, number_of_points
+            r2=x1(ipart)**2+x1(ipart)**2+x1(ipart)**2
+            mass=m(1)/K2
+            if(r2.LT.rcen**2) then
+              phi(ipart)=-mass*r2/rcen**3
+            else
+              phi(ipart)=-mass/sqrt(r2)            
+            endif
+            do i = 1, nbig
+                mass=m(i+1)/K2
+                x=xh(1,i+1)
+                y=xh(2,i+1)
+                z=xh(3,i+1)                
+                r2 = (x-x1(ipart))**2 + (y-y1(ipart))**2 + (z-z1(ipart))**2 + eps1(ipart)**2
+                if (r2.GT.0) phi(ipart) = phi(ipart) - mass/sqrt(r2)
+            enddo
+        enddo
+        ret = 0
+end function
+
+
 
 function find_particle(id_) result(index)
   use hashMod

@@ -458,6 +458,57 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         """
         return function
 
+    @legacy_function
+    def get_gravity_at_point():
+        """
+        Get the gravitational acceleration at the given points. To calculate the force on
+        bodies at those points, multiply with the mass of the bodies
+        """
+        function = LegacyFunctionSpecification()
+        for x in ['eps','x','y','z']:
+            function.addParameter(
+              x,
+              dtype='float64',
+              direction=function.IN,
+              unit=units.AU
+            )
+        for x in ['ax','ay','az']:
+            function.addParameter(
+                x,
+                dtype='float64',
+                direction=function.OUT,
+                unit=units.AU/units.day**2
+            )
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+
+    @legacy_function
+    def get_potential_at_point():
+        """
+        Determine the gravitational potential on any given point
+        """
+        function = LegacyFunctionSpecification()
+        for x in ['eps','x','y','z']:
+            function.addParameter(
+                x,
+                dtype='float64',
+                direction=function.IN,
+                unit=units.AU
+            )
+        for x in ['phi']:
+            function.addParameter(
+                x,
+                dtype='float64',
+                direction=function.OUT,
+                unit=units.AU**2/units.day**2
+            )
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+
 class MercuryDoc(object):
 
     def __get__(self, instance, owner):
@@ -964,13 +1015,13 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_method(
             "get_center_of_mass_position",
             (),
-            (units.AU, object.ERROR_CODE,)
+            (units.AU, units.AU, units.AU, object.ERROR_CODE,)
         )
-        
+
         object.add_method(
             "get_center_of_mass_velocity",
             (),
-            (units.AUd, object.ERROR_CODE,)
+            (units.AUd, units.AUd, units.AUd, object.ERROR_CODE,)
         )
         
         object.add_method(
@@ -989,11 +1040,51 @@ class Mercury(MercuryWayWard):
         self.particles_accessed=True
         self.committed=False
 
+    def define_parameters(self, object):
+        MercuryWayWard.define_parameters(self,object)
+
+        object.add_method_parameter(
+            "get_eps2",
+            "set_eps2",
+            "epsilon_squared",
+            "smoothing parameter for gravity calculations",
+            default_value = 0.0 | units.AU * units.AU
+        )
+
+    def get_eps2(self):
+        return 0|units.AU * units.AU
+
+    def set_eps2(self, eps2):
+       if eps2.number!=0:
+            raise Exception("Mercury cannot use non-zero smoothing")
+
+    def get_number_of_particles(self):
+        return len(self.particles)
+
+    def get_total_radius(self):
+        max_dist2 = 0|units.AU * units.AU
+        for p in self.particles:
+            dist2 = p.x*p.x + p.y*p.y + p.z*p.z
+            if dist2 > max_dist2:
+                max_dist2 = dist2
+        return ((max_dist2.number**0.5)|units.AU)
+
     @property
     def particles(self):
         if not self.particles_accessed:
             self.particles_accessed=True
         return self._particles
+
+    @property
+    def total_mass(self):
+        return self.particles.total_mass()
+
+
+    def get_center_of_mass_position(self):
+        return self.particles.center_of_mass()
+
+    def get_center_of_mass_velocity(self):
+        return self.particles.center_of_mass_velocity()
         
     def commit_particles(self):
         N=len(self.particles)
@@ -1048,6 +1139,9 @@ class Mercury(MercuryWayWard):
           print "you are not allowed to remove the central particle"
           return -11
         (self.particles-self.overridden().central_particle).synchronize_to(self.overridden().orbiters)                
+
+        self.overridden().central_particle.mass=self.central_particle.mass
+
         self.particles_accessed=False
         return self.overridden().recommit_particles()
                 
@@ -1057,19 +1151,15 @@ class Mercury(MercuryWayWard):
             ret=self.commit_particles()
           else:  
             ret=self.recommit_particles()
-#          if ret != 0:
-#              print "(re)commit error:",ret
-#              return -20  
+
         if self.overridden().central_particle[0] not in self.particles:
           print "you are not allowed to remove the central particle"
           return -11
-        if self.overridden().central_particle.mass != self.central_particle.mass:
-          print self.overridden().central_particle.mass,self.central_particle.mass
-          print "unallowed change of the mass of the central particle"
-#          return -12
+# these are allowed now
+        if self.overridden().central_particle[0].mass != self.central_particle.mass:
+          pass
         if self.overridden().central_particle.radius != self.central_particle.radius:
-          print "unallowed change of the radius of the central particle"
-          return -13
+          pass
 
         com_position=self.particles.center_of_mass()
         com_velocity=self.particles.center_of_mass_velocity()

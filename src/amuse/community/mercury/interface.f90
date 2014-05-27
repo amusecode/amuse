@@ -341,4 +341,32 @@ function set_begin_time(system_time) result(ret)
       ret = mercury_set_begin_time(system_time)
 end function  
 
+
+! get acceleration at (heliocentric) positions x1,y1,z1 smoothed with eps1
+function get_gravity_at_point(eps1, x1, y1, z1, ax,ay,az, number_of_points) result(ret)
+      use amuse_mercuryMod
+      implicit none
+      integer :: ret
+      integer, intent(in) :: number_of_points
+      real*8, intent(in) :: eps1(number_of_points)
+      real*8, intent(in) :: x1(number_of_points), y1(number_of_points)
+      real*8, intent(in) :: z1(number_of_points)
+      real*8, intent(out) :: ax(number_of_points),ay(number_of_points),az(number_of_points)
+      ret = amuse_get_gravity_at_point(eps1,x1,y1,z1,ax,ay,az,number_of_points)
+end function
+
+
+! get potential at (heliocentric) positions x1,y1,z1 smoothed with eps1
+function get_potential_at_point(eps1, x1, y1, z1, phi, number_of_points) result(ret)
+      use amuse_mercuryMod
+      implicit none
+      integer :: ret
+      integer, intent(in) :: number_of_points
+      real*8, intent(in) :: eps1(number_of_points)
+      real*8, intent(in) :: x1(number_of_points), y1(number_of_points)
+      real*8, intent(in) :: z1(number_of_points)
+      real*8, intent(out) :: phi(number_of_points)
+      ret = amuse_get_potential_at_point(eps1,x1,y1,z1,phi,number_of_points)
+end function
+
 end module
