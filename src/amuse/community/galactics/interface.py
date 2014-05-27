@@ -178,67 +178,86 @@ class GalactICsImplementation(object):
         in_disk += "{0}\n".format(1 if self._disk_do_center_flag else 0)
         return in_disk
     
-    def _new_dbh_dir(self, in_dbh):
-        lowercase = "abcdefghijklmnopqrstuvwxyz"
-        dbh_dir = ''.join(random.choice(lowercase) for x in range(8))
-        dbh_dir_full_path = os.path.join(self._output_directory, dbh_dir)
-        if os.path.exists(dbh_dir_full_path):
-            return self._new_dbh_dir(in_dbh)
+    def _new_dbh_dir(self, data_directory,in_dbh,in_diskdf):
+        if not os.path.exists(data_directory):
+            os.mkdir(data_directory)
+        with open(os.path.join(data_directory, "in.gendenspsi"), "w") as f:
+            f.write("2000 40\n")
+        # for clarity, also store the used input parameters in this directory:
+        with open(os.path.join(data_directory, "in.dbh"), "w") as f:
+            f.write(in_dbh)
+        with open(os.path.join(data_directory, "in.diskdf"), "w") as f:
+            f.write(in_diskdf)
+        # remove finished-step files
+        for f in ['dbh.finished','getfreqs.finished','diskdf.finished']:
+          try:
+            os.remove(os.path.join( data_directory, f))    
+          except:
+            pass
+
+    def _data_directory(self,in_dbh,in_diskdf):
+        return os.path.join(self._output_directory, "model"+str(hash(in_dbh+in_diskdf)))
+        
+    def model_present(self,x):
+        in_dbh = self.generate_in_dbh_string()
+        in_diskdf = self.generate_in_diskdf_string()
+        data_directory=self._data_directory(in_dbh,in_diskdf)
+        x.value=self._directory_contains_valid_model(data_directory)      
+        return 0
+
+    def _directory_contains_valid_model(self,data_directory):
+        if os.path.exists(os.path.join( data_directory)) and \
+           os.path.exists(os.path.join( data_directory, 'dbh.dat')) and \
+           os.path.exists(os.path.join( data_directory, 'dbh.finished')) and \
+           os.path.exists(os.path.join( data_directory, 'getfreqs.finished')) and \
+           (os.path.exists(os.path.join( data_directory, 'diskdf.finished')) or not self._generate_disk_flag):
+             return True
         else:
-            os.mkdir(dbh_dir_full_path)
-            gendenspsi_infile = open(os.path.join(dbh_dir_full_path, "in.gendenspsi"), "w")
-            gendenspsi_infile.write("2000 40\n")
-            gendenspsi_infile.close()
-            # for clarity, also store the used input parameters in this directory:
-            dbh_infile = open(os.path.join(dbh_dir_full_path, "in.dbh"), "w")
-            dbh_infile.write(in_dbh)
-            dbh_infile.close()
-            is_new = True
-            return dbh_dir, is_new
+             return False
     
-    def _location_dbh_dat(self, in_dbh):
-        index_filename = os.path.join(self._output_directory, "index.pkl")
-        if os.path.exists(index_filename):
-            index_file = open(index_filename, "rb")
-            dbh_index = pickle.load(index_file)
-            index_file.close()
-            if in_dbh in dbh_index and os.path.exists(os.path.join(self._output_directory, dbh_index[in_dbh])) and os.path.exists(os.path.join(self._output_directory, dbh_index[in_dbh], 'dbh.dat')):
-                dbh_dir, is_new = dbh_index[in_dbh], False
-            else:
-                dbh_dir, is_new = self._new_dbh_dir(in_dbh)
-                dbh_index[in_dbh] = dbh_dir
-                index_file = open(index_filename, "wb")
-                pickle.dump(dbh_index, index_file)
-                index_file.close()
+    def _location_dbh_dat(self, in_dbh,in_diskdf):
+        data_directory=self._data_directory(in_dbh,in_diskdf)
+        
+        if self._directory_contains_valid_model(data_directory):
+            is_new = False
         else:
-            dbh_dir, is_new = self._new_dbh_dir(in_dbh)
-            dbh_index = dict()
-            dbh_index[in_dbh] = dbh_dir
-            index_file = open(index_filename, "wb")
-            pickle.dump(dbh_index, index_file)
-            index_file.close()
-        return os.path.join(self._output_directory, dbh_dir), is_new
+            is_new = True
+            self._new_dbh_dir(data_directory,in_dbh,in_diskdf)
+        return data_directory, is_new
     
     def commit_parameters(self):
         try:
             in_dbh = self.generate_in_dbh_string()
             in_diskdf = self.generate_in_diskdf_string()
-            dbh_dir, is_new = self._location_dbh_dat(in_dbh + in_diskdf)
+            dbh_dir, is_new = self._location_dbh_dat(in_dbh, in_diskdf)
             self._cwd = dbh_dir
             print dbh_dir
             if not is_new:
                 return 0
             print "Writing output to:", self._cwd
             
-            print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path, "dbh")], 
-                cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate(in_dbh))
+            proc=Popen([os.path.join(self._bin_path, "dbh")], 
+                cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
+            stdout,stderr=proc.communicate(in_dbh)
+            print "(stdout, stderr) =", stdout,stderr
+            if proc.returncode==0:
+              open(os.path.join(dbh_dir,"dbh.finished"),'a').close()
             
-            print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path, "getfreqs")], 
-                cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate())
-            
+            proc=Popen([os.path.join(self._bin_path, "getfreqs")], 
+                cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
+            stdout,stderr=proc.communicate()
+            print "(stdout, stderr) =", stdout,stderr
+            if proc.returncode==0:
+              open(os.path.join(dbh_dir,"getfreqs.finished"),'a').close()
+
             if self._generate_disk_flag:
-                print "(stdout, stderr) =", (Popen([os.path.join(self._bin_path, "diskdf")], 
-                    cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate(in_diskdf))
+              proc=Popen([os.path.join(self._bin_path, "diskdf")], 
+                      cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
+              stdout,stderr=proc.communicate(in_diskdf)
+              print "(stdout, stderr) =", stdout,stderr
+              if proc.returncode==0:
+                open(os.path.join(dbh_dir,"diskdf.finished"),'a').close()
+                                
             return 0
         except Exception as ex:
             print "Exception occurred in commit_parameters:", ex
@@ -515,6 +534,15 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         function.must_handle_array = True
         return function
     
+    @legacy_function
+    def model_present():
+        """
+        Return whether a valid galaxy model is present.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('model_present', dtype='bool', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
 
 
 class GalactICs(CommonCode):
