@@ -2,7 +2,7 @@ from amuse.community.galactics.interface import GalactICs, GalactICsInterface
 from amuse.datamodel import ParticlesWithUnitsConverted
 
 def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, do_scale=False, **keyword_arguments):
-    instance = GalactICs(unit_system_converter=unit_system_converter)
+    instance = GalactICs(unit_converter=unit_system_converter)
     instance.parameters.halo_number_of_particles = halo_number_of_particles
     for (key, value) in keyword_arguments.iteritems():
         setattr(instance.parameters, key, value)
