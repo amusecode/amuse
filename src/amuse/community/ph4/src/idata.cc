@@ -39,7 +39,7 @@ void idata::set_ni(int n)
 	ilist = new int[n];
 	inn = new int[n]();
 	pnn = new int[n];
-	lnn = NULL;	// force recomuptation in get_partial_acc_and_jerk()
+	lnn = NULL;		// force recomputation in get_partial_acc_and_jerk()
 	imass = new real[n];
 	iradius = new real[n];
 	itime = new real[n];
@@ -82,9 +82,12 @@ void idata::cleanup()
     const char *in_function = "idata::cleanup";
     if (DEBUG > 2) PRL(in_function);
 
+    if (iid) delete [] iid;
     if (ilist) delete [] ilist;
     if (inn) delete [] inn;
     if (pnn) delete [] pnn;
+    if (imass) delete [] imass;
+    if (iradius) delete [] iradius;
     if (itime) delete [] itime;
     if (itimestep) delete [] itimestep;
     if (ipot) delete [] ipot;
