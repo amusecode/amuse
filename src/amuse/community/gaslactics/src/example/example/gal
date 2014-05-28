@@ -1,0 +1,13 @@
+#! /bin/csh
+set exdir=./src
+$exdir/dbh < in.dbh
+$exdir/getfreqs
+$exdir/diskdf  < in.diskdf
+$exdir/gendisk < in.disk
+$exdir/genhalo < in.halo
+$exdir/genbulge < in.bulge
+#./combine_simple < in.comb3
+#./combine_simple < in.comb2
+#./rsimple < in.rsimple
+#mv diskhalo.new galaxy
+#rm disk bulge halo diskbulge diskhalo

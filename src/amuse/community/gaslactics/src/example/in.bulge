@@ -1,0 +1,6 @@
+0.5        # streaming fraction
+500        # Enter the number of particles
+-123       # Enter negative integer seed
+1          # Center particles (0=no, 1=yes) [1]: 1
+dbh.dat    # Enter harmonics file [dbh.dat]:
+

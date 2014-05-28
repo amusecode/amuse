@@ -1,0 +1,3 @@
+g77 haloinfo.f readharmfile.o halodens.o densrpsi.o erfcen.o pot.o plgndr1.o appdiskpot.o thickdisk.o fixedhalopot.o bessj01.o erfcc.o 
+-L/opt/intel/compiler80/lib/ -lifcore -lcxa -lunwind -lirc -lircmt /opt/intel/compiler80/lib/libircmt.a
+
