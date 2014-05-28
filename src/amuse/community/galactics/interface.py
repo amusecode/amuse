@@ -276,81 +276,61 @@ class GalactICsImplementation(object):
     
     def generate_particles(self):
         try:
-            concatenation_cmd = ["cat"]
             if self._generate_disk_flag:
                 in_disk  = self.generate_in_disk_string()
-                disk_file = open(os.path.join(self._cwd, "disk"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path, "gendisk")], 
-                    cwd = self._cwd, stdin = PIPE, stdout = disk_file, stderr = PIPE).communicate(in_disk))
-                disk_file.close()
-                
-                disk1_file = open(os.path.join(self._cwd, "disk1"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path, "energysort"), "dbh.dat", "disk", "disk"], 
-                    cwd = self._cwd, stdin = PIPE, stdout = disk1_file, stderr = PIPE).communicate())
-                disk1_file.close()
-                if stderr: print stderr; return -1
-                concatenation_cmd.append("disk1")
-            
+                process = Popen([os.path.join(self._bin_path, "gendisk")], 
+                    cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
+                out,err=process.communicate(in_disk)
+                if process.returncode != 0:
+                    print "error:", err
+                    return -2
+                disk_data=numpy.frombuffer(out,dtype="float32")
+            else:
+                disk_data=numpy.array([])    
+
             if self._generate_bulge_flag:
                 in_bulge = self.generate_in_bulge_string()
-                bulge_file = open(os.path.join(self._cwd, "bulge"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path, "genbulge")], 
-                    cwd = self._cwd, stdin = PIPE, stdout = bulge_file, stderr = PIPE).communicate(in_bulge))
-                bulge_file.close()
-                
-                bulge1_file = open(os.path.join(self._cwd, "bulge1"), "wb")
-                stdout, stderr = (Popen([os.path.join(self._bin_path, "energysort"), "dbh.dat", "bulge", "bulge"], 
-                    cwd = self._cwd, stdin = PIPE, stdout = bulge1_file, stderr = PIPE).communicate())
-                bulge1_file.close()
-                if stderr: print stderr; return -1
-                concatenation_cmd.append("bulge1")
-            
+                process = Popen([os.path.join(self._bin_path, "genbulge")], 
+                    cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
+                out,err=process.communicate(in_bulge)
+                if process.returncode != 0:
+                    print "error:", err
+                    return -3 
+                bulge_data=numpy.frombuffer(out,dtype="float32")
+            else:
+                bulge_data=numpy.array([])    
+                            
             if self._generate_halo_flag:
                 in_halo  = self.generate_in_halo_string()
-                halo_file = open(os.path.join(self._cwd, "halo"), "wb")
-                process = Popen(
-                        [os.path.join(self._bin_path, "genhalo")], 
-                        cwd = self._cwd,
-                        stdin = PIPE,
-                        stdout = halo_file,
-                        stderr = PIPE)
-                stdout, stderr = process.communicate(in_halo)
+                process = Popen([os.path.join(self._bin_path, "genhalo")], 
+                    cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
+                out, err = process.communicate(in_halo)
                 if process.returncode != 0:
-                    print "error:", stderr
-                    return -1 
-                halo_file.close()
-                
-                halo1_file = open(os.path.join(self._cwd, "halo1"), "wb")
-                process = Popen(
-                        [os.path.join(self._bin_path, "energysort"), "dbh.dat", "halo", "halo"], 
-                        cwd = self._cwd,
-                        stdin = PIPE,
-                        stdout = halo1_file,
-                        stderr = PIPE)
-                stdout, stderr = process.communicate()
-                if process.returncode != 0:
-                    print "error:", stderr
-                    return -1 
-                halo1_file.close()
-                concatenation_cmd.append("halo1")
+                    print "error:", err
+                    return -4 
+                halo_data=numpy.frombuffer(out,dtype="float32")
+            else:
+                halo_data=numpy.array([])    
             
-            galaxy_file = open(os.path.join(self._cwd, "galaxy"), "wb")
-            stdout, stderr = (Popen(concatenation_cmd, 
-                cwd = self._cwd, stdin = PIPE, stdout = galaxy_file, stderr = PIPE).communicate())
-            galaxy_file.close()
-            if stderr: print stderr; return -1
-            
-            stdout, stderr = Popen([os.path.join(self._bin_path, "toascii"), "galaxy"], 
-                cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE).communicate()
-            if stderr: print stderr; return -1
-            
-            data = stdout.split()
-            self._number_of_particles_updated = int(data[0])
-            self._particle_data = numpy.reshape([float(entry) for entry in data[1:]], (-1, 7))
+            self._number_of_particles_updated = (len(halo_data)+len(bulge_data)+len(disk_data))/7
+            self._number_of_halo_particles=len(halo_data)/7
+            self._number_of_bulge_particles=len(bulge_data)/7
+            self._number_of_disk_particles=len(disk_data)/7
+            data=numpy.concatenate((halo_data,bulge_data,disk_data))              
+            self._particle_data = numpy.reshape(data,( self._number_of_particles_updated,7))
             self._particles_generated = True
             return 0
         except Exception as ex:
             print "Exception occurred in generate_particles:", ex
+            return -1
+    
+    def get_number_of_particles(self,nhalo,nbulge,ndisk):
+        try:
+            nhalo.value=self._number_of_halo_particles
+            nbulge.value=self._number_of_bulge_particles
+            ndisk.value=self._number_of_disk_particles
+            return 0
+        except:
             return -1
     
     def get_mass(self, index_of_the_particle, mass, length):
@@ -497,6 +477,18 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         """
         function = LegacyFunctionSpecification()
         function.addParameter('index', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_number_of_particles():
+        """
+        Return the number of halo/bulge/disk particles of the last generate_particles.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('number_of_halo_particles', dtype='int32', direction=function.OUT)
+        function.addParameter('number_of_bulge_particles', dtype='int32', direction=function.OUT)
+        function.addParameter('number_of_disk_particles', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
@@ -858,15 +850,18 @@ class GalactICs(CommonCode):
         object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
         object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
         object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
-        
+
+        object.add_method('CHANGE_PARAMETERS_RUN', 'model_present')
+        object.add_method('CHANGE_PARAMETERS_EDIT', 'model_present')
+        object.add_method('CHANGE_PARAMETERS_UPDATE','model_present')
+        object.add_method('INITIALIZED','model_present')
+
         object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
         object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
         object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
         object.add_method('RUN', 'before_get_parameter')
         object.add_method('EDIT', 'before_get_parameter')
         object.add_method('UPDATE','before_get_parameter')
-        
-        
         
         object.add_transition('EDIT', 'UPDATE', 'generate_particles', False)
         object.add_transition('UPDATE', 'RUN', 'update_particle_set')
@@ -875,6 +870,7 @@ class GalactICs(CommonCode):
         object.add_method('EDIT', 'get_number_of_particles_updated')
         object.add_method('UPDATE', 'get_number_of_particles_updated')
         object.add_method('RUN', 'get_number_of_particles_updated')
+        object.add_method('RUN', 'get_number_of_particles')
         object.add_method('RUN', 'get_mass')
         object.add_method('RUN', 'get_position')
         object.add_method('RUN', 'get_velocity')
@@ -901,4 +897,17 @@ class GalactICs(CommonCode):
         if len(self.particles):
             self.particles.remove_particles(self.particles)
     
-    
+    @property
+    def halo_particles(self):
+        nhalo,nbulge,ndisk=self.get_number_of_particles()
+        return self.particles[:nhalo]
+
+    @property
+    def bulge_particles(self):
+        nhalo,nbulge,ndisk=self.get_number_of_particles()
+        return self.particles[nhalo:nhalo+nbulge]
+
+    @property
+    def disk_particles(self):
+        nhalo,nbulge,ndisk=self.get_number_of_particles()
+        return self.particles[nhalo+nbulge:]
