@@ -60,7 +60,7 @@ diskdf: diskdf.o diskdf5intez.o diskdensf.o splintd.o splined.o readharmfile.o \
 	fnamidden.o rcirc.o diskdens.o modstamp.o fixedhalopot.o \
 	thickdisk2.o bessj01.o erfcc.o sphericaldf_nfw.o \
 	fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(FC) $(FFLAGS)  $(FLIBS) $(LIBS) -lstdc++ -o $@ $^
+	$(FC) $(FFLAGS)  $(FLIBS) $(LIBS) -lstdc++ -o $@ $^ -lpgplot
 	
 getfreqs: newfreqs.o pot.o appdiskpot.o plgndr1.o erfcen.o thickdisk2.o bessj01.o \
 	erfcc.o fixedhalopot.o\
@@ -86,7 +86,7 @@ plotforce: plotforce.o readharmfile.o readdiskdf.o force.o appdiskforce.o appdis
 	diskdensf.o sigr2.o omekap.o plgndr1.o diskdens.o splined.o splintd.o diskdenspsi.o \
 	pot.o modstamp.o fixedhalopot.o sphericaldf_nfw.o thickdisk2.o bessj01.o \
 	fixedbulgepot.o sphericaldf_hernquist.o erfcc.o alldens.o
-	$(FC) $(FFLAGS) $(FLIBS) $(LIBS)  -o $@ $^
+	$(FC) $(FFLAGS) $(FLIBS) $(LIBS)  -o $@ $^ -lpgplot
 
 testgas: testgas.o ran1.o readharmfile.o pot.o \
 	halodens.o appdiskpot.o plgndr1.o densrpsi.o erfcen.o fixedhalopot.o thickdisk2.o \
