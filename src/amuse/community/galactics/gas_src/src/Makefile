@@ -33,13 +33,13 @@ genhalo: genhalo.o readmassrad.o query.o ran1.o readharmfile.o pot.o \
 	halodens.o appdiskpot.o plgndr1.o densrpsi.o erfcen.o fixedhalopot.o thickdisk2.o \
 	bessj01.o erfcc.o sphericaldf_nfw.o diskdens.o \
 	fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LIBS)
 
 genbulge: genbulge.o readmassrad.o query.o ran1.o readharmfile.o pot.o \
 	bulgedens.o appdiskpot.o plgndr1.o bulgedenspsi.o erfcen.o \
 	fixedhalopot.o thickdisk2.o bessj01.o erfcc.o sphericaldf_nfw.o \
 	bulgedens.o fixedbulgepot.o sphericaldf_hernquist.o diskdens.o alldens.o
-	$(CC) $(CFLAGS)  -o $@ $^ $(LIBS)
+	$(FC) $(FFLAGS)  -o $@ $^ $(LIBS)
 
 gendisk: gendisk.o ran1.o query.o readdiskdf.o golden.o simpson.o diskdf5ez.o \
 	 diskdensf.o readharmfile.o sigr2.o sigz2.o omekap.o diskdens.o \
@@ -47,7 +47,7 @@ gendisk: gendisk.o ran1.o query.o readdiskdf.o golden.o simpson.o diskdf5ez.o \
 	 appdiskpot.o plgndr1.o rcirc.o fixedhalopot.o  \
 	 thickdisk2.o bessj01.o erfcc.o sphericaldf_nfw.o \
 	 fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LIBS)
 
 gengas:  readharmfile.o diskinfo.o thickdisk2.o bessj01.o erfcc.o gasdisk3.o \
 	diskdens.o sphericaldf_nfw.o bessj01.o erfcc.o pot.o force.o \
@@ -73,7 +73,7 @@ getfreqs: newfreqs.o pot.o appdiskpot.o plgndr1.o erfcen.o thickdisk2.o bessj01.
 vcirc: vcirc.o query.o readharmfile.o force.o appdiskforce.o bessj01.o erfcc.o\
 	appdiskpot.o plgndr1.o sphericaldf_nfw.o diskdens.o fixedhalopot.o \
 	thickdisk2.o pot.o fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(CC) $(CFLAGS) $(LIBS) -o $@ $^
+	$(FC) $(FFLAGS) $(LIBS) -o $@ $^
 	
 plothalo: plothalo.o contourden.o readdiskdf.o diskdens.o halodens.o bulgedens.o \
 	bulgedenspsi.o diskdensf.o readharmfile.o sigr2.o densrpsi.o omekap.o pot.o \
