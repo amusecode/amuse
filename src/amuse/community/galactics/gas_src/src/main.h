@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #define GCON 6.349363592e-2 /* (2.0*pi)^(-3/2) */
 

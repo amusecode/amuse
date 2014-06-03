@@ -20,7 +20,7 @@
  *      fprintf(stdout,"%s %g squared = %g\n",a,x*x);
  * }
  */
-
+#include <string.h>
 #include <stdio.h>
 double atof();
 

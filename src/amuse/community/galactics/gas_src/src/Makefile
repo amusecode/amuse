@@ -12,6 +12,8 @@ ALLFILES= dbh genhalo genbulge gendisk diskdf  \
 #FFLAGS = -O -extend_source
 #CFLAGS = -O2 -DRINGASCII -DASCII -DTP
 #LIBS = -lm -lots -lfor
+FFLAGS ?=   -132 -O2   -ip -nofor-main
+FFLAGS2 ?= -O2  -ip 
 
 
 all: $(ALLFILES)

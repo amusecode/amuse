@@ -110,7 +110,7 @@ c now turn forces into circular speeds.
       
       call pgenv(0.,zplot(nzplot),0.,fmax*1.15,0,0)
       call pgline(nzplot+1,zplot(0),fz(0))
-      write(toplbl,'(''z-FORCE AT R='',f5.3,'' kpc'')') rsun
+      write(toplbl,'(''z-FORCE AT R='',f6.3,'' kpc'')') rsun
       call pglabel('z [kpc]','Kz [(km/s)**2 /pc]',toplbl)
       call pgpt(1,1.1,1.9,12)
       call modstamp
