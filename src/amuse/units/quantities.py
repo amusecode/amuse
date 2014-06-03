@@ -812,7 +812,7 @@ class VectorQuantity(Quantity):
             (self.unit * other.unit).to_simple_form()
         )
 
-    def dot(self, other, out=None):
+    def dot(self, other, **kwargs):
         """
         Return the dot product of this vector quantity with the supplied vector (quantity).
 
@@ -823,7 +823,7 @@ class VectorQuantity(Quantity):
         """
         other = to_quantity(other)
         return new_quantity_nonone(
-            numpy.dot(self.number, other.number,out=out),
+            numpy.dot(self.number, other.number, **kwargs),
             (self.unit * other.unit).to_simple_form()
         )
 
