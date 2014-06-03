@@ -145,7 +145,11 @@ namespace dev {
               break;            
           }
           break;             
-      }  
+      } 
+      
+      //Set it to at least 20, to pass the comparison in load_source
+      if(ccMajor > 2) defaultComputeMode = CU_TARGET_COMPUTE_20;
+
    }
 
     const int getDeviceCount() {
@@ -547,10 +551,7 @@ namespace dev {
     }
     
     void load_source(const char *kernel_name, const char *subfolder,
-                     const char *compilerOptions = "",
-                     const int maxrregcount = -1,
-//                      const int architecture = CU_TARGET_COMPUTE_11) {
-                     const int architecture = CU_TARGET_COMPUTE_12) {
+                     const char *compilerOptions = "") {
       
       assert(ContextFlag);
       assert(!ProgramFlag);
@@ -567,33 +568,41 @@ namespace dev {
         
         
         int jitOptionCount = 0;
-        //use JIT compiling to set the max register number
-        if(maxrregcount > 0) {
-          //Set the maximum number of registers option
-          jitOptions[jitOptionCount] = CU_JIT_MAX_REGISTERS;
-          int jitRegCount = maxrregcount;
-          jitOptVals[jitOptionCount] = (void *)jitRegCount;        
-          jitOptionCount++;        
+        
+        if(computeMode < CU_TARGET_COMPUTE_20)
+        {
+          fprintf(stderr,"Sapporo2 requires at least a Fermi or newer NVIDIA architecture.\n");
+          exit(-1);
         }
+        
+        
+        
+        //use JIT compiling to set the max register number
+//         if(maxrregcount > 0) {
+//           //Set the maximum number of registers option
+//           jitOptions[jitOptionCount] = CU_JIT_MAX_REGISTERS;
+//           int jitRegCount = maxrregcount;
+//           jitOptVals[jitOptionCount] = (void *)jitRegCount;        
+//           jitOptionCount++;        
+//         }
         
         //Fermi requires at least compute mode 2, so if device is compute mode 2
         //but the given option is not compute mode 2 (eg constant <= 3) we change 
         //it to compute mode 2.0
         //TODO should make this a bit more strict,usefull
-        int maxArchitecture = architecture;
-        if(architecture <= 3 && computeMode >= 4)
-          maxArchitecture = 4;
+//         int maxArchitecture = architecture;
+//         if(architecture <= 3 && computeMode >= 4)
+//           maxArchitecture = 4;
         
         //Set the architecture
-        {                
+/*        {                
           jitOptions[jitOptionCount] = CU_JIT_TARGET;
-  //         int arch = architecture;
           int arch = maxArchitecture;
           jitOptVals[jitOptionCount] = (void *)arch;        
           jitOptionCount++;  
           
           std::cout << "Using compute mode: " << maxArchitecture << "\tSource file: " << KernelFilename << std::endl;
-        }     
+        } */    
   //         std::cout << "Using compute mode: " << maxArchitecture << std::endl;
         
         std::string ptxSource;
