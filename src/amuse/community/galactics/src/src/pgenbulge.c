@@ -9,6 +9,7 @@ int argc;
 char **argv;
 {
 	int i, j, k, nobj=10000;
+  long long lseed=0;
 	int seed= -123;
 	int nrtrunc;
 	float rtrunc, rtrunc1;
@@ -19,6 +20,7 @@ char **argv;
 	float f0, frand, fmax, psi;
 	float dfbulge_(), bulgedens_(), pot_();
 	float ran1();
+  void ran_seed();
 	float dr, rhomax1;
 	float t, mass;
 	float u1, v1, u1max, v1max;
@@ -71,7 +73,7 @@ char **argv;
 	fscanf(infile,"%d\n",&nobj);
 	fscanf(infile,"%d\n",&seed);
 	fscanf(infile,"%d\n",&icofm);
-	seed = seed*(1+myid);
+//	seed = seed*(1+myid);
 
 	readmassrad(); /* reads in mass and truncation radius of components */
 	readharmfile_(harmfile,&gparam,&cparam,&bparam);
@@ -127,6 +129,8 @@ char **argv;
 	kinetic = potential = 0.;
 
   	fprintf(stderr,"Calculating bulge positions and velocities - seed=%d\n",seed);
+	if(lseed<0) lseed=-lseed;  
+  ran_seed(lseed + ((long long) nobj) * myid);    
 	for(i=0; i<nobj;) {
 restart:
 	  u1 = u1max*ran1(&seed);
@@ -188,7 +192,7 @@ restart:
 	  r[i].vx = (float)vx;
 	  r[i].vy = (float)vy;
 	  r[i].vz = (float)vz;
-	  i++;
+	  i++;ran_seed(lseed + i + ((long long) nobj) * myid);    
 	  if( i % 1000 == 0 ) fprintf(stderr,".");
 	}
 	fprintf(stderr,"\n");

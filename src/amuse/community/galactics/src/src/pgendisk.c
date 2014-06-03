@@ -11,6 +11,7 @@ int argc;
 char **argv;
 {
 	int i, j, k, nobj=10000;
+  long long lseed=0;
 	int seed= -123;
 	int icofm=1;
 	int nrtrunc;
@@ -23,6 +24,7 @@ char **argv;
 	float fr;
 	float Fdisk();
 	float ran1();
+  void ran_seed();
 	float invu();
 	float dr, rhomax1;
 	float t, mass;
@@ -78,18 +80,18 @@ char **argv;
 	strcpy(harmfile,"dbh.dat");
 #ifdef never
 	iquery("Enter the number of particles",&nobj);
-	iquery("Enter negative integer seed",&seed);
+	llquery("Enter negative integer seed",&lseed);
 	iquery("Center the simulation (0=no,1=yes)",&icofm);
 	cquery("Enter harmonics file",harmfile);
 #endif
 
 	fscanf(infile,"%d\n",&nobj);
-	fscanf(infile,"%d\n",&seed);
+	fscanf(infile,"%lld\n",&lseed);
 	fscanf(infile,"%d\n",&icofm);
 /*
 	fscanf(infile,"%s\n",harmfile);
 */
-	seed = seed*(1+myid); /* different random seed for each process */
+//	seed = seed*(1+myid); /* different random seed for each process */
 
 	r = (phase *) calloc(nobj,sizeof(phase));
 
@@ -123,7 +125,9 @@ char **argv;
 
 	kinetic = potential = 0.;
 
-	fprintf(stderr,"Calculating disk positions and velocities - seed=%d\n",seed);
+	fprintf(stderr,"Calculating disk positions and velocities - seed=%lld\n",lseed);
+	if(lseed<0) lseed=-lseed;
+  ran_seed(lseed + ((long long) nobj) * myid);    
 	for(i=0, j=0, k=0; i<nobj;) {
 	  fmax = -1.;
 	  while (fmax <= 0.) {
@@ -200,7 +204,7 @@ char **argv;
 	  r[i].vx = (float)vx;
 	  r[i].vy = (float)vy;
 	  r[i].vz = (float)vz;
-	  i++;
+	  i++;ran_seed(lseed + i + ((long long) nobj) * myid);    
 	  if( i % 1000 == 0 ) {
 	    fprintf(stderr,".");
 	    fflush(stderr);

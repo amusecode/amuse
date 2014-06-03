@@ -31,10 +31,11 @@ class NewGalactICsModelTests(TestWithMPI):
     
     def slowtest3(self):
         print "Generate a model for M31, using defaults (100k disk, 50k bulge, 200k halo) - Nbody units"
-        halo_number_of_particles = 200000
-        particles = new_galactics_model(halo_number_of_particles, do_scale = True)
+        halo_number_of_particles = 20000
+        particles = new_galactics_model(halo_number_of_particles, do_scale = True, 
+          bulge_number_of_particles=5000, disk_number_of_particles=10000)
         
-        self.assertEquals(len(particles), 350000)
+        self.assertEquals(len(particles), 35000)
         self.assertAlmostEquals(particles.total_mass(), 1.0 | nbody_system.mass)
         self.assertAlmostEquals(particles.kinetic_energy(), 0.25 | nbody_system.energy)
         
@@ -53,8 +54,10 @@ class NewGalactICsModelTests(TestWithMPI):
         
         disk = particles[:10000]
         self.assertAlmostRelativeEquals(disk.total_mass(), 2.156e10 | units.MSun, 3)
-        self.assertAlmostRelativeEquals(disk.position.lengths_squared().amax().sqrt(), 15.5675526285 | units.kpc, 5)
-        self.assertAlmostRelativeEquals(disk.position.std(axis=0), [3.64746422018, 3.62743124932, 0.171638441317] | units.kpc, 5)
+        self.assertAlmostRelativeEquals(disk.position.lengths_squared().amax().sqrt().in_(units.kpc),
+                                                 15.584 | units.kpc, 3)
+                              
+        self.assertAlmostRelativeEquals(disk.position.std(axis=0).in_(units.kpc), [3.5934, 3.6768, 0.17078] | units.kpc, 3)
         
         write_set_to_file(particles, os.path.join(get_path_to_results(), 'disk_galactICs.amuse'), 'amuse')
     

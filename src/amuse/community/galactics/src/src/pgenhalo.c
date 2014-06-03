@@ -8,6 +8,7 @@ int argc;
 char **argv;
 {
 	int i, j, k, nobj=10000;
+  long long lseed=0;
 	int seed= -123;
 	int nrtrunc;
 	float rtrunc;
@@ -18,6 +19,7 @@ char **argv;
 	float f0, frand, fmax, psi;
 	float fr, fz;
 	float dfhalo_(), halodens_(), pot_();
+  void ran_seed();
 	float ran1();
 	float dr, rhomax1;
 	float t, mass;
@@ -63,14 +65,14 @@ char **argv;
 #ifdef never
 	fquery("Enter streaming fraction",&stream);
 	iquery("Enter the number of particles",&nobj);
-	iquery("Enter negative integer seed",&seed);
+	llquery("Enter negative integer seed",&lseed);
 	iquery("Center particles (0=no, 1=yes)",&icofm);
 #endif
 	fscanf(infile,"%f\n",&stream);
 	fscanf(infile,"%d\n",&nobj);
-	fscanf(infile,"%d\n",&seed);
+	fscanf(infile,"%lld\n",&lseed);
 	fscanf(infile,"%d\n",&icofm);
-	seed = seed*(1+myid);
+//	seed = seed*(1+myid);
 
 	readmassrad(); /* reads in mass and truncation radius of components */
 	readharmfile_(harmfile,&gparam,&cparam,&bparam);
@@ -124,7 +126,9 @@ char **argv;
 
 	kinetic = potential = 0.;
 
-  	fprintf(stderr,"Calculating halo positions and velocities seed=%d\n",seed);
+  	fprintf(stderr,"Calculating halo positions and velocities seed=%lld\n",lseed);
+	if(lseed<0) lseed=-lseed;  
+  ran_seed(lseed + ((long long) nobj) * myid);    
 	for(i=0; i<nobj;) {
 restart:
 	  u1 = u1max*ran1(&seed);
@@ -186,7 +190,7 @@ restart:
 	  r[i].vx = (float)vx;
 	  r[i].vy = (float)vy;
 	  r[i].vz = (float)vz;
-	  i++;
+	  i++; ran_seed(lseed + i + ((long long) nobj) * myid);    
 	  if( i % 1000 == 0 ) fprintf(stderr,".");
 	}
 	fprintf(stderr,"\n");

@@ -316,7 +316,7 @@ class GalactICsImplementation(object):
             self._number_of_halo_particles=len(halo_data)/7
             self._number_of_bulge_particles=len(bulge_data)/7
             self._number_of_disk_particles=len(disk_data)/7
-            data=numpy.concatenate((halo_data,bulge_data,disk_data))              
+            data=numpy.concatenate((disk_data,bulge_data,halo_data))              
             self._particle_data = numpy.reshape(data,( self._number_of_particles_updated,7))
             self._particles_generated = True
             return 0
@@ -900,14 +900,14 @@ class GalactICs(CommonCode):
     @property
     def halo_particles(self):
         nhalo,nbulge,ndisk=self.get_number_of_particles()
-        return self.particles[:nhalo]
+        return self.particles[ndisk+nbulge:]
 
     @property
     def bulge_particles(self):
         nhalo,nbulge,ndisk=self.get_number_of_particles()
-        return self.particles[nhalo:nhalo+nbulge]
+        return self.particles[ndisk:ndisk+nbulge]
 
     @property
     def disk_particles(self):
         nhalo,nbulge,ndisk=self.get_number_of_particles()
-        return self.particles[nhalo+nbulge:]
+        return self.particles[:ndisk]

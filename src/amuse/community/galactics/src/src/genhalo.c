@@ -5,6 +5,7 @@ int argc;
 char **argv;
 {
 	int i, j, k, nobj=10000;
+  long long lseed=0;
 	int seed= -123;
 	int nrtrunc;
 	float rtrunc;
@@ -16,6 +17,7 @@ char **argv;
 	float fr, fz;
 	float dfhalo_(), halodens_(), pot_();
 	float ran1();
+  void ran_seed();
 	float dr, rhomax1;
 	float t, mass;
 	float u1, v1, u1max, v1max;
@@ -37,7 +39,7 @@ char **argv;
 	strcpy(harmfile,"dbh.dat");
 	fquery("Enter streaming fraction",&stream);
 	iquery("Enter the number of particles",&nobj);
-	iquery("Enter negative integer seed",&seed);
+	llquery("Enter negative integer seed",&lseed);
 	iquery("Center particles (0=no, 1=yes)",&icofm);
 	readmassrad(); /* reads in mass and truncation radius of components */
 	readharmfile_(harmfile,&gparam,&cparam,&bparam);
@@ -92,7 +94,9 @@ char **argv;
 	kinetic = potential = 0.;
 
   	fprintf(stderr,"Calculating halo positions and velocities\n");
-	for(i=0; i<nobj;) {
+	if(lseed<0) lseed=-lseed;
+  ran_seed(lseed);
+  for(i=0; i<nobj;) {
 restart:
 	  u1 = u1max*ran1(&seed);
 	  v1 = 2.0*v1max*(ran1(&seed) - 0.5);
@@ -153,7 +157,7 @@ restart:
 	  r[i].vx = (float)vx;
 	  r[i].vy = (float)vy;
 	  r[i].vz = (float)vz;
-	  i++;
+	  i++;ran_seed(lseed + i);
 	  if( i % 1000 == 0 ) fprintf(stderr,".");
 	}
 	fprintf(stderr,"\n");
