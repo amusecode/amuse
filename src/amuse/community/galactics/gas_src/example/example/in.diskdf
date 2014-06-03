@@ -1,4 +1,0 @@
-1. 4.     #central radial vel dispersion (in vzdisp), scale length of sig_r^2
-200       #number of intervals for correction functions
-12        #number of iterations
-diskdf.ps/ps

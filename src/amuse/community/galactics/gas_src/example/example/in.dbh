@@ -1,9 +1,0 @@
-3                   #yes we want a halo -28. 2.5 1 0.0 4.     #psi0, v0, q, (rc/rk)^2, ra 
-13.7 40. .01
-1                    #yes we want a disk 
-50. 3. 13 .6 1.       #Disk mass, scale length, radius, scale height and trunc. width?
-3                    #yes we want a bulge  
-.8 7. 5.5            #density, cutoff potential, veldisp
-0.025 20000           #delta_r, nr
-12                   #number of harmonics (even number)
-dbh.ps/ps
