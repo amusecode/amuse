@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 extern float diskmass, diskedge;
 extern float bulgemass, bulgeedge;

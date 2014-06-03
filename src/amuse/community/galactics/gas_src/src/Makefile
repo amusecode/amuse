@@ -3,7 +3,13 @@
 .f.o:
 	$(FC) $(FFLAGS) -c $*.f
 
-FLIBS = -L/usr/X11/lib/ -lX11 -L${PGPLOT_DIR} -lpgplot 
+PGSTUB ?= 0
+
+ifeq ($(PGSTUB),0)
+PGPLOTLIBS=-L/usr/X11/lib/ -lX11 -L${PGPLOT_DIR} -lpgplot 
+else
+PGPLOTLIBS=pgstub.o
+endif
 
 
 ALLFILES= dbh genhalo genbulge gendisk diskdf  \
@@ -15,8 +21,7 @@ ALLFILES= dbh genhalo genbulge gendisk diskdf  \
 FFLAGS ?=   -132 -O2   -ip -nofor-main
 FFLAGS2 ?= -O2  -ip 
 
-
-all: $(ALLFILES)
+all: pgstub.o $(ALLFILES)
 
 %.o: %.f90
 	$(FC) $(FFLAGS2) -g -c -o $@ $< 
@@ -29,7 +34,7 @@ dbh: dbh.o dbhplot.o polardens.o bulgepotential.o totdens.o halopotential.o \
 	polarbulgedens.o polarhalodens.o appdiskdens.o halodens.o erfcen.o \
 	modstamp.o fixedhalopot.o sphericaldf_nfw.o bessj01.o  \
 	erfcc.o bulgedens.o fixedbulgepot.o sphericaldf_hernquist.o alldens.o	
-	$(FC) $(FFLAGS)  -o $@ $^ $(FLIBS) $(LIBS)
+	$(FC) $(FFLAGS)  -o $@ $^ $(LIBS) $(PGPLOTLIBS)
 
 genhalo: genhalo.o readmassrad.o query.o ran1.o readharmfile.o pot.o \
 	halodens.o appdiskpot.o plgndr1.o densrpsi.o erfcen.o fixedhalopot.o thickdisk2.o \
@@ -62,12 +67,12 @@ diskdf: diskdf.o diskdf5intez.o diskdensf.o splintd.o splined.o readharmfile.o \
 	fnamidden.o rcirc.o diskdens.o modstamp.o fixedhalopot.o \
 	thickdisk2.o bessj01.o erfcc.o sphericaldf_nfw.o \
 	fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(FC) $(FFLAGS)  $(FLIBS) $(LIBS) -lstdc++ -o $@ $^ -lpgplot
+	$(FC) $(FFLAGS) $(LIBS) -lstdc++ -o $@ $^   $(PGPLOTLIBS)
 	
 getfreqs: newfreqs.o pot.o appdiskpot.o plgndr1.o erfcen.o thickdisk2.o bessj01.o \
 	erfcc.o fixedhalopot.o\
 	fixedbulgepot.o
-	$(FC) $(FFLAGS)  $(FLIBS) $(LIBS) -o $@ $^
+	$(FC) $(FFLAGS) $(LIBS) -o $@ $^
 
 #tobinary: tobinary.o
 #	$(FC) $(CFLAGS) $(LIBS) -o $@ $^
@@ -82,13 +87,13 @@ plothalo: plothalo.o contourden.o readdiskdf.o diskdens.o halodens.o bulgedens.o
 	splined.o appdiskpot.o splintd.o diskdenspsi.o erfcen.o plgndr1.o  modstamp.o \
 	thickdisk2.o sphericaldf_nfw.o fixedhalopot.o bessj01.o erfcc.o \
 	bulgedens.o fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(FC) $(FFLAGS2) -o $@ $^ $(FLIBS) $(LIBS)
+	$(FC) $(FFLAGS2) -o $@ $^ $(LIBS) $(PGPLOTLIBS)
 
 plotforce: plotforce.o readharmfile.o readdiskdf.o force.o appdiskforce.o appdiskpot.o \
 	diskdensf.o sigr2.o omekap.o plgndr1.o diskdens.o splined.o splintd.o diskdenspsi.o \
 	pot.o modstamp.o fixedhalopot.o sphericaldf_nfw.o thickdisk2.o bessj01.o \
 	fixedbulgepot.o sphericaldf_hernquist.o erfcc.o alldens.o
-	$(FC) $(FFLAGS) $(FLIBS) $(LIBS)  -o $@ $^ -lpgplot
+	$(FC) $(FFLAGS) $(LIBS)  -o $@ $^ $(PGPLOTLIBS)
 
 testgas: testgas.o ran1.o readharmfile.o pot.o \
 	halodens.o appdiskpot.o plgndr1.o densrpsi.o erfcen.o fixedhalopot.o thickdisk2.o \
