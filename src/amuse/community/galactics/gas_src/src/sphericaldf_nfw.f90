@@ -168,8 +168,8 @@ module sphericaldfMod
    extdens(i)=int_theta(densfunc,r(i))
   enddo
 
-  cmass(0.)=0.
-  cmass(1.)=4/3.*Pi*r(1)**3*dens(0)
+  cmass(0)=0.
+  cmass(1)=4/3.*Pi*r(1)**3*dens(0)
   do i=2,ngrid
    cmass(i)=cmass(i-1)+4*Pi*(r(i)-r(i-1))*(r(i)**2*dens(i)+r(i-1)**2*dens(i-1))/2.
   enddo

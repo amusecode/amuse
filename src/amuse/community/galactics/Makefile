@@ -45,7 +45,7 @@ $(EXES): Makefile
 
 $(GASEXES): Makefile 
 	echo $(findstring xlf, $(notdir $(FORTRAN)))
-	make -C gas_src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" F77FLAGS="$(F77FLAGS)" PGSTUB=1
+	make -C gas_src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" FFLAGS2="$(FCFLAGS)" F77FLAGS="$(F77FLAGS)" PGSTUB=1
 	make -C gas_src/src install
 
 
