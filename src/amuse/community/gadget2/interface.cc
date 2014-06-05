@@ -349,17 +349,19 @@ int commit_particles(){
 #endif
     }
 
-    ngb_treeallocate(MAX_NGB);
-    if((All.MaxPart < 1000) && (All.TreeAllocFactor <= 1.0)){
+    if((All.MaxPart < 1000)){
         if (ThisTask == 0){
             cout << "Gadget takes "<< All.PartAllocFactor  << " times the number of particles on a processors as a maximum."<<endl;
             cout << "For large numbers of particles some room is always available for storing nodes from other processors." << endl;
             cout << "For smaller numbers, this assumption is incorrect."<<endl;
             cout << "Changed allocation of tree to include more nodes."<<endl;
         }
-        All.TreeAllocFactor = 6000 / All.MaxPart;
-        force_treeallocate(All.TreeAllocFactor * 10*All.MaxPart, 10*All.MaxPart);
+        //All.MaxPart = MAXTOPNODES;
+        All.TreeAllocFactor = 4000.0 / All.MaxPart;
+        ngb_treeallocate(MAX_NGB);
+        force_treeallocate(10 * All.TreeAllocFactor * All.MaxPart, 10 * All.MaxPart);
     } else {
+        ngb_treeallocate(MAX_NGB);
         force_treeallocate(All.TreeAllocFactor * All.MaxPart, All.MaxPart);
     }
     
