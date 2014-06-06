@@ -1,6 +1,7 @@
 function rnd()
  integer dummmy
- real*4 rnd
+ real*4 rnd,ran1
+ external ran1
  rnd=ran1(dummy)
 end function
 
@@ -41,7 +42,7 @@ program gas
  real*8 m8,x8(3),v8(3)
  character*60 filename
  integer*8 iseed,itmp
- integer*8,parameter :: skip=10
+ integer*8,parameter :: skip=100
 
  print*,'ngas, nr?'
  read*, ngas,nrs
@@ -102,7 +103,7 @@ print*,'pmass:',m
   rpart=getrad(rnd())
   fipart=2*pi*(mod(i-1,nfis)+rnd())/nfis
   zpart=getz(rpart,rnd())
- 
+
   x(1)=rpart*cos(fipart)
   x(2)=rpart*sin(fipart)
   x(3)=zpart
@@ -121,7 +122,7 @@ print*,'pmass:',m
   v(1)=v(1)+vdisp*nrnd()
   v(2)=v(2)+vdisp*nrnd()
   v(3)=v(3)+vdisp*nrnd()
- 
+
   m8=m
   x8=x
   v8=v
