@@ -1,5 +1,8 @@
 #include "main.h"
 
+// random skip factor, must be larger than the number of random draws per particle
+#define SKIP  100000
+
 main(argc,argv)
 int argc;
 char **argv;
@@ -95,7 +98,7 @@ char **argv;
 
   	fprintf(stderr,"Calculating halo positions and velocities\n");
 	if(lseed<0) lseed=-lseed;
-  ran_seed(lseed);
+  ran_seed(SKIP*lseed);
   for(i=0; i<nobj;) {
 restart:
 	  u1 = u1max*ran1(&seed);
@@ -157,7 +160,7 @@ restart:
 	  r[i].vx = (float)vx;
 	  r[i].vy = (float)vy;
 	  r[i].vz = (float)vz;
-	  i++;ran_seed(lseed + i);
+	  i++;ran_seed(SKIP*(lseed + i));
 	  if( i % 1000 == 0 ) fprintf(stderr,".");
 	}
 	fprintf(stderr,"\n");

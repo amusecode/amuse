@@ -21,6 +21,8 @@ ALLFILES= dbh genhalo genbulge gendisk diskdf  \
 FFLAGS ?=   -132 -O2   -ip -nofor-main
 FFLAGS2 ?= -O2  -ip 
 
+GENLIBS=-lstdc++
+
 all: pgstub.o $(ALLFILES)
 
 %.o: %.f90
@@ -36,31 +38,31 @@ dbh: dbh.o dbhplot.o polardens.o bulgepotential.o totdens.o halopotential.o \
 	erfcc.o bulgedens.o fixedbulgepot.o sphericaldf_hernquist.o alldens.o	
 	$(FC) $(FFLAGS)  -o $@ $^ $(LIBS) $(PGPLOTLIBS)
 
-genhalo: genhalo.o readmassrad.o query.o ran1.o readharmfile.o pot.o \
+genhalo: genhalo.o readmassrad.o query.o ran1.o prng_engine_wrapper.o readharmfile.o pot.o \
 	halodens.o appdiskpot.o plgndr1.o densrpsi.o erfcen.o fixedhalopot.o thickdisk2.o \
 	bessj01.o erfcc.o sphericaldf_nfw.o diskdens.o \
 	fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(FC) $(FFLAGS) -o $@ $^ $(LIBS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LIBS) $(GENLIBS)
 
-genbulge: genbulge.o readmassrad.o query.o ran1.o readharmfile.o pot.o \
+genbulge: genbulge.o readmassrad.o query.o ran1.o  prng_engine_wrapper.o readharmfile.o pot.o \
 	bulgedens.o appdiskpot.o plgndr1.o bulgedenspsi.o erfcen.o \
 	fixedhalopot.o thickdisk2.o bessj01.o erfcc.o sphericaldf_nfw.o \
 	bulgedens.o fixedbulgepot.o sphericaldf_hernquist.o diskdens.o alldens.o
-	$(FC) $(FFLAGS)  -o $@ $^ $(LIBS)
+	$(FC) $(FFLAGS)  -o $@ $^ $(LIBS) $(GENLIBS)
 
-gendisk: gendisk.o ran1.o query.o readdiskdf.o golden.o simpson.o diskdf5ez.o \
+gendisk: gendisk.o ran1.o prng_engine_wrapper.o query.o readdiskdf.o golden.o simpson.o diskdf5ez.o \
 	 diskdensf.o readharmfile.o sigr2.o sigz2.o omekap.o diskdens.o \
 	 splined.o splintd.o diskdf3ez.o diskdenspsi.o pot.o fnamidden.o \
 	 appdiskpot.o plgndr1.o rcirc.o fixedhalopot.o  \
 	 thickdisk2.o bessj01.o erfcc.o sphericaldf_nfw.o \
 	 fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(FC) $(FFLAGS) -o $@ $^ $(LIBS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LIBS) $(GENLIBS)
 
 gengas:  readharmfile.o diskinfo.o thickdisk2.o bessj01.o erfcc.o gasdisk3.o \
 	diskdens.o sphericaldf_nfw.o bessj01.o erfcc.o pot.o force.o \
 	fixedhalopot.o appdiskpot.o plgndr1.o appdiskforce.o \
-	fixedbulgepot.o sphericaldf_hernquist.o alldens.o
-	$(FC) $(FFLAGS)  -o $@ $^ $(LIBS)
+	fixedbulgepot.o sphericaldf_hernquist.o alldens.o prng_engine_wrapper.o
+	$(FC) $(FFLAGS)  -o $@ $^ $(LIBS) $(GENLIBS)
 
 diskdf: diskdf.o diskdf5intez.o diskdensf.o splintd.o splined.o readharmfile.o \
 	sigr2.o sigz2.o omekap.o pot.o diskdf3intez.o appdiskpot.o plgndr1.o \
@@ -95,7 +97,7 @@ plotforce: plotforce.o readharmfile.o readdiskdf.o force.o appdiskforce.o appdis
 	fixedbulgepot.o sphericaldf_hernquist.o erfcc.o alldens.o
 	$(FC) $(FFLAGS) $(LIBS)  -o $@ $^ $(PGPLOTLIBS)
 
-testgas: testgas.o ran1.o readharmfile.o pot.o \
+testgas: testgas.o ran1.o prng_engine_wrapper.o readharmfile.o pot.o \
 	halodens.o appdiskpot.o plgndr1.o densrpsi.o erfcen.o fixedhalopot.o thickdisk2.o \
 	bessj01.o erfcc.o sphericaldf_nfw.o diskdens.o \
 	fixedbulgepot.o sphericaldf_hernquist.o alldens.o

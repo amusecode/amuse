@@ -1,10 +1,14 @@
 #include "main.h"
 
+// random skip factor, must be larger than the number of random draws per particle
+#define SKIP  100000
+
 main(argc,argv)
 int argc;
 char **argv;
 {
         int i, j, k, nobj=10000;
+        long long lseed=0;
         int seed= -123;
         int icofm=1;
         float q=0.9, rtrunc=5.0;
@@ -15,6 +19,7 @@ char **argv;
         float f0, frand, fmax, psi;
         float Fbulge();
         float ran1();
+        void ran_seed();
         float t, mass;
         float dr;
         float u1, v1, u1max, v1max;
@@ -32,7 +37,7 @@ char **argv;
         (void) strcpy(harmfile,"dbh.dat");
     fquery("Enter streaming fraction",&stream);
         iquery("Enter the number of particles",&nobj);
-        iquery("Enter negative integer seed",&seed);
+      	llquery("Enter negative integer seed",&lseed);
     iquery("Center particles (0=no, 1=yes)",&icofm);
         cquery("Enter harmonics file",harmfile);
 
@@ -72,6 +77,8 @@ char **argv;
         rhomin = 1.0e-10*rhomax;  /* define density contour cutoff */
 
         fprintf(stderr,"Calculating bulge particles positions and velocities\n");
+        if(lseed<0) lseed=-lseed;
+        ran_seed(SKIP*lseed);
         for(i=0; i<nobj;) {
 
                 u1 = u1max*ran1(&seed);
@@ -132,7 +139,7 @@ char **argv;
                 r[i].vx = (float)vx;
                 r[i].vy = (float)vy;
                 r[i].vz = (float)vz;
-                i++;
+                i++;ran_seed(SKIP*(lseed + i));
                 if( i % 1000 == 0 ) fprintf(stderr,".");
         }
         fprintf(stderr,"\n");

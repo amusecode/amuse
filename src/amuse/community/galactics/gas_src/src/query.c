@@ -97,3 +97,18 @@ char prompt[100];
 		*i = atoi(line);
 	}
 }
+
+llquery(prompt,i)
+long long *i;
+char prompt[100];
+{
+	char line[100], newprompt[200];
+	strcpy(newprompt,prompt);
+	strcat(newprompt," [%lld]: ");
+	fprintf(stderr,newprompt,*i);
+	fgets(line,100,stdin);
+	if(*line != '\n')
+	{
+		sscanf(line,"%lld",i);
+	}
+}

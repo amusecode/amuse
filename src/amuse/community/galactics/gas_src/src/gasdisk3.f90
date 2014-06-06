@@ -1,6 +1,7 @@
 function rnd()
- real rnd
- call random_number(rnd)
+ integer dummmy
+ real*4 rnd
+ rnd=ran1(dummy)
 end function
 
 function nrnd()
@@ -39,6 +40,8 @@ program gas
  real m,x(3),v(3),fr,fz,phi
  real*8 m8,x8(3),v8(3)
  character*60 filename
+ integer*8 iseed,itmp
+ integer*8,parameter :: skip=10
 
  print*,'ngas, nr?'
  read*, ngas,nrs
@@ -46,6 +49,8 @@ program gas
  read*, vdisp
  print*,' csound?'
  read*, vdispt
+ print*,' random seed?'
+ read*, iseed
  
  filename='dbh.dat'
  call readharmfile(filename,ibuf)
@@ -90,6 +95,8 @@ program gas
 m=mass/ngas
 print*,'pmass:',m  
  do i=1,ngas
+   itmp=(iseed+i)*skip
+   call ran_seed(itmp)
 !  bin=(i-1)/nfis+1
 !  rpart=sqrt(rnd()*(crad(bin)**2-crad(bin-1)**2)+crad(bin-1)**2)
   rpart=getrad(rnd())

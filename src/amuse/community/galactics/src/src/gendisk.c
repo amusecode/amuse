@@ -1,5 +1,8 @@
 #include "main.h"
 
+// random skip factor, must be larger than the number of random draws per particle
+#define SKIP  100000
+
 float rad;
 float Rc, zc;
 
@@ -93,7 +96,7 @@ char **argv;
 
 	fprintf(stderr,"Calculating disk positions and velocities seed=%d\n",seed);
 	if(lseed<0) lseed=-lseed;
-  ran_seed(lseed);
+  ran_seed(SKIP*lseed);
   for(i=0, j=0, k=0; i<nobj;) {
     fmax = -1.;
 	  while (fmax <= 0.) {
@@ -168,7 +171,7 @@ char **argv;
 	  r[i].vx = (float)vx;
 	  r[i].vy = (float)vy;
 	  r[i].vz = (float)vz;
-	  i++;ran_seed(lseed + i);
+	  i++;ran_seed(SKIP*(lseed + i));
 	  if( i % 1000 == 0 ) {
 	    fprintf(stderr,".");
 	    fflush(stderr);

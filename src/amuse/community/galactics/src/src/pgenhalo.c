@@ -3,6 +3,9 @@
 #include <mpi.h>
 #endif
 
+// random skip factor, must be larger than the number of random draws per particle
+#define SKIP  100000
+
 main(argc,argv)
 int argc;
 char **argv;
@@ -128,7 +131,7 @@ char **argv;
 
   	fprintf(stderr,"Calculating halo positions and velocities seed=%lld\n",lseed);
 	if(lseed<0) lseed=-lseed;  
-  ran_seed(lseed + ((long long) nobj) * myid);    
+  ran_seed(SKIP*(lseed + ((long long) nobj) * myid));    
 	for(i=0; i<nobj;) {
 restart:
 	  u1 = u1max*ran1(&seed);
@@ -190,7 +193,7 @@ restart:
 	  r[i].vx = (float)vx;
 	  r[i].vy = (float)vy;
 	  r[i].vz = (float)vz;
-	  i++; ran_seed(lseed + i + ((long long) nobj) * myid);    
+	  i++; ran_seed(SKIP*(lseed + i + ((long long) nobj) * myid));    
 	  if( i % 1000 == 0 ) fprintf(stderr,".");
 	}
 	fprintf(stderr,"\n");

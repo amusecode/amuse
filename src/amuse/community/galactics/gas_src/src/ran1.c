@@ -1,3 +1,9 @@
+
+void ran_seed(long long i);
+float ran1(int *idum);
+
+#if 0
+
 #define IA 16807
 #define IM 2147483647
 #define AM (1.0/IM)
@@ -46,3 +52,5 @@ int *idum;
 #undef NDIV
 #undef EPS
 #undef RNMX
+
+#endif

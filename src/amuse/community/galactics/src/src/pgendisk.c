@@ -3,6 +3,9 @@
 #include <mpi.h>
 #endif
 
+// random skip factor, must be larger than the number of random draws per particle
+#define SKIP  100000
+
 float rad;
 float Rc, zc;
 
@@ -127,7 +130,7 @@ char **argv;
 
 	fprintf(stderr,"Calculating disk positions and velocities - seed=%lld\n",lseed);
 	if(lseed<0) lseed=-lseed;
-  ran_seed(lseed + ((long long) nobj) * myid);    
+  ran_seed(SKIP*(lseed + ((long long) nobj) * myid));    
 	for(i=0, j=0, k=0; i<nobj;) {
 	  fmax = -1.;
 	  while (fmax <= 0.) {
@@ -204,7 +207,7 @@ char **argv;
 	  r[i].vx = (float)vx;
 	  r[i].vy = (float)vy;
 	  r[i].vz = (float)vz;
-	  i++;ran_seed(lseed + i + ((long long) nobj) * myid);    
+	  i++;ran_seed(SKIP*(lseed + i + ((long long) nobj) * myid));    
 	  if( i % 1000 == 0 ) {
 	    fprintf(stderr,".");
 	    fflush(stderr);

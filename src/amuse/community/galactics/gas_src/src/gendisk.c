@@ -1,5 +1,8 @@
 #include "main.h"
 
+// random skip factor, must be larger than the number of random draws per particle
+#define SKIP  100000
+
 float rad;
 float Rc, zc;
 
@@ -9,6 +12,7 @@ char **argv;
 {
         int i, j, k, nobj=10000;
         int seed= -123;
+        long long lseed=0;
         int icofm=1;
         float q=0.9, rtrunc=5.0;
         float rhoran, massapp;
@@ -18,6 +22,7 @@ char **argv;
         float f0, frand, fmax, fmax1, vphimax1, psi, fnorm;
         float Fdisk();
         float ran1();
+        void ran_seed();
         float invu();
         float dr, rhomax1;
         float t, mass;
@@ -43,7 +48,7 @@ char **argv;
         strcpy(harmfile,"dbh.dat");
         iquery("Enter the number of particles",&nobj);
 /*        fquery("Enter distribution broadening constant",&broadcon); */
-        iquery("Enter negative integer seed",&seed);
+      	llquery("Enter negative integer seed",&lseed);
         iquery("Center the simulation (0=no,1=yes)",&icofm);
         cquery("Enter harmonics file",harmfile);
 
@@ -75,6 +80,8 @@ char **argv;
         rhomax *=1.2;
 
         fprintf(stderr,"Calculating disk positions and velocities\n");
+        if(lseed<0) lseed=-lseed;
+        ran_seed(SKIP*lseed);
         for(i=0, j=0, k=0; i<nobj;) {
 
                 u1 = -ran1(&seed);
@@ -171,7 +178,7 @@ char **argv;
                 r[i].vx = (float)vx;
                 r[i].vy = (float)vy;
                 r[i].vz = (float)vz;
-                i++;
+                i++; ran_seed(SKIP*(lseed+i));
                 if( i % 1000 == 0 ) {
                         fprintf(stderr,".");
                         fflush(stderr);
