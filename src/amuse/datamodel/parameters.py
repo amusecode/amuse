@@ -548,6 +548,35 @@ class Parameter(object):
         return self.definition.get_value(self, self.parameter_set._instance())
     
     
+class ModuleVectorMethodParameterDefinition(ModuleMethodParameterDefinition):
+    
+    def get_value(self, parameter, object):
+        if self.must_set_before_get and not parameter.is_set:
+            self.set_default_value(parameter, object)
+        
+        if self.get_method is None:
+            return self.stored_value
+        else:
+            list_of_scalars = getattr(object, self.get_method)()
+            result = quantities.AdaptingVectorQuantity()
+            result.extend(list_of_scalars)
+            return result.copy()
+            
+            
+    def set_value(self, parameter, object, vector_quantity):
+        if self.set_method is None:
+            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+        
+        getattr(object, self.set_method)(*vector_quantity)
+        
+        if self.get_method is None:
+            self.stored_value = vector_quantity
+        
+        parameter.is_set = True
+
+    def is_readonly(self):
+        return self.set_method is None
+    
 
 class VectorParameterDefinition(AbstractParameterDefinition):
     def __init__(self, name, description, names_of_parameters, default_value):

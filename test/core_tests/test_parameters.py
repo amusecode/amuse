@@ -310,6 +310,48 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         self.assertEquals(instance.x, 20 | units.m)
         self.assertEquals(instance.y, 12 | units.m)
         
+    def test4(self):
+        parameter_definition = parameters.ModuleVectorMethodParameterDefinition(
+            "get_test",
+            "set_test",
+            "test_name",
+            "a test parameter",
+            [0.1, 0.2, 0.3] | units.km,
+            True
+        )
+
+        class TestModule(BaseTestModule):
+            def get_test(self):
+                return self.x, self.y, self.z
+                
+            def set_test(self, x, y, z):
+                self.x = x
+                self.y = y
+                self.z = z
+
+        class TestModuleBinding(object):
+            parameter_definitions = [parameter_definition]
+
+            def __init__(self):
+                self.parameters = parameters.Parameters(self.parameter_definitions, self)
+
+        class TestInterface(TestModule, TestModuleBinding):
+
+            def __init__(self):
+                TestModuleBinding.__init__(self)
+
+        instance = TestInterface()
+
+        self.assertTrue('test_name' in list(instance.parameters.names()))
+
+        self.assertEquals([0.1, 0.2, 0.3] | units.km, instance.parameters.test_name)
+        
+        instance.parameters.test_name = [1, 2, 3] | units.km
+
+        self.assertEquals([1, 2, 3] | units.km, instance.parameters.test_name)
+        
+        self.assertEquals(1000 | units.m, instance.x)
+        
 
 
 
