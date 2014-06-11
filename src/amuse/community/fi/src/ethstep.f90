@@ -120,6 +120,15 @@ subroutine extraprho(dt)
     hsmooth(p)=hsmooth(p)*hsmfac
     hsmdivv(p)=hsmdivv(p)*hsmfac
     hsmcurlv(p)=hsmcurlv(p)*hsmfac
+
+    if(eps_is_h) then
+      if(mingaseps) then 
+        epsgrav(p)=max(epsgas,hsmooth(p))
+      else
+        epsgrav(p)=hsmooth(p)
+      endif  
+    endif
+
   enddo
 end subroutine
 
@@ -170,6 +179,15 @@ subroutine extrapeth(dt)
    hsmooth(p)=hsmooth(p)*hsmfac
    hsmdivv(p)=hsmdivv(p)*hsmfac
    hsmcurlv(p)=hsmcurlv(p)*hsmfac
+
+   if(eps_is_h) then
+     if(mingaseps) then 
+      epsgrav(p)=max(epsgas,hsmooth(p))
+     else
+      epsgrav(p)=hsmooth(p)
+     endif  
+   endif
+
    if(uentropy) then
     ethtoent=gamma1/rho(p)**gamma1
    else
