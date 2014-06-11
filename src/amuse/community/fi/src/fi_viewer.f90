@@ -12,7 +12,7 @@ implicit none
            MouseClickMotion,NormalKeyUp,menu_handler             !  to  'take over'
  public :: freeflightQ, leftbuttonQ, rightbuttonQ,slewQ,outputtext
  public :: request_refresh,refresh
- public :: spot,cam                                            
+ public :: spot,cam, viewangle,ratio                                            
                                                      
 integer, parameter :: MouseMovementScale=200
 real(kind=gldouble), parameter :: curveScale=0.02
@@ -330,7 +330,7 @@ module snap_viewer
   real(kind=glfloat),save :: pointsize_gas=3.,pointsize_stars=1.5,pointsize_halo=2. 
  
   logical :: show_gas=.TRUE.,show_stars=.TRUE.,SHOW_halo=.FALSE.
-  logical :: show_axes=.TRUE.,show_box=.TRUE.,show_spot=.FALSE.,show_data=.TRUE.
+  logical :: show_axes=.TRUE.,show_box=.TRUE.,show_spot=.TRUE.,show_data=.TRUE.
   logical :: update_flag=.TRUE.
   integer :: show_temp=0
   logical :: show_age=0
@@ -602,12 +602,13 @@ subroutine display
     call glLineWidth(1.25_glfloat)
   endif
 
-
-  call glDepthFunc(GL_ALWAYS)
+  call glDepthMask(.False.)
+!  call glDepthFunc(GL_ALWAYS)
   call glBlendFunc(GL_SRC_ALPHA,GL_ONE)
   if( show_stars) call renderstars
   if( show_halo) call renderhalo
   if( show_gas) call rendergas
+  call glDepthMask(.True.)
 
   call glDepthFunc(GL_LESS)
   call glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA)
@@ -981,3 +982,43 @@ subroutine trigger_viewer_refresh
  call viewer_refresh
 
 end subroutine 
+
+function get_image_target(x,y,z) result(ret)
+  use viewer
+  real :: x,y,z
+  integer :: ret
+  x=spot(1);y=spot(2);z=spot(3)
+  ret=0
+end function
+
+function get_viewpoint(x,y,z) result(ret)
+  use viewer
+  real :: x,y,z
+  integer :: ret
+  x=cam(1);y=cam(2);z=cam(3)
+  ret=0
+end function
+
+function get_upvector(x,y,z) result(ret)
+  real :: x,y,z
+  integer :: ret
+  x=0;y=0;z=1
+  ret=0
+end function
+
+function get_image_angle(x) result(ret)
+  use viewer
+  real :: x
+  integer :: ret
+  x=viewangle
+  ret=0
+end function
+
+function get_image_ratio(x) result(ret)
+  use viewer
+  real :: x
+  integer :: ret
+  x=ratio
+  ret=0
+end function
+

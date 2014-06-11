@@ -1,6 +1,9 @@
 MODULE AmuseInterface
     use MuseHelpers
     
+    integer, external :: get_image_angle, get_upvector, get_image_target, &
+      get_viewpoint, get_image_ratio
+    
 CONTAINS
 
 function initialize_code() result(ret)

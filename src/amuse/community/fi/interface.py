@@ -1568,8 +1568,55 @@ class GlFiInterface(FiInterface):
             return 'fi_worker_gl'
 
     def __init__(self,mode=FiInterface.MODE_NORMAL, **options):
+        self.mode=mode
         CodeInterface.__init__(self,name_of_the_worker = self.name_of_the_worker(mode), **options)
-        
+
+    @legacy_function   
+    def get_image_target():
+        """ target point of image """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.OUT, unit=nbody_system.length)
+        function.addParameter('y', dtype='d', direction=function.OUT, unit=nbody_system.length)
+        function.addParameter('z', dtype='d', direction=function.OUT, unit=nbody_system.length)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def get_viewpoint():
+        """ camera position (for perspective proj) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.OUT, unit=nbody_system.length)
+        function.addParameter('y', dtype='d', direction=function.OUT, unit=nbody_system.length)
+        function.addParameter('z', dtype='d', direction=function.OUT, unit=nbody_system.length)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def get_upvector():
+        """ specify the orientation of the image by setting the direction vector of image y """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.OUT, unit=units.none)
+        function.addParameter('y', dtype='d', direction=function.OUT, unit=units.none)
+        function.addParameter('z', dtype='d', direction=function.OUT, unit=units.none)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def get_image_angle():
+        """ angle of image in x direction (for perpective proj.) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('image_angle', dtype='d', direction=function.OUT, unit=None)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def get_image_ratio():
+        """ width/height of image """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('image_ratio', dtype='d', direction=function.OUT, unit=None)
+        function.result_type = 'i'
+        return function;
+
     @legacy_function
     def viewer():
         function = LegacyFunctionSpecification()  
@@ -3222,6 +3269,50 @@ class FiViewer(Fi):
     def __init__(self, convert_nbody = None, mode = 'normal', **options):
         Fi.__init__(self, convert_nbody = convert_nbody, mode = mode, use_gl = True , **options)
 
+    def define_parameters(self, object):
+        Fi.define_parameters(self,object)
+
+        object.add_method_parameter(
+            "get_viewpoint",
+            None,
+            "viewpoint",
+            "viewpoint (location of the camera, readonly)",
+            [0,1,0] | nbody_system.length, is_vector=True
+        )
+
+        object.add_method_parameter(
+            "get_image_target",
+            None,
+            "image_target",
+            "image_target (location the camera points to, readonly)",
+            [0,0,0] | nbody_system.length, is_vector=True
+        )
+        
+        object.add_method_parameter(
+            "get_upvector",
+            None,
+            "upvector",
+            "upvector (which direction points up, readonly)",
+            [0,0,1] , is_vector=True
+        )        
+
+        object.add_method_parameter(
+            "get_image_angle", 
+            None,
+            "image_angle", 
+            "image angle - vertical!! (readonly)", 
+            default_value = 45
+        )
+        
+        object.add_method_parameter(
+            "get_image_ratio", 
+            None,
+            "image_ratio", 
+            "image width/height (readonly)", 
+            default_value = 1.
+        )        
+        
+        
     def define_state(self, object):
         object.set_initial_state('UNINITIALIZED')
         object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
