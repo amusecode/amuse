@@ -352,9 +352,11 @@ subroutine show_menu(optie)
  case(3)
   show_halo=.NOT.show_halo
  case(4)
-  call glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB,no)
+!  call glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB,no)
+  call glPointParameterfvEXT(GL_DISTANCE_ATTENUATION_EXT,no)
  case(5) 
-  call glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB,da)
+!  call glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB,da)
+  call glPointParameterfvEXT(GL_DISTANCE_ATTENUATION_EXT,da)
  case(6)
   show_data=.NOT.show_data
  case(7)
@@ -527,8 +529,9 @@ subroutine viewer_refresh()
  
 end subroutine
 
-recursive subroutine check_for_refresh()
+recursive subroutine check_for_refresh(dummy)
   use viewer
+  integer(kind=glint), intent(in out) :: dummy
   if(refresh.OR.update_flag) then
     refresh=.FALSE.
     call selectparticles
@@ -963,9 +966,12 @@ subroutine viewbodies
  call glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
  call glHint(GL_POINT_SMOOTH_HINT, GL_NICEST)
  call glLineWidth(1.25_glfloat)
- call glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB,da)
- call glPointParameterfARB(GL_POINT_SIZE_MIN_ARB, 2._glfloat) 
- call glPointParameterfARB(GL_POINT_FADE_THRESHOLD_SIZE_ARB, 0._glfloat) 
+! call glPointParameterfvARB(GL_POINT_DISTANCE_ATTENUATION_ARB,da)
+! call glPointParameterfARB(GL_POINT_SIZE_MIN_ARB, 2._glfloat) 
+! call glPointParameterfARB(GL_POINT_FADE_THRESHOLD_SIZE_ARB, 0._glfloat) 
+ call glPointParameterfvEXT(GL_DISTANCE_ATTENUATION_EXT,da)
+ call glPointParameterfEXT(GL_POINT_SIZE_MIN_EXT, 2._glfloat) 
+ call glPointParameterfEXT(GL_POINT_FADE_THRESHOLD_SIZE_EX, 0._glfloat) 
 
  call glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE,GLUT_ACTION_GLUTMAINLOOP_RETURNS)
  call glutMainLoop()
