@@ -38,7 +38,7 @@ logical :: refresh=.TRUE.
  contains
 
 ! state query functions
-integer function freeflightQ();freeflightQ=free_flight;end function
+logical function freeflightQ();freeflightQ=free_flight;end function
 integer function leftbuttonQ();leftbuttonQ=leftbutton;end function leftbuttonQ
 integer function rightbuttonQ();rightbuttonQ=rightbutton;end function rightbuttonQ
 logical function slewQ();slewQ=slew;end function slewQ
@@ -327,13 +327,13 @@ module snap_viewer
   real(kind=glfloat),dimension(3) :: no=(/1.,0., 0./) 
 !  real(kind=glfloat),dimension(3) :: da=(/.15,.075, .026/) 
 !  real(kind=glfloat),dimension(3) :: no=(/1.,0., .0/) 
-  real(kind=glfloat),save :: pointsize_gas=3.,pointsize_stars=1.5,pointsize_halo=2. 
+  real(kind=glfloat) :: pointsize_gas=3.,pointsize_stars=1.5,pointsize_halo=2. 
  
   logical :: show_gas=.TRUE.,show_stars=.TRUE.,SHOW_halo=.FALSE.
   logical :: show_axes=.TRUE.,show_box=.TRUE.,show_spot=.TRUE.,show_data=.TRUE.
   logical :: update_flag=.TRUE.
   integer :: show_temp=0
-  logical :: show_age=0
+  logical :: show_age=.FALSE.
 
   integer :: ok=0
   integer :: step
