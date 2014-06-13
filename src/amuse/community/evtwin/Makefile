@@ -32,19 +32,11 @@ $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 	cd $(BUILDDIR) && FC="$(FC) $(FCFLAGS)" cmake ../src/trunk -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)"
 
 clean:
-	rm -f *.pyc make.log
-	rm -f mpi_code.f90 worker_code evtwin_worker twin_library_v2.mod mesh.mod evtwin_worker_sockets worker_code-sockets.f90 forsockets.mod
-	rm -f amuse_worker_module.mod
-	rm -f worker_code.f90
-	rm -f $(BUILDDIR)/CMakeCache.txt
-	rm -rf $(BUILDDIR)/CMakeFiles
-	rm -rf $(BUILDDIR)/Makefile
+	rm -f *.pyc worker_code.f90 evtwin_worker
+	make -C $(BUILDDIR) clean
 	rm -rf $(BUILDDIR)
 	rm -f $(EVTWINLIB)
-
-distclean:
-	make -C $(SRCDIR) distclean
-	/bin/rm -f *.pyc
+	rm -rf $(SRCDIR)/lib
 
 evtwin_worker: worker_code.f90 $(SRC)
 	make -s --no-print-directory -C $(BUILDDIR)
