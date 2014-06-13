@@ -2,6 +2,7 @@ from amuse.test.amusetest import TestWithMPI
 import sys
 import os.path
 from numpy import pi, arange
+import numpy.random
 
 from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 
@@ -34,37 +35,35 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         instance.stop()
     
-    def xtest1(self):
+    def test2(self):
         print "Testing get/set for metallicity..."
         instance = EVtwinInterface()
-        (metallicity, error) = instance.get_metallicity()
-        self.assertEquals(0, error)
-        self.assertEquals(0.02, metallicity)
         error = instance.set_ev_path(instance.get_data_directory())
         self.assertEquals(0, error)
         error = instance.initialize_code()
         self.assertEquals(0, error)
+        error = instance.set_ev_path(instance.get_data_directory())
+        self.assertEquals(0, error)
+        (metallicity, error) = instance.get_metallicity()
+        self.assertEquals(0, error)
+        self.assertEquals(0.02, metallicity)
+        
+        # Z > 0.04 is not allowed
+        error = instance.set_metallicity(0.0401)
+        self.assertEquals(0, error)
+        error = instance.commit_parameters()
+        self.assertEquals(-2, error)
+        
+        # 0.0 <= Z <= 0.04 is allowed
+        any_allowed_Z = numpy.random.random() * 0.04
+        error = instance.set_metallicity(any_allowed_Z)
+        self.assertEquals(0, error)
+        (metallicity, error) = instance.get_metallicity()
+        self.assertEquals(0, error)
+        self.assertEquals(any_allowed_Z, metallicity)
         error = instance.commit_parameters()
         self.assertEquals(0, error)
         instance.stop()
-
-        for x in [0.03, 0.01, 0.004, 0.001, 0.0003, 0.0001]:
-            instance = EVtwinInterface()
-            error = instance.set_metallicity(x)
-            self.assertEquals(0, error)
-            (metallicity, error) = instance.get_metallicity()
-            self.assertEquals(0, error)
-            self.assertEquals(x, metallicity)
-            error = instance.set_ev_path(instance.get_data_directory())
-            self.assertEquals(0, error)      
-            error = instance.initialize_code()
-            error = instance.commit_parameters()
-            if os.path.exists(os.path.join(instance.get_data_directory(),'zams','zams'+str(x)[2:]+'.mod')):
-                self.assertEquals(0, error)
-            else:
-                self.assertEquals(-1, error)
-                print "Metallicities other than solar need additional starting models!"
-            instance.stop()
     
     def xtest2(self):
         print "Testing get/set for maximum number of stars..."

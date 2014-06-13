@@ -1703,12 +1703,14 @@ contains
    integer function get_metallicity(value)
       implicit none
       real(double), intent(out) :: value
-      get_metallicity = -1
+      value = amuse_Z
+      get_metallicity = 0
    end function
    integer function set_metallicity(value)
       implicit none
       real(double), intent(in) :: value
-      set_metallicity = -1
+      amuse_Z = value
+      set_metallicity = 0
    end function
 
    integer function initialize_code()
