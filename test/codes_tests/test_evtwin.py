@@ -24,6 +24,16 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         instance.stop()
     
+    def test1(self):
+        instance = EVtwinInterface()
+        error = instance.initialize_code()
+        self.assertEquals(0, error)
+        error = instance.set_ev_path(instance.get_data_directory())
+        self.assertEquals(0, error)
+        error = instance.cleanup_code()
+        self.assertEquals(0, error)
+        instance.stop()
+    
     def xtest1(self):
         print "Testing get/set for metallicity..."
         instance = EVtwinInterface()

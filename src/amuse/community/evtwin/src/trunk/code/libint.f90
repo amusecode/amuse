@@ -127,6 +127,11 @@ module twinlib
    integer, private :: eqns_single(130)
    integer, private :: eqns_binary(130)
 
+   ! Temporary storage of amuse parameters, needed by initialise_twin
+   character(len = 1000), private :: amuse_ev_path
+   integer, private :: amuse_nstars, amuse_nmesh
+   logical, private :: amuse_verbose
+   real(double), private :: amuse_Z
 
    ! List private subroutines that should not be called directly
    private initialise_stellar_parameters, allocate_star, swap_in, swap_out, select_star
@@ -143,13 +148,14 @@ contains
    !            allocate space
    !   Z      - Desired metallicity, in the range 0.0 <= Z <= 0.04
    !   verb   - verbose output (true/false); optional.
+   !   nmesh  - maximum number of mesh points (optional)
    !  Returns value:
    !     0 on succes, non zero on failure:
    !    -1 initialised before (not critical)
    !    -2 bad metallicity requested (out-of-range)
    !    -3 bad number of stars requested (<1)
    !    -4 Cannot load init.dat settings file
-   integer function initialise_twin(path, nstars, Z, verb)
+   integer function initialise_twin(path, nstars, Z, verb, nmesh)
       use real_kind
       use settings
       use constants
@@ -169,6 +175,7 @@ contains
       integer, intent(in)          :: nstars
       real(double), intent(in)     :: Z
       logical, intent(in),optional :: verb
+      integer, intent(in),optional :: nmesh
       character(len=80)            :: tmpstr
       integer                      :: i, j
 
@@ -219,6 +226,7 @@ contains
       j = max(j,i)
       zstr = tmpstr(i:j)
 
+      if (present(nmesh)) max_nm = max(max_nm, nmesh)
       max_nm = max(max_nm, NMP)
 
       if (verbose) then
@@ -366,6 +374,7 @@ contains
             star_list(i)%pid = -1
             star_list(i)%sid = -1
             star_list(i)%bid = -1
+            star_list(i)%nucleosynthesis = .false.
             allocate_star = i
             return
          end if
@@ -688,6 +697,142 @@ contains
    end function
 
 
+   ! new_star_from_file:
+   !  Create a new pre-main sequence model for a star
+   !  Input variables:
+   !   filename   - the name of the file the model is stored in
+   !  Return value:
+   !   >0: The stars ID for identifying it in the array of models
+   !   =0: No star allocated, out of memory
+   !   -1: No star allocated, requested mesh is too large
+   !   -2: No star allocated, file not found
+   integer function new_star_from_file(filename)
+      use real_kind
+      use mesh, only: nm, h, hpr, dh, kh
+      use nucleosynthesis, only: ht_nvar, hnuc, nvar_nuc
+      use constants
+      use settings
+      use polytrope
+      use test_variables
+      use filenames
+      implicit none
+
+      character(len=*), intent(in) :: filename
+      type(twin_star_t), pointer   :: star
+      integer                      :: new_id
+      integer :: ioerror
+
+      integer :: kh1,kp1,jmod1,jb1,jn1,jf1, ip1, tm, oa
+      real(double) :: sm1, dty1, age1, per1, bms1, ecc1, p1, enc1
+
+      real(double), allocatable ::  h1(:, :)
+      real(double), allocatable :: hn1(:, :)
+      real(double), allocatable :: dh1(:, :)
+
+      new_star_from_file = 0
+
+      call swap_out()
+
+      ip1 = get_free_file_unit()
+      open(unit = ip1, action="read", file=filename, iostat=ioerror)
+      if (ioerror /= 0) then
+         if (verbose) print *, 'Cannot load file ', trim(filename), '.'
+         new_star_from_file = -2
+         return
+      end if
+
+
+      allocate(h1(nvar, nm))
+      allocate(dh1(nvar, nm))
+      allocate(hn1(nvar_nuc, nm))
+      call load_star_model(ip1,1, h1, dh1, hn1, sm1,dty1,age1,per1,bms1,ecc1,p1,enc1,kh1,kp1,jmod1,jb1,jn1,jf1)
+      close(ip1)
+
+      if (kh1 > NM) then
+         if (verbose) print *, 'Cannot load model with ', kh1, 'meshpoints. Maximum size is ', NM, 'meshpoints.'
+         new_star_from_file = -1
+         goto 3
+      end if
+
+      new_id = allocate_star()
+      if (new_id == 0) then
+         goto 3
+      end if
+      star => star_list(new_id)
+
+      ! Allocate memory for this star
+      star%number_of_variables = jn1
+      star%number_of_meshpoints = kh1
+      allocate(star%h(star%number_of_variables, star%number_of_meshpoints))
+      allocate(star%dh(star%number_of_variables, star%number_of_meshpoints))
+      allocate(star%hpr(star%number_of_variables, star%number_of_meshpoints))
+
+      ! Nucleosynthesis?
+      ! *TODO* Make sure we can actually set this per star
+      if (star%nucleosynthesis) then
+         allocate(star%ht(ht_nvar, star%number_of_meshpoints))
+      end if
+
+      call select_star(new_id)
+
+      h(1:jn1, 1:kh1) = h1(1:jn1, 1:kh1)
+      dh(1:jn1, 1:kh1) = dh1(1:jn1, 1:kh1)
+
+      star%zams_mass = sm1
+      star%age       = age1
+
+      ! Set desired options, this is a single star (by construction)
+      kh = kh1
+      tm = cmsn * sm1
+      bm = cmsn * bms1
+      om = bm - tm
+      bper = per1
+      ecc1 = 0.0
+      oa = cg1*tm*om*(cg2*bper/bm)**c3rd*sqrt(1.0d0 - ecc1*ecc1)
+      ! Remesh to desired numer of mesh points
+      call remesh ( kh, jch, bm, tm, p1, ecc1, oa, 1, 0 )
+
+      hpr = h
+
+      call initialise_stellar_parameters(new_id)
+
+      call swap_out()
+
+      new_star_from_file = new_id
+
+      ! Cleanup
+      ! Use a line number because Fortran doesn't allow for labels
+3     continue
+      if (allocated(h1)) deallocate(h1)
+      if (allocated(dh1)) deallocate(dh1)
+      if (allocated(hn1)) deallocate(hn1)
+   end function new_star_from_file
+
+
+
+
+   ! write_star_to_file:
+   !  write the state of star id to a named file, for later retrieval.
+   !  The file will be in the format of a TWIN input file
+   subroutine write_star_to_file(id, filename)
+      use real_kind
+      use filenames, only: get_free_file_unit
+      
+      implicit none
+      integer, intent(in) :: id
+      character(len=*), intent(in) :: filename
+      integer :: ip
+
+      call select_star(id)
+
+      ip = get_free_file_unit()
+      open (unit=ip, file=filename, action='write')
+      call output(200, ip, 0, 0)
+      close (ip);
+   end subroutine write_star_to_file
+
+
+
 
    logical function is_binary_system(star_id)
       implicit none
@@ -786,6 +931,9 @@ contains
       pprev = star%pprev
       jm2 = star%jm2
       jm1  = star%jm1
+
+      ! Correctly set binary mass eigenvalue (not otherwise preserved for single stars, but needed)
+      h(VAR_BMASS, 1:kh) = bm
 
       rlf_prev = star%rlf_prev
       qcnv_prev = star%qcnv_prev
@@ -1452,10 +1600,27 @@ contains
       join_binary = new_id
    end function join_binary
 
+
+   integer function set_ev_path(new_ev_path)
+      use file_exists_module
+      implicit none
+      character(len=*), intent(in) :: new_ev_path
+      if (.not. file_exists(new_ev_path) ) then
+         if (.not. file_exists(trim(new_ev_path)//'/input/amuse/init.dat') ) then
+            if (verbose) print *, "Warning: file ",trim(new_ev_path)," for ", trim(amuse_ev_path), " does not exist!"
+            set_ev_path = -1
+            return
+         end if
+      end if
+      amuse_ev_path = new_ev_path
+      set_ev_path = 0
+   end function
+
    ! Does nothing, but part of standard AMUSE interface
    integer function commit_parameters()
       implicit none
-      commit_parameters = 0
+      commit_parameters = initialise_twin(amuse_ev_path, amuse_nstars, amuse_Z, &
+         amuse_verbose, amuse_nmesh)
    end function
    integer function recommit_parameters()
       implicit none
@@ -1548,6 +1713,11 @@ contains
 
    integer function initialize_code()
       implicit none
+      amuse_ev_path = 'src/trunk'
+      amuse_nstars = 1000
+      amuse_nmesh = 500
+      amuse_verbose = .true.
+      amuse_Z = 0.02d0
       initialize_code = 0
    end function
 

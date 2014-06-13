@@ -1,0 +1,31 @@
+&INIT_DAT
+! -------------------------------------------------------------------------
+! This file contains parameters that change the numerics or physics options
+! in the code.
+! -------------------------------------------------------------------------
+
+ ! Variables and equations to solve for
+ VAR_LIST = '*1:ln r', '*1:L', '*1:M', '*1:I',
+            'xi',
+            '*2:ln r', '*2:L', '*2:M', '*2:I',
+            '*1:H1', '*1:O16', '*1:He4', '*1:C12', '*1:Ne20', '*1:N14',
+            '*2:H1', '*2:O16', '*2:He4', '*2:C12', '*2:Ne20', '*2:N14',
+            '*1:ln f', '*1:ln T', '*1:phi',
+            '*2:ln f', '*2:ln T', '*2:phi',
+            '*1:Qk', '*1:omega', '*1:phis',
+            '*2:Qk', '*2:omega', '*2:phis',
+            'e','Horb','Mbin'
+ EQN_LIST = '*1:H1', '*1:He4', '*1:C12', '*1:N14', '*1:O16', '*1:Ne20',
+            '*2:H1', '*2:He4', '*2:C12', '*2:N14', '*2:O16', '*2:Ne20',
+            '*1:hydrostatic', '*1:radius', '*1:energy transport', '*1:energy generation', '*1:mesh spacing', '*1:inertia', '*1:potential',
+            'mass flow',
+            '*2:hydrostatic', '*2:radius', '*2:energy transport', '*2:energy generation', '*2:mesh spacing', '*2:inertia', '*2:potential'
+ CBC_LIST = '*1:mass', '*1:luminosity', '*1:radius', '*1:inertia',
+            'xi',
+            '*2:mass', '*2:luminosity', '*2:radius', '*2:inertia',
+ SBC_LIST = '*1:H1', '*1:He4', '*1:C12', '*1:N14', '*1:O16', '*1:Ne20',
+            '*2:H1', '*2:He4', '*2:C12', '*2:N14', '*2:O16', '*2:Ne20',
+            '*1:massloss', '*1:stefan-boltzmann', '*1:pressure', '*1:potential','*1:spin angular momentum', '*1:surface potential',
+            '*2:massloss', '*2:stefan-boltzmann', '*2:pressure', '*2:potential','*2:spin angular momentum', '*2:surface potential',
+            'orbital angular momentum', 'eccentricity', 'binary mass'
+/

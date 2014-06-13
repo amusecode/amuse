@@ -104,22 +104,15 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         """
         return function
     
-#~    @legacy_function
-#~    def set_ev_path():
-#~        """
-#~        Update the path to the EVtwin database.
-#~        """
-#~        function = LegacyFunctionSpecification()  
-#~        function.addParameter('path', dtype='string', direction=function.IN,
-#~            description = "Name of the the directory")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            Current value was set
-#~        -1 - ERROR
-#~            Directory does not exist
-#~        """
-#~        return function
+    @legacy_function
+    def set_ev_path():
+        """
+        Update the path to the EVtwin database.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('path', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
         
 #~    @legacy_function
 #~    def set_init_dat_name():
