@@ -38,8 +38,6 @@ class TestInterface(TestWithMPI):
     def test2(self):
         print "Testing get/set for metallicity..."
         instance = EVtwinInterface()
-        error = instance.set_ev_path(instance.get_data_directory())
-        self.assertEquals(0, error)
         error = instance.initialize_code()
         self.assertEquals(0, error)
         error = instance.set_ev_path(instance.get_data_directory())
@@ -63,23 +61,32 @@ class TestInterface(TestWithMPI):
         self.assertEquals(any_allowed_Z, metallicity)
         error = instance.commit_parameters()
         self.assertEquals(0, error)
+        error = instance.cleanup_code()
+        self.assertEquals(0, error)
         instance.stop()
     
-    def xtest2(self):
+    def test3(self):
         print "Testing get/set for maximum number of stars..."
         instance = EVtwinInterface()
+        error = instance.initialize_code()
+        self.assertEquals(0, error)
+        error = instance.set_ev_path(instance.get_data_directory())
+        self.assertEquals(0, error)
+        (value, error) = instance.get_maximum_number_of_stars()
+        self.assertEquals(0, error)
+        self.assertEquals(1000, value)
+        
+        error = instance.set_maximum_number_of_stars(10000)
+        self.assertEquals(0, error)      
         
         (value, error) = instance.get_maximum_number_of_stars()
         self.assertEquals(0, error)      
+        self.assertEquals(10000, value)      
         
-        for x in range(10,100,10):
-            error = instance.set_maximum_number_of_stars(x)
-            self.assertEquals(0, error)      
-            
-            (value, error) = instance.get_maximum_number_of_stars()
-            self.assertEquals(0, error)      
-            self.assertEquals(x, value)      
-        
+        error = instance.commit_parameters()
+        self.assertEquals(0, error)
+        error = instance.cleanup_code()
+        self.assertEquals(0, error)
         instance.stop()
     
     def xtest4(self):

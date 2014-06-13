@@ -1645,7 +1645,7 @@ contains
    integer function get_maximum_number_of_stars(value)
       implicit none
       integer, intent(out) :: value
-      value = max_stars
+      value = amuse_nstars
       get_maximum_number_of_stars = 0
    end function
    
@@ -1653,7 +1653,8 @@ contains
    integer function set_maximum_number_of_stars(value)
       implicit none
       integer, intent(in) :: value
-      set_maximum_number_of_stars = -1
+      amuse_nstars = value
+      set_maximum_number_of_stars = 0
    end function
 
    integer function get_mixing_length_ratio(value)
