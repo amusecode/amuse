@@ -1,0 +1,12 @@
+This run shows how to run the nucleosynthesis post-processing code.
+It evolves a 3 solar mass star from the pre-main sequence onwards.
+The initial abundances for the nucleosynthesis code are read from the
+namelist ABUND at the very end of init.dat. These are based on Anders &
+Grevesse (1989) abundances.
+
+Compared to a standard run the main differences are:
+ 1. starting from a pre-main sequence model rather than a ZAMS model
+ 2. the timestep control parameters CDC are set so that the timesteps are
+    (very) small. This is desirable for the nucleosynthesis code to
+    converge properly.
+

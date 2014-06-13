@@ -1,0 +1,86 @@
+#! /bin/csh -f
+set EVOLDIR = Work/evol/code/twin/devel/
+### set above to the directory (relative to your home) where the evolution 
+### package is located.
+
+# Set path, EV programme name and metalicity Z if these haven't been specified
+if ( !($?evpath) ) set evpath = $HOME/$EVOLDIR
+if ( !($?EV) ) set EV = $evpath/code/ev
+if ( !($?Z) ) set Z = 02
+
+set name = $1
+
+# remove old files
+if (-e $name.out1) rm -i $name.out1
+if (-e $name.out2) rm -i $name.out2
+if (-e $name.log) rm -i $name.log
+if (-e $name.out) rm -i $name.out
+if (-e $name.last1) rm -i $name.last1
+if (-e $name.last2) rm -i $name.last2
+if (-e $name.mod) rm -i $name.mod
+if (-e $name.plt1) rm -i $name.plt1
+if (-e $name.plt2) rm -i $name.plt2
+if (-e $name.mdl1) rm -i $name.mdl1
+if (-e $name.mdl2) rm -i $name.mdl2
+# config files
+echo 0 > fort.11
+ln -s init.dat fort.22
+ln -s init.run fort.23
+# input files
+ln -s $evpath/input/zahb{$Z}.mod fort.12
+ln -s $evpath/input/zams/zams{$Z}.mod fort.16
+ln -s $evpath/input/zams/zams{$Z}.out fort.18
+ln -s $evpath/input/zams/zams{$Z}.mas fort.19
+ln -s $evpath/input/metals/z{$Z}/phys.z{$Z} fort.20
+ln -s $evpath/input/lt2ubv.dat fort.21
+
+### uncomment below to start from initial model in 'init.mod'
+### then change init.run to read from unit 51.
+#ln -s init.mod fort.51
+
+# output files
+ln -s $name.out1 fort.1
+ln -s $name.out2 fort.2
+ln -s $name.io12 fort.3
+ln -s $name.log fort.8
+ln -s $name.out fort.9
+ln -s $name.last1 fort.13
+ln -s $name.last2 fort.14
+ln -s $name.mod fort.15
+ln -s $name.plt1 fort.31
+ln -s $name.plt2 fort.32
+ln -s $name.mdl1 fort.33
+ln -s $name.mdl2 fort.34
+
+# run code
+#nice +19 $evpath/code/ev $name
+$EV $name
+
+# remove links
+rm -f fort.16
+rm -f fort.17
+rm -f fort.18
+rm -f fort.19
+rm -f fort.20
+rm -f fort.21
+rm -f fort.22
+rm -f fort.23
+rm -f fort.25
+rm -f fort.29
+
+rm -f fort.1
+rm -f fort.2
+rm -f fort.3
+rm -f fort.8
+rm -f fort.9
+rm -f fort.10
+rm -f fort.11
+rm -f fort.12
+rm -f fort.13
+rm -f fort.14
+rm -f fort.15
+rm -f fort.31
+rm -f fort.32
+rm -f fort.33
+rm -f fort.34
+

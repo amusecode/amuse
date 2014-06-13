@@ -1,0 +1,11 @@
+ * Cleanup differential rotation/rotational mixing in code
+
+ * Convert scheme for calculating fp and ft to fully implicit (may need an extra
+   equation for the psi integral)
+
+ * Fix detection of presence of symbolic links. Right now, it doesn't work
+   properly for overriding output fort.nnn files.
+
+ * Cleanup the code. In particular, make things like cfuncs output their
+   results in variables that are in a clear and "clean" place, rather than
+   all over the place.

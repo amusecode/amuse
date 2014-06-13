@@ -1,0 +1,566 @@
+\documentclass{article}
+
+\begin{document}
+
+\subsection*{ Dictionary of COMMON Variables in the Program EV}
+
+This dictionary is intended to cover the shared variables in 
+Peter Eggleton's EV program as of November 2003.	It doesn't deal with local variables or go into details of the	workings of subroutines.  It's job is just to give you a place to	look for the meaning of some of the common terms in the code.	For example, if you're curious about termination code J0 = 14,	you might find your way to this line in PRINTB:         \begin{center} IF ( VMH.LT.VME .OR. VME.LT.VMC ) JO = 14\end{center}	If it isn't immediately obvious what this is doing, you might want to 
+	check the dictionary for VMH, VME, and VMC.  However, if you're wondering about
+	the variable DDR in PRINTB, you'll need to look at the comments in the code, since it's not
+	a COMMON block variable and isn't in the dictionary.The code makes use of Fortran's ability to give differentnames to the same COMMON block data in different block declarations.For example, in one routine the composition variables may be referenced by individual names such as XH, XHE, XC, etc.  In another routine, the samevariables may be treated as components of an array XA with XA(1)=XH,XA(2)=XHE, XA(3)=XC, etc.  So if you `grep' for XHE to see how it's used,you'll miss the places where it is referenced as XA(I) with I=2.But if you check the dictionary entries, you'll find cross referencesbetween XA(2) and XHE.  I've tried to cross reference all the cases like this,but I've undoubtedly missed some.  Keep it in mind.  Also,some variables in COMMON block lists are simply there as spacers and aren'tactually referenced--- I've left those out of the dictionary.This dictionary is a best-effort attempt, but programs change and programmersare human, so don't expect it to perfectly track the code.Even an imperfect dictionary should be better than nothing when you're firstgetting into a complex system like this.Here is a list of the COMMON blocks and the routines that use them.(Not included are `private' COMMON blocks used by a single routine.)\begin{description}
+\item[blank]
+		Blank COMMON holds the array of values of independent variables at each meshpoint,		the changes in those values during the last timestep, and related widely shared data.    		Used by MAIN, STAR12, BEGINN, NEXTDT, UPDATE, BACKUP, OUTPUT, FUNCS1, 	        EQUNS1, PRINTB, REMESH, CHECKS, SOLVER, DIFRNS, PRINTS, and PRINTC.			        \item[ABUND] Holds information about element abundances.    Used by FUNCS1, PRINTB, FUNCS2, STATEF, PRESSI, and NUCRAT.
+\item[ATDATA] Holds atomic data such as atomic weights and ionization energies.    Used by SETSUP, PRINTB, REMESH, and STATEF.
+\item[CONSTS] Holds constants: numerical (e.g. pi), physical (e.g. c), and astronomical (e.g. Msolar).    Used by MAIN, SETSUP, BEGINN, NEXTDT, BACKUP, OUTPUT,	        FUNCS1, PRINTB, REMESH, STATEF, PRESSI, and NUCRAT.
+\item[INE]  Used for passing data to and from EQUNS2.    Used by NAMES2, EQUNS2, and DIFRNS.
+\item[INF] Used for passing data to and from FUNCS1.    Used by FUNCS1, NAMES1, PRINTB, REMESH, FUNCS2, and DIFRNS.
+\item[NAMEIN] Holds the named variables and their changes which are the input for FUNCS1 and EQUNS1.    Used by FUNCS1, EQUNS1, NAMES1, and NAMES2.
+\item[NAMOUT] Holds the named functions which are the output for FUNCS1 and EQUNS1.    Used by FUNCS1, EQUNS1, NAMES1, and NAMES2.
+\item[NCDATA] Holds nuclear reaction data.    Used by SETSUP, PRINTB, and NUCRAT.
+\item[QUERY] Holds control information for the run such as number of timesteps.    Used by MAIN, STAR12, BEGINN, FGB2HB, NEXTDT, UPDATE, BACKUP, OUTPUT, PRINTB,	        REMESH, SOLVER, DIFRNS, DIVIDE, and ELIMN8.
+\item[SOLV] Holds the working data used in solving the difference equations.    Used by SOLVER, DIFRNS, DIVIDE, ELIMN8, PRINTS, and PRINTC.
+\item[STAT1] Holds constant data such as the opacity tables.
+    Used by SETSUP, OPSPLN, STATEF, NUCRAT, and OPACTY.
+\item[STAT2] Holds the state variables to be evaluated by STATEF.
+    Used by FUNCS1, PRINTB, REMESH, STATEL, FUNCS2, STATEF, and NUCRAT.
+\item[STAT3] Holds data for opacity interpolation.    Used by OPSPLN and OPACTY.
+\item[STATFD] Holds the Fermi-Dirac integral approximation information.    Used by STATEF, FDIRAC, and PRESSI.
+\item[STORE] Holds previous state information for backup.    Used by BEGINN, NEXTDT, UPDATE, BACKUP, FUNCS1, REMESH, and FUNCS2.
+\item[TVBLES] Holds variables such as timestep, age, period, and mass.    Used by STAR12, BEGINN, FGB2HB, NEXTDT, UPDATE, BACKUP, OUTPUT,			FUNCS1, PRINTB, REMESH, and FUNCS2.
+\item[UBVDAT] Holds data for converting from luminosity and temperature to B-V and U-B.    Used by SETSUP and LT2UBV.
+\item[VBLES] Holds variables such as thermal gradient and mesh spacing function.    Used by FUNCS1, PRINTB, and REMESH.
+\end{description}
+
+The following dictionary gives the variable name, the COMMON block it lives in,and a description of what it is which usually includes precise units.  In some cases,a typical value for the variable is given in parentheses.  Much of the terminology follows
+ that of Eggleton, Programme EV, November 2003, which is a prerequisite for this document.
+
+\subsection*{A}
+\begin{description}
+
+	\item[AF]  /NAMEIN/ value of degeneracy ln(f) at current mesh point; independent variable 1.
+		\item[AGE]  /TVBLES/ stellar age in years.
+		\item[AI] /NAMEIN/ moment of inertia of interior material in $10^{55}$ gm cm$^2$ units; independent variable 12.
+		\item[AME]  /CONSTS/ electron mass in grams.
+		\item[AMU] /CONSTS/ atomic mass unit in grams.
+		\item[AP]  /STAT2 / ln(pressure) at current mesh point.
+		\item[APER] /NAMEIN/ rotation period of star in days; independent variable 13.
+		\item[AR]		    /NAMEIN/ ln(R in $10^{11}$ cm units); independent variable 7.
+		\item[ARHO]		/STAT2 / ln(density) at current mesh point.
+		\item[AT]		    /NAMEIN/ value of ln(T) at current mesh point; independent variable 2.
+	   	\item[AVM]     	/ABUND / moles of baryons per gram of star.
+				         1/AVM = average grams per moles of baryons in the star
+				               = average atomic weight of baryons (in amu/baryon).\end{description}
+\subsection*{B}
+\begin{description}
+	\item[BCA]		    /NAMOUT/ boundary condition for orbital angular momentum (non-TWIN case).
+		\item[BCE]		    /NAMOUT/ boundary condition for eccentricity (non-TWIN case).
+	\item[BCF]		    /NAMOUT/ boundary condition for potential on L1 surface.
+	\item[BCM]		    /NAMOUT/ boundary condition for stellar mass (non TWIN case).
+	\item[BCMB]    	/NAMOUT/ boundary condition for total mass of binary.
+	\item[BCP]		    /NAMOUT/ surface pressure boundary condition.
+	\item[BCPH]		/NAMOUT/ boundary condition for surface potential eigenvalue.
+	\item[BCS]		    /NAMOUT/ boundary condition for spins (non TWIN case).
+		\item[BCT]		    /NAMOUT/ surface temperature boundary condition.
+		\item[BM]      	/TVBLES/ total mass of binary system in $10^{33}$ g units.
+		\item[BOLTZM]		/CONSTS/ Boltzmann's constant $k_B$ (erg/K).
+	\end{description}
+\subsection*{C}
+\begin{description}
+    \item[C(I,J,K)]    /SOLV  / working storage for SOLVER.                        For example, C(I,J,1) holds correction for variable KD(J) at meshpoint I.
+    	\item[C3RD]		/CONSTS/ 1/3.
+	\item[CA]		    /CONSTS/ radiation constant.
+	\item[CALP]		/CONSTS/ $\alpha$ for mixing length (2.0).
+	\item[CAN(I)]     	/ATDATA/ baryons per nucleus of element I; using average atomic weights for elements				    (e.g., 4.0026 for He, 12.0000 for C, 19.9920 for Ne).
+				    I: 1=H, 2=He, 3=C, 4=N, 5=O, 6=Ne, 7=Mg, 8=Si, 9=Fe.
+	\item[CASN]		/CONSTS/ solar age in years.
+	\item[CB]		    /CONSTS/ conversion factor for P* to PE. = $8 \pi m_e c^2 / \Lambda_C^3, \Lambda_C=h/(m_e c)$.	\item[CBN(I)]     	/ATDATA/ baryons per nucleus of element I; using integer atomic weights for elements
+				    (e.g., 4 for He4, 12 for C12, 20 for Ne20).
+				    I: 1=H, 2=He, 3=C, 4=N, 5=O, 6=Ne, 7=Mg, 8=Si, 9=Fe.
+	\item[CBR]		    /CONSTS/ `bipolar re-emission' fraction (0).
+	\item[CC]		    /CONSTS/ C abundance as fraction of metals (.176).
+	\item[CD]		    /CONSTS/ $8 \pi (m_e c/h)^3$ (grams/amu).
+	\item[CDC(1)]		/CONSTS/ value for CDD from ZAMS to He ignition (0.01).
+	\item[CDC(2)]		/CONSTS/ extra factor for CDD during He burning (0.25).
+	\item[CDC(3)]		/CONSTS/ extra factor for CDD until He shell near H shell (1.0).
+	\item[CDC(4)]		/CONSTS/ extra factor for CDD during double shell burning (4.0).
+	\item[CDD]		    /TVBLES/ target value for average change in variables; used in adjusting timestep.
+	\item[CEA	]	    /CONSTS/ saturation value for ENC changes (1e2).
+	\item[CEN]	    /CONSTS/ $h^3/(2 \pi k_B)^{3/2}$/(grams/amu)$^{5/2}$.
+	\item[CET]	    /CONSTS/ time scale for ENC changes (1e-6).
+	\item[CEVB]		/CONSTS/ (ergs per electron volt)/$k_B$.
+	\item[CFE	]	    /CONSTS/ Fe abundance as fraction of metals (.072).
+	\item[CG]		    /CONSTS/ gravitational constant.
+	\item[CG1]		    /CONSTS/ 1e5 $G^{1/2}$.
+	\item[CG2]		    /CONSTS/ CG1 $0.432/ \pi$.
+	\item[CGR]		    /CONSTS/ defines the semiconvection boundary for printing (.001).
+	\item[CGRT]		/CONSTS/ $6.4 (\pi/4.32e4)^6 (1e11/c)^5$.
+	\item[CH]		    /CONSTS/ initial H mass fraction.
+	\item[CH2]     	/ATDATA/ molecular hydrogen parameters.
+	\item[CHAT]		/STAT1 / table of neutrino loss rates and nuclear reaction rates.
+	\item[CHE]     	/CONSTS/ $m_e c^2$.
+	\item[CHI(J,I)]    /ATDATA/ energy (eV) for J$^{th}$ ionization level of element I.
+	\item[CL]		    /CONSTS/ speed of light in cm/sec.
+	\item[CLN]		    /CONSTS/ ln(10); for converting between ln and $log_{10}$.
+	\item[CLSN]		/CONSTS/ Lsolar*1e-33 erg/s.
+	\item[CLT]		    /CONSTS/ prefactor for heat flux between components of contact binary.
+	\item[CME]		    /CONSTS/ (ergs/MeV)/(grams/amu).
+	\item[CMG]		    /CONSTS/ Mg abundance as fraction of metals (.034).
+	\item[CMI]		    /CONSTS/ in surface dM/dt, prefactor for M for artificial mass gain (0, +/- 5e-9, or +/- 1e-6).
+	\item[CMJ]		    /CONSTS/ in surface dM/dt, prefactor for mass-loss rate from luminous-star wind (0 or 1).
+	\item[CML]		    /CONSTS/ in surface dM/dt, prefactor for mass-loss rate from dynamo-driven wind (0 or 1).
+	\item[CMR]		    /CONSTS/ in surface dM/dt, prefactor for mass-loss rate from Reimers-like wind (0, .2, or 1).
+	\item[CMS]		    /CONSTS/ in surface dM/dt, prefactor of log(r/rlobe)$^3$ for Roche lobe overflow (0 or 1e4).
+	\item[CMSN]		/CONSTS/ Msolar*1e-33 grams.
+	\item[CMT]		    /CONSTS/ in surface dM/dt, prefactor for Roche lobe overflow (Msolar/yr) (0 or 1e-2).
+	\item[CMU]		    /CONSTS/ (ergs/MeV)/(grams/amu) [AKA CME].
+	\item[CN]		    /CONSTS/ N abundance as fraction of metals (.052).
+	\item[CNE	]	    /CONSTS/ Ne abundance as fraction of metals (.092).
+	\item[CO]		    /CONSTS/ O abundance as fraction of metals (.502).
+	\item[COM]     	/ATDATA/ statistical weights (for Saha equation).
+	\item[COS]		    /CONSTS/ convective overshoot parameter for H-burning cores (.12).
+	\item[CPA]		    /CONSTS/ partial accretion: fraction of one star's wind accreted by the other (0).
+	\item[CPI]		    /CONSTS/ $\pi$.
+	\item[CPI4]		/CONSTS/ $4\pi$.
+	\item[CPL] 		/CONSTS/ $(4 \pi e^3)/(k_B^3$(grams/amu)), where e is electron charge.
+	\item[CPS]		    /CONSTS/ convective overshoot parameter for He-burning cores (.12).
+	\item[CR]		    /CONSTS/ $k_B$/ gas constant (erg/K/mole).
+	\item[CRD]		    /CONSTS/ prefactor for convective mixing (1e-4).
+	\item[CRHO]		/CONSTS/ $8 \pi (m_e c/h)^3$.
+	\item[CRSN]		/CONSTS/ Rsolar*1e-11 cm.
+	\item[CRT(I,J)]    /STAT1 / data used in computing the T dependent factors for nuclear reaction rates.
+	\item[CS]		    /STAT1 / opacity tables.
+	\item[CSD]		    /CONSTS/ `spin-down' from loss of material.
+	\item[CSI]		    /CONSTS/ Si abundance as fraction of metals (.072).
+	\item[CSU	]	    /CONSTS/ `spin-up' from accretion of material.
+	\item[CSX(I)]		/STAT1 / parameters for subcompositions for opacities.
+	\item[CSY]		    /CONSTS/ seconds per year.
+	\item[CT(I)]		/CONSTS/ coefficients for mesh-spacing function QQ.
+	\item[CT1]		    /CONSTS/ used to limit DT adjustments.  min change factor. (0.8 or 1).
+	\item[CT2]		    /CONSTS/ used to limit DT adjustments.  max change factor. (1.1 or 1).
+	\item[CT3]		    /CONSTS/ decrease DT by this factor if fail to converge (0.3 to 0.5).
+	\item[CTE]     	/CONSTS/ $k_B/(m_e c^2)$.
+	\item[CTF]		    /CONSTS/ prefactor for tidal friction rate (0 or .01).
+	\item[CU]		    /CONSTS/ convective diffusion parameter (0.1).
+	\item[CXB]		    /CONSTS/ defines core boundary for printing (0.15).
+	\item[CZA]		    /NCDATA/ constant for electron screening.  ?
+	\item[CZB]	    /NCDATA/ constant for electron screening.  ?
+	\item[CZC	]	    /NCDATA/ constant for electron screening.  ?
+	\item[CZD	]	    /NCDATA/ constant for electron screening.  ?
+	\item[CZS	]	    /CONSTS/ metals mass fraction.
+\end{description}
+\subsection*{D}
+\begin{description}
+	\item[D(I,J)]		/STATFD/ contains $\rho$*, P* and Q* and 1st logarithmic derivatives w.r.t. T and f
+		\begin{itemize}
+					\item $\rho$* is $(\Lambda_C^3 \rho)/(8 \pi \mu_e m_H)$
+						where $\Lambda_C$ is Compton wavelength of electron, $h/(m_e c)$.
+						$\mu_e$ is atomic weight per free electron.
+						$m_H$ is mass of hydrogen.
+						$\rho$ is density of the gas.
+					\item P* is $(\Lambda_C^3 P_e)/(8 \pi m_e c^2)$
+						$P_e$ is electron pressure
+					\item Q* is used in computing s*, the entropy per unit volume of free electrons,
+						as in Pols, Tout, Eggleton, and Han (1995)
+					\item D(1,1) is $\rho$*; D(1,2) is d$\rho$*/dln(T); D(1,3) is d$\rho$*/dln(f)
+					\item D(2,1) is P*;   D(1,2) is dP*/dln(T);   D(1,3) is dP*/dln(f)
+					\item D(3,1) is Q*;   D(1,2) is dQ*/dln(T);   D(1,3) is dQ*/dln(f)
+					\item D(3,3) = RE, PE, QE, RET, PET, QET, REF, PEF, QEF.
+		\end{itemize}
+					    \item[DAF]     	/NAMEIN/ change in ln(F) during the previous timestep.
+    \item[DAI]     	/NAMEIN/ change in moment of inertia during the previous timestep.
+    \item[DAP]     	/NAMEIN/ change in rotation period of star during the previous timestep.
+    \item[DAT]     	/NAMEIN/ change in ln(T) during the previous timestep.
+   	\item[DE]     	 	/NAMEIN/ change in orbital eccentricity during the previous timestep.
+	\item[DEL]		    /      / max size of error correction (0.01).  same as EP(2).
+						\item[DFN1(I,J)]   /INF   / holds derivatives of function J wrt independent variable I.
+	\item[DG]		    /VBLES / $\nabla_r-\nabla_a$ at current meshpoint.
+	\item[DH(J,K)]		/      / increment for value of variable J at mesh point K.
+	\item[DH0]		    /      / variation size for Jacobian matrix partials (1e-7).  same as EP(3).
+						\item[DM]		    /NAMEIN/ change in stellar mass in $10^{33}$ g units during the previous timestep.
+	\item[DMB]     	/NAMEIN/  change in binary mass in  $10^{33}$ g units during the previous timestep.
+	\item[DMT]		    /INF   / dM/dt, change in mass during the previous timestep.
+	\item[DOA]     	/NAMEIN/ change in orbital angular momentum in previous timestep.
+
+	\item[DQ(I)]	    /INF   / same as DX.
+	\item[DT]		    /TVBLES/ the timestep in seconds.
+		\item[DVAR(I)] 	/INF   / same as DX.
+	\item[DX(I)]      /INF   / array of changes in independent variables during the previous timestep;	                     also known as DQ or DVAR.
+		\item[DX1]     	/NAMEIN/ change in fractional abundance by mass of H1 during the previous timestep.
+	\item[DX4]     	/NAMEIN/ change in fractional abundance by mass of He4 during the previous timestep.
+	\item[DX12]    	/NAMEIN/ change in fractional abundance by mass of C12 during the previous timestep.
+	\item[DX16]    	/NAMEIN/ change in fractional abundance by mass of O16 during the previous timestep.
+	\item[DX20]    	/NAMEIN/ change in fractional abundance by mass of X20 during the previous timestep.
+	\item[DXI]     	/NAMEIN/ change in mass flux from *1 towards *2 during the previous timestep.
+\end{description}
+\subsection*{E}
+\begin{description}
+    \item[E0]      	/TVBLES/  ?
+	\item[ECC]		    /NAMEIN/ orbital eccentricity; independent variable 18.
+	\item[ECHAR]		/CONSTS/ elementary charge in e.s.u.
+    	\item[EG]      	/VBLES / superadiabaticity for convection.
+	\item[EGR]     	/VBLES /  ?
+    	\item[EN]		    /STAT2 / neutrino losses from sources other than the nuclear reaction network.
+
+	\item[ENC]		    /TVBLES/ generation rate for adding extra energy to star (0).	\item[ENX	]	    /STAT2 / nuclear reaction neutrino loss in ergs/g/sec.
+	\item[EP(I)]     	/      / I=1 for EPS, =2 for DEL, =3 for DH0.
+		\item[EPS]		    /      / desired accuracy for SOLVER (1e-6).  same as EP(1).	                     given as average(abs(correction as fraction of ER(I))).
+	\item[EQU(I)]		    /NAMOUT/ array of difference equation values; each is EQU = (actual difference) - (desired difference).  For interior points, the equations and the corresponding variable are as follows:
+		\begin{itemize}					\item 1	H1 abundance, X1					\item 2	O16 abundance, X16					\item 3	He4 abundance, X4					\item 4	C12 abundance, X12					\item 5	Ne20 abundance, X20					\item 6	Pressure, VP					\item 7	Radius, VR					\item 8	Temperature, VT					\item 9	Luminosity, L					\item 10	Mass, VM					\item 11	Moment of Inertia, VI					\item 12	Centrifugal gravitational potential in ergs, PHI
+					\item 19	Mass flux from *1 to *2, XIM
+		\end{itemize}
+					    \item[ER(I)]       /SOLV  / max(abs(value(I))) for the variable I over all the meshpoints.
+     					 corrections for variable I are calculated as a fraction of ER(I).
+	\item[ETA]     	/TVBLES/ ?
+						\item[ETH]		    /VBLES / thermal  energy release in ergs/g/sec (e.g., T DS/Dt term).
+	\item[EVOLT]		/CONSTS/ ergs per electron volt.
+	\item[EX]		    /STAT2 / nuclear reaction energy release in ergs/g/sec.
+\end{description}
+\subsection*{F}
+\begin{description}
+	\item[FK]		    /STAT2 / opacity at current meshpoint.
+	\item[FLT]     	/NAMEIN/ ?
+		\item[FRM]     	/STAT3 / densities for opacity interpolation.
+	\item[FSPL]    	/STAT3 / opacity interpolation tables.
+\end{description}
+\subsection*{G}
+\begin{description}
+	\item[GGR]     	/UBVDAT/ data from (L,T) to (U,B,V) conversion.
+	\item[GMR]     	/VBLES / ?
+	
+	\item[GRAD]		/VBLES / actual temperature gradient, $\nabla$; dln(T)/dln(P).
+
+	\item[GRADA]		/STAT2 / adiabatic temperature gradient, $\nabla_a$; dln(T)/dln(P) for adiabatic change.
+	
+	\item[GRADT]   	/VBLES / same as GRAD.
+	\end{description}
+\subsection*{H}
+\begin{description}
+	\item[H(J,K)]		/      / matrix of independent variables.   See X(I) for a listing of the variables.					J=1,KVB is the variable number.					K=1,KH is the shell number.					K=1 for the surface; K=KH for the center.
+		\item[HP]      	/VBLES / ?
+		\item[HPR]		    /STORE / previous values for array H.
+	\item[HT(I,J)]		/STORE / saves variable I (1:RHO, 2:SG, 3:ZT, and 4:MK) at meshpoint J for use by FUNCS2.
+\end{description}
+\subsection*{I}
+\begin{description}
+	\item[ID]      	/      / (KE1,KE2,KE3,KBC,KEV,KFN,KL,JH1,JH2,JH3) +  3 permutations of var 's.	            	first permutation is for the independent variables;	           	    second permutation is for the equations;	           	    third permutation is for the boundary conditions.
+    \item[IE]     	 	/      / same form as ID array.
+	\item[IHOLD]		/TVBLES/ after backtrack, do this many steps before letting timestep change.
+\end{description}
+\subsection*{J}
+\begin{description}
+	\item[JB]		    /QUERY / which star of binary we're doing now (1 $\to$ *1, 2 $\to$ *2).
+	\item[JHOLD]   	/TVBLES/ the number of timesteps taken since last BACKUP.
+	\item[JKH]		    /QUERY / controls debugging output from SOLVER.
+	\item[JH1, JH2]    /SOLV  / SOLVER debug printout is turned on if JNN=JH1 and JTER=JH2.
+	\item[JM1]		    /TVBLES/ previous JMOD.
+	\item[JM2]		    /TVBLES/ previous JM1.
+	\item[JMOD]		/QUERY / model number.
+	\item[JNN]		    /QUERY / number of timesteps taken.
+	\item[JOC]		    /QUERY / 1 $\to$ calling SOLVER for structure, mesh, and composition variables.	                     2 $\to$ calling SOLVER for minor composition vars with mesh fixed.
+		\item[JTER]		/QUERY / number of iterations done by SOLVER.
+
+\end{description}
+\subsection*{K}
+\begin{description}
+	\item[KBC]		    /SOLV  / number of boundary conditions (5).
+	\item[KCL]		    /CONSTS/ 1 $\to$ use Coulomb correction to pressure; 0 $\to$ don't  (1).
+	\item[KCN]		    /CONSTS/ 0 $\to$ use standard nuclear reaction network; 1 $\to$ use CNO equilibrium fudge (0).  same as KCL(7).
+	\item[KCSX]		/STAT1 / number of subcompositions tabulated for opacities (8 or 9).
+    \item[KD(1-40)] 	/SOLV  / permutation for the independent variables.
+    \item[KD(41-80)] 	/SOLV  / permutation for the equations.
+    \item[KD(81-120)] 	/SOLV  / permutation for the boundary conditions.
+	\item[KE1]		    /SOLV  / number of 1st order equations (8).
+	\item[KE2]		    /SOLV  / number of 2nd order equations (5).
+	\item[KE3]		    /SOLV  / number of 3rd order equations (0).
+	\item[KEQ]		    /SOLV  / number of actual variables that vary on mesh (13).
+	\item[KEV]		    /SOLV  / number of `eigenvalues' constant on mesh (6).
+	\item[KFN]		    /SOLV  / number of functions evaluated by FUNCS1.
+	\item[KH]		    /      / number of mesh points (199).
+	\item[KION]		/CONSTS/ do ionization calculation for this number of ions   
+					from list H, He, C, N, O, Ne,  Mg, Si, and Fe (5).   same as KCL(2).		\item[KJN(I)]		/CONSTS/ identifies the KN variables to be used in determining next timestep.
+	\item[KL]		    /SOLV  / 0 $\to$ start solution at surface; 1 $\to$ start at center  (1).
+	\item[KN]		    /CONSTS/ number of variables used for determining next timestep.
+	\item[KOP]		    /CONSTS/ 1 $\to$ use spline interpolation for opacity; 0 $\to$ use bilinear (1). same as KCL(4).
+	\item[KQ]		    /SOLV  / increment for next meshpoint in SOLVER.	                     = 1 if starting at surface; = -1 if starting at center.
+		\item[KSX]		    /CONSTS/ indicates which variables to print.
+	\item[KT(I)]       /CONSTS/ controls for printing. same as KT1, KT2, KT3, KT4.
+		\item[KT1]		    /CONSTS/ print internal details of every KT1st model (20 or n*200). same as KT(1).
+	\item[KT2]		    /CONSTS/ print internal details of every KT2nd mesh point (1 or 2). same as KT(2).
+	\item[KT3]		    /CONSTS/ print KT3 `pages' of information (1, 2, or 3). same as KT(3).
+	\item[KT4]		    /CONSTS/ print 5 line summary every KT4th timestep (1, 2 or 4). same as KT(4).
+	\item[KTH]		    /CONSTS/ prefactor for T DS/Dt in luminosity equation (0 or 1).
+	\item[KTW]		    /      / 1 $\to$ normal operation; 2 $\to$ TWIN mode.
+	\item[KVB]		    /SOLV  / number of independent variables (11).
+	\item[KX]		    /CONSTS/ prefactor for DX/Dt in luminosity equation where X is H1 abundance (0 or 1). same as KTH(2).
+		\item[KY]		    /CONSTS/ prefactor for DY/Dt in luminosity equation where Y is He4 abundance (0 or 1). same as KTH(3).
+		\item[KZ]		    /CONSTS/ prefactor for DZ/Dt in luminosity equation where Z is metals abundance (0 or 1). same as KTH(4).
+		\item[KZN(I)]     	/ATDATA/  atomic number of element I.
+\end{description}
+\subsection*{L}
+\begin{description}
+	\item[L]		    /NAMEIN/ luminosity in $10^{33}$ ergs per second.
+			        independent variable 8.  variable for difference equation 9.
+			        	\item[LDRK]		/NAMOUT/ heat transfer due to differential rotation.
+	\item[LEDD]		/VBLES / Eddington luminosity.
+	\item[LK]      	/NAMOUT/ the part of dL/dk that is not multiplied by dM/dt.
+	\item[LQ]      	/NAMOUT/ the part of dL/dk that is multiplied by dM/dt.
+\end{description}
+\subsection*{M}
+\begin{description}
+	\item[M]		    /NAMEIN/ mass in $10^{33}$ g units interior to the meshpoint; independent variable 4.
+	\item[M0]      	/TVBLES/ ?
+		\item[MB]      	/NAMEIN/ binary mass in $10^{33}$ g units; independent variable 20.  ??
+	\item[MC]      	/TVBLES/ mass (in $10^{33}$ g units) for *1 and *2.  ?
+
+	\item[MCB]		    /TVBLES/ array of overshoot boundaries (EG = 0) in Msolar units.
+	\item[ML]		    /QUERY / $log_{10}$(mass of *1 in solar units); outer loop in MAIN.
+	\item[MS]		    /STORE / ?
+		\item[MSB]     	/TVBLES/ array of convective/semiconvective boundaries (EG = CGR) in Msolar units.
+	\item[MT]      	/NAMOUT/ dM/dt.
+	\item[MTA]     	/TVBLES/ ?
+	\end{description}
+\subsection*{N}
+\begin{description}
+	\item[N1]		    /ABUND / moles of H1 per gram of star;   = NA(1).
+	\item[N4]		    /ABUND / moles of He4 per gram of star;  = NA(2).
+	\item[N12]		    /ABUND / moles of C12 per gram of star;  = NA(3).
+	\item[N14]		    /ABUND / moles of N14 per gram of star;  = NA(4).
+	\item[N16]		    /ABUND / moles of O16 per gram of star;  = NA(5).
+	\item[N20]		    /ABUND / moles of Ne20 per gram of star; = NA(6).
+	\item[N24]		    /ABUND / moles of Mg24 per gram of star; = NA(7).
+	\item[N28]		    /ABUND / moles of Si28 per gram of star; = NA(8).
+	\item[N56]		    /ABUND / moles of Fe56 per gram of star; = NA(9).
+	\item[NA(I)]		/ABUND / fractional abundances by number (moles of element I per gram of star)	                same as N1, N4, N12, N14, N16, N20, N24, N28, N56.
+	                NA(I)/NIO is fractional abundance by number of the I$^{th}$ element.
+    \item[NE]	     	/ABUND / moles of free electrons per gram of star.
+    \item[NE0]     	/ABUND / moles of electrons per gram of star (bound and free).
+
+	                NEO/NIO is average charge per nucleus = average number of electrons per nucleus.
+	\item[NI]		    /ABUND / moles of molecules (including monatomic) per gram.
+   	\item[NIO]     	/ABUND / moles of nuclei per gram of star.
+	\item[NZZ]		    /ABUND / moles of $Z^2$'s per gram of star where Z is nuclear charge.
+\end{description}
+\subsection*{O}
+\begin{description}
+    \item[OA]     	 	/NAMEIN/ orbital angular momentum in $10^{50}$ gm cm$^2$/sec units; independent variable 17.
+    \item[OM]      	/TVBLES/ mass of other star in $10^{33}$ g units.
+    \item[OM0]     	/TVBLES/ ? M0 for `other' star.
+        \item[OMTA]    	/TVBLES/ ? MTA for `other' star.
+    \end{description}
+\subsection*{P}
+\begin{description}
+	\item[P]		    /STAT2 / total pressure at current meshpoint.
+
+	\item[PE]      	/STATFD/ pressure of electron gas.
+	\item[PEF]     	/STATFD/ d$\rho$*/dln(F).
+	\item[PET]     	/STATFD/ d$\rho$*/dln(T).
+	\item[PER]		    /TVBLES/ binary orbital period in days.
+	\item[PF]		    /STAT2 / dP/dln(F).
+
+	\item[PG]		    /STAT2 / gas pressure.
+	\item[PHI]     	/NAMEIN/ centrifugal-gravitational potential in ergs.
+			        independent variable 14.  variable for difference equation 12.
+	\item[PHIK]    	/NAMOUT/ dPHI/dk.
+	\item[PHIM]    	/VBLES / dPHI/dM.
+	\item[PHIS]    	/NAMEIN/ potential at the surface minus potential at L1; independent variable 15.
+	\item[PLANCK]		/CONSTS/ Planck's constant h.
+	\item[PPR]     	/TVBLES/ holds previous PR for BACKUP.
+	\item[PR]      	/TVBLES/ holds previous ZQ for BACKUP.
+	            /STAT2 / radiation pressure, $(a T^4)/3$.
+	\item[PSI]		    electron degeneracy parameter.
+
+	\item[PT]		    /STAT2 / dP/dln(T).
+
+	\item[PX(I)]		/VBLES / array of data for the current meshpoint for printing  UNITS???		\begin{enumerate}					\item	psi (the degeneracy parameter)					\item	pressure dynes/cm$^2$  ?					\item	density in g/cm$^3$  ?					\item	temperature in K					\item	opacity     (units?)					\item	$\nabla_a$					\item	$\nabla$					\item$\nabla_r - \nabla_a$					\item	mass in solar units					\item	H1 fractional abundance by mass					\item	He4 fractional abundance by mass					\item	C12 fractional abundance by mass					\item	N14 fractional abundance by mass					\item	O16 fractional abundance by mass					\item	Ne20 fractional abundance by mass					\item	Mg24 fractional abundance by mass					\item	Radius in solar units					\item	Luminosity in solar units					\item	eps-thermal in ergs/g/sec   ?					\item	eps-nuclear in ergs/g/sec   ?					\item	eps-neutrino in ergs/g/sec   ?					\item	delta-m  (units?)					\item	unused					\item	+ dln(rho)/dln(P)    ?					\item	- dln(R)/dln(P)       ?					\item	- dln(M)/dln(P)      ?					\item	energy  ergs/gram ?					\item	entropy  ergs/K/gram ?					\item	luminosity in $L_{Eddington}$ units					\item	W*L (convection velocity times mixing length)  units?					\item	mu, grams per mole of gas particles					\item	wt  ?					\item	Ne  free electron abundance by number (moles per gram of star)					\item	Ne0,  value of NE if complete ionization					\item	wcv, convection velocity   (units?)					\item	moment of inertia of interior material in $10^{55}$ gm cm$^2$ units					\item	phi,  centrifugal gravitational potential in ergs					\item	FM, mass flux between stars					\item	EG, measure of superadiabaticity					\item	unused					\item	unused					\item	DLdr  ?					\item	Denth  ?					\item	$V^2$  ?					\item	F1+F2  ?
+	\end{enumerate}
+	\end{description}
+\subsection*{Q}
+\begin{description}
+	\item[Q]		    /INF   / the array of independent variables. also known as X or VAR.
+	
+	\item[Q33]		    /NCDATA/ MeV per He3 (He3,2p) He4.
+	\item[Q3A]		    /NCDATA/ MeV per triple alpha reaction, 3 He4 $\to$ C12.
+	\item[QA]      	/VBLES /  ?
+		\item[QAC	]	    /NCDATA/ MeV per C12 + He4 $\to$ O16.
+	\item[QAN	]	    /NCDATA/ MeV per N14 + 3/2 He4 $\to$ Ne20.
+	\item[QAO]		    /NCDATA/ MeV per O16 + He4 $\to$ Ne20.
+	\item[QANE]		/NCDATA/ MeV per Ne20 + He4 $\to$ Mg24.
+	\item[QCCA]		/NCDATA/ MeV per 2 C12 $\to$ Ne20 + He4.
+	\item[QCCG]		/NCDATA/ MeV per 2 C12 $\to$ Mg24.
+	\item[QCO]		    /NCDATA/ MeV per C12 + O16 $\to$ Mg24 + He4.
+	\item[QE]      	/STATFD/ Q*, intermediate in calculation of s* and U*.
+	\item[QEF]     	/STATFD/ d$\rho$*/dln(F).
+	\item[QET]     	/STATFD/ d$\rho$*/dln(T).
+	\item[QGMG]		/NCDATA/ MeV per Mg24 $\to$ Ne20 + He4.
+	\item[QGNE]		/NCDATA/ MeV per Ne20 $\to$ O16 + He4.
+	\item[QL]		    /QUERY / $log_{10}$(mass *1 / mass *2) from outer loop in MAIN.
+	\item[QM]      	/VBLES / dQQ/dM.
+	\item[QNT]		    /NCDATA/ neutrino Q values in MeV per reaction.
+	\item[QOO]		    /NCDATA/ MeV per 2 O16 $\to$ Mg24 + 2 He4.
+	\item[QPC	]	    /NCDATA/ MeV per C12 + 2 p $\to$ N14.
+	\item[QPNA]		/NCDATA/ MeV per N14 + 2 p $\to$ C12 + He4.
+	\item[QPNG]		/NCDATA/ MeV per N14 + 2 p $\to$ O16.
+	\item[QPO]		    /NCDATA/ MeV per O16 + 2 p $\to$ N14 + He4.
+	\item[QPP]		    /NCDATA/ MeV per P-P reaction which consumes 2 p to make 1/2 He4.
+	\item[QQ]      	/VBLES / the meshpoint spacing function.
+	\item[QRT(I)]		    /NCDATA/ nuclear reaction Q values in MeV per reaction.
+\end{description}
+\subsection*{R}
+\begin{description}
+	\item[R33]		    /STAT2 / reaction rate for pp-I chain.  He3 (He3,2p) He4, in reactions per ? per second.
+	\item[R3A]		    /STAT2 / triple alpha reaction rate, 3 He4 $\to$ C12, in reactions per ? per second.
+	\item[RAC]		    /STAT2 / rate of C12 + He4 $\to$ O16, in reactions per ? per second.
+	\item[RAN]		    /STAT2 / rate of N14 + 3/2 He4 $\to$ Ne20, in reactions per ? per second.
+	\item[RAO]		    /STAT2 / rate of O16 + He4 $\to$ Ne20, in reactions per ? per second.
+	\item[RANE]		/STAT2 / rate of Ne20 + He4 $\to$ Mg24, in reactions per ? per second.
+
+	\item[RCB]		    TVBLES/ array of radiative/convective boundaries ($\nabla_r=\nabla_a$) in Rsolar units.
+
+	\item[RCC]		    /STAT2 / rate of 2 C12 $\to$ Ne20 + He4, in reactions per ? per second.
+	\item[RCCA]		/STAT2 / same as RCC.
+	\item[RCCG]		/STAT2 / rate of 2 C12 $\to$ Mg24, in reactions per ? per second.
+	\item[RCO]		    /STAT2 / rate of C12 + O16 $\to$ Mg24 + He4, in reactions per ? per second.
+	\item[RE]     	/STATFD/ RE = $\rho* = (\Lambda_C^3 \rho)/(8 \pi \mu_e m_H)$.
+	\item[REF]     	/STATFD/ d$\rho$*/dln(F).
+	\item[RET]     	/STATFD/ d$\rho$*/dln(T).
+	\item[RGMG]		/STAT2 / rate of Mg24 $\to$ Ne20 + He4, in reactions per ? per second.
+	\item[RGNE]		/STAT2 / rate of Ne20 $\to$ O16 + He4, in reactions per ? per second.
+    \item[RHO]		    /STAT2 / density at current meshpoint.
+
+    \item[RLF]    	 	/VBLES / ?
+    	\item[ROO]		    /STAT2 / rate of 2 O16 $\to$ Mg24 + 2 He4, in reactions per ? per second.
+	\item[RPP]		    /STAT2 / rate of PP chain, 2 p $\to$ 1/2 He4, in reactions per ? per second.
+	\item[RPC]		    /STAT2 / rate of C12 + 2 p $\to$ N14, in reactions per ? per second.
+	\item[RPN] 		/STAT2 / rate of N14 + 2 p $\to$ C12 + He4, in reactions per ? per second.
+	\item[RPNA]		/STAT2 / same as RPN.
+	\item[RPNG]		/STAT2 / rate of N14 + 2 p $\to$ O16, in reactions per ? per second.
+
+	\item[RPO]		    /STAT2 / rate of O16 + 2 p $\to$ N14 + He4, in reactions per ? per second.
+
+	\item[RPT(I)]		/STAT2 / array of reaction rates.
+
+\end{description}
+\subsection*{S}
+\begin{description}
+	\item[S]		    /STAT2 / entropy per gram at current meshpoint.
+	\item[SCP]		    /STAT2 / specific heat capacity at constant pressure.
+	\item[SE]		    /STORE / s* = (entropy per mole of free electrons) / (CR*NE).
+		\item[SF]		    /STAT2 / dS/dln(F).
+	\item[SG]      	/NAMOUT/ $\sigma$, diffusion coefficient for convective mixing.
+
+	\item[SM]		    /TVBLES/ *1 mass in solar units.
+	\item[ST]		    /STAT2 / dS/dln(T).
+	\item[SX(I,J)]		/VBLES / array of data for the current meshpoint.  mesh number J = 2 for center. 	                index I same as for PX(I), so see PX for descriptions.
+	\end{description}
+\subsection*{T}
+\begin{description}
+
+	\item[T]		    /STAT2 / temperature at current meshpoint.
+	\item[T0]      	/TVBLES/ ?
+	 	\item[TAB]     	/UBVDAT/ ?
+	 	\item[TCT]      	/TVBLES/ array of convective turnover times for zones in RCB (=0 for nonconvective regions).
+
+	\item[TFM]     	/STAT3 / temperatures for opacity interpolation.
+	\item[TGR]     	/UBVDAT/  ?
+		\item[TW]      	/VBLES / ?
+	 \end{description}
+\subsection*{U}
+\begin{description}
+
+	\item[U]		    /STAT2 / internal energy at current mesh point; ergs per gram.
+	\item[UC(I)]		    /QUERY / constants from fort.23 to determine when to terminate or adjust the model.
+		\begin{enumerate}			\item 	limit for *1 radius beyond Roche-lobe limit            		\item   limit for AGE            		\item   limit for C burning in solar units            		\item   limit for *2 radius beyond Roche-lobe limit            		\item   limit for He burning luminosity (solar units) before He ignition            		\item   limit for $log_{10}$(central density) before He ignition            		\item   limit for VME for massive degenerate C/O core            		\item   limit for central density for massive degenerate C/O core            		\item   if center He abundance less than this, reset EPS to UC(11)            		\item  limit for abs(dM/dt) as fraction of mass per Kelvin-Helmholtz time            		\item  new value for EPS if center He abundance is less than UC(10)            		\item  lower limit for timestep in seconds            		\item  if mass greater than this, set CMI to zero so stop growing.  (units?)            		\item  core mass limit  (units?)
+	\end{enumerate}\end{description}
+\subsection*{V}
+\begin{description}
+    \item[VI]      	/NAMOUT/ moment of inertia.  variable for difference equation 11.
+   	\item[VIK]     	/NAMOUT/ dVI/dk.
+    \item[VL]      	/NAMOUT/ luminosity term for mesh spacing function QQ.
+	\item[VLC]		    /TVBLES/ integrated luminosity from C burning in solar units.
+	\item[VLE] 		/TVBLES/ integrated luminosity from He burning in solar units.
+	\item[VLH]		    /TVBLES/ integrated luminosity from H burning in solar units.
+	\item[VLN]		    /TVBLES/ integrated loss from neutrino cooling in solar units.
+	\item[VLT]		    /TVBLES/ integrated thermal energy in solar units.
+	\item[VM]      	/NAMOUT/ mass term for mesh spacing function QQ.  variable for difference equation 10.
+	\item[VMC]		    /TVBLES/ location (in Msolar) where C12 abundance XC reaches 0.05 as go out from center.
+	\item[VME]     	/TVBLES/ location (in Msolar) where He4 abundance XHE reaches CXB as go out from center.
+	\item[VMH]		    /TVBLES/ location (in Msolar) where H1 abundance XH reaches CXB as go out from center.
+	\item[VMK]     	/NAMOUT/ dVM/dk.
+	\item[VP]      	/NAMOUT/ pressure term for mesh spacing function QQ.
+	                     variable for difference equation 6.
+	\item[VPK]     	/NAMOUT/ dVP/dk.
+	\item[VPHI]    	/NAMOUT/ centrifugal gravitational potential.
+	\item[VQK]		    /NAMEIN/ derivative wrt meshpoint k of meshpoint spacing function QQ;	                     independent variable 6.
+	\item[VR]      	/NAMOUT/ radius term for mesh spacing function QQ.  variable for difference equation 7.
+	\item[VRK]     	/NAMOUT/ dVR/dk.
+	\item[VT]      	/NAMOUT/ temperature term for mesh spacing function QQ.  variable for difference equation 8.
+	\item[VTK]     	/NAMOUT/ dVT/dk.
+	\item[VX1]		    /NAMEIN/ fractional abundance by mass of H;  independent variable 5.
+	\item[VX4]		    /NAMEIN/ fractional abundance by mass of He4; variable 9.
+	\item[VX12]		/NAMEIN/ fractional abundance by mass of C12;  variable 10.
+	\item[VX16]		/NAMEIN/ fractional abundance by mass of O16; variable 3.
+	\item[VX20]		/NAMEIN/ fractional abundance by mass of Ne20; variable 11.
+	\item[VZ]		    /NCDATA/ constant for electron screening.   ?
+\end{description}
+\subsection*{W}
+\begin{description}
+
+    \item[WCV]     	/VBLES / convection velocity.
+	\item[WL]		    /VBLES / convection velocity times mixing length.
+
+	\item[WNE0]		/ABUND / same as NE0.
+
+	\item[WNE]		    /ABUND / same as NE.
+	\item[WT]      	/NAMOUT/   ?
+	\item[WX]		    /INF   / array of function values. also known as Y or FN1.
+\end{description}
+\subsection*{X}
+\begin{description}
+
+    \item[X(I)]       	/INF   / the array of independent variables at each meshpoint
+     			1-16 are intrinsic to *1; 17-24 relate to both *1 and *2; 25-40 are same as 1-16, but for *2.
+			\begin{enumerate}         			 \item AF,		ln(F), the electron degeneracy variable         			 \item AT,		ln(T in K)         			  \item VX16,		fractional abundance by mass of O16         			  \item M,		mass in $10^{33}$ g units         			  \item VX1,		fractional abundance by mass of H1         			  \item VQK,		dQQ/dk, the gradient of the mesh spacing function QQ         			  \item AR,		ln(R in $10^{11}$ cm units)         			  \item L,		luminosity in $10^{33}$ erg/s units         			  \item VX4,		fractional abundance by mass of He4         			 \item VX12,		fractional abundance by mass of C12         			 \item VX20,		fractional abundance by mass of Ne20         			 \item AI,		moment of inertia of interior material in $10^{55}$ gm cm$^2$ units         			 \item APER,		rotation period of star in days         			 \item PHI,		centrifugal gravitational potential in ergs         			 \item PHIS,		potential at the surface minus potential at L1         			 \item	 	unused         			 \item OA,		orbital angular momentum in $10^{50}$ gm cm$^2$/sec units         			 \item ECC,		orbital eccentricity         			 \item XI,		mass flux from *1 towards *2 in $10^{33}$ gm/sec units         			 \item MB,		total mass of binary (units?)         			 \item		unused         			 \item		unused         			 \item		unused         			 \item		unused		\end{enumerate}    \item[X1]      	/NAMOUT/  H1 abundance. variable for difference equation 1.
+    \item[X1T]     	/NAMOUT/  dX1/dt.
+    \item[X12]     	/NAMOUT/  C12 abundance. variable for difference equation 4.
+    \item[X12T]    	/NAMOUT/  dX12/dt.
+    \item[X16]     	/NAMOUT/  O16 abundance. variable for difference equation 2.
+    \item[X16T]    	/NAMOUT/  dX16/dt.
+    \item[X20]     	/NAMOUT/  Ne20 abundance. variable for difference equation 5.
+    \item[X20T]    	/NAMOUT/  dX20/dt.
+
+    \item[X4]      	/NAMOUT/  He4 abundance. variable for difference equation 3.
+   	\item[X4T]     	/NAMOUT/  dX4/dt.
+	\item[XA(I)]		/ABUND / fractional abundances by mass (grams of element I per gram of star)
+				         I: 1=XH, 2=XHE, 3=XC, 4=XN, 5=XO, 6=XNE, 7=XMG, 8=XSI, 9=XFE.
+	\item[XC]		    /ABUND / grams of C12 per gram of star. same as XA(3).
+	\item[XFE	]	    /ABUND / grams of Fe56 per gram of star. same as XA(9).
+	\item[XH]		    /ABUND / grams of H1 per gram of star. same as XA(1).
+
+	\item[XHE]		    /ABUND / grams of He4 per gram of star. same as XA(2).
+
+	\item[XHI]		    /STAT2 / thermal conductivity = $4 a c T^3/(3 \kappa \rho^2 c_P$). (cm$^2$/sec).
+ 	\item[XI ]     	/NAMEIN/ mass flux from *1 towards *2 in $10^{33}$ gm/sec; independent variable 19.
+
+	\item[XIK]     	/NAMOUT/ dXIM/dk.
+	\item[XIM ]    	/NAMOUT/ Flux of mass from *1 to *2.  variable for difference equation 19.
+	\item[XL]		    /QUERY / $log_{10}$(initial period / period for R-lobe overflow for *1 on ZAMS).	\item[XMG]		    /ABUND / grams of Mg24 per gram of star. same as XA(7).
+	\item[XN]		    /ABUND / grams of N14 per gram of star. same as XA(4).
+	\item[XNE	]	    /ABUND / grams of Ne20 per gram of star. same as XA(6).
+	\item[XO]		    /ABUND / grams of O16 per gram of star. same as XA(5).
+	\item[XSI]		    /ABUND / grams of Si28 per gram of star. same as XA(8).
+
+\end{description}
+\subsection*{Y}
+\begin{description}
+    \item[Y(I)]      	/INF   / holds functions values for current meshpoint as output of FUNCS1.
+
+	\item[YA(I)]		/ABUND / holds abundances by number (N1, N4, N12, ...).
+	\end{description}
+\subsection*{Z}
+\begin{description}
+
+   \item[ ZQ(I)]      	/TVBLES/ ?
+   \end{description}
+\end{document}
+

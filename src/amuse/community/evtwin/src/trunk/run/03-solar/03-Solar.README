@@ -1,0 +1,6 @@
+   Evolves a solar-like model, including magnetic braking and
+mass loss. We have to start at 1.0135 Msun to get the present
+parameters, more-or-less, at age 4.6Gyr.
+   The second run (init.run_2) illustrates how to start from the 
+last model of a previous run. The first run did 200 timesteps, 
+and the second starts from there and does another 200.

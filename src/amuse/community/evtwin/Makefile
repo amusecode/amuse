@@ -10,15 +10,14 @@ FC ?= $(FORTRAN)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-SRCDIR=src/code
+SRCDIR=src/trunk
 BUILDDIR=build
 
-CMAKE_DEPS=src/CMakeLists.txt src/cmake/CompilerFlags.cmake src/cmake/FileList.cmake
+CMAKE_DEPS=$(SRCDIR)/CMakeLists.txt $(SRCDIR)/cmake/CompilerFlags.cmake $(SRCDIR)/cmake/FileList.cmake
 
-SRC = $(SRCDIR)/library_v2.f90 $(SRCDIR)/export.f90 $(SRCDIR)/import.f90 \
-      $(SRCDIR)/create_new_model.f90 $(SRCDIR)/prtoft.f90
+SRC = $(SRCDIR)/code/libint.f90
 
-EVTWINLIB=$(BUILDDIR)/libtwin.a
+EVTWINLIB=$(SRCDIR)/lib/libtwin.a $(SRCDIR)/lib/libtwincore.a
 
 FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
 LD = ld
@@ -30,7 +29,7 @@ all:    $(BUILDDIR)/Makefile evtwin_worker
 
 $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 	-mkdir -p $(BUILDDIR)
-	cd $(BUILDDIR) && FC="$(FC) $(FCFLAGS)" cmake ../src -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)"
+	cd $(BUILDDIR) && FC="$(FC) $(FCFLAGS)" cmake ../src/trunk -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)"
 
 clean:
 	rm -f *.pyc make.log
@@ -41,9 +40,10 @@ clean:
 	rm -rf $(BUILDDIR)/CMakeFiles
 	rm -rf $(BUILDDIR)/Makefile
 	rm -rf $(BUILDDIR)
+	rm -f $(EVTWINLIB)
 
 distclean:
-	make -C src distclean
+	make -C $(SRCDIR) distclean
 	/bin/rm -f *.pyc
 
 evtwin_worker: worker_code.f90 $(SRC)

@@ -1,0 +1,27 @@
+  The run (a) with fort.22 = af22 and fort.23 = af23 takes a ZAMS star 
+of 0.5 Msun, 0.04 Lsun. and pseudo-evolves it *up* the Hayashi track, 
+by putting in a fictitious uniform energy source that increases with 
+time. 500 timesteps takes it to a luminosity of  ~ 0.6 Lsun.
+  The run (b) with fort.22 = bf22 and fort.23 = bf23 then allows it to
+evolve normally from that luminosity back towards the ZAMS. The
+starting model in fort.13 is the last model of the first run (af13). It 
+is started with a rotational period of 3d, which initially decreases to 
+2.68d as the star shrinks, but then increases due to magnetic braking. 
+By the end of 500 steps the luminosity is down to 0.12 Lsun, and the 
+period up to 7.9d. By 1000 steps nuclear burning has been re-established,
+the star has aged to 2.8 Gyr and the rotational period has reached
+333d. That this rotation is rather slow is possibly an indication that
+the magnetic-braking algorithm is rather too fierce, though not
+necessarily by a large factor.
+   Deuterium and 3He burning are not included, so the astrophysical 
+significance of the run is small. But they can be included without too much 
+trouble, adding three extra equations on the lines of the composition
+equations already present.
+   For higher masses than 0.5 Msun one can start from the 0.5 Msun model at 
+some point already well up its Hayashi track, e.g. once again from the last 
+model (af13) of run (a), and add mass to it while also adding to the 
+artificial energy source. Run (c) starts from the end of run (a), with mass 
+gain CMI = 1.0D-9 /yr but otherwise continuing much the same. By timestep 350 
+it is up to 2.7 msun. It is near but somewhat to the left of the Hayashi track
+(outer 30% by mass convective). It probably needs more of the artificial 
+energy source to make it fully convective again.

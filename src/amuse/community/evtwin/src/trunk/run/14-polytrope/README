@@ -1,0 +1,11 @@
+This test job evolves a 1 solar mass star from a fully convective polytrope
+with a central temperature of 1e6K (a pre-main sequence model).
+The polytropic model is created on-the-fly by the code, and as such the
+code doesn't require the ZAMS library in this mode.
+
+Activating the polytropic mode works by initialising with IP1 = 0. The
+number of iterations KR1 in init.dat should be large for the code to
+converge at all.
+
+The current code has been tested (and found to work) in the range 0.4-100
+Msun. Some parameter tweaking may be needed for different masses.

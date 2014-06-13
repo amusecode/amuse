@@ -1,0 +1,10 @@
+    The input file init.run_grid (=> init.run) evolves a 3x1x3 grid of 
+binary stars: 3 M1s, 1 M1/M2, and 3 periods each. Conservative evolution, 
+of non-rotating components, some Case A and some Case B. The lowest-mass, 
+longest-period one is *late* Case B, and breaks down shortly after
+RLOF begins. The others all evolve until reverse RLOF.
+
+   The input file init.run_b (=> init.run) starts a run that gives Fig. A 
+in the writeup: it evolves conservatively a binary of 8 + 7 Msun, 
+Porb = 3.5 days.
+
