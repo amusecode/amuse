@@ -1241,19 +1241,19 @@ contains
 
 
    ! Stellar wind switch: can be modulated between 0.0 (no wind) and 1.0 (full strength)
-   subroutine set_wind_multiplier(star_id, mdot_factor)
-      use constants, only: csy
+   integer function set_wind_multiplier(star_id, mdot_factor)
       use settings, only: cmdot_wind
       implicit none
       integer, intent(in) :: star_id
       real(double), intent(in) :: mdot_factor
-
+      set_wind_multiplier = -1
       if (star_id > max_stars) return
       
       call select_star(star_id)
       cmdot_wind = mdot_factor
       star_list(star_id)%cmdot_wind = mdot_factor
-   end subroutine set_wind_multiplier
+      set_wind_multiplier = 0
+   end function set_wind_multiplier
 
 
 
@@ -1657,48 +1657,125 @@ contains
       set_maximum_number_of_stars = 0
    end function
 
+! Retrieve the current value of the mixing length ratio
    integer function get_mixing_length_ratio(value)
+      use settings, only: calp
       implicit none
       real(double), intent(out) :: value
-      get_mixing_length_ratio = -1
+      value = calp
+      get_mixing_length_ratio = 0
    end function
+! Set the current value of the mixing length ratio
    integer function set_mixing_length_ratio(value)
+      use settings, only: calp
       implicit none
       real(double), intent(in) :: value
-      set_mixing_length_ratio = -1
+      calp = value
+      set_mixing_length_ratio = 0
    end function
 
+! Return the minimum timestep stop condition
    integer function get_min_timestep_stop_condition(value)
+      use stopping_conditions
+      use constants
       implicit none
       real(double), intent(out) :: value
-      get_min_timestep_stop_condition = -1
+      value = uc(12)/csy ! Convert from seconds to yr
+      get_min_timestep_stop_condition = 0
    end function
+! Set the minimum timestep stop condition
    integer function set_min_timestep_stop_condition(value)
+      use stopping_conditions
+      use constants
       implicit none
       real(double), intent(in) :: value
-      set_min_timestep_stop_condition = -1
+      uc(12) = value*csy ! Convert from yr to seconds
+      set_min_timestep_stop_condition = 0
    end function
 
+! Return the maximum age stop condition
    integer function get_max_age_stop_condition(value)
+      use stopping_conditions
       implicit none
       real(double), intent(out) :: value
-      get_max_age_stop_condition = -1
+      value = uc(2)
+      get_max_age_stop_condition = 0
    end function
+! Set the maximum age stop condition
    integer function set_max_age_stop_condition(value)
+      use stopping_conditions
       implicit none
       real(double), intent(in) :: value
-      set_max_age_stop_condition = -1
+      uc(2) = value
+      set_max_age_stop_condition = 0
    end function
 
+! Retrieve the current value of the efficiency of semi-convection
    integer function get_semi_convection_efficiency(value)
+      use settings, only: csmc
       implicit none
       real(double), intent(out) :: value
-      get_semi_convection_efficiency = -1
+      value = csmc
+      get_semi_convection_efficiency = 0
    end function
+! Set the current value of the efficiency of semi-convection
    integer function set_semi_convection_efficiency(value)
+      use settings, only: csmc
       implicit none
       real(double), intent(in) :: value
-      set_semi_convection_efficiency = -1
+      csmc = value
+      set_semi_convection_efficiency = 0
+   end function
+
+! Retrieve the current value of the convective overshoot parameter
+   integer function get_convective_overshoot_parameter(value)
+      use settings, only: cos
+      implicit none
+      real(double), intent(out) :: value
+      value = cos
+      get_convective_overshoot_parameter = 0
+   end function
+! Set the current value of the convective overshoot parameter
+   integer function set_convective_overshoot_parameter(value)
+      use settings, only: cos
+      implicit none
+      real(double), intent(in) :: value
+      cos = value
+      set_convective_overshoot_parameter = 0
+   end function
+
+! Retrieve the current value of the thermohaline mixing parameter
+   integer function get_thermohaline_mixing_parameter(value)
+      use settings, only: cth
+      implicit none
+      real(double), intent(out) :: value
+      value = cth
+      get_thermohaline_mixing_parameter = 0
+   end function
+! Set the current value of the thermohaline mixing parameter
+   integer function set_thermohaline_mixing_parameter(value)
+      use settings, only: cth
+      implicit none
+      real(double), intent(in) :: value
+      cth = value
+      set_thermohaline_mixing_parameter = 0
+   end function
+
+! Retrieve the current number of elements used for ionization in the EoS
+   integer function get_number_of_ionization_elements(value)
+      use settings, only: kion
+      implicit none
+      integer, intent(out) :: value
+      value = kion
+      get_number_of_ionization_elements = 0
+   end function
+! Set the current number of elements used for ionization in the EoS
+   integer function set_number_of_ionization_elements(value)
+      use settings, only: kion
+      implicit none
+      integer, intent(in) :: value
+      kion = value
+      set_number_of_ionization_elements = 0
    end function
 
    integer function get_metallicity(value)
@@ -1717,7 +1794,7 @@ contains
    integer function initialize_code()
       implicit none
       amuse_ev_path = 'src/trunk'
-      amuse_nstars = 1000
+      amuse_nstars = 10
       amuse_nmesh = 500
       amuse_verbose = .true.
       amuse_Z = 0.02d0
@@ -1738,14 +1815,19 @@ contains
    integer function evolve_one_step(star_id)
       implicit none
       integer, intent(in) :: star_id
-      evolve_one_step = -1
+      evolve_one_step = evolve_one_timestep(star_id)
    end function
 
    integer function get_wind_mass_loss_rate(star_id, value)
+      use constants
       implicit none
       integer, intent(in) :: star_id
       real(double), intent(out) :: value
       get_wind_mass_loss_rate = -1
+      value = -1.0
+      if (star_id > max_stars .or. .not. star_list(star_id)%exists) return
+      value = star_list(star_id)%zet(1) * csy / cmsn
+      get_wind_mass_loss_rate = 0
    end function
 
    integer function get_spin(star_id, value)

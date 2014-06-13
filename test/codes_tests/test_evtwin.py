@@ -13,9 +13,9 @@ from amuse.datamodel import Particle, Particles
 from amuse.rfi import channel
 
 
-class TestInterface(TestWithMPI):
+class TestEVtwinInterface(TestWithMPI):
     
-    def test0(self):
+    def test1(self):
         instance = EVtwinInterface()
 #~        error = instance.set_ev_path(instance.get_data_directory())
 #~        self.assertEquals(0, error)
@@ -25,7 +25,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         instance.stop()
     
-    def test1(self):
+    def test2(self):
         instance = EVtwinInterface()
         error = instance.initialize_code()
         self.assertEquals(0, error)
@@ -35,7 +35,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         instance.stop()
     
-    def test2(self):
+    def test3(self):
         print "Testing get/set for metallicity..."
         instance = EVtwinInterface()
         error = instance.initialize_code()
@@ -65,7 +65,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         instance.stop()
     
-    def test3(self):
+    def test4(self):
         print "Testing get/set for maximum number of stars..."
         instance = EVtwinInterface()
         error = instance.initialize_code()
@@ -74,7 +74,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         (value, error) = instance.get_maximum_number_of_stars()
         self.assertEquals(0, error)
-        self.assertEquals(1000, value)
+        self.assertEquals(10, value)
         
         error = instance.set_maximum_number_of_stars(10000)
         self.assertEquals(0, error)      
@@ -89,65 +89,46 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         instance.stop()
     
-    def xtest4(self):
-        print "Testing initialization..."
-        instance = EVtwinInterface()
-        
-        error = instance.set_ev_path(instance.get_data_directory())
-        self.assertEquals(0, error)      
-        
-        error = instance.initialize_code()
-        self.assertEquals(0, error)      
-        
-        instance.stop()
     
-    def xtest5(self):
+    def test5(self):
         print "Testing basic operations (new_particle, evolve_one_step etc.)..."
-        #code/library_v2.f:602
         instance = EVtwinInterface()
-        
-        error = instance.set_ev_path(instance.get_data_directory())
-        self.assertEquals(0, error)
-        
         error = instance.initialize_code()
         self.assertEquals(0, error)
-        
+        error = instance.set_ev_path(instance.get_data_directory())
+        self.assertEquals(0, error)
         error = instance.commit_parameters()
         self.assertEquals(0, error)
         
         (index_of_the_star, error) = instance.new_particle(1.05)
         self.assertEquals(0, error)
-        
         self.assertTrue(index_of_the_star >= 0)
+        error = instance.set_wind_multiplier(index_of_the_star, 1.0)
+        self.assertEquals(0, error)
         
         (mass, error) = instance.get_mass(index_of_the_star)
         self.assertEquals(0, error)
         self.assertEquals(1.05, mass)
         
-        error = instance.evolve_one_step(index_of_the_star)
-        self.assertEquals(0, error)
-          
-        for i in range(2):
+        for i in range(3):
             error = instance.evolve_one_step(index_of_the_star)
             self.assertEquals(0, error)
     
         (mass, error) = instance.get_mass(index_of_the_star)
         self.assertEquals(0, error)
-        self.assertTrue(mass < 1.05)
+        self.assertTrue(mass <= 1.05)
     
         (age, error) = instance.get_age(index_of_the_star)
         self.assertEquals(0, error)
         self.assertTrue(age > 0)
-        
-        (x, error) = instance.get_mass_transfer_rate(index_of_the_star)
-        self.assertEquals(0, error)
-        self.assertEquals(0, x)
         
         (x, error) = instance.get_wind_mass_loss_rate(index_of_the_star)
         self.assertEquals(0, error)
         self.assertTrue(x < 1e-13, "mass loss should be less than 1e-13, it is {0}".format(x))
         self.assertTrue(x > 0, "mass loss rate should be more than 0, it is {0}".format(x))
         
+        error = instance.cleanup_code()
+        self.assertEquals(0, error)
         instance.stop()
         
     def xtest6(self):
@@ -333,15 +314,20 @@ class TestEVtwin(TestWithMPI):
     
             
     
-    def xtest1(self):
+    def test0(self):
+        instance = EVtwin()
+        instance.initialize_code()
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test1(self):
         print "Testing assigned default parameter values..."
         instance = EVtwin()
-        
+        instance.initialize_code()
         instance.parameters.set_defaults()
-        
-        self.assertEquals(10.0 | units.no_unit, instance.parameters.maximum_number_of_stars)
-        instance.parameters.maximum_number_of_stars = 12 | units.no_unit
-        self.assertEquals(12.0 | units.no_unit, instance.parameters.maximum_number_of_stars)
+        self.assertEquals(10, instance.parameters.maximum_number_of_stars)
+        instance.parameters.maximum_number_of_stars = 12 
+        self.assertEquals(12, instance.parameters.maximum_number_of_stars)
         instance.stop()
     
     def xtest2(self):
