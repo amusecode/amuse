@@ -35,12 +35,17 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         .. [#] Stancliffe, Glebbeek, Izzard & Pols, 2007 A&A (for thermohaline mixing)
         .. [#] Eldridge & Tout, 2004 MNRAS 348 (for the OPAL 1996 opacity tables)
     """
-    use_modules = ['twinlib']#, 'create_new_model']
+    use_modules = ['twinlib']
     
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
+    
+    set_mass_fraction_of_species_at_zone = None
+    set_radius_at_zone = None
+    set_density_at_zone = None
+    set_temperature_at_zone = None
     
     @property
     def default_path_to_ev_database(self):
@@ -143,28 +148,26 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
     @legacy_function
     def get_min_timestep_stop_condition():
         """
-        Retrieve the current minimum timestep stop condition of this instance (in years).
+        Retrieve the current minimum timestep stop condition of this instance (in seconds).
         Evolution will stop if the timestep required by the solver in order to converge
         has decreased below this minimum timestep.
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('min_timestep_stop_condition', dtype='float64', direction=function.OUT
-            , description="The current minimum timestep stop condition of this instance (in years).")
+        function.addParameter('min_timestep', dtype='float64', direction=function.OUT, unit=units.s)
         function.result_type = 'int32'
         return function
     
     @legacy_function
     def set_min_timestep_stop_condition():
         """
-        Set the new minimum timestep stop condition of this instance (in years).
+        Set the new minimum timestep stop condition of this instance (in seconds).
         Evolution will stop if the timestep required by the solver in order to converge
         has decreased below this minimum timestep.
         This needs to be set after calling :method:`initialize_code`. It will 
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('min_timestep_stop_condition', dtype='float64', direction=function.IN
-            , description="The new minimum timestep stop condition of this instance (in years).")
+        function.addParameter('min_timestep', dtype='float64', direction=function.IN, unit=units.s)
         function.result_type = 'int32'
         return function
         
@@ -633,17 +636,17 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             (object.ERROR_CODE,)
         )
     
-        object.add_method(
-            "get_min_timestep_stop_condition", 
-            (),
-            (units.yr, object.ERROR_CODE,)
-        )
-    
-        object.add_method(
-            "set_min_timestep_stop_condition", 
-            (units.yr, ),
-            (object.ERROR_CODE,)
-        )
+#~        object.add_method(
+#~            "get_min_timestep_stop_condition", 
+#~            (),
+#~            (units.yr, object.ERROR_CODE,)
+#~        )
+#~    
+#~        object.add_method(
+#~            "set_min_timestep_stop_condition", 
+#~            (units.s, ),
+#~            (object.ERROR_CODE,)
+#~        )
     
         object.add_method(
             "get_number_of_ionization_elements", 

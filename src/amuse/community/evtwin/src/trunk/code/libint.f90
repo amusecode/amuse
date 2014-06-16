@@ -127,11 +127,12 @@ module twinlib
    integer, private :: eqns_single(130)
    integer, private :: eqns_binary(130)
 
-   ! Temporary storage of amuse parameters, needed by initialise_twin
+   ! Temporary storage of amuse parameters
    character(len = 1000), private :: amuse_ev_path
-   integer, private :: amuse_nstars, amuse_nmesh
+   integer, private :: amuse_nstars, amuse_nmesh, amuse_kion
    logical, private :: amuse_verbose
-   real(double), private :: amuse_Z
+   real(double), private :: amuse_Z, amuse_csmc, amuse_calp, amuse_cos
+   real(double), private :: amuse_cth, amuse_maxage, amuse_mindt
 
    ! List private subroutines that should not be called directly
    private initialise_stellar_parameters, allocate_star, swap_in, swap_out, select_star
@@ -388,8 +389,7 @@ contains
       integer, intent(in) :: star_id
       type(twin_star_t), pointer :: star
 
-      if (star_id < 1) return
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
 
       if (current_star == star_id) current_star = 0
 
@@ -1072,7 +1072,7 @@ contains
 
       age = -1.0
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       age = star_list(star_id)%age
       get_age = 0
    end function
@@ -1098,7 +1098,7 @@ contains
 
       luminosity = -1.0
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       luminosity = star_list(star_id)%H(VAR_LUM, 1) / CLSN
       get_luminosity = 0
    end function
@@ -1122,7 +1122,7 @@ contains
       get_mass = -1
       mass = -1.0
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       mass = star_list(star_id)%H(VAR_MASS, 1) / CMSN
       get_mass = 0
    end function
@@ -1148,7 +1148,7 @@ contains
 
       radius = -1.0
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       r = sqrt(exp(2.*star_list(star_id)%H(VAR_LNR, 1)) - CT(8))
       radius = r / CLSN
       get_radius = 0
@@ -1175,7 +1175,7 @@ contains
 
       temperature = -1.0
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       temperature = exp(star_list(star_id)%h(VAR_LNT, 1))
       get_temperature = 0
    end function
@@ -1200,7 +1200,7 @@ contains
 
       timestep = -1.0
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       timestep = star_list(star_id)%dt / csy
       get_time_step = 0
    end function
@@ -1216,7 +1216,7 @@ contains
       integer, intent(in) :: star_id
       real(double), intent(in) :: mmass
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       
       star_list(star_id)%maximum_mass = mmass
    end subroutine set_maximum_mass_after_accretion
@@ -1231,7 +1231,7 @@ contains
       integer, intent(in) :: star_id
       real(double), intent(in) :: mdot
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       
       call select_star(star_id)
       cmi = mdot / csy
@@ -1247,7 +1247,7 @@ contains
       integer, intent(in) :: star_id
       real(double), intent(in) :: mdot_factor
       set_wind_multiplier = -1
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       
       call select_star(star_id)
       cmdot_wind = mdot_factor
@@ -1266,7 +1266,7 @@ contains
       integer, intent(in) :: star_id
       real(double), intent(in) :: dty
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
 
       call select_star(star_id)
       dt = dty * csy
@@ -1291,7 +1291,7 @@ contains
       get_stellar_type = -1
       stellar_type = -1
 
-      if (star_id > max_stars) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       call select_star(star_id)
       stellar_type = find_stellar_type()
       get_stellar_type = 0
@@ -1315,7 +1315,7 @@ contains
       integer :: jo
       integer :: Jstar
 
-      if (star_id > max_stars) then
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) then
          evolve_one_timestep = -1
          return
       end if
@@ -1618,12 +1618,30 @@ contains
 
    ! Does nothing, but part of standard AMUSE interface
    integer function commit_parameters()
+      use stopping_conditions
+      use settings, only: csmc, calp, cos, cth, kion
       implicit none
       commit_parameters = initialise_twin(amuse_ev_path, amuse_nstars, amuse_Z, &
          amuse_verbose, amuse_nmesh)
+      csmc = amuse_csmc
+      calp = amuse_calp
+      cos = amuse_cos
+      cth = amuse_cth
+      kion = amuse_kion
+      uc(2) = amuse_maxage
+      uc(12) = amuse_mindt
    end function
    integer function recommit_parameters()
+      use stopping_conditions
+      use settings, only: csmc, calp, cos, cth, kion
       implicit none
+      csmc = amuse_csmc
+      calp = amuse_calp
+      cos = amuse_cos
+      cth = amuse_cth
+      kion = amuse_kion
+      uc(2) = amuse_maxage
+      uc(12) = amuse_mindt
       recommit_parameters = 0
    end function
    integer function commit_particles()
@@ -1648,7 +1666,6 @@ contains
       value = amuse_nstars
       get_maximum_number_of_stars = 0
    end function
-   
 ! Set the maximum_number_of_stars parameter
    integer function set_maximum_number_of_stars(value)
       implicit none
@@ -1659,122 +1676,106 @@ contains
 
 ! Retrieve the current value of the mixing length ratio
    integer function get_mixing_length_ratio(value)
-      use settings, only: calp
       implicit none
       real(double), intent(out) :: value
-      value = calp
+      value = amuse_calp
       get_mixing_length_ratio = 0
    end function
 ! Set the current value of the mixing length ratio
    integer function set_mixing_length_ratio(value)
-      use settings, only: calp
       implicit none
       real(double), intent(in) :: value
-      calp = value
+      amuse_calp = value
       set_mixing_length_ratio = 0
    end function
 
 ! Return the minimum timestep stop condition
    integer function get_min_timestep_stop_condition(value)
-      use stopping_conditions
-      use constants
       implicit none
       real(double), intent(out) :: value
-      value = uc(12)/csy ! Convert from seconds to yr
+      value = amuse_mindt
       get_min_timestep_stop_condition = 0
    end function
 ! Set the minimum timestep stop condition
    integer function set_min_timestep_stop_condition(value)
-      use stopping_conditions
-      use constants
       implicit none
       real(double), intent(in) :: value
-      uc(12) = value*csy ! Convert from yr to seconds
+      amuse_mindt = value
       set_min_timestep_stop_condition = 0
    end function
 
 ! Return the maximum age stop condition
    integer function get_max_age_stop_condition(value)
-      use stopping_conditions
       implicit none
       real(double), intent(out) :: value
-      value = uc(2)
+      value = amuse_maxage
       get_max_age_stop_condition = 0
    end function
 ! Set the maximum age stop condition
    integer function set_max_age_stop_condition(value)
-      use stopping_conditions
       implicit none
       real(double), intent(in) :: value
-      uc(2) = value
+      amuse_maxage = value
       set_max_age_stop_condition = 0
    end function
 
 ! Retrieve the current value of the efficiency of semi-convection
    integer function get_semi_convection_efficiency(value)
-      use settings, only: csmc
       implicit none
       real(double), intent(out) :: value
-      value = csmc
+      value = amuse_csmc
       get_semi_convection_efficiency = 0
    end function
 ! Set the current value of the efficiency of semi-convection
    integer function set_semi_convection_efficiency(value)
-      use settings, only: csmc
       implicit none
       real(double), intent(in) :: value
-      csmc = value
+      amuse_csmc = value
       set_semi_convection_efficiency = 0
    end function
 
 ! Retrieve the current value of the convective overshoot parameter
    integer function get_convective_overshoot_parameter(value)
-      use settings, only: cos
       implicit none
       real(double), intent(out) :: value
-      value = cos
+      value = amuse_cos
       get_convective_overshoot_parameter = 0
    end function
 ! Set the current value of the convective overshoot parameter
    integer function set_convective_overshoot_parameter(value)
-      use settings, only: cos
       implicit none
       real(double), intent(in) :: value
-      cos = value
+      amuse_cos = value
       set_convective_overshoot_parameter = 0
    end function
 
 ! Retrieve the current value of the thermohaline mixing parameter
    integer function get_thermohaline_mixing_parameter(value)
-      use settings, only: cth
       implicit none
       real(double), intent(out) :: value
-      value = cth
+      value = amuse_cth
       get_thermohaline_mixing_parameter = 0
    end function
 ! Set the current value of the thermohaline mixing parameter
    integer function set_thermohaline_mixing_parameter(value)
-      use settings, only: cth
       implicit none
       real(double), intent(in) :: value
-      cth = value
+      amuse_cth = value
       set_thermohaline_mixing_parameter = 0
    end function
 
 ! Retrieve the current number of elements used for ionization in the EoS
    integer function get_number_of_ionization_elements(value)
-      use settings, only: kion
       implicit none
       integer, intent(out) :: value
-      value = kion
+      value = amuse_kion
       get_number_of_ionization_elements = 0
    end function
 ! Set the current number of elements used for ionization in the EoS
    integer function set_number_of_ionization_elements(value)
-      use settings, only: kion
       implicit none
       integer, intent(in) :: value
-      kion = value
+      amuse_kion = value
       set_number_of_ionization_elements = 0
    end function
 
@@ -1798,6 +1799,13 @@ contains
       amuse_nmesh = 500
       amuse_verbose = .true.
       amuse_Z = 0.02d0
+      amuse_kion = 5
+      amuse_cth = 1.0d0
+      amuse_cos = 0.12d0
+      amuse_csmc = 0.04d0
+      amuse_calp = 2.0d0
+      amuse_mindt = 1.0d6
+      amuse_maxage = 1.0d12
       initialize_code = 0
    end function
 
@@ -1810,7 +1818,7 @@ contains
       implicit none
       integer, intent(in) :: star_id
       real(double), intent(in) :: delta_t
-      evolve_for = -1
+      evolve_for = evolve_until_model_time(star_id, delta_t + age_of(star_id))
    end function
    integer function evolve_one_step(star_id)
       implicit none
@@ -1825,22 +1833,46 @@ contains
       real(double), intent(out) :: value
       get_wind_mass_loss_rate = -1
       value = -1.0
-      if (star_id > max_stars .or. .not. star_list(star_id)%exists) return
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
       value = star_list(star_id)%zet(1) * csy / cmsn
       get_wind_mass_loss_rate = 0
    end function
 
+! Returns the star's spin period, in days
    integer function get_spin(star_id, value)
       implicit none
       integer, intent(in) :: star_id
       real(double), intent(out) :: value
       get_spin = -1
+      value = -1.0
+      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
+      value = star_list(star_id)%p
+      get_spin = 0
    end function
 
    integer function get_number_of_particles(value)
       implicit none
       integer, intent(out) :: value
-      get_number_of_particles = -1
+      integer :: i
+      value = 0
+      do i = 1, max_stars
+         if (star_list(i)%exists) value = value + 1
+      end do
+      get_number_of_particles = 0
    end function
+
+! Return the current number of zones/mesh-cells of the star
+      integer function get_number_of_zones(star_id, AMUSE_value)
+         implicit none
+         integer, intent(in) :: star_id
+         integer, intent(out) :: AMUSE_value
+         if (star_id<1 .or. star_id>max_stars .or. .not. star_list(star_id)%exists) then
+            AMUSE_value = 0
+            get_number_of_zones = -21
+            return
+         end if
+         AMUSE_value = star_list(star_id)% number_of_meshpoints
+         get_number_of_zones = 0
+      end function
 
 end module twinlib
