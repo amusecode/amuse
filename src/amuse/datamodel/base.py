@@ -1404,7 +1404,7 @@ class LinkedArray(numpy.ndarray):
         if memento is None:
             memento = dict()
             
-        result = LinkedArray(self.copy())
+        result = LinkedArray(numpy.empty_like(self))
         index = 0
         for index in numpy.ndindex(*self.shape):
             if len(index) == 1:

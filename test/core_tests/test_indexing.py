@@ -124,6 +124,49 @@ class TestIndexing(amusetest.TestCase):
         self.assertEquals((5,4,2), indexing.shape_after_index((5,4,2), numpy.s_[-10:,...,...]))
         
 
+    
+    def test15(self):
+        a = numpy.arange(6).reshape(2,3)
+        indices = numpy.asarray([[True, False, True],[True,False,True]])
+        direct =  a[indices][list([1,3])]
+        combined = combine_indices(indices,[1,3])
+        indirect = a[combined]
+        print a, a[indices], direct, indirect, combined
+        self.assertEquals(indirect, direct)
+        
+    
+    def test16(self):
+        self.assertEquals((4,), indexing.shape_after_index((2,3), [[True, False, True],[True,False,True]]))
+        self.assertEquals((1,3), indexing.shape_after_index((2,3), [True, False]))
+    
+    def test17(self):
+        a = numpy.arange(6).reshape(2,3)
+        indices = numpy.asarray([True,False])
+        direct =  a[indices, 1:][0,1:]
+        combined = combine_indices(numpy.s_[indices,1:],numpy.s_[0,1:])
+        indirect = a[combined]
+        print a, a[indices], direct, indirect, combined
+        self.assertEquals(indirect, direct)
+        
+    def test18(self):
+        a = numpy.arange(6).reshape(2,3)
+        indices = numpy.asarray([True,False])
+        direct =  a[indices, 1:][0]
+        combined = combine_indices(numpy.s_[indices,1:],0)
+        indirect = a[combined]
+        print a, a[indices], direct, indirect, combined
+        self.assertEquals(indirect, direct)
+        
+    def test19(self):
+        a = numpy.arange(6).reshape(2,3)
+        indices = numpy.asarray([True,False])
+        direct =  a[:1, 1:][0]
+        combined = combine_indices(numpy.s_[:1,1:],0)
+        indirect = a[combined]
+        print a, a[:1, 1:][0], direct, indirect, combined
+        self.assertEquals(indirect, direct)
+        
+        
 class TestSplitOverDimensions(amusetest.TestCase):
     
     def test1(self):

@@ -49,13 +49,25 @@ def combine_indices(index0, index1):
             else:
                 raise Exception("unhandled case, two tuple one with different length")
         else:
+            index = 0
+            for i, x in enumerate(index0):
+                index = i
+                if isinstance(x, int) or isinstance(x, long):
+                    continue
+                elif isinstance(x, slice):
+                    break
+                elif isinstance(x, EllipsisType):
+                    break
+                else:
+                    break
             result = []
-            result.extend(index0[:-1])
-            continuation = combine_indices(index0[-1], index1)
+            result.extend(index0[:index])
+            continuation = combine_indices(index0[index], index1)
             if isinstance(continuation, collections.Sequence):
                 result.extend(continuation)
             else: 
                 result.append(continuation)
+            result.extend(index0[index+1:])
             return tuple(result)
         
     if isinstance(index0, int) or isinstance(index0, long):
@@ -78,6 +90,17 @@ def combine_indices(index0, index1):
             return index1
         else:
             raise Exception("not handled yet")
+    elif isinstance(index0, list) or isinstance(index0, numpy.ndarray):
+        ndarray = numpy.asarray(index0)
+        if ndarray.dtype == 'bool':
+            ndarray1 = numpy.zeros_like(ndarray)
+            ndarray2 = ndarray1[ndarray]
+            ndarray2[index1] = True
+            ndarray1[ndarray] = ndarray2
+            return ndarray1
+        else:
+            raise Exception("index must be a integer, slice or sequence")
+                
     else:
         raise Exception("index must be a integer, slice or sequence")
 
@@ -163,7 +186,19 @@ def shape_after_index(shape, index):
     elif isinstance(index, list) or isinstance(index, numpy.ndarray):
         ndarray = numpy.asarray(index)
         if ndarray.dtype == 'bool':
-            raise Exception("Not handled yet")
+            if ndarray.shape == shape:
+                return (numpy.count_nonzero(ndarray),)
+            if len(ndarray.shape) < shape:
+                if not ndarray.shape == shape[:len(ndarray.shape)]:
+                    raise Exception("Shape is not compatible")
+                    
+                result = list(shape[len(ndarray.shape):])
+                result.insert(0, numpy.count_nonzero(ndarray))
+                print shape[:len(ndarray.shape)]
+                return tuple(result)
+            else:
+                
+                raise Exception("Not handled yet")
         else:
             raise Exception("Not handled yet")
     else:
