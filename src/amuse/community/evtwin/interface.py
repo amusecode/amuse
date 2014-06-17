@@ -427,6 +427,19 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def get_verbosity():
+        function = LegacyFunctionSpecification()
+        function.addParameter('verbosity', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_verbosity():
+        function = LegacyFunctionSpecification()
+        function.addParameter('verbosity', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
 #~    @legacy_function
 #~    def new_spinning_particle():
 #~        """
@@ -555,7 +568,14 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         self.model_time = 0.0 | units.yr
     
     def define_parameters(self, object):
-              
+        object.add_boolean_parameter(
+            "get_verbosity", 
+            "set_verbosity",
+            "verbosity", 
+            "The level of terminal output, verbose or not.", 
+            default_value = False
+        )
+        
         object.add_method_parameter(
             "get_maximum_number_of_stars",
             "set_maximum_number_of_stars",

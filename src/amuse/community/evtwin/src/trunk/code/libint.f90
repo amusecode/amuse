@@ -1940,6 +1940,29 @@ contains
       end if
    end function
 
+   integer function get_verbosity(value)
+      implicit none
+      integer, intent(out) :: value
+      if (amuse_verbose) then
+         value = 1
+      else
+         value = 0
+      end if
+      get_verbosity = 0
+   end function get_verbosity
+   integer function set_verbosity(value)
+      implicit none
+      integer, intent(in) :: value
+      set_verbosity = 0
+      if (value .eq. 0) then
+         amuse_verbose = .false.
+      else if (value .eq. 1) then
+         amuse_verbose = .true.
+      else
+         set_verbosity = -1
+      end if
+   end function set_verbosity
+
    integer function initialize_code()
       implicit none
       amuse_ev_path = 'src/trunk'
@@ -1953,7 +1976,7 @@ contains
       amuse_csmc = 0.04d0
       amuse_calp = 2.0d0
       amuse_mindt = 1.0d6
-      amuse_maxage = 1.0d12
+      amuse_maxage = 2.0d12
       initialize_code = 0
    end function
 

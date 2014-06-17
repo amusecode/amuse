@@ -143,7 +143,7 @@ class TestEVtwinInterface(TestWithMPI):
                 
         (value, error) = instance.get_max_age_stop_condition()
         self.assertEquals(0, error)
-        self.assertEquals(1.0e12, value)
+        self.assertEquals(2.0e12, value)
         for x in range(10,14):
             error = instance.set_max_age_stop_condition(10 ** x)
             self.assertEquals(0, error)
@@ -288,7 +288,7 @@ class TestEVtwin(TestWithMPI):
         self.assertEquals(12, instance.parameters.maximum_number_of_stars)
         instance.stop()
     
-    def xtest2(self):
+    def test2(self):
         print "Testing basic operations"
         instance = EVtwin()
         instance.initialize_code()
@@ -299,10 +299,9 @@ class TestEVtwin(TestWithMPI):
         
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        instance.particles.copy_values_of_all_attributes_to(stars)
         
-        self.assertEquals(stars.mass, 10 | units.MSun)
-        self.assertAlmostEquals(stars.luminosity, 5695.19757302 | units.LSun, 6)
+        self.assertEquals(instance.particles.mass, 10 | units.MSun)
+        self.assertAlmostEquals(instance.particles.luminosity, 5695.19757302 | units.LSun, 6)
         instance.stop()
     
     def xtest3(self):
@@ -401,14 +400,13 @@ class TestEVtwin(TestWithMPI):
         instance.commit_particles()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
         
         instance.evolve_model(end_time = 8.0 | units.Myr)
         from_code_to_model.copy()
         
         for i in range(number_of_stars):
             print stars[i].age.as_quantity_in(units.Myr)
-            self.assertTrue(stars[i].age.value_in(units.Myr) >= 8.0)
+            self.assertTrue(stars[i].age >= 8.0 | units.Myr)
             self.assertTrue(stars[i].age <= max_age)
             self.assertTrue(stars[i].mass <= masses[i])
             self.assertTrue(stars[i].time_step <= max_age)
@@ -418,54 +416,16 @@ class TestEVtwin(TestWithMPI):
                 "is 5, error is 'PRINTB -- age greater than limit'")
 
         instance.stop()
-
-    def xtest4b(self):
-        print "Testing alternate max age stop condition..."
-        masses = [.5] | units.MSun
-        max_age = 12.0 | units.Myr
-
-        number_of_stars=len(masses)
-        stars = Particles(number_of_stars)
-        for i, star in enumerate(stars):
-            star.mass = masses[i]
-            star.radius = 0.0 | units.RSun
-
-#       Initialize stellar evolution code
-        instance = EVtwin() #debugger="xterm")
-        self.assertEqual(instance.parameters.max_age_stop_condition, 2e6 | units.Myr)
-        instance.parameters.max_age_stop_condition = max_age
-        self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
-        instance.particles.add_particles(stars)
-#       Let the code perform initialization actions after all particles have been created. 
-        
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
-        
-        instance.evolve_model(end_time = 8.0 | units.Myr)
-        from_code_to_model.copy()
-        
-        for i in range(number_of_stars):
-            print stars[i].age.as_quantity_in(units.Myr)
-            self.assertTrue(stars[i].age.value_in(units.Myr) >= 8.0)
-            self.assertTrue(stars[i].age <= max_age)
-            self.assertTrue(stars[i].mass <= masses[i])
-            self.assertTrue(stars[i].time_step <= max_age)
-                
-        self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
-            expected_message = "Error when calling 'evolve_for' of a 'EVtwin', errorcode "
-                "is 5, error is 'PRINTB -- age greater than limit'")
-
-        instance.stop()
-
-        
-    def xtest5(self):
+    
+    def test5(self):
         print "Testing adding and removing particles from stellar evolution code..."
         
         particles = Particles(3)
         particles.mass = 1.0 | units.MSun
         
-        instance = EVtwin()
+        instance = EVtwin(redirection="none")
         instance.initialize_code()
+        instance.parameters.verbosity = True
         instance.commit_parameters()
         stars = instance.particles
         self.assertEquals(len(stars), 0) # before creation
