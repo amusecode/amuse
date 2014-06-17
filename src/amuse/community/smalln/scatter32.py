@@ -418,8 +418,8 @@ def scatter32(init, kep, gravity, treecheck,
         final.separation = -1.0
         final.v_rel = -1.0
 
-    # Clean up internal data for recycling
-    # reset children, so that the garbage collection can do it's work
+    # Clean up internal data for recycling.
+    # Reset children so that the garbage collection can do its work.
     stars.child1 = None
     stars.child2 = None
     gravity.reset()

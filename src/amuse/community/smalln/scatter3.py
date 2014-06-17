@@ -379,7 +379,9 @@ def scatter3(init, kep, gravity,
         final.v_rel = -1.0
 
     # Clean up internal data for recycling.
-
+    # Reset children so that the garbage collection can do its work.
+    stars.child1 = None
+    stars.child2 = None
     gravity.reset()
     
     return final,numpy.array([dt_init, dt_evolve, dt_over, dt_tree])
