@@ -106,6 +106,7 @@ module twinlib
    integer, private :: max_stars = -1        ! Maximum number of stars
    type(twin_star_t), private, allocatable, target :: star_list(:)
    integer, private :: current_star = 0      ! Currently selected star
+   integer, private :: sx_updated_for_star = 0 ! Stellar structure data sx is up-to-date for this star
 
    logical, private :: initialised = .false.
 
@@ -389,7 +390,7 @@ contains
       integer, intent(in) :: star_id
       type(twin_star_t), pointer :: star
 
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
+      if (star_id_is_valid(star_id) < 0) return
 
       if (current_star == star_id) current_star = 0
 
@@ -521,7 +522,7 @@ contains
 
       ! Set default value for number of gridpoints and rotation rate
       new_kh = wanted_kh
-      if (present(nmesh)) kh1 = nmesh
+      if (present(nmesh)) new_kh = nmesh
 
       w = 0.0d0
       if (present(wrot)) w = wrot
@@ -681,6 +682,117 @@ contains
       new_prems_star = new_id
    end function new_prems_star
 
+
+
+   ! new_star_from_file:
+   !  Create a new pre-main sequence model for a star
+   !  Input variables:
+   !   filename   - the name of the file the model is stored in
+   !   start_age  - (optional) the starting age, in years (default: whatever the age of the saved model is)
+   !   nmesh      - (optional) the number of gridpoints in the model (default: whatever was read in from init.dat)
+   !   wrot       - (optional) the rotation rate for the model (default: whatever is in the file)
+   !  Return value:
+   !   >0: The stars ID for identifying it in the array of models
+   !   =0: No star allocated, out of memory
+   !   -1: No star allocated, requested mesh is too large
+   !   -2: No star allocated, file not found
+   integer function new_star_from_file(filename, start_age, nmesh, wrot)
+      use real_kind
+      use mesh, only: nm, h, hpr, dh, kh
+      use nucleosynthesis, only: ht_nvar, hnuc
+      use constants
+      use settings
+      use polytrope
+      use indices
+      use test_variables
+      use filenames
+      implicit none
+      character(len=*), intent(in)        :: filename
+      real(double), optional, intent(in)  :: start_age
+      integer, optional, intent(in)       :: nmesh
+      real(double), optional, intent(in)  :: wrot
+      type(twin_star_t), pointer          :: star
+      integer                             :: new_kh
+      integer                             :: new_id
+      integer                             :: ip1, ioerror
+      real(double)                        :: sm1,dty1,age1,per1,bms1,ecc1,p1,enc1, tm, oa
+      integer                             :: kh1,kp1,jmod1,jb1,jn1,jf1
+      real(double)                        :: hn1(50, nm)
+
+      ! Set default value for number of gridpoints and rotation rate
+      new_kh = wanted_kh
+      if (present(nmesh)) new_kh = nmesh
+
+      if (new_kh > NM .or. new_kh < 1) then
+         if (verbose) print *, 'Cannot create model at ', new_kh, 'meshpoints. Maximum size is ', NM, 'meshpoints.'
+         new_star_from_file = -1
+         return
+      end if
+
+      ip1 = get_free_file_unit()
+      open(unit = ip1, action="read", file=filename, iostat=ioerror)
+      if (ioerror /= 0) then
+         if (verbose) print *, 'Cannot load file ', trim(filename), '.'
+         new_star_from_file = -2
+         return
+      end if
+
+      new_id = allocate_star()
+      if (new_id == 0) then
+         new_star_from_file = 0
+         return
+      end if
+      star => star_list(new_id)
+
+      ! Allocate memory for this star
+      star%number_of_variables = NVSTAR
+      star%number_of_meshpoints = new_kh
+      allocate(star%h(star%number_of_variables, star%number_of_meshpoints))
+      allocate(star%dh(star%number_of_variables, star%number_of_meshpoints))
+      allocate(star%hpr(star%number_of_variables, star%number_of_meshpoints))
+
+      ! Nucleosynthesis?
+      ! *TODO* Make sure we can actually set this per star
+      if (star%nucleosynthesis) then
+         allocate(star%ht(ht_nvar, star%number_of_meshpoints))
+      end if
+
+      call select_star(new_id)
+
+      ! Load model
+      if (star%nucleosynthesis .and. verbose) print *, '*** Warning: ZAMS model+nucleosynthesis is not reliable.'
+      call load_star_model(ip1,1, h, dh, hn1, sm1,dty1,age1,per1,bms1,ecc1,p1,enc1,kh1,kp1,jmod1,jb1,jn1,jf1)
+      close(ip1)
+
+      if (verbose) print *, 'Loaded model with mass ', sm1, ' and age ', age1
+      star%zams_mass = sm1
+      star%age       = age1
+
+      ! Optionally override options
+      if (present(start_age)) star%age = start_age
+      if (present(wrot))      p1 = 2.*cpi / (wrot * csday + 1.0e-9)
+
+      ! Set desired options, this is a single star (by construction)
+      kh = kh1
+      tm = cmsn * sm1
+      bm = cmsn * bms1
+      om = bm - tm
+      bper = per1
+      oa = cg1*tm*om*(cg2*bper/bm)**c3rd*sqrt(1.0d0 - ecc1*ecc1)
+      ! Remesh to desired numer of mesh points
+      call remesh ( new_kh, jch, bm, tm, p1, ecc1, oa, 1, 2 )
+
+      hpr = h
+
+      call initialise_stellar_parameters(new_id)
+
+      call swap_out()
+
+      new_star_from_file = new_id
+   end function new_star_from_file
+
+
+
 ! Create a new particle
    integer function new_particle(star_id, mass)
       implicit none
@@ -695,119 +807,6 @@ contains
         new_particle = 0
       end if
    end function
-
-
-   ! new_star_from_file:
-   !  Create a new pre-main sequence model for a star
-   !  Input variables:
-   !   filename   - the name of the file the model is stored in
-   !  Return value:
-   !   >0: The stars ID for identifying it in the array of models
-   !   =0: No star allocated, out of memory
-   !   -1: No star allocated, requested mesh is too large
-   !   -2: No star allocated, file not found
-   integer function new_star_from_file(filename)
-      use real_kind
-      use mesh, only: nm, h, hpr, dh, kh
-      use nucleosynthesis, only: ht_nvar, hnuc, nvar_nuc
-      use constants
-      use settings
-      use polytrope
-      use test_variables
-      use filenames
-      implicit none
-
-      character(len=*), intent(in) :: filename
-      type(twin_star_t), pointer   :: star
-      integer                      :: new_id
-      integer :: ioerror
-
-      integer :: kh1,kp1,jmod1,jb1,jn1,jf1, ip1, tm, oa
-      real(double) :: sm1, dty1, age1, per1, bms1, ecc1, p1, enc1
-
-      real(double), allocatable ::  h1(:, :)
-      real(double), allocatable :: hn1(:, :)
-      real(double), allocatable :: dh1(:, :)
-
-      new_star_from_file = 0
-
-      call swap_out()
-
-      ip1 = get_free_file_unit()
-      open(unit = ip1, action="read", file=filename, iostat=ioerror)
-      if (ioerror /= 0) then
-         if (verbose) print *, 'Cannot load file ', trim(filename), '.'
-         new_star_from_file = -2
-         return
-      end if
-
-
-      allocate(h1(nvar, nm))
-      allocate(dh1(nvar, nm))
-      allocate(hn1(nvar_nuc, nm))
-      call load_star_model(ip1,1, h1, dh1, hn1, sm1,dty1,age1,per1,bms1,ecc1,p1,enc1,kh1,kp1,jmod1,jb1,jn1,jf1)
-      close(ip1)
-
-      if (kh1 > NM) then
-         if (verbose) print *, 'Cannot load model with ', kh1, 'meshpoints. Maximum size is ', NM, 'meshpoints.'
-         new_star_from_file = -1
-         goto 3
-      end if
-
-      new_id = allocate_star()
-      if (new_id == 0) then
-         goto 3
-      end if
-      star => star_list(new_id)
-
-      ! Allocate memory for this star
-      star%number_of_variables = jn1
-      star%number_of_meshpoints = kh1
-      allocate(star%h(star%number_of_variables, star%number_of_meshpoints))
-      allocate(star%dh(star%number_of_variables, star%number_of_meshpoints))
-      allocate(star%hpr(star%number_of_variables, star%number_of_meshpoints))
-
-      ! Nucleosynthesis?
-      ! *TODO* Make sure we can actually set this per star
-      if (star%nucleosynthesis) then
-         allocate(star%ht(ht_nvar, star%number_of_meshpoints))
-      end if
-
-      call select_star(new_id)
-
-      h(1:jn1, 1:kh1) = h1(1:jn1, 1:kh1)
-      dh(1:jn1, 1:kh1) = dh1(1:jn1, 1:kh1)
-
-      star%zams_mass = sm1
-      star%age       = age1
-
-      ! Set desired options, this is a single star (by construction)
-      kh = kh1
-      tm = cmsn * sm1
-      bm = cmsn * bms1
-      om = bm - tm
-      bper = per1
-      ecc1 = 0.0
-      oa = cg1*tm*om*(cg2*bper/bm)**c3rd*sqrt(1.0d0 - ecc1*ecc1)
-      ! Remesh to desired numer of mesh points
-      call remesh ( kh, jch, bm, tm, p1, ecc1, oa, 1, 0 )
-
-      hpr = h
-
-      call initialise_stellar_parameters(new_id)
-
-      call swap_out()
-
-      new_star_from_file = new_id
-
-      ! Cleanup
-      ! Use a line number because Fortran doesn't allow for labels
-3     continue
-      if (allocated(h1)) deallocate(h1)
-      if (allocated(dh1)) deallocate(dh1)
-      if (allocated(hn1)) deallocate(hn1)
-   end function new_star_from_file
-
 
 
 
@@ -827,7 +826,7 @@ contains
 
       ip = get_free_file_unit()
       open (unit=ip, file=filename, action='write')
-      call output(200, ip, 0, 0)
+      call output(200, ip, 0, 4)
       close (ip);
    end subroutine write_star_to_file
 
@@ -865,10 +864,11 @@ contains
       integer, intent(in) :: star_id
       type(twin_star_t), pointer :: star, primary, secondary
       if (current_star == star_id) return
-      if (star_id > max_stars) return
 
+      if (star_id_is_valid(star_id) < 0) return
       star => star_list(star_id)
-      if (.not. star%exists) return
+
+      sx_updated_for_star = 0
 
       assert(allocated(h))
 
@@ -1053,252 +1053,12 @@ contains
 
 
 
-
-   ! Get global stellar properties:
-   ! age (in years)
-   real(double) function age_of(star_id)
-      implicit none
-      integer, intent(in) :: star_id
-      integer :: tmp
-      tmp = get_age(star_id, age_of)
-   end function
-   integer function get_age(star_id, age)
-      use real_kind
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(out) :: age
-      real(double) :: r
-      get_age = -1
-
-      age = -1.0
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      age = star_list(star_id)%age
-      get_age = 0
-   end function
-
-
-
-   ! Get luminosity (in solar units)
-   real(double) function luminosity_of(star_id)
-      implicit none
-      integer, intent(in) :: star_id
-      integer :: tmp
-      tmp = get_luminosity(star_id, luminosity_of)
-   end function
-   integer function get_luminosity(star_id, luminosity)
-      use real_kind
-      use constants
-      use indices
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(out) :: luminosity
-      real(double) :: r
-      get_luminosity = -1
-
-      luminosity = -1.0
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      luminosity = star_list(star_id)%H(VAR_LUM, 1) / CLSN
-      get_luminosity = 0
-   end function
-
-
-
-
-   ! Get mass (in solar units)
-   real(double) function mass_of(star_id)
-      implicit none
-      integer, intent(in) :: star_id
-      integer :: tmp
-      tmp = get_mass(star_id, mass_of)
-   end function
-   integer function get_mass(star_id, mass)
-      use indices
-      use constants
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(out) :: mass
-      get_mass = -1
-      mass = -1.0
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      mass = star_list(star_id)%H(VAR_MASS, 1) / CMSN
-      get_mass = 0
-   end function
-
-
-
-   ! Get mass (in solar units)
-   real(double) function radius_of(star_id)
-      implicit none
-      integer, intent(in) :: star_id
-      integer :: tmp
-      tmp = get_radius(star_id, radius_of)
-   end function
-   integer function get_radius(star_id, radius)
-      use indices
-      use constants
-      use settings, only: ct
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(out) :: radius
-      real(double) :: r
-      get_radius = -1
-
-      radius = -1.0
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      r = sqrt(exp(2.*star_list(star_id)%H(VAR_LNR, 1)) - CT(8))
-      radius = r / CLSN
-      get_radius = 0
-   end function
-
-
-
-   ! Get effective temperature (in Kelvin)
-   real(double) function temperature_of(star_id)
-      implicit none
-      integer, intent(in) :: star_id
-      integer :: tmp
-      tmp = get_temperature(star_id, temperature_of)
-   end function
-   integer function get_temperature(star_id, temperature)
-      use real_kind
-      use constants
-      use indices
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(out) :: temperature
-      real(double) :: r
-      get_temperature = -1
-
-      temperature = -1.0
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      temperature = exp(star_list(star_id)%h(VAR_LNT, 1))
-      get_temperature = 0
-   end function
-
-
-
-   ! Get timestep (in yr)
-   real(double) function timestep_of(star_id)
-      implicit none
-      integer, intent(in) :: star_id
-      integer :: tmp
-      tmp = get_time_step(star_id, timestep_of)
-   end function
-   integer function get_time_step(star_id, timestep)
-      use real_kind
-      use constants
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(out) :: timestep
-      real(double) :: r
-      get_time_step = -1
-
-      timestep = -1.0
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      timestep = star_list(star_id)%dt / csy
-      get_time_step = 0
-   end function
-
-
-
-   ! Set some evolution options
-   ! Maximum mass the star can reach before accretion is turned off (in solar units).
-   ! Can be used to increase the mass of the star to a particular point.
-   ! Setting it to -1 allows the mass of the star to grow indefinitely (unless the code breaks first)
-   subroutine set_maximum_mass_after_accretion(star_id, mmass)
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(in) :: mmass
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      
-      star_list(star_id)%maximum_mass = mmass
-   end subroutine set_maximum_mass_after_accretion
-
-
-
-   ! Set the accretion rate for this star, in Msun/yr
-   subroutine set_accretion_rate(star_id, mdot)
-      use constants, only: csy
-      use settings, only: cmi
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(in) :: mdot
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      
-      call select_star(star_id)
-      cmi = mdot / csy
-      star_list(star_id)%cmi = cmi
-   end subroutine set_accretion_rate
-
-
-
-   ! Stellar wind switch: can be modulated between 0.0 (no wind) and 1.0 (full strength)
-   integer function set_wind_multiplier(star_id, mdot_factor)
-      use settings, only: cmdot_wind
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(in) :: mdot_factor
-      set_wind_multiplier = -1
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      
-      call select_star(star_id)
-      cmdot_wind = mdot_factor
-      star_list(star_id)%cmdot_wind = mdot_factor
-      set_wind_multiplier = 0
-   end function set_wind_multiplier
-
-
-
-   ! Set timestep (in yr)
-   subroutine set_timestep(star_id, dty)
-      use real_kind
-      use constants
-      use test_variables, only: dt
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(in) :: dty
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-
-      call select_star(star_id)
-      dt = dty * csy
-      star_list(star_id)%dt = dt
-   end subroutine set_timestep
-
-
-
-   ! Return the stellar type of the specified star
-   integer function stellar_type_of(star_id)
-      implicit none
-      integer, intent(in) :: star_id
-      integer :: tmp
-      tmp = get_stellar_type(star_id, stellar_type_of)
-   end function
-   integer function get_stellar_type(star_id, stellar_type)
-      use real_kind
-      implicit none
-      integer, intent(in) :: star_id
-      integer, intent(out) :: stellar_type
-      integer, external :: find_stellar_type
-      get_stellar_type = -1
-      stellar_type = -1
-
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      call select_star(star_id)
-      stellar_type = find_stellar_type()
-      get_stellar_type = 0
-   end function
-
-
-
+   ! evolve_one_timestep:
+   !  Advance the evolution of a star one timestep.
+   !  BEWARE: in the case of non-convergence, the code will do a backup and retry from the previous model
+   !  with a reduced timestep. If this occurs, the age of the star after this call is lower than it was before.
+   ! Returns value:
+   !  returns 0 if converged ok, non-zero value (positive or negative) indicate convergence failure!
    integer function evolve_one_timestep(star_id)
       use test_variables, only: dt, age, jhold
       use current_model_properties, only: jmod, jnn, joc, jb
@@ -1315,7 +1075,7 @@ contains
       integer :: jo
       integer :: Jstar
 
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) then
+      if (star_id_is_valid(star_id) < 0) then
          evolve_one_timestep = -1
          return
       end if
@@ -1601,6 +1361,373 @@ contains
    end function join_binary
 
 
+
+   ! Get global stellar properties:
+   ! age (in years)
+   real(double) function age_of(star_id)
+      implicit none
+      integer, intent(in) :: star_id
+      integer :: tmp
+      tmp = get_age(star_id, age_of)
+   end function age_of
+   integer function get_age(star_id, age)
+      use real_kind
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(out) :: age
+      get_age = -1
+
+      age = -1.0
+
+      if (star_id_is_valid(star_id) < 0) return
+      age = star_list(star_id)%age
+      get_age = 0
+   end function get_age
+
+
+
+   ! Get luminosity (in solar units)
+   real(double) function luminosity_of(star_id)
+      implicit none
+      integer, intent(in) :: star_id
+      integer :: tmp
+      tmp = get_luminosity(star_id, luminosity_of)
+   end function luminosity_of
+   integer function get_luminosity(star_id, luminosity)
+      use real_kind
+      use constants
+      use indices
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(out) :: luminosity
+      get_luminosity = -1
+
+      luminosity = -1.0
+
+      if (star_id_is_valid(star_id) < 0) return
+      luminosity = star_list(star_id)%H(VAR_LUM, 1) / CLSN
+      get_luminosity = 0
+   end function get_luminosity
+
+
+
+
+   ! Get mass (in solar units)
+   real(double) function mass_of(star_id)
+      implicit none
+      integer, intent(in) :: star_id
+      integer :: tmp
+      tmp = get_mass(star_id, mass_of)
+   end function mass_of
+   integer function get_mass(star_id, mass)
+      use indices
+      use constants
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(out) :: mass
+      get_mass = -1
+      mass = -1.0
+
+      if (star_id_is_valid(star_id) < 0) return
+      mass = star_list(star_id)%H(VAR_MASS, 1) / CMSN
+      get_mass = 0
+   end function get_mass
+
+
+
+   ! Get mass (in solar units)
+   real(double) function radius_of(star_id)
+      implicit none
+      integer, intent(in) :: star_id
+      integer :: tmp
+      tmp = get_radius(star_id, radius_of)
+   end function radius_of
+   integer function get_radius(star_id, radius)
+      use indices
+      use constants
+      use settings, only: ct
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(out) :: radius
+      real(double) :: r
+      get_radius = -1
+
+      radius = -1.0
+
+      if (star_id_is_valid(star_id) < 0) return
+      r = sqrt(exp(2.*star_list(star_id)%H(VAR_LNR, 1)) - CT(8))
+      radius = r / CLSN
+      get_radius = 0
+   end function get_radius
+
+
+
+   ! Get effective temperature (in Kelvin)
+   real(double) function temperature_of(star_id)
+      implicit none
+      integer, intent(in) :: star_id
+      integer :: tmp
+      tmp = get_temperature(star_id, temperature_of)
+   end function temperature_of
+   integer function get_temperature(star_id, temperature)
+      use real_kind
+      use constants
+      use indices
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(out) :: temperature
+      get_temperature = -1
+
+      temperature = -1.0
+
+      if (star_id_is_valid(star_id) < 0) return
+      temperature = exp(star_list(star_id)%h(VAR_LNT, 1))
+      get_temperature = 0
+   end function get_temperature
+
+
+
+   ! Get timestep (in yr)
+   real(double) function timestep_of(star_id)
+      implicit none
+      integer, intent(in) :: star_id
+      integer :: tmp
+      tmp = get_time_step(star_id, timestep_of)
+   end function timestep_of
+   integer function get_time_step(star_id, timestep)
+      use real_kind
+      use constants
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(out) :: timestep
+      get_time_step = -1
+
+      timestep = -1.0
+
+      if (star_id_is_valid(star_id) < 0) return
+      timestep = star_list(star_id)%dt / csy
+      get_time_step = 0
+   end function get_time_step
+
+
+
+   ! Set some evolution options
+   ! Maximum mass the star can reach before accretion is turned off (in solar units).
+   ! Can be used to increase the mass of the star to a particular point.
+   ! Setting it to -1 allows the mass of the star to grow indefinitely (unless the code breaks first)
+   subroutine set_maximum_mass_after_accretion(star_id, mmass)
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(in) :: mmass
+
+      if (star_id_is_valid(star_id) < 0) return
+      
+      star_list(star_id)%maximum_mass = mmass
+   end subroutine set_maximum_mass_after_accretion
+
+
+
+   ! Set the accretion rate for this star, in Msun/yr (negative for winds / mass loss)
+   integer function set_manual_mass_transfer_rate(star_id, mdot)
+      use constants, only: csy
+      use settings, only: cmi
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(in) :: mdot
+      set_manual_mass_transfer_rate = -1
+      if (star_id_is_valid(star_id) < 0) return
+      
+      call select_star(star_id)
+      cmi = mdot / csy
+      star_list(star_id)%cmi = cmi
+      set_manual_mass_transfer_rate = 0
+   end function set_manual_mass_transfer_rate
+   integer function get_manual_mass_transfer_rate(star_id, mdot)
+      use constants, only: csy
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(out) :: mdot
+      get_manual_mass_transfer_rate = -1
+      if (star_id_is_valid(star_id) < 0) return
+      mdot = star_list(star_id)%cmi * csy
+      get_manual_mass_transfer_rate = 0
+   end function get_manual_mass_transfer_rate
+
+   ! Stellar wind switch: can be modulated between 0.0 (no wind) and 1.0 (full strength)
+   integer function set_wind_multiplier(star_id, mdot_factor)
+      use settings, only: cmdot_wind
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(in) :: mdot_factor
+      set_wind_multiplier = -1
+
+      if (star_id_is_valid(star_id) < 0) return
+      
+      call select_star(star_id)
+      cmdot_wind = mdot_factor
+      star_list(star_id)%cmdot_wind = mdot_factor
+      set_wind_multiplier = 0
+   end function set_wind_multiplier
+   integer function get_wind_multiplier(star_id, mdot_factor)
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(out) :: mdot_factor
+      get_wind_multiplier = -1
+      if (star_id_is_valid(star_id) < 0) return
+      mdot_factor = star_list(star_id)%cmdot_wind
+      get_wind_multiplier = 0
+   end function get_wind_multiplier
+
+
+
+! get_AGB_wind_setting:
+! Get the current setting for mass-loss (AGB)
+   integer function get_AGB_wind_setting(value)
+      use real_kind
+      use massloss
+      implicit none
+      integer, intent(out) :: value
+      real(double) :: tmpVW, tmpW
+      tmpVW = multiplier_vasiliadis_wood
+      tmpW = multiplier_wachter
+      if ((tmpVW.eq.0.0) .and. (tmpW.eq.1.0)) then
+        value = 1
+        get_AGB_wind_setting = 0
+      else if ((tmpVW.eq.1.0) .and. (tmpW.eq.0.0)) then
+        value = 2
+        get_AGB_wind_setting = 0
+      else
+        value = 0
+        get_AGB_wind_setting = -1
+      endif
+   end function
+
+
+
+! set_AGB_wind_setting:
+! Set the current setting for mass-loss (AGB)
+   integer function set_AGB_wind_setting(value)
+      use massloss
+      implicit none
+      integer, intent(in) :: value
+      if (value .eq. 1) then
+        multiplier_vasiliadis_wood = 0.0
+        multiplier_wachter = 1.0
+        set_AGB_wind_setting = 0
+      else if (value .eq. 2) then
+        multiplier_vasiliadis_wood = 1.0
+        multiplier_wachter = 0.0
+        set_AGB_wind_setting = 0
+      else
+        set_AGB_wind_setting = -1
+      endif
+   end function
+
+
+
+! get_RGB_wind_setting:
+! Get the current setting for mass-loss (RGB)
+   integer function get_RGB_wind_setting(value)
+      use real_kind
+      use massloss
+      implicit none
+      real(double), intent(out) :: value
+      if (multiplier_schroeder .gt. 0.0) then
+        value = multiplier_schroeder
+      else
+        value = -multiplier_reimers
+      endif
+      get_RGB_wind_setting = 0
+   end function
+
+
+
+! set_RGB_wind_setting:
+! Set the current setting for mass-loss (RGB)
+   integer function set_RGB_wind_setting(value)
+      use real_kind
+      use massloss
+      implicit none
+      real(double), intent(in) :: value
+      if (value .ge. 0.0) then
+        multiplier_schroeder = value
+        multiplier_reimers = 0.0
+      else
+        multiplier_schroeder = 0.0
+        multiplier_reimers = -value
+      endif
+      set_RGB_wind_setting = 0
+   end function
+
+
+
+! get_Ostar_wind_setting:
+! Get the current setting for mass-loss (O/B stars)
+   integer function get_Ostar_wind_setting(value)
+      use real_kind
+      use massloss
+      implicit none
+      real(double), intent(out) :: value
+      value = multiplier_vink
+      get_Ostar_wind_setting = 0
+   end function
+
+! set_Ostar_wind_setting:
+! Set the current setting for mass-loss (O/B stars)
+   integer function set_Ostar_wind_setting(value)
+      use real_kind
+      use massloss
+      implicit none
+      real(double), intent(in) :: value
+      multiplier_vink = value
+      set_Ostar_wind_setting = 0
+   end function
+
+
+
+   ! Set timestep (in yr)
+   subroutine set_timestep(star_id, dty)
+      use real_kind
+      use constants
+      use test_variables, only: dt
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(in) :: dty
+
+      if (star_id_is_valid(star_id) < 0) return
+
+      call select_star(star_id)
+      dt = dty * csy
+      star_list(star_id)%dt = dt
+   end subroutine set_timestep
+
+
+
+   ! Return the stellar type of the specified star
+   integer function stellar_type_of(star_id)
+      implicit none
+      integer, intent(in) :: star_id
+      integer :: tmp
+      tmp = get_stellar_type(star_id, stellar_type_of)
+   end function stellar_type_of
+   integer function get_stellar_type(star_id, stellar_type)
+      use real_kind
+      implicit none
+      integer, intent(in) :: star_id
+      integer, intent(out) :: stellar_type
+      integer, external :: find_stellar_type
+      get_stellar_type = -1
+      stellar_type = -1
+
+      if (star_id_is_valid(star_id) < 0) return
+      call select_star(star_id)
+      stellar_type = find_stellar_type()
+      get_stellar_type = 0
+   end function get_stellar_type
+
+
+
+
    integer function set_ev_path(new_ev_path)
       use file_exists_module
       implicit none
@@ -1616,42 +1743,44 @@ contains
       set_ev_path = 0
    end function
 
-   ! Does nothing, but part of standard AMUSE interface
+   ! Part of standard AMUSE interface, called when all parameters have been set
    integer function commit_parameters()
       use stopping_conditions
-      use settings, only: csmc, calp, cos, cth, kion
+      use settings, only: csmc, calp, cos, cps, cth, kion
       implicit none
       commit_parameters = initialise_twin(amuse_ev_path, amuse_nstars, amuse_Z, &
          amuse_verbose, amuse_nmesh)
       csmc = amuse_csmc
       calp = amuse_calp
       cos = amuse_cos
+      cps = amuse_cos
       cth = amuse_cth
       kion = amuse_kion
       uc(2) = amuse_maxage
       uc(12) = amuse_mindt
-   end function
+   end function commit_parameters
    integer function recommit_parameters()
       use stopping_conditions
-      use settings, only: csmc, calp, cos, cth, kion
+      use settings, only: csmc, calp, cos, cps, cth, kion
       implicit none
       csmc = amuse_csmc
       calp = amuse_calp
       cos = amuse_cos
+      cps = amuse_cos
       cth = amuse_cth
       kion = amuse_kion
       uc(2) = amuse_maxage
       uc(12) = amuse_mindt
       recommit_parameters = 0
-   end function
+   end function recommit_parameters
    integer function commit_particles()
       implicit none
       commit_particles = 0
-   end function
+   end function commit_particles
    integer function recommit_particles()
       implicit none
       recommit_particles = 0
-   end function
+   end function recommit_particles
 
 
 
@@ -1719,6 +1848,21 @@ contains
       set_max_age_stop_condition = 0
    end function
 
+   integer function get_convection_efficiency(value)
+      use settings, only: crd
+      implicit none
+      real(double), intent(out) :: value
+      value = crd
+      get_convection_efficiency = 0
+   end function
+   integer function set_convection_efficiency(value)
+      use settings, only: crd
+      implicit none
+      real(double), intent(in) :: value
+      crd = value
+      set_convection_efficiency = 0
+   end function
+
 ! Retrieve the current value of the efficiency of semi-convection
    integer function get_semi_convection_efficiency(value)
       implicit none
@@ -1734,34 +1878,17 @@ contains
       set_semi_convection_efficiency = 0
    end function
 
-! Retrieve the current value of the convective overshoot parameter
-   integer function get_convective_overshoot_parameter(value)
-      implicit none
-      real(double), intent(out) :: value
-      value = amuse_cos
-      get_convective_overshoot_parameter = 0
-   end function
-! Set the current value of the convective overshoot parameter
-   integer function set_convective_overshoot_parameter(value)
-      implicit none
-      real(double), intent(in) :: value
-      amuse_cos = value
-      set_convective_overshoot_parameter = 0
-   end function
-
-! Retrieve the current value of the thermohaline mixing parameter
-   integer function get_thermohaline_mixing_parameter(value)
+   integer function get_thermohaline_efficiency(value)
       implicit none
       real(double), intent(out) :: value
       value = amuse_cth
-      get_thermohaline_mixing_parameter = 0
+      get_thermohaline_efficiency = 0
    end function
-! Set the current value of the thermohaline mixing parameter
-   integer function set_thermohaline_mixing_parameter(value)
+   integer function set_thermohaline_efficiency(value)
       implicit none
       real(double), intent(in) :: value
       amuse_cth = value
-      set_thermohaline_mixing_parameter = 0
+      set_thermohaline_efficiency = 0
    end function
 
 ! Retrieve the current number of elements used for ionization in the EoS
@@ -1779,6 +1906,22 @@ contains
       set_number_of_ionization_elements = 0
    end function
 
+! Retrieve the current value of the convective overshoot parameter
+   integer function get_convective_overshoot_parameter(value)
+      implicit none
+      real(double), intent(out) :: value
+      value = amuse_cos
+      get_convective_overshoot_parameter = 0
+   end function
+! Set the current value of the convective overshoot parameter
+   integer function set_convective_overshoot_parameter(value)
+      implicit none
+      real(double), intent(in) :: value
+      amuse_cos = value
+      set_convective_overshoot_parameter = 0
+   end function
+
+
    integer function get_metallicity(value)
       implicit none
       real(double), intent(out) :: value
@@ -1788,8 +1931,13 @@ contains
    integer function set_metallicity(value)
       implicit none
       real(double), intent(in) :: value
-      amuse_Z = value
-      set_metallicity = 0
+      if (initialised) then
+         ! Can only be done once, on startup
+         set_metallicity = -1
+      else
+         amuse_Z = value
+         set_metallicity = 0
+      end if
    end function
 
    integer function initialize_code()
@@ -1814,11 +1962,12 @@ contains
       cleanup_code = 0
    end function
 
+   ! This code assumes that delta_t is in years
    integer function evolve_for(star_id, delta_t)
       implicit none
       integer, intent(in) :: star_id
       real(double), intent(in) :: delta_t
-      evolve_for = evolve_until_model_time(star_id, delta_t + age_of(star_id))
+      evolve_for = evolve_until_model_time(star_id, age_of(star_id) + delta_t)
    end function
    integer function evolve_one_step(star_id)
       implicit none
@@ -1832,23 +1981,89 @@ contains
       integer, intent(in) :: star_id
       real(double), intent(out) :: value
       get_wind_mass_loss_rate = -1
-      value = -1.0
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      value = star_list(star_id)%zet(1) * csy / cmsn
+      if (star_id_is_valid(star_id) < 0) return
+      value = star_list(star_id)%zet(1)*csy/cmsn
       get_wind_mass_loss_rate = 0
    end function
 
-! Returns the star's spin period, in days
-   integer function get_spin(star_id, value)
+   ! msun / yr
+   function get_mass_transfer_rate(star_id, value)
+      use constants
       implicit none
+      integer :: get_mass_transfer_rate
+      real(double) , intent(out) :: value
       integer, intent(in) :: star_id
+      get_mass_transfer_rate = -1
+      if (star_id_is_valid(star_id) < 0) return
+      value = star_list(star_id)%xit(1)*csy/cmsn
+      get_mass_transfer_rate = 0
+   end function
+
+! Returns the star's spin period, in days
+   integer function get_spin(id, value)
+      implicit none
       real(double), intent(out) :: value
+      integer, intent(in) :: id      
       get_spin = -1
-      value = -1.0
-      if (star_id < 1 .or. star_id > max_stars .or. .not. star_list(star_id)%exists) return
-      value = star_list(star_id)%p
+      if (star_id_is_valid(id) < 0) return
+      value = star_list(id)%p
       get_spin = 0
    end function
+
+   ! Binding energy of the stellar envelope [erg/(1Mo)]
+   integer function get_envelope_binding_energy(id, value)
+      implicit none
+      integer, intent(in)       :: id
+      real(double), intent(out) :: value
+      get_envelope_binding_energy = -1
+      if (star_id_is_valid(id) < 0) return
+      value = star_list(id)%be(1)
+      get_envelope_binding_energy = 0
+   end function get_envelope_binding_energy
+
+   ! Binding energy of the stellar envelope: gravity [erg/(1Mo)]
+   integer function get_envelope_gravitational_energy(id, value)
+      implicit none
+      integer, intent(in)       :: id
+      real(double), intent(out) :: value
+      get_envelope_gravitational_energy = -1
+      if (star_id_is_valid(id) < 0) return
+      value = star_list(id)%be(1)
+      get_envelope_gravitational_energy = 0
+   end function get_envelope_gravitational_energy
+
+   ! Binding energy of the stellar envelope: internal energy [erg/(1Mo)]
+   integer function get_envelope_internal_energy(id, value)
+      implicit none
+      integer, intent(in)       :: id
+      real(double), intent(out) :: value
+      get_envelope_internal_energy = -1
+      if (star_id_is_valid(id) < 0) return
+      value = star_list(id)%be(1)
+      get_envelope_internal_energy = 0
+   end function get_envelope_internal_energy
+
+   ! Binding energy of the stellar envelope: recombination energy [erg/(1Mo)]
+   integer function get_envelope_recombination_energy(id, value)
+      implicit none
+      integer, intent(in)       :: id
+      real(double), intent(out) :: value
+      get_envelope_recombination_energy = -1
+      if (star_id_is_valid(id) < 0) return
+      value = star_list(id)%be(1)
+      get_envelope_recombination_energy = 0
+   end function get_envelope_recombination_energy
+
+   ! Binding energy of the stellar envelope: H2 association energy [erg/(1Mo)]
+   integer function get_envelope_association_energy(id, value)
+      implicit none
+      integer, intent(in)       :: id
+      real(double), intent(out) :: value
+      get_envelope_association_energy = -1
+      if (star_id_is_valid(id) < 0) return
+      value = star_list(id)%be(1)
+      get_envelope_association_energy = 0
+   end function get_envelope_association_energy
 
    integer function get_number_of_particles(value)
       implicit none
@@ -1856,23 +2071,431 @@ contains
       integer :: i
       value = 0
       do i = 1, max_stars
-         if (star_list(i)%exists) value = value + 1
+         if (star_list(i)%exists) value = value+1
       end do
       get_number_of_particles = 0
    end function
 
+   integer function star_id_is_valid(star_id)
+      implicit none
+      integer, intent(in) :: star_id
+      star_id_is_valid = -1
+      ! nb: it looks like we can combine the following two lines into one, but we cannot since fortran does not
+      ! short-circuit boolean logic and all elements in the expression are evaluated. so we must only index the
+      ! array *after* we have established that the index is in range.
+      if (star_id<1 .or. star_id>max_stars) return
+      if (.not. star_list(star_id)%exists)  return
+      star_id_is_valid = 0
+   end function star_id_is_valid
+
+! Internal structure getters:
+
 ! Return the current number of zones/mesh-cells of the star
-      integer function get_number_of_zones(star_id, AMUSE_value)
+      integer function get_number_of_zones(star_id, value)
          implicit none
          integer, intent(in) :: star_id
-         integer, intent(out) :: AMUSE_value
-         if (star_id<1 .or. star_id>max_stars .or. .not. star_list(star_id)%exists) then
-            AMUSE_value = 0
+         integer, intent(out) :: value
+         if (star_id_is_valid(star_id) < 0) then
+            value = 0
             get_number_of_zones = -21
             return
          end if
-         AMUSE_value = star_list(star_id)% number_of_meshpoints
+         value = star_list(star_id)%number_of_meshpoints
          get_number_of_zones = 0
       end function
+
+! Update the stellar structure data sx for the specified star, if necessary
+      subroutine update_quantities_if_needed(star_id)
+         implicit none
+         integer, intent(in) :: star_id
+         if (sx_updated_for_star .ne. star_id) then
+            call swap_in(star_id)
+            call compute_output_quantities ( 1 )
+            sx_updated_for_star = star_id
+         end if
+      end subroutine
+
+! Return the requested quantity (index in SX array) at the specified zone/mesh-cell of the star
+      integer function get_quantity_at_zone(star_id, zone, qty, value)
+         use structure_variables
+         implicit none
+         integer, intent(in) :: star_id, zone, qty
+         double precision, intent(out) :: value
+         if (star_id_is_valid(star_id) < 0) then
+            value = -1.0
+            get_quantity_at_zone = -21
+            return
+         end if
+         if (zone >= star_list(star_id)%number_of_meshpoints .or. zone < 0) then
+            value = -1.0
+            get_quantity_at_zone = -22
+            return
+         end if
+         call update_quantities_if_needed(star_id)
+         value = sx(qty, zone+2)
+         get_quantity_at_zone = 0
+      end function get_quantity_at_zone
+
+! Return the temperature at the specified zone/mesh-cell of the star
+      integer function get_temperature_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_temperature_at_zone = get_quantity_at_zone(star_id, zone, 4, value)
+      end function
+
+! Return the density at the specified zone/mesh-cell of the star
+      integer function get_density_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_density_at_zone = get_quantity_at_zone(star_id, zone, 3, value)
+      end function
+
+! Return the density at the specified zone/mesh-cell of the star
+      integer function get_pressure_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_pressure_at_zone = get_quantity_at_zone(star_id, zone, 2, value)
+      end function
+
+! Return the entropy at the specified zone/mesh-cell of the star
+      integer function get_entropy_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_entropy_at_zone = get_quantity_at_zone(star_id, zone, 28, value)
+      end function
+
+! Return the internal energy at the specified zone/mesh-cell of the star
+      integer function get_uint_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_uint_at_zone = get_quantity_at_zone(star_id, zone, 27, value)
+      end function
+
+! Return the electron degeneracy parameter at the specified zone/mesh-cell of the star
+      integer function get_psie_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_psie_at_zone = get_quantity_at_zone(star_id, zone, 1, value)
+      end function
+
+! Return the opacity at the specified zone/mesh-cell of the star
+      integer function get_opacity_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_opacity_at_zone = get_quantity_at_zone(star_id, zone, 5, value)
+      end function
+
+! Return the adiabatic gamma (gamma1) at the specified zone/mesh-cell of the star
+      integer function get_gamma_ad_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_gamma_ad_at_zone = get_quantity_at_zone(star_id, zone, 62, value)
+      end function
+
+! Return the specific heat at constant pressure at the specified zone/mesh-cell of the star
+      integer function get_scp_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_scp_at_zone = get_quantity_at_zone(star_id, zone, 63, value)
+      end function
+
+! Return the adiabatic temperature gradient at the specified zone/mesh-cell of the star
+      integer function get_nabla_ad_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_nabla_ad_at_zone = get_quantity_at_zone(star_id, zone, 6, value)
+      end function
+
+! Return the radiative temperature gradient at the specified zone/mesh-cell of the star
+      integer function get_nabla_rad_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_nabla_rad_at_zone = get_quantity_at_zone(star_id, zone, 8, value) + get_quantity_at_zone(star_id, zone, 6, value)
+      end function
+
+! Return the actual temperature gradient at the specified zone/mesh-cell of the star
+      integer function get_nabla_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_nabla_at_zone = get_quantity_at_zone(star_id, zone, 7, value)
+      end function
+
+! Return the radius at the specified zone/mesh-cell of the star
+      integer function get_radius_at_zone(star_id, zone, value)
+         use constants
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_radius_at_zone = get_quantity_at_zone(star_id, zone, 17, value)
+         value = value * CRSN * 1.0D11
+      end function
+
+! Return the luminosity at the specified zone/mesh-cell of the star
+      integer function get_luminosity_at_zone(star_id, zone, value)
+         use constants
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_luminosity_at_zone = get_quantity_at_zone(star_id, zone, 18, value)
+         value = value * CLSN * 1.0D33
+      end function
+
+! Return the mass-coordinate at the specified zone/mesh-cell of the star
+      integer function get_mass_at_zone(star_id, zone, value)
+         use constants
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_mass_at_zone = get_quantity_at_zone(star_id, zone, 9, value)
+         value = value * CMSN * 1.0D33
+      end function
+
+! Return the mass in the specified zone/mesh-cell of the star
+      integer function get_mass_in_zone(star_id, zone, value)
+         use constants
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_mass_in_zone = get_quantity_at_zone(star_id, zone, 22, value)
+         value = value * CMSN * 1.0D33
+      end function
+
+! Return the thermal energy production rate at the specified zone/mesh-cell of the star
+      integer function get_eth_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_eth_at_zone = get_quantity_at_zone(star_id, zone, 19, value)
+      end function
+
+! Return the nuclear energy generation rate at the specified zone/mesh-cell of the star
+      integer function get_enuc_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_enuc_at_zone = get_quantity_at_zone(star_id, zone, 20, value)
+      end function
+
+! Return the neutrino energy loss rate at the specified zone/mesh-cell of the star
+      integer function get_nuloss_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_nuloss_at_zone = get_quantity_at_zone(star_id, zone, 21, value)
+      end function
+
+! Return the mean molecular weight per particle (ions + free electrons) at the specified zone/mesh-cell of the star
+      integer function get_mu_at_zone(star_id, zone, value)
+         implicit none
+         integer, intent(in) :: star_id, zone
+         double precision, intent(out) :: value
+         get_mu_at_zone = get_quantity_at_zone(star_id, zone, 31, value)
+      end function
+
+! Return the current number of chemical abundance variables per zone of the star
+   integer function get_number_of_species(star_id, value)
+      implicit none
+      integer, intent(in) :: star_id
+      integer, intent(out) :: value
+      value = 9
+      get_number_of_species = 0
+   end function
+
+! Return the name of chemical abundance variable 'AMUSE_species' of the star
+   integer function get_name_of_species(star_id, AMUSE_species, value)
+      implicit none
+      integer, intent(in) :: star_id, AMUSE_species
+      character (len=6), intent(out) :: value
+      get_name_of_species = 0
+      select case (AMUSE_species)
+         case (1)
+            value = 'h1'
+         case (2)
+            value = 'he4'
+         case (3)
+            value = 'c12'
+         case (4)
+            value = 'n14'
+         case (5)
+            value = 'o16'
+         case (6)
+            value = 'ne20'
+         case (7)
+            value = 'mg24'
+         case (8)
+            value = 'si28'
+         case (9)
+            value = 'fe56'
+         case default
+            value = 'error'
+            get_name_of_species = -23
+      end select
+   end function
+
+! Return the mass fraction of species 'AMUSE_species' at the specified 
+! zone/mesh-cell of the star
+   integer function get_mass_fraction_of_species_at_zone(star_id, &
+         AMUSE_species, zone, value)
+      use atomic_data
+!~      use extra_elements
+      use binary_history, only: hpr
+      use indices
+      use mesh
+      implicit none
+      integer, intent(in) :: star_id, zone, AMUSE_species
+      double precision, intent(out) :: value
+      real(double) :: xa(9), na(9)
+      real(double) :: avm
+      integer :: zone_index, i
+  
+      value = -1.0
+      if (star_id_is_valid(star_id) < 0) then
+         get_mass_fraction_of_species_at_zone = -21
+         return
+      end if
+      if (zone >= star_list(star_id)% number_of_meshpoints .or. zone < 0) then
+         get_mass_fraction_of_species_at_zone = -22
+         return
+      end if
+      if (AMUSE_species > 9 .or. AMUSE_species < 1) then
+         get_mass_fraction_of_species_at_zone = -23
+         return
+      end if
+      call update_quantities_if_needed(star_id)
+      zone_index = star_list(star_id)% number_of_meshpoints - zone
+      xa(1) = h(VAR_H1, zone_index)
+      xa(2) = h(VAR_HE4, zone_index)
+      xa(3) = h(VAR_C12, zone_index)
+      xa(4) = h(VAR_N14, zone_index)
+      xa(5) = h(VAR_O16, zone_index)
+      xa(6) = h(VAR_NE20, zone_index)
+      xa(7) = h(VAR_MG24, zone_index)
+      xa(8) = h(VAR_SI28, zone_index)
+      xa(9) = h(VAR_FE56, zone_index)
+      do i=1, 9
+        na(i) = xa(i) * can(i)/cbn(i)
+      end do
+      avm = sum(na(1:9))
+      value = na(AMUSE_species) / avm
+      get_mass_fraction_of_species_at_zone = 0
+   end function
+
+! Return the internal structure of the star at a specific zone
+   integer function get_stellar_model_element(zone, star_id, &
+         d_mass, cumul_mass, radius, rho, pressure, entropy, temperature, &
+         luminosity, molecular_weight, XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE)
+      use mesh
+      use structure_variables
+      use atomic_data
+!~      use extra_elements
+      use binary_history, only: hpr
+      use indices
+      
+      implicit none
+      integer, intent(in) :: star_id, zone
+      double precision, intent(out) :: d_mass, cumul_mass, radius, rho, &
+         pressure, entropy, temperature, luminosity, molecular_weight, &
+         XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE
+      real(double) :: xa(9), na(9)
+      real(double) :: avm
+      integer :: zone_index, i
+      
+      if (star_id_is_valid(star_id) < 0) then
+         get_stellar_model_element = -21
+         return
+      end if
+      if (zone > star_list(star_id)% number_of_meshpoints .or. zone < 1) then
+         get_stellar_model_element = -22
+         return
+      end if
+      
+      call update_quantities_if_needed(star_id)
+      d_mass      = sx(22, 1 + zone)
+      cumul_mass  = sx(9,  1 + zone)
+      radius      = sx(17, 1 + zone)
+      rho         = sx(3,  1 + zone)
+      pressure    = sx(2,  1 + zone)
+      
+      entropy     = sx(28, 1 + zone)
+      temperature = sx(4,  1 + zone)
+      luminosity  = sx(18, 1 + zone)
+      molecular_weight = sx(31, 1 + zone)
+      
+      ! Convert *all* abundances to mass fractions
+      zone_index = star_list(star_id)%number_of_meshpoints - zone
+      xa(1) = h(VAR_H1, zone_index)
+      xa(2) = h(VAR_HE4, zone_index)
+      xa(3) = h(VAR_C12, zone_index)
+      xa(4) = h(VAR_N14, zone_index)
+      xa(5) = h(VAR_O16, zone_index)
+      xa(6) = h(VAR_NE20, zone_index)
+      xa(7) = h(VAR_MG24, zone_index)
+      xa(8) = h(VAR_SI28, zone_index)
+      xa(9) = h(VAR_FE56, zone_index)
+      do i=1, 9
+        na(i) = xa(i) * can(i)/cbn(i)
+      end do
+      avm = sum(na(1:9))
+      
+      XH = na(1) / avm
+      XHE = na(2) / avm
+      XC = na(3) / avm
+      XN = na(4) / avm
+      XO = na(5) / avm
+      XNE = na(6) / avm
+      XMG = na(7) / avm
+      XSI = na(8) / avm
+      XFE = na(9) / avm
+      
+      get_stellar_model_element = 0
+   end function
+   
+   integer function set_mass_fraction_of_species_at_zone(star_id, &
+         AMUSE_species, zone, value)
+      implicit none
+      integer, intent(in) :: star_id, zone, AMUSE_species
+      double precision, intent(in) :: value
+      set_mass_fraction_of_species_at_zone = -4
+   end function
+   
+   integer function set_density_at_zone(star_id, zone, value)
+      implicit none
+      integer, intent(in) :: star_id, zone
+      double precision, intent(in) :: value
+      set_density_at_zone = -4
+   end function
+   
+   integer function set_temperature_at_zone(star_id, zone, value)
+      implicit none
+      integer, intent(in) :: star_id, zone
+      double precision, intent(in) :: value
+      set_temperature_at_zone = -4
+   end function
+   
+   integer function set_radius_at_zone(star_id, zone, value)
+      implicit none
+      integer, intent(in) :: star_id, zone
+      double precision, intent(in) :: value
+      set_radius_at_zone = -4
+   end function
+   
+   integer function set_mass(star_id, value)
+      implicit none
+      integer, intent(in) :: star_id
+      double precision, intent(in) :: value
+      set_mass = -4
+   end function
 
 end module twinlib

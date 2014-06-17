@@ -213,13 +213,13 @@ class TestEVtwinInterface(TestWithMPI):
             self.assertEquals(0, error)
             self.assertEquals(x, value)
         
-        (value, error) = instance.get_thermohaline_mixing_parameter()
+        (value, error) = instance.get_thermohaline_efficiency()
         self.assertEquals(0, error)
         self.assertEquals(1.0, value)
         for x in [0.0, 0.5, 1.5]:
-            error = instance.set_thermohaline_mixing_parameter(x)
+            error = instance.set_thermohaline_efficiency(x)
             self.assertEquals(0, error)
-            (value, error) = instance.get_thermohaline_mixing_parameter()
+            (value, error) = instance.get_thermohaline_efficiency()
             self.assertEquals(0, error)
             self.assertEquals(x, value)
         
