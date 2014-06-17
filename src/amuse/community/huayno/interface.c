@@ -29,10 +29,12 @@ int initialize_code()
   LOOKUPSYMBOL(init_,)(&lookup, nmax*sizeof(struct particle)/sizeof(int));
   mainsys.n=0;
   mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
+  if(mainsys.part == NULL) return -1;
   mainsys.last=NULL;
   dt_param=.03; 
   eps2=0.;
   inttype=8;
+  t_now=0.;
   dtime=0.;
   init_code();
   // AMUSE STOPPING CONDITIONS SUPPORT
@@ -43,11 +45,12 @@ int initialize_code()
 int cleanup_code()
 { 
     pcounter=0;
-    LOOKUPSYMBOL(clear_,)(&lookup);
+    LOOKUPSYMBOL(end_,)(&lookup);
     mainsys.n=0;
     free(mainsys.part);
     mainsys.last=NULL;
     dt_param=.03; 
+    t_now=0.;
     dtime=0.;
     eps2=0.;
     inttype=8;
