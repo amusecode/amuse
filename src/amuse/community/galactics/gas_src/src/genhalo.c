@@ -38,7 +38,6 @@ char **argv;
 
     readmassrad(); /* reads in mass and truncation radius of components */
         readharmfile_(harmfile,&gparam);
-        printf("hellow\n");
         A = gparam.A; B = gparam.B; C = gparam.C; 
         v0 = gparam.v0; q = gparam.q; psi0 = gparam.psi0;
         v02 = v0*v0;haloflag=gparam.ihaloflag;

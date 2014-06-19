@@ -101,7 +101,8 @@ print*,'pmass:',m
 !  bin=(i-1)/nfis+1
 !  rpart=sqrt(rnd()*(crad(bin)**2-crad(bin-1)**2)+crad(bin-1)**2)
   rpart=getrad(rnd())
-  fipart=2*pi*(mod(i-1,nfis)+rnd())/nfis
+!  fipart=2*pi*(mod(i-1,nfis)+rnd())/nfis
+  fipart=2*pi*rnd()
   zpart=getz(rpart,rnd())
 
   x(1)=rpart*cos(fipart)
