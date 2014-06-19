@@ -180,8 +180,8 @@ module sphericaldfMod
    extmass(i)=extmass(i-1)+4*Pi*(r(i)-r(i-1))*(r(i)**2*extdens(i)+r(i-1)**2*extdens(i-1))/2.
   enddo
 
-  print*,'halo reports a mass of:', cmass(ngrid)
-  print*,'and an external mass of:', extmass(ngrid)
+  write(0,*) 'halo reports a mass of:', cmass(ngrid)
+  write(0,*) 'and an external mass of:', extmass(ngrid)
   
   tmass=cmass+extmass
   
@@ -298,8 +298,8 @@ function Fhalo3(E)
  real Fhalo3,E,nE
  Fhalo3=0
  if(E.LT.-maxE()) then
-  print*, 'EEEEKS'
-  print*, E, -maxE()
+  write(0,*)  'E error'
+  write(0,*)  E, -maxE()
   stop
  endif 
  nE=-E ! note: E is expected always to be > psi0!!

@@ -42,7 +42,7 @@ subroutine readdisk
  read(1) dfitable
  read(1) ddfitable
  close(1)
- print*,' thickdisk read:', datafile
+ write(0,*) ' thickdisk read:', datafile
 end subroutine
 
 subroutine writedisk
@@ -559,7 +559,7 @@ subroutine readgasdisk
  close(1)
  allocate(ddenstab(0:nr))
  call setdd
- print*,' hydrostaticdisk read:', datafile
+ write(0,*) ' hydrostaticdisk read:', datafile
 end subroutine
 
 subroutine writegasdisk

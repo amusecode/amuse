@@ -58,9 +58,9 @@ gendisk: gendisk.o ran1.o prng_engine_wrapper.o query.o readdiskdf.o golden.o si
 	 fixedbulgepot.o sphericaldf_hernquist.o alldens.o
 	$(FC) $(FFLAGS) -o $@ $^ $(LIBS) $(GENLIBS)
 
-gengas:  readharmfile.o diskinfo.o thickdisk2.o bessj01.o erfcc.o gasdisk3.o \
-	diskdens.o sphericaldf_nfw.o bessj01.o erfcc.o pot.o force.o \
-	fixedhalopot.o appdiskpot.o plgndr1.o appdiskforce.o \
+gengas: readharmfile.o diskinfo.o thickdisk2.o bessj01.o erfcc.o gasdisk3.o \
+	diskdens.o sphericaldf_nfw.o bessj01.o erfcc.o pot.o force.o query.o \
+	fixedhalopot.o appdiskpot.o plgndr1.o appdiskforce.o gengas.o \
 	fixedbulgepot.o sphericaldf_hernquist.o alldens.o prng_engine_wrapper.o
 	$(FC) $(FFLAGS)  -o $@ $^ $(LIBS) $(GENLIBS)
 

@@ -32,39 +32,28 @@ function sech2rnd()
  sech2rnd=atanh(1-2*rnd())
 end function 
  
-program gas
+subroutine generate_gas(ngas,vdisp,iseed,m,x,y,z,vx,vy,vz,cs)
   use hydrostaticdiskMod
  real, parameter :: pi=3.141592654
  real, allocatable :: rad(:),crad(:),csigtab(:)
  real nrnd,mass,drs,vrot,fipart,rpart,rrpart,zpart,cm,dr
  integer ngas,nrs,bin,bin1,imax,i,j,jm,nfis,nr,ibuf(100)
- real m,x(3),v(3),fr,fz,phi
- real*8 m8,x8(3),v8(3)
+ real m(ngas),x(ngas),y(ngas),z(ngas),vx(ngas),vy(ngas),vz(ngas),cs(ngas)
+ real fr,fz,phi
  character*60 filename
  integer*8 iseed,itmp
  integer*8,parameter :: skip=100
 
- print*,'ngas, nr?'
- read*, ngas,nrs
- print*,' velocity dispersion?'
- read*, vdisp
- print*,' csound?'
- read*, vdispt
- print*,' random seed?'
- read*, iseed
+ nrs=1000
  
  filename='dbh.dat'
  call readharmfile(filename,ibuf)
-
  
  call readgasdisk
  nr=nrQ()
- if(mod(ngas,nrs).NE.0) print*, 'warning, ngas/nrs not int'
- nfis=ngas/nrs
  
  vdisp=0 
  vdispt=csQ()  
- print*,'cdisp:',vdispt
  allocate(rad(0:nr),csigtab(0:nr),crad(0:nrs))
  rad=radQ() 
  csigtab=csigtabQ()  
@@ -78,7 +67,6 @@ program gas
 
  dr=rad(imax)/imax
  drs=rad(imax)/nrs
- print*,' total mass of gasdisk:',mass,nrs,drs
  crad(0)=0
  do i=1,nrs-1
   cm=i*mass/nrs
@@ -88,13 +76,13 @@ program gas
   crad(i)=dr*jm+dr*(cm-csigtab(jm))/(csigtab(jm+1)-csigtab(jm))
  enddo
  crad(nrs)=rad(imax)
- print*,rad(imax)
 
- open(unit=2,file='gas',status='unknown',form='unformatted')
- write(2) ngas,ngas,0
+ write(0,*) 'cdisp:',vdispt
+ write(0,*) 'total mass of gasdisk:',mass,nrs,drs
+ write(0,*) 'rmax, mass:',rad(imax),mass/ngas
 
 m=mass/ngas
-print*,'pmass:',m  
+cs=vdispt
  do i=1,ngas
    itmp=(iseed+i)*skip
    call ran_seed(itmp)
@@ -105,10 +93,10 @@ print*,'pmass:',m
   fipart=2*pi*rnd()
   zpart=getz(rpart,rnd())
 
-  x(1)=rpart*cos(fipart)
-  x(2)=rpart*sin(fipart)
-  x(3)=zpart
-  if(rnd().GT.0.5) x(3)=-x(3)
+  x(i)=rpart*cos(fipart)
+  y(i)=rpart*sin(fipart)
+  z(i)=zpart
+  if(rnd().GT.0.5) z(i)=-z(i)
   
   call force(rpart,zpart,fr,fz,phi)
   vrot=sqrt(max(0.,-rpart*fr))
@@ -116,23 +104,13 @@ print*,'pmass:',m
 ! drift correction: checkcheck
 !  print*,'zz',rpart,zpart,fr,phi
   vrot=sqrt(max(0.,vrot**2-driftcorfac(rpart)*vdispt**2))
-  v(1)=-vrot*sin(fipart)
-  v(2)=vrot*cos(fipart)
-  v(3)=0
+  vx(i)=-vrot*sin(fipart)
+  vy(i)=vrot*cos(fipart)
+  vz(i)=0
  
-  v(1)=v(1)+vdisp*nrnd()
-  v(2)=v(2)+vdisp*nrnd()
-  v(3)=v(3)+vdisp*nrnd()
+  vx(i)=vx(i)+vdisp*nrnd()
+  vy(i)=vy(i)+vdisp*nrnd()
+  vz(i)=vz(i)+vdisp*nrnd()
 
-  m8=m
-  x8=x
-  v8=v
-  write(2) m8,x8,v8
  enddo
- 
- close(2)
- print*,' finished making gasdisk, output written to file: gas'
-
- stop
-999 print*,' oops - error reading freqs'
-end program
+end subroutine

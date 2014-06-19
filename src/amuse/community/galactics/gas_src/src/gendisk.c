@@ -212,63 +212,18 @@ char **argv;
         }
 
         t = 0.0;
-/* #ifdef ASCII */
-/*        outfile=fopen("disk","w");
-        fprintf(outfile,"%d %d %d\n", nobj,0,nobj);
-        fprintf(outfile," %d\n",3);        
-        fprintf(outfile," %15.7e\n",t);
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e \n",mass);
-        }        
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e %14.7e %14.7e \n", r[i].x, r[i].y, r[i].z);
-        }
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e %14.7e %14.7e \n", r[i].vx, r[i].vy, r[i].vz);
-        }*/
-/* #else 
-        fwrite(&nobj, sizeof(int), 1, stdout);
-        for(i=0; i<nobj; i++) 
-                fwrite(&mass,sizeof(float),1,stdout);
-        fwrite(&t,sizeof(float),1,stdout);
-        fwrite(r,nobj*sizeof(phase),1,stdout);
-/* #endif */
-    {
-        outfile = fopen("disk", "w");
-        for(i=0; i<nobj; i++){
-            fprintf(outfile, "%.15e %24.15e %24.15e %24.15e %24.15e %24.15e %24.15e\n", 
-                mass, r[i].x, r[i].y, r[i].z, r[i].vx, r[i].vy, r[i].vz);
-        }
-        close(outfile);
-        
-        //~int zero=0,one=4*3, seven=56;double m,x,y,z,vx,vy,vz;
-        //~outfile=fopen("disk","w");
-        //~fwrite(&one,sizeof(int),1,outfile);        
-        //~fwrite(&nobj,sizeof(int),1,outfile);
-        //~fwrite(&zero,sizeof(int),1,outfile);        
-        //~fwrite(&nobj,sizeof(int),1,outfile);
-        //~fwrite(&one,sizeof(int),1,outfile);        
-        //~for(i=0; i< nobj; i++){
-        //~m=mass;
-        //~x=r[i].x;y=r[i].y;
-        //~z=r[i].z;vx=r[i].vx;
-        //~vy=r[i].vy;vz=r[i].vz;
-        //~fwrite(&seven,sizeof(int),1,outfile);        
-        //~fwrite(&m,sizeof(double),1,outfile);
-        //~fwrite(&x,sizeof(double),1,outfile);
-        //~fwrite(&y,sizeof(double),1,outfile);
-        //~fwrite(&z,sizeof(double),1,outfile);
-        //~fwrite(&vx,sizeof(double),1,outfile);
-        //~fwrite(&vy,sizeof(double),1,outfile);
-        //~fwrite(&vz,sizeof(double),1,outfile);
-        //~fwrite(&seven,sizeof(int),1,outfile);        
-        //~
-        //~}
-        //~close(outfile);
-    }
-
-
-
+#ifdef ASCII
+	fprintf(stdout,"%d %15.7e\n",nobj,t);
+	for(i=0; i<nobj; i++) {
+	  fprintf(stdout,"%14.7e %14.7e %14.7e %14.7e %14.7e %14.7e %14.7e\n",
+		  mass, r[i].x, r[i].y, r[i].z, r[i].vx, r[i].vy, r[i].vz);
+		  }
+#else
+	for(i=0; i<nobj; i++) {
+	  fwrite(&mass,sizeof(float),1,stdout);
+      fwrite(r+i,sizeof(phase),1,stdout);
+	}
+#endif
     exit(0);
 }
 

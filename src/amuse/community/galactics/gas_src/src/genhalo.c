@@ -42,11 +42,11 @@ char **argv;
         v0 = gparam.v0; q = gparam.q; psi0 = gparam.psi0;
         v02 = v0*v0;haloflag=gparam.ihaloflag;
         
-        printf("flags: %d %d %d\n",
+        fprintf(stderr,"flags: %d %d %d\n",
                 gparam.idiskflag,gparam.ibulgeflag,gparam.ihaloflag);
 
         rtrunc = haloedge;  mass = halomass/nobj;
-        printf("haloedge: %g\n",haloedge);
+        fprintf(stderr,"haloedge: %g\n",haloedge);
         u1max = rtrunc;
         v1max = 0.5*M_PI;
 
@@ -79,7 +79,7 @@ char **argv;
         fprintf(stderr,"rhomax1 = %g\n",rhomax1);
         rhomax = 1.5*rhomax1;
         rhomin = 1.0e-10*rhomax;  /* define density contour cutoff */
-        printf("rhomin, rhomax: %g %g\n",rhomin,rhomax); 
+        fprintf(stderr,"rhomin, rhomax: %g %g\n",rhomin,rhomax); 
 
         fprintf(stderr,"Calculating halo positions and velocities\n");
         if(lseed<0) lseed=-lseed;
@@ -180,45 +180,17 @@ char **argv;
                 }
         }
     t = 0.0;
-/*#ifdef ASCII
-    fprintf(stdout,"%d %15.7e\n",nobj,t);
-    for(i=0; i<nobj; i++) {
-        fprintf(stdout,"%14.7e %14.7e %14.7e %14.7e %14.7e %14.7e %14.7e\n",
-            mass, r[i].x, r[i].y, r[i].z, r[i].vx, r[i].vy, r[i].vz);
-    }
+#ifdef ASCII
+	fprintf(stdout,"%d %f\n",nobj,t);
+	for(i=0; i<nobj; i++) {
+	  fprintf(stdout,"% 15.7e % 15.7e % 15.7e % 15.7e % 15.7e % 15.7e % 15.7e\n", mass, r[i].x, r[i].y, r[i].z, r[i].vx, r[i].vy, r[i].vz);
+	}
 #else
-    fwrite(&nobj, sizeof(int), 1, stdout);
-    for(i=0; i<nobj; i++)
-        fwrite(&mass,sizeof(float),1,stdout);
-    fwrite(&t,sizeof(float),1,stdout);
-    fwrite(r,nobj*sizeof(phase),1,stdout);
-#endif
-        exit(0);
-}
-*/
-/*        outfile=fopen("halo","w");
-        fprintf(outfile,"%d %d %d\n", nobj,0,0);
-        fprintf(outfile," %d\n",3);        
-        fprintf(outfile," %15.7e\n",t);
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e \n",mass);
-        }        
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e %14.7e %14.7e \n", r[i].x, r[i].y, r[i].z);
-        }
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e %14.7e %14.7e \n", r[i].vx, r[i].vy, r[i].vz);
-        }        
-*/
-        {
-            outfile = fopen("halo", "w");
-            for(i=0; i<nobj; i++){
-                fprintf(outfile, "%.15e %24.15e %24.15e %24.15e %24.15e %24.15e %24.15e\n", 
-                    mass, r[i].x, r[i].y, r[i].z, r[i].vx, r[i].vy, r[i].vz);
-            }
-            close(outfile);
-        }
-        
+	for(i=0; i<nobj; i++) {
+	  fwrite(&mass,sizeof(float),1,stdout);
+      fwrite(r+i,sizeof(phase),1,stdout);
+    }
+#endif        
         exit(0);
 }
 /* This defines the distribution function */

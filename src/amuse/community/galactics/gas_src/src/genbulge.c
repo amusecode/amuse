@@ -55,8 +55,8 @@ char **argv;
 
         R=0;z=0;
 //        psi0=pot_(&R,&z);
-        printf("psi0 %f %f %f\n",psi0,sigb2,psicutb);
-        fflush(stdout);
+        fprintf(stderr,"psi0 %f %f %f\n",psi0,sigb2,psicutb);
+        fflush(stderr);
 
         r = (phase *) calloc(nobj,sizeof(phase));
 
@@ -168,68 +168,17 @@ char **argv;
         }
 
     t = 0.0;
-/*#ifdef ASCII
-    fprintf(stdout,"%d %15.7e\n",nobj,t);
-    for(i=0; i<nobj; i++) {
-        fprintf(stdout,"%14.7e %14.7e %14.7e %14.7e %14.7e %14.7e %14.7e\n",
-            mass, r[i].x, r[i].y, r[i].z, r[i].vx, r[i].vy, r[i].vz);
-    }
+#ifdef ASCII
+	fprintf(stdout,"%d %f\n",nobj,t);
+	for(i=0; i<nobj; i++) {
+	  fprintf(stdout,"% 15.7e % 15.7e % 15.7e % 15.7e % 15.7e % 15.7e % 15.7e\n", mass, r[i].x, r[i].y, r[i].z, r[i].vx, r[i].vy, r[i].vz);
+	}
 #else
-    fwrite(&nobj, sizeof(int), 1, stdout);
-    for(i=0; i<nobj; i++)
-        fwrite(&mass,sizeof(float),1,stdout);
-    fwrite(&t,sizeof(float),1,stdout);
-    fwrite(r,nobj*sizeof(phase),1,stdout);
-#endif
-*/
-/*        outfile=fopen("bulge","w");
-        fprintf(outfile,"%d %d %d\n", nobj,0,nobj);
-        fprintf(outfile," %d\n",3);        
-        fprintf(outfile," %15.7e\n",t);
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e \n",mass);
-        }        
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e %14.7e %14.7e \n", r[i].x, r[i].y, r[i].z);
-        }
-        for(i=0; i<nobj; i++) {
-                fprintf(outfile,"%14.7e %14.7e %14.7e \n", r[i].vx, r[i].vy, r[i].vz);
-        }
-*/
-
-    { 
-        outfile = fopen("bulge", "w");
-        for(i=0; i<nobj; i++){
-            fprintf(outfile, "%.15e %24.15e %24.15e %24.15e %24.15e %24.15e %24.15e\n", 
-                mass, r[i].x, r[i].y, r[i].z, r[i].vx, r[i].vy, r[i].vz);
-        }
-        close(outfile);
-        
-        //~int zero=0,one=4*3, seven=56;double m,x,y,z,vx,vy,vz;
-        //~outfile=fopen("bulge","w");
-        //~fwrite(&one,sizeof(int),1,outfile);        
-        //~fwrite(&nobj,sizeof(int),1,outfile);
-        //~fwrite(&zero,sizeof(int),1,outfile);        
-        //~fwrite(&nobj,sizeof(int),1,outfile);
-        //~fwrite(&one,sizeof(int),1,outfile);        
-        //~for(i=0; i< nobj; i++){
-        //~m=mass;
-        //~x=r[i].x;y=r[i].y;
-        //~z=r[i].z;vx=r[i].vx;
-        //~vy=r[i].vy;vz=r[i].vz;
-        //~fwrite(&seven,sizeof(int),1,outfile);        
-        //~fwrite(&m,sizeof(double),1,outfile);
-        //~fwrite(&x,sizeof(double),1,outfile);
-        //~fwrite(&y,sizeof(double),1,outfile);
-        //~fwrite(&z,sizeof(double),1,outfile);
-        //~fwrite(&vx,sizeof(double),1,outfile);
-        //~fwrite(&vy,sizeof(double),1,outfile);
-        //~fwrite(&vz,sizeof(double),1,outfile);
-        //~fwrite(&seven,sizeof(int),1,outfile);        
-        //~
-        //~}
-        //~close(outfile);
+	for(i=0; i<nobj; i++) {
+	  fwrite(&mass,sizeof(float),1,stdout);
+      fwrite(r+i,sizeof(phase),1,stdout);
     }
+#endif
     return 0;
     
 }
