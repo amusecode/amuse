@@ -369,16 +369,17 @@ def run_ph4(infile = None, outfile = None,
     kep = init_kepler(stars[0], stars[1])
     multiples_code = multiples.Multiples(gravity, new_smalln, kep)
 
-    multiples_code.neighbor_distance_factor = 1.0
-    multiples_code.neighbor_veto = False
+    multiples_code.neighbor_perturbation_limit = 0.1
+    #multiples_code.neighbor_distance_factor = 1.0
+    #multiples_code.neighbor_veto = False
     #multiples_code.neighbor_distance_factor = 2.0
-    #multiples_code.neighbor_veto = True
+    multiples_code.neighbor_veto = True
 
     print ''
     print 'multiples_code.initial_scale_factor =', \
         multiples_code.initial_scale_factor
-    print 'multiples_code.neighbor_distance_factor =', \
-        multiples_code.neighbor_distance_factor
+    print 'multiples_code.neighbor_perturbation_limit =', \
+        multiples_code.neighbor_perturbation_limit
     print 'multiples_code.neighbor_veto =', \
         multiples_code.neighbor_veto
     print 'multiples_code.final_scale_factor =', \
@@ -389,6 +390,8 @@ def run_ph4(infile = None, outfile = None,
         multiples_code.final_scatter_factor
     print 'multiples_code.retain_binary_apocenter =', \
         multiples_code.retain_binary_apocenter
+    print 'multiples_code.wide_perturbation_limit =', \
+        multiples_code.wide_perturbation_limit
 
     pre = "%%% "
     E0,cpu0 = print_log(pre, time, multiples_code)
