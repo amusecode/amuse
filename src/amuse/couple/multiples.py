@@ -173,21 +173,25 @@ class Multiples(object):
         # radii of the interacting components (no veto) or their
         # separation (veto).
 
-        self.initial_scale_factor = 1.0
+        #self.initial_scale_factor = 1.0
+        self.initial_scale_factor = 3.0
 
-        # Distance within which to include a neighbor, relative to the
-        # initial separation of the top-level two-body encounter.
+        # Perturbation above which to include a neighbor, estimated
+        # using the neighbor distance and the initial separation of
+        # the top-level two-body encounter.  (Previously was a simple
+        # distance criterion...)
         
-        self.neighbor_distance_factor = 1.0
+        #self.neighbor_distance_factor = 1.0
         #self.neighbor_distance_factor = 2.0
+        self.neighbor_perturbation_limit = 0.1
 
         # Neighbor veto policy.  True means we allow neighbors to veto
         # a two-body encounter (meaning that don't want to deal with
         # complex initial many-body configurations).  False means we
         # include neighbors in the multiple integration.
 
-        self.neighbor_veto = False
-        #self.neighbor_veto = True
+        #self.neighbor_veto = False
+        self.neighbor_veto = True
 
         # Size of the rescaled final system, relative to the initial
         # scale.  Should be 1 + epsilon.
@@ -211,6 +215,10 @@ class Multiples(object):
         # choice.
 
         self.retain_binary_apocenter = True
+
+        # Maximum allowed perturbation at apocenter on a wide binary.
+
+        self.wide_perturbation_limit = 0.01
 
     @property
     def particles(self):
@@ -641,19 +649,13 @@ class Multiples(object):
         # with star1 and star2.
 
         scattering_stars = datamodel.Particles(particles = (star1, star2))
+        center_of_mass = scattering_stars.center_of_mass()
+        other_stars = stars - scattering_stars
 
-        # 1b. Add neighbors if desired.  Use a simple distance
-        # criterion for now -- possibly refine later.  Also consider a
-        # simple neighbor veto.  Start by sorting all stars by
-        # distance from the CM.  Later, use neighbors, if supported.
-        # TODO
-
-        distances = (stars.position
-                      - scattering_stars.center_of_mass()).lengths()
-        indices = numpy.argsort(distances.number)
-        sorted_stars = stars[indices]
-        sorted_distances = distances[indices]
-        #print "sorted_distances", sorted_distances
+        # 1b. Add neighbors if desired.  Use a perturbation criterion.
+        # Also impose a simple neighbor veto, if specified.  Start by
+        # sorting all stars by perturbation on the CM.  Later, use
+        # neighbors only, if supported.  TODO
 
         sep12 = ((star1.position-star2.position)**2).sum().sqrt()
         rad12 = star1.radius + star2.radius
@@ -664,27 +666,42 @@ class Multiples(object):
         # is in effect.  Initial_scale sets the "size" of the
         # interaction and the scale to which the final products will
         # be rescaled.  Rad12 is also the 90 degree scattering
-        # sistance for the two stars, and hence the natural limit on
-        # binary scale.  Rnnmax sets the distance inside which we
-        # check for neighbors.
+        # distance for the two stars, and hence the natural limit on
+        # binary scale.
 
         if not self.neighbor_veto:
             initial_scale = self.initial_scale_factor * rad12
         else:
             initial_scale = self.initial_scale_factor * sep12
-
-        rnnmax = self.neighbor_distance_factor * sep12
-
         print 'initial_scale =', initial_scale
 
-        for i in range(2,len(sorted_distances)):
+        # The basic sort on other_stars is by perturbation, not
+        # distance.  Maintain sorted lists of stars, distances (d),
+        # and perturbations (actually m/d**3).
+
+        distances = (other_stars.position - center_of_mass).lengths()
+        pert = other_stars.mass / distances**3
+        indices = numpy.argsort(-pert.number)	# decreasing sort
+        sorted_stars = other_stars[indices]
+        sorted_distances = distances[indices]
+        sorted_perturbations = pert[indices]
+        fac12 = 0.5*(star1.mass + star2.mass)/sep12**3
+        #print "sorted_stars", sorted_stars[:5]
+        #print "sorted_distances", sorted_distances[:5]
+        #print "sorted_perturbations", sorted_perturbations[:5]/fac12
+
+        # Perturbation limit for identification as a neighbor.
+
+        pert_min = self.neighbor_perturbation_limit*fac12
+
+        for i in range(2,len(sorted_stars)):
             star = sorted_stars[i]
 
-            # Note that it is possible for star1 and star2 not to be
-            # at the start of the sorted list.
+            # Include anything lying "inside" the binary, even if it
+            # is a weak perturber.
 
-            if sorted_distances[i] < rnnmax \
-                    and star != star1 and star != star2:
+            if sorted_perturbations[i] > pert_min \
+                    or sorted_distances[i] < sep12:
                 if not self.neighbor_veto:
                     scattering_stars.add_particle(star)
                     print 'added',
@@ -696,9 +713,10 @@ class Multiples(object):
                     sys.stdout.flush()
 		    #initial_scale = sorted_distances[i]    # don't expand!
                 else:
-                    print 'Encounter vetoed by neighbor', star.id, \
-                          'at distance', sorted_distances[i]
-                    return True, 0., 0., 0., 0., 0.
+                    print 'encounter vetoed by', \
+                        star.id, 'at distance', sorted_distances[i].number, \
+                        'pert =', sorted_perturbations[i]/fac12
+                    return True, 0., 0., 0., 0., 0., None
 
         #----------------------------------------------------------------
         # 2a. Calculate the total internal and external potential
@@ -789,11 +807,15 @@ class Multiples(object):
         print 'tperi =', tperi.number, ' period =', self.kepler.get_period()
         sys.stdout.flush()
 
+        # Hard limits on the smallN integraiton are dangerous, but for
+        # now we don't have a strategy to deal with scatterings that
+        # don't end.  TODO
+
         if self.gravity_code.unit_converter is None:
-            end_time = 10000 | nbody_system.time
+            end_time = 1.e6 | nbody_system.time
             delta_t = min(10*abs(tperi), 1.0 | nbody_system.time)
         else:
-            end_time = 10000.0 * abs(tperi)
+            end_time = 1.e6 * abs(tperi)
             delta_t = abs(tperi)
 
         final_scatter_scale = self.final_scatter_factor * initial_scatter_scale
@@ -895,17 +917,32 @@ class Multiples(object):
             else:
                 binary_scale = 2*semi	    # (the more conservative choice)
 
-            if binary_scale > rad12:
+            # Estimate the maximum perturbation on this binary due to
+            # its current strongest perturber.
 
+            max_perturbation = 2*sorted_perturbations[0]*binary_scale**3/mass
+
+            #if binary_scale > rad12:
+            if max_perturbation < self.wide_perturbation_limit:
+                print 'accepting wide binary', name_pair(comp1,comp2)
+                print '    semi =', semi.number, 'E/mu =', E.number
+                print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
+                print '    strongest perturber is', sorted_stars[0].id, \
+                    'with apo perturbation', max_perturbation
+                print '    nearest neighbor is', sorted_stars[0].id, \
+                    'at distance', sorted_distances[0].number
+                sys.stdout.flush()
+            else:
                 print 'initial top-level:', \
                     comp1.id, '('+str(comp1.radius)+')', \
                     comp2.id, '('+str(comp2.radius)+')'
                 print 'splitting wide binary', name_pair(comp1,comp2)
-                print 'semi =', semi
-                print 'apo =', apo
-                print 'peri =', semi*(1-ecc)
-                print 'E/mu =', E
-                # print 'initial_scale =', initial_scale
+                print '    semi =', semi.number, 'E/mu =', E.number
+                print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
+                print '    strongest perturber is', sorted_stars[0].id, \
+                    'with apocenter perturbation', max_perturbation
+                print '    nearest neighbor is', sorted_stars[0].id, \
+                    'at distance', sorted_distances[0].number
                 sys.stdout.flush()
 
                 # See the "special case" logic in
@@ -1141,7 +1178,9 @@ class Multiples(object):
         sys.stdout.flush()
 
         resolve_collision_code.set_break_scale(final_scatter_scale)
+
         delta_t_max = 64*delta_t
+        while delta_t_max < end_time/10: delta_t_max *= 2
 
         if self.debug_encounters:
             delta_t *= 0.1
