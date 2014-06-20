@@ -1,4 +1,5 @@
 import os
+import sys
 import os.path
 import pickle
 import random
@@ -35,10 +36,10 @@ parameters={
             "gas_disk_scale_length": dict(dtype="float64", default=3. | nbody_system.length,description="gas disk scale length (1/r profile)"), 
             "gas_disk_outer_radius": dict(dtype="float64", default=26. | nbody_system.length,description="gas disk outer radius"), 
             "gas_disk_truncation_dr": dict(dtype="float64", default=1. | nbody_system.length,description="gas disk truncation width"), 
-            "gas_disk_sound_speed": dict(dtype="float64", default=0.12 ,description="gas disk sound speed"),
-            "gas_disk_gamma": dict(dtype="float64", default=1.6667 ,description="gas disk polytropic index"),
+            "gas_disk_sound_speed": dict(dtype="float64", default=0.12 | nbody_system.speed ,description="gas disk sound speed"),
+            "gas_disk_gamma": dict(dtype="float64", default=1. ,description="gas disk polytropic index"),
             "gas_disk_number_of_radial_bins": dict(dtype="int32", default=50 ,description="gas disk nr of radial bins"), 
-            "gas_disk_max_z": dict(dtype="float64", default=2. | nbody_system.length,description="gas disk max z of grid"), 
+            "gas_disk_max_z": dict(dtype="float64", default=5. | nbody_system.length,description="gas disk max z of grid"), 
             "bulge_type_parameter": dict(dtype="int32", default=3 ,description="type of bulge (0=no, 1=KD95 (untested), 3=spherical df)"), 
             "bulge_cutoff_potential": dict(dtype="float64", default= -20 | nbody_system.potential ,description="KD95 cutoff potential"),
             "bulge_velocity_dispersion": dict(dtype="float64", default= 1. | nbody_system.speed ,description="KD95 velocity dispersion"),
@@ -153,8 +154,8 @@ class GaslactICsImplementation(object):
         in_dbh.append( "")
           
         in_dbh="\n".join(in_dbh)
-                        
-        print "in_dbh:\n", in_dbh
+
+#        print "in_dbh:\n", in_dbh
         return in_dbh
     
     def generate_in_diskdf_string(self):
@@ -167,7 +168,7 @@ class GaslactICsImplementation(object):
         in_diskdf.append("diskdf.ps/ps")
 
         in_diskdf="\n".join(in_diskdf)
-        print "in_diskdf:\n", in_diskdf
+#        print "in_diskdf:\n", in_diskdf
         return in_diskdf
     
     def generate_in_halo_string(self):
@@ -176,7 +177,7 @@ class GaslactICsImplementation(object):
         in_halo += "{0}\n".format(self._halo_random_seed)
         in_halo += "{0}\n".format(1 if self._halo_do_center_flag else 0)
         in_halo += "dbh.dat\n"
-        print "in_halo:\n", in_halo
+#        print "in_halo:\n", in_halo
         return in_halo
     
     def generate_in_bulge_string(self):
@@ -185,7 +186,7 @@ class GaslactICsImplementation(object):
         in_bulge += "{0}\n".format(self._bulge_random_seed)
         in_bulge += "{0}\n".format(1 if self._bulge_do_center_flag else 0)
         in_bulge += "dbh.dat\n"
-        print "in_bulge:\n", in_bulge
+#        print "in_bulge:\n", in_bulge
         return in_bulge
     
     def generate_in_disk_string(self):
@@ -193,14 +194,14 @@ class GaslactICsImplementation(object):
         in_disk += "{0}\n".format(self._disk_random_seed)
         in_disk += "{0}\n".format(1 if self._disk_do_center_flag else 0)
         in_disk += "dbh.dat\n"
-        print "in_disk:\n", in_disk
+#        print "in_disk:\n", in_disk
         return in_disk
 
     def generate_in_gas_string(self):
         in_gas = "{0}\n".format(self._gas_disk_number_of_particles)
         in_gas += "{0}\n0.\n".format(self._gas_disk_velocity_dispersion)
         in_gas += "{0}\n".format(self._gas_disk_random_seed)
-        print "in_gas:\n", in_gas
+#        print "in_gas:\n", in_gas
         return in_gas
 
     def _new_dbh_dir(self, data_directory,in_dbh,in_diskdf):
@@ -256,34 +257,36 @@ class GaslactICsImplementation(object):
             in_diskdf = self.generate_in_diskdf_string()
             dbh_dir, is_new = self._location_dbh_dat(in_dbh, in_diskdf)
             self._cwd = dbh_dir
-            print dbh_dir
             if not is_new:
                 return 0
             print "Writing output to:", self._cwd
+
+            print "\n running dbh \n\n"
             
             proc=Popen([os.path.join(self._bin_path, "dbh")], 
-                cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-            stdout,stderr=proc.communicate(in_dbh)
-            print "(stdout, stderr) =", stdout,stderr
+                cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
+            proc.communicate(in_dbh)
             if proc.returncode==0:
               open(os.path.join(dbh_dir,"dbh.finished"),'a').close()
             else:
               raise Exception("dbh fail")
+
+            print "\n running getfreqs \n\n"
             
             proc=Popen([os.path.join(self._bin_path, "getfreqs")], 
-                cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-            stdout,stderr=proc.communicate()
-            print "(stdout, stderr) =", stdout,stderr
+                cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
+            proc.communicate()
             if proc.returncode==0:
               open(os.path.join(dbh_dir,"getfreqs.finished"),'a').close()
             else:
               raise Exception("getfreqs fail")
 
+            print "\n running diskdf \n\n"
+
             if self._disk_type_parameter in [1,3]:
               proc=Popen([os.path.join(self._bin_path, "diskdf")], 
-                      cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-              stdout,stderr=proc.communicate(in_diskdf)
-              print "(stdout, stderr) =", stdout,stderr
+                      cwd = self._cwd, stdin = PIPE, stdout = sys.stdout, stderr = sys.stderr)
+              proc.communicate(in_diskdf)
               if proc.returncode==0:
                 open(os.path.join(dbh_dir,"diskdf.finished"),'a').close()
             else:
@@ -364,7 +367,9 @@ class GaslactICsImplementation(object):
             self._number_of_disk_particles=len(disk_data)/7
             self._number_of_gas_particles=len(gas_data)/8
             gas_posdata=gas_data[8*numpy.arange(self._number_of_gas_particles*7)/7]
-            self._gas_internal_energy=gas_data[8*numpy.arange(self._number_of_gas_particles)+7]
+            
+            gammafactor=1. if self._gas_disk_gamma==1 else 1/self._gas_disk_gamma/(self._gas_disk_gamma-1)
+            self._gas_internal_energy=gammafactor*gas_data[8*numpy.arange(self._number_of_gas_particles)+7]**2
             data=numpy.concatenate((gas_posdata,disk_data,bulge_data,halo_data))  
             self._particle_data = numpy.reshape(data,( self._number_of_particles_updated,7))
             self._particles_generated = True
@@ -570,7 +575,8 @@ class GaslactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRe
     def get_internal_energy():
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter('u', dtype='float64', direction=function.OUT, description = "The current x component of the velocity vector of the particle")
+        function.addParameter('u', dtype='float64', direction=function.OUT, 
+          description = "internal energy of gas particle", unit=nbody_system.speed**2)
         function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         function.must_handle_array = True
@@ -730,7 +736,16 @@ class GaslactICs(CommonCode):
         object.add_method('RUN', 'get_velocity')
         object.add_method('RUN', 'get_internal_energy')
 
-    
+    def commit_parameters(self):
+        if not self.model_present():
+          print "generating galaxy model, this may take a while..."
+        self.overridden().commit_parameters()  
+
+    def recommit_parameters(self):
+        if not self.model_present():
+          print "(re)generating galaxy model, this may take a while..."
+        self.overridden().recommit_parameters()  
+
     def generate_particles(self):
         result = self.overridden().generate_particles()
         self.invoke_state_change_updated()
