@@ -312,9 +312,9 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            Current value of the metallicity was retrieved
+            Current value of the supernova kick velocity was retrieved
         -1 - ERROR
-            The code does not have support for retrieving the metallicity
+            The code does not have support for retrieving the supernova kick velocity
         """
         return function
         
@@ -330,11 +330,32 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            Current value of the metallicity was set
+            Current value of the supernova kick velocity was set
         -1 - ERROR
-            The code does not have support for updating the metallicity
+            The code does not have support for updating the supernova kick velocity
         """
         return function
+        
+        
+    @legacy_function
+    def get_gyration_radius_sq():
+        """
+        Retrieve the current value of the square of the gyration radius (no units). 
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('gyration_radius_sq', dtype='float64', direction=function.OUT,
+            description = "The current value of the square of the gyration radius")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the square of the gyration radius was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the square of the gyration radius
+        """
+        return function
+         
         
     @legacy_function
     def get_time():
@@ -460,6 +481,11 @@ class SeBa(se.StellarEvolution):
             (object.ERROR_CODE,)
         )
         object.add_method(
+            "get_gyration_radius_sq", 
+            (object.INDEX,), 
+            (units.none, object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_time",
             (),
             (units.Myr,object.ERROR_CODE,)
@@ -512,6 +538,7 @@ class SeBa(se.StellarEvolution):
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
         object.add_method('particles', 'change_mass')
+        object.add_method('particles', 'get_gyration_radius_sq')
 
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')

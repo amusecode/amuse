@@ -119,6 +119,8 @@ binary_type starbase::get_bin_type() {return Unknown_Binary_Type;}
 real starbase::add_mass_to_accretor(real, bool, const real) {return 0;}
 star* starbase::subtrac_mass_from_donor(const real, real&){return NULL;}
 
+real starbase::gyration_radius_sq() {return 0;}
+
 //     -----  Scaling:  -----
 
 real starbase::conv_m_star_to_dyn(real ms)	// input:  mass (solar)

@@ -327,6 +327,7 @@ int set_supernova_kick_velocity(double v_disp) {
 int get_supernova_kick_velocity(double * v_disp){
   *v_disp = cnsts.v_disp;
     return 0;
+    
 }
 
 int get_is_logging_of_evolve_enabled(int *value){
@@ -499,6 +500,16 @@ int get_stellar_type(int index_of_the_star, int * stellar_type){
     *stellar_type = translate_stellar_type_to_int(seba_node->get_starbase()->get_element_type(), mass);
     return error_code;
 }
+
+int get_gyration_radius_sq(int index_of_the_star, double * gyration_radius_sq){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *gyration_radius_sq = seba_node->get_starbase()->gyration_radius_sq();
+    return error_code;
+}
+
+
 
 int evolve_one_step(int index_of_the_star){
     int error_code = 0;
