@@ -1092,59 +1092,98 @@ class Mercury(MercuryWayWard):
           print "too few particles"
           return -11
 
-        com_position=self.particles.center_of_mass()
-        com_velocity=self.particles.center_of_mass_velocity()
-        
         ic=numpy.argmax(self.particles.mass)
         self.central_particle=self.particles[ic]
-        
-        self.particles.position=self.particles.position-self.central_particle.position
-        self.particles.velocity=self.particles.velocity-self.central_particle.velocity
-        
-        centre=self.particles[ic:ic+1].copy()
-        orbiters=(self.particles-centre).copy()
-        
+
+        orbiters=(self.particles-self.central_particle).copy()
+
         maxmass=orbiters.mass.amax()
         if (maxmass/self.central_particle.mass) > 0.1:
           print "orbiters too massive"
           return -12
-                        
+
+        orbiters.position=orbiters.position-self.central_particle.position
+        orbiters.velocity=orbiters.velocity-self.central_particle.velocity
 
         if not hasattr(orbiters,'density'):
           orbiters.density=orbiters.mass*3/(4*numpy.pi)/orbiters.radius**3
   
-        self.overridden().central_particle.add_particles(centre)
+        self.overridden().central_particle.add_particle(self.central_particle)
                 
         self.overridden().orbiters.add_particles(orbiters)
         
         self.overridden().commit_particles()
-        
-        self.channel=self.overridden().orbiters.new_channel_to(self.particles)
-        self.reverse_channel=self.particles.new_channel_to(self.overridden().orbiters)
-        
-        self.channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
 
+# commit_particles may already change the particle positions (I think it doesn't though)
+        """
+        com_position=self.particles.center_of_mass()
+        com_velocity=self.particles.center_of_mass_velocity()
+
+        self.particles.position=self.particles.position-self.central_particle.position
+        self.particles.velocity=self.particles.velocity-self.central_particle.velocity
+
+        channel=self.overridden().orbiters.new_channel_to(self.particles)
+
+        channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
+        
         self.particles.move_to_center()
         self.particles.position+=com_position
         self.particles.velocity+=com_velocity
+        """
         self.model_time=self.overridden().get_time()
         self.committed=True
         self.particles_accessed=False
         return 0
-
+        
+        
     def recommit_particles(self):
         if not self.particles_accessed:
           return 0
         if self.overridden().central_particle[0] not in self.particles:
-          print "you are not allowed to remove the central particle"
-          return -11
-        (self.particles-self.overridden().central_particle).synchronize_to(self.overridden().orbiters)                
+          raise Exception("you are not allowed to remove the central particle")
+# these are allowed now
+        if self.overridden().central_particle[0].mass != self.central_particle.mass:
+          self.overridden().central_particle.mass=self.central_particle.mass
+        if self.overridden().central_particle.radius != self.central_particle.radius:
+          self.overridden().central_particle.radius=self.central_particle.radius
 
-        self.overridden().central_particle.mass=self.central_particle.mass
+        orbiters=(self.particles-self.central_particle).copy()
 
+        maxmass=orbiters.mass.amax()
+        if (maxmass/self.central_particle.mass) > 0.1:
+          print "orbiters too massive"
+          return -12
+
+        orbiters.position=orbiters.position-self.central_particle.position
+        orbiters.velocity=orbiters.velocity-self.central_particle.velocity
+        if not hasattr(orbiters,'density'):
+          orbiters.density=orbiters.mass*3/(4*numpy.pi)/orbiters.radius**3
+   
+        orbiters.synchronize_to(self.overridden().orbiters)                
+
+        channel=orbiters.new_channel_to(self.overridden().orbiters)
+
+        channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
+
+        self.overridden().recommit_particles()
+
+# recommit_particles could already change the particle positions (I think it doesn't though)
+        """ 
+        com_position=self.particles.center_of_mass()
+        com_velocity=self.particles.center_of_mass_velocity()
+
+        channel=self.overridden().orbiters.new_channel_to(self.particles)
+        channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
+        self.central_particle.position*=0
+        self.central_particle.velocity*=0
+        self.particles.move_to_center()
+        self.particles.position+=com_position
+        self.particles.velocity+=com_velocity
+        """
+        self.model_time=self.overridden().get_time()
         self.particles_accessed=False
-        return self.overridden().recommit_particles()
-                
+        return 0
+        
     def evolve_model(self, tend):
         if self.particles_accessed:
           if not self.committed:
@@ -1152,33 +1191,48 @@ class Mercury(MercuryWayWard):
           else:  
             ret=self.recommit_particles()
 
-        if self.overridden().central_particle[0] not in self.particles:
-          print "you are not allowed to remove the central particle"
-          return -11
-# these are allowed now
-        if self.overridden().central_particle[0].mass != self.central_particle.mass:
-          pass
-        if self.overridden().central_particle.radius != self.central_particle.radius:
-          pass
-
         com_position=self.particles.center_of_mass()
         com_velocity=self.particles.center_of_mass_velocity()
-
-        self.particles.position=self.particles.position-self.central_particle.position
-        self.particles.velocity=self.particles.velocity-self.central_particle.velocity
-        self.reverse_channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
         
         ret=self.overridden().evolve_model(tend)
         tmodel=self.overridden().get_time()
         com_position+=com_velocity*(tmodel-self.model_time)
         self.model_time=tmodel            
-        self.channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
+        channel=self.overridden().orbiters.new_channel_to(self.particles)
+        channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
+        self.central_particle.position*=0
+        self.central_particle.velocity*=0
         self.particles.move_to_center()
         self.particles.position+=com_position
-        self.particles.velocity+=com_velocity        
+        self.particles.velocity+=com_velocity
         self.particles_accessed=False
-
         return ret
+
+    def get_potential_at_point(self,eps,x,y,z):
+        if self.particles_accessed:
+          if not self.committed:
+            ret=self.commit_particles()
+          else:  
+            ret=self.recommit_particles()
+            
+        xx=x-self.central_particle.x
+        yy=y-self.central_particle.y
+        zz=z-self.central_particle.z
+
+        return self.overridden().get_potential_at_point(eps,xx,yy,zz)
+
+    def get_gravity_at_point(self,eps,x,y,z):
+        if self.particles_accessed:
+          if not self.committed:
+            ret=self.commit_particles()
+          else:  
+            ret=self.recommit_particles()
+            
+        xx=x-self.central_particle.x
+        yy=y-self.central_particle.y
+        zz=z-self.central_particle.z
+
+        return self.overridden().get_gravity_at_point(eps,xx,yy,zz)
 
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)

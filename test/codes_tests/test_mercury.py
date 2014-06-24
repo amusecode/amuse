@@ -644,3 +644,52 @@ class TestMercury(TestWithMPI):
         mercury.evolve_model(oneyear)
         self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
         mercury.stop()
+
+    def test15(self):
+        solsys = new_solar_system()
+
+        solsys.x-=1.| units.AU
+
+        p=datamodel.Particles(3)
+        p.mass=[1,2,3] | units.MSun
+        p.x=[1,10,100] | units.AU
+        p.y=[0,0,-10] | units.AU
+        p.z=[0,0,10] | units.AU
+
+        pe=p.potential_energy_in_field(solsys)
+
+        mercury = Mercury()
+        mercury.particles.add_particles(solsys)
+        pot=mercury.get_potential_at_point(p.x*0.,p.x,p.y,p.z)
+
+        self.assertAlmostRelativeEqual((pot*p.mass).sum(),pe,12)
+
+    def test16(self):
+        solsys = new_solar_system()
+
+        solsys.x-=1.| units.AU
+
+        p=datamodel.Particles(3)
+        p.mass=[1,2,3] | units.MSun
+        p.x=[1,10,100] | units.AU
+        p.y=[0,0,-10] | units.AU
+        p.z=[0,0,10] | units.AU
+
+        from amuse.community.huayno.interface import Huayno
+        from amuse.units import nbody_system        
+        conv=nbody_system.nbody_to_si(1. | units.AU, 1.| units.MSun)
+        h = Huayno(conv)
+        h.particles.add_particles(solsys)
+        
+        ax1,ay1,az1=h.get_gravity_at_point(p.x*0.,p.x,p.y,p.z)
+        
+        mercury = Mercury()        
+        mercury.particles.add_particles(solsys)
+
+        ax2,ay2,az2=mercury.get_gravity_at_point(p.x*0.,p.x,p.y,p.z)
+
+
+        self.assertAlmostRelativeEqual(ax1,ax2,12)
+        self.assertAlmostRelativeEqual(ay1,ay2,12)
+        self.assertAlmostRelativeEqual(az1,az2,12)
+

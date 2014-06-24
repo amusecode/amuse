@@ -535,18 +535,18 @@ function amuse_get_gravity_at_point(eps1, x1, y1, z1, ax,ay,az, number_of_points
       real*8 :: r2
 
         do ipart = 1, number_of_points
-            r2=x1(ipart)**2+x1(ipart)**2+x1(ipart)**2
-            mass=m(1)/K2
+            r2=x1(ipart)**2+y1(ipart)**2+z1(ipart)**2
+            mass=m(1)
             if(r2.LT.rcen**2) then
-              f=-mass/rcen**3
+              f=mass/rcen**3
             else
-              f=-mass/(r2*sqrt(r2))            
+              f=mass/(r2*sqrt(r2))            
             endif
             ax(ipart)=-f*x1(ipart)
             ay(ipart)=-f*y1(ipart)
             az(ipart)=-f*z1(ipart)
             do i = 1, nbig
-                mass=m(i+1)/K2
+                mass=m(i+1)
                 x=xh(1,i+1)
                 y=xh(2,i+1)
                 z=xh(3,i+1)                
@@ -576,15 +576,15 @@ function amuse_get_potential_at_point(eps1, x1, y1, z1, phi, number_of_points) r
       real*8 :: r2
 
         do ipart = 1, number_of_points
-            r2=x1(ipart)**2+x1(ipart)**2+x1(ipart)**2
-            mass=m(1)/K2
+            r2=x1(ipart)**2+y1(ipart)**2+z1(ipart)**2
+            mass=m(1)
             if(r2.LT.rcen**2) then
               phi(ipart)=-mass*r2/rcen**3
             else
               phi(ipart)=-mass/sqrt(r2)            
             endif
             do i = 1, nbig
-                mass=m(i+1)/K2
+                mass=m(i+1)
                 x=xh(1,i+1)
                 y=xh(2,i+1)
                 z=xh(3,i+1)                
