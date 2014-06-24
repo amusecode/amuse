@@ -693,3 +693,30 @@ class TestMercury(TestWithMPI):
         self.assertAlmostRelativeEqual(ay1,ay2,12)
         self.assertAlmostRelativeEqual(az1,az2,12)
 
+    def test17(self):
+        solsys = new_solar_system()
+
+        mercury = Mercury()
+        mercury.particles.add_particles(solsys)
+        mercury.evolve_model(5.|units.yr)
+        mercury.evolve_model(10.|units.yr)
+
+        dpos1=mercury.particles[0].position-mercury.particles[5].position
+
+        mercury.stop()
+
+        mercury = Mercury()
+        mercury.particles.add_particles(solsys)
+        mercury.evolve_model(5.|units.yr)
+        mercury.particles.x+=1 | units.AU
+        mercury.particles.y+=2 | units.AU
+        mercury.particles.z+=3 | units.AU
+        mercury.particles.vx+=10. | units.kms
+        mercury.particles.vy+=20. | units.kms
+        mercury.particles.vz+=30. | units.kms
+        mercury.evolve_model(10.|units.yr)
+
+        dpos2=mercury.particles[0].position-mercury.particles[5].position
+        mercury.stop()
+                
+        self.assertAlmostEqual(dpos1, dpos2, 12)
