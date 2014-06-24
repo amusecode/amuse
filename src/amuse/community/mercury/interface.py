@@ -1105,6 +1105,7 @@ class Mercury(MercuryWayWard):
         orbiters.position=orbiters.position-self.central_particle.position
         orbiters.velocity=orbiters.velocity-self.central_particle.velocity
 
+# note: lx,ly,lz, celimit?
         if not hasattr(orbiters,'density'):
           orbiters.density=orbiters.mass*3/(4*numpy.pi)/orbiters.radius**3
   
@@ -1158,12 +1159,13 @@ class Mercury(MercuryWayWard):
         orbiters.velocity=orbiters.velocity-self.central_particle.velocity
         if not hasattr(orbiters,'density'):
           orbiters.density=orbiters.mass*3/(4*numpy.pi)/orbiters.radius**3
+# note: lx,ly,lz, celimit?
    
         orbiters.synchronize_to(self.overridden().orbiters)                
 
         channel=orbiters.new_channel_to(self.overridden().orbiters)
 
-        channel.copy_attributes(["x","y","z","vx","vy","vz","mass"])
+        channel.copy_attributes(["x","y","z","vx","vy","vz","mass","density"])
 
         self.overridden().recommit_particles()
 
