@@ -487,7 +487,7 @@ contains
    !   >0: The stars ID for identifying it in the array of models
    !   =0: No star allocated, out of memory
    !   -1: No star allocated, requested mesh is too large
-   integer function new_zams_star(mass, start_age, nmesh, wrot)
+   integer function new_zams_star(star_id, mass, start_age, nmesh, wrot)
       use real_kind
       use mesh, only: nm, h, hpr, dh, kh
       use nucleosynthesis, only: ht_nvar, hnuc
@@ -497,6 +497,7 @@ contains
       use indices
       use test_variables
       implicit none
+      integer, intent(out)                :: star_id
       real(double), intent(in)            :: mass, start_age
       integer, optional, intent(in)       :: nmesh
       real(double), optional, intent(in)  :: wrot
@@ -507,12 +508,14 @@ contains
       real(double)                        :: sm1,dty1,age1,per1,bms1,ecc1,p1,enc1, tm, oa
       integer                             :: kh1,kp1,jmod1,jb1,jn1,jf1, im1
       real(double)                        :: hn1(50, nm)
+      star_id = -1
+      new_zams_star = -1
 
       ! Test if we can actually load a model from disk.
       ! If we cannot, we construct a pre-mainsequence star (that is, a polytrope) instead and evolve it to ZAMS
       if (have_zams_library() .eqv. .false.) then
          ! Construct a pre-mainsequence star
-         new_zams_star = new_prems_star(mass, start_age, nmesh, wrot)
+         new_zams_star = new_prems_star(star_id, mass, start_age, nmesh, wrot)
 
          ! Evolve to ZAMS
          ! *TODO*
@@ -535,7 +538,7 @@ contains
 
       new_id = allocate_star()
       if (new_id == 0) then
-         new_zams_star = 0
+         new_zams_star = -3
          return
       end if
       star => star_list(new_id)
@@ -581,7 +584,8 @@ contains
 
       call swap_out()
 
-      new_zams_star = new_id
+      new_zams_star = 0
+      star_id = new_id
    end function new_zams_star
 
 
@@ -597,7 +601,7 @@ contains
    !   >0: The stars ID for identifying it in the array of models
    !   =0: No star allocated, out of memory
    !   -1: No star allocated, requested mesh is too large
-   integer function new_prems_star(mass, start_age, nmesh, wrot)
+   integer function new_prems_star(star_id, mass, start_age, nmesh, wrot)
       use real_kind
       use mesh, only: nm, h, hpr, dh, kh
       use nucleosynthesis, only: ht_nvar, hnuc
@@ -606,6 +610,7 @@ contains
       use polytrope
       use test_variables
       implicit none
+      integer, intent(out)                :: star_id
       real(double), intent(in)            :: mass, start_age
       integer, optional, intent(in)       :: nmesh
       real(double), optional, intent(in)  :: wrot
@@ -617,7 +622,8 @@ contains
       integer                             :: kh1,kp1,jmod1,jb1,jn1,jf1
       real(double)                        :: hn1(50, nm)
 
-      new_prems_star = 0
+      star_id = -1
+      new_prems_star = -3
 
       ! Set default value for number of gridpoints and rotation rate
       new_kh = wanted_kh
@@ -679,7 +685,8 @@ contains
 
       call swap_out()
 
-      new_prems_star = new_id
+      new_prems_star = 0
+      star_id = new_id
    end function new_prems_star
 
 
@@ -696,7 +703,7 @@ contains
    !   =0: No star allocated, out of memory
    !   -1: No star allocated, requested mesh is too large
    !   -2: No star allocated, file not found
-   integer function new_star_from_file(filename, start_age, nmesh, wrot)
+   integer function new_star_from_file(star_id, filename, start_age, nmesh, wrot)
       use real_kind
       use mesh, only: nm, h, hpr, dh, kh
       use nucleosynthesis, only: ht_nvar, hnuc
@@ -707,6 +714,7 @@ contains
       use test_variables
       use filenames
       implicit none
+      integer, intent(out)                :: star_id
       character(len=*), intent(in)        :: filename
       real(double), optional, intent(in)  :: start_age
       integer, optional, intent(in)       :: nmesh
@@ -718,7 +726,8 @@ contains
       real(double)                        :: sm1,dty1,age1,per1,bms1,ecc1,p1,enc1, tm, oa
       integer                             :: kh1,kp1,jmod1,jb1,jn1,jf1
       real(double)                        :: hn1(50, nm)
-
+      star_id = -1
+      
       ! Set default value for number of gridpoints and rotation rate
       new_kh = wanted_kh
       if (present(nmesh)) new_kh = nmesh
@@ -739,7 +748,7 @@ contains
 
       new_id = allocate_star()
       if (new_id == 0) then
-         new_star_from_file = 0
+         new_star_from_file = -3
          return
       end if
       star => star_list(new_id)
@@ -788,32 +797,33 @@ contains
 
       call swap_out()
 
-      new_star_from_file = new_id
+      new_star_from_file = 0
+      star_id = new_id
    end function new_star_from_file
 
 
 
-! Create a new particle
-   integer function new_particle(star_id, mass)
-      implicit none
-      integer, intent(out) :: star_id
-      real(double), intent(in) :: mass
-      real(double) :: start_age
-      start_age = 0.0
-      star_id = new_zams_star(mass, start_age)
-      if (star_id .lt. 1) then
-        new_particle = -1
-      else
-        new_particle = 0
-      end if
-   end function
+!~! Create a new particle
+!~   integer function new_particle(star_id, mass)
+!~      implicit none
+!~      integer, intent(out) :: star_id
+!~      real(double), intent(in) :: mass
+!~      real(double) :: start_age
+!~      start_age = 0.0
+!~      star_id = new_zams_star(mass, start_age)
+!~      if (star_id .lt. 1) then
+!~        new_particle = -1
+!~      else
+!~        new_particle = 0
+!~      end if
+!~   end function
 
 
 
    ! write_star_to_file:
    !  write the state of star id to a named file, for later retrieval.
    !  The file will be in the format of a TWIN input file
-   subroutine write_star_to_file(id, filename)
+   integer function write_star_to_file(id, filename)
       use real_kind
       use filenames, only: get_free_file_unit
       
@@ -828,7 +838,8 @@ contains
       open (unit=ip, file=filename, action='write')
       call output(200, ip, 0, 4)
       close (ip);
-   end subroutine write_star_to_file
+      write_star_to_file = 0
+   end function write_star_to_file
 
 
 

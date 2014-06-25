@@ -180,7 +180,7 @@ class TestStellarEncounterInHydrodynamics(TestWithMPI):
         print result
         self.assertTrue(isinstance(result, Particles))
         self.assertEqual(len(result), 2)
-        self.assertAlmostEqual(result.mass, [5.0, 1.9] | units.MSun, 1)
+        self.assertAlmostEqual(result.mass, [4.9, 2.0] | units.MSun, 1)
         self.assertAlmostRelativeEqual(result.center_of_mass(), position_offset, 2)
         self.assertAlmostRelativeEqual(result.center_of_mass_velocity(), velocity_offset, 2)
     

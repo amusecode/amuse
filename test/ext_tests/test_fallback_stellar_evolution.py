@@ -20,7 +20,7 @@ class TestFallbackStellarEvolution(TestCase):
         instance = FallbackStellarEvolution()
         instance.stop()
 
-    def test2(self):
+    def xtest2(self):
         print "Testing FallbackStellarEvolution: evolve tests"
   
   

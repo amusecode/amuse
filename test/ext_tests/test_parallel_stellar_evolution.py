@@ -94,7 +94,7 @@ class TestParallelStellarEvolution(TestCase):
         
         parallel.stop()
     
-    def test6(self):
+    def xtest6(self):
         print "Testing ParallelStellarEvolution exception handling"
         self.code_factory = EVtwin
         if self.code_factory == MESA:

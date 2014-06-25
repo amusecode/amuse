@@ -8,7 +8,7 @@ program twin
    integer, parameter :: max_id = 2
    integer :: status
    integer :: star_id(max_id)
-   integer :: iter, i
+   integer :: iter, i, new_id
   
    print *, 'Welcome to the TWIN library test program'
   
@@ -28,7 +28,9 @@ program twin
   do i=1, max_id
   !do i=max_id, 1, -1
      print *, 'loading ZAMS model with mass ', 4.-(2*i-1)*mass
-     star_id(i) = new_zams_star(4.-(2*i-1)*mass, age)
+     status = new_zams_star(new_id, 4.-(2*i-1)*mass, age)
+     if (status /= 0) print *, 'loading ZAMS model failed, errnum: ', status
+     star_id(i) = new_id
      print *, 'New star with id ', star_id(i)
   end do
   print *, 'star IDs:', star_id(1:max_id)
