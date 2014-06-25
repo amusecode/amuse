@@ -512,7 +512,8 @@ def effective_iso_potential_plot(gravity_code,
         contour_kwargs = dict(),
         omega2 = None,
         center_of_rotation2 = [0, 0]|units.AU,
-        fraction_screen_filled2 = 0.2):
+        fraction_screen_filled2 = 0.2,
+        projection3D=False):
     """
     Create a contour plot of the effective potential of particles in a gravity code.
     The code needs to support 'get_potential_at_point' only, so it can also be an
@@ -541,6 +542,23 @@ def effective_iso_potential_plot(gravity_code,
     potential = gravity_code.get_potential_at_point(zeros, x, y, zeros)
     potential -= omega**2 * ((x-center_of_rotation[0])**2 + (y-center_of_rotation[1])**2) / 2.0
 
+    if projection3D:
+        from matplotlib import cm
+        ax = native_plot.gca(projection='3d')
+        Z = potential.number.reshape(resolution[::-1])
+        levels = set_contour_levels(potential, number_of_contours, fraction_screen_filled, quadratic_contour_levels)
+        Z = numpy.maximum(Z, levels[0])
+        ax.plot_surface(x_num, y_num, Z, rstride=1, cstride=1, cmap=cm.spectral, 
+            linewidth=0, antialiased=False, vmin=levels[0], vmax=3*levels[-1]-2*levels[0])
+        
+        ax.set_xlabel('X')
+        ax.set_xlim(-1, 1)
+        ax.set_ylabel('Y')
+        ax.set_ylim(-1, 1)
+        ax.set_zlabel('Z')
+        ax.set_zlim(levels[0], levels[-1])
+        return potential
+    
     levels = set_contour_levels(potential, number_of_contours, fraction_screen_filled, quadratic_contour_levels)
     CS = native_plot.contour(x_num, y_num, potential.number.reshape(resolution[::-1]), levels, **contour_kwargs)
     #~native_plot.clabel(CS, inline=1, fontsize=10)
