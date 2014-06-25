@@ -3,7 +3,7 @@ from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSubset
 from amuse.community.interface import se
 
-class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureReferencesMixIn):
+class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     
     """
     Stellar evolution is performed by the rapid single-star evolution
@@ -20,7 +20,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         .. [#] ... "Supernova Type Ia progenitors from merging double white dwarfs. Using a new population synthesis model"
     """
 
-    include_headers = ['worker_code.h']
+    include_headers = ['worker_code.h', 'stopcond.h']
     
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="seba_worker", **options)
@@ -355,6 +355,46 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             The code does not have support for retrieving the square of the gyration radius
         """
         return function
+
+    @legacy_function
+    def get_relative_age():
+        """
+        Retrieve the current value of the square of the relative age (Myr). 
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('relative_age', dtype='float64', direction=function.OUT,
+            description = "The current value of the square of the relative age")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the square of the relative age was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the square of the relative age
+        """
+        return function
+
+    @legacy_function
+    def get_relative_mass():
+        """
+        Retrieve the current value of the square of the relative mass (MSun). 
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('relative_mass', dtype='float64', direction=function.OUT,
+            description = "The current value of the square of the relative mass")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the square of the relative mass was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the square of the relative mass
+        """
+        return function
          
         
     @legacy_function
@@ -376,6 +416,8 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
+    # SPZ&SLWMcM
+    # No stopping conditions in this version for now.
     def evolve_model(self, end_time=None, keep_synchronous=True):
         if not keep_synchronous:
             raise Exception("non_synchronous evolution not implemented")
@@ -386,17 +428,56 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 class SeBa(se.StellarEvolution):
 
     def __init__(self, **options):
+        self.stopping_conditions = StoppingConditions(self)
         se.StellarEvolution.__init__(self,  SeBaInterface(**options), **options)
-    
-
-    
+        
     def evolve_model(self, end_time=None, keep_synchronous=True):
         if not keep_synchronous:
             raise Exception("non_synchronous evolution not implemented")
-        if end_time is None:
-            end_time = self.model_time + min(self.particles.time_step)
-        return self.evolve_system(end_time)
-        
+        evolve_a_success = 0
+#        if end_time is None:
+#            end_time = self.model_time + min(self.particles.time_step)
+        print "t=", self.model_time, end_time
+        end_time = min(end_time, self.model_time + min(self.particles.time_step))
+        while self.model_time<end_time:
+            old_particles = self.particles.copy()
+            evolve_a_success =  self.evolve_system(end_time)
+            psn = self.particles[self.particles.stellar_type>=10|units.stellar_type]
+            psn -= self.particles[old_particles.stellar_type>=10|units.stellar_type]
+            if len(psn)>0:
+                return evolve_a_success
+            else:
+                end_time = min(end_time, self.model_time + min(self.particles.time_step))
+
+            """
+        old_particles = self.particles.copy()
+        evolve_a_success =  self.evolve_system(end_time)
+        if self.stopping_conditions.supernova_detection.is_set():
+            print "XXStellar supernova stopping condition is set"
+            print self.particles
+            print "age=", self.particles.age, self.particles.relative_age
+
+            self.reset_all_stars(old_particles)
+            evolve_a_success =  self.evolve_system(new_end_time)
+            """
+
+        return evolve_a_success
+
+    def reset_all_stars(self, old_particles):
+        psn = self.particles[self.particles.stellar_type==14|units.stellar_type]
+        psn -= self.particles[old_particles.stellar_type==14|units.stellar_type]
+
+        print "t=", psn.relative_age[0]
+        tsn = self.model_time - psn.get_relative_age()[0]
+#        channel_from_old_to_new_star = old_particles.new_channel_to(self.particles)
+#        channel_from_old_to_new_star.copy_attributes(["relative_age", "relative_mass"])
+#        self.evolve_model(tsn)
+
+        self.particles.remove_particles(self.particles)
+        self.particles.add_particles(old_particles)
+        self.model_time = tsn
+        self.evolve_model(tsn)
+
     def define_properties(self, object):
         se.StellarEvolution.define_properties(self, object)
         object.add_property('get_time', public_name = "model_time")
@@ -486,11 +567,22 @@ class SeBa(se.StellarEvolution):
             (units.none, object.ERROR_CODE,)
         )
         object.add_method(
+            "get_relative_age", 
+            (object.INDEX,), 
+            (units.Myr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_relative_mass", 
+            (object.INDEX,), 
+            (units.MSun, object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_time",
             (),
             (units.Myr,object.ERROR_CODE,)
         )
-    
+        self.stopping_conditions.define_methods(object)
+
     def update_time_steps(self):
         pass
     
@@ -517,6 +609,8 @@ class SeBa(se.StellarEvolution):
             "if True will log star state before and after evolve in starev.data", 
             default_value = False
         )
+
+        self.stopping_conditions.define_parameters(object)
         
         
     def define_particle_sets(self, object):
@@ -535,10 +629,16 @@ class SeBa(se.StellarEvolution):
         #object.add_getter('particles', 'get_spin', names = ('spin',))
         object.add_getter('particles', 'get_luminosity', names = ('luminosity',))
         object.add_getter('particles', 'get_temperature', names = ('temperature',))
+#        object.add_getter('particles', 'get_relative_age', names = ('relative_age',))
+#        object.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
+
+
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
         object.add_method('particles', 'change_mass')
         object.add_method('particles', 'get_gyration_radius_sq')
+        object.add_method('particles', 'get_relative_age')
+        object.add_method('particles', 'get_relative_mass')
 
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')

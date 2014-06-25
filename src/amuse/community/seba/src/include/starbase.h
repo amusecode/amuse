@@ -88,6 +88,7 @@ class  starbase
         virtual real get_effective_radius();
         virtual real get_current_time();
         virtual real get_relative_age();
+        virtual real get_relative_mass();
 	
         virtual real temperature();
         virtual real get_luminosity();

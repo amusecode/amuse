@@ -4,6 +4,9 @@
 #include "worker_code.h"
 #include "double_star.h"
 
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
+
 #include <map>
 
 static node * seba_root = 0;
@@ -71,14 +74,51 @@ local real evolve_star_until_next_time(node* bi, const real out_time, const int 
     real time_step    =  bi->get_starbase()->get_evolve_timestep();
 
     while (out_time>current_time+time_step ) {
-        bi->get_starbase()->evolve_element(current_time+time_step);
-        if(is_logging_of_evolve_enabled) {
-            bi->get_starbase()->dump(starev, false);     
-        }
-        current_time = ((star*)bi->get_starbase())->get_current_time();
-        time_step    =  bi->get_starbase()->get_evolve_timestep();
+      stellar_type pre_stellar_type = bi->get_starbase()->get_element_type();
+      bi->get_starbase()->evolve_element(current_time+time_step);
+      stellar_type post_stellar_type = bi->get_starbase()->get_element_type();
+      if (post_stellar_type>15	&& pre_stellar_type != post_stellar_type) {
+	//int sn1 = 1;
+	int is_supernova_detection_enabled;
+	is_stopping_condition_enabled(SUPERNOVA_DETECTION,
+				      &is_supernova_detection_enabled);
+	if (is_supernova_detection_enabled) {
+	  real time_of_supernova = bi->get_starbase()->get_current_time();
+	  cerr << "Star has experienced a supernova:"<<time_of_supernova<<endl;
+	  int stopping_index = next_index_for_stopping_condition();
+	  set_stopping_condition_info(stopping_index, SUPERNOVA_DETECTION);
+	  //bi->get_starbase()->set_relative_age(time_of_supernova);
+	  cerr << "Relative age="<<bi->get_starbase()->get_relative_age()<<endl;
+	  //set_stopping_condition_particle_index(stopping_index, 0, sn1);
+	  //out_time = time_of_supernova
+	  //time_step = time_of_supernova-current_time;
+	}
+      }
+      /*
+      try {
+	bi->get_starbase()->evolve_element(current_time+time_step);
+      }
+      catch(real moment_of_supernova) {
+	cerr << "We have a Supernova occurring at t="<<moment_of_supernova<<endl<< bi->get_starbase()->get_current_time();
+
+	int is_supernova_detection_enabled;
+	is_stopping_condition_enabled(SUPERNOVA_DETECTION,
+				      &is_supernova_detection_enabled);
+	if (is_supernova_detection_enabled) {
+	  int stopping_index = next_index_for_stopping_condition();
+	  set_stopping_condition_info(stopping_index, SUPERNOVA_DETECTION);
+	}
+	return bi->get_starbase()->get_current_time();
+      }
+      */
+
+      if(is_logging_of_evolve_enabled) {
+	bi->get_starbase()->dump(starev, false);     
+      }
+      current_time = ((star*)bi->get_starbase())->get_current_time();
+      time_step    =  bi->get_starbase()->get_evolve_timestep();
         
-        star_state ss(dynamic_cast(star*, bi->get_starbase()));
+      star_state ss(dynamic_cast(star*, bi->get_starbase()));
     }
     
       
@@ -294,6 +334,10 @@ int initialize_code(){
     // it looks like this is important for
     // double stars!!
     seba_root->get_starbase()->set_use_hdyn(false); 
+
+    // AMUSE STOPPING CONDITIONS SUPPORT
+    set_support_for_condition(SUPERNOVA_DETECTION);
+
     return 0;
 }
 
@@ -509,7 +553,21 @@ int get_gyration_radius_sq(int index_of_the_star, double * gyration_radius_sq){
     return error_code;
 }
 
+int get_relative_age(int index_of_the_star, double * relative_age){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *relative_age= seba_node->get_starbase()->get_relative_age() ;
+    return error_code; 
+}
 
+int get_relative_mass(int index_of_the_star, double * relative_mass){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *relative_mass= seba_node->get_starbase()->get_relative_mass() ;
+    return error_code; 
+}
 
 int evolve_one_step(int index_of_the_star){
     int error_code = 0;
@@ -544,11 +602,18 @@ int evolve_system(double end_time) {
     real delta_t = (end_time - seba_time)/((real)n_steps);
     real out_time; 
     nodeptr bi;
+    // make a local copy of all stars
+    real actual_time;
     for_all_daughters(node, seba_root, bi) {
         out_time = seba_time;
         do {
             out_time = Starlab::min(out_time+delta_t, end_time);
-            out_time = evolve_star_until_next_time(bi, out_time, n_steps_per_phase);
+            actual_time = evolve_star_until_next_time(bi, out_time, n_steps_per_phase);
+	    if (actual_time<out_time) {
+	      cerr<< "Star must have exploded at actual_time="<< actual_time<<" out_time="<< out_time<<endl;
+	      //exit(-1);
+	      end_time = actual_time;
+	    }
         }
         while(out_time < end_time);
     }

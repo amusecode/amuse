@@ -5,9 +5,9 @@ AMUSE_DIR?=../../../..
 
 MPICXX ?= mpicxx
 
-CFLAGS   += -Isrc/include -Isrc/include/star
+CFLAGS   += -Isrc/include -Isrc/include/star -I$(AMUSE_DIR)/lib/stopcond
 CXXFLAGS += $(CFLAGS)
-LDFLAGS  += -Lsrc/node -lnode -Lsrc/std -lstd -lm
+LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -Lsrc/node -lnode -Lsrc/std -lstd -lm
 
 # so that seba build process works
 unexport CFLAGS CXXFLAGS LDFLAGS
@@ -37,10 +37,10 @@ worker_code.cc: interface.py
 	CFLAGS="$(CFLAGS)" $(CODE_GENERATOR) --type=c interface.py SeBaInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py SeBaInterface -o $@
+	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py SeBaInterface -o $@
 
 seba_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $< $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $< $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@  $(LIBS) 
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

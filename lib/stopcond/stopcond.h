@@ -45,6 +45,7 @@ int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 #define DENSITY_LIMIT_DETECTION 6
 #define INTERNAL_ENERGY_LIMIT_DETECTION 7
 #define INTERACTION_OVER_DETECTION 8
+#define SUPERNOVA_DETECTION 9
 
 #define COLLISION_DETECTION_BITMAP  1
 #define PAIR_DETECTION_BITMAP       2
@@ -55,6 +56,7 @@ int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 #define DENSITY_LIMIT_DETECTION_BITMAP 64
 #define INTERNAL_ENERGY_LIMIT_DETECTION_BITMAP 128
 #define INTERACTION_OVER_DETECTION_BITMAP 256
+#define SUPERNOVA_DETECTION_BITMAP 512 
 
 #ifdef __cplusplus
 extern "C" {

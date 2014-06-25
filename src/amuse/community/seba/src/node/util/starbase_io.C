@@ -95,6 +95,7 @@ real starbase::get_envelope_mass() {return 0;}
 real starbase::get_effective_radius() {return 0;}
 real starbase::get_current_time() {return 0;}
 real starbase::get_relative_age() {return 0;}
+real starbase::get_relative_mass() {return 0;}
 real starbase::get_evolve_timestep() {return 0;}
 
 

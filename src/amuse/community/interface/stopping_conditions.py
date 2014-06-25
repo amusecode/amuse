@@ -398,6 +398,11 @@ class StoppingConditions(object):
             8,
             "If enabled, the code will stop if the interaction between particles is over"
         )
+        self.supernova_detection = StoppingCondition(
+            self,
+            9, 
+            "If enabled, the code will stop at the end of the inner loop when two a star goes supernova"
+        )
 
     def all_conditions(self):
         for name in dir(self):
