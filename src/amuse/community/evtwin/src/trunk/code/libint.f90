@@ -478,15 +478,17 @@ contains
 
    ! new_zams_star:
    !  Create a new ZAMS model for a star
+   !  Output variables:
+   !   star_id    - The stars ID for identifying it in the array of models
    !  Input variables:
    !   mass       - the initial mass, in solar units
    !   start_age  - the starting age, in years. Only used for reporting the star's age
    !   nmesh      - (optional) the number of gridpoints in the model (default: whatever was read in from init.dat)
    !   wrot       - (optional) the rotation rate for the model (default: no rotation)
    !  Return value:
-   !   >0: The stars ID for identifying it in the array of models
-   !   =0: No star allocated, out of memory
+   !    0: Success
    !   -1: No star allocated, requested mesh is too large
+   !   -3: No star allocated, out of memory
    integer function new_zams_star(star_id, mass, start_age, nmesh, wrot)
       use real_kind
       use mesh, only: nm, h, hpr, dh, kh
@@ -592,15 +594,17 @@ contains
 
    ! new_prems_star:
    !  Create a new pre-main sequence model for a star
+   !  Output variables:
+   !   star_id    - The stars ID for identifying it in the array of models
    !  Input variables:
    !   mass       - the initial mass, in solar units
    !   start_age  - the starting age, in years. Only used for reporting the star's age
    !   nmesh      - (optional) the number of gridpoints in the model (default: whatever was read in from init.dat)
    !   wrot       - (optional) the rotation rate for the model (default: no rotation)
    !  Return value:
-   !   >0: The stars ID for identifying it in the array of models
-   !   =0: No star allocated, out of memory
+   !    0: Success
    !   -1: No star allocated, requested mesh is too large
+   !   -3: No star allocated, out of memory
    integer function new_prems_star(star_id, mass, start_age, nmesh, wrot)
       use real_kind
       use mesh, only: nm, h, hpr, dh, kh
@@ -693,16 +697,18 @@ contains
 
    ! new_star_from_file:
    !  Create a new pre-main sequence model for a star
+   !  Output variables:
+   !   star_id    - The stars ID for identifying it in the array of models
    !  Input variables:
    !   filename   - the name of the file the model is stored in
    !   start_age  - (optional) the starting age, in years (default: whatever the age of the saved model is)
    !   nmesh      - (optional) the number of gridpoints in the model (default: whatever was read in from init.dat)
    !   wrot       - (optional) the rotation rate for the model (default: whatever is in the file)
    !  Return value:
-   !   >0: The stars ID for identifying it in the array of models
-   !   =0: No star allocated, out of memory
+   !    0: Success
    !   -1: No star allocated, requested mesh is too large
    !   -2: No star allocated, file not found
+   !   -3: No star allocated, out of memory
    integer function new_star_from_file(star_id, filename, start_age, nmesh, wrot)
       use real_kind
       use mesh, only: nm, h, hpr, dh, kh
