@@ -146,13 +146,13 @@ class TestCase(unittest.TestCase):
     def assertGreaterEqual(self, a, b, msg=None):
         """Just like self.assertTrue(a >= b), but with a nicer default message."""
         if not a >= b:
-            standardMsg = '%s not greater than or equal to %s' % (safe_repr(a), safe_repr(b))
+            standardMsg = '%s not greater than or equal to %s' % (repr(a), repr(b))
             self.fail(self._formatMessage(msg, standardMsg))
     
     def assertLess(self, a, b, msg=None):
         """Just like self.assertTrue(a < b), but with a nicer default message."""
         if not a < b:
-            standardMsg = '%s not less than %s' % (safe_repr(a), safe_repr(b))
+            standardMsg = '%s not less than %s' % (repr(a), repr(b))
             self.fail(self._formatMessage(msg, standardMsg))
     
     def run(self, result=None):
