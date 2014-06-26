@@ -1431,7 +1431,7 @@ class TestFi(TestWithMPI):
         print instance.stopping_conditions
         self.assertTrue(internal_energy_limit_detection.is_set())
         self.assertTrue(instance.model_time < 10.0 | units.Myr)
-        self.assertEquals(len(internal_energy_limit_detection.particles()), 5)
+        self.assertEquals(len(internal_energy_limit_detection.particles()), 6)
         self.assertTrue((internal_energy_limit_detection.particles().u > 
                 10 * initial_internal_energy).all())
         instance.stop()
