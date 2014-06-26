@@ -599,26 +599,25 @@ class InternalStellarStructureInterface(object):
         """
         return function
     
-# Probably never a good idea... use wind/accretion instead
-#~    @legacy_function   
-#~    def set_mass():
-#~        """
-#~        Set the current mass of the star.
-#~        """
-#~        function = LegacyFunctionSpecification() 
-#~        function.can_handle_array = True 
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-#~            , description="The index of the star to set the value of")
-#~        function.addParameter('mass', dtype='float64', direction=function.IN
-#~            , description="The current mass of the star.")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            The value has been set.
-#~        -1 - ERROR
-#~            A star with the given index was not found.
-#~        """
-#~        return function
+    @legacy_function   
+    def set_mass():
+        """
+        Set the current mass of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('mass', dtype='float64', direction=function.IN
+            , description="The current mass of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
     
     @legacy_function
     def get_radius_at_zone():
