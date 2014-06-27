@@ -74,8 +74,9 @@ local real evolve_star_until_next_time(node* bi, const real out_time, const int 
     real time_step    =  bi->get_starbase()->get_evolve_timestep();
 
     while (out_time>current_time+time_step ) {
-      stellar_type pre_stellar_type = bi->get_starbase()->get_element_type();
+      //stellar_type pre_stellar_type = bi->get_starbase()->get_element_type();
       bi->get_starbase()->evolve_element(current_time+time_step);
+      /*
       stellar_type post_stellar_type = bi->get_starbase()->get_element_type();
       if (post_stellar_type>15	&& pre_stellar_type != post_stellar_type) {
 	//int sn1 = 1;
@@ -94,6 +95,7 @@ local real evolve_star_until_next_time(node* bi, const real out_time, const int 
 	  //time_step = time_of_supernova-current_time;
 	}
       }
+      */
       /*
       try {
 	bi->get_starbase()->evolve_element(current_time+time_step);
