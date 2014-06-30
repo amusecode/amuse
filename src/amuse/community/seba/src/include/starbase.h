@@ -86,6 +86,7 @@ class  starbase
         virtual real get_envelope_mass();
         virtual real get_core_mass();
         virtual real get_COcore_mass();
+        virtual real get_core_radius();
         virtual real get_effective_radius();
         virtual real get_current_time();
         virtual real get_relative_age();
