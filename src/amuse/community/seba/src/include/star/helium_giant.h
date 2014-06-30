@@ -40,8 +40,9 @@ class helium_giant : public single_star {
          ~helium_giant() {}
 
         stellar_type get_element_type();
-        bool giant_star();
-        bool remnant();
+
+        bool giant_star() {return true;}
+        bool remnant() {return false;}
         bool hydrogen_envelope_star() {return false;}
         bool star_with_COcore() {return true;}   
 

@@ -664,18 +664,6 @@ real helium_giant::temperature() {
   //return sqrt(33.45*sqrt(luminosity)/effective_radius);
 }
 
-
-bool helium_giant::giant_star() {
-    
-    return TRUE;
-}
-
-bool helium_giant::remnant() {
-
-    return FALSE;
-}
-
-
 //Eq. 84
 real helium_giant::helium_giant_luminosity_core_mass_relation(const real time, const real mass, const real z){
     real A_He = AGB_A_He_estimator();
