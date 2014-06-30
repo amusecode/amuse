@@ -430,14 +430,8 @@ class SeBa(se.StellarEvolution):
     def __init__(self, **options):
         self.stopping_conditions = StoppingConditions(self)
         se.StellarEvolution.__init__(self,  SeBaInterface(**options), **options)
-    
+        
     def evolve_model(self, end_time=None, keep_synchronous=True):
-        if not keep_synchronous:
-            raise Exception("non_synchronous evolution not implemented")
-        if end_time is None: 
-            end_time = self.model_time + min(self.particles.time_step)
-        return self.evolve_system(end_time) 
-    def evolve_model_experiment(self, end_time=None, keep_synchronous=True):
         if not keep_synchronous:
             raise Exception("non_synchronous evolution not implemented")
         evolve_a_success = 0
