@@ -525,7 +525,6 @@ class CalculateLinearWave1D(object):
                 from_model_to_code.copy()
             offset += self.grid_length / self.number_of_codes
             
-            
         for x in self.codes:
             x.initialize_grid()
         self.evolve.init_channels()
@@ -557,7 +556,7 @@ class CalculateLinearWave1D(object):
 
 import sys
 def main():
-    number_of_grid_points = 60
+    number_of_grid_points = 10
     name_of_the_code = 'athena'
     number_of_steps = 2000
     vflow_factor = -1.0
@@ -609,6 +608,7 @@ def main():
         y = grid.y[0,...,0].value_in(length)
         ys.append(y)
         rho = grid.rho[0,...,0].value_in(density)
+        print rho-1.0
         line = plot1.plot(y,rho)[0]
         lines.append(line)
     

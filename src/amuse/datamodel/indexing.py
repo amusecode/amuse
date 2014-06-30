@@ -188,7 +188,7 @@ def shape_after_index(shape, index):
         if ndarray.dtype == 'bool':
             if ndarray.shape == shape:
                 return (numpy.count_nonzero(ndarray),)
-            if len(ndarray.shape) < shape:
+            if len(ndarray.shape) < len(shape):
                 if not ndarray.shape == shape[:len(ndarray.shape)]:
                     raise Exception("Shape is not compatible")
                     

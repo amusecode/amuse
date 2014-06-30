@@ -614,7 +614,7 @@ int evolve_system(double end_time) {
 	    if (actual_time<out_time) {
 	      cerr<< "Star must have exploded at actual_time="<< actual_time<<" out_time="<< out_time<<endl;
 	      //exit(-1);
-	      end_time = actual_time;
+	      //end_time = actual_time;
 	    }
         }
         while(out_time < end_time);

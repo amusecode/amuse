@@ -13,6 +13,16 @@ from amuse.units.quantities import Quantity
 from amuse.units.quantities import to_quantity
 from amuse.units.quantities import is_quantity
 
+_MAX_LENGTH = 80
+def safe_repr(obj, short=False):
+    try:
+        result = repr(obj)
+    except Exception:
+        result = object.__repr__(obj)
+    if not short or len(result) < _MAX_LENGTH:
+        return result
+    return result[:_MAX_LENGTH] + ' [truncated]...'
+    
 class SkipTest(exceptions.AmuseException):
     pass
     

@@ -2650,6 +2650,29 @@ ConsS *** get_boundary_with_index(GridS * grid, int index_of_boundary)
     }
 }
 
+void copy_boundary_with_index(GridS * grid, int index_of_boundary)
+{
+    BoundaryCellS * boundary = grid->boundary;
+    switch(index_of_boundary) {
+        case 1:
+            boundary_left_x1_copy(grid);
+        case 2:
+            boundary_left_x2_copy(grid);
+        case 3:
+            boundary_left_x3_copy(grid);
+        case 4:
+            boundary_right_x1_copy(grid);
+        case 5:
+            boundary_right_x2_copy(grid);
+        case 6:
+            boundary_right_x3_copy(grid);
+        default:
+            fprintf(stderr, "Error, incorrect boundary index");
+            return;
+    }
+}
+
+
 int set_boundary_state(
     int * i,
     int * j,
@@ -2703,13 +2726,39 @@ int set_boundary_state(
             if (is_on_boundary_grid(dom, grid, index_of_boundary[l], i0, j0, k0, 1)) 
             {
                 ijk_on_boundary_grid(grid, index_of_boundary[l], &i0, &j0, &k0);
-                //fprintf(stderr, "i,j,k %d, %d, %d - %p\n", i0, j0, k0, U);
+                fprintf(stderr, "i,j,k %d, %d, %d - %p - %d\n", i0, j0, k0, U, l);
                 U[k0][j0][i0].d = rho[l];
                 U[k0][j0][i0].M1 = rhovx[l];
                 U[k0][j0][i0].M2 = rhovy[l];
                 U[k0][j0][i0].M3 = rhovz[l];
                 U[k0][j0][i0].E = en[l];
+                //copy_boundary_with_index(grid, index_of_boundary[l]);
+                //fprintf(stderr, "i,j,k %d, %d, %d - %p - %d\n", grid->is-nghost+i0, j0 + grid->js, k0 + grid->ks, grid->U, index_of_boundary[l]);
+                //fflush(stderr);
+                switch(index_of_boundary[l]) {
+                    case 1: //####
+                        grid->U[k0 + grid->ks][j0 + grid->js][grid->is-nghost+i0] = U[k0][j0][i0];
+                        break;
+                    case 2: 
+                        grid->U[k0 + grid->ks][j0 + grid->js][i0 + 1 + grid->ie] = U[k0][j0][i0];
+                        break;
+                    case 3:
+                        grid->U[k0 + grid->ks][grid->js - nghost + j0][grid->is - nghost + i0] = U[k0][j0][i0];
+                        break;
+                    case 4:
+                        grid->U[k0 + grid->ks][grid->je + 1 + j0][grid->is - nghost + i0] = U[k0][j0][i0];
+                        break;
+                    case 5:
+                        grid->U[grid->ks - nghost + k0][grid->js - nghost + j0][grid->is - nghost+i0] = U[k0][j0][i0];
+                        break;
+                    case 6:
+                        grid->U[grid->ke + 1 + k0][grid->js - nghost + j0][grid->is - nghost + i0] = U[k0][j0][i0];
+                        break;
+                    default:
+                        fprintf(stderr, "Error, incorrect boundary index");
+                }
             }
+            
 
         }
     }

@@ -21,6 +21,8 @@ def cellsize(grid, dimensions = 3):
     
     result = [0.0,0.0,0.0] | dx.unit
     result[0] = dx
+    result[1] = dx
+    result[2] = dx
    
     if dimensions > 1:
         if grid.shape[1] > 1:
