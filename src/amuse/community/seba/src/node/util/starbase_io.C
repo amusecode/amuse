@@ -91,6 +91,7 @@ void starbase::set_use_hdyn(bool u) {use_hdyn = u;}
 void starbase::dump(ostream&, bool) {} 
 real starbase::get_total_mass() {return 0;}
 real starbase::get_core_mass() {return 0;}
+real starbase::get_COcore_mass() {return 0;}
 real starbase::get_envelope_mass() {return 0;}
 real starbase::get_effective_radius() {return 0;}
 real starbase::get_current_time() {return 0;}
