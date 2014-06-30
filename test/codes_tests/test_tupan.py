@@ -18,7 +18,7 @@ class TestTupanInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Test TupanInterface initialization"
-        instance = TupanInterface()
+        instance = self.new_instance_of_an_optional_code(TupanInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.cleanup_code())
@@ -28,7 +28,7 @@ class TestTupanInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Test TupanInterface new_particle / get_state"
-        instance = TupanInterface()
+        instance = self.new_instance_of_an_optional_code(TupanInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
 
@@ -56,7 +56,7 @@ class TestTupanInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Test TupanInterface particle property getters/setters"
-        instance = TupanInterface()
+        instance = self.new_instance_of_an_optional_code(TupanInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals([0, 0], instance.new_particle(0.01,  1, 0, 0,  0, 1, 0, 0.1).values())
@@ -96,7 +96,7 @@ class TestTupanInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Test TupanInterface parameters"
-        instance = TupanInterface()
+        instance = self.new_instance_of_an_optional_code(TupanInterface)
         self.assertEquals(0, instance.initialize_code())
 
         self.assertEquals([0.03125, 0], instance.get_eta().values())
@@ -130,7 +130,7 @@ class TestTupanInterface(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Test TupanInterface evolve_model, binary"
-        instance = TupanInterface()
+        instance = self.new_instance_of_an_optional_code(TupanInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
 
@@ -169,7 +169,7 @@ class TestTupan(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Testing Tupan initialization"
-        instance = Tupan(self.default_converter, )
+        instance = self.new_instance_of_an_optional_code(Tupan, self.default_converter)
         instance.initialize_code()
         instance.commit_parameters()
         instance.cleanup_code()
@@ -179,7 +179,7 @@ class TestTupan(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Testing Tupan parameters"
-        instance = Tupan(self.default_converter, )
+        instance = self.new_instance_of_an_optional_code(Tupan, self.default_converter)
         instance.initialize_code()
 
         self.assertEquals(instance.parameters.epsilon_squared,
@@ -228,7 +228,7 @@ class TestTupan(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Testing Tupan particles"
-        instance = Tupan(self.default_converter, )
+        instance = self.new_instance_of_an_optional_code(Tupan, self.default_converter)
         instance.initialize_code()
         instance.commit_parameters()
         instance.particles.add_particles(self.new_sun_earth_system())
@@ -258,7 +258,7 @@ class TestTupan(TestWithMPI):
         particles.move_to_center()
         print particles
 
-        instance = Tupan(self.default_converter, )
+        instance = self.new_instance_of_an_optional_code(Tupan, self.default_converter)
         instance.initialize_code()
 #        instance.parameters.include_smbh = True
         instance.commit_parameters()
@@ -324,7 +324,7 @@ class TestTupan(TestWithMPI):
             self.skip("Failed to import a module required for Tupan")
         print "Testing Tupan evolve_model, earth-sun system, no SMBH"
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Tupan(converter, )
+        instance = self.new_instance_of_an_optional_code(Tupan, converter, )
         instance.initialize_code()
 #        instance.parameters.smbh_mass = 0.0 | units.MSun
         instance.commit_parameters()
@@ -358,7 +358,7 @@ class TestTupan(TestWithMPI):
         self.assertAlmostEquals(tan_initial_direction, math.tan(math.pi/4))
         tan_final_direction =  []
         for log_eps2 in range(-9,10,2):
-            instance = Tupan(converter, )
+            instance = self.new_instance_of_an_optional_code(Tupan, converter)
             instance.initialize_code()
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
 #            instance.parameters.smbh_mass = 0.0 | units.MSun
@@ -382,7 +382,7 @@ class TestTupan(TestWithMPI):
         if MODULES_MISSING:
             self.skip("Failed to import a module required for Tupan")
         print "Testing Tupan get_gravity_at_point and get_potential_at_point"
-        instance = Tupan()
+        instance = self.new_instance_of_an_optional_code(Tupan)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
 #        instance.parameters.smbh_mass = 0.0 | nbody_system.mass
@@ -425,7 +425,7 @@ class TestTupan(TestWithMPI):
             self.skip("Failed to import a module required for Tupan")
         print "Testing Tupan evolve_model and getters energy, plummer sphere, no SMBH"
         converter = nbody_system.nbody_to_si(1.0e2 | units.MSun, 1.0 | units.parsec)
-        instance = Tupan(converter, )
+        instance = self.new_instance_of_an_optional_code(Tupan, converter)
         instance.parameters.timestep_parameter = 1.0/256
         instance.initialize_code()
 #        instance.parameters.smbh_mass = 0.0 | units.MSun
@@ -463,7 +463,7 @@ class TestTupan(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
 
-        instance = Tupan()
+        instance = self.new_instance_of_an_optional_code(Tupan)
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
@@ -517,7 +517,7 @@ class TestTupan(TestWithMPI):
         particles.velocity += cluster_velocity
         external_kinetic_energy = (0.5 | nbody_system.mass) * cluster_velocity.length_squared()
 
-        instance = Tupan()
+        instance = self.new_instance_of_an_optional_code(Tupan)
         instance.particles.add_particles(particles)
 
         kinetic_energy = instance.kinetic_energy - external_kinetic_energy
