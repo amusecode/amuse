@@ -426,7 +426,7 @@ contains
       real(double) :: ch_opac, cz_opac
       integer :: ke1, ke2, ke3, kbc, kev, kfn, kl, jh(3),kp_var(40), kp_eqn(40), kp_bc(40),   &
          ke1_2, ke2_2, ke3_2, kbc_2, kev_2, kfn_2, kl_2, jh_2(3),kp_var_2(40), kp_eqn_2(40), kp_bc_2(40)
-      real(double) :: cdc_ms, cdc_hec, cdc_hes, cdc_dblsh, cdc5,   &
+      real(double) :: cdc_prems, cdc_ms, cdc_hec, cdc_hes, cdc_dblsh, cdc5,   &
          cdc_ems, cdc_hg, cdc_1dup, cdc_rlof, cdc_rlof_reduce,  &
          unused1, unused(17)
 
@@ -455,7 +455,7 @@ contains
          kcl, kion, kam, kop, kcc, knuc, kcn,  &
          kt1, kt2, kt3, kt4, kt5, ksv,  &
          eps, wanted_eps, del, dh0, fac_down, fac_up, fac_min,accept_res,max_eps, max_erk, &
-         cdc_ms, cdc_hec, cdc_hes, cdc_dblsh, cdc5, cdc_ems, cdc_hg, cdc_1dup, cdc_rlof, cdc_rlof_reduce,  &
+         cdc_prems, cdc_ms, cdc_hec, cdc_hes, cdc_dblsh, cdc5, cdc_ems, cdc_hg, cdc_1dup, cdc_rlof, cdc_rlof_reduce,  &
          ke1, ke2, ke3, kbc, kev, kfn, kl, jh, kp_var, kp_eqn, kp_bc,   &
          ke1_2, ke2_2, ke3_2, kbc_2, kev_2, kfn_2, kl_2, jh_2, kp_var_2, kp_eqn_2, kp_bc_2,  &
          ksx, kn, kjn,   &
@@ -509,6 +509,7 @@ contains
       ccac = 0.0d0   ! Default (single star): don't accrete composition
       clac = 0.0d0   ! Default (mass transfer): don't apply accretion luminosity
       cdc(:) = 1.0d0 ! Default timestep control
+      cdc_prems = 1.0d0! Timestep parameter during pre-MS
       cdc_ems = 1.0d0! Timestep parameter at end of MS
       cdc_hg = 1.0d0 ! Timestep parameter in HG
       cdc_1dup = 1.0d0! Timestep parameter at 1DUP
@@ -637,6 +638,7 @@ contains
          cdc(8) = cdc_1dup
          cdc(9) = cdc_rlof
          cdc(10) = cdc_rlof_reduce
+         cdc(11) = cdc_prems
 
          ! Set some leftover junk that's never actually used
          unused1 = 0.0
@@ -730,7 +732,19 @@ contains
          return
       end if
 
-      ! Fall back to the `old' bare numbers init.dat; close file to seek from start
+      ! Fall back to the `old' bare numbers init.dat
+      ! Force some options that cannot be set from the old init.dat file to 0
+      SMART_MASS_LOSS = 0.0
+      CMR   =  0.0d0
+      CMRR  =  0.0d0
+      CMSC  =  0.0d0
+      CMVW  =  0.0d0
+      CMW   =  0.0d0
+      CMAL  =  0.0d0
+      CMJ   =  0.0d0
+      CMV   =  0.0d0
+      CMK   =  0.0d0
+      CMNL  =  0.0d0
       rewind (it)
       read  (it, 993, iostat=ioerror) kh2, kr1, kr2, jch, kth, kx, ky, kz,  &
          kcl, kion, kam, kop, kcc, knuc, kcn, kt1, kt2, kt3, kt4, kt5, ksv,   &

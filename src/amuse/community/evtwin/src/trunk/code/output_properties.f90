@@ -338,7 +338,6 @@ subroutine compute_output_quantities ( Jstar )
       px(27) = u
       px(28) = s
       px(31) = cr*rho*t/pg       ! Mean molecular weight
-      px(32) = 0.0               ! Unused!
       px(33) = wne
       px(34) = dvar(4)/(cmsn*dty)  ! dM/dt
       !PX(34) = WNE0
@@ -677,8 +676,8 @@ subroutine update_timestep_parameters( Jstar )
    if ( mhe <= mh ) then
       ! Pre-main sequence
       if (sx(4,2) < 1.1d7) then
-         if (qcnv > 0.2d0) cdd = cdc(1)*4.0d0
-         if (qcnv > 0.1d0) cdd = cdc(1)*2.0d0
+         if (qcnv > 0.2d0) cdd = cdc(1)*cdc(11)*cdc(11)
+         if (qcnv > 0.1d0) cdd = cdc(1)*cdc(11)
       end if
       ! End of main sequence, reduce timestep to resolve hook
       if (sx(10,2) < 5.0d-2 .and. sx(10,2) > 1.0d-5) cdd = cdc(1)*cdc(6)
@@ -827,8 +826,8 @@ subroutine check_stop_conditions ( Jstar, jo, ift )
       ! Switch on composition adjustment when the mass exceeds the target core
       ! mass; if we adjust the composition before this point the code runs
       ! very unstable (we're not reconstructing the H burning shell properly).
-      if (m > mh) then
-         ccac = 1.0d0
+      if (m > uc(14)) then
+         ccac = min(1.0d0, max(1.0d-10, sqrt(ccac), ccac*1.1))
       end if
       ! Check for various intermediate stages and goals
       if ( mh >= uc(14) ) kx = 0       ! Core mass reached, stop burning
@@ -976,7 +975,7 @@ subroutine write_internal_details ( ig )
    DATA CHAR/'     ',' psi ','  P  ',' rho ','  T  ','kappa','grada',' grad','gr-ga','  m  ', & !  0- 9
              '  H1 ',' He4 ',' C12 ',' N14 ',' O16 ',' Ne20',' Mg24','  r  ','  L  ',' Eth ', & ! 10-19
              ' Enuc',' Eneu','  dm ','SGTH ','n/n+1','lr/lp','lm/lp',' U   ',' S   ','L/Edd', & ! 20-29
-             ' w.l ','  mu ','  32 ',' Ne  ','dm/dt','  wcv',' M.I.','phi  ','  xi ',' DGOS', & ! 30-39
+             ' w.l ','  mu ','  fp ',' Ne  ','dm/dt','  wcv',' M.I.','phi  ','  xi ',' DGOS', & ! 30-39
              'dDLdk','Denth',' xik ','v**2 ',' F2  ',' F1  ','  Si ','  Fe ','sep  ','  49 ', & ! 40-49
              ' RPP ',' RPC ',' RPNG',' RPN ',' RPO ',' RAN ','dS/dP','  LK ','  LQ ','Omega', & ! 50-59
              'RichN','DDSI ','GAM1 ',' scp ','delta','alpha','  66 ','  67 ','  68 ','  69 ', & ! 60-69

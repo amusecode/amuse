@@ -60,7 +60,6 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT)
         function.addParameter('mass', dtype='float64', unit=units.MSun, direction=function.IN)
-        function.addParameter('start_age', dtype='float64', unit=units.yr, direction=function.IN, default = 0)
         function.result_type = 'int32'
         return function
     
@@ -73,7 +72,6 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT)
         function.addParameter('mass', dtype='float64', unit=units.MSun, direction=function.IN)
-        function.addParameter('start_age', dtype='float64', unit=units.yr, direction=function.IN, default = 0)
         function.result_type = 'int32'
         return function
     

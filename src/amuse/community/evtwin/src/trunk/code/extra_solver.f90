@@ -158,14 +158,17 @@ subroutine checks
       if ( h(VAR_ECC, ik) + dh(VAR_ECC, ik) < 0.0d0 ) dh(VAR_ECC, ik) = -h(VAR_ECC, ik)
    end do
 
-   do ik = 2, kh-1
-      do jstar = 1, isb
-         ij = idx_for_star(VAR_OMEGA, jstar)
-         if ( h(ij, ik) + dh(ij, ik) < 0.0 ) then
-            dh(ij, ik) = -h(ij, ik) / 1.5d0
-         end if
-      end do
-   end do
+   ! Sanity corrections on the rotation rate.
+   ! Unfortunately this causes artifacts if rotation is supposed to be an eigenvalue, so
+   ! disabled until I can think of the correct way to do this.
+   !do ik = 2, kh-1
+   !   do jstar = 1, isb
+   !      ij = idx_for_star(VAR_OMEGA, jstar)
+   !      if ( h(ij, ik) + dh(ij, ik) < 0.0 ) then
+   !         dh(ij, ik) = -h(ij, ik) / 1.5d0
+   !      end if
+   !   end do
+   !end do
 
    do ik = 1, kh-1
       do jstar = 1, isb

@@ -10,7 +10,7 @@ module settings
    real(double) :: CZS
    real(double) :: CALPHA_OVER_FE = 0.0d0
    real(double) :: CH = -1.0
-   real(double) :: CDC(10)
+   real(double) :: CDC(11)
    real(double) :: CT1, CT2, CT3
    real(double) :: INITIAL_CT(20)
    real(double) :: CT(20)

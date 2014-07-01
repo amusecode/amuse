@@ -1532,6 +1532,7 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
       ! Eddington rate
       px(29) = LoLedd
 
+      px(32) = fp
       px( 7) = grad
       px( 8) = dg
       px(30) = wl

@@ -387,10 +387,11 @@ class TestEVtwin(TestWithMPI):
             star.radius = 0.0 | units.RSun
 
 #       Initialize stellar evolution code
-        instance = EVtwin() #debugger="xterm")
+        instance = EVtwin()
         instance.initialize_code()
-        if instance.get_maximum_number_of_stars() < number_of_stars:
-            instance.set_maximum_number_of_stars(number_of_stars)
+        instance.parameters.verbosity = True
+        if instance.parameters.maximum_number_of_stars < number_of_stars:
+            instance.parameters.maximum_number_of_stars = number_of_stars
         self.assertEqual(instance.parameters.max_age_stop_condition, 2e6 | units.Myr)
         instance.parameters.max_age_stop_condition = max_age
         self.assertEqual(instance.parameters.max_age_stop_condition, max_age)

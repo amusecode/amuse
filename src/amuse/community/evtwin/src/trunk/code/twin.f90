@@ -25,17 +25,20 @@ program twin
    end if
    
   !     Load some ZAMS models
-  do i=1, max_id
-  !do i=max_id, 1, -1
-     print *, 'loading ZAMS model with mass ', 4.-(2*i-1)*mass
-     status = new_zams_star(new_id, 4.-(2*i-1)*mass, age)
-     if (status /= 0) print *, 'loading ZAMS model failed, errnum: ', status
-     star_id(i) = new_id
-     print *, 'New star with id ', star_id(i)
-  end do
+  !do i=1, max_id
+  !   print *, 'loading ZAMS model with mass ', 4.-(2*i-1)*mass
+  !   star_id(i) = new_zams_star(4.-(2*i-1)*mass, age)
+  !   print *, 'New star with id ', star_id(i)
+  !end do
+  status = new_star_from_file(new_id, 'star1')
+  if (status /= 0) stop
+  star_id(1) = new_id
+  status = new_star_from_file(new_id, 'star2')
+  if (status /= 0) stop
+  star_id(2) = new_id
   print *, 'star IDs:', star_id(1:max_id)
-  !
-  do iter=1, 1200
+
+  do iter=1, 100!1200
      !        Evolve all stars
      do i=1, max_id
         status = evolve_one_timestep(star_id(i))
@@ -51,6 +54,8 @@ program twin
      end do
      flush(6)
   end do
+  !call write_star_to_file(star_id(1), 'star1')
+  !call write_star_to_file(star_id(2), 'star2')
   
 end program twin
 

@@ -482,7 +482,7 @@ contains
    !   star_id    - The stars ID for identifying it in the array of models
    !  Input variables:
    !   mass       - the initial mass, in solar units
-   !   start_age  - the starting age, in years. Only used for reporting the star's age
+   !   start_age  - (optional) the starting age, in years. Only used for reporting the star's age (default: 0.0)
    !   nmesh      - (optional) the number of gridpoints in the model (default: whatever was read in from init.dat)
    !   wrot       - (optional) the rotation rate for the model (default: no rotation)
    !  Return value:
@@ -500,7 +500,8 @@ contains
       use test_variables
       implicit none
       integer, intent(out)                :: star_id
-      real(double), intent(in)            :: mass, start_age
+      real(double), intent(in)            :: mass
+      real(double), optional, intent(in)  :: start_age
       integer, optional, intent(in)       :: nmesh
       real(double), optional, intent(in)  :: wrot
       type(twin_star_t), pointer          :: star
@@ -561,7 +562,11 @@ contains
       call select_star(new_id)
 
       star%zams_mass = mass
-      star%age       = start_age
+      if (present(start_age)) then
+         star%age = start_age
+      else
+         star%age = 0.0d0
+      endif
 
       ! Load model
       if (star%nucleosynthesis .and. verbose) print *, '*** Warning: ZAMS model+nucleosynthesis is not reliable.'
@@ -598,7 +603,7 @@ contains
    !   star_id    - The stars ID for identifying it in the array of models
    !  Input variables:
    !   mass       - the initial mass, in solar units
-   !   start_age  - the starting age, in years. Only used for reporting the star's age
+   !   start_age  - (optional) the starting age, in years. Only used for reporting the star's age (default: 0.0)
    !   nmesh      - (optional) the number of gridpoints in the model (default: whatever was read in from init.dat)
    !   wrot       - (optional) the rotation rate for the model (default: no rotation)
    !  Return value:
@@ -615,7 +620,8 @@ contains
       use test_variables
       implicit none
       integer, intent(out)                :: star_id
-      real(double), intent(in)            :: mass, start_age
+      real(double), intent(in)            :: mass
+      real(double), optional, intent(in)  :: start_age
       integer, optional, intent(in)       :: nmesh
       real(double), optional, intent(in)  :: wrot
       type(twin_star_t), pointer          :: star
@@ -664,7 +670,11 @@ contains
       call select_star(new_id)
 
       star%zams_mass = mass
-      star%age       = start_age
+      if (present(start_age)) then
+         star%age = start_age
+      else
+         star%age = 0.0d0
+      endif
 
       ! Construct pre-main sequence model
       if (verbose) print *, 'Construct pre-main sequence model'

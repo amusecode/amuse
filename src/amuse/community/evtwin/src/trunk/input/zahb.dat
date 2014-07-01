@@ -28,7 +28,7 @@
  KION  = 5           ! Number of species to calculate partial ionisation for
  KCN   = 0           ! standard nuclear network (0) or force CNO equilibrium (1)
 
- KR1   = 20          ! Iterations for first timestep
+ KR1   = 50          ! Iterations for first timestep
  KR2   = 20          ! Iterations for later timesteps
 
  EPS        = 1.00E-006   ! Desired accuracy for solver (lower window bound)
@@ -40,7 +40,7 @@
 
  FAC_DOWN   = 0.8         ! If no progress reduce scale for corrections by this
  FAC_UP     = 1.1         ! Allow scale to grow with this factor
- FAC_MIN    = 0.1         ! Do not reduce factor below this
+ FAC_MIN    = 0.6         ! Do not reduce factor below this
  CLIMIT     = 0.1         ! Scale relative corrections if larger than this value
 
  DH0        = 1.00E-007   ! Relative variation when calculating derivatives
@@ -67,7 +67,7 @@
  CDC_RLOF_REDUCE  = 0.25
 
  CT1   =  0.8
- CT2   =  1.2
+ CT2   =  1.1
  CT3   =  0.3
 
  ! Variables and equations to solve for
@@ -172,7 +172,7 @@
  CMB   =  0.000000000000000E+000    ! Multiplier for Verbunt & Zwaan magnetic braking						      
 
  KN      = 12
- KJN     =  1   2   3   5   6   7  25  26  27  29  30  31, 28*0
+ KJN     =  1   2   3   9   6   7  25  26  27  29  30  31, 28*0
 
  KSX     =  2   3   4  39   9  10  11  12  17
            18  19  20  21  24  36  27  28  29  30

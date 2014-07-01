@@ -456,20 +456,11 @@ contains
    ! off.
    Tc = 1.0d6
 
-   ! ZAMS composition
-   ! This is the Anders&Grevesse mixture
-   cc  =  0.176e+000
-   cn  =  5.200e-002
-   co  =  0.502e+000
-   cne =  9.200e-002
-   cmg =  3.400e-002
-   csi =  7.200e-002
-   cfe =  7.200e-002
+   ! ZAMS composition, from init.dat
    ch0 = ch
    if (czs < 0.0d0) czs = 0.02d0
    if (ch<0.0d0) ch0 = 0.76d0 - 3.0d0*czs
    che = 1.0d0 - ch0 - czs
-   cn = 1.0d0 - cc - co - cne - cmg - csi - cfe
    xa(1) = ch0*cbn(1)/can(1)
    xa(2) = che*cbn(2)/can(2)
    xa(3) = cc*czs*cbn(3)/can(3)

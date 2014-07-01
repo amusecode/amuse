@@ -62,6 +62,7 @@
  USE_LINESEARCH = FALSE             ! Line search algorithm, (NR 2nd ed. 9.7)
 
  CDC_MS    = 0.03    ! Base timestep control parameter (MS)
+ CDC_PREMS = 2.00    ! Second timestep control parameter (pre-main sequence)
  CDC_EMS   = 0.15    ! Second timestep control parameter (end MS)
  CDC_HG    = 3.00    ! Second timestep control parameter (Hertzsprung gap)
  CDC_1DUP  = 0.10    ! Second timestep control parameter (First dredge-up)
