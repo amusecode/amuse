@@ -296,7 +296,7 @@ class TestTupan(TestWithMPI):
         print particles
 
         converter = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Tupan(converter, )
+        instance = self.new_instance_of_an_optional_code(Tupan, converter)
         instance.initialize_code()
         instance.parameters.integrator_method = "sakura"
         instance.commit_parameters()
