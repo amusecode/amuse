@@ -44,7 +44,7 @@ class _TestStellarEvolutionCodes(TestWithMPI):
         self.assertEqual( str(p2.stellar_type),"Main Sequence star")
 
     def test4(self):
-        for m in ([0.2,1.,5.,25.]|units.MSun):
+        for m in ([0.2,1.,5.]|units.MSun):
           instance=self.code_factory()()
           p=datamodel.Particle(mass=m)
           p2=instance.particles.add_particle(p)
@@ -163,11 +163,5 @@ class TestSeBaCode(_TestStellarEvolutionCodes):
 class TestEVtwinCode(_TestStellarEvolutionCodes):
     def code_factory(self):
         return EVtwin
-    
-    def test4(self):
-        self.skip("Problem with ages...")
-    
-    def test7(self):
-        self.skip("Problem with ages...")
     
 

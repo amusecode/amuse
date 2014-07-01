@@ -243,7 +243,7 @@ class TestEVtwinInterface(TestWithMPI):
             self.assertEquals(0, instance.evolve_one_step(index))
             (age_after_evolve, error) = instance.get_age(index)
             self.assertEquals(0, error)
-            self.assertAlmostEqual(age_after_evolve, 9000000.0, 5)
+            self.assertAlmostEqual(age_after_evolve, 3000000.0, 5)
         
         self.assertEquals(0, instance.delete_star(1))
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
@@ -263,7 +263,7 @@ class TestEVtwinInterface(TestWithMPI):
             self.assertEquals(0, instance.evolve_one_step(index))
             (age, error) = instance.get_age(index)
             self.assertEquals(0, error)
-#~            self.assertAlmostEqual(age, age_after_evolve)
+            self.assertAlmostEqual(age, age_after_evolve)
         
         instance.stop()
     
@@ -374,7 +374,7 @@ class TestEVtwin(TestWithMPI):
         
         instance.stop()
         
-    def xtest4(self):
+    def test4(self):
         print "Testing max age stop condition..."
         #masses = [.5, 1.0, 1.5] | units.MSun # Test with fewer particles for speed-up.
         masses = [.5] | units.MSun
@@ -411,10 +411,10 @@ class TestEVtwin(TestWithMPI):
             self.assertTrue(stars[i].age <= max_age)
             self.assertTrue(stars[i].mass <= masses[i])
             self.assertTrue(stars[i].time_step <= max_age)
-                
+        
         self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
             expected_message = "Error when calling 'evolve_for' of a 'EVtwin', errorcode "
-                "is 5, error is 'PRINTB -- age greater than limit'")
+                "is 5, error is 'Age greater than maximum age limit.'")
 
         instance.stop()
     
@@ -422,7 +422,7 @@ class TestEVtwin(TestWithMPI):
         print "Testing adding and removing particles from stellar evolution code..."
         
         particles = Particles(3)
-        particles.mass = 1.0 | units.MSun
+        particles.mass = 0.3 | units.MSun
         
         instance = EVtwin(redirection="none")
         instance.initialize_code()
@@ -434,24 +434,24 @@ class TestEVtwin(TestWithMPI):
         instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
         self.assertEquals(len(stars), 2) # before remove
-#~        self.assertAlmostEqual(stars.age, 1.0 | units.Myr)
+        self.assertAlmostEqual(stars.age, 1.0 | units.Myr)
         
         stars.remove_particle(particles[0])
         self.assertEquals(len(stars), 1)
         self.assertEquals(instance.get_number_of_particles(), 1)
         instance.evolve_model(2.0 | units.Myr)
-#~        self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
+        self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
         
         stars.add_particles(particles[::2])
         self.assertEquals(len(stars), 3) # it's back...
-#~        self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
+        self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
         self.assertAlmostEqual(stars[1].age, 0.0 | units.Myr)
-#~        self.assertAlmostEqual(stars[2].age, 0.0 | units.Myr) # ... and rejuvenated.
+        self.assertAlmostEqual(stars[2].age, 0.0 | units.Myr) # ... and rejuvenated.
         
         instance.evolve_model(3.0 | units.Myr) # The young stars keep their age offset from the old star
-#~        self.assertAlmostEqual(stars.age, [3.0, 1.0, 1.0] | units.Myr)
+        self.assertAlmostEqual(stars.age, [3.0, 1.0, 1.0] | units.Myr)
         instance.evolve_model(4.0 | units.Myr)
-#~        self.assertAlmostEqual(stars.age, [4.0, 2.0, 2.0] | units.Myr)
+        self.assertAlmostEqual(stars.age, [4.0, 2.0, 2.0] | units.Myr)
         instance.stop()
 
     def test6(self):
@@ -463,7 +463,6 @@ class TestEVtwin(TestWithMPI):
         instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
-#~        instance.evolve_model()
         self.assertEquals(instance.particles.get_number_of_zones(), [199, 199])
         self.assertEquals(len(instance.particles[0].get_radius_profile()), 199)
         self.assertRaises(AmuseException, instance.particles.get_radius_profile, 
@@ -490,8 +489,6 @@ class TestEVtwin(TestWithMPI):
         instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
-#~        instance.evolve_model()
-#~        instance.evolve_model()
         number_of_zones   = instance.particles.get_number_of_zones()[0]
         number_of_species = instance.particles.get_number_of_species()[0]
         composition       = instance.particles[0].get_chemical_abundance_profiles()

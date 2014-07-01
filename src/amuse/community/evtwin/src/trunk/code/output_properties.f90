@@ -556,7 +556,7 @@ subroutine compute_output_quantities ( Jstar )
    htot = horb + hspn(1) + hspn(2)
 
    aj = age + dty
-   if ( jnn == 0 .and. ktw == Jstar ) age = aj
+   if ( jnn == 0 .and. ktw == Jstar ) aj = age
 end subroutine compute_output_quantities
 
 

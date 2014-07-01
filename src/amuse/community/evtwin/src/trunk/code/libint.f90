@@ -498,6 +498,7 @@ contains
       use polytrope
       use indices
       use test_variables
+      use stopping_conditions
       implicit none
       integer, intent(out)                :: star_id
       real(double), intent(in)            :: mass
@@ -591,6 +592,7 @@ contains
 
       call swap_out()
 
+      star%uc = uc
       new_zams_star = 0
       star_id = new_id
    end function new_zams_star
@@ -618,6 +620,7 @@ contains
       use settings
       use polytrope
       use test_variables
+      use stopping_conditions
       implicit none
       integer, intent(out)                :: star_id
       real(double), intent(in)            :: mass
@@ -699,6 +702,7 @@ contains
 
       call swap_out()
 
+      star%uc = uc
       new_prems_star = 0
       star_id = new_id
    end function new_prems_star
@@ -729,6 +733,7 @@ contains
       use indices
       use test_variables
       use filenames
+      use stopping_conditions
       implicit none
       integer, intent(out)                :: star_id
       character(len=*), intent(in)        :: filename
@@ -813,6 +818,7 @@ contains
 
       call swap_out()
 
+      star%uc = uc
       new_star_from_file = 0
       star_id = new_id
    end function new_star_from_file
@@ -1238,7 +1244,8 @@ contains
       integer, intent(in) :: star_id
       real(double), intent(in) :: time
       real(double) :: age, dty, dty_min, dty_max
-
+      evolve_until_model_time = 0
+      
       if (star_id /= current_star) call select_star(star_id)
 
       dty_min = uc(12)/csy
@@ -1269,6 +1276,7 @@ contains
          dt = dty * csy
 
          evolve_until_model_time = evolve_one_timestep(star_id)
+         if (age_of(star_id) >= uc(2)) evolve_until_model_time = 5
 
          ! Abort in case of convergence failure
          if (evolve_until_model_time /= 0) return

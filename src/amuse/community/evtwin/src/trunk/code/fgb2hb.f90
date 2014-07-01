@@ -184,7 +184,7 @@ contains
       integer      :: it, jk
       real(double) :: hn1(50, nm)
       type(interpolate_t) :: pf_h, pf_he, pf_c, pf_n, pf_o, pf_ne, pf_mg, pf_si, pf_fe
-      real(double) :: mcore, mstar, cf
+      real(double) :: mcore, mstar
       real(double) :: age_backup
       integer      :: jmod_backup, jnn_backup
 

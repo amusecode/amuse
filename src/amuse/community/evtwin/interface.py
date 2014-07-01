@@ -769,6 +769,8 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         object.add_transition('RUN', 'UPDATE', 'new_particle_method', False)
     
     def define_errorcodes(self, object):
+        object.add_errorcode(5, 'Age greater than maximum age limit.') 
+        object.add_errorcode(2, 'BACKUP -- tstep reduced below limit; quit')
         InternalStellarStructure.define_errorcodes(self, object)
     
     def define_methods(self, object):
