@@ -541,8 +541,8 @@ class SeBa(se.StellarEvolution):
         if not keep_synchronous:
             raise Exception("non_synchronous evolution not implemented")
         evolve_a_success = 0
-#        if end_time is None:
-#            end_time = self.model_time + min(self.particles.time_step)
+        if end_time is None:
+            end_time = self.model_time + min(self.particles.time_step)
         print "t=", self.model_time, end_time
         new_end_time = min(end_time, self.model_time + min(self.particles.time_step))
         while self.model_time<new_end_time:
