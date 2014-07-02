@@ -457,6 +457,51 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
          
+    @legacy_function
+    def get_convective_envelope_mass():
+        """
+        Retrieve the current value of the mass of the part of the envelope that is convective (MSun). 
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('convective_envelope_mass', dtype='float64', direction=function.OUT,
+            description = "The current value of the mass of the part of the envelope that is convective")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the convective envelope mass was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the square of the relative mass
+        """
+        return function
+
+
+
+
+    @legacy_function
+    def get_convective_envelope_radius():
+        """
+        Retrieve the current value of the radius of the part of the envelope that is convective (RSun). 
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('convective_envelope_radius', dtype='float64', direction=function.OUT,
+            description = "The current value of the radius of the part of the envelope that is convective")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the convective envelope radius was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the square of the relative mass
+        """
+        return function
+
+
+
         
     @legacy_function
     def get_time():
@@ -657,6 +702,16 @@ class SeBa(se.StellarEvolution):
             (units.MSun, object.ERROR_CODE,)
         )
         object.add_method(
+            "get_convective_envelope_mass", 
+            (object.INDEX,), 
+            (units.MSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_convective_envelope_radius", 
+            (object.INDEX,), 
+            (units.RSun, object.ERROR_CODE,)
+        )        
+        object.add_method(
             "get_time",
             (),
             (units.Myr,object.ERROR_CODE,)
@@ -714,7 +769,8 @@ class SeBa(se.StellarEvolution):
         object.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
 #        object.add_getter('particles', 'get_relative_age', names = ('relative_age',))
 #        object.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
-
+        object.add_getter('particles', 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
+        object.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
 
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')

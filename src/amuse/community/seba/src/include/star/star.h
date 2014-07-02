@@ -169,7 +169,7 @@ class  star : public starbase
         virtual real zeta_thermal(){return 0;}
         virtual real angular_momentum() {return 0;}
         virtual void stellar_wind(const real){}
-	   virtual void update_wind_constant(){}
+	    virtual void update_wind_constant(){}
 
         virtual real wind_velocity(){return 0;}
         virtual real get_velocity(){return 0;}
@@ -226,7 +226,7 @@ class  star : public starbase
         virtual star* reduce_mass(const real) {return NULL;}
         virtual star* subtrac_mass_from_donor(const real, real&){return NULL;}
 
-	virtual void add_mass_to_core(const real) {} 
+    	virtual void add_mass_to_core(const real) {} 
 
         virtual real add_mass_to_accretor(real, bool, const real) {return 0;}
 	//        virtual real add_mass_to_accretor(const real, bool) {return 0;}
@@ -276,6 +276,8 @@ class  star : public starbase
         virtual void evolve_core_mass() {};
 
         virtual real gyration_radius_sq()=0;
+        virtual real  convective_envelope_mass(){return 0;}
+        virtual real  convective_envelope_radius(){return 0;}
 
     };
 

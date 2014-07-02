@@ -123,6 +123,8 @@ real starbase::add_mass_to_accretor(real, bool, const real) {return 0;}
 star* starbase::subtrac_mass_from_donor(const real, real&){return NULL;}
 
 real starbase::gyration_radius_sq() {return 0;}
+real starbase::convective_envelope_mass() {return 0;}
+real starbase::convective_envelope_radius() {return 0;}
 
 //     -----  Scaling:  -----
 

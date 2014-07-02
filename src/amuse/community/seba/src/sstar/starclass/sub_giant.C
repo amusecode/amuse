@@ -359,6 +359,17 @@ real sub_giant::gyration_radius_sq() {
 }
 
 
+// Section 7.2 in Hurley, Pols & Tout 2000
+real sub_giant::convective_envelope_mass(){
+    return envelope_mass;
+}
+
+// Section 2.3.1 in Hurley, Tout & Pols 2002
+real sub_giant::convective_envelope_radius(){
+    return radius - helium_core_radius(); // function of relative_mass, core_mass and metalicity
+}
+
+
 real sub_giant::zeta_adiabatic() {
 
 // (GN+SPZ Apr 28 1999) fit from Lev Yungelson private communication

@@ -617,7 +617,15 @@ real helium_giant::gyration_radius_sq() {
 }
 
 
+// Section 7.2 in Hurley, Pols & Tout 2000
+real helium_giant::convective_envelope_mass(){
+    return envelope_mass;
+}
 
+// Section 2.3.1 in Hurley, Tout & Pols 2002
+real helium_giant::convective_envelope_radius(){
+    return radius - co_core_radius(); // function of core_mass
+}
 
 
 void helium_giant::update_wind_constant() {

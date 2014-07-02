@@ -432,8 +432,20 @@ real super_giant::zeta_thermal() {
 
 real super_giant::gyration_radius_sq() {
 
-  return cnsts.parameters(convective_star_gyration_radius_sq); 
+    return cnsts.parameters(convective_star_gyration_radius_sq); 
 }
+
+
+// Section 7.2 in Hurley, Pols & Tout 2000
+real super_giant::convective_envelope_mass(){
+    return envelope_mass;
+}
+
+// Section 2.3.1 in Hurley, Tout & Pols 2002
+real super_giant::convective_envelope_radius(){
+    return radius - helium_core_radius(); // function of relative_mass, core_mass and metalicity
+}
+
 
 void super_giant::update_wind_constant() {
 #if 0  

@@ -118,6 +118,8 @@ class  starbase
         virtual void set_time_offset(real value);
 
         virtual real gyration_radius_sq();
+        virtual real convective_envelope_mass();
+        virtual real convective_envelope_radius();
         
 //	Scaling:
 

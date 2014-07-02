@@ -419,6 +419,26 @@ real hertzsprung_gap::gyration_radius_sq() {
   return cnsts.parameters(radiative_star_gyration_radius_sq); 
 }
 
+
+// Section 7.2 in Hurley, Pols & Tout 2000
+real hertzsprung_gap::convective_envelope_mass(){
+
+    real t_ms = main_sequence_time(); // function of relative mass and metalicity
+    real t_bgb = base_giant_branch_time(); // function of relative mass and metalicity
+    real tau = (relative_age - t_ms)/ (t_bgb - t_ms);
+    return tau * envelope_mass;
+}
+
+// Eq. 39-40 in Hurley, Tout & Pols 2002
+real hertzsprung_gap::convective_envelope_radius(){
+
+    real t_ms = main_sequence_time(); // function of relative mass and metalicity
+    real t_bgb = base_giant_branch_time(); // function of relative mass and metalicity
+    real tau = (relative_age - t_ms)/ (t_bgb - t_ms);
+    return sqrt(tau) * (radius-helium_core_radius()); //function of relative_mass, core_mass and metalicity
+}
+
+
 void hertzsprung_gap::update_wind_constant() {
 #if 0
 // (GN+SPZ Apr 28 1999) new fits to Maeder, de Koter and common sense

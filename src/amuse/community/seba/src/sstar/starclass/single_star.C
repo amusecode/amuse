@@ -1665,19 +1665,25 @@ real single_star::base_giant_branch_time() {
   return base_giant_branch_time(relative_mass, metalicity);
 }
 
+
+
+// (SilT July 2 2014) convective_envelope_mass replaced by equations of Hurley, Pols & Tout 2000, section 7.2
+// needed for use of tidal equations of Hurley, Tout & Pols 2002
 // This function uses internal parameters explicitely!
-real single_star::convective_envelope_mass(const real z) {
+//real single_star::convective_envelope_mass(const real z) {
+//
+//  real m_ce;
+//  if(low_mass_star(relative_mass, z)) {
+//    m_ce = 0.4 * envelope_mass;
+//  }
+//  else {
+//    m_ce = cnsts.mathematics(one_third) * envelope_mass;
+//  }
+//
+//  return m_ce;
+//}
+//
 
-  real m_ce;
-  if(low_mass_star(relative_mass, z)) {
-    m_ce = 0.4 * envelope_mass;
-  }
-  else {
-    m_ce = cnsts.mathematics(one_third) * envelope_mass;
-  }
-
-  return m_ce;
-}
 
 
 // Eq.10
@@ -3015,6 +3021,7 @@ real single_star::r_helper(const real rad, const real rad_c, const real mass_tot
     real r = (1. + pow(c, 3)) * pow(mu/c, 3) * pow(mu, 0.1/q) / (1. + pow(mu/c, 3));
     return r;
 }
+
     
 //
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

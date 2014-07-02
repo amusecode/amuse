@@ -667,6 +667,42 @@ real main_sequence::gyration_radius_sq() {
 
 }
 
+// Section 7.2 in Hurley, Pols & Tout 2000
+real main_sequence::convective_envelope_mass(){
+
+    real M_tot = get_total_mass();
+    real M_mag_min = cnsts.parameters(minimum_magnetic_mass_limit);
+    real M_mag_max = cnsts.parameters(maximum_magnetic_mass_limit);
+
+    real M_env_conv_zams = 0;
+    if (M_tot < M_mag_min) M_env_conv_zams = M_tot;
+    else if (M_tot > M_mag_max) M_env_conv_zams = 0;
+    else M_env_conv_zams = M_mag_min * pow((M_mag_max - M_tot) / (M_mag_max - M_mag_min), 2);
+    
+    real tau = relative_age / main_sequence_time(); // function of relative age, relative mass and metalicity
+    real M_env_conv = M_env_conv_zams * pow(1-tau, 0.25);
+    return M_env_conv;
+}
+
+// Eq. 36-38 in Hurley, Tout & Pols 2002
+real main_sequence::convective_envelope_radius(){
+
+    real M_tot = get_total_mass();
+    real M_mag_min = cnsts.parameters(minimum_magnetic_mass_limit);
+    real M_mag_max = cnsts.parameters(maximum_magnetic_mass_limit);
+    real R_env_conv_zams = 0;
+
+    if (M_tot < M_mag_min) R_env_conv_zams = radius;
+    else if (M_tot > M_mag_max) R_env_conv_zams = 0;
+    else R_env_conv_zams = radius * sqrt((M_mag_max - M_tot) / (M_mag_max - M_mag_min));
+    
+    real tau = relative_age / main_sequence_time(); // function of relative age, relative mass and metalicity
+    real R_env_conv = R_env_conv_zams * pow(1-tau, 0.25);
+    return R_env_conv;
+
+}
+
+
 real main_sequence::nucleair_evolution_timescale() {
   // t_nuc = 10^10 [years] Msun/Lsun.
   // Assumed that 0.1 Msun is thermalized.

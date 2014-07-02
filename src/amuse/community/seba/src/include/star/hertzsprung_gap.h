@@ -39,6 +39,9 @@ class hertzsprung_gap : public single_star
         void evolve_element(const real);
         real gyration_radius_sq();
 
+        real convective_envelope_mass();
+        real convective_envelope_radius();
+
 //           Mass transfer utilities.
         star* reduce_mass(const real);
         star* subtrac_mass_from_donor(const real, real&);

@@ -597,6 +597,24 @@ int get_relative_mass(int index_of_the_star, double * relative_mass){
     return error_code; 
 }
 
+
+int get_convective_envelope_mass(int index_of_the_star, double * convective_envelope_mass){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *convective_envelope_mass= seba_node->get_starbase()->convective_envelope_mass() ;
+    return error_code; 
+}
+
+int get_convective_envelope_radius(int index_of_the_star, double * convective_envelope_radius){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *convective_envelope_radius= seba_node->get_starbase()->convective_envelope_radius();
+    return error_code; 
+}
+
+
 int evolve_one_step(int index_of_the_star){
     int error_code = 0;
     int n_steps_per_phase = 10;

@@ -84,9 +84,14 @@ class helium_giant : public single_star {
 
         real helium_giant_type(const real lum, const real mass, 
                                  const real mass_tot, const real z);
-	real zeta_adiabatic();
+    	real zeta_adiabatic();
         real zeta_thermal();
         real gyration_radius_sq();
+
+        real convective_envelope_mass();
+        real convective_envelope_radius();
+
+
 
     //Small envelope behaviour
     real small_envelope_core_luminosity();

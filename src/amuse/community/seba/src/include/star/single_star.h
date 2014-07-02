@@ -271,10 +271,12 @@ class  single_star : public star
 					const real z);
       real base_giant_branch_luminosity(const real mass);
       real base_giant_branch_luminosity();
-      real convective_envelope_mass(const real z);
       real FGB_mass(const real z);
       real get_hydrogen_fraction(const real z);
 
+//      real convective_envelope_mass(const real z);
+      real  convective_envelope_mass(){return 0;}
+      real  convective_envelope_radius(){return 0;}
 
       //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
       // These functions are part of main_sequence.C

@@ -56,7 +56,10 @@ class super_giant : public single_star {
 //           Mass transfer stability.
         real zeta_adiabatic();
         real zeta_thermal();
-	real gyration_radius_sq();
+    	real gyration_radius_sq();
+
+        real convective_envelope_mass();
+        real convective_envelope_radius();
 	
         real  add_mass_to_accretor(real, bool, const real = -1. );
         star* reduce_mass(const real);
