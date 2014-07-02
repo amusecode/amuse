@@ -88,10 +88,10 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
         function.addParameter('core_mass2', dtype='d', direction=function.INOUT, unit = units.MSun)
         function.addParameter('core_radius1', dtype='d', direction=function.INOUT, unit = units.RSun)
         function.addParameter('core_radius2', dtype='d', direction=function.INOUT, unit = units.RSun)
-        function.addParameter('envelope_mass1', dtype='d', direction=function.INOUT, unit = units.MSun)
-        function.addParameter('envelope_mass2', dtype='d', direction=function.INOUT, unit = units.MSun)
-        function.addParameter('envelope_radius1', dtype='d', direction=function.INOUT, unit = units.RSun)
-        function.addParameter('envelope_radius2', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('convective_envelope_mass1', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('convective_envelope_mass2', dtype='d', direction=function.INOUT, unit = units.MSun)
+        function.addParameter('convective_envelope_radius1', dtype='d', direction=function.INOUT, unit = units.RSun)
+        function.addParameter('convective_envelope_radius2', dtype='d', direction=function.INOUT, unit = units.RSun)
         function.addParameter('spin1', dtype='d', direction=function.INOUT, unit = NO_UNIT)
         function.addParameter('spin2', dtype='d', direction=function.INOUT, unit = NO_UNIT)
         function.addParameter('epoch1', dtype='d', direction=function.INOUT, unit = units.Myr)
@@ -205,8 +205,8 @@ class BSEStars(Particles):
             "luminosity":  0 | units.LSun,
             "core_mass": 0 | units.MSun,
             "core_radius": 0 | units.RSun,
-            "envelope_mass": 0 | units.MSun,
-            "envelope_radius": 0 | units.RSun,
+            "convective_envelope_mass": 0 | units.MSun,
+            "convective_envelope_radius": 0 | units.RSun,
             "epoch": 0 | units.Myr,
             "spin": 0 | units.none,
             "main_sequence_lifetime": 0 | units.Myr,
@@ -548,8 +548,8 @@ class BSE(common.CommonCode):
             "luminosity",
             "core_mass", 
             "core_radius", 
-            "envelope_mass", 
-            "envelope_radius", 
+            "convective_envelope_mass", 
+            "convective_envelope_radius", 
             "spin",  
             "epoch",  
             "age", 
