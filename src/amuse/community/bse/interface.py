@@ -510,7 +510,7 @@ class BSE(common.CommonCode):
             # 'mass1', 'mass2',
             # 'MS_lifetime1', 'MS_lifetime2',
             # 'epoch1', 'epoch2',
-            # 'age')
+            #'age')
         )
     
     def _get_time_step(self, child1, child2, age):

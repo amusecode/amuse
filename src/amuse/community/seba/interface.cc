@@ -373,7 +373,6 @@ int set_supernova_kick_velocity(double v_disp) {
 int get_supernova_kick_velocity(double * v_disp){
   *v_disp = cnsts.v_disp;
     return 0;
-    
 }
 
 int get_is_logging_of_evolve_enabled(int *value){
@@ -576,6 +575,17 @@ int get_relative_age(int index_of_the_star, double * relative_age){
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
     *relative_age= seba_node->get_starbase()->get_relative_age() ;
+    return error_code; 
+}
+
+int get_natal_kick_velocity(int index_of_the_star, double * kick_velocity_x, double * kick_velocity_y, double * kick_velocity_z){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    vec kick = seba_node->get_starbase()->get_anomal_velocity() ;
+    *kick_velocity_x = kick[0];
+    *kick_velocity_y = kick[1];
+    *kick_velocity_z = kick[2];
     return error_code; 
 }
 

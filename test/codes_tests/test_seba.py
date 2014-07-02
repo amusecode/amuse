@@ -344,7 +344,8 @@ class TestSeBa(TestWithMPI):
         
         p = instance.particles.add_particle(p)
         instance.evolve_model(130 | units.Myr)
-
+        print p
+        
         self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)
         
     def test3(self):

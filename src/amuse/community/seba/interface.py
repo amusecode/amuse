@@ -358,7 +358,6 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             The code does not have support for retrieving the supernova kick velocity
         """
         return function
-        
     
     @legacy_function
     def set_supernova_kick_velocity():
@@ -414,6 +413,27 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             Current value of the square of the relative age was retrieved
         -1 - ERROR
             The code does not have support for retrieving the square of the relative age
+        """
+        return function
+
+    @legacy_function
+    def get_natal_kick_velocity():
+        """
+        Retrieve the current value of the square of the natal kick velocity (Myr). 
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('natal_kick_velocity_x', dtype='float64', direction=function.OUT)
+        function.addParameter('natal_kick_velocity_y', dtype='float64', direction=function.OUT)
+        function.addParameter('natal_kick_velocity_z', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the natal_kick_velocity was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the square of the natal_kick_velocity
         """
         return function
 
@@ -487,9 +507,9 @@ class SeBa(se.StellarEvolution):
             psn -= self.particles[old_particles.stellar_type>=10|units.stellar_type]
             if len(psn)>0:
                 print "Supernova at time:", psn
-#                for p in psn:
-#                    print "kick=", p.get_supernova_kick_velocity()
-#                    p.velocity += p.get_supernova_kick_velocity()
+#######         for p in psn:
+#######             print "kick=", p.get_supernova_kick_velocity()
+#######             p.velocity += p.get_supernova_kick_velocity()
 #                channel_copy_velocity_from_seba_to...
                 return evolve_a_success
             new_end_time = min(end_time, self.model_time + min(self.particles.time_step))
@@ -627,6 +647,11 @@ class SeBa(se.StellarEvolution):
             (units.Myr, object.ERROR_CODE,)
         )
         object.add_method(
+            "get_natal_kick_velocity", 
+            (object.INDEX,), 
+            (units.kms, units.kms, units.kms, object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_relative_mass", 
             (object.INDEX,), 
             (units.MSun, object.ERROR_CODE,)
@@ -686,6 +711,7 @@ class SeBa(se.StellarEvolution):
         #object.add_getter('particles', 'get_spin', names = ('spin',))
         object.add_getter('particles', 'get_luminosity', names = ('luminosity',))
         object.add_getter('particles', 'get_temperature', names = ('temperature',))
+        object.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
 #        object.add_getter('particles', 'get_relative_age', names = ('relative_age',))
 #        object.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
 
