@@ -63,11 +63,17 @@ class FastKickInterface(CodeInterface, CommonCodeInterface, GravityFieldInterfac
         function.result_type = 'int32'
         return function
 
-
     @legacy_function
     def set_eps2():
         function = LegacyFunctionSpecification()
         function.addParameter('epsilon_squared', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_potential_energy():
+        function = LegacyFunctionSpecification()
+        function.addParameter('potential_energy', dtype='float64', direction=function.OUT, unit=nbody_system.energy)
         function.result_type = 'int32'
         return function
 
@@ -132,7 +138,9 @@ class FastKick(CommonCode, GravityFieldCode):
         object.add_transition('RUN', 'UPDATE', 'new_particle', False)
         object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        
         GravityFieldCode.define_state(self, object)
+        object.add_method('RUN', 'get_potential_energy')
         
     def define_converter(self, object):
         if not self.unit_converter is None:
@@ -167,3 +175,6 @@ class FastKick(CommonCode, GravityFieldCode):
         object.define_set('particles', 'index_of_the_particle')
         object.set_new('particles', 'new_particle')
         object.set_delete('particles', 'delete_particle')
+    
+    def define_properties(self, object):
+        object.add_property("get_potential_energy")

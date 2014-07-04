@@ -359,6 +359,18 @@ class TestFastKick(TestWithMPI):
         self.assertAlmostRelativeEqual(potential, -G*sources.total_mass()/point.z, 3)
         instance.stop()
     
+    def test12(self):
+        print "Test FastKick potential energy"
+        number_of_sources = 1000
+        numpy.random.seed(12345)
+        plummer = new_plummer_model(number_of_sources)
+        
+        fastkick = self.new_fastkick_instance()
+        fastkick.particles.add_particles(plummer)
+        self.assertAlmostRelativeEqual(fastkick.potential_energy, plummer.potential_energy(G=nbody_system.G), 6)
+        fastkick.cleanup_code()
+        fastkick.stop()
+    
 
 class TestFastKickGPU(TestFastKick):
 

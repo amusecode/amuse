@@ -59,6 +59,37 @@ __global__ void dev_get_potential_at_point(
     }
 }
 
+__global__ void dev_get_potential_energy(
+        float *partial_results, float eps2, float *field_m, 
+        float *fxh, float *fyh, float *fzh, float *fxt, float *fyt, float *fzt, int n_field) {
+    extern __shared__ float thread_results[];
+    unsigned int i, j;
+    float dx, dy, dz, r, dr2, potential_energy = 0;
+    for (j=threadIdx.x + blockIdx.x*blockDim.x; j < n_field; j += blockDim.x*gridDim.x){
+        for (i=0; i<j; i++){
+            dx = (fxh[i] - fxh[j]) + (fxt[i] - fxt[j]);
+            dy = (fyh[i] - fyh[j]) + (fyt[i] - fyt[j]);
+            dz = (fzh[i] - fzh[j]) + (fzt[i] - fzt[j]);
+            dr2 = dx*dx + dy*dy + dz*dz;
+            r = sqrt(eps2 + dr2);
+            potential_energy -= field_m[i]*field_m[j] / r;
+        }
+    }
+    
+    // Reduce results from all threads within this block
+    thread_results[threadIdx.x] = potential_energy;
+    __syncthreads();
+    for (i = blockDim.x/2; i>0; i>>=1) {
+        if (threadIdx.x < i) {
+            thread_results[threadIdx.x] += thread_results[threadIdx.x + i];
+        }
+        __syncthreads();
+    }
+    if (threadIdx.x == 0) {
+        partial_results[blockIdx.x] = thread_results[0];
+    }
+}
+
 // field particle data
 int number_of_field_particles;
 float *dev_m;
@@ -126,16 +157,6 @@ int cuda_commit_particles(vector<double>& m, vector<double>& x, vector<double>& 
     return 0;
 }
 
-int cuda_recommit_particles(vector<double>& m, vector<double>& x, vector<double>& y, vector<double>& z) {
-    HANDLE_CUDA_ERROR(cudaFree(dev_x_head));
-    HANDLE_CUDA_ERROR(cudaFree(dev_y_head));
-    HANDLE_CUDA_ERROR(cudaFree(dev_z_head));
-    HANDLE_CUDA_ERROR(cudaFree(dev_x_tail));
-    HANDLE_CUDA_ERROR(cudaFree(dev_y_tail));
-    HANDLE_CUDA_ERROR(cudaFree(dev_z_tail));
-    HANDLE_CUDA_ERROR(cudaFree(dev_m));
-    return cuda_commit_particles(m, x, y, z);
-}
 
 int cuda_cleanup_code() {
     if (particle_data_allocated_on_device == 1) {
@@ -284,5 +305,30 @@ int cuda_get_potential_at_point(double eps2, double *eps, double *x, double *y, 
     delete[] z_tail;
     delete[] eps_float;
     cerr << "cuda_get_potential_at_point finished successfully" << endl;
+    return 0;
+}
+int cuda_get_potential_energy(double eps2, double *potential_energy) {
+    cerr << "cuda_get_potential_energy" << endl;
+    int blocks_per_grid = (number_of_field_particles + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
+    if (blocks_per_grid > 32) blocks_per_grid = 32;
+    float *partial_results = new float[blocks_per_grid];
+    float *dev_partial_results;
+    HANDLE_CUDA_ERROR(cudaMalloc((void **) &dev_partial_results, blocks_per_grid*sizeof(float)));
+    int shared_memory = 2 * THREADS_PER_BLOCK * sizeof(float);
+    
+    dev_get_potential_energy<<<blocks_per_grid, THREADS_PER_BLOCK, shared_memory>>>(
+        dev_partial_results, eps2, 
+        dev_m, dev_x_head, dev_y_head, dev_z_head, dev_x_tail, dev_y_tail, dev_z_tail, 
+        number_of_field_particles);
+    
+    HANDLE_CUDA_ERROR(cudaMemcpy(partial_results, dev_partial_results, blocks_per_grid*sizeof(float), cudaMemcpyDeviceToHost));
+    HANDLE_CUDA_ERROR(cudaFree(dev_partial_results));
+    
+    *potential_energy = 0;
+    for (int i=0; i < blocks_per_grid; i++) {
+        *potential_energy += partial_results[i];
+    }
+    delete[] partial_results;
+    cerr << "cuda_get_potential_energy finished successfully" << endl;
     return 0;
 }
