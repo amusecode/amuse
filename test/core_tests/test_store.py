@@ -599,8 +599,30 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         self.assertEquals(len(particles_from_file), 0)
     
+    def test24(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test24"+self.store_version()+".hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        particles = Particles(20)
+#~        particles = Particles(1000000) # For testing memory usage
+        particles.mass = 1.0 | units.kg
+        particles.position = [0.0, 0.0, 0.0] | units.m
         
+        for i in range(10):
+            particles.position += [1.0, 2.0, 3.0] | units.m
+            io.write_set_to_file(particles, output_file, format='amuse', version = self.store_version())
         
+        particles_from_file = io.read_set_from_file(output_file, format='amuse', version = self.store_version())
+        os.remove(output_file)
+        self.assertEquals(len(list(particles_from_file.history)), 10)
+        for i, snap in enumerate(particles_from_file.history):
+            self.assertEquals(len(snap), 20)
+            self.assertEquals((i+1) * ([1.0, 2.0, 3.0] | units.m), snap.center_of_mass())
+    
+
+
 class TestStoreHDFV1(_AbstractTestStoreHDF):
     
     def store_factory(self):
