@@ -29,18 +29,15 @@ module mesh_enc
    real(double), allocatable, save :: THc(:,:)
    real(double), allocatable, save :: THd(:,:)
 
-   ! Entropy
-   real(double), allocatable, save :: TSa(:)
-   real(double), allocatable, save :: TSb(:)
-   real(double), allocatable, save :: TSc(:)
-   real(double), allocatable, save :: TSd(:)
-
    ! Nucleosynthesis data for merger remnant
    real(double), allocatable, save, private :: THnuc(:, :)
    real(double), allocatable, save, private :: THnucb(:, :)
    real(double), allocatable, save, private :: THnucc(:, :)
    real(double), allocatable, save, private :: THnucd(:, :)
    logical, save, private :: have_nucleosynthesis_data
+
+   ! Extra mesh-dependent energy term
+   real(double), allocatable, save :: menc(:,:)
 
    ! Number of meshpoints in interpolation profiles
    integer, save :: ip_mesh_size
@@ -57,21 +54,6 @@ module mesh_enc
    real(double), save :: curr_diffsqr
    real(double), save :: curr_maxdiffsqr
    integer, save :: best_mod
-
-   ! Output file for artificial energy term, corresponding to fort.13
-   ! menc_out+1 corresponds to fort.14, while menc_out+2 contains a
-   ! sequence of models that corresponds to the output from fort.15
-   integer, parameter :: menc_out = 35
-
-   ! Variable numbers for menc, mea and met
-   integer, parameter :: NMENC = 22
-   integer, parameter :: NMEA = 23
-   integer, parameter :: NMET = 24
-
-   ! Equation numbers for menc, mea, met
-   integer, parameter :: EMENC = 16
-   integer, parameter :: EMEA = 18
-   integer, parameter :: EMET = 22
 
 
 
@@ -135,19 +117,6 @@ contains
    end function
 
 
-
-   ! Read interpolated entropy as a function of the mass coordinate m
-   function get_s(m)
-      use real_kind
-      use interpolate
-      use indices
-
-      implicit none
-      real(double) :: get_s;
-      real(double), intent(in) :: m
-
-      get_s = iptable_eval(ip_mesh_size, m, TH(VAR_MASS,:), TSa(:), TSb(:), TSc(:), TSd(:))
-   end function get_s
 
    ! Compute quantities from the equation of state for mass
    ! coordinate m
@@ -221,10 +190,6 @@ contains
       integer :: ioerror;
       real(double) :: var(nvar)
       real(double) :: dh1(NVAR)
-      real(double) :: XA(9)
-      type(eostate) :: eos
-      type(abundance) :: abund
-
 
       print *, 'Using monotonic cubic interpolation of target profile.'
 
@@ -328,28 +293,6 @@ contains
       end do
       print *, 'Maximum match mass = ', maximum_match_mass
 
-      if (allocated(TSa)) deallocate(TSa)
-      if (allocated(TSb)) deallocate(TSb)
-      if (allocated(TSc)) deallocate(TSc)
-      if (allocated(TSd)) deallocate(TSd)
-      allocate(TSa(ip_mesh_size))
-      allocate(TSb(ip_mesh_size))
-      allocate(TSc(ip_mesh_size))
-      allocate(TSd(ip_mesh_size))
-      do ik = 1, ip_mesh_size
-         XA(1) = TH(VAR_H1, ik)
-         XA(2) = TH(VAR_HE4, ik)
-         XA(3) = TH(VAR_C12, ik)
-         XA(4) = TH(VAR_N14, ik)
-         XA(5) = TH(VAR_O16, ik)
-         XA(6) = TH(VAR_NE20, ik)
-         XA(7) = CMG*CZS
-         XA(8) = CSI*CZS
-         XA(9) = CFE*CZS
-         call statef ( TH(VAR_LNF, IK), TH(VAR_LNT, IK), xa, abund, eos )
-         TSa(ik) = eos%S
-      end do
-      call iptable_init (ip_mesh_size, TH(VAR_MASS,:), TSa(:), TSb(:), TSc(:), TSd(:))
       print *, "Interpolation initialisation done."
       print *, "Target profile initialisation completed."
    end subroutine read_target_model
@@ -395,11 +338,7 @@ contains
       f = dm/H(VAR_MASS, 1)
 
       ! Get desired entropy at current meshpoint
-      s_target = 0
-      select case (mutation_mode)
-      case (MMODE_EV)
-         s_target = calc_s(m);
-      end select
+      s_target = calc_s(m);
 
       ! Get actual entropy at current meshpoint from the equation of state
       ! Pass composition to the equation of state through the common block

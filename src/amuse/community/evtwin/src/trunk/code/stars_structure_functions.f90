@@ -357,7 +357,7 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
    end if
 
    ! Gradient of luminosity, LOM = dL/dM
-   lom = ex + en + enx + enc - wth*t*ds/dt
+   lom = ex + en + enx + enc + menc(Jstar, jk) - wth*t*ds/dt
 
    if ( jk == kh ) then
      ! Approximations for the centre (M=0); the normal expressions become singular

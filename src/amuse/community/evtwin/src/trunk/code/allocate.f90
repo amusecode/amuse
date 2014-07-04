@@ -31,6 +31,8 @@ subroutine allocate_global_arrays(max_mesh)
    allocate(THb(nvar, nm))
    allocate(THc(nvar, nm))
    allocate(THd(nvar, nm))
+   allocate(menc(2, nm))
+   menc = 0.0d0
 
    allocate(sx(npx,NM+1))
 

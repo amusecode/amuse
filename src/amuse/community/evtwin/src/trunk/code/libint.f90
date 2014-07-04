@@ -43,6 +43,7 @@ module twinlib
       real(double), pointer :: Hnucpr(:,:,:)
       real(double), pointer :: Hnuc(:,:,:)
       real(double), pointer :: DHnuc(:,:,:)
+      real(double), pointer :: menc(:,:)
 
       real(double) :: maximum_mass
       real(double) :: zams_mass
@@ -136,7 +137,7 @@ module twinlib
    real(double), private :: amuse_cth, amuse_maxage, amuse_mindt
    
    ! List private subroutines that should not be called directly
-   private initialise_stellar_parameters, allocate_star, swap_in, swap_out, select_star
+   private initialise_stellar_parameters, allocate_star, swap_in, swap_out, select_star, make_zahb_model
 
 contains
 
@@ -357,7 +358,7 @@ contains
       use file_exists_module
       use filenames
       implicit none
-      
+
       have_zams_library = file_exists(inputfilenames(3)) .and. file_exists(inputfilenames(4))
    end function have_zams_library
 
@@ -401,6 +402,7 @@ contains
       deallocate(star%h)
       deallocate(star%dh)
       deallocate(star%hpr)
+      deallocate(star%menc)
       if (star%nucleosynthesis) then
          deallocate(star%ht)
       end if
@@ -492,6 +494,7 @@ contains
    integer function new_zams_star(star_id, mass, start_age, nmesh, wrot)
       use real_kind
       use mesh, only: nm, h, hpr, dh, kh
+      use mesh_enc, only: menc
       use nucleosynthesis, only: ht_nvar, hnuc
       use constants
       use settings
@@ -553,6 +556,8 @@ contains
       allocate(star%h(star%number_of_variables, star%number_of_meshpoints))
       allocate(star%dh(star%number_of_variables, star%number_of_meshpoints))
       allocate(star%hpr(star%number_of_variables, star%number_of_meshpoints))
+      allocate(star%menc(2, star%number_of_meshpoints))
+      star%menc = 0.0d0
 
       ! Nucleosynthesis?
       ! *TODO* Make sure we can actually set this per star
@@ -560,6 +565,7 @@ contains
          allocate(star%ht(ht_nvar, star%number_of_meshpoints))
       end if
 
+      star%cmdot_wind = 1.0d0   ! Enable stellar winds
       call select_star(new_id)
 
       star%zams_mass = mass
@@ -575,7 +581,7 @@ contains
       tm = cmsn * mass
       bm = cmsn * bms1
       om = bm - tm
-      p1 = 2.*cpi / (w * csday + 1.0e-9)
+      p1 = 2.*cpi / (w * csday + 1.0e-16)
       bper = per1
       oa = cg1*tm*om*(cg2*bper/bm)**c3rd*sqrt(1.0d0 - ecc1*ecc1)
       ! Remesh to desired numer of mesh points
@@ -619,6 +625,7 @@ contains
    integer function new_prems_star(star_id, mass, start_age, nmesh, wrot)
       use real_kind
       use mesh, only: nm, h, hpr, dh, kh
+      use mesh_enc, only: menc
       use nucleosynthesis, only: ht_nvar, hnuc
       use constants
       use settings
@@ -667,6 +674,8 @@ contains
       allocate(star%h(star%number_of_variables, star%number_of_meshpoints))
       allocate(star%dh(star%number_of_variables, star%number_of_meshpoints))
       allocate(star%hpr(star%number_of_variables, star%number_of_meshpoints))
+      allocate(star%menc(2, star%number_of_meshpoints))
+      star%menc = 0.0d0
 
       ! Nucleosynthesis?
       ! *TODO* Make sure we can actually set this per star
@@ -692,7 +701,7 @@ contains
       tm = cmsn * mass
       bm = cmsn * bms1
       om = bm - tm
-      p1 = 2.*cpi / (w * csday + 1.0e-9)
+      p1 = 2.*cpi / (w * csday + 1.0e-16)
       if (w == 0.0d0) p1 = 1.0d6
       bper = per1
       oa = cg1*tm*om*(cg2*bper/bm)**c3rd*sqrt(1.0d0 - ecc1*ecc1)
@@ -752,7 +761,7 @@ contains
       integer                             :: kh1,kp1,jmod1,jb1,jn1,jf1
       real(double)                        :: hn1(50, nm)
       star_id = -1
-      
+
       ! Set default value for number of gridpoints and rotation rate
       new_kh = wanted_kh
       if (present(nmesh)) new_kh = nmesh
@@ -784,6 +793,8 @@ contains
       allocate(star%h(star%number_of_variables, star%number_of_meshpoints))
       allocate(star%dh(star%number_of_variables, star%number_of_meshpoints))
       allocate(star%hpr(star%number_of_variables, star%number_of_meshpoints))
+      allocate(star%menc(2, star%number_of_meshpoints))
+      star%menc = 0.0d0
 
       ! Nucleosynthesis?
       ! *TODO* Make sure we can actually set this per star
@@ -804,7 +815,7 @@ contains
 
       ! Optionally override options
       if (present(start_age)) star%age = start_age
-      if (present(wrot))      p1 = 2.*cpi / (wrot * csday + 1.0e-9)
+      if (present(wrot))      p1 = 2.*cpi / (wrot * csday + 1.0e-16)
 
       ! Set desired options, this is a single star (by construction)
       kh = kh1
@@ -852,7 +863,7 @@ contains
    integer function write_star_to_file(id, filename)
       use real_kind
       use filenames, only: get_free_file_unit
-      
+
       implicit none
       integer, intent(in) :: id
       character(len=*), intent(in) :: filename
@@ -891,6 +902,7 @@ contains
    subroutine swap_in(star_id)
       use real_kind
       use mesh, only: nm, kh, h, dh, hpr
+      use mesh_enc, only: menc
       use test_variables
       use current_model_properties, only: jmod, jnn, rlf_prev, qcnv_prev, lnuc_prev, lhe_prev, lh_prev
       use nucleosynthesis, only: nucleosynthesis_enabled
@@ -914,6 +926,7 @@ contains
          h(1:star%number_of_variables, 1:kh) = star%h(1:star%number_of_variables, 1:kh)
          dh(1:star%number_of_variables, 1:kh) = star%dh(1:star%number_of_variables, 1:kh)
          hpr(1:star%number_of_variables, 1:kh) = star%hpr(1:star%number_of_variables, 1:kh)
+         menc(1:2, 1:kh) = star%menc(1:2, 1:kh)
       else
          assert(star%pid > -1)
          assert(star%sid > -1)
@@ -924,6 +937,7 @@ contains
          h(1:primary%number_of_variables, 1:kh)   = primary%h(1:primary%number_of_variables, 1:kh)
          dh(1:primary%number_of_variables, 1:kh)  = primary%dh(1:primary%number_of_variables, 1:kh)
          hpr(1:primary%number_of_variables, 1:kh) = primary%hpr(1:primary%number_of_variables, 1:kh)
+         menc(1, 1:kh) = primary%menc(1, 1:kh)
 
          ! Orbital elements
          h(INDEX_ORBIT_VAR_START+1:INDEX_ORBIT_VAR_START+star%number_of_variables, 1:kh)   = &
@@ -940,6 +954,7 @@ contains
             secondary%dh(1:secondary%number_of_variables, 1:kh)
          hpr(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh) = &
             secondary%hpr(1:secondary%number_of_variables, 1:kh)
+         menc(2, 1:kh) = secondary%menc(1, 1:kh)
       end if
       age  = star%age
       dt   = star%dt
@@ -995,6 +1010,7 @@ contains
    subroutine swap_out()
       use real_kind
       use mesh, only: nm, kh, h, dh, hpr
+      use mesh_enc, only: menc
       use test_variables
       use current_model_properties, only: jmod, jnn, rlf_prev, qcnv_prev, lnuc_prev, lhe_prev, lh_prev
       use settings, only: cmi, cmdot_wind
@@ -1012,6 +1028,7 @@ contains
          star%h(1:star%number_of_variables, 1:kh) = h(1:star%number_of_variables, 1:kh)
          star%dh(1:star%number_of_variables, 1:kh) = dh(1:star%number_of_variables, 1:kh)
          star%hpr(1:star%number_of_variables, 1:kh) = hpr(1:star%number_of_variables, 1:kh)
+         star%menc(1:2, 1:kh) = menc(1:2, 1:kh)
       else
          assert(star%pid > -1)
          assert(star%sid > -1)
@@ -1022,6 +1039,7 @@ contains
          primary%h(1:primary%number_of_variables, 1:kh) = h(1:primary%number_of_variables, 1:kh)   
          primary%dh(1:primary%number_of_variables, 1:kh) = dh(1:primary%number_of_variables, 1:kh)  
          primary%hpr(1:primary%number_of_variables, 1:kh) = hpr(1:primary%number_of_variables, 1:kh) 
+         primary%menc(1, 1:kh) = menc(1, 1:kh) 
 
          ! Orbital elements
          star%h(1:star%number_of_variables, 1:kh) = &
@@ -1038,6 +1056,7 @@ contains
             dh(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh)  
          secondary%hpr(1:secondary%number_of_variables, 1:kh) = &
             hpr(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh) 
+         secondary%menc(1, 1:kh) = menc(2, 1:kh) 
       end if
       star%age  = age
       star%dt   = dt
@@ -1090,6 +1109,50 @@ contains
 
 
 
+   subroutine make_zahb_model(star_id, jo, dty)
+      use test_variables, only: dt, age, jhold, lhe, mhe
+      use printb_global_variables, only: sdc
+      use current_model_properties, only: jmod, jnn, joc, jb
+      use stopping_conditions
+      use constants, only: csy, cg, cmsn, cpi, csday
+      use mesh, only: h, ktw, isb, kh
+      use settings
+      use indices
+      use resolve_helium_flash
+      implicit none
+      integer, intent(in) :: star_id
+      integer, intent(inout) :: jo
+      real(double), intent(inout) :: dty
+      real(double) :: tm, oa, ecc, bms, omega, vi, p1
+      integer :: iter
+      integer :: Jstar
+
+      call backup ( dty, jo )
+      call update_quantities_if_needed(star_id)
+
+      if ( lhe > uc(5) .and. sdc > uc(6) .and. mhe == 0.0d0 ) then   ! Helium flash
+         tm  = h(VAR_MASS,  1)
+         oa  = h(VAR_HORB,  1)
+         ecc = h(VAR_ECC,   1)
+         bms = h(VAR_BMASS, 1)
+         omega = h(VAR_OMEGA, 1)
+         vi  = h(VAR_INERT, 1)
+         p1 = 2.0*cpi/(h(VAR_OMEGA, 1) * csday)
+         if (verbose) print *, 'He flash (construct new model)'
+         call make_post_flash_model(jo)
+         tm  = h(VAR_MASS,  1)
+         call remesh ( kh, jch, bms, tm, p1, ecc, oa, 1, 0 )
+         dty = 1.0d3
+         ! Conserve angular momentum
+         ! FIXME: this does not really work properly for differentially rotating stars
+         h(VAR_OMEGA, 1:kh) = omega*vi / h(VAR_INERT, 1)
+         if (verbose) print *, 'Start ZAHB'
+         jo = 0
+      end if
+   end subroutine make_zahb_model
+
+
+
    ! evolve_one_timestep:
    !  Advance the evolution of a star one timestep.
    !  BEWARE: in the case of non-convergence, the code will do a backup and retry from the previous model
@@ -1097,17 +1160,20 @@ contains
    ! Returns value:
    !  returns 0 if converged ok, non-zero value (positive or negative) indicate convergence failure!
    integer function evolve_one_timestep(star_id)
-      use test_variables, only: dt, age, jhold
+      use test_variables, only: dt, age, jhold, lhe, mhe
+      use printb_global_variables, only: sdc
       use current_model_properties, only: jmod, jnn, joc, jb
       use stopping_conditions
-      use constants, only: csy, cg, cmsn
-      use mesh, only: h, ktw, isb
+      use constants, only: csy, cg, cmsn, cpi, csday
+      use mesh, only: h, ktw, isb, kh
       use settings
       use indices
+      use resolve_helium_flash
       implicit none
       integer, intent(in) :: star_id
       type(twin_star_t), pointer :: star
       real(double) :: dty, tdyn
+      real(double) :: tm, oa, ecc, bms, omega, vi, p1
       integer :: iter
       integer :: jo
       integer :: Jstar
@@ -1167,7 +1233,11 @@ contains
             call backup ( dty, jo )
             if ( jo == 2 ) then
                evolve_one_timestep = jo
-               return
+               ! If not converged, figure out why.
+               ! If we're at the He flash, build a ZAHB model.
+               call make_zahb_model(star_id, jo, dty)
+               tdyn = 1. / (csy*sqrt(cg * h(VAR_MASS, 1) / exp(3.*h(VAR_LNR, 1))))
+               if (jo /= 0) return
             end if
             call nextdt ( dty, jo, 22 )
 
@@ -1187,6 +1257,12 @@ contains
             jo = 0
             call smart_solver ( iter, star%eqns, kt5, jo )
          end do
+      end if
+
+      evolve_one_timestep = jo
+      if (verbose) then
+         call update_quantities_if_needed(star_id)
+         call write_summary ( 1, jmod, 6 )
       end if
 
       ! If converged, update nucleosynthesis (if wanted)
@@ -1209,7 +1285,6 @@ contains
       !         Rewrite fgb2hb to work like this.
       !
       ! If stuck on the way to the white dwarf cooling track, eliminate the H shell.
-
 
       if (verbose) print *, 'converged on timestep'
       ! ----------------------------------------------------------
@@ -1249,7 +1324,7 @@ contains
       real(double), intent(in) :: time
       real(double) :: age, dty, dty_min, dty_max
       evolve_until_model_time = 0
-      
+
       if (star_id /= current_star) call select_star(star_id)
 
       dty_min = uc(12)/csy
@@ -1356,6 +1431,8 @@ contains
       allocate(binary%h(binary%number_of_variables, binary%number_of_meshpoints))
       allocate(binary%dh(binary%number_of_variables, binary%number_of_meshpoints))
       allocate(binary%hpr(binary%number_of_variables, binary%number_of_meshpoints))
+      allocate(binary%menc(2, binary%number_of_meshpoints))
+      binary%menc = 0.0d0
 
       binary%h(VAR_HORB, :) = oa
       binary%h(VAR_ECC, :) = ecc
@@ -1560,7 +1637,7 @@ contains
       real(double), intent(in) :: mmass
 
       if (star_id_is_valid(star_id) < 0) return
-      
+
       star_list(star_id)%maximum_mass = mmass
    end subroutine set_maximum_mass_after_accretion
 
@@ -1575,7 +1652,7 @@ contains
       real(double), intent(in) :: mdot
       set_manual_mass_transfer_rate = -1
       if (star_id_is_valid(star_id) < 0) return
-      
+
       call select_star(star_id)
       cmi = mdot / csy
       star_list(star_id)%cmi = cmi
@@ -1601,7 +1678,7 @@ contains
       set_wind_multiplier = -1
 
       if (star_id_is_valid(star_id) < 0) return
-      
+
       call select_star(star_id)
       cmdot_wind = mdot_factor
       star_list(star_id)%cmdot_wind = mdot_factor
@@ -2421,7 +2498,7 @@ contains
       real(double) :: xa(9), na(9)
       real(double) :: avm
       integer :: zone_index, i
-  
+
       value = -1.0
       if (star_id_is_valid(star_id) < 0) then
          get_mass_fraction_of_species_at_zone = -21
@@ -2436,7 +2513,7 @@ contains
          return
       end if
       call update_quantities_if_needed(star_id)
-      zone_index = star_list(star_id)% number_of_meshpoints - zone
+      zone_index = star_list(star_id)%number_of_meshpoints - zone
       xa(1) = h(VAR_H1, zone_index)
       xa(2) = h(VAR_HE4, zone_index)
       xa(3) = h(VAR_C12, zone_index)
@@ -2464,7 +2541,7 @@ contains
 !~      use extra_elements
       use binary_history, only: hpr
       use indices
-      
+
       implicit none
       integer, intent(in) :: star_id, zone
       double precision, intent(out) :: d_mass, cumul_mass, radius, rho, &
@@ -2473,7 +2550,7 @@ contains
       real(double) :: xa(9), na(9)
       real(double) :: avm
       integer :: zone_index, i
-      
+
       if (star_id_is_valid(star_id) < 0) then
          get_stellar_model_element = -21
          return
@@ -2482,19 +2559,19 @@ contains
          get_stellar_model_element = -22
          return
       end if
-      
+
       call update_quantities_if_needed(star_id)
       d_mass      = sx(22, 1 + zone)
       cumul_mass  = sx(9,  1 + zone)
       radius      = sx(17, 1 + zone)
       rho         = sx(3,  1 + zone)
       pressure    = sx(2,  1 + zone)
-      
+
       entropy     = sx(28, 1 + zone)
       temperature = sx(4,  1 + zone)
       luminosity  = sx(18, 1 + zone)
       molecular_weight = sx(31, 1 + zone)
-      
+
       ! Convert *all* abundances to mass fractions
       zone_index = star_list(star_id)%number_of_meshpoints - zone
       xa(1) = h(VAR_H1, zone_index)
@@ -2510,7 +2587,7 @@ contains
         na(i) = xa(i) * can(i)/cbn(i)
       end do
       avm = sum(na(1:9))
-      
+
       XH = na(1) / avm
       XHE = na(2) / avm
       XC = na(3) / avm
@@ -2520,10 +2597,32 @@ contains
       XMG = na(7) / avm
       XSI = na(8) / avm
       XFE = na(9) / avm
-      
+
       get_stellar_model_element = 0
    end function
-   
+
+   ! Inject energy into the star at the given zone.
+   ! The value is in erg/g/s
+   integer function set_extra_energy_at_zone(star_id, zone, value)
+      use mesh_enc, only: menc
+      implicit none
+      integer, intent(in) :: star_id, zone
+      double precision, intent(in) :: value
+      integer :: zone_index
+      if (star_id_is_valid(star_id) < 0) then
+         set_extra_energy_at_zone = -21
+         return
+      end if
+      if (zone >= star_list(star_id)%number_of_meshpoints .or. zone < 0) then
+         set_extra_energy_at_zone = -22
+         return
+      end if
+      set_extra_energy_at_zone = 0
+      call select_star(star_id)
+      zone_index = star_list(star_id)%number_of_meshpoints - zone
+      menc(1, zone_index) = value
+   end function set_extra_energy_at_zone
+
    integer function set_mass_fraction_of_species_at_zone(star_id, &
          AMUSE_species, zone, value)
       implicit none
@@ -2531,28 +2630,28 @@ contains
       double precision, intent(in) :: value
       set_mass_fraction_of_species_at_zone = -4
    end function
-   
+
    integer function set_density_at_zone(star_id, zone, value)
       implicit none
       integer, intent(in) :: star_id, zone
       double precision, intent(in) :: value
       set_density_at_zone = -4
    end function
-   
+
    integer function set_temperature_at_zone(star_id, zone, value)
       implicit none
       integer, intent(in) :: star_id, zone
       double precision, intent(in) :: value
       set_temperature_at_zone = -4
    end function
-   
+
    integer function set_radius_at_zone(star_id, zone, value)
       implicit none
       integer, intent(in) :: star_id, zone
       double precision, intent(in) :: value
       set_radius_at_zone = -4
    end function
-   
+
    integer function set_mass(star_id, value)
       implicit none
       integer, intent(in) :: star_id
