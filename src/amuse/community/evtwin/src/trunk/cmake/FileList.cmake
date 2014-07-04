@@ -75,7 +75,7 @@ set(TWIN_SRC_FILES
 set(TWIN_LIBRARY_FILES
    code/libint.f90
    #code/export.f90
-   #code/import.f90
+   code/import.f90
    #code/library.f90
    )
 

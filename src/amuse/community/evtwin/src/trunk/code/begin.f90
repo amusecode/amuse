@@ -217,13 +217,14 @@ subroutine star12 ( jo, kh2, jch, jop, jip, ksv, kt5, it )
    use current_model_properties
    use constants
    use indices
+   use resolve_helium_flash, only: make_post_flash_model
 
    implicit none
    integer, intent(in) :: kh2, ksv, kt5, jop, jip, it
    integer, intent(inout) :: jch
    integer, intent(out) :: jo
    integer :: kp,jf
-   real(double) :: dty
+   real(double) :: dty, tm, oa, ecc, bms, p1, omega(kh2), vi
 
    if(debug_level.ge.2) write(6,'(/,A20,6I12)')'star12: ',jo, jop, jip, ksv, it
 
@@ -234,7 +235,28 @@ subroutine star12 ( jo, kh2, jch, jop, jip, ksv, kt5, it )
    ! Load models and prepare for the first timestep
    call beginn ( jip, kh2, jch, dty, kp, it, jo, jf )
 
-   if ( jo /= -2 ) call star12_loop ( jo, ksv, kt5, kp, it, dty )
+   if ( jo /= -2 ) then
+      call star12_loop ( jo, ksv, kt5, kp, it, dty )
+      if (jo == 8 .and. construct_zahb_model) then
+         tm  = h(VAR_MASS,  1)
+         oa  = h(VAR_HORB,  1)
+         ecc = h(VAR_ECC,   1)
+         bms = h(VAR_BMASS, 1)
+         omega = h(VAR_OMEGA, 1:kh2)
+         vi  = h(VAR_INERT, 1)
+         p1 = 2.0*cpi/(h(VAR_OMEGA, 1) * csday)
+         write (jb, *) 'He flash (construct new model)'
+         call make_post_flash_model(jo)
+         tm  = h(VAR_MASS,  1)
+         call remesh ( kh2, jch, bms, tm, p1, ecc, oa, 1, jf )
+         ! Conserve angular momentum
+         ! FIXME: this does not really work properly for differentially rotating stars
+         h(VAR_OMEGA, 1:kh2) = omega*vi / h(VAR_INERT, 1)
+         hpr = h
+         write (jb,*) 'Start ZAHB'
+         call star12_loop ( jo, ksv, kt5, kp, it, dty )
+      end if
+   end if
 
    ! Output the last converged model, unless it's at the He flash
    call output ( kp, jop, jo, jf )

@@ -134,7 +134,7 @@ module twinlib
    logical, private :: amuse_verbose
    real(double), private :: amuse_Z, amuse_csmc, amuse_calp, amuse_cos
    real(double), private :: amuse_cth, amuse_maxage, amuse_mindt
-
+   
    ! List private subroutines that should not be called directly
    private initialise_stellar_parameters, allocate_star, swap_in, swap_out, select_star
 
@@ -563,11 +563,6 @@ contains
       call select_star(new_id)
 
       star%zams_mass = mass
-      if (present(start_age)) then
-         star%age = start_age
-      else
-         star%age = 0.0d0
-      endif
 
       ! Load model
       if (star%nucleosynthesis .and. verbose) print *, '*** Warning: ZAMS model+nucleosynthesis is not reliable.'
@@ -593,6 +588,15 @@ contains
       call swap_out()
 
       star%uc = uc
+!~      status = evolve_one_timestep(new_id)
+!~      if (status /= 0) return
+      if (present(start_age)) then
+         age = start_age
+         star%age = start_age
+      else
+         age = 0.0d0
+         star%age = 0.0d0
+      endif
       new_zams_star = 0
       star_id = new_id
    end function new_zams_star
@@ -2555,5 +2559,6 @@ contains
       double precision, intent(in) :: value
       set_mass = -4
    end function
+   
 
 end module twinlib

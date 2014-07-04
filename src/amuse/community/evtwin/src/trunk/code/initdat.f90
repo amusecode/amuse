@@ -477,7 +477,8 @@ contains
          cdsi, cshi, cssi,  cesc, cgsf, cfmu, cfc, &
          artmix, cgrs, grs_burgers, ccac, clac, csmc, csmce, &
          inner_points_mixed, outer_points_mixed, &
-         crlev, op_data_path, rlev_update, kr_nucsyn, neutrino_rate, use_clairaut_distortion,use_contact_flow,&
+         crlev, op_data_path, rlev_update, kr_nucsyn, neutrino_rate,&
+         use_clairaut_distortion,use_contact_flow,construct_zahb_model,&
          eqn_list, var_list, cbc_list, sbc_list,&
          mdl_columns, mdl_column_variables
 
@@ -541,6 +542,7 @@ contains
       use_clairaut_distortion = .false. ! Use default Roche model for distorted stars
       use_contact_flow = .false.        ! Don't use detailed (slow) mass transfer model intended for contact binaries
       use_quadratic_predictions = .true.
+      construct_zahb_model = .false.
 
       ! Assigned to cdc(5) below, which is never used(?), but can cause unexpected behaviour if undefined.
       ! It's still read from the old init.dat and needs to be retained (and defined) for now.

@@ -15,7 +15,7 @@ contains
 ! Mespoints should be passed in from *surface* to *centre*
 function import_stellar_merger(nmesh, numvar, model, age_tag)
    use real_kind
-   use twin_library
+   use twinlib
    use control
    use mesh_enc
    use constants
@@ -43,7 +43,7 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
    basename = "star"
 
    call push_init_dat(initdat, kh2, ksv, kt5, jch)
-   kr2 = get_number_of_iterations()
+!~   kr2 = get_number_of_iterations()
    kx = 0
    ky = 0
    kz = 0
@@ -98,7 +98,11 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
 
    print *, 'loading zams star of mass', mass
    call flush_star
-   star_id = load_zams_star(mass, 0.0d0)
+   status = new_zams_star(star_id, mass, 0.0d0)
+   if (status /= 0) then
+      print *, '*** failed to create new zamsn star. Returned with code:', status
+      stop
+   end if
    call select_star(star_id)
 
    ! Stage 1: match composition
@@ -112,10 +116,10 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
       do while (status == 0 .and. dt < tkh)
          !print *, 'Grow timestep'
          dt = 1.1*dt
-         status = twin_evolve()
+         status = evolve_one_timestep(star_id)
       end do
 
-      status = twin_evolve()
+      status = evolve_one_timestep(star_id)
       call flush_star()
       if (status /= 0) then
          print *, '*** failed to converge on timestep', iter, 'with code', status
@@ -146,12 +150,12 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
 
    ! Bring the star in thermal equilibrium
    print *, "Thermalising..."
-   status = twin_evolve()
+   status = evolve_one_timestep(star_id)
    tkh = 1.0d22*cg*h(VAR_MASS, 1)*2/(exp(h(VAR_LNR, 1))*h(VAR_LUM, 1)*csy)
    do while (status == 0 .and. dt < 10.0*tkh)
       !print *, 'Grow timestep'
       dt = 1.01*dt
-      status = twin_evolve()
+      status = evolve_one_timestep(star_id)
    end do
  
    call flush_star()
@@ -177,17 +181,17 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
       ! thermal time scale for the best accuracy. Make sure the
       ! solution is stable at this timestep by iterating on it while
       ! only changing the timestep.
-      status = twin_evolve()
+      status = evolve_one_timestep(star_id)
       tkh = 1.0d22*cg*h(VAR_MASS, 1)*2/(exp(h(VAR_LNR, 1))*h(VAR_LUM, 1)*csy)
       do while (status == 0 .and. dt < 10.0*csy)
          !print *, 'Grow timestep'
          dt = 1.01*dt
-         status = twin_evolve()
+         status = evolve_one_timestep(star_id)
       end do
       do while (status == 0 .and. dt > tkh * csy)
          !print *, 'Shrink timestep'
          dt = dt*0.8
-         status = twin_evolve()
+         status = evolve_one_timestep(star_id)
       end do
       !print *, DT/CSY, TKH
       dt = tkh * csy
@@ -250,5 +254,53 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
 
    import_stellar_merger = star_id
 end function import_stellar_merger
+
+
+   ! Each shell has: Mass coordinate [Msun], Radius [Rsun], density [cgs],
+   !  pressure [cgs], XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE
+   ! Meshpoints should be passed in from *surface* to *centre*
+   integer function new_stellar_model(star_id, mass, radius, rho, pressure, &
+         XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
+      use real_kind
+      use twinlib
+      use mesh, only: max_nm
+      implicit none
+      integer, intent(out) :: star_id
+      integer, intent(in) :: n
+      double precision, intent(in) :: mass(n), radius(n), rho(n), pressure(n), &
+         XH(n), XHE(n), XC(n), XN(n), XO(n), XNE(n), XMG(n), XSI(n), XFE(n)
+      double precision :: logrho(n), logpressure(n)
+      real(double), pointer :: new_model(:,:)
+      
+      if (n < 3) then
+         new_stellar_model = -31   ! Too few shells in new empty model
+         return
+      else if (n > max_nm) then
+         new_stellar_model = -32   ! Too many shells in new empty model
+         return
+      else
+         allocate(new_model(13, n))
+         new_stellar_model = 0    ! A new empty model was defined
+      endif
+      
+      new_model(1, 1:n) = mass(1:n)
+      new_model(2, 1:n) = radius(1:n)
+      logrho(1:n) = log(rho(1:n))
+      logpressure(1:n) = log(pressure(1:n))
+      new_model(3, 1:n) = logrho(1:n)
+      new_model(4, 1:n) = logpressure(1:n)
+      new_model(5, 1:n) = XH
+      new_model(6, 1:n) = XHE
+      new_model(7, 1:n) = XC
+      new_model(8, 1:n) = XN
+      new_model(9, 1:n) = XO
+      new_model(10, 1:n) = XNE
+      new_model(11, 1:n) = XMG
+      new_model(12, 1:n) = XSI
+      new_model(13, 1:n) = XFE
+      star_id = import_stellar_merger(n, 13, new_model, 0.0d0)
+      deallocate(new_model)
+   end function
+   
 
 end module

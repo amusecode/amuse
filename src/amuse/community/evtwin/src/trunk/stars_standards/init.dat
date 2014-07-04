@@ -56,6 +56,7 @@
  ALLOW_MDOTRELAXATION   = TRUE
  ALLOW_AVMURELAXATION   = FALSE
  USE_PREVIOUS_MU        = TRUE
+ CONSTRUCT_ZAHB_MODEL   = FALSE     ! Construct a ZAHB model, or use template
 
  STORE_CHANGES = FALSE              ! Save changes (DH) in the .mod and .last? files
  USE_QUADRATIC_PREDICTIONS = TRUE   ! Quadratic extrapolation of timestep

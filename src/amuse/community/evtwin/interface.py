@@ -35,7 +35,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         .. [#] Stancliffe, Glebbeek, Izzard & Pols, 2007 A&A (for thermohaline mixing)
         .. [#] Eldridge & Tout, 2004 MNRAS 348 (for the OPAL 1996 opacity tables)
     """
-    use_modules = ['twinlib']
+    use_modules = ['twinlib', 'import']
     
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
@@ -87,9 +87,25 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.result_type = 'int32'
         return function
     
-    def new_particle_method(self, mass=0|units.MSun, pms=False, filename=None):
+    def new_particle_method(self, mass=0|units.MSun, pms=False, internal_structure=None, filename=None):
         if not filename is None:
             return self.new_star_from_file(filename)
+        if not internal_structure is None:
+            return self.new_stellar_model(
+                internal_structure.mass[::-1],
+                internal_structure.radius[::-1],
+                internal_structure.rho[::-1],
+                internal_structure.pressure[::-1],
+                internal_structure.X_H[::-1],
+                internal_structure.X_He[::-1],
+                internal_structure.X_C[::-1],
+                internal_structure.X_N[::-1],
+                internal_structure.X_O[::-1],
+                internal_structure.X_Ne[::-1],
+                internal_structure.X_Mg[::-1],
+                internal_structure.X_Si[::-1],
+                internal_structure.X_Fe[::-1]
+            )
         if pms:
             return self.new_prems_star(mass)
         else:
@@ -463,29 +479,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('verbosity', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
-
-#~    @legacy_function
-#~    def new_spinning_particle():
-#~        """
-#~        Define a new star in the code. The star will start with the given mass and given spin.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.can_handle_array = True
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
-#~            , description="The new index for the star. This index can be used to refer to this star in other functions")
-#~        function.addParameter('mass', dtype='float64', direction=function.IN
-#~            , description="The initial mass of the star")
-#~        function.addParameter('spin', dtype='float64', direction=function.IN
-#~            , description="The initial spin of the star")
-#~        function.result_type = 'int32'
-#~        function.result_doc = """
-#~        0 - OK
-#~            New star was loaded and the index_of_the_star parameter set.
-#~        -1 - ERROR
-#~            New star could not be created.
-#~        """
-#~        return function
-        
+    
     @legacy_function
     def get_spin():
         """
@@ -536,35 +530,24 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.result_type = 'int32'
         return function
     
-#~    @legacy_function   
-#~    def new_stellar_model():
-#~        """
-#~        Define a new star model in the code. The star needs to be finalized 
-#~        before it can evolve, see 'finalize_stellar_model'.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.must_handle_array = True
-#~        for par in ['mass', 'radius', 'rho', 'pressure', 'X_H', 'X_He', 'X_C', 
-#~                'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
-#~            function.addParameter(par, dtype='float64', direction=function.IN)
-#~        function.addParameter('n', 'int32', function.LENGTH)
-#~        function.result_type = 'int32'
-#~        return function
-#~    
-#~    @legacy_function   
-#~    def finalize_stellar_model():
-#~        """
-#~        Finalize the new star model defined by 'new_stellar_model'.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.addParameter('index_of_the_star', dtype='int32', 
-#~            direction=function.OUT, description = "The new index for the star. "
-#~            "This index can be used to refer to this star in other functions")
-#~        function.addParameter('age_tag', dtype='float64', direction=function.IN, 
-#~            description = "The initial age of the star")
-#~        function.result_type = 'int32'
-#~        return function
-#~    
+    @legacy_function   
+    def new_stellar_model():
+        """
+        Define a new star model in the code. The star needs to be finalized 
+        before it can evolve, see 'finalize_stellar_model'.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT)
+        for par in ['mass', 'radius', 'rho', 'pressure', 'X_H', 'X_He', 'X_C', 
+                'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
+            function.addParameter(par, dtype='float64', direction=function.IN)
+        function.addParameter('n', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    new_stellar_model = None # Temporarily turned off, until import_stellar_merger is fixed
+
+    
 #~    @legacy_function
 #~    def get_stellar_model_element():
 #~        """
@@ -778,7 +761,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         StellarEvolution.define_methods(self, object)
         object.add_method(
             "new_particle_method",
-            (units.MSun, object.NO_UNIT, object.NO_UNIT),
+            (units.MSun, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT),
             (object.INDEX, object.ERROR_CODE)
         )
         object.add_method(

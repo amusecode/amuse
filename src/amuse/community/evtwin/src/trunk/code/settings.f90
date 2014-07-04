@@ -143,6 +143,9 @@ module settings
    logical :: relax_loaded_model = .true.
    logical :: start_with_rigid_rotation = .true.
 
+   ! Construct a post-He flash model from scratch or not
+   logical :: construct_zahb_model = .false.
+
    ! Column output for .mdl files
    integer :: mdl_columns
    integer :: mdl_column_variables(NPX)

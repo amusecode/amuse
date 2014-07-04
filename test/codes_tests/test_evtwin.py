@@ -17,8 +17,6 @@ class TestEVtwinInterface(TestWithMPI):
     
     def test1(self):
         instance = EVtwinInterface()
-#~        error = instance.set_ev_path(instance.get_data_directory())
-#~        self.assertEquals(0, error)
         error = instance.initialize_code()
         self.assertEquals(0, error)
         error = instance.cleanup_code()
