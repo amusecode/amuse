@@ -176,7 +176,7 @@ contains
       
       implicit none
       integer, intent(inout) :: jo
-      integer :: jop, jo3, wanted_kh, kt5, jch, kh2
+      integer :: jo3, wanted_kh, kt5, jch, kh2
       integer :: cmi_mode_bck,ksv
       real(double) :: bm_fgb, bper_fgb, ccmi, xa(9)
       real(double) :: sm1,dty1,age1,per1,bms1,ecc1,p1,enc1, tm, oa
@@ -197,7 +197,7 @@ contains
       !< 
       mcore = max(0.40d0, mh)
       mstar = sm
-      rewind (jop)
+      !! rewind (jop)
 
       ! Backup age, model number and number of models, to be restored after the flash
       age_backup  = age

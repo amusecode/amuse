@@ -64,7 +64,7 @@ subroutine printb ( jo, Jstar, ift )
 
    ! Funny composition profile - flag this as a problem
    !if ( mh < mhe .or. mhe < mco ) write (ig,*) 'ccc', mh, mhe, mco
-   flush ( ig )
+   !flush ( ig )
 
    ! Write some quantities of each model for plotting purposes, 31,32: file.plt1,2
    ! Print a line for every KT4'th model
