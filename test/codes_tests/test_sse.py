@@ -705,7 +705,7 @@ class TestSSE(TestWithMPI):
         instance.particles.add_particle(Particle(mass = 1.416 | units.MSun))
         instance.particles[0].evolve_for(7000.0 | units.Myr)
         evolved_star = instance.particles.copy()[0]
-	evolved_star.temperature = instance.particles[0].temperature
+        evolved_star.temperature = instance.particles[0].temperature
         instance.stop()
        
         testpath = get_path_to_results()
@@ -725,7 +725,7 @@ class TestSSE(TestWithMPI):
         self.assertAlmostEqual(evolved_star.radius, 10**float(sse_final_result[5]) | units.RSun, 3)
         self.assertAlmostRelativeEqual(evolved_star.temperature, 10**float(sse_final_result[6]) | units.K, 2)
         self.assertAlmostEqual(evolved_star.core_mass, float(sse_final_result[7]) | units.MSun, 3)
-        self.assertAlmostEqual(evolved_star.envelope_mass, float(sse_final_result[8]) | units.MSun, 3)
+        self.assertAlmostEqual(evolved_star.convective_envelope_mass, float(sse_final_result[8]) | units.MSun, 3)
         self.assertAlmostEqual(evolved_star.epoch, float(sse_final_result[9]) | units.Myr, 3)
         self.assertAlmostEqual(evolved_star.spin, float(sse_final_result[10]) | units.yr**-1, 3)
     
