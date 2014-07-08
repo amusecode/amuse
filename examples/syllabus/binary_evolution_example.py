@@ -77,7 +77,7 @@ def new_option_parser():
     result.add_option("-a", unit=units.RSun,
                       dest="a", type="float",default =  205|units.RSun,
                       help="orbital separation [%defailt]")
-    result.add_option("-e", dest="e", type="float", default = 0,
+    result.add_option("-e", dest="e", type="float", default = 0.0,
                       help="orbital eccentricity [%defailt]")
     result.add_option("-n", dest="n_steps", type="float", default = 10,
                       help="number of output steps [%defailt]")
