@@ -2,6 +2,7 @@ from amuse.community import *
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSubset
 from amuse.community.interface import se
+from amuse.support import code
 
 class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     
@@ -535,9 +536,12 @@ class SeBa(se.StellarEvolution):
 
     def __init__(self, **options):
         self.stopping_conditions = StoppingConditions(self)
+        self.stopping_conditions.supernova_detection = code.StoppingCondition('supernova_detection')
+
         se.StellarEvolution.__init__(self,  SeBaInterface(**options), **options)
         
     def evolve_model(self, end_time=None, keep_synchronous=True):
+        self.stopping_conditions.supernova_detection.unset()
         if not keep_synchronous:
             raise Exception("non_synchronous evolution not implemented")
         evolve_a_success = 0
@@ -550,11 +554,17 @@ class SeBa(se.StellarEvolution):
             evolve_a_success =  self.evolve_system(end_time)
             psn = self.particles[self.particles.stellar_type>=10|units.stellar_type]
             psn -= self.particles[old_particles.stellar_type>=10|units.stellar_type]
+
             if len(psn)>0:
+                for p in psn:
+                    print "kick=", p.natal_kick_velocity
                 print "Supernova at time:", psn
-#######         for p in psn:
-#######             print "kick=", p.get_supernova_kick_velocity()
-#######             p.velocity += p.get_supernova_kick_velocity()
+                if self.stopping_conditions.supernova_detection.is_enabled():
+                    self.stopping_conditions.supernova_detection.set(psn)
+                    break
+                for p in psn:
+                    print "kick=", p.natal_kick_velocity
+                    #p.velocity += p.natal_kick_velocity
 #                channel_copy_velocity_from_seba_to...
                 return evolve_a_success
             new_end_time = min(end_time, self.model_time + min(self.particles.time_step))

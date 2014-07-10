@@ -543,3 +543,20 @@ class TestSeBa(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.particles[2].mass, 1.2263 | units.MSun, 4)
         self.assertAlmostRelativeEquals(instance.particles[3].mass, 8.8682 | units.MSun, 4)
         
+    def test10(self):
+        instance = self.new_instance_of_an_optional_code(SeBa)
+        instance.stopping_conditions.supernova_detection.enable()
+
+        p = Particle()
+        p.mass = 5 | units.MSun
+        p.metallicity = 0.02
+        
+        p = instance.particles.add_particle(p)
+        instance.evolve_model(130 | units.Myr)
+        self.assertEquals(instance.stopping_conditions.supernova_detection.is_set(), True)
+        self.assertEquals(instance.stopping_conditions.supernova_detection.particles(0)[0].key, p.key)
+        
+        print instance.parameters
+        
+        self.assertAlmostRelativeEqual(p.mass, 0.9906 | units.MSun, 4)
+        self.assertAlmostRelativeEqual(p.natal_kick_velocity, [0,0,0] | units.kms, 4)
