@@ -10,6 +10,13 @@ try:
 except:
     EllipsisType = type(Ellipsis)
     
+if hasattr(numpy, 'count_nonzero'):
+    def count_nonzero(array):
+        return numpy.count_nonzero(array)
+else:
+    def count_nonzero(array):
+        return len(numpy.flatnonzero(array))
+        
 def unpack_slice(slice):
     start = 0 if slice.start is None else slice.start
     stop = None if slice.stop is None else slice.stop
@@ -187,7 +194,7 @@ def shape_after_index(shape, index):
         ndarray = numpy.asarray(index)
         if ndarray.dtype == 'bool':
             if ndarray.shape == shape:
-                return (numpy.count_nonzero(ndarray),)
+                return (count_nonzero(ndarray),)
             if len(ndarray.shape) < len(shape):
                 if not ndarray.shape == shape[:len(ndarray.shape)]:
                     raise Exception("Shape is not compatible")
