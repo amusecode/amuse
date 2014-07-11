@@ -605,9 +605,11 @@ function mpi_collect_stopping_conditions()
     );
     if (sc_mpi_rank .EQ. 0) then
     
-        number_of_stopping_conditions_set = local_number_of_stopping_conditions_set;
+        number_of_stopping_conditions_set = local_number_of_stopping_conditions_set
+        if (number_of_stopping_conditions_set.GT.0) then
         index_of_particle_in_stopping_condition = local_index_of_particle_in_stopping_condition
         type_of_stopping_condition_set = local_type_of_stopping_condition_set
+        end if
         DEALLOCATE(local_type_of_stopping_condition_set)
         DEALLOCATE(local_index_of_particle_in_stopping_condition)
     end if

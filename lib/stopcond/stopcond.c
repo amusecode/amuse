@@ -522,8 +522,10 @@ int mpi_collect_stopping_conditions() {
 
     if(sc_mpi_rank == 0) {
         number_of_stopping_conditions_set = local_number_of_stopping_conditions_set;
-        memcpy(index_of_particle_in_stopping_condition, local_index_of_particle_in_stopping_condition, MAX_NUMBER_OF_PARTICLES_PER_INDEX * MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET * sizeof(int));
-        memcpy(type_of_stopping_condition_set, local_type_of_stopping_condition_set, MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET * sizeof(int));
+        if(number_of_stopping_conditions_set > 0) {
+            memcpy(index_of_particle_in_stopping_condition, local_index_of_particle_in_stopping_condition, MAX_NUMBER_OF_PARTICLES_PER_INDEX * MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET * sizeof(int));
+            memcpy(type_of_stopping_condition_set, local_type_of_stopping_condition_set, MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET * sizeof(int));
+        }
         free(local_type_of_stopping_condition_set);
         free(local_index_of_particle_in_stopping_condition);
         local_type_of_stopping_condition_set = 0;
