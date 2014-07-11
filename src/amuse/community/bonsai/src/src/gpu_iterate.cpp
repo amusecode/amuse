@@ -195,7 +195,9 @@ void octree::iterate() {
     //Check if a stopping condition was triggered
     if(this->stopping_condition_found)
     {
-      return;
+      //Disabled return to ensure that at least one time-step is taken
+      //when we call 'iterate' at (re) starts.
+      //return;
     }
   #endif
       
