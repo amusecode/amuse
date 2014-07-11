@@ -108,7 +108,7 @@ class  single_star : public star
 	real  get_magnetic_field()      {return magnetic_field;}
 	real  get_rotation_period()     {return rotation_period;}
         real  get_total_mass()		{return envelope_mass + core_mass;}
-
+        
         void  set_current_time(real t) 		{current_time=t;}
         void  set_relative_age(real t)          {relative_age=t;}
 
@@ -127,8 +127,9 @@ class  single_star : public star
         void  set_velocity(const real v)	{velocity = v;}
         void  set_anomal_velocity(const vec v)	{anomal_velocity = v;}
 
-	real  magnitude();              
+    	real  magnitude();              
     	real  temperature();            
+        real get_wind_constant(); 
 
 //        void clean();
 

@@ -614,6 +614,15 @@ int get_convective_envelope_radius(int index_of_the_star, double * convective_en
     return error_code; 
 }
 
+int get_wind_mass_loss_rate(int index_of_the_star, double * wind_mass_loss_rate){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *wind_mass_loss_rate = seba_node->get_starbase()->get_wind_constant()*-1.;
+    return error_code;
+}
+
+
 
 int evolve_one_step(int index_of_the_star){
     int error_code = 0;

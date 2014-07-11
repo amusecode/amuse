@@ -523,6 +523,26 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
+    @legacy_function
+    def get_wind_mass_loss_rate():
+        """
+        Retrieve the current value of the wind_mass_loss_rate (Msun/yr). 
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('wind_mass_loss_rate', dtype='float64', direction=function.OUT,
+            description = "The current value of the wind_mass_loss_rate")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the wind_mass_loss_rate was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the wind_mass_loss_rate
+        """
+        return function
+
+
     # SPZ&SLWMcM
     # No stopping conditions in this version for now.
     def evolve_model(self, end_time=None, keep_synchronous=True):
@@ -726,6 +746,11 @@ class SeBa(se.StellarEvolution):
             (),
             (units.Myr,object.ERROR_CODE,)
         )
+        object.add_method(
+            "get_wind_mass_loss_rate", 
+            (object.INDEX,), 
+            (units.MSun/units.yr, object.ERROR_CODE,)
+        )
         self.stopping_conditions.define_methods(object)
 
     def update_time_steps(self):
@@ -788,6 +813,7 @@ class SeBa(se.StellarEvolution):
         object.add_method('particles', 'get_gyration_radius_sq')
         object.add_method('particles', 'get_relative_age')
         object.add_method('particles', 'get_relative_mass')
+        object.add_method('particles', 'get_wind_mass_loss_rate')
 
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')

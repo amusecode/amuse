@@ -276,8 +276,10 @@ class  star : public starbase
         virtual void evolve_core_mass() {};
 
         virtual real gyration_radius_sq()=0;
-        virtual real  convective_envelope_mass(){return 0;}
-        virtual real  convective_envelope_radius(){return 0;}
+        virtual real convective_envelope_mass(){return 0;}
+        virtual real convective_envelope_radius(){return 0;}
+
+        virtual real get_wind_constant(){return 0;}
 
     };
 

@@ -126,6 +126,8 @@ real starbase::gyration_radius_sq() {return 0;}
 real starbase::convective_envelope_mass() {return 0;}
 real starbase::convective_envelope_radius() {return 0;}
 
+real starbase::get_wind_constant() {return 0;}
+
 //     -----  Scaling:  -----
 
 real starbase::conv_m_star_to_dyn(real ms)	// input:  mass (solar)

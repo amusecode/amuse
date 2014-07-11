@@ -79,6 +79,7 @@ single_star * new_single_star(stellar_type type,	// All defaults are
   return element;
 }
 
+
 single_star::single_star(node* n) : star(n) {
 
     star_type = NAS;
@@ -151,6 +152,11 @@ single_star::single_star(single_star & rv) : star(rv) {
   //previous.time_offset     = rv.previous.time_offset;
 
 }
+
+
+
+
+
 
 #if 0
 void single_star::post_constructor() {
@@ -1369,6 +1375,17 @@ void single_star::stellar_wind(const real dt) {
 
     return;
 }
+
+// (SilT Jul 10 2014) to retrieve wind_constant from outside
+real single_star::get_wind_constant(){
+
+//    update_wind_constant(); 
+// not necessary, wind_constant is automatically updated at end of timestep and after change of stellar type
+    return wind_constant;
+}
+
+
+
 
 void single_star::update_relative_mass(const real new_relative_mass) {
   relative_mass = new_relative_mass;

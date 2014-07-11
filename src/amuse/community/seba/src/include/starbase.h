@@ -121,6 +121,8 @@ class  starbase
         virtual real convective_envelope_mass();
         virtual real convective_envelope_radius();
         
+        virtual real get_wind_constant();
+        
 //	Scaling:
 
         void set_stellar_evolution_scaling(real, real, real);
