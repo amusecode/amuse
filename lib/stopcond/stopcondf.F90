@@ -3,8 +3,8 @@ module StoppingConditions
 
     implicit none
     
-    integer :: MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET
-    parameter(MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET = 256)
+    integer, private, save :: MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET = 0
+    integer, private, save :: DELTA_MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET = 100
     
     integer :: MAX_NUMBER_OF_PARTICLES_PER_INDEX
     parameter(MAX_NUMBER_OF_PARTICLES_PER_INDEX = 256)
@@ -12,15 +12,14 @@ module StoppingConditions
     double precision :: DBL_MAX
     parameter(DBL_MAX = 1.d308)
     
-    integer, private, save :: type_of_stopping_condition_set(0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
-    integer, private, save :: index_of_particle_in_stopping_condition(&
-&      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX,&
-&      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
+    integer, private, allocatable, save :: type_of_stopping_condition_set(:)
+    integer, private, allocatable, save :: &
+&       index_of_particle_in_stopping_condition(:,:)
 
-    integer, private, save :: local_type_of_stopping_condition_set(0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
-    integer, private, save :: local_index_of_particle_in_stopping_condition(&
-&      0:MAX_NUMBER_OF_PARTICLES_PER_INDEX,&
-&      0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET)
+    integer, private, allocatable, save  :: &
+&       local_type_of_stopping_condition_set(:)
+    integer, private, allocatable, save:: &
+&       local_index_of_particle_in_stopping_condition(:,:)
 
     
     integer*4, private, save :: enabled_conditions = 0
@@ -88,6 +87,46 @@ module StoppingConditions
 
 contains
     
+    
+    
+function increase_memory()
+    implicit none
+    integer :: old_max, i, j
+    integer :: increase_memory
+    integer, allocatable :: saved_type_of_stopping_condition_set(:)
+    integer, allocatable  :: save_index_of_particle_in_stopping_condition(:,:)
+    old_max = MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET;
+    MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET = &
+&             MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET + &
+&             DELTA_MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET
+    if (ALLOCATED(type_of_stopping_condition_set)) THEN
+        ALLOCATE(saved_type_of_stopping_condition_set(0:old_max))
+        saved_type_of_stopping_condition_set = type_of_stopping_condition_set
+        DEALLOCATE(type_of_stopping_condition_set)
+        ALLOCATE(type_of_stopping_condition_set(&
+&            0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET))
+        type_of_stopping_condition_set(0:old_max) = saved_type_of_stopping_condition_set
+        DEALLOCATE(saved_type_of_stopping_condition_set)
+    ELSE
+        ALLOCATE(type_of_stopping_condition_set(&
+&            0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET))
+    ENDIF
+    
+    if (ALLOCATED(index_of_particle_in_stopping_condition)) THEN
+        ALLOCATE(save_index_of_particle_in_stopping_condition(0:MAX_NUMBER_OF_PARTICLES_PER_INDEX,0:old_max))
+        save_index_of_particle_in_stopping_condition = index_of_particle_in_stopping_condition
+        DEALLOCATE(index_of_particle_in_stopping_condition)
+        ALLOCATE(index_of_particle_in_stopping_condition(&
+&          0:MAX_NUMBER_OF_PARTICLES_PER_INDEX, 0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET))
+        index_of_particle_in_stopping_condition(&
+&         0:MAX_NUMBER_OF_PARTICLES_PER_INDEX, 0:old_max) = save_index_of_particle_in_stopping_condition
+        DEALLOCATE(save_index_of_particle_in_stopping_condition)
+    ELSE
+        ALLOCATE(index_of_particle_in_stopping_condition(&
+&          0:MAX_NUMBER_OF_PARTICLES_PER_INDEX, 0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET))
+    ENDIF
+    increase_memory = 0
+end function
     
 function enable_stopping_condition(type) 
     implicit none
@@ -260,8 +299,10 @@ function next_index_for_stopping_condition()
     integer :: next_index_for_stopping_condition, i
     
     if (number_of_stopping_conditions_set == MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET) then
-        next_index_for_stopping_condition = -1
-	return
+        if(increase_memory() .LT. 0) THEN
+            next_index_for_stopping_condition = -1
+            return
+        ENDIF
     end if
     
     do i = 0 , MAX_NUMBER_OF_PARTICLES_PER_INDEX
@@ -462,27 +503,28 @@ function mpi_setup_stopping_conditions()
     mpi_setup_stopping_conditions = 0
 end function
 
-function mpi_collect_stopping_conditions()
-#if defined( MPILIB ) && !defined(NOMPI)
-    use mpi
-#endif
-    implicit none
-    integer :: mpi_collect_stopping_conditions
-    mpi_collect_stopping_conditions = 0
-end function
-
 function mpi_distribute_stopping_conditions()
 #if defined( MPILIB ) && !defined(NOMPI)
     use mpi
 #endif
     implicit none
     integer :: mpi_distribute_stopping_conditions
+    mpi_distribute_stopping_conditions = 0
+end function
+
+function mpi_collect_stopping_conditions()
+#if defined( MPILIB ) && !defined(NOMPI)
+    use mpi
+#endif
+    implicit none
+    integer :: mpi_collect_stopping_conditions
     integer :: i, error, offset
     integer :: local_number_of_stopping_conditions_set
+    integer :: n, tmp
     integer :: counts(sc_mpi_size)
     integer :: displs(sc_mpi_size)
     integer*4 :: set
-    mpi_distribute_stopping_conditions = 0
+    mpi_collect_stopping_conditions = 0
     counts = 0
     displs = 0
     set = 0
@@ -499,6 +541,22 @@ function mpi_distribute_stopping_conditions()
         do i = 1, sc_mpi_size
             local_number_of_stopping_conditions_set = local_number_of_stopping_conditions_set + counts(i)
         end do
+        if(local_number_of_stopping_conditions_set &
+&            > MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET) THEN
+            n = ((local_number_of_stopping_conditions_set - &
+&                   MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET) / &
+&                   DELTA_MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET) + 1;
+            tmp = DELTA_MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET;
+            DELTA_MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET = n * &
+&                   DELTA_MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET;
+            error = increase_memory()
+            DELTA_MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET = tmp;
+        END IF
+        ALLOCATE(local_type_of_stopping_condition_set(&
+&             0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET))
+        ALLOCATE(local_index_of_particle_in_stopping_condition(&
+&             0:MAX_NUMBER_OF_PARTICLES_PER_INDEX, &
+&             0:MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET))
     end if
     
     if (sc_mpi_rank .EQ. 0) then
@@ -550,6 +608,8 @@ function mpi_distribute_stopping_conditions()
         number_of_stopping_conditions_set = local_number_of_stopping_conditions_set;
         index_of_particle_in_stopping_condition = local_index_of_particle_in_stopping_condition
         type_of_stopping_condition_set = local_type_of_stopping_condition_set
+        DEALLOCATE(local_type_of_stopping_condition_set)
+        DEALLOCATE(local_index_of_particle_in_stopping_condition)
     end if
     
 end function

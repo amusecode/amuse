@@ -33,7 +33,6 @@ int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 #endif
 
 // private methods
-#define MAX_NUMBER_OF_SIMULTANIOUS_CONDITIONS_SET 100
 #define MAX_NUMBER_OF_PARTICLES_PER_INDEX        10
 
 #define COLLISION_DETECTION  0
