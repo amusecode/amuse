@@ -16,7 +16,9 @@ if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
         OUTPUT_VARIABLE _evtwin_COMPILER_VERSION
    )
    set (FPP_FLAGS "-cpp")
-
+    STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.[0-9].*" "\\1\\2" _evtwin_COMPILER_VERSION ${_evtwin_COMPILER_VERSION})
+   message ("-- Fortran compiler version: " ${_evtwin_COMPILER_VERSION})
+   
    if(NOT _evtwin_COMPILER_VERSION LESS 43 )
     set (CMAKE_Fortran_FLAGS "-finit-local-zero")
    endif(NOT _evtwin_COMPILER_VERSION LESS 43 )
