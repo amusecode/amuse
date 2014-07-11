@@ -11,15 +11,27 @@ if (WANT_O3)
 endif (WANT_O3)
 
 if (CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
-
+   EXEC_PROGRAM(${CMAKE_Fortran_COMPILER}
+        ARGS --version
+        OUTPUT_VARIABLE _evtwin_COMPILER_VERSION
+   )
    set (FPP_FLAGS "-cpp")
 
-   set (CMAKE_Fortran_FLAGS "-finit-local-zero")
+   if(NOT _evtwin_COMPILER_VERSION LESS 43 )
+    set (CMAKE_Fortran_FLAGS "-finit-local-zero")
+   endif(NOT _evtwin_COMPILER_VERSION LESS 43 )
+   
    set (CMAKE_Fortran_FLAGS_RELEASE "${OFLAGS} -pipe -funroll-all-loops")
    set (CMAKE_Fortran_FLAGS_DEBUG "-g -ffpe-trap=zero,invalid -fsignaling-nans")
    set (CMAKE_Fortran_FLAGS_PROFILE "-g -gp")
 
-   set (SSE_FLAGS "-msse4.2")
+   
+   if(NOT _evtwin_COMPILER_VERSION LESS 43 )
+    if(WANT_SSE42)
+         set (SSE_FLAGS "-msse4.2")
+    endif(WANT_SSE42)
+   endif(NOT _evtwin_COMPILER_VERSION LESS 43 )
+   
    set (OPENMP_FLAGS "-fopenmp")
    set (STATIC_FLAGS "-static")
    set (FFLAGS "-std=f2008")
