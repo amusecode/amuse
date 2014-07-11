@@ -200,7 +200,7 @@ def shape_after_index(shape, index):
                     raise Exception("Shape is not compatible")
                     
                 result = list(shape[len(ndarray.shape):])
-                result.insert(0, numpy.count_nonzero(ndarray))
+                result.insert(0, count_nonzero(ndarray))
                 print shape[:len(ndarray.shape)]
                 return tuple(result)
             else:
