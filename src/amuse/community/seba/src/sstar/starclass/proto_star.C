@@ -111,6 +111,7 @@ void proto_star::create_zero_age_object() {
 
 void proto_star::stellar_wind(const real dt) {
 
+  update_wind_constant();
   real wind_mass = wind_constant 
                  * (pow(relative_age/next_update_age,
 			cnsts.parameters(massive_star_mass_loss_law))

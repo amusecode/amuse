@@ -1452,6 +1452,7 @@ void single_star::update_wind_constant() {
     
     //single_star::update_wind_constant is not used
     // only by WD, NS, BH who don't have stellar_wind
+    // and disintegrated and brown dwarfs
     wind_constant = 0.0;
 }
 
