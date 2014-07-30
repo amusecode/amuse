@@ -29,7 +29,7 @@ all:    $(BUILDDIR)/Makefile evtwin_worker
 
 $(BUILDDIR)/Makefile: $(CMAKE_DEPS)
 	-mkdir -p $(BUILDDIR)
-	cd $(BUILDDIR) && FC="$(FC) $(FCFLAGS)" cmake ../src/trunk -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)"
+	cd $(BUILDDIR) && FC="$(FC) $(FCFLAGS)" cmake ../src/trunk -DCMAKE_Fortran_FLAGS:STRING="$(FCFLAGS)"  -G "$(CMAKE_GENERATOR)" -DWANT_MKMERGERMOD=0 -DWANT_LIBRARY=1 
 
 clean:
 	rm -f *.pyc worker_code.f90 evtwin_worker
