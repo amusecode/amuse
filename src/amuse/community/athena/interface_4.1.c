@@ -2726,7 +2726,7 @@ int set_boundary_state(
             if (is_on_boundary_grid(dom, grid, index_of_boundary[l], i0, j0, k0, 1)) 
             {
                 ijk_on_boundary_grid(grid, index_of_boundary[l], &i0, &j0, &k0);
-                fprintf(stderr, "i,j,k %d, %d, %d - %p - %d\n", i0, j0, k0, U, l);
+                //fprintf(stderr, "i,j,k %d, %d, %d - %p - %d\n", i0, j0, k0, U, l);
                 U[k0][j0][i0].d = rho[l];
                 U[k0][j0][i0].M1 = rhovx[l];
                 U[k0][j0][i0].M2 = rhovy[l];
