@@ -47,7 +47,8 @@ helium_giant::helium_giant(super_giant & g) : single_star(g) {
 
     instantaneous_element();
     evolve_core_mass();
-    small_envelope_perturbation();       
+    small_envelope_perturbation();   
+    effective_radius = radius;    
     update();
     post_constructor();
 }
