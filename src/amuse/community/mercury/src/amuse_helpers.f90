@@ -579,7 +579,7 @@ function amuse_get_potential_at_point(eps1, x1, y1, z1, phi, number_of_points) r
             r2=x1(ipart)**2+y1(ipart)**2+z1(ipart)**2
             mass=m(1)
             if(r2.LT.rcen**2) then
-              phi(ipart)=-mass*r2/rcen**3
+              phi(ipart)=mass/rcen*(r2/2/rcen**2-3./2)
             else
               phi(ipart)=-mass/sqrt(r2)            
             endif
