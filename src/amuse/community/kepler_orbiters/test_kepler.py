@@ -1,9 +1,7 @@
 import numpy
 import struct
 
-#from amuse.community.test_kepler.interface import Kepler
 from interface import Kepler
-
 
 from amuse.units import nbody_system
 from amuse.units import units,constants
@@ -12,7 +10,7 @@ from amuse.ic.plummer import new_plummer_model
 
 from amuse.datamodel import Particle
 
-from matplotlib import pyplot
+#from matplotlib import pyplot
 
 import time
 
@@ -43,7 +41,7 @@ def elements(starmass,x,y,z,vx,vy,vz,G=constants.G):
 
     return a,eps
 
-def test_kepler( N,tend=1.| units.yr,method=0):
+def test_kepler(N=10000, tend=1.| units.yr,method=0):
 
   numpy.random.seed(12345)
 
@@ -95,7 +93,6 @@ def test_kepler( N,tend=1.| units.yr,method=0):
 
 #  pyplot.plot(a0[dev].value_in(units.AU),eps0[dev],"ro")
 #  pyplot.plot(a[dev].value_in(units.AU),eps[dev],"g+")
-
 
   print "max da,deps:",da.max(), deps.max()
 
@@ -396,7 +393,7 @@ def test_softening(method=1):
   print da,deps
   print "time:",t2-t1
 
-def test_linear(tend=1,N=100,method=0):
+def t_linear(tend=1,N=100,method=0):
   code=Kepler(redirection="none",channel_type="sockets")
 
   code.set_method(method)
@@ -443,9 +440,9 @@ def test_linear(tend=1,N=100,method=0):
 
   print orbital_elements_from_binary(code.particles[0:2])
 
-  pyplot.ion()
-  f=pyplot.figure(figsize=(8,6))
-  pyplot.show()
+  #pyplot.ion()
+  #f=pyplot.figure(figsize=(8,6))
+  #pyplot.show()
 
   tnow=0*tend
   time=[]
@@ -454,13 +451,13 @@ def test_linear(tend=1,N=100,method=0):
     tnow+=dt
     print tnow,int(tnow/dt)
     code.evolve_model(tnow)
-    f.clf()
+    #f.clf()
     time.append(tnow/tend)
     xs.append(code.orbiters.x[0].number)
-  pyplot.plot(time,xs,"r+")
-  pyplot.xlim(-0.1,1.1)
-  pyplot.ylim(-1.1,3.1)
-  pyplot.draw()
+  #pyplot.plot(time,xs,"r+")
+  #pyplot.xlim(-0.1,1.1)
+  #pyplot.ylim(-1.1,3.1)
+  #pyplot.draw()
 
   print orbital_elements_from_binary(code.particles[0:2])
 
@@ -479,7 +476,7 @@ def test_linear(tend=1,N=100,method=0):
 if __name__=="__main__":
 
   for method in [1,0]:
-      test_linear(N=100,method=method)
+      t_linear(N=100,method=method)
       print
 
   print "-"*10
