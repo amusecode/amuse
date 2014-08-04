@@ -197,7 +197,6 @@ contains
       !< 
       mcore = max(0.40d0, mh)
       mstar = sm
-      !! rewind (jop)
 
       ! Backup age, model number and number of models, to be restored after the flash
       age_backup  = age

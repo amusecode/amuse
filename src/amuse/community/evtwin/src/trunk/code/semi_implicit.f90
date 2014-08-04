@@ -47,7 +47,7 @@ logical function comp_semi_implicit_quantities()
 
    real(double) :: phi(NM, 2), ent(KH, 2), hp(KH, 2)
    real(double) :: mdot(2), old_mdot(2)
-   real(double) :: ent_l1(2), cs_l1(2), vm, xx, fac, fac1, fac2, rrho, dent, ell
+   real(double) :: ent_l1(2), cs_l1(2), vm, xx, fac, fac1, fac2, rrho, oenth, ell
    real(double) :: m1, m2
    type(interpolate_t) :: enthalpy(2), sound_speed, pressure(2), density(2)
 
@@ -188,10 +188,10 @@ logical function comp_semi_implicit_quantities()
             po = 0.0d0
             vm = 0.0d0
             if (phi(k, Jstar) >= phi(1, 3-Jstar)) then   ! Contact
-               po = evaluate_interpolation_table(phi(k,Jstar), pressure(3-Jstar))
-               rrho = evaluate_interpolation_table(phi(k,Jstar), density(3-Jstar))
-               dent = ent(k, Jstar) - evaluate_interpolation_table(phi(k,Jstar), enthalpy(3-Jstar))
-               vm = rrho**2 * 2.d0 * abs(dent / (rrho**2 - rho(k, Jstar)**2))
+               po    = evaluate_interpolation_table(phi(k,Jstar), pressure(3-Jstar))
+               rrho  = evaluate_interpolation_table(phi(k,Jstar), density(3-Jstar))
+               oenth = evaluate_interpolation_table(phi(k,Jstar), enthalpy(3-Jstar))
+               vm = rrho**2 * 2.d0 * abs((ent(k, Jstar) - oenth) / (rrho**2 - rho(k, Jstar)**2))
             else                                         ! No contact
                vm = cs(k, Jstar)
             end if

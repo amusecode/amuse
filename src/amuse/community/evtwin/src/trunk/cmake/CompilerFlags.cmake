@@ -197,7 +197,7 @@ set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS}  ${USER_FLAGS}")
 set (CMAKE_Fortran_FLAGS_RELWITHDEBINFO "${CMAKE_Fortran_FLAGS_RELEASE}  -g")
 
 
-message( STATUS "Using Fortran compiler: " ${Fortran_COMPILER_NAME} " ("${CMAKE_Fortran_COMPILER}")" )
+message( STATUS "Using Fortran compiler:  ${Fortran_COMPILER_NAME}  (${CMAKE_Fortran_COMPILER})" )
 message( STATUS "Compiler vendor: ${CMAKE_Fortran_COMPILER_ID}")
 message( STATUS "Compiler flags used:  ${CMAKE_Fortran_FLAGS}" )
 

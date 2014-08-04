@@ -62,10 +62,6 @@ subroutine printb ( jo, Jstar, ift )
    ! Same, for nucleosynthesis
    if ( kt4>0 .and. mod(jmod, kt4) == 0 .and. ig < 3) call write_nucsyn_summary ( Jstar, jmad, 34 + ig )
 
-   ! Funny composition profile - flag this as a problem
-   !if ( mh < mhe .or. mhe < mco ) write (ig,*) 'ccc', mh, mhe, mco
-   !flush ( ig )
-
    ! Write some quantities of each model for plotting purposes, 31,32: file.plt1,2
    ! Print a line for every KT4'th model
    ! Don't output models during ZAHB construction
@@ -1004,6 +1000,7 @@ subroutine write_internal_details ( ig )
          if ( mod(ik, 10*kt2) == 0 ) write(ig, 99005) (char(ksx(ip + ij)), ip = 1, 12)
       end do
    end do
+   flush(ig)
 end subroutine write_internal_details
 
 

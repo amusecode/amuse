@@ -1269,7 +1269,7 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
             !     ZET(2): mass emitted from pole of companion (after accretion)
             zet(2) = brp(2)*xit(1)
             !     BCM: boundary condition for total mass of *1
-            bcm = dmp(1)/dt + zet(1) + xit(1) - mdot_cmi
+            bcm = dmp(1) + (zet(1) + xit(1) - mdot_cmi) * dt
             ! The accreted mass flux for the star, used to accrete
             ! material of a given composition.
             ! CCAC is a switch that determines whether this composition
@@ -1282,7 +1282,7 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
             bca = doa/dt + (w1p(1)*zet(1) + w2p(1))*oa - w3p(1)*spp(1)&
                  + oatgr + m/(om*mb)*zet(2)*oa
             bce = decc/dt + et(1) + etgr
-            bcmb = dmb/dt + zet(1) + zet(2)
+            bcmb = dmb + (zet(1) + zet(2))*dt
             ! Transport different dHorb/dt's to printb - case not TWIN
             ! SP:spin (wind+mag.br.), MB:mag.br., SO:spin-orbit, ML:system mass loss, GW:grav.waves
             dhsp(1) = w4p(1)*spp(1)*zep(1) ! + OATMB(1) ! ?? Onno
@@ -1385,10 +1385,10 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
          end if
 
          ! Mass boundary condition for each of the two components...
-         fn1(fn_bcm) = dmp(1)/dt + zet(1) + xit(1) - xit(2) ! *1
-         bcm         = dmp(2)/dt + zet(2) - xit(1) + xit(2) ! *2
+         fn1(fn_bcm) = dmp(1) + (zet(1) + xit(1) - xit(2))*dt ! *1
+         bcm         = dmp(2) + (zet(2) - xit(1) + xit(2))*dt ! *2
          ! ... and for the binary
-         bcmb  = dmb/dt + zet(1) + zet(2) ! binary
+         bcmb  = dmb + (zet(1) + zet(2))*dt ! binary
 
          ! AM boundary condition for each of the two components ...
          fn1(fn_bcs) = spp(1)*(dsp(1)/dt + w3p(1) + w4p(1)*zet(1))-w2p(1)*oa - sup(1)*xit(2) + sdp(1)*xit(1) + oatmb(1)    ! *1
