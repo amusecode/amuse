@@ -168,8 +168,9 @@ subroutine nextdt ( dty, jo, it )
    use stopping_conditions
 
    implicit none
-   integer :: jo,it
-   real(double) :: dty
+   integer, intent(in) :: it
+   integer, intent(out) :: jo
+   real(double), intent(inout) :: dty
 
    integer :: ik,ij,kb,ka,jd,ips
    real(double) :: sum,fac,dty_min,dty_max,fdt,tdf
@@ -194,7 +195,7 @@ subroutine nextdt ( dty, jo, it )
       ! input file (ignore for ZAHB construction).
       ! In this way, we get a model of *exactly* a specific age.
       ! Control the timestep so that the approach to the final age is a bit smooth
-      if (it /= 24 .and. .not. adj_mea) then
+      if (it /= 24 .and. .not. adj_mea .and. uc(2) > 0.0d0) then
          dty_min = uc(12)/csy
          dty_max = uc(2) - age
          if ( age+2*dty < uc(2) .and. age+3*dty >= uc(2)) then
@@ -214,6 +215,7 @@ subroutine nextdt ( dty, jo, it )
    end if
 
    if (dty > 1.0d12) dty = 1.0d12
+   if (usemenc .and. dty > 1.0d6) dty = 1.0d6
 
    ! For star 2 in a binary interpolate the mass loss history of star 1
    ! Not done in TWIN mode (when jb == 1 always)

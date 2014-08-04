@@ -416,6 +416,7 @@ contains
       use accretion_abundances
       use neutrinos
       use indices
+      use mesh_enc, only: entropy_force
 
       implicit none
       logical :: read_init_dat
@@ -472,7 +473,7 @@ contains
          use_previous_mu, off_centre_weight, allow_mdotrelaxation,  &
          use_smooth_remesher, relax_loaded_model, convection_ledoux,  &
          allow_avmurelaxation, store_changes, use_quadratic_predictions, use_linesearch, climit,  &
-         cmi_mode, zscaling_mdot,&
+         cmi_mode, zscaling_mdot, entropy_force,&
          Chs, Cvs, Cshear, Cadam,&
          cdsi, cshi, cssi,  cesc, cgsf, cfmu, cfc, &
          artmix, cgrs, grs_burgers, ccac, clac, csmc, csmce, &
@@ -538,6 +539,7 @@ contains
       kp_bc = 0
       cnuc = 1.0d0
       cmdot_wind = 1.0d0
+      entropy_force = 20.d0
 
       use_clairaut_distortion = .false. ! Use default Roche model for distorted stars
       use_contact_flow = .false.        ! Don't use detailed (slow) mass transfer model intended for contact binaries

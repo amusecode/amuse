@@ -1,6 +1,6 @@
 program make_merger_startup_model
    use real_kind
-   use twin_library
+   use twinlib
    use import
 
    implicit none
@@ -8,7 +8,9 @@ program make_merger_startup_model
    integer :: status, id, IK
    integer :: number_of_meshpoints
    integer, parameter :: number_of_variables = 13
-   real(double), allocatable :: model(:)
+   character :: tmpstr*(80)
+   real(double), allocatable :: model(:,:)
+   real(double) :: Z
 
    print *, 'Stand-alone merger startup model creation program for TWIN'
    print *, 'Written by Evert Glebbeek 2007,2008,2009'
@@ -36,6 +38,9 @@ program make_merger_startup_model
       zstr = "02"
    end if
 
+   tmpstr = "0."//zstr
+   read (tmpstr, *) Z
+
    ! Global path to the evolution code   
    evpath=""
    call getenv("evpath", evpath);
@@ -50,9 +55,8 @@ program make_merger_startup_model
    basename = inputfilename(1:ik-4);
 
    ! The init.run we read in here is just a stub really...
-   call set_init_run_name(trim(evpath)//'/stars_standards/init.run')
-   call set_init_dat_name(trim(evpath)//'/input/mutate.dat')
-   status = initialise_twin(trim(evpath), 20, trim(zstr));
+   status = initialise_twin(trim(evpath), 3, Z, verb=.false.)
+
    print *, 'TWIN initialisation finished with errnum', status
    if (status/=0) stop
 
@@ -61,18 +65,20 @@ program make_merger_startup_model
    read (66, *) number_of_meshpoints
 
    ! Allocate enough memory to store the model
-   allocate(model(number_of_meshpoints*number_of_variables))
+   allocate(model(number_of_variables, number_of_meshpoints))
 
    ! Read in all values
-   read (66, *) model(1:number_of_meshpoints*number_of_variables)
+   do ik = 1, number_of_meshpoints
+      read (66, *) model(1:number_of_variables, ik)
+   end do
    close (66)
 
    ! Convert model to TWIN input file
-   id = import_stellar_merger(number_of_meshpoints, number_of_variables, model, 0.0d0)
+   status = import_stellar_merger(id, number_of_meshpoints, number_of_variables, model, 0.0d0, .false.)
 
    ! Store the output model
    outputfilename = trim(basename)//'.pmutate'
    print *, 'Writing output to ', trim(outputfilename)
-   call dump_twin_model(id, outputfilename);
+   status = write_star_to_file(id, outputfilename)
 
 end program make_merger_startup_model

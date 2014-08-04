@@ -196,7 +196,7 @@ contains
       ! we adopt the values from the input model (as expected), otherwise we
       ! override those. This is mainly useful for ignoring rotation and to
       ! add "missing mass" from a partial SPH model.
-      if (t0p < 0.0) t0sm = t1sm
+      if (t0sm < 0.0) t0sm = t1sm
       if (t0p < 0.0) t0p = t1p
       ml1 = log10(t1sm)
       ip1 = 16

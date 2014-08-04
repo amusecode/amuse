@@ -601,7 +601,7 @@ subroutine update_explicit_quantities( Jstar )
    if (adj_mea .and. impose_composition_factor > 1.0e-1) then
       ! Monitor convergence to target model.
       call check_conv_to_target_structure()
-      if ( curr_diffsqr < best_diffsqr .and. get_composition_mean_square() < 1.0d-4) then
+      if ( curr_diffsqr < best_diffsqr .and. get_composition_mean_square() < 1.0d-2) then
          best_diffsqr = curr_diffsqr
          best_mod = jmod+1
          mutant_h(1:24, 1:kh) = h(1:24, 1:kh)
@@ -611,14 +611,7 @@ subroutine update_explicit_quantities( Jstar )
    ! Adjust the timescale for the artificial energy term. This causes it to be
    ! turned on smoothly.
    if (usemenc .and. get_composition_mean_square() < 1.0d-6) then
-      if (impose_entropy_factor < 1.0d0) then
-         !impose_entropy_factor = min(2.0d0*impose_entropy_factor, 1.01d0)
-         impose_entropy_factor = min(1.5d0*impose_entropy_factor, 1.01d0)
-      else
-         impose_entropy_factor = min(1.5d0*impose_entropy_factor, 1.0d2)
-      end if
-      impose_entropy_factor = max(impose_entropy_factor, 1.0d-6)
-      !PRINT *, 'Set eart factor to ', IMPOSE_ENTROPY_FACTOR
+      impose_entropy_factor = max(1.0d-6, min(1.0d0, 1.5d0*impose_entropy_factor, sqrt(impose_entropy_factor)))
    end if
 
    ! Adjust the fudge-factor for the artificial composition adjustment. This causes
@@ -789,10 +782,11 @@ subroutine check_stop_conditions ( Jstar, jo, ift )
 
    real(double) :: m
 
-   if (adj_mea .and. impose_entropy_factor > 1.0e-2) then
+   if (best_mod > 0 .and. impose_entropy_factor > 1.0e-2) then
       !if ( best_diffsqr<1.0e-4 ) jo = 53
       if ( best_diffsqr<1.0e-4 .and. get_composition_mean_square() < 1.0d-4) jo = 53
       !if ( best_diffsqr<1.0e-2 .and. get_composition_mean_square() < 1.0d-3) jo = 53
+      if (age > 1.0d13) jo = 53
       if (jo == 53) return
    end if
 

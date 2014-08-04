@@ -420,6 +420,7 @@ contains
    subroutine initialise_stellar_parameters(star_id)
       use real_kind
       use test_variables, only: dt, age, jhold
+      use stopping_conditions, only: uc
       use current_model_properties
       use constants
       use settings
@@ -437,10 +438,17 @@ contains
       star%startup_iter = kr1
       star%normal_iter = kr2
 
-      star%uc = (/ 1.00E-01, 2.00E+12, 1.00E+02, 0.00E+00, 3.00E+00, 5.30E+00, 1.20E+00, &
+      star%uc = (/ 1.00E-01, 0.00E+00, 1.00E+02, 0.00E+00, 3.00E+00, 5.30E+00, 1.20E+00, &
                    6.30E+00, 3.00E+02, 0.00E+00, 1.00E-06, 1.00E+06, 1.00E+03, 1.00E+03, &
                    0.00E+00, 0.00E+00, 0.00E+00, 0.00E+00, 0.00E+00, 0.00E+00, 0.00E+00 /)
+      star%uc(2) = amuse_maxage
+      star%uc(12) = amuse_mindt
+      uc = star%uc
       star%maximum_mass = -1.0
+      jmod = 0
+      jnn = 0
+      star%jmod = jmod
+      star%jnn = jnn
 
       rlf_prev = (/0.0, 0.0/)   ! Previous value of Roche-lobe filling factor
       qcnv_prev = (/0.0, 0.0/)  ! Previous value of mass fraction of convective envelope
@@ -569,6 +577,11 @@ contains
       call select_star(new_id)
 
       star%zams_mass = mass
+      if (present(start_age)) then
+         star%age = start_age
+      else
+         star%age = 0.0d0
+      endif
 
       ! Load model
       if (star%nucleosynthesis .and. verbose) print *, '*** Warning: ZAMS model+nucleosynthesis is not reliable.'
@@ -594,15 +607,6 @@ contains
       call swap_out()
 
       star%uc = uc
-!~      status = evolve_one_timestep(new_id)
-!~      if (status /= 0) return
-      if (present(start_age)) then
-         age = start_age
-         star%age = start_age
-      else
-         age = 0.0d0
-         star%age = 0.0d0
-      endif
       new_zams_star = 0
       star_id = new_id
    end function new_zams_star
@@ -1159,7 +1163,7 @@ contains
    !  with a reduced timestep. If this occurs, the age of the star after this call is lower than it was before.
    ! Returns value:
    !  returns 0 if converged ok, non-zero value (positive or negative) indicate convergence failure!
-   integer function evolve_one_timestep(star_id)
+   integer function evolve_one_timestep(star_id, myverb)
       use test_variables, only: dt, age, jhold, lhe, mhe
       use printb_global_variables, only: sdc
       use current_model_properties, only: jmod, jnn, joc, jb
@@ -1171,17 +1175,22 @@ contains
       use resolve_helium_flash
       implicit none
       integer, intent(in) :: star_id
+      logical, optional, intent(in) :: myverb
       type(twin_star_t), pointer :: star
       real(double) :: dty, tdyn
       real(double) :: tm, oa, ecc, bms, omega, vi, p1
       integer :: iter
       integer :: jo
       integer :: Jstar
+      logical :: my_verbose
 
       if (star_id_is_valid(star_id) < 0) then
          evolve_one_timestep = -1
          return
       end if
+
+      my_verbose = verbose
+      if (present(myverb)) my_verbose = myverb
 
       evolve_one_timestep = 0
       if (star_id /= current_star) call select_star(star_id)
@@ -1201,7 +1210,7 @@ contains
       ktw = 1
 
       dty = dt/csy
-      if (verbose) print *, 'taking timestep ',dty,'yr for star', current_star
+      if (my_verbose) print *, 'taking timestep ',dty,'yr for star', current_star
 
       ! Determine number of allowed iterations before backup
       iter = star%normal_iter
@@ -1221,13 +1230,13 @@ contains
 
       ! Don't show iteration output, unless we're printing verbose output.
       kt5 = iter
-      if (verbose) kt5 = 0
+      if (my_verbose) kt5 = 0
 
       call smart_solver ( iter, star%eqns, kt5, jo )
 
       ! Converged if JO == 0
       if ( jo /= 0 ) then
-         if (verbose) print *, 'failed to converge on timestep'
+         if (my_verbose) print *, 'failed to converge on timestep'
          ! If no convergence, restart from 2 steps back, DT decreased substantially
          do while (jo /= 0)
             call backup ( dty, jo )
@@ -1241,7 +1250,7 @@ contains
             end if
             call nextdt ( dty, jo, 22 )
 
-            if (verbose) print *, 'timestep reduced to', dty,'yr'
+            if (my_verbose) print *, 'timestep reduced to', dty,'yr'
 
             ! If the timestep is (well) below the dynamical timescale for the star, abort
             if (dty < tdyn) then
@@ -1260,9 +1269,9 @@ contains
       end if
 
       evolve_one_timestep = jo
-      if (verbose) then
+      if (my_verbose) then
          call update_quantities_if_needed(star_id)
-         call write_summary ( 1, jmod, 6 )
+         call write_summary ( 1, jnn, 6 )
       end if
 
       ! If converged, update nucleosynthesis (if wanted)
@@ -1286,7 +1295,7 @@ contains
       !
       ! If stuck on the way to the white dwarf cooling track, eliminate the H shell.
 
-      if (verbose) print *, 'converged on timestep'
+      if (my_verbose) print *, 'converged on timestep'
       ! ----------------------------------------------------------
       ! Compute quantities
       ! ----------------------------------------------------------
@@ -1308,6 +1317,8 @@ contains
 
       if (dty < tdyn) dty = tdyn * 1.1
       dt = dty * csy
+
+      if (my_verbose) print *, 'new timestep', dty,'yr'
 
       ! Synchronise the star-list with the evolution code
       call swap_out()
@@ -1627,6 +1638,24 @@ contains
 
 
 
+
+   ! Set timestep (in yr)
+   subroutine set_timestep(star_id, dty)
+      use real_kind
+      use constants
+      use test_variables, only: dt
+      implicit none
+      integer, intent(in) :: star_id
+      real(double), intent(in) :: dty
+
+      if (star_id_is_valid(star_id) < 0) return
+
+      call select_star(star_id)
+      dt = dty * csy
+      star_list(star_id)%dt = dt
+   end subroutine set_timestep
+
+
    ! Set some evolution options
    ! Maximum mass the star can reach before accretion is turned off (in solar units).
    ! Can be used to increase the mass of the star to a particular point.
@@ -1798,24 +1827,6 @@ contains
       multiplier_vink = value
       set_Ostar_wind_setting = 0
    end function
-
-
-
-   ! Set timestep (in yr)
-   subroutine set_timestep(star_id, dty)
-      use real_kind
-      use constants
-      use test_variables, only: dt
-      implicit none
-      integer, intent(in) :: star_id
-      real(double), intent(in) :: dty
-
-      if (star_id_is_valid(star_id) < 0) return
-
-      call select_star(star_id)
-      dt = dty * csy
-      star_list(star_id)%dt = dt
-   end subroutine set_timestep
 
 
 

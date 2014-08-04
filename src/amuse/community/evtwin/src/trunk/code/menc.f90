@@ -12,6 +12,10 @@ module mesh_enc
    logical :: start_model_only = .false. ! TRUE if we only want to construct a starting model
    logical :: composition_only = .false. ! TRUE if we only want to construct a starting model
 
+   ! Weight of the entropy term. Larger values reproduce the input better, but make the
+   ! output harder to evolve, while the long-term evolution is not very different.
+   real(double) :: entropy_force = 20.d0
+
    ! Mutation modes, how to check for convergence and what variables
    ! to use for matching the target entropy profile
    integer, parameter :: MMODE_EV = -1    ! Use logT and logf to calculate S
@@ -415,25 +419,27 @@ contains
       O_max    = 0.0_dbl
 
       do n = 1, kh
-         m = H(4, n)
-
-         H_sum = H_sum + (H(VAR_H1, n) - get_iph(m, VAR_H1))**2
-         if (H(VAR_H1, n) > H_max) H_max = H(VAR_H1, n)
-
-         He_sum = He_sum + (H(VAR_HE4, n) - get_iph(m, VAR_HE4))**2
-         if (H(VAR_HE4, n) > He_max) He_max = H(VAR_HE4, n)
-
-         C_sum = C_sum + (H(VAR_C12, n) - get_iph(m, VAR_C12))**2
-         if (H(VAR_C12, n) > C_max) C_max = H(VAR_C12, n)
-
-         N_sum = N_sum + (H(VAR_N14, n) - get_iph(m, VAR_N14))**2
-         if (H(VAR_N14, n) > N_max) N_max = H(VAR_N14, n)
-
-         O_sum = O_sum + (H(VAR_O16, n) - get_iph(m, VAR_O16))**2
-         if (H(VAR_O16, n) > O_max) O_max = H(VAR_O16, n)
+         H_max  = max(H(VAR_H1, n), H_max)
+         He_max = max(H(VAR_HE4, n), He_max)
+         C_max  = max(H(VAR_C12, n), C_max)
+         N_max  = max(H(VAR_N14, n), N_max)
+         O_max  = max(H(VAR_O16, n), O_max)
       end do
 
-      get_composition_mean_square = sqrt(H_sum/H_max**2 + He_sum/He_max**2 + C_sum/C_max**2 + N_sum/N_max**2 + O_sum/O_max**2)
+
+      do n = 1, kh
+         m = H(4, n)
+
+         if (m < maximum_match_mass) then
+            H_sum  = H_sum  + (H(VAR_H1,  n) - get_iph(m, VAR_H1 ))**2
+            He_sum = He_sum + (H(VAR_HE4, n) - get_iph(m, VAR_HE4))**2
+            C_sum  = C_sum  + (H(VAR_C12, n) - get_iph(m, VAR_C12))**2
+            N_sum  = N_sum  + (H(VAR_N14, n) - get_iph(m, VAR_N14))**2
+            O_sum  = O_sum  + (H(VAR_O16, n) - get_iph(m, VAR_O16))**2
+         end if
+      end do
+
+      get_composition_mean_square = H_sum/H_max**2 + He_sum/He_max**2 + C_sum/C_max**2 + N_sum/N_max**2 + O_sum/O_max**2
    end function get_composition_mean_square
 
 end module mesh_enc

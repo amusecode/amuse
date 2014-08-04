@@ -5,7 +5,7 @@
 ! -------------------------------------------------------------------------
 
  KH2   =  199        ! Number of meshpoints
- JCH   =    2        ! Remeshing options, typically 2, 3 or 4 (see manual)
+ JCH   =    3        ! Remeshing options, typically 2, 3 or 4 (see manual)
  KL    =    1        ! Solve surface-to-centre (0) or centre-to-surface(1)
  JH    =    3*0
 
@@ -45,7 +45,7 @@
 
  FAC_DOWN   = 0.8         ! If no progress reduce scale for corrections by this
  FAC_UP     = 1.1         ! Allow scale to grow with this factor
- FAC_MIN    = 0.0         ! Do not reduce factor below this
+ FAC_MIN    = 0.6         ! Do not reduce factor below this
  CLIMIT     = 0.1         ! Scale relative corrections if larger than this value
 
  DH0        = 1.00E-007   ! Relative variation when calculating derivatives
@@ -76,6 +76,14 @@
  CT1   =  0.8
  CT2   =  1.2
  CT3   =  0.3
+
+ ! When constructing a post-merger model the entropy matching term in the
+ ! energy equation is multiplied by this factor.
+ ! A high value (~20) results in a close match between the evolution model
+ ! and the merger data, but the result can be much harder to evolve. A low
+ ! value (~1) makes the output much easier to evolve, but the entropy
+ ! profile does not match the merger product so well.
+ ENTROPY_FORCE = 20.0d0
 
  !KE1   =  6          ! First order/structure equations
  !KE2   =  6          ! Second order/composition diffusion equations

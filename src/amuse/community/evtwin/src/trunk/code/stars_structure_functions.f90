@@ -156,7 +156,7 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
    real(double) :: gmr           ! Effective gravity at the surface(?)
    real(double) :: m3            ! m^(1/3), m is the mass coordinate
 
-   real(double) :: gradl, dg_ledoux, dsc, gradmu, gradtsc, a
+   real(double) :: gradl, dg_ledoux, dsc, gradmu, gradtsc, a, lom_enc, ds_enc, ex_enc, wth_enc
    real(double) :: aper, dap
    real(double) :: eg            ! Convective grad_r - grad_a mixing due to for overshooting
 
@@ -343,13 +343,9 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
       if (m<maximum_match_mass .and. m > th(VAR_MASS,ip_mesh_size)) then
          target_daf = get_iph(m, VAR_LNF)-af
          target_dat = get_iph(m, VAR_LNT)-at
-         !ds  = sf*target_daf + st*target_dat
-         !ds = ds * (1.0-min(1.0e2*impose_entropy_factor, 1.0d0)) - impose_entropy_factor * (sf*target_daf + st*target_dat)
-         ds = ds - impose_entropy_factor * (sf*target_daf + st*target_dat)
-         wth = impose_entropy_factor*luminosity_fudge
-         if (dt > 1.0d4*csy) then
-            wth = wth * dt / (1.0d4*csy)
-         end if
+         ds_enc = (1.0d0 - impose_entropy_factor)*ds - impose_entropy_factor * (sf*target_daf + st*target_dat)
+         wth_enc = entropy_force * impose_entropy_factor*luminosity_fudge
+         ex_enc = ex*(1.1d0 - impose_entropy_factor*impose_entropy_factor)/1.1d0
       else
          wth = 1.0
       end if
@@ -358,6 +354,8 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
 
    ! Gradient of luminosity, LOM = dL/dM
    lom = ex + en + enx + enc + menc(Jstar, jk) - wth*t*ds/dt
+   lom_enc = ex_enc + en + enx - wth_enc*t*ds_enc/dt 
+   if (usemenc .and. m<maximum_match_mass .and. m > th(VAR_MASS,ip_mesh_size)) lom=lom_enc
 
    if ( jk == kh ) then
      ! Approximations for the centre (M=0); the normal expressions become singular
@@ -421,6 +419,8 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
    gradl  = grada + convection_ledoux * phie*gradmu/delta      ! Critical gradient for Ledoux convection
    dg     = gradr - grada
    dg_ledoux = gradr - gradl
+
+   if (usemenc .and. m<maximum_match_mass .and. m > th(VAR_MASS,ip_mesh_size)) lom=lom_enc
 
    ! mixing-length theory; the cubic equation for wl/chi has one real solution
    s2  = grada*scp*t
@@ -587,7 +587,7 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
    x56t = (dx56/dt)*mk
 
    ! Artificial composition adjustment:
-   if(adj_comp) then
+   if (adj_comp) then
      cif = mixing_fudge*impose_composition_factor
      cif = cif**1.5
      tau = min(dt, 1.0d6*csy)
@@ -676,6 +676,9 @@ subroutine funcs1 ( jk, ji, var, dvar, fn1, eosout, abundout, px )
    ! Mixing due to rotational shear
    ! SGF in 1e11 g/cm**2, Deff in g/cm**2, so SGF*Deff is in 1e-22 [1e33 g/s]
    sg = sg + 1.0d-22*Deff*sgf
+
+   ! If we're matching the composition profile to a reference model, do not include convective mixing.
+   if (adj_comp) sg = 0.0d0
 
    ! For ZAMS runs (KCN = 1) always weakly mix inner and outer meshpoints
    if (kcn == 1) then

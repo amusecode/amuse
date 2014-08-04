@@ -300,7 +300,7 @@ subroutine solver ( iter, ig, kt5, jo )
       C(1:kh, 1:kvb, 1) = tanh(C(1:kh, 1:kvb, 1))
 
       if (maxval(abs(C(1:kh, 1:kvb, 1))) > climit) then
-         C = 0.1d0 * C
+         C = 0.5d0 * C
          converged_ok = .false.
       end if
 
@@ -446,7 +446,7 @@ subroutine solver ( iter, ig, kt5, jo )
    ! converged to accuracy EPS!
    if ( (joc == 1 .and. besterr < eps) .or. (joc > 1 .and. besterr < 1.0d-1*eps) ) then
       frr = log10(besterr)
-      write (solver_output_unit(1), "('Accepting solution with err = ', f6.2)") frr
+      if (kt5 < iter) write (solver_output_unit(1), "('Accepting solution with err = ', f6.2)") frr
 
       if (joc == 1) then
          H(1:NVAR,1:kh) = besth(1:NVAR,1:kh)

@@ -114,7 +114,7 @@ subroutine ms2bss ( jop, jo3 )
 
    ! Rotational period; set it as when it was read in from the target model
    ! Optionally replace with the value from init.run
-   h(VAR_OMEGA, 1:kh) = t0p
+   h(VAR_OMEGA, 1:kh) = 2.0d0*CPI / (t0p*csday)
    call output ( s_kpt, 14, 0, 0 )
    call output ( s_kpt, 13, 0, 0 )
    rewind (14)
