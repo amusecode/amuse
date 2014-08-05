@@ -238,11 +238,10 @@ void helium_star::create_remnant() {
 
 
 //used by subtrac_mass_from_donor and double_star::perform_mass_transfer
-real helium_star::mdot_limit(const real dt){
+real helium_star::mdot_limit(const real dt, real mdot){
     //real mdot = relative_mass*dt/get_binary()->get_donor_timescale();
-    real mdot = get_total_mass();
     if (is_binary_component()) {
-      real mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
+      mdot = get_total_mass()*dt/get_binary()->get_donor_timescale();
     }
     return mass_ratio_mdot_limit(mdot);
     
@@ -251,7 +250,7 @@ real helium_star::mdot_limit(const real dt){
 star* helium_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 //    for a helium star relative_helium_mass = get_total_mass()  
     
-    mdot = mdot_limit(dt);
+    mdot = mdot_limit(dt, mdot);
     
     //if (envelope_mass >= mdot)
     //  envelope_mass -= mdot;

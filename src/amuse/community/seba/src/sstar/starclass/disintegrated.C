@@ -170,7 +170,7 @@ real disintegrated::mass_transfer_timescale(mass_transfer_type
      }
      
      
-real disintegrated::mdot_limit(const real dt){
+real disintegrated::mdot_limit(const real dt, real mdot){
         cerr << "disintegrated::mdot_limit(dt="
 	     << dt << ")" << endl;
         cerr << "Disintegrated cannot be donor star!"<<endl;

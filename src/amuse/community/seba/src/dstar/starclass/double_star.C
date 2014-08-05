@@ -868,13 +868,14 @@ void double_star::perform_mass_transfer(const real dt,
     
     // (SilT 13 Apr 2012) Only calculate md_dot, subtract the mass later 
     // so that in the SeBa output the correct separation is given
-    real md_dot = donor->mdot_limit(dt);
+    real md_dot = 0;
+    md_dot = donor->mdot_limit(dt, md_dot);
     md_dot = min(md_dot, donor->get_envelope_mass());
 
     if (md_dot>0) {
 
         real ma_dot = accretor->add_mass_to_accretor(md_dot, donor->hydrogen_envelope_star(), dt);
-    
+        
         real M_new = M_old - md_dot + ma_dot;
         real new_donor_mass = old_donor_mass - md_dot;
         real new_accretor_mass = old_accretor_mass + ma_dot;

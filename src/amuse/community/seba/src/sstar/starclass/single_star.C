@@ -393,7 +393,6 @@ real single_star::kelvin_helmholds_timescale() {
 
   // Equilibrium radius is 'single_star::radius'
   // Effective radius may be puffed up by accretion or subtraction of mass.
-
   return 31.56*pow(relative_mass,2.)/(radius*luminosity); // [Myr]
 }
 
@@ -714,7 +713,7 @@ real single_star::accretion_limit(const real mdot, const real dt) {
 
   if (dt < 0) return mdot;
   // Conservative mass transfer.
-  //   return mdot;
+//  return mdot;
 
   // Non-conservative mass transfer.
   // Based on Pols & Marinus,1994, A&A,288, 475

@@ -461,7 +461,7 @@ bool neutron_star::super_nova() {
 
 //used by subtrac_mass_from_donor and double_star::perform_mass_transfer
 
-real neutron_star::mdot_limit(const real dt){
+real neutron_star::mdot_limit(const real dt, real mdot){
  
     return mass_ratio_mdot_limit(accretion_limit(envelope_mass, dt));
 }
@@ -470,7 +470,7 @@ real neutron_star::mdot_limit(const real dt){
 
 star* neutron_star::subtrac_mass_from_donor(const real dt, real& mdot) {
 
-      mdot = mdot_limit(dt);
+      mdot = mdot_limit(dt, mdot);
 
       //		The disc may lose mass.
       envelope_mass -= mdot;

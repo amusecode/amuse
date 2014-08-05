@@ -50,7 +50,7 @@ class disintegrated : public single_star {
         real mass_transfer_timescale(mass_transfer_type &type);
         star* subtrac_mass_from_donor(const real, real&);
         real add_mass_to_accretor(real, bool, const real = -1.);
-        real mdot_limit(const real);
+        real mdot_limit(const real, real);
 
         star* merge_elements(star*);
 
