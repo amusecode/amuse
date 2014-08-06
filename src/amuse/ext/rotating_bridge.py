@@ -1,11 +1,27 @@
 """
 Wrapper of the bridge-like integrator for amuse. To see how bridge works go to the file bridge.py in this folder.
 
-This Rotating bridge makes the integration of eqs of motion in a counterclockwise rotating system.
+This bridge makes the integration of eqs of motion in a right hand counterclockwise rotating system.
 
 Usage:
+from amuse.ext.composition_methods import *
 from amuse.ext.rotating_bridge import Rotating_Bridge
 
+system= Rotating_Bridge(omega, timestep= dt_bridge, verbose= False, method= method)
+system.add_system(cluster, (MW,), False)
+system.add_system(MW, (), False) 
+
+omega: angular velocity of the rotating frame. If an axisymmetric model is used, omega must be 0 kms/kpc
+dt_bridge: bridge timestep. By now it is fixed
+method: One of the composite methods. The default one is LEAPFROG but it can be used:
+
+SPLIT_4TH_S_M6
+SPLIT_4TH_S_M5
+SPLIT_4TH_S_M4
+SPLIT_6TH_SS_M11
+SPLIT_6TH_SS_M13
+SPLIT_8TH_SS_M21
+SPLIT_10TH_SS_M35 
 
 """
 
