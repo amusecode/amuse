@@ -1,6 +1,11 @@
 """
-This bridge makes the integration of eq of motion in a counterclockwise rotating system (OMEGA IN THE INTERFACE SHOULD BE SET NEGATIVE!!!)
-In this bridge I can put more than one partner
+Wrapper of the bridge-like integrator for amuse. To see how bridge works go to the file bridge.py in this folder.
+
+This Rotating bridge makes the integration of eqs of motion in a counterclockwise rotating system.
+
+Usage:
+from amuse.ext.rotating_bridge import Rotating_Bridge
+
 
 """
 
