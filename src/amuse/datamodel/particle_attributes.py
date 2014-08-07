@@ -1132,4 +1132,6 @@ AbstractParticleSet.add_global_function_attribute("mass_segregation_from_nearest
 AbstractParticleSet.add_global_function_attribute("correlation_dimension", correlation_dimension)
 AbstractParticleSet.add_global_function_attribute("box_counting_dimension", box_counting_dimension)
 AbstractParticleSet.add_global_vector_attribute("natal_kick_velocity", ["natal_kick_x","natal_kick_y","natal_kick_z"])
+AbstractParticleSet.add_global_function_attribute("in_rotating_frame", in_rotating_frame)
+AbstractParticleSet.add_global_function_attribute("in_inertial_frame", in_inertial_frame)
 
