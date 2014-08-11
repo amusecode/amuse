@@ -7,17 +7,17 @@ from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import OptionalAttributes, option
 
 
-class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
-        InternalStellarStructureInterface, 
+class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface,
+        InternalStellarStructureInterface,
         CodeWithDataDirectories):
     """
-    Evtwin is based on Peter Eggleton's stellar evolution code, and solves 
-    the differential equations that apply to the interior of a star. Therefore 
-    it is more accurate, but also much slower than the analytic fits-based 
+    Evtwin is based on Peter Eggleton's stellar evolution code, and solves
+    the differential equations that apply to the interior of a star. Therefore
+    it is more accurate, but also much slower than the analytic fits-based
     SSE legacy code, that has the same origin.
-    The work-around for the helium flash is not yet implemented in the AMUSE 
+    The work-around for the helium flash is not yet implemented in the AMUSE
     interface to evtwin. Currently only solar metallicity.
-    
+
         .. [#] ** Eggleton, P.P. 1971, MNRAS, 151, 351: "The evolution of low mass stars"
         .. [#] ** Glebbeek, Pols & Hurley, 2008 A&A (for enhancements to the solver)
         .. [#] Eggleton, P.P. 1972, MNRAS, 156, 361: "Composition changes during stellar evolution"
@@ -36,21 +36,21 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         .. [#] Eldridge & Tout, 2004 MNRAS 348 (for the OPAL 1996 opacity tables)
     """
     use_modules = ['twinlib', 'import']
-    
+
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
-    
+
     set_mass_fraction_of_species_at_zone = None
     set_radius_at_zone = None
     set_density_at_zone = None
     set_temperature_at_zone = None
-    
+
     @property
     def default_path_to_ev_database(self):
         return self.get_code_src_directory()
-    
+
     @legacy_function
     def new_zams_star():
         """
@@ -62,7 +62,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('mass', dtype='float64', unit=units.MSun, direction=function.IN)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def new_prems_star():
         """
@@ -74,7 +74,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('mass', dtype='float64', unit=units.MSun, direction=function.IN)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def new_star_from_file():
         """
@@ -86,7 +86,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('filename', dtype='string', direction=function.IN)
         function.result_type = 'int32'
         return function
-    
+
     def new_particle_method(self, mass=0|units.MSun, pms=False, internal_structure=None, filename=None):
         if not filename is None:
             return self.new_star_from_file(filename)
@@ -111,7 +111,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         else:
             return self.new_zams_star(mass)
     new_particle = None
-    
+
     @legacy_function
     def get_maximum_number_of_stars():
         """
@@ -127,8 +127,8 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             Current value of was retrieved
         """
         return function
-        
-    
+
+
     @legacy_function
     def set_maximum_number_of_stars():
         """
@@ -148,7 +148,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             The code cannot update the maximum number of stars
         """
         return function
-    
+
     @legacy_function
     def set_ev_path():
         """
@@ -158,7 +158,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('path', dtype='string', direction=function.IN)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def get_max_age_stop_condition():
         """
@@ -169,20 +169,20 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('max_age_stop_condition', dtype='float64', direction=function.OUT, unit=units.yr)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_max_age_stop_condition():
         """
         Set the new maximum age stop condition of this instance (in years).
         Evolution will stop once the star has reached this maximum age.
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('max_age_stop_condition', dtype='float64', direction=function.IN, unit=units.yr)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_min_timestep_stop_condition():
         """
@@ -194,21 +194,21 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('min_timestep', dtype='float64', direction=function.OUT, unit=units.s)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_min_timestep_stop_condition():
         """
         Set the new minimum timestep stop condition of this instance (in seconds).
         Evolution will stop if the timestep required by the solver in order to converge
         has decreased below this minimum timestep.
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('min_timestep', dtype='float64', direction=function.IN, unit=units.s)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_convective_overshoot_parameter():
         """
@@ -219,12 +219,12 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The current value of the convective overshoot parameter.")
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_convective_overshoot_parameter():
         """
         Set the value of the convective overshoot parameter.
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -232,7 +232,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The new value of the convective overshoot parameter.")
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_mixing_length_ratio():
         """
@@ -243,12 +243,12 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The current value of the mixing length ratio.")
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_mixing_length_ratio():
         """
         Set the value of the mixing length ratio.
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -256,7 +256,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The new value of the mixing length ratio.")
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_semi_convection_efficiency():
         """
@@ -268,13 +268,13 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The current value of the efficiency of semi-convection.")
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_semi_convection_efficiency():
         """
         Set the value of the efficiency of semi-convection,
         after Langer, Sugimoto & Fricke 1983 (A&A).
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -282,7 +282,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The new value of the efficiency of semi-convection.")
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_thermohaline_efficiency():
         """
@@ -294,13 +294,13 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The current value of the thermohaline mixing parameter.")
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_thermohaline_efficiency():
         """
         Set the value of the thermohaline mixing parameter,
         probably only important for binaries and collision remnants.
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -308,7 +308,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The new value of the thermohaline mixing parameter.")
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_number_of_ionization_elements():
         """
@@ -322,7 +322,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The current number of elements used for ionization in EoS solver of this instance.")
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_number_of_ionization_elements():
         """
@@ -330,7 +330,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         With the default value (2), only the ionization of H and He are taken into account
         in the EoS. For values 3, 4, 5, 6, 7, 8, 9:
         the elements:          C, N, O, Ne,Mg,Si,Fe are also included. Don't try 9.
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -338,8 +338,8 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The new number of elements used for ionization in EoS solver of this instance.")
         function.result_type = 'int32'
         return function
-    
-    @legacy_function   
+
+    @legacy_function
     def get_manual_mass_transfer_rate():
         """
         Retrieve the current user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
@@ -350,8 +350,8 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('mass_change', dtype='float64', unit=units.MSun/units.yr, direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
-    @legacy_function   
+
+    @legacy_function
     def set_manual_mass_transfer_rate():
         """
         Set a new user-specified mass transfer rate of the star. (negative for winds, positive for accretion)
@@ -362,7 +362,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('mass_change', dtype='float64', unit=units.MSun/units.yr, direction=function.IN)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def get_wind_multiplier():
         """
@@ -374,7 +374,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('wind_multiplier', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_wind_multiplier():
         """
@@ -386,7 +386,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('wind_multiplier', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_AGB_wind_setting():
         """
@@ -399,14 +399,14 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The current AGB wind setting of this instance.")
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_AGB_wind_setting():
         """
         Set the new AGB wind setting of this instance (1 or 2).
         (1) means use Wachter et al. (AGB) mass loss prescription.
         (2) means use Vasiliadis & Wood (AGB) mass loss rate.
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -414,7 +414,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The new AGB wind setting of this instance.")
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_RGB_wind_setting():
         """
@@ -428,7 +428,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The current RGB wind setting of this instance.")
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_RGB_wind_setting():
         """
@@ -436,7 +436,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         (positive) means use Schroeder & Cuntz mass loss prescription.
         (negative) means use Reimers mass loss rate. (0) means none.
         The absolute value is used as efficiency factor.
-        This needs to be set after calling :method:`initialize_code`. It will 
+        This needs to be set after calling :method:`initialize_code`. It will
         be overridden by initialize_code otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -444,22 +444,22 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The new RGB wind setting of this instance.")
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_Ostar_wind_setting():
         """
-        Retrieve the current wind setting for O/B stars, i.e. the efficiency 
+        Retrieve the current wind setting for O/B stars, i.e. the efficiency
         factor of the Vink et al. wind prescription.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('Ostar_wind_setting', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def set_Ostar_wind_setting():
         """
-        Set the new wind setting for O/B stars, i.e. the efficiency 
+        Set the new wind setting for O/B stars, i.e. the efficiency
         factor of the Vink et al. wind prescription.
         """
         function = LegacyFunctionSpecification()
@@ -479,7 +479,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('verbosity', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
-    
+
     @legacy_function
     def get_spin():
         """
@@ -493,14 +493,14 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             , description="The current spin period (in days) of this star.")
         function.result_type = 'int32'
         return function
-    
-#~    @legacy_function   
+
+#~    @legacy_function
 #~    def get_mass_transfer_rate():
 #~        """
 #~        Retrieve the current mass transfer of the star to the other star.
 #~        """
 #~        function = LegacyFunctionSpecification()
-#~        function.can_handle_array = True 
+#~        function.can_handle_array = True
 #~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
 #~            , description="The index of the star to get the value of")
 #~        function.addParameter('value', dtype='float64', direction=function.OUT
@@ -513,33 +513,33 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
 #~            A star with the given index was not found.
 #~        """
 #~        return function
-        
-        
-    
-    @legacy_function   
+
+
+
+    @legacy_function
     def get_wind_mass_loss_rate():
         """
         Retrieve the current mass loss rate of the star due to stellar wind.
         """
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True 
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.OUT
             , description="The mass loss rate of the star due to stellar wind.")
         function.result_type = 'int32'
         return function
-    
-    @legacy_function   
+
+    @legacy_function
     def new_stellar_model():
         """
-        Define a new star model in the code. The star needs to be finalized 
+        Define a new star model in the code. The star needs to be finalized
         before it can evolve, see 'finalize_stellar_model'.
         """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT)
-        for par in ['mass', 'radius', 'rho', 'pressure', 'X_H', 'X_He', 'X_C', 
+        for par in ['mass', 'radius', 'rho', 'pressure', 'X_H', 'X_He', 'X_C',
                 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
             function.addParameter(par, dtype='float64', direction=function.IN)
         function.addParameter('n', 'int32', function.LENGTH)
@@ -547,7 +547,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         return function
     new_stellar_model = None # Temporarily turned off, until import_stellar_merger is fixed
 
-    
+
 #~    @legacy_function
 #~    def get_stellar_model_element():
 #~        """
@@ -555,18 +555,18 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
 #~        """
 #~        function = LegacyFunctionSpecification()
 #~        function.can_handle_array = True
-#~        function.addParameter('index_of_the_zone', dtype='int32', direction=function.IN, 
+#~        function.addParameter('index_of_the_zone', dtype='int32', direction=function.IN,
 #~            description="The index of the zone to get the values of")
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN, 
+#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN,
 #~            description="The index of the star to get the values of")
-#~        for par in ['d_mass', 'mass', 'radius', 'density', 'pressure', 
-#~                'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H', 
+#~        for par in ['d_mass', 'mass', 'radius', 'density', 'pressure',
+#~                'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H',
 #~                'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
 #~            function.addParameter(par, dtype='float64', direction=function.OUT)
 #~        function.result_type = 'int32'
 #~        return function
-    
-    @legacy_function   
+
+    @legacy_function
     def write_star_to_file():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
@@ -574,133 +574,133 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.addParameter('filename', dtype='string', direction=function.IN)
         function.result_type = 'int32'
         return function
-    
+
 
 
 class EVtwin(StellarEvolution, InternalStellarStructure):
-    
+
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, EVtwinInterface(**options), **options)
         self.model_time = 0.0 | units.yr
-    
+
     def define_parameters(self, object):
         object.add_boolean_parameter(
-            "get_verbosity", 
+            "get_verbosity",
             "set_verbosity",
-            "verbosity", 
-            "The level of terminal output, verbose or not.", 
+            "verbosity",
+            "The level of terminal output, verbose or not.",
             default_value = False
         )
-        
+
         object.add_method_parameter(
             "get_maximum_number_of_stars",
             "set_maximum_number_of_stars",
-            "maximum_number_of_stars", 
-            "Maximum number of stars that can be allocated", 
+            "maximum_number_of_stars",
+            "Maximum number of stars that can be allocated",
             default_value = 10
         )
-        
+
         object.add_method_parameter(
             "get_metallicity",
             "set_metallicity",
-            "metallicity", 
-            "Metallicity of all stats", 
+            "metallicity",
+            "Metallicity of all stats",
             default_value = 0.02
         )
-        
+
         object.add_method_parameter(
             None,
             "set_ev_path",
-            "path_to_data", 
-            "Path to the data directory", 
+            "path_to_data",
+            "Path to the data directory",
             default_value = self.data_directory
         )
-        
+
         object.add_method_parameter(
             "get_max_age_stop_condition",
             "set_max_age_stop_condition",
-            "max_age_stop_condition", 
+            "max_age_stop_condition",
             "The maximum age stop condition of this instance.",
             default_value = 1.0e12 | units.yr
         )
-        
+
         object.add_method_parameter(
             "get_min_timestep_stop_condition",
             "set_min_timestep_stop_condition",
-            "min_timestep_stop_condition", 
+            "min_timestep_stop_condition",
             "The minimum timestep stop condition of this instance.",
             default_value = 1.0e6 | units.s
         )
-        
+
         object.add_method_parameter(
             "get_number_of_ionization_elements",
             "set_number_of_ionization_elements",
-            "number_of_ionization_elements", 
+            "number_of_ionization_elements",
             "The number of elements used for ionization in EoS solver of this instance.",
             default_value = 2
         )
-        
+
         object.add_method_parameter(
             "get_convective_overshoot_parameter",
             "set_convective_overshoot_parameter",
-            "convective_overshoot_parameter", 
+            "convective_overshoot_parameter",
             "The convective overshoot parameter.",
             default_value = 0.12
         )
-        
+
         object.add_method_parameter(
             "get_mixing_length_ratio",
             "set_mixing_length_ratio",
-            "mixing_length_ratio", 
+            "mixing_length_ratio",
             "The mixing-length ratio (alpha).",
             default_value = 2.0
         )
-        
+
         object.add_method_parameter(
             "get_semi_convection_efficiency",
             "set_semi_convection_efficiency",
-            "semi_convection_efficiency", 
+            "semi_convection_efficiency",
             "The efficiency of semi-convection, after Langer, Sugimoto & Fricke 1983 (A&A).",
             default_value = 0.04
         )
-        
+
         object.add_method_parameter(
             "get_thermohaline_efficiency",
             "set_thermohaline_efficiency",
-            "thermohaline_efficiency", 
+            "thermohaline_efficiency",
             "The thermohaline mixing parameter, probably only important for binaries and collision remnants.",
             default_value = 1.0
         )
-        
+
         object.add_method_parameter(
             "get_AGB_wind_setting",
             "set_AGB_wind_setting",
-            "AGB_wind_setting", 
+            "AGB_wind_setting",
             "The AGB wind setting: (1, 2) for (Wachter&al, Vasiliadis&Wood) mass loss.",
             default_value = 1
         )
-        
+
         object.add_method_parameter(
             "get_RGB_wind_setting",
             "set_RGB_wind_setting",
-            "RGB_wind_setting", 
+            "RGB_wind_setting",
             "The RGB wind setting: (positive, negative, 0) for (Schroeder&Cuntz, Reimers, none) mass loss.",
             default_value = 1.0
         )
-        
+
         object.add_method_parameter(
             "get_Ostar_wind_setting",
             "set_Ostar_wind_setting",
-            "OB_wind_setting", 
+            "OB_wind_setting",
             "The wind setting for O/B stars, i.e. the efficiency factor of the Vink et al. wind prescription",
             default_value = 1.0
         )
-    
+
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_star')
         object.set_new('particles', 'new_particle_method')
         object.set_delete('particles', 'delete_star')
-        
+
         object.add_getter('particles', 'get_radius', names = ('radius',))
         object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
         object.add_getter('particles', 'get_mass', names = ('mass',))
@@ -709,24 +709,27 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         object.add_getter('particles', 'get_spin', names = ('spin',))
         object.add_getter('particles', 'get_luminosity', names = ('luminosity',))
         object.add_getter('particles', 'get_temperature', names = ('temperature',))
+        object.add_getter('particles', 'get_manual_mass_transfer_rate', names = ('mass_transfer_rate',))
+        object.add_setter('particles', 'set_manual_mass_transfer_rate', names = ('mass_transfer_rate',))
+
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
         InternalStellarStructure.define_particle_sets(self, object, set_name = 'particles')
-        object.add_method('particles', 'get_stellar_model', 'internal_structure') 
-        object.add_method('particles', 'write_star_to_file') 
+        object.add_method('particles', 'get_stellar_model', 'internal_structure')
+        object.add_method('particles', 'write_star_to_file')
 
-        
-#~        object.define_super_set('particles', ['native_stars', 'imported_stars'], 
+
+#~        object.define_super_set('particles', ['native_stars', 'imported_stars'],
 #~            index_to_default_set = 0)
-#~        
+#~
 #~        object.define_set('imported_stars', 'index_of_the_star')
 #~        object.set_new('imported_stars', 'finalize_stellar_model')
 #~        object.set_delete('imported_stars', 'delete_star')
-#~        
+#~
 #~        object.define_set('native_stars', 'index_of_the_star')
 #~        object.set_new('native_stars', 'new_particle')
 #~        object.set_delete('native_stars', 'delete_star')
-#~        
+#~
 #~        for particle_set_name in ['native_stars', 'imported_stars']:
 #~            object.add_getter(particle_set_name, 'get_radius', names = ('radius',))
 #~            object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
@@ -739,9 +742,9 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
 #~            object.add_method(particle_set_name, 'evolve_one_step')
 #~            object.add_method(particle_set_name, 'evolve_for')
 #~            InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
-#~            object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
-#~            object.add_method(particle_set_name, 'write_star_to_file') 
-    
+#~            object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure')
+#~            object.add_method(particle_set_name, 'write_star_to_file')
+
     def define_state(self, object):
         StellarEvolution.define_state(self, object)
         object.add_method('EDIT', 'finalize_stellar_model')
@@ -750,12 +753,12 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         object.add_method('EDIT', 'new_particle_method')
         object.add_method('UPDATE', 'new_particle_method')
         object.add_transition('RUN', 'UPDATE', 'new_particle_method', False)
-    
+
     def define_errorcodes(self, object):
-        object.add_errorcode(5, 'Age greater than maximum age limit.') 
+        object.add_errorcode(5, 'Age greater than maximum age limit.')
         object.add_errorcode(2, 'BACKUP -- tstep reduced below limit; quit')
         InternalStellarStructure.define_errorcodes(self, object)
-    
+
     def define_methods(self, object):
         InternalStellarStructure.define_methods(self, object)
         StellarEvolution.define_methods(self, object)
@@ -775,65 +778,65 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             (units.MSun/units.yr, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_spin", 
-            (object.INDEX,), 
+            "get_spin",
+            (object.INDEX,),
             (units.day, object.ERROR_CODE,)
         )
         object.add_method(
-            "new_stellar_model", 
-            (units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,), 
+            "new_stellar_model",
+            (units.MSun, units.RSun, units.g / units.cm**3, units.barye,
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
         object.add_method(
-            "finalize_stellar_model", 
-            (units.yr,), 
+            "finalize_stellar_model",
+            (units.yr,),
             (object.INDEX, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_stellar_model_element", 
+            "get_stellar_model_element",
             (object.INDEX, object.INDEX,),
-            (units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+            (units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye,
                 object.NO_UNIT, units.K, units.LSun, units.amu,
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
+                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,
                 object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE)
         )
-    
+
     def initialize_module_with_default_parameters(self):
         self.initialize_code()
         self.commit_parameters()
-        
+
     def initialize_module_with_current_parameters(self):
         self.commit_parameters()
-        
+
     def setup_particles(self, particles):
         self.particles.add_particles(particles)
-        
+
     def commit_parameters(self):
         self.parameters.send_not_set_parameters_to_code()
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
-                
+
     def get_stellar_model(self, index_of_the_star):
         if hasattr(index_of_the_star, '__iter__'):
             return [self._create_new_grid(self._specify_stellar_model, index_of_the_star = x) for x in index_of_the_star]
         else:
             return self._create_new_grid(self._specify_stellar_model, index_of_the_star = index_of_the_star)
-    
+
     def get_range_in_zones(self, index_of_the_star):
         """
         Returns the inclusive range of defined zones/mesh-cells of the star.
         """
         return (1, self.get_number_of_zones(index_of_the_star))
-    
+
     def _specify_stellar_model(self, definition, index_of_the_star = 0):
         definition.set_grid_range('get_range_in_zones')
-        definition.add_getter('get_stellar_model_element', names=('d_mass', 'mass', 'radius', 
-            'rho', 'pressure', 'entropy', 'temperature', 'luminosity', 'molecular_weight', 
+        definition.add_getter('get_stellar_model_element', names=('d_mass', 'mass', 'radius',
+            'rho', 'pressure', 'entropy', 'temperature', 'luminosity', 'molecular_weight',
             'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
         definition.define_extra_keywords({'index_of_the_star':index_of_the_star})
-    
+
     def new_particle_from_model(self, internal_structure, current_age, key=None):
         self.new_stellar_model(
             internal_structure.mass[::-1],
@@ -853,7 +856,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         tmp_star = datamodel.Particle(key=key)
         tmp_star.age_tag = current_age
         return self.imported_stars.add_particle(tmp_star)
-    
+
     def new_particle_from_model2(self, internal_structure, current_age, key=None):
         if isinstance(internal_structure, dict):
             if "dmass" in internal_structure:
