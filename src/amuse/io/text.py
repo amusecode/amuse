@@ -134,7 +134,7 @@ class TableFormattedText(base.FileFormatProcessor):
         List of the data types of the attributes. If not given, the 
         data types will be float64.
         """
-        return self._get_attribute_types()
+        return self._get_attribute_dtypes()
     
     def _get_attribute_dtypes(self):
         return [None] * len(self.attribute_names)
