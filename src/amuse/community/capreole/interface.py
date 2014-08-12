@@ -803,7 +803,7 @@ class Capreole(CommonCode):
                     'get_gravity_field',
                     'get_boundary_state',
                     'set_boundary_state',
-                    'get_boundary_position_if_index',
+                    'get_boundary_position_of_index',
                     'get_boundary_index_range_inclusive'
                 ]:
                 object.add_method(state, methodname)    
