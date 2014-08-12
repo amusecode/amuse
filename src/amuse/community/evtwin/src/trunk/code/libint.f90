@@ -132,9 +132,10 @@ module twinlib
    ! Temporary storage of amuse parameters
    character(len = 1000), private :: amuse_ev_path
    integer, private :: amuse_nstars, amuse_nmesh, amuse_kion
-   logical, private :: amuse_verbose
+   logical :: amuse_verbose
    real(double), private :: amuse_Z, amuse_csmc, amuse_calp, amuse_cos
    real(double), private :: amuse_cth, amuse_maxage, amuse_mindt
+   real(double) :: amuse_entropy_accuracy, amuse_entropy_force
    
    ! List private subroutines that should not be called directly
    private initialise_stellar_parameters, allocate_star, swap_in, swap_out, select_star, make_zahb_model
@@ -2090,6 +2091,32 @@ contains
       end if
    end function set_verbosity
 
+   integer function get_import_model_entropy_accuracy(value)
+      implicit none
+      real(double), intent(out) :: value
+      value = amuse_entropy_accuracy
+      get_import_model_entropy_accuracy = 0
+   end function
+   integer function set_import_model_entropy_accuracy(value)
+      implicit none
+      real(double), intent(in) :: value
+      amuse_entropy_accuracy = value
+      set_import_model_entropy_accuracy = 0
+   end function
+   
+   integer function get_import_model_entropy_force(value)
+      implicit none
+      real(double), intent(out) :: value
+      value = amuse_entropy_force
+      get_import_model_entropy_force = 0
+   end function
+   integer function set_import_model_entropy_force(value)
+      implicit none
+      real(double), intent(in) :: value
+      amuse_entropy_force = value
+      set_import_model_entropy_force = 0
+   end function
+   
    integer function initialize_code()
       implicit none
       amuse_ev_path = 'src/trunk'
@@ -2104,6 +2131,8 @@ contains
       amuse_calp = 2.0d0
       amuse_mindt = 1.0d6
       amuse_maxage = 2.0d12
+      amuse_entropy_accuracy = 1.0d-4
+      amuse_entropy_force = 20.0d0
       initialize_code = 0
    end function
 
@@ -2584,7 +2613,7 @@ contains
       molecular_weight = sx(31, 1 + zone)
 
       ! Convert *all* abundances to mass fractions
-      zone_index = star_list(star_id)%number_of_meshpoints - zone
+      zone_index = star_list(star_id)%number_of_meshpoints - zone + 1
       xa(1) = h(VAR_H1, zone_index)
       xa(2) = h(VAR_HE4, zone_index)
       xa(3) = h(VAR_C12, zone_index)

@@ -1,4 +1,5 @@
 import os.path
+from amuse.support import exceptions
 from amuse.community import *
 from amuse.community.interface.se import StellarEvolution, StellarEvolutionInterface, \
     InternalStellarStructure, InternalStellarStructureInterface
@@ -87,25 +88,32 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.result_type = 'int32'
         return function
 
-    def new_particle_method(self, mass=0|units.MSun, pms=False, internal_structure=None, filename=None):
+    def new_particle_with_internal_structure(self, internal_structure):
+        if len(internal_structure) > 1:
+            raise exceptions.AmuseException("Can only add one particle with internal structure at a time.")
+        internal_structure = internal_structure[0]
+        self.new_stellar_model(
+            internal_structure.mass[::-1].value_in(units.MSun),
+            internal_structure.radius[::-1].value_in(units.RSun),
+            internal_structure.rho[::-1].value_in(units.g / units.cm**3),
+            internal_structure.pressure[::-1].value_in(units.barye),
+            internal_structure.X_H[::-1],
+            internal_structure.X_He[::-1],
+            internal_structure.X_C[::-1],
+            internal_structure.X_N[::-1],
+            internal_structure.X_O[::-1],
+            internal_structure.X_Ne[::-1],
+            internal_structure.X_Mg[::-1],
+            internal_structure.X_Si[::-1],
+            internal_structure.X_Fe[::-1]
+        )
+        return self.finalize_stellar_model([0.0])
+    
+    def new_particle_method(self, mass=None, pms=False, internal_structure=None, filename=None):
         if not filename is None:
             return self.new_star_from_file(filename)
         if not internal_structure is None:
-            return self.new_stellar_model(
-                internal_structure.mass[::-1],
-                internal_structure.radius[::-1],
-                internal_structure.rho[::-1],
-                internal_structure.pressure[::-1],
-                internal_structure.X_H[::-1],
-                internal_structure.X_He[::-1],
-                internal_structure.X_C[::-1],
-                internal_structure.X_N[::-1],
-                internal_structure.X_O[::-1],
-                internal_structure.X_Ne[::-1],
-                internal_structure.X_Mg[::-1],
-                internal_structure.X_Si[::-1],
-                internal_structure.X_Fe[::-1]
-            )
+            return self.new_particle_with_internal_structure(internal_structure)
         if pms:
             return self.new_prems_star(mass)
         else:
@@ -532,39 +540,83 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
 
     @legacy_function
     def new_stellar_model():
-        """
-        Define a new star model in the code. The star needs to be finalized
-        before it can evolve, see 'finalize_stellar_model'.
-        """
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT)
-        for par in ['mass', 'radius', 'rho', 'pressure', 'X_H', 'X_He', 'X_C',
-                'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
+        function.addParameter('mass', dtype='float64', unit=units.MSun, direction=function.IN)
+        function.addParameter('radius', dtype='float64', unit=units.RSun, direction=function.IN)
+        function.addParameter('rho', dtype='float64', unit=units.g / units.cm**3, direction=function.IN)
+        function.addParameter('pressure', dtype='float64', unit=units.barye, direction=function.IN)
+        for par in ['X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
             function.addParameter(par, dtype='float64', direction=function.IN)
         function.addParameter('n', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
-    new_stellar_model = None # Temporarily turned off, until import_stellar_merger is fixed
+    
+    @legacy_function   
+    def finalize_stellar_model():
+        """
+        Finalize the new star model defined by 'new_stellar_model'.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT)
+        function.addParameter('age_tag', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_import_model_entropy_accuracy():
+        """
+        Retrieve the current value of the entropy accuracy required for convergence, 
+        used when importing stellar (merger) models.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('import_model_entropy_accuracy', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_import_model_entropy_accuracy():
+        function = LegacyFunctionSpecification()
+        function.addParameter('import_model_entropy_accuracy', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_import_model_entropy_force():
+        """
+        Retrieve the current value of entropy_force, used when importing stellar 
+        (merger) models. It indicates how hard EVtwin tries to match the entropy profile.
+        Higher values give better agreement, but may be harder to evolve succesfully.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('import_model_entropy_force', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_import_model_entropy_force():
+        function = LegacyFunctionSpecification()
+        function.addParameter('import_model_entropy_force', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
 
 
-#~    @legacy_function
-#~    def get_stellar_model_element():
-#~        """
-#~        Return properties of the stellar model at a specific zone.
-#~        """
-#~        function = LegacyFunctionSpecification()
-#~        function.can_handle_array = True
-#~        function.addParameter('index_of_the_zone', dtype='int32', direction=function.IN,
-#~            description="The index of the zone to get the values of")
-#~        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN,
-#~            description="The index of the star to get the values of")
-#~        for par in ['d_mass', 'mass', 'radius', 'density', 'pressure',
-#~                'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H',
-#~                'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
-#~            function.addParameter(par, dtype='float64', direction=function.OUT)
-#~        function.result_type = 'int32'
-#~        return function
+    @legacy_function
+    def get_stellar_model_element():
+        """
+        Return properties of the stellar model at a specific zone.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_zone', dtype='int32', direction=function.IN, 
+            description="The index of the zone to get the values of")
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN, 
+            description="The index of the star to get the values of")
+        for par in ['d_mass', 'mass', 'radius', 'density', 'pressure', 
+                'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H', 
+                'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
+            function.addParameter(par, dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
 
     @legacy_function
     def write_star_to_file():
@@ -695,7 +747,25 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "The wind setting for O/B stars, i.e. the efficiency factor of the Vink et al. wind prescription",
             default_value = 1.0
         )
-
+        
+        object.add_method_parameter(
+            "get_import_model_entropy_accuracy",
+            "set_import_model_entropy_accuracy",
+            "import_model_entropy_accuracy", 
+            "The entropy accuracy required for convergence, used when importing stellar (merger) models.",
+            default_value = 1.0e-4
+        )
+        
+        object.add_method_parameter(
+            "get_import_model_entropy_force",
+            "set_import_model_entropy_force",
+            "import_model_entropy_force", 
+            "The current value of entropy_force, used when importing stellar (merger) models."
+                " It indicates how hard EVtwin tries to match the entropy profile."
+                " Higher values give better agreement, but may be harder to evolve succesfully.",
+            default_value = 20.0
+        )
+    
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_star')
         object.set_new('particles', 'new_particle_method')
@@ -717,39 +787,9 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         InternalStellarStructure.define_particle_sets(self, object, set_name = 'particles')
         object.add_method('particles', 'get_stellar_model', 'internal_structure')
         object.add_method('particles', 'write_star_to_file')
-
-
-#~        object.define_super_set('particles', ['native_stars', 'imported_stars'],
-#~            index_to_default_set = 0)
-#~
-#~        object.define_set('imported_stars', 'index_of_the_star')
-#~        object.set_new('imported_stars', 'finalize_stellar_model')
-#~        object.set_delete('imported_stars', 'delete_star')
-#~
-#~        object.define_set('native_stars', 'index_of_the_star')
-#~        object.set_new('native_stars', 'new_particle')
-#~        object.set_delete('native_stars', 'delete_star')
-#~
-#~        for particle_set_name in ['native_stars', 'imported_stars']:
-#~            object.add_getter(particle_set_name, 'get_radius', names = ('radius',))
-#~            object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
-#~            object.add_getter(particle_set_name, 'get_mass', names = ('mass',))
-#~            object.add_getter(particle_set_name, 'get_age', names = ('age',))
-#~            object.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
-#~            object.add_getter(particle_set_name, 'get_spin', names = ('spin',))
-#~            object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
-#~            object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
-#~            object.add_method(particle_set_name, 'evolve_one_step')
-#~            object.add_method(particle_set_name, 'evolve_for')
-#~            InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
-#~            object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure')
-#~            object.add_method(particle_set_name, 'write_star_to_file')
-
+    
     def define_state(self, object):
         StellarEvolution.define_state(self, object)
-        object.add_method('EDIT', 'finalize_stellar_model')
-        object.add_method('UPDATE', 'finalize_stellar_model')
-        object.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
         object.add_method('EDIT', 'new_particle_method')
         object.add_method('UPDATE', 'new_particle_method')
         object.add_transition('RUN', 'UPDATE', 'new_particle_method', False)
@@ -781,13 +821,6 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "get_spin",
             (object.INDEX,),
             (units.day, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "new_stellar_model",
-            (units.MSun, units.RSun, units.g / units.cm**3, units.barye,
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
-            (object.ERROR_CODE,)
         )
         object.add_method(
             "finalize_stellar_model",
@@ -837,71 +870,8 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
         definition.define_extra_keywords({'index_of_the_star':index_of_the_star})
 
-    def new_particle_from_model(self, internal_structure, current_age, key=None):
-        self.new_stellar_model(
-            internal_structure.mass[::-1],
-            internal_structure.radius[::-1],
-            internal_structure.rho[::-1],
-            internal_structure.pressure[::-1],
-            internal_structure.X_H[::-1],
-            internal_structure.X_He[::-1],
-            internal_structure.X_C[::-1],
-            internal_structure.X_N[::-1],
-            internal_structure.X_O[::-1],
-            internal_structure.X_Ne[::-1],
-            internal_structure.X_Mg[::-1],
-            internal_structure.X_Si[::-1],
-            internal_structure.X_Fe[::-1]
-        )
+    def new_particle_from_model(self, internal_structure, key=None):
         tmp_star = datamodel.Particle(key=key)
-        tmp_star.age_tag = current_age
-        return self.imported_stars.add_particle(tmp_star)
+        tmp_star.internal_structure = internal_structure
+        return self.particles.add_particle(tmp_star)
 
-    def new_particle_from_model2(self, internal_structure, current_age, key=None):
-        if isinstance(internal_structure, dict):
-            if "dmass" in internal_structure:
-                mass_profile = internal_structure['dmass'][::-1]
-            else:
-                cumulative_mass_profile = [0.0] | units.MSun
-                cumulative_mass_profile.extend(internal_structure['mass'])
-                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
-            self.new_stellar_model(
-                mass_profile,
-                internal_structure['radius'][::-1],
-                internal_structure['rho'][::-1],
-                internal_structure['pressure'][::-1],
-                internal_structure['X_H'][::-1],
-                internal_structure['X_He'][::-1],
-                internal_structure['X_C'][::-1],
-                internal_structure['X_N'][::-1],
-                internal_structure['X_O'][::-1],
-                internal_structure['X_Ne'][::-1],
-                internal_structure['X_Mg'][::-1],
-                internal_structure['X_Si'][::-1],
-                internal_structure['X_Fe'][::-1]
-            )
-        else:
-            if hasattr(internal_structure, "dmass"):
-                mass_profile = internal_structure.dmass[::-1]
-            else:
-                cumulative_mass_profile = [0.0] | units.MSun
-                cumulative_mass_profile.extend(internal_structure.mass)
-                mass_profile = (cumulative_mass_profile[1:] - cumulative_mass_profile[:-1])[::-1]
-            self.new_stellar_model(
-                mass_profile,
-                internal_structure.radius[::-1],
-                internal_structure.rho[::-1],
-                internal_structure.pressure[::-1],
-                internal_structure.X_H[::-1],
-                internal_structure.X_He[::-1],
-                internal_structure.X_C[::-1],
-                internal_structure.X_N[::-1],
-                internal_structure.X_O[::-1],
-                internal_structure.X_Ne[::-1],
-                internal_structure.X_Mg[::-1],
-                internal_structure.X_Si[::-1],
-                internal_structure.X_Fe[::-1]
-            )
-        tmp_star = datamodel.Particle(key=key)
-        tmp_star.age_tag = current_age
-        return self.imported_stars.add_particle(tmp_star)
