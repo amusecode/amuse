@@ -62,18 +62,19 @@ class TestSPH2StellarModel(TestWithMPI):
         model = converter.derive_stellar_structure()
         for variable in ['dmass', 'radius', 'rho', 'temperature', 'luminosity', 'X_H', 
                 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
-            self.assertTrue(variable in model)
-            self.assertEqual(len(model[variable]), 500)
+            self.assertTrue(hasattr(model, variable))
+            self.assertEqual(len(getattr(model, variable)), 500)
     
     def test2(self):
         print "Test SPH2StellarModel result properties"
         converter = SPH2StellarModel(self.new_particles())
         model = converter.derive_stellar_structure() # model is from center to surface
-        self.assertTrue(numpy.all(model['radius'][:-1] <= model['radius'][1:])) # monotonically increasing
+        self.assertTrue(numpy.all(model.radius[:-1] <= model.radius[1:])) # monotonically increasing
+        self.assertTrue(numpy.all(model.mass[:-1] >= model.mass[1:])) # monotonically decreasing
         n=50 # following properties are not strictly monotonic, because of randomness in the particle distribution
-        self.assertTrue(numpy.all(model['temperature'][:-n:n] >= model['temperature'][n::n]))
-        self.assertTrue(numpy.all(model['rho'][:-n:n] >= model['rho'][n::n]))
-        self.assertTrue(numpy.all(model['X_H'][:-n:n] <= model['X_H'][n::n]))
+        self.assertTrue(numpy.all(model.temperature[:-n:n] >= model.temperature[n::n]))
+        self.assertTrue(numpy.all(model.rho[:-n:n] >= model.rho[n::n]))
+        self.assertTrue(numpy.all(model.X_H[:-n:n] <= model.X_H[n::n]))
     
     def slowtest3(self):
         print "Test convert_SPH_to_stellar_model result in MESA"
@@ -99,19 +100,20 @@ class TestSPH2StellarModel(TestWithMPI):
         model = convert_SPH_to_stellar_model(self.new_particles(), particles_per_zone=50)
         for variable in ['dmass', 'radius', 'rho', 'temperature', 'luminosity', 'X_H', 
                 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
-            self.assertTrue(variable in model)
-            self.assertEqual(len(model[variable]), 10)
+            self.assertTrue(hasattr(model, variable))
+            self.assertEqual(len(getattr(model, variable)), 10)
         
-        self.assertTrue(numpy.all(model['radius'][:-1] <= model['radius'][1:])) # monotonically increasing
-        self.assertTrue(numpy.all(model['temperature'][:-1] >= model['temperature'][1:]))
-        self.assertTrue(numpy.all(model['rho'][:-1] >= model['rho'][1:]))
-        self.assertTrue(numpy.all(model['X_H'][:-1] <= model['X_H'][1:]))
+        self.assertTrue(numpy.all(model.radius[:-1] <= model.radius[1:])) # monotonically increasing
+        self.assertTrue(numpy.all(model.mass[:-1] >= model.mass[1:])) # monotonically decreasing
+        self.assertTrue(numpy.all(model.temperature[:-1] >= model.temperature[1:]))
+        self.assertTrue(numpy.all(model.rho[:-1] >= model.rho[1:]))
+        self.assertTrue(numpy.all(model.X_H[:-1] <= model.X_H[1:]))
         
         lowres_model = convert_SPH_to_stellar_model(self.new_particles(), particles_per_zone=100)
-        self.assertAlmostRelativeEqual(model['dmass'].sum(), 1|units.MSun, 3)
-        self.assertAlmostRelativeEqual(lowres_model['dmass'].sum(), 1|units.MSun, 3)
-        self.assertAlmostRelativeEqual(lowres_model['radius'], model['radius'][1::2], 7)
-        self.assertAlmostRelativeEqual(lowres_model['X_H'], (model['X_H'][0::2]+model['X_H'][1::2])/2.0, 7)
+        self.assertAlmostRelativeEqual(model.dmass.sum(), 1|units.MSun, 3)
+        self.assertAlmostRelativeEqual(lowres_model.dmass.sum(), 1|units.MSun, 3)
+        self.assertAlmostRelativeEqual(lowres_model.radius, model.radius[1::2], 7)
+        self.assertAlmostRelativeEqual(lowres_model.X_H, (model.X_H[0::2]+model.X_H[1::2])/2.0, 7)
     
 
 
