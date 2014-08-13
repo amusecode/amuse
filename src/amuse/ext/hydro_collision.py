@@ -74,8 +74,8 @@ class StellarEncounterInHydrodynamics(object):
         
         result = Particles(len(self.models))
         result.add_function_attribute("internal_structure", None, internal_structure)
-        result.mass = [model["dmass"].sum().as_quantity_in(self.mass_unit) for model in self.models]
-        result.radius = [model["radius"][-1].as_quantity_in(self.radius_unit) for model in self.models]
+        result.mass = [model.dmass.sum().as_quantity_in(self.mass_unit) for model in self.models]
+        result.radius = [model.radius[-1].as_quantity_in(self.radius_unit) for model in self.models]
         result.position = (self.original_center_of_mass + self.stars_after_encounter.position).as_quantity_in(self.position_unit)
         result.velocity = (self.original_center_of_mass_velocity + self.stars_after_encounter.velocity).as_quantity_in(self.velocity_unit)
         return result
