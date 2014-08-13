@@ -1489,7 +1489,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             range(1,number_of_species+1)
         )
     
-    def new_particle_from_model(self, internal_structure, current_age, key=None):
+    def new_particle_from_model(self, internal_structure, current_age=0|units.Myr, key=None):
         if isinstance(internal_structure, dict):
             if "dmass" in internal_structure:
                 mass_profile = internal_structure['dmass'][::-1]

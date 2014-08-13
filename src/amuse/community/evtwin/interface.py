@@ -88,7 +88,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         function.result_type = 'int32'
         return function
 
-    def new_particle_with_internal_structure(self, internal_structure):
+    def new_particle_with_internal_structure(self, internal_structure, age_tag):
         if len(internal_structure) > 1:
             raise exceptions.AmuseException("Can only add one particle with internal structure at a time.")
         internal_structure = internal_structure[0]
@@ -107,13 +107,13 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             internal_structure.X_Si[::-1],
             internal_structure.X_Fe[::-1]
         )
-        return self.finalize_stellar_model([0.0])
+        return self.finalize_stellar_model([age_tag])
     
-    def new_particle_method(self, mass=None, pms=False, internal_structure=None, filename=None):
+    def new_particle_method(self, mass=None, pms=False, internal_structure=None, filename=None, age_tag=0):
         if not filename is None:
             return self.new_star_from_file(filename)
         if not internal_structure is None:
-            return self.new_particle_with_internal_structure(internal_structure)
+            return self.new_particle_with_internal_structure(internal_structure, age_tag)
         if pms:
             return self.new_prems_star(mass)
         else:
@@ -804,7 +804,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         StellarEvolution.define_methods(self, object)
         object.add_method(
             "new_particle_method",
-            (units.MSun, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT),
+            (units.MSun, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, units.yr),
             (object.INDEX, object.ERROR_CODE)
         )
         object.add_method(
@@ -870,8 +870,9 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
         definition.define_extra_keywords({'index_of_the_star':index_of_the_star})
 
-    def new_particle_from_model(self, internal_structure, key=None):
+    def new_particle_from_model(self, internal_structure, current_age=0|units.Myr, key=None):
         tmp_star = datamodel.Particle(key=key)
         tmp_star.internal_structure = internal_structure
+        tmp_star.age_tag = current_age
         return self.particles.add_particle(tmp_star)
 

@@ -27,7 +27,7 @@ class SPH2StellarModel(object):
         
         stellar_model = Grid(binned.shape[0])
         stellar_model.dmass = self.sph_particles.mass[binned].sum(axis=1)
-        stellar_model.mass = stellar_model.dmass[::-1].accumulate()[::-1]
+        stellar_model.mass = stellar_model.dmass.accumulate()
         stellar_model.pressure= self.sph_particles.pressure[binned].sum(axis=1)
         stellar_model.rho = stellar_model.dmass / (self.sph_particles.mass / self.sph_particles.density)[binned].sum(axis=1)
         stellar_model.radius = ((3 / (4 * numpy.pi)) * stellar_model.dmass / stellar_model.rho).accumulate()**(1.0/3.0) * 1
