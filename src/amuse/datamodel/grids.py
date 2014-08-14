@@ -176,6 +176,9 @@ class Grid(AbstractGrid):
         
     def set_values_in_store(self, indices, attributes, values, by_key = True):
         self._private.attribute_storage.set_values_in_store(indices, attributes, values)
+        
+    def set_values_in_store_async(self, indices, attributes, values, by_key = True):
+        return self._private.attribute_storage.set_values_in_store_async(indices, attributes, values)
 
     def get_attribute_names_defined_in_store(self):
         return self._private.attribute_storage.get_defined_attribute_names()
@@ -257,6 +260,10 @@ class SubGrid(AbstractGrid):
     def set_values_in_store(self, indices, attributes, values, by_key = True):
         combined_index = indexing.combine_indices(self._private.indices, indices)
         self._private.grid.set_values_in_store(combined_index, attributes, values)
+        
+    def set_values_in_store_async(self, indices, attributes, values, by_key = True):
+        combined_index = indexing.combine_indices(self._private.indices, indices)
+        return self._private.grid.set_values_in_store_async(combined_index, attributes, values)
             
     def get_all_keys_in_store(self):
         return None
@@ -344,6 +351,22 @@ class GridInformationChannel(object):
                 
         self.target.set_values_in_store(self.index, attributes, converted)
     
+    
+    def get_values(self, attributes):
+        values = self.source.get_values_in_store(self.index, attributes)
+        converted = []
+        for x in values:
+            if isinstance(x, LinkedArray):
+                converted.append(x.copy_with_link_transfer(self.source, self.target))
+            else:
+                converted.append(x)
+        return converted
+        
+    def get_overlapping_attributes(self):
+        from_names = self.source.get_attribute_names_defined_in_store()
+        to_names = self.target.get_defined_settable_attribute_names()
+        names_to_copy = set(from_names).intersection(set(to_names))
+        return list(names_to_copy)
         
     def copy(self):
         if not self.target.can_extend_attributes():

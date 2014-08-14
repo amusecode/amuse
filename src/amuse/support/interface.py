@@ -8,7 +8,7 @@ from amuse.units import units
 from amuse.support.options import OptionalAttributes, option
 
 from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition, IncorrectWrappedMethodException
-
+from amuse.support.methods import ProxyingMethodWrapper
 from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.support import state
@@ -161,7 +161,11 @@ class LegacyInterfaceHandler(HandleCodeInterfaceAttributeAccess):
         return hasattr(self.legacy_interface, name)
 
     def get_attribute(self, name, result):
-        return getattr(self.legacy_interface, name)
+        attr = getattr(self.legacy_interface, name)
+        if hasattr(attr, '__call__'):
+            return ProxyingMethodWrapper(self.legacy_interface, name)
+        else:
+            return attr
 
     def attribute_names(self):
         return set(dir(self.legacy_interface))
@@ -1232,8 +1236,7 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         self.interface = interface
         self.mapping_from_name_to_set_definition = {}
         self.mapping_from_name_to_set_instance = {}
-
-
+        
     def supports(self, name, was_found):
         return name in self.mapping_from_name_to_set_definition
 

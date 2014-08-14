@@ -468,7 +468,7 @@ class CsvFileText(TableFormattedText):
         result.append(self.column_separator.join(self.attribute_names))
         if self.must_store_units_in_header:
             result.append(self.column_separator.join(['-' if one_unit is None else one_unit.to_simple_form().reference_string() for one_unit in self.attribute_types]))
-        result.append(self.column_separator.join(map(str, self.attribute_types)))
+            result.append(self.column_separator.join(map(str, self.attribute_types)))
         return result
     
 class Athena3DText(TableFormattedText):

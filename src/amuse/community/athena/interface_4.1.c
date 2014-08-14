@@ -2456,14 +2456,17 @@ int evolve_model(double tlim) {
     } else {
         par_setd("time","tlim", "%.15e", 10.0 * tlim, "-"); /* far away */
     }
-
     //AMUSE STOPPING CONDITIONS SUPPORT
+    reset_stopping_conditions();
+    
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION,
                                           &is_number_of_steps_detection_enabled);
     error = is_stopping_condition_enabled(TIMEOUT_DETECTION, 
 					  &is_timeout_detection_enabled);
+                      
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
-    get_stopping_condition_timeout_parameter(&timeout);    
+    get_stopping_condition_timeout_parameter(&timeout); 
+       
     time(&clock_init);
     if(evolve_to_exact_time && mesh.time + mesh.dt > tlim) {
         if(mesh.time < tlim)

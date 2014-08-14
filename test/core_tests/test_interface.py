@@ -15,6 +15,7 @@ from amuse.units import nbody_system
 from amuse import datamodel
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
+
 class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
     class TestClass(object):
         
@@ -1181,7 +1182,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertAlmostRelativeEquals(method1([1]), 20 | units.kg)
         self.assertAlmostRelativeEquals(method2([1]), 10 | units.kg)
         
-    def xtest9(self):
+    def test9(self):
         original = ParticlesWithBindingInterface()
         
         instance = interface.InCodeComponentImplementation(original)

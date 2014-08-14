@@ -16,6 +16,7 @@ from amuse import datamodel
 from amuse.rfi import python_code
 from amuse.rfi.core import *
 from amuse.rfi.channel import AsyncRequestsPool
+from amuse.rfi.channel import ASyncRequestSequence
 from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
 
 class ForTestingInterface(PythonCodeInterface):
@@ -832,3 +833,71 @@ class TestInterface(TestWithMPI):
         self.assertEquals(errorcode[0], 0)
         self.assertEquals(result[0], "world")
         
+    def test28(self):
+        x = ForTestingInterface()
+        def next_request(index):
+            if index < 3:
+                return x.sleep.async(0.1)
+            else:
+                return None
+                
+        sequence = ASyncRequestSequence(next_request)
+        self.assertFalse(sequence.is_finished)
+        sequence.wait()
+        self.assertFalse(sequence.is_finished)
+        sequence.wait()
+        self.assertFalse(sequence.is_finished)
+        sequence.wait()
+        self.assertTrue(sequence.is_finished)
+        result = sequence.result()
+        self.assertEquals(len(result), 3)
+        x.stop()
+        
+        
+    def test29(self):
+        
+        pool = AsyncRequestsPool()
+        
+        x = ForTestingInterface()
+        y = ForTestingInterface()
+        sequenced_requests_indices = []
+        def next_request(index):
+            if index < 4:
+                sequenced_requests_indices.append(index)
+                return x.sleep.async(0.5)
+            else:
+                return None
+                
+        request1 = ASyncRequestSequence(next_request)
+        request2 = y.sleep.async(1.0)
+        finished_requests = []
+        
+        def handle_result(request, index):
+            self.assertTrue(request.is_result_available())
+            self.assertTrue(request.is_finished)
+            finished_requests.append(index)
+            
+        pool.add_request(request1, handle_result, [1])
+        pool.add_request(request2, handle_result, [2])
+        
+        pool.wait()
+        print finished_requests, sequenced_requests_indices
+        self.assertEquals(len(finished_requests), 1)
+        self.assertEquals(len(pool), 1)
+        self.assertEquals(finished_requests, [2])
+        self.assertTrue(len(sequenced_requests_indices)> 0)
+        
+        pool.wait()
+        self.assertEquals(len(finished_requests), 2)
+        self.assertEquals(len(pool), 0)
+        
+        self.assertEquals(sequenced_requests_indices, [0,1,2,3])
+        
+        self.assertTrue(request1.is_result_available())
+        self.assertTrue(request2.is_result_available())
+        
+        self.assertEquals(request1.result(), [0,0,0,0])
+        self.assertEquals(request2.result(), 0)
+        
+        y.stop()
+        x.stop()

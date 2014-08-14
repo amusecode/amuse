@@ -103,6 +103,8 @@ from amuse.datamodel import Particle
 from amuse.datamodel import Grid
 from amuse.datamodel import AttributeStorage
 
+from amuse.rfi.channel import ASyncRequestSequence
+
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
         AbstractCodeMethodWrapper.__init__(self, method)
@@ -319,6 +321,20 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
         list_arguments.extend(list_args)
         keyword_args.update(storage.extra_keyword_arguments_for_getters_and_setters)
         self.method(*list_arguments, **keyword_args)
+            
+        
+    def set_attribute_values_async(self, storage, attributes, values, *indices, **extra_keyword_arguments_for_getters_and_setters):
+        keyword_args = {}
+        keyword_args.update(storage.extra_keyword_arguments_for_getters_and_setters)
+        keyword_args.update(extra_keyword_arguments_for_getters_and_setters)
+        
+        list_arguments = list(indices)
+        list_args, keyword_args2 = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
+        keyword_args.update(keyword_args2)
+        list_arguments.extend(list_args)
+        async_request = self.method.async(*list_arguments, **keyword_args)
+        return async_request
+    
     
     def convert_attributes_and_values_to_list_and_keyword_arguments(self, attributes, values):
         not_set_marker = object()
@@ -393,9 +409,42 @@ class ParticleSetGriddedAttributesMethod(ParticleSetAttributesMethod):
             keyword_args[key] = value.reshape(-1)
         
         keyword_args.update(storage.extra_keyword_arguments_for_getters_and_setters)
-        
         self.method(*one_dimensional_arrays_of_args, **keyword_args)
-    
+        
+        
+        
+    def set_attribute_values_async(self, storage, attributes, values, *indices):
+        keyword_args = {}
+        keyword_args.update(storage.extra_keyword_arguments_for_getters_and_setters)
+        list_args, keyword_args2 = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
+        keyword_args.update(keyword_args2)
+        print keyword_args2
+        minmax_per_dimension = self.get_range_method( **storage.extra_keyword_arguments_for_getters_and_setters)
+        
+        result = [slice(0, len(indices[0]))]
+        for i in range(0, len(minmax_per_dimension), 2):
+            minval = minmax_per_dimension[i]
+            maxval = minmax_per_dimension[i+1]
+            result.append(slice(minval, maxval+1))
+        
+        grid_indices = numpy.mgrid[tuple(result)]
+        gridshape = grid_indices[0].shape
+        newshape = [1]*len(result)
+        newshape[0] = len(indices[0])
+        a =  numpy.array(indices[0]).reshape(newshape)
+        grid_indices[0] = a
+        
+        one_dimensional_arrays_of_indices = [x.reshape(-1) for x in grid_indices]
+        
+        list_arguments = list(grid_indices)
+        list_arguments.extend(list_args)
+        one_dimensional_arrays_of_args = [x.reshape(-1) for x in list_arguments]
+        
+        for key, value in keyword_args.iteritems():
+            keyword_args[key] = value.reshape(-1)
+        
+        async_request = self.method.async(*one_dimensional_arrays_of_args, **keyword_args)
+        return async_request
         
 
 class NewParticleMethod(ParticleSetAttributesMethod):
@@ -975,6 +1024,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     ):
         AbstractInCodeAttributeStorage.__init__(self, code_interface, setters, getters, extra_keyword_arguments_for_getters_and_setters)
         self.get_range_method = get_range_method
+        self._indices_grid = None
             
     def can_extend_attributes(self):
         return False
@@ -1001,14 +1051,16 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     
     def _to_arrays_of_indices(self, index):
         #imin, imax, jmin, jmax, kmin, kmax = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
-        minmax_per_dimension = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
-        result = []
-        for i in range(0, len(minmax_per_dimension), 2):
-            minval = minmax_per_dimension[i]
-            maxval = minmax_per_dimension[i+1]
-            result.append(slice(minval, maxval+1))
+        if self._indices_grid is None:
+            minmax_per_dimension = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
+            result = []
+            for i in range(0, len(minmax_per_dimension), 2):
+                minval = minmax_per_dimension[i]
+                maxval = minmax_per_dimension[i+1]
+                result.append(slice(minval, maxval+1))
 
-        indices = numpy.mgrid[tuple(result)]
+            self._indices_grid  = numpy.mgrid[tuple(result)]
+        indices = self._indices_grid 
         
         if index is None:
             return indices
@@ -1044,6 +1096,23 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(self, attributes, one_dimensional_values, *one_dimensional_array_of_indices)
      
+        
+    def set_values_in_store_async(self,  indices, attributes, quantities):
+        array_of_indices = self._to_arrays_of_indices(indices)
+    
+        one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
+        one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
+        selected_setters = list([setter for setter in self.select_setters_for(attributes)])
+        
+        def next_request(index, setters):
+            if index < len(setters):
+                setter = setters[index]
+                return setter.set_attribute_values_async(self, attributes, one_dimensional_values, *one_dimensional_array_of_indices)
+            else:
+                return None
+        
+        request = ASyncRequestSequence(next_request, args = (selected_setters,))
+        return request
         
     def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index

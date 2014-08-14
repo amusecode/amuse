@@ -174,6 +174,32 @@ class CodeMethodWrapperDefinition(object):
     
     
         
+class ProxyingMethodWrapper(AbstractCodeMethodWrapper):
+    
+    def __init__(self, code_interface, attribute_name):
+        self.code_interface = code_interface
+        self.attribute_name = attribute_name
+        self.method = getattr(code_interface, attribute_name)
+        
+    def __getstate__(self):
+        return {
+            "code_interface": self.code_interface,
+            "attribute_name": self.attribute_name
+        }
+    
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.method = getattr(self.code_interface, self.attribute_name)
+        
+    
+    def __call__(self, *list_arguments, **keyword_arguments):
+        return self.method(*list_arguments, **keyword_arguments)
+    
+    def async(self, *list_arguments, **keyword_arguments):
+        return self.method.async(*list_arguments, **keyword_arguments)
+
+    def __str__(self):
+        return 'wrapped<{0}>'.format(self.method)
 
 class IncorrectWrappedMethodException(exceptions.AmuseException):
     formatstring = "{0}"

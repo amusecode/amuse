@@ -76,7 +76,7 @@ class ASyncRequest(object):
                 self.args = args
                 
             def __call__(self):
-                return self.outer(self.inner)
+                return self.outer(self.inner, *self.args)
                 
         self.message.receive_content(self.comm, self.header)
         
@@ -185,6 +185,90 @@ class ASyncSocketRequest(object):
         return False
 
         
+
+class ASyncRequestSequence(object):
+        
+    def __init__(self, create_next_request, args = ()):
+        self.create_next_request = create_next_request
+        self.args = args
+        self.index = 0
+        self.current_async_request = self.create_next_request(self.index, *self.args)
+        self.request = self.current_async_request.request
+        self.is_finished = False
+        self.is_set = False
+        self._result = None
+        self.result_handlers = []
+        self.results = []
+
+    def wait(self):
+        if self.is_finished:
+            return
+            
+        self.current_async_request.wait()
+        
+        self.is_result_available()
+        
+    
+    def is_result_available(self):
+        if self.is_finished:
+            return True
+        
+        if self.current_async_request.is_result_available():
+            self.results.append(self.current_async_request.result())
+            self.index += 1
+            self.current_async_request = self.create_next_request(self.index, *self.args)
+            if not self.current_async_request is None:
+                self.request = self.current_async_request.request
+            
+        self.is_finished =  self.current_async_request is None
+        return self.is_finished
+        
+    def add_result_handler(self, function, args = ()):
+        self.result_handlers.append([function,args])
+    
+    def get_message(self):
+        return self.results
+        
+    def _set_result(self):
+        class CallingChain(object):
+            def __init__(self, outer, args,  inner):
+                self.outer = outer
+                self.inner = inner
+                self.args = args
+                
+            def __call__(self):
+                return self.outer(self.inner, *self.args)
+                
+        current = self.get_message
+        for x, args in self.result_handlers:
+            current = CallingChain(x, args, current)
+        
+        self._result = current()
+        
+        self.is_set = True
+        
+    def result(self):
+        self.wait()
+        
+        if not self.is_set:
+            self._set_result()
+        
+        return self._result
+        
+    def _new_handler(self, result_handler, args=(), kwargs={}):
+        return
+        
+    def is_mpi_request(self):
+        return self.current_async_request.is_mpi_request()
+        
+    def is_pool(self):
+        return False
+        
+    def join(self, other):
+        pool = AsyncRequestsPool()
+        pool.add_request(self, lambda x: x.result())
+        pool.add_request(other, lambda x: x.result())
+        return pool
         
 class AsyncRequestWithHandler(object):
     
@@ -221,55 +305,65 @@ class AsyncRequestsPool(object):
             )
         )
     
+    def waitall(self):
+        while len(self) > 0:
+            self.wait()
         
     def wait(self):
         
         # TODO need to cleanup this code
         #
-        requests = [x.async_request.request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
-        indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
-        
-        if len(requests) > 0:
-            index = MPI.Request.Waitany(requests)
-              
-            index = indices[index]
+        while len(self.requests_and_handlers) > 0:
+            requests = [x.async_request.request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
+            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
             
-            request_and_handler = self.requests_and_handlers[index]
-            
-            request_and_handler.async_request.wait()  # will set the finished flag
-            
-            if request_and_handler.async_request.is_result_available():
-                self.registered_requests.remove(request_and_handler.async_request)
-                
-                del self.requests_and_handlers[index]
-                
-                request_and_handler.run()
-            
-        
-        sockets = [x.async_request.socket for x in self.requests_and_handlers if not x.async_request.is_mpi_request()]
-        indices = [i for i, x in enumerate(self.requests_and_handlers) if not x.async_request.is_mpi_request()]
-        if len(sockets) > 0:
-            readable, _, _ = select.select(sockets, [], [])
-            indices_to_delete = []
-            for read_socket in readable:
-                
-                index = sockets.index(read_socket)
-                
+            if len(requests) > 0:
+                index = MPI.Request.Waitany(requests)
+                  
                 index = indices[index]
                 
                 request_and_handler = self.requests_and_handlers[index]
                 
-                self.registered_requests.remove(request_and_handler.async_request)
-                
-                indices_to_delete.append(index)
-                
                 request_and_handler.async_request.wait()  # will set the finished flag
                 
-                request_and_handler.run()
-            
-            for x in reversed(list(sorted(indices_to_delete))):
+                if request_and_handler.async_request.is_result_available():
+                    self.registered_requests.remove(request_and_handler.async_request)
+                    
+                    del self.requests_and_handlers[index]
+                    
+                    request_and_handler.run()
+                    break
                 
-                del self.requests_and_handlers[x]
+            
+            sockets = [x.async_request.socket for x in self.requests_and_handlers if not x.async_request.is_mpi_request()]
+            indices = [i for i, x in enumerate(self.requests_and_handlers) if not x.async_request.is_mpi_request()]
+            if len(sockets) > 0:
+                readable, _, _ = select.select(sockets, [], [])
+                indices_to_delete = []
+                for read_socket in readable:
+                    
+                    index = sockets.index(read_socket)
+                    
+                    index = indices[index]
+                    
+                    request_and_handler = self.requests_and_handlers[index]
+                    
+                    self.registered_requests.remove(request_and_handler.async_request)
+                    
+                    indices_to_delete.append(index)
+                    
+                    request_and_handler.async_request.wait()  # will set the finished flag
+                    
+                    request_and_handler.run()
+                    
+                
+                for x in reversed(list(sorted(indices_to_delete))):
+                    
+                    del self.requests_and_handlers[x]
+                
+                if indices_to_delete > 0:
+                    break
+            
             
     def __len__(self):
         return len(self.requests_and_handlers)

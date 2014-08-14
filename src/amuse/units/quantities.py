@@ -1163,6 +1163,16 @@ def to_quantity(input):
     else:
         from amuse.units.si import none
         return new_quantity(input, none)
+        
+def concatenate(quantities):
+    first = quantities[0]
+    if not is_quantity(first):
+        return numpy.concatenate(quantities)
+    unit = first.unit
+    numbers = list([x.value_in(unit) for x in quantities])
+    concatenated = numpy.concatenate(numbers)
+    return VectorQuantity(concatenated, unit)
+    
 
 def arange(start, stop, step):
     if not is_quantity(start):

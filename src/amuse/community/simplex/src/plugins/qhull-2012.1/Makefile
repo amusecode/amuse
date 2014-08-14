@@ -514,11 +514,11 @@ lib/libqhullcpp.a: $(LIBQHULLCPP_OBJS)
 	#ranlib $@
 
 lib/libqhull.$(SO): $(LIBQHULLS_OBJS)
-	$(CC) -shared -o $@ $(CC_OPTS3) $^
+	$(CC) -shared -o $@ $(CC_OPTS3) $^ -lm
 	cd lib && ln -f -s libqhull.$(SO) libqhull.so
 
 lib/libqhull_p.$(SO): $(LIBQHULLSP_OBJS)
-	$(CC) -shared -o $@ $(CC_OPTS3) $^
+	$(CC) -shared -o $@ $(CC_OPTS3) $^ -lm
 	cd lib && ln -f -s libqhull_p.$(SO) libqhull_p.so
 
 # don't use ../qconvex.	 Does not work on Red Hat Linux
