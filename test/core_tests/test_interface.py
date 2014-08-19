@@ -1229,7 +1229,10 @@ class TestGridWithBinding(amusetest.TestCase):
             
         def get_range(self):
             return (0,self.shape[0]-1,0,self.shape[1]-1,0,self.shape[2]-1)
-            
+        
+        def get_position(self, i_s, j_s, k_s):
+            return [numpy.asarray(i_s), numpy.asarray(j_s)]
+        
         def get_a(self,i_s,j_s,k_s):
             #print "indices:", i_s, j_s, k_s
             #print "values:", numpy.asarray([(self.storage[i][j][k]) for i,j,k in zip(i_s, j_s, k_s)])
@@ -1271,6 +1274,30 @@ class TestGridWithBinding(amusetest.TestCase):
         self.assertEquals(grid[0:2][1][2][3].mass, 38 | units.kg)
         self.assertEquals(len(grid[1][2].mass), 5)
         self.assertTrue(numpy.all(grid[1][2].mass == [35,36,37,38,39] | units.kg))
+        
+    
+            
+    def test2(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_position',(handler.INDEX, handler.INDEX,handler.INDEX,), (units.m, units.m,))
+      
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid', axes_names = ['x','y'])
+        handler.add_getter('grid', 'get_position', names = ('x','y',))
+        
+        grid = instance.grid
+        
+        
+        self.assertEquals(grid[1][2][3].position, [1,2] |units.m)
+        self.assertEquals(grid[1][2][1].position, [1,2] |units.m)
+        self.assertEquals(grid[1][2][2].position, [1,2] |units.m)
+        self.assertEquals(grid[1][2][0].position, [1,2] |units.m)
+        self.assertEquals(grid[1][2].position, [[1,2],[1,2],[1,2],[1,2],[1,2]] |units.m)
+        self.assertEquals(grid[0][1][1].position, [0,1] |units.m)
         
 
 class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):

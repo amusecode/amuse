@@ -1190,6 +1190,7 @@ class GridDefinition(AbstractParticleSetDefinition):
 
     def __init__(self, handler):
         self.handler = handler
+        self.axes_names = None
         self.name_of_the_get_range_method = 'get_range'
         self.setters = []
         self.getters = []
@@ -1222,7 +1223,10 @@ class GridDefinition(AbstractParticleSetDefinition):
     
     def new_set_instance(self, handler):
         storage = self.new_storage(handler.interface)
-        result = self.particles_factory(storage = storage)
+        if self.axes_names is None:
+            result = self.particles_factory(storage = storage)
+        else:
+            result = self.particles_factory(storage = storage, axes_names = self.axes_names)
         return result
 
 class CodeInMemoryParticles(datamodel.Particles):
@@ -1275,9 +1279,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         definition.particles_factory = particles_factory
         self.mapping_from_name_to_set_definition[name] = definition
     
-    def define_grid(self, name, name_of_indexing_attribute = 'index_of_the_particle'):
+    def define_grid(self, name, name_of_indexing_attribute = 'index_of_the_particle', axes_names = None):
         definition = GridDefinition(self)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
+        definition.axes_names = axes_names
         self.mapping_from_name_to_set_definition[name] = definition
         
     def set_new(self, name_of_the_set, name_of_new_particle_method, names = None):

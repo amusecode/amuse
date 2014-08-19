@@ -142,7 +142,7 @@ class Grid(AbstractGrid):
             self._private.attribute_storage = InMemoryGridAttributeStorage(*args)
         
         
-        if "axes_names" in kwargs:
+        if "axes_names" in kwargs and (not kwargs['axes_names'] is None):
             self._private.axes_names = kwargs['axes_names']
         else:
             self._private.axes_names = self.DEFAULT_AXES_NAMES
