@@ -17,7 +17,7 @@ def cellsize(grid):
     result = grid[tuple(grid.get_minimum_index())].position*0.
     Ndim=len(grid.shape)
     cell1 = grid[(0,)*Ndim]
-    for i in range(Ndim):
+    for i in range(len(result)):
       cell2=grid[(0,)*i+(1,)+(0,)*(Ndim-1-i)]
       result[i:i+1]=(cell2.position-cell1.position)[i]      
     return result
