@@ -10,54 +10,34 @@ grids.AbstractGrid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B
 
 
 @grids.AbstractGrid.function_for_set
-def cellsize(grid, dimensions = 3):
+def cellsize(grid):
     """Returns the lenght of each direction in the grid.
-    Works on 3d, 2d and 1d grids, although the grid cells
-    must have 3d positions (x,y and z)
+    Works for regular cartesion grids.
     """
-    cell1 = grid[0][0][0]
-    cell2 = grid[1][0][0]
-    dx = cell2.x - cell1.x
-    
-    result = [0.0,0.0,0.0] | dx.unit
-    result[0] = dx
-    result[1] = dx
-    result[2] = dx
-   
-    if dimensions > 1:
-        if grid.shape[1] > 1:
-            cell2 = grid[0][1][0]
-            result[1] = cell2.y - cell1.y
-    else:
-        return result[0:1]
-        
-    if dimensions > 2:
-        if grid.shape[2] > 1:
-            cell2 = grid[0][0][1]
-            result[2] = cell2.z - cell1.z
-    else:
-        return result[0:2]
-    
+    result = grid[tuple(grid.get_minimum_index())].position*0.
+    Ndim=len(grid.shape)
+    cell1 = grid[(0,)*Ndim]
+    for i in range(Ndim):
+      cell2=grid[(0,)*i+(1,)+(0,)*(Ndim-1-i)]
+      result[i:i+1]=(cell2.position-cell1.position)[i]      
     return result
-
-
 
 @grids.AbstractGrid.function_for_set
 def get_minimum_index(grid):
-    return [0,0,0]
+    return numpy.zeros_like(grid.shape)
     
 @grids.AbstractGrid.function_for_set
 def get_maximum_index(grid):
-    return grid.shape - numpy.asarray([1,1,1])
+    return grid.shape - numpy.ones_like(grid.shape)
     
-
 @grids.AbstractGrid.function_for_set
 def get_minimum_position(grid):
-    return grid[0,0,0].position - (0.5 * grid.cellsize())
+    return grid[tuple(grid.get_minimum_index())].position - 0.5 * grid.cellsize()
     
 @grids.AbstractGrid.function_for_set
 def get_maximum_position(grid):
-    return grid[-1,-1,-1].position + (0.5 * grid.cellsize())
+    print grid.cellsize()
+    return grid[tuple(grid.get_maximum_index())].position + 0.5 * grid.cellsize()
     
 @grids.AbstractGrid.function_for_set
 def get_volume(grid):
