@@ -36,7 +36,6 @@ def get_minimum_position(grid):
     
 @grids.AbstractGrid.function_for_set
 def get_maximum_position(grid):
-    print grid.cellsize()
     return grid[tuple(grid.get_maximum_index())].position + 0.5 * grid.cellsize()
     
 @grids.AbstractGrid.function_for_set
@@ -98,5 +97,4 @@ def connectivity(grid):
     result[...,...,...,6] = indices[ :-1,1:  ,1:  ]
     result[...,...,...,7] = indices[1:  ,1:  ,1:  ]
     return result
-
 
