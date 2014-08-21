@@ -111,6 +111,9 @@ int echo_3_int(int * i, int * j, int * k, int * l, int * m, int * int_out, int l
     return len;
 }
 
+int dummy_3_int(int i, int j, int k) {
+    return 0;
+}
 
 int echo_inout_array_with_result(int * inout, int len) {
     int i = 0;
@@ -302,6 +305,15 @@ class ForTestingInterface(CodeInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function  
+        
+    @legacy_function
+    def dummy_3_int():
+        function = LegacyFunctionSpecification()
+        function.addParameter('i', dtype='int32', direction=function.IN)
+        function.addParameter('j', dtype='int32', direction=function.IN)
+        function.addParameter('k', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function        
         
     @legacy_function
     def print_error_string():
@@ -851,3 +863,10 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertTrue(port_id2 >= 0)
         self.assertEquals(error1, 0)
         self.assertEquals(error2, 0)
+
+    def test30(self):
+        from amuse.support.interface import ConvertArgumentsException
+        instance = ForTesting(self.exefile)
+        self.assertRaises(ConvertArgumentsException,instance.dummy_3_int,2,3,i=1, expected_message=
+          "got multiple values for argument 'i' of method dummy_3_int")
+        instance.stop()

@@ -573,7 +573,8 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         for index, argument in enumerate(list_arguments):
             parameter = input_parameters[index]
             if parameter in result:
-              raise ConvertArgumentsException("got multiple values for argument '{0}' of method {1}".format(parameter, str(method)))
+              raise ConvertArgumentsException(
+              "got multiple values for argument '{0}' of method {1}".format(parameter, self.function_name))
             try:
                 if self.units[index] == self.NO_UNIT:
                     arg = argument
