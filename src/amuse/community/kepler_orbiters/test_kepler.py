@@ -56,7 +56,7 @@ def test_kepler(N=10000, tend=1.| units.yr,method=0):
 
   comets.mass*=0.
 
-  code=Kepler(conv,redirection="none",channel_type="sockets")
+  code=Kepler(conv,redirection="none")
 
   code.set_method(method)
 
@@ -103,7 +103,7 @@ def test_kepler(N=10000, tend=1.| units.yr,method=0):
   return t2-t1,da.max(),deps.max()
 
 def test_kepler_almost_parabolic( tend=1,method=0):
-  code=Kepler(redirection="none",channel_type="sockets")
+  code=Kepler(redirection="none")
 
   code.set_method(method)
 
@@ -148,7 +148,7 @@ def test_kepler_almost_parabolic( tend=1,method=0):
   print "time:",t2-t1
 
 def test_kepler_parabolic( tend=1,method=0, sign=+1):
-  code=Kepler(redirection="none",channel_type="sockets")
+  code=Kepler(redirection="none")
 
   code.set_method(method)
 
@@ -199,7 +199,7 @@ def test_kepler_parabolic( tend=1,method=0, sign=+1):
   print "time:",t2-t1
 
 def crash_test(method=1):
-  code=Kepler(redirection="none",channel_type="sockets")
+  code=Kepler(redirection="none")
 
   code.set_method(method)
 
@@ -261,7 +261,7 @@ def crash_test(method=1):
 
 
 def crash_test2(method=1):
-  code=Kepler(redirection="none",channel_type="sockets")
+  code=Kepler(redirection="none")
 
   code.set_method(method)
 
@@ -331,7 +331,7 @@ def crash_test2(method=1):
   print "time:",t2-t1
 
 def test_softening(method=1):
-  code=Kepler(redirection="none",channel_type="sockets")
+  code=Kepler(redirection="none")
 
   code.set_method(method)
 
@@ -394,7 +394,7 @@ def test_softening(method=1):
   print "time:",t2-t1
 
 def t_linear(tend=1,N=100,method=0):
-  code=Kepler(redirection="none",channel_type="sockets")
+  code=Kepler(redirection="none")
 
   code.set_method(method)
 

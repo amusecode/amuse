@@ -458,7 +458,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
         self.assertEquals(instance.returns_2(), 2)
         self.assertRaises(Exception, instance.returns_3, 
-            expected_message = "No transition from current state state 'TWO' to state 'THREE' possible")
+            expected_message = "While calling returns_3 of InCodeComponentImplementation: No transition from current state state 'TWO' to state 'THREE' possible")
         
     def test9(self):
         original = ClassWithState()

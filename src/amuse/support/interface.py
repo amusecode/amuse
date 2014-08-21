@@ -324,10 +324,18 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
             # do again to get an exception.
             message="While calling {0} of {1}: ".format(self.function_name, self.interface.__class__.__name__)
             try:
-              self.state_machine._get_state_transition_path_to(stored_transitions[0][0])
+                self.state_machine._get_state_transition_path_to(stored_transitions[0][0])
+            except exceptions.AmuseException as ex:
+                args = list(ex.arguments)
+                args[0] = message+str(args[0])
+                ex.arguments = tuple(args)
+                raise ex
             except Exception as ex:
-              raise exceptions.AmuseException(message+str(ex))
-         
+                
+                args = list(ex.args)
+                args[0] = message+str(args[0])
+                ex.args = tuple(args)
+                raise ex
         
         for path, to_state in sorted(possible_paths, key = lambda x: len(x[0])):
             for transition in path:
