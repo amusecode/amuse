@@ -664,6 +664,25 @@ class CodeInterfaceTests(amusetest.TestCase):
         self.assertEquals(unpickled_instance.returns_2(), 2)    
         self.assertEquals(unpickled_instance.get_name_of_current_state(), 'TWO')
         self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+
+    def test10(self):
+        original = ClassWithState()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('STATE')
+        handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
+# remove to generate exception
+#        handler.add_transition('ONE', 'TWO', 'move_to_state_2')
+        handler.add_method('ONE', 'returns_1')
+        handler.add_method('TWO', 'returns_2')
+        handler.set_initial_state('ZERO')
+        
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertRaises( Exception, instance.returns_2, expected_message=
+         "While calling returns_2 of InCodeComponentImplementation: No transition from current state state 'ZERO' to state 'TWO' possible")
+
         
 class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     class TestClass(object):

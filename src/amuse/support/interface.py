@@ -322,7 +322,12 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
         
         if len(possible_paths) == 0:            
             # do again to get an exception.
-            self.state_machine._get_state_transition_path_to(stored_transitions[0][0])
+            message="While calling {0} of {1}: ".format(self.function_name, self.interface.__class__.__name__)
+            try:
+              self.state_machine._get_state_transition_path_to(stored_transitions[0][0])
+            except Exception as ex:
+              raise exceptions.AmuseException(message+str(ex))
+         
         
         for path, to_state in sorted(possible_paths, key = lambda x: len(x[0])):
             for transition in path:
