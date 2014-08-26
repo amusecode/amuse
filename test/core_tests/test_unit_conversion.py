@@ -96,6 +96,10 @@ class TestUnitConversions(amusetest.TestCase):
         self.assertEquals((1.0 | km * s**-1).as_string_in(s**-1 * m), '1000.0 s**-1 * m')
         self.assertEquals((1.0 | km / s).as_string_in((10*J/g)**0.5), '10.0 (10 * J / g)**0.5')
 
+    def test13(self):
+        self.assertAlmostRelativeEquals((1234 | km ** (5/3.)).value_in( (km ** 5.0) ** (1.0/3.0) ), 1234.0, 12)
+        self.assertAlmostRelativeEquals((1234 | km ** (5/3.)).value_in( (m ** 5.0) ** (1.0/3.0) ), 123400000.0)
+        
 class TestNonNumericUnits(amusetest.TestCase):
     def test1(self):
         string1 = "string" | string

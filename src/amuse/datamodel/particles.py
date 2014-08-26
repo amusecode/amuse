@@ -151,11 +151,16 @@ class AbstractParticleSet(AbstractSet):
         AbstractSet.__init__(self, original)
 
 
+    def __delattr__(self, name):
+        self.remove_attribute_from_store(name)
 
     #
     # Particle storage interface
     #
 
+    def remove_attribute_from_store(self, name):
+        pass
+        
     def remove_particles_from_store(self, indices):
         pass
 
@@ -1206,6 +1211,11 @@ class Particles(AbstractParticleSet):
         return list(map(lambda value,unit : unit.new_quantity(value), result, units))
 
 
+   
+
+    def remove_attribute_from_store(self, name):
+        self._private.attribute_storage.remove_attribute_from_store(name)
+        
     def add_particles_to_store(self, keys, attributes = [], values = []):
         self._private.attribute_storage.add_particles_to_store(keys, attributes, values)
         self._private.version += 1

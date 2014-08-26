@@ -254,11 +254,34 @@ class unit(object):
             if not found:
                 return False
         return True
-                        
+    
+    def _compare_bases(self, other, eps = None):
+        if len(self.base) != len(other.base):
+            return False
+        if eps is None:
+            eps = numpy.finfo(numpy.double).eps
+        for (n1, unit1), (n2, unit2) in zip(self.base, other.base):
+            if not unit1 == unit2:
+                return False
+            if n1 == n2:
+                continue
+            else:
+                if abs(n1 - n2) < eps:
+                    continue;
+                if abs(n2) > abs(n1):
+                    relativeError = abs((n1 - n2) / n2);
+                else:
+                    relativeError = abs((n1 - n2) / n1);
+                if relativeError <= eps:
+                    continue
+                else:
+                    return False
+        return True
+            
     def conversion_factor_from(self, x):
         if x.base is None:
             return self.factor * 1.0
-        elif self.base == x.base:
+        elif self._compare_bases(x):
             this_factor = self.factor * 1.0
             other_factor = x.factor
             return this_factor / other_factor

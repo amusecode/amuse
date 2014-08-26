@@ -204,6 +204,18 @@ class TestParticles(amusetest.TestCase):
 
         particles[1].name = '123456'
         self.assertEquals(particles[1].name, '123456')
+        
+    
+    def test18(self):
+        particles = datamodel.Particles(keys = [10,11])
+        particles.mass = [1,2] | units.kg
+        particles.radius = [2,3] | units.m
+        self.assertAlmostRelativeEquals(particles.mass, [1,2] | units.kg)
+        self.assertAlmostRelativeEquals(particles.radius, [2,3] | units.m)
+        del particles.radius
+        particles.radius = [2,3] | units.m*2
+        self.assertAlmostRelativeEquals(particles.radius, [2,3] | units.m*2)
+        
 
 class TestParticle(amusetest.TestCase):
 

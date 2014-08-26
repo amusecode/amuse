@@ -32,6 +32,10 @@ class InMemoryAttributeStorage(AttributeStorage):
     def can_extend_attributes(self):
         return True
         
+    
+    def remove_attribute_from_store(self, name):
+        del self.mapping_from_attribute_to_quantities[name]
+        
     def add_particles_to_store(self, keys, attributes = [], quantities = []):
         if len(quantities) != len(attributes):
             raise exceptions.AmuseException(
@@ -224,6 +228,10 @@ class InMemoryGridAttributeStorage(object):
             
     def remove_particles_from_store(self, keys):
         raise exceptions.AmuseException("removing points from the grid is not implemented")
+        
+    def remove_attribute_from_store(self, name):
+        del self.mapping_from_attribute_to_quantities[name]
+        
         
     def get_values_in_store(self, indices, attributes):
         results = []
