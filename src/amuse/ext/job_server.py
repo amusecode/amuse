@@ -126,30 +126,30 @@ class RemoteCodeInterface(PythonCodeInterface):
         return function
 
     def execute(self,express):
-        err=decode_and_load( self._exec(express)[0] )
+        err=decode_and_load( self._exec(express) )
         if err:
           raise err
 
     def assign(self,lhs,arg):
-        err=decode_and_load( self._assign(lhs, dump_and_encode(arg))[0] )
+        err=decode_and_load( self._assign(lhs, dump_and_encode(arg)) )
         if err:
           raise err
 
     def evaluate(self,express):
         result,err=self._eval(express)
-        err=decode_and_load( err[0])
+        err=decode_and_load( err)
         if err :
           raise err
-        return decode_and_load(result[0]) 
+        return decode_and_load(result) 
 
     def func(self,f,*args,**kwargs):
         result,err=self._func( dump_and_encode(f),
                                dump_and_encode(args),
                                dump_and_encode(kwargs) )
-        err=decode_and_load( err[0])
+        err=decode_and_load( err)
         if err :
           raise err
-        return decode_and_load(result[0])
+        return decode_and_load(result)
 
     def async_func(self,f,*args,**kwargs):
         request=self._func.async(dump_and_encode(f),
@@ -157,10 +157,10 @@ class RemoteCodeInterface(PythonCodeInterface):
                                  dump_and_encode(kwargs) )
         def f(x):
           result,err=x()
-          err=decode_and_load( err[0])
+          err=decode_and_load( err)
           if err :
             raise err
-          return decode_and_load(result[0])
+          return decode_and_load(result)
         request.add_result_handler( f )
         return request
 

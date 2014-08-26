@@ -3,6 +3,7 @@ from amuse.test import amusetest
 from amuse.ext.job_server import RemoteCodeInterface,JobServer
 
 from socket import gethostname
+import os
 
 from amuse.ic.plummer import new_plummer_model
 
@@ -38,6 +39,19 @@ def example_parallel_jobs2(N,Nhosts=1):
 
 class TestRemoteCode(amusetest.TestCase):
 
+    def check_not_in_mpiexec(self):
+        """
+        The tests will fork another process, if the test run 
+        is itself an mpi process, the tests may fail.
+                 
+        For the hydra process manager the tests will fail.
+        So skip the tests if we detect hydra
+        """
+                 
+        if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
+            self.skip('cannot run the socket tests under mpi process manager')
+         
+
     def test1(self):
       remote=RemoteCodeInterface()
       
@@ -65,6 +79,7 @@ class TestRemoteCode(amusetest.TestCase):
       self.assertEqual(var_,var.mass)
 
     def test4(self):
+      self.check_not_in_mpiexec()
       remote=RemoteCodeInterface(channel_type="sockets")
       
       var=123

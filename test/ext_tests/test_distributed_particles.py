@@ -151,7 +151,7 @@ class DistributedParticles(object):
         )
         
     def __getattr__(self, name_of_the_attribute):
-        return decode_and_load(self.code.do_get_attribute(self.reference,name_of_the_attribute)[0])
+        return decode_and_load(self.code.do_get_attribute(self.reference,name_of_the_attribute))
         
     def __getitem__(self, index):
         is_particle, reference = self.code.do_getitem(
@@ -187,7 +187,7 @@ class DistributedParticles(object):
 
     def write_set_to_file(self, filebase, fileformat):
       
-        filenames=self.code.write_set_to_file(self.reference,filebase,fileformat)[0]
+        filenames=self.code.write_set_to_file(self.reference,filebase,fileformat)
         
         return decode_and_load(filenames)
 
@@ -213,7 +213,7 @@ class DistributedParticle(object):
         )
         
     def __getattr__(self, name_of_the_attribute):
-        return decode_and_load(self.code.do_get_attribute(self.reference,name_of_the_attribute)[0])
+        return decode_and_load(self.code.do_get_attribute(self.reference,name_of_the_attribute))
         
 ReferencedParticles = namedtuple('ReferencedParticles', ['particles', 'local_offset', 'local_size', 'global_size'])
 
