@@ -481,7 +481,7 @@ class TestInterface(TestWithMPI):
         out, error = instance.echo_string("abc")
         del instance
         self.assertEquals(error, 0)
-        self.assertEquals(out[0], "abc")
+        self.assertEquals(out, "abc")
 
     def test7(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
@@ -499,8 +499,8 @@ class TestInterface(TestWithMPI):
         del instance
         
         self.assertEquals(error, 0)
-        self.assertEquals(out1[0], "Abc")
-        self.assertEquals(out2[0], "Bef")
+        self.assertEquals(out1, "Abc")
+        self.assertEquals(out2, "Bef")
       
     def test9(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
@@ -519,7 +519,7 @@ class TestInterface(TestWithMPI):
         out = instance.return_string("abc")
         del instance
         
-        self.assertEquals(out[0], "abc")
+        self.assertEquals(out, "abc")
         
     def test11(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
@@ -534,7 +534,7 @@ class TestInterface(TestWithMPI):
         out, error = instance.echo_string_fixed_len("abc")
         del instance
         self.assertEquals(error, 0)
-        self.assertEquals(out[0], "abc")
+        self.assertEquals(out, "abc")
         
         
     def test13(self):
@@ -632,19 +632,3 @@ class TestInterface(TestWithMPI):
         self.assertEquals(content.strip(), "exex\n exex")
         
         
-
-    def test21(self):
-        instance = ForTestingInterface(self.exefile)
-        (output1, error1) = instance.internal__get_message_polling_interval()
-        error2 = instance.internal__set_message_polling_interval(1234)
-        (output2, error3) = instance.internal__get_message_polling_interval()
-        instance.stop()
-        self.assertEquals(error1, 0)
-        self.assertEquals(output1, 0)
-        self.assertEquals(error2, 0)
-        self.assertEquals(error3, 0)
-        self.assertEquals(output2, 1234)
-    
-
-    
-    

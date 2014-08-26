@@ -205,12 +205,12 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         ni = self.par_geti(domainid, "Nx1")
         nj = self.par_geti(domainid, "Nx2")
         nk = self.par_geti(domainid, "Nx3")
-        idisp = self.par_geti(domainid, "iDisp")[0]
-        jdisp = self.par_geti(domainid, "jDisp")[0]
-        kdisp = self.par_geti(domainid, "kDisp")[0]
+        idisp = self.par_geti(domainid, "iDisp")
+        jdisp = self.par_geti(domainid, "jDisp")
+        kdisp = self.par_geti(domainid, "kDisp")
         #print index_of_grid, "  ===  > ", (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
         
-        return (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
+        return (idisp, idisp+ni-1, jdisp, jdisp + nj-1, kdisp, kdisp + nk-1)
 
     def get_index_range_magnetic_field_inclusive(self, index_of_grid = 1):
         original = list(self.get_index_range_inclusive(index_of_grid))

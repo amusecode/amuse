@@ -472,7 +472,7 @@ class TestInterface(TestWithMPI):
         out, error = instance.echo_string("abc")
         del instance
         self.assertEquals(error, 0)
-        self.assertEquals(out[0], "abc")
+        self.assertEquals(out, "abc")
 
     def test7(self):
         instance = ForTestingInterface(self.exefile)
@@ -490,8 +490,8 @@ class TestInterface(TestWithMPI):
         del instance
         
         self.assertEquals(error, 0)
-        self.assertEquals(out1[0], "Abc")
-        self.assertEquals(out2[0], "Bef")
+        self.assertEquals(out1, "Abc")
+        self.assertEquals(out2, "Bef")
       
     def test9(self):
         instance = ForTestingInterface(self.exefile)
@@ -510,7 +510,7 @@ class TestInterface(TestWithMPI):
         out = instance.return_string("abc")
         del instance
         
-        self.assertEquals(out[0], "abc")
+        self.assertEquals(out, "abc")
         
     def test11(self):
         instance = ForTestingInterface(self.exefile)
@@ -525,7 +525,7 @@ class TestInterface(TestWithMPI):
         out, error = instance.echo_string_fixed_len("abc")
         del instance
         self.assertEquals(error, 0)
-        self.assertEquals(out[0], "abc")
+        self.assertEquals(out, "abc")
         
         
     def test13(self):

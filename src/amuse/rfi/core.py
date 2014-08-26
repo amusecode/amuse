@@ -136,12 +136,18 @@ class CodeFunction(object):
         
     
     def must_handle_as_array(self, keyword_arguments):
-        result = False
-        for x in keyword_arguments.values():
-            if x and hasattr(x[0],"__len__"):
-                result = len(x[0]) > 0
-                break
-        return result
+        for argument_type, argument_values in keyword_arguments.items():
+            if argument_values:
+                count = 0
+                for argument_value in argument_values:
+                    try:
+                        if not isinstance(argument_value, basestring):
+                            count = max(count, len(argument_value))
+                    except:
+                        count = max(count, 0)
+                if count > 0:
+                    return True
+        return False
         
     """
     Convert results from an MPI message to a return value.

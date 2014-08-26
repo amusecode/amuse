@@ -355,7 +355,7 @@ class TestInterface(TestWithMPI):
         path = os.path.abspath(self.get_path_to_results())
         self.exefile = os.path.join(path,"java_worker")
        
-	#generate interface class
+        #generate interface class
         interfacefile = os.path.join(path,"CodeInterface.java")
 
         uc = create_java.GenerateAJavaInterfaceStringFromASpecificationClass()
@@ -365,7 +365,7 @@ class TestInterface(TestWithMPI):
         with open(interfacefile, "w") as f:
             f.write(interface)
         
-	#generate worker class
+        #generate worker class
         workerfile = os.path.join(path,"Worker.java")
 
         uc = create_java.GenerateAJavaSourcecodeStringFromASpecificationClass()
@@ -375,31 +375,34 @@ class TestInterface(TestWithMPI):
         with open(workerfile, "w") as f:
             f.write(worker)
 
-	#write code imlementation to a file
+        #write code imlementation to a file
 
         codefile = os.path.join(path,"Code.java")
 
         with open(codefile, "w") as f:
             f.write(codestring)
 
-	#compile all code
+        #compile all code
 
-	if not config.java.is_enabled:
-	    self.skip("java not enabled")
+        if not config.java.is_enabled:
+            self.skip("java not enabled")
 
-	javac = config.java.javac
-	jar = config.java.jar
+        javac = config.java.javac
+        if not os.path.exists(javac):
+            self.skip("java compiler not available")
+            
+        jar = config.java.jar
 
-	jarfile = 'worker.jar'
+        jarfile = 'worker.jar'
 
-	tmpdir = os.path.join(path, "tmp")
+        tmpdir = os.path.join(path, "tmp")
 
-	shutil.rmtree(tmpdir, ignore_errors=True)
-	os.mkdir(tmpdir)
+        shutil.rmtree(tmpdir, ignore_errors=True)
+        os.mkdir(tmpdir)
 
         returncode = subprocess.call(
             [javac, "-d", tmpdir, "Worker.java", "CodeInterface.java", "Code.java"],
-	    cwd = path,
+        cwd = path,
         )
             
         if returncode != 0:
@@ -407,7 +410,7 @@ class TestInterface(TestWithMPI):
 
 	#make jar file
 
-	returncode = subprocess.call(
+        returncode = subprocess.call(
             [jar, '-cf', 'worker.jar', '-C', 'tmp', '.'],
             cwd = path,
         )
@@ -415,20 +418,46 @@ class TestInterface(TestWithMPI):
         if returncode != 0:
             print "Could not compile worker"
 
-	#generate worker script
+        #generate worker script
 
         uc = create_java.GenerateAJavaWorkerScript()
         uc.specification_class = ForTestingInterface
-	uc.code_dir = path
+        uc.code_dir = path
         worker_script =  uc.result
 
         with open(self.exefile, "w") as f:
             f.write(worker_script)
 
-	os.chmod(self.exefile, 0777)
+        os.chmod(self.exefile, 0777)
 
+    def check_not_in_mpiexec(self):
+        """
+        The tests will fork another process, if the test run 
+        is itself an mpi process, the tests may fail.
+                 
+        For the hydra process manager the tests will fail.
+        So skip the tests if we detect hydra
+        """
+                 
+        if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
+            self.skip('cannot run the socket tests under mpi process manager')
+         
+    
+    def check_has_java(self):
+        """
+        The tests will fork another process, if the test run 
+        is itself an mpi process, the tests may fail.
+                 
+        For the hydra process manager the tests will fail.
+        So skip the tests if we detect hydra
+        """
+                 
+        if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
+            self.skip('cannot run the socket tests under mpi process manager')
+         
     
     def setUp(self):
+        self.check_not_in_mpiexec()
         super(TestInterface, self).setUp()
         print "building...",
         self.check_can_compile_modules()
@@ -485,7 +514,7 @@ class TestInterface(TestWithMPI):
         out, error = instance.echo_string("abc")
         instance.stop()
         self.assertEquals(error, 0)
-        self.assertEquals(out[0], "abc")
+        self.assertEquals(out, "abc")
 
     def test7(self):
         instance = ForTestingInterface(self.exefile)
@@ -503,8 +532,8 @@ class TestInterface(TestWithMPI):
         instance.stop()
         
         self.assertEquals(error, 0)
-        self.assertEquals(out1[0], "def")
-        self.assertEquals(out2[0], "abc")
+        self.assertEquals(out1, "def")
+        self.assertEquals(out2, "abc")
       
     def test9(self):
         instance = ForTestingInterface(self.exefile)

@@ -370,7 +370,7 @@ class TestInterface(TestWithMPI):
         x = ForTestingInterface(channel_type = 'sockets')
         string_out, error = x.echo_string("1234567")
         self.assertEquals(error, 0)
-        self.assertEquals(string_out[0], "1234567")
+        self.assertEquals(string_out, "1234567")
         x.stop()
         
     def test10(self):
@@ -395,8 +395,8 @@ class TestInterface(TestWithMPI):
         x = ForTestingInterface(channel_type = 'sockets')
         str1_out, str2_out, error = x.echo_strings("abc", "def")
         self.assertEquals(error, 0)
-        self.assertEquals(str1_out[0], "cba")
-        self.assertEquals(str2_out[0], "fed")
+        self.assertEquals(str1_out, "cba")
+        self.assertEquals(str2_out, "fed")
         x.stop()
         
         

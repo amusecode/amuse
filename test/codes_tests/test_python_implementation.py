@@ -286,8 +286,9 @@ class ForTestingImplementation(object):
     
     def deep_echo_string(self, string_in, string_out):
         result, errorcode = self._other.echo_string(string_in)
-        string_out.value = result[0][::-1]
+        string_out.value = result[::-1]
         return errorcode
+        
         
     def return_control(self):
         self._other.internal__activate_communicator(0)
@@ -457,7 +458,7 @@ class TestInterface(TestWithMPI):
         x = ForTestingInterface()
         string_out, error = x.echo_string("1234567")
         self.assertEquals(error, 0)
-        self.assertEquals(string_out[0], "1234567")
+        self.assertEquals(string_out, "1234567")
         x.stop()
         
     def test10(self):
@@ -482,8 +483,8 @@ class TestInterface(TestWithMPI):
         x = ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings("abc", "def")
         self.assertEquals(error, 0)
-        self.assertEquals(str1_out[0], "cba")
-        self.assertEquals(str2_out[0], "fed")
+        self.assertEquals(str1_out, "cba")
+        self.assertEquals(str2_out, "fed")
         x.stop()
         
         
@@ -565,6 +566,8 @@ class TestInterface(TestWithMPI):
         products = x.multiply_ints(range(N),range(N))
         self.assertTrue(list(products) == [i*i for i in range(N)])
         x.stop()
+        
+        
     
     def test19(self):
         print "Testing the splitting of very long MPI messages into blocks II: strings"
@@ -805,13 +808,14 @@ class TestInterface(TestWithMPI):
         
         
     def test27(self):
-        instance1 = ForTestingInterface()
-        instance2 = ForTestingInterface()
+        instance1 = ForTestingInterface(redirection="none")
+        instance2 = ForTestingInterface(redirection="none")
         print type(instance1)
         encoded_interface = pickle.dumps(instance1,0)
         decoded_interface = pickle.loads(encoded_interface)
         #pickle.loads(pickle.dumps(instance1,0))
         portname, error = instance2.internal__open_port()
+        print portname
         print portname
         request1 = instance2.internal__accept_on_port.async(portname)
         request2 = instance1.internal__connect_to_port.async(portname)
@@ -823,15 +827,15 @@ class TestInterface(TestWithMPI):
         instance2.copy_over_interface(port_id2, pickle.dumps(instance1,0))
         instance1.internal__activate_communicator(port_id1)
         result, errorcode = instance2.deep_echo_string("hello")
-        self.assertEquals(errorcode[0], 0)
-        self.assertEquals(result[0], "olleh")
+        self.assertEquals(errorcode, 0)
+        self.assertEquals(result, "olleh")
         result, errorcode = instance2.deep_echo_string("world")
-        self.assertEquals(errorcode[0], 0)
-        self.assertEquals(result[0], "dlrow")
+        self.assertEquals(errorcode, 0)
+        self.assertEquals(result, "dlrow")
         instance2.return_control()
         result, errorcode = instance1.echo_string("world")
-        self.assertEquals(errorcode[0], 0)
-        self.assertEquals(result[0], "world")
+        self.assertEquals(errorcode, 0)
+        self.assertEquals(result, "world")
         
     def test28(self):
         x = ForTestingInterface()
@@ -901,3 +905,12 @@ class TestInterface(TestWithMPI):
         
         y.stop()
         x.stop()
+        
+    
+    def test30(self):
+        instance= ForTesting()
+        input = [1.0,2.0,3.0]
+        output =  instance.sum_doubles(input, 5)
+        self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])
+        output =  instance.sum_doubles(5, input)
+        self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])

@@ -998,6 +998,28 @@ Please do a 'make clean; make' in the root directory.
     
     def is_polling_supported(self):
         return False
+        
+    
+    def determine_length_from_data(self, dtype_to_arguments):
+        def get_length(type_and_values):
+            argument_type, argument_values = type_and_values
+            if argument_values:
+                result = 1
+                for argument_value in argument_values:
+                    try:
+                        if not isinstance(argument_value, basestring):
+                            result = max(result, len(argument_value))
+                    except:
+                        result = max(result, 1)
+                return result
+               
+               
+        
+        lengths = map(get_length, dtype_to_arguments.items())
+        if len(lengths) == 0:
+            return 1
+            
+        return max(1, max(lengths))
  
 AbstractMessageChannel.DEBUGGERS = {
     "none":None,
@@ -1246,7 +1268,7 @@ class MpiChannel(AbstractMessageChannel):
                 
             self.intercomm = None
     
-    def determine_length_from_data(self, dtype_to_arguments):
+    def determine_length_from_datax(self, dtype_to_arguments):
         def get_length(x):
             if x:
                 try:
@@ -2000,18 +2022,22 @@ class SocketChannel(AbstractMessageChannel):
     def is_inuse(self):
         return self._is_inuse
     
-    def determine_length_from_data(self, dtype_to_arguments):
-        def get_length(x):
-            if x:
-                try:
-                    if not isinstance(x[0], str):
-                        return len(x[0])
-                except:
-                    return 1
+    def determine_length_from_datax(self, dtype_to_arguments):
+        def get_length(type_and_values):
+            argument_type, argument_values = type_and_values
+            if argument_values:
+                result = 1
+                for argument_value in argument_values:
+                    try:
+                        if not isinstance(argument_value, basestring):
+                            result = max(result, len(argument_value))
+                    except:
+                        result = max(result, 1)
+                return result
                
                
         
-        lengths = map(get_length, dtype_to_arguments.values())
+        lengths = map(get_length, dtype_to_arguments.items())
         if len(lengths) == 0:
             return 1
             
@@ -2298,7 +2324,7 @@ class DistributedChannel(AbstractMessageChannel):
     def is_inuse(self):
         return self._is_inuse
     
-    def determine_length_from_data(self, dtype_to_arguments):
+    def determine_length_from_datax(self, dtype_to_arguments):
         def get_length(x):
             if x:
                 try:
