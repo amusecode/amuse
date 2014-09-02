@@ -64,9 +64,9 @@ class InstallPrerequisites(object):
           (
             'h5py', 
             ['hdf'], 
-            '2.0.0', 
+            '2.3.1', 
             'h5py-' , '.tar.gz', 
-            'http://h5py.googlecode.com/files/', self.h5py_build
+            'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
             'docutils', 
