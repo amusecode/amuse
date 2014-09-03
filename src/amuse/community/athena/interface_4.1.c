@@ -3185,6 +3185,128 @@ static int weighing_offsets[8][3] = {
     {1,1,1},
 };
 
+int get_hydro_state_for_cell(
+        double * x, double * y, double *z,
+        double * dx, double * dy, double *dz,
+        double * vx, double * vy, double * vz,
+        double * rho,
+        double * rhovx, double * rhovy, double * rhovz,
+        double * rhoen,
+        int number_of_points)
+{
+    DomainS * dom = 0;
+    int ii = 0, level = 0, i = 0;
+    int igrid, jgrid, kgrid;
+    int i0grid, j0grid, k0grid;
+    int i1grid, j1grid, k1grid;
+    int nweigh = 0;
+    for(i=0; i < number_of_points; i++) {
+    for(level = mesh.NLevels - 1; level >= 0; level--)
+    {
+        rho[i]   = 0.0;
+        rhovx[i] = 0.0;
+        rhovy[i] = 0.0;
+        rhovz[i] = 0.0;
+        rhoen[i] = 0.0;
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {   
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            if(dom->Grid == NULL)
+            {
+                continue;
+            }
+            else
+            {
+                GridS * grid = dom->Grid;
+                if(
+                    (grid->MinX[0] <= x[i] && x[i] <= grid->MaxX[0]) &&
+                    ((dom->Nx[1] <= 1) || (grid->MinX[1] <= y[i] && y[i] <= grid->MaxX[1])) &&
+                    ((dom->Nx[2] <= 1) || (grid->MinX[2] <= z[i] && z[i] <= grid->MaxX[2])) 
+                )
+                {
+                    double yval = 0.0;
+                    double zval = 0.0;
+                    double volume = dx[i];
+                    double x0val = (x[i] - (0.5/dx[i]) - grid->MinX[0] - (0.5 * grid->dx1))/grid->dx1;
+                    double x1val = (x[i] + (0.5/dx[i]) - grid->MinX[0] + (0.5 * grid->dx1))/grid->dx1;
+                    i0grid = floor(x0val) + grid->is;
+                    i1grid = floor(x1val) + grid->is;
+                    if(dom->Nx[1] > 1) {
+                        double y0val = (y[i] - (0.5/dy[i]) - grid->MinX[1] - (0.5 * grid->dx2))/grid->dx2;
+                        double y1val = (y[i] + (0.5/dy[i]) - grid->MinX[1] + (0.5 * grid->dx2))/grid->dx2;
+                        j0grid = floor(y0val) + grid->js;
+                        j1grid = floor(y1val) + grid->js;
+                        volume *= dy[i];
+                    } else {
+                        j0grid = 0;
+                        j1grid = 0;
+                    }
+                    if(dom->Nx[2] > 1) {
+                        zval = (z[i] - grid->MinX[2] - (0.5 * grid->dx3))/grid->dx3;
+                        kgrid = floor(zval) + grid->ks;
+                        volume *= dz[i];
+                    } else {
+                        kgrid = 0;
+                    }
+                    double x0p = x[i] - (0.5 * dx[i]);
+                    double x1p = x[i] + (0.5 * dx[i]);
+                    double y0p = y[i] - (0.5 * dy[i]);
+                    double y1p = y[i] + (0.5 * dy[i]);
+                    double z0p = z[i] - (0.5 * dz[i]);
+                    double z1p = z[i] + (0.5 * dz[i]);
+                    //printf("ig: %d, %d\n", i0grid, i1grid);
+                    for(igrid = i0grid; igrid <= i1grid; igrid++) {
+                        double x0g = ((igrid - grid->is)* grid->dx1) +  grid->MinX[0];
+                        double x1g = x0g + grid->dx1;
+                        double x1o = fmin(x1g, x1p);
+                        double x0o = fmax(x0g, x0p);
+                        double overlapx = fmax(0.0, x1o - x0o);
+                        for(jgrid = j0grid; jgrid <= j1grid; jgrid++) {
+                            
+                            double overlapy = 1;
+                            if(dom->Nx[1] > 1) {
+                                double y0g = ((jgrid - grid->js) * grid->dx2) +  grid->MinX[1];
+                                double y1g = x0g + grid->dx2;
+                                double y1o = fmin(y1g, y1p);
+                                double y0o = fmax(y0g, y0p);
+                                overlapy = fmax(0.0, y1o - y0o);
+                            }
+                            
+                            //printf("overlapy: %f, %f\n", overlapy, overlapx);
+                            double overlap = overlapx * overlapy;
+                            rho[i]   +=  (overlap / volume) * grid->U[kgrid][jgrid][igrid].d;
+                            rhovx[i] +=  (overlap / volume) * grid->U[kgrid][jgrid][igrid].M1;
+                            rhovy[i] +=  (overlap / volume) * grid->U[kgrid][jgrid][igrid].M2;
+                            rhovz[i] +=  (overlap / volume) * grid->U[kgrid][jgrid][igrid].M3;
+                            rhoen[i] +=  (overlap / volume) * grid->U[kgrid][jgrid][igrid].E;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    }
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(rho  , NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhoen, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, rho  , number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhoen, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    return 0;
+}
+
+
+
 int get_hydro_state_at_point(
         double * x, double * y, double *z,
         double * vx, double * vy, double * vz,

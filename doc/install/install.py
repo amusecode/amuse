@@ -87,7 +87,7 @@ class InstallPrerequisites(object):
           (
             'mpi4py', 
             ['mpich2'], 
-            '1.3', 
+            '1.3.1', 
             'mpi4py-', '.tar.gz', 
             'http://mpi4py.googlecode.com/files/', 
             self.python_build

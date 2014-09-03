@@ -2582,3 +2582,71 @@ class TestAthena(TestWithMPI):
         print interpolated_inside, interpolated_outside
         self.assertAlmostRelativeEquals(interpolated_inside, interpolated_outside)
 
+
+    
+    
+    def test29(self):
+        
+        instance=self.new_instance(Athena)
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (20.0, 1, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (20, 1, 1)
+        
+        for x in instance.itergrids():
+            inmem = x.copy()
+            inmem.rho = inmem.x/(1| generic_unit_system.length) | generic_unit_system.density
+            inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+            inmem.energy =  1.0 | generic_unit_system.energy_density
+            from_model_to_code = inmem.new_channel_to(x)
+            from_model_to_code.copy()
+            print inmem.rho
+        rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_at_point(0.5| generic_unit_system.length,0.0| generic_unit_system.length,0.0| generic_unit_system.length)
+        
+        self.assertEquals(rho , 0.5 | generic_unit_system.density)
+        
+        for value in numpy.arange(0.5, 19.6, 0.1):
+            
+            rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_for_cell(
+                value | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                1.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length
+            )
+            self.assertAlmostRelativeEquals(rho , value | generic_unit_system.density, 9)
+        
+        for value in numpy.arange(0.0, 0.6, 0.1):
+            rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_for_cell(
+                value | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                1.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length
+            )
+            self.assertAlmostRelativeEquals(rho , ((0.5 + value) * 0.5 + (0.5-value) * 19.5) | generic_unit_system.density, 9)
+        
+        
+        for value in numpy.arange(0.0, 0.5, 0.1):
+            rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_for_cell(
+                value + 19.5| generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                1.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length,
+                0.0 | generic_unit_system.length
+            )
+            self.assertAlmostRelativeEquals(rho , (19.5 - (value * 19))  | generic_unit_system.density, 9)
+        
+        # out of range
+        rho, rhovx, rhovy, rhovx, rhoenergy = instance.get_hydro_state_for_cell(
+            21.0| generic_unit_system.length,
+            0.0 | generic_unit_system.length,
+            0.0 | generic_unit_system.length,
+            1.0 | generic_unit_system.length,
+            0.0 | generic_unit_system.length,
+            0.0 | generic_unit_system.length
+        )
+        self.assertAlmostRelativeEquals(rho , 0.0 | generic_unit_system.density, 9)
+

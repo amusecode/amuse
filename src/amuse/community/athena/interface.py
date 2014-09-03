@@ -662,6 +662,22 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         function.result_type = 'i' 
         function.must_handle_array = True
         return function
+        
+    @legacy_function    
+    def get_hydro_state_for_cell():
+        function = LegacyFunctionSpecification()  
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['dx','dy','dz']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='d', direction=function.IN, default = 0)
+        for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
+        function.result_type = 'i' 
+        function.must_handle_array = True
+        return function
     
 class Athena(CommonCode):
 
@@ -951,6 +967,16 @@ class Athena(CommonCode):
             (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
                 generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
         )
+        object.add_method(
+            'get_hydro_state_for_cell',
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
+                generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
+                generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
+            (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
+                generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
+        )
+        
+        
         
         self.stopping_conditions.define_methods(object)
     
