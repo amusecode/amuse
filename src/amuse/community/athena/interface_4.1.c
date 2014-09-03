@@ -695,17 +695,35 @@ int initialize_grid()
   return 0;
 }
 
-static inline int is_on_grid(GridS * grid, int i0, int j0, int k0)
+static inline int is_on_grid(DomainS * dom, GridS * grid, int i0, int j0, int k0)
 {
-    if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+    if (grid->Nx[0] > 1 && (
+            (grid->Disp[0] >  0 && i0 < grid->Disp[0]) || 
+            (grid->Disp[0] == 0 && i0 < -nghost) || 
+            ((grid->Disp[0] + grid->Nx[0] <  dom->Nx[0]) && i0 >= (grid->Disp[0] + grid->Nx[0])) || 
+            ((grid->Disp[0] + grid->Nx[0] == dom->Nx[0]) && i0 >= (dom->Nx[0] + nghost))
+        )
+    )
     {
         return 0;
     }
-    else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+    else  if (grid->Nx[1] > 1 && (
+            (grid->Disp[1] >  0 && j0 < grid->Disp[1]) || 
+            (grid->Disp[1] == 0 && j0 < -nghost) || 
+            ((grid->Disp[1] + grid->Nx[1] <  dom->Nx[1]) && j0 >= (grid->Disp[1] + grid->Nx[1])) || 
+            ((grid->Disp[1] + grid->Nx[1] == dom->Nx[1]) && j0 >= (dom->Nx[1] + nghost))
+        )
+    )
     {
         return 0;
     }
-    else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+    else   if (grid->Nx[2] > 1 && (
+            (grid->Disp[2] >  0 && k0 < grid->Disp[2]) || 
+            (grid->Disp[2] == 0 && k0 < -nghost) || 
+            ((grid->Disp[2] + grid->Nx[2] <  dom->Nx[2]) && k0 >= (grid->Disp[2] + grid->Nx[2])) || 
+            ((grid->Disp[2] + grid->Nx[2] == dom->Nx[2]) && k0 >= (dom->Nx[2] + nghost))
+        )
+    )
     {
         return 0;
     }
@@ -1089,7 +1107,7 @@ int get_grid_state(
         else
         {
             GridS * grid = dom->Grid;
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
 
@@ -1170,7 +1188,7 @@ int get_grid_gravitational_potential(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 
     //fprintf(stderr, "GRID i,j,k %d,%d,%d\n", i0, j0, k0);
@@ -1293,7 +1311,7 @@ int get_grid_gravitational_acceleration(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
 
                 
@@ -1365,7 +1383,7 @@ int get_grid_acceleration(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
                 ax[l] = grid->AccX[k0][j0][i0];
@@ -1430,7 +1448,7 @@ int set_grid_acceleration(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
                 grid->AccX[k0][j0][i0] = ax[l];
@@ -1488,7 +1506,7 @@ int get_grid_density(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
 
                 
@@ -1556,7 +1574,7 @@ int get_grid_scalar(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
 
                 ijk_on_grid(grid, &i0, &j0, &k0);
@@ -1624,7 +1642,7 @@ int get_grid_momentum_density(
         {
             GridS * grid = dom->Grid;
            
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
 
                 
@@ -1695,7 +1713,7 @@ int get_grid_energy_density(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
 
                 
@@ -1768,7 +1786,7 @@ int set_grid_state(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
                 
@@ -1828,7 +1846,7 @@ int set_grid_density(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
                 
@@ -1885,7 +1903,7 @@ int set_grid_scalar(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
 
@@ -1943,7 +1961,7 @@ int set_grid_energy_density(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
                 
@@ -2001,7 +2019,7 @@ int set_grid_momentum_density(
         {
             GridS * grid = dom->Grid;
             
-            if (is_on_grid(grid, i0, j0, k0))
+            if (is_on_grid(dom, grid, i0, j0, k0))
             {
                 ijk_on_grid(grid, &i0, &j0, &k0);
                 

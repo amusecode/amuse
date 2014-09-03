@@ -1280,6 +1280,184 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(az_in, az_out)
         instance.stop() 
         
+    
+
+    def test37(self):
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.setup_mesh(4,1,1, 1.0, 1.0, 1.0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.4)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+        self.assertEquals(result, 0)
+        
+        time, error = instance.get_time()
+        self.assertEquals(error,0)
+        self.assertEquals(time, 0.0)
+        
+        for i in range(4):
+            error = instance.set_grid_state(i,0,0,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
+            self.assertEquals(error, 0)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,0,0)
+        self.assertEquals(error, 0)
+        self.assertEquals(rho, 0.1)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-1,0,0)
+        self.assertEquals(error, 0)
+        self.assertEquals(rho, 0.0)
+        self.assertEquals(rhovx, 0.0)
+        self.assertEquals(rhovy, 0.0)
+        self.assertEquals(rhovz, 0.0)
+        self.assertEquals(energy, 0.0)
+        
+        instance.initialize_grid()
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-1,0,0)
+        self.assertEquals(error, 0)
+        self.assertEquals(rho, 0.4)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-2,0,0)
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(rho, 0.3)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-3,0,0)
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(rho, 0.2)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-4,0,0)
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(rho, 0.1)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-5,0,0)
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(rho, 0.0)
+        
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(4,0,0)
+        self.assertEquals(error, 0)
+        self.assertEquals(rho, 0.1)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(5,0,0)
+        self.assertEquals(error, 0)
+        self.assertEquals(rho, 0.2)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(6,0,0)
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(rho, 0.3)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(7,0,0)
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEquals(rho, 0.4)
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8,0,0)
+        self.assertEquals(error, 0)
+        self.assertEquals(rho, 0.0)
+        
+        
+        
+        instance.stop()
+        
+    
+    def test38(self):
+        instance=self.new_instance(AthenaInterface, number_of_workers = 8)
+        instance.initialize_code()
+        instance.set_auto_decomposition(0)
+        instance.set_parallel_decomposition(2,2,2)
+        instance.setup_mesh(8, 8, 8, 1.0, 1.0, 1.0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.4)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+        self.assertEquals(result, 0)
+        time, error = instance.get_time()
+        self.assertEquals(error,0)
+        self.assertEquals(time, 0.0)
+        for i in range(8):
+            error = instance.set_grid_state(i,0,0,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
+            
+            error = instance.set_grid_state(0,i,0,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
+            
+            error = instance.set_grid_state(0,0,i,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
+            
+            self.assertEquals(error, 0)
+        
+        instance.initialize_grid()
+        
+        
+        for i in range(8):
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(i,0,0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,i,0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,0,i)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            
+        for i in range(4):
+            
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-(i+1),0,0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-5,0,0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8 + i,0,0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8 + 4,0,0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            # 2 dimension
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0, -(i+1),0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,-5, 0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,8 + i,0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,8+4, 0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            # 3 dimension
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0, 0, -(i+1))
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,-5, 0)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,0,8 + i)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(0,0, 8+4)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+        
+        
+        
+        instance.stop()
+        
 class TestAthena(TestWithMPI):
     
         
