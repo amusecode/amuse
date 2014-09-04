@@ -20,14 +20,16 @@ AC_ARG_ENABLE(gsltest, [  --disable-gsltest       Do not try to compile and run 
      fi
   fi
   
-  if test "x${GSL_CONFIG+set}" != xset ; then
-    if [ -x ${GSL_CONFIG} ] ; then
-        gsl_config_exits=1
+  
+  if test "x${GSL_CONFIG+set}" == xset ; then
+    if test -x "${GSL_CONFIG}" ; then
+        gsl_config_exists=yes
     else
-        GSL_CONFIG=
+        gsl_config_exists=no
     fi
   fi
-  if test "x${GSL_CONFIG+set}" == xset ; then
+  FOUND_GSL=no
+  if test "x$gsl_config_exists" != xyes ; then
     PKG_CHECK_MODULES([GSL],[gsl >= 1.0],
         [
         GSL_FLAGS="$GSL_CFLAGS"
@@ -37,11 +39,11 @@ AC_ARG_ENABLE(gsltest, [  --disable-gsltest       Do not try to compile and run 
         ifelse([$2], , :, [$2]) 
         ],
         [
-        AC_PATH_PROG(GSL_CONFIG, gsl-config, no)
         ]
     )
   fi
   if test "$FOUND_GSL" = "no"; then
+      AC_PATH_PROG(GSL_CONFIG, gsl-config, no)
       min_gsl_version=ifelse([$1], ,0.2.5,$1)
       AC_MSG_CHECKING(for GSL - version >= $min_gsl_version)
       no_gsl=""
