@@ -7938,6 +7938,48 @@ fi
 
 
 
+
+# Check whether --with-gsl-prefix was given.
+if test "${with_gsl_prefix+set}" = set; then :
+  withval=$with_gsl_prefix; gsl_prefix="$withval"
+else
+  gsl_prefix=""
+fi
+
+
+# Check whether --with-gsl-exec-prefix was given.
+if test "${with_gsl_exec_prefix+set}" = set; then :
+  withval=$with_gsl_exec_prefix; gsl_exec_prefix="$withval"
+else
+  gsl_exec_prefix=""
+fi
+
+# Check whether --enable-gsltest was given.
+if test "${enable_gsltest+set}" = set; then :
+  enableval=$enable_gsltest;
+else
+  enable_gsltest=yes
+fi
+
+
+  if test "x${GSL_CONFIG+set}" != xset ; then
+     if test "x$gsl_prefix" != x ; then
+         GSL_CONFIG="$gsl_prefix/bin/gsl-config"
+     fi
+     if test "x$gsl_exec_prefix" != x ; then
+        GSL_CONFIG="$gsl_exec_prefix/bin/gsl-config"
+     fi
+  fi
+
+  if test "x${GSL_CONFIG+set}" != xset ; then
+    if  -x ${GSL_CONFIG}  ; then
+        gsl_config_exits=1
+    else
+        GSL_CONFIG=
+    fi
+  fi
+  if test "x${GSL_CONFIG+set}" == xset ; then
+
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSL" >&5
 $as_echo_n "checking for GSL... " >&6; }
@@ -7997,41 +8039,7 @@ fi
 	echo "$GSL_PKG_ERRORS" >&5
 
 
-
-
-# Check whether --with-gsl-prefix was given.
-if test "${with_gsl_prefix+set}" = set; then :
-  withval=$with_gsl_prefix; gsl_prefix="$withval"
-else
-  gsl_prefix=""
-fi
-
-
-# Check whether --with-gsl-exec-prefix was given.
-if test "${with_gsl_exec_prefix+set}" = set; then :
-  withval=$with_gsl_exec_prefix; gsl_exec_prefix="$withval"
-else
-  gsl_exec_prefix=""
-fi
-
-# Check whether --enable-gsltest was given.
-if test "${enable_gsltest+set}" = set; then :
-  enableval=$enable_gsltest;
-else
-  enable_gsltest=yes
-fi
-
-
-  if test "x${GSL_CONFIG+set}" != xset ; then
-     if test "x$gsl_prefix" != x ; then
-         GSL_CONFIG="$gsl_prefix/bin/gsl-config"
-     fi
-     if test "x$gsl_exec_prefix" != x ; then
-        GSL_CONFIG="$gsl_exec_prefix/bin/gsl-config"
-     fi
-  fi
-
-  # Extract the first word of "gsl-config", so it can be a program name with args.
+        # Extract the first word of "gsl-config", so it can be a program name with args.
 set dummy gsl-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
@@ -8072,137 +8080,13 @@ $as_echo "no" >&6; }
 fi
 
 
-  min_gsl_version=1.0
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSL - version >= $min_gsl_version" >&5
-$as_echo_n "checking for GSL - version >= $min_gsl_version... " >&6; }
-  no_gsl=""
-  if test "$GSL_CONFIG" = "no" ; then
-    no_gsl=yes
-  else
-    GSL_FLAGS=`$GSL_CONFIG --cflags`
-    GSL_LIBS=`$GSL_CONFIG --libs`
-
-    gsl_version=`$GSL_CONFIG --version`
-    as_arg_v1=$gsl_version
-as_arg_v2=$min_gsl_version
-awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
-case $? in #(
-  1) :
-    no_gsl=yes ;; #(
-  0) :
-     ;; #(
-  2) :
-     ;; #(
-  *) :
-     ;;
-esac
-  fi
-  if test "x$no_gsl" = x ; then
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-     FOUND_GSL=yes
-  else
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-     if test "$GSL_CONFIG" = "no" ; then
-       echo "*** The gsl-config script installed by GSL could not be found"
-       echo "*** If GSL was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the GSL_CONFIG environment variable to the"
-       echo "*** full path to gsl-config."
-     else
-       if test -f conf.gsltest ; then
-        :
-       else
-          echo "*** Could not run GSL test program, checking why..."
-          CFLAGS="$CFLAGS $GSL_FLAGS"
-          LIBS="$LIBS $GSL_LIBS"
-          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdio.h>
-
-int
-main ()
-{
- return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-   echo "*** The test program compiled, but did not run. This usually means"
-          echo "*** that the run-time linker is not finding GSL or finding the wrong"
-          echo "*** version of GSL. If it is not finding GSL, you'll need to set your"
-          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
-          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
-          echo "*** is required on your system"
-	  echo "***"
-          echo "*** If you have an old version installed, it is best to remove it, although"
-          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"
-else
-   echo "*** The test program failed to compile or link. See the file config.log for the"
-          echo "*** exact error that occured. This usually means GSL was incorrectly installed"
-          echo "*** or that you have moved GSL since it was installed. In the latter case, you"
-          echo "*** may want to edit the gsl-config script: $GSL_CONFIG"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-          CFLAGS="$ac_save_CFLAGS"
-          LIBS="$ac_save_LIBS"
-       fi
-     fi
-#     GSL_FLAGS=""
-#     GSL_LIBS=""
-
-	FOUND_GSL=no
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: gsl not found, please specify --with-gsl" >&5
-$as_echo "$as_me: WARNING: gsl not found, please specify --with-gsl" >&2;}
-
-  fi
-
-
-  rm -f conf.gsltest
 
 
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
-
-
-# Check whether --with-gsl-prefix was given.
-if test "${with_gsl_prefix+set}" = set; then :
-  withval=$with_gsl_prefix; gsl_prefix="$withval"
-else
-  gsl_prefix=""
-fi
-
-
-# Check whether --with-gsl-exec-prefix was given.
-if test "${with_gsl_exec_prefix+set}" = set; then :
-  withval=$with_gsl_exec_prefix; gsl_exec_prefix="$withval"
-else
-  gsl_exec_prefix=""
-fi
-
-# Check whether --enable-gsltest was given.
-if test "${enable_gsltest+set}" = set; then :
-  enableval=$enable_gsltest;
-else
-  enable_gsltest=yes
-fi
-
-
-  if test "x${GSL_CONFIG+set}" != xset ; then
-     if test "x$gsl_prefix" != x ; then
-         GSL_CONFIG="$gsl_prefix/bin/gsl-config"
-     fi
-     if test "x$gsl_exec_prefix" != x ; then
-        GSL_CONFIG="$gsl_exec_prefix/bin/gsl-config"
-     fi
-  fi
-
-  # Extract the first word of "gsl-config", so it can be a program name with args.
+        # Extract the first word of "gsl-config", so it can be a program name with args.
 set dummy gsl-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
@@ -8243,96 +8127,6 @@ $as_echo "no" >&6; }
 fi
 
 
-  min_gsl_version=1.0
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSL - version >= $min_gsl_version" >&5
-$as_echo_n "checking for GSL - version >= $min_gsl_version... " >&6; }
-  no_gsl=""
-  if test "$GSL_CONFIG" = "no" ; then
-    no_gsl=yes
-  else
-    GSL_FLAGS=`$GSL_CONFIG --cflags`
-    GSL_LIBS=`$GSL_CONFIG --libs`
-
-    gsl_version=`$GSL_CONFIG --version`
-    as_arg_v1=$gsl_version
-as_arg_v2=$min_gsl_version
-awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
-case $? in #(
-  1) :
-    no_gsl=yes ;; #(
-  0) :
-     ;; #(
-  2) :
-     ;; #(
-  *) :
-     ;;
-esac
-  fi
-  if test "x$no_gsl" = x ; then
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-     FOUND_GSL=yes
-  else
-     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-     if test "$GSL_CONFIG" = "no" ; then
-       echo "*** The gsl-config script installed by GSL could not be found"
-       echo "*** If GSL was installed in PREFIX, make sure PREFIX/bin is in"
-       echo "*** your path, or set the GSL_CONFIG environment variable to the"
-       echo "*** full path to gsl-config."
-     else
-       if test -f conf.gsltest ; then
-        :
-       else
-          echo "*** Could not run GSL test program, checking why..."
-          CFLAGS="$CFLAGS $GSL_FLAGS"
-          LIBS="$LIBS $GSL_LIBS"
-          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdio.h>
-
-int
-main ()
-{
- return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-   echo "*** The test program compiled, but did not run. This usually means"
-          echo "*** that the run-time linker is not finding GSL or finding the wrong"
-          echo "*** version of GSL. If it is not finding GSL, you'll need to set your"
-          echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
-          echo "*** to the installed location  Also, make sure you have run ldconfig if that"
-          echo "*** is required on your system"
-	  echo "***"
-          echo "*** If you have an old version installed, it is best to remove it, although"
-          echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"
-else
-   echo "*** The test program failed to compile or link. See the file config.log for the"
-          echo "*** exact error that occured. This usually means GSL was incorrectly installed"
-          echo "*** or that you have moved GSL since it was installed. In the latter case, you"
-          echo "*** may want to edit the gsl-config script: $GSL_CONFIG"
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-          CFLAGS="$ac_save_CFLAGS"
-          LIBS="$ac_save_LIBS"
-       fi
-     fi
-#     GSL_FLAGS=""
-#     GSL_LIBS=""
-
-	FOUND_GSL=no
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: gsl not found, please specify --with-gsl" >&5
-$as_echo "$as_me: WARNING: gsl not found, please specify --with-gsl" >&2;}
-
-  fi
-
-
-  rm -f conf.gsltest
 
 
 else
@@ -8341,11 +8135,109 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
-    GSL_FLAGS="$GSL_CFLAGS"
-    FOUND_GSL=yes
+        GSL_FLAGS="$GSL_CFLAGS"
+        FOUND_GSL=yes
 
+
+        FOUND_GSL=yes
 
 fi
+  fi
+  if test "$FOUND_GSL" = "no"; then
+      min_gsl_version=1.0
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSL - version >= $min_gsl_version" >&5
+$as_echo_n "checking for GSL - version >= $min_gsl_version... " >&6; }
+      no_gsl=""
+      if test "$GSL_CONFIG" = "no" ; then
+        no_gsl=yes
+      else
+        GSL_FLAGS=`$GSL_CONFIG --cflags`
+        GSL_LIBS=`$GSL_CONFIG --libs`
+
+        gsl_version=`$GSL_CONFIG --version`
+        as_arg_v1=$gsl_version
+as_arg_v2=$min_gsl_version
+awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
+case $? in #(
+  1) :
+    no_gsl=yes ;; #(
+  0) :
+     ;; #(
+  2) :
+     ;; #(
+  *) :
+     ;;
+esac
+      fi
+      if test "x$no_gsl" = x ; then
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+         FOUND_GSL=yes
+      else
+         { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+         if test "$GSL_CONFIG" = "no" ; then
+           echo "*** The gsl-config script installed by GSL could not be found"
+           echo "*** If GSL was installed in PREFIX, make sure PREFIX/bin is in"
+           echo "*** your path, or set the GSL_CONFIG environment variable to the"
+           echo "*** full path to gsl-config."
+         else
+           if test -f conf.gsltest ; then
+            :
+           else
+              echo "*** Could not run GSL test program, checking why..."
+              CFLAGS="$CFLAGS $GSL_FLAGS"
+              LIBS="$LIBS $GSL_LIBS"
+              cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #include <stdio.h>
+
+int
+main ()
+{
+ return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+   echo "*** The test program compiled, but did not run. This usually means"
+              echo "*** that the run-time linker is not finding GSL or finding the wrong"
+              echo "*** version of GSL. If it is not finding GSL, you'll need to set your"
+              echo "*** LD_LIBRARY_PATH environment variable, or edit /etc/ld.so.conf to point"
+              echo "*** to the installed location  Also, make sure you have run ldconfig if that"
+              echo "*** is required on your system"
+          echo "***"
+              echo "*** If you have an old version installed, it is best to remove it, although"
+              echo "*** you may also be able to get things to work by modifying LD_LIBRARY_PATH"
+else
+   echo "*** The test program failed to compile or link. See the file config.log for the"
+              echo "*** exact error that occured. This usually means GSL was incorrectly installed"
+              echo "*** or that you have moved GSL since it was installed. In the latter case, you"
+              echo "*** may want to edit the gsl-config script: $GSL_CONFIG"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+              CFLAGS="$ac_save_CFLAGS"
+              LIBS="$ac_save_LIBS"
+           fi
+         fi
+    #     GSL_FLAGS=""
+    #     GSL_LIBS=""
+
+	FOUND_GSL=no
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: gsl not found, please specify --with-gsl" >&5
+$as_echo "$as_me: WARNING: gsl not found, please specify --with-gsl" >&2;}
+
+      fi
+
+  fi
+
+
+  rm -f conf.gsltest
+
+
 
 
 

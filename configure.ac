@@ -185,17 +185,9 @@ AX_GMP()
 AX_MPFR()
 AX_HDF5()
 
-PKG_CHECK_MODULES([GSL],[gsl >= 1.0],
-    [
-    GSL_FLAGS="$GSL_CFLAGS"
-    FOUND_GSL=yes
-    AC_SUBST(GSL_FLAGS)
-    ],
-    [
-    AX_PATH_GSL(1.0, [FOUND_GSL=yes], [
+AX_PATH_GSL(1.0, [FOUND_GSL=yes], [
 	FOUND_GSL=no
 	AC_MSG_WARN([gsl not found, please specify --with-gsl])
-    ])
 ])
 
 AC_SUBST(FOUND_GSL)
