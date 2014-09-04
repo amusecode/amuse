@@ -269,9 +269,9 @@ class unit(object):
                 if abs(n1 - n2) < eps:
                     continue;
                 if abs(n2) > abs(n1):
-                    relativeError = abs((n1 - n2) / n2);
+                    relativeError = abs((n1 - n2) * 1.0 / n2);
                 else:
-                    relativeError = abs((n1 - n2) / n1);
+                    relativeError = abs((n1 - n2) * 1.0 / n1);
                 if relativeError <= eps:
                     continue
                 else:
