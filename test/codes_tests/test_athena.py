@@ -2827,4 +2827,46 @@ class TestAthena(TestWithMPI):
             0.0 | generic_unit_system.length
         )
         self.assertAlmostRelativeEquals(rho , 0.0 | generic_unit_system.density, 9)
-
+    
+    
+    
+    def test29(self):
+        
+        instance=self.new_instance(Athena)
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (20.0, 1, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (20, 1, 1)
+        
+        for x in instance.itergrids():
+            inmem = x.copy()
+            inmem.rho = inmem.x/(1| generic_unit_system.length) | generic_unit_system.density
+            inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+            inmem.energy =  1.0 | generic_unit_system.energy_density
+            from_model_to_code = inmem.new_channel_to(x)
+            from_model_to_code.copy()
+            print inmem.rho
+        
+        
+    
+    def test30(self):
+        
+        instance=self.new_instance(Athena)
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (8, 1, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (8, 1, 1)
+        
+        for x in instance.itergrids():
+            inmem = x.copy()
+            inmem.rho = inmem.x/(1| generic_unit_system.length) | generic_unit_system.density
+            inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+            inmem.energy =  1.0 | generic_unit_system.energy_density
+            from_model_to_code = inmem.new_channel_to(x)
+            from_model_to_code.copy()
+            print inmem.rho
+            
+        grid = instance.get_extended_grid()
+        self.assertEquals(grid.shape, (12,1,1))
+        instance.initialize_grid()
+        self.assertEquals(grid.rho[...,0,0] , [6.5,7.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,0.5,1.5] | generic_unit_system.density)
+        
+        

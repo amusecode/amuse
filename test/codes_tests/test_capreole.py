@@ -827,6 +827,109 @@ class TestCapreoleInterface(TestWithMPI):
         
         instance.stop()
         
+    
+    def test29(self):
+        instance = CapreoleInterface(number_of_workers = 1)
+        self.check_extended_grid(instance)
+        
+    def xtest30(self):
+        print "Broken as capreole cannot do periodic boundaries with multiple workers!"
+        instance = CapreoleInterface(redirection="none", number_of_workers = 8)
+        self.check_extended_grid(instance)
+    
+    
+    def check_extended_grid(self, instance):
+        instance.initialize_code()
+        instance.setup_mesh(8, 8, 8, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+        self.assertEquals(result, 0)
+        time, error = instance.get_time()
+        self.assertEquals(error,0)
+        self.assertEquals(time, 0.0)
+        for i in range(8):
+            error = instance.set_grid_state(i+1,1,1,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
+            self.assertEquals(error, 0)
+            
+            error = instance.set_grid_state(1,i+1,1,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
+            self.assertEquals(error, 0)
+            
+            error = instance.set_grid_state(1,1,i+1,0.1 * (i+1), 0.2 * (i+1), 0.3 * (i+1), 0.4 * (i+1), 0.5 * (i+1))
+            self.assertEquals(error, 0)
+        
+        instance.initialize_grid()
+        
+        
+        for i in range(8):
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(i+1,1,1)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,i+1,1)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,1,i+1)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            
+        for i in range(2):
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-(i),1,1)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(-2,1,1)
+            self.assertEquals(error, -1)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8 + i+1,1,1)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(8 + 3,1,1)
+            self.assertEquals(error, -1)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            # 2 dimension
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1, -i,1)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,-3, 1)
+            self.assertEquals(error, -1)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,8 + i + 1,1)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,8+3, 1)
+            self.assertEquals(error, -1)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            # 3 dimension
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1, 1, -i)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, 0.8 - (i * 0.1))
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,-3, 1)
+            self.assertEquals(error, -1)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1, 1,8 + i + 1)
+            self.assertEquals(error, 0)
+            self.assertAlmostRelativeEquals(rho, (i+1) * 0.1)
+            
+            rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1, 1, 8+3)
+            self.assertEquals(error, -1)
+            self.assertAlmostRelativeEquals(rho, 0.0)
+            
+        
+        
+        
+        instance.stop()
+        
 class TestSodShocktube(TestWithMPI):
     
     def test0(self):
@@ -1697,3 +1800,28 @@ class TestCapreole(TestWithMPI):
         #self.assertAlmostRelativeEquals(instance.parameters.timestep, 0.1 | generic_unit_system.time)
         #instance.parameters.timestep = 0.2 | generic_unit_system.time
         #self.assertAlmostRelativeEquals(instance.parameters.timestep, 0.2 | generic_unit_system.time)
+
+
+
+    def test16(self):
+        
+        instance=self.new_instance(Capreole)
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.mesh_length = (8, 1, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (8, 1, 1)
+        
+        for x in instance.itergrids():
+            inmem = x.copy()
+            inmem.rho = inmem.x/(1| generic_unit_system.length) | generic_unit_system.density
+            inmem.rhovx = 0.0 | generic_unit_system.momentum_density
+            inmem.energy =  1.0 | generic_unit_system.energy_density
+            from_model_to_code = inmem.new_channel_to(x)
+            from_model_to_code.copy()
+            print inmem.rho
+            
+        grid = instance.get_extended_grid()
+        self.assertEquals(grid.shape, (12,1,1))
+        instance.initialize_grid()
+        self.assertEquals(grid.rho[...,0,0] , [6.5,7.5,0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,0.5,1.5] | generic_unit_system.density)
+        
+        

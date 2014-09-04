@@ -162,7 +162,6 @@ contains
          MPI_COMM_NEW,status,ierror)
       
     ! Fill the boundaries with the received planes
-
     if (nbrleft /= MPI_PROC_NULL) then
        do ieq=1,neq
           do k=sz-mbc,ez+mbc

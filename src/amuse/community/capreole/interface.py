@@ -566,7 +566,6 @@ class Capreole(CommonCode):
         #object.add_setter('grid', 'set_energy_density', names=('energy',))
         
         
-        
 
     def define_parameters(self, object):
         
@@ -832,4 +831,28 @@ class Capreole(CommonCode):
         index_of_boundary = self.BOUNDARY_NAME_TO_INDEX[name]
         
         return self._create_new_grid(self.specify_boundary_grid, index_of_boundary = index_of_boundary, index_of_grid = 1)
+    
+    
+
+    def get_extended_grid(self, index_of_grid = 1):
+        return self._create_new_grid(self.sepecify_extended_grid, index_of_grid = index_of_grid)
+                
+    def get_index_range_extended(self, index_of_grid = 1):
+        i0,i1, j0,j1, k0,k1 = self.get_index_range_inclusive()
+        dj = 2 if j1 > j0 else 0
+        dk = 2 if k1 > k0 else 0
+        return i0-2, i1+2, j0-dj, j0+dj, k0-dk, k1+dk
+    
+    def sepecify_extended_grid(self, definition, index_of_grid = 1):
+        
+        definition.set_grid_range('get_index_range_extended')
+        definition.add_getter('get_position_of_index', names=('x','y','z'))
+    
+        definition.add_getter('get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        definition.add_setter('set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        
+        definition.add_getter('get_grid_density', names=('rho',))
+        definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
+        definition.add_getter('get_grid_energy_density', names=('energy',))
+        
     

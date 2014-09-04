@@ -632,9 +632,27 @@ module amuse_helpers
     logical :: in_grid
     integer :: i,j,k
     in_grid=.FALSE.
-    if(i.LT.sx.OR.i.GT.ex.OR. &
-       j.LT.sy.OR.j.GT.ey.OR. &
-       k.LT.sz.OR.k.GT.ez) return
+    if(&
+       (sx.EQ.1 .AND. i.LT.(1-mbc)) .OR.&
+       (sx.NE.1 .AND. i.LT.sx).OR.&
+       (ex.EQ.meshx .AND. i.GT.(meshx+mbc)) .OR. &
+       (ex.LT.meshx .AND. i.GT.ex) &
+    ) return
+    
+    if(&
+       (sy.EQ.1 .AND. j.LT.(1-mbc)) .OR.&
+       (sy.NE.1 .AND. j.LT.sy).OR.&
+       (ey.EQ.meshy .AND. j.GT.(meshy+mbc)) .OR. &
+       (ey.LT.meshy .AND. j.GT.ey) &
+    ) return
+    
+    if(&
+       (sz.EQ.1 .AND. k.LT.(1-mbc)) .OR.&
+       (sz.NE.1 .AND. k.LT.sz).OR.&
+       (ez.EQ.meshz .AND. k.GT.(meshz+mbc)) .OR. &
+       (ez.LT.meshz .AND. k.GT.ez) &
+    ) return
+    
     in_grid=.TRUE.
   end function
 

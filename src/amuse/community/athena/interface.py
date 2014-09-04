@@ -211,6 +211,8 @@ class AthenaInterface(CodeInterface, MagnetohydrodynamicsInterface, LiteratureRe
         #print index_of_grid, "  ===  > ", (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
         
         return (idisp, idisp+ni-1, jdisp, jdisp + nj-1, kdisp, kdisp + nk-1)
+        
+    
 
     def get_index_range_magnetic_field_inclusive(self, index_of_grid = 1):
         original = list(self.get_index_range_inclusive(index_of_grid))
@@ -1032,6 +1034,13 @@ class Athena(CommonCode):
        
         definition.define_extra_keywords({'index_of_boundary': index_of_boundary, 'index_of_grid':index_of_grid})
         
+    
+    
+    def sepecify_extended_grid(self, definition, index_of_grid = 1):
+        self.specify_grid(definition, index_of_grid = index_of_grid)
+        definition.set_grid_range('get_index_range_extended')
+        
+        
     @property
     def grid(self):
         return self._create_new_grid(self.specify_grid, index_of_grid = 1)
@@ -1050,6 +1059,16 @@ class Athena(CommonCode):
         index_of_boundary = self.BOUNDARY_NAME_TO_INDEX[name]
         
         return self._create_new_grid(self.specify_boundary_grid, index_of_boundary = index_of_boundary, index_of_grid = 1)
+    
+
+    def get_extended_grid(self, index_of_grid = 1):
+        return self._create_new_grid(self.sepecify_extended_grid, index_of_grid = index_of_grid)
+                
+    def get_index_range_extended(self, index_of_grid = 1):
+        i0,i1, j0,j1, k0,k1 = self.get_index_range_inclusive(index_of_grid = index_of_grid)
+        dj = 2 if j1 > j0 else 0
+        dk = 2 if k1 > k0 else 0
+        return i0-2, i1+2, j0-dj, j0+dj, k0-dk, k1+dk
     
     def itergrids(self):
         n = self.get_number_of_grids()
