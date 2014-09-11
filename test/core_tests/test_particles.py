@@ -515,7 +515,7 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles[-3:-1].mass, [4,20] | units.kg)
         self.assertAlmostRelativeEquals(particles[::-1].mass, [21,20,4,3,2,1] | units.kg)
 
-    def test15(self):
+    def test16(self):
         set1 = datamodel.Particles(3)
         set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
         subset1 = set1[0:2]
@@ -526,7 +526,7 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
         self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
         
-    def test15(self):
+    def test17(self):
         set1 = datamodel.Particles(3, storage = memory_storage.InMemoryAttributeStorageUseSortedKeys())
         set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
         subset1 = set1[0:2]
@@ -537,7 +537,7 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
         self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
     
-    def test15(self):
+    def test18(self):
         set1 = datamodel.Particles(3, storage = memory_storage.InMemoryAttributeStorageUseDictionaryForKeySet())
         set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
         subset1 = set1[0:2]
@@ -548,6 +548,33 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
         self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
     
+    def test19(self):
+        particles = datamodel.Particles(keys = [10,11])
+        particles.x = [1,2] | units.m
+        particles.y = [3,4] | units.m
+        particles.add_caching_function_attribute(
+            "xy",
+            lambda allparticles : (allparticles.x * allparticles.y),
+            lambda allparticles, one : (one.x * one.y)
+        )
+
+        self.assertAlmostRelativeEquals(
+            particles.xy(),
+            [3, 8] | units.m*units.m
+        )
+        self.assertAlmostRelativeEquals(
+            particles[0].xy(),
+            3 | units.m*units.m
+        )
+        particles.x = [5,6]  | units.m
+        self.assertAlmostRelativeEquals(
+            particles.xy(),
+            [3, 8] | units.m*units.m
+        )
+        self.assertAlmostRelativeEquals(
+            particles[0].xy(),
+            15 | units.m*units.m
+        )
 class TestParticlesChannel(amusetest.TestCase):
 
     def test1(self):

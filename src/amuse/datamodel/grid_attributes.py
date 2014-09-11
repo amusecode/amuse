@@ -9,7 +9,7 @@ grids.AbstractGrid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rho
 grids.AbstractGrid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
 
 
-@grids.AbstractGrid.function_for_set
+@grids.AbstractGrid.caching_function_for_set
 def cellsize(grid):
     """Returns the lenght of each direction in the grid.
     Works for regular cartesion grids.
@@ -18,27 +18,28 @@ def cellsize(grid):
     Ndim=len(grid.shape)
     cell1 = grid[(0,)*Ndim]
     for i in range(len(result)):
-      cell2=grid[(0,)*i+(1,)+(0,)*(Ndim-1-i)]
-      result[i:i+1]=(cell2.position-cell1.position)[i]      
+        if grid.shape[i] > 1:
+            cell2=grid[(0,)*i+(1,)+(0,)*(Ndim-1-i)]
+            result[i:i+1]=(cell2.position-cell1.position)[i]      
     return result
 
-@grids.AbstractGrid.function_for_set
+@grids.AbstractGrid.caching_function_for_set
 def get_minimum_index(grid):
     return numpy.zeros_like(grid.shape)
     
-@grids.AbstractGrid.function_for_set
+@grids.AbstractGrid.caching_function_for_set
 def get_maximum_index(grid):
     return grid.shape - numpy.ones_like(grid.shape)
     
-@grids.AbstractGrid.function_for_set
+@grids.AbstractGrid.caching_function_for_set
 def get_minimum_position(grid):
     return grid[tuple(grid.get_minimum_index())].position - 0.5 * grid.cellsize()
     
-@grids.AbstractGrid.function_for_set
+@grids.AbstractGrid.caching_function_for_set
 def get_maximum_position(grid):
     return grid[tuple(grid.get_maximum_index())].position + 0.5 * grid.cellsize()
     
-@grids.AbstractGrid.function_for_set
+@grids.AbstractGrid.caching_function_for_set
 def get_volume(grid):
     maximum_position = grid.get_maximum_position()
     minimum_position = grid.get_minimum_position()

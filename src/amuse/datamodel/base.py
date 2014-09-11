@@ -503,6 +503,28 @@ def new_particle_function_attribute_with_doc(function):
             return self._function(self.particles, self.particle, *list_arguments, **keyword_arguments)
     
     return BoundParticleFunctionAttribute
+    
+def new_caching_particles_function_attribute_with_doc(name, function):
+    class CachingBoundParticlesFunctionAttribute(object):
+        if function.__doc__:
+            __doc__ = ("\n  Documentation on '{0}' particles function attribute:"
+                "\n\n".format(function.__name__) + function.__doc__)
+        _function = staticmethod(function)
+        _name =  name
+        def  __init__(self):
+            self.particles = None
+            
+        def __call__(self, *list_arguments, **keyword_arguments):
+            cached_results = self.particles._private.cached_results
+            if self._name in cached_results.results:
+                result = cached_results.results[self._name]
+            else:
+                result = self._function(self.particles, *list_arguments, **keyword_arguments)
+                cached_results.results[self._name] = result
+            return result
+            
+    return CachingBoundParticlesFunctionAttribute
+
 
 class FunctionAttribute(DerivedAttribute):
     
@@ -527,6 +549,31 @@ class FunctionAttribute(DerivedAttribute):
     
     def __setstate__(self, state):
         self.particles_function_attribute = new_particles_function_attribute_with_doc(state[0])
+        self.particle_function_attribute = new_particle_function_attribute_with_doc(state[1])
+        
+class CachingFunctionAttribute(DerivedAttribute):
+    
+    def  __init__(self, name_of_the_attribute, particles_function = None, particle_function = None):
+        self.particles_function_attribute = new_caching_particles_function_attribute_with_doc(name_of_the_attribute, particles_function)
+        self.particle_function_attribute = new_particle_function_attribute_with_doc(particle_function)
+    
+    def get_values_for_entities(self, particles):
+        function_attribute = self.particles_function_attribute()
+        function_attribute.particles = particles
+        return function_attribute
+    
+    def get_value_for_entity(self, particles, particle, index):
+        function_attribute = self.particle_function_attribute()
+        function_attribute.particles = particles
+        function_attribute.particle = particle
+        function_attribute.index = index
+        return function_attribute
+    
+    def __getstate__(self):
+        return self.particles_function_attribute._function, self.particle_function_attribute._function
+    
+    def __setstate__(self, state):
+        self.particles_function_attribute = new_caching_particles_function_attribute_with_doc(state[0])
         self.particle_function_attribute = new_particle_function_attribute_with_doc(state[1])
 
 
@@ -570,6 +617,19 @@ class CollectionAttributes(object):
     
     def _copy_for_collection(self, newcollection):
         return CollectionAttributes(self._attributes)
+        
+class CachedResults(object):
+    """
+    Stores results for functions that only need to be called once
+    """
+    
+    def __init__(self):
+        self.results = {}
+    
+    def __getstate__(self):
+        return {'results':{}}
+        
+    
         
 
 class PrivateProperties(object):
@@ -630,6 +690,7 @@ class AbstractSet(object):
         object.__setattr__(self, "_private", PrivateProperties())
         
         self._private.collection_attributes = CollectionAttributes()
+        self._private.cached_results = CachedResults()
     
     @property
     def collection_attributes(self):
@@ -853,6 +914,36 @@ class AbstractSet(object):
         self._derived_attributes[name_of_the_attribute] = FunctionAttribute(function, function_for_particle)
         
     
+    def add_caching_function_attribute(self, name_of_the_attribute, function, function_for_particle = None):
+        """
+        Define a function attribute, adding a function to the particles, the function will
+        be evaluated once for the set, after that the function will return the same results.
+        The function must not take any arguments and the caching only works for the whole set (not on single
+        particles) 
+        
+        :argument name_of_the_attribute: Name to reference the vector attribute by. 
+        :argument function: A function, first argument will be the particles.
+        
+        >>> from amuse.datamodel import Particles
+        >>> particles = Particles(2)
+        >>> particles.x = [1.0, 2.0] | units.m
+        >>> def sumx(p):
+        ...   return p.x.sum()
+        ...
+        >>> particles.add_caching_function_attribute("sum_of_x", sumx)
+        >>> particles.sum_of_x()
+        quantity<3.0 m>
+        
+        >>> particles.x = [3.0, 4.0] | units.m
+        >>> particles.sum_of_x()
+        quantity<3.0 m>
+
+        
+        """
+        
+        self._derived_attributes[name_of_the_attribute] = CachingFunctionAttribute(name_of_the_attribute, function, function_for_particle)
+        
+    
     @classmethod
     def add_global_function_attribute(cls, name_of_the_attribute, function, function_for_particle = None):
         """
@@ -875,6 +966,33 @@ class AbstractSet(object):
         """
         
         cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = FunctionAttribute(function, function_for_particle)
+        
+        
+    @classmethod
+    def add_global_caching_function_attribute(cls, name_of_the_attribute, function, function_for_particle = None):
+        """
+        Define a function attribute, adding a function to the particles
+        
+        :argument name_of_the_attribute: Name to reference the attribute by. 
+        :argument function: A function, first argument will be the particles.
+        
+        >>> from amuse.datamodel import Particles
+        >>> def sumx(p):
+        ...   return p.x.sum()
+        ...
+        >>> Particles.add_global_caching_function_attribute("sum_of_x", sumx)
+        >>> particles = Particles(2)
+        >>> particles.x = [4.0 , 2.0] | units.m
+        >>> particles.sum_of_x()
+        quantity<6.0 m>
+        >>> particles.x = [5.0 , 6.0] | units.m
+        >>> particles.sum_of_x()
+        quantity<6.0 m>
+        >>> del Particles.GLOBAL_DERIVED_ATTRIBUTES['sum_of_x']
+        
+        """
+        
+        cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = CachingFunctionAttribute(name_of_the_attribute, function, function_for_particle)
         
     
     def add_particle_function_attribute(self, name_of_the_attribute, function):
@@ -1341,6 +1459,11 @@ class AbstractSet(object):
     @classmethod
     def attribute_for_set(cls, function):
         cls.add_global_calculated_attribute(function.__name__, function)
+        return function
+        
+    @classmethod
+    def caching_function_for_set(cls, function):
+        cls.add_global_function_attribute(function.__name__, function)
         return function
 
     
