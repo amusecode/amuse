@@ -107,7 +107,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             internal_structure.X_Si[::-1],
             internal_structure.X_Fe[::-1]
         )
-        return self.finalize_stellar_model([age_tag])
+        return self.finalize_stellar_model(age_tag)
     
     def new_particle_method(self, mass=None, pms=False, internal_structure=None, filename=None, age_tag=0):
         if not filename is None:
