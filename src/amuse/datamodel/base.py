@@ -1463,7 +1463,7 @@ class AbstractSet(object):
         
     @classmethod
     def caching_function_for_set(cls, function):
-        cls.add_global_function_attribute(function.__name__, function)
+        cls.add_global_caching_function_attribute(function.__name__, function)
         return function
 
     
