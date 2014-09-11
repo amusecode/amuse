@@ -3,6 +3,7 @@ from amuse.test import amusetest
 from amuse.support.exceptions import AmuseException, MissingAttributesAmuseException
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.interface import LinkMethodArgumentOrResultType
+from amuse.support.core import compare_version_strings
 
 import numpy
 import time
@@ -4637,63 +4638,65 @@ class TestParticlesOverlay(amusetest.TestCase):
 
 class TestParticlesWithSpecificDtypes(amusetest.TestCase):
    
-   def new_set_with_specific_dtype(self):
-      m_float32 = unit_with_specific_dtype(units.m, numpy.float32)
-      m_int32 = unit_with_specific_dtype(units.m, numpy.int32)
-      set = datamodel.Particles(3)
-      set.x = [1.3, 2.7, numpy.pi] | units.m
-      set.y = [1.3, 2.7, numpy.pi] | m_float32
-      set.z = [1.3, 2.7, numpy.pi] | m_int32
-      return set
+    def new_set_with_specific_dtype(self):
+        m_float32 = unit_with_specific_dtype(units.m, numpy.float32)
+        m_int32 = unit_with_specific_dtype(units.m, numpy.int32)
+        set = datamodel.Particles(3)
+        set.x = [1.3, 2.7, numpy.pi] | units.m
+        set.y = [1.3, 2.7, numpy.pi] | m_float32
+        set.z = [1.3, 2.7, numpy.pi] | m_int32
+        return set
    
-   def test1(self):
-      print "Unit with dtype is stored on set, number gets same dtype"
-      set = self.new_set_with_specific_dtype()
-      self.assertEqual(set.x.unit.dtype, None)
-      self.assertEqual(set.y.unit.dtype, numpy.float32)
-      self.assertEqual(set.z.unit.dtype, numpy.int32)
-      self.assertEqual(set.x.number.dtype, numpy.float64)
-      self.assertEqual(set.y.number.dtype, numpy.float32)
-      self.assertEqual(set.z.number.dtype, numpy.int32)
+    def test1(self):
+        print "Unit with dtype is stored on set, number gets same dtype"
+        set = self.new_set_with_specific_dtype()
+        self.assertEqual(set.x.unit.dtype, None)
+        self.assertEqual(set.y.unit.dtype, numpy.float32)
+        self.assertEqual(set.z.unit.dtype, numpy.int32)
+        self.assertEqual(set.x.number.dtype, numpy.float64)
+        self.assertEqual(set.y.number.dtype, numpy.float32)
+        self.assertEqual(set.z.number.dtype, numpy.int32)
 
-      self.assertTrue((set.x.number == [1.3, 2.7, numpy.pi]).all())
-      self.assertFalse((set.y.number == [1.3, 2.7, numpy.pi]).any())
-      self.assertAlmostEqual(set.y.number, [1.3, 2.7, numpy.pi], 6)
-      self.assertEqual(set.z.number, [1, 2, 3])
+        self.assertTrue((set.x.number == [1.3, 2.7, numpy.pi]).all())
+        self.assertFalse((set.y.number == [1.3, 2.7, numpy.pi]).any())
+        self.assertAlmostEqual(set.y.number, [1.3, 2.7, numpy.pi], 6)
+        self.assertEqual(set.z.number, [1, 2, 3])
    
-   def test2(self):
-      print "Stored unit with dtype remains, only number can be changed"
-      set = self.new_set_with_specific_dtype()
-      temp_x = set.x
-      set.x = set.z
-      set.y = set.z
-      set.z = 2 * temp_x
-      self.assertEqual(set.x.unit.dtype, None)
-      self.assertEqual(set.y.unit.dtype, numpy.float32)
-      self.assertEqual(set.z.unit.dtype, numpy.int32)
-      self.assertEqual(set.x.number.dtype, numpy.float64)
-      self.assertEqual(set.y.number.dtype, numpy.float32)
-      self.assertEqual(set.z.number.dtype, numpy.int32)
-      
-      self.assertTrue((set.x.number == [1, 2, 3]).all())
-      self.assertAlmostEqual(set.y.number, [1.0, 2.0, 3.0], 6)
-      self.assertEqual(set.z.number, [2, 5, 6])
-   
-   def test3(self):
-      print "Adding particles: stored unit with dtype remains"
-      set = self.new_set_with_specific_dtype()
-      set2 = datamodel.Particles(3)
-      set2.position = [[1.3]*3, [2.7]*3, [numpy.pi]*3] | units.m
-      set.add_particles(set2)
-      self.assertEqual(set.x.unit.dtype, None)
-      self.assertEqual(set.y.unit.dtype, numpy.float32)
-      self.assertEqual(set.z.unit.dtype, numpy.int32)
-      self.assertEqual(set.x.number.dtype, numpy.float64)
-      self.assertEqual(set.y.number.dtype, numpy.float32)
-      self.assertEqual(set.z.number.dtype, numpy.int32)
-      
-      self.assertTrue((set.x.number == [1.3, 2.7, numpy.pi, 1.3, 2.7, numpy.pi]).all())
-      self.assertAlmostEqual(set.y.number, [1.3, 2.7, numpy.pi, 1.3, 2.7, numpy.pi], 6)
-      self.assertEqual(set.z.number, [1, 2, 3, 1, 2, 3])
+    def test2(self):
+        if compare_version_strings(numpy.__version__, '1.8.0') < 0:
+            self.skip("test does a conversion that is not supported on older numpy versions")
+        print "Stored unit with dtype remains, only number can be changed"
+        set = self.new_set_with_specific_dtype()
+        temp_x = set.x
+        set.x = set.z
+        set.y = set.z
+        set.z = 2 * temp_x
+        self.assertEqual(set.x.unit.dtype, None)
+        self.assertEqual(set.y.unit.dtype, numpy.float32)
+        self.assertEqual(set.z.unit.dtype, numpy.int32)
+        self.assertEqual(set.x.number.dtype, numpy.float64)
+        self.assertEqual(set.y.number.dtype, numpy.float32)
+        self.assertEqual(set.z.number.dtype, numpy.int32)
+
+        self.assertTrue((set.x.number == [1, 2, 3]).all())
+        self.assertAlmostEqual(set.y.number, [1.0, 2.0, 3.0], 6)
+        self.assertEqual(set.z.number, [2, 5, 6])
+
+    def test3(self):
+        print "Adding particles: stored unit with dtype remains"
+        set = self.new_set_with_specific_dtype()
+        set2 = datamodel.Particles(3)
+        set2.position = [[1.3]*3, [2.7]*3, [numpy.pi]*3] | units.m
+        set.add_particles(set2)
+        self.assertEqual(set.x.unit.dtype, None)
+        self.assertEqual(set.y.unit.dtype, numpy.float32)
+        self.assertEqual(set.z.unit.dtype, numpy.int32)
+        self.assertEqual(set.x.number.dtype, numpy.float64)
+        self.assertEqual(set.y.number.dtype, numpy.float32)
+        self.assertEqual(set.z.number.dtype, numpy.int32)
+
+        self.assertTrue((set.x.number == [1.3, 2.7, numpy.pi, 1.3, 2.7, numpy.pi]).all())
+        self.assertAlmostEqual(set.y.number, [1.3, 2.7, numpy.pi, 1.3, 2.7, numpy.pi], 6)
+        self.assertEqual(set.z.number, [1, 2, 3, 1, 2, 3])
 
 
