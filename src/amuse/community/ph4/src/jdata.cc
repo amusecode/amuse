@@ -465,10 +465,16 @@ void jdata::set_initial_timestep()
     
 	    // Force the time step to a power of 2 commensurate with
 	    // system_time.
+        
+        if(isnan(firststep)) {  
+            firststep = 0.0625 * eta;
+        }
 
 	    int exponent;
 	    firststep /= 2*frexp(firststep, &exponent);
-	    while (fmod(system_time, firststep) != 0) firststep /= 2;
+	    while (fmod(system_time, firststep) != 0) {
+            firststep /= 2;
+        }
 
 	    timestep[j] = firststep;
 	}
@@ -502,6 +508,10 @@ void jdata::force_initial_timestep()
 	// Force the time step to a power of 2 commensurate with
 	// system_time.
 
+    if(isnan(firststep)) {  
+        firststep = 0.0625 * eta;
+    }
+    
 	int exponent;
 	firststep /= 2*frexp(firststep, &exponent);
 	while (fmod(system_time, firststep) != 0) firststep /= 2;
