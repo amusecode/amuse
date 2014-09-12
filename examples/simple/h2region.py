@@ -3,6 +3,7 @@ Evolves the steady state solution of a star irridiating a H2 region.
 """
 
 import numpy
+import os
 from matplotlib import pyplot
 from optparse import OptionParser
 
@@ -76,7 +77,7 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
     radiative_transfer = Mocassin(number_of_workers = 2) #, debugger = "xterm")
     
     radiative_transfer.set_input_directory(radiative_transfer.get_default_input_directory())
-    radiative_transfer.set_mocassin_output_directory(radiative_transfer.get_default_output_directory())
+    radiative_transfer.set_mocassin_output_directory(radiative_transfer.output_directory  + os.sep)
     
     radiative_transfer.initialize_code()
     
