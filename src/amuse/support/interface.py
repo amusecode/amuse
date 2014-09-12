@@ -1462,10 +1462,13 @@ class PropertyDefinition(object):
         self.publicname = publicname
         self.handler = handler
         self.keyword_arguments = {}
-
+        self._method = None
+        
     def get_value(self, original):
-        method = getattr(self.handler.interface, self.functionname)
-        result = method(**self.keyword_arguments)
+        if self._method is None:
+            self._method = getattr(self.handler.interface, self.functionname)
+         
+        result = self._method (**self.keyword_arguments)
         if hasattr(result, "__iter__"):
             return quantities.VectorQuantity.new_from_scalar_quantities(*result)
         else:
