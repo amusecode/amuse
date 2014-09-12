@@ -23,7 +23,6 @@ class MocassinInterface(CodeInterface, CommonCodeInterface,
         return os.path.join(self.get_code_src_directory(), 'mocassin.{0}'.format(self.MOCASSIN_VERSION), '')
     
     def setup_abundancies(self):
-        print self.output_directory
         abundancies_file_name = os.path.join(self.output_directory, 'tmp_abundancies_file')
         with open(abundancies_file_name, 'w') as abundancies_file:
             for atomname, value in self.abundancies_table().iteritems():
