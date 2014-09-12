@@ -58,7 +58,7 @@ def plot_track(data):
         temperature=stardata['temperature']
         luminosity=stardata['luminosity']
         loglog(temperature[4:], luminosity[4:], marker="s") # first few points show transient
-        text(1.25*temperature[-1], 0.5*luminosity[-1], mass)
+        text(1.25*temperature[-1], 0.5*luminosity[-1], str(mass))
     xlabel('Effective Temperature')
     ylabel('Luminosity')
     pyplot.xlim(10**4.6, 10**3.5)
