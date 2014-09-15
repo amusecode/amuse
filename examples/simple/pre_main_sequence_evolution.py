@@ -4,7 +4,6 @@ After Iben, ApJ 141, 993, 1965
 """
 
 from matplotlib import pyplot
-from amuse.plot import loglog, xlabel, ylabel, text
 
 from amuse.units import units
 from amuse.community.mesa.interface import MESA
@@ -52,17 +51,20 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 1.25, 1.5, 2.25, 3.0, 5.0, 9.0
     return data
     
 def plot_track(data):
-    pyplot.figure(figsize = (6, 8))
-    pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
+    figure = pyplot.figure(figsize = (6, 8))
+    plot = figure.add_subplot(1,1,1)
+    plot.set_title('Hertzsprung-Russell diagram', fontsize=12)
+    temp_unit = units.K
+    luminosity_unit = units.LSun
     for mass,stardata in data.items():
         temperature=stardata['temperature']
         luminosity=stardata['luminosity']
-        loglog(temperature[4:], luminosity[4:], marker="s") # first few points show transient
-        text(1.25*temperature[-1], 0.5*luminosity[-1], str(mass))
-    xlabel('Effective Temperature')
-    ylabel('Luminosity')
-    pyplot.xlim(10**4.6, 10**3.5)
-    pyplot.ylim(1.0e-2,1.e5)
+        plot.loglog(temperature[4:].value_in(temp_unit), luminosity[4:].value_in(luminosity_unit), marker="s") # first few points show transient
+        plot.text(1.25*temperature[-1].value_in(temp_unit), 0.5*luminosity[-1].value_in(luminosity_unit), str(mass))
+    plot.set_xlabel('Effective Temperature ['+str(temp_unit)+']')
+    plot.set_ylabel('Luminosity ['+str(luminosity_unit)+']')
+    plot.set_xlim(10**4.6, 10**3.5)
+    plot.set_ylim(1.0e-2,1.e5)
     pyplot.show()   
     
 if __name__ in ('__main__', '__plot__'):
