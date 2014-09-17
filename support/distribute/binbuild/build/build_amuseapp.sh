@@ -17,12 +17,12 @@ echo "Version to build:" ${VERSION:=${NOWSHORT}}
 
 PYTHONMAJOR="2"
 PYTHONMINOR="7"
-PYTHONRELEASE="2"
+PYTHONRELEASE="8"
 PYTHONPRERELEASE=0
 PYTHONMAJORMINOR="${PYTHONMAJOR}.${PYTHONMINOR}"
 PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 
-OPENSSLVERSION="0.9.8t"
+OPENSSLVERSION="1.0.1i"
 
 if [ ${PYTHONPRERELEASE} == 1 ]; then
     FTPPATH="http://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
@@ -94,12 +94,12 @@ if [ ! -e "installed" ]; then
         
         cd ${BASEDIR}
     
-        if [ ! -e "Python-${PYTHONVERSION}.tar.bz2" ]; then
+        if [ ! -e "Python-${PYTHONVERSION}.tgz" ]; then
             # download
-            wget ${FTPPATH}/Python-${PYTHONVERSION}.tar.bz2 || exit $?
+            wget ${FTPPATH}/Python-${PYTHONVERSION}.tgz  --no-check-certificate|| exit $?
         fi
         # extract
-        tar -xjvf Python-${PYTHONVERSION}.tar.bz2 || exit $?
+        tar -xvf Python-${PYTHONVERSION}.tgz || exit $?
         
         cd Python-${PYTHONVERSION}
     

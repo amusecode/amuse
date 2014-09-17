@@ -42,7 +42,7 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.7.1' ,                  #version string
+            '1.8.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
             'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
@@ -75,9 +75,9 @@ class InstallPrerequisites(object):
           (
             'h5py', 
             ['hdf'], 
-            '2.2.0', 
+            '2.3.1', 
             'h5py-' , '.tar.gz', 
-            'http://h5py.googlecode.com/files/', self.h5py_build
+            'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
             'docutils', 
@@ -90,9 +90,9 @@ class InstallPrerequisites(object):
           (
             'mpich', 
             [], 
-            '3.0.4', 
+            '3.1.2', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/3.0.4/', 
+            'http://www.mpich.org/static/tarballs/3.1.2/', 
             self.mpich2_build
           ) ,
           (
@@ -149,9 +149,9 @@ class InstallPrerequisites(object):
           (
             'png' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '1.6.6' ,                   #version string
+            '1.6.13' ,                   #version string
             'libpng-', '.tar.gz',        #pre- and postfix for filename
-            'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.6/', #download url, filename is appended
+            'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.13/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
           #(
