@@ -45,14 +45,32 @@ echo "Distfile = ${DISTFILE}"
 
 if [ ! -e "installed" ]; then
     if [ ${PLATFORM} == 'Darwin' ]; then
+        rm -rf openssl-${OPENSSLVERSION} || exit $?
+        
+        if [ ! -e "openssl-${OPENSSLVERSION}.tar.gz" ]; then
+            # download
+            curl -OL http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
+        fi
+        
+        tar zxf openssl-${OPENSSLVERSION}.tar.gz || exit $?
+        
+        cd openssl-${OPENSSLVERSION}
+        
+        ./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
+        
+        make || exit $?
+        
+        make install  || exit $?
+        
+        cd ${BASEDIR}
         # delete previous source
         rm -rf Python-${PYTHONVERSION} || exit $?
-        if [ ! -e "Python-${PYTHONVERSION}.tar.bz2" ]; then
+        if [ ! -e "Python-${PYTHONVERSION}.tgz" ]; then
             # download
-            curl -OL ${FTPPATH}/Python-${PYTHONVERSION}.tar.bz2 || exit $?
+            curl -OkL ${FTPPATH}/Python-${PYTHONVERSION}.tgz || exit $?
         fi
         # extract
-        tar -xjvf Python-${PYTHONVERSION}.tar.bz2 || exit $?
+        tar -xvf Python-${PYTHONVERSION}.tgz || exit $?
         cd Python-${PYTHONVERSION}
     
         if [ ${ARCHITECTURE} == 'i386' ]; then
@@ -65,6 +83,9 @@ if [ ! -e "installed" ]; then
         
         # Build Python
         ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --disable-framework --disable-universalsdk
+
+        # patch 
+        patch setup.py < ${BASEDIR}/setup_linux.patch || exit $?
         
         # build
         make || exit $?
