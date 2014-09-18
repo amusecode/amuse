@@ -222,7 +222,7 @@ if [ ! -e "pipsinstalled"  ]; then
     
     ${PYTHONHOME}/bin/pip install Flask || exit $?
     
-    py_install/bin/pip install -b mpl matplotlib --no-install || exit $?
+    py_install/bin/pip install -b mpl 'matplotlib < 1.3.0' --no-install || exit $?
     
     cd mpl/matplotlib
     
