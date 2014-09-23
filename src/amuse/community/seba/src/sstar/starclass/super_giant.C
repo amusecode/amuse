@@ -443,7 +443,7 @@ real super_giant::convective_envelope_mass(){
 
 // Section 2.3.1 in Hurley, Tout & Pols 2002
 real super_giant::convective_envelope_radius(){
-    return radius - helium_core_radius(); // function of relative_mass, core_mass and metalicity
+    return max(0., radius - helium_core_radius());// function of relative_mass, core_mass and metalicity
 }
 
 
@@ -778,7 +778,7 @@ real super_giant::helium_core_radius(const real time, const real mass, const rea
         real tau = 3.*(time-t_bagb) / (t_tagb-t_bagb);    
         l_c = helium_giant_luminosity_from_core_mass(COcore_mass, core_mass, z);
 //        in Hurleys code: slowly grow to He Giant radius
-        if (tau < 1.){
+        if (tau < 1.){ 
             real l_x = terminal_helium_main_sequence_luminosity(m_core);
             l_c = l_x * pow(l_c/l_x, tau);
         }

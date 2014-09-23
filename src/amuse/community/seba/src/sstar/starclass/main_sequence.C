@@ -698,7 +698,7 @@ real main_sequence::convective_envelope_radius(){
     
     real tau = relative_age / main_sequence_time(); // function of relative age, relative mass and metalicity
     real R_env_conv = R_env_conv_zams * pow(1-tau, 0.25);
-    return R_env_conv;
+    return max(0., R_env_conv);
 
 }
 

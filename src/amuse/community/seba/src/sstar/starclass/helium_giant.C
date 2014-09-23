@@ -624,7 +624,7 @@ real helium_giant::convective_envelope_mass(){
 
 // Section 2.3.1 in Hurley, Tout & Pols 2002
 real helium_giant::convective_envelope_radius(){
-    return radius - co_core_radius(); // function of core_mass
+    return max(0., radius - co_core_radius()); // function of core_mass
 }
 
 

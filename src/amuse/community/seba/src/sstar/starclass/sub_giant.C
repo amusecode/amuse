@@ -366,7 +366,7 @@ real sub_giant::convective_envelope_mass(){
 
 // Section 2.3.1 in Hurley, Tout & Pols 2002
 real sub_giant::convective_envelope_radius(){
-    return radius - helium_core_radius(); // function of relative_mass, core_mass and metalicity
+    return max(0., radius - helium_core_radius()); // function of relative_mass, core_mass and metalicity
 }
 
 

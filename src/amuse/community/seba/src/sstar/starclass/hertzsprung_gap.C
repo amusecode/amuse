@@ -435,7 +435,7 @@ real hertzsprung_gap::convective_envelope_radius(){
     real t_ms = main_sequence_time(); // function of relative mass and metalicity
     real t_bgb = base_giant_branch_time(); // function of relative mass and metalicity
     real tau = (relative_age - t_ms)/ (t_bgb - t_ms);
-    return sqrt(tau) * (radius-helium_core_radius()); //function of relative_mass, core_mass and metalicity
+    return max(0., sqrt(tau) * (radius-helium_core_radius())); //function of relative_mass, core_mass and metalicity
 }
 
 
