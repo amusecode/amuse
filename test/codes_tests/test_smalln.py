@@ -553,3 +553,57 @@ class TestSmallN(TestWithMPI):
         self.assertTrue(stopping_condition.is_set())
         
         self.assertTrue(instance.model_time < 10.0 | nbody_system.time)
+    
+    def test20(self):
+        p = datamodel.Particles(3)
+
+        p[0].mass   = 6.667e-01 | nbody_system.mass
+        p[0].radius = 4.000e-03 | nbody_system.length
+        p[0].x  = -1.309e+01 | nbody_system.length
+        p[0].y  =  1.940e+01 | nbody_system.length
+        p[0].z  = -1.163e+01 | nbody_system.length
+        p[0].vx =  2.366e-01 | nbody_system.speed
+        p[0].vy = -3.813e-01 | nbody_system.speed
+        p[0].vz =  2.486e-01 | nbody_system.speed
+
+        p[1].mass   = 3.333e-01 | nbody_system.mass
+        p[1].radius = 1.000e-03 | nbody_system.length  
+        p[1].x  = -1.506e+01 | nbody_system.length
+        p[1].y  =  1.937e+01 | nbody_system.length
+        p[1].z  = -1.163e+01 | nbody_system.length
+        p[1].vx =  3.483e-01 | nbody_system.speed
+        p[1].vy = -4.513e-01 | nbody_system.speed
+        p[1].vz =  2.486e-01 | nbody_system.speed
+
+        p[2].mass   = 5.000e-01 | nbody_system.mass
+        p[2].radius = 2.000e-03 | nbody_system.length 
+        p[2].x  =  2.749e+01 | nbody_system.length
+        p[2].y  = -3.877e+01 | nbody_system.length
+        p[2].z  =  2.325e+01 | nbody_system.length
+        p[2].vx = -5.476e-01 | nbody_system.speed
+        p[2].vy =  8.092e-01 | nbody_system.speed
+        p[2].vz = -4.972e-01 | nbody_system.speed
+
+        instance = SmallN()
+        instance.initialize_code()
+        instance.parameters.set_defaults
+        N = 3
+        t_begin = 0.0 | nbody_system.time
+        t_end = 100.0 | nbody_system.time
+
+        particles = p
+
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+
+
+        sc = instance.stopping_conditions.collision_detection
+        sc.enable()
+
+
+        isCollision = False
+        instance.evolve_model(t_end)
+        isCollision = sc.is_set()
+        
+        instance.stop()
+        self.assertTrue(isCollision, "no collision detected")

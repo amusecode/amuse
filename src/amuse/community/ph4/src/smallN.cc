@@ -360,6 +360,62 @@ real calculate_top_level_acc_and_jerk(hdyn *b)
 
 
 
+
+//----------------------------------------------------------------------
+//
+// Check if a collision occurs before time
+
+void check_collision_between_components_before_time(hdyn *bi, real t)	// unperturbed
+{							// "predictor"
+    hdyn *od = bi->get_oldest_daughter();
+
+    if (od) {
+
+        // Only way this can occur is for unperturbed motion.
+        // Check and flag if no kepler found.
+
+        kepler *k = od->get_kepler();
+
+        if (!k) err_exit("smallN_evolve: daughter node with no kepler.");
+
+        else {
+            hdyn *yd = od->get_younger_sister();
+            // AVE COLLISION DETECTION
+            real rsum = od->get_radius() + yd->get_radius();
+            if(rsum > k->get_periastron()) {
+#if 0
+                cerr<< "kepler orbit with periastron < sum of radii" << endl;
+                cerr<< "time to next periastron:" << k->get_time_of_periastron_passage() << endl;
+                cerr<< "time to evolve to:" << t << endl;
+                cerr<< "periastron:" << k->get_periastron() << endl;
+                cerr<< "sum of radii:" << rsum << endl;
+#endif
+                
+                if ( t > k->get_time_of_periastron_passage() ) {
+                    
+                    // the advance components to time function will not
+                    // move fully unperturbed binaries,
+                    // as we are going to stop, we need to do this here
+                    if (od->get_fully_unperturbed()) {
+                        k->transform_to_time(t);
+                    }
+                    int stopping_index  = next_index_for_stopping_condition();
+                    if(stopping_index < 0)
+                    {
+                
+                    }
+                    else
+                    {
+                        set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                        set_stopping_condition_particle_index(stopping_index, 0, od->get_index());
+                        set_stopping_condition_particle_index(stopping_index, 1, yd->get_index());
+                    }
+                }
+            }
+        }
+    }
+}
+
 //----------------------------------------------------------------------
 //
 // Advance the components of a binary to the specified time.
@@ -394,9 +450,9 @@ void advance_components_to_time(hdyn *bi, real t)	// unperturbed
 	    // components' positions and velocities unchanged.
 
 	    hdyn *yd = od->get_younger_sister();
-
-	    if (!od->get_fully_unperturbed())
-		k->transform_to_time(t);
+	    if (!od->get_fully_unperturbed()) {
+            k->transform_to_time(t);
+        }
 
 	    real fac = yd->get_mass()/bi->get_mass();
 	    od->set_pred_pos(-fac*k->get_rel_pos());
@@ -481,6 +537,9 @@ static real take_a_step(hdyn *b,	// root node
 			real &dt)	// natural step at start/end
 {
     real t = b->get_system_time();
+    
+    int is_collision_detection_enabled = 0;
+    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
 
     // Impose an absolute limit on the step if unperturbed motion is
     // underway.
@@ -510,9 +569,13 @@ static real take_a_step(hdyn *b,	// root node
 
     predict_loworder_all(b, t+dt);	// top-level nodes
     for_all_daughters(hdyn, b, bi) {
-	bi->store_old_force();
-	if (bi->is_parent())		// components
-	    advance_components_to_time(bi, t+dt);
+        bi->store_old_force();
+        if (bi->is_parent()){		// components
+            if(is_collision_detection_enabled) {
+                check_collision_between_components_before_time(bi, t+dt);
+            }
+            advance_components_to_time(bi, t+dt);
+        }
     }
 
     // Compute forces and correct, iterating if desired.  Note that
@@ -531,8 +594,6 @@ static real take_a_step(hdyn *b,	// root node
     // Ultimately, new_dt will be the actual step taken, while
     // end_point_dt will be the natural time step at the end of the
     // step.
-    int is_collision_detection_enabled = 0;
-    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
 
     for (int i = 0; i <= n_iter; i++) {
 
@@ -571,7 +632,12 @@ static real take_a_step(hdyn *b,	// root node
 	    if (new_dt != prev_new_dt)
 		bi->correct_acc_and_jerk(new_dt, prev_new_dt);
 	    bi->correct_pos_and_vel(new_dt);	// sets pred_xxx
-	    if (bi->is_parent()) advance_components_to_time(bi, t+new_dt);
+	    if (bi->is_parent()) {
+            if(is_collision_detection_enabled) {
+                check_collision_between_components_before_time(bi, t+dt);
+            }
+            advance_components_to_time(bi, t+new_dt);
+        }
 	}
 	
 	if(is_collision_detection_enabled && (set_conditions & enabled_conditions)) {
