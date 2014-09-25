@@ -208,14 +208,14 @@ int main(int argc, char *argv[]){
       switch(c){
       case 'i':
 	READ_FLAG=0;
-	sprintf(sinput,optarg);
+	sprintf(sinput, "%s", optarg);
 	break;
       case 'I':
 	READ_FLAG=1;
-	sprintf(sinput,optarg);
+	sprintf(sinput, "%s", optarg);
 	break;
       case 'o':
-	sprintf(dirname,optarg);
+	sprintf(dirname, "%s", optarg);
 	break;
       case 's':
 	snpid=atoi(optarg);
