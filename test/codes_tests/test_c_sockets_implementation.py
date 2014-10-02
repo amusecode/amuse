@@ -29,6 +29,9 @@ class TestCSocketsImplementationInterface(test_c_implementation.TestCImplementat
 
     def test22(self):
         self.skip("this test uses mpi internals, skip here")
+        
+    def test29(self):
+        self.skip("this test uses mpi internals, skip here")
                      
     def check_not_in_mpiexec(self):
         """
