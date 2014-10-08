@@ -844,6 +844,17 @@ class AbstractMessageChannel(OptionalAttributes):
             return interpreter_executable, [full_name_of_the_worker]
         else:
             return full_name_of_the_worker, []
+            
+    
+    @classmethod
+    def STRACE(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+        arguments = ['-ostrace-out',  '-ff', '-eexit_group']
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+        arguments.append(full_name_of_the_worker)
+        command = 'strace'
+        return command, arguments
+        
     
     @classmethod
     def is_multithreading_supported(cls):
@@ -1028,6 +1039,7 @@ AbstractMessageChannel.DEBUGGERS = {
     "xterm":AbstractMessageChannel.XTERM,
     "gdb-remote":AbstractMessageChannel.GDBR,
     "valgrind":AbstractMessageChannel.VALGRIND,
+    "strace":AbstractMessageChannel.STRACE
 }
 
 # import time
