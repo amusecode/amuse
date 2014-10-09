@@ -306,7 +306,7 @@ int evolve_star(double mass, double endtime, double metal, double * resulttime, 
     for_all_daughters(node, root, bi) {
        *resulttime = bi->get_starbase()->get_current_time();
        *end_mass = bi->get_starbase()->get_total_mass() ;
-       *end_radius = bi->get_starbase()->get_effective_radius(); 
+       *end_radius = bi->get_starbase()->get_radius(); 
        *end_luminosity = bi->get_starbase()->get_luminosity();
        *end_temperature = bi->get_starbase()->temperature();
        *end_time_step = bi->get_starbase()->get_evolve_timestep();
@@ -541,7 +541,7 @@ int get_radius(int index_of_the_star, double * radius){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
     if(error_code < 0) {return error_code;}
-    *radius= seba_node->get_starbase()->get_effective_radius() ;
+    *radius= seba_node->get_starbase()->get_radius() ;
     return error_code;
 }
 
@@ -595,6 +595,14 @@ int get_relative_mass(int index_of_the_star, double * relative_mass){
     if(error_code < 0) {return error_code;}
     *relative_mass= seba_node->get_starbase()->get_relative_mass() ;
     return error_code; 
+}
+
+int get_effective_radius(int index_of_the_star, double * radius){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+    *radius= seba_node->get_starbase()->get_effective_radius() ;
+    return error_code;
 }
 
 

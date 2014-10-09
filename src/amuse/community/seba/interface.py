@@ -384,6 +384,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         Retrieve the current value of the square of the gyration radius (no units). 
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
         function.addParameter('gyration_radius_sq', dtype='float64', direction=function.OUT,
@@ -459,6 +460,28 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         return function
          
     @legacy_function
+    def get_effective_radius():
+        """
+        Retrieve the current value of the effective radius (Rsun).
+        This can be different from the (equilibrium) radius due to accretion or mass loss.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('effective_radius', dtype='float64', direction=function.OUT,
+            description = "The current value of the effective radius")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the effective_radius was retrieved
+        -1 - ERROR
+            The code does not have support for retrieving the effective_radius
+        """
+        return function
+         
+         
+    @legacy_function
     def get_convective_envelope_mass():
         """
         Retrieve the current value of the mass of the part of the envelope that is convective (MSun). 
@@ -529,6 +552,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         Retrieve the current value of the wind_mass_loss_rate (Msun/yr). 
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
         function.addParameter('wind_mass_loss_rate', dtype='float64', direction=function.OUT,
@@ -732,6 +756,11 @@ class SeBa(se.StellarEvolution):
             (units.MSun, object.ERROR_CODE,)
         )
         object.add_method(
+            "get_effective_radius", 
+            (object.INDEX,), 
+            (units.RSun, object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_convective_envelope_mass", 
             (object.INDEX,), 
             (units.MSun, object.ERROR_CODE,)
@@ -802,18 +831,17 @@ class SeBa(se.StellarEvolution):
         object.add_getter('particles', 'get_luminosity', names = ('luminosity',))
         object.add_getter('particles', 'get_temperature', names = ('temperature',))
         object.add_getter('particles', 'get_natal_kick_velocity', names = ('natal_kick_x','natal_kick_y','natal_kick_z'))
-#        object.add_getter('particles', 'get_relative_age', names = ('relative_age',))
-#        object.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
         object.add_getter('particles', 'get_convective_envelope_mass', names = ('convective_envelope_mass',))
         object.add_getter('particles', 'get_convective_envelope_radius', names = ('convective_envelope_radius',))
+        object.add_getter('particles', 'get_gyration_radius_sq', names = ('gyration_radius_sq',))
+        object.add_getter('particles', 'get_relative_age', names = ('relative_age',))
+        object.add_getter('particles', 'get_relative_mass', names = ('relative_mass',))
+        object.add_getter('particles', 'get_wind_mass_loss_rate', names = ('wind_mass_loss_rate',))
+        object.add_getter('particles', 'get_effective_radius', names = ('effective_radius',))
 
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
         object.add_method('particles', 'change_mass')
-        object.add_method('particles', 'get_gyration_radius_sq')
-        object.add_method('particles', 'get_relative_age')
-        object.add_method('particles', 'get_relative_mass')
-        object.add_method('particles', 'get_wind_mass_loss_rate')
 
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')
