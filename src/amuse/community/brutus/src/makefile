@@ -33,14 +33,14 @@ main.o: main.cpp Brutus.o Bulirsch_Stoer.o Cluster.o Star.o
 	$(CC) main.cpp -I$(MPRDIR)
 ###################################################################
 Brutus.o: Brutus.h Brutus.cpp Bulirsch_Stoer.o Cluster.o Star.o 
-	$(CC) Brutus.cpp -I$(MPRDIR)
+	$(CC) Brutus.cpp
 
 Bulirsch_Stoer.o: Bulirsch_Stoer.h Bulirsch_Stoer.cpp Cluster.o Star.o 
-	$(CC) Bulirsch_Stoer.cpp -I$(MPRDIR)
+	$(CC) Bulirsch_Stoer.cpp 
 Cluster.o: Cluster.h Cluster.cpp Star.o 
-	$(CC) Cluster.cpp -I$(MPRDIR)
+	$(CC) Cluster.cpp 
 Star.o: Star.h Star.cpp 
-	$(CC) Star.cpp -I$(MPRDIR)
+	$(CC) Star.cpp 
 ###################################################################
 clean:
 	rm -f *~
