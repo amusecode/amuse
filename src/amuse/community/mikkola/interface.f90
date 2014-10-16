@@ -5,6 +5,7 @@ DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_m
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_y
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_x
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_z
+DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_radius
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vy
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vx
 DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: particle_vz
@@ -53,6 +54,7 @@ FUNCTION commit_parameters()
   ALLOCATE(particle_x(maximum_number_of_particles))
   ALLOCATE(particle_y(maximum_number_of_particles))
   ALLOCATE(particle_z(maximum_number_of_particles))
+  ALLOCATE(particle_radius(maximum_number_of_particles))
   ALLOCATE(particle_vx(maximum_number_of_particles))
   ALLOCATE(particle_vy(maximum_number_of_particles))
   ALLOCATE(particle_vz(maximum_number_of_particles))
@@ -93,6 +95,7 @@ FUNCTION new_particle(index_of_the_particle, m, x, y, z, vx, vy, vz, r)
       particle_x(index_of_the_particle) = x
       particle_y(index_of_the_particle) = y
       particle_z(index_of_the_particle) = z
+      particle_radius(index_of_the_particle) = r
       particle_vx(index_of_the_particle) = vx
       particle_vy(index_of_the_particle) = vy
       particle_vz(index_of_the_particle) = vz
@@ -191,6 +194,7 @@ FUNCTION get_state(index_of_the_particle, mass, x, y, z, vx, vy,  &
   x = particle_x(index_of_the_particle)
   y = particle_y(index_of_the_particle)
   z = particle_z(index_of_the_particle)
+  radius = particle_radius(index_of_the_particle)
   vx = particle_vx(index_of_the_particle)
   vy = particle_vy(index_of_the_particle)
   vz = particle_vz(index_of_the_particle)
@@ -564,6 +568,11 @@ FUNCTION get_radius(index_of_the_particle, radius)
   INTEGER :: get_radius
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: radius
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      get_radius = -1
+      RETURN
+  ENDIF
+  radius = particle_radius(index_of_the_particle)
   get_radius=0
 END FUNCTION
 
@@ -572,6 +581,12 @@ FUNCTION set_radius(index_of_the_particle, radius)
   INTEGER :: set_radius
   INTEGER :: index_of_the_particle
   DOUBLE PRECISION :: radius
+  IF ( (.NOT. ALLOCATED(particle_id)) .OR. (particle_id(index_of_the_particle).EQ.-1) ) THEN
+      set_radius = -1
+      RETURN
+  ENDIF
+  
+  particle_radius(index_of_the_particle) = radius
   set_radius=0
 END FUNCTION
 
@@ -585,13 +600,13 @@ FUNCTION cleanup_code()
       DEALLOCATE(particle_x)
       DEALLOCATE(particle_y)
       DEALLOCATE(particle_z)
+      DEALLOCATE(particle_radius)
       DEALLOCATE(particle_vx)
       DEALLOCATE(particle_vy)
       DEALLOCATE(particle_vz)
       DEALLOCATE(particle_child1)
       DEALLOCATE(particle_child2)
       DEALLOCATE(particle_is_child)
-      
       DEALLOCATE(particle_id_added)
   END IF
   

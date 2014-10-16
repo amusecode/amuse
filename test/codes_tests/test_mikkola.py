@@ -40,9 +40,9 @@ class MikkolaInterfaceTests(TestWithMPI):
         instance.set_lightspeed(1e4)
         instance.commit_parameters()
 
-        index1, error = instance.new_particle(mass = 1.0, radius = 0, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
+        index1, error = instance.new_particle(mass = 1.0, radius = 0.1, x = 1.0, y = 2.0, z = 3.0, vx = 1.1, vy = 2.2, vz = 3.3)
         self.assertEquals(error, 0)
-        index2, error = instance.new_particle(mass = 0.001, radius = 0, x = 3.0, y = 4.0, z = 5.0, vx = 3.3, vy = 4.4, vz = 5.5)
+        index2, error = instance.new_particle(mass = 0.001, radius = 0.2, x = 3.0, y = 4.0, z = 5.0, vx = 3.3, vy = 4.4, vz = 5.5)
         self.assertEquals(error, 0)
         
         self.assertEquals(1, index1)
@@ -55,6 +55,15 @@ class MikkolaInterfaceTests(TestWithMPI):
         mass,error = instance.get_mass(2)
         self.assertEquals(error, 0)
         self.assertEquals(mass, 0.001)
+        
+        
+        radius,error = instance.get_radius(1)
+        self.assertEquals(error, 0)
+        self.assertEquals(radius, 0.1)
+                
+        radius,error = instance.get_radius(2)
+        self.assertEquals(error, 0)
+        self.assertEquals(radius, 0.2)
         
         
         x,y,z,error = instance.get_position(1)
