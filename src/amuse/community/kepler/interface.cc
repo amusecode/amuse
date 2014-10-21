@@ -1,5 +1,5 @@
-#include "src/stdinc.h"
-#include "src/kepler.h"
+#include "stdinc.h"
+#include "kepler.h"
 
 static kepler *k;
 

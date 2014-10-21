@@ -12,7 +12,7 @@ OPT	  = # -O4 don't use O4 it is not defined on normal gcc, but has special mean
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += $(OPT)
+CFLAGS   += $(OPT) -I../../ph4/src -I../ph4/src
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -34,7 +34,7 @@ interface.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py KeplerInterface -o $@
 
 kepler_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LIBS)
 
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 

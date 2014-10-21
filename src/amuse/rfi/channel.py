@@ -855,6 +855,16 @@ class AbstractMessageChannel(OptionalAttributes):
         command = 'strace'
         return command, arguments
         
+    @classmethod
+    def CUSTOM(cls, full_name_of_the_worker, channel, interpreter_executable=None):
+        import shlex
+        arguments = list(shlex.split(channel.custom_args))
+        if not interpreter_executable is None:
+            arguments.append(interpreter_executable)
+        arguments.append(full_name_of_the_worker)
+        command = channel.custom_exe
+        return command, arguments
+        
     
     @classmethod
     def is_multithreading_supported(cls):
@@ -892,6 +902,14 @@ class AbstractMessageChannel(OptionalAttributes):
     @option(type="string", sections=("channel",))
     def adg_exe(self):
         return 'adg.exe'
+        
+    @option(type="string", sections=("channel",))
+    def custom_exe(self):
+        return 'mintty.exe'
+        
+    @option(type="string", sections=("channel",))
+    def custom_args(self):
+        return '--hold -e gdb --args'
     
     
         
@@ -1039,7 +1057,8 @@ AbstractMessageChannel.DEBUGGERS = {
     "xterm":AbstractMessageChannel.XTERM,
     "gdb-remote":AbstractMessageChannel.GDBR,
     "valgrind":AbstractMessageChannel.VALGRIND,
-    "strace":AbstractMessageChannel.STRACE
+    "strace":AbstractMessageChannel.STRACE,
+    "custom":AbstractMessageChannel.CUSTOM
 }
 
 # import time

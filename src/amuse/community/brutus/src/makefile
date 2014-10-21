@@ -10,7 +10,7 @@ AMUSE_DIR?=../../../../..
 #MPRLIB  = $(HOME)Packages/mpreal_local/lib/	# libmpfr.a, libgmp.a
 
 ###################################################################
-COMP = mpicxx
+COMP = $(CXX)
 CFLAGS = -O1 $(CXXFLAGS)
 CC  = $(COMP) $(CFLAGS) -c
 CO  = $(COMP) $(CFLAGS) -o

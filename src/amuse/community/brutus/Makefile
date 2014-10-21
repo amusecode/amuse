@@ -19,8 +19,8 @@ LIBS += $(MPFR_LIBS) $(GMP_LIBS)
 MPICXX ?= mpicxx
 MPICC ?= mpicc
 
-CC = $(MPICC)
-CXX = $(MPICXX)
+#CC = $(MPICC)
+#CXX = $(MPICXX)
 
 CXXFLAGS ?= -Wall -g -O2 
 

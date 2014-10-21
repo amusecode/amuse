@@ -128,7 +128,7 @@ int internal__open_port(char ** output)
     MPI_Open_port(MPI_INFO_NULL, portname_buffer);
     *output = portname_buffer;
 #else
-    *output = empty_string;
+    *output = (char *) empty_string;
 #endif
     return 0;
 }

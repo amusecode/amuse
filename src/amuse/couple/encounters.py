@@ -1393,6 +1393,8 @@ class Multiples(options.OptionalAttributes):
                 subset.add_particle(node.particle)
             subset.position += multiple.position
             subset.velocity += multiple.velocity
+            delattr(subset, 'child1')
+            delattr(subset, 'child2')
             result.add_particles(subset)
         return result
         
