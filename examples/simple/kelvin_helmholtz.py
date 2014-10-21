@@ -3,15 +3,16 @@ Runs the Kelvin-Helmholtz Instability problem in two dimensions with Athena.
 """
 import numpy
 from matplotlib import pyplot
+#from amuse.lab import *
 from amuse.community.athena.interface import Athena
 from amuse.units.generic_unit_system import *
 from amuse.datamodel import Grid
 
 GAMMA = 1.4
-DIMENSIONS_OF_MESH = (400,400,1)
-PERTUBATION_AMPLITUDE = 0.01 | speed
+DIMENSIONS_OF_MESH = (50,50,1)
+PERTUBATION_AMPLITUDE = 0.1 | speed
 
-def new_instance_of_hydro_code(number_of_workers=4):
+def new_instance_of_hydro_code(number_of_workers=1):
     result=Athena(number_of_workers = number_of_workers)
     result.parameters.gamma = GAMMA
     result.parameters.courant_number=0.8
@@ -31,7 +32,7 @@ def set_parameters(instance):
     
 def new_grid():
     grid = Grid.create(DIMENSIONS_OF_MESH, [1,1,1] | length)
-    self.clear_grid(grid)
+    clear_grid(grid)
     return grid
     
 def clear_grid(grid):
