@@ -170,6 +170,9 @@ void hydro_force(void)
 
 		    HydroDataIn[nexport].Index = i;
 		    HydroDataIn[nexport].Task = j;
+#ifdef VARIABLE_VISC_CONST
+                    HydroDataIn[nexport].Alpha = SphP[i].Alpha;
+#endif
 		    nexport++;
 		    nsend_local[j]++;
 		  }
@@ -384,7 +387,10 @@ void hydro_evaluate(int target, int mode)
 {
   int j, k, n, timestep, startnode, numngb;
   FLOAT *pos, *vel;
-  FLOAT mass, h_i, dhsmlDensityFactor, rho, pressure, f1, f2;
+  FLOAT mass, h_i, dhsmlDensityFactor, rho, pressure, f1, alpha_visc, alpha_visc_j;
+#ifndef VARIABLE_VISC_CONST
+  FLOAT f2;
+#endif
   double acc[3], dtEntropy, maxSignalVel;
   double dx, dy, dz, dvx, dvy, dvz;
   double h_i2, hinv, hinv4;
@@ -395,6 +401,8 @@ void hydro_evaluate(int target, int mode)
 #ifndef NOVISCOSITYLIMITER
   double dt;
 #endif
+
+  alpha_visc = All.ArtBulkViscConst;
 
   if(mode == 0)
     {
@@ -407,9 +415,14 @@ void hydro_evaluate(int target, int mode)
       pressure = SphP[target].Pressure;
       timestep = P[target].Ti_endstep - P[target].Ti_begstep;
       soundspeed_i = sqrt(GAMMA * pressure / rho);
+
+#ifdef VARIABLE_VISC_CONST
+      alpha_visc = SphP[target].Alpha;
+#else
       f1 = fabs(SphP[target].DivVel) /
 	(fabs(SphP[target].DivVel) + SphP[target].CurlVel +
 	 0.0001 * soundspeed_i / SphP[target].Hsml / fac_mu);
+#endif
     }
   else
     {
@@ -423,6 +436,9 @@ void hydro_evaluate(int target, int mode)
       timestep = HydroDataGet[target].Timestep;
       soundspeed_i = sqrt(GAMMA * pressure / rho);
       f1 = HydroDataGet[target].F1;
+#ifdef VARIABLE_VISC_CONST
+      alpha_visc = HydroDataGet[target].Alpha;
+#endif
     }
 
 
@@ -446,6 +462,11 @@ void hydro_evaluate(int target, int mode)
 	  dx = pos[0] - P[j].Pos[0];
 	  dy = pos[1] - P[j].Pos[1];
 	  dz = pos[2] - P[j].Pos[2];
+
+          alpha_visc_j = All.ArtBulkViscConst;
+#ifdef VARIABLE_VISC_CONST
+          alpha_visc_j = SphP[j].Alpha;
+#endif	
 
 #ifdef PERIODIC			/*  find the closest image in the given box size  */
 	  if(dx > boxHalf_X)
@@ -531,11 +552,18 @@ void hydro_evaluate(int target, int mode)
 			maxSignalVel = vsig;
 
 		      rho_ij = 0.5 * (rho + SphP[j].Density);
+
+#ifdef VARIABLE_VISC_CONST		      
+                      visc = 0.25 * (alpha_visc + alpha_visc_j) * vsig * (-mu_ij) / rho_ij;
+#else
 		      f2 =
 			fabs(SphP[j].DivVel) / (fabs(SphP[j].DivVel) + SphP[j].CurlVel +
 						0.0001 * soundspeed_j / fac_mu / SphP[j].Hsml);
 
-		      visc = 0.25 * All.ArtBulkViscConst * vsig * (-mu_ij) / rho_ij * (f1 + f2);
+		      visc = 0.25 * alpha_visc * vsig * (-mu_ij) / rho_ij * (f1 + f2);
+#endif		      		      
+
+
 
 		      /* .... end artificial viscosity evaluation */
 #ifndef NOVISCOSITYLIMITER

@@ -50,9 +50,10 @@ OPT   +=  -DNOSTOP_WHEN_BELOW_MINTIMESTEP
 #OPT   +=  -DNOVISCOSITYLIMITER
 #OPT   +=  -DCOMPUTE_POTENTIAL_ENERGY
 #OPT   +=  -DLONGIDS
-#OPT   +=  -DISOTHERM_EQS
-#OPT   +=  -DADAPTIVE_GRAVSOFT_FORGAS
+OPT   +=  -DISOTHERM_EQS
+OPT   +=  -DADAPTIVE_GRAVSOFT_FORGAS
 #OPT   +=  -DSELECTIVE_NO_GRAVITY=2+4+8+16
+OPT   +=  -DVARIABLE_VISC_CONST
 
 #--------------------------------------- Testing and Debugging options
 #OPT   +=  -DFORCETEST=0.1
@@ -71,8 +72,8 @@ OPT   +=  -DNOSTOP_WHEN_BELOW_MINTIMESTEP
 #                                                                           #
 #############################################################################
 
-OPT   +=  -DTIMESTEP_LIMITER=4
-OPT   +=  -DTIMESTEP_UPDATE
+#OPT   +=  -DTIMESTEP_LIMITER=4
+#OPT   +=  -DTIMESTEP_UPDATE
 
 # NB: the variable TIMESTEP_LIMITER has been defined to 4 (recommended value), 
 # but can be changed to any other power of 2 before compilation.
