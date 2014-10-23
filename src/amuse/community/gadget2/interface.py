@@ -40,9 +40,8 @@ class Gadget2Interface(
     
     MODE_NORMAL = 'normal'
     MODE_PERIODIC_BOUNDARIES   = 'periodic'
-    MODE_PERIODIC_NOGRAVITY = 'periodic_nogravity'
+    MODE_PERIODIC_NOGRAVITY   = 'periodic_nogravity'
     MODE_NOGRAVITY = 'nogravity'
-    MODE_PERIODIC_BOUNDARIES_GRAVITY = 'periodic_gravity'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
@@ -58,8 +57,6 @@ class Gadget2Interface(
             return 'gadget2_worker_periodic_nogravity'
         elif mode == self.MODE_NOGRAVITY:
             return 'gadget2_worker_nogravity'
-        elif mode == self.MODE_PERIODIC_BOUNDARIES_GRAVITY:
-        	return 'gadget2_worker_periodic_gravity'
         else:
             return 'gadget2_worker'
     
@@ -369,26 +366,6 @@ class Gadget2Interface(
         function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('h_smooth', dtype='float64', direction=function.OUT)
-        function.addParameter('length', 'int32', function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_alpha_visc():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter('alpha', dtype='float64', direction=function.OUT)
-        function.addParameter('length', 'int32', function.LENGTH)
-        function.result_type = 'int32'
-        return function
-    
-    @legacy_function
-    def get_dtalpha_visc():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter('dtalpha', dtype='float64', direction=function.OUT)
         function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -1211,12 +1188,11 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
     
     def initialize_code(self):
         result = self.overridden().initialize_code()
-        if (self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES or self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES_GRAVITY):
+        if self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES:
             self.parameters.periodic_boundaries_flag = True
-            
         elif self.mode == self.legacy_interface.MODE_PERIODIC_NOGRAVITY:
             self.parameters.periodic_boundaries_flag = True
-        
+        print self.get_output_directory()
         self.parameters.gadget_output_directory = self.get_output_directory()
         # The code's units are read-only, and set here to ensure they always match with the unit_converter
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))
@@ -1701,11 +1677,9 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         object.add_setter('gas_particles', 'set_internal_energy')
         object.add_getter('gas_particles', 'get_internal_energy')
         object.add_getter('gas_particles', 'get_smoothing_length')
-        object.add_getter('gas_particles', 'get_alpha_visc', names = ('alpha',))
-        object.add_getter('gas_particles', 'get_dtalpha_visc', names = ('dtalpha',))
         object.add_getter('gas_particles', 'get_density', names = ('rho',))
         object.add_getter('gas_particles', 'get_density', names = ('density',))
-        object.add_getter('gas_particles', 'get_pressure', names = ('pressure',))
+        object.add_getter('gas_particles', 'get_pressure')
         object.add_getter('gas_particles', 'get_d_internal_energy_dt')
         object.add_getter('gas_particles', 'get_n_neighbours')
         object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('radius',))

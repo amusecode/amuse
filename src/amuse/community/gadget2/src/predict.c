@@ -74,10 +74,6 @@ void move_particles(int time0, int time1)
 	  dt_entr = (time1 - (P[i].Ti_begstep + P[i].Ti_endstep) / 2) * All.Timebase_interval;
 
 	  SphP[i].Pressure = (SphP[i].Entropy + SphP[i].DtEntropy * dt_entr) * pow(SphP[i].Density, GAMMA);
-
-#ifdef VARIABLE_VISC_CONST
-          SphP[i].Alpha += SphP[i].DtAlpha * dt_drift;
-#endif
 	}
     }
 

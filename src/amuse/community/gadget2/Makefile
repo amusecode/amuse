@@ -101,8 +101,6 @@ $(PERIODIC_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options
 	
 $(PERIODIC_BUILDDIR)/libgadget.a:  $(PERIODIC_BUILDDIR)/Makefile $(PERIODIC_BUILDDIR)/makefile_options
 	make -C $(PERIODIC_BUILDDIR) all OPT="$(PERIODIC_OPT)" VPATH=../src
-
-gadget2_viscosity_worker_periodic: gadget2_worker_periodic
 	
 gadget2_worker_periodic: worker_code.cc worker_code.h interface.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SC_FLAGS) $(GSL_FLAGS) $< interface.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o  $(LIBS)
@@ -121,8 +119,6 @@ $(PERIODIC_NOGRAVITY_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options
 	
 $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a:  $(PERIODIC_NOGRAVITY_BUILDDIR)/Makefile $(PERIODIC_NOGRAVITY_BUILDDIR)/makefile_options
 	make -C $(PERIODIC_NOGRAVITY_BUILDDIR) all OPT="$(PERIODIC_NOGRAVITY_OPT)" VPATH=../src
-
-gadget2_viscosity_worker_periodic_nogravity: gadget2_worker_periodic_nogravity
 	
 gadget2_worker_periodic_nogravity: worker_code.cc worker_code.h interface.pngo $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) -DPERIODIC -DNOGRAVITY $(SC_FLAGS) $(GSL_FLAGS) $< interface.pngo -o $@  $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas  $(LIBS) $(PERIODIC_NOGRAVITY_BUILDDIR)/allvars.o
@@ -141,8 +137,6 @@ $(NOGRAVITY_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options
 
 $(NOGRAVITY_BUILDDIR)/libgadget.a:  $(NOGRAVITY_BUILDDIR)/Makefile $(NOGRAVITY_BUILDDIR)/makefile_options
 	make -C $(NOGRAVITY_BUILDDIR) all OPT="$(NOGRAVITY_OPT)" VPATH=../src
-
-gadget2_viscosity_worker_nogravity: gadget2_worker_nogravity
 
 gadget2_worker_nogravity: worker_code.cc worker_code.h interface.ngo $(NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) -DNOGRAVITY $(SC_FLAGS) $(GSL_FLAGS) $< interface.ngo -o $@  $(NOGRAVITY_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(NOGRAVITY_BUILDDIR)/allvars.o  $(LIBS)
