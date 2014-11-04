@@ -403,9 +403,9 @@ class TestSimpleMultiples(TestWithMPI):
         
         self.assertEquals(len(multiples_code.particles), 2) # 1 multiples with 2 singles
         self.assertEquals(len(multiples_code.multiples), 2)
+        self.assertEquals(len(multiples_code.binaries), 2)
         self.assertEquals(len(multiples_code.multiples[0].components), 2)
         self.assertEquals(len(multiples_code.multiples[1].components), 2)
-        self.assertEquals(len(multiples_code.binaries), 2)
         self.assertEquals(len(multiples_code.singles), 0)
         self.assertEquals(len(multiples_code.all_singles), 4)
 
@@ -1012,6 +1012,7 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code_loaded.binaries.add_particles(binaries)
         multiples_code_loaded.components_of_multiples.add_particles(components_of_multiples)
         multiples_code_loaded.multiples.add_particles(multiples)
+        
         multiples_code_loaded.commit_particles()   
         
         self.assertEquals(len(multiples_code_loaded.multiples), 1)

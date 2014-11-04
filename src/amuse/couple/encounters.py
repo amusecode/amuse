@@ -25,6 +25,106 @@ import logging
 LOG_ENERGY = logging.getLogger('energy')
 LOG_ENCOUNTER = logging.getLogger('encounter')
 
+# todo to be more compatible with multiples module:
+# - not handling the encounter in case of the neighbours
+# - splitting a resulting binary in case of a perturber
+
+class AbstractSelectNeighboursMixin(object):
+
+    def define_neighbours_selection_parameters(self, handler):
+        pass
+        
+    def select_neighbours_from_field(self): 
+        raise NotImplementedError
+        
+class EmptySelectNeighboursMixin(AbstractSelectNeighboursMixin):
+
+    def select_neighbours_from_field(self): 
+        pass # do not select any neighbours
+        
+
+class SelectNeighboursByDistanceMixin(AbstractSelectNeighboursMixin):
+
+    def __init__(self):
+        self.neighbours_factor = 1.0
+        
+        
+    def get_neighbours_factor(self):
+        return self.neighbours_factor
+        
+    def set_neighbours_factor(self, value):
+        self.neighbours_factor = value
+        
+    def define_neighbours_selection_parameters(self, handler):
+        handler.add_method_parameter(
+            "get_neighbours_factor",
+            "set_neighbours_factor",
+            "neighbours_factor",
+            "look for neighbours of the interaction, neighbours_factor * large scale of the interaction",
+            default_value = 1.0
+        )
+        
+    def select_neighbours_from_field(self): 
+        if len(self.particles_in_field) == 0:
+            return
+            
+        center_of_mass = self.particles_in_encounter.center_of_mass()
+        distances = (self.particles_in_field.position-center_of_mass).lengths()
+        
+        near_distance = self.large_scale_of_particles_in_the_encounter * self.neighbours_factor
+        near_particles = self.particles_in_field[distances <= near_distance]
+        
+        self.particles_close_to_encounter.add_particles(near_particles)
+        
+class SelectNeighboursByPerturbationMixin(AbstractSelectNeighboursMixin):
+
+    def __init__(self):
+        self.neighbor_perturbation_limit = 0.1
+        self.wide_perturbation_limit = 0.01 
+        
+    def get_neighbor_perturbation_limit(self):
+        return self.neighbor_perturbation_limit
+        
+    def set_neighbor_perturbation_limit(self, value):
+        self.neighbor_perturbation_limit = value
+        
+    def get_wide_perturbation_limit(self):
+        return self.wide_perturbation_limit
+        
+    def set_wide_perturbation_limit(self, value):
+        self.wide_perturbation_limit = value
+        
+    def define_neighbours_selection_parameters(self, handler):
+        handler.add_method_parameter(
+            "get_neighbor_perturbation_limit",
+            "set_neighbor_perturbation_limit",
+            "neighbor_perturbation_limit",
+            "look for neighbours of the interaction if these neighbours might perturb the collission elements",
+            default_value = 0.1
+        )
+        handler.add_method_parameter(
+            "get_wide_perturbation_limit",
+            "set_wide_perturbation_limit",
+            "wide_perturbation_limit",
+            "split resulting binary in case of a possible perturber",
+            default_value = 0.01
+        )
+        
+    def select_neighbours_from_field(self): 
+        if len(self.particles_in_field) == 0:
+            return
+            
+        center_of_mass = self.particles_in_encounter.center_of_mass()
+        distances = (self.particles_in_field.position-center_of_mass).lengths()
+        pertubation = self.particles_in_field.mass / distances**3 
+        
+        factor =  0.5*(self.particles_in_encounter.mass.sum())/self.large_scale_of_particles_in_the_encounter**3 
+        minimum_pertubation = self.neighbor_perturbation_limit*factor
+        
+        near_particles = self.particles_in_field[numpy.logical_or(pertubation > minimum_pertubation , distances < self.large_scale_of_particles_in_the_encounter)]
+        
+        self.particles_close_to_encounter.add_particles(near_particles)
+        
 class AbstractHandleEncounter(object):
     """Abstract base class for all strategies to handle encounters.
     
@@ -69,7 +169,6 @@ class AbstractHandleEncounter(object):
         self.parameters = handler.get_attribute('parameters', None)
         
         self.hard_binary_factor = 3.0
-        self.neighbours_factor = 1.0
         self.scatter_factor = 10.0
         
         self.reset()
@@ -81,13 +180,8 @@ class AbstractHandleEncounter(object):
         pass
         
     def define_parameters(self, handler):
-        handler.add_method_parameter(
-            "get_neighbours_factor",
-            "set_neighbours_factor",
-            "neighbours_factor",
-            "look for neighbours of the interaction, neighbours_factor * large scale of the interaction",
-            default_value = 1.0
-        )
+        self.define_neighbours_selection_parameters(handler)
+        
         handler.add_method_parameter(
             "get_hard_binary_factor",
             "set_hard_binary_factor",
@@ -102,12 +196,6 @@ class AbstractHandleEncounter(object):
             "Initial separation for the scattering experiment, relative to the small scale of the interaction.",
             default_value = 3.0
         )
-        
-    def get_neighbours_factor(self):
-        return self.neighbours_factor
-        
-    def set_neighbours_factor(self, value):
-        self.neighbours_factor = value
         
     def get_hard_binary_factor(self):
         return self.hard_binary_factor
@@ -407,17 +495,6 @@ class AbstractHandleEncounter(object):
         self.particles_after_encounter.position += self.initial_sphere_position
         self.particles_after_encounter.velocity += self.initial_sphere_velocity
         
-    def select_neighbours_from_field(self): 
-        if len(self.particles_in_field) == 0:
-            return
-            
-        center_of_mass = self.particles_in_encounter.center_of_mass()
-        distances = (self.particles_in_field.position-center_of_mass).lengths()
-        
-        near_distance = self.large_scale_of_particles_in_the_encounter * self.neighbours_factor
-        near_particles = self.particles_in_field[distances <= near_distance]
-        
-        self.particles_close_to_encounter.add_particles(near_particles)
     
     def scale_up_system_if_two_body_scattering(self):
         if len(self.particles_close_to_encounter) > 0:
@@ -735,7 +812,7 @@ class AbstractHandleEncounter(object):
         binary_copy.position = binary_found_in_encounter.position
         binary_copy.velocity = binary_found_in_encounter.velocity
         
-class HandleEncounter(AbstractHandleEncounter):
+class HandleEncounter(AbstractHandleEncounter, SelectNeighboursByDistanceMixin):
     
     def __init__(self,
         kepler_code,
@@ -750,6 +827,7 @@ class HandleEncounter(AbstractHandleEncounter):
             kepler_code,
             G
         )
+        SelectNeighboursByDistanceMixin.__init__(self)
     
     def reset(self):
         AbstractHandleEncounter.reset(self)
@@ -818,7 +896,7 @@ class HandleEncounter(AbstractHandleEncounter):
         self.scale_code.scale_particles_to_sphere(self.particles_after_encounter, self.initial_sphere_radius)
         
         
-class StickyHandleEncounter(AbstractHandleEncounter):
+class StickyHandleEncounter(AbstractHandleEncounter, EmptySelectNeighboursMixin):
     
     def __init__(self, G = nbody_system.G):
         AbstractHandleEncounter.__init__(
@@ -827,8 +905,6 @@ class StickyHandleEncounter(AbstractHandleEncounter):
             G
         )
         
-    def select_neighbours_from_field(self):
-        pass
     
     def evolve_singles_in_encounter_until_end_state(self):
         self.scatter_energy_error = quantities.zero
@@ -1250,34 +1326,6 @@ class Binaries(Particles):
     def get_children_subset(self, binaries, particle):
         return binaries._private.singles._subset(keys = (particle.child1.key, particle.child2.key))
         
-class MultiplesSet(Particles):
-    
-    def __init__(self, components_set):
-        Particles.__init__(self)
-        self._private.components_set = components_set
-        
-    def add_particles_to_store(self, keys, attributes = [], values = []):
-        if len(keys) == 0:
-            return
-            
-            
-        all_attributes = []
-        all_values = []
-        for attribute, value in zip(attributes, values):
-            all_attributes.append(attribute)
-            if attribute == 'components':
-                value = value.copy_with_link_transfer(None, self._private.components_set)
-                all_values.append(value)
-            else:
-                all_values.append(value)
-        
-        super(MultiplesSet, self).add_particles_to_store(keys, all_attributes, all_values)
-        
-    def remove_particles_from_store(self, keys):
-        if len(keys) == 0:
-            return
-        
-        return super(MultiplesSet, self).remove_particles_from_store(keys)
         
 class MultiplesStoppingConditions(object):
     
@@ -1340,7 +1388,7 @@ class Multiples(options.OptionalAttributes):
     def reset(self):
     
         self.components_of_multiples = Particles()
-        self.multiples = MultiplesSet(self.components_of_multiples)
+        self.multiples = Particles()
         self.singles   = Particles()
         
         self.particles = ParticlesSuperset(
@@ -1387,7 +1435,11 @@ class Multiples(options.OptionalAttributes):
         
         #if len(self.singles) == 0:
         #    self.singles.add_particles(self.particles)
-            
+        # relink te components so these are in the right set
+        if len(self.multiples) > 0:
+            for x in self.multiples:
+                x.components = x.components.get_intersecting_subset_in(self.components_of_multiples)
+                
         #if len(self.particles) == 0:
         #    self.particles.add_particles(self.singles)
         #    self.particles.add_particles(self.multiples)
@@ -1603,9 +1655,9 @@ class Multiples(options.OptionalAttributes):
         for x in code.dissolved_multiples:
             self.components_of_multiples.remove_particles(x.components)
         
-        for x in new_multiples:
-            self.components_of_multiples.add_particles(x.components)
         new_multiples = self.multiples.add_particles(code.new_multiples)
+        for x in new_multiples:
+            x.components = self.components_of_multiples.add_particles(x.components)
         
             
         
