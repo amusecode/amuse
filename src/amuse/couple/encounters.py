@@ -199,8 +199,19 @@ class AbstractHandleEncounter(object):
         self.determine_final_energies()
         
         self.create_energy_report()
+        
+        self.error_on_fly_away()
     
-    
+    def error_on_fly_away(self):
+        center_of_mass = self.particles_after_encounter.center_of_mass()
+        distances = (self.particles_after_encounter.position - center_of_mass).lengths()
+        particles_to_far = self.particles_after_encounter[(distances > self.large_scale_of_particles_in_the_encounter)]
+        if len(particles_to_far) > 0:
+            print "distances:", distances
+            print "lsi:", self.large_scale_of_particles_in_the_encounter
+            print "scaled:", distances / self.large_scale_of_particles_in_the_encounter
+            #raise Exception('a particle is too far!');
+        
     def determine_initial_energies(self):
         
         self.initial_energy =  self.all_particles_in_encounter.kinetic_energy()
@@ -471,7 +482,7 @@ class AbstractHandleEncounter(object):
         while len(roots_to_check)>0:
             root_node = roots_to_check.pop()
             children = root_node.get_children_particles()
-            semimajor_axis, _ = self.kepler_orbits.get_semimajor_axis_and_eccentricity_for_binary_components(
+            semimajor_axis, eccentricity = self.kepler_orbits.get_semimajor_axis_and_eccentricity_for_binary_components(
                 children[0],
                 children[1]
             )
@@ -551,7 +562,8 @@ class AbstractHandleEncounter(object):
             multiple_particle.child1 = None
             multiple_particle.child2 = None
             multiple_particle.components = multiple_components
-            multiple_particle.radius = multiple_components.position.lengths().max() * 2
+            multiple_particle.radius = self.determine_radius_from_components(multiple_components)
+            
             multiples_set.add_particle(multiple_particle)
         
         for multiple in self.multiples_in_encounter:
@@ -561,7 +573,10 @@ class AbstractHandleEncounter(object):
         # a leaft in the tree is a child node with no children
         for root_node in tree.iter_leafs():
             self.update_binaries_from_single(root_node.particle, binary_lookup_table)
-            
+    
+    def determine_radius_from_components(self, components):
+        return components.position.lengths().max() * 2
+        
     def singles_of_a_multiple(self, multiple):
         components = multiple.components
         tree = components.new_binary_tree_wrapper()
@@ -766,19 +781,20 @@ class HandleEncounter(AbstractHandleEncounter):
 
             # Return the tree structure.
             code.update_particle_set()
-            
+        
             final_scatter_energy = code.get_total_energy()
-            
+        
             self.scatter_energy_error = final_scatter_energy - initial_scatter_energy 
-            
+        
             self.singles_and_multiples_after_evolve.add_particles(code.particles)
-            
+        
             LOG_ENERGY.info('scatter_energy_error={0}'.format(self.scatter_energy_error))
-        else:        
-            raise Exception(
-                "Did not finish the small-N simulation before end time {0}".
-                format(end_time)
-            )
+            return
+            
+        raise Exception(
+            "Did not finish the small-N simulation before end time {0}".
+            format(end_time)
+        )
     
     
     def determine_structure_of_the_evolved_state(self):
@@ -802,6 +818,86 @@ class HandleEncounter(AbstractHandleEncounter):
         self.scale_code.scale_particles_to_sphere(self.particles_after_encounter, self.initial_sphere_radius)
         
         
+class StickyHandleEncounter(AbstractHandleEncounter):
+    
+    def __init__(self, G = nbody_system.G):
+        AbstractHandleEncounter.__init__(
+            self,
+            None,
+            G
+        )
+        
+    def select_neighbours_from_field(self):
+        pass
+    
+    def evolve_singles_in_encounter_until_end_state(self):
+        self.scatter_energy_error = quantities.zero
+            
+        particles = self.all_singles_in_evolve.copy()
+        
+        working_set = particles.copy()
+        parents = Particles()
+        
+        counter = len(working_set)
+        while counter > 1 :
+            
+            number_of_particles = len(working_set)
+            indices1, indices2 = numpy.triu_indices(number_of_particles, 1)
+            dd = lambda x : x[indices1] - x[indices2]
+            dx = dd(working_set.x)
+            dy = dd(working_set.y)
+            dz = dd(working_set.z)
+            distances_squared = (dx**2 + dy**2 + dz**2)
+            minindex =distances_squared.argmin()
+            index1 = indices1[minindex]
+            index2 = indices2[minindex]
+            partner1 = working_set[index1]
+            partner2 = working_set[index2]
+            
+            mass1 = partner1.mass
+            mass2 = partner2.mass
+            total_mass = mass1 + mass2
+            parent = Particle()
+            parent.mass =mass1 + mass1
+            parent.position = (partner1.position + partner2.position) / 2.0
+            parent.velocity = (
+                    (mass1 / total_mass) * partner1.velocity +
+                    (mass2 / total_mass) * partner2.velocity
+            )
+            parent.child1 = partner1
+            parent.child2 = partner2
+            parents.add_particle(parent)
+            
+            working_set.remove_particle(partner1)
+            working_set.remove_particle(partner2)
+            working_set.add_particle(parent)
+            
+            counter -= 1
+        
+        result = Particles()
+        result.add_particles(particles)
+        parents = result.add_particles(parents)
+        for x in parents:
+            x.child1 = x.child1.as_particle_in_set(result)
+            x.child2 = x.child2.as_particle_in_set(result)
+        self.singles_and_multiples_after_evolve.add_particles(result)
+    
+    
+    def determine_structure_of_the_evolved_state(self):
+        pass
+    
+    def scale_evolved_state_to_initial_sphere(self):
+        pass
+    
+    def remove_soft_binaries_from_evolved_state(self):
+        pass
+    
+    def scale_up_system_if_two_body_scattering(self):
+        pass
+    
+    def determine_radius_from_components(self, components):
+        return components.position.lengths().max() + components.radius.max()
+
 class KeplerOrbits(object):
     
     def __init__(self, kepler_code):
@@ -1037,7 +1133,6 @@ class ScaleSystem(object):
             the radii of the particles can be zero -> the system will be scaled to radius
             note this is not implemented for 2 body yet!!!
         """
-        
 
         center_of_mass_position = particles.center_of_mass()
         center_of_mass_velocity = particles.center_of_mass_velocity()
@@ -1080,7 +1175,7 @@ class ScaleSystem(object):
         # for all other situations, we revert to scaling
         # where we perserve energy by scaling
         # the velocities
-    
+        # print "DD:", distance, sum_of_radii, distance < sum_of_radii, radius, distance < 2 * radius
         # we need to scale up, as the separation between particles is less than zero
         if distance < sum_of_radii:
             # use the largest scaling factor
@@ -1094,10 +1189,7 @@ class ScaleSystem(object):
         else:
             # we have room to scale down
             if distance > sum_of_radii:
-                if (2 * radius) < sum_of_radii:
-                    factor_position = sum_of_radii / distance
-                else:
-                    factor_position = (2 * radius) / distance
+                factor_position = sum_of_radii / distance
             # we have no room available for any scaling
             else:
                 factor_position = 1.0
@@ -1114,10 +1206,9 @@ class ScaleSystem(object):
             raise Exception("cannot scale the velocities")
             
         factor_velocity = numpy.sqrt(factor_velocity_squared)
-        
         particles.position = center_of_mass_position + factor_position*(particles.position-center_of_mass_position)
         particles.velocity = center_of_mass_velocity + factor_velocity*(particles.velocity-center_of_mass_velocity)
-
+        #print "MINIMUM:",(2 * radius) , sum_of_radii, (particle0.position - particle1.position).length()
 
 class Binaries(Particles):
     
@@ -1154,11 +1245,39 @@ class Binaries(Particles):
         if len(keys) == 0:
             return
         
-        pass    
-        
         return super(Binaries, self).remove_particles_from_store(keys)
+        
     def get_children_subset(self, binaries, particle):
-        return self._private.singles._subset(keys = (particle.child1.key, particle.child2.key))
+        return binaries._private.singles._subset(keys = (particle.child1.key, particle.child2.key))
+        
+class MultiplesSet(Particles):
+    
+    def __init__(self, components_set):
+        Particles.__init__(self)
+        self._private.components_set = components_set
+        
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        if len(keys) == 0:
+            return
+            
+            
+        all_attributes = []
+        all_values = []
+        for attribute, value in zip(attributes, values):
+            all_attributes.append(attribute)
+            if attribute == 'components':
+                value = value.copy_with_link_transfer(None, self._private.components_set)
+                all_values.append(value)
+            else:
+                all_values.append(value)
+        
+        super(MultiplesSet, self).add_particles_to_store(keys, all_attributes, all_values)
+        
+    def remove_particles_from_store(self, keys):
+        if len(keys) == 0:
+            return
+        
+        return super(MultiplesSet, self).remove_particles_from_store(keys)
         
 class MultiplesStoppingConditions(object):
     
@@ -1220,7 +1339,8 @@ class Multiples(options.OptionalAttributes):
     
     def reset(self):
     
-        self.multiples = Particles()
+        self.components_of_multiples = Particles()
+        self.multiples = MultiplesSet(self.components_of_multiples)
         self.singles   = Particles()
         
         self.particles = ParticlesSuperset(
@@ -1232,7 +1352,6 @@ class Multiples(options.OptionalAttributes):
         self.binaries  = Binaries(self.singles_in_binaries)
         self.singles_in_binaries_previous  = None
         
-        self.components_of_multiples = Particles()
         
         self.gravity_code.reset()
         self.stopping_condition = self.gravity_code.stopping_conditions.collision_detection
@@ -1484,9 +1603,9 @@ class Multiples(options.OptionalAttributes):
         for x in code.dissolved_multiples:
             self.components_of_multiples.remove_particles(x.components)
         
-        new_multiples = self.multiples.add_particles(code.new_multiples)
         for x in new_multiples:
-            x.components = self.components_of_multiples.add_particles(x.components)
+            self.components_of_multiples.add_particles(x.components)
+        new_multiples = self.multiples.add_particles(code.new_multiples)
         
             
         

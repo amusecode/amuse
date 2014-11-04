@@ -20,6 +20,7 @@ from amuse import datamodel
 from amuse.ic import plummer
 from amuse.couple import multiples
 from amuse.couple import encounters
+from amuse import io
 
 class TestSimpleMultiples(TestWithMPI):
     previous = None
@@ -926,5 +927,110 @@ class TestSimpleMultiples(TestWithMPI):
         for x in multiples_code.singles:
             print x.key, x.mass
         self.assertEquals(len(multiples_code.binaries) - len(stopping_condition.particles(0)) + len(stopping_condition.particles(1)),  len(center_of_mass_particles))
+     
+    
+    def test16(self):
+        code = Hermite()
         
         
+        n = 10
+        singles = datamodel.Particles(keys = range(1,n+1))
+        singles.mass = 1 | nbody_system.mass
+        for x in range(n):
+            singles[x].position = [x*x, 0, 0] | nbody_system.length
+        singles.velocity = [0,0,0] | nbody_system.speed
+            
+        singles.radius  = 0.5 | nbody_system.length
+        
+        multiples_code = encounters.Multiples(
+            gravity_code = code,
+            handle_encounter_code = encounters.StickyHandleEncounter()
+        )
+        multiples_code.singles.add_particles(singles)
+        multiples_code.commit_particles()   
+        
+        multiples_code.evolve_model(0.1 | nbody_system.time)
+        print len(multiples_code.multiples)
+        self.assertEquals(len(multiples_code.multiples), 1)
+        self.assertEquals(len(multiples_code.particles), 9)
+        self.assertEquals(len(multiples_code.singles), 8)
+        self.assertEquals(len(multiples_code.binaries), 1)
+        self.assertEquals(len(multiples_code.singles_in_binaries), 2)
+        self.assertEquals(id(multiples_code.components_of_multiples), id(multiples_code.multiples[0].components[0].particles_set))
+        print multiples_code.multiples[0].components
+        io.write_set_to_file(
+            (
+                multiples_code.singles, 
+                multiples_code.singles_in_binaries, 
+                multiples_code.binaries,  
+                multiples_code.components_of_multiples, 
+                multiples_code.multiples
+            ), 
+            "multiples.hdf5", 
+            "hdf5",
+            version = "2.0",
+            names = (
+                "singles",
+                "singles_in_binaries",
+                "binaries",
+                "components_of_multiples",
+                "multiples"
+            )
+            )
+        
+        multiples_code_loaded  = encounters.Multiples(
+            gravity_code = Hermite(),
+            handle_encounter_code = encounters.StickyHandleEncounter()
+        )
+        
+        (
+            singles,
+            singles_in_binaries,
+            binaries,
+            components_of_multiples,
+            multiples
+        ) = io.read_set_from_file(
+            "multiples.hdf5", 
+            "hdf5",
+            version = "2.0",
+            names = (
+                "singles",
+                "singles_in_binaries",
+                "binaries",
+                "components_of_multiples",
+                "multiples"
+            )
+        )
+        self.assertEquals(len(multiples), 1)
+        self.assertEquals(len(singles), 8)
+        self.assertEquals(len(binaries), 1)
+        self.assertEquals(len(singles_in_binaries), 2)
+        self.assertEquals(id(components_of_multiples), id(multiples[0].components[0].particles_set))
+        
+        multiples_code_loaded.singles.add_particles(singles)
+        multiples_code_loaded.singles_in_binaries.add_particles(singles_in_binaries)
+        multiples_code_loaded.binaries.add_particles(binaries)
+        multiples_code_loaded.components_of_multiples.add_particles(components_of_multiples)
+        multiples_code_loaded.multiples.add_particles(multiples)
+        multiples_code_loaded.commit_particles()   
+        
+        self.assertEquals(len(multiples_code_loaded.multiples), 1)
+        self.assertEquals(len(multiples_code_loaded.particles), 9)
+        self.assertEquals(len(multiples_code_loaded.singles), 8)
+        self.assertEquals(len(multiples_code_loaded.binaries), 1)
+        self.assertEquals(len(multiples_code_loaded.singles_in_binaries), 2)
+        self.assertEquals(id(multiples_code_loaded.components_of_multiples), id(multiples_code_loaded.multiples[0].components[0].particles_set))
+       
+        multiples_code.evolve_model(4 | nbody_system.time)
+        multiples_code_loaded.evolve_model(4 | nbody_system.time)
+        
+
+        print len(multiples_code.multiples), multiples_code.particles
+        for code in [multiples_code, multiples_code_loaded]:
+            self.assertEquals(len(code.multiples), 1)
+            self.assertEquals(len(code.particles), 8)
+            self.assertEquals(len(code.singles), 7)
+            self.assertEquals(len(code.binaries), 1)
+            self.assertEquals(len(code.singles_in_binaries), 2)
+            self.assertEquals(len(code.components_of_multiples), 3)
+            self.assertEquals(id(code.components_of_multiples), id(code.multiples[0].components[0].particles_set))

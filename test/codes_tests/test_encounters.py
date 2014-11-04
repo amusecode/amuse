@@ -1310,5 +1310,38 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         self.assertAlmostRelativeEqual(x.final_multiple_energy, -56.0615226817 | nbody_system.energy, 4)
         
         
+class TestStickyHandleEncounter(amusetest.TestWithMPI):
+
+    def test1(self):
+        particles_in_encounter = Particles(keys=(1,2))
+        particles_in_encounter.mass = 1 | nbody_system.mass
+        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
+        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
+        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
+        particles_in_encounter[0].velocity = [-1,0.0,0] | nbody_system.speed
+        particles_in_encounter.radius = 0 | nbody_system.length
+        
+        particles_in_field = Particles()
+        
+        x = encounters.StickyHandleEncounter(
+            G = nbody_system.G
+        )
+        
+        x.particles_in_encounter.add_particles(particles_in_encounter)
+        
+        x.execute()
+        self.assertEquals(len(x.new_multiples), 1)
+        self.assertEquals(len(x.new_binaries), 1)
+        multiple = x.new_multiples[0]
+        self.assertEquals(len(multiple.components), 2)
+        self.assertAlmostRelativeEqual(multiple.components[0].key, particles_in_encounter[0].key)
+        self.assertAlmostRelativeEqual(multiple.components[1].key, particles_in_encounter[1].key)
+        self.assertEquals(len(x.captured_singles), 2)
+        self.assertEquals(x.captured_singles.key, [1,2])
+        self.assertAlmostRelativeEqual(multiple.velocity, [-0.5,0.0,0] | nbody_system.speed)
+        self.assertAlmostRelativeEqual(multiple.mass, 2 |  nbody_system.mass)
+        self.assertAlmostRelativeEqual(multiple.radius, 0.5 |  nbody_system.length)
+        self.assertAlmostRelativeEqual(multiple.position, [0.5,0,0] | nbody_system.length)
+        
         
         
