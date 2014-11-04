@@ -949,7 +949,7 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.singles.add_particles(singles)
         multiples_code.commit_particles()   
         
-        multiples_code.evolve_model(0.1 | nbody_system.time)
+        multiples_code.evolve_model(1 | nbody_system.time)
         print len(multiples_code.multiples)
         self.assertEquals(len(multiples_code.multiples), 1)
         self.assertEquals(len(multiples_code.particles), 9)
@@ -1022,10 +1022,15 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertEquals(id(multiples_code_loaded.components_of_multiples), id(multiples_code_loaded.multiples[0].components[0].particles_set))
        
         multiples_code.evolve_model(4 | nbody_system.time)
-        multiples_code_loaded.evolve_model(4 | nbody_system.time)
+        
+        # need to use 3 here as the model_time is reset when doing a restart and we dit not set it after creating Hermite
+        multiples_code_loaded.evolve_model(3.0 | nbody_system.time)
         
 
         print len(multiples_code.multiples), multiples_code.particles
+        print multiples_code.particles.position - multiples_code_loaded.particles.position
+        self.assertAlmostRelativeEquals(multiples_code.particles.position - multiples_code_loaded.particles.position, [0,0,0] | nbody_system.length)
+        
         for code in [multiples_code, multiples_code_loaded]:
             self.assertEquals(len(code.multiples), 1)
             self.assertEquals(len(code.particles), 8)
