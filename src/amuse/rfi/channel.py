@@ -1974,7 +1974,7 @@ class SocketChannel(AbstractMessageChannel):
         #start arguments with command        
         arguments.insert(0, command)
 
-        if self.initialize_mpi and self.number_of_workers>1:
+        if self.initialize_mpi and len(config.mpi.mpiexec) > 0:
             # prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
             arguments.insert(0, "-np")
