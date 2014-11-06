@@ -1232,7 +1232,7 @@ class ScaleSystem(object):
         
             
         # special case, 2 bodies, we can use kepler to 
-        # do the scaling in a consistent, energy perserving way
+        # do the scaling in a consistent, energy preserving way
         if len(particles) == 2:
             if distance < sum_of_radii:
                 scale = max(2*radius, sum_of_radii)
@@ -1249,9 +1249,9 @@ class ScaleSystem(object):
         
         
         # for all other situations, we revert to scaling
-        # where we perserve energy by scaling
+        # where we preserve energy by scaling
         # the velocities
-        # print "DD:", distance, sum_of_radii, distance < sum_of_radii, radius, distance < 2 * radius
+        print "DD:", distance, sum_of_radii, distance < sum_of_radii, radius, distance < 2 * radius
         # we need to scale up, as the separation between particles is less than zero
         if distance < sum_of_radii:
             # use the largest scaling factor
@@ -1259,16 +1259,19 @@ class ScaleSystem(object):
             
         # we need to scale up, as the minimum distance is less than the sphere diameter
         elif distance < 2 * radius:
-            factor_position = (2 * radius) / distance
-            
+            factor_position = (2.0 * radius) / distance
         # we need to scale down, the minimum distance is larger than the radius
         else:
             # we have room to scale down
             if distance > sum_of_radii:
-                factor_position = sum_of_radii / distance
+                if sum_of_radii > (0.0 * radius):
+                    factor_position = sum_of_radii / distance 	 	 
+                else: 	 	 
+                    factor_position = (2.0 * radius) / distance 
             # we have no room available for any scaling
             else:
                 factor_position = 1.0
+                
         factor_velocity_squared = 1.0 - (1.0/factor_position-1.0) * potential_energy/kinetic_energy
         if factor_velocity_squared < 0.0:
             from amuse.units import units

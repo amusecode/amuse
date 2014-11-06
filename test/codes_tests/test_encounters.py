@@ -45,7 +45,20 @@ def new_binary(
     binary[1].velocity = -(mass_fraction_particle_1 * velocity * [0.0,1.0,0.0])   
 
     return binary
-        
+       
+class TryHandleEncounter(encounters.AbstractHandleEncounter, encounters.SelectNeighboursByDistanceMixin):
+    
+    def __init__(self,
+        kepler_code,
+        G = nbody_system.G
+    ):
+        encounters.AbstractHandleEncounter.__init__(
+            self,
+            kepler_code,
+            G
+        )
+        encounters.SelectNeighboursByDistanceMixin.__init__(self)
+    
 class TestAbstractHandleEncounter(amusetest.TestWithMPI):
     
     def new_kepler(self):
@@ -71,7 +84,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field.velocity = [0,0.0,0] | nbody_system.speed
         particles_in_field.radius = 0 | nbody_system.length
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -114,7 +127,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         multiple.components.child1 = None
         multiple.components.child2 = None
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -162,7 +175,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field.velocity = [0,0,0]  | nbody_system.speed
         particles_in_field.radius = 0 | nbody_system.length
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -234,7 +247,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         binaries[0].child1 = particles_in_encounter[0]
         binaries[0].child2 = particles_in_encounter[1]
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -300,7 +313,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_field.velocity = [0,0,0]  | nbody_system.speed
         particles_in_field.radius = 0 | nbody_system.length
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -358,7 +371,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter.radius = 0 | nbody_system.length
         
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -441,7 +454,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter.radius = 0 | nbody_system.length
         
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -495,7 +508,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter.radius = [0.5, 1, 0.2] | nbody_system.length
         
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -518,7 +531,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
         
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -541,7 +554,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
         
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -570,7 +583,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
         
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -617,7 +630,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
         
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -652,7 +665,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         particles_in_encounter.radius = [0.5, 0.5] | nbody_system.length
         
         
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -676,7 +689,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         
     
     def test13(self):
-        x = encounters.AbstractHandleEncounter(
+        x = TryHandleEncounter(
             G = nbody_system.G,
             kepler_code = self.new_kepler()
         )
@@ -887,12 +900,10 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
         
         x = encounters.ScaleSystem(kepler)
-        
         potential_energy0 = particles.potential_energy(G = nbody_system.G)
         kinetic_energy0 = particles.kinetic_energy()
         
         x.scale_particles_to_sphere(particles, 0.5 | nbody_system.length)
-        
         
         self.assertAlmostRelativeEquals(particles[0].position,  [1/numpy.sqrt(2),0,0] | nbody_system.length)
         self.assertAlmostRelativeEquals(particles[3].position,  [-1/numpy.sqrt(2),0,0] | nbody_system.length)
