@@ -4,7 +4,7 @@ FFLAGS ?= -O3
 
 LIBFILES= $(OBJECTS) hash.o amuse_helpers.o
 
-KROME_OPTIONS=-unsafe -iRHS -n networks/react_COthin -compiler ifort -useN -clean
+KROME_OPTIONS=-unsafe -iRHS -n networks/react_COthin -compiler $(FC) -useN -clean
 #  -compact
 
 ifeq ($(FC), ifort)
