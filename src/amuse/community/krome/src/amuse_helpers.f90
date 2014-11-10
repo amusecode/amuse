@@ -33,6 +33,7 @@ contains
     if(.not.allocated(particles)) allocate(particles(NMAX))
     particles(:)%density=0.
     
+    print*,"initialize"
     call krome_init()
     
     ret=0
@@ -71,7 +72,8 @@ contains
     double precision :: tend,dt
     integer :: i,iret
     ret=0
-    dt=tcurrent-tend
+    dt=tend-tcurrent
+    if(dt.LE.0) return
     do i=1,nparticle
       iret=evolve_1_particle(particles(i),dt)
       ret=min(iret,ret)
@@ -83,10 +85,14 @@ contains
     integer :: ret
     type(particle_type) :: particle
     double precision :: tend,dt
-    double precision :: n(krome_nmols),T
+    double precision :: n(krome_nmols),T,cr
 
     n=particle%abundances*particle%density
     T = particle%temperature
+    cr = particle%ionrate
+    call krome_set_user_crate(cr)
+    call krome_set_user_Av(1.d0)
+    call krome_set_user_Tdust(1.d1)
     call krome(n, T, dt)
     particle%temperature=T
     particle%abundances=n/particle%density
@@ -102,6 +108,10 @@ contains
       ret=index
       return
     endif
+    if(aid.LT.1.OR.aid.GT.krome_nmols) then
+      ret=-1
+      return
+    endif
     abundance=particles(index)%abundances(aid)
     ret=0
   end function
@@ -113,6 +123,10 @@ contains
     index=find_particle(id)
     if(index.LT.0) then
       ret=index
+      return
+    endif
+    if(aid.LT.1.OR.aid.GT.krome_nmols) then
+      ret=-1
       return
     endif
     particles(index)%abundances(aid)=abundance

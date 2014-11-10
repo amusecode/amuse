@@ -5,12 +5,12 @@ from amuse.support.options import option
 
 #(Grevesse & Sauval, 1998, Space Sci. Rev. 85, 161)
 solar_abundances= dict(H=1.,
-                       He=.085,
+                       HE=.085,
                        C=3.31e-4,
                        N=8.3e-5,
                        O=6.76e-4,
                        Ne=1.2e-4,
-                       Si=3.55e-5,
+                       SI=3.55e-5,
                        Fe=3.2e-5)
  
 class KromeInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):

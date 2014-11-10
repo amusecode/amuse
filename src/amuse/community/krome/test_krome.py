@@ -119,11 +119,171 @@ class TestKromeInterface(TestWithMPI):
         
         for i in range(first,last+1):
           name,err=instance.get_name_of_species(i)
+          print name
           self.assertEqual(err,0)
           index,err=instance.get_index_of_species(name)
           self.assertEqual(i,index)
 
         instance.stop()
+
+    def test6(self):
+        print "Test 6: add 100 particles, remove particles"
+
+        instance = KromeInterface(**default_options)
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+
+        dens=1.e5*numpy.random.random(100)
+        t=500.*numpy.random.random(100)
+        ion=1.e-11*numpy.random.random(100)
+        ids,err=instance.new_particle(dens,t,ion)
+
+        self.assertEqual(err,0)
+      
+        self.assertEqual(instance.commit_particles(),0)
+
+        for i in ids[:10]:
+          instance.delete_particle(i)
+
+        instance.recommit_particles()
+
+        for i in range(10,100):
+          dens_,t_,ion_,err=instance.get_state(ids[i])
+
+          self.assertEqual(err,0)
+
+          self.assertEqual(dens_,dens[i])
+          self.assertEqual(t_,t[i])
+          self.assertEqual(ion_,ion[i])
+
+        dens_,t_,ion_,err=instance.get_state(ids[0])
+
+        self.assertEqual(err,-1)
+
+        self.assertEqual(0, instance.cleanup_code())
+
+        instance.stop()
+
+    def test7(self):
+        print "Test 1: add particle, set abundances"
+
+        instance = KromeInterface(**default_options)
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+
+        dens=1.e5
+        t=500.
+        ion=1.e-11
+        id,err=instance.new_particle(dens,t,ion)
+ 
+        instance.commit_particles()
+
+        first,last,err=instance.get_firstlast_abundance()
+        for i in range(first,last+1):
+          x,err=instance.get_abundance(id,i)
+          self.assertEqual(x,0.)
+          self.assertEqual(err,0)
+        x,err=instance.get_abundance(id,last+1)
+        self.assertEqual(err,-1)
+        
+        for s in ["H","HE","C","SI","O"]:
+          x=solar_abundances[s]
+          aid,err=instance.get_index_of_species(s)          
+          instance.set_abundance(id,aid,x)
+
+        for s in ["H","HE","C","SI","O"]:
+          x=solar_abundances[s]
+          aid,err=instance.get_index_of_species(s)          
+          xx,err=instance.get_abundance(id,aid)
+          self.assertEqual(x,xx)
+          self.assertEqual(err,0)
+          
+    def test8(self):
+        print "evolve test"
+
+        instance = KromeInterface(**default_options)
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+
+        dens=1.e2
+        t=100.
+        ion=2.e-17
+        id,err=instance.new_particle(dens,t,ion)
+         
+        first,last,err=instance.get_firstlast_abundance()
+        for i in range(first,last+1):
+          err=instance.set_abundance(id,i,1.e-40)         
+         
+        for s in ["H","HE","C","SI","O"]:
+          x=solar_abundances[s]
+          aid,err=instance.get_index_of_species(s)          
+          instance.set_abundance(id,aid,x)
+
+        instance.commit_particles()
+
+        yr=365*24*3600.
+        err=instance.evolve_model(10000.*yr)
+        self.assertEqual(err,0)
+        time,err=instance.get_time()
+        self.assertEqual(err,0)
+        self.assertEqual(time,10000.*yr)
+
+        first,last,err=instance.get_firstlast_abundance()
+        for i in range(first,last+1):
+          x,err=instance.get_abundance(id,i)
+          self.assertEqual(err,0)
+          name,err=instance.get_name_of_species(i)
+          print i,name,x
+        
+    def test9(self):
+        print "evolve test 2"
+
+        instance = KromeInterface(**default_options)
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+
+        dens=1.e2
+        t=100.
+        ion=2.e-17
+        id,err=instance.new_particle(dens,t,ion)
+         
+        first,last,err=instance.get_firstlast_abundance()
+        for i in range(first,last+1):
+          err=instance.set_abundance(id,i,1.e-40)         
+         
+        for s in ["H","HE","C","SI","O"]:
+          x=solar_abundances[s]
+          aid,err=instance.get_index_of_species(s)          
+          instance.set_abundance(id,aid,x)
+
+        aid,err=instance.get_index_of_species("C")          
+        instance.set_abundance(id,aid,1.e-40)
+        
+        aid,err=instance.get_index_of_species("C+")          
+        instance.set_abundance(id,aid,solar_abundances["C"])
+
+        aid,err=instance.get_index_of_species("H2")          
+        instance.set_abundance(id,aid,1.e-6)
+        aid,err=instance.get_index_of_species("H+")          
+        instance.set_abundance(id,aid,1.e-4)
+
+        instance.commit_particles()
+
+        yr=365*24*3600.
+        err=instance.evolve_model(10000.*yr)
+        self.assertEqual(err,0)
+        time,err=instance.get_time()
+        self.assertEqual(err,0)
+        self.assertEqual(time,10000.*yr)
+
+        first,last,err=instance.get_firstlast_abundance()
+        for i in range(first,last+1):
+          x,err=instance.get_abundance(id,i)
+          self.assertEqual(err,0)
+          name,err=instance.get_name_of_species(i)
+          print i,name,x
+
+
 
     #~ def test5(self):
         #~ print "Test 1: simple evolve test"
