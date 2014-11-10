@@ -149,14 +149,6 @@ class KromeInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMix
         function.result_type = 'i'
         return function
 
-class species(object):
-    def __init__(self,first,last,name_getter):
-      for i in range(first,last+1):
-        setattr(self,name_getter(i),i)
-    @classmethod
-    def _list(cls):
-          return set([x for x in cls.__dict__.keys() if not x.startswith('_')])
-
 class Krome(CommonCode):
 
     def __init__(self,unit_converter = None, **options):
@@ -165,7 +157,10 @@ class Krome(CommonCode):
             raise Exception("krome uses predefined units")
            
         InCodeComponentImplementation.__init__(self, KromeInterface(**options))
-        self.species=species(self.get_firstlast_species()+self.get_name_of_species)
+        first,last=self.get_firstlast_abundance()
+        self.species=dict()
+        for i in range(first,last+1):
+          self.species[self.get_name_of_species(i)]=i-1
 #        self.set_data_directory(self.data_directory())
 #        self.set_output_directory(self.output_directory())
                   
@@ -188,6 +183,7 @@ class Krome(CommonCode):
             (
                 units.cm**-3,
                 units.K,
+                units.s**-1,
             ),
             (
                 object.INDEX,
@@ -200,6 +196,7 @@ class Krome(CommonCode):
                 object.NO_UNIT,
                 units.cm**-3,
                 units.K,
+                units.s**-1,
             ),
             (
                 object.ERROR_CODE,
@@ -213,6 +210,7 @@ class Krome(CommonCode):
             (
                 units.cm**-3,
                 units.K,
+                units.s**-1,
                 object.ERROR_CODE,
             )
         )

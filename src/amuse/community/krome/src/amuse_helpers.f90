@@ -173,6 +173,7 @@ contains
   integer :: ret
   integer :: i,id
   double precision :: density, temperature,ionrate
+  double precision :: x(krome_nmols)
   particles_searcheable=.FALSE.
   id=new_id()  
   i=nparticle+1
@@ -185,7 +186,25 @@ contains
   particles(i)%density=density
   particles(i)%temperature=temperature
   particles(i)%ionrate=ionrate
-  particles(i)%abundances=0
+  particles(i)%abundances=1.d-40
+  
+  if(density.GT.0) then
+    particles(i)%abundances(KROME_idx_H)  = 1. !H
+    particles(i)%abundances(KROME_idx_H2) = 1.d-6    !H2
+    particles(i)%abundances(KROME_idx_Hj) = 1.d-4    !H+
+    particles(i)%abundances(KROME_idx_He) = 0.0775d0 !He
+  
+    x=particles(i)%density*particles(i)%abundances
+  
+    call krome_scale_Z(x(:), 0.d0) ! scale to solar
+  
+    x(krome_idx_Cj) = x(krome_idx_C) !carbon is fully ionized
+    x(krome_idx_C)  = 1d-40
+    x(krome_idx_e) = krome_get_electrons(x(:))
+    
+    particles(i)%abundances=x/particles(i)%density
+  endif
+
   nparticle=nparticle+1
   ret=0
   end function

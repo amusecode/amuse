@@ -181,7 +181,7 @@ class TestKromeInterface(TestWithMPI):
         first,last,err=instance.get_firstlast_abundance()
         for i in range(first,last+1):
           x,err=instance.get_abundance(id,i)
-          self.assertEqual(x,0.)
+          self.assertTrue((x>=0.) & (x<=1.))
           self.assertEqual(err,0)
         x,err=instance.get_abundance(id,last+1)
         self.assertEqual(err,-1)
@@ -283,191 +283,192 @@ class TestKromeInterface(TestWithMPI):
           name,err=instance.get_name_of_species(i)
           print i,name,x
 
+    def test10(self):
+        print "check initialization of abundances"
+
+        instance = KromeInterface(**default_options)
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+
+        dens=1.e2
+        t=100.
+        ion=2.e-17
+        id,err=instance.new_particle(dens,t,ion)
+        
+        abundances={"E":0.000369180975425,
+                     "H+":0.0001,"HE":0.0851224751475, 
+                     "C+":0.000269180975425, "SI": 3.2362683404e-05,
+                     "O": 0.000489828841345}
+         
+        first,last,err=instance.get_firstlast_abundance()
+        for i in range(first,last+1):
+          x,err=instance.get_abundance(id,i)
+          self.assertEqual(err,0)
+          name,err=instance.get_name_of_species(i)
+          if name in abundances:
+            self.assertAlmostEqual(x,abundances[name],12)
+
+    def test11(self):
+        print "evolve test, comparison"
+
+        instance = KromeInterface(**default_options)
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+
+        dens=1.e2
+        t=100.
+        ion=2.e-17
+        id,err=instance.new_particle(dens,t,ion)
+        instance.evolve_model(1.e10)
+        
+        result1={}
+        first,last,err=instance.get_firstlast_abundance()
+        for i in range(first,last+1):
+          x,err=instance.get_abundance(id,i)
+          self.assertEqual(err,0)
+          name,err=instance.get_name_of_species(i)
+          result1[name]=x
+
+        instance = KromeInterface(**default_options)
+        self.assertEqual(0, instance.initialize_code())
+        self.assertEqual(0, instance.commit_parameters())
+
+        dens=1.e2
+        t=100.
+        ion=2.e-17
+        id,err=instance.new_particle(dens,t,ion)
+        instance.evolve_model(1.e9)
+        instance.evolve_model(5.e9)
+        instance.evolve_model(1.e10)
+        
+        result2={}
+        first,last,err=instance.get_firstlast_abundance()
+        for i in range(first,last+1):
+          x,err=instance.get_abundance(id,i)
+          self.assertEqual(err,0)
+          name,err=instance.get_name_of_species(i)
+          result2[name]=x
+
+        for x in result1:
+          self.assertAlmostEqual(result1[x],result2[x])
 
 
-    #~ def test5(self):
-        #~ print "Test 1: simple evolve test"
-#~ 
-        #~ instance = TDCInterface(**default_options)
-        #~ self.assertEqual(0, instance.initialize_code())
-        #~ self.assertEqual(0, instance.commit_parameters())
-#~ 
-        #~ dens=1.e5
-        #~ t=500.
-        #~ ion=1.e-11
-        #~ id,err=instance.new_particle(dens,t,ion)
-#~ 
-        #~ self.assertEqual(err,0)
-      #~ 
-        #~ self.assertEqual(instance.commit_particles(),0)
-#~ 
-        #~ dens_,t_,ion_,err=instance.get_state(id)
-#~ 
-        #~ self.assertEqual(err,0)
-#~ 
-        #~ self.assertEqual(dens_,dens)
-        #~ self.assertEqual(t_,t)
-        #~ self.assertEqual(ion_,ion)
-#~ 
-        #~ err=instance.evolve_model( 94.112609921226252)
-#~ 
-        #~ x,err=instance.get_abundance(id,1)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,0.38895405860649546,7)
-        #~ x,err=instance.get_abundance(id,2)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,.30526706600870018,7)
-        #~ x,err=instance.get_abundance(id,3)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,1.47184343246716795E-004,7)
-        #~ x,err=instance.get_abundance(id,4)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,7.08149953046615757E-008,7)
-        #~ x,err=instance.get_abundance(id,5)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x, 6.52897069295877081E-005,7)
-#~ 
-        #~ self.assertEqual(0, err)
-#~ 
-        #~ self.assertEqual(0, instance.cleanup_code())
-#~ 
-        #~ instance.stop()
-#~ 
-    #~ def test6(self):
-        #~ print "Test 1: simple evolve test 2"
-#~ 
-        #~ instance = TDCInterface(**default_options)
-        #~ self.assertEqual(0, instance.initialize_code())
-        #~ self.assertEqual(0, instance.commit_parameters())
-#~ 
-        #~ dens=1.e5
-        #~ t=500.
-        #~ ion=1.e-11
-        #~ id,err=instance.new_particle(dens,t,ion)
-#~ 
-        #~ self.assertEqual(err,0)
-      #~ 
-        #~ self.assertEqual(instance.commit_particles(),0)
-#~ 
-        #~ dens_,t_,ion_,err=instance.get_state(id)
-#~ 
-        #~ self.assertEqual(err,0)
-#~ 
-        #~ self.assertEqual(dens_,dens)
-        #~ self.assertEqual(t_,t)
-        #~ self.assertEqual(ion_,ion)
-#~ 
-        #~ err=instance.evolve_model( 50.)
-        #~ err=instance.evolve_model( 94.112609921226252)
-#~ 
-        #~ x,err=instance.get_abundance(id,1)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,0.38895405860649546,3)
-        #~ x,err=instance.get_abundance(id,2)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,.30526706600870018,3)
-        #~ x,err=instance.get_abundance(id,3)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,1.47184343246716795E-004,3)
-        #~ x,err=instance.get_abundance(id,4)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,7.08149953046615757E-008,3)
-        #~ x,err=instance.get_abundance(id,5)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x, 6.52897069295877081E-005,3)
-#~ 
-        #~ self.assertEqual(0, err)
-#~ 
-        #~ self.assertEqual(0, instance.cleanup_code())
-#~ 
-        #~ instance.stop()
-#~ 
-    #~ def test7(self):
-        #~ print "Test 1: simple evolve test 3"
-#~ 
-        #~ instance = TDCInterface(**default_options)
-        #~ self.assertEqual(0, instance.initialize_code())
-        #~ self.assertEqual(0, instance.commit_parameters())
-#~ 
-        #~ dens=1.e5
-        #~ t=500.
-        #~ ion=1.e-11
-        #~ id1,err=instance.new_particle(dens,t,ion)
-        #~ id2,err=instance.new_particle(dens,t,ion)
-#~ 
-        #~ self.assertEqual(err,0)
-      #~ 
-        #~ self.assertEqual(instance.commit_particles(),0)
-#~ 
-        #~ err=instance.evolve_model( 94.112609921226252)
-#~ 
-        #~ x,err=instance.get_abundance(id1,1)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,0.38895405860649546,7)
-        #~ x,err=instance.get_abundance(id1,2)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,.30526706600870018,7)
-        #~ x,err=instance.get_abundance(id1,3)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,1.47184343246716795E-004,7)
-        #~ x,err=instance.get_abundance(id1,4)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,7.08149953046615757E-008,7)
-        #~ x,err=instance.get_abundance(id1,5)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x, 6.52897069295877081E-005,7)
-#~ 
-        #~ x,err=instance.get_abundance(id2,1)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,0.38895405860649546,7)
-        #~ x,err=instance.get_abundance(id2,2)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,.30526706600870018,7)
-        #~ x,err=instance.get_abundance(id2,3)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,1.47184343246716795E-004,7)
-        #~ x,err=instance.get_abundance(id2,4)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,7.08149953046615757E-008,7)
-        #~ x,err=instance.get_abundance(id2,5)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x, 6.52897069295877081E-005,7)
-#~ 
-        #~ self.assertEqual(0, err)
-#~ 
-        #~ self.assertEqual(0, instance.cleanup_code())
-#~ 
-        #~ instance.stop()
-#~ 
-    #~ def test8(self):
-        #~ print "Test 1: simple evolve test 4"
-#~ 
-        #~ instance = TDCInterface(**default_options)
-        #~ self.assertEqual(0, instance.initialize_code())
-        #~ self.assertEqual(0, instance.commit_parameters())
-#~ 
-        #~ dens=1.e5
-        #~ t=500.
-        #~ ion=1.e-11
-        #~ id1,err=instance.new_particle(dens,t,ion)
-        #~ id2,err=instance.new_particle(2*dens,t,ion)
-#~ 
-        #~ self.assertEqual(err,0)
-      #~ 
-        #~ self.assertEqual(instance.commit_particles(),0)
-        #~ 
-        #~ err=instance.evolve_model( 94.112609921226252)
-#~ 
-        #~ x,err=instance.get_abundance(id1,3)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,1.47184343246716795E-004,7)
-        #~ x,err=instance.get_abundance(id2,3)
-        #~ self.assertEqual(0,err)
-        #~ self.assertAlmostRelativeEqual(x,6.7890303322737115e-05,7)
-#~ 
-        #~ instance.stop()
-#~ 
-#~ 
+class TestKrome(TestWithMPI):
+    def makeparts(self,N):
+        parts=Particles(N)
+        numpy.random.seed(1234567)
+        parts.number_density=(numpy.random.random(N)*1.e5+1.e5)| units.cm**-3
+        parts.temperature=(numpy.random.random(N)*500+100)| units.K
+        parts.ionrate=(numpy.random.random(N)*1.e-11+1.e-17)| units.s**-1
+        return parts
+
+    def test0(self):
+        print "test1: basic startup and flow"
+        instance=Krome()
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.commit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+
+        instance.cleanup_code()
+        instance.stop()
+
+    def test1(self):
+        print "test1: adding particles"
+
+        instance=Krome()
+
+        parts=self.makeparts(5)
+                
+        self.assertEqual(len(instance.particles),0)
+        instance.particles.add_particles(parts)
+        self.assertEqual(len(instance.particles),len(parts))
+
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+
+        part2=instance.particles.copy()
+
+        self.assertAlmostRelativeEquals(parts.number_density,part2.number_density,12)
+        self.assertAlmostRelativeEquals(parts.temperature,part2.temperature,12)
+        self.assertAlmostRelativeEquals(parts.ionrate,part2.ionrate,12)
+
+        for p in part2:
+          i=instance.species["E"]
+          self.assertAlmostEqual(p.abundances[i],0.000369180975425)
+          i=instance.species["H+"]
+          self.assertAlmostEqual(p.abundances[i],0.0001)
+          i=instance.species["HE"]
+          self.assertAlmostEqual(p.abundances[i],0.0851224751475)
+          i=instance.species["C+"]
+          self.assertAlmostEqual(p.abundances[i],0.000269180975425)
+          i=instance.species["SI"]
+          self.assertAlmostEqual(p.abundances[i],3.2362683404e-05)
+          i=instance.species["O"]
+          self.assertAlmostEqual(p.abundances[i],0.000489828841345)
+          
+        instance.cleanup_code()
+        instance.stop()
+
+    def test2(self):
+        print "test2: adding particles w abund."
+
+        instance=Krome()
+
+        parts=self.makeparts(5)
+        
+        N=len(instance.species)
+
+        parts.abundances=numpy.zeros((5,N))        
+
+        for i in range(5):
+          parts[i].abundances=(numpy.array(range(N))+1)/(N+1.)
+ 
+        instance.particles.add_particles(parts)
+
+        channel=parts.new_channel_to(instance.particles)
+        channel.copy() 
+
+        part2=instance.particles.copy()
+
+        self.assertAlmostRelativeEquals(parts.number_density,part2.number_density,12)
+        self.assertAlmostRelativeEquals(parts.temperature,part2.temperature,12)
+        self.assertAlmostRelativeEquals(parts.ionrate,part2.ionrate,12)
+
+        for i in range(5):  
+          self.assertAlmostRelativeEquals(part2[i].abundances,parts[i].abundances ,12)
+
+        instance.cleanup_code()
+        instance.stop()
+
+    def test3(self):
+        print "test3: evolve test"
+
+        instance=Krome(**default_options)
+
+        parts=Particles(1)
+        parts.number_density=1.e5 | units.cm**-3
+        parts.temperature=50 | units.K
+        parts.ionrate=2.e-17 | units.s**-1
+        parts.abundances=numpy.zeros((5,35))        
+
+        instance.particles.add_particles(parts)
+ 
+        instance.evolve_model( 1. | units.Myr )
+        
+        f=2*instance.particles[0].abundances[instance.species["H2"]]
+        self.assertTrue(f> 0.95) # not much of a test..
+        #~ for x,i in instance.species.items():
+          #~ print x, instance.particles[0].abundances[i]
+        
+        instance.cleanup_code()
+        instance.stop()
+
+
+
+
 #~ class TestTDC(TestWithMPI):
     #~ 
     #~ def is_fortan_version_up_to_date(self):
