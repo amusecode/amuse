@@ -21,7 +21,7 @@ src/krome:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
-	@echo "DOWNLOAD_CODES is not set. tupan will not be downloaded and build."
+	@echo "DOWNLOAD_CODES is not set. Krome will not be downloaded and build."
 	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
 	@echo "bash> export DOWNLOAD_CODES=1"
 	@echo "csh> setenv DOWNLOAD_CODES 1"

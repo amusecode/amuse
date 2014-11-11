@@ -8,7 +8,8 @@ from amuse.datamodel import Particles
 
 from amuse.io import read_set_from_file
 
-default_options = dict(redirection="none")
+default_options={}
+#default_options = dict(redirection="none")
 #default_options=dict(debugger="gdb")
 
 class TestKromeInterface(TestWithMPI):
@@ -16,7 +17,7 @@ class TestKromeInterface(TestWithMPI):
     def test1(self):
         print "Test 1: initialization"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         self.assertEqual(0, instance.cleanup_code())
@@ -25,7 +26,7 @@ class TestKromeInterface(TestWithMPI):
     def test2(self):
         print "Test 1: add particle, get state"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -53,7 +54,7 @@ class TestKromeInterface(TestWithMPI):
     def test3(self):
         print "Test 1: add 2 particles, get state"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -82,7 +83,7 @@ class TestKromeInterface(TestWithMPI):
     def test4(self):
         print "Test 1: add 100 particles, get state"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -111,7 +112,7 @@ class TestKromeInterface(TestWithMPI):
     def test5(self):
         print "Test 5: can we get species?"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         
         first,last,err=instance.get_firstlast_abundance()
         self.assertEqual(err,0)
@@ -129,7 +130,7 @@ class TestKromeInterface(TestWithMPI):
     def test6(self):
         print "Test 6: add 100 particles, remove particles"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -167,7 +168,7 @@ class TestKromeInterface(TestWithMPI):
     def test7(self):
         print "Test 1: add particle, set abundances"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -201,7 +202,7 @@ class TestKromeInterface(TestWithMPI):
     def test8(self):
         print "evolve test"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -238,7 +239,7 @@ class TestKromeInterface(TestWithMPI):
     def test9(self):
         print "evolve test 2"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -286,7 +287,7 @@ class TestKromeInterface(TestWithMPI):
     def test10(self):
         print "check initialization of abundances"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -311,7 +312,7 @@ class TestKromeInterface(TestWithMPI):
     def test11(self):
         print "evolve test, comparison"
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -329,7 +330,7 @@ class TestKromeInterface(TestWithMPI):
           name,err=instance.get_name_of_species(i)
           result1[name]=x
 
-        instance = KromeInterface(**default_options)
+        instance = self.new_instance_of_an_optional_code(KromeInterface, **default_options)
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
 
@@ -364,7 +365,7 @@ class TestKrome(TestWithMPI):
 
     def test0(self):
         print "test1: basic startup and flow"
-        instance=Krome()
+        instance=self.new_instance_of_an_optional_code(Krome)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
@@ -379,7 +380,7 @@ class TestKrome(TestWithMPI):
     def test1(self):
         print "test1: adding particles"
 
-        instance=Krome()
+        instance=self.new_instance_of_an_optional_code(Krome)
 
         parts=self.makeparts(5)
                 
@@ -415,7 +416,7 @@ class TestKrome(TestWithMPI):
     def test2(self):
         print "test2: adding particles w abund."
 
-        instance=Krome()
+        instance=self.new_instance_of_an_optional_code(Krome)
 
         parts=self.makeparts(5)
         
@@ -446,7 +447,7 @@ class TestKrome(TestWithMPI):
     def test3(self):
         print "test3: evolve test"
 
-        instance=Krome(**default_options)
+        instance=self.new_instance_of_an_optional_code(Krome,**default_options)
 
         parts=Particles(1)
         parts.number_density=1.e5 | units.cm**-3
