@@ -76,6 +76,9 @@ class SelectNeighboursByDistanceMixin(AbstractSelectNeighboursMixin):
         
         self.particles_close_to_encounter.add_particles(near_particles)
         
+        LOG_ENCOUNTER.info("neighbor particles (mutliples or singles): {0}".format(self.particles_close_to_encounter.key))
+        
+        
 class SelectNeighboursByPerturbationMixin(AbstractSelectNeighboursMixin):
 
     def __init__(self):
@@ -123,7 +126,11 @@ class SelectNeighboursByPerturbationMixin(AbstractSelectNeighboursMixin):
         
         near_particles = self.particles_in_field[numpy.logical_or(pertubation > minimum_pertubation , distances < self.large_scale_of_particles_in_the_encounter)]
         
+        LOG_ENCOUNTER.info("perturbations({0}): {1}".format(minimum_pertubation, pertubation[pertubation > minimum_pertubation]))
+        
         self.particles_close_to_encounter.add_particles(near_particles)
+        
+        LOG_ENCOUNTER.info("neighbor particles (mutliples or singles): {0}".format(self.particles_close_to_encounter.key))
         
 class AbstractHandleEncounter(object):
     """Abstract base class for all strategies to handle encounters.
@@ -811,8 +818,11 @@ class AbstractHandleEncounter(object):
         binary_copy.child2 = binary_found_in_encounter.child2.copy()
         binary_copy.position = binary_found_in_encounter.position
         binary_copy.velocity = binary_found_in_encounter.velocity
+
         
-class HandleEncounter(AbstractHandleEncounter, SelectNeighboursByDistanceMixin):
+        
+
+class HandleEncounterWithCollisionCode(AbstractHandleEncounter):
     
     def __init__(self,
         kepler_code,
@@ -827,7 +837,6 @@ class HandleEncounter(AbstractHandleEncounter, SelectNeighboursByDistanceMixin):
             kepler_code,
             G
         )
-        SelectNeighboursByDistanceMixin.__init__(self)
     
     def reset(self):
         AbstractHandleEncounter.reset(self)
@@ -895,6 +904,24 @@ class HandleEncounter(AbstractHandleEncounter, SelectNeighboursByDistanceMixin):
         self.scale_code = ScaleSystem(self.kepler_orbits, self.G)
         self.scale_code.scale_particles_to_sphere(self.particles_after_encounter, self.initial_sphere_radius)
         
+        
+class HandleEncounter(HandleEncounterWithCollisionCode, SelectNeighboursByDistanceMixin):
+    
+    def __init__(self,
+        kepler_code,
+        resolve_collision_code,
+        interaction_over_code = None,
+        G = nbody_system.G
+    ):
+        HandleEncounterWithCollisionCode.__init__(
+            self,
+            kepler_code,
+            resolve_collision_code,
+            interaction_over_code,
+            G
+        )
+        SelectNeighboursByDistanceMixin.__init__(self)
+    
         
 class StickyHandleEncounter(AbstractHandleEncounter, EmptySelectNeighboursMixin):
     
@@ -1622,7 +1649,8 @@ class Multiples(options.OptionalAttributes):
         code = self.handle_encounter_code
     
         code.reset()
-        
+
+        LOG_ENCOUNTER.info("found encounter with particles {0}".format(particles_in_encounter.key))
         code.particles_in_encounter.add_particles(particles_in_encounter)
         code.particles_in_field.add_particles(self.particles - particles_in_encounter)
         code.existing_binaries.add_particles(self.binaries)
@@ -1649,6 +1677,8 @@ class Multiples(options.OptionalAttributes):
             x.components = x.components.copy()
         
         
+        LOG_ENCOUNTER.info("captured singles: {0}".format(code.captured_singles.key))
+        LOG_ENCOUNTER.info("released singles: {0}".format(code.released_singles.key))
         # update the singles (will have singles and multiples)
         self.singles.remove_particles(code.captured_singles)
         self.singles.add_particles(code.released_singles)
