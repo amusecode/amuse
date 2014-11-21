@@ -263,12 +263,13 @@ class HDF5LinkedAttribute(HDF5Attribute):
         else:
             grid_indices = numpy.zeros(shape)
         result = LinkedArray(numpy.empty(shape, dtype = numpy.object))
-        
         if len(shape) == 0:
             # we have one unique value, happens with grids
             result = self.convert_to_object(kinds, references, keys, grid_indices)
         else:
             for index in numpy.ndindex(*shape):
+                if len(index) == 1:
+                    index = index[0]
                 reference = references[index]
                 kind = kinds[index]
                 result[index] = self.convert_to_object(kind,reference, keys[index], grid_indices[index])
