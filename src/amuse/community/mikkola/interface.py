@@ -314,12 +314,12 @@ class Mikkola(GravitationalDynamics):
             "the code will evolve this number of particles, please be sure to account for mergers", 
             default_value = 100
         )
-        object.add_method_parameter(
+        object.add_boolean_parameter(
             "get_evolve_to_exact_time", 
             "set_evolve_to_exact_time",
             "evolve_to_exact_time", 
             "the code will evolve the model to the exact time given in evolve_model", 
-            default_value = True
+            True
         )
         
     def define_methods(self, object):

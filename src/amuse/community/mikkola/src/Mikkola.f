@@ -861,35 +861,35 @@ C---  init acc
         END DO
          if(1.eq.2) then !THIS MUST BE REMOVED FOR REAL USE
 c        This is an example only:
-        do ic=1,N               ! ic= chainparticle index
-
-           ic0=3*ic-3
-
-           do i=1,Npertur       ! i=perturber index
-
-              S  = TrueTIME - t0p(i)  ! this is the step size
-              S1 = 0.5d0*S            ! and some multiples of it
-              S2 = S/3.d0             ! as used in the predictor
-
-              rr=0
-              do k=1,3          ! coordinate index
-
-C---  here comes the predictor
-c                 xppred(k,i) =  ((fpdot(k,i)*S2 + fp(k,i))*S1
-c     $                         +  vp(k,i))*S   + xp(k,i)
-
-C---  and predicted distance to chain particle 
-c                 dx(k)=X(ic0+k)-xppred(k,i)
-c                 rr=rr+dx(k)**2
-              end do            ! k
-              rrr=sqrt((rr+ee)**3.d0)
-
-              do k=1,3
-c                 ACC(ic0+k)=ACC(ic0+k)-MP(I)/rrr*dx(k) ! hope this is correct (not confirmed)
-              end do            ! k
-               
-           end do               ! i
-        end do                  ! ic         
+c~         do ic=1,N               ! ic= chainparticle index
+c~ 
+c~            ic0=3*ic-3
+c~ 
+c~            do i=1,Npertur       ! i=perturber index
+c~ 
+c~               S  = TrueTIME - t0p(i)  ! this is the step size
+c~               S1 = 0.5d0*S            ! and some multiples of it
+c~               S2 = S/3.d0             ! as used in the predictor
+c~ 
+c~               rr=0
+c~               do k=1,3          ! coordinate index
+c~ 
+c~ C---  here comes the predictor
+c~ c                 xppred(k,i) =  ((fpdot(k,i)*S2 + fp(k,i))*S1
+c~ c     $                         +  vp(k,i))*S   + xp(k,i)
+c~ 
+c~ C---  and predicted distance to chain particle 
+c~ c                 dx(k)=X(ic0+k)-xppred(k,i)
+c~ c                 rr=rr+dx(k)**2
+c~               end do            ! k
+c~               rrr=sqrt((rr+ee)**3.d0)
+c~ 
+c~               do k=1,3
+c~ c                 ACC(ic0+k)=ACC(ic0+k)-MP(I)/rrr*dx(k) ! hope this is correct (not confirmed)
+c~               end do            ! k
+c~                
+c~            end do               ! i
+c~         end do                  ! ic         
 
         end if !1.eq.2
         return
