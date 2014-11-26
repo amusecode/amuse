@@ -746,7 +746,6 @@ FUNCTION set_evolve_to_exact_time(inputvalue)
   IMPLICIT NONE
   INTEGER :: set_evolve_to_exact_time
   LOGICAL, intent(in) :: inputvalue
-  print*,"set:", inputvalue
   evolve_to_exact_time = inputvalue
   set_evolve_to_exact_time=0
 END FUNCTION
@@ -756,7 +755,6 @@ FUNCTION get_evolve_to_exact_time(outputvalue)
   INTEGER :: get_evolve_to_exact_time
   LOGICAL, intent(out) :: outputvalue
   outputvalue = evolve_to_exact_time
-  print*,"get:", outputvalue
   get_evolve_to_exact_time=0
 END FUNCTION
 
