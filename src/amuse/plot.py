@@ -152,6 +152,7 @@ def semilogy(*args, **kwargs):
 
 def loglog(*args, **kwargs):
     args = UnitlessArgs.strip(*args, **kwargs)
+    print args
     result = native_plot.loglog(*args, **kwargs)
     native_plot.xlabel(UnitlessArgs.x_label())
     native_plot.ylabel(UnitlessArgs.y_label())

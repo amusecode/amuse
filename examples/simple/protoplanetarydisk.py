@@ -81,5 +81,5 @@ if __name__ in ("__main__","__plot__"):
     pyplot.title(tend)
     pyplot.xlabel('AU')
     pyplot.savefig('test.png')
-#    pyplot.show()
+    pyplot.show()
          

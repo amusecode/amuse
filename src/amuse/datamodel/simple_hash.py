@@ -3,6 +3,11 @@ import ctypes
 import numpy
 from amuse.support import exceptions
 
+# run a little code, to create import error 
+# for numpy in pypy
+keys=numpy.ascontiguousarray([1,2,3], dtype="uintp")
+keys.ctypes
+
 class cell(ctypes.Structure):
     _fields_=[("key", ctypes.c_size_t),
               ("value", ctypes.c_size_t)]

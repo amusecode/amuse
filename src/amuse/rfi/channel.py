@@ -14,6 +14,7 @@ import time
 import socket
 import array
 import logging
+import shlex
 
 logger = logging.getLogger(__name__)
 
@@ -848,7 +849,7 @@ class AbstractMessageChannel(OptionalAttributes):
     
     @classmethod
     def STRACE(cls, full_name_of_the_worker, channel, interpreter_executable=None):
-        arguments = ['-ostrace-out',  '-ff', '-eexit_group']
+        arguments = ['-ostrace-out',  '-ff']
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
         arguments.append(full_name_of_the_worker)
@@ -857,7 +858,6 @@ class AbstractMessageChannel(OptionalAttributes):
         
     @classmethod
     def CUSTOM(cls, full_name_of_the_worker, channel, interpreter_executable=None):
-        import shlex
         arguments = list(shlex.split(channel.custom_args))
         if not interpreter_executable is None:
             arguments.append(interpreter_executable)
@@ -1914,6 +1914,14 @@ class SocketChannel(AbstractMessageChannel):
         self._is_inuse = False
         self.socket = None
     
+    
+    @option(sections=("channel",))
+    def mpiexec(self):
+        """mpiexec with arguments"""
+        if len(config.mpi.mpiexec):
+            return shlex.split(config.mpi.mpiexec)
+        return []
+    
 
     @late
     def debugger_method(self):
@@ -1936,6 +1944,7 @@ class SocketChannel(AbstractMessageChannel):
                 
         raise exceptions.CodeException('worker still not started after 60 seconds')
 
+    
 
     def start(self):
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1974,12 +1983,12 @@ class SocketChannel(AbstractMessageChannel):
         #start arguments with command        
         arguments.insert(0, command)
 
-        if self.initialize_mpi and len(config.mpi.mpiexec) > 0:
+        if self.initialize_mpi and len(self.mpiexec) > 0 and len(self.mpiexec[0]) > 0:
             # prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
             arguments.insert(0, "-np")
-            arguments.insert(0, config.mpi.mpiexec)
-            command = config.mpi.mpiexec
+            arguments[:0] = self.mpiexec
+            command = self.mpiexec[0]
 
             #append with port and hostname where the worker should connect            
             arguments.append(str(server_socket.getsockname()[1]))

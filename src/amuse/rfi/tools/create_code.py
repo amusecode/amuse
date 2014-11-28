@@ -13,6 +13,9 @@ class DTypeSpec(object):
         self.counter_name = counter_name
         self.type = type
         self.mpi_type = mpi_type
+        
+    
+
 
 dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
 
