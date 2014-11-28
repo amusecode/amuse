@@ -177,7 +177,7 @@ class Job(object):
 
 class JobServer(object):
     def __init__(self,hosts=[],channel_type="mpi",preamble=None, retry_jobs=True, 
-                   no_wait=True,verbose=True,max_retries=2):
+                   no_wait=True,verbose=True,max_retries=2, use_threading=False):
       self.hosts=[]
       self.job_list=deque()
       self.idle_codes=[]
@@ -190,6 +190,7 @@ class JobServer(object):
       self.number_starting_codes=0
       self.no_wait=no_wait
       self.last_finished_job=None
+      self.use_threading=use_threading
       self.verbose=verbose
       if self.verbose:
           print "AMUSE JobServer launching"
@@ -201,7 +202,7 @@ class JobServer(object):
       self.hosts.append(hosts)
       if self.verbose:
         print "JobServer: connecting %i hosts"%len(hosts)
-      if channel_type=="mpi" or channel_type=="sockets":
+      if not self.use_threading:
         for host in hosts:
           self.number_starting_codes+=1
           self._startup( channel_type=channel_type,hostname=host,
