@@ -760,6 +760,7 @@ int delete_binary(int index_of_the_star){
             
             child1->set_elder_sister(elder_sister);
             child1->set_parent(parent);
+            ((star*)child1->get_starbase())->set_identity(-1);
             if(elder_sister) {
                 elder_sister->set_younger_sister(child1);
             }
@@ -771,6 +772,7 @@ int delete_binary(int index_of_the_star){
             if(child2 != 0) {
                 child2->set_younger_sister(younger_sister);
                 child2->set_parent(parent);
+                ((star*)child2->get_starbase())->set_identity(-1);
                 
                 if(younger_sister) {
                     younger_sister->set_elder_sister(child2);
