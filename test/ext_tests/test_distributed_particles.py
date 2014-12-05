@@ -800,9 +800,9 @@ class TestDistributedParticles(TestWithMPI):
         )
 
         z.read_set_from_file(files,"amuse")
-        self.assertEqual(len(z), len(z) )
-        self.assertEqual(z.index, z.index )        
-        self.assertEqual(z.mass, z.mass )        
+        self.assertEqual(len(x), len(z) )
+        self.assertEqual(x.index, z.index )        
+        self.assertEqual(x.mass, z.mass )        
 
     def test19(self):
         from test_distributed_particles import distributed_king_generator
@@ -815,7 +815,7 @@ class TestDistributedParticles(TestWithMPI):
         
         x = DistributedParticles(
             size = N,
-            number_of_workers = 2
+            number_of_workers = 4
         )
         x.set_from_generator(distributed_king_generator,args=(N,W0))
         self.assertEqual(y.mass,x.mass)
