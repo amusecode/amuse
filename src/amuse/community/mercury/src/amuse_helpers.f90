@@ -1057,6 +1057,7 @@ end function
        rcen,rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,xh,vh,s,rho,rceh, &
        stat,id,ngf,opt,opflag,ngflag,outfile,dumpfile,mem,lmem,onestep)
 !
+      use StoppingConditions
       implicit none
 !
 ! Input/Output
@@ -1077,6 +1078,14 @@ end function
       real*8 rce(NMAX),rphys(NMAX),rcrit(NMAX),a(NMAX)
       real*8 dclo(CMAX),tclo(CMAX),epoch(NMAX)
       real*8 ixvclo(6,CMAX),jxvclo(6,CMAX)
+
+      integer clock_init, clock_current
+      integer count_rate, count_max
+      integer is_timeout_detection_enabled
+      integer stopping_index
+      integer error
+      double precision timeout
+
       external mfo_all,onestep
 !
 !------------------------------------------------------------------------------
@@ -1108,12 +1117,42 @@ end function
       tdump = time
       tfun  = time
       tlog  = time
+
+!
+      error = reset_stopping_conditions()
+
+      error = is_stopping_condition_enabled(&
+                     TIMEOUT_DETECTION, &
+                     is_timeout_detection_enabled)
+      error = get_stopping_condition_timeout_parameter(timeout)
+
+      call system_clock(clock_init, count_rate, count_max)
+
+!
+
 !
 !------------------------------------------------------------------------------
 !
 !  MAIN  LOOP  STARTS  HERE
 !
  100  continue
+
+! timeout stopping condition
+
+      if (is_timeout_detection_enabled.gt.0) then
+         call system_clock(clock_current, count_rate, count_max)
+         if ((clock_current-clock_init).gt.timeout) then
+            stopping_index = next_index_for_stopping_condition()
+            error = set_stopping_condition_info(stopping_index, &
+                 TIMEOUT_DETECTION)
+         endif
+      endif
+! if condition met, break
+      if (is_any_condition_set().gt.0) then
+	 write(6,*) "condition set"
+         return
+      endif
+
 !
 ! Is it time for output ?
       if (abs(tout-time).lt.abs(tsmall).and.opflag.ge.-1) then
