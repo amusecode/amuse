@@ -21,9 +21,11 @@ module amuse_mercuryMod
     mercury_time,set_central_body,get_central_body, &
     mercury_set_begin_time, mercury_get_begin_time, &
     mercury_commit_parameters,amuse_get_gravity_at_point, &
-    amuse_get_potential_at_point
+    amuse_get_potential_at_point, &
+    set_algor,get_algor, &
+    get_outputfiles,set_outputfiles
 
-  include 'amuse_mercury.inc'
+  include 'mercury.inc'
 
   integer algor,nbod,nbig,stat(NMAX),lmem(NMESS)
   integer opflag,ngflag,ndump,nfun
@@ -77,14 +79,14 @@ function mercury_init() result(ret)
   dtout=1.e30
   h0=8
   tol=1.e-12
-  opt=(/1,1,2,3,0,0,0,0/)
-  outfile(1)="osc_coor_vel_masses.out"
-  outfile(2)="close_enc.out"
-  outfile(3)="info.out"
-  dumpfile(1)="bigbody_data.dmp"
-  dumpfile(2)="smallbody_data.dmp"
-  dumpfile(3)="int_parameters.dmp"
-  dumpfile(4)="restart.dmp"
+  opt=(/1,0,2,3,0,0,0,0/)
+  outfile(1)="/dev/null" !"osc_coor_vel_masses.out"
+  outfile(2)="/dev/null" !"close_enc.out"
+  outfile(3)="/dev/null" !"info.out"
+  dumpfile(1)="/dev/null"! "bigbody_data.dmp"
+  dumpfile(2)="/dev/null"!"smallbody_data.dmp"
+  dumpfile(3)="/dev/null"!"int_parameters.dmp"
+  dumpfile(4)="/dev/null"!"restart.dmp"
 
   call messages()
 
@@ -161,6 +163,20 @@ function mercury_commit_parameters() result(ret)
     if(time.EQ.0.0) then
         time = begin_time
     end if
+    open (24,file=outfile(1),status='unknown',position='append')
+    close(24)
+    open (24,file=outfile(2),status='unknown',position='append')
+    close(24)
+    open (24,file=outfile(3),status='unknown',position='append')
+    close(24)
+    open (24,file=dumpfile(1),status='unknown',position='append')
+    close(24)
+    open (24,file=dumpfile(2),status='unknown',position='append')
+    close(24)
+    open (24,file=dumpfile(3),status='unknown',position='append')
+    close(24)
+    open (24,file=dumpfile(4),status='unknown',position='append')
+    close(24)
     ret=0
 end function
 
@@ -331,11 +347,21 @@ function evolve_mercury(t_end) result(ret)
 
   id_searcheable=.FALSE.
   tstop=t_end
-  if(algor.NE.10) then
+  if(algor.NE.1.AND. &
+     algor.NE.2.AND. &
+     algor.NE.10) then
     ret=-1
     return
   endif
 !  print*,time,tstart,tstop,dtout,h0
+  if (algor.eq.1) call mal_hcon (time,tstart,tstop,dtout,algor,h0, &
+       tol,jcen,rcen,rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,xh,vh,s, &
+       rho,rceh,stat,id,ngf,opt,opflag,ngflag,outfile,dumpfile,mem, &
+       lmem,mdt_mvs,mco_h2mvs,mco_mvs2h)
+  if (algor.eq.2) call mal_hvar (time,tstart,tstop,dtout,algor,h0, &
+       tol,jcen,rcen,rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,xh,vh,s, &
+       rho,rceh,stat,id,ngf,opt,opflag,ngflag,outfile,dumpfile,mem, &
+       lmem,mdt_bs1)
   if (algor.eq.10) call mal_hcon (time,tstart,tstop,dtout,algor,h0, &
       tol,jcen,rcen,rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,xh,vh,s, &
       rho,rceh,stat,id,ngf,opt,opflag,ngflag,outfile,dumpfile,mem, &
@@ -627,202 +653,49 @@ function set_algor(algor_i) result(x)
 
   algor=algor_i
   
-  if(algor.NE.10) then
+  if(algor.NE.1.AND. &
+     algor.NE.2.AND. &
+     algor.NE.10) then
     x=-1
   else
     x=0
-  endif  
+  endif
 
 end function
 
-! dummies
-      subroutine mio_out (time,jcen,rcen,rmax,nbod,nbig,m,xh,vh,s,rho, &
-        stat,id,opt,opflag,algor,outfile)
+function get_algor(algor_o) result(x)
+  integer x,algor_o
+  algor_o=algor  
+  x=0
+end function
 
-      implicit none
-!      include 'amuse_mercury.inc'
+function set_outputfiles(f1,f2,f3,f4,f5,f6,f7) result(ret)
+  integer :: ret
+  character*80, optional :: f1,f2,f3,f4,f5,f6,f7
 
-      integer nbod, nbig, stat(nbod), opt(8), opflag, algor
-      real*8 time,jcen(3),rcen,rmax,m(nbod),xh(3,nbod),vh(3,nbod)
-      real*8 s(3,nbod),rho(nbod)
-      character*80 outfile
-      character*8 id(nbod)
+  if(present(f1)) outfile(1)=f1
+  if(present(f2)) outfile(2)=f2
+  if(present(f3)) outfile(3)=f3
+  if(present(f4)) dumpfile(1)=f4
+  if(present(f5)) dumpfile(2)=f5
+  if(present(f6)) dumpfile(3)=f6
+  if(present(f7)) dumpfile(4)=f7
+  ret=0
+end function
 
-      opflag = 0
+function get_outputfiles(f1,f2,f3,f4,f5,f6,f7) result(ret)
+  integer :: ret
+  character*80, optional :: f1,f2,f3,f4,f5,f6,f7
 
-      return
-      end subroutine
-
-      subroutine mio_dump (time,tstart,tstop,dtout,algor,h0,tol,jcen, &
-        rcen,rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,x,v,s,rho,rceh, &
-        stat,id,ngf,epoch,opt,opflag,dumpfile,mem,lmem)
-
-      implicit none
-!      include 'amuse_mercury.inc'
-
-      integer algor,nbod,nbig,stat(nbod),opt(8),opflag,ndump,nfun
-      integer lmem(NMESS)
-      real*8 time,tstart,tstop,dtout,h0,tol,rmax,en(3),am(3)
-      real*8 jcen(3),rcen,cefac,m(nbod),x(3,nbod),v(3,nbod)
-      real*8 s(3,nbod),rho(nbod),rceh(nbod),ngf(4,nbod),epoch(nbod)
-      character*80 dumpfile(4),mem(NMESS)
-      character*8 id(nbod)
-
-      return
-      end subroutine
-
-      subroutine mio_log (time,tstart,en,am,opt,mem,lmem)
-      implicit none
-!      include 'amuse_mercury.inc'
-      integer lmem(NMESS), opt(8)
-      real*8 time, tstart, en(3), am(3)
-      character*80 mem(NMESS)
-
-      return
-      end subroutine
-!-------
-
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!
-!      MIO_CE.FOR    (ErikSoft   1 March 2001)
-!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!
-! Author: John E. Chambers
-!
-! Writes details of close encounter minima to an output file, and decides how
-! to continue the integration depending upon the close-encounter option
-! chosen by the user. Close encounter details are stored until either 100
-! have been accumulated, or a data dump is done, at which point the stored
-! encounter details are also output.
-!
-! For each encounter, the routine outputs the time and distance of closest
-! approach, the identities of the objects involved, and the output
-! variables of the objects at this time. The output variables are:
-! expressed as
-!  r = the radial distance
-!  theta = polar angle
-!  phi = azimuthal angle
-!  fv = 1 / [1 + 2(ke/be)^2], where be and ke are the object's binding and
-!                             kinetic energies. (Note that 0 < fv < 1).
-!  vtheta = polar angle of velocity vector
-!  vphi = azimuthal angle of the velocity vector
-!
-!------------------------------------------------------------------------------
-!
-      subroutine mio_ce (time,tstart,rcen,rmax,nbod,nbig,m,stat,id, &
-        nclo,iclo,jclo,opt,stopflag,tclo,dclo,ixvclo,jxvclo,mem, &
-        lmem,outfile,nstored,ceflush)
-!
-      implicit none
-!      include 'amuse_mercury.inc'
-!
-! Input/Output
-      integer nbod,nbig,opt(8),stat(nbod),lmem(NMESS),stopflag
-      integer nclo,iclo(nclo),jclo(nclo),nstored,ceflush
-      real*8 time,tstart,rcen,rmax,m(nbod),tclo(nclo),dclo(nclo)
-      real*8 ixvclo(6,nclo),jxvclo(6,nclo)
-      character*80 outfile(3),mem(NMESS)
-      character*8 id(nbod)
-!
-! Local
-      integer k,year,month
-      real*8 tmp0,t1,rfac,fr,fv,theta,phi,vtheta,vphi
-      character*80 c(200)
-      character*38 fstop
-      character*8 mio_fl2c, mio_re2c
-      character*6 tstring
-!
-!------------------------------------------------------------------------------
-!
-      save c
-!
-! Scaling factor (maximum possible range) for distances
-      rfac = log10 (rmax / rcen)
-!
-! Store details of each new close-encounter minimum
-      do k = 1, nclo
-        nstored = nstored + 1
-        c(nstored)(1:8)   = mio_fl2c(tclo(k))
-        c(nstored)(9:16)  = mio_re2c(dble(iclo(k)-1),0.d0,11239423.99d0)
-        c(nstored)(12:19) = mio_re2c(dble(jclo(k)-1),0.d0,11239423.99d0)
-        c(nstored)(15:22) = mio_fl2c(dclo(k))
-!
-        call mco_x2ov (rcen,rmax,m(1),0.d0,ixvclo(1,k),ixvclo(2,k), &
-          ixvclo(3,k),ixvclo(4,k),ixvclo(5,k),ixvclo(6,k),fr,theta,phi, &
-          fv,vtheta,vphi)
-        c(nstored)(23:30) = mio_re2c (fr    , 0.d0, rfac)
-        c(nstored)(27:34) = mio_re2c (theta , 0.d0, PI)
-        c(nstored)(31:38) = mio_re2c (phi   , 0.d0, TWOPI)
-        c(nstored)(35:42) = mio_re2c (fv    , 0.d0, 1.d0)
-        c(nstored)(39:46) = mio_re2c (vtheta, 0.d0, PI)
-        c(nstored)(43:50) = mio_re2c (vphi  , 0.d0, TWOPI)
-!
-        call mco_x2ov (rcen,rmax,m(1),0.d0,jxvclo(1,k),jxvclo(2,k), &
-          jxvclo(3,k),jxvclo(4,k),jxvclo(5,k),jxvclo(6,k),fr,theta,phi, &
-          fv,vtheta,vphi)
-        c(nstored)(47:54) = mio_re2c (fr    , 0.d0, rfac)
-        c(nstored)(51:58) = mio_re2c (theta , 0.d0, PI)
-        c(nstored)(55:62) = mio_re2c (phi   , 0.d0, TWOPI)
-        c(nstored)(59:66) = mio_re2c (fv    , 0.d0, 1.d0)
-        c(nstored)(63:74) = mio_re2c (vtheta, 0.d0, PI)
-        c(nstored)(67:78) = mio_re2c (vphi  , 0.d0, TWOPI)
-      end do
-!
-! If required, output the stored close encounter details
-      if (nstored.ge.100.or.ceflush.eq.0) then
-
-! no output for amuse
-!  10    open (22, file=outfile(2), status='old', access='append',err=10)
-!        do k = 1, nstored
-!          write (22,'(a1,a2,a70)') char(12),'6b',c(k)(1:70)
-!        end do
-!       close (22)
- 
-        nstored = 0
-      end if
-!
-! If new encounter minima have occurred, decide whether to stop integration
-      stopflag = 0
-      if (opt(1).eq.1.and.nclo.gt.0) then
-
-! no output for amuse
-!  20    open (23, file=outfile(3), status='old', access='append',err=20)
-!! If time style is Gregorian date then...
-!        tmp0 = tclo(1)
-!        if (opt(3).eq.1) then
-!          fstop = '(5a,/,9x,a,i10,1x,i2,1x,f4.1)'
-!          call mio_jd2y (tmp0,year,month,t1)
-!          write (23,fstop) mem(121)(1:lmem(121)),mem(126) &
-!            (1:lmem(126)),id(iclo(1)),',',id(jclo(1)), &
-!            mem(71)(1:lmem(71)),year,month,t1
-!! Otherwise...
-!        else
-!          if (opt(3).eq.3) then
-!            tstring = mem(2)
-!            fstop = '(5a,/,9x,a,f14.3,a)'
-!            t1 = (tmp0 - tstart) / 365.25d0
-!          else
-!            tstring = mem(1)
-!            fstop = '(5a,/,9x,a,f14.1,a)'
-!            if (opt(3).eq.0) t1 = tmp0
-!            if (opt(3).eq.2) t1 = tmp0 - tstart
-!          end if
-!          write (23,fstop) mem(121)(1:lmem(121)),mem(126) &
-!            (1:lmem(126)),id(iclo(1)),',',id(jclo(1)), &
-!            mem(71)(1:lmem(71)),t1,tstring
-!        end if
-        stopflag = 1
-!        close(23)
-!
-
-      end if
-!
-!------------------------------------------------------------------------------
-!
-      return
-      end subroutine
+  if(present(f1)) f1=outfile(1)
+  if(present(f2)) f2=outfile(2)
+  if(present(f3)) f3=outfile(3)
+  if(present(f4)) f4=dumpfile(1)
+  if(present(f5)) f5=dumpfile(2)
+  if(present(f6)) f6=dumpfile(3)
+  if(present(f7)) f7=dumpfile(4)
+  ret=0
+end function
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !
@@ -850,7 +723,6 @@ end function
 !
       use StoppingConditions
       implicit none
-      include 'amuse_mercury.inc'
       
 !
 ! Input/Output
@@ -1163,7 +1035,269 @@ end function
       write(6,*)"just check if stuck exit loop"
       end subroutine
 
-      subroutine kin_pot_ang_mom(jcen,nbod,nbig,m,xh,vh,s)
+
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!
+!      MAL_HVAR.FOR    (ErikSoft   4 March 2001)
+!
+!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+!
+! Author: John E. Chambers
+!
+! Does an integration using a variable-timestep integration algorithm. The
+! particular integrator routine is ONESTEP and the algorithm must use
+! coordinates with respect to the central body.
+!
+! N.B. This routine is also called by the synchronisation routine mxx_sync,
+! ===  in which case OPFLAG = -2. Beware when making changes involving OPFLAG.
+!
+!------------------------------------------------------------------------------
+!
+      subroutine mal_hvar (time,tstart,tstop,dtout,algor,h0,tol,jcen, &
+       rcen,rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,xh,vh,s,rho,rceh, &
+       stat,id,ngf,opt,opflag,ngflag,outfile,dumpfile,mem,lmem,onestep)
+!
+      implicit none
+!
+! Input/Output
+      integer algor,nbod,nbig,stat(nbod),opt(8),opflag,ngflag,ndump,nfun
+      integer lmem(NMESS)
+      real*8 time,tstart,tstop,dtout,h0,tol,jcen(3),rcen,rmax
+      real*8 en(3),am(3),cefac,m(nbod),xh(3,nbod),vh(3,nbod)
+      real*8 s(3,nbod),rho(nbod),rceh(nbod),ngf(4,nbod)
+      character*8 id(nbod)
+      character*80 outfile(3),dumpfile(4),mem(NMESS)
+!
+! Local
+      integer i,j,k,n,itmp,nhit,ihit(CMAX),jhit(CMAX),chit(CMAX)
+      integer dtflag,ejflag,nowflag,stopflag,nstored,ce(NMAX)
+      integer nclo,iclo(CMAX),jclo(CMAX),nce,ice(NMAX),jce(NMAX)
+      real*8 tmp0,h,hdid,tout,tdump,tfun,tlog,tsmall,dtdump,dtfun
+      real*8 thit(CMAX),dhit(CMAX),thit1,x0(3,NMAX),v0(3,NMAX)
+      real*8 rce(NMAX),rphys(NMAX),rcrit(NMAX),a(NMAX)
+      real*8 dclo(CMAX),tclo(CMAX),epoch(NMAX)
+      real*8 ixvclo(6,CMAX),jxvclo(6,CMAX)
+      external mfo_all,onestep
+!
+!------------------------------------------------------------------------------
+!
+! Initialize variables. DTFLAG = 0 implies first ever call to ONESTEP
+      dtout  = abs(dtout)
+      dtdump = abs(h0) * ndump
+      dtfun  = abs(h0) * nfun
+      dtflag = 0
+      nstored = 0
+      tsmall = h0 * 1.d-8
+      h = h0
+      do j = 2, nbod
+        ce(j) = 0.d0
+      end do
+!
+! Calculate close-encounter limits and physical radii for massive bodies
+      call mce_init (tstart,algor,h0,jcen,rcen,rmax,cefac,nbod,nbig, &
+       m,xh,vh,s,rho,rceh,rphys,rce,rcrit,id,opt,outfile(2),1)
+!
+! Set up time of next output, times of previous dump, log and periodic effect
+      if (opflag.eq.-1) then
+        tout = tstart
+      else
+        n = int (abs (time - tstart) / dtout) + 1
+        tout = tstart  +  dtout * sign (dble(n), tstop - tstart)
+        if ((tstop - tstart)*(tout - tstop).gt.0) tout = tstop
+      end if
+      tdump = time
+      tfun  = time
+      tlog  = time
+!
+!------------------------------------------------------------------------------
+!
+!  MAIN  LOOP  STARTS  HERE
+!
+ 100  continue
+!
+! Is it time for output ?
+      if (abs(tout-time).lt.abs(tsmall).and.opflag.ge.-1) then
+!
+! Beware: the integration may change direction at this point!!!!
+        if (opflag.eq.-1) dtflag = 0
+!
+! Output data for all bodies
+        call mio_out (time,jcen,rcen,rmax,nbod,nbig,m,xh,vh,s,rho, &
+         stat,id,opt,opflag,algor,outfile(1))
+        call mio_ce (time,tstart,rcen,rmax,nbod,nbig,m,stat,id, &
+         0,iclo,jclo,opt,stopflag,tclo,dclo,ixvclo,jxvclo,mem,lmem, &
+         outfile,nstored,0)
+        tmp0 = tstop - tout
+        tout = tout + sign( min( abs(tmp0), abs(dtout) ), tmp0 )
+!
+! Update the data dump files
+        do j = 2, nbod
+          epoch(j) = time
+        end do
+        call mio_dump (time,tstart,tstop,dtout,algor,h,tol,jcen,rcen, &
+         rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,xh,vh,s,rho,rceh,stat, &
+         id,ngf,epoch,opt,opflag,dumpfile,mem,lmem)
+        tdump = time
+      end if
+!
+! If integration has finished return to the main part of programme
+      if (abs(tstop-time).le.abs(tsmall).and.opflag.ne.-1) return
+!
+! Set the timestep
+      if (opflag.eq.-1) tmp0 = tstart - time
+      if (opflag.eq.-2) tmp0 = tstop  - time
+      if (opflag.ge.0)  tmp0 = tout   - time
+      h = sign ( max( min( abs(tmp0), abs(h) ), tsmall), tmp0 )
+!
+! Save the current coordinates and velocities
+      call mco_iden (time,jcen,nbod,nbig,h,m,xh,vh,x0,v0,ngf,ngflag,opt)
+!
+! Advance one timestep
+      call onestep (time,h,hdid,tol,jcen,nbod,nbig,m,xh,vh,s,rphys, &
+       rcrit,ngf,stat,dtflag,ngflag,opt,nce,ice,jce,mfo_all)
+      time = time + hdid
+!
+! Check if close encounters or collisions occurred
+      nclo = 0
+      call mce_stat (time,h,rcen,nbod,nbig,m,x0,v0,xh,vh,rce,rphys, &
+       nclo,iclo,jclo,dclo,tclo,ixvclo,jxvclo,nhit,ihit,jhit, &
+       chit,dhit,thit,thit1,nowflag,stat,outfile(3),mem,lmem)
+!
+!------------------------------------------------------------------------------
+!
+!  CLOSE  ENCOUNTERS
+!
+! If encounter minima occurred, output details and decide whether to stop
+      if (nclo.gt.0.and.opflag.ge.-1) then
+        itmp = 1
+        if (nhit.ne.0) itmp = 0
+        call mio_ce (time,tstart,rcen,rmax,nbod,nbig,m,stat,id,nclo, &
+         iclo,jclo,opt,stopflag,tclo,dclo,ixvclo,jxvclo,mem,lmem, &
+         outfile,nstored,itmp)
+        if (stopflag.eq.1) return
+      end if
+!
+!------------------------------------------------------------------------------
+!
+!  COLLISIONS
+!
+! If a collision occurred, output details and resolve the collision
+      if (nhit.gt.0.and.opt(2).ne.0) then
+        do k = 1, nhit
+          if (chit(k).eq.1) then
+            i = ihit(k)
+            j = jhit(k)
+            call mce_coll (thit(k),tstart,en(3),jcen,i,j,nbod,nbig,m,xh, &
+             vh,s,rphys,stat,id,opt,mem,lmem,outfile(3))
+          end if
+        end do
+!
+! Remove lost objects, reset flags and recompute Hill and physical radii
+        call mxx_elim (nbod,nbig,m,xh,vh,s,rho,rceh,rcrit,ngf,stat, &
+         id,mem,lmem,outfile(3),itmp)
+        dtflag = 1
+        if (opflag.ge.0) opflag = 1
+        call mce_init (tstart,algor,h0,jcen,rcen,rmax,cefac,nbod,nbig, &
+         m,xh,vh,s,rho,rceh,rphys,rce,rcrit,id,opt,outfile(2),1)
+      end if
+!
+!------------------------------------------------------------------------------
+!
+!  COLLISIONS  WITH  CENTRAL  BODY
+!
+! Check for collisions
+      call mce_cent (time,hdid,rcen,jcen,2,nbod,nbig,m,x0,v0,xh,vh,nhit, &
+       jhit,thit,dhit,algor,ngf,ngflag)
+!
+! Resolve the collisions
+      if (nhit.gt.0) then
+        do k = 1, nhit
+          i = 1
+          j = jhit(k)
+          call mce_coll (thit(k),tstart,en(3),jcen,i,j,nbod,nbig,m,xh, &
+           vh,s,rphys,stat,id,opt,mem,lmem,outfile(3))
+        end do
+!
+! Remove lost objects, reset flags and recompute Hill and physical radii
+        call mxx_elim (nbod,nbig,m,xh,vh,s,rho,rceh,rcrit,ngf,stat, &
+         id,mem,lmem,outfile(3),itmp)
+        dtflag = 1
+        if (opflag.ge.0) opflag = 1
+        call mce_init (tstart,algor,h0,jcen,rcen,rmax,cefac,nbod,nbig, &
+         m,xh,vh,s,rho,rceh,rphys,rce,rcrit,id,opt,outfile(2),0)
+      end if
+!
+!------------------------------------------------------------------------------
+!
+!  DATA  DUMP  AND  PROGRESS  REPORT
+!
+! Do the data dump
+      if (abs(time-tdump).ge.abs(dtdump).and.opflag.ge.-1) then
+        do j = 2, nbod
+          epoch(j) = time
+        end do
+        call mio_ce (time,tstart,rcen,rmax,nbod,nbig,m,stat,id, &
+         0,iclo,jclo,opt,stopflag,tclo,dclo,ixvclo,jxvclo,mem,lmem, &
+         outfile,nstored,0)
+        call mio_dump (time,tstart,tstop,dtout,algor,h,tol,jcen,rcen, &
+         rmax,en,am,cefac,ndump,nfun,nbod,nbig,m,xh,vh,s,rho,rceh,stat,&
+         id,ngf,epoch,opt,opflag,dumpfile,mem,lmem)
+        tdump = time
+      end if
+!
+! Write a progress report to the log file
+      if (abs(time-tlog).ge.abs(dtdump).and.opflag.ge.0) then
+        call mxx_en (jcen,nbod,nbig,m,xh,vh,s,en(2),am(2))
+        call mio_log (time,tstart,en,am,opt,mem,lmem)
+        tlog = time
+      end if
+!
+!------------------------------------------------------------------------------
+!
+!  CHECK  FOR  EJECTIONS  AND  DO  OTHER  PERIODIC  EFFECTS
+!
+      if (abs(time-tfun).ge.abs(dtfun).and.opflag.ge.-1) then
+!
+! Recompute close encounter limits, to allow for changes in Hill radii
+        call mce_hill (nbod,m,xh,vh,rce,a)
+        do j = 2, nbod
+          rce(j) = rce(j) * rceh(j)
+        end do
+!
+! Check for ejections
+        call mxx_ejec (time,tstart,rmax,en,am,jcen,2,nbod,nbig,m,xh,vh, &
+         s,stat,id,opt,ejflag,outfile(3),mem,lmem)
+!
+! Remove lost objects, reset flags and recompute Hill and physical radii
+        if (ejflag.ne.0) then
+          call mxx_elim (nbod,nbig,m,xh,vh,s,rho,rceh,rcrit,ngf,stat, &
+           id,mem,lmem,outfile(3),itmp)
+          dtflag = 1
+          if (opflag.ge.0) opflag = 1
+          call mce_init (tstart,algor,h0,jcen,rcen,rmax,cefac,nbod,nbig, &
+           m,xh,vh,s,rho,rceh,rphys,rce,rcrit,id,opt,outfile(2),0)
+        end if
+        tfun = time
+      end if
+!
+! Go on to the next time step
+      goto 100
+!
+!------------------------------------------------------------------------------
+!
+      end subroutine
+
+
+
+
+
+
+
+
+
+
+
+subroutine kin_pot_ang_mom(jcen,nbod,nbig,m,xh,vh,s)
       implicit none
       integer nbod,nbig
       real*8 jcen(3),m(nbod),xh(3,nbod),vh(3,nbod),s(3,nbod)
@@ -1244,121 +1378,7 @@ end function
       potential_energy=pe
       angular_momentum=l
 
-      end subroutine
-
-
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!
-!      MCE_INIT.FOR    (ErikSoft   28 February 2001)
-!
-!%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-!
-! Author: John E. Chambers
-!
-! Calculates close-approach limits RCE (in AU) and physical radii RPHYS
-! (in AU) for all objects, given their masses M, coordinates X, velocities
-! V, densities RHO, and close-approach limits RCEH (in Hill radii).
-!
-! Also calculates the changeover distance RCRIT, used by the hybrid
-! symplectic integrator. RCRIT is defined to be the larger of N1*HILL and
-! N2*H*VMAX, where HILL is the Hill radius, H is the timestep, VMAX is the
-! largest expected velocity of any body, and N1, N2 are parameters (see
-! section 4.2 of Chambers 1999, Monthly Notices, vol 304, p793-799).
-!
-! N.B. Designed to use heliocentric coordinates, but should be adequate using
-! ===  barycentric coordinates.
-!
-!------------------------------------------------------------------------------
-!
-      subroutine mce_init (tstart,algor,h,jcen,rcen,rmax,cefac,nbod, &
-        nbig,m,x,v,s,rho,rceh,rphys,rce,rcrit,id,opt,outfile,rcritflag)
-!
-      implicit none
-!      include 'mercury.inc'
-!
-      real*8 N2,THIRD
-      parameter (N2=.4d0,THIRD=.3333333333333333d0)
-!
-! Input/Output
-      integer nbod,nbig,algor,opt(8),rcritflag
-      real*8 tstart,h,jcen(3),rcen,rmax,cefac,m(nbod),x(3,nbod)
-      real*8 v(3,nbod),s(3,nbod),rho(nbod),rceh(nbod),rphys(nbod)
-      real*8 rce(nbod),rcrit(nbod)
-      character*8 id(nbod)
-      character*80 outfile
-!
-! Local
-      integer j
-      real*8 a(NMAX),hill(NMAX),temp,amin,vmax,k_2,rhocgs,rcen_2
-      character*80 header,c(NMAX)
-      character*8 mio_re2c, mio_fl2c
-!
-!------------------------------------------------------------------------------
-!
-      rhocgs = AU * AU * AU * K2 / MSUN
-      k_2 = 1.d0 / K2
-      rcen_2 = 1.d0 / (rcen * rcen)
-      amin = HUGE
-!
-! Calculate the Hill radii
-      call mce_hill (nbod,m,x,v,hill,a)
-!
-! Determine the maximum close-encounter distances, and the physical radii
-      temp = 2.25d0 * m(1) / PI
-      do j = 2, nbod
-        rce(j)   = hill(j) * rceh(j)
-        rphys(j) = hill(j) / a(j) * (temp/rho(j))**THIRD
-        amin = min (a(j), amin)
-      end do
-!
-! If required, calculate the changeover distance used by hybrid algorithm
-      if (rcritflag.eq.1) then
-        vmax = sqrt (m(1) / amin)
-        temp = N2 * h * vmax
-        do j = 2, nbod
-          rcrit(j) = max(hill(j) * cefac, temp)
-        end do
-      end if
-!
-! Write list of object's identities to close-encounter output file
-      header(1:8)   = mio_fl2c (tstart)
-      header(9:16)  = mio_re2c (dble(nbig - 1),   0.d0, 11239423.99d0)
-      header(12:19) = mio_re2c (dble(nbod - nbig),0.d0, 11239423.99d0)
-      header(15:22) = mio_fl2c (m(1) * k_2)
-      header(23:30) = mio_fl2c (jcen(1) * rcen_2)
-      header(31:38) = mio_fl2c (jcen(2) * rcen_2 * rcen_2)
-      header(39:46) = mio_fl2c (jcen(3) * rcen_2 * rcen_2 * rcen_2)
-      header(47:54) = mio_fl2c (rcen)
-      header(55:62) = mio_fl2c (rmax)
-!
-      do j = 2, nbod
-        c(j)(1:8) = mio_re2c (dble(j - 1), 0.d0, 11239423.99d0)
-        c(j)(4:11) = id(j)
-        c(j)(12:19) = mio_fl2c (m(j) * k_2)
-        c(j)(20:27) = mio_fl2c (s(1,j) * k_2)
-        c(j)(28:35) = mio_fl2c (s(2,j) * k_2)
-        c(j)(36:43) = mio_fl2c (s(3,j) * k_2)
-        c(j)(44:51) = mio_fl2c (rho(j) / rhocgs)
-      end do
-!
-! Write compressed output to file
-
-!  50  open (22, file=outfile, status='old', access='append', err=50)
-!      write (22,'(a1,a2,i2,a62,i1)') char(12),'6a',algor,header(1:62), &
-!        opt(4)
-!      do j = 2, nbod
-!        write (22,'(a51)') c(j)(1:51)
-!      end do
-!      close (22)
-      
-!
-!------------------------------------------------------------------------------
-!
-      return
-      end subroutine
-
-
-
+end subroutine
 
 subroutine messages()
 

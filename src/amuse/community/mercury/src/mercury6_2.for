@@ -5033,7 +5033,8 @@ c      if (algor.eq.11) call mco_h2ub (time,jcen,nbod,nbig,h0,m,x,v,
 c     %   x0,v0)
 c
 c Dump to temporary files (idp=1) and real dump files (idp=2)
-      do idp = 1, 2
+c FIP20141209, AMUSE: skip the tmp files..
+      do idp = 2,2
 c
 c Dump data for the Big (i=1) and Small (i=2) bodies
         do i = 1, 2

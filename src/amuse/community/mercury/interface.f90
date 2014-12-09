@@ -7,6 +7,7 @@ function initialize_code() result(ret)
   integer :: ret
   integer :: error
   error = set_support_for_condition(TIMEOUT_DETECTION)
+  error = set_support_for_condition(COLLISION_DETECTION)
   ret=mercury_init()
 end function  
 
@@ -341,6 +342,108 @@ function set_begin_time(system_time) result(ret)
       ret = mercury_set_begin_time(system_time)
 end function  
 
+function set_integrator(t_) result(ret)
+  use amuse_mercuryMod
+  integer :: ret,t_
+  ret=set_algor(t_)
+end function  
+
+function get_integrator(t_) result(ret)
+  use amuse_mercuryMod
+  integer :: ret,t_
+  ret=get_algor(t_)
+end function
+
+function set_elements_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=set_outputfiles(f1=s)
+end function
+function get_elements_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=get_outputfiles(f1=s)
+end function
+
+function set_close_encounters_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=set_outputfiles(f2=s)
+end function
+function get_close_encounters_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=get_outputfiles(f2=s)
+end function
+
+function set_info_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=set_outputfiles(f3=s)
+end function
+function get_info_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=get_outputfiles(f3=s)
+end function
+
+function set_bigbody_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=set_outputfiles(f4=s)
+end function
+function get_bigbody_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=get_outputfiles(f4=s)
+end function
+
+function set_smallbody_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=set_outputfiles(f5=s)
+end function
+function get_smallbody_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=get_outputfiles(f5=s)
+end function
+
+function set_integration_parameters_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=set_outputfiles(f6=s)
+end function
+function get_integration_parameters_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=get_outputfiles(f6=s)
+end function
+
+function set_restart_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=set_outputfiles(f7=s)
+end function
+function get_restart_file(s) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  character*80 :: s
+  ret=get_outputfiles(f7=s)
+end function
 
 ! get acceleration at (heliocentric) positions x1,y1,z1 smoothed with eps1
 function get_gravity_at_point(eps1, x1, y1, z1, ax,ay,az, number_of_points) result(ret)

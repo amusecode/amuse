@@ -239,6 +239,18 @@ class TestMercuryInterface(TestWithMPI):
         self.assertEqual(lz, 8.0)
         instance.stop()
 
+    def test15(self):
+        instance=MercuryInterface(redirection='none')
+        instance.initialize_code()  
+        i,err=instance.get_integrator()
+        self.assertEqual(i,10)
+        err=instance.set_integrator(2)
+        self.assertEqual(err,0)
+        i,err=instance.get_integrator()
+        self.assertEqual(i,2)
+        err=instance.set_integrator(22)
+        self.assertEqual(err,-1)
+        instance.stop()
 
 class TestMercury(TestWithMPI):
     
@@ -720,3 +732,63 @@ class TestMercury(TestWithMPI):
         mercury.stop()
                 
         self.assertAlmostEqual(dpos1, dpos2, 12)
+
+    def test18(self):
+        solsys = new_solar_system()
+
+        mercury = Mercury()
+        mercury.initialize_code()
+        self.assertEqual(mercury.parameters.integrator,10)
+        mercury.parameters.integrator=2
+        self.assertEqual(mercury.parameters.integrator,2)
+        mercury.stop()
+
+    def test19(self):
+        solsys = new_solar_system()
+
+        mercury = Mercury()
+        mercury.initialize_code()
+        mercury.parameters.integrator=1
+
+        mercury.particles.add_particles(solsys)
+        mercury.commit_particles()
+
+        start_pos = mercury.orbiters[2].position
+        mercury.evolve_model(365.14|units.day)
+        self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
+        mercury.stop()
+
+    def test20(self):
+        solsys = new_solar_system()
+
+        mercury = Mercury()#debugger="gdb")
+        mercury.initialize_code()
+        mercury.parameters.integrator=2
+
+        mercury.particles.add_particles(solsys)
+        mercury.commit_particles()
+
+        start_pos = mercury.orbiters[2].position
+        mercury.evolve_model(365.14|units.day)
+        self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
+        mercury.stop()
+
+    def test21(self):
+        solsys = new_solar_system()
+
+        mercury = Mercury()
+        mercury.initialize_code()
+        
+        names=["elements_file","close_encounters_file","info_file",
+         "bigbody_file","smallbody_file","integration_parameters_file","restart_file"]
+        
+        for name in names:
+          self.assertEqual(getattr(mercury.parameters,name),"/dev/null")
+        
+        for name in names:
+          setattr(mercury.parameters,name,os.path.join(mercury.output_directory,name))
+
+        for name in names:
+          self.assertEqual(getattr(mercury.parameters,name),os.path.join(mercury.output_directory,name))
+
+        mercury.stop()

@@ -7,7 +7,8 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 
 from amuse.datamodel import Particles
 
-class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectories,
+                       LiteratureReferencesMixIn, StoppingConditionInterface):
     """
     Mercury N-body integrator package, version 6.2.
     Mercury is a general-purpose N-body integration package for problems in 
@@ -459,6 +460,119 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
 
     @legacy_function
+    def get_integrator():
+        """
+        Retrieve the integrator (algor parameter)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('integrator', dtype='i', direction=function.OUT,
+            description = "integrator to use")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_integrator():
+        """
+        Set the model integrator (algor parameter)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('integrator', dtype='i', direction=function.IN,
+            description = "integrator to use")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            integrator was changed
+        -1 - ERROR
+            integrator not supported (wrong input)
+        """
+        return function
+
+    @legacy_function
+    def get_elements_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('elements_file', dtype='s', direction=function.OUT)
+        function.result_type = 'int32'
+        return function    
+    @legacy_function
+    def set_elements_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('elements_file', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_close_encounters_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('close_encounters_file', dtype='s', direction=function.OUT)
+        function.result_type = 'int32'
+        return function    
+    @legacy_function
+    def set_close_encounters_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('close_encounters_file', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_info_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('info_file', dtype='s', direction=function.OUT)
+        function.result_type = 'int32'
+        return function    
+    @legacy_function
+    def set_info_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('info_file', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_bigbody_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('bigbody_file', dtype='s', direction=function.OUT)
+        function.result_type = 'int32'
+        return function    
+    @legacy_function
+    def set_bigbody_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('bigbody_file', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_smallbody_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('smallbody_file', dtype='s', direction=function.OUT)
+        function.result_type = 'int32'
+        return function    
+    @legacy_function
+    def set_smallbody_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('smallbody_file', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_integration_parameters_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('integration_parameters_file', dtype='s', direction=function.OUT)
+        function.result_type = 'int32'
+        return function    
+    @legacy_function
+    def set_integration_parameters_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('integration_parameters_file', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_restart_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('restart_file', dtype='s', direction=function.OUT)
+        function.result_type = 'int32'
+        return function    
+    @legacy_function
+    def set_restart_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('restart_file', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def get_gravity_at_point():
         """
         Get the gravitational acceleration at the given points. To calculate the force on
@@ -550,6 +664,70 @@ class MercuryWayWard(GravitationalDynamics):
         )
         
         object.add_method_parameter(
+            "get_integrator",
+            "set_integrator",
+            "integrator",
+            "integrator to use", 
+            default_value = 10
+        )        
+
+        object.add_method_parameter(
+            "get_elements_file",
+            "set_elements_file",
+            "elements_file",
+            "outputfile for mercury data (orbital elements) [/dev/null]", 
+            default_value = "/dev/null"
+        )        
+
+        object.add_method_parameter(
+            "get_close_encounters_file",
+            "set_close_encounters_file",
+            "close_encounters_file",
+            "outputfile for mercury data (close encounters) [/dev/null]", 
+            default_value = "/dev/null"
+        )
+        
+        object.add_method_parameter(
+            "get_info_file",
+            "set_info_file",
+            "info_file",
+            "outputfile for mercury data (info) [/dev/null]", 
+            default_value = "/dev/null"
+        )        
+
+        object.add_method_parameter(
+            "get_bigbody_file",
+            "set_bigbody_file",
+            "bigbody_file",
+            "dumpfile for mercury data (big bodies) [/dev/null]", 
+            default_value = "/dev/null"
+        )
+
+        object.add_method_parameter(
+            "get_smallbody_file",
+            "set_smallbody_file",
+            "smallbody_file",
+            "dumpfile for mercury data (small bodies) [/dev/null]", 
+            default_value = "/dev/null"
+        )
+
+        object.add_method_parameter(
+            "get_integration_parameters_file",
+            "set_integration_parameters_file",
+            "integration_parameters_file",
+            "dumpfile for mercury data (integration parameters) [/dev/null]", 
+            default_value = "/dev/null"
+        )
+
+        object.add_method_parameter(
+            "get_restart_file",
+            "set_restart_file",
+            "restart_file",
+            "dumpfile for mercury data (restart data - only mercury internal state) [/dev/null]", 
+            default_value = "/dev/null"
+        )
+        
+        object.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -613,6 +791,7 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_getter('central_particle', 'get_central_spin')
 
         #GravitationalDynamics.define_particle_sets(self, object)
+        self.stopping_conditions.define_particle_set(object)
 
     def define_methods(self, object):
         #GravitationalDynamics.define_methods(self, object)
