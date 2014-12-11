@@ -320,7 +320,7 @@ local void decompose(hdyn2 *b)
 	    cout << "top level:";
 	    for_all_daughters(hdyn2, b, bi)
 		cout << " " << bi->format_label();
-	    cout << endl;
+	    cout << endl << flush;
 	}
 
 	real min_energy = 0;
@@ -744,6 +744,7 @@ local void print_recursive(hdyn2 *b, bool verbose, int indent = 0)
     } else
 	cout << endl;
 
+    cout << flush;
     for_all_daughters(hdyn2, b, bb) print_recursive(bb, verbose, indent+2);
 }
 
@@ -914,8 +915,10 @@ local inline bool is_quasi_stable(hdyn2 *b)
 {
     if (state_count >= min_qstable_count) {
 	real max_period = 0;
+	cout << "checking quasistability..." << endl << flush;
 	for_all_daughters(hdyn2, b, bi) {
 	    if (!bi->stable) {					 // STORY
+		cout << bi->format_label() << " is not stable" << endl << flush;
 		hdyn2 *od = bi->get_oldest_daughter();
 		hdyn2 *yd = od->get_younger_sister();
 		kepler k;
@@ -924,32 +927,43 @@ local inline bool is_quasi_stable(hdyn2 *b)
 		k.set_rel_pos(yd->get_pos()-od->get_pos());
 		k.set_rel_vel(yd->get_vel()-od->get_vel());
 		k.initialize_from_pos_and_vel(true);
+		//PRC(k.get_separation()); PRL(k.get_period());
+		//PRC(k.get_semi_major_axis()); PRL(k.get_apastron());
 		if (k.get_period() > max_period) max_period = k.get_period();
 	    }
+	    //PRL(max_period);
 	}
+	//PRC(b->get_system_time()); PRL(state_time);
 	return (b->get_system_time()-state_time > 10*max_period);
     }
     return false;
 }
 
-local inline bool is_over(hdyn2 *b, bool verbose)
+local inline int is_over(hdyn2 *b, bool verbose)
 {
-    bool over = true;
-    print_recursive(b, false);
+    int over = 1;
+    print_recursive(b, verbose);
     for_all_daughters(hdyn2, b, bi) {
-	if (!is_escaper(b, bi)) over = false;
+	//PRL(bi->format_label());
+	if (!is_escaper(b, bi)) over = 0;
     }
+    //PRC(1); PRL(over);
 
     bool stable = true;
     for_all_daughters(hdyn2, b, bi)
 	if (!bi->stable) stable = false;			 // STORY
+    //PRC(2); PRL(stable);
 
-    if (over) {
+    if (over) {			// over here means all top level is escaping
 	if (stable) {
-	    if (verbose) cout << "is_over: normal termination: "
+	    //if (verbose) 
+		cout << "is_over: normal termination: "
 			      << last_state << endl << flush;
 	} else {
-	    over = is_quasi_stable(b);
+	    if (is_quasi_stable(b))
+		over = 2;
+	    else
+		over = 0;
 	    //if (over && verbose)
 	    if (over)
 		cout << "is_over: quasi-stable termination: "
@@ -957,7 +971,7 @@ local inline bool is_over(hdyn2 *b, bool verbose)
 	}
     }
 
-    return over;
+    return over;	// return 0, 1, or 2
 }
 
 
@@ -980,7 +994,7 @@ int check_structure(hdyn *bin,			// input root node
     string summary, curr_state;
     create_summary_strings(b, summary, curr_state);
 
-    if (verbose) {
+    if (verbose > 1) {
 
 	// Print the results:
 
@@ -991,24 +1005,27 @@ int check_structure(hdyn *bin,			// input root node
 	// Summary strings.
 
 	cout << "summary: " << summary << endl;
-	cout << "state:   " << curr_state << endl;
+	cout << "state:   " << curr_state << endl << flush;
     } else
-	cout << "summary: " << summary << endl << flush;
+	if (verbose)
+	    cout << "summary: " << summary << endl << flush;
 
     // Count the latest run of unchanged state strings.
 
     if (curr_state == last_state)
-	state_count += 1;
+	state_count += 1;			// number of times state unchanged
     else {
 	state_count = 0;
-	state_time = bin->get_system_time();
+	state_time = bin->get_system_time();	// time state last changed
     }
     last_state = curr_state;
+
+    //PRC(curr_state); PRC(last_state); PRC(state_count); PRL(state_time);
 
     // See if the interaction is over.
 
     int over = is_over(b, verbose);
-    if (over && verbose) cout << endl << "interaction is over" << endl;
+    if (over && verbose) cout << endl << "interaction is over" << endl << flush;
 
 #if 0
     for_all_daughters(hdyn2, b, bb) {
@@ -1021,7 +1038,7 @@ int check_structure(hdyn *bin,			// input root node
 	for_all_daughters(hdyn, bin, bi) {
 	    real r2 = square(bi->get_pos());
 	    if (r2 > rlimit2) {
-		over = 2;
+		over = 3;
 		cout << "is_over: termination at rlimit" << endl << flush;
 	    }
 	}
