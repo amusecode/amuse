@@ -459,6 +459,8 @@ if __name__ == '__main__':
     # Instantiate workers once only and pass to scatter3 as arguments.
 
     gravity = SmallN(redirection = "none")
+    #gravity = SmallN(redirection = "none", debugger="valgrind") # search for
+								 # memory leaks
     gravity.initialize_code()
     gravity.parameters.set_defaults()
     gravity.parameters.timestep_parameter = accuracy_parameter
