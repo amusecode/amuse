@@ -13,7 +13,7 @@ OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g $(OPT)
+CFLAGS   += -Wall -g -O2 $(OPT)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS)
 
@@ -59,7 +59,7 @@ $(CODELIB_GPU):
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py ph4Interface -o $@
-	
+
 interface.h: interface.py
 	$(CODE_GENERATOR) --type=H  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py ph4Interface -o $@
 

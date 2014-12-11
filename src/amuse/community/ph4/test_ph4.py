@@ -7,7 +7,8 @@ import os
 import random
 import sys
 import unittest 
-from time import clock
+from time import clock as cputime
+from time import time as wallclocktime
 
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.units import nbody_system
@@ -19,8 +20,10 @@ from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 
-def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
-    cpu = clock()
+def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
+              cpu0 = 0.0, wall0 = 0.0):
+    cpu = cputime()
+    wall = wallclocktime()
     N = len(gravity.particles)
     M = gravity.total_mass
     U = gravity.potential_energy
@@ -39,6 +42,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     print ''
     print pre+"time=", time.number
     print pre+"cpu=", cpu-cpu0
+    print pre+"wall=", wall-wall0
     print pre+"Ntot=", N
     print pre+"mass=", M.number
     print pre+"Etot=", E.number
@@ -60,7 +64,7 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     print ''
 
     sys.stdout.flush()
-    return E,cpu
+    return E,cpu,wall
 
 def run_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
@@ -114,15 +118,17 @@ def run_ph4(infile = None, number_of_stars = 40,
         stars.id = id+1
 
         print "setting particle masses and radii"
-	#stars.mass = (1.0 / number_of_stars) | nbody_system.mass
-        scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
-        stars.mass = scaled_mass
+	stars.mass = (1.0 / number_of_stars) | nbody_system.mass
+        if 0:
+            scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
+            stars.mass = scaled_mass
         stars.radius = 0.0 | nbody_system.length
 
         print "centering stars"
         stars.move_to_center()
-        print "scaling stars to virial equilibrium"
-        stars.scale_to_standard(smoothing_length_squared
+        if 0:
+            print "scaling stars to virial equilibrium"
+            stars.scale_to_standard(smoothing_length_squared
                                     = gravity.parameters.epsilon_squared)
 
         time = 0.0 | nbody_system.time
@@ -195,7 +201,7 @@ def run_ph4(infile = None, number_of_stars = 40,
           "in steps of", delta_t.number
     sys.stdout.flush()
 
-    E0,cpu0 = print_log('', time, gravity)
+    E0,cpu0,wall0 = print_log('', time, gravity)
     
     # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
@@ -252,7 +258,7 @@ def run_ph4(infile = None, number_of_stars = 40,
                 print "number of stars =", len(stars)
             sys.stdout.flush()
 
-        print_log('', time, gravity, E0, cpu0)
+        print_log('', time, gravity, E0, cpu0, wall0)
         sys.stdout.flush()
 
     print ''
