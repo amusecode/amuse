@@ -1,3 +1,4 @@
+import os
 import numpy
 
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
@@ -26,9 +27,8 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
     def __init__(self, **args):
         CodeInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
         LiteratureReferencesMixIn.__init__(self)
-
-   
-
+        CodeWithDataDirectories.__init__(self)
+                
     @legacy_function    
     def commit_particles():
         function = LegacyFunctionSpecification()  
@@ -645,6 +645,15 @@ class MercuryWayWard(GravitationalDynamics):
             **options
         )
 
+    def initialize_code(self):
+        self.overridden().initialize_code()
+        self.set_elements_file(os.devnull)
+        self.set_close_encounters_file(os.devnull)
+        self.set_info_file(os.devnull)
+        self.set_bigbody_file(os.devnull)
+        self.set_smallbody_file(os.devnull)
+        self.set_integration_parameters_file(os.devnull)
+        self.set_restart_file(os.devnull)
 
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -676,7 +685,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_elements_file",
             "elements_file",
             "outputfile for mercury data (orbital elements) [/dev/null]", 
-            default_value = "/dev/null"
+            default_value = None
         )        
 
         object.add_method_parameter(
@@ -684,7 +693,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_close_encounters_file",
             "close_encounters_file",
             "outputfile for mercury data (close encounters) [/dev/null]", 
-            default_value = "/dev/null"
+            default_value = None
         )
         
         object.add_method_parameter(
@@ -692,7 +701,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_info_file",
             "info_file",
             "outputfile for mercury data (info) [/dev/null]", 
-            default_value = "/dev/null"
+            default_value = None
         )        
 
         object.add_method_parameter(
@@ -700,7 +709,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_bigbody_file",
             "bigbody_file",
             "dumpfile for mercury data (big bodies) [/dev/null]", 
-            default_value = "/dev/null"
+            default_value = None
         )
 
         object.add_method_parameter(
@@ -708,7 +717,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_smallbody_file",
             "smallbody_file",
             "dumpfile for mercury data (small bodies) [/dev/null]", 
-            default_value = "/dev/null"
+            default_value = None
         )
 
         object.add_method_parameter(
@@ -716,7 +725,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_integration_parameters_file",
             "integration_parameters_file",
             "dumpfile for mercury data (integration parameters) [/dev/null]", 
-            default_value = "/dev/null"
+            default_value = None
         )
 
         object.add_method_parameter(
@@ -724,7 +733,7 @@ class MercuryWayWard(GravitationalDynamics):
             "set_restart_file",
             "restart_file",
             "dumpfile for mercury data (restart data - only mercury internal state) [/dev/null]", 
-            default_value = "/dev/null"
+            default_value = None
         )
         
         object.add_method_parameter(
