@@ -73,7 +73,7 @@ c Input/Output
       real*8 en(3),am(3),cefac,m(nbod),xh(3,nbod),vh(3,nbod)
       real*8 s(3,nbod),rho(nbod),rceh(nbod),ngf(4,nbod)
       character*8 id(nbod)
-      character*80 outfile(3),dumpfile(4),mem(NMESS)
+      character*4096 outfile(3),dumpfile(4),mem(NMESS)
 c
 c Local
       integer i,j,k,n,itmp,nhit,ihit(CMAX),jhit(CMAX),chit(CMAX)
@@ -327,7 +327,7 @@ c Input/Output
       real*8 en(3),am(3),cefac,m(nbod),xh(3,nbod),vh(3,nbod)
       real*8 s(3,nbod),rho(nbod),rceh(nbod),ngf(4,nbod)
       character*8 id(nbod)
-      character*80 outfile(3),dumpfile(4),mem(NMESS)
+      character*4096 outfile(3),dumpfile(4),mem(NMESS)
 c
 c Local
       integer i,j,k,n,itmp,nclo,nhit,jhit(CMAX),iclo(CMAX),jclo(CMAX)
@@ -785,7 +785,7 @@ c Input/Output
       integer i,j,nbod,nbig,stat(nbod),opt(8),lmem(NMESS)
       real*8 time,tstart,elost,jcen(3)
       real*8 m(nbod),xh(3,nbod),vh(3,nbod),s(3,nbod),rphys(nbod)
-      character*80 outfile,mem(NMESS)
+      character*4096 outfile,mem(NMESS)
       character*8 id(nbod)
 c
 c Local
@@ -941,7 +941,7 @@ c Input/Output
       real*8 v(3,nbod),s(3,nbod),rho(nbod),rceh(nbod),rphys(nbod)
       real*8 rce(nbod),rcrit(nbod)
       character*8 id(nbod)
-      character*80 outfile
+      character*4096 outfile
 c
 c Local
       integer j
@@ -1373,7 +1373,7 @@ c Input/Output
       real*8 x1(3,nbod),v1(3,nbod),rce(nbod),rphys(nbod)
       real*8 dclo(CMAX),tclo(CMAX),thit(CMAX),dhit(CMAX),thit1
       real*8 ixvclo(6,CMAX),jxvclo(6,CMAX)
-      character*80 outfile,mem(NMESS)
+      character*4096 outfile,mem(NMESS)
 c
 c Local
       integer i,j
@@ -3193,7 +3193,7 @@ c Input/Output
       real*8 m(nbod),x(3,nbod),v(3,nbod),s(3,nbod),rphys(nbod)
       real*8 rce(nbod),rcrit(nbod),ngf(4,nbod),tclo(CMAX),dclo(CMAX)
       real*8 ixvclo(6,CMAX),jxvclo(6,CMAX)
-      character*80 outfile(3),mem(NMESS)
+      character*4096 outfile(3),mem(NMESS)
       character*8 id(nbod)
 c
 c Local
@@ -3350,7 +3350,7 @@ c Input/Output
       real*8 m(nbod),x(3,nbod),v(3,nbod),s(3,nbod)
       real*8 rce(nbod),rphy(nbod),rcrit(nbod),ngf(4,nbod)
       real*8 tclo(CMAX),dclo(CMAX),ixvclo(6,CMAX),jxvclo(6,CMAX)
-      character*80 outfile(3),mem(NMESS)
+      character*4096 outfile(3),mem(NMESS)
       character*8 id(nbod)
       external force
 c
@@ -3507,7 +3507,7 @@ c Input/Output
       real*8 m(nbod),x(3,nbod),v(3,nbod),s(3,nbod),rphys(nbod)
       real*8 rce(nbod),rcrit(nbod),ngf(4,nbod),tclo(CMAX),dclo(CMAX)
       real*8 ixvclo(6,CMAX),jxvclo(6,CMAX)
-      character*80 outfile(3),mem(NMESS)
+      character*4096 outfile(3),mem(NMESS)
       character*8 id(nbod)
 c
 c Local
@@ -4889,7 +4889,7 @@ c Input/Output
       integer nclo,iclo(nclo),jclo(nclo),nstored,ceflush
       real*8 time,tstart,rcen,rmax,m(nbod),tclo(nclo),dclo(nclo)
       real*8 ixvclo(6,nclo),jxvclo(6,nclo)
-      character*80 outfile(3),mem(NMESS)
+      character*4096 outfile(3),mem(NMESS)
       character*8 id(nbod)
 c
 c Local
@@ -5012,7 +5012,7 @@ c Input/Output
       real*8 time,tstart,tstop,dtout,h0,tol,rmax,en(3),am(3)
       real*8 jcen(3),rcen,cefac,m(nbod),x(3,nbod),v(3,nbod)
       real*8 s(3,nbod),rho(nbod),rceh(nbod),ngf(4,nbod),epoch(nbod)
-      character*80 dumpfile(4),mem(NMESS)
+      character*4096 dumpfile(4),mem(NMESS)
       character*8 id(nbod)
 c
 c Local
@@ -5235,7 +5235,7 @@ c
 c
 c Input/Output
       integer unit,ls1,ls2,ls3,ls4
-      character*80 s1,s2,s3,s4
+      character*4096 s1,s2,s3,s4
 c
 c------------------------------------------------------------------------------
 c
@@ -5347,7 +5347,7 @@ c Input/Output
       real*8 time,tstart,tstop,dtout,h0,tol,rmax,rcen,jcen(3)
       real*8 en(3),am(3),m(NMAX),x(3,NMAX),v(3,NMAX),s(3,NMAX)
       real*8 rho(NMAX),rceh(NMAX),epoch(NMAX),ngf(4,NMAX),cefac
-      character*80 outfile(3),dumpfile(4), mem(NMESS)
+      character*4096 outfile(3),dumpfile(4), mem(NMESS)
       character*8 id(NMAX)
 c
 c Local
@@ -5357,7 +5357,7 @@ c      real*8 v0(3,NMAX),x0(3,NMAX)
       logical test,oldflag,flag1,flag2
       character*1 c1
       character*3 c3,alg(60)
-      character*80 infile(3),filename,c80
+      character*4096 infile(3),filename,c80
       character*150 string
 c
 c------------------------------------------------------------------------------
@@ -6032,7 +6032,7 @@ c
 c Input/Output
       integer lmem(NMESS), opt(8)
       real*8 time, tstart, en(3), am(3)
-      character*80 mem(NMESS)
+      character*4096 mem(NMESS)
 c
 c Local
       integer year, month
@@ -6113,13 +6113,13 @@ c Input/Output
       integer nbod, nbig, stat(nbod), opt(8), opflag, algor
       real*8 time,jcen(3),rcen,rmax,m(nbod),xh(3,nbod),vh(3,nbod)
       real*8 s(3,nbod),rho(nbod)
-      character*80 outfile
+      character*4096 outfile
       character*8 id(nbod)
 c
 c Local
       integer k, len, nchar
       real*8 rhocgs,k_2,rfac,rcen_2,fr,fv,theta,phi,vtheta,vphi
-      character*80 header,c(NMAX)
+      character*4096 header,c(NMAX)
       character*8 mio_fl2c,mio_re2c
       character*5 fout
 c
@@ -6372,7 +6372,7 @@ c Input/Output
       integer i0, nbod, nbig, stat(nbod), opt(8), ejflag, lmem(NMESS)
       real*8 time, tstart, rmax, en(3), am(3), jcen(3)
       real*8 m(nbod), x(3,nbod), v(3,nbod), s(3,nbod)
-      character*80 outfile, mem(NMESS)
+      character*4096 outfile, mem(NMESS)
       character*8 id(nbod)
 c
 c Local
@@ -6460,7 +6460,7 @@ c Input/Output
       real*8 m(nbod), x(3,nbod), v(3,nbod), s(3,nbod)
       real*8 rho(nbod), rceh(nbod), rcrit(nbod), ngf(4,nbod)
       character*8 id(nbod)
-      character*80 outfile, mem(NMESS)
+      character*4096 outfile, mem(NMESS)
 c
 c Local
       integer j, k, l, nbigelim, elim(NMAX+1)

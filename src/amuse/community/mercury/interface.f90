@@ -357,91 +357,91 @@ end function
 function set_elements_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=set_outputfiles(f1=s)
 end function
 function get_elements_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=get_outputfiles(f1=s)
 end function
 
 function set_close_encounters_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=set_outputfiles(f2=s)
 end function
 function get_close_encounters_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=get_outputfiles(f2=s)
 end function
 
 function set_info_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=set_outputfiles(f3=s)
 end function
 function get_info_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=get_outputfiles(f3=s)
 end function
 
 function set_bigbody_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=set_outputfiles(f4=s)
 end function
 function get_bigbody_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=get_outputfiles(f4=s)
 end function
 
 function set_smallbody_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=set_outputfiles(f5=s)
 end function
 function get_smallbody_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=get_outputfiles(f5=s)
 end function
 
 function set_integration_parameters_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=set_outputfiles(f6=s)
 end function
 function get_integration_parameters_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=get_outputfiles(f6=s)
 end function
 
 function set_restart_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=set_outputfiles(f7=s)
 end function
 function get_restart_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret
-  character*80 :: s
+  character*4096 :: s
   ret=get_outputfiles(f7=s)
 end function
 

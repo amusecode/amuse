@@ -33,7 +33,7 @@ module amuse_mercuryMod
   real*8 rceh(NMAX),epoch(NMAX),ngf(4,NMAX),rmax,rcen,jcen(3)
   real*8 cefac,time,tstart,tstop,dtout,h0,tol,en(3),am(3)
   character*8 id(NMAX)
-  character*80 outfile(3), dumpfile(4), mem(NMESS)
+  character*4096 outfile(3), dumpfile(4), mem(NMESS)
   external mdt_mvs, mdt_bs1, mdt_bs2, mdt_ra15, mdt_hy
   external mco_dh2h,mco_h2dh
   external mco_b2h,mco_h2b,mco_h2mvs,mco_mvs2h,mco_iden
@@ -671,7 +671,7 @@ end function
 
 function set_outputfiles(f1,f2,f3,f4,f5,f6,f7) result(ret)
   integer :: ret
-  character*80, optional :: f1,f2,f3,f4,f5,f6,f7
+  character*4096, optional :: f1,f2,f3,f4,f5,f6,f7
 
   if(present(f1)) outfile(1)=f1
   if(present(f2)) outfile(2)=f2
@@ -685,7 +685,7 @@ end function
 
 function get_outputfiles(f1,f2,f3,f4,f5,f6,f7) result(ret)
   integer :: ret
-  character*80, optional :: f1,f2,f3,f4,f5,f6,f7
+  character*4096, optional :: f1,f2,f3,f4,f5,f6,f7
 
   if(present(f1)) f1=outfile(1)
   if(present(f2)) f2=outfile(2)
@@ -732,7 +732,7 @@ end function
       real*8 en(3),am(3),cefac,m(nbod),xh(3,nbod),vh(3,nbod)
       real*8 s(3,nbod),rho(nbod),rceh(nbod),ngf(4,nbod)
       character*8 id(nbod)
-      character*80 outfile(3),dumpfile(4),mem(NMESS)
+      character*4096 outfile(3),dumpfile(4),mem(NMESS)
 !
 ! Local
       integer i,j,k,n,itmp,nclo,nhit,jhit(CMAX),iclo(CMAX),jclo(CMAX)
@@ -1067,7 +1067,7 @@ end function
       real*8 en(3),am(3),cefac,m(nbod),xh(3,nbod),vh(3,nbod)
       real*8 s(3,nbod),rho(nbod),rceh(nbod),ngf(4,nbod)
       character*8 id(nbod)
-      character*80 outfile(3),dumpfile(4),mem(NMESS)
+      character*4096 outfile(3),dumpfile(4),mem(NMESS)
 !
 ! Local
       integer i,j,k,n,itmp,nhit,ihit(CMAX),jhit(CMAX),chit(CMAX)
