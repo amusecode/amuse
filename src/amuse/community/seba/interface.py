@@ -5,7 +5,7 @@ from amuse.community.interface import se
 from amuse.support import code
 
 class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
-    
+
     """
     Stellar evolution is performed by the rapid single-star evolution
     and binary evolution using SeBa.This is a package of
@@ -14,7 +14,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     is valid for masses in the range 0.01-1000 Msun with variable
     metallicity.  SeBa includes prescriptions for mass loss by stellar
     winds, supernova and supports binary evolution.
-    
+
         .. [#] ** Portegies Zwart S.F. & Verbunt F., 1996, A&A, 309, 179:
         .. [#] ... "Population synthesis of high-mass binaries"
         .. [#] Toonen, S., Nelemans, G., Portegies Zwart S.F., 2012, A&A, 546A, 70T
@@ -22,15 +22,15 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     """
 
     include_headers = ['worker_code.h', 'stopcond.h']
-    
+
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="seba_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
 
-    
+
     @legacy_function
     def evolve_star():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('mass', dtype='float64', direction=function.IN)
         function.addParameter('endtime', dtype='float64', direction=function.IN)
         function.addParameter('metal', dtype='float64', direction=function.IN)
@@ -45,12 +45,12 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         function.can_handle_array = True
         return function
 
-    @legacy_function   
+    @legacy_function
     def new_binary():
         """
         Define a new star in the code. The star will start with the given mass.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
             , description="The new index for the star. This index can be used to refer to this star in other functions")
@@ -62,7 +62,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             , description="The index of the first child, as returned by new_particle")
         function.addParameter('child2', dtype='int32', direction=function.IN
             , description="The index of the second child, as returned by new_particle")
-            
+
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -71,7 +71,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             New star could not be created.
         """
         return function
-        
+
     @legacy_function
     def delete_binary():
         """
@@ -92,7 +92,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             not yet implemented
         """
         return function
-        
+
     @legacy_function
     def evolve_system():
         """
@@ -104,15 +104,15 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             description = "Model time to evolve the code to. The model will be "
                 "evolved until this time is reached exactly or just after.")
         function.result_type = 'int32'
-        return function  
-    
-    @legacy_function   
+        return function
+
+    @legacy_function
     def get_eccentricity():
         """
         Retrieve the current eccentricity of the binary star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.OUT
@@ -125,14 +125,14 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             A binary with the given index was not found.
         """
         return function
-    
-    @legacy_function   
+
+    @legacy_function
     def get_semi_major_axis():
         """
         Retrieve the current semi major axis of the elliptical orbit of the parts in the binary star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.OUT
@@ -146,13 +146,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
-    @legacy_function   
+    @legacy_function
     def get_core_mass():
         """
         Retrieve the current core mass of a star
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.OUT
@@ -166,13 +166,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
-    @legacy_function   
+    @legacy_function
     def get_COcore_mass():
         """
         Retrieve the current CO core mass of a star
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.OUT
@@ -186,13 +186,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
-    @legacy_function   
+    @legacy_function
     def change_mass():
         """
         Set the add_mass increase (positive) or decrease (negative) of a star
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
         function.addParameter('value', dtype='float64', direction=function.IN
@@ -208,13 +208,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
-    @legacy_function   
+    @legacy_function
     def get_envelope_mass():
         """
         Retrieve the current envelope mass of a star
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.OUT
@@ -228,13 +228,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
-    @legacy_function   
+    @legacy_function
     def get_core_radius():
         """
         Retrieve the current radius of the core
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.OUT
@@ -249,13 +249,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         return function
 
 
-    @legacy_function   
+    @legacy_function
     def set_semi_major_axis():
         """
         Update the current semi major axis of the elliptical orbit of the parts in the binary star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.IN
@@ -269,13 +269,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
-    @legacy_function   
+    @legacy_function
     def set_eccentricity():
         """
         Update the current eccentricity of the elliptical orbit of the parts in the binary star.
         """
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('value', dtype='float64', direction=function.IN
@@ -288,7 +288,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             A binary with the given index was not found.
         """
         return function
-        
+
     @legacy_function
     def get_children_of_binary():
         """
@@ -296,7 +296,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_star', dtype='int32',
-                              direction=function.IN, 
+                              direction=function.IN,
                  description = 'index of the parent particle',
                  unit = INDEX)
         function.addParameter('child1', dtype='int32', direction=function.OUT,
@@ -307,8 +307,8 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         function.can_handle_array = True
         function.result_type = 'int32'
         return function
-        
-    
+
+
     @legacy_function
     def get_is_logging_of_evolve_enabled():
         """
@@ -325,7 +325,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_is_logging_of_evolve_enabled():
         """
@@ -346,9 +346,9 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     @legacy_function
     def get_supernova_kick_velocity():
         """
-        Retrieve the current value of the supernova kick velocity (in kms). 
+        Retrieve the current value of the supernova kick velocity (in kms).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('v_disp', dtype='float64', direction=function.OUT,
             description = "The current value of the kick velocity dispersion")
         function.result_type = 'int32'
@@ -359,13 +359,13 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             The code does not have support for retrieving the supernova kick velocity
         """
         return function
-    
+
     @legacy_function
     def set_supernova_kick_velocity():
         """
         Update the value of the kick velocity dispersion.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('v_disp', dtype='float64', direction=function.IN,
             description = "The new value of the supernova kick velocity dispersion.")
         function.result_type = 'int32'
@@ -376,14 +376,14 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             The code does not have support for updating the supernova kick velocity
         """
         return function
-        
-        
+
+
     @legacy_function
     def get_gyration_radius_sq():
         """
-        Retrieve the current value of the square of the gyration radius (no units). 
+        Retrieve the current value of the square of the gyration radius (no units).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
@@ -401,9 +401,9 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     @legacy_function
     def get_relative_age():
         """
-        Retrieve the current value of the square of the relative age (Myr). 
+        Retrieve the current value of the square of the relative age (Myr).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
@@ -421,9 +421,9 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     @legacy_function
     def get_natal_kick_velocity():
         """
-        Retrieve the current value of the square of the natal kick velocity (Myr). 
+        Retrieve the current value of the square of the natal kick velocity (Myr).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
@@ -442,9 +442,9 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     @legacy_function
     def get_relative_mass():
         """
-        Retrieve the current value of the square of the relative mass (MSun). 
+        Retrieve the current value of the square of the relative mass (MSun).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
@@ -458,14 +458,14 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             The code does not have support for retrieving the square of the relative mass
         """
         return function
-         
+
     @legacy_function
     def get_effective_radius():
         """
         Retrieve the current value of the effective radius (Rsun).
         This can be different from the (equilibrium) radius due to accretion or mass loss.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
@@ -479,14 +479,14 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
             The code does not have support for retrieving the effective_radius
         """
         return function
-         
-         
+
+
     @legacy_function
     def get_convective_envelope_mass():
         """
-        Retrieve the current value of the mass of the part of the envelope that is convective (MSun). 
+        Retrieve the current value of the mass of the part of the envelope that is convective (MSun).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
@@ -507,9 +507,9 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     @legacy_function
     def get_convective_envelope_radius():
         """
-        Retrieve the current value of the radius of the part of the envelope that is convective (RSun). 
+        Retrieve the current value of the radius of the part of the envelope that is convective (RSun).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
@@ -526,7 +526,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 
 
 
-        
+
     @legacy_function
     def get_time():
         """
@@ -549,9 +549,9 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     @legacy_function
     def get_wind_mass_loss_rate():
         """
-        Retrieve the current value of the wind_mass_loss_rate (Msun/yr). 
+        Retrieve the current value of the wind_mass_loss_rate (Msun/yr).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to set the value of")
@@ -583,7 +583,7 @@ class SeBa(se.StellarEvolution):
         self.stopping_conditions.supernova_detection = code.StoppingCondition('supernova_detection')
 
         se.StellarEvolution.__init__(self,  SeBaInterface(**options), **options)
-        
+
     def evolve_model(self, end_time=None, keep_synchronous=True):
         self.stopping_conditions.supernova_detection.unset()
         if not keep_synchronous:
@@ -591,7 +591,7 @@ class SeBa(se.StellarEvolution):
         evolve_a_success = 0
         if end_time is None:
             end_time = self.model_time + min(self.particles.time_step)
-        print "t=", self.model_time, end_time
+        # print "t=", self.model_time, end_time
         new_end_time = min(end_time, self.model_time + min(self.particles.time_step))
         while self.model_time<new_end_time:
             old_particles = self.particles.copy()
@@ -601,13 +601,13 @@ class SeBa(se.StellarEvolution):
 
             if len(psn)>0:
                 for p in psn:
-                    print "kick=", p.natal_kick_velocity
-                print "Supernova at time:", psn
+                    # print "kick=", p.natal_kick_velocity
+                # print "Supernova at time:", psn
                 if self.stopping_conditions.supernova_detection.is_enabled():
                     self.stopping_conditions.supernova_detection.set(psn)
                     break
                 for p in psn:
-                    print "kick=", p.natal_kick_velocity
+                    # print "kick=", p.natal_kick_velocity
                     #p.velocity += p.natal_kick_velocity
 #                channel_copy_velocity_from_seba_to...
                 return evolve_a_success
@@ -631,7 +631,7 @@ class SeBa(se.StellarEvolution):
         psn = self.particles[self.particles.stellar_type==14|units.stellar_type]
         psn -= self.particles[old_particles.stellar_type==14|units.stellar_type]
 
-        print "t=", psn.relative_age[0]
+        # print "t=", psn.relative_age[0]
         tsn = self.model_time - psn.get_relative_age()[0]
 #        channel_from_old_to_new_star = old_particles.new_channel_to(self.particles)
 #        channel_from_old_to_new_star.copy_attributes(["relative_age", "relative_mass"])
@@ -716,108 +716,108 @@ class SeBa(se.StellarEvolution):
             (object.ERROR_CODE,)
         )
         object.add_method(
-            "get_age", 
-            (object.INDEX,), 
+            "get_age",
+            (object.INDEX,),
             (units.Myr, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_time_step", 
-            (object.INDEX,), 
+            "get_time_step",
+            (object.INDEX,),
             (units.Myr, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_supernova_kick_velocity", 
-            (), 
+            "get_supernova_kick_velocity",
+            (),
             (units.kms, object.ERROR_CODE,)
         )
         object.add_method(
-            "set_supernova_kick_velocity", 
-            (units.kms,), 
+            "set_supernova_kick_velocity",
+            (units.kms,),
             (object.ERROR_CODE,)
         )
         object.add_method(
-            "get_gyration_radius_sq", 
-            (object.INDEX,), 
+            "get_gyration_radius_sq",
+            (object.INDEX,),
             (units.none, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_relative_age", 
-            (object.INDEX,), 
+            "get_relative_age",
+            (object.INDEX,),
             (units.Myr, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_natal_kick_velocity", 
-            (object.INDEX,), 
+            "get_natal_kick_velocity",
+            (object.INDEX,),
             (units.kms, units.kms, units.kms, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_relative_mass", 
-            (object.INDEX,), 
+            "get_relative_mass",
+            (object.INDEX,),
             (units.MSun, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_effective_radius", 
-            (object.INDEX,), 
+            "get_effective_radius",
+            (object.INDEX,),
             (units.RSun, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_convective_envelope_mass", 
-            (object.INDEX,), 
+            "get_convective_envelope_mass",
+            (object.INDEX,),
             (units.MSun, object.ERROR_CODE,)
         )
         object.add_method(
-            "get_convective_envelope_radius", 
-            (object.INDEX,), 
+            "get_convective_envelope_radius",
+            (object.INDEX,),
             (units.RSun, object.ERROR_CODE,)
-        )        
+        )
         object.add_method(
             "get_time",
             (),
             (units.Myr,object.ERROR_CODE,)
         )
         object.add_method(
-            "get_wind_mass_loss_rate", 
-            (object.INDEX,), 
+            "get_wind_mass_loss_rate",
+            (object.INDEX,),
             (units.MSun/units.yr, object.ERROR_CODE,)
         )
         self.stopping_conditions.define_methods(object)
 
     def update_time_steps(self):
         pass
-    
+
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_metallicity",
             "set_metallicity",
-            "metallicity", 
-            "Metallicity of all stats", 
+            "metallicity",
+            "Metallicity of all stats",
             default_value = 0.02
         )
         object.add_method_parameter(
             "get_supernova_kick_velocity",
             "set_supernova_kick_velocity",
-            "supernova_kick_velocity", 
-            "Kick velocity to compact object formed in supernova", 
+            "supernova_kick_velocity",
+            "Kick velocity to compact object formed in supernova",
             default_value = 600 | units.kms
         )
-        
+
         object.add_method_parameter(
             "get_is_logging_of_evolve_enabled",
             "set_is_logging_of_evolve_enabled",
-            "is_logging_of_evolve_enabled", 
-            "if True will log star state before and after evolve in starev.data", 
+            "is_logging_of_evolve_enabled",
+            "if True will log star state before and after evolve in starev.data",
             default_value = False
         )
 
         self.stopping_conditions.define_parameters(object)
-        
-        
+
+
     def define_particle_sets(self, object):
-       
+
         object.define_set('particles', 'index_of_the_star')
         object.set_new('particles', 'new_particle')
         object.set_delete('particles', 'delete_star')
-        
+
         object.add_getter('particles', 'get_radius', names = ('radius',))
         object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
         object.add_getter('particles', 'get_mass', names = ('mass',))
@@ -846,7 +846,7 @@ class SeBa(se.StellarEvolution):
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')
         object.set_delete('binaries', 'delete_binary')
-        
+
         object.add_getter('binaries', 'get_semi_major_axis', names = ('semi_major_axis',))
         object.add_getter('binaries', 'get_eccentricity', names = ('eccentricity',))
         object.add_getter('binaries', 'get_mass', names = ('mass',))
