@@ -152,7 +152,6 @@ def semilogy(*args, **kwargs):
 
 def loglog(*args, **kwargs):
     args = UnitlessArgs.strip(*args, **kwargs)
-    print args
     result = native_plot.loglog(*args, **kwargs)
     native_plot.xlabel(UnitlessArgs.x_label())
     native_plot.ylabel(UnitlessArgs.y_label())
@@ -189,9 +188,9 @@ def errorbar(*args, **kwargs):
     native_plot.ylabel(UnitlessArgs.y_label())
     return result
 
-def text(*args, **kwargs):
-    args = UnitlessArgs.strip(*args, **kwargs)
-    return native_plot.text(*args, **kwargs)
+def text(x, y, s, **kwargs):
+    strp_x, strp_y = UnitlessArgs.strip(x, y)
+    return native_plot.text(strp_x, strp_y, s, **kwargs)
 
 def xlabel(s, *args, **kwargs):
     if not '[' in s:
@@ -549,9 +548,9 @@ def effective_iso_potential_plot(gravity_code,
         Z = potential.number.reshape(resolution[::-1])
         levels = set_contour_levels(potential, number_of_contours, fraction_screen_filled, quadratic_contour_levels)
         Z = numpy.maximum(Z, levels[0])
-        ax.plot_surface(x_num, y_num, Z, rstride=1, cstride=1, cmap=cm.spectral, 
+        ax.plot_surface(x_num, y_num, Z, rstride=1, cstride=1, cmap=cm.spectral,
             linewidth=0, antialiased=False, vmin=levels[0], vmax=3*levels[-1]-2*levels[0])
-        
+
         ax.set_xlabel('X')
         ax.set_xlim(-1, 1)
         ax.set_ylabel('Y')
@@ -559,7 +558,7 @@ def effective_iso_potential_plot(gravity_code,
         ax.set_zlabel('Z')
         ax.set_zlim(levels[0], levels[-1])
         return potential
-    
+
     levels = set_contour_levels(potential, number_of_contours, fraction_screen_filled, quadratic_contour_levels)
     CS = native_plot.contour(x_num, y_num, potential.number.reshape(resolution[::-1]), levels, **contour_kwargs)
     #~native_plot.clabel(CS, inline=1, fontsize=10)
