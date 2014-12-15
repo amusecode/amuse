@@ -49,7 +49,7 @@ def low_q_medium_A(q, A):
     g_0 = 0.9978 - 0.1229 * log_A - 0.1273 * (log_A)**2
     g_1 = 0.001 + 0.02556 * log_A
     g_2 = 0.0004 + 0.0021 * log_A
-    return g_0 + g_1 * log_q * g_2 * (log_q)**2
+    return g_0 + g_1 * log_q + g_2 * (log_q)**2
 
 def high_q_medium_A(q, A):
     log_q = numpy.log10(q)
@@ -58,7 +58,7 @@ def high_q_medium_A(q, A):
     h_0 = 1.0071 -  0.0907 * log_A - 0.0495 * (log_A)**2
     h_1 = -0.004 -  0.163 * log_A - 0.214 * (log_A)**2
     h_2 = 0.00022 -  0.0108 * log_A - 0.02718 * (log_A)**2
-    return h_0 + h_1 * log_q * h_2 * (log_q)**2
+    return h_0 + h_1 * log_q + h_2 * (log_q)**2
 
 def low_q_high_A(q, A):
     log_q = numpy.log10(q)
@@ -120,6 +120,7 @@ def sepinsky_formula(q=1, A=1):
     return vec_pick_formula(q, A)
 
 def sepinsky_A_parameter(eccentricity=0.0, angular_velocity_ratio=1.0, true_anomaly=numpy.pi):
+    """ Euation 21 of Sepinsky 2007 """
     numerator = angular_velocity_ratio**2 * (1.0 + eccentricity)**4
     denominator = (1.0 + eccentricity * numpy.cos(true_anomaly))**3
     return numerator / denominator
@@ -202,6 +203,39 @@ class Roche_Orbit(object):
 
     def separation(self):
         return separation(self.semimajor_axis, self.eccentricity, self.true_anomaly)
+
+def create_orbit_from_particles(particles, angular_velocity=0.|units.yr**-1):
+    """
+        Use mass, position and velocity to determine orbital parameters.
+        Then setup Roche_Orbit
+    """
+    roche = Roche_Orbit()
+    roche.mass_1, roche.mass_2 = particles.mass
+
+    position_vector = particles.position[1] - particles.position[0]
+    velocity_vector = particles.velocity[1] - particles.velocity[0]
+    mu = constants.G * particles.mass.sum()
+
+    separation = position_vector.length()
+    speed_squared = velocity_vector.length_squared()
+
+    roche.semimajor_axis = mu * separation / (2 * mu - separation * speed_squared)
+
+
+    e_vector = speed_squared * position_vector / mu - position_vector.dot(velocity_vector) * velocity_vector / mu - position_vector / separation
+    roche.eccentricity = numpy.sqrt((e_vector * e_vector).sum())
+
+    roche.true_anomaly = numpy.arccos(position_vector.dot(e_vector) / (roche.eccentricity * separation))
+
+    if position_vector.dot(velocity_vector) < quantities.zero:
+        # arccos is ambiguous
+        roche.true_anomaly = 2. * numpy.pi - roche.true_anomaly
+
+    period = (4. * numpy.pi**2 * roche.semimajor_axis**3 / mu).sqrt()
+    peri_orbital_angular_velocity = 2. * numpy.pi / period * (1. + roche.eccentricity)**2/ (1-roche.eccentricity**2)**(3./2.)
+    roche.angular_velocity_ratio = angular_velocity / peri_orbital_angular_velocity
+
+    return roche
 
 def new_option_parser():
     parser = OptionParser(description="Calculate the Roche radius for a given orbit.")
