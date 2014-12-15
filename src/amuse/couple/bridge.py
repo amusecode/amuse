@@ -321,8 +321,6 @@ class GravityCodeInField(object):
             self.zero_smoothing=True
         else:
             self.zero_smoothing=False
-        
-        self.cannot_kick = not (hasattr(self, 'particles') and 'vx' in self.particles.get_attribute_names_defined_in_store())
 
 
     def evolve_model(self,tend,timestep=None):
@@ -427,9 +425,17 @@ class GravityCodeInField(object):
         if(self.verbose):
             print ".. done"
 
+    def cannot_kick(self):
+        """
+            check if the code is capable of kicking other particles,
+            please do not try to optimize this, I know it is called every kick but
+            only calculating it at the start causes an annoying bug in certain uses of the code.
+        """
+        return len(self.code.particles)==0 or not (hasattr(self, 'particles') and 'vx' in self.particles.get_attribute_names_defined_in_store())
+
     def kick(self, dt):
 
-        if self.cannot_kick or len(self.code.particles)==0:
+        if self.cannot_kick():
             return quantities.zero
 
         particles = self.code.particles.copy(filter_attributes = self.required_attributes)
@@ -487,7 +493,7 @@ class GravityCodeInField(object):
         particles.vx += dt * ax
         particles.vy += dt * ay
         particles.vz += dt * az
-    
+
     def stop(self):
         self.code.stop()
 
