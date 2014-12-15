@@ -600,13 +600,13 @@ class SeBa(se.StellarEvolution):
             psn -= self.particles[old_particles.stellar_type>=10|units.stellar_type]
 
             if len(psn)>0:
-                for p in psn:
+                # for p in psn:
                     # print "kick=", p.natal_kick_velocity
                 # print "Supernova at time:", psn
                 if self.stopping_conditions.supernova_detection.is_enabled():
                     self.stopping_conditions.supernova_detection.set(psn)
                     break
-                for p in psn:
+                # for p in psn:
                     # print "kick=", p.natal_kick_velocity
                     #p.velocity += p.natal_kick_velocity
 #                channel_copy_velocity_from_seba_to...
