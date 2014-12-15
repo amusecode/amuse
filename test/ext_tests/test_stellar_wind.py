@@ -52,7 +52,7 @@ class TestStellarWind(amusetest.TestCase):
     def test2(self):
         """ Test the accelerating wind """
         star = self.create_star()
-        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, accelerate=True)
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, mode="accelerate")
         star_wind.init_v_wind_ratio = 0.1
         star_wind.particles.add_particles(star)
 
@@ -87,7 +87,7 @@ class TestStellarWind(amusetest.TestCase):
         """ Test the wind acceleration """
         star = self.create_star()
         star.position = [1, 1, 1] | units.RSun
-        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, accelerate=True)
+        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, mode="accelerate")
         star_wind.particles.add_particles(star)
 
         # unaffected points
