@@ -12,10 +12,10 @@ def check_builtin_unit(option, opt, value):
             return result
         else:
             return quantities.new_quantity(result, option.unit)
-            
+
     except ValueError:
-        raise OptionValueError(
-            _("option %s: invalid %s value: %r") % (opt, what, value))
+        raise optparse.OptionValueError(
+            "option %s: invalid %s value: %r" % (opt, what, value))
 
 
 class Option(optparse.Option):
@@ -27,7 +27,7 @@ class Option(optparse.Option):
         "choice" : optparse.check_choice,
     }
     ATTRS = optparse.Option.ATTRS + ['unit',]
-    
+
     def convert_value(self, opt, value):
         if value is not None:
             if self.nargs == 1:
@@ -36,7 +36,7 @@ class Option(optparse.Option):
                 return tuple([self.check_value(opt, v) for v in value])
 
 class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
-    
+
     def __init__(self,
              indent_increment=2,
              max_help_position=24,
@@ -44,9 +44,9 @@ class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
              short_first=1):
         optparse.IndentedHelpFormatter.__init__(
             self, indent_increment, max_help_position, width, short_first)
-            
+
         self.unit_tag = "%unit"
-        
+
     def format_option(self, option):
         # The help for each option consists of two parts:
         #   * the opt strings and metavars
@@ -72,7 +72,7 @@ class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
             opts = "%*s%-*s  " % (self.current_indent, "", opt_width, opts)
             indent_first = 0
         result.append(opts)
-            
+
         if option.help:
             help_text = self.expand_default(option)
             help_text = self.expand_unit(option, help_text)
@@ -83,22 +83,22 @@ class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
         elif opts[-1] != "\n":
             result.append("\n")
         return "".join(result)
-    
+
     def expand_unit(self, option, help_text):
         if self.parser is None or not self.unit_tag:
             return help_text
 
         if option.unit is None:
             return help_text
-        
+
         unit = option.unit
 
         return help_text.replace(self.unit_tag, str(unit))
-    
-    
-    
+
+
+
 class OptionParser(optparse.OptionParser):
-    
+
     def __init__(self,
              usage=None,
              option_list=None,
@@ -110,15 +110,15 @@ class OptionParser(optparse.OptionParser):
              add_help_option=True,
              prog=None,
              epilog=None):
-        
-        
+
+
         if formatter is None:
             formatter = IndentedHelpFormatter()
-            
+
         optparse.OptionParser.__init__(
-            self, usage, 
-            option_list, option_class, 
-            version, conflict_handler, 
+            self, usage,
+            option_list, option_class,
+            version, conflict_handler,
             description, formatter,
             add_help_option, prog, epilog
         )
@@ -136,5 +136,5 @@ class OptionParser(optparse.OptionParser):
                 defaults[option.dest] = option.check_value(opt_str, default)
             elif not option.unit is None and not quantities.is_quantity(default):
                 defaults[option.dest] = quantities.new_quantity(default, option.unit)
-                
+
         return optparse.Values(defaults)
