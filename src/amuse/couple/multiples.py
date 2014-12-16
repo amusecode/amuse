@@ -2,6 +2,7 @@ import sys
 import numpy
 import collections
 import math
+import copy
 
 from amuse import datamodel
 from amuse.datamodel import particle_attributes
@@ -135,6 +136,9 @@ def get_component_binary_elements(comp1, comp2, kep, peri = 0):
 
 def get_cm_binary_elements(p, kep, peri = 0):
     return get_component_binary_elements(p.child1, p.child2, kep, peri)
+
+class DidNotFinishException(Exception):
+    pass
 
 class Multiples(object):
 
@@ -368,7 +372,8 @@ class Multiples(object):
         
         while time < end_time:
 
-            print '\ncalling evolve_model to ', end_time
+            print '\ncalling evolve_model from', \
+		  self.gravity_code.model_time, 'to', end_time
             sys.stdout.flush()
 
 #             if time > 100 | nbody_system.time:
@@ -477,7 +482,7 @@ class Multiples(object):
 
                     veto, dE_top_level_scatter, dphi_top, dE_mul, \
                         dphi_int, dE_int, final_particles \
-                        = self.manage_encounter(star1, star2, 
+                        = self.manage_encounter(time, star1, star2, 
                                                 self._inmemory_particles,
                                                 self.gravity_code.particles,
                                                 self.kepler)
@@ -633,7 +638,8 @@ class Multiples(object):
 
         self.channel_from_code_to_memory.copy_attribute("index_in_code", "id")
 
-    def manage_encounter(self, star1, star2, stars, gravity_stars, kep):
+    def manage_encounter(self, global_time, star1, star2,
+                         stars, gravity_stars, kep):
 
         # Manage an encounter between star1 and star2.  Stars is the
         # python memory data set.  Gravity_stars points to the gravity
@@ -807,16 +813,16 @@ class Multiples(object):
         print 'tperi =', tperi.number, ' period =', self.kepler.get_period()
         sys.stdout.flush()
 
-        # Hard limits on the smallN integraiton are dangerous, but for
+        # Hard limits on the smallN integration are dangerous, but for
         # now we don't have a strategy to deal with scatterings that
         # don't end.  TODO
 
         if self.gravity_code.unit_converter is None:
-            end_time = 1.e6 | nbody_system.time
+            end_time = 1.e4 * abs(tperi) # nbody_system.time
             delta_t = min(10*abs(tperi), 1.0 | nbody_system.time)
         else:
-            end_time = 1.e6 * abs(tperi)
-            delta_t = abs(tperi)
+            end_time = 1.e4 * abs(tperi)
+            delta_t = 10*abs(tperi)
 
         final_scatter_scale = self.final_scatter_factor * initial_scatter_scale
 
@@ -921,16 +927,42 @@ class Multiples(object):
             # its current strongest perturber.
 
             max_perturbation = 2*sorted_perturbations[0]*binary_scale**3/mass
+            perturber = sorted_stars[0]
+            perturber_distance = sorted_distances[0]
+            
+            # Check that stars not in a multiple are not the dominant perturbation
+            print "DEBUGGING PERTURBER ADDITION"
+            stars_to_check = copy.copy(stars_not_in_a_multiple)
+            roots_to_check = list(roots_of_trees)
+            while len(roots_to_check) > 0:
+                r = roots_to_check.pop()
+                if r != root:
+                    if hasattr(r, "child1"):
+                        if r not in roots_to_check:
+                            roots_to_check.append(r)
+                    else:
+                        stars_to_check.extend(r)
+            for s in stars_to_check:
+                distance = (s.position - center_of_mass).length()
+                pert = s.mass / distance**3
+                s_perturbation = 2*pert*binary_scale**3/mass
+                print "star = %s, distance = %s, pert = %s, s_pert = %s, max_pert = %s" %\
+                        (s.id, distance, pert, s_perturbation, max_perturbation)
+                if s_perturbation > max_perturbation:
+                    max_perturbation = s_perturbation
+                    perturber = s
+                    perturber_distance = distance
+
 
             #if binary_scale > rad12:
             if max_perturbation < self.wide_perturbation_limit:
                 print 'accepting wide binary', name_pair(comp1,comp2)
                 print '    semi =', semi.number, 'E/mu =', E.number
                 print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
-                print '    strongest perturber is', sorted_stars[0].id, \
+                print '    strongest perturber is', perturber.id, \
                     'with apo perturbation', max_perturbation
-                print '    nearest neighbor is', sorted_stars[0].id, \
-                    'at distance', sorted_distances[0].number
+                print '    nearest neighbor is', perturber.id, \
+                    'at distance', perturber_distance.number
                 sys.stdout.flush()
             else:
                 print 'initial top-level:', \
@@ -939,10 +971,10 @@ class Multiples(object):
                 print 'splitting wide binary', name_pair(comp1,comp2)
                 print '    semi =', semi.number, 'E/mu =', E.number
                 print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
-                print '    strongest perturber is', sorted_stars[0].id, \
+                print '    strongest perturber is', perturber.id, \
                     'with apocenter perturbation', max_perturbation
-                print '    nearest neighbor is', sorted_stars[0].id, \
-                    'at distance', sorted_distances[0].number
+                print '    nearest neighbor is', perturber.id, \
+                    'at distance', perturber_distance.number
                 sys.stdout.flush()
 
                 # See the "special case" logic in
@@ -1138,6 +1170,8 @@ class Multiples(object):
                           end_time = 1000 | nbody_system.time,
                           delta_t = 10 | nbody_system.time):
 
+        pre = 'encounter:'	# identifier for all output here
+
         # Take the system described by particles and evolve it forward
         # in time until it is over.  Don't update global quantities,
         # don't interpret the outcome.  Return the energy error due to
@@ -1162,22 +1196,9 @@ class Multiples(object):
 
         initial_scatter_energy = self.get_total_energy(resolve_collision_code)
 
-        print "multiples: number_of_stars =", len(particles), ' ', particles.id
-        print 'multiples: initial energy =', initial_scatter_energy
+        print pre, 'number_of_stars =', len(particles), ' ', particles.id
+        print pre, 'initial energy =', initial_scatter_energy
         #print particles
-        print "multiples: evolving to time =", end_time, 
-        print "in steps of", delta_t
-        if self.debug_encounters:
-            print 'multiples: ### START ENCOUNTER ###'
-            print 'multiples: ### snapshot at time %f' % 0.0
-            for p in particles:
-                print 'multiples: ### id=%d, x=%f, y=%f, z=%f,'\
-                      'vx=%f, vy=%f, vz=%f' % \
-                        (p.id, p.x.number, p.y.number, p.z.number,
-                         p.vx.number, p.vy.number, p.vz.number)
-        sys.stdout.flush()
-
-        resolve_collision_code.set_break_scale(final_scatter_scale)
 
         delta_t_max = 64*delta_t
         while delta_t_max < end_time/10: delta_t_max *= 2
@@ -1185,88 +1206,131 @@ class Multiples(object):
         if self.debug_encounters:
             delta_t *= 0.1
 
+        initial_delta_t = delta_t
+        print pre, 'evolving to time', end_time
+        print pre, 'initial step =', initial_delta_t
+        if self.debug_encounters:
+            print pre, '### START ENCOUNTER ###'
+            print pre, '### snapshot at time %f' % 0.0
+            for p in particles:
+                print pre, '### id=%d, x=%f, y=%f, z=%f,'\
+                      'vx=%f, vy=%f, vz=%f' % \
+                        (p.id, p.x.number, p.y.number, p.z.number,
+                         p.vx.number, p.vy.number, p.vz.number)
+        sys.stdout.flush()
+
+        resolve_collision_code.set_break_scale(final_scatter_scale)
+
         while time < end_time:
 
+            tt = time
             time += delta_t
-            print 'multiples: evolving to time', time
+            print pre, '...to time', time
             sys.stdout.flush()
 
-            resolve_collision_code.evolve_model(time)
+            # Work with internal steps of initial_delta_t to allow
+            # checks for quasi-stable motion.
 
-            # DEBUGGING:
-            if self.debug_encounters:
-                print 'multiples: ### snapshot at time %f' % time.number
-                #resolve_collision_code.update_particle_tree()
-                #resolve_collision_code.update_particle_set()
-                resolve_collision_code.particles.synchronize_to(particles)
-                channel.copy()
-                for p in particles:
-                    print 'multiples: ### id=%d, x=%f, y=%f, z=%f,'\
-                          'vx=%f, vy=%f, vz=%f' % \
-                            (p.id, p.x.number, p.y.number, p.z.number,
-                             p.vx.number, p.vy.number, p.vz.number)
+            while tt < time:
+
+                tt += initial_delta_t
+                if tt > time: tt = time
+                print pre, '    ...', time, tt, \
+                      'model_time =', resolve_collision_code.model_time
+                sys.stdout.flush()
+                resolve_collision_code.evolve_model(tt)
+                print pre, '    ...back:', \
+                      ': model_time =', resolve_collision_code.model_time
+                tt = resolve_collision_code.model_time
                 sys.stdout.flush()
 
-            # The argument final_scatter_scale is used to limit the
-            # size of the system.  It has to be supplied again because
-            # the code that determines if the scattering is over isn't
-            # necessarily the same as resolve_collision_code.
-            # Currently, only smallN has an "is_over()" function.
-            # TODO
-            #
-            # Return values:	0 - not over
-            #			1 - over
-            #			2 - not over, but size exceeded limit
-            #
-            # Note that this is really a stopping condition, and
-            # should eventually be handled that way.  TODO
+                # Note: Return with tt != time means we have exceeded
+                # the size limit and don't need to check is_over().
 
-            # We are currently ignoring any possibility of a physical
-            # collision during the multiples encounter.  TODO
-
-            over = resolve_collision_code.is_over(final_scatter_scale)
-
-            # TODO: what happens if we reach final_scatter_scale but
-            # the encounter isn't over?
-
-            if over:
-                final_scatter_energy \
-                    = self.get_total_energy(resolve_collision_code)
-                scatter_energy_error \
-                    = final_scatter_energy - initial_scatter_energy
-                print 'multiples: over =', over, 'at time', time
-                print 'multiples: initial energy =', initial_scatter_energy
-                print 'multiples: final energy =', final_scatter_energy
-                print 'multiples: energy error =', scatter_energy_error
+                # DEBUGGING:
                 if self.debug_encounters:
-                    print 'multiples: ### END ENCOUNTER ###'
-                sys.stdout.flush()
+                    print pre, '### snapshot at time %f' % time.number
+                    #resolve_collision_code.update_particle_tree()
+                    #resolve_collision_code.update_particle_set()
+                    resolve_collision_code.particles.synchronize_to(particles)
+                    channel.copy()
+                    for p in particles:
+                            print pre, '### id=%d, x=%f, y=%f, z=%f,'\
+                              'vx=%f, vy=%f, vz=%f' % \
+                                (p.id, p.x.number, p.y.number, p.z.number,
+                                 p.vx.number, p.vy.number, p.vz.number)
+                    sys.stdout.flush()
 
-                # Create a tree in the module representing the binary structure.
-                resolve_collision_code.update_particle_tree()
+                # The argument final_scatter_scale is used to limit
+                # the size of the system.  It has to be supplied again
+                # because the code that determines if the scattering
+                # is over isn't necessarily the same as
+                # resolve_collision_code.  Currently, only smallN has
+                # an "is_over()" function.  TODO
+                #
+                # Return values:	0 - not over
+                #			1 - over
+                #			2 - quasi-stable system
+                #			3 - not over, but size exceeded limit
+                #
+                # Note that this is really a stopping condition, and
+                # should eventually be handled that way.  TODO
 
-                # Note that center of mass particles are now part of
-                # the particle set...
+                # We are currently ignoring any possibility of a
+                # physical collision during the multiples encounter.
+                # TODO
 
-                # Return the tree structure to AMUSE.  Children are
-                # identified by get_children_of_particle in interface.??,
-                # and the information is returned in the copy operation.
+                over = resolve_collision_code.is_over(final_scatter_scale,
+                                                      0)    # verbose = 0
 
-                resolve_collision_code.update_particle_set()
-                resolve_collision_code.particles.synchronize_to(particles)
-                #print "resolve_collision_code.particles.radius", \
-                #       resolve_collision_code.particles.radius
-                channel.copy()
-                #resolve_collision_code.stop()
+                if over:
+                    final_scatter_energy \
+                        = self.get_total_energy(resolve_collision_code)
+                    scatter_energy_error \
+                        = final_scatter_energy - initial_scatter_energy
+                    print pre, 'over =', over, 'at time', tt
+                    #print pre, 'initial energy =', initial_scatter_energy
+                    #print pre, 'final energy =', final_scatter_energy
+                    #print pre, 'energy error =', scatter_energy_error
+                    print pre, 'fractional energy error =', \
+                scatter_energy_error/initial_scatter_energy
+                    if self.debug_encounters:
+                            print pre, '### END ENCOUNTER ###'
+                    sys.stdout.flush()
 
-                return scatter_energy_error
+                    # Create a tree in the module representing the binary structure.
+                    resolve_collision_code.update_particle_tree()
 
+                    # TODO: what happens if we reach over = 2 or 3?
+
+                    # Note that center of mass particles are now part
+                    # of the particle set...
+
+                    # Return the tree structure to AMUSE.  Children
+                    # are identified by get_children_of_particle in
+                    # interface.??, and the information is returned in
+                    # the copy operation.
+
+                    resolve_collision_code.update_particle_set()
+                    resolve_collision_code.particles.synchronize_to(particles)
+                    #print "resolve_collision_code.particles.radius", \
+                    #       resolve_collision_code.particles.radius
+                    channel.copy()
+                    #resolve_collision_code.stop()
+
+                    return scatter_energy_error
+
+                if tt >= 0.9999999*time: break
+
+            time = resolve_collision_code.model_time
             if not self.debug_encounters:
                 if delta_t < delta_t_max and time > 0.999999*4*delta_t:
                     delta_t *= 2
+                    print pre, 'setting delta_t =', delta_t
+                    sys.stdout.flush()
 
-        raise Exception(
-            "Did not finish the small-N simulation before end time {0}".
+        raise DidNotFinishException(
+            pre + "Did not finish the small-N simulation before end time {0}".
             format(end_time)
         )
     
@@ -1885,6 +1949,8 @@ def set_radii(top_level_nodes, kep):
 def scale_top_level_list(singles, multiples, kep, scale,
                          gravity_constant):
 
+    pre = 'scale_top_level_list:'
+
     # The multiples code followed the particles until their
     # interaction could be unambiguously classified as over.  They may
     # now be very far apart.  Input singles and multiples are lists
@@ -1913,7 +1979,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
     lm = len(multiples)
     lt = ls + lm
 
-    print 'scale_top_level_list: ls =', ls, ' lm =', lm, ' lt =', lt
+    print pre, 'ls =', ls, ' lm =', lm, ' lt =', lt
     sys.stdout.flush()
 
     if lt == 1:
@@ -1931,7 +1997,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
 
             root = multiples[0]
 
-            print "scale_top_level_list: bound binary node"
+            print pre, 'bound binary node'
             #print '\nunscaled binary node:'
             #print_multiple_recursive(root)
             comp1 = root.child1
@@ -1957,7 +2023,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
         comp1 = top_level_nodes[0]
         comp2 = top_level_nodes[1]
 
-        print "scale_top_level_list: top-level unbound pair"
+        print pre, 'top-level unbound pair'
         #print '\nunscaled top-level pair:'
         #print_pair_of_stars('pair', comp1, comp2)
         semi = rescale_binary_components(comp1, comp2, kep, scale)
@@ -1971,7 +2037,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
         # will conserve energy and think later about how to preserve
         # angular momentum.  TODO
 
-        print 'scale_top_level_list:', lt, 'top-level nodes'
+        print pre, lt, 'top-level nodes'
         #print lt, 'unscaled top-level nodes'
         #print top_level_nodes
         compress_nodes(top_level_nodes, scale)
