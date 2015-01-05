@@ -393,5 +393,14 @@ class SmallN(GravitationalDynamics):
         
         incode_storage = self.particles._private.attribute_storage
         
-        if len(indices_to_add) > 0:
-            incode_storage._add_indices(indices_to_add)
+        try:
+            if len(indices_to_add) > 0:
+                incode_storage._add_indices(indices_to_add)
+        except:
+            print "Crash while adding indicies to incode_storage."
+            print "indices_to_add=", indices_to_add
+            print "number_of_updated_particles=", number_of_updated_particles
+            print "incode_storage=", incode_storage
+            print "dir(incode_storage)=", dir(incode_storage)
+            raise
+
