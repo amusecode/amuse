@@ -793,6 +793,7 @@ c Local
       real*8 t1
       character*38 flost,fcol
       character*6 tstring
+      character*20 pos
 c
 c------------------------------------------------------------------------------
 c
@@ -807,7 +808,11 @@ c (unless the more massive one is a Small body)
       end if
 c
 c Write message to info file (I=0 implies collision with the central body)
-  10  open (23, file=outfile, status='old', position='append', err=10)
+      pos = 'append'
+      if(trim(outfile).EQ.'/dev/null') then
+         pos = 'asis'
+      end if
+  10  open (23, file=outfile, status='old', position=pos, err=10)
 c
       if (opt(3).eq.1) then
         call mio_jd2y (time,year,month,t1)
@@ -946,8 +951,9 @@ c
 c Local
       integer j
       real*8 a(NMAX),hill(NMAX),temp,amin,vmax,k_2,rhocgs,rcen_2
-      character*80 header,c(NMAX)
+      character*80 header,c(NMAX),pos
       character*8 mio_re2c, mio_fl2c
+
 c
 c------------------------------------------------------------------------------
 c
@@ -999,7 +1005,11 @@ c
 c
 c Write compressed output to file
 
-  50  open (22, file=outfile, status='old', position='append', err=50)
+      pos = 'append'
+      if(trim(outfile).EQ.'/dev/null') then
+         pos = 'asis'
+      end if
+  50  open (22, file=outfile, status='old', position=pos, err=50)
       write (22,'(a1,a2,i2,a62,i1)') char(12),'6a',algor,header(1:62),
      %  opt(4)
       do j = 2, nbod
@@ -1381,6 +1391,7 @@ c Local
       real*8 dx0,dy0,dz0,du0,dv0,dw0,dx1,dy1,dz1,du1,dv1,dw1
       real*8 xmin(NMAX),xmax(NMAX),ymin(NMAX),ymax(NMAX)
       real*8 d2min,d2ce,d2near,d2hit,temp,tmin
+      character*40 pos
 c
 c------------------------------------------------------------------------------
 c
@@ -1440,7 +1451,11 @@ c is in progress, store details
      %        .or.(d2min.le.d2hit)) then
               nclo = nclo + 1
               if (nclo.gt.CMAX) then
- 230            open (23,file=outfile,status='old',position='append',
+                pos = 'append'
+                if(trim(outfile).EQ.'/dev/null') then
+                    pos = 'asis'
+                end if
+ 230            open (23,file=outfile,status='old',position=pos,
      %            err=230)
                 write (23,'(/,2a,/,a)') mem(121)(1:lmem(121)),
      %            mem(132)(1:lmem(132)),mem(82)(1:lmem(82))
@@ -4896,7 +4911,7 @@ c Local
       integer k,year,month
       real*8 tmp0,t1,rfac,fr,fv,theta,phi,vtheta,vphi
       character*80 c(200)
-      character*38 fstop
+      character*38 fstop,pos
       character*8 mio_fl2c, mio_re2c
       character*6 tstring
 c
@@ -4938,7 +4953,11 @@ c
 c
 c If required, output the stored close encounter details
       if (nstored.ge.100.or.ceflush.eq.0) then
-  10    open (22, file=outfile(2), status='old', position='append'
+        pos = 'append'
+        if(trim(outfile(2)).EQ.'/dev/null') then
+           pos = 'asis'
+        end if
+  10    open (22, file=outfile(2), status='old', position=pos
      %     ,err=10)
         do k = 1, nstored
           write (22,'(a1,a2,a70)') char(12),'6b',c(k)(1:70)
@@ -4950,7 +4969,11 @@ c
 c If new encounter minima have occurred, decide whether to stop integration
       stopflag = 0
       if (opt(1).eq.1.and.nclo.gt.0) then
-  20    open (23, file=outfile(3), status='old', position='append'
+        pos = 'append'
+        if(trim(outfile(3)).EQ.'/dev/null') then
+           pos = 'asis'
+        end if
+  20    open (23, file=outfile(3), status='old', position=pos
      %        ,err=20)
 c If time style is Gregorian date then...
         tmp0 = tclo(1)
@@ -5359,6 +5382,7 @@ c      real*8 v0(3,NMAX),x0(3,NMAX)
       character*3 c3,alg(60)
       character*4096 infile(3),filename,c80
       character*150 string
+      character*40 pos
 c
 c------------------------------------------------------------------------------
 c
@@ -5799,6 +5823,10 @@ c Check that element and close-encounter files don't exist, and create them
           inquire (file=outfile(j), exist=test)
           if (test) call mio_err (23,mem(81),lmem(81),mem(87),lmem(87),
      %      ' ',1,outfile(j),80)
+          pos = 'append'
+          if(trim(outfile(j)).EQ.'/dev/null') then
+             pos = 'asis'
+          end if
  430      open  (20+j, file=outfile(j), status='new', err=430)
           close (20+j)
         end do
@@ -6122,6 +6150,7 @@ c Local
       character*4096 header,c(NMAX)
       character*8 mio_fl2c,mio_re2c
       character*5 fout
+      character*40 pos
 c
 c------------------------------------------------------------------------------
 c
@@ -6142,7 +6171,11 @@ c Create the format list, FOUT, used when outputting the orbital elements
       if (len.ge.10) write (fout(3:4),'(i2)') len
 c
 c Open the orbital-elements output file
-  10  open (21, file=outfile, status='old', position='append', err=10)
+      pos = 'append'
+      if(trim(outfile).EQ.'/dev/null') then
+         pos = 'asis'
+      end if
+  10  open (21, file=outfile, status='old', position=pos, err=10)
 c
 c------------------------------------------------------------------------------
 c
@@ -6378,7 +6411,7 @@ c
 c Local
       integer j, year, month
       real*8 r2,rmax2,t1,e,l
-      character*38 flost
+      character*38 flost, pos
       character*6 tstring
 c
 c------------------------------------------------------------------------------
@@ -6402,7 +6435,11 @@ c Flag each object which is ejected, and set its mass to zero
           s(3,j) = 0.d0
 c
 c Write message to information file
-  20      open  (23,file=outfile,status='old',position='append',err=20)
+          pos = 'append'
+          if(trim(outfile).EQ.'/dev/null') then
+             pos = 'asis'
+          end if
+  20      open  (23,file=outfile,status='old',position=pos,err=20)
           if (opt(3).eq.1) then
             call mio_jd2y (time,year,month,t1)
             flost = '(1x,a8,a,i10,1x,i2,1x,f8.5)'
@@ -6464,6 +6501,7 @@ c Input/Output
 c
 c Local
       integer j, k, l, nbigelim, elim(NMAX+1)
+      character * 40 pos
 c
 c------------------------------------------------------------------------------
 c
@@ -6510,7 +6548,11 @@ c Update total number of bodies and number of Big bodies
 c
 c If no massive bodies remain, stop the integration
       if (nbig.lt.1) then
-  10    open (23,file=outfile,status='old',position='append',err=10)
+        pos = 'append'
+        if(trim(outfile).EQ.'/dev/null') then
+           pos = 'asis'
+        end if
+  10    open (23,file=outfile,status='old',position=pos,err=10)
         write (23,'(2a)') mem(81)(1:lmem(81)),mem(124)(1:lmem(124))
         close (23)
         stop

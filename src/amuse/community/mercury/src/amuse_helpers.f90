@@ -159,25 +159,40 @@ function mercury_set_begin_time(system_time) result(ret)
     ret = 0
 end function  
 
+function check_file(path) result(ret)
+    implicit none
+    integer :: ret, err
+    character*4096, intent(in) :: path 
+    character*40 :: position
+    if(TRIM(path) .EQ. '/dev/null') then
+        position = 'asis'
+    else
+        position = 'append'
+    end if
+
+    open (24,file=outfile(1),status='unknown',position=position, iostat = err)
+    close(24)
+    if (err.GT.0)  then
+       ret = -1
+       PRINT *, 'error in opening file with name =', TRIM(path),', code =', err 
+    else
+       ret = 0
+    end if
+end function
+    
 function mercury_commit_parameters() result(ret)
+    implicit none
+    integer :: ret
     if(time.EQ.0.0) then
         time = begin_time
     end if
-    open (24,file=outfile(1),status='unknown',position='append')
-    close(24)
-    open (24,file=outfile(2),status='unknown',position='append')
-    close(24)
-    open (24,file=outfile(3),status='unknown',position='append')
-    close(24)
-    open (24,file=dumpfile(1),status='unknown',position='append')
-    close(24)
-    open (24,file=dumpfile(2),status='unknown',position='append')
-    close(24)
-    open (24,file=dumpfile(3),status='unknown',position='append')
-    close(24)
-    open (24,file=dumpfile(4),status='unknown',position='append')
-    close(24)
-    ret=0
+    ret = check_file(outfile(1))
+    ret = check_file(outfile(2))
+    ret = check_file(outfile(3))
+    ret = check_file(dumpfile(1))
+    ret = check_file(dumpfile(2))
+    ret = check_file(dumpfile(3))
+    ret = check_file(dumpfile(4))
 end function
 
 
