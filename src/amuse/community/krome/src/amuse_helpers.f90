@@ -33,7 +33,6 @@ contains
     if(.not.allocated(particles)) allocate(particles(NMAX))
     particles(:)%density=0.
     
-    print*,"initialize"
     call krome_init()
     
     ret=0
@@ -147,6 +146,7 @@ contains
     particles(index)%density=density
     particles(index)%temperature=temperature
     particles(index)%ionrate=ionrate
+    ret=0
 
   end function
 

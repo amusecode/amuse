@@ -8,8 +8,8 @@ from amuse.datamodel import Particles
 
 from amuse.io import read_set_from_file
 
-default_options={}
-#default_options = dict(redirection="none")
+#default_options={}
+default_options = dict(redirection="none")
 #default_options=dict(debugger="gdb")
 
 class TestKromeInterface(TestWithMPI):
@@ -453,12 +453,43 @@ class TestKrome(TestWithMPI):
         parts.number_density=1.e5 | units.cm**-3
         parts.temperature=50 | units.K
         parts.ionrate=2.e-17 | units.s**-1
-        parts.abundances=numpy.zeros((5,35))        
+
+        Ns=len(instance.species)
+
+        parts.abundances=numpy.zeros((1,Ns))        
 
         instance.particles.add_particles(parts)
- 
+  
         instance.evolve_model( 1. | units.Myr )
+ 
+        print instance.particles.abundances
+
+        f=2*instance.particles[0].abundances[instance.species["H2"]]
+        self.assertTrue(f> 0.95) # not much of a test..
+        #~ for x,i in instance.species.items():
+          #~ print x, instance.particles[0].abundances[i]
         
+        instance.cleanup_code()
+        instance.stop()
+
+    def test4(self):
+        print "test4: evolve test (10 part)"
+
+        instance=self.new_instance_of_an_optional_code(Krome,**default_options)
+
+        parts=Particles(10)
+        parts.number_density=1.e5 | units.cm**-3
+        parts.temperature=50 | units.K
+        parts.ionrate=2.e-17 | units.s**-1
+
+        Ns=len(instance.species)
+
+        parts.abundances=numpy.zeros((1,Ns))        
+
+        instance.particles.add_particles(parts)
+  
+        instance.evolve_model( 1. | units.Myr )
+
         f=2*instance.particles[0].abundances[instance.species["H2"]]
         self.assertTrue(f> 0.95) # not much of a test..
         #~ for x,i in instance.species.items():
