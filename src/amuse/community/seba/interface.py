@@ -591,29 +591,25 @@ class SeBa(se.StellarEvolution):
         evolve_a_success = 0
         if end_time is None:
             end_time = self.model_time + min(self.particles.time_step)
-        # print "t=", self.model_time, end_time
-        new_end_time = min(end_time, self.model_time + min(self.particles.time_step))
-        while self.model_time<new_end_time:
-            old_particles = self.particles.copy()
-            evolve_a_success =  self.evolve_system(end_time)
-            psn = self.particles[self.particles.stellar_type>=10|units.stellar_type]
-            psn -= self.particles[old_particles.stellar_type>=10|units.stellar_type]
-
-            if len(psn)>0:
-                # for p in psn:
-                    # print "kick=", p.natal_kick_velocity
-                # print "Supernova at time:", psn
-                if self.stopping_conditions.supernova_detection.is_enabled():
+#        print "t=", self.model_time, end_time
+        if not self.stopping_conditions.supernova_detection.is_enabled():
+            evolve_a_success =  self.evolve_system(end_time)        
+        else:
+            new_end_time = min(end_time, self.model_time + min(self.particles.time_step))
+            while self.model_time<new_end_time:
+                old_particles = self.particles.copy()
+                evolve_a_success =  self.evolve_system(new_end_time)
+                psn = self.particles[numpy.logical_and(self.particles.stellar_type >= 13|units.stellar_type, self.particles.stellar_type <= 15|units.stellar_type)]
+                psn -= self.particles[numpy.logical_and(old_particles.stellar_type >= 13|units.stellar_type, old_particles.stellar_type <= 15|units.stellar_type)]
+    
+                if len(psn)>0:
+#                    print "Supernova at time:", psn
                     self.stopping_conditions.supernova_detection.set(psn)
                     break
-                # for p in psn:
-                    # print "kick=", p.natal_kick_velocity
-                    #p.velocity += p.natal_kick_velocity
-#                channel_copy_velocity_from_seba_to...
-                return evolve_a_success
-            new_end_time = min(end_time, self.model_time + min(self.particles.time_step))
+                new_end_time = min(end_time, self.model_time + min(self.particles.time_step))
 
             """
+            to be used if stopping condition is implemented in c
         old_particles = self.particles.copy()
         evolve_a_success =  self.evolve_system(end_time)
         if self.stopping_conditions.supernova_detection.is_set():
