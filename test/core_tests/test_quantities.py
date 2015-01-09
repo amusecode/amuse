@@ -412,7 +412,7 @@ class TestNumpyFunctionWithUnits(amusetest.TestCase):
 
     def test4(self):
         x = quantities.arange(0 | units.yr, 10 | units.yr, 1 | units.yr)
-        y = (2|units.km) * (x/ (2|units.yr))**2 + (20|units.km)
+        y = (2.0|units.km) * (x/ (2.0|units.yr))**2 + (20.0|units.km)
 
         fit = quantities.polyfit(x, y, 2)
 
