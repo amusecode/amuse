@@ -228,6 +228,7 @@ Most initial setup problems with the Distributed AMUSE code can be solved by che
     >>> nosetests -v test/codes_tests/test_*_implementation.py
 
 - Are the settings provided for each resource correct (username, amuse location, etc)
+- Have you set the correct mpiexec in ./configure? This setting is normally not used by AMUSE, so you may only now notice it is misconfigured
 
 In case this does not help, it is probably best to check the output for any errors. Normally worker output is discarded by most scripts. Use 'redirect=none' to see the output of the workers, a lot of errors show up in this output only. There is also a "debug" parameter in Distributed Amuse. If enabled, output for each pilot will be in a "distributed-amuse-logs" folder in the home of each remote machine used, and additional information is printed to the log from the local AMUSE script.
 
