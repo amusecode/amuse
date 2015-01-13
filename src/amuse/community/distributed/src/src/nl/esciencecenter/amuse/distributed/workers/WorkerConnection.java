@@ -166,6 +166,8 @@ public class WorkerConnection extends Thread {
             throw new Exception("timeout while starting worker");
         }
         
+        logger.debug("remaining time before deadline: " + result);
+        
         return result;
     }
     
@@ -181,11 +183,11 @@ public class WorkerConnection extends Thread {
             job.waitUntilRunning(queueTimeout * 1000);
 
             if (!job.isRunning()) {
-                throw new Exception("Worker not started within set time (" + startupTimeout + " seconds). Current state: "
+                throw new Exception("Worker in the the queue for more time than specified maximum (" + queueTimeout + " seconds). Current state: "
                         + job.getJobState());
             }
             
-            long deadline = System.currentTimeMillis() + startupTimeout * 1000;
+            long deadline = System.currentTimeMillis() + (startupTimeout * 1000);
 
             //read initial "hello" message with identifier
             ReadMessage helloMessage = receivePort.receive(remaining(deadline));

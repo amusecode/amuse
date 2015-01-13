@@ -189,7 +189,7 @@ public class WorkerJobRunner extends JobRunner {
                 }
             }
         }
-        throw new DistributedAmuseException("worker failed to connect to java pilot process within " + description.getStartupTimeout() + "seconds");
+        throw new DistributedAmuseException("worker failed to connect to java pilot process within " + description.getStartupTimeout() + " seconds");
     }
 
     /**

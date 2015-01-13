@@ -170,6 +170,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
                 return;
             } else {
                 try {
+                    logger.debug("Waiting " + remaining + " millis for job to start running");
                     wait(remaining);
                 } catch (InterruptedException e) {
                     return;

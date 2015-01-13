@@ -660,9 +660,18 @@ class DistributedAmuse(CommonCode):
             "get_worker_startup_timeout",
             "set_worker_startup_timeout",
             "worker_startup_timeout", 
-            "Time to wait until workers have started", 
+            "Time to wait until workers have started once a pilot has been aquired", 
             default_value = 60 | units.s
         )
+        
+        object.add_method_parameter(
+            "get_worker_queue_timeout",
+            "set_worker_queue_timeout",
+            "worker_queue_timeout", 
+            "Time to wait in the queue for a pilot to become available", 
+            default_value = 60 | units.s
+        )
+
 
     
     def define_particle_sets(self, object):
