@@ -24,24 +24,24 @@ def start_distributed_amuse():
     distributed_amuse.parameters.debug = True
     distributed_amuse.parameters.webinterface_port = 4556
     distributed_amuse.commit_parameters()
-    distributed_amuse.set_as_default_for_all_workers()
+    distributed_amuse.use_for_all_workers()
 
     #open the address of the webinterface in a brower window
     webbrowser.open(distributed_amuse.get_webinterface_url())
 
     #Add some resources
-    #resource = Resource()
-    #resource.name='DAS4-VU'
-    #resource.location="user@fs0.das4.cs.vu.nl"
-    #resource.scheduler_type="sge"
-    #resource.amuse_dir="/home/user/amuse"
-    #distributed_amuse.resources.add_resource(resource)
+    resource = Resource()
+    resource.name='DAS4-VU'
+    resource.location="niels@fs0.das4.cs.vu.nl"
+    resource.scheduler_type="sge"
+    resource.amuse_dir="/home/niels/amuse"
+    distributed_amuse.resources.add_resource(resource)
     print "Resources:"
     print distributed_amuse.resources
 
     #Claim nodes on the resources. In this example simply the "local" machine
     pilot = Pilot()
-    pilot.resource_name='local'
+    pilot.resource_name='DAS4-VU'
     pilot.node_count=1
     pilot.time= 2|units.hour
     pilot.slots_per_node=22
@@ -55,8 +55,8 @@ def start_distributed_amuse():
     distributed_amuse.wait_for_pilots()
 
     print "setting distributed as default channel"
-    distributed_amuse.set_as_default_for_all_workers()
-
+    distributed_amuse.use_for_all_workers()
+    
     return distributed_amuse
 
 def new_system_of_sun_and_earth():
