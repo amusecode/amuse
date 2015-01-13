@@ -640,7 +640,7 @@ class DistributedAmuse(CommonCode):
             "get_worker_startup_timeout",
             "set_worker_startup_timeout",
             "worker_startup_timeout", 
-            "Port for monitoring webinterface", 
+            "Time to wait until workers have started", 
             default_value = 60 | units.s
         )
 
@@ -664,21 +664,23 @@ class DistributedAmuse(CommonCode):
         object.mapping_from_name_to_set_definition['pilots'].particles_factory = Pilots
         
         #script jobs
-        object.define_set('script_jobs', 'job_id')
-        object.set_new('script_jobs', 'submit_script_job')
-        object.set_delete('script_jobs', 'delete_script_job')
-        object.add_getter('script_jobs', 'get_script_job_state')
-        object.add_getter('script_jobs', 'get_script_job_status', names = ('status',))
-        object.mapping_from_name_to_set_definition['script_jobs'].particles_factory = ScriptJobs
+        #FOR NOW, SCRIPT AND FUNCTION JOBS ARE DISABLED
+        #object.define_set('script_jobs', 'job_id')
+        #object.set_new('script_jobs', 'submit_script_job')
+        #object.set_delete('script_jobs', 'delete_script_job')
+        #object.add_getter('script_jobs', 'get_script_job_state')
+        #object.add_getter('script_jobs', 'get_script_job_status', names = ('status',))
+        #object.mapping_from_name_to_set_definition['script_jobs'].particles_factory = ScriptJobs
 
         
         #function jobs
-        object.define_set('function_jobs', 'job_id')
-        object.set_new('function_jobs', 'submit_function_job')
-        object.set_delete('function_jobs', 'delete_function_job')
-        object.add_getter('function_jobs', 'get_function_job_state')
-        object.add_getter('function_jobs', 'get_function_job_status')
-        object.mapping_from_name_to_set_definition['function_jobs'].particles_factory = FunctionJobs
+        #FOR NOW, SCRIPT AND FUNCTION JOBS ARE DISABLED
+        #object.define_set('function_jobs', 'job_id')
+        #object.set_new('function_jobs', 'submit_function_job')
+        #object.set_delete('function_jobs', 'delete_function_job')
+        #object.add_getter('function_jobs', 'get_function_job_state')
+        #object.add_getter('function_jobs', 'get_function_job_status')
+        #object.mapping_from_name_to_set_definition['function_jobs'].particles_factory = FunctionJobs
         
         #workers
         object.define_set('_workers', 'worker_id')
