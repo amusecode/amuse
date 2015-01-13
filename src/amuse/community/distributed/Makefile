@@ -34,8 +34,11 @@ java_check:
 ifeq ($(JAVA_ENABLED),no)
 	$(error "Java support not configured in AMUSE")
 endif
-ifeq (,$(findstring $(JAVA_VERSION), 1.7))
-	$(error "Java 1.7 required for Distributed Amuse, but AMUSE configured with Java $(JAVA_VERSION)")
+ifeq (1.5,$(findstring $(JAVA_VERSION), 1.5))
+	$(error "Java 1.7 or higher required for Distributed Amuse, but AMUSE configured with Java $(JAVA_VERSION)")
+endif
+ifeq (1.6,$(findstring $(JAVA_VERSION), 1.6))
+	$(error "Java 1.7 or higher required for Distributed Amuse, but AMUSE configured with Java $(JAVA_VERSION)")
 endif
 
 update:
