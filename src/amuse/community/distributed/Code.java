@@ -56,6 +56,7 @@ public class Code implements CodeInterface {
     private boolean startHubs = true;
     private int webinterfacePort = 0;
     private int workerStartupTimeout = 60;
+    private int workerQueueTimeout = 60;
 
     private final UUID id;
 
@@ -88,7 +89,7 @@ public class Code implements CodeInterface {
         if (distributedAmuse == null) {
             try {
                 distributedAmuse = new DistributedAmuse(id, codeDir, amuseRootDir, webinterfacePort, debug, startHubs,
-                        workerStartupTimeout);
+                        workerQueueTimeout, workerStartupTimeout);
             } catch (DistributedAmuseException e) {
                 logger.error("Exception while initializing code", e);
                 return -10;
@@ -152,6 +153,22 @@ public class Code implements CodeInterface {
         this.workerStartupTimeout = worker_startup_timeout;
         return 0;
     }
+    
+    @Override
+    public int get_worker_queue_timeout(int[] result) {
+        logger.debug("Returning worker port.");
+
+        result[0] = this.workerQueueTimeout;
+
+        return 0;
+    }
+
+    @Override
+    public int set_worker_queue_timeout(int worker_queue_timeout) {
+        this.workerQueueTimeout = worker_queue_timeout;
+        return 0;
+    }
+
 
     @Override
     public int get_webinterface_port(int[] result) {

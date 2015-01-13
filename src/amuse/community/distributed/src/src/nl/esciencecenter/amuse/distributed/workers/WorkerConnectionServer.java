@@ -57,10 +57,13 @@ public class WorkerConnectionServer extends Thread {
 
     private final JobSet scheduler;
 
+    private final int queueTimeout;
+    
     private final int startupTimeout;
-
-    public WorkerConnectionServer(JobSet scheduler, int startupTimeout) throws DistributedAmuseException {
+    
+    public WorkerConnectionServer(JobSet scheduler, int queueTimeout, int startupTimeout) throws DistributedAmuseException {
         this.scheduler = scheduler;
+        this.queueTimeout = queueTimeout;
         this.startupTimeout = startupTimeout;
         this.ibis = scheduler.getIbis();
 
@@ -115,7 +118,7 @@ public class WorkerConnectionServer extends Thread {
                 String receivedString = new String(magic.array(), "UTF-8");
                 if (receivedString.equalsIgnoreCase(WORKER_TYPE_STRING)) {
                     logger.debug("handling new worker connection");
-                    new WorkerConnection(socket, ibis, scheduler, startupTimeout);
+                    new WorkerConnection(socket, ibis, scheduler, queueTimeout, startupTimeout);
                 } else if (receivedString.equalsIgnoreCase(OUTPUT_TYPE_STRING)) {
                     logger.debug("handling new output connection");
                     outputManager.newOutputConnection(socket);

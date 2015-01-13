@@ -58,7 +58,6 @@ public class WorkerJobRunner extends JobRunner {
 
     //how long until we give up on a worker initializing?
     private static final int ACCEPT_TIMEOUT = 100; // ms
-    private static final int ACCEPT_TRIES = 50;
 
     static final String[] ENVIRONMENT_BLACKLIST = { "JOB_ID", "PE_", "PRUN_", "JOB_NAME", "JOB_SCRIPT", "OMPI_", "SLURM",
             "SBATCH", "SRUN", "HYDRA" };
@@ -164,7 +163,11 @@ public class WorkerJobRunner extends JobRunner {
         serverSocket.configureBlocking(true);
         serverSocket.socket().setSoTimeout(ACCEPT_TIMEOUT);
 
-        for (int i = 0; i < ACCEPT_TRIES; i++) {
+        int accept_tries = (description.getStartupTimeout() * 1000) / ACCEPT_TIMEOUT;
+        
+        logger.debug("Will try to accept connection from worker " + accept_tries + " times");
+        
+        for (int i = 0; i < accept_tries; i++) {
             try {
 
                 //will timeout if this takes too long.
@@ -186,7 +189,7 @@ public class WorkerJobRunner extends JobRunner {
                 }
             }
         }
-        throw new DistributedAmuseException("worker failed to connect to java pilot process within time");
+        throw new DistributedAmuseException("worker failed to connect to java pilot process within " + description.getStartupTimeout() + "seconds");
     }
 
     /**

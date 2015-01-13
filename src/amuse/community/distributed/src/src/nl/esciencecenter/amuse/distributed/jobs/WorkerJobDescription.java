@@ -29,21 +29,24 @@ public class WorkerJobDescription extends AmuseJobDescription implements Seriali
 
     private final String executable;
     private final String workerDir;
-    
+
     private final int nrOfWorkers;
     private final int nrOfThreads;
     private final boolean dynamicPythonCode;
 
-    public WorkerJobDescription(String stdoutFile, String stderrFile, String nodeLabel, String executable, String workerDir, int nrOfWorkers,
-            int nrOfThreads, boolean dynamicPythonCode) {
+    private final int startupTimeout;
+
+    public WorkerJobDescription(String stdoutFile, String stderrFile, String nodeLabel, String executable, String workerDir,
+            int nrOfWorkers, int nrOfThreads, boolean dynamicPythonCode, int startupTimeout) {
         super(stdoutFile, stderrFile, nodeLabel);
         this.executable = executable;
         this.workerDir = workerDir;
         this.nrOfWorkers = nrOfWorkers;
         this.nrOfThreads = nrOfThreads;
         this.dynamicPythonCode = dynamicPythonCode;
+        this.startupTimeout = startupTimeout;
     }
-    
+
     public boolean isDynamicPythonCode() {
         return dynamicPythonCode;
     }
@@ -54,7 +57,7 @@ public class WorkerJobDescription extends AmuseJobDescription implements Seriali
     public String getExecutable() {
         return executable;
     }
-    
+
     public String getWorkerDir() {
         return workerDir;
     }
@@ -66,10 +69,14 @@ public class WorkerJobDescription extends AmuseJobDescription implements Seriali
     public int getNrOfThreads() {
         return nrOfThreads;
     }
-    
+
     @Override
     public int getNrOfSlots() {
         return getNrOfWorkers();
+    }
+
+    public int getStartupTimeout() {
+        return startupTimeout;
     }
 
     @Override
@@ -77,12 +84,15 @@ public class WorkerJobDescription extends AmuseJobDescription implements Seriali
         return "worker";
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
-        return "WorkerJobDescription [executable=" + executable + ", nrOfWorkers=" + nrOfWorkers + ", nrOfThreads=" + nrOfThreads
-                + ", dynamicPythonCode=" + dynamicPythonCode + ", id=" + id + ", stdoutFile=" + stdoutFile + ", stderrFile="
-                + stderrFile + ", label=" + label + "]";
+        return "WorkerJobDescription [executable=" + executable + ", workerDir=" + workerDir + ", nrOfWorkers=" + nrOfWorkers
+                + ", nrOfThreads=" + nrOfThreads + ", dynamicPythonCode=" + dynamicPythonCode + ", startupTimeout="
+                + startupTimeout + ", id=" + id + ", stdoutFile=" + stdoutFile + ", stderrFile=" + stderrFile + ", label="
+                + label + "]";
     }
-  
 
 }

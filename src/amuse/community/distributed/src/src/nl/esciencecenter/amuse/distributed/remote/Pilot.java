@@ -235,7 +235,7 @@ public class Pilot implements MessageUpcall, ReceivePortConnectUpcall {
             //send reply
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE);
 
-            sendPort.connect(replyPort);
+            sendPort.connect(replyPort, 60000, true);
 
             WriteMessage reply = sendPort.newMessage();
 

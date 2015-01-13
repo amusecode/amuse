@@ -90,7 +90,7 @@ public class DistributedAmuse {
     }
 
     public DistributedAmuse(UUID id, String codeDir, String amuseRootDir, int webInterfacePort, boolean debug, boolean startHubs,
-            int workerStartupTimeout) throws DistributedAmuseException {
+            int workerQueueTimeout, int workerStartupTimeout) throws DistributedAmuseException {
         this.debug = debug;
         initializeLogger(debug);
 
@@ -108,7 +108,7 @@ public class DistributedAmuse {
 
         jobs = new JobSet(resources.getIplServerAddress(), pilots);
 
-        workerConnectionServer = new WorkerConnectionServer(jobs, workerStartupTimeout);
+        workerConnectionServer = new WorkerConnectionServer(jobs, workerQueueTimeout, workerStartupTimeout);
 
         new Lighthouse(jobs.getIbis(), pilots);
 

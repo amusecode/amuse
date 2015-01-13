@@ -117,7 +117,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     @legacy_function
     def get_worker_startup_timeout():
         """
-        Returns the port the webinterface is running on
+        Returns the time to wait before the worker is started on the remote note onc e a pilot to run on is acquired
         """
         function = LegacyFunctionSpecification()
         function.addParameter("worker_startup_timeout", dtype='int32', unit=units.s, direction=function.OUT)
@@ -127,10 +127,30 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
     @legacy_function
     def set_worker_startup_timeout():
         """
-        Set the port the webinterface is running on
+        Set the time to wait before the worker is started on the remote note onc e a pilot to run on is acquired
         """
         function = LegacyFunctionSpecification()
         function.addParameter("worker_startup_timeout", dtype='int32', unit=units.s, direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_worker_queue_timeout():
+        """
+	Returns the amount of time to wait until a slot becomes available to run a worker on.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("worker_queue_timeout", dtype='int32', unit=units.s, direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_worker_queue_timeout():
+        """
+	Set the amount of time to wait until a slot becomes available to run a worker on.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter("worker_queue_timeout", dtype='int32', unit=units.s, direction=function.IN)
         function.result_type = 'int32'
         return function
     

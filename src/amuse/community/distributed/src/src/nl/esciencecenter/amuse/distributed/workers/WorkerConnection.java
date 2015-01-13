@@ -26,6 +26,7 @@ import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
 import java.nio.channels.SocketChannel;
+import java.util.concurrent.TimeoutException;
 
 import nl.esciencecenter.amuse.distributed.AmuseMessage;
 import nl.esciencecenter.amuse.distributed.DistributedAmuse;
@@ -54,8 +55,6 @@ public class WorkerConnection extends Thread {
 
     private static final Logger PROFILE_LOGGER = LoggerFactory.getLogger("amuse.profile");
 
-    public static final int CONNECT_TIMEOUT = 60000;
-
     private final SocketChannel socket;
 
     private final int id;
@@ -70,6 +69,8 @@ public class WorkerConnection extends Thread {
 
     private final AmuseJob job;
 
+    private final int queueTimeout;
+    
     private final int startupTimeout;
 
     /*
@@ -77,8 +78,9 @@ public class WorkerConnection extends Thread {
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    WorkerConnection(SocketChannel socket, Ibis ibis, JobSet jobSet, int startupTimeout) throws Exception {
+    WorkerConnection(SocketChannel socket, Ibis ibis, JobSet jobSet, int queueTimeout, int startupTimeout) throws Exception {
         this.socket = socket;
+        this.queueTimeout = queueTimeout;
         this.startupTimeout = startupTimeout;
 
         if (logger.isDebugEnabled()) {
@@ -127,7 +129,7 @@ public class WorkerConnection extends Thread {
         boolean dynamicPythonCode = initRequest.getBoolean(0);
 
         //description of the worker, used for both the scheduler and the code proxy to start the worker properly
-        workerDescription = new WorkerJobDescription(stdoutFile, stderrFile, label, executable, workerDir, nrOfWorkers, nrOfThreads, dynamicPythonCode);
+        workerDescription = new WorkerJobDescription(stdoutFile, stderrFile, label, executable, workerDir, nrOfWorkers, nrOfThreads, dynamicPythonCode, startupTimeout);
 
         // initialize ibis ports
         receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, Integer.toString(id));
@@ -156,6 +158,17 @@ public class WorkerConnection extends Thread {
                 remoteExecutionTime);
     }
 
+    static long remaining(long deadline) throws Exception {
+        long result = deadline - System.currentTimeMillis();
+        
+        //give each step at least a fighting change.
+        if (result <= 0) {
+            throw new Exception("timeout while starting worker");
+        }
+        
+        return result;
+    }
+    
     public void run() {
         AmuseMessage request = new AmuseMessage();
         AmuseMessage result = new AmuseMessage();
@@ -165,15 +178,17 @@ public class WorkerConnection extends Thread {
         try {
 
             // Wait until job is running. Will not wait for more than time requested
-            job.waitUntilRunning(startupTimeout * 1000);
+            job.waitUntilRunning(queueTimeout * 1000);
 
             if (!job.isRunning()) {
                 throw new Exception("Worker not started within set time (" + startupTimeout + " seconds). Current state: "
                         + job.getJobState());
             }
+            
+            long deadline = System.currentTimeMillis() + startupTimeout * 1000;
 
             //read initial "hello" message with identifier
-            ReadMessage helloMessage = receivePort.receive(CONNECT_TIMEOUT);
+            ReadMessage helloMessage = receivePort.receive(remaining(deadline));
 
             ReceivePortIdentifier remotePort = (ReceivePortIdentifier) helloMessage.readObject();
 
@@ -181,7 +196,7 @@ public class WorkerConnection extends Thread {
 
             helloMessage.finish();
 
-            sendPort.connect(remotePort, CONNECT_TIMEOUT, true);
+            sendPort.connect(remotePort, remaining(deadline), true);
 
             //send a reply
             AmuseMessage initReply = new AmuseMessage(initRequest.getCallID(), initRequest.getFunctionID(),
