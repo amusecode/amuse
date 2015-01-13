@@ -256,7 +256,6 @@ class HDF5LinkedAttribute(HDF5Attribute):
         kinds = self.kind_dataset[:][indices]
         references = self.ref_dataset[:][indices]
         keys = self.keys_dataset[:][indices]
-        
         shape = kinds.shape
         if self.indices_dataset:
             grid_indices = self.indices_dataset[:][indices]
@@ -282,6 +281,7 @@ class HDF5LinkedAttribute(HDF5Attribute):
             return None
         elif kind == 1:
             referenced_group = self.loader.derefence(reference)
+            
             mapping_from_groupid_to_set = self.loader.mapping_from_groupid_to_set
         
             if not referenced_group.id in mapping_from_groupid_to_set:
@@ -568,6 +568,7 @@ class UneresolvedItemInArrayLink(object):
     def is_resolved(self):
         return self.resolved
         
+        
 class UneresolvedAttributeLink(object):
 
     def __init__(self, group, name, linked_set):
@@ -682,6 +683,10 @@ class StoreHDF(object):
                 links_to_resolve
             )
         while len(links_to_resolve) > 0:
+            print mapping_from_setid_to_group
+            for x in links_to_resolve:
+                print x
+            print '-'*80
             sets_to_store, links_to_resolve = self.resolve_links(
                 mapping_from_setid_to_group,
                 links_to_resolve
@@ -699,7 +704,7 @@ class StoreHDF(object):
             
         group = self.new_version(parent)
         group.attrs["type"] = 'particles'
-        self.mapping_from_groupid_to_set[group.id] = particles._original_set()
+        self.mapping_from_groupid_to_set[group.id] = particles
         
         
         group.attrs["number_of_particles"] = len(particles)
@@ -711,7 +716,7 @@ class StoreHDF(object):
         self.store_collection_attributes(particles, group, extra_attributes, links)
         self.store_values(particles, group, links)
             
-        mapping_from_setid_to_group[id(particles._original_set())] = group
+        mapping_from_setid_to_group[id(particles)] = group
         
         self.hdf5file.flush()
         
@@ -729,7 +734,7 @@ class StoreHDF(object):
         self.store_collection_attributes(grid, group, extra_attributes, links)
         self.store_values(grid, group, links)
         
-        mapping_from_setid_to_group[id(grid._original_set())] = group
+        mapping_from_setid_to_group[id(grid)] = group
         
         self.hdf5file.flush()
         
