@@ -23,7 +23,7 @@ def start_distributed_amuse():
     distributed_amuse = DistributedAmuse(redirection='none')
     distributed_amuse.parameters.debug = True
     distributed_amuse.parameters.webinterface_port = 4556
-    distributed_amuse.commit_parameters()
+
     distributed_amuse.use_for_all_workers()
 
     #open the address of the webinterface in a brower window
