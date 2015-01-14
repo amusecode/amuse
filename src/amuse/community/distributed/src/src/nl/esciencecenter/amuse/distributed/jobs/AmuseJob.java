@@ -50,6 +50,8 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
 
     //how long we keep jobs which have finished.
     public static int TIMEOUT = 60000; //ms
+    
+    public static int RPC_TIMEOUT = 60000; //ms
 
     private static final Logger logger = LoggerFactory.getLogger(AmuseJob.class);
 
@@ -242,7 +244,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
             ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
 
-            sendPort.connect(master.getIbisIdentifier(), "pilot");
+            sendPort.connect(master.getIbisIdentifier(), "pilot", RPC_TIMEOUT, true);
 
             WriteMessage writeMessage = sendPort.newMessage();
 
@@ -263,7 +265,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
             logger.debug("receiving reply from pilot");
 
             //FIXME: we should use some kind of rpc mechanism
-            ReadMessage readMessage = receivePort.receive(60000);
+            ReadMessage readMessage = receivePort.receive(RPC_TIMEOUT);
 
             Exception error = (Exception) readMessage.readObject();
 
@@ -309,7 +311,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
 
             SendPort sendPort = ibis.createSendPort(DistributedAmuse.MANY_TO_ONE_PORT_TYPE);
 
-            sendPort.connect(master.getIbisIdentifier(), Pilot.PORT_NAME);
+            sendPort.connect(master.getIbisIdentifier(), Pilot.PORT_NAME, RPC_TIMEOUT, true);
 
             WriteMessage writeMessage = sendPort.newMessage();
 

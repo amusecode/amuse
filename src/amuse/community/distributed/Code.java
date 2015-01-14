@@ -141,7 +141,7 @@ public class Code implements CodeInterface {
 
     @Override
     public int get_worker_startup_timeout(int[] result) {
-        logger.debug("Returning worker port.");
+        logger.debug("Returning worker startup timeout.");
 
         result[0] = this.workerStartupTimeout;
 
