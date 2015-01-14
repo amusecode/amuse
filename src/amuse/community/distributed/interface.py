@@ -621,6 +621,8 @@ class DistributedAmuse(CommonCode):
         object.add_method('RUN', 'get_worker_status')
         object.add_method('RUN', 'use_for_distributed_workers')
         object.add_method('RUN', 'use_for_all_workers')
+        object.add_method('RUN', 'get_worker_port')
+
     
     def define_parameters(self, object):
               
