@@ -10,7 +10,7 @@ Installation
 
 Deploying workers one remote machines requires a full installation of AMUSE on each machine. For each code "sockets" support needs to be present. This is done by default, and should be available for all codes. Note that older versions of Fortran lack the necessary features to support sockets workers.
 
-On each machine, the distributed code also needs to be build. Distributed AMUSE requires a Java Development Kit (JDK), preferably Oracle Java version 7. The ``configure`` script tries to locate the JDK, but you may need to specify it by hand. For details, see:
+On each machine, the distributed code also needs to be build. Distributed AMUSE requires a Java Development Kit (JDK), preferably Oracle Java version 7 or 8. The ``configure`` script tries to locate the JDK, but you may need to specify it by hand. For details, see:
 
 .. code-block:: sh
 
@@ -73,6 +73,8 @@ webinterface_port
 	Port on which a simple webinterface is available for monitoring. Defaults to "0", for a port determined automatically.
 start_hubs
 	To facilitate communication across different networks (with for instance firewalls), as hub is by default started on each resource. This can be turned off if needed, for instance if all resources are within the same network.
+worker_queue_timeout
+	The user is responsible for making sure enough slots are available to run a worker. If not, it will end up in the queue. The time the worker will wait before giving up can be set using this parameter.
 worker_startup_timeout
 	The distributed code starts AMUSE workers running the actual codes. This can take a while on some machines. If needed, this parameter can be used to increase the time waited.
 	
@@ -205,6 +207,39 @@ distributed_instance
 dynamic_python_code
 	Boolean option stating if this code is a dynamic python code. If so, all .py files in the worker directory will be copied to the remote machine before starting the code.
 
+
+Labels
+------
+
+By default workers are started on any available pilot with enough slots available. However, sometimes you would like to have more control over which worker is started where, for instance if special hardware is present on some machines.
+
+The concept of labels can be used within Distributed AMUSE to get this functionality. If a label is attached to a worker (one of the parameters when starting a worker, see above), only pilots with exactly the same label (specified when the pilot is started) are considered candidates for running the worker. The name of labels is completely up to the user.
+
+For instance, say a simulation uses a number of workers running on a CPU, and a single GPU worker. The following code will put all the cpu workers on one machine, and the single gpu worker on another.
+
+    >>> cpu_pilot = Pilot()
+    >>> cpu_pilot.resource_name='machine1'
+    >>> cpu_pilot.node_count=1
+    >>> cpu_pilot.time= 2|units.hour
+    >>> cpu_pilot.slots_per_node=30
+    >>> cpu_pilot.label='CPU'
+    >>> instance.pilots.add_pilot(cpu_pilot)
+    >>>
+    >>> gpu_pilot = Pilot()
+    >>> gpu_pilot.resource_name='machine2'
+    >>> gpu_pilot.node_count=1
+    >>> gpu_pilot.time= 2|units.hour
+    >>> gpu_pilot.slots_per_node=1
+    >>> gpu_pilot.label='GPU'
+    >>> instance.pilots.add_pilot(gpu_pilot)
+    >>>
+    >>> ...
+    >>> worker1 = Hermite(label='CPU')
+    >>> worker2 = Bonsai(label='GPU')
+    >>>
+    >>> #will not start due to a lack of slots.
+    >>> worker3 = Bonsai(label='GPU')
+ 
 
 Examples
 --------
