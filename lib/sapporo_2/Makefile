@@ -32,11 +32,10 @@ all:$(CODEDIR)/lib/Makefile
 	cp $(CODEDIR)/lib/libsapporo.a .
 
 ifdef DOWNLOAD_CODES
-$(CODEDIR)/makefile:
-	$(CODEDIR)/lib/Makefile:download.py
-		$(PYTHON) download.py
+$(CODEDIR)/lib/Makefile:download.py
+	$(PYTHON) download.py
 else
-$(CODEDIR)/makefile:
+$(CODEDIR)/lib/Makefile:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
