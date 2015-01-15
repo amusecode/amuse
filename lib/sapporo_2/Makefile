@@ -30,9 +30,30 @@ ifeq (yes,$(CUDA_ENABLED))
 all:$(CODEDIR)/lib/Makefile
 	make -C $(CODEDIR)/lib
 	cp $(CODEDIR)/lib/libsapporo.a .
-	
-$(CODEDIR)/lib/Makefile:download.py
-	$(PYTHON) download.py
+
+ifdef DOWNLOAD_CODES
+$(CODEDIR)/makefile:
+	$(CODEDIR)/lib/Makefile:download.py
+		$(PYTHON) download.py
+else
+$(CODEDIR)/makefile:
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "DOWNLOAD_CODES is not set. Sapporo 2 will not be downloaded and build."
+	@echo "If you do want Sapporo 2, set DOWNLOAD_CODES to 1."
+	@echo "bash> export DOWNLOAD_CODES=1"
+	@echo "csh> setenv DOWNLOAD_CODES 1"
+	@echo ""
+endif
+else
+all:
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "CUDA support is not enabled, sapporo 2 will not be build"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
 endif
 
 clean:
