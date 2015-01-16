@@ -231,11 +231,11 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
     @Override
     public void run() {
         try {
-            PilotManager master = target;
+            PilotManager pilot = target;
 
             logger.debug("sending start command for {} to pilot", this);
 
-            if (!master.isRunning()) {
+            if (!pilot.isRunning()) {
                 setError(new DistributedAmuseException("Pilot no longer running, cannot start job"));
                 return;
             }
@@ -244,7 +244,7 @@ public abstract class AmuseJob extends Thread implements MessageUpcall {
             ReceivePort receivePort = ibis.createReceivePort(DistributedAmuse.ONE_TO_ONE_PORT_TYPE, null);
             receivePort.enableConnections();
 
-            sendPort.connect(master.getIbisIdentifier(), "pilot", RPC_TIMEOUT, true);
+            sendPort.connect(pilot.getIbisIdentifier(), "pilot", RPC_TIMEOUT, true);
 
             WriteMessage writeMessage = sendPort.newMessage();
 

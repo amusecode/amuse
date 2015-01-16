@@ -55,19 +55,16 @@ public class Watchdog implements RegistryEventHandler {
         }
     }
 
-    @Override
-    public synchronized void gotSignal(String signal, IbisIdentifier source) {
-        logger.debug("Got signal: " + signal + " from " + source);
+    public synchronized void gotPing() {
+        logger.debug("Got ping from master");
 
-        if (signal.equals("ping")) {
-            if (logger.isDebugEnabled()) {
-                long remaining = deadline - System.currentTimeMillis();
-                logger.debug("Resetting deadline. There were {} ms remaining before the watchdog would have expired.", remaining);
-            }
-
-            //update deadline
-            deadline = System.currentTimeMillis() + WATCHDOG_TIMEOUT;
+        if (logger.isDebugEnabled()) {
+            long remaining = deadline - System.currentTimeMillis();
+            logger.debug("Resetting deadline. There were {} ms remaining before the watchdog would have expired.", remaining);
         }
+
+        //update deadline
+        deadline = System.currentTimeMillis() + WATCHDOG_TIMEOUT;
     }
 
     @Override
@@ -99,6 +96,12 @@ public class Watchdog implements RegistryEventHandler {
         terminated = true;
         notifyAll();
     }
+    
+    @Override
+    public void gotSignal(String arg0, IbisIdentifier arg1) {
+        //IGNORE
+    }
+
 
     /**
      * Waits until the pool is terminated, or the watchdog timer expires.
@@ -135,5 +138,6 @@ public class Watchdog implements RegistryEventHandler {
 
         return terminated;
     }
+
 
 }

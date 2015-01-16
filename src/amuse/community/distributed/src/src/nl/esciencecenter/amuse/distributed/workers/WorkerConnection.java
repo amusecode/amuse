@@ -67,6 +67,8 @@ public class WorkerConnection extends Thread {
 
     private final WorkerJobDescription workerDescription;
 
+    private final JobSet jobSet;
+    
     private final AmuseJob job;
 
     private final int queueTimeout;
@@ -80,6 +82,7 @@ public class WorkerConnection extends Thread {
      */
     WorkerConnection(SocketChannel socket, Ibis ibis, JobSet jobSet, int queueTimeout, int startupTimeout) throws Exception {
         this.socket = socket;
+        this.jobSet = jobSet;
         this.queueTimeout = queueTimeout;
         this.startupTimeout = startupTimeout;
 
@@ -336,9 +339,15 @@ public class WorkerConnection extends Thread {
         }
         try {
             job.cancel();
-        } catch (Exception e2) {
-            logger.error("Error cancelling job", e2);
+        } catch (Exception e) {
+            logger.error("Error cancelling job", e);
         }
+        try {
+            jobSet.removeJob(job.getJobID());
+        } catch (Exception e) {
+            logger.error("Error removing job from job set", e);
+        }
+
     }
 
     @Override

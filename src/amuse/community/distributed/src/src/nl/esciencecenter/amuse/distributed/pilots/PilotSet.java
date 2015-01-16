@@ -52,8 +52,7 @@ public class PilotSet {
 
     private final boolean debug;
 
-    public PilotSet(Xenon xenon, ResourceSet resourceManager, UUID amuseID, boolean debug)
-            throws DistributedAmuseException {
+    public PilotSet(Xenon xenon, ResourceSet resourceManager, UUID amuseID, boolean debug) throws DistributedAmuseException {
         this.xenon = xenon;
         this.resourceManager = resourceManager;
         this.amuseID = amuseID;
@@ -168,6 +167,10 @@ public class PilotSet {
 
     public PilotStatusMonitor getStatusMonitor() {
         return statusMonitor;
+    }
+
+    public synchronized int getNrOfPilots() {
+        return pilots.size();
     }
 
     public PilotManager getSuitablePilot(AmuseJob job) {
