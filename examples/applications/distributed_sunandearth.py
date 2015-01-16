@@ -30,18 +30,19 @@ def start_distributed_amuse():
     webbrowser.open(distributed_amuse.get_webinterface_url())
 
     #Add some resources
-    resource = Resource()
-    resource.name='DAS4-VU'
-    resource.location="niels@fs0.das4.cs.vu.nl"
-    resource.scheduler_type="sge"
-    resource.amuse_dir="/home/niels/amuse"
-    distributed_amuse.resources.add_resource(resource)
+    #resource = Resource()
+    #resource.name='some.machine'
+    #resource.location="user@fs0.das4.cs.vu.nl"
+    #resource.scheduler_type="sge"
+    #resource.amuse_dir="/home/user/amuse"
+    #distributed_amuse.resources.add_resource(resource)
+
     print "Resources:"
     print distributed_amuse.resources
 
     #Claim nodes on the resources. In this example simply the "local" machine
     pilot = Pilot()
-    pilot.resource_name='DAS4-VU'
+    pilot.resource_name='local'
     pilot.node_count=1
     pilot.time= 2|units.hour
     pilot.slots_per_node=22
