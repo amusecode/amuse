@@ -626,9 +626,13 @@ void super_giant::create_remnant(const real mass, const real mass_tot, const rea
     real mc_bagb = base_AGB_core_mass(mass, z);
     real mc_SN = maximum_AGB_core_mass(mass, z);
 
+    // stars on the tpagb are evaluated until the envelope is gone or Mch is reached
+    // sensitive to numerical errors
+    real tiny_number = 1.e-10;
+
     // if mc_core equals get_total_mass()
     // core mass reaches outside of star, no envelope anymore
-    if (mc_core < cnsts.parameters(Chandrasekar_mass)){
+    if (mc_core < cnsts.parameters(Chandrasekar_mass)-tiny_number){
         if (mc_bagb < 1.6)
             type = Carbon_Dwarf;
         else if (mc_bagb <= 2.25)
