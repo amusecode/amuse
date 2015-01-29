@@ -354,6 +354,65 @@ class TestGrids(amusetest.TestCase):
             expected_position = grid[xv[i], yv[i], zv[i]].position
             self.assertEquals(cell.position, expected_position)
             i += 1
+
+    def test27(self):
+        grid = datamodel.Grid.create((3,3), [1.0, 1.0] | units.m)
+        subgrid1=grid[0:1,0:2]
+        subgrid2=grid[0:1,0:2]
+        subgrid3=grid[0:2,0:3][0:1,0:2]
+        subgrid4=grid[0:1,0:3]
+                
+        self.assertTrue(subgrid1==subgrid2)
+        self.assertTrue(subgrid1==subgrid3)
+        self.assertTrue(subgrid2==subgrid3)
+        self.assertFalse(subgrid1==subgrid4)
+        self.assertFalse(subgrid2==subgrid4)
+        self.assertFalse(subgrid3==subgrid4)
+
+    def test28(self):
+        grid = datamodel.Grid(200,400)
+        subgrid1=grid[1:-1,1:-1]
+        subgrid2=subgrid1[3:5,1:399]
+        self.assertEqual(subgrid2.shape,(2,397))
+
+    def test29(self):
+        grid = datamodel.Grid(200)
+        subgrid1=grid[1:-1]
+        subgrid2=subgrid1[3:5]
+        self.assertEqual(subgrid2.shape,(2,))
+
+    def test30(self):
+        grid = datamodel.Grid(200)
+        subgrid1=grid[1:199]
+        subgrid2=subgrid1[3:5]
+        self.assertEqual(subgrid2.shape,(2,))
+
+    def test31(self):
+        grid = datamodel.Grid(20,20,20)
+        a=numpy.zeros((20,20,20))
+        self.assertEqual(a[1].shape,grid[1].shape) 
+        self.assertEqual(a[1,2].shape,grid[1,2].shape) 
+        self.assertEqual(a[1:5].shape,grid[1:5].shape) 
+        self.assertEqual(a[2,1:5].shape,grid[2,1:5].shape)
+        self.assertEqual(a[2,...].shape,grid[2,...].shape)       
+        self.assertEqual(a[...,3,:].shape,grid[...,3,:].shape)       
+        self.assertEqual(a[...,3:5,:].shape,grid[...,3:5,:].shape)       
+        self.assertEqual(a[...,3:5,:].shape,grid[...,3:5,:].shape)
+        self.assertEqual(a[::,::2].shape,grid[::,::2].shape)        
+
+    def test32(self):
+        grid = datamodel.Grid(200)
+        grid.mass=numpy.arange(200)
+
+        self.assertEquals(grid[1].mass,grid.mass[1]) 
+        self.assertEquals(grid[1:-1].mass,grid.mass[1:-1])
+        self.assertEquals(grid[-1:1:-1].mass,grid.mass[-1:1:-1])
+        self.assertEquals(grid[-1:1:-1][1:-1].mass,grid.mass[-1:1:-1][1:-1])
+        self.assertEquals(grid[-1:1:-1][-1:1].mass,grid.mass[-1:1:-1][-1:1])
+        self.assertEquals(grid[-1:1:-1][-1:1:-3].mass,grid.mass[-1:1:-1][-1:1:-3])
+        self.assertEquals(grid[300:1:-2][-1:5:-3].mass,grid.mass[300:1:-2][-1:5:-3])
+        
+                
             
 class TestGridAttributes(amusetest.TestCase):
     
@@ -454,7 +513,45 @@ class TestGridAttributes(amusetest.TestCase):
         
         grid[1][2][3].position += [1,2,3] |units.m
         self.assertAlmostRelativeEquals(grid[1][2][3].position, [8,7,6] |units.m)
-        
+
+    def test8(self):
+        grid = datamodel.Grid.create((5,4), [1.0, 1.0] | units.m)
+        self.assertAlmostRelativeEquals(grid.get_minimum_position(),  ([0.0, 0.0] | units.m) )
+        self.assertAlmostRelativeEquals(grid.get_maximum_position(),  [1.0, 1.0] | units.m)
+        self.assertAlmostRelativeEquals(grid.get_volume(),  1.0 | units.m ** 2)
+        self.assertTrue(grid.contains([0.5,0.5] | units.m))
+
+    def test9(self):
+        grid = datamodel.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertEquals((0,0,0),grid.get_minimum_index())
+        self.assertEquals((4,3,1),grid.get_maximum_index())
+
+    def test10(self):
+        grid1 = datamodel.Grid.create((5,4), [1.0, 1.0] | units.m)
+        grid2 = datamodel.Grid.create((5,4), [.1, .1] | units.m)
+        grid3 = datamodel.Grid.create((5,4), [.1, .1] | units.m,offset=[0.5,0.6] | units.m)
+        self.assertTrue(grid1.overlaps(grid2))
+        self.assertTrue(grid1.overlaps(grid3))
+        self.assertFalse(grid2.overlaps(grid3))
+        self.assertTrue(grid2.overlaps(grid1))
+        self.assertTrue(grid3.overlaps(grid1))
+        self.assertFalse(grid3.overlaps(grid2))
+
+    def test11(self):
+        grid1 = datamodel.Grid.create((4,4), [1.0, 1.0] | units.m)
+        grid2 = datamodel.Grid.create((4,4), [1.0, 1.0] | units.m,offset=[-0.5,-0.5] | units.m)
+        self.assertTrue(grid1.overlaps(grid2))
+        overlap=grid1.get_overlap_with(grid2)
+        self.assertEquals(overlap.position,grid1[0:3,0:3].position)
+
+    def test12(self):
+        grid1 = datamodel.Grid.create((4,4), [1.0, 1.0] | units.m)
+        grid2 = datamodel.Grid.create((4,4), [1.0, 1.0] | units.m,offset=[-0.5,-0.5] | units.m)
+        self.assertTrue(grid1.overlaps(grid2))
+        overlap=grid1.get_overlap_with(grid2,eps=grid2.cellsize()[0]*1.e-6)
+        self.assertEquals(overlap.position,grid1[0:2,0:2].position)
+
+
 class TestGridSampling(amusetest.TestCase):
     
     def test1(self):

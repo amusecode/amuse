@@ -155,18 +155,21 @@ class Grid(AbstractGrid):
         return self._private.attribute_storage.can_extend_attributes()
     
     @classmethod
-    def create(cls, shape, lengths, axes_names = DEFAULT_AXES_NAMES):
+    def create(cls, shape, lengths, axes_names = DEFAULT_AXES_NAMES,offset=None):
         """Returns a grid with cells between 0 and lengths.
         """
         result = cls(*shape, axes_names = axes_names)
     
         all_indices = numpy.indices(shape)+0.5
         
+        if offset is None:
+          offset=[0.*l for l in lengths]
+        
         def positions(indices, length, n):
             return length * (indices/n)
     
-        for indices, length, n, axis_name in zip(all_indices, lengths, shape, axes_names):
-            setattr(result, axis_name, positions(indices, length, n))
+        for indices, length, n, axis_name,of in zip(all_indices, lengths, shape, axes_names,offset):
+            setattr(result, axis_name, positions(indices, length, n)+of)
        
         return result
             
@@ -247,22 +250,25 @@ class SubGrid(AbstractGrid):
         AbstractGrid.__init__(self, grid)
         
         self._private.grid = grid
-        self._private.indices = indices
+        self._private.indices = indexing.normalize_slices(grid.shape,indices)
     
     def _original_set(self):
         return self._private.grid
         
     def get_values_in_store(self, indices, attributes, by_key = True):
-        combined_index = indexing.combine_indices(self._private.indices, indices)
+        normalized_indices = indexing.normalize_slices(self.shape,indices)
+        combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
         result = self._private.grid.get_values_in_store(combined_index, attributes)
         return result
     
     def set_values_in_store(self, indices, attributes, values, by_key = True):
-        combined_index = indexing.combine_indices(self._private.indices, indices)
+        normalized_indices = indexing.normalize_slices(self.shape,indices)
+        combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
         self._private.grid.set_values_in_store(combined_index, attributes, values)
         
     def set_values_in_store_async(self, indices, attributes, values, by_key = True):
-        combined_index = indexing.combine_indices(self._private.indices, indices)
+        normalized_indices = indexing.normalize_slices(self.shape,indices)
+        combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
         return self._private.grid.set_values_in_store_async(combined_index, attributes, values)
             
     def get_all_keys_in_store(self):
@@ -272,7 +278,8 @@ class SubGrid(AbstractGrid):
         return indexing.number_of_dimensions_after_index(self._original_set().number_of_dimensions(), self._private.indices)
         
     def __getitem__(self, index):
-        combined_index = indexing.combine_indices(self._private.indices, index)
+        normalized_index= indexing.normalize_slices(self.shape,index)
+        combined_index = indexing.combine_indices(self._private.indices, normalized_index)
         if indexing.number_of_dimensions_after_index(self._original_set().number_of_dimensions(), combined_index) == 0:
             return GridPoint(combined_index, self._original_set())
         else:
@@ -290,8 +297,20 @@ class SubGrid(AbstractGrid):
         return indexing.shape_after_index(self._private.grid.shape, self._private.indices )
 
     def indices(self):
-        return [x[self._private.indices] for x in self._original_set().indices()]   
-    
+        return [x[self._private.indices] for x in self._original_set().indices()]
+        
+    def __eq__(self, other):
+        if self._private.grid!=other._private.grid:
+          return False
+        else:
+          if numpy.all(numpy.array(self.indices())==numpy.array(other.indices())):
+            return True
+          else:
+            return False
+        
+    def __ne__(self,other):
+        return not(self==other)
+        
 class GridPoint(object):
 
     def __init__(self, index, grid):
@@ -691,6 +710,5 @@ class NonOverlappingGridsIndexer(object):
     def grids_for_points(self, points):
         index = ((points - self.minimum_position) / self.smallest_boxsize)
         index = numpy.floor(index).astype(numpy.int)
-        print indices
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]

@@ -88,7 +88,7 @@ class FrameworkTests(amusetest.TestCase):
         self.assertRaises(base.CannotLoadException, processor.load, 
             expected_message = "You tried to load a file with fileformat 'test', but"
                 " this format is not supported for reading files")
-    
+
 
 class FormatTests(amusetest.TestCase):
     
@@ -326,3 +326,4 @@ class FormatTests(amusetest.TestCase):
         for x in all_formats:
             options = base.get_options_for_format('txt')
             self.assertTrue(len(options) >= 0)
+

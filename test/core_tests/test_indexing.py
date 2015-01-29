@@ -25,7 +25,6 @@ class TestIndexing(amusetest.TestCase):
         
     def test3(self):
         a = numpy.arange(12).reshape(3,4)
-        print a, a[0:2][0], a[combine_indices(numpy.s_[0:2],0)]
         self.assertTrue(a[combine_indices(numpy.s_[0:2],0)].shape, a[0:2][0].shape)
         self.assertTrue(numpy.all(a[combine_indices(numpy.s_[0:2],0)] ==  a[0:2][0]))
 
@@ -33,7 +32,6 @@ class TestIndexing(amusetest.TestCase):
         a = numpy.arange(12).reshape(3,4)
         direct =  a[1][:]
         indirect = a[combine_indices(1,numpy.s_[:])]
-        print a, direct, indirect
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
         
@@ -41,7 +39,6 @@ class TestIndexing(amusetest.TestCase):
         a = numpy.arange(12).reshape(3,4)
         direct =  a[0:2][:]
         indirect = a[combine_indices(numpy.s_[0:2],numpy.s_[:])]
-        print a, direct, indirect
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
 
@@ -49,7 +46,6 @@ class TestIndexing(amusetest.TestCase):
         a = numpy.arange(12).reshape(3,4)
         direct =  a[1:3][1:]
         indirect = a[combine_indices(numpy.s_[1:3],numpy.s_[1:])]
-        print a, direct, indirect
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
 
@@ -83,7 +79,6 @@ class TestIndexing(amusetest.TestCase):
         a = numpy.arange(60).reshape(5,6,2)
         direct =  a[3][2][1]
         indirect = a[combine_indices(combine_indices(3,2),1)]
-        print direct, indirect, combine_indices(combine_indices(3,2),1), a[(3,2,1)]
         self.assertEquals(indirect, direct)
         
     def test11(self):
@@ -131,7 +126,6 @@ class TestIndexing(amusetest.TestCase):
         direct =  a[indices][list([1,3])]
         combined = combine_indices(indices,[1,3])
         indirect = a[combined]
-        print a, a[indices], direct, indirect, combined
         self.assertEquals(indirect, direct)
         
     
@@ -145,7 +139,6 @@ class TestIndexing(amusetest.TestCase):
         direct =  a[indices, 1:][0,1:]
         combined = combine_indices(numpy.s_[indices,1:],numpy.s_[0,1:])
         indirect = a[combined]
-        print a, a[indices], direct, indirect, combined
         self.assertEquals(indirect, direct)
         
     def test18(self):
@@ -154,7 +147,6 @@ class TestIndexing(amusetest.TestCase):
         direct =  a[indices, 1:][0]
         combined = combine_indices(numpy.s_[indices,1:],0)
         indirect = a[combined]
-        print a, a[indices], direct, indirect, combined
         self.assertEquals(indirect, direct)
         
     def test19(self):
@@ -163,9 +155,150 @@ class TestIndexing(amusetest.TestCase):
         direct =  a[:1, 1:][0]
         combined = combine_indices(numpy.s_[:1,1:],0)
         indirect = a[combined]
-        print a, a[:1, 1:][0], direct, indirect, combined
         self.assertEquals(indirect, direct)
+
+    def test20(self):
+        combined=combine_indices( slice(1, 199, None), slice(3, 5, None) )
+        self.assertEqual(combined,slice(4,6,1))
         
+    def test21(self):
+        shape=shape_after_index((200,), slice(4, 6, 1))
+        self.assertEqual(shape,(2,))
+
+    def test22(self):
+        tiny=range(2)
+        small=range(10)
+        big=range(1000)
+        
+        # combining slicings w negative stops not possible! e.g. ((7,-1),(2,3),(9,10,1))
+        # (without normalize)
+        slicings=[ ((9,19),(5,9,2),(14,18,2)),
+                   ((7,19,2),(5,9,1),(17,19,2)),
+                   ((1,None),(1,10),(2,11,1)),
+                   ((7,None),(1,10),(8,17,1)),
+                   ((None,12),(3,5),(3,5,1)),
+                   ((None,12),(3,15),(3,12,1)),
+                   ((None,None),(3,5),(3,5,1)),
+                   ((None,None),(3,15),(3,15,1)),
+                   ((None,None),(None,15),(0,15,1)),
+                   ((None,None),(None,None),(0,None,1)),
+                   ((9,None),(None,None),(9,None,1)),
+                   ((9,None),(6,None),(15,None,1)),
+                   ((9,None),(None,40),(9,49,1)),
+                   ((1,None),(None,40),(1,41,1)),
+                   ((9,16),(None,40),(9,16,1)),
+                   ((1,16),(None,40),(1,16,1)),
+                   ((49,16),(None,40),(16,16,1)),
+                   ((41,66),(None,40),(41,66,1)),
+                 ]
+        
+        for t1,t2,t3 in slicings:
+          s1=slice(*t1)
+          s2=slice(*t2)
+          s3=slice(*t3)
+          self.assertEqual(combine_slices(s1,s2),t3)
+          self.assertTrue(tiny[s1][s2]==tiny[s3])
+          self.assertTrue(small[s1][s2]==small[s3])
+          self.assertTrue(big[s1][s2]==big[s3])
+        
+    def test23(self):
+        import random
+        random.seed(123456)
+        tiny=range(2)
+        small=range(20)
+        big=range(2000)
+        
+        Ntest=1000
+        start0=[random.randint(0,20) for x in range(Ntest)]        
+        stop0=[random.randint(15,50) for x in range(Ntest)]        
+        step0=[random.randint(1,3) for x in range(Ntest)]        
+        start1=[random.randint(0,10) for x in range(Ntest)]        
+        stop1=[random.randint(5,25) for x in range(Ntest)]        
+        step1=[random.randint(1,3) for x in range(Ntest)]        
+        
+        slicings=[]
+        for x in zip(start0,stop0,step0,start1,stop1,step1):
+          slicings.append(((x[0],x[1],x[2]),(x[3],x[4],x[5])))
+        
+        for t1,t2 in slicings:
+          s1=slice(*t1)
+          s2=slice(*t2)
+          t3=combine_slices(s1,s2)
+          s3=slice(*t3)
+          self.assertTrue(tiny[s1][s2]==tiny[s3])
+          self.assertTrue(small[s1][s2]==small[s3])
+          self.assertTrue(big[s1][s2]==big[s3])
+
+    def test24(self):
+        import random
+        random.seed(123456)
+        tiny=range(2)
+        small=range(20)
+        big=range(2000)
+        
+        Ntest=1000
+        stop0=[random.randint(0,20) for x in range(Ntest)]        
+        start0=[random.randint(15,50) for x in range(Ntest)]        
+        step0=[random.randint(-3,-1) for x in range(Ntest)]        
+        start1=[random.randint(0,10) for x in range(Ntest)]        
+        stop1=[random.randint(5,25) for x in range(Ntest)]        
+        step1=[random.randint(1,3) for x in range(Ntest)]        
+        
+        slicings=[]
+        for x in zip(start0,stop0,step0,start1,stop1,step1):
+          slicings.append(((x[0],x[1],x[2]),(x[3],x[4],x[5])))
+        
+        for t1,t2 in slicings:
+          s1=slice(*t1)
+          s2=slice(*t2)
+
+          t3=combine_slices(normalize_slices(len(tiny),s1),normalize_slices(len(tiny),s2))
+          s3=slice(*t3)
+          self.assertTrue(tiny[s1][s2]==tiny[s3])
+
+          t3=combine_slices(normalize_slices(len(small),s1),normalize_slices(len(small),s2))
+          s3=slice(*t3)
+          self.assertTrue(small[s1][s2]==small[s3])
+          t3=combine_slices(normalize_slices(len(big),s1),normalize_slices(len(big),s2))
+          s3=slice(*t3)
+          self.assertTrue(big[s1][s2]==big[s3])
+
+    def test25(self):
+        import random
+        random.seed(123456)
+        tiny=range(2)
+        small=range(20)
+        big=range(2000)
+        
+        Ntest=1000
+        stop0=[random.randint(0,20) for x in range(Ntest)]        
+        start0=[random.randint(15,50) for x in range(Ntest)]        
+        step0=[random.randint(-3,-1) for x in range(Ntest)]        
+        stop1=[random.randint(0,10) for x in range(Ntest)]        
+        start1=[random.randint(5,25) for x in range(Ntest)]        
+        step1=[random.randint(-3,-1) for x in range(Ntest)]        
+        
+        slicings=[]
+        for x in zip(start0,stop0,step0,start1,stop1,step1):
+          slicings.append(((x[0],x[1],x[2]),(x[3],x[4],x[5])))
+        
+        for t1,t2 in slicings:
+          s1=slice(*t1)
+          s2=slice(*t2)
+
+          t3=combine_slices(normalize_slices(len(tiny),s1),normalize_slices(len(tiny[s1]),s2))
+          s3=slice(*t3)
+          self.assertTrue(tiny[s1][s2]==tiny[s3])
+
+          t3=combine_slices(normalize_slices(len(small),s1),normalize_slices(len(small[s1]),s2))
+          s3=slice(*t3)
+          self.assertTrue(small[s1][s2]==small[s3])
+          t3=combine_slices(normalize_slices(len(big),s1),normalize_slices(len(big[s1]),s2))
+          s3=slice(*t3)
+          self.assertTrue(big[s1][s2]==big[s3])
+
+    def test26(self):
+          pass
         
 class TestSplitOverDimensions(amusetest.TestCase):
     

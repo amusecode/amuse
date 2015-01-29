@@ -26,18 +26,30 @@ def unpack_slice(slice):
 def combine_slices(slice0, slice1):
     start0,stop0,step0 = unpack_slice(slice0)
     start1,stop1,step1 = unpack_slice(slice1)
-            
-    newstart = start0 + (start1 * step0)
-    
+
+    if step0>0:
+      newstart = start0 + (start1 * step0) if stop0 is None else min(start0 + (start1 * step0),stop0)
+    else:
+      newstart = max(start0 + (start1 * step0),stop0)
     if stop0 is None:
         if stop1 is None:
             newstop = None
         else:
             newstop = (stop1 * step0) + start0
+    elif stop0<0:
+        if stop1 is None:
+          newstop = stop0
+        elif stop1<0:
+          newstop = stop0+stop1*step0
+        else:
+          newstop = stop1*step0+start0
     elif stop1 is None:
         newstop = stop0
     else:
-        newstop = min((stop1 * step0) + start0, stop0)
+        if step0>0:
+          newstop = start0 + (stop1 * step0) if stop0 is None else min(start0 + (stop1 * step0),stop0)
+        else:
+          newstop = max((stop1 * step0) + start0, stop0)
     
     newstep = step0 * step1
     return newstart, newstop, newstep
@@ -45,7 +57,7 @@ def combine_slices(slice0, slice1):
 def combine_indices(index0, index1):
     if index1 is None:
         return index0
-        
+    
     if isinstance(index0, tuple):
         if len(index0) == 1:
             index0 = index0[0]
@@ -86,8 +98,13 @@ def combine_indices(index0, index1):
         elif isinstance(index1, EllipsisType):
             return index0
         else:
-            start,stop,step = combine_slices(index0, index1)
-            return numpy.s_[start:stop:step]
+            if isinstance(index1, slice):
+              start,stop,step = combine_slices(index0, index1)
+              return numpy.s_[start:stop:step]
+            else:
+              start,stop,step = combine_slices(index0, index1[0])
+              return numpy.s_[start:stop:step]
+
     elif isinstance(index0, EllipsisType):
         if isinstance(index1, slice):
             return index1
@@ -148,20 +165,54 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
     else:
         raise Exception("Not handled yet")
     
+def normalize_slices(shape,index):
+    """ returns index with slice expressions normalized, i.e.
+    simplified using actual length, replace ellipsis, extend where necessary
+    """
+    if isinstance(index, tuple):
+        if is_all_int(index):
+            return index
+        else:
+            result = []
+            first_ellipsis = True
+            for length,x in zip(shape,index):
+                if isinstance(x, slice):
+                    result.append( slice(*x.indices(length)))
+                elif isinstance(x,EllipsisType):
+                    if first_ellipsis:
+                      n=len(shape)-len(index)+1
+                      result.extend([slice(0,shape[i],1) for i in range(n)])
+                      first_ellipsis=False
+                    else:
+                      result.append(slice(None))
+                else:
+                    result.append(x)
+            n=len(shape)-len(result)
+            result.extend([slice(0,shape[i],1) for i in range(n)])
+            return tuple(result)
+                    
+    if isinstance(index, slice):
+        if isinstance(shape,int) or isinstance(shape,long):
+            return slice(*index.indices(shape))
+        else:   
+            return normalize_slices(shape,(index,))
+    else:
+        return index
+    
+    
 def shape_after_index(shape, index):
+    index=normalize_slices(shape,index)
     if isinstance(index, tuple):
         if is_all_int(index):
             return tuple(shape[len(index):])
         else:
-            if len(index) > len(shape):
-                raise Exception("Not handled yet")
-                
+            if len(index) != len(shape):
+                raise Exception("should not be possible")
+
             shape_as_list = list(shape)
             result = []
             for i,x in enumerate(index):
-                if isinstance(x, EllipsisType):
-                    result.append(shape_as_list[i])
-                elif isinstance(x, slice):
+                if isinstance(x, slice):
                     
                     start,stop,step = unpack_slice(x)
                     if start is None:
@@ -187,9 +238,7 @@ def shape_after_index(shape, index):
     elif isinstance(index, int) or isinstance(index, long):
         return tuple(shape[1:])
     elif isinstance(index, slice):
-        result = list(shape)
-        result[0] = len(index.indices(shape[0]))
-        return tuple(result)
+        return shape_after_index(shape,(index,))
     elif isinstance(index, list) or isinstance(index, numpy.ndarray):
         ndarray = numpy.asarray(index)
         if ndarray.dtype == 'bool':
@@ -201,7 +250,6 @@ def shape_after_index(shape, index):
                     
                 result = list(shape[len(ndarray.shape):])
                 result.insert(0, count_nonzero(ndarray))
-                print shape[:len(ndarray.shape)]
                 return tuple(result)
             else:
                 
@@ -236,7 +284,6 @@ def split_numpy_index_over_dimensions(index, dimension_values):
                     result[i] = result[i][x]
                 elif x is Ellipsis:
                     result[i] = result[i]
-                    print len(dimension_values) - number_of_indices
                     for _ in range(len(dimension_values) - number_of_indices):
                         i += 1
                         result[i] = result[i]

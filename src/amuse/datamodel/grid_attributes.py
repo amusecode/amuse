@@ -99,3 +99,56 @@ def connectivity(grid):
     result[...,...,...,7] = indices[1:  ,1:  ,1:  ]
     return result
 
+@grids.AbstractGrid.function_for_set
+def overlaps(grid, grid1,eps=None):
+    """simple test for overlap
+       optional keyword parameter:
+       
+       [eps]: size of buffer (to ignore just touching regions)
+    """
+    minp=grid.get_minimum_position()
+    maxp=grid.get_maximum_position()
+    minp1=grid1.get_minimum_position()
+    maxp1=grid1.get_maximum_position()
+    if eps is not None:
+      minp+=eps
+      maxp-=eps
+      minp1+=eps
+      maxp1-=eps
+    if (maxp<=minp1).sum()>0 or (minp>=maxp1).sum()>0:
+      return False
+    return True
+    
+@grids.AbstractGrid.function_for_set
+def get_overlap_with(grid, grid1,eps=None):
+    """return overlapping subgrid"""
+    if not grid.overlaps(grid1,eps):
+      return None
+    minindex=grid.get_minimum_index()
+    maxindex=grid.get_maximum_index()
+    cellsize=grid.cellsize()
+        
+    minp=grid.get_minimum_position()
+    maxp=grid.get_maximum_position()
+    minp1=grid1.get_minimum_position()
+    maxp1=grid1.get_maximum_position()
+    if eps is not None:
+      minp1+=eps
+      maxp1-=eps
+    
+    index_of_minp1=numpy.maximum( numpy.array((minp1-minp)/cellsize,'int'), minindex[:len(cellsize)])
+    index_of_maxp1=numpy.minimum( numpy.array((maxp1-minp)/cellsize,'int'), maxindex[:len(cellsize)])
+    slices=()
+    for i,j in zip(index_of_minp1,index_of_maxp1):
+      slices+=(slice(i,j+1),)
+    if len(slices)!= len(minindex): slices+=(Ellipsis,)
+    return grid[slices]
+
+
+#@grids.AbstractGrid.function_for_set
+#def select_fully_inside(grid, cellsizes=(), coordinates=()):
+#    """returns boolean array with cells with cellsizes centered on 
+#    coordinates fully inside the grid """
+#    gridminx,gridminy=sys.grid.get_minimum_position()
+#    gridmaxx,gridmaxy=sys.grid.get_maximum_position()
+

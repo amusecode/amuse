@@ -819,3 +819,21 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         self.assertEquals(id(attributes.particles), id(loaded_particles))
         self.assertAlmostRelativeEquals(attributes.gridpoint.y, 1.0 | units.km)
         self.assertAlmostRelativeEquals(attributes.grid[0][0].y, 1.0 | units.km)
+
+    def test57(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test26"+self.store_version()+".hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        x = Particles(2)
+        x.sub = None
+        x[0].sub = Particles(2)
+        io.write_set_to_file(x, output_file,"amuse", version=self.store_version())
+        y = io.read_set_from_file(output_file,"amuse")
+        
+        self.assertEqual(len(x), len(y))
+        self.assertEqual(len(x[0].sub), len(y[0].sub))
+        self.assertTrue(y[1].sub==x[1].sub==None)
+
+        os.remove(output_file)
