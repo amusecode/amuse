@@ -58,7 +58,7 @@ You can install all the packages described below in one go with::
 After installing you will need to configure the code with the following line::
 
     > ./configure --with-fftw=/opt/local \
-                  MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90 \
+                  MPICXX=mpicxx-openmpi-mp MPICC=mpicc-openmpi-mp MPIFC=mpif90-openmpi-mp \
                   FC=gfortran-mp-4.5 PYTHON=python2.7 \
                   PREFIX=/opt/local
                   
