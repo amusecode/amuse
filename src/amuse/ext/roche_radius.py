@@ -153,17 +153,21 @@ class Roche_Orbit(object):
         Sepinsky, Willems and Kalogera 2007
     """
 
-    def __init__(self, mass_1=1.0|units.MSun, mass_2=1.0|units.MSun, eccentricity=0.0, true_anomaly=0.0, angular_velocity_ratio=1.0, semimajor_axis=1.0|units.RSun):
+    def __init__(self, mass_1=1.0|units.MSun, mass_2=1.0|units.MSun, eccentricity=0.0,
+            true_anomaly=0.0, angular_velocity_ratio=1.0, semimajor_axis=1.0|units.RSun,
+            period=None):
         self.mass_1 =  mass_1
         self.mass_2 = mass_2
         self.eccentricity = eccentricity
         self.true_anomaly = true_anomaly
         self.angular_velocity_ratio = angular_velocity_ratio
         self.semimajor_axis = semimajor_axis
+        if period is not None:
+            self.period = period
 
     @property
     def mass_ratio(self):
-        return self.mass_1 / self.mass_2
+        return self.mass_1 / (1. * self.mass_2)
 
     @mass_ratio.setter
     def mass_ratio(self, value):
