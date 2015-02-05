@@ -52,42 +52,35 @@ class TestStellarWind(amusetest.TestCase):
     def test2(self):
         """ Test the accelerating wind """
         star = self.create_star()
-        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, mode="accelerate")
-        star_wind.init_v_wind_ratio = 0.1
+        star_wind = stellar_wind.new_stellar_wind(
+                        3e-11|units.MSun,
+                        mode="accelerate",
+                        init_v_wind_ratio = 0.01,
+                        r_min_ratio=1,
+                        r_max_ratio=5
+                        )
         star_wind.particles.add_particles(star)
 
-        star_wind.evolve_model(1|units.yr)
+        star_wind.evolve_model(1|units.day)
         wind = star_wind.create_wind_particles()
 
-        self.assertEqual(len(wind), 100)
+        self.assertEqual(len(wind), 91)
         min_dist = (wind.position - star.position).lengths().min()
         max_dist = (wind.position - star.position).lengths().max()
         self.assertGreaterEqual(min_dist, 2|units.RSun)
-        self.assertLessEqual(max_dist, 24.7|units.RSun)
-        plus_x_wind = wind[wind.x > star.x]
-        minus_x_wind = wind[wind.x < star.x]
-        plus_y_wind = wind[wind.y > star.y]
-        minus_y_wind = wind[wind.y < star.y]
-        plus_z_wind = wind[wind.z > star.z]
-        minus_z_wind = wind[wind.z < star.z]
-        self.assertGreaterEqual(minus_x_wind.vx.min(), -1050|units.ms)
-        self.assertLessEqual(minus_x_wind.vx.max(), -1000|units.ms)
-        self.assertGreaterEqual(plus_x_wind.vx.min(), -1000|units.ms)
-        self.assertLessEqual(plus_x_wind.vx.max(), -950|units.ms)
-        self.assertGreaterEqual(minus_y_wind.vy.min(), -50|units.ms)
-        self.assertLessEqual(minus_y_wind.vy.max(), 0|units.ms)
-        self.assertGreaterEqual(plus_y_wind.vy.min(), 0|units.ms)
-        self.assertLessEqual(plus_y_wind.vy.max(), 50|units.ms)
-        self.assertGreaterEqual(minus_z_wind.vz.min(), 950|units.ms)
-        self.assertLessEqual(minus_z_wind.vz.max(), 1000|units.ms)
-        self.assertGreaterEqual(plus_z_wind.vz.min(), 1000|units.ms)
-        self.assertLessEqual(plus_z_wind.vz.max(), 1050|units.ms)
+        self.assertLessEqual(max_dist, 2.8|units.RSun)
 
     def test3(self):
         """ Test the wind acceleration """
         star = self.create_star()
         star.position = [1, 1, 1] | units.RSun
-        star_wind = stellar_wind.new_stellar_wind(1e-8|units.MSun, mode="accelerate")
+        star_wind = stellar_wind.new_stellar_wind(
+                        3e-11|units.MSun,
+                        mode="accelerate",
+                        init_v_wind_ratio = 0.01,
+                        r_min_ratio=1.5,
+                        r_max_ratio=5
+                        )
         star_wind.particles.add_particles(star)
 
         # unaffected points
@@ -104,11 +97,11 @@ class TestStellarWind(amusetest.TestCase):
         x, y, z = points.transpose()
         ax, ay, az = star_wind.get_gravity_at_point(1, x, y, z)
         a = quantities.as_vector_quantity([ax, ay, az]).transpose()
-        self.assertAlmostEquals(a[0], [5.987e-5, 0, 0]|units.m/units.s**2, places=8)
-        self.assertAlmostEquals(a[1], [0, 0, 5.987e-5]|units.m/units.s**2, places=8)
-        self.assertAlmostEquals(a[2], [0, 2.796e-5, 0]|units.m/units.s**2, places=8)
-        self.assertAlmostEquals(a[3], [0, 7.706e-6, 8.990e-6]|units.m/units.s**2, places=8)
-        self.assertAlmostEquals(a[4], [-1.243e-5, 0, 0]|units.m/units.s**2, places=8)
+        self.assertAlmostEquals(a[0], [32.64354, 0, 0]|units.m/units.s**2, places=4)
+        self.assertAlmostEquals(a[1], [0, 0, 32.64354]|units.m/units.s**2, places=4)
+        self.assertAlmostEquals(a[2], [0, 15.24272, 0]|units.m/units.s**2, places=4)
+        self.assertAlmostEquals(a[3], [0, 4.20134, 4.90156]|units.m/units.s**2, places=4)
+        self.assertAlmostEquals(a[4], [-6.77454, 0, 0]|units.m/units.s**2, places=4)
 
     def test4(self):
         """ Test the transfer to a target gas particle set """

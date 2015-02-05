@@ -66,16 +66,34 @@ class StarsWithMassLoss(Particles):
         self.collection_attributes.previous_time = 0. | units.yr
         self.collection_attributes.track_mechanical_energy = False
 
-    def add_particles(self, *args, **kwargs):
-        new_particles = super(StarsWithMassLoss, self).add_particles(*args, **kwargs)
-        new_particles.lost_mass = 0. | units.MSun
-        new_particles.wind_release_time = self.collection_attributes.timestamp
-        new_particles.mu = self.collection_attributes.global_mu
+    def add_particles(self, particles, *args, **kwargs):
+        new_particles = super(StarsWithMassLoss, self).add_particles(particles, *args, **kwargs)
+
+        """
+            TODO: there is a better way to define defaults
+            override:
+                can_extend_attributes
+                set_value_in_store
+                get_attribute_names_defined_in_store
+                look at ParticlesWithFilteredAttributes as an example
+
+        """
+
+        attributes = particles.get_attribute_names_defined_in_store()
+        if 'lost_mass' not in attributes:
+            new_particles.lost_mass = 0. | units.MSun
+        if 'wind_release_time' not in attributes:
+            new_particles.wind_release_time = self.collection_attributes.timestamp
+        if 'mu' not in attributes:
+            new_particles.mu = self.collection_attributes.global_mu
 
         if self.collection_attributes.track_mechanical_energy:
-            self.mechanical_energy = quantities.zero
-            self.previous_mechanical_energy = quantities.zero
-            self.previous_mechanical_luminosity = quantities.zero
+            if 'mechanical_energy' not in attributes:
+                new_particles.mechanical_energy = quantities.zero
+            if 'previous_mechanical_energy' not in attributes:
+                new_particles.previous_mechanical_energy = quantities.zero
+            if 'previous_mechanical_luminosity' not in attributes:
+                new_particles.previous_mechanical_luminosity = quantities.zero
 
         return new_particles
 
@@ -90,6 +108,7 @@ class StarsWithMassLoss(Particles):
                 time_step = time - self.collection_attributes.previous_time
                 self.mechanical_energy += time_step * 0.5 * (self.previous_mechanical_luminosity + new_mechanical_luminosity)
                 self.previous_mechanical_energy += elapsed_time * new_mechanical_luminosity
+                self.previous_mechanical_luminosity = new_mechanical_luminosity
 
 
             self.collection_attributes.timestamp = time
@@ -123,11 +142,15 @@ class EvolvingStarsWithMassLoss(StarsWithMassLoss):
         while <every timestep>:
             chan.copy()
     """
-    def add_particles(self, *args, **kwargs):
-        new_particles = super(EvolvingStarsWithMassLoss, self).add_particles(*args, **kwargs)
-        new_particles.wind_mass_loss_rate = 0. | units.MSun/units.yr
-        new_particles.previous_age = new_particles.age
-        new_particles.previous_mass = new_particles.mass
+    def add_particles(self, particles, *args, **kwargs):
+        new_particles = super(EvolvingStarsWithMassLoss, self).add_particles(particles, *args, **kwargs)
+        attributes = particles.get_attribute_names_defined_in_store()
+        if 'wind_mass_loss_rate' not in attributes:
+            new_particles.wind_mass_loss_rate = 0. | units.MSun/units.yr
+        if 'previous_age' not in attributes:
+            new_particles.previous_age = new_particles.age
+        if 'previous_mass' not in attributes:
+            new_particles.previous_mass = new_particles.mass
         return new_particles
 
     def evolve_mass_loss(self, time):
@@ -153,7 +176,7 @@ class SimpleWind(object):
     """
     def __init__(self, sph_particle_mass, derive_from_evolution=False, tag_gas_source=False):
         self.sph_particle_mass = sph_particle_mass
-        self.system_time = 0.0|units.yr
+        self.model_time = 0.0|units.yr
 
         if derive_from_evolution:
             self.particles = EvolvingStarsWithMassLoss()
@@ -173,18 +196,18 @@ class SimpleWind(object):
         return stars.terminal_wind_velocity
 
     def evolve_particles(self):
-        self.particles.evolve_mass_loss(self.system_time)
+        self.particles.evolve_mass_loss(self.model_time)
 
     def evolve_model(self, time):
         if self.has_target():
-            while self.system_time <= time:
+            while self.model_time <= time:
                 self.evolve_particles()
                 if self.has_new_wind_particles():
                     wind_gas = self.create_wind_particles()
                     self.target_gas.add_particles(wind_gas)
-                self.system_time += self.timestep
+                self.model_time += self.timestep
         else:
-            self.system_time = time
+            self.model_time = time
             self.evolve_particles()
 
     def set_target_gas(self, target_gas, timestep):
@@ -221,7 +244,7 @@ class SimpleWind(object):
         wind=Particles(Ngas)
 
         wind_velocity = self.initial_wind_velocity(star)
-        outer_wind_distance = wind_velocity * (self.system_time - star.wind_release_time)
+        outer_wind_distance = wind_velocity * (self.model_time - star.wind_release_time)
 
         wind.position, direction = random_positions(Ngas, star.radius, outer_wind_distance)
         wind.velocity = direction * wind_velocity
@@ -251,7 +274,7 @@ class SimpleWind(object):
             if star.lost_mass > self.sph_particle_mass:
                 new_particles = self.create_wind_particles_for_one_star(star)
                 wind.add_particles(new_particles)
-                star.wind_release_time = self.system_time
+                star.wind_release_time = self.model_time
 
         return wind
 
@@ -273,8 +296,8 @@ class SimpleWind(object):
             total_mass_loss = self.particles.wind_mass_loss_rate.sum()
             time = 1.1 * required_mass/total_mass_loss
 
-        self.system_time = time
-        self.particles.evolve_mass_loss(self.system_time)
+        self.model_time = time
+        self.particles.evolve_mass_loss(self.model_time)
 
         if self.has_new_wind_particles():
             wind_gas = self.create_wind_particles()
@@ -291,10 +314,10 @@ class SimpleWind(object):
 
     def reset(self):
         self.particles.reset()
-        self.system_time = 0.0|units.yr
+        self.model_time = 0.0|units.yr
 
     def set_begin_time(self, time):
-        self.system_time = time
+        self.model_time = time
         self.particles.set_begin_time(time)
 
     def get_gravity_at_point(self, eps, x, y, z):
@@ -312,17 +335,14 @@ class AcceleratingWind(SimpleWind):
     """
 
     def __init__(self, *args, **kwargs):
-        self.init_v_wind_ratio = kwargs.pop("init_v_wind_ratio ", 0.4)
-        self.r_min_ratio = kwargs.pop("r_min_ratio ", 2)
-        self.r_max_ratio = kwargs.pop("r_max_ratio ", 5)
+        self.init_v_wind_ratio = kwargs.pop("init_v_wind_ratio", 1.0)
+        self.r_min_ratio = kwargs.pop("r_min_ratio", 1)
+        self.r_max_ratio = kwargs.pop("r_max_ratio", 5)
         super(AcceleratingWind, self).__init__(*args, **kwargs)
 
     def initial_wind_velocity(self, stars):
-        """
-            TODO: set the initial velocity using the wind velocity formula if the
-            particles are created in the middle of or outside the acceleration zone.
-        """
-        return self.init_v_wind_ratio * stars.terminal_wind_velocity
+        escape_velocity_at_surface = (2*constants.G * stars.mass / stars.radius)**0.5
+        return self.init_v_wind_ratio * escape_velocity_at_surface
 
     def wind_accelation_formula(self, star, distance):
         """
@@ -333,7 +353,8 @@ class AcceleratingWind(SimpleWind):
         r_min = self.r_min_ratio * star.radius
         r_max = self.r_max_ratio * star.radius
         init_wind_velocity = self.initial_wind_velocity(star)
-        integrated_acceleration = 0.5 * ( star.terminal_wind_velocity**2 - init_wind_velocity**2 )
+        integrated_gravity_acceleration = constants.G * star.mass * (r_min**-1 - r_max**-1)
+        integrated_acceleration = 0.5 * ( star.terminal_wind_velocity**2 - init_wind_velocity**2 ) + integrated_gravity_acceleration
         scaling_constant = integrated_acceleration / (r_min**-1 - r_max**-1)
 
         radii_in_range = numpy.logical_and(distance > r_min, distance < r_max)
@@ -382,7 +403,7 @@ class MechanicalLuminosityWind(SimpleWind):
         self.particles.track_mechanical_energy(True)
 
     def evolve_particles(self):
-        self.particles.evolve_mass_loss(self.system_time)
+        self.particles.evolve_mass_loss(self.model_time)
 
     def mechanical_internal_energy(self, star, wind):
         delta_mechanical_energy = star.mechanical_energy - star.previous_mechanical_energy
@@ -409,7 +430,7 @@ def new_stellar_wind(sph_particle_mass, target_gas=None, timestep=None, derive_f
         target_gas: a gas particle set into which the wind particles should be put (requires timestep)
         timestep: the timestep at which the wind particles should be generated.
         derive_from_evolution: derive the wind parameters from stellar evolution (you still need to update the stellar parameters)
-        accelerate: start at subterminal velocity and accelerate the gas near the star (requires a bridge coupling)
+        mode: set to 'simple', 'accelerate' or 'mechanical'
     """
     if (target_gas is None) ^ (timestep is None):
         raise AmuseException("Must specify both target_gas and timestep (or neither)")
@@ -441,6 +462,7 @@ def static_wind_from_stellar_evolution(stellar_wind, stellar_evolution, start_ti
     chan = stellar_evolution.particles.new_channel_to(stellar_wind.particles)
     chan.copy_attributes(["age", "radius", "mass", "luminosity", "temperature"])
 
+    #TODO: shouldn't this be stellar_wind.reset()
     stellar_wind.evolve_model(0|units.yr)
 
     return stellar_wind
