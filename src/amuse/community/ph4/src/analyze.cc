@@ -900,8 +900,8 @@ local hdyn2 *get_tree2(hdyn *bin)
 
 // Manage quarantining of quasi-stable systems.  If a multiple cannot
 // be confirmed as stable, but the interaction is otherwise over,
-// declare the multiple stable if the system configuration survives
-// without changing state for some specified period of time.
+// declare the multiple quasi-stable if the system configuration
+// survives without changing state for some specified period of time.
 // Currently, we simply count calls to check_structure, but probably
 // we want to follow the system for some number of outer multiple
 // periods. TODO.
@@ -913,12 +913,15 @@ const int min_qstable_count = 15;
 
 local inline bool is_quasi_stable(hdyn2 *b)
 {
+    bool verbose = true;
     if (state_count >= min_qstable_count) {
 	real max_period = 0;
-	cout << "checking quasistability..." << endl << flush;
+	if (verbose) cout << "checking quasistability..." << endl << flush;
 	for_all_daughters(hdyn2, b, bi) {
 	    if (!bi->stable) {					 // STORY
-		cout << bi->format_label() << " is not stable" << endl << flush;
+		if (verbose)
+		    cout << bi->format_label() << " is not stable"
+			 << endl << flush;
 		hdyn2 *od = bi->get_oldest_daughter();
 		hdyn2 *yd = od->get_younger_sister();
 		kepler k;
@@ -933,8 +936,19 @@ local inline bool is_quasi_stable(hdyn2 *b)
 	    }
 	    //PRL(max_period);
 	}
-	//PRC(b->get_system_time()); PRL(state_time);
-	return (b->get_system_time()-state_time > 10*max_period);
+
+	// The basic requirement for quasistability is that the
+	// configuration remain unchanged for 10 times the maximum
+	// orbital period in the system -- 10 outer orbits, in
+	// practice.
+
+	bool quasi = b->get_system_time()-state_time > 10*max_period;
+	if (verbose) {
+	    PRC(b->get_system_time()); PRL(state_time);
+	    PRC(b->get_system_time()-state_time); PRL(max_period);
+	    cout << "quasi-stable = " << quasi << endl << flush;
+	}
+	return quasi;
     }
     return false;
 }
