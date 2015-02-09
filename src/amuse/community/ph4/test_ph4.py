@@ -91,14 +91,21 @@ def run_ph4(infile = None, number_of_stars = 40,
 
     #print "1"; sys.stdout.flush()
     
+    gpu = 0
     if gpu_worker == 1:
         try:
             gravity = grav(number_of_workers = n_workers,
                            redirection = "none", mode = "gpu")
+            #              debugger='valgrind')
+            gpu = 1
         except Exception as ex:
-            gravity = grav(number_of_workers = n_workers, redirection = "none")
-    else:
-        gravity = grav(number_of_workers = n_workers, redirection = "none")
+            print 'GPU worker code not found.  Using non-GPU code.'
+            gpu = 0
+
+    if gpu == 0:
+        gravity = grav(number_of_workers = n_workers,
+                       redirection = "none")
+        #              debugger='valgrind')
 
     #print "2"; sys.stdout.flush()
     gravity.initialize_code()
