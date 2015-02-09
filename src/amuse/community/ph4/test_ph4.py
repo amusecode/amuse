@@ -99,7 +99,7 @@ def run_ph4(infile = None, number_of_stars = 40,
             #              debugger='valgrind')
             gpu = 1
         except Exception as ex:
-            print 'GPU worker code not found.  Using non-GPU code.'
+            print '*** GPU worker code not found. Reverting to non-GPU code. ***'
             gpu = 0
 
     if gpu == 0:
