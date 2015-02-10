@@ -43,9 +43,20 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // (Re)initialize the local GPU(s): reload all particles.
-   
+
     if (!reinitialize) {
-	g6_open(clusterid);
+
+	// g6_open() logic is for a single GPU.  May be overridden by
+	// a configuration file.  If gpu_id is >= 0, use that GPU.
+	// Otherwise use GPU 0 for a single-process run, MPI rank for
+	// a multi-process run.  No check for a valid GPU ID.
+   
+	//PRL(clusterid);
+	//PRL(gpu_id);
+	int gpu_to_use = clusterid;
+	if (gpu_id >= 0) gpu_to_use = gpu_id;
+	cout << "opening GPU " << gpu_to_use << endl << flush;
+	g6_open(gpu_to_use);
 	// g6_set_tunit(new_tunit);
 	// g6_set_xunit(new_xunit);
     }

@@ -82,6 +82,18 @@ int get_gpu(int * gpu)
     return 0;
 }
 
+int set_gpu_id(int gpu_id)
+{
+    jd->gpu_id = gpu_id;
+    return 0;
+}
+
+int get_gpu_id(int * gpu_id)
+{
+    *gpu_id = jd->gpu_id;
+    return 0;
+}
+
 int set_manage_encounters(int m)
 {
     jd->set_manage_encounters(m);

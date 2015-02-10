@@ -140,7 +140,7 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def set_eta():
         """
-        Set the current time step parameter.
+        Set the current accuracy parameter.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('eta', dtype='float64',
@@ -151,7 +151,7 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def get_eta():
         """
-        Set the current system time step parameter.
+        Get the current accuracy parameter.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('eta', dtype='float64',
@@ -162,7 +162,7 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def set_gpu():
         """
-        Set the current time step parameter.
+        Set use_gpu.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('gpu', dtype='int32',
@@ -173,7 +173,7 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def get_gpu():
         """
-        Set the current system time step parameter.
+        Get use_gpu.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('gpu', dtype='int32',
@@ -182,9 +182,31 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
+    def set_gpu_id():
+        """
+        Set gpu_id.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('gpu_id', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_gpu_id():
+        """
+        Get gpu_id.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('gpu_id', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def set_manage_encounters():
         """
-        Set the current time step parameter.
+        Set the value of manage_encounters.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('manage_encounters', dtype='int32',
@@ -195,7 +217,7 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def get_manage_encounters():
         """
-        Set the current system time step parameter.
+        Get the value of manage_encounters.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('manage_encounters', dtype='int32',
@@ -324,6 +346,14 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             "use_gpu",                   # python parameter name
             "use GPU",                   # description
             default_value = 1
+        )
+        
+        object.add_method_parameter(
+            "get_gpu_id",                # getter name in interface.cc
+            "set_gpu_id",                # setter name in interface.cc
+            "gpu_id",                    # python parameter name
+            "GPU ID",                    # description
+            default_value = -1
         )
         
         object.add_method_parameter(
