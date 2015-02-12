@@ -1373,7 +1373,7 @@ class TestParticlesExtra(amusetest.TestCase):
     def test20(self):
 
         particles = datamodel.Particles(3)
-        particles.a = [1.0, 2.0, 3,0]
+        particles.a = numpy.array([1.0, 2.0, 3.0])
         self.assertEquals(particles[0].a, 1.0)
         # should be able to set the attribute with a unitless array
         # this code will be obsoleted when units.none is completely gone

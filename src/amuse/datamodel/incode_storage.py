@@ -1118,7 +1118,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         return key in self.mapping_from_particle_to_index
         
     def get_all_keys_in_store(self):
-        return None 
+        return Ellipsis
         
     def __len__(self):
         shape = self.storage_shape()

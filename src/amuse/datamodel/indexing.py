@@ -55,18 +55,24 @@ def combine_slices(slice0, slice1):
     return newstart, newstop, newstep
 
 def combine_indices(index0, index1):
-    if index1 is None:
-        return index0
+    if index1 is None or index0 is None:
+        raise Exception("unhandled case, think about numpy")
     
     if isinstance(index0, tuple):
         if len(index0) == 1:
             index0 = index0[0]
         elif isinstance(index1, tuple):
-            if len(index0) == len(index1):
-                combined = [ combine_indices(p0, p1) for p0, p1 in zip(index0, index1)]
-                return tuple(combined)
-            else:
-                raise Exception("unhandled case, two tuple one with different length")
+            result=[]
+            offset=0
+            for i0 in index0:
+                if isinstance(i0, (int,long)):
+                  result.append(i0)
+                else:
+                  result.append(combine_indices(i0,index1[offset]))
+                  offset+=1
+            if offset<len(index1):
+              result.extend(index1[offset:])
+            return tuple(result)              
         else:
             index = 0
             for i, x in enumerate(index0):
@@ -90,7 +96,10 @@ def combine_indices(index0, index1):
             return tuple(result)
         
     if isinstance(index0, int) or isinstance(index0, long):
-        return (index0, index1)
+        if isinstance(index1, tuple):
+            return (index0,)+index1
+        else:
+            return (index0, index1)
     elif isinstance(index0, slice):
         if isinstance(index1, int) or isinstance(index1, long):
             start,stop,step = unpack_slice(index0)
@@ -138,7 +147,9 @@ def number_of_dimensions(array, index):
     return number_of_dimensions_after_index(array.ndim, index)
 
 def number_of_dimensions_after_index(number_of_dimensions, index):
-    if isinstance(index, tuple):
+    if isinstance(index, EllipsisType):
+        return number_of_dimensions
+    elif isinstance(index, tuple):
         if is_all_int(index):
             return number_of_dimensions - len(index)
         else:
@@ -169,6 +180,8 @@ def normalize_slices(shape,index):
     """ returns index with slice expressions normalized, i.e.
     simplified using actual length, replace ellipsis, extend where necessary
     """
+    if isinstance(index,EllipsisType):
+        index=(Ellipsis,)
     if isinstance(index, tuple):
         if is_all_int(index):
             return index
@@ -214,23 +227,12 @@ def shape_after_index(shape, index):
             for i,x in enumerate(index):
                 if isinstance(x, slice):
                     
-                    start,stop,step = unpack_slice(x)
-                    if start is None:
-                        start = 0
-                    if stop is None:
-                        stop = shape_as_list[i]
-                    if stop < 0:
-                        stop = shape_as_list[i] + stop
-                    if start < 0:
-                        start = shape_as_list[i] + start
+                    start,stop,step = x.indices(shape_as_list[i])
+                    if step>0:
+                      nitems = (stop - 1 - start) // step + 1
+                    else:
+                      nitems = (start- stop -1) // (-step) + 1
                     
-                    if start < 0:
-                        start = 0
-                    if stop < 0:
-                        stop = 0
-                        
-                    nmax =  min(stop, shape_as_list[i])
-                    nitems = (nmax - start) // step
                     result.append(nitems)
                 else:
                     pass

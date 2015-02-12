@@ -526,7 +526,7 @@ class HDF5GridAttributeStorage(AttributeStorage):
         return False
     
     def get_all_keys_in_store(self):
-        return None
+        return Ellipsis
         
     def set_values_in_store(self, indices, attributes, quantities):
         for attribute, quantity in zip(attributes, quantities):
@@ -996,7 +996,6 @@ class StoreHDF(object):
             if self.copy_history:
                 container = container.copy()
             all_containers[int(group_index) - 1] = container
-            
         previous = None
         for x in all_containers:
             x._private.previous = previous

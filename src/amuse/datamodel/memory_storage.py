@@ -273,7 +273,7 @@ class InMemoryGridAttributeStorage(object):
         return key in self.mapping_from_particle_to_index
         
     def get_all_keys_in_store(self):
-        return None #numpy.s_[0:self.number_of_i], numpy.s_[0:self.number_of_j], numpy.s_[0:self.number_of_k]
+        return Ellipsis #numpy.s_[0:self.number_of_i], numpy.s_[0:self.number_of_j], numpy.s_[0:self.number_of_k]
         
     def __len__(self):
         return self.storage_shape()[0]
@@ -475,12 +475,17 @@ class InMemoryAttribute(object):
     @classmethod
     def _determine_shape(cls, length, values_to_set):
         if isinstance(length, tuple):
-            return length
+            vector_shape = values_to_set.shape
+            if len(vector_shape) > len(length):
+                return vector_shape
+            else:
+                return length
         vector_shape = values_to_set.shape
         if len(vector_shape) > 1 and len(values_to_set) == length:
             return vector_shape
         else:
             return length
+
             
     @classmethod
     def new_attribute(cls, name, shape, values_to_set):

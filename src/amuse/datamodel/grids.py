@@ -66,7 +66,7 @@ class AbstractGrid(AbstractSet):
         attributes = self.get_attribute_names_defined_in_store()
         attributes = [x for x in attributes if filter_attributes(self, x)]
         
-        values = self.get_values_in_store(None, attributes)
+        values = self.get_values_in_store(Ellipsis, attributes)
         result = self._factory_for_new_collection()(*self.shape)
         
         if memento is None:
@@ -79,7 +79,7 @@ class AbstractGrid(AbstractSet):
                 converted.append(x.copy(memento, keep_structure))
             else:
                 converted.append(x)
-        result.set_values_in_store(None, attributes, converted)
+        result.set_values_in_store(Ellipsis, attributes, converted)
         
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
@@ -272,7 +272,7 @@ class SubGrid(AbstractGrid):
         return self._private.grid.set_values_in_store_async(combined_index, attributes, values)
             
     def get_all_keys_in_store(self):
-        return None
+        return Ellipsis
 
     def number_of_dimensions(self):
         return indexing.number_of_dimensions_after_index(self._original_set().number_of_dimensions(), self._private.indices)

@@ -84,7 +84,7 @@ class TestIndexing(amusetest.TestCase):
     def test11(self):
         a = numpy.arange(60).reshape(5,6,2)
         direct =  a[3]
-        indirect = a[combine_indices(3,None)]
+        indirect = a[combine_indices(3,Ellipsis)]
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
     

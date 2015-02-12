@@ -412,7 +412,46 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(grid[-1:1:-1][-1:1:-3].mass,grid.mass[-1:1:-1][-1:1:-3])
         self.assertEquals(grid[300:1:-2][-1:5:-3].mass,grid.mass[300:1:-2][-1:5:-3])
         
-                
+    def test33(self):
+        grid = datamodel.Grid(20)
+        grid.mass=numpy.zeros((20,5))
+        self.assertEquals(grid[1].mass,numpy.zeros(5))
+        grid.mass=numpy.arange(5)
+        self.assertEquals(grid[-1].mass,numpy.arange(5))
+        subgrid=grid[::2]
+        self.assertEquals(subgrid[-1].mass,numpy.arange(5))
+        subgrid[1].mass=5-numpy.arange(5)
+        self.assertEquals(subgrid[1].mass,5-numpy.arange(5))
+        self.assertEquals(grid[2].mass,5-numpy.arange(5))
+
+    def test34(self):
+        grid = datamodel.Grid(20)
+        grid.mass=numpy.zeros((20,5)) | units.kg
+        self.assertEquals(grid[1].mass,numpy.zeros(5) | units.kg)
+        grid.mass=numpy.arange(5) | units.kg
+        self.assertEquals(grid[-1].mass,numpy.arange(5)| units.kg)
+        subgrid=grid[::2]
+        self.assertEquals(subgrid[-1].mass,numpy.arange(5)| units.kg)
+        subgrid[1].mass=(5-numpy.arange(5))| units.kg
+        self.assertEquals(subgrid[1].mass,(5-numpy.arange(5))| units.kg)
+        self.assertEquals(grid[2].mass,(5-numpy.arange(5))| units.kg)
+
+    def test35(self):
+        grid=datamodel.Grid(10,5)
+        grid.mass=numpy.zeros((10,5,3))
+        self.assertEquals(grid[2,2].mass,numpy.zeros(3))
+        grid[::3,::2].mass=numpy.arange(3)
+        self.assertEquals(grid[3,2].mass,numpy.arange(3))
+
+    def test36(self):
+        grid=datamodel.Grid(10)
+        grid.mass=numpy.zeros((10,5,3))
+        self.assertEquals(grid[2].mass,numpy.zeros((5,3)))
+        grid[::3].mass=numpy.ones((5,3))
+        self.assertEquals(grid[3].mass,numpy.ones((5,3)))
+
+        
+
             
 class TestGridAttributes(amusetest.TestCase):
     
