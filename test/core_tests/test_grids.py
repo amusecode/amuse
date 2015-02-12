@@ -450,6 +450,28 @@ class TestGrids(amusetest.TestCase):
         grid[::3].mass=numpy.ones((5,3))
         self.assertEquals(grid[3].mass,numpy.ones((5,3)))
 
+    def test37(self):
+        grid = datamodel.Grid(20)
+        grid.mass=numpy.zeros((20,5))
+        grid.mass=numpy.arange(5)
+        self.assertEquals(grid[-1].mass,numpy.arange(5))
+        self.assertEquals(grid.mass.shape,(20,5))
+        subgrid=grid[::2]
+        self.assertEquals(subgrid[-1].mass,numpy.arange(5))
+        subgrid[1].mass=5-numpy.arange(5)
+        self.assertEquals(subgrid[1].mass,5-numpy.arange(5))
+        self.assertEquals(grid[2].mass,5-numpy.arange(5))
+        cp=subgrid.copy()
+        self.assertEquals(cp[1].mass,5-numpy.arange(5))
+        self.assertEquals(cp.mass.shape,(10,5))       
+        cp=grid.copy()
+        self.assertEquals(cp.mass.shape,(20,5))
+        self.assertEquals(cp[2].mass,5-numpy.arange(5))
+        self.assertEquals(cp[-1].mass,numpy.arange(5))
+        
+        
+        
+        
         
 
             
