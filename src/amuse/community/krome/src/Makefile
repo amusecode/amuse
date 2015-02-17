@@ -23,7 +23,7 @@ krome/build/krome:
 	make -C krome/build/
 
 libchem.a: krome/build/krome hash.o amuse_helpers.o
-	$(AR) $@ krome/build/[!test]*.o hash.o amuse_helpers.o
+	$(AR) $@ $(filter-out krome/build/test.o, $(wildcard krome/build/*.o)) hash.o amuse_helpers.o
 
 %.o: %.f90
 	$(FC) $(FFLAGS) -Ikrome/build/ -c -o $@ $<
