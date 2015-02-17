@@ -123,6 +123,8 @@ class  starbase
         virtual real convective_envelope_radius();
         
         virtual real get_wind_constant();
+        virtual void refresh_memory();
+        virtual void recall_memory();
         
 //	Scaling:
 

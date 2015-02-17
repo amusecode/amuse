@@ -496,6 +496,27 @@ int change_mass(int index_of_the_star, double mass, double dt){
     return error_code;
 }
 
+
+
+int refresh_memory(int index_of_the_star){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+
+    seba_node->get_starbase()->refresh_memory();  
+    return error_code;
+}
+
+//Does not work for binaries as memory is already refreshed in SeBa by SeBa
+int recall_memory_one_step(int index_of_the_star){
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);
+    if(error_code < 0) {return error_code;}
+
+    seba_node->get_starbase()->recall_memory();    
+    return error_code;
+}
+
 int get_envelope_mass(int index_of_the_star, double * mass){
     int error_code = 0;
     node * seba_node = get_seba_node_from_index(index_of_the_star, &error_code);

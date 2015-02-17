@@ -208,6 +208,46 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         """
         return function
 
+
+    @legacy_function
+    def refresh_memory():
+        """
+        Refresh the memory of SeBa. Update previous parameters in SeBa to current values. 
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+
+    @legacy_function
+    def recall_memory_one_step():
+        """
+        Recall the memory of SeBa one time_step ago. Update current parameters in SeBa to previous values. 
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+
+
     @legacy_function
     def get_envelope_mass():
         """
@@ -697,6 +737,16 @@ class SeBa(se.StellarEvolution):
             (object.ERROR_CODE,)
         )
         object.add_method(
+            "refresh_memory",
+            (object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "recall_memory_one_step",
+            (object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_envelope_mass",
             (object.INDEX,),
             (units.MSun, object.ERROR_CODE,)
@@ -838,6 +888,8 @@ class SeBa(se.StellarEvolution):
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
         object.add_method('particles', 'change_mass')
+        object.add_method('particles', 'refresh_memory')
+        object.add_method('particles', 'recall_memory_one_step')
 
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')

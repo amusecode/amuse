@@ -128,6 +128,10 @@ real starbase::convective_envelope_mass() {return 0;}
 real starbase::convective_envelope_radius() {return 0;}
 
 real starbase::get_wind_constant() {return 0;}
+void starbase::refresh_memory(){};
+void starbase::recall_memory(){};
+
+
 
 //     -----  Scaling:  -----
 
