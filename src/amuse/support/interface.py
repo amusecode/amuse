@@ -116,6 +116,7 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
     def convert_argument_value(self, method, definition, value):
         linked_set = self.get_linked_set(method, definition)
         storage = linked_set._private.attribute_storage
+        print value
         if isinstance(value, datamodel.Particle):
             indices = storage.get_indices_of([value.key])
             return indices
@@ -128,7 +129,7 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
             valid_indices = numpy.asarray(storage.get_indices_of(valid_keys))
             all_indices = -1 * numpy.ones(len(value), dtype=valid_indices.dtype)
             all_indices[valid] = valid_indices
-            return valid_indices
+            return all_indices
 
 class CodeAttributeWrapper(object):
 

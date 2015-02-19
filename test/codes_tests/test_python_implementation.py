@@ -45,6 +45,24 @@ class ForTestingInterface(PythonCodeInterface):
         return function    
         
     @legacy_function
+    def new_particle():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
+        function.addParameter('other', dtype='int32', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function   
+        
+    @legacy_function
+    def delete_particle():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function   
+        
+    @legacy_function
     def echo_int():
         function = LegacyFunctionSpecification()  
         function.addParameter('int_in', dtype='int32', direction=function.IN)
@@ -207,7 +225,16 @@ class ForTestingImplementation(object):
     def __init__(self):
         self.masses = [0.0] * 100
         self._particle_data = numpy.reshape(numpy.arange(300.0), (-1, 3))
+        self.maxindex  = 0
         
+    def new_particle(self,  mass, other, index_of_the_particle):
+        try:
+            self.masses[self.maxindex] = mass
+            index_of_the_particle.value = self.maxindex
+            self.maxindex += 1
+            return 0
+        except:
+            return -1
     def get_mass(self, index_of_the_particle,  mass):
         try:
             mass.value = self.masses[index_of_the_particle]
@@ -302,6 +329,16 @@ class ForTesting(InCodeComponentImplementation):
     
     def define_methods(self, object):
         object.add_method("sleep", (units.s,), (object.ERROR_CODE,))
+        object.add_method("new_particle", (units.kg,object.LINK("particles")), (object.INDEX, object.ERROR_CODE,))
+        
+        
+    def define_particle_sets(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_mass')
+        object.add_getter('particles', 'get_mass')
 
 class TestCreatePythonWorker(TestCase):
     
@@ -914,3 +951,14 @@ class TestInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])
         output =  instance.sum_doubles(5, input)
         self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])
+
+    def test31(self):
+        x = ForTesting()
+        p = datamodel.Particles(5)
+        p.mass = [1,2,3,4,5] | units.kg
+        p.other = None
+        for pi in p:
+            x.particles.add_particle(pi)
+        self.assertAlmostRelativeEquals(x.particles.mass, [1,2,3,4,5])
+        x.stop()
+    
