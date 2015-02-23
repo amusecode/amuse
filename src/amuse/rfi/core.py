@@ -8,6 +8,9 @@ import traceback
 import random
 import sys
 
+import inspect
+import functools
+from collections import OrderedDict
 
 from subprocess import Popen, PIPE
 
@@ -322,6 +325,116 @@ class legacy_function(object):
             pass
         
         raise Exception("No working crc32 implementation found!")
+
+def derive_dtype_unit_and_default(value):
+    if value is None:
+        return None,None,None
+    try: 
+        unit=value.unit
+        number=value.number
+    except:
+        unit=None
+        number=value
+    try:
+        dtype=number.dtype.__str__()
+        default=number
+    except:
+        if number in [ 'd','float64','i','int32','f','float32',
+            's','string','b','bool','l','int64']:
+            dtype=number
+            default=None
+        else:
+          if isinstance(number,type):
+              number=number()
+              default=None
+          else:
+              default=number
+          if isinstance(number,(int,long)):
+              dtype="i"
+          elif isinstance(number,(float,)):
+              dtype="d"
+          elif isinstance(number,(str,unicode)):
+              dtype="s"
+          elif isinstance(number, bool):
+              dtype="b"
+          else:
+              raise Exception("undetectable type")
+    return dtype,unit,default
+
+
+def get_function_specification(name,in_arg,out_arg,must_handle_array=False,
+                                   can_handle_array=False,length_arguments=None):
+    function=LegacyFunctionSpecification()
+    function.name=name
+    function.must_handle_array=must_handle_array
+    function.can_handle_array=can_handle_array
+    if "__result" in out_arg:
+        result=out_arg.pop("__result")
+        dtype,unit,dummy=derive_dtype_unit_and_default(result)
+        function.result_type=dtype
+        function.result_unit=unit
+    else:
+        function.result_type='i'
+        function.result_unit=None            
+    inout_arg=dict()
+    for arg in in_arg.keys():
+        if arg in out_arg:
+            inout_arg[arg]=in_arg.pop(arg)
+            out_arg.pop(arg)     
+    for arg,value in in_arg.items():
+        dtype,unit,default=derive_dtype_unit_and_default(value)
+        function.addParameter(arg, dtype=dtype, direction=function.IN ,unit=unit,default=default)
+    for arg,value in inout_arg.items():
+        dtype,unit,default=derive_dtype_unit_and_default(value)
+        function.addParameter(arg, dtype=dtype, direction=function.INOUT ,unit=unit,default=default)
+    for arg,value in out_arg.items():
+        dtype,unit,default=derive_dtype_unit_and_default(value)
+        function.addParameter(arg, dtype=dtype, direction=function.OUT ,unit=unit,default=default)
+    if function.must_handle_array:
+        if length_arguments:
+            name=length_arguments[0]
+        else:
+            name="N"
+        function.addParameter(name, dtype='i', direction=function.LENGTH)
+    return function
+  
+def simplified_function_specification(must_handle_array=False,can_handle_array=False):
+    def wrapper(f):
+        argspec=inspect.getargspec(f)
+        nkw=len(argspec.defaults) if argspec.defaults else 0
+        defaults=argspec.defaults if argspec.defaults else []
+        length_arguments=argspec.args[0:-nkw]
+        kwargs=argspec.args[-nkw:]
+        in_arg=OrderedDict()
+        for x,y in zip(kwargs,defaults):
+          in_arg[x]=y
+        
+        out_arg=[]
+        flatsrc=inspect.getsource(f).replace("\n","").replace(" ","")
+        def returns(**kwargs):
+            start=flatsrc.find("returns(")
+            order=lambda k: flatsrc.find(k[0]+"=",start)
+            out_arg.extend(sorted(kwargs.items()))
+        f.func_globals['returns']=returns
+        f(*argspec.args)
+        out_arg=OrderedDict(out_arg)
+
+        function=get_function_specification(f.func_name,in_arg,out_arg,
+            must_handle_array,can_handle_array,length_arguments)
+
+        def g():
+            return function
+        return g
+    return wrapper
+
+def remote_function(f=None,must_handle_array=False,can_handle_array=False):
+    # If called without method, we've been called with optional arguments.
+    # We return a decorator with the optional arguments filled in.
+    # Next time round we'll be decorating method.
+    if f is None:
+        return functools.partial(remote_function,must_handle_array=must_handle_array,can_handle_array=can_handle_array)
+    return legacy_function(simplified_function_specification(must_handle_array=must_handle_array,can_handle_array=can_handle_array)(f))
+
      
 class ParameterSpecification(object):
     def __init__(self, name, dtype, direction, description, default = None, unit = None):
