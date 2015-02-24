@@ -66,7 +66,6 @@ class PythonImplementation(object):
                 self.id_to_activate = -1
                 parent = self.communicators[self.activeid]
                 rank = parent.Get_rank()
-                
             message = ClientSideMPIMessage(polling_interval = self.polling_interval)
             message.receive(parent)
                 
@@ -80,7 +79,14 @@ class PythonImplementation(object):
                         self.handle_message(message, result_message)
                     except Exception as ex:
                         traceback.print_exc()
-                        result_message.set_error(ex.__str__())
+                        result_message.set_error(str(ex))
+                        #for type, attribute in self.dtype_to_message_attribute.iteritems():
+                        #    setattr(result_message, attribute, [])
+                            
+                        for type, attribute in self.dtype_to_message_attribute.iteritems():
+                            array = getattr(result_message, attribute)
+                            packed = pack_array(array, result_message.call_count, type)
+                            setattr(result_message, attribute, packed)
                         
                 else:
                     result_message.set_error("unknown function id " + message.function_id)
@@ -127,19 +133,21 @@ class PythonImplementation(object):
         dtype_to_count = self.get_dtype_to_count(specification)
         
         
+        if specification.name.startswith('internal__'):
+            method = getattr(self, specification.name)
+        else:
+            method = getattr(self.implementation, specification.name)
+        
+        
+        
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             count = dtype_to_count.get(type,0)
             for x in range(count):
                 if type == 'string':
                     getattr(output_message, attribute).append([""] * output_message.call_count)
                 else:
-                    getattr(output_message, attribute).append(numpy.empty(output_message.call_count, dtype=type))
-        
-        if specification.name.startswith('internal__'):
-            method = getattr(self, specification.name)
-        else:
-            method = getattr(self.implementation, specification.name)
-        
+                    getattr(output_message, attribute).append(numpy.zeros(output_message.call_count, dtype=type))
+
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             array = getattr(input_message, attribute)
             unpacked = unpack_array(array, input_message.call_count, type)
