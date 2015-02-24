@@ -53,8 +53,10 @@ def integrate_solar_system(particles, end_time):
     
 def plot_track(xe,ye,xv,yv):
 
-    from matplotlib import pyplot
-    figure = pyplot.figure(figsize=(5,5))
+    from matplotlib import pyplot, rc
+    figure = pyplot.figure(figsize=(10,10))
+    font = {'size' : 20}
+    rc('font', **font)
     plot = figure.add_subplot(1,1,1)
 
     plot.scatter([0.0], [0.0], color='y')
