@@ -953,10 +953,7 @@ static int max_identifier = 0;
 
 int cleanup_code()
 {
-    if(mpi_rank) {
-        return 0;
-    }
-    
+    ident.clear();
     vel.clear();
     pos.clear();
     mass.clear();
@@ -964,7 +961,12 @@ int cleanup_code()
     jerk.clear();
     potential.clear();
     radius.clear();
+    
+    acc_reduced.clear();
+    jerk_reduced.clear();
+    potential_reduced.clear();
     max_identifier = 0;
+    nsteps = 0;
     return 0;
 }
 

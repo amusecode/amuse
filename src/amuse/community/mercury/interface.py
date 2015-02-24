@@ -1277,26 +1277,26 @@ class Mercury(MercuryWayWard):
     def commit_particles(self):
         N=len(self.particles)
         if N<=1:
-          print "too few particles"
-          return -11
+            print "too few particles"
+            return -11
 
-        ic=numpy.argmax(self.particles.mass)
+        ic=self.particles.mass.argmax()
         self.central_particle=self.particles[ic]
 
         orbiters=(self.particles-self.central_particle).copy()
 
         maxmass=orbiters.mass.amax()
         if (maxmass/self.central_particle.mass) > 0.1:
-          print "orbiters too massive"
-          return -12
+            print "orbiters too massive"
+            return -12
 
         orbiters.position=orbiters.position-self.central_particle.position
         orbiters.velocity=orbiters.velocity-self.central_particle.velocity
 
 # note: lx,ly,lz, celimit?
         if not hasattr(orbiters,'density'):
-          orbiters.density=orbiters.mass*3/(4*numpy.pi)/orbiters.radius**3
-  
+            orbiters.density=orbiters.mass*3/(4*numpy.pi)/orbiters.radius**3
+
         self.overridden().central_particle.add_particle(self.central_particle)
                 
         self.overridden().orbiters.add_particles(orbiters)
@@ -1432,3 +1432,9 @@ class Mercury(MercuryWayWard):
         object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
         object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
         object.add_method('RUN', 'recommit_particles')
+    def cleanup_code(self):
+        self._particles=Particles(0)
+        self.model_time=0.|units.s
+        self.particles_accessed=True
+        self.committed=False
+
