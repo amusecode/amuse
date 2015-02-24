@@ -759,6 +759,16 @@ class VectorQuantity(Quantity):
         """
         return numpy.argsort(self.number, **options)
 
+    def argmax(self, **options):
+        """
+        Returns the index of the maximum item
+
+        >>> from amuse.units import si
+        >>> v1 = [1.0, 3.0, 2.0] | si.kg
+        >>> v1.argmax()
+        1
+        """
+        return numpy.argmax(self.number, **options)
 
     def sorted_with(self, *others):
         """
