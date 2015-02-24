@@ -617,7 +617,7 @@ class StoreHDF(object):
         self.return_working_copy = return_working_copy
         self.mapping_from_groupid_to_set = {}
         
-        warnings.warn("amuse hdf storage version 2.0 is still in development, do not use it for production scripts")
+        #warnings.warn("amuse hdf storage version 2.0 is still in development, do not use it for production scripts")
         
     def is_correct_version(self):
         if len(self.hdf5file) == 0 or self.INFO_GROUP_NAME in self.hdf5file:
