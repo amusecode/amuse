@@ -314,6 +314,8 @@ class ChildTreeOnParticleSet(object):
         return getattr(set, name_of_attribute).as_set().compressed()
         
 
+    def get_children_subset(self):    
+        return self._children()
 
 class ChildTreeOnParticle(object):
 
@@ -383,6 +385,10 @@ class ChildTreeOnParticle(object):
                 children = list(current.iter_children())
                 stack.extend(reversed(children))
 
+    def get_children_subset(self):    
+        keys = [x.particle.key for x in self.iter_children()]
+        return self.particle.particles_set._subset(keys)
+        
     def iter_children(self):
         current = self.particle
         
