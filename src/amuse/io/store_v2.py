@@ -683,10 +683,7 @@ class StoreHDF(object):
                 links_to_resolve
             )
         while len(links_to_resolve) > 0:
-            print mapping_from_setid_to_group
-            for x in links_to_resolve:
-                print x
-            print '-'*80
+            
             sets_to_store, links_to_resolve = self.resolve_links(
                 mapping_from_setid_to_group,
                 links_to_resolve
