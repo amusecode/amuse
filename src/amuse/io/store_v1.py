@@ -521,7 +521,7 @@ class StoreHDF(object):
             else:
                 self.hdf5file = h5py.File(filename,'r')
         
-        self.copy_history = False
+        self.copy_history = copy_history
         self.mapping_from_groupid_to_set = {}
     
     def is_correct_version(self):

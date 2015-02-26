@@ -999,7 +999,13 @@ class StoreHDF(object):
             previous = x
             
         last = all_containers[-1]
-        return last
+        
+        if self.copy_history:
+            copy_of_last = last.copy()
+            copy_of_last._private.previous = last
+            return copy_of_last
+        else:
+            return last
     
     def get_set_from_reference(self, reference):
         referenced_group = self.derefence(reference)
