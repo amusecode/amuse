@@ -64,11 +64,11 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         else:
             result = processor.load()
             if self.close_file:
-                result = result.copy()
                 if not self.copy_history:
+                    result = result.copy()
                     result._private.previous = None
                 else:
-                    raise Exception("copying the history to memmory is not supported")
+                    return result
                 processor.close()
         return result
         
