@@ -586,11 +586,10 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
               "got multiple values for argument '{0}' of method {1}".format(parameter, self.function_name))
             try:
                 if self.units[index] == self.NO_UNIT:
-                    arg = argument
-                    if is_quantity(arg):
-                        result[parameter] = arg.value_in(units.none)
+                    if is_quantity(argument):
+                        result[parameter] = argument.value_in(units.none)
                     else:
-                        result[parameter] = arg
+                        result[parameter] = argument
                 elif self.units[index] == self.INDEX:
                     result[parameter] = argument
                 elif type(self.units[index]) == self.LINK:

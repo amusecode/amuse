@@ -1051,14 +1051,14 @@ class CodeFunctionWithUnits(CodeFunction):
             logging.getLogger("code").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
         
         call_id = random.randint(0, 1000)
-        
         try:
             self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values, encoded_units = encoded_units)
             
             dtype_to_result , output_encoded_units = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array, has_units = True)
         except Exception, ex:
             CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
-            raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
+            raise         
+            exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
         output_units = self.convert_floats_to_units(output_encoded_units)
         result = self.converted_results(dtype_to_result, handle_as_array, output_units)
@@ -1138,7 +1138,7 @@ class CodeFunctionWithUnits(CodeFunction):
         
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
-            if self.specification.has_units:
+            if self.specification.has_units and not units[parameter.index_in_output] is None:
                 result[parameter.name] = result[parameter.name] | units[parameter.index_in_output]
                 
         
@@ -1202,7 +1202,7 @@ class CodeFunctionWithUnits(CodeFunction):
         
     def convert_unit_to_floats(self, unit):
         if unit is None:
-            return numpy.zeros(5, dtype=numpy.float64)
+            return numpy.zeros(9, dtype=numpy.float64)
         else:
             return unit.to_array_of_floats()
         
@@ -1210,7 +1210,7 @@ class CodeFunctionWithUnits(CodeFunction):
         result = numpy.zeros(len(units) * 9, dtype = numpy.float64)
         for index, unit in enumerate(units):
             offset = index*9
-            result[offset:offset+10] = self.convert_unit_to_floats(unit)
+            result[offset:offset+9] = self.convert_unit_to_floats(unit)
         return result
         
     def convert_floats_to_units(self, floats):

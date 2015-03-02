@@ -373,7 +373,7 @@ class PythonImplementation(object):
         result = numpy.zeros(len(units) * 9, dtype = numpy.float64)
         for index, unit in enumerate(units):
             offset = index*9
-            result[offset:offset+10] = self.convert_unit_to_floats(unit)
+            result[offset:offset+9] = self.convert_unit_to_floats(unit)
         return result
         
 
