@@ -167,7 +167,6 @@ export LD_LIBRARY_PATH=${PYTHONHOME}/lib/
 export PKG_CONFIG_PATH=${PYTHONHOME}/lib/pkgconfig/
 export FC=gfortran
 export F77=gfortran
-export
 
 if [ ! -e "libsinstalled" ]; then
     ${PYTHON} build_libraries.py install || exit $?
@@ -273,6 +272,9 @@ if [ ! -e "amuseinstalled" ]; then
     
     #make distclean PYTHON=${PYTHON}
 
+    if [ ${PLATFORM} == "Darwin" ]; then
+        export CPP="gcc -E"
+    fi
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
     
     ${PYTHON} setup.py install || exit $?
