@@ -196,6 +196,31 @@ class ForTestingInterface(PythonCodeInterface):
         function.can_handle_array = False
         return function  
     
+    
+    @legacy_function
+    def echo_quantity():
+        function = LegacyFunctionSpecification()      
+        function.addParameter('quantity_in', dtype='float64', direction=function.IN)
+        function.addParameter('quantity_out', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.has_units = True
+        function.id = 23
+        return function  
+    
+
+    @legacy_function
+    def echo_quantities():
+        function = LegacyFunctionSpecification()          
+        function.addParameter('quantity_in', dtype='float64', direction=function.IN)
+        function.addParameter('quantity_out', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        function.has_units = True
+        function.id = 23
+        return function      
+
+
 
 basic_python_exe = """#!{executable}
 import sys
@@ -321,6 +346,16 @@ class ForTestingImplementation(object):
         self._other.internal__activate_communicator(0)
         return 0
     
+
+    def echo_quantity(self, quantity_in, quantity_out):
+        quantity_out.value = quantity_in * (10 | (1.0/units.s))
+        return 0
+        
+
+    def echo_quantities(self, quantity_in, quantity_out):
+        quantity_out.value = quantity_in * (10 | (1.0/units.s))
+        return 0
+        
 
 class ForTesting(InCodeComponentImplementation):
     
@@ -962,3 +997,27 @@ class TestInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(x.particles.mass, [1,2,3,4,5])
         x.stop()
     
+    def test32(self):
+        x = ForTestingInterface()
+        quantity_out, error = x.echo_quantity(20 | units.m)
+        self.assertEquals(error, 0)
+        self.assertEquals(quantity_out, 200 | (units.m/units.s))
+        x.stop()
+
+
+    def test33(self):
+        x = ForTestingInterface()
+        quantity_out, error = x.echo_quantity([20, 30, 40] | units.m)
+        self.assertEquals(error, 0)
+        self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
+        x.stop()
+
+
+    def test34(self):
+        x = ForTestingInterface()
+        quantity_out, error = x.echo_quantities([20, 30, 40] | units.m)
+        self.assertEquals(error, 0)
+        self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
+        x.stop()
+
+

@@ -138,7 +138,10 @@ class PythonImplementation(object):
         else:
             method = getattr(self.implementation, specification.name)
         
-        
+        if specification.has_units:
+            input_units = self.convert_floats_to_units(input_message.encoded_units)
+        else:
+            input_units = ()
         
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             count = dtype_to_count.get(type,0)
@@ -152,27 +155,31 @@ class PythonImplementation(object):
             array = getattr(input_message, attribute)
             unpacked = unpack_array(array, input_message.call_count, type)
             setattr(input_message,attribute, unpacked)
-            
+        
+        units = [False] * len(specification.output_parameters)
         if specification.must_handle_array:
-            keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification)
+            keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification, input_units)
             result = method(**keyword_arguments)
-            self.fill_output_message(output_message, None, result, keyword_arguments, specification)
+            self.fill_output_message(output_message, None, result, keyword_arguments, specification, units)
         else:
             for index in range(input_message.call_count):
-                keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification)
+                keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification, input_units)
                 try:
                     result = method(**keyword_arguments)
                 except TypeError:
                     result = method(*list(keyword_arguments))
-                self.fill_output_message(output_message, index, result, keyword_arguments, specification)
+                self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         
             
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             array = getattr(output_message, attribute)
             packed = pack_array(array, input_message.call_count, type)
             setattr(output_message, attribute, packed)
+        
+        if specification.has_units:
+            output_message.encoded_units = self.convert_output_units_to_floats(units)
     
-    def new_keyword_arguments_from_message(self, input_message, index, specification):
+    def new_keyword_arguments_from_message(self, input_message, index, specification, units = []):
         keyword_arguments = OrderedDictionary()
         for parameter in specification.parameters:
             attribute = self.dtype_to_message_attribute[parameter.datatype]
@@ -182,11 +189,20 @@ class PythonImplementation(object):
                     argument_value = getattr(input_message, attribute)[parameter.input_index]
                 else:
                     argument_value = getattr(input_message, attribute)[parameter.input_index][index]
+                if specification.has_units:
+                    unit = units[parameter.index_in_input]
+                    if not unit is None:
+                        argument_value = argument_value | unit
             elif parameter.direction == LegacyFunctionSpecification.INOUT:
                 if specification.must_handle_array:
                     argument_value = ValueHolder(getattr(input_message, attribute)[parameter.input_index])
                 else:
                     argument_value = ValueHolder(getattr(input_message, attribute)[parameter.input_index][index])
+                
+                if specification.has_units:
+                    unit = units[parameter.index_in_input]
+                    if not unit is None:
+                        argument_value.value = argument_value.value | unit
             elif parameter.direction == LegacyFunctionSpecification.OUT:
                 argument_value = ValueHolder(None)
             elif parameter.direction == LegacyFunctionSpecification.LENGTH:
@@ -194,7 +210,8 @@ class PythonImplementation(object):
             keyword_arguments[parameter.name] = argument_value
         return keyword_arguments
         
-    def fill_output_message(self, output_message, index, result, keyword_arguments, specification):
+    def fill_output_message(self, output_message, index, result, keyword_arguments, specification, units):
+        from amuse.units import quantities
         
         if not specification.result_type is None:
             attribute = self.dtype_to_message_attribute[specification.result_type]
@@ -206,12 +223,21 @@ class PythonImplementation(object):
         for parameter in specification.parameters:
             attribute = self.dtype_to_message_attribute[parameter.datatype]
             if (parameter.direction == LegacyFunctionSpecification.OUT or 
-               parameter.direction == LegacyFunctionSpecification.INOUT):
+                parameter.direction == LegacyFunctionSpecification.INOUT):
                 argument_value = keyword_arguments[parameter.name]
+                output = argument_value.value
+                if specification.has_units:
+                    unit = output.unit if quantities.is_quantity(output) else None
+                    if specification.must_handle_array or index == 0:
+                        units[parameter.index_in_output] = unit
+                    else:
+                        unit = units[parameter.index_in_output]
+                    if not unit is None:
+                        output = output.value_in(unit)
                 if specification.must_handle_array:
-                    getattr(output_message, attribute)[parameter.output_index] = argument_value.value
+                    getattr(output_message, attribute)[parameter.output_index] = output
                 else:
-                    getattr(output_message, attribute)[parameter.output_index][index] = argument_value.value
+                    getattr(output_message, attribute)[parameter.output_index][index] = output
     
     def get_dtype_to_count(self, specification):
         dtype_to_count = {}
@@ -334,3 +360,50 @@ class PythonImplementation(object):
     
         return 0
         
+    def convert_to_unit(self, units_as_floats, index):
+        return None
+
+    def convert_unit_to_floats(self, unit):
+        if unit is None:
+            return numpy.zeros(9, dtype=numpy.float64)
+        else:
+            return unit.to_array_of_floats()
+
+    def convert_output_units_to_floats(self, units):
+        result = numpy.zeros(len(units) * 9, dtype = numpy.float64)
+        for index, unit in enumerate(units):
+            offset = index*9
+            result[offset:offset+10] = self.convert_unit_to_floats(unit)
+        return result
+        
+
+    def convert_float_to_unit(self, floats):
+        from amuse.units import core
+        from amuse.units import units
+        if numpy.all(floats == 0):
+            return None
+        factor = floats[0]
+        result = factor
+        system_index = floats[1]
+        unit_system = None
+        for x in core.system.ALL.values():
+            if x.index == system_index:
+                unit_system = x
+                break
+        for x in unit_system.bases:
+            power = floats[x.index + 2]
+            if not power == 0.0:
+                result = result * (x ** power)
+        return result
+        
+
+    def convert_floats_to_units(self, floats):
+        result = []
+        for index in range(len(floats) / 9):
+            offset = index*9
+            unit_floats = floats[offset:offset+10]
+            unit = self.convert_float_to_unit(unit_floats)
+            result.append(unit)
+        return result
+        
+

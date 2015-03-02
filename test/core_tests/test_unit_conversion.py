@@ -100,6 +100,13 @@ class TestUnitConversions(amusetest.TestCase):
         self.assertAlmostRelativeEquals((1234 | km ** (5/3.)).value_in( (km ** 5.0) ** (1.0/3.0) ), 1234.0, 12)
         self.assertAlmostRelativeEquals((1234 | km ** (5/3.)).value_in( (m ** 5.0) ** (1.0/3.0) ), 123400000.0)
         
+    def test15(self):
+        print (m / s).to_array_of_floats()
+        self.assertAlmostRelativeEquals( (m / s).to_array_of_floats(), [1, 1,  1, 0, -1, 0, 0, 0, 0])
+        self.assertAlmostRelativeEquals( (s / m).to_array_of_floats(), [1, 1, -1, 0, 1, 0, 0, 0, 0])
+        self.assertAlmostRelativeEquals( (kg ** 2/ s).to_array_of_floats(), [1, 1,  0, 2, -1, 0, 0, 0, 0])
+        
+
 class TestNonNumericUnits(amusetest.TestCase):
     def test1(self):
         string1 = "string" | string

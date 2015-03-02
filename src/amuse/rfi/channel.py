@@ -377,8 +377,9 @@ class AbstractMessage(object):
         dtype_to_arguments={},
         error=False,
         big_endian=(sys.byteorder.lower() == 'big'),
-        polling_interval=0
-    ):
+        polling_interval=0,
+        encoded_units = ()
+):
         self.polling_interval = polling_interval
         
         # flags
@@ -397,8 +398,10 @@ class AbstractMessage(object):
         self.doubles = []
         self.strings = []
         self.booleans = []
-        
+    
         self.pack_data(dtype_to_arguments)
+        
+        self.encoded_units = encoded_units
         
     def pack_data(self, dtype_to_arguments):
         for dtype, attrname in self.dtype_to_message_attribute():
@@ -441,13 +444,14 @@ class MPIMessage(AbstractMessage):
         self.receive_content(comm, header)
         
     def receive_header(self, comm):
-        header = numpy.zeros(10, dtype='i')
+        header = numpy.zeros(11, dtype='i')
         self.mpi_receive(comm, [header, MPI.INT])
         return header
         
     def receive_content(self, comm, header):
         # 4 flags as 8bit booleans in 1st 4 bytes of header
         # endiannes(not supported by MPI channel), error, unused, unused 
+    
         flags = header.view(dtype='bool8')
         self.big_endian = flags[0]
         self.error = flags[1]
@@ -462,6 +466,7 @@ class MPIMessage(AbstractMessage):
         number_of_doubles = header[7]
         number_of_booleans = header[8]
         number_of_strings = header[9]
+        number_of_units = header[10]
         
         self.ints = self.receive_ints(comm, number_of_ints)
         self.longs = self.receive_longs(comm, number_of_longs)
@@ -470,8 +475,10 @@ class MPIMessage(AbstractMessage):
         self.booleans = self.receive_booleans(comm, number_of_booleans)
         self.strings = self.receive_strings(comm, number_of_strings)
         
+        self.encoded_units = self.receive_floats(comm, number_of_units)
+        
     def nonblocking_receive(self, comm):
-        header = numpy.zeros(10, dtype='i')
+        header = numpy.zeros(11, dtype='i')
         request = self.mpi_nonblocking_receive(comm, [header, MPI.INT])
         return ASyncRequest(request, self, comm, header)
     
@@ -556,12 +563,14 @@ class MPIMessage(AbstractMessage):
             len(self.doubles) ,
             len(self.booleans) ,
             len(self.strings) ,
+            len(self.encoded_units)
         ], dtype='i')
         
         
         flags = header.view(dtype='bool8')
         flags[0] = self.big_endian
         flags[1] = self.error
+        flags[2] = len(self.encoded_units) > 0
         self.send_header(comm, header)
         self.send_content(comm)
     
@@ -575,6 +584,7 @@ class MPIMessage(AbstractMessage):
         self.send_doubles(comm, self.doubles)
         self.send_booleans(comm, self.booleans)
         self.send_strings(comm, self.strings)
+        self.send_floats(comm, self.encoded_units)
         
     def send_ints(self, comm, array):
         if len(array) > 0:
@@ -658,7 +668,7 @@ class ServerSideMPIMessage(MPIMessage):
         return comm.Irecv(array, source=0, tag=999)
 
     def receive_header(self, comm):
-        header = numpy.zeros(10, dtype='i')
+        header = numpy.zeros(11, dtype='i')
         request = comm.Irecv([header, MPI.INT], source=0, tag=999)
         if self.polling_interval > 0:
             is_finished = request.Test()
@@ -683,7 +693,7 @@ class ClientSideMPIMessage(MPIMessage):
         return comm.Irecv(array, source=0, tag=999)
 
     def receive_header(self, comm):
-        header = numpy.zeros(10, dtype='i')
+        header = numpy.zeros(11, dtype='i')
         request = comm.Irecv([header, MPI.INT], source=0, tag=989)
         if self.polling_interval > 0:
             is_finished = request.Test()
@@ -1003,10 +1013,10 @@ Please do a 'make clean; make' in the root directory.
             
         return full_name_of_the_worker
     
-    def send_message(self, call_id=0, function_id=-1, dtype_to_arguments={}):
+    def send_message(self, call_id=0, function_id=-1, dtype_to_arguments={}, encoded_units = None):
         pass
         
-    def recv_message(self, call_id=0, function_id=-1, handle_as_array=False):
+    def recv_message(self, call_id=0, function_id=-1, handle_as_array=False, has_units = False):
         pass
     
     def nonblocking_recv_message(self, call_id=0, function_id=-1, handle_as_array=False):
@@ -1318,7 +1328,7 @@ class MpiChannel(AbstractMessageChannel):
         return max(1, max(lengths))
         
         
-    def send_message(self, call_id, function_id, dtype_to_arguments={}):
+    def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = ()):
 
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
@@ -1328,18 +1338,18 @@ class MpiChannel(AbstractMessageChannel):
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
         if call_count > self.max_message_length:
-            self.split_message(call_id, function_id, call_count, dtype_to_arguments)
-            return
+            self.split_message(call_id, function_id, call_count, dtype_to_arguments, encoded_units)
+        else:
+            message = ServerSideMPIMessage(
+                call_id, function_id,
+                call_count, dtype_to_arguments, 
+                encoded_units = encoded_units
+            )
+            message.send(self.intercomm)
+
+            self._is_inuse = True
         
-        message = ServerSideMPIMessage(
-            call_id, function_id,
-            call_count, dtype_to_arguments
-        )
-        message.send(self.intercomm)
-        
-        self._is_inuse = True
-        
-    def split_message(self, call_id, function_id, call_count, dtype_to_arguments):
+    def split_message(self, call_id, function_id, call_count, dtype_to_arguments, encoded_units = ()):
         
         def split_input_array(i, arr_in):
             if call_count == 1:
@@ -1364,7 +1374,8 @@ class MpiChannel(AbstractMessageChannel):
                 call_id,
                 function_id,
                 # min(call_count,self.max_message_length),
-                split_dtype_to_argument
+                split_dtype_to_argument,
+                encoded_units=encoded_units
             )
             
             partial_dtype_to_result = self.recv_message(call_id, function_id, True)
@@ -1389,7 +1400,7 @@ class MpiChannel(AbstractMessageChannel):
         self._communicated_splitted_message = True
         self._merged_results_splitted_message = dtype_to_result
     
-    def recv_message(self, call_id, function_id, handle_as_array):
+    def recv_message(self, call_id, function_id, handle_as_array, has_units = False):
         
         self._is_inuse = False
         
@@ -1423,10 +1434,12 @@ class MpiChannel(AbstractMessageChannel):
 #        elif message.tag == -2:
 #            self.stop()
 #            raise exceptions.CodeException("Fatal error in code, code has exited")
+        if has_units:
+            return message.to_result(handle_as_array), message.encoded_units
+        else:
+            return message.to_result(handle_as_array)
         
-        return message.to_result(handle_as_array)
-        
-    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units = False):
         request = ServerSideMPIMessage().nonblocking_receive(self.intercomm)
         def handle_result(function):
             self._is_inuse = False
@@ -1444,8 +1457,11 @@ class MpiChannel(AbstractMessageChannel):
             if message.error:
                 raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
                 
-            return message.to_result(handle_as_array)
-    
+            if has_units:
+                return message.to_result(handle_as_array), message.encoded_units
+            else:
+                return message.to_result(handle_as_array)
+
         request.add_result_handler(handle_result)
         
         return request
@@ -1577,14 +1593,14 @@ m.run_mpi_channel('{2}')"""
         finally:
             socket.close()
     
-    def send_message(self, call_id=0, function_id=-1, dtype_to_arguments={}):
+    def send_message(self, call_id=0, function_id=-1, dtype_to_arguments={}, encoded_units = ()):
         self._send(self.client_socket, ('send_message', (call_id, function_id, dtype_to_arguments),))
         result = self._recv(self.client_socket)
         return result
 
-    def recv_message(self, call_id=0, function_id=-1, handle_as_array=False):
+    def recv_message(self, call_id=0, function_id=-1, handle_as_array=False, has_units=False):
         self._send(self.client_socket, ('recv_message', (call_id, function_id, handle_as_array),))
-        result = self._recv(self.client_socket)    
+        result = self._recv(self.client_socket)        
         return result
     
     def _send(self, client_socket, message):
@@ -1688,7 +1704,7 @@ class SocketMessage(AbstractMessage):
         
         # logger.debug("receiving message")
         
-        header_bytes = self._receive_all(40, socket)
+        header_bytes = self._receive_all(44, socket)
 
         flags = numpy.frombuffer(header_bytes, dtype="b", count=4, offset=0)
         
@@ -1826,6 +1842,7 @@ class SocketMessage(AbstractMessage):
             len(self.doubles),
             len(self.booleans),
             len(self.strings),
+            0
         ], dtype='i')
         
         # logger.debug("sending message with flags %s and header %s", flags, header)
@@ -2083,7 +2100,7 @@ class SocketChannel(AbstractMessageChannel):
             
         return max(1, max(lengths))
     
-    def send_message(self, call_id, function_id, dtype_to_arguments={}):
+    def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = None):
         
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
@@ -2099,7 +2116,7 @@ class SocketChannel(AbstractMessageChannel):
         
         self._is_inuse = True
         
-    def recv_message(self, call_id, function_id, handle_as_array):
+    def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
            
         self._is_inuse = False
         
@@ -2381,7 +2398,7 @@ class DistributedChannel(AbstractMessageChannel):
             
         return max(1, max(lengths))
     
-    def send_message(self, call_id, function_id, dtype_to_arguments={}):
+    def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = None):
         
         call_count = self.determine_length_from_data(dtype_to_arguments)
         
@@ -2397,7 +2414,7 @@ class DistributedChannel(AbstractMessageChannel):
         
         self._is_inuse = True
         
-    def recv_message(self, call_id, function_id, handle_as_array):
+    def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
            
         self._is_inuse = False
         

@@ -44,7 +44,7 @@ HEADER_CODE_STRING = """
 
 CONSTANTS_AND_GLOBAL_VARIABLES_STRING = """
 static int ERROR_FLAG = 256;
-static int HEADER_SIZE = 10; //integers
+static int HEADER_SIZE = 11; //integers
 
 static int HEADER_FLAGS = 0;
 static int HEADER_CALL_ID = 1;
@@ -56,6 +56,7 @@ static int HEADER_FLOAT_COUNT = 6;
 static int HEADER_DOUBLE_COUNT = 7;
 static int HEADER_BOOLEAN_COUNT = 8;
 static int HEADER_STRING_COUNT = 9;
+static int HEADER_UNITS_COUNT = 10;
 
 static bool TRUE_BYTE = 1;
 static bool FALSE_BYTE = 0;
@@ -254,6 +255,7 @@ void onexit_mpi(void) {
         header_out[HEADER_DOUBLE_COUNT] = 0;
         header_out[HEADER_BOOLEAN_COUNT] = 0;
         header_out[HEADER_STRING_COUNT] = 0;
+        header_out[HEADER_UNITS_COUNT] = 0;
 
         MPI_Send(header_out, HEADER_SIZE, MPI_INT, 0, 999, parent);
         
@@ -465,6 +467,7 @@ void run_mpi(int argc, char *argv[]) {
     header_out[HEADER_DOUBLE_COUNT] = 0;
     header_out[HEADER_BOOLEAN_COUNT] = 0;
     header_out[HEADER_STRING_COUNT] = 0;
+    header_out[HEADER_UNITS_COUNT] = 0;
 
     //fprintf(stderr, "c worker mpi: handling call\\n");
     

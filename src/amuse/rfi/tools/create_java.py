@@ -40,7 +40,7 @@ import java.nio.channels.SocketChannel;
 
 AMUSE_MESSAGE_CLASS_CODE_STRING = """
  public static class AmuseMessage {
-        public static final int HEADER_SIZE = 10; // integers
+        public static final int HEADER_SIZE = 11; // integers
 
         // 4 byte flags field.
         public static final int HEADER_FLAGS = 0;

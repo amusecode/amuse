@@ -42,6 +42,8 @@ code and C++ or Fortran codes. It provides the abstract base
 class for all community codes.
 """
 
+import numpy
+
 def ensure_mpd_is_running():
     from mpi4py import MPI
     if not is_mpd_running():
@@ -266,7 +268,10 @@ class legacy_function(object):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return CodeFunction(instance, owner, self.specification)
+        if self.specification.has_units:
+            return CodeFunctionWithUnits(instance, owner, self.specification)
+        else:
+            return CodeFunction(instance, owner, self.specification)
         
     def __set__(self, instance, value):
         return
@@ -515,6 +520,7 @@ class LegacyFunctionSpecification(object):
         self.dtype_to_output_parameters = {}
         self.can_handle_array = False
         self.must_handle_array = False
+        self.has_units = False
         self.result_doc = ''
 
     def set_name(self, name):
@@ -547,7 +553,7 @@ class LegacyFunctionSpecification(object):
         if has_default_parameters and not parameter.has_default_value():
             raise exceptions.AmuseException("non default argument '{0}' follows default argument".format(parameter.name))
         self.input_parameters.append(parameter)
-        
+        parameter.index_in_input = len(self.input_parameters) - 1
         parameters = self.dtype_to_input_parameters.get(parameter.datatype, [])
         parameters.append(parameter)
         parameter.input_index = len(parameters) - 1
@@ -555,6 +561,7 @@ class LegacyFunctionSpecification(object):
    
     def add_output_parameter(self, parameter):
         self.output_parameters.append(parameter)
+        parameter.index_in_output = len(self.output_parameters) - 1
         
         parameters = self.dtype_to_output_parameters.get(parameter.datatype, [])
         parameters.append(parameter)
@@ -1016,6 +1023,227 @@ class PythonCodeInterface(CodeInterface):
     @option(type='string', sections=("channel",))
     def python_interpreter(self):
         return sys.executable
+
+
+
+class CodeFunctionWithUnits(CodeFunction):
+   
+    def __init__(self, interface, owner, specification):
+        """
+        Implementation of the runtime call to the remote process.
+
+        Performs the encoding of python arguments into lists
+        of values, sends a message over an MPI channel and
+        waits for a result message, decodes this message and
+        returns.
+        """
+        self.interface = interface
+        self.owner = owner
+        self.specification = specification
+    
+    def __call__(self, *arguments_list, **keyword_arguments):
+        dtype_to_values, units = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
+        encoded_units = self.convert_input_units_to_floats(units)
+        
+        handle_as_array = self.must_handle_as_array(dtype_to_values)
+        
+        if not self.owner is None:
+            logging.getLogger("code").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
+        
+        call_id = random.randint(0, 1000)
+        
+        try:
+            self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values, encoded_units = encoded_units)
+            
+            dtype_to_result , output_encoded_units = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array, has_units = True)
+        except Exception, ex:
+            CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
+            raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
+        
+        output_units = self.convert_floats_to_units(output_encoded_units)
+        result = self.converted_results(dtype_to_result, handle_as_array, output_units)
+        
+        if not self.owner is None:
+            logging.getLogger("code").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
+        
+        return result
+    
+    def async(self, *arguments_list, **keyword_arguments):
+        dtype_to_values, units = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
+        
+        handle_as_array = self.must_handle_as_array(dtype_to_values)
+        
+        call_id = random.randint(0, 1000)
+              
+        self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
+        
+        request = self.interface.channel.nonblocking_recv_message(call_id, self.specification.id, handle_as_array)
+        
+        def handle_result(function):
+            try:
+                dtype_to_result = function()
+            except Exception, ex:
+                raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
+            return self.converted_results(dtype_to_result, handle_as_array)
+            
+        request.add_result_handler(handle_result)
+        return request
+        
+        
+    
+    def must_handle_as_array(self, keyword_arguments):
+        for argument_type, argument_values in keyword_arguments.items():
+            if argument_values:
+                count = 0
+                for argument_value in argument_values:
+                    try:
+                        if not isinstance(argument_value, basestring):
+                            count = max(count, len(argument_value))
+                    except:
+                        count = max(count, 0)
+                if count > 0:
+                    return True
+        return False
+        
+    """
+    Convert results from an MPI message to a return value.
+    """
+    def converted_results(self, dtype_to_result, must_handle_as_array, units):
+        
+        number_of_outputs = len(self.specification.output_parameters)
+        
+        if number_of_outputs == 0:
+            if self.specification.result_type is None:
+                return None
+            return dtype_to_result[self.specification.result_type][0]
+            
+        if number_of_outputs == 1 \
+            and self.specification.result_type is None:
+            
+            for value in dtype_to_result.values():
+                if len(value) == 1:
+                    if must_handle_as_array:
+                        return value
+                    else:
+                        return value[0]
+            
+        result = OrderedDictionary()
+        dtype_to_array = {}
+        
+        for key, value in dtype_to_result.iteritems():
+            dtype_to_array[key] = list(reversed(value))
+        
+        if not self.specification.result_type is None:
+            return_value =  dtype_to_array[self.specification.result_type].pop()
+        
+        for parameter in self.specification.output_parameters:
+            result[parameter.name] = dtype_to_array[parameter.datatype].pop()
+            if self.specification.has_units:
+                result[parameter.name] = result[parameter.name] | units[parameter.index_in_output]
+                
+        
+        if not self.specification.result_type is None:
+            result["__result"] =  return_value
+        
+        return result
+       
+    """
+    Convert keyword arguments and list arguments to an MPI message
+    """
+    def converted_keyword_and_list_arguments(self, arguments_list, keyword_arguments):
+        from  amuse.units import quantities
+        dtype_to_values = self.specification.new_dtype_to_values()
+        units = [None] * len(self.specification.input_parameters)
+        
+        input_parameters_seen = set(map(lambda x : x.name, self.specification.input_parameters))
+        names_in_argument_list = set([])
+        for index, argument in enumerate(arguments_list):
+            parameter = self.specification.input_parameters[index]
+            names_in_argument_list.add(parameter.name)
+            
+            if quantities.is_quantity(argument):
+                units[parameter.index_in_input] = argument.unit
+                argument = argument.number
+                
+            values = dtype_to_values[parameter.datatype]
+            values[parameter.input_index] = argument
+            input_parameters_seen.remove(parameter.name)
+        
+        for index, parameter in enumerate(self.specification.input_parameters):
+            if parameter.name in keyword_arguments:
+                argument = keyword_arguments[parameter.name]
+                if quantities.is_quantity(argument):
+                    units[parameter.index_in_input] = argument.unit
+                    argument = argument.number
+                
+                values = dtype_to_values[parameter.datatype]
+                values[parameter.input_index] = argument
+                input_parameters_seen.remove(parameter.name)
+        
+        for parameter in self.specification.input_parameters:
+            if (parameter.name in input_parameters_seen) and parameter.has_default_value():
+                argument = parameter.default
+                if quantities.is_quantity(argument):
+                    units[parameter.index_in_input] = argument.unit
+                    argument = argument.number
+                    
+                values = dtype_to_values[parameter.datatype]
+                values[parameter.input_index] = parameter.default
+                input_parameters_seen.remove(parameter.name)
+                
+        if input_parameters_seen:
+            raise exceptions.CodeException("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
+         
+        return dtype_to_values, units
+        
+    def __str__(self):
+        return str(self.specification)
+        
+        
+    def convert_unit_to_floats(self, unit):
+        if unit is None:
+            return numpy.zeros(5, dtype=numpy.float64)
+        else:
+            return unit.to_array_of_floats()
+        
+    def convert_input_units_to_floats(self, units):
+        result = numpy.zeros(len(units) * 9, dtype = numpy.float64)
+        for index, unit in enumerate(units):
+            offset = index*9
+            result[offset:offset+10] = self.convert_unit_to_floats(unit)
+        return result
+        
+    def convert_floats_to_units(self, floats):
+        result = []
+        for index in range(len(floats) / 9):
+            offset = index*9
+            unit_floats = floats[offset:offset+10]
+            unit = self.convert_float_to_unit(unit_floats)
+            result.append(unit)
+        return result
+        
+    def convert_float_to_unit(self, floats):
+        from amuse.units import core
+        from amuse.units import units
+        if numpy.all(floats == 0):
+            return None
+        factor = floats[0]
+        result = factor
+        system_index = floats[1]
+        unit_system = None
+        for x in core.system.ALL.values():
+            if x.index == system_index:
+                unit_system = x
+                break
+        for x in unit_system.bases:
+            power = floats[x.index + 2]
+            if not power == 0.0:
+                result = result * (x ** power)
+        return result
+        
+
+
+
 
 
 
