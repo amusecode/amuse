@@ -426,6 +426,21 @@ class unit(object):
         result.append(self.convert_result_value(method, definition, value))
     
     
+    def to_array_of_floats(self):
+        """Represent a unit as an array of 8 64-bit floats. First float represents the factor, the other 7 the power of each base unit.
+        Cannot be used for non numeric units
+        """
+        result = numpy.zeros(9, dtype=numpy.float64)
+        if not self.base:
+            return result
+        
+        result[0] = self.factor
+        
+        for n, base in self.base:
+            result[base.index + 2] = n
+            result[1] = base.system.index
+        return result
+
 class base_unit(unit):
     """
     base_unit objects are  orthogonal, indivisable units 
