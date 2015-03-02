@@ -187,7 +187,7 @@ AC_LANG(C++)
 save_CFLAGS="$CFLAGS"
 save_CPPFLAGS="$CPPFLAGS"
 CFLAGS="$MPFR_FLAGS $save_CFLAGS"
-CPPFLAGS="$MPFR_FLAGS  -std=c++0x $save_CPPFLAGS"
+CPPFLAGS="$MPFR_FLAGS $save_CPPFLAGS"
 cache_var=AS_TR_SH([ac_cv_header_mpfr.h])
 AC_CHECK_HEADER(
     [mpreal.h],
