@@ -273,7 +273,7 @@ if [ ! -e "amuseinstalled" ]; then
     #make distclean PYTHON=${PYTHON}
 
     if [ ${PLATFORM} == "Darwin" ]; then
-        export CPP="gcc -E"
+        export CXXCPP="g++ -E"
     fi
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
     
