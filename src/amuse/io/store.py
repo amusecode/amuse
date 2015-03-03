@@ -67,8 +67,6 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                 if not self.copy_history:
                     result = result.copy()
                     result._private.previous = None
-                else:
-                    return result
                 processor.close()
         return result
         
