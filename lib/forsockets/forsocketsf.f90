@@ -8,7 +8,7 @@ module FortranSocketsInterface
         HEADER_CALL_COUNT=4, HEADER_INTEGER_COUNT=5, HEADER_LONG_COUNT=6, &
         HEADER_FLOAT_COUNT=7, HEADER_DOUBLE_COUNT=8, &
         HEADER_BOOLEAN_COUNT=9, HEADER_STRING_COUNT=10, &
-        HEADER_SIZE=10)
+        HEADER_SIZE=11)
 
     interface
         subroutine receive_integers &
