@@ -39,7 +39,7 @@ public class AmuseMessage {
 
     private static final Logger logger = LoggerFactory.getLogger(AmuseMessage.class);
 
-    public static final int HEADER_SIZE = 10; // integers
+    public static final int HEADER_SIZE = 11; // integers
 
     // 4 byte flags field.
     public static final int HEADER_FLAGS = 0;
@@ -59,6 +59,7 @@ public class AmuseMessage {
     public static final int HEADER_DOUBLE_COUNT_INDEX = 7;
     public static final int HEADER_BOOLEAN_COUNT_INDEX = 8;
     public static final int HEADER_STRING_COUNT_INDEX = 9;
+    public static final int HEADER_UNITS_COUNT_INDEX = 9;
 
     public static final int SIZEOF_INT = 4;
     public static final int SIZEOF_LONG = 8;

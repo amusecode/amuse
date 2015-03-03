@@ -1002,6 +1002,9 @@ class TestInterface(TestWithMPI):
         quantity_out, error = x.echo_quantity(20 | units.m)
         self.assertEquals(error, 0)
         self.assertEquals(quantity_out, 200 | (units.m/units.s))
+        quantity_out, error = x.echo_quantity(30)
+        self.assertEquals(error, 0)
+        self.assertEquals(quantity_out, 300 | (1.0/units.s))
         x.stop()
 
 
