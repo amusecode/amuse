@@ -8,6 +8,7 @@ It is used by the multiples module.
 from amuse.datamodel import Particle
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesSuperset
+from amuse.datamodel import trees
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.units import quantities
@@ -17,10 +18,12 @@ from amuse.units.quantities import zero
 from amuse.support import options
 from amuse.support import code
 from amuse.support import interface
+from amuse import io
 
 import logging
 import numpy
 import logging
+import sys
 
 LOG_ENERGY = logging.getLogger('energy')
 LOG_ENCOUNTER = logging.getLogger('encounter')
@@ -84,6 +87,7 @@ class SelectNeighboursByPerturbationMixin(AbstractSelectNeighboursMixin):
     def __init__(self):
         self.neighbor_perturbation_limit = 0.1
         self.wide_perturbation_limit = 0.01 
+        self.retain_binary_apocenter = True
         
     def get_neighbor_perturbation_limit(self):
         return self.neighbor_perturbation_limit
@@ -119,19 +123,86 @@ class SelectNeighboursByPerturbationMixin(AbstractSelectNeighboursMixin):
             
         center_of_mass = self.particles_in_encounter.center_of_mass()
         distances = (self.particles_in_field.position-center_of_mass).lengths()
-        pertubation = self.particles_in_field.mass / distances**3 
+        perturbation = self.particles_in_field.mass / distances**3 
+        max_perturber_index = perturbation.argmax()
+        
+        self.perturber_in_field = self.particles_in_field[max_perturber_index]
+        self.perturber_distance = distances[max_perturber_index]
         
         factor =  0.5*(self.particles_in_encounter.mass.sum())/self.large_scale_of_particles_in_the_encounter**3 
-        minimum_pertubation = self.neighbor_perturbation_limit*factor
-        
-        near_particles = self.particles_in_field[numpy.logical_or(pertubation > minimum_pertubation , distances < self.large_scale_of_particles_in_the_encounter)]
-        
-        LOG_ENCOUNTER.info("perturbations({0}): {1}".format(minimum_pertubation, pertubation[pertubation > minimum_pertubation]))
+        minimum_perturbation = self.neighbor_perturbation_limit*factor
+        print "ENCOUNTERS:", "minimum_perturbation", minimum_perturbation, "radius", self.large_scale_of_particles_in_the_encounter, "factor", factor
+        near_particles = self.particles_in_field[numpy.logical_or(perturbation > minimum_perturbation , distances < self.large_scale_of_particles_in_the_encounter)]
+        print "NP:", near_particles
+        LOG_ENCOUNTER.info("perturbations({0}): {1}".format(minimum_perturbation, perturbation[perturbation > minimum_perturbation]))
         
         self.particles_close_to_encounter.add_particles(near_particles)
         
         LOG_ENCOUNTER.info("neighbor particles (mutliples or singles): {0}".format(self.particles_close_to_encounter.key))
         
+        
+    def remove_soft_binaries_from_evolved_state(self):
+        """
+        Remove binaries with a aphelion (largest separation between the
+        parts) larger that the small scale of the encounter from the
+        resolved component list.
+        """
+        tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
+        
+        nodes_to_break_up = []
+        
+        # a branch in the tree is a node with two children
+        # the iter_branches will return only the branches under this node
+        roots = list(tree.iter_branches())
+        roots_to_check = list(roots) 
+        
+        # a leaf in the tree is a node with no children (a node can have no children or two children)
+        # the iter_leafs will return only the leafs under this node
+        singles = Particles()
+        for x in tree.iter_leafs():
+            singles.add_particle(x.particle)
+        
+        while len(roots_to_check)>0:
+            root_node = roots_to_check.pop()
+            children = root_node.get_children_particles()
+            semimajor_axis, eccentricity = self.kepler_orbits.get_semimajor_axis_and_eccentricity_for_binary_components(
+                children[0],
+                children[1]
+            )
+            periapsis, apoapsis = self.kepler_orbits.get_periapsis_and_apoapsis(
+                semimajor_axis,
+                eccentricity
+            )
+            binary_scale = apoapsis if self.retain_binary_apocenter else semimajor_axis * 2
+            
+            others = Particles()
+            for x in roots:
+                if not x is root_node:
+                    others.add_particle(x.particle)
+            others.add_particles(singles)
+            others.add_particle(self.perturber_in_field)
+            distances = (others.position-root_node.particle.position).lengths()
+            perturbation = others.mass / distances**3 
+            max_perturber_index = perturbation.argmax()
+            
+            distance = distances[max_perturber_index]
+            max_perturbation = perturbation[max_perturber_index]
+            max_perturbation = 2*max_perturbation*binary_scale**3/root_node.particle.mass
+            print "max_perturbation:", max_perturbation, self.wide_perturbation_limit
+            if max_perturbation > self.wide_perturbation_limit:
+                "break it up!"
+                nodes_to_break_up.append(root_node.particle)
+            print roots, roots.index(root_node)
+            del roots[roots.index(root_node)]
+            print roots
+            # if we will break up a level in a triple/multiple, we 
+            # also will check the binaries under that level.
+            roots_to_check.extend(root_node.iter_branches())
+            
+        # as this is a binary tree with no pointer up the tree
+        # we can break up a binary by removing the parent particle
+        for root_node in nodes_to_break_up:
+            self.singles_and_multiples_after_evolve.remove_particle(root_node)
 class AbstractHandleEncounter(object):
     """Abstract base class for all strategies to handle encounters.
     
@@ -177,6 +248,7 @@ class AbstractHandleEncounter(object):
         
         self.hard_binary_factor = 3.0
         self.scatter_factor = 10.0
+        self.small_scale_factor = 3.0
         
         self.reset()
     
@@ -266,12 +338,15 @@ class AbstractHandleEncounter(object):
         self.determine_singles_and_energies_from_particles_and_neighbours_in_encounter()
         
         self.determine_initial_singles_energies()
-        
         self.move_all_singles_to_initial_sphere_frame_of_reference()
         
         self.evolve_singles_in_encounter_until_end_state()
         
+        #self.particles_before_scaling = self.singles_and_multiples_after_evolve .copy()
+        
         self.determine_structure_of_the_evolved_state()
+        
+        self.scale_evolved_state_to_initial_sphere()
         
         self.remove_soft_binaries_from_evolved_state()
         
@@ -283,7 +358,6 @@ class AbstractHandleEncounter(object):
         
         self.determine_particles_after_encounter()
         
-        self.scale_evolved_state_to_initial_sphere()
         
         self.move_evolved_state_to_original_frame_of_reference()
         
@@ -338,7 +412,7 @@ class AbstractHandleEncounter(object):
         center_of_mass = self.particles_in_encounter.center_of_mass()
         distances = (self.particles_in_encounter.position-center_of_mass).lengths()
         max_distance = distances.max() * 2 # times 2 as we are relative to the center of mass
-        max_distance = max(max_sum_radii,  max_distance)
+        #max_distance = max(max_sum_radii,  max_distance)
         self.large_scale_of_particles_in_the_encounter = max_distance 
         
         # determine small scale from the smallest distance between all pairs in the encounter
@@ -348,8 +422,9 @@ class AbstractHandleEncounter(object):
         distances_between_all_particles = ((transpose_positions - positions)**2).sum(axis=2).sqrt()
         distances_between_different_particles  = distances_between_all_particles[distances_between_all_particles > 0*max_distance]
         min_distance = distances_between_different_particles.min()
+       
         min_distance = max(max_sum_radii,  min_distance)
-        self.small_scale_of_particles_in_the_encounter = min_distance    
+        self.small_scale_of_particles_in_the_encounter = self.small_scale_factor * min_distance    
         
     def determine_initial_multiple_energy(self):
         self.initial_multiple_energy = zero
@@ -509,13 +584,13 @@ class AbstractHandleEncounter(object):
         if not (len(self.particles_in_encounter) == 2):
             return
         
+        print "initial_scatter_scale:", self.scatter_factor * self.small_scale_of_particles_in_the_encounter, self.small_scale_of_particles_in_the_encounter, self.scatter_factor
         delta_position, delta_velocity = self.kepler_orbits.expand_binary(
             self.particles_in_encounter,
             self.scatter_factor * self.small_scale_of_particles_in_the_encounter
         )
         self.particles_in_encounter.position += delta_position
         self.particles_in_encounter.velocity += delta_velocity
-        
         
     def get_potential_energy_of_particles_in_field(self, particles, field):
         """
@@ -729,9 +804,8 @@ class AbstractHandleEncounter(object):
         
         channel = self.singles_and_multiples_after_evolve.new_channel_to(particles_after_encounter)
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
-        
         self.particles_after_encounter = particles_after_encounter
-    
+        
     def update_positions_of_subsets(self):
         channel = self.particles_after_encounter.new_channel_to(self.new_binaries)
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
@@ -860,8 +934,8 @@ class HandleEncounterWithCollisionCode(AbstractHandleEncounter):
             end_time = 100 | nbody_system.time
         LOG_ENCOUNTER.info("evolving singles in encounter")
         code.evolve_model(end_time)
-        LOG_ENCOUNTER.info("evolving singles in encounter finished")
-            
+        LOG_ENCOUNTER.info("evolving singles in encounter finished model_time = {0}".format(code.model_time))
+        
         if interaction_over.is_set():
             # Create a tree in the module representing the binary structure.
             code.update_particle_tree()
@@ -874,7 +948,7 @@ class HandleEncounterWithCollisionCode(AbstractHandleEncounter):
             self.scatter_energy_error = final_scatter_energy - initial_scatter_energy 
         
             self.singles_and_multiples_after_evolve.add_particles(code.particles)
-        
+            self.particles_before_scaling = code.particles.copy()
             LOG_ENERGY.info('scatter_energy_error={0}'.format(self.scatter_energy_error))
             return
             
@@ -902,9 +976,246 @@ class HandleEncounterWithCollisionCode(AbstractHandleEncounter):
         """
         
         self.scale_code = ScaleSystem(self.kepler_orbits, self.G)
-        self.scale_code.scale_particles_to_sphere(self.particles_after_encounter, self.initial_sphere_radius)
+        tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
+        roots_and_singles = tree.get_children_subset()
+        self.scale_code.scale_particles_to_sphere(roots_and_singles, 1.01 * self.initial_sphere_radius)
+        
+
+class HandleEncounterWithSmallN(AbstractHandleEncounter):
+    debug_encounters = False
+    
+    def __init__(self,
+        kepler_code,
+        resolve_collision_code,
+        interaction_over_code = None,
+        G = nbody_system.G
+    ):
+        self.resolve_collision_code = resolve_collision_code
+        self.interaction_over_code = interaction_over_code
+        AbstractHandleEncounter.__init__(
+            self,
+            kepler_code,
+            G
+        )
+    def evolve_singles_in_encounter_until_end_state(self):
+
+        pre = 'encounter:'	# identifier for all output here
+
+                          
+        # Take the system described by particles and evolve it forward
+        # in time until it is over.  Don't update global quantities,
+        # don't interpret the outcome.  Return the energy error due to
+        # the smallN integration.
+
+        # Temporarily avoid "is_over" problems.  If we allow
+        # collisions to stop early -- when they become too large or
+        # last too long -- then we need will logic to manage the
+        # intermediate state that results.  TODO
+        final_scatter_scale = 1.e30 | nbody_system.length
         
         
+        timescale = self.get_timescale()
+        print "time_scale =", timescale
+        if self.resolve_collision_code.unit_converter is None:
+            end_time = 1.e4 * abs(timescale) # nbody_system.time
+            delta_t = min(10*abs(timescale), 1.0 | nbody_system.time)
+        else:
+            end_time = 1.e4 * abs(timescale)
+            delta_t = 10*abs(timescale)
+        print "end_time =", end_time
+        print "delta_t =", delta_t
+
+        resolve_collision_code = self.resolve_collision_code
+        resolve_collision_code.reset()
+
+        time = 0 * end_time
+        resolve_collision_code.set_time(time);
+        resolve_collision_code.particles.add_particles(self.all_singles_in_evolve)
+        resolve_collision_code.commit_particles()
+    #self.particles_before_scaling = self.all_singles_in_evolve.copy()
+
+        # Channel to copy values from the code to the set in memory.
+        # channel = resolve_collision_code.particles.new_channel_to(particles)
+
+        initial_scatter_energy = self.get_total_energy(resolve_collision_code)
+
+        print pre, 'number_of_stars =', len(self.all_singles_in_evolve), ' ', self.all_singles_in_evolve.key
+        print pre, 'initial energy =', initial_scatter_energy
+        #print particles
+
+        delta_t_max = 64*delta_t
+        while delta_t_max < end_time/10: 
+            delta_t_max *= 2
+
+        if self.debug_encounters:
+            delta_t *= 0.1
+
+        initial_delta_t = delta_t
+        print pre, 'evolving to time', end_time
+        print pre, 'initial step =', initial_delta_t
+        if self.debug_encounters:
+            print pre, '### START ENCOUNTER ###'
+            print pre, '### snapshot at time %f' % 0.0
+            for p in particles:
+                print pre, '### id=%d, x=%f, y=%f, z=%f,'\
+                      'vx=%f, vy=%f, vz=%f' % \
+                        (p.id, p.x.number, p.y.number, p.z.number,
+                         p.vx.number, p.vy.number, p.vz.number)
+
+        resolve_collision_code.set_break_scale(final_scatter_scale)
+
+        while time < end_time:
+
+            tt = time
+            time += delta_t
+            print pre, '...to time', time
+
+            # Work with internal steps of initial_delta_t to allow
+            # checks for quasi-stable motion.
+
+            while tt < time:
+
+                tt += initial_delta_t
+                if tt > time: 
+                    tt = time
+                print pre, '    ...', time, tt, \
+                      'model_time =', resolve_collision_code.model_time
+                resolve_collision_code.evolve_model(tt)
+                print pre, '    ...back:', \
+                      ': model_time =', resolve_collision_code.model_time
+                tt = resolve_collision_code.model_time
+
+                # Note: Return with tt != time means we have exceeded
+                # the size limit and don't need to check is_over().
+
+                # DEBUGGING:
+                if self.debug_encounters:
+                    print pre, '### snapshot at time %f' % time.number
+                    #resolve_collision_code.update_particle_tree()
+                    #resolve_collision_code.update_particle_set()
+                    resolve_collision_code.particles.synchronize_to(particles)
+                    channel.copy()
+                    for p in particles:
+                            print pre, '### id=%d, x=%f, y=%f, z=%f,'\
+                              'vx=%f, vy=%f, vz=%f' % \
+                                (p.id, p.x.number, p.y.number, p.z.number,
+                                 p.vx.number, p.vy.number, p.vz.number)
+
+                # The argument final_scatter_scale is used to limit
+                # the size of the system.  It has to be supplied again
+                # because the code that determines if the scattering
+                # is over isn't necessarily the same as
+                # resolve_collision_code.  Currently, only smallN has
+                # an "is_over()" function.  TODO
+                #
+                # Return values:	0 - not over
+                #			1 - over
+                #			2 - quasi-stable system
+                #			3 - not over, but size exceeded limit
+                #
+                # Note that this is really a stopping condition, and
+                # should eventually be handled that way.  TODO
+
+                # We are currently ignoring any possibility of a
+                # physical collision during the multiples encounter.
+                # TODO
+
+                over = resolve_collision_code.is_over(final_scatter_scale,
+                                                      0)    # verbose = 0
+
+                if over:
+                    final_scatter_energy = self.get_total_energy(resolve_collision_code)
+                    scatter_energy_error = final_scatter_energy - initial_scatter_energy
+                    print pre, 'over =', over, 'at time', tt
+                    #print pre, 'initial energy =', initial_scatter_energy
+                    #print pre, 'final energy =', final_scatter_energy
+                    #print pre, 'energy error =', scatter_energy_error
+                    print pre, 'fractional energy error =', scatter_energy_error/initial_scatter_energy
+                    if self.debug_encounters:
+                            print pre, '### END ENCOUNTER ###'
+
+                    # Create a tree in the module representing the binary structure.
+                    resolve_collision_code.update_particle_tree()
+
+                    # TODO: what happens if we reach over = 2 or 3?
+
+                    # Note that center of mass particles are now part
+                    # of the particle set...
+
+                    # Return the tree structure to AMUSE.  Children
+                    # are identified by get_children_of_particle in
+                    # interface.??, and the information is returned in
+                    # the copy operation.
+
+                    resolve_collision_code.update_particle_set()
+                    self.singles_and_multiples_after_evolve.add_particles(resolve_collision_code.particles)
+                    self.particles_before_scaling = resolve_collision_code.particles.copy()
+
+                    return scatter_energy_error
+
+                if tt >= 0.9999999*time:
+                    break
+
+            time = resolve_collision_code.model_time
+            if not self.debug_encounters:
+                if delta_t < delta_t_max and time > 0.999999*4*delta_t:
+                    delta_t *= 2
+                    print pre, 'setting delta_t =', delta_t
+
+        raise Exception(
+            pre + "Did not finish the small-N simulation before end time {0}".
+            format(end_time)
+        )
+    def get_total_energy(self, code):
+        # ??? from Steve: what is get_binary_energy()?
+        try:
+            binaries_energy = code.get_binary_energy()  # include binaries
+        except:                                         # if code understands
+            binaries_energy = zero
+        total_energy = code.potential_energy + code.kinetic_energy \
+                             + binaries_energy
+
+        return total_energy
+
+    def determine_structure_of_the_evolved_state(self):
+        """
+        Based on the evolved solution determine the hierarchical structure
+        of the particles (i.e. binary, triples etc). 
+        Structure is determined during evolve singles....
+        """
+        pass
+        
+     
+    def scale_evolved_state_to_initial_sphere(self):
+        """
+        Scale the system so that all particles are just inside the initial sphere.
+        Particles should be moving apart.
+        Implementation should be equivalent to moving the system back in time (or forward
+        if the system is smaller than the initial scale).
+        """
+        
+        self.scale_code = ScaleSystem(self.kepler_orbits, self.G)
+        tree = self.singles_and_multiples_after_evolve.new_binary_tree_wrapper()
+        roots_and_singles = tree.get_children_subset()
+        self.scale_code.scale_particles_to_sphere(roots_and_singles, 1.01 * self.initial_sphere_radius)
+        #self.particles_before_scaling = roots_and_singles.copy()
+        
+    def get_timescale(self):
+        self.kepler_orbits 
+        self.all_singles_in_evolve
+        min_period = None
+        for i, iparticle in enumerate(self.all_singles_in_evolve[:-1]):
+            for j, jparticle in enumerate(self.all_singles_in_evolve[i+1:]):
+                period = self.kepler_orbits.get_period(iparticle, jparticle)
+                print "period =", period
+                period = self.kepler_orbits.get_periastron_time(iparticle, jparticle)
+                print "time =", period
+                if min_period is None:
+                    min_period = period
+                else:
+                    min_period = min_period.min(period)
+        print "tperi =", min_period
+        return min_period
 class HandleEncounter(HandleEncounterWithCollisionCode, SelectNeighboursByDistanceMixin):
     
     def __init__(self,
@@ -941,6 +1252,7 @@ class StickyHandleEncounter(AbstractHandleEncounter, EmptySelectNeighboursMixin)
         working_set = particles.copy()
         parents = Particles()
         
+        self.particles_before_scaling = particles.copy()
         counter = len(working_set)
         while counter > 1 :
             
@@ -1019,6 +1331,29 @@ class KeplerOrbits(object):
         
         return self.kepler_code.get_elements()
 
+    def get_period(self, particle1, particle2):
+        
+        particles = Particles()
+        particles.add_particle(particle1)
+        particles.add_particle(particle2)
+        
+        self.kepler_code.initialize_from_particles(particles)
+        
+        return self.kepler_code.get_period()
+    def get_periastron_time(self, particle1, particle2):
+        
+        particles = Particles()
+        particles.add_particle(particle1)
+        particles.add_particle(particle2)
+        
+        self.kepler_code.initialize_from_particles(particles)
+        M,_ = self.kepler_code.get_angles()
+        if M < 0:
+            self.kepler_code.advance_to_periastron()
+        else:
+            self.kepler_code.return_to_periastron()
+        return self.kepler_code.get_time()
+
 
     def move_binary(self, scale, true_anomaly, receeding):
         
@@ -1034,6 +1369,7 @@ class KeplerOrbits(object):
                 else:
                     self.kepler_code.return_to_radius(scale)
         else:
+            print "true_anomaly:", true_anomaly,  self.kepler_code.get_separation() , scale
             if true_anomaly > 0:
                 self.kepler_code.return_to_periastron()
                 self.kepler_code.return_to_radius(scale)
@@ -1054,6 +1390,11 @@ class KeplerOrbits(object):
         The final orbit will be receding (moving away from each other).
         """    
         separation = (particles[1].position - particles[0].position).length()
+        print "MULTI-POSITIONS:"
+        print particles[0].position
+        print particles[1].position
+        print "scaling:",separation, scale, separation < scale
+        print "scaling2:",  (particles[1].position - particles[0].position).length_squared(), scale ** 2
         if separation <= scale: 
             # particles are already close together, no scaling done
             # AVE is this correct, will the particle(s) be receding?
@@ -1081,7 +1422,8 @@ class KeplerOrbits(object):
         
         rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
         rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
-    
+        
+        print "REL POS:", rel_position
         return self.deltas_to_update_binary(particles, rel_position, rel_velocity)
     
     def expand_binary(self, particles, scale, receeding = False):
@@ -1093,9 +1435,9 @@ class KeplerOrbits(object):
         The particles will be moving towards each other.
         """
         
-        separation = (particles[1].position - particles[0].position).length()     
-        
-        if separation > scale:
+        separation = (particles[1].position - particles[0].position).length_squared()     
+        print "separation:", separation, scale, scale**2,separation > scale**2
+        if separation > scale**2:
             return particles.position * 0, particles.velocity * 0
             
         
@@ -1107,17 +1449,22 @@ class KeplerOrbits(object):
         periapsis, apoapsis = self.get_periapsis_and_apoapsis(semimajor_axis, eccentricity)
         # largest distance minus 1% of the distance between peri and apo
         limit = apoapsis - 0.01*(apoapsis-periapsis)
-
+        print "limit:", scale ** 2, scale, limit, apoapsis, periapsis, eccentricity
         # we cannot scale to larger than the apoapsis distance
         # but if eccentricity > 1 we can!
-        if eccentricity <= 1 and scale > limit:
+        # TURNED OFF TO COMPARE WITH MULTIPLES:
+        # if eccentricity <= 1 and scale > limit:
+        if scale > limit and receeding:
+            return particles.position * 0, particles.velocity * 0
+        if scale > limit:
             scale = limit
-            
+        print "INPUT:", as_vector_quantity(self.kepler_code.get_separation_vector())
         self.move_binary(scale, true_anomaly, receeding)
     
         rel_position = as_vector_quantity(self.kepler_code.get_separation_vector())
         rel_velocity = as_vector_quantity(self.kepler_code.get_velocity_vector())
         
+        print "REL POS:", as_vector_quantity(self.kepler_code.get_separation_vector())
         return self.deltas_to_update_binary(particles, rel_position, rel_velocity)
         
     def deltas_to_update_binary(self, particles, relative_position, relative_velocity):
@@ -1133,7 +1480,8 @@ class KeplerOrbits(object):
         
         delta_positions  = (relative_position * fractions) - positions_to_center_of_mass
         delta_velocities = (relative_velocity * fractions) - velocities_to_center_of_mass
-        
+        print "DELTA 1:" , delta_positions[0]
+        print "DELTA 2:" , delta_positions[1]
         return delta_positions, delta_velocities
     
     def get_periapsis_and_apoapsis(self, semimajor_axis, eccentricity):
@@ -1186,7 +1534,7 @@ class ScaleSystem(object):
         particle.position += delta_position
         particle.velocity += delta_velocity
         
-        tree = particle.as_set().new_binary_tree_wrapper()
+        tree = trees.BinaryTreeOnParticle(particle)
         
         descendants = tree.get_descendants_subset()
         descendants.position += delta_position
@@ -1236,7 +1584,7 @@ class ScaleSystem(object):
             the radii of the particles can be zero -> the system will be scaled to radius
             note this is not implemented for 2 body yet!!!
         """
-
+        print "scale_particles_to_sphere", radius
         center_of_mass_position = particles.center_of_mass()
         center_of_mass_velocity = particles.center_of_mass_velocity()
 
@@ -1246,8 +1594,21 @@ class ScaleSystem(object):
         # special case, 1 body
         if len(particles) == 1:
             "The position and velocity of this particle must be zero"
+            
+            tree = trees.ChildTreeOnParticle(particles[0])
+            children = tree.get_children_subset()
+            if len(children) == 2:
+                "special case, scale the binary"
+                scale = 2 * radius
+                print "scale:", scale
+                delta_p, delta_v = self.kepler_orbits.compress_binary(children, scale, receeding = True)
+                print delta_p, delta_v 
+                
+                for particle, dp, dv in zip(children, delta_p, delta_v):
+                    self.move_particle(particle, dp, dv + center_of_mass_velocity)
+                particles.velocity += center_of_mass_velocity
             return
-        
+            
         kinetic_energy = particles.kinetic_energy()
         potential_energy = particles.potential_energy(G = self.G)
         particle0, particle1 = self.get_particles_with_minimum_separation(particles)
@@ -1268,10 +1629,10 @@ class ScaleSystem(object):
                 scale = max(2 * radius, sum_of_radii)
                 delta_p, delta_v = self.kepler_orbits.compress_binary(particles, scale, receeding = True)
             else:
+                print "AA:",separation, 2 * radius,sum_of_radii
                 delta_p, delta_v = self.kepler_orbits.expand_binary(particles, 2 * radius, receeding = True)
-            particles.position += delta_p
-            particles.velocity += delta_v
-            particles.velocity += center_of_mass_velocity
+            for particle, dp, dv in zip(particles, delta_p, delta_v):
+                self.move_particle(particle, dp, dv + center_of_mass_velocity)
             return
         
         
@@ -1310,10 +1671,14 @@ class ScaleSystem(object):
             print "sum_of_radii", sum_of_radii
             print "factor_position", factor_position
             raise Exception("cannot scale the velocities")
-            
+        
+        print particles
         factor_velocity = numpy.sqrt(factor_velocity_squared)
-        particles.position = center_of_mass_position + factor_position*(particles.position-center_of_mass_position)
-        particles.velocity = center_of_mass_velocity + factor_velocity*(particles.velocity-center_of_mass_velocity)
+        delta_position = factor_position*(particles.position-center_of_mass_position) - particles.position
+        delta_velocity = center_of_mass_velocity + factor_velocity*(particles.velocity-center_of_mass_velocity) - particles.velocity
+        
+        for particle, dp, dv in zip(particles, delta_position, delta_velocity):
+            self.move_particle(particle, dp, dv + center_of_mass_velocity)
         #print "MINIMUM:",(2 * radius) , sum_of_radii, (particle0.position - particle1.position).length()
 
 class Binaries(Particles):
@@ -1405,7 +1770,7 @@ class Multiples(options.OptionalAttributes):
         ):
             
         options.OptionalAttributes.__init__(self, **opts)
-    
+
        
         self.gravity_code = gravity_code
         self.handle_encounter_code = handle_encounter_code
@@ -1414,6 +1779,8 @@ class Multiples(options.OptionalAttributes):
         self.stopping_conditions = MultiplesStoppingConditions()
         
         self.reset()
+        self.number_of_collisions = 0
+        self.must_handle_one_encounter_per_stopping_condition = True
     
     def reset(self):
     
@@ -1496,9 +1863,15 @@ class Multiples(options.OptionalAttributes):
             
             if self.stopping_condition.is_set():
                 
+                LOG_ENCOUNTER.info("found collision at time: {0}".format(self.gravity_code.model_time))
                 initial_energy = self.gravity_code.get_total_energy()
+                
+                self.gravity_code.synchronize_model()
+                self.channel_from_code_to_model.copy()
                 self.handle_stopping_condition()
                 self.particles.synchronize_to(self.gravity_code.particles)
+                for i,k in enumerate(self.gravity_code.particles.key):
+                    print i, k
                 self.channel_from_model_to_code.copy()
                 
                 final_energy = self.gravity_code.get_total_energy()
@@ -1647,9 +2020,8 @@ class Multiples(options.OptionalAttributes):
             updated_multiples
         ):
         code = self.handle_encounter_code
-    
         code.reset()
-
+        before = particles_in_encounter.copy()
         LOG_ENCOUNTER.info("found encounter with particles {0}".format(particles_in_encounter.key))
         code.particles_in_encounter.add_particles(particles_in_encounter)
         code.particles_in_field.add_particles(self.particles - particles_in_encounter)
@@ -1683,6 +2055,8 @@ class Multiples(options.OptionalAttributes):
         self.singles.remove_particles(code.captured_singles)
         self.singles.add_particles(code.released_singles)
         
+        LOG_ENCOUNTER.info("dissolved multiples: {0}".format(code.dissolved_multiples.key))
+        LOG_ENCOUNTER.info("new multiples: {0}".format(code.new_multiples.key))
         # update multiples
         self.multiples.remove_particles(code.dissolved_multiples)
         for x in code.dissolved_multiples:
@@ -1693,7 +2067,9 @@ class Multiples(options.OptionalAttributes):
             x.components = self.components_of_multiples.add_particles(x.components)
         
             
-        
+        self.number_of_collisions += 1
+        io.write_set_to_file((code.all_particles_in_encounter, code.particles_after_encounter, code.particles_before_scaling), "encounter-{0}.h5".format(self.number_of_collisions), "amuse", names=('before', 'after', 'after_smalln'), version="2.0", append_to_file=False)
+        # code.all_particles_in_encounter
         # update binaries
         for x in code.dissolved_binaries:
             self.singles_in_binaries.remove_particle(x.child1)
@@ -1733,14 +2109,24 @@ class Multiples(options.OptionalAttributes):
         dissolved_binaries.add_particles(code.dissolved_binaries) 
         updated_binaries.add_particles(code.updated_binaries) 
         
-        
+        if 0:
+            print "before:", particles_in_encounter
+            self.particles.remove_particles(particles_in_encounter)
+            print "after:", code.particles_after_encounter.key
+            self.particles.add_particles(code.particles_after_encounter)
+        elif 0:
+            self.gravity_code.particles.remove_particles(particles_in_encounter)
         channel = code.particles_after_encounter.new_channel_to(self.particles)
         channel.copy_attributes(["x","y","z", "vx", "vy","vz"])
         
     
     def determine_encounters(self):
-        particles0 = self.stopping_condition.particles(0)
-        particles1 = self.stopping_condition.particles(1)
+        particles0 = self.stopping_condition.particles(0).copy()
+        particles1 = self.stopping_condition.particles(1).copy()
+        if self.must_handle_one_encounter_per_stopping_condition:
+            particles0 = particles0[:1]
+            particles1 = particles0[:1]
+            
         encounters = []
         
         from_key_to_encounter = {}

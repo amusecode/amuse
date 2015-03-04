@@ -55,49 +55,49 @@ typedef double  real;
 const int NDIM = 3;                // number of spatial dimensions
 
 /*------------- MPI data ---------------------*/
-int mpi_rank = 0;
-int mpi_size = 1;
+static int mpi_rank = 0;
+static int mpi_size = 1;
 /*------------- MPI data ---------------------*/
 
 // N-body data:
 
 
-real  t = 0;
-real t_evolve = t;                // Time requested by evolve.  Control returns
+static real  t = 0;
+static real t_evolve = t;                // Time requested by evolve.  Control returns
                                 // when t <= t_evolve and t + dt > t_evolve,
                                 // and this is assumed when the state of the
                                 // system is computed by extrapolation.
-real t_wanted = 0;
+static real t_wanted = 0;
 static double begin_time = 0;
 static double end_time_accuracy_factor = 0.5;
 
-vector<int>  ident;
-vector<real> mass, radius, potential;
-vector<vec>  pos, vel, acc, jerk;
-vector<vec>  acc_reduced, jerk_reduced;
-vector<real> potential_reduced;
+static vector<int>  ident;
+static vector<real> mass, radius, potential;
+static vector<vec>  pos, vel, acc, jerk;
+static vector<vec>  acc_reduced, jerk_reduced;
+static vector<real> potential_reduced;
 
 // Control parameters:
 
 const real DT_PARAM = 0.03;
 const real DT_DIA = 1;
 
-real dt_param = DT_PARAM;        // control parameter to determine time step size
-real dt_dia = DT_DIA;                // time interval between diagnostic output
+static real dt_param = DT_PARAM;        // control parameter to determine time step size
+static real dt_dia = DT_DIA;                // time interval between diagnostic output
 
-bool x_flag = false;                // set true for serious debugging only!
-bool is_time_reversed_allowed = false;
+static bool x_flag = false;                // set true for serious debugging only!
+static bool is_time_reversed_allowed = false;
 
-int nsteps = 0;                        // number of integration time steps completed
-real einit = 0;                        // initial total energy of the system
-bool init_flag = false;
-real t_dia = 0;
-real eps2 = 0;
+static int nsteps = 0;                        // number of integration time steps completed
+static real einit = 0;                        // initial total energy of the system
+static bool init_flag = false;
+static real t_dia = 0;
+static real eps2 = 0;
 
-bool flag_collision = true;
-bool reeval = false;
-bool test_mode = false;
-ostream* sout = &cout;
+static bool flag_collision = true;
+static bool reeval = false;
+static bool test_mode = false;
+static ostream* sout = &cout;
 
 // Accessors for use by the C++ main driver only:
 

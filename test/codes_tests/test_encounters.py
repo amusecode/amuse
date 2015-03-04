@@ -28,7 +28,9 @@ def new_binary(
     binary = Particles(keys=range(keyoffset, keyoffset+2))
     binary[0].mass = mass1
     binary[1].mass = mass2
-
+    binary.child1 = None
+    binary.child2 = None
+    
     mu = G * total_mass
 
     if is_at_periapsis:
@@ -95,7 +97,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         x.execute()
         
         self.assertAlmostRelativeEqual(x.large_scale_of_particles_in_the_encounter, 1.0 | nbody_system.length)
-        self.assertAlmostRelativeEqual(x.small_scale_of_particles_in_the_encounter, 1.0 | nbody_system.length)
+        self.assertAlmostRelativeEqual(x.small_scale_of_particles_in_the_encounter, 3.0 | nbody_system.length)
         
         self.assertEquals(len(x.particles_close_to_encounter), 3)
         self.assertAlmostRelativeEqual(x.particles_close_to_encounter.mass, [2,3,4] | nbody_system.mass)
@@ -319,9 +321,10 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         )
         
         x.parameters.hard_binary_factor = 1
+        x.small_scale_factor = 1
+
         x.particles_in_encounter.add_particles(particles_in_encounter)
         x.particles_in_field.add_particles(particles_in_field)
-        
         
         simple_binary = new_binary(
             1 | nbody_system.mass, 
@@ -376,7 +379,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
             kepler_code = self.new_kepler()
         )
         x.particles_in_encounter.add_particles(particles_in_encounter)
-        
+        x.small_scale_factor = 1.0
         
         simple_binary_1 = new_binary(
             1 | nbody_system.mass, 
@@ -856,6 +859,8 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
         particles= Particles(keys=(1,2))
         particles.mass = 1 | nbody_system.mass
+        particles.child2 = None
+        particles.child1 = None
         particles[0].position = [1,0,0] | nbody_system.length
         particles[0].velocity = [1,0.0,0] | nbody_system.speed
         
@@ -866,7 +871,7 @@ class TestScaleSystem(amusetest.TestWithMPI):
         
         x = encounters.ScaleSystem(kepler)
         
-        print (particles[0].position - particles[1].position).length() 
+        print (particles[0].position - particles[1].position).length()     
         self.assertTrue((particles[0].position - particles[1].position).length() > 1.5 | nbody_system.length)
         
         x.scale_particles_to_sphere(particles, 0.75 | nbody_system.length)
@@ -882,6 +887,8 @@ class TestScaleSystem(amusetest.TestWithMPI):
         kepler = encounters.KeplerOrbits(self.new_kepler())
         
         particles= Particles(keys=(1,2,3,4,5,6))
+        particles.child2 = None
+        particles.child1 = None
         particles.mass = 1 | nbody_system.mass
         for i in range(3):
             position = [0,0,0] | nbody_system.length
@@ -921,6 +928,8 @@ class TestScaleSystem(amusetest.TestWithMPI):
         kepler = encounters.KeplerOrbits(self.new_kepler(converter))
         
         particles= Particles(keys=(1,2,3))
+        particles.child2 = None
+        particles.child1 = None
         particles.position = [
             [ -1.28230200e-05,  -3.69457095e-05,  -2.02383488e-05],
             [ -2.91749746e-05,  -1.21387289e-05,   1.56377986e-07],

@@ -381,11 +381,13 @@ class TestSimpleMultiples(TestWithMPI):
             interaction_over_code = None,
             G = constants.G
         )
+        encounter_code.small_scale_factor = 1.0
         multiples_code = encounters.Multiples(
             gravity_code = code,
             handle_encounter_code = encounter_code,
             G = constants.G
         )
+        multiples_code.must_handle_one_encounter_per_stopping_condition = False
         multiples_code.particles.add_particles(stars)
         multiples_code.commit_particles()
         
@@ -401,7 +403,7 @@ class TestSimpleMultiples(TestWithMPI):
         self.assertEquals(len(stopping_condition.particles(0)), 2)
         self.assertEquals(len(stopping_condition.particles(1)), 0)
         
-        self.assertEquals(len(multiples_code.particles), 2) # 1 multiples with 2 singles
+        self.assertEquals(len(multiples_code.particles), 2)             # 1 multiples with 2 singles
         self.assertEquals(len(multiples_code.multiples), 2)
         self.assertEquals(len(multiples_code.binaries), 2)
         self.assertEquals(len(multiples_code.multiples[0].components), 2)
@@ -433,12 +435,14 @@ class TestSimpleMultiples(TestWithMPI):
             interaction_over_code = None,
             G = constants.G
         )
+        encounter_code.small_scale_factor = 1.0
         encounter_code.parameters.hard_binary_factor = 1
         multiples_code = encounters.Multiples(
             gravity_code = code,
             handle_encounter_code = encounter_code,
             G = constants.G
         )
+        multiples_code.must_handle_one_encounter_per_stopping_condition = False
         multiples_code.singles.add_particles(stars)
         multiples_code.commit_particles()
         
