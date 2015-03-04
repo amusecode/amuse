@@ -89,14 +89,12 @@ real stellar_evolution_constants::super_nova_kick() {
   // in a supernova. 
   PRL(v_disp);
     switch(pk) {
-        case no_velocity_kick:              return 0;
+    case no_velocity_kick:              return 0;
              break;                                
-	case Maxwellian_velocity_kick:      return
-					    random_maxwellian_velocity(v_disp);
+	case Maxwellian_velocity_kick:      return random_maxwellian_velocity(v_disp);
              break;
-        case internally_decided_velocity_kick:
-	case Paczynski_velocity_kick:       return
-					    random_paczynski_velocity(v_disp);
+    case internally_decided_velocity_kick:
+	case Paczynski_velocity_kick:       return random_paczynski_velocity(v_disp);
              break;
 	case delta_function_velocity_kick:  return v_disp;
              break;

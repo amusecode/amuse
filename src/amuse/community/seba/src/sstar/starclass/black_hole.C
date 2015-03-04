@@ -491,128 +491,124 @@ bool black_hole::super_nova() {
       if(cnsts.parameters(impulse_kick_for_black_holes)) {
 	  mass_correction = cnsts.parameters(kanonical_neutron_star_mass)/core_mass;
       }
-      // no kick
-      //mass_correction = 0.;
 
       real v_kick  = mass_correction*cnsts.super_nova_kick();
       real theta_kick = acos(1-2*random_angle(0, 1));
       real phi_kick   = random_angle(0, cnsts.mathematics(two_pi));
-
 //      cerr << "Supernova kick v = " << v_kick << " [km/s]" << endl;
-
-     if (is_binary_component()) {
-       if(v_kick>0) 
-	 get_seba_counters()->snwk_in_dstar++;
-       else
-	 get_seba_counters()->sn_in_dstar++;
-     }
-     else if(v_kick>0) 
-       get_seba_counters()->snwk_in_sstar++;
-     else
-       get_seba_counters()->sn_in_sstar++;
-
-    if (get_use_hdyn()) {
 
       // Transform 1D kick velocity to 3D space velocity for dynamics.
       real x_kick = v_kick*sin(theta_kick)*cos(phi_kick);
       real y_kick = v_kick*sin(theta_kick)*sin(phi_kick);
       real z_kick = v_kick*cos(theta_kick);
       vec kick_velocity(x_kick, y_kick, z_kick);
-//      PRL(kick_velocity);
       anomal_velocity = kick_velocity;
-// cerr << "Kick   : "<< v_kick <<" " << theta_kick <<" " << phi_kick<< endl;
-// cerr << "kick v : " << anomal_velocity << endl;
 
+
+     if (is_binary_component()) {
+       if(v_kick>0) 
+    	 get_seba_counters()->snwk_in_dstar++;
+       else
+	    get_seba_counters()->sn_in_dstar++;
+     }
+     else if(v_kick>0) 
+       get_seba_counters()->snwk_in_sstar++;
+     else
+       get_seba_counters()->sn_in_sstar++;
+
+
+
+    if (get_use_hdyn()) {
+ 
       velocity = sqrt(pow(v_kick, 2) + pow(velocity, 2)
 	       + 2*v_kick*velocity*sin(theta_kick)*cos(phi_kick));
       envelope_mass = 0;
-//      cerr << "return hit_companion;" <<hit_companion << flush << endl;
       return hit_companion;
     }
-    
     else if(is_binary_component()) {  //+++
         
         // Supernova is performed by the binary evolution
         
         if(get_binary()->get_bin_type() == Disrupted ||
-	    get_binary()->get_bin_type() == Merged) {
-
-      get_companion()->set_spec_type(Accreting, false);
-
-      velocity = sqrt(pow(v_kick, 2) + pow(velocity, 2)
-	       + 2*v_kick*velocity*sin(theta_kick)*cos(phi_kick));
-      envelope_mass = 0;
-      return hit_companion;
-    }
-    else if (get_binary()->get_bin_type() != Merged &&
-	     get_binary()->get_bin_type() != Disrupted) {
-
-      real a_init = get_binary()->get_semi();
-      real e_init = get_binary()->get_eccentricity();
-      real mtot_0 = get_binary()->get_total_mass();
-      real msn_0 = get_total_mass();
-      real m_psn = core_mass;
-      real m_comp_0 = mtot_0 - msn_0;
-      real m_comp = m_comp_0;
-
-      real separation = random_separation(a_init, e_init);
-      real a_new = post_sn_semi_major_axis(a_init, e_init, separation,
-					   msn_0, m_comp_0, m_psn, m_comp,
-					   v_kick, theta_kick, phi_kick);
-      real e_new = post_sn_eccentricity(a_init, e_init, separation,
-					msn_0, m_comp_0, m_psn, m_comp,
-					v_kick, theta_kick, phi_kick);
-      real v_cm  = post_sn_cm_velocity(a_init, e_init, separation,
-				       msn_0, m_comp_0, m_psn, m_comp,
-				       v_kick, theta_kick, phi_kick);
-
-//              System bound after kick?
-      if (e_new>=0 && e_new<1.) {
-	get_binary()->set_eccentricity(e_new);
-	get_binary()->set_semi(a_new);
-
-	get_binary()->set_velocity(v_cm);
-	get_binary()->calculate_velocities();
-	    
-//              Does it hit the companion?
-	real pericenter = a_new*(1-e_new);
-	if (pericenter<=get_companion()->get_radius())
-	  hit_companion = TRUE;
-      }
-      else {
-	spec_type[Runaway]=Runaway;
-	
-	get_binary()->set_eccentricity(1);
-	get_companion()->set_spec_type(Runaway);
-	get_binary()->set_bin_type(Disrupted);
-	get_binary()->set_semi(0);
-	real e2_init = e_init*e_init;
-	real vr_mean_0 = sqrt(((cnsts.physics(G)*cnsts.parameters(solar_mass)
-		       / cnsts.parameters(solar_radius))
-		       * (msn_0+m_comp_0)/a_init)
-                       * (1-e2_init)/pow(1+0.5*e2_init, 2));
-	vr_mean_0 /= cnsts.physics(km_per_s);
-	real mu_0 = get_total_mass()/mtot_0;
-	real v_comp = mu_0*vr_mean_0;
-//      v_comp = velocity_at_infinity(v_comp, separation, m_comp, m_psn);
-
-	real v_sn_0 = (1-mu_0)*vr_mean_0;
-	real v_sn   = sqrt(v_sn_0*v_sn_0 + v_kick*v_kick
-		     + 2*v_sn_0*v_kick*sin(theta_kick)*cos(phi_kick));
-//      v_sn = velocity_at_infinity(v_sn, separation, m_psn, m_comp);
-
-//              Now corect for binary CM velocity:
-	real v_cm = get_binary()->get_velocity();
-	v_comp = sqrt(pow(v_comp, 2) + pow(v_cm, 2)
-		      + 2*v_comp*v_cm*cos(theta_kick));
-	get_companion()->set_velocity(v_comp);
-	v_sn = sqrt(pow(v_sn, 2) + pow(v_cm, 2)
-		    + 2*v_sn*v_cm*cos(theta_kick));
-	velocity = v_sn;
-         }
-      }
-    } // +++    
+        get_binary()->get_bin_type() == Merged) {
+        
+            get_companion()->set_spec_type(Accreting, false);
+            
+            velocity = sqrt(pow(v_kick, 2) + pow(velocity, 2)
+                + 2*v_kick*velocity*sin(theta_kick)*cos(phi_kick));
+            envelope_mass = 0;
+            return hit_companion;
+        }
+        else if (get_binary()->get_bin_type() != Merged &&
+             get_binary()->get_bin_type() != Disrupted) {
+        
+            real a_init = get_binary()->get_semi();
+            real e_init = get_binary()->get_eccentricity();
+            real mtot_0 = get_binary()->get_total_mass();
+            real msn_0 = get_total_mass();
+            real m_psn = core_mass;
+            real m_comp_0 = mtot_0 - msn_0;
+            real m_comp = m_comp_0;
+        
+            real separation = random_separation(a_init, e_init);
+            real a_new = post_sn_semi_major_axis(a_init, e_init, separation,
+        				   msn_0, m_comp_0, m_psn, m_comp,
+        				   v_kick, theta_kick, phi_kick);
+            real e_new = post_sn_eccentricity(a_init, e_init, separation,
+        				msn_0, m_comp_0, m_psn, m_comp,
+        				v_kick, theta_kick, phi_kick);
+            real v_cm  = post_sn_cm_velocity(a_init, e_init, separation,
+        			       msn_0, m_comp_0, m_psn, m_comp,
+        			       v_kick, theta_kick, phi_kick);
+        
+        //              System bound after kick?
+            if (e_new>=0 && e_new<1.) {
+            get_binary()->set_eccentricity(e_new);
+            get_binary()->set_semi(a_new);
+            
+            get_binary()->set_velocity(v_cm);
+            get_binary()->calculate_velocities();
+                
+            //              Does it hit the companion?
+            real pericenter = a_new*(1-e_new);
+            if (pericenter<=get_companion()->get_radius())
+              hit_companion = TRUE;
+            }
+            else {
+                spec_type[Runaway]=Runaway;
+                
+                get_binary()->set_eccentricity(1);
+                get_companion()->set_spec_type(Runaway);
+                get_binary()->set_bin_type(Disrupted);
+                get_binary()->set_semi(0);
+                real e2_init = e_init*e_init;
+                real vr_mean_0 = sqrt(((cnsts.physics(G)*cnsts.parameters(solar_mass)
+                	       / cnsts.parameters(solar_radius))
+                	       * (msn_0+m_comp_0)/a_init)
+                                    * (1-e2_init)/pow(1+0.5*e2_init, 2));
+                vr_mean_0 /= cnsts.physics(km_per_s);
+                real mu_0 = get_total_mass()/mtot_0;
+                real v_comp = mu_0*vr_mean_0;
+                //      v_comp = velocity_at_infinity(v_comp, separation, m_comp, m_psn);
+                
+                real v_sn_0 = (1-mu_0)*vr_mean_0;
+                real v_sn   = sqrt(v_sn_0*v_sn_0 + v_kick*v_kick
+                	     + 2*v_sn_0*v_kick*sin(theta_kick)*cos(phi_kick));
+                //      v_sn = velocity_at_infinity(v_sn, separation, m_psn, m_comp);
+                
+                //              Now correct for binary CM velocity:
+                real v_cm = get_binary()->get_velocity();
+                v_comp = sqrt(pow(v_comp, 2) + pow(v_cm, 2)
+                	      + 2*v_comp*v_cm*cos(theta_kick));
+                get_companion()->set_velocity(v_comp);
+                v_sn = sqrt(pow(v_sn, 2) + pow(v_cm, 2)
+                	    + 2*v_sn*v_cm*cos(theta_kick));
+                velocity = v_sn;
+            }
+        }// !merged or !disrupted  
+    } // binary component
     envelope_mass = 0;
+
 
     return hit_companion;
 }
