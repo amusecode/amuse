@@ -2024,6 +2024,7 @@ class Multiples(options.OptionalAttributes):
         before = particles_in_encounter.copy()
         LOG_ENCOUNTER.info("found encounter with particles {0}".format(particles_in_encounter.key))
         code.particles_in_encounter.add_particles(particles_in_encounter)
+        print self.particles , particles_in_encounter
         code.particles_in_field.add_particles(self.particles - particles_in_encounter)
         code.existing_binaries.add_particles(self.binaries)
         code.existing_multiples.add_particles(self.multiples)
@@ -2068,7 +2069,7 @@ class Multiples(options.OptionalAttributes):
         
             
         self.number_of_collisions += 1
-        io.write_set_to_file((code.all_particles_in_encounter, code.particles_after_encounter, code.particles_before_scaling), "encounter-{0}.h5".format(self.number_of_collisions), "amuse", names=('before', 'after', 'after_smalln'), version="2.0", append_to_file=False)
+        #io.write_set_to_file((code.all_particles_in_encounter, code.particles_after_encounter, code.particles_before_scaling), "encounter-{0}.h5".format(self.number_of_collisions), "amuse", names=('before', 'after', 'after_smalln'), version="2.0", append_to_file=False)
         # code.all_particles_in_encounter
         # update binaries
         for x in code.dissolved_binaries:
@@ -2125,7 +2126,7 @@ class Multiples(options.OptionalAttributes):
         particles1 = self.stopping_condition.particles(1).copy()
         if self.must_handle_one_encounter_per_stopping_condition:
             particles0 = particles0[:1]
-            particles1 = particles0[:1]
+            particles1 = particles1[:1]
             
         encounters = []
         

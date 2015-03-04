@@ -635,7 +635,7 @@ self.gravity_code.model_time, 'to', end_time
                 
         
                 self.number_of_collisions += 1
-                io.write_set_to_file((self.before, self.after,self.after_smalln), "multiples-{0}.h5".format(self.number_of_collisions), "amuse", names=('before', 'after', 'after_smalln'), version="2.0", append_to_file=False)
+                #io.write_set_to_file((self.before, self.after,self.after_smalln), "multiples-{0}.h5".format(self.number_of_collisions), "amuse", names=('before', 'after', 'after_smalln'), version="2.0", append_to_file=False)
         
                 count_ignore_encounter += ignore
 

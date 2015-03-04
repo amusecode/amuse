@@ -127,6 +127,8 @@ class TestSimpleMultiples(TestWithMPI):
             resolve_collision_code = self.new_smalln(),
             interaction_over_code = None
         )
+        encounter_code.parameters.hard_binary_factor = 1
+        encounter_code.small_scale_factor = 1
         multiples_code = encounters.Multiples(
             gravity_code = code,
             handle_encounter_code = encounter_code
@@ -495,12 +497,15 @@ class TestSimpleMultiples(TestWithMPI):
             resolve_collision_code = self.new_smalln(),
             interaction_over_code = None
         )
+        encounter_code.parameters.hard_binary_factor = 1
+        encounter_code.small_scale_factor = 1
         multiples_code = encounters.Multiples(
             gravity_code = code,
             handle_encounter_code = encounter_code
         )
         multiples_code.singles_in_binaries.add_particles(particles_in_binary)
         multiples_code.binaries.add_particle(binary)
+        multiples_code.must_handle_one_encounter_per_stopping_condition = False
         
         field_particle = datamodel.Particle(key = 4)
         field_particle.mass = 0.5  | nbody_system.mass
