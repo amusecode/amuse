@@ -47,6 +47,10 @@ class MethodArgumentOrResultType(object):
 class NoUnitMethodArgumentOrResultType(MethodArgumentOrResultType):
     def __reduce__(self):
         return (_get_result_type, ("NO_UNIT",))
+        
+class UnitMethodArgumentOrResultType(MethodArgumentOrResultType):
+    def __reduce__(self):
+        return (_get_result_type, ("UNIT",))
 
 class ErrorCodeMethodArgumentOrResultType(MethodArgumentOrResultType):
 
@@ -82,6 +86,8 @@ class IndexMethodArgumentOrResultType(MethodArgumentOrResultType):
 def _get_result_type(name):
     if name == "NO_UNIT":
         return MethodWithUnitsDefinition.NO_UNIT
+    elif name == "UNIT":
+        return MethodWithUnitsDefinition.UNIT
     elif name == "ERROR_CODE":
         return MethodWithUnitsDefinition.ERROR_CODE
     elif name == "INDEX":
@@ -232,6 +238,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
     def convert_arguments(self, method,  list_arguments, keyword_arguments):
         
         converted_list_arguments = []
+        print "NBODY:", method,  method.nbody_input_attributes
         for x,is_nbody in zip(list_arguments, method.nbody_input_attributes):
             if is_nbody:
                 converted_list_arguments.append(self.from_source_to_target(x))
@@ -480,6 +487,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     ERROR_CODE =  ErrorCodeMethodArgumentOrResultType()
     NO_UNIT = NoUnitMethodArgumentOrResultType()
+    UNIT = UnitMethodArgumentOrResultType()
     INDEX = IndexMethodArgumentOrResultType()
     LINK = LinkMethodArgumentOrResultType
 
@@ -573,6 +581,8 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                         result[parameter] = arg
                 elif self.units[index] == self.INDEX:
                     result[parameter] = keyword_arguments[parameter]
+                elif self.units[index] == self.UNIT:
+                    result[parameter] = keyword_arguments[parameter]
                 else:
                     if not self.units[index].base and not is_quantity(keyword_arguments[parameter]):
                         result[parameter] = keyword_arguments[parameter]
@@ -591,6 +601,8 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                     else:
                         result[parameter] = argument
                 elif self.units[index] == self.INDEX:
+                    result[parameter] = argument
+                elif self.units[index] == self.UNIT:
                     result[parameter] = argument
                 elif type(self.units[index]) == self.LINK:
                     result[parameter] = self.units[index].convert_argument_value(method, self, argument)
@@ -623,7 +635,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     @late
     def nbody_input_attributes(self):
-        return map(lambda x : isinstance(x, unit) and generic_unit_system.is_generic_unit(x), self.units)
+        return map(lambda x : isinstance(x, UnitMethodArgumentOrResultType) or isinstance(x, unit) and generic_unit_system.is_generic_unit(x), self.units)
 
     @late
     def index_output_attributes(self):
@@ -684,6 +696,7 @@ class HandleMethodsWithUnits(object):
     NO_UNIT = MethodWithUnitsDefinition.NO_UNIT
     INDEX = MethodWithUnitsDefinition.INDEX
     LINK = MethodWithUnitsDefinition.LINK
+    UNIT = MethodWithUnitsDefinition.UNIT
 
     def __init__(self, interface):
         self.method_definitions = {}
@@ -1473,3 +1486,5 @@ class PropertyDefinition(object):
             return quantities.VectorQuantity.new_from_scalar_quantities(*result)
         else:
             return result
+
+

@@ -1188,7 +1188,7 @@ class CodeFunctionWithUnits(CodeFunction):
                     argument = argument.number
                     
                 values = dtype_to_values[parameter.datatype]
-                values[parameter.input_index] = parameter.default
+                values[parameter.input_index] = argument
                 input_parameters_seen.remove(parameter.name)
                 
         if input_parameters_seen:
