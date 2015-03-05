@@ -635,6 +635,8 @@ class TestSimpleMultiples(TestWithMPI):
             resolve_collision_code = self.new_smalln(),
         )
         
+        #encounter_code.parameters.hard_binary_factor = 1
+        encounter_code.small_scale_factor = 1
         
         others = datamodel.Particles(key = [4,5,6])
         for i in range(3):
