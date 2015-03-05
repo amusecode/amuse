@@ -38,6 +38,8 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                 copy_history = self.copy_history
             )
             if not processor.is_correct_version():
+                
+                processor.close()
                 processor = store_v2.StoreHDF(
                     self.filename, 
                     False, 
