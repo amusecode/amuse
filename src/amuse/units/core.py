@@ -1,7 +1,7 @@
 from amuse.support.core import late
 from amuse.support import exceptions
-
 import numpy
+
 
 class system(object):
     ALL = {}

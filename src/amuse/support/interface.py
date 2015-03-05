@@ -163,16 +163,21 @@ class LegacyInterfaceHandler(HandleCodeInterfaceAttributeAccess):
 
     def __init__(self, legacy_interface):
         self.legacy_interface = legacy_interface
+        self.method_instances = {}
 
     def supports(self, name, was_found):
-        return hasattr(self.legacy_interface, name)
+        return name in self.method_instances or hasattr(self.legacy_interface, name)
 
     def get_attribute(self, name, result):
-        attr = getattr(self.legacy_interface, name)
-        if hasattr(attr, '__call__'):
-            return ProxyingMethodWrapper(self.legacy_interface, name)
-        else:
-            return attr
+        
+        if not name in self.method_instances:
+            attr = getattr(self.legacy_interface, name)      
+            if hasattr(attr, '__call__'):
+                self.method_instances[name] = ProxyingMethodWrapper(self.legacy_interface, name)
+            else:
+                return attr
+
+        return self.method_instances[name]
 
     def attribute_names(self):
         return set(dir(self.legacy_interface))
@@ -499,6 +504,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             self.units = (units,)
 
         self.return_units = return_units
+        self.is_return_units_iterable = hasattr(self.return_units, '__iter__')
         self.wrapped_object = wrapped_object
         self.name = name
         if self.return_units is None:
@@ -550,14 +556,14 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             self.handle_errorcode(errorcode)
 
     def handle_as_unit(self, method, return_value):
-        if not hasattr(self.return_units, '__iter__'):
+        if not self.is_return_units_iterable:
             return self.return_units.convert_result_value(method, self, return_value)
         else:
             if not hasattr(return_value, '__iter__'):
                 return_value = [return_value]
                 
             result = []
-            for value, unit in zip(list(return_value), self.return_units):
+            for value, unit in zip(return_value, self.return_units):
                 unit.append_result_value(method, self, value, result)
                     
             if len(result) == 1:                
@@ -701,6 +707,7 @@ class HandleMethodsWithUnits(object):
         self.method_definitions = {}
         self.interface = interface
         self.setup_units_from_legacy_interface()
+        self.method_instances = {}
     
     def setup_units_from_legacy_interface(self):
         for name, specification in self.interface_function_specifications():
@@ -743,7 +750,10 @@ class HandleMethodsWithUnits(object):
         return name in self.method_definitions
 
     def get_attribute(self, name, value):
-        return self.method_definitions[name].new_method(value)
+        if not name in self.method_instances:
+            self.method_instances[name] = self.method_definitions[name].new_method(value)
+
+        return self.method_instances[name]
 
 
     def attribute_names(self):

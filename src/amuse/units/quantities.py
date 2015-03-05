@@ -3,12 +3,11 @@ import numpy
 from math import sqrt
 
 from amuse.support import exceptions
-from amuse.support.core import late
 from amuse.support import console
 
-from amuse.units.core import zero_unit
+from amuse.support.core import late
 from amuse.support.core import compare_version_strings
-
+from amuse.units import core
 """
 """
 class Quantity(object):
@@ -876,6 +875,7 @@ class ZeroQuantity(Quantity):
 
 
     def __init__(self):
+        from amuse.units.core import zero_unit
         Quantity.__init__(self, zero_unit())
         self.base = ()
         self.factor = 1
@@ -1125,6 +1125,11 @@ def new_quantity(value, unit):
     if unit.is_non_numeric():
         return NonNumericQuantity(value, unit)
     return ScalarQuantity(value, unit)
+    
+def new_quantity_from_unit(unit, value):
+    return new_quantity(value, unit)
+
+core.unit.new_quantity = new_quantity_from_unit
 
 def new_quantity_nonone(value, unit):
     """Create a new Quantity object.

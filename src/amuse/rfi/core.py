@@ -10,7 +10,8 @@ import sys
 
 import inspect
 import functools
-from collections import OrderedDict
+
+#from collections import OrderedDict
 
 from subprocess import Popen, PIPE
 
@@ -98,7 +99,7 @@ class CodeFunction(object):
         handle_as_array = self.must_handle_as_array(dtype_to_values)
         
         if not self.owner is None:
-            logging.getLogger("code").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
+            CODE_LOG.info("start call '%s.%s'",self.owner.__name__, self.specification.name)
         
         call_id = random.randint(0, 1000)
         
@@ -113,7 +114,7 @@ class CodeFunction(object):
         result = self.converted_results(dtype_to_result, handle_as_array)
         
         if not self.owner is None:
-            logging.getLogger("code").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
+            CODE_LOG.info("end call '%s.%s'",self.owner.__name__, self.specification.name)
         
         return result
     
@@ -410,7 +411,7 @@ def simplified_function_specification(must_handle_array=False,can_handle_array=F
         defaults=argspec.defaults if argspec.defaults else []
         length_arguments=argspec.args[0:-nkw]
         kwargs=argspec.args[-nkw:]
-        in_arg=OrderedDict()
+        in_arg=OrderedDictionary()
         for x,y in zip(kwargs,defaults):
           in_arg[x]=y
         
@@ -1048,7 +1049,7 @@ class CodeFunctionWithUnits(CodeFunction):
         handle_as_array = self.must_handle_as_array(dtype_to_values)
         
         if not self.owner is None:
-            logging.getLogger("code").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
+            CODE_LOG.info("start call '%s.%s'",self.owner.__name__, self.specification.name)
         
         call_id = random.randint(0, 1000)
         try:
@@ -1064,7 +1065,7 @@ class CodeFunctionWithUnits(CodeFunction):
         result = self.converted_results(dtype_to_result, handle_as_array, output_units)
         
         if not self.owner is None:
-            logging.getLogger("code").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
+            CODE_LOG.info("end call '%s.%s'",self.owner.__name__, self.specification.name)
         
         return result
     
