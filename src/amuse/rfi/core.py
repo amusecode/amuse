@@ -161,14 +161,14 @@ class CodeFunction(object):
     def converted_results(self, dtype_to_result, must_handle_as_array):
         
         number_of_outputs = len(self.specification.output_parameters)
-        
+        result_type = self.specification.result_type
         if number_of_outputs == 0:
-            if self.specification.result_type is None:
+            if result_type is None:
                 return None
             return dtype_to_result[self.specification.result_type][0]
             
         if number_of_outputs == 1 \
-            and self.specification.result_type is None:
+            and result_type is None:
             
             for value in dtype_to_result.values():
                 if len(value) == 1:
@@ -189,7 +189,7 @@ class CodeFunction(object):
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
         
-        if not self.specification.result_type is None:
+        if not result_type is None:
             result["__result"] =  return_value
         
         return result
@@ -423,11 +423,12 @@ def simplified_function_specification(must_handle_array=False,can_handle_array=F
             out_arg.extend(sorted(kwargs.items()))
         f.func_globals['returns']=returns
         f(*argspec.args)
-        out_arg=OrderedDict(out_arg)
-
-        function=get_function_specification(f.func_name,in_arg,out_arg,
+        out_arg_mapping=OrderedDictionary()
+        for x in out_arg:
+            out_arg_mapping[x[0]] = x[1]
+            
+        function=get_function_specification(f.func_name,in_arg,out_arg_mapping,
             must_handle_array,can_handle_array,length_arguments)
-
         def g():
             return function
         return g

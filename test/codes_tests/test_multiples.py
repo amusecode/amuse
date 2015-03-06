@@ -635,7 +635,7 @@ class TestSimpleMultiples(TestWithMPI):
             resolve_collision_code = self.new_smalln(),
         )
         
-        #encounter_code.parameters.hard_binary_factor = 1
+        encounter_code.parameters.hard_binary_factor = 1
         encounter_code.small_scale_factor = 1
         
         others = datamodel.Particles(key = [4,5,6])
@@ -649,6 +649,7 @@ class TestSimpleMultiples(TestWithMPI):
             gravity_code = code,
             handle_encounter_code = encounter_code
         )
+        multiples_code.must_handle_one_encounter_per_stopping_condition = False
         multiples_code.singles.add_particles(particles_in_binary)
         multiples_code.singles.add_particles(others)
         
@@ -670,14 +671,18 @@ class TestSimpleMultiples(TestWithMPI):
         multiples_code.update_model()
         
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 1.1 | nbody_system.mass)
-        self.assertAlmostRelativeEquals(code.particles[-1].mass, 1.1 | nbody_system.mass)
+        
+        index = -1
+        if not code.particles[index].mass > 1.0| nbody_system.mass:
+            index = -2
+        self.assertAlmostRelativeEquals(code.particles[index].mass, 1.1 | nbody_system.mass)
         
         multiples_code.singles_in_binaries[0].mass += 0.2 | nbody_system.mass
         
         multiples_code.update_model()
         
         self.assertAlmostRelativeEquals(multiples_code.particles[-1].mass, 1.3 | nbody_system.mass)
-        self.assertAlmostRelativeEquals(code.particles[-1].mass, 1.3 | nbody_system.mass)
+        self.assertAlmostRelativeEquals(code.particles[index].mass, 1.3 | nbody_system.mass)
     
     
       

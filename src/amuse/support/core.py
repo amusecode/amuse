@@ -261,7 +261,7 @@ class OrderedDictionary(object):
         return iter(self.orderedKeys)
         
     def itervalues(self):
-        for x in self.orderedKeys:
+        for x in iter(self.orderedKeys):
             yield self.mapping[x]
     
     def iteritems(self):
@@ -269,7 +269,12 @@ class OrderedDictionary(object):
             yield x, self.mapping[x]
     
     def keys(self):
-        return self.orderedKeys
+        return list(self.orderedKeys)
+        
+    def pop(self, key):
+        index = self.orderedKeys.index(key)
+        del self.orderedKeys[index]
+        return self.mapping.pop(key)
     
     def values(self):
         return [self.mapping[x] for x in self.orderedKeys]
