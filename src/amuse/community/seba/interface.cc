@@ -496,6 +496,36 @@ int change_mass(int index_of_the_star, double mass, double dt){
     return error_code;
 }
 
+// note that the dinner's mass is set to zero, but other parameters and the particle itself remain
+int merge_the_binary(int index_of_the_binary, int index_of_the_consumer, int index_of_the_dinner){
+
+    int error_code = 0;
+    node * seba_node = get_seba_node_from_index(index_of_the_binary, &error_code);
+    if(error_code < 0) {return error_code;}
+    node * consumer = get_seba_node_from_index(index_of_the_consumer, &error_code);
+    if(error_code < 0) {return error_code;}
+    node * dinner = get_seba_node_from_index(index_of_the_dinner, &error_code);
+    if(error_code < 0) {return error_code;}
+    
+    seba_node->get_starbase()->merge_elements((star*)consumer->get_starbase(), (star*)dinner->get_starbase());
+    return error_code;
+}
+
+
+//note that dinner is not altered by this routine!
+int merge_with_other_star(int index_of_the_consumer, int index_of_the_dinner){
+    
+    int error_code = 0;
+    node * consumer = get_seba_node_from_index(index_of_the_consumer, &error_code);
+    if(error_code < 0) {return error_code;}
+    node * dinner = get_seba_node_from_index(index_of_the_dinner, &error_code);
+    if(error_code < 0) {return error_code;}
+    
+    consumer->get_starbase()->merge_elements((star*)dinner->get_starbase());
+    return error_code;
+}
+
+
 
 
 int refresh_memory(int index_of_the_star){
@@ -872,6 +902,7 @@ int set_eccentricity(int index_of_the_star, double value){
     seba_node->get_starbase()->set_eccentricity(value);
     return error_code;
 }
+
 
 int set_semi_major_axis(int index_of_the_star, double value){
     int error_code = 0;

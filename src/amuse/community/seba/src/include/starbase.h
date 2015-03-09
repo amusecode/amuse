@@ -101,6 +101,7 @@ class  starbase
         virtual void evolve_element(const real);
         virtual real get_evolve_timestep();
         virtual star* merge_elements(star*);
+        virtual void merge_elements(star*, star*);
         
         virtual real sudden_mass_loss();
 
@@ -121,7 +122,7 @@ class  starbase
         virtual real gyration_radius_sq();
         virtual real convective_envelope_mass();
         virtual real convective_envelope_radius();
-        
+
         virtual real get_wind_constant();
         virtual void refresh_memory();
         virtual void recall_memory();

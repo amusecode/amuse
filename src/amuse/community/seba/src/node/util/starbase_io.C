@@ -113,6 +113,7 @@ vec starbase::get_anomal_velocity() {
 void starbase::set_anomal_velocity(const vec v) {}
 void starbase::evolve_element(const real) {}
 star* starbase::merge_elements(star*) { return NULL; }    // HELP HELP
+void starbase::merge_elements(star*, star*){}
 
 real starbase::get_semi() {return 0;}
 void starbase::set_semi(real a) {}

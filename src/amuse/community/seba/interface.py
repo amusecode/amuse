@@ -210,6 +210,50 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 
 
     @legacy_function
+    def merge_the_binary():
+        """
+        Merges the stars in the binary, creates a 'merged' binary. 
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_binary', dtype='int32', direction=function.IN
+            , description="The index of the binary to set the value of")
+        function.addParameter('child1', dtype='int32', direction=function.IN
+            , description="The index of the consumer")
+        function.addParameter('child2', dtype='int32', direction=function.IN
+            , description="The index of the dinner")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+    @legacy_function
+    def merge_with_other_star():
+        """
+        Merges the star with another star, companion star remains unaltered
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('child1', dtype='int32', direction=function.IN
+            , description="The index of the consumer")
+        function.addParameter('child2', dtype='int32', direction=function.IN
+            , description="The index of the dinner")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A binary with the given index was not found.
+        """
+        return function
+
+
+
+    @legacy_function
     def refresh_memory():
         """
         Refresh the memory of SeBa. Update previous parameters in SeBa to current values. 
@@ -737,6 +781,16 @@ class SeBa(se.StellarEvolution):
             (object.ERROR_CODE,)
         )
         object.add_method(
+            "merge_the_binary",
+            (object.INDEX,object.LINK('particles'),object.LINK('particles')),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "merge_with_other_star",
+            (object.INDEX,object.LINK('particles')),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
             "refresh_memory",
             (object.INDEX),
             (object.ERROR_CODE,)
@@ -890,6 +944,7 @@ class SeBa(se.StellarEvolution):
         object.add_method('particles', 'change_mass')
         object.add_method('particles', 'refresh_memory')
         object.add_method('particles', 'recall_memory_one_step')
+        object.add_method('particles', 'merge_with_other_star')
 
         object.define_set('binaries', 'index_of_the_star')
         object.set_new('binaries', 'new_binary')
@@ -903,3 +958,4 @@ class SeBa(se.StellarEvolution):
         object.add_getter("binaries", 'get_children_of_binary')
         object.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
         object.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
+        object.add_method('binaries', 'merge_the_binary')
