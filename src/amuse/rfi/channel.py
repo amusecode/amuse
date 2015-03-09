@@ -740,7 +740,7 @@ def pack_array(array, length, dtype):
 def unpack_array(array, length, dtype=None):
     result = []
     total = len(array) // length
-    for i in range(total):
+    for i in xrange(total):
         offset = i * length
         result.append(array[offset:offset + length])
     return result

@@ -165,7 +165,7 @@ class CodeFunction(object):
         if number_of_outputs == 0:
             if result_type is None:
                 return None
-            return dtype_to_result[self.specification.result_type][0]
+            return dtype_to_result[result_type][0]
             
         if number_of_outputs == 1 \
             and result_type is None:
@@ -183,8 +183,8 @@ class CodeFunction(object):
         for key, value in dtype_to_result.iteritems():
             dtype_to_array[key] = list(reversed(value))
         
-        if not self.specification.result_type is None:
-            return_value =  dtype_to_array[self.specification.result_type].pop()
+        if not result_type is None:
+            return_value =  dtype_to_array[result_type].pop()
         
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
@@ -1042,6 +1042,7 @@ class CodeFunctionWithUnits(CodeFunction):
         self.interface = interface
         self.owner = owner
         self.specification = specification
+        self.number_of_output_parameters = len(self.specification.output_parameters)
     
     def __call__(self, *arguments_list, **keyword_arguments):
         dtype_to_values, units = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
@@ -1112,15 +1113,16 @@ class CodeFunctionWithUnits(CodeFunction):
     """
     def converted_results(self, dtype_to_result, must_handle_as_array, units):
         
-        number_of_outputs = len(self.specification.output_parameters)
+        number_of_outputs = self.number_of_output_parameters
+        result_type = self.specification.result_type         
         
         if number_of_outputs == 0:
-            if self.specification.result_type is None:
+            if result_type is None:
                 return None
-            return dtype_to_result[self.specification.result_type][0]
+            return dtype_to_result[result_type][0]
             
         if number_of_outputs == 1 \
-            and self.specification.result_type is None:
+            and result_type is None:
             
             for value in dtype_to_result.values():
                 if len(value) == 1:
@@ -1135,8 +1137,8 @@ class CodeFunctionWithUnits(CodeFunction):
         for key, value in dtype_to_result.iteritems():
             dtype_to_array[key] = list(reversed(value))
         
-        if not self.specification.result_type is None:
-            return_value =  dtype_to_array[self.specification.result_type].pop()
+        if not result_type is None:
+            return_value =  dtype_to_array[result_type].pop()
         
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
@@ -1144,7 +1146,7 @@ class CodeFunctionWithUnits(CodeFunction):
                 result[parameter.name] = result[parameter.name] | units[parameter.index_in_output]
                 
         
-        if not self.specification.result_type is None:
+        if not result_type is None:
             result["__result"] =  return_value
         
         return result

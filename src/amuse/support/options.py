@@ -168,13 +168,15 @@ class option(object):
             return self
         
         if self.name in instance._local_options:
-            return instance._local_options[self.name]
+            value = instance._local_options[self.name]
         else:
-            return self.global_options.get_value_for_option(self, instance)
+            value = self.global_options.get_value_for_option(self, instance)
             
-    def __set__(self, instance, value):
-        instance._local_options[self.name] = self.validator(value)
+
+        setattr(instance, self.name, value)     
         
+        return value
+            
     def get_value(self, instance, section, options):
         return self.validator(self.valuetype(section, options))
         
@@ -217,6 +219,14 @@ class option(object):
     
         
         
+    def __setx__(self, instance, value):
+        instance._local_options[self.name] = self.validator(value)
+        try:
+            delattr(instance, self.name)
+        except AttributeError as ex:
+            pass
+        
+
 class OptionalAttributes(object):
     """
     Abstract superclass for all classes supporting optional

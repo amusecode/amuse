@@ -21,6 +21,8 @@ from amuse.datamodel import base
 from amuse.datamodel import parameters
 from amuse.datamodel import incode_storage
 
+import itertools
+
 class ConvertArgumentsException(core.IncompatibleUnitsException):
     formatstring = "{0}"
 
@@ -563,7 +565,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 return_value = [return_value]
                 
             result = []
-            for value, unit in zip(return_value, self.return_units):
+            for value, unit in itertools.izip(return_value, self.return_units):
                 unit.append_result_value(method, self, value, result)
                     
             if len(result) == 1:                
