@@ -336,7 +336,7 @@ FUNCTION evolve_model(end_time)
     particle_is_child(REVERSE_INDEX(idchild1)) = .TRUE.
     particle_is_child(REVERSE_INDEX(idchild2)) = .TRUE.
   ENDDO
-  current_time = end_time
+  ! current_time = end_time
 END FUNCTION
 
 FUNCTION get_index_of_first_particle(index_of_the_particle)
