@@ -268,8 +268,6 @@ class TestEVtwinInterface(TestWithMPI):
 
 class TestEVtwin(TestWithMPI):
 
-
-
     def test0(self):
         instance = EVtwin()
         instance.initialize_code()
@@ -300,6 +298,31 @@ class TestEVtwin(TestWithMPI):
 
         self.assertEquals(instance.particles.mass, 10 | units.MSun)
         self.assertAlmostEquals(instance.particles.luminosity, 5695.19757302 | units.LSun, 6)
+        self.assertAlmostEquals(instance.particles.radius, 4.07378590 | units.RSun, 6)
+        instance.stop()
+
+    def test3(self):
+        print "Testing sun recreation"
+        instance = EVtwin()
+        instance.initialize_code()
+        instance.commit_parameters()
+
+        stars = Particles(1)
+        stars.mass = 1 | units.MSun
+
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
+
+        self.assertEquals(instance.particles.mass, 1 | units.MSun)
+        self.assertAlmostEquals(instance.particles.luminosity, 0.7098065 | units.LSun, 6)
+        self.assertAlmostEquals(instance.particles.radius, 0.8892833 | units.RSun, 6)
+
+        instance.evolve_model(4.8|units.Gyr)
+
+        self.assertAlmostEquals(instance.particles.mass, 0.999921335 | units.MSun, 6)
+        self.assertAlmostEquals(instance.particles.luminosity, 1.04448714 | units.LSun, 6)
+        self.assertAlmostEquals(instance.particles.radius, 1.02061451 | units.RSun, 6)
+
         instance.stop()
 
     def xtest3(self):
@@ -629,55 +652,55 @@ class TestEVtwin(TestWithMPI):
         instance.parameters.verbosity = True
         instance.particles.add_particles(Particles(mass = [0.8] | units.MSun))
         instance.evolve_model()
-        
+
         instance.new_particle_from_model(instance.particles[0].internal_structure())
         # The above line is equivalent with:
         #copy = Particles(1)
         #copy.internal_structure = instance.particles[0].internal_structure()
         #instance.particles.add_particles(copy)
-        
+
         number_of_zones = instance.particles[0].get_number_of_zones()
         self.assertEqual(len(instance.particles), 2)
         self.assertEqual(instance.particles[1].get_number_of_zones(), number_of_zones)
         self.assertIsOfOrder(instance.particles[1].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.particles[1].get_temperature_profile()[0],  1.0e7 | units.K)
         self.assertIsOfOrder(instance.particles[1].get_pressure_profile()[0],      1.0e17 | units.barye)
-        
+
         instance.evolve_model(keep_synchronous = False)
         self.assertAlmostRelativeEqual(
             instance.particles[0].temperature, instance.particles[1].temperature, 2)
         self.assertAlmostRelativeEqual(
             instance.particles[0].luminosity, instance.particles[1].luminosity, 2)
         instance.stop()
-    
+
     def slowtest11(self):
         print "Test for importing new stellar models, also check long-term evolution"
         instance = EVtwin()
         instance.parameters.verbosity = True
         instance.particles.add_particles(Particles(mass = [0.8] | units.MSun))
         instance.evolve_model()
-        
+
         copy = Particles(1)
         copy.internal_structure = instance.particles[0].internal_structure()
         instance.particles.add_particles(copy)
-        
+
         number_of_zones = instance.particles[0].get_number_of_zones()
         self.assertEqual(len(instance.particles), 2)
         self.assertEqual(instance.particles[1].get_number_of_zones(), number_of_zones)
         self.assertIsOfOrder(instance.particles[1].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.particles[1].get_temperature_profile()[0],  1.0e7 | units.K)
         self.assertIsOfOrder(instance.particles[1].get_pressure_profile()[0],      1.0e17 | units.barye)
-        
+
         t1, l1 = simulate_evolution_tracks(instance.particles[0], end_time=26.5|units.Gyr)
         t2, l2 = simulate_evolution_tracks(instance.particles[1], end_time=26.5|units.Gyr)
         instance.stop()
-        
+
         i1 = t1.argmax() # Maximum temperature ~ turnoff main sequence
         i2 = t2.argmax()
         self.assertAlmostRelativeEqual(t1[i1], t2[i2], 2)
         self.assertAlmostRelativeEqual(l1[i1], l2[i2], 2)
         #plot_tracks(t1, l1, t2, l2)
-    
+
     def xslowtest11(self):
         print "Test 11: Continue the stellar evolution of a 'merger product' - WIP"
         instance = EVtwin()
@@ -1000,7 +1023,7 @@ class TestEVtwin(TestWithMPI):
         self.assertIsOfOrder(stars.central_temperature, [4e6, 13e6, 31e6] | units.K)
         self.assertIsOfOrder(stars.central_density, [400, 77, 9] | units.g * units.cm**-3)
         instance.stop()
-    
+
     def test20(self):
         print "Testing EVtwin manual mass transfer rate"
         instance = EVtwin()
@@ -1010,7 +1033,7 @@ class TestEVtwin(TestWithMPI):
         instance.evolve_model()
         # NOTE! no mass transfer during the initial step:
         self.assertEqual(stars[0].mass, stars[1].mass)
-        
+
         age = stars[0].age
         mass = stars[0].mass
         instance.evolve_model()
@@ -1029,7 +1052,7 @@ def simulate_evolution_tracks(star, end_time=1|units.Gyr):
         star.evolve_one_step()
         print star.age
     return temperature_at_time, luminosity_at_time
-    
+
 def plot_tracks(temperature1, luminosity1, temperature2, luminosity2):
     from matplotlib import pyplot
     from amuse.plot import loglog, xlabel, ylabel

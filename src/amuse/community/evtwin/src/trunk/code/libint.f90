@@ -95,7 +95,7 @@ module twinlib
       real(double) :: cdd        ! Timestep control parameter
       integer :: jhold           ! If jhold<3, then don't change the timestep
       real(double) :: prev(81), pprev(81)
-      integer :: jm2, jm1 
+      integer :: jm2, jm1
 
 
       ! Wind/mass accretion options
@@ -136,7 +136,7 @@ module twinlib
    real(double), private :: amuse_Z, amuse_csmc, amuse_calp, amuse_cos
    real(double), private :: amuse_cth, amuse_maxage, amuse_mindt
    real(double) :: amuse_entropy_accuracy, amuse_entropy_force
-   
+
    ! List private subroutines that should not be called directly
    private initialise_stellar_parameters, allocate_star, swap_in, swap_out, select_star, make_zahb_model
 
@@ -1041,27 +1041,27 @@ contains
          secondary => star_list(star%sid)
 
          ! Primary star
-         primary%h(1:primary%number_of_variables, 1:kh) = h(1:primary%number_of_variables, 1:kh)   
-         primary%dh(1:primary%number_of_variables, 1:kh) = dh(1:primary%number_of_variables, 1:kh)  
-         primary%hpr(1:primary%number_of_variables, 1:kh) = hpr(1:primary%number_of_variables, 1:kh) 
-         primary%menc(1, 1:kh) = menc(1, 1:kh) 
+         primary%h(1:primary%number_of_variables, 1:kh) = h(1:primary%number_of_variables, 1:kh)
+         primary%dh(1:primary%number_of_variables, 1:kh) = dh(1:primary%number_of_variables, 1:kh)
+         primary%hpr(1:primary%number_of_variables, 1:kh) = hpr(1:primary%number_of_variables, 1:kh)
+         primary%menc(1, 1:kh) = menc(1, 1:kh)
 
          ! Orbital elements
          star%h(1:star%number_of_variables, 1:kh) = &
-            h(INDEX_ORBIT_VAR_START+1:INDEX_ORBIT_VAR_START+star%number_of_variables, 1:kh)   
+            h(INDEX_ORBIT_VAR_START+1:INDEX_ORBIT_VAR_START+star%number_of_variables, 1:kh)
          star%dh(1:star%number_of_variables, 1:kh) = &
-            dh(INDEX_ORBIT_VAR_START+1:INDEX_ORBIT_VAR_START+star%number_of_variables, 1:kh)  
+            dh(INDEX_ORBIT_VAR_START+1:INDEX_ORBIT_VAR_START+star%number_of_variables, 1:kh)
          star%hpr(1:star%number_of_variables, 1:kh) = &
-            hpr(INDEX_ORBIT_VAR_START+1:INDEX_ORBIT_VAR_START+star%number_of_variables, 1:kh) 
+            hpr(INDEX_ORBIT_VAR_START+1:INDEX_ORBIT_VAR_START+star%number_of_variables, 1:kh)
 
          ! Secondary star
          secondary%h(1:secondary%number_of_variables, 1:kh) = &
-            h(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh)   
+            h(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh)
          secondary%dh(1:secondary%number_of_variables, 1:kh) = &
-            dh(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh)  
+            dh(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh)
          secondary%hpr(1:secondary%number_of_variables, 1:kh) = &
-            hpr(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh) 
-         secondary%menc(1, 1:kh) = menc(2, 1:kh) 
+            hpr(INDEX_SECONDARY_START+1:INDEX_SECONDARY_START+secondary%number_of_variables, 1:kh)
+         secondary%menc(1, 1:kh) = menc(2, 1:kh)
       end if
       star%age  = age
       star%dt   = dt
@@ -1563,7 +1563,7 @@ contains
 
 
 
-   ! Get mass (in solar units)
+   ! Get radius (in solar units)
    real(double) function radius_of(star_id)
       implicit none
       integer, intent(in) :: star_id
@@ -1584,7 +1584,7 @@ contains
 
       if (star_id_is_valid(star_id) < 0) return
       r = sqrt(exp(2.*star_list(star_id)%H(VAR_LNR, 1)) - CT(8))
-      radius = r / CLSN
+      radius = r / CRSN
       get_radius = 0
    end function get_radius
 
@@ -2103,7 +2103,7 @@ contains
       amuse_entropy_accuracy = value
       set_import_model_entropy_accuracy = 0
    end function
-   
+
    integer function get_import_model_entropy_force(value)
       implicit none
       real(double), intent(out) :: value
@@ -2116,7 +2116,7 @@ contains
       amuse_entropy_force = value
       set_import_model_entropy_force = 0
    end function
-   
+
    integer function initialize_code()
       implicit none
       amuse_ev_path = 'src/trunk'
@@ -2182,7 +2182,7 @@ contains
    integer function get_spin(id, value)
       implicit none
       real(double), intent(out) :: value
-      integer, intent(in) :: id      
+      integer, intent(in) :: id
       get_spin = -1
       if (star_id_is_valid(id) < 0) return
       value = star_list(id)%p
@@ -2523,7 +2523,7 @@ contains
       end select
    end function
 
-! Return the mass fraction of species 'AMUSE_species' at the specified 
+! Return the mass fraction of species 'AMUSE_species' at the specified
 ! zone/mesh-cell of the star
    integer function get_mass_fraction_of_species_at_zone(star_id, &
          AMUSE_species, zone, value)
@@ -2698,6 +2698,6 @@ contains
       double precision, intent(in) :: value
       set_mass = -4
    end function
-   
+
 
 end module twinlib
