@@ -454,7 +454,6 @@ void idata::correct(real tnext)
 
 	real newstep = eta * dt * sqrt((sqrt(a2 * k2) + j2)
 				       / (sqrt(j2 * l2) + k2));
-
 	// Force the time step down to a power of 2 commensurate with
 	// tnext.  Start by finding the first power of 2 below the old
 	// timestep.  This is redundant if the old step is already a
@@ -464,6 +463,9 @@ void idata::correct(real tnext)
 	int exponent;
 	real oldstep2 = itimestep[i]/(2*frexp(itimestep[i], &exponent));
 
+    cout << "newstep:" << newstep << " , oldstep2:"<< oldstep2 <<endl;
+    cout << "eta, dt:"<< eta <<", "<< dt<<endl;
+    cout << "eta, dt:"<< eta <<", "<< dt<<endl;
 	// At this stage it is possible that oldstep2 is not
 	// commensurate with the new time tnext (e.g. if this step was
 	// forced by system synchronization, rather than "occurring

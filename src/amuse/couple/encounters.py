@@ -1852,6 +1852,7 @@ class Multiples(options.OptionalAttributes):
         
         attributes_to_update = ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'radius']
         self.channel_from_model_to_code.copy_attributes(attributes_to_update)
+        self.particles.synchronize_to(self.gravity_code.particles)
         
         self.model_time = self.gravity_code.model_time
         

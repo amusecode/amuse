@@ -286,9 +286,9 @@ void jdata::remove_particle(int j)
 	    add_to_list = false;
 	    break;
 	}
-    if (add_to_list)
-	UpdatedParticles.push_back(UpdatedParticle(id[j], 1));
-
+    if (add_to_list) {
+        UpdatedParticles.push_back(UpdatedParticle(id[j], 1));
+    }
     nj--;
 
     if (0 && system_time > 0 && mpi_rank == 0) {
@@ -303,26 +303,33 @@ void jdata::remove_particle(int j)
     }
 
     if (j < nj) {
-	sched->remove_particle(nj);
-	id[j] = id[nj];
-	name[j] = name[nj];
-	time[j] = time[nj];
-	timestep[j] = timestep[nj];
-	mass[j] = mass[nj];
-	radius[j] = radius[nj];
-	pot[j] = pot[nj];
-	nn[j] = nn[nj];
-	dnn[j] = dnn[nj];
-	for (int k = 0; k < 3; k++) {
-	    pos[j][k] = pos[nj][k];
-	    vel[j][k] = vel[nj][k];
-	    acc[j][k] = acc[nj][k];
-	    jerk[j][k] = jerk[nj][k];
-	    pred_pos[j][k] = pred_pos[nj][k];
-	    pred_vel[j][k] = pred_vel[nj][k];
-	}
-	inverse_id[id[j]] = j;
-	sched->add_particle(j);
+        if(nj > 2) {
+            sched->remove_particle(nj);
+        } 
+        id[j] = id[nj];
+        name[j] = name[nj];
+        time[j] = time[nj];
+        timestep[j] = timestep[nj];
+        mass[j] = mass[nj];
+        radius[j] = radius[nj];
+        pot[j] = pot[nj];
+        nn[j] = nn[nj];
+        dnn[j] = dnn[nj];
+        for (int k = 0; k < 3; k++) {
+            pos[j][k] = pos[nj][k];
+            vel[j][k] = vel[nj][k];
+            acc[j][k] = acc[nj][k];
+            jerk[j][k] = jerk[nj][k];
+            pred_pos[j][k] = pred_pos[nj][k];
+            pred_vel[j][k] = pred_vel[nj][k];
+        }
+        inverse_id[id[j]] = j;
+        if(nj > 2) {
+            sched->add_particle(j);
+        } else {
+            sched->cleanup();
+            sched->initialize();
+        }
     } 
 
     if (1)  {
