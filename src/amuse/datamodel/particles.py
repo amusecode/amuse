@@ -644,7 +644,7 @@ class AbstractParticleSet(AbstractSet):
         """
         return self.add_particles(particle.as_set())[0]
 
-    def ensure_presence_of(self, particle):
+    def ensure_presence_of(self, x):
         """
         Add one particle to the set, but only if not already in set.
 
@@ -662,12 +662,26 @@ class AbstractParticleSet(AbstractSet):
         1
         >>> p1==p2
         True
+        >>> particle2 = Particle()
+        >>> set=particle.as_set()
+        >>> p3=set.add_particle(particle2)
+        >>> set2=particles.ensure_presence_of(set)
+        >>> len(particles)
+        2
+        >>> len(set2)
+        2
+
 
         """
-        if particle in self:
-            return particle.as_particle_in_set(self)
-        else:
-            return self.add_particle(particle)
+        try:
+          not_in_set=x-x.get_intersecting_subset_in(self)
+          self.add_particles(not_in_set)
+          return x.get_intersecting_subset_in(self)
+        except:  
+          if x in self:
+              return x.as_particle_in_set(self)
+          else:
+              return self.add_particle(x)
 
     def remove_particles(self, particles):
         """
@@ -1019,7 +1033,6 @@ class AbstractParticleSet(AbstractSet):
     def get_intersecting_subset_in(self, other):
         selected_keys = filter(lambda x : other.has_key_in_store(x), self.get_all_keys_in_store())
         return other._subset(selected_keys)
-
 
     def _as_masked_subset_in(self, other):
         keys = numpy.ma.array(self.get_all_keys_in_store(), dtype='uint64')
