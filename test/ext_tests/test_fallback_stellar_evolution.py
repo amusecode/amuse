@@ -22,8 +22,8 @@ class TestFallbackStellarEvolution(TestCase):
 
     def xtest2(self):
         print "Testing FallbackStellarEvolution: evolve tests"
-  
-  
+
+
 # results of original code  (not really check the numbers, tests have been relaxed because
 # different timestepping of evolve_model and evolve_one_step)
         results=dict()
@@ -51,45 +51,45 @@ class TestFallbackStellarEvolution(TestCase):
                                       evtwin_mass=37.0862227121 | units.MSun,
                                       evtwin_rad= 13.5982316053| units.RSun,
                                       evtwin_L=320099.608846| units.LSun)
-        
-  
+
+
         for m in [40.]| units.MSun:#,20.,10.] | units.MSun:
           instance = FallbackStellarEvolution()
           instance._main_se.parameters.max_age_stop_condition=3.| units.Myr
-  
+
           star = Particle(1)
           star.mass = m
           star = instance.particles.add_particle(star)
           instance.commit_particles()
-  
+
           while instance.ActiveModel[star].__class__.__name__=="EVtwin":
               instance.evolve_model()
 
           print "%s\t%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius,
            star.luminosity, star.stellar_type, instance.ActiveModel[star].__class__.__name__)
-  
+
           self.assertAlmostRelativeEqual(results[str(m)]["sse_age"],instance._FBTimeseries[star].particles[0].SSEAgeAtSwitch,7)
           self.assertAlmostRelativeEqual(results[str(m)]["sse_mass"],star.mass,7)
           self.assertAlmostRelativeEqual(results[str(m)]["sse_rad"],star.radius,7)
           self.assertAlmostRelativeEqual(results[str(m)]["sse_L"],star.luminosity,7)
-  
-  
+
+
           star=instance._main_se.particles[0]
 
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_age"],star.age,7)
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_mass"],star.mass,2)
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_rad"],star.radius,2)
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_L"],star.luminosity,2)
-  
+
           print "%s\t%s\t%s\t%s\t%s" % (star.age, star.mass, star.radius,
            star.luminosity, star.stellar_type)
-  
+
           instance.stop()
-        
+
     def slowtest3(self):
         print "Testing FallbackStellarEvolution: evolve 3 stars at the same time"
-  
-  
+
+
 # results of original code  (not really check the numbers, tests have been relaxed because
 # different timestepping of evolve_model and evolve_one_step)
         results=dict()
@@ -117,16 +117,16 @@ class TestFallbackStellarEvolution(TestCase):
                                       evtwin_mass=37.0862227121 | units.MSun,
                                       evtwin_rad= 13.5982316053| units.RSun,
                                       evtwin_L=320099.608846| units.LSun)
-        
-  
+
+
         instance = FallbackStellarEvolution()
         instance._main_se.parameters.max_age_stop_condition=3.| units.Myr
-  
+
         stars = Particles(3,mass=[10.,20.,40.] | units.MSun)
         stars = instance.particles.add_particles(stars)
         stars.initial_mass=stars.mass
         instance.commit_particles()
-  
+
         while instance.model_time<.05| units.Myr:
               instance.evolve_model()
 
@@ -142,15 +142,15 @@ class TestFallbackStellarEvolution(TestCase):
         for star in stars:
           m=star.initial_mass
           self.assertAlmostRelativeEqual(results[str(m)]["sse_age"],instance._FBTimeseries[star].particles[0].SSEAgeAtSwitch,3)
-    
+
           evstar=star.as_particle_in_set(instance._main_se.particles)
 
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_age"],evstar.age,7)
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_mass"],evstar.mass,2)
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_rad"],evstar.radius,2)
           self.assertAlmostRelativeEqual(results[str(m)]["evtwin_L"],evstar.luminosity,2)
-  
-  
+
+
         instance.stop()
 
     def slowtest4(self):
@@ -158,11 +158,11 @@ class TestFallbackStellarEvolution(TestCase):
 
         instance = FallbackStellarEvolution()
         instance._main_se.parameters.max_age_stop_condition=3.| units.Myr
-  
+
         stars = Particles(3,mass=[40.,40.,40.] | units.MSun)
         stars = instance.particles.add_particles(stars)
         instance.commit_particles()
-  
+
         while instance.model_time<=3.| units.Myr:
               instance.evolve_model()
 
@@ -172,22 +172,22 @@ class TestFallbackStellarEvolution(TestCase):
         age1=instance._FBTimeseries[stars[0]].particles[0].SSEAgeAtSwitch
         age2=instance._FBTimeseries[stars[1]].particles[0].SSEAgeAtSwitch
         age3=instance._FBTimeseries[stars[2]].particles[0].SSEAgeAtSwitch
-        
+
         self.assertEqual(age1,age2)
         self.assertEqual(age2,age3)
 
         instance.stop()
-        
+
     def slowtest5(self):
         print "Testing FallbackStellarEvolution: evolve with end time"
 
         instance = FallbackStellarEvolution()
         instance._main_se.parameters.max_age_stop_condition=0.1| units.Myr
-  
+
         stars = Particles(3,mass=[10.,20.,30.] | units.MSun)
         stars = instance.particles.add_particles(stars)
         instance.commit_particles()
-  
+
         instance.evolve_model(.101 | units.Myr)
 
         for star in stars:
@@ -196,22 +196,22 @@ class TestFallbackStellarEvolution(TestCase):
         self.assertTrue(.101| units.Myr<instance.model_time)
 
         instance.stop()
-        
+
     def test6(self):
         print "Testing FallbackStellarEvolution: enforce monotonic mass evolution"
 
         instance = FallbackStellarEvolution(enforce_monotonic_mass_evolution=True)
         instance._main_se.parameters.max_age_stop_condition=3.| units.Myr
-  
+
         stars = Particles(1,mass=[40.] | units.MSun)
         stars = instance.particles.add_particles(stars)
         instance.commit_particles()
-  
-        while instance.ActiveModel[stars[0]].__class__.__name__=="EVtwin": 
+
+        while instance.ActiveModel[stars[0]].__class__.__name__=="EVtwin":
           emass=stars[0].mass
           instance.evolve_model()
 
-        self.assertTrue(stars[0].mass<emass)
+        self.assertTrue(stars[0].mass<=emass)
 
         instance.stop()
 
@@ -220,11 +220,11 @@ class TestFallbackStellarEvolution(TestCase):
 
         instance = FallbackStellarEvolution(MESA)
         instance._main_se.parameters.max_age_stop_condition=3.| units.Myr
-  
+
         stars = Particles(3,mass=[40.,40.,40.] | units.MSun)
         stars = instance.particles.add_particles(stars)
         instance.commit_particles()
-  
+
         instance.evolve_model(3.01 | units.Myr)
 
         for star in stars:
@@ -233,7 +233,7 @@ class TestFallbackStellarEvolution(TestCase):
         age1=instance._FBTimeseries[stars[0]].particles[0].SSEAgeAtSwitch
         age2=instance._FBTimeseries[stars[1]].particles[0].SSEAgeAtSwitch
         age3=instance._FBTimeseries[stars[2]].particles[0].SSEAgeAtSwitch
-        
+
         self.assertEqual(age1,age2)
         self.assertEqual(age2,age3)
 
