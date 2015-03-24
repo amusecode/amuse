@@ -495,7 +495,7 @@ class TestMikkola(TestWithMPI):
         
         instance1 = Mikkola(convert_nbody)
         instance1.particles.add_particles(stars)
-        instance1.evolve_model(0.3 | units.yr)
+        instance1.evolve_model(0.45 | units.yr)
         
         pos11 = quantities.as_vector_quantity(instance1.get_position(1))
         pos12 = quantities.as_vector_quantity(instance1.get_position(2))
@@ -505,9 +505,10 @@ class TestMikkola(TestWithMPI):
         instance2 = Mikkola(convert_nbody)
         instance2.particles.add_particles(stars)
         instance2.evolve_model(0.15 | units.yr)
-        self.assertAlmostRelativeEquals(instance2.model_time,0.15 | units.yr)
-        instance2.evolve_model(0.3  | units.yr)
-        self.assertAlmostRelativeEquals(instance2.model_time, 0.3| units.yr)
+        self.assertAlmostRelativeEquals(instance2.model_time,0.15 | units.yr, 3)
+        instance2.evolve_model(0.3 | units.yr)
+        print instance2.model_time.as_quantity_in(units.yr)
+        self.assertAlmostRelativeEquals(instance2.model_time, 0.45| units.yr, 3)
         
         pos21 = quantities.as_vector_quantity(instance2.get_position(1))
         pos22 = quantities.as_vector_quantity(instance2.get_position(2))
@@ -519,7 +520,7 @@ class TestMikkola(TestWithMPI):
         
         self.assertAlmostRelativeEquals(pos11, pos21)
         self.assertAlmostRelativeEquals(pos12, pos22)
-        self.assertAlmostRelativeEquals(posmerger1[0], posmerger2[0], 5)
+        self.assertAlmostRelativeEquals(posmerger1[0], posmerger2[0], 4)
         self.assertAlmostRelativeEquals(posmerger1[1], posmerger2[1], 1)
         
     def test9(self):
