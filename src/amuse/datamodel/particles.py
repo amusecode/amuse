@@ -644,6 +644,30 @@ class AbstractParticleSet(AbstractSet):
         """
         return self.add_particles(particle.as_set())[0]
 
+    def ensure_presence_of(self, particle):
+        """
+        Add one particle to the set, but only if not already in set.
+
+        :parameter particle: particle to add
+
+        >>> particles = Particles()
+        >>> print len(particles)
+        0
+        >>> particle = Particle()
+        >>> p1=particles.ensure_presence_of(particle)  # doctest:+ELLIPSIS
+        >>> print len(particles)
+        1
+        >>> p2=particles.ensure_presence_of(particle)  # doctest:+ELLIPSIS
+        >>> print len(particles)
+        1
+        >>> p1==p2
+        True
+
+        """
+        if particle in self:
+            return particle.as_particle_in_set(self)
+        else:
+            return self.add_particle(particle)
 
     def remove_particles(self, particles):
         """
