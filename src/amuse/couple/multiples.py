@@ -16,6 +16,7 @@ from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import constants
 from amuse.units.quantities import zero
+from amuse.support.exceptions import KeysNotInStorageException
 from amuse import io
 #---------------------------------------------------------------------
 #
@@ -951,16 +952,26 @@ self.gravity_code.model_time, 'to', end_time
             
             # Check that stars not in a multiple are not the dominant perturbation
             print "DEBUGGING PERTURBER ADDITION"
-            stars_to_check = copy.copy(stars_not_in_a_multiple)
-            roots_to_check = list(roots_of_trees)
-            while len(roots_to_check) > 0:
-                r = roots_to_check.pop()
-                if r != root:
-                    if hasattr(r, "child1"):
-                        if r not in roots_to_check:
-                            roots_to_check.append(r)
-                    else:
-                        stars_to_check.extend(r)
+            sys.stdout.flush()
+            stars_to_check = Particles()
+            for t in binaries.iter_binary_trees():
+                stars_to_check.add_particles(t.get_leafs_subset())
+            #while len(roots_to_check) > 0:
+            #    r = roots_to_check.pop()
+            #    if r != root:
+            #        if hasattr(r, "child1"):
+            #            if r not in roots_to_check:
+            #                roots_to_check.append(r)
+            #        else:
+            #            stars_to_check.extend(r)
+            try:
+                stars_to_check.remove_particle(star1)
+            except KeysNotInStorageException:
+                pass
+            try:
+                stars_to_check.remove_particle(star2)
+            except KeysNotInStorageException:
+                pass
             for s in stars_to_check:
                 distance = (s.position - center_of_mass).length()
                 pert = s.mass / distance**3
@@ -1737,8 +1748,8 @@ def print_pair_of_stars(s, star1, star2, kep):
     m2 = star2.mass
     M,a,e,r,E,t = get_component_binary_elements(star1, star2, kep)
     print_elements(s, a, e, r, E, E*m1*m2/(m1+m2))
-    print_multiple_recursive(star1)
-    print_multiple_recursive(star2)
+    print_multiple_recursive(star1, kep)
+    print_multiple_recursive(star2, kep)
     
 def print_multiple_recursive(m, kep, level=0):	  ##### not working? #####
 
@@ -2057,11 +2068,13 @@ def scale_top_level_list(singles, multiples, kep, scale,
         comp2 = top_level_nodes[1]
 
         print pre, 'top-level unbound pair'
-        #print '\nunscaled top-level pair:'
-        #print_pair_of_stars('pair', comp1, comp2)
+        print pre, '\nunscaled top-level pair:'
+        sys.stdout.flush()
+        print_pair_of_stars('pair', comp1, comp2, kep)
         semi = rescale_binary_components(comp1, comp2, kep, scale)
-        #print '\nscaled top-level pair:'
-        #print_pair_of_stars('pair', comp1, comp2)
+        print pre, '\nscaled top-level pair:'
+        print_pair_of_stars('pair', comp1, comp2, kep)
+        sys.stdout.flush()
 
     else:
 
@@ -2077,6 +2090,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
         #print lt, 'scaled top-level nodes'
         #print top_level_nodes
 
+    print pre, 'done'
     sys.stdout.flush()
 
     # Don't attempt to correct or even return the tidal energy error.
