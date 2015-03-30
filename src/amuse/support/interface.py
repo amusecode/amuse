@@ -1257,14 +1257,11 @@ class GridDefinition(AbstractParticleSetDefinition):
             self.extra_keyword_arguments_for_getters_and_setters
         )
 
-    
-    
     def new_set_instance(self, handler):
         storage = self.new_storage(handler.interface)
-        if self.axes_names is None:
-            result = self.particles_factory(storage = storage)
-        else:
-            result = self.particles_factory(storage = storage, axes_names = self.axes_names)
+        result = self.particles_factory(storage = storage)
+        if self.axes_names is not None:
+            result.add_vector_attribute("position",self.axes_names)
         return result
 
 class CodeInMemoryParticles(datamodel.Particles):
