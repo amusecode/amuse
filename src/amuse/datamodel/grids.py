@@ -130,9 +130,6 @@ class AbstractGrid(AbstractSet):
         )
         
 class Grid(AbstractGrid):
-    DEFAULT_AXES_NAMES = ('x', 'y', 'z')
-    
-    
     def __init__(self, *args, **kwargs):
         AbstractGrid.__init__(self)
         
@@ -141,38 +138,12 @@ class Grid(AbstractGrid):
         else:
             self._private.attribute_storage = InMemoryGridAttributeStorage(*args)
         
-        
-        if "axes_names" in kwargs and (not kwargs['axes_names'] is None):
-            self._private.axes_names = kwargs['axes_names']
-        else:
-            self._private.axes_names = self.DEFAULT_AXES_NAMES
-            
         self._private.previous = None
         self.collection_attributes.timestamp = None
-        self.add_vector_attribute("position", self._private.axes_names[0:len(self.shape)])
         
     def can_extend_attributes(self):
         return self._private.attribute_storage.can_extend_attributes()
-    
-    @classmethod
-    def create(cls, shape, lengths, axes_names = DEFAULT_AXES_NAMES,offset=None):
-        """Returns a grid with cells between 0 and lengths.
-        """
-        result = cls(*shape, axes_names = axes_names)
-    
-        all_indices = numpy.indices(shape)+0.5
-        
-        if offset is None:
-          offset=[0.*l for l in lengths]
-        
-        def positions(indices, length, n):
-            return length * (indices/n)
-    
-        for indices, length, n, axis_name,of in zip(all_indices, lengths, shape, axes_names,offset):
-            setattr(result, axis_name, positions(indices, length, n)+of)
-       
-        return result
-            
+                
     def get_values_in_store(self, indices, attributes, by_key = True):
         result = self._private.attribute_storage.get_values_in_store(indices, attributes)
         return result
@@ -244,7 +215,37 @@ class Grid(AbstractGrid):
     @property
     def history(self):
         return reversed(list(self.iter_history()))
+
+    @classmethod
+    def create(cls,*args,**kwargs):
+        print ("Grid.create deprecated, use new_regular_grid instead")
+        return new_regular_grid(*args,**kwargs)
+
+# tbd: new_cartesian_grid (provide cellsize) and new_rectilinear_grid (provide positions)
+# (follow wikipedia defs) and eventually new_structured_grid and new_unstructured_grid
+def new_regular_grid(shape, lengths, axes_names = "xyz",offset=None):
+        """Returns a grid with cells between 0 and lengths.
+        """
+        result = Grid(*shape)
+    
+        all_indices = numpy.indices(shape)+0.5
         
+        if offset is None:
+          offset=[0.*l for l in lengths]
+        
+        def positions(indices, length, n):
+            return length * (indices/n)
+    
+        for indices, length, n, axis_name,of in zip(all_indices, lengths, shape, axes_names,offset):
+            setattr(result, axis_name, positions(indices, length, n)+of)
+       
+        if len(axes_names)<len(shape):
+          raise Exception("provide enough axes names")
+          
+        result.add_vector_attribute("position", axes_names[0:len(shape)])
+       
+        return result
+
 class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):
         AbstractGrid.__init__(self, grid)

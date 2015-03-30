@@ -619,7 +619,7 @@ class TestMpiAmrVac(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((10,10,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((10,10,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -677,7 +677,7 @@ class TestMpiAmrVac(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((10,10,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((10,10,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -1030,7 +1030,7 @@ class TestMpiAmrVac(TestWithMPI):
         
             self.assertAlmostRelativeEquals(rho , value | generic_unit_system.density)
         
-        sample = sample = datamodel.Grid.create(
+        sample = sample = datamodel.new_regular_grid(
             (4, 4, 76),
             (2, 2, 19) | generic_unit_system.length
         )

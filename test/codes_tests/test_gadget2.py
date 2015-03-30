@@ -11,7 +11,7 @@ from amuse.units import nbody_system
 from amuse.units import generic_unit_converter
 from amuse.units import generic_unit_system
 from amuse.units import units, constants
-from amuse.datamodel import Particles, Grid, ParticlesSuperset
+from amuse.datamodel import Particles, Grid, ParticlesSuperset, new_regular_grid
 from amuse.rfi import channel
 from amuse.io import read_set_from_file, write_set_to_file
 from amuse.ic.plummer import new_plummer_model
@@ -1344,7 +1344,7 @@ def hydro_plot(view, hydro_code, image_size, figname):
     axis_lengths = [0.0, 0.0, 0.0] | units.m
     axis_lengths[0] = view[1] - view[0]
     axis_lengths[1] = view[3] - view[2]
-    grid = Grid.create(shape, axis_lengths)
+    grid = new_regular_grid(shape, axis_lengths)
     grid.x += view[0]
     grid.y += view[2]
     speed = grid.z.reshape(size) * (0 | 1/units.s)

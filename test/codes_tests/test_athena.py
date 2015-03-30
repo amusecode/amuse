@@ -1727,7 +1727,7 @@ class TestAthena(TestWithMPI):
         momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
         energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
         
-        grid = datamodel.Grid.create((10,10,10), [10.0, 10.0, 10.0] | units.m)
+        grid = datamodel.new_regular_grid((10,10,10), [10.0, 10.0, 10.0] | units.m)
         
         grid.rho = 0.4 | density
         grid.rhovx = 0.1 | momentum
@@ -1887,7 +1887,7 @@ class TestAthena(TestWithMPI):
         
         result = instance.commit_parameters()
     
-        grid = datamodel.Grid.create((n,n,n), [4.0 , 4.0, 4.0] | generic_unit_system.length)
+        grid = datamodel.new_regular_grid((n,n,n), [4.0 , 4.0, 4.0] | generic_unit_system.length)
         
         grid.rho = 0.0 | generic_unit_system.density
         grid.rhovx = 0.0 | momentum
@@ -2007,7 +2007,7 @@ class TestAthena(TestWithMPI):
         momentum =  units.MSun / (units.Myr * units.parsec ** 2 )
         energy =  units.MSun / (units.parsec * units.Myr ** 2)
         
-        grid = datamodel.Grid.create((10,20,40), [1.0, 1.0, 1.0] | units.parsec )
+        grid = datamodel.new_regular_grid((10,20,40), [1.0, 1.0, 1.0] | units.parsec )
         
         grid.rho = 0.4 | density
         grid.rhovx = 0.1 | momentum
@@ -2038,7 +2038,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_number_of_steps = 1
         
         
-        grid = datamodel.Grid.create((10,1,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((10,1,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -2103,7 +2103,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_number_of_steps = 1
         
         
-        grid = datamodel.Grid.create((10,1,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((10,1,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -2166,7 +2166,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_number_of_steps = 1
         
         
-        grid = datamodel.Grid.create((10,4,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((10,4,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -2229,7 +2229,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_number_of_steps = 1
         
         
-        grid = datamodel.Grid.create((4,10,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((4,10,1), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -2294,7 +2294,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_number_of_steps = 1
         
         
-        grid = datamodel.Grid.create((4,5,6), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((4,5,6), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -2357,7 +2357,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_number_of_steps = 1
         
         
-        grid = datamodel.Grid.create((4,5,6), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((4,5,6), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -2542,7 +2542,7 @@ class TestAthena(TestWithMPI):
         
             self.assertAlmostRelativeEquals(rho , value | generic_unit_system.density)
         
-        sample = sample = datamodel.Grid.create(
+        sample = sample = datamodel.new_regular_grid(
             (4, 4, 76),
             (2, 2, 19) | generic_unit_system.length
         )

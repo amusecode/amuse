@@ -15,7 +15,7 @@ from amuse import datamodel
 class VtkStructuredGridTests(amusetest.TestCase):
     
     def test1(self):
-        grid = datamodel. Grid.create([2,3,4], [1,1,1] | generic_unit_system.length)
+        grid = datamodel. new_regular_grid([2,3,4], [1,1,1] | generic_unit_system.length)
         grid.rho = grid.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
         data_file = StringIO()
         instance = vtk.VtkStructuredGrid("test.vts", data_file, grid)
@@ -28,7 +28,7 @@ class VtkStructuredGridTests(amusetest.TestCase):
     
 
     def test2(self):
-        grid = datamodel. Grid.create([4,5,6], [1,1,1] | generic_unit_system.length)
+        grid = datamodel. new_regular_grid([4,5,6], [1,1,1] | generic_unit_system.length)
         grid.mass = generic_unit_system.density(numpy.random.rand(4,5,6))
         data_file = StringIO()
         instance = vtk.VtkStructuredGrid("test.vts", data_file, grid)
@@ -44,7 +44,7 @@ class VtkStructuredGridTests(amusetest.TestCase):
 class VtkUnstructuredGridTests(amusetest.TestCase):
     
     def test1(self):
-        grid = datamodel. Grid.create([2,3,4], [1,1,1] | generic_unit_system.length)
+        grid = datamodel. new_regular_grid([2,3,4], [1,1,1] | generic_unit_system.length)
         grid.rho = grid.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
         data_file = StringIO()
         instance = vtk.VtkUnstructuredGrid("test.vtu", data_file, grid)
@@ -60,7 +60,7 @@ class VtkUnstructuredGridTests(amusetest.TestCase):
         
     
     def test2(self):
-        grid = datamodel. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
+        grid = datamodel. new_regular_grid([2,2,2], [1,1,1] | generic_unit_system.length)
         grid.rho = grid.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
         data_file = StringIO()
         instance = vtk.VtkUnstructuredGrid("test.vtu", data_file, grid)
@@ -77,9 +77,9 @@ class VtkUnstructuredGridTests(amusetest.TestCase):
         
     
     def test3(self):
-        grid1 = datamodel. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
+        grid1 = datamodel. new_regular_grid([2,2,2], [1,1,1] | generic_unit_system.length)
         grid1.rho = grid1.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
-        grid2 = datamodel. Grid.create([2,2,2], [1,1,1] | generic_unit_system.length)
+        grid2 = datamodel. new_regular_grid([2,2,2], [1,1,1] | generic_unit_system.length)
         grid2.position += [1.0,0.0,0.0] | generic_unit_system.length
         grid2.rho = grid2.x * (0.1 | generic_unit_system.mass / generic_unit_system.length ** 4)
         

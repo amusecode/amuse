@@ -1175,7 +1175,7 @@ class TestCapreole(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((10,4,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((10,4,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -1243,7 +1243,7 @@ class TestCapreole(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((10,4,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((10,4,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -1309,7 +1309,7 @@ class TestCapreole(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((10,4,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((10,4,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -1379,7 +1379,7 @@ class TestCapreole(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((4,10,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((4,10,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -1447,7 +1447,7 @@ class TestCapreole(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((4,10,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((4,10,4), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -1513,7 +1513,7 @@ class TestCapreole(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((4,4,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((4,4,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -1581,7 +1581,7 @@ class TestCapreole(TestWithMPI):
         
         gamma = 5.0 / 3.0
         
-        grid = datamodel.Grid.create((4,4,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
+        grid = datamodel.new_regular_grid((4,4,10), [1.0, 1.0, 1.0] | generic_unit_system.length )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.speed * generic_unit_system.density
@@ -1770,7 +1770,7 @@ class TestCapreole(TestWithMPI):
         
             self.assertAlmostRelativeEquals(rho , value | generic_unit_system.density)
         
-        sample = datamodel.Grid.create(
+        sample = datamodel.new_regular_grid(
             (4, 4, 76),
             (2, 2, 19) | generic_unit_system.length
         )
