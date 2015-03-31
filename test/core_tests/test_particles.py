@@ -218,6 +218,41 @@ class TestParticles(amusetest.TestCase):
         self.assertAlmostRelativeEquals(particles.radius, [2,3] | units.m*2)
         
 
+    def test19(self):
+        particles = datamodel.Particles(keys = [10,11])
+        particles.mass = [1,2] | units.kg
+        
+        particles2 = datamodel.Particles(keys = [12,13])
+        particles2.mass = [3,4] | units.kg
+        particles[0].child = particles2[0]
+        particles[1].child = particles2[1]
+        outputstring = str(particles)
+        
+        self.assertEquals(outputstring.strip(), textwrap.dedent("""
+        key        child         mass
+                           -         none           kg
+        ====================  ===========  ===========
+                          10           12    1.000e+00
+                          11           13    2.000e+00
+        ====================  ===========  ===========""").strip())
+
+
+
+    def test20(self):
+        particles = datamodel.Particles(keys = [10,11])
+        particles.mass = [1,2] | units.kg
+        
+        particles2 = datamodel.Particles(keys = [12,13])
+        particles2.mass = [3,4] | units.kg
+        particles[0].child = particles2[0]
+        particles[1].child = particles2[1]
+        outputstring = str(particles[0])
+        print outputstring
+        self.assertEquals(outputstring.strip(), "Particle(10, set=<{1}>, child=Particle(12, set=<{0}>), mass=1.0 kg)".format(id(particles2), id(particles)).strip())
+
+
+
+
 class TestParticle(amusetest.TestCase):
 
     def test1(self):

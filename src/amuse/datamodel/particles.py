@@ -1016,8 +1016,8 @@ class AbstractParticleSet(AbstractSet):
         False
 
         """
-        keys = set(self.get_all_keys_in_store())
-        return particle.key in keys
+        
+        return isinstance(particle, Particle) and self.has_key_in_store(particle.key)
 
 
     def all_attributes(self):
@@ -2955,8 +2955,8 @@ class ParticleInformationChannel(object):
                 converted.append(x.copy_with_link_transfer(self.from_particles, self.to_particles))
             else:
                 converted.append(x)
-
-        self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
+        if len(self.to_indices) > 0:
+            self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
 
     def copy(self):
         if not self.attributes is None:
@@ -3319,11 +3319,22 @@ class Particle(object):
 
         output = 'Particle('
         output += str(self.key)
+        output += ', set=<{0}>'.format(id(self.particles_set))
+        
         for name, value in self.particles_set._values_of_particle(self._set_index):
             output += ', '
             output += name
             output += '='
-            output += str(value)
+            if isinstance(value, Particle):
+                output += 'Particle('
+                output += str(value.key)
+                output += ', set=<{0}>'.format(id(value.particles_set))
+                output += ')'
+            elif isinstance(value, AbstractParticleSet):
+                output += value.__class__.__name__
+                output += '(len={0}, id={1})'.format(len(value), id(value))
+            else:
+                output += str(value)
         output += ')'
         return output
 
