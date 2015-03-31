@@ -221,30 +221,86 @@ class Grid(AbstractGrid):
         print ("Grid.create deprecated, use new_regular_grid instead")
         return new_regular_grid(*args,**kwargs)
 
-# tbd: new_cartesian_grid (provide cellsize) and new_rectilinear_grid (provide positions)
-# (follow wikipedia defs) and eventually new_structured_grid and new_unstructured_grid
-def new_regular_grid(shape, lengths, axes_names = "xyz",offset=None):
-        """Returns a grid with cells between 0 and lengths.
+# tbd new_structured_grid and new_unstructured_grid
+def new_cartesian_grid(shape, cellsize, axes_names = "xyz",offset=None):
+        """Returns a cartesian grid with cells of size cellsize.
         """
+        if len(axes_names)<len(shape):
+          raise Exception("provide enough axes names")
+
         result = Grid(*shape)
     
         all_indices = numpy.indices(shape)+0.5
         
         if offset is None:
-          offset=[0.*l for l in lengths]
+            offset=[0.*cellsize]*len(shape)
+        
+        def positions(indices):
+            return cellsize * indices
+    
+        for indices, n, axis_name, of in zip(all_indices, shape, axes_names,offset):
+            setattr(result, axis_name, positions(indices)+of)
+                 
+        result.add_vector_attribute("position", axes_names[0:len(shape)])
+
+        object.__setattr__(result,"_cellsize",cellsize)
+       
+        return result
+
+def new_regular_grid(shape, lengths, axes_names = "xyz",offset=None):
+        """Returns a regular grid with cells between 0 and lengths.
+        """
+        if len(axes_names)<len(shape):
+          raise Exception("provide enough axes names")
+        if len(lengths)!=len(shape):
+          raise Exception("shape and lengths do not conform")
+
+        result = Grid(*shape)
+    
+        all_indices = numpy.indices(shape)+0.5
+        
+        if offset is None:
+            offset=[0.*l for l in lengths]
         
         def positions(indices, length, n):
             return length * (indices/n)
     
-        for indices, length, n, axis_name,of in zip(all_indices, lengths, shape, axes_names,offset):
+        for indices, length, n, axis_name, of in zip(all_indices, lengths, shape, axes_names,offset):
             setattr(result, axis_name, positions(indices, length, n)+of)
-       
-        if len(axes_names)<len(shape):
-          raise Exception("provide enough axes names")
-          
+                 
         result.add_vector_attribute("position", axes_names[0:len(shape)])
+
+        object.__setattr__(result,"_lengths",lengths)
        
         return result
+
+def new_rectilinear_grid(shape, axes_cell_boundaries, axes_names = "xyz",offset=None):
+        """Returns a rectilinear grid with cells at positions midway given cell boundaries.
+        """
+        if len(axes_names)<len(shape):
+          raise Exception("provide enough axes names")
+        if len(axes_cell_boundaries)!=len(shape):
+          raise Exception("length of shape and axes positions do not conform")
+
+        result = Grid(*shape)
+
+        all_indices = numpy.indices(shape)
+    
+        positions=[(b[1:]+b[:-1])/2 for b in axes_cell_boundaries]
+        
+        if offset is None:
+            offset=[0.*l[0] for l in positions]
+            
+        for indices, axis_pos, axis_name, of in zip(all_indices, positions, axes_names, offset):
+            setattr(result, axis_name, axis_pos[indices]+of)
+       
+        result.add_vector_attribute("position", axes_names[0:len(shape)])
+        
+        object.__setattr__(result,"_axes_cell_boundaries",axes_cell_boundaries)
+       
+        return result
+
+
 
 class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):
