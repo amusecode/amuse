@@ -49,12 +49,12 @@ $(GPU_BUILDDIR)/Makefile: $(BHTCDIR)/Makefile
 	-mkdir $(GPU_BUILDDIR) 
 	cp $(BHTCDIR)/Makefile $(GPU_BUILDDIR)/Makefile
 	
-$(BHTC): $(BUILDDIR)/Makefile
+$(BHTC): $(BUILDDIR)/Makefile src/*.c src/*.h src/*.C
 	make -C $(BUILDDIR) all VPATH=../src
-$(CODELIB): $(BUILDDIR)/Makefile
+$(CODELIB): $(BUILDDIR)/Makefile src/*.c src/*.h src/*.C
 	make -C $(BUILDDIR) all VPATH=../src
 	
-$(GPUCODELIB): $(GPU_BUILDDIR)/Makefile
+$(GPUCODELIB): $(GPU_BUILDDIR)/Makefile src/*.c src/*.h src/*.C
 	make -C $(GPU_BUILDDIR) libbhtree.a CPPFLAGS=-DGPU VPATH=../src
 
 clean:

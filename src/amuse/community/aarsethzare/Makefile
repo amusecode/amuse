@@ -24,7 +24,7 @@ clean:
 	$(RM) -f forsockets.mod
 	make -C src clean
 
-$(CODELIB):
+$(CODELIB):  src/*.f
 	make -C src all
 
 worker_code.f90: interface.py
