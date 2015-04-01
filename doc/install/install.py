@@ -58,7 +58,7 @@ class InstallPrerequisites(object):
             [],  
             '1.8.14',
             'hdf5-' , '.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src',
+            'http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src/',
             self.hdf5_build
           ) ,
           (
