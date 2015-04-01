@@ -2183,10 +2183,12 @@ class ParticlesMaskedSubset(ParticlesSubset):
 
         >>> particles = Particles(keys=[1,2])
         >>> particles[0].child = particles[1]
-        >>> print particles.child[0]
-        Particle(2, child=None)
+        >>> print particles.child[0] # doctest: +ELLIPSIS
+        Particle(2, set=<...>, child=None)
         >>> print particles.child[1]
         None
+        >>> print particles[0] # doctest: +ELLIPSIS
+        Particle(1, set=<...>, child=Particle(2, set=<...>))
         """
         keys = numpy.where(self.get_valid_particles_mask(), self._private.keys, [None])
         return str(list(keys))
@@ -3310,8 +3312,8 @@ class Particle(object):
         >>> p = Particle(10)
         >>> p.x = 10.2 | units.m
         >>> p.mass = 5 | units.kg
-        >>> print p
-        Particle(10, mass=5.0 kg, x=10.2 m)
+        >>> print p # doctest: +ELLIPSIS
+        Particle(10, set=<...>, mass=5.0 kg, x=10.2 m)
         """
         if self._set_index is None or self._set_version != self.particles_set._get_version():
             object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
