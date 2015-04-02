@@ -878,7 +878,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def attribute_names(self):
         return set(['parameters'])
 
-    def add_method_parameter(self, get_method, set_method, name, description, unit = None, default_value = None,must_set_before_get = False, is_vector = False):
+    def add_method_parameter(self, get_method, set_method, name, description, default_value = None,must_set_before_get = False, is_vector = False):
         if is_vector:
             definition = parameters.ModuleVectorMethodParameterDefinition(
                 get_method,
@@ -927,6 +927,12 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             default_value
         )
         self.definitions.append(definition)
+
+    def add_default_form_parameter(self,name,description,default):
+        if isinstance(default,bool):
+          self.add_boolean_parameter("get_"+name,"set_"+name,name,description,default)
+        else:
+          self.add_method_parameter("get_"+name,"set_"+name,name,description,default)
 
     def has_name(self, name):
         return name == 'PARAMETER'

@@ -355,14 +355,14 @@ def derive_dtype_unit_and_default(value):
               default=None
           else:
               default=number
-          if isinstance(number,(int,long)):
+          if isinstance(number, bool):
+              dtype="b"
+          elif isinstance(number,(int,long)):
               dtype="i"
           elif isinstance(number,(float,)):
               dtype="d"
           elif isinstance(number,(str,unicode)):
               dtype="s"
-          elif isinstance(number, bool):
-              dtype="b"
           else:
               raise Exception("undetectable type")
     return dtype,unit,default
