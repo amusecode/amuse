@@ -426,7 +426,25 @@ class ParameterDefinition(AbstractParameterDefinition):
     def is_cached(self):
         return False
     
-    
+class InterfaceParameterDefinition(ParameterDefinition):
+    def __init__(self, name, description, default_value):
+        AbstractParameterDefinition.__init__(self, name, description)
+        self.default_value = default_value
+        self.must_set_before_get = False
+        self.value=default_value
+        
+    def get_value(self, parameter, object):
+        try:
+          x=self.value.copy()
+        except:
+          x=self.value
+        return x
+        
+    def set_value(self, parameter, object, quantity):
+        try:
+          self.value=quantity.copy()
+        except:
+          self.value=quantity
 
 class ParameterException(AttributeError):
     template = ("Could not {0} value for parameter '{1}' of a '{2}' object, got errorcode <{3}>")
