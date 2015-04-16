@@ -10,6 +10,7 @@ from amuse.datamodel.base import *
 from amuse.support import exceptions
 
 try:
+  if numpy.uintp().itemsize<8: raise Exception()
   from amuse.datamodel.simple_hash import SimpleHash
   _SIMPLE_HASH_PRESENT_=True
 except BaseException as ex:

@@ -429,6 +429,8 @@ class ParameterDefinition(AbstractParameterDefinition):
 class InterfaceParameterDefinition(ParameterDefinition):
     def __init__(self, name, description, default_value):
         AbstractParameterDefinition.__init__(self, name, description)
+        if default_value is None:
+          raise Exception("interface parameters need default value")
         self.default_value = default_value
         self.must_set_before_get = False
         self.value=default_value
