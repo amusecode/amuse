@@ -463,9 +463,12 @@ void idata::correct(real tnext)
 	int exponent;
 	real oldstep2 = itimestep[i]/(2*frexp(itimestep[i], &exponent));
 
-    cout << "newstep:" << newstep << " , oldstep2:"<< oldstep2 <<endl;
-    cout << "eta, dt:"<< eta <<", "<< dt<<endl;
-    cout << "eta, dt:"<< eta <<", "<< dt<<endl;
+#if 0
+	cout << "newstep:" << newstep << " , oldstep2:"<< oldstep2 <<endl;
+	cout << "eta, dt:"<< eta <<", "<< dt<<endl;
+	cout << "eta, dt:"<< eta <<", "<< dt<<endl;
+#endif
+
 	// At this stage it is possible that oldstep2 is not
 	// commensurate with the new time tnext (e.g. if this step was
 	// forced by system synchronization, rather than "occurring
