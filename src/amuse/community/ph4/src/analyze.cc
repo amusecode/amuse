@@ -290,14 +290,14 @@ local bool is_lightly_perturbed(hdyn2 *b, hdyn2 *bi, hdyn2 *bj)
 			  / pow(square(bi->get_pos()-bj->get_pos()), 3);
 
     real max_pert_sq = 0;
-    hdyn2 *max_pert_bb = NULL;  
+    // hdyn2 *max_pert_bb = NULL;  
     for_all_daughters(hdyn2, b, bb)
 	if (bb != bi && bb != bj) {
 	    real r3_sq = square(bb->get_pos() - cm);
 	    real pert_sq = pow(bb->get_mass(), 2) / pow(r3_sq, 3);
 	    if (pert_sq > max_pert_sq) {
 		max_pert_sq = pert_sq;
-		max_pert_bb = bb;
+		// max_pert_bb = bb;
 	    }
 	}
 

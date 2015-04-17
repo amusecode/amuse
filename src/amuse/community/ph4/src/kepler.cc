@@ -66,7 +66,7 @@ static real cos_to_sin(real c) // special treatment near |cos| = 1
 
 // Simple mechanism for handling trigonometric errors in the Kepler package:
 
-static int kepler_tolerance_level = 0;
+static int kepler_tolerance_level = 2;	// was 0 (Steve)
 static bool print_trig_warning = false;
 
 // Options:
