@@ -93,6 +93,10 @@ class UnitlessArgs(object):
         return self.value_in(UnitlessArgs.arg_units[1], *args)
 
     @classmethod
+    def value_in_z_unit(self, *args):
+        return self.value_in(UnitlessArgs.arg_units[2], *args)
+
+    @classmethod
     def x_label(self, s=None):
         unit_name = self.unitnames_of_args[0]
 
@@ -180,9 +184,11 @@ def errorbar(*args, **kwargs):
     yerr, xerr = args[2:4]
 
     args1 = UnitlessArgs.strip(*args[:2])
-    args2 = UnitlessArgs.strip(xerr, yerr)
-    args = args1 + args2[::-1]
-
+    if xerr is not None:
+        xerr = UnitlessArgs.value_in_x_unit(xerr)
+    if yerr is not None:
+        yerr = UnitlessArgs.value_in_y_unit(yerr)
+    args = args1 + [yerr, xerr]
     result = native_plot.errorbar(*args, **kwargs)
     native_plot.xlabel(UnitlessArgs.x_label())
     native_plot.ylabel(UnitlessArgs.y_label())
@@ -236,18 +242,21 @@ def fix_xyz_axes(X, Y, Z):
         X, Y = numpy.meshgrid(X, Y)
     return X, Y, Z
 
-def log_norm(Z):
+def log_norm(Z, zmin, zmax):
     # for log scale, 0 is considered a missing value
     masked_Z = numpy.ma.masked_equal(Z, 0.0, copy=False)
-    zmin, zmax = masked_Z.min(), masked_Z.max()
+    zmin = UnitlessArgs.value_in_z_unit(zmin or masked_Z.min())
+    zmax = UnitlessArgs.value_in_z_unit(zmax or masked_Z.max())
 
     from matplotlib.colors import LogNorm
     return masked_Z, LogNorm(vmin=zmin, vmax=zmax)
 
 def fix_pcolor_norm(args, kwargs):
-
+    args = [a for a in args]
     if 'zlog' in kwargs and kwargs['zlog']:
-        args[2], kwargs['norm']= log_norm(args[2])
+        zmin = kwargs.pop("zmin", None)
+        zmax = kwargs.pop("zmax", None)
+        args[2], kwargs['norm']= log_norm(args[2], zmin, zmax)
         del kwargs['zlog']
 
     return args, kwargs
@@ -283,6 +292,7 @@ def imshow_color_plot(x, y, z, label=None, add_colorbar=False, **kwargs):
     kwargs['origin'] = 'lower'
     kwargs['aspect'] = 'auto'
     kwargs['extent'] = extent
+
     cax = native_plot.imshow(Z, **kwargs)
 
     if has_log_scaling(X[0,:]):

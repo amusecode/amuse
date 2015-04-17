@@ -305,6 +305,8 @@ class ScalarQuantity(Quantity):
 
     def sum(self, axis=None, dtype=None, out=None):
         return self
+    def cumsum(self, axis=None, dtype=None, out=None):
+        return self
     def prod(self, axis=None, dtype=None):
         return self
     def min(self, axis = None):
@@ -369,7 +371,7 @@ class VectorQuantity(Quantity):
     @property
     def shape(self):
         return self.number.shape
-        
+
     @property
     def dtype(self):
         return self.number.dtype
@@ -403,6 +405,11 @@ class VectorQuantity(Quantity):
         quantity<3.0 kg>
         """
         return new_quantity(self.number.sum(axis, dtype, out), self.unit)
+
+    def cumsum(self, axis=None, dtype=None, out=None):
+        """ Calculate  the cumulative sum of the elements along a given axis. """
+
+        return new_quantity(numpy.cumsum(self.number, axis, dtype, out), self.unit)
 
     def prod(self, axis=None, dtype=None):
         """Calculate the product of the vector components
@@ -1125,7 +1132,7 @@ def new_quantity(value, unit):
     if unit.is_non_numeric():
         return NonNumericQuantity(value, unit)
     return ScalarQuantity(value, unit)
-    
+
 def new_quantity_from_unit(unit, value):
     return new_quantity(value, unit)
 
@@ -1178,7 +1185,7 @@ def to_quantity(input):
     else:
         from amuse.units.si import none
         return new_quantity(input, none)
-        
+
 def concatenate(quantities):
     first = quantities[0]
     if not is_quantity(first):
@@ -1187,7 +1194,7 @@ def concatenate(quantities):
     numbers = list([x.value_in(unit) for x in quantities])
     concatenated = numpy.concatenate(numbers)
     return VectorQuantity(concatenated, unit)
-    
+
 
 def arange(start, stop, step):
     if not is_quantity(start):
@@ -1259,6 +1266,12 @@ def polyval(p, x):
     value = numpy.polyval(p_number, x)
 
     return value | y_unit
+
+def searchsorted(a, v, **kwargs):
+    if is_quantity(a):
+        return numpy.searchsorted(a.value_in(a.unit), v.value_in(a.unit), **kwargs)
+    else:
+        return numpy.searchsorted(a, v, **kwargs)
 
 def numpy_or_operator(array, other, out = None):
     if isinstance(other, unit):
