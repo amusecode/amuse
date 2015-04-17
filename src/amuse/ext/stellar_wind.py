@@ -90,29 +90,35 @@ class StarsWithMassLoss(Particles):
         if self.collection_attributes.track_mechanical_energy:
             if 'mechanical_energy' not in attributes:
                 new_particles.mechanical_energy = quantities.zero
-            if 'previous_mechanical_energy' not in attributes:
-                new_particles.previous_mechanical_energy = quantities.zero
             if 'previous_mechanical_luminosity' not in attributes:
-                new_particles.previous_mechanical_luminosity = quantities.zero
+                new_particles.previous_mechanical_luminosity = -1 | units.W
+                self.collection_attributes.new_unset_lmech_particles = True
 
         return new_particles
 
     def evolve_mass_loss(self, time):
-        #TODO: do we really need this check? Why?
-        if self.collection_attributes.previous_time <= time:
-            elapsed_time = time - self.collection_attributes.previous_time
-            self.lost_mass += elapsed_time * self.wind_mass_loss_rate
+        if self.collection_attributes.previous_time > time:
+            #TODO: do we really need this check? Why?
+            return
 
-            if self.collection_attributes.track_mechanical_energy:
-                new_mechanical_luminosity = 0.5 * self.wind_mass_loss_rate * self.terminal_wind_velocity**2
-                time_step = time - self.collection_attributes.previous_time
-                self.mechanical_energy += time_step * 0.5 * (self.previous_mechanical_luminosity + new_mechanical_luminosity)
-                self.previous_mechanical_energy += elapsed_time * new_mechanical_luminosity
-                self.previous_mechanical_luminosity = new_mechanical_luminosity
+        elapsed_time = time - self.collection_attributes.previous_time
+        self.lost_mass += elapsed_time * self.wind_mass_loss_rate
 
+        if self.collection_attributes.track_mechanical_energy:
+            new_mechanical_luminosity = 0.5 * self.wind_mass_loss_rate * self.terminal_wind_velocity**2
 
-            self.collection_attributes.timestamp = time
-            self.collection_attributes.previous_time = time
+            if self.collection_attributes.new_unset_lmech_particles:
+                i_new = self.previous_mechanical_luminosity < quantities.zero
+                self[i_new].previous_mechanical_luminosity = new_mechanical_luminosity[i_new]
+                self.collection_attributes.new_unset_lmech_particles = False
+
+            average_mechanical_luminosity = 0.5 * (self.previous_mechanical_luminosity + new_mechanical_luminosity)
+            self.mechanical_energy += elapsed_time *average_mechanical_luminosity
+
+            self.previous_mechanical_luminosity = new_mechanical_luminosity
+
+        self.collection_attributes.timestamp = time
+        self.collection_attributes.previous_time = time
 
     def track_mechanical_energy(self, track):
         self.collection_attributes.track_mechanical_energy = track
@@ -335,16 +341,17 @@ class AcceleratingWind(SimpleWind):
     """
 
     def __init__(self, *args, **kwargs):
-        self.init_v_wind_ratio = kwargs.pop("init_v_wind_ratio", 1.0)
+        self.init_v_wind_velocity = kwargs.pop("init_v_wind_velocity", 5.0 | units.kms)
         self.r_min_ratio = kwargs.pop("r_min_ratio", 1)
         self.r_max_ratio = kwargs.pop("r_max_ratio", 5)
+        self.wind_accelation_formula = self.one_over_r_squared_wind_accelation_formula
         super(AcceleratingWind, self).__init__(*args, **kwargs)
 
     def initial_wind_velocity(self, stars):
-        escape_velocity_at_surface = (2*constants.G * stars.mass / stars.radius)**0.5
-        return self.init_v_wind_ratio * escape_velocity_at_surface
+        # escape_velocity_at_surface = (2*constants.G * stars.mass / stars.radius)**0.5
+        return self.init_v_wind_velocity
 
-    def wind_accelation_formula(self, star, distance):
+    def one_over_r_squared_wind_accelation_formula(self, star, distance):
         """
             A simple formula that approximates acceleration due to
             radiation pressure at a given distance from the star.
@@ -361,6 +368,32 @@ class AcceleratingWind(SimpleWind):
 
         acceleration = numpy.zeros(distance.shape) | units.m/units.s**2
         acceleration[radii_in_range] = scaling_constant * distance[radii_in_range]**-2
+
+        return acceleration
+
+    def first_constant_then_one_over_r_squared_wind_accelation_formula(self, star, distance):
+        """
+            A slighly more complex formula that approximates acceleration due to
+            radiation pressure at a given distance from the star.
+        """
+        r_star = star.radius
+        r_min = self.r_min_ratio * r_star
+        r_max = self.r_max_ratio * r_star
+
+        const_integrated_gravity_acceleration = constants.G * star.mass * (r_star**-1 - r_min**-1)
+        const_scaling_constant = const_integrated_acceleration / (r_star**-1 - r_min**-1)
+        const_radii_in_range = numpy.logical_and(distance > r_star, distance < r_min)
+
+        init_wind_velocity = self.initial_wind_velocity(star)
+        integrated_gravity_acceleration = constants.G * star.mass * (r_min**-1 - r_max**-1)
+        integrated_acceleration = 0.5 * ( star.terminal_wind_velocity**2 - init_wind_velocity**2 ) + integrated_gravity_acceleration
+        scaling_constant = integrated_acceleration / (r_min**-1 - r_max**-1)
+
+        radii_in_range = numpy.logical_and(distance > r_min, distance < r_max)
+
+        acceleration = numpy.zeros(distance.shape) | units.m/units.s**2
+        acceleration[radii_in_range] = scaling_constant * distance[radii_in_range]**-2
+        acceleration[const_radii_in_range] = const_scaling_constant * distance[const_radii_in_range]**-2
 
         return acceleration
 
@@ -406,10 +439,11 @@ class MechanicalLuminosityWind(SimpleWind):
         self.particles.evolve_mass_loss(self.model_time)
 
     def mechanical_internal_energy(self, star, wind):
-        delta_mechanical_energy = star.mechanical_energy - star.previous_mechanical_energy
-        star.previous_mechanical_energy = star.mechanical_energy
+        mass_lost = wind.mass.sum()
+        mechanical_energy_to_remove = star.mechanical_energy / (star.lost_mass/mass_lost + 1)
+        star.mechanical_energy -= mechanical_energy_to_remove
 
-        return self.feedback_efficiency * delta_mechanical_energy / wind.mass.sum()
+        return self.feedback_efficiency * mechanical_energy_to_remove / mass_lost
 
     def wind_sphere(self, star, Ngas):
         wind=Particles(Ngas)
@@ -424,6 +458,10 @@ class MechanicalLuminosityWind(SimpleWind):
         super(MechanicalLuminosityWind, self).reset()
         self.previous_time = 0|units.Myr
 
+wind_modes = {"simple": SimpleWind,
+              "accelerate": AcceleratingWind,
+              "mechanical": MechanicalLuminosityWind,
+              }
 def new_stellar_wind(sph_particle_mass, target_gas=None, timestep=None, derive_from_evolution=False, mode="simple", **kwargs):
     """
         Create a new stellar wind code.
@@ -435,14 +473,7 @@ def new_stellar_wind(sph_particle_mass, target_gas=None, timestep=None, derive_f
     if (target_gas is None) ^ (timestep is None):
         raise AmuseException("Must specify both target_gas and timestep (or neither)")
 
-    if mode == "simple":
-        stellar_wind = SimpleWind(sph_particle_mass, derive_from_evolution, **kwargs)
-    elif mode == "accelerate":
-        stellar_wind = AcceleratingWind(sph_particle_mass, derive_from_evolution, **kwargs)
-    elif mode == "mechanical":
-        stellar_wind = MechanicalLuminosityWind(sph_particle_mass, derive_from_evolution, **kwargs)
-    else:
-        raise AmuseException("Undefined stellar wind mode: {0}".format(mode))
+    stellar_wind = wind_modes[mode](sph_particle_mass, derive_from_evolution, **kwargs)
 
     if target_gas is not None:
         stellar_wind.set_target_gas(target_gas, timestep)
