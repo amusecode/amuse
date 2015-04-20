@@ -960,8 +960,10 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             default_value
         )
         self.definitions.append(definition)
-        
-    
+
+    def add_interface_parameter(self, name, description, default_value):        
+        definition=parameters.InterfaceParameterDefinition(name,description,default_value)
+        self.definitions.append(definition)
     
 class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
