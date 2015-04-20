@@ -1035,4 +1035,35 @@ class TestParameters(amusetest.TestCase):
         b*=2
         self.assertEqual(set.test_name,2)
         
+    def test11(self):
+        print "Testing add_interface_parameter"
+        
+        class TestModule(BaseTestModule):
+          pass
+        
+        o = TestModule()
+        parameters_handler = HandleParameters(o)
+        parameters_handler.add_vector_parameter(
+            "mesh_length",
+            "length of the model in the x, y and z directions",
+            ("length_x", "length_y", "length_z")
+        )
+        for i,par_name in enumerate(["length_x", "length_y", "length_z"]):
+            parameters_handler.add_interface_parameter(
+                par_name, 
+                "a test parameter", 
+                default_value = i*10.0 | generic_unit_system.length,
+            )
+        
+        x = parameters_handler.get_attribute(None, None)
+        self.assertTrue("mesh_length" in str(x))
+        self.assertTrue("[0.0, 10.0, 20.0] length" in str(x))
+        
+        converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(2.0 | units.m, 4.0 | units.kg, 6.0 | units.s)
+        y = parameters.ParametersWithUnitsConverted(
+                x,
+                converter.as_converter_from_si_to_generic()
+            )
+        self.assertTrue("mesh_length" in str(y))
+        self.assertTrue("[0.0, 20.0, 40.0] m" in str(y))
         
