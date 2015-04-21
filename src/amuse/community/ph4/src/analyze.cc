@@ -1051,7 +1051,7 @@ int check_structure(hdyn *bin,			// input root node
     if (!over && rlimit2 < _INFINITY_)		// *same* test as in smallN
 	for_all_daughters(hdyn, bin, bi) {
 	    real r2 = square(bi->get_pos());
-	    PRC(r2); PRL(rlimit2);
+	    // PRC(r2); PRL(rlimit2);
 	    if (r2 > rlimit2) {
 		over = 3;
 		cout << "is_over: termination at rlimit" << endl << flush;

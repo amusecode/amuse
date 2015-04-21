@@ -23,25 +23,32 @@ int initialize_code()
 {
     // Begin the initialization by creating the jdata data structure.
 
+    //PRL(1);
     jd = new jdata;
 
 #ifndef NOMPI
     jd->setup_mpi(MPI::COMM_WORLD);
 #endif
+    //PRL(2);
     jd->setup_gpu();
+    //PRL(3);
     if (jd->mpi_rank == 0) {
 	cout << "initialize_code: ";
 	PRC(jd->mpi_size); PRL(jd->have_gpu);
     }
     
+    //PRL(4);
     begin_time = 0.0;
     jd->system_time = 0;		// ? TBD
 
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
+    //PRL(5);
     mpi_setup_stopping_conditions();
     
+    //PRL(6);
     jd->set_manage_encounters(4);	// 4 ==> enable AMUSE suport
+    //PRL(7);
 
     return 0;
 }
@@ -424,7 +431,7 @@ int evolve_model(double to_time)
     // out of the jd->advance() loop if an encounter is detected.
 
     if (jd->mpi_rank == 0) {
-	cout << "in evolve_model: "; PRC(to_time); PRL(jd->nj);
+	//cout << "in evolve_model: "; PRC(to_time); PRL(jd->nj);
 	for (int j = 0; j < jd->nj; j++)
 	    if (jd->id[j] <= 0) {PRC(j); PRC(jd->mass[j]); PRL(jd->id[j]);}
     }

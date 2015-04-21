@@ -7,6 +7,7 @@ from amuse.support.interface import InCodeComponentImplementation
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
 
+import sys
 class CommonCodeInterface(object):
 
     @legacy_function
@@ -16,6 +17,7 @@ class CommonCodeInterface(object):
         any other call on the code (so before any parameters
         are set or particles are defined in the code).
         """
+
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         function.result_doc = """

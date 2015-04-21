@@ -990,8 +990,8 @@ int smallN_evolve(hdyn *b,
 	    for_all_daughters(hdyn, b, bi) {
 		real r2 = square(bi->get_pos());
 		if (r2 > break_r2) {
-		    cout << "smallN: returning with rmax > break_r"
-			 << endl << flush;
+		    // cout << "smallN: returning with rmax > break_r"
+		    //	 << endl << flush;
 		    return 2;
 		}
 	    }
@@ -1083,7 +1083,7 @@ int smallN_evolve(hdyn *b,
 	real r2 = square(bi->get_pos());
 	if (r2 > rmax2) rmax2 = r2;
     }
-    cout << "smallN: returning with "; PRC(rmax2); PRL(break_r2);
+    //cout << "smallN: returning with "; PRC(rmax2); PRL(break_r2);
 
     return 1;
 }

@@ -776,7 +776,7 @@ bool jdata::advance_and_check_encounter()
 	    }
 	    r = sqrt(r);
 	    v = sqrt(v);
-//	    PRC(r); PRC(v); PRL(vr);
+	    // PRC(r); PRC(v); PRL(vr);
 
 	    if (vr < EPS*r*v) {
 		int stopping_index = next_index_for_stopping_condition();
