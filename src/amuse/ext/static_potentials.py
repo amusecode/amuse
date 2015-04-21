@@ -7,6 +7,7 @@ import numpy
 from amuse.units import units, constants, quantities
 from amuse.datamodel import Particle, Particles
 from amuse.support.exceptions import AmuseException
+from StringIO import StringIO 
 
 class Abstract_Potential(object):
     def get_gravity_at_point(self, eps, x,y,z):
@@ -154,7 +155,8 @@ class Galactic_Center_Potential_Kruijssen(Abstract_Potential):
             487.9	3.694E9
             1e6  	3.694E9
         """
-        radius, enclosed_mass = numpy.loadtxt((l for l in table.split('\n')), unpack=True)
+        stream = StringIO(table)
+        radius, enclosed_mass = numpy.loadtxt(stream, unpack=True)
         if rescale:
             """ See footnote 18 at the bottom of page 1076 of Kruijssen """
             factor = 8.3/8.5
