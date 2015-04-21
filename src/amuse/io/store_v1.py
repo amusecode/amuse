@@ -539,7 +539,7 @@ class StoreHDF(object):
         mapping_from_setid_to_group = {}
         links_to_resolve = []
         for x, name in zip(sets, names):
-            if hasattr(x, 'shape') and len(x.shape) > 1:
+            if hasattr(x, 'shape'):
                 self.store_grid(x, extra_attributes, parent = self.named_group(name))
             else:   
                 self.store_particles(x, extra_attributes, self.named_group(name), mapping_from_setid_to_group, links_to_resolve)
@@ -550,14 +550,14 @@ class StoreHDF(object):
                 links_to_resolve
             )
             for x in set(sets_to_store):
-                if hasattr(x, 'shape') and len(x.shape) > 1:
+                if hasattr(x, 'shape'):
                     self.store_grid(x, extra_attributes, parent = self.unnamed_references_group())
                 else:   
                     self.store_particles(x, {}, self.unnamed_references_group(), mapping_from_setid_to_group, links_to_resolve)
         
         
     def store(self, container, extra_attributes = {}):
-        if hasattr(container, 'shape') and len(container.shape) > 1:
+        if hasattr(container, 'shape'):
             self.store_grid(container, extra_attributes)
         else:      
             mapping_from_setid_to_group = {}

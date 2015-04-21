@@ -636,7 +636,7 @@ class StoreHDF(object):
         links_to_resolve = []
         
         for x, name in zip(sets, names):
-            if hasattr(x, 'shape') and len(x.shape) > 1:
+            if hasattr(x, 'shape'):
                 self.store_grid(x, extra_attributes, parent = self.named_group(name))
             else:   
                 self.store_particles(x, extra_attributes, self.named_group(name), mapping_from_setid_to_group, links_to_resolve)
@@ -647,7 +647,7 @@ class StoreHDF(object):
                 links_to_resolve
             )
             for group_to_store_under, x in sets_to_store:
-                if hasattr(x, 'shape') and len(x.shape) > 1:
+                if hasattr(x, 'shape'):
                     self.store_grid(x, {}, group_to_store_under, mapping_from_setid_to_group, links_to_resolve)
                 else:   
                     self.store_particles(x, {}, group_to_store_under, mapping_from_setid_to_group, links_to_resolve)
@@ -666,7 +666,7 @@ class StoreHDF(object):
                 container.keys(),
                 extra_attributes
             )
-        if hasattr(container, 'shape') and len(container.shape) > 1:
+        if hasattr(container, 'shape'):
             self.store_grid(
                 container, 
                 extra_attributes,
@@ -690,7 +690,7 @@ class StoreHDF(object):
             )
             
             for group_to_store_under, x in sets_to_store:
-                if hasattr(x, 'shape') and len(x.shape) > 1:
+                if hasattr(x, 'shape'):
                     self.store_grid(x, {}, group_to_store_under, mapping_from_setid_to_group, links_to_resolve)
                 else:   
                     self.store_particles(x, {}, group_to_store_under, mapping_from_setid_to_group, links_to_resolve)

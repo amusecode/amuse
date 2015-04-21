@@ -646,7 +646,44 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
             self.assertEquals((i+1) * ([1.0, 2.0, 3.0] | units.m), snap.center_of_mass())
         os.remove(output_file)
         
-    
+    def test26(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test26"+self.store_version()+".hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        p = Grid(20)
+        
+        io.write_set_to_file(p, output_file, format='amuse', version = self.store_version())
+        
+        os.remove(output_file)
+
+    def test27(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test27"+self.store_version()+".hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        instance = self.store_factory()(output_file)
+        
+        shape = 10,
+        p = Grid(*shape)
+        p.mass = ([x * 2.0 for x in range(p.size)] | units.kg).reshape(shape)
+        p.model_time = 2.0 | units.s
+
+        instance.store_grid(p)
+
+        loaded_grid = instance.load_grid()
+
+        self.assertEquals(loaded_grid.shape, shape)
+        
+        loaded_mass_in_kg = loaded_grid.mass.value_in(units.kg)
+        previous_mass_in_kg = p.mass.value_in(units.kg)
+        for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
+            self.assertEquals(expected, actual)
+        
+        instance.close()
+
+
 
 
 class TestStoreHDFV1(_AbstractTestStoreHDF):
