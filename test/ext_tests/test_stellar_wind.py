@@ -10,10 +10,14 @@ from amuse.ext import stellar_wind
 
 from amuse.support.console import set_printing_strategy
 
-set_printing_strategy("custom", preferred_units = [units.MSun, units.RSun, units.day, units.kms, units.kms**2, units.m/units.s**2, units.W, units.J])
-
 
 class TestStellarWind(amusetest.TestCase):
+    def setUp(self):
+        set_printing_strategy("custom", preferred_units = [units.MSun, units.parsec, units.Myr, units.kms, units.kms**2, units.m/units.s**2])
+
+    def tearDown(self):
+        set_printing_strategy("default")
+        
     def assertGreaterEqual(self, value, expected):
         self.assertTrue(value >= expected, "Expected {0} >= {1}".format(value, expected))
 
