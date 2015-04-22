@@ -6,10 +6,13 @@ from amuse.ext import static_potentials
 
 from amuse.support.console import set_printing_strategy
 
-set_printing_strategy("custom", preferred_units = [units.MSun, units.parsec, units.Myr, units.kms, units.kms**2, units.m/units.s**2])
-
 class TestGalacticCenterPotential(amusetest.TestCase):
+    def setUp(self):
+        set_printing_strategy("custom", preferred_units = [units.MSun, units.parsec, units.Myr, units.kms, units.kms**2, units.m/units.s**2])
 
+    def tearDown(self):
+        set_printing_strategy("default")
+        
     def test1(self):
         """ test enclosed mass profile of Kruijssen potential """
 
