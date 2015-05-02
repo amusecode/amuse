@@ -495,6 +495,8 @@ class Multiples(object):
 
                     # Do the scattering.
 
+                    print 'calling manage_encounter'
+                    sys.stdout.flush()
                     veto, dE_top_level_scatter, dphi_top, dE_mul, \
                         dphi_int, dE_int, final_particles \
                         = self.manage_encounter(time, star1, star2, 
@@ -691,15 +693,21 @@ class Multiples(object):
         # scattering calculation.  Steps below follow those defined in
         # the PDF description.
 
+        print 'in manage_encounter'
+        sys.stdout.flush()
+
         # Record the state of the system prior to the encounter, in
         # case we need to abort and return without taking any action.
+        #
+        # 'gravity_stars' is no longer used below, as it makes N
+        # individual calls to get_state...
 
         snapshot = {
             'global_time': global_time,
             'star1': star1.copy(),
             'star2': star2.copy(),
             'stars': stars.copy(),
-            'gravity_stars': gravity_stars.copy(),
+            #'gravity_stars': gravity_stars.copy(),
             'self.root_to_tree': self.root_to_tree.copy(),
             'particles_in_encounter': datamodel.Particles(0)
         }
@@ -713,6 +721,8 @@ class Multiples(object):
         # with star1 and star2.
 
         scattering_stars = datamodel.Particles(particles = (star1, star2))
+        #print scattering_stars
+
         star1 = scattering_stars[0]
         star2 = scattering_stars[1]
         center_of_mass = scattering_stars.center_of_mass()
@@ -951,8 +961,8 @@ class Multiples(object):
         # resonance, then the relative scales are the virial radius
         # (*10) and virial time scale (*100).
 
-        end_time = max(2 * abs(tperi), 10*ttrans, 100*tvir)
-        delta_t = max(tperi, tvir)
+        end_time = max(2*abs(tperi), 10*ttrans, 100*tvir)
+        delta_t = max(1.5*abs(tperi), tvir)
 
         print 'end_time =', end_time
         print 'delta_t =', delta_t
@@ -981,6 +991,8 @@ class Multiples(object):
         min_scatter_scale /= 2
 
         print 'final_scatter_scale =', final_scatter_scale
+        #print particles_in_encounter.position
+        #print particles_in_encounter.velocity
 
         try:
             scatter_energy_error \
@@ -995,7 +1007,7 @@ class Multiples(object):
             # the main simulation.
 
             print "*** SmallN encounter did not finish. ", \
-                  "Aborting and returning to the top level."
+                  "Aborting and returning to top level."
 
             global_time = snapshot['global_time']
             star1 = snapshot['star1']
@@ -1010,12 +1022,15 @@ class Multiples(object):
             return False, zero_en, zero_en, zero_en, zero_en, zero_en, \
                 snapshot['particles_in_encounter']
 
+        #print particles_in_encounter.position
+        #print particles_in_encounter.velocity
+
         # Note that on return, particles_in_encounter contains CM
         # nodes in the list.
 
-        #E2CM = get_energy_of_leaves(particles_in_encounter,
-        #                            G=self.gravity_constant)
-        #print 'E2 (CM) =', E2CM
+        E2CM = get_energy_of_leaves(particles_in_encounter,
+                                    G=self.gravity_constant)
+        print 'E2 (CM) =', E2CM
 
         particles_in_encounter.position += cmpos
         particles_in_encounter.velocity += cmvel
@@ -1029,6 +1044,8 @@ class Multiples(object):
             print '*** warning: dE_int mismatch ***'
             print 'scatter_energy_error =', scatter_energy_error
             print 'dE_int =', dE_int
+            #print particles_in_encounter
+            print 'E1 =', E1, 'E2 =', E2
 
         if print_internal:
             print 'E2 =', E2
@@ -1169,9 +1186,8 @@ class Multiples(object):
                 # scale_top_level_list().  If this is a sole bound
                 # top-level object, it has already been scaled to the
                 # desired separation and should *not* be modified
-                # here.  Otherwise, move the components to periastron
-                # to minimize the tidal error when they are
-                # reinstated..
+                # here.  Otherwise, move the components past
+                # periastron to initial_scatter_scale.
 
                 if lt > 1:
 
@@ -1179,11 +1195,13 @@ class Multiples(object):
                     # but code here is more compact, since we have
                     # already initialized the kepler structure.
 
-                    print 'moving binary to periastron'
                     sys.stdout.flush()
                     cmpos = root.position
                     cmvel = root.velocity
+                    print 'moving binary to periastron'
                     self.kepler.advance_to_periastron()
+                    print 'advancing binary to', final_scale
+                    self.kepler.advance_to_radius(final_scale)
 
 	            ### Question to Arjen: what is the right syntax to
 	            ### do this??  We want to say
@@ -1295,6 +1313,8 @@ class Multiples(object):
         
         # 7b. Add stars not in a binary to the gravity code.
         if len(stars_not_in_a_multiple) > 0:
+            #print 'adding stars_not_in_a_multiple:'
+            #print stars_not_in_a_multiple
             gravity_stars.add_particles(stars_not_in_a_multiple)
             
         # 7c. Add the roots to the gravity code
@@ -1302,6 +1322,8 @@ class Multiples(object):
         multiples_particles.id = None
         for tree in binaries.iter_binary_trees():
             tree.particle.id = assign_id_to_root(tree)
+            #print 'adding particle:'
+            #print tree.particle
             gravity_stars.add_particle(tree.particle)
             self.after.add_particle(tree.particle)  # Steve: add_particles broke
             multiples_particles.add_particle(tree.particle)
@@ -1842,7 +1864,17 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
     # Rescale the two-body system consisting of comp1 and comp2 to lie
     # inside (compress=True) or outside (compress=False) distance
     # scale of one another.  If compress=True, the final orbit will be
-    # receding; otherwise it will be approaching.
+    # receding; otherwise it will be approaching.  In a typical case,
+    # scale is comparable to the separation at which the interaction
+    # started.  It is possible that the input system is very close to
+    # periastron.  To avoid problems with very eccentric systems,
+    # force the system to be scaled to a separation of at least
+    # 0.1*scale (0.1 is ~arbitrary: should be <1, and not too small).
+
+    if compress:
+        pre = 'rescale_binary_components(-):'
+    else:
+        pre = 'rescale_binary_components(+):'
 
     pos1 = comp1.position
     pos2 = comp2.position
@@ -1860,9 +1892,9 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
     rel_vel = vel2 - vel1
     
     if 0:
-        print "MULTIPLE POSITIONS:"
-	print comp1.position
-	print comp2.position
+        print pre, 'mass =', mass
+        print pre, 'pos =', rel_pos
+        print pre, 'vel =', rel_vel
 
     kep.initialize_from_dyn(mass,
                             rel_pos[0], rel_pos[1], rel_pos[2],
@@ -1870,14 +1902,26 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
     M,th = kep.get_angles()
     a,e = kep.get_elements()
 
-    if (compress and sep12 > scale**2) \
-            or (not compress and sep12 < scale**2):
+    if 0:
+        print pre, 'M, th, a, e, =', M, th, a, e
+        print pre, 'compress =', compress
+        print pre, sep12, scale**2, min_scale**2
 
-        #print 'rescaling components', int(comp1.id), \
-        #      'and', int(comp2.id), 'to separation', scale.number
-        #sys.stdout.flush()
+    rescale = (compress and sep12 > scale**2) \
+	        or (not compress and sep12 < scale**2)
+
+    min_scale = 0.1*scale			# see note above
+
+    if compress == True:
+        rescale = rescale or sep12 < min_scale**2
+
+    if rescale:
+
+        print 'rescaling components', int(comp1.id), \
+              'and', int(comp2.id), 'to separation', scale
+        sys.stdout.flush()
         
-        #print 'a, e =', a, e
+        print pre, 'a, e =', a, e
         if e < 1:
             peri = a*(1-e)
             apo = a*(1+e)
@@ -1886,18 +1930,27 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
             apo = peri+a		# OK - used only to reset scale
 
         if compress:
+
+            # Logic here is to handle special configurations.
+
             limit = peri + 1.e-4*(apo-peri)		# numbers are
             if limit > 1.1*peri: limit = 1.1*peri	# ~arbitrary
+            if limit < min_scale: limit = min_scale
             if scale < limit:
-                #print 'changed scale from', scale, 'to', limit
+                print pre, 'changed scale from', scale, 'to', limit
                 scale = limit
+
             if M < 0:
+                print pre, 'advance_to_periastron'
                 kep.advance_to_periastron()
+                print pre, 'advance_to_radius', scale
                 kep.advance_to_radius(scale)
             else:
                 if kep.get_separation() < scale:
+                    print pre, 'advance_to_radius', scale
                     kep.advance_to_radius(scale)
                 else:
+                    print pre, 'return_to_radius', scale
                     kep.return_to_radius(scale)
 
 	    # Note: Always end up on an outgoing orbit.  If periastron
@@ -1905,9 +1958,9 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
 
         else:
             limit = apo - 0.01*(apo-peri)
-            #print "limit:", limit, apo, peri, scale , M, e
+            print pre, "limit:", limit, apo, peri, scale , M, e
             if scale > limit:
-                #print 'changed scale from', scale, 'to', limit
+                print pre, 'changed scale from', scale, 'to', limit
                 scale = limit
             
             #print "INPUT:", kep.get_separation_vector()
@@ -1958,6 +2011,9 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
             offset_particle_tree(comp1, newpos1-pos1, newvel1-vel1)
         if hasattr(comp2, 'child1'):
             offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
+
+    print pre, 'done'
+    sys.stdout.flush()
 
     return a
 
@@ -2210,7 +2266,13 @@ def get_energy_of_leaves(particles, G):
     for p in particles:
         if not hasattr(p, 'child1') or p.child1 == None:
             leaves.add_particle(p)
-    return leaves.kinetic_energy() + leaves.potential_energy(G=G)
+    #print 'get_energy_of_leaves():'
+    #print leaves
+    ke = leaves.kinetic_energy()
+    pe = leaves.potential_energy(G=G)
+    e = ke+ pe
+    #print ke, pe, e
+    return e
 
 def print_energies(stars):
 
@@ -2348,7 +2410,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
             #print_multiple_recursive(root)
             comp1 = root.child1
             comp2 = root.child2
-            #print "scale:", scale
+            print pre, 'scale:', scale
             semi = rescale_binary_components(comp1, comp2, kep, scale)
             #true, mean = kep.get_angles()
             #print 'true =', true, 'mean =', mean
