@@ -745,7 +745,11 @@ bool jdata::advance_and_check_encounter()
     bool status = false;
     int collision_detection_enabled;
 
+    //cout << "advance..." << endl << flush;
     advance();
+    //int p = cout.precision(16);
+    //cout << "time = " << system_time << endl << flush;
+    //cout.precision(p);
 
     // Optionally manage close encounters.  AMUSE stopping conditions
     // are enabled with manage_encounters = 4.  Return true if an

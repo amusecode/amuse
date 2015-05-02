@@ -829,6 +829,7 @@ void idata::advance(real tnext)
 					// (j pred_pos, pred_vel --> ipos, ivel)
 					// j acc, jerk --> i old_acc, old_jerk
     ti = tnext;
+    //cout << "dt = " << ti - jdat->system_time << endl << flush;
 
     // Predict i-particles only (if using GPU; the GPU will handle the
     // j-particles), or i-particles not in the current j-domain (no

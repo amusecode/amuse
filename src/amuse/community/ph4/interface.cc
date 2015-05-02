@@ -171,7 +171,7 @@ int commit_particles()
     id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
     jd->set_initial_timestep();		// set timesteps (needs acc and jerk)
     s = new scheduler(jd);
-#if 0
+#if 10
     cout << "commit_particles:";
     for (int j = 0; j < jd->nj; j++) cout << " " << jd->id[j];
     cout << endl << flush;
@@ -188,7 +188,7 @@ int recommit_particles()
     // idata arrays.  To resize idata, just delete and create a new
     // one.  Resizing jdata is more complicated -- defer for now.
 
-    //cout << "recommitting..." << endl << flush;
+    //cout << "recommit_particles" << endl << flush;
     if (!jd->use_gpu)
 	jd->predict_all(jd->system_time, true);	// set pred quantities
     else
@@ -196,6 +196,7 @@ int recommit_particles()
     id->setup();				// compute acc and jerk
     jd->set_initial_timestep();			// set timesteps if not set
     s->initialize();				// reconstruct the scheduler
+    //s->print(true);
     return 0;
 }
 
@@ -205,6 +206,7 @@ int recompute_timesteps()
     // reserved for the state model and we always recompute the time
     // steps.
 
+    //cout << "recompute_timesteps" << endl << flush;
     if (!jd->use_gpu)
 	jd->predict_all(jd->system_time, true);	// set pred quantities
     else
@@ -244,6 +246,12 @@ int new_particle(int * index_of_the_particle,
     *index_of_the_particle = jd->add_particle(mass, radius,
 					      vec(x,y,z), vec(vx,vy,vz),
 					      index_to_set);
+#if 0
+    int p = cout.precision(15);
+    cout << "new_particle " << *index_of_the_particle << " " << mass
+	    << " " << x << " " << y << " " << z   << endl;
+    cout.precision(p);
+#endif
     return 0;
 }
 
@@ -254,6 +262,7 @@ int delete_particle(int index_of_the_particle)
     int j = jd->get_inverse_id(index_of_the_particle);
     if (j < 0) return -1;
     jd->remove_particle(j);
+    //cout << "delete_particle " << index_of_the_particle << endl;
     return 0;
 }
 
@@ -272,6 +281,7 @@ int set_state(int index_of_the_particle,
 	      double x, double y, double z,
 	      double vx, double vy, double vz, double radius)
 {
+    //cout << "set_state" << endl << flush;
     int j = jd->get_inverse_id(index_of_the_particle);
     if (j < 0) return -1;
     jd->mass[j] = mass;
@@ -290,6 +300,7 @@ int get_state(int index_of_the_particle,
 	      double * x, double * y, double * z,
 	      double * vx, double * vy, double * vz, double * radius)
 {
+    //cout << "get_state" << endl << flush;
     int j = jd->get_inverse_id(index_of_the_particle);
     if (j < 0) return -1;
     *mass = jd->mass[j];
@@ -339,6 +350,7 @@ int set_position(int index_of_the_particle,
 		 double x, double y, double z)
 {
     int j = jd->get_inverse_id(index_of_the_particle);
+    //cout << "set_position " << j<< endl << flush;
     if (j < 0) return -1;
     jd->pos[j][0] = x;
     jd->pos[j][1] = y;
@@ -349,6 +361,7 @@ int set_position(int index_of_the_particle,
 int get_position(int index_of_the_particle,
 		 double * x, double * y, double * z)
 {
+    //cout << "get_position " << index_of_the_particle << endl << flush;
     int j = jd->get_inverse_id(index_of_the_particle);
     if (j < 0) return -1;
     *x = jd->pos[j][0];
@@ -450,6 +463,7 @@ int synchronize_model()
     // default is not to reinitialize the scheduler, as this will be
     // handled later, in recommit_particles().
 
+    //cout << "synchronize_model" << endl << flush;
     jd->UpdatedParticles.clear();
     jd->synchronize_all();
     return 0;
