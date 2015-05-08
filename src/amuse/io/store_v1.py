@@ -794,5 +794,7 @@ class StoreHDF(object):
         return self.hdf5file.require_group(name)
         
     def close(self):
-        self.hdf5file.flush()
-        self.hdf5file.close()
+        if not self.hdf5file is None:
+            self.hdf5file.flush()
+            self.hdf5file.close()
+            self.hdf5file = None

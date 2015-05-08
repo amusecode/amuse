@@ -683,7 +683,43 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
         
         instance.close()
 
+    def test28(self):
+        
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test28"+self.store_version()+".hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
 
+       
+        
+        stars = Particles(2)
+        stars[0].x = 1.0  | units.km
+        stars[1].x = 2.0  | units.km
+        
+        binaries = Particles(1)
+        binaries[0].y = 1.0 | units.km
+        binaries[0].child1 = stars[0]
+        binaries[0].child2 = stars[1]
+
+        stars[0].parent = binaries[0]
+        stars[1].parent = binaries[0]
+        
+        self.assertEqual(binaries[0].child1,stars[0])
+        self.assertEqual(binaries[0].child2,stars[1])
+        self.assertEqual(binaries[0].child1.parent,binaries[0])
+        self.assertEqual(binaries[0].child2.parent,binaries[0])
+        
+        io.write_set_to_file(binaries, output_file, "hdf5", version = self.store_version())
+        
+        with io.read_set_from_file(output_file, "hdf5", version = self.store_version(), return_context = True) as loaded:
+        
+            self.assertEqual(loaded[0].child1.key,stars[0].key)
+            self.assertEqual(loaded[0].child2.key,stars[1].key)
+            self.assertEqual(loaded[0].child1,stars[0])
+            self.assertEqual(loaded[0].child2,stars[1])
+            self.assertEqual(loaded[0].child1.parent,loaded[0])
+            self.assertEqual(loaded[0].child2.parent,loaded[0])
+        
 
 
 class TestStoreHDFV1(_AbstractTestStoreHDF):

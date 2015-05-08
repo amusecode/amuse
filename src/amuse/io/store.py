@@ -18,6 +18,18 @@ from amuse.io import store_v2
 
 StoreHDF = store_v1.StoreHDF
 
+class _FileContext(object):
+    
+    def __init__(self, processor, result):
+        self.processor = processor
+        self.result = result
+    
+    def __enter__(self):
+        return self.result
+    
+    def __exit__(self, type, value, traceback):
+        self.processor.close()
+        
 class HDF5FileFormatProcessor(base.FileFormatProcessor):
     """
     Process an HDF5 file
@@ -30,6 +42,13 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         self.append_to_file = append_to_file
     
     def load(self):
+        processor, result = self.load_base()
+        if self.return_context:
+            return _FileContext(processor, result)
+        else:
+            return result
+            
+    def load_base(self):
         if self.version == '1.0':
             processor = store_v1.StoreHDF(
                 self.filename, 
@@ -70,7 +89,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                     result = result.copy()
                     result._private.previous = None
                 processor.close()
-        return result
+        return processor, result
         
     def store(self):
         
@@ -133,7 +152,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     @base.format_option
     def version(self):
         """AMUSE storage version to use, needs to be > '2.0' if you want
-        to store links between particles and grids (default: '2.0')"""
+        to store links between particles and grids (default: '1.0')"""
         return '1.0'
 
     @base.format_option
@@ -143,3 +162,19 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         a working copy (i.e. a particles set or grid in memory)
         is always returned. (default: False)"""
         return False
+    
+    @base.format_option
+    def return_context(self):
+        """If set to True, will return a context manager instead of
+        the loaded set(s). This context manager will take care of properly 
+        closing any connected resources. To access the set, use the with 
+        statement.
+        
+        .. code-block:: python
+            
+            with load_set_from_file("example.h5", "amuse") as particles:
+                print particles
+        
+        Usefull for cases where close_file == False. (default: False)"""
+        return False
+        
