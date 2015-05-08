@@ -81,3 +81,16 @@ stellar_type = core.enumeration_unit(
 #special unit for keys of particles
 object_key = core.key_unit('object_key','key')
 
+# proposal:
+#rev=core.base_unit('angle','revolutions','rev',core.system("S.I."))
+#deg=named('degree','degree',(1./360)*rev)
+#rad=named('radian','rad',(1./2/math.pi)*rev)
+# or:
+#rad=core.base_unit("angle","radian","rad",core.system("S.I."))
+#rev=named('revolutions','rev',2*math.pi*rad)
+#deg=named('degree','degree',(1./360)*rev)
+#or rad=named (defined in derived (si))
+#rad=named('radian','rad',m/m)
+rev=named('revolutions','rev',2*constants.pi*rad)
+deg=named('degree','deg',(1./360)*rev)
+
