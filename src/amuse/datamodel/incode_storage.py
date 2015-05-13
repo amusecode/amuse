@@ -1082,7 +1082,8 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             if len(array_of_indices[0].shape) == 0:
                 value = returned_value[0]
             else:
-                value = returned_value.reshape(array_of_indices[0].shape)
+                n=len(returned_value.shape)-len(array_of_indices[0].shape)
+                value = returned_value.reshape(array_of_indices[0].shape+(-1,)*n)
                 
             results.append(value)
             

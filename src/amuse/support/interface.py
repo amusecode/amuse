@@ -1240,6 +1240,8 @@ class GridDefinition(AbstractParticleSetDefinition):
         self.name_of_the_get_range_method = 'get_range'
         self.setters = []
         self.getters = []
+        self.gridded_setters=[]
+        self.gridded_getters=[]
         self.particles_factory = datamodel.Grid
         self.extra_keyword_arguments_for_getters_and_setters = {}
 
@@ -1254,6 +1256,22 @@ class GridDefinition(AbstractParticleSetDefinition):
         for name, names in self.getters:
             x = incode_storage.ParticleGetAttributesMethod(getattr(interface, name), names)
             getters.append(x)
+
+        for name, range_method_name, names in self.gridded_getters:
+            x = incode_storage.ParticleGetGriddedAttributesMethod(
+                    getattr(interface, name), 
+                    getattr(interface, range_method_name), 
+                    names
+            )
+            getters.append(x)
+            
+        for name, range_method_name, names in self.gridded_setters:
+            x = incode_storage.ParticleSetGriddedAttributesMethod(
+                    getattr(interface, name), 
+                    getattr(interface, range_method_name), 
+                    names
+            )
+            setters.append(x)
 
         range_method = getattr(interface, self.name_of_the_get_range_method)
 
