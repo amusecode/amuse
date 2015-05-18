@@ -242,22 +242,27 @@ def fix_xyz_axes(X, Y, Z):
         X, Y = numpy.meshgrid(X, Y)
     return X, Y, Z
 
-def log_norm(Z, zmin, zmax):
+def log_norm(Z, vmin, vmax):
     # for log scale, 0 is considered a missing value
     masked_Z = numpy.ma.masked_equal(Z, 0.0, copy=False)
-    zmin = UnitlessArgs.value_in_z_unit(zmin or masked_Z.min())
-    zmax = UnitlessArgs.value_in_z_unit(zmax or masked_Z.max())
+    vmin = UnitlessArgs.value_in_z_unit(vmin or masked_Z.min())
+    vmax = UnitlessArgs.value_in_z_unit(vmax or masked_Z.max())
 
     from matplotlib.colors import LogNorm
-    return masked_Z, LogNorm(vmin=zmin, vmax=zmax)
+    return masked_Z, LogNorm(vmin=vmin, vmax=vmax)
 
 def fix_pcolor_norm(args, kwargs):
     args = [a for a in args]
-    if 'zlog' in kwargs and kwargs['zlog']:
-        zmin = kwargs.pop("zmin", None)
-        zmax = kwargs.pop("zmax", None)
+    if 'vlog' in kwargs and kwargs['vlog']:
+        zmin = kwargs.pop("vmin", None)
+        zmax = kwargs.pop("vmax", None)
         args[2], kwargs['norm']= log_norm(args[2], zmin, zmax)
-        del kwargs['zlog']
+        del kwargs['vlog']
+    else:
+        for name in ("vmin", "vmax"):
+            if name in kwargs:
+                kwargs[name] = UnitlessArgs.value_in_z_unit(kwargs[name])
+
 
     return args, kwargs
 
