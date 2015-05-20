@@ -420,7 +420,7 @@ def simplified_function_specification(must_handle_array=False,can_handle_array=F
         def returns(**kwargs):
             start=flatsrc.find("returns(")
             order=lambda k: flatsrc.find(k[0]+"=",start)
-            out_arg.extend(sorted(kwargs.items()))
+            out_arg.extend(sorted(kwargs.items(),key=order))
         f.func_globals['returns']=returns
         f(*argspec.args)
         out_arg_mapping=OrderedDictionary()
