@@ -325,6 +325,15 @@ class TestQuantities(amusetest.TestCase):
         a=1.5| units.km
         b=1000. | units.m
         self.assertEqual(a%b,500. | units.m)
+        a=[1.5,1.75]| units.km
+        b=1000. | units.m
+        self.assertEqual(a%b,[500.,750] | units.m)
+        a=[1.5,1.75]| units.km
+        b=[1000.,500.] | units.m
+        self.assertEqual(a%b,[500.,250.] | units.m)
+        a=[1.5]| units.km
+        b=[1000.,500.] | units.m
+        self.assertEqual(a%b,[500.,0.] | units.m)
 
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):
