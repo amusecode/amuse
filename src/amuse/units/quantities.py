@@ -138,7 +138,7 @@ class Quantity(object):
 
     def __mod__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-        return new_quantity_nonone(numpy.mod(self.number , other.number), self.unit)
+        return new_quantity_nonone(numpy.mod(self.number , other_in_my_units.number), self.unit)
 
     def in_(self, x):
         return self.as_quantity_in(x)

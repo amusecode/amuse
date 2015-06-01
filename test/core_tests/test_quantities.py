@@ -321,6 +321,10 @@ class TestQuantities(amusetest.TestCase):
         self.assertEquals(one_inch.as_unit(), 2.54 * units.cm)
         self.assertEquals(1 | one_inch.as_unit(), 2.54 | units.cm)
     
+    def test30(self):
+        a=1.5| units.km
+        b=1000. | units.m
+        self.assertEqual(a%b,500. | units.m)
 
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):
