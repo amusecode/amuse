@@ -921,3 +921,28 @@ class TestBHTree(TestWithMPI):
         
         instance.stop()
 
+    
+    def test23(self):
+        particles = datamodel.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0.0 | nbody_system.length
+        particles.z = 0.0 | nbody_system.length
+        particles.vx =  1.0 | nbody_system.speed
+        particles.vy =  0.0 | nbody_system.speed
+        particles.vz =  0.0 | nbody_system.speed
+        particles.mass = 0.1 | nbody_system.mass
+
+        instance = BHTree(redirection="none")
+        instance.particles.add_particles(particles) 
+        instance.commit_particles()
+        instance.evolve_model(0.1 | nbody_system.time)
+        self.assertFalse(instance.particles[0].vy > 0| nbody_system.speed)
+        self.assertAlmostRelativeEquals(instance.particles[0].x , 0.1 | nbody_system.length, 4)
+        instance.particles.new_channel_to(particles).copy()
+        particles.vy = 1| nbody_system.speed
+        particles.new_channel_to(instance.particles).copy()
+        
+        instance.evolve_model(0.2 | nbody_system.time)
+        self.assertTrue(instance.particles[0].vy > 0| nbody_system.speed)
+        self.assertAlmostRelativeEquals(instance.particles[0].y , 0.1 | nbody_system.length, 4)
+        instance.stop()
