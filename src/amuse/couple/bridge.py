@@ -290,7 +290,7 @@ class CalculateFieldForParticles(object):
 class GravityCodeInField(object):
 
 
-    def __init__(self, code, field_codes, do_sync=True, verbose=False, radius_is_eps=False, h_smooth_is_eps=False):
+    def __init__(self, code, field_codes, do_sync=True, verbose=False, radius_is_eps=False, h_smooth_is_eps=False, zero_smoothing=False):
         """
         verbose indicates whether to output some run info
         """
@@ -320,7 +320,7 @@ class GravityCodeInField(object):
         elif not hasattr(self.code.parameters,"epsilon_squared"):
             self.zero_smoothing=True
         else:
-            self.zero_smoothing=False
+            self.zero_smoothing=zero_smoothing
 
 
     def evolve_model(self,tend,timestep=None):
@@ -512,15 +512,15 @@ class Bridge(object):
         self.method=method
         self.channels = datamodel.Channels()
 
-    def add_system(self, interface, partners=set(),do_sync=True,
-            radius_is_eps=False, h_smooth_is_eps=False):
+    def add_system(self, interface, partners=set(), do_sync=True,
+            radius_is_eps=False, h_smooth_is_eps=False, zero_smoothing=False):
         """
         add a system to bridge integrator
         """
 
         if hasattr(interface, "particles"):
             code = GravityCodeInField(interface, partners, do_sync, self.verbose,
-                radius_is_eps, h_smooth_is_eps)
+                radius_is_eps, h_smooth_is_eps, zero_smoothing)
             self.add_code(code)
         else:
             if len(partners):
