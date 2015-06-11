@@ -1065,32 +1065,6 @@ class div_unit(derived_unit):
         
         return result
     
-def k(unit):
-    """
-    Create a new factor unit with factor 1000. Prepend
-    *k* to the symbol of the unit.
-    
-    This is a very simple utility function that only
-    prepends a name and has no knowledge about anything
-    else than kilo's.
-    
-    Examples
-    
-    
-    >>> from amuse.units import si
-    >>> km = k(si.m)
-    >>> km
-    unit<km>
-    >>> kkg = k(si.kg)
-    >>> kkg
-    unit<kkg>
-    >>> kkg.as_quantity_in(si.kg)
-    quantity<1000.0 kg>
-    """
-    return factor_unit(1000, unit, 'kilo','k')           
-       
-
-
 class UnitException(exceptions.AmuseException):
     formatstring = "Unit exception: {0}"
 

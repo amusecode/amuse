@@ -1,7 +1,5 @@
 from amuse.units import core
 
-k = core.k
-
 system = core.system('S.I.')
 
 m = core.base_unit('length', 'meter', 'm', system)
@@ -59,3 +57,5 @@ def zepto(unit):
     return named('zepto'+unit.name,'z'+unit.symbol,1.e-21*unit)    
 def yocto(unit):
     return named('yocto'+unit.name,'y'+unit.symbol,1.e-24*unit)
+
+k=kilo
