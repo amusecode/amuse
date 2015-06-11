@@ -843,22 +843,6 @@ class VectorQuantity(Quantity):
             (self.unit * other.unit).to_simple_form()
         )
 
-
-    def tanh(self, out = None):
-        if not self.unit.is_none():
-            raise Exception("only none unit support for tanh")
-        return numpy.tanh(self.number) | self.unit
-
-    def sin(self):
-        if not self.unit.is_none():
-            raise Exception("only none unit support for sin")
-        return new_quantity(numpy.sin(self.number), self.unit)
-
-    def cos(self):
-        if not self.unit.is_none():
-            raise Exception("only none unit support for sin")
-        return new_quantity(numpy.cos(self.number), self.unit)
-
     def __getstate__(self):
         return (self.unit, self.number)
 
