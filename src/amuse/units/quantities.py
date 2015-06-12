@@ -144,6 +144,10 @@ class Quantity(object):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
         return new_quantity_nonone(numpy.mod(self.number , other_in_my_units.number), self.unit)
 
+    def __rmod__(self, other):
+        other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
+        return new_quantity_nonone(numpy.mod(other_in_my_units.number , self.number), self.unit)
+
     def in_base(self):
         unit=self.unit.base_unit()
         return self.as_quantity_in(unit)
@@ -956,22 +960,28 @@ class ZeroQuantity(Quantity):
         return "zero"
 
     def __lt__(self, other):
-        return 0 < to_quantity(other).value_in(other.unit)
+        other_as_q=to_quantity(other)
+        return 0 < other_as_q.value_in(other_as_q.unit)
 
     def __gt__(self, other):
-        return 0 > to_quantity(other).value_in(other.unit)
+        other_as_q=to_quantity(other)
+        return 0 > other_as_q.value_in(other_as_q.unit)
 
     def __eq__(self, other):
-        return 0 == to_quantity(other).value_in(other.unit)
+        other_as_q=to_quantity(other)
+        return 0 == other_as_q.value_in(other_as_q.unit)
 
     def __ne__(self, other):
-        return 0 != to_quantity(other).value_in(other.unit)
+        other_as_q=to_quantity(other)
+        return 0 != other_as_q.value_in(other_as_q.unit)
 
     def __le__(self, other):
-        return 0 <= to_quantity(other).value_in(other.unit)
+        other_as_q=to_quantity(other)
+        return 0 <= other_as_q.value_in(other_as_q.unit)
 
     def __ge__(self, other):
-        return 0 >= to_quantity(other).value_in(other.unit)
+        other_as_q=to_quantity(other)
+        return 0 >= other_as_q.value_in(other_as_q.unit)
 
 
 
