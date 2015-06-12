@@ -8,6 +8,7 @@ from amuse.support.exceptions import AmuseException
 from amuse.units.quantities import *
 from amuse.units import si
 from amuse.units import units
+from amuse.units import trigo
 from amuse.units import nbody_system
 from amuse.units import quantities
 from amuse.units import core
@@ -341,41 +342,41 @@ class TestQuantities(amusetest.TestCase):
         """
         self.assertEqual(units.pi,numpy.pi)
         a=units.pi
-        self.assertEqual(units.to_rad(a), numpy.pi | units.rad)
-        self.assertEqual(units.to_deg(a), 180. | units.deg)
-        self.assertEqual(units.to_rev(a), 0.5 | units.rev)
+        self.assertEqual(trigo.to_rad(a), numpy.pi | units.rad)
+        self.assertEqual(trigo.to_deg(a), 180. | units.deg)
+        self.assertEqual(trigo.to_rev(a), 0.5 | units.rev)
         a=90 | units.deg
-        self.assertEqual(units.to_rad(a), numpy.pi/2 | units.rad)
-        self.assertEqual(units.to_deg(a), 90. | units.deg)
-        self.assertEqual(units.to_rev(a), 0.25 | units.rev)
+        self.assertEqual(trigo.to_rad(a), numpy.pi/2 | units.rad)
+        self.assertEqual(trigo.to_deg(a), 90. | units.deg)
+        self.assertEqual(trigo.to_rev(a), 0.25 | units.rev)
         a=0.75 | units.rev
-        self.assertEqual(units.to_rad(a), 3/2.*numpy.pi | units.rad)
-        self.assertEqual(units.to_deg(a), 270. | units.deg)
-        self.assertEqual(units.to_rev(a), 0.75 | units.rev)
+        self.assertEqual(trigo.to_rad(a), 3/2.*numpy.pi | units.rad)
+        self.assertEqual(trigo.to_deg(a), 270. | units.deg)
+        self.assertEqual(trigo.to_rev(a), 0.75 | units.rev)
         a=2*numpy.pi
-        self.assertEqual(units.to_rad(a), 2*numpy.pi | units.rad)
-        self.assertEqual(units.to_deg(a), 360. | units.deg)
-        self.assertEqual(units.to_rev(a), 1. | units.rev)
+        self.assertEqual(trigo.to_rad(a), 2*numpy.pi | units.rad)
+        self.assertEqual(trigo.to_deg(a), 360. | units.deg)
+        self.assertEqual(trigo.to_rev(a), 1. | units.rev)
 
         a=45. | units.deg
-        self.assertEqual(units.sin(a),numpy.sin(45./180*numpy.pi))
-        self.assertEqual(units.cos(a),numpy.cos(45./180*numpy.pi))
-        self.assertEqual(units.tan(a),numpy.tan(45./180*numpy.pi))
+        self.assertEqual(trigo.sin(a),numpy.sin(45./180*numpy.pi))
+        self.assertEqual(trigo.cos(a),numpy.cos(45./180*numpy.pi))
+        self.assertEqual(trigo.tan(a),numpy.tan(45./180*numpy.pi))
 
         a=1. | units.rad
-        self.assertEqual(units.sin(a),numpy.sin(1.))
-        self.assertEqual(units.cos(a),numpy.cos(1.))
-        self.assertEqual(units.tan(a),numpy.tan(1.))
+        self.assertEqual(trigo.sin(a),numpy.sin(1.))
+        self.assertEqual(trigo.cos(a),numpy.cos(1.))
+        self.assertEqual(trigo.tan(a),numpy.tan(1.))
 
         a=0.125 | units.rev
-        self.assertEqual(units.sin(a),numpy.sin(45./180*numpy.pi))
-        self.assertEqual(units.cos(a),numpy.cos(45./180*numpy.pi))
-        self.assertEqual(units.tan(a),numpy.tan(45./180*numpy.pi))
+        self.assertEqual(trigo.sin(a),numpy.sin(45./180*numpy.pi))
+        self.assertEqual(trigo.cos(a),numpy.cos(45./180*numpy.pi))
+        self.assertEqual(trigo.tan(a),numpy.tan(45./180*numpy.pi))
 
         a=45. | units.deg
-        self.assertAlmostEqual(units.arcsin(units.sin(a)),45. | units.deg,13)
-        self.assertAlmostEqual(units.arccos(units.cos(a)),45. | units.deg,13)
-        self.assertAlmostEqual(units.arctan(units.tan(a)),45. | units.deg,13)
+        self.assertAlmostEqual(trigo.arcsin(trigo.sin(a)),45. | units.deg,13)
+        self.assertAlmostEqual(trigo.arccos(trigo.cos(a)),45. | units.deg,13)
+        self.assertAlmostEqual(trigo.arctan(trigo.tan(a)),45. | units.deg,13)
 
 
 
