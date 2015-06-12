@@ -1,4 +1,5 @@
-import math
+import numpy
+import quantities
 from amuse.units.si import *
 from amuse.units.derivedsi import *
 from amuse.units import constants
@@ -25,7 +26,7 @@ Ry = named('rydberg unit', 'Ry', (constants.Rydberg_constant * constants.h * con
 angstrom = named('angstrom', 'angstrom', 1e-10*m)
 AU =  named('astronomical unit', 'AU', 149597870691.0  * m)
 AUd = named('AU per day','AUd', 149597870691.0  * m / day)
-parsec=named('parsec','parsec', AU / math.tan(math.pi/(180*60*60)))
+parsec=named('parsec','parsec', AU / numpy.tan(numpy.pi/(180*60*60)))
 kpc=named('kilo parsec','kpc',10**3 * parsec)
 Mpc=named('mega parsec','Mpc',10**6 * parsec)
 Gpc=named('giga parsec','Gpc',10**9 * parsec)
@@ -81,16 +82,25 @@ stellar_type = core.enumeration_unit(
 #special unit for keys of particles
 object_key = core.key_unit('object_key','key')
 
-# proposal:
-#rev=core.base_unit('angle','revolutions','rev',core.system("S.I."))
-#deg=named('degree','degree',(1./360)*rev)
-#rad=named('radian','rad',(1./2/math.pi)*rev)
-# or:
-#rad=core.base_unit("angle","radian","rad",core.system("S.I."))
-#rev=named('revolutions','rev',2*math.pi*rad)
-#deg=named('degree','degree',(1./360)*rev)
-#or rad=named (defined in derived (si))
-#rad=named('radian','rad',m/m)
-rev=named('revolutions','rev',2*constants.pi*rad)
-deg=named('degree','deg',(1./360)*rev)
+#angles
+#rad=named('radian','rad',m/m) (defined in derivedsi.py)
+pi=numpy.pi | rad
+rev=named('revolutions','rev',(2*numpy.pi) * rad)
+deg=named('degree','deg',(numpy.pi/180) *  rad)
 
+#trigonometric convenience functions which are "unit aware"
+sin=lambda x: numpy.sin(1.*x)
+cos=lambda x: numpy.cos(1.*x)
+tan=lambda x: numpy.tan(1.*x)
+arcsin=lambda x: numpy.arcsin(x) | rad
+arccos=lambda x: numpy.arccos(x) | rad
+arctan=lambda x: numpy.arctan(x) | rad
+arctan2=lambda x,y: numpy.arctan2(x,y) | rad
+
+def to_rad(angle):
+  return quantities.as_quantity_in(angle,rad)
+def to_deg(angle):
+  return quantities.as_quantity_in(angle,deg)
+def to_rev(angle):
+  return quantities.as_quantity_in(angle,rev)
+  

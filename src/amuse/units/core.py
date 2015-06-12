@@ -57,7 +57,7 @@ class unit(object):
     Units can also be named, by creating a named unit.
     """
     __array_priority__ = 100
-    
+
     def __mul__(self, other):
        
         if isinstance(other, unit):
@@ -458,8 +458,8 @@ class base_unit(unit):
     >>> cm
     unit<cm>
     """
-    def __init__(self, quantiy, name, symbol, system):
-        self.quantity = quantiy
+    def __init__(self, quantity, name, symbol, system):
+        self.quantity = quantity
         self.name = name
         self.symbol = symbol
         self.system = system

@@ -8,6 +8,10 @@ from amuse.support import console
 from amuse.support.core import late
 from amuse.support.core import compare_version_strings
 from amuse.units import core
+from amuse.units.si import none
+from amuse.units.core import zero_unit
+
+
 """
 """
 class Quantity(object):
@@ -140,9 +144,6 @@ class Quantity(object):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
         return new_quantity_nonone(numpy.mod(self.number , other_in_my_units.number), self.unit)
 
-    def in_(self, x):
-        return self.as_quantity_in(x)
-
     def in_base(self):
         unit=self.unit.base_unit()
         return self.as_quantity_in(unit)
@@ -173,6 +174,8 @@ class Quantity(object):
         """
         value_of_unit_in_another_unit = self.unit.as_quantity_in(another_unit)
         return new_quantity(self.number * value_of_unit_in_another_unit.number, another_unit)
+
+    in_=as_quantity_in
 
     def as_string_in(self, another_unit):
         """
@@ -866,7 +869,6 @@ class ZeroQuantity(Quantity):
 
 
     def __init__(self):
-        from amuse.units.core import zero_unit
         Quantity.__init__(self, zero_unit())
         self.base = ()
         self.factor = 1
@@ -929,7 +931,6 @@ class ZeroQuantity(Quantity):
 
 
     def new_zeros_array(self, length):
-        from amuse.units.core import zero_unit
         array = numpy.zeros(length, dtype=self.dtype)
         return new_quantity(array, zero_unit())
 
@@ -1162,13 +1163,16 @@ def as_vector_quantity(value):
             raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
     return value
 
-
 def to_quantity(input):
     if is_quantity(input):
         return input
     else:
-        from amuse.units.si import none
         return new_quantity(input, none)
+
+def as_quantity_in(input,unit):
+    return to_quantity(input).as_quantity_in(unit)
+def value_in(input,unit):
+    return to_quantity(input).value_in(unit)
 
 def concatenate(quantities):
     first = quantities[0]

@@ -335,6 +335,49 @@ class TestQuantities(amusetest.TestCase):
         b=[1000.,500.] | units.m
         self.assertEqual(a%b,[500.,0.] | units.m)
 
+    def test31(self):
+        """ 
+        test trigonometric unit stuff
+        """
+        self.assertEqual(units.pi,numpy.pi)
+        a=units.pi
+        self.assertEqual(units.to_rad(a), numpy.pi | units.rad)
+        self.assertEqual(units.to_deg(a), 180. | units.deg)
+        self.assertEqual(units.to_rev(a), 0.5 | units.rev)
+        a=90 | units.deg
+        self.assertEqual(units.to_rad(a), numpy.pi/2 | units.rad)
+        self.assertEqual(units.to_deg(a), 90. | units.deg)
+        self.assertEqual(units.to_rev(a), 0.25 | units.rev)
+        a=0.75 | units.rev
+        self.assertEqual(units.to_rad(a), 3/2.*numpy.pi | units.rad)
+        self.assertEqual(units.to_deg(a), 270. | units.deg)
+        self.assertEqual(units.to_rev(a), 0.75 | units.rev)
+        a=2*numpy.pi
+        self.assertEqual(units.to_rad(a), 2*numpy.pi | units.rad)
+        self.assertEqual(units.to_deg(a), 360. | units.deg)
+        self.assertEqual(units.to_rev(a), 1. | units.rev)
+
+        a=45. | units.deg
+        self.assertEqual(units.sin(a),numpy.sin(45./180*numpy.pi))
+        self.assertEqual(units.cos(a),numpy.cos(45./180*numpy.pi))
+        self.assertEqual(units.tan(a),numpy.tan(45./180*numpy.pi))
+
+        a=1. | units.rad
+        self.assertEqual(units.sin(a),numpy.sin(1.))
+        self.assertEqual(units.cos(a),numpy.cos(1.))
+        self.assertEqual(units.tan(a),numpy.tan(1.))
+
+        a=0.125 | units.rev
+        self.assertEqual(units.sin(a),numpy.sin(45./180*numpy.pi))
+        self.assertEqual(units.cos(a),numpy.cos(45./180*numpy.pi))
+        self.assertEqual(units.tan(a),numpy.tan(45./180*numpy.pi))
+
+        a=45. | units.deg
+        self.assertAlmostEqual(units.arcsin(units.sin(a)),45. | units.deg,13)
+        self.assertAlmostEqual(units.arccos(units.cos(a)),45. | units.deg,13)
+        self.assertAlmostEqual(units.arctan(units.tan(a)),45. | units.deg,13)
+
+
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):
 
