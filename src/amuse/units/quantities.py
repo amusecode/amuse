@@ -101,8 +101,9 @@ class Quantity(object):
         if self.unit.is_zero():
             return new_quantity(other.number, other.unit)
         else:
-            other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-            return new_quantity(self.number + other_in_my_units.number, self.unit)
+            other = to_quantity(other)
+            factor = other.unit.conversion_factor_from(self.unit)
+            return new_quantity(self.number + factor*other.number, self.unit)
     __radd__ = __add__
 
     def __sub__(self, other):
@@ -176,8 +177,10 @@ class Quantity(object):
         :argument another_unit: unit to convert quantity to
         :returns: quantity converted to new unit
         """
-        value_of_unit_in_another_unit = self.unit.as_quantity_in(another_unit)
-        return new_quantity(self.number * value_of_unit_in_another_unit.number, another_unit)
+        if isinstance(another_unit, Quantity):
+            raise exceptions.AmuseException("Cannot expres a unit in a quantity")
+        factor = self.unit.conversion_factor_from(another_unit)
+        return new_quantity(self.number * factor, another_unit)
 
     in_=as_quantity_in
 
