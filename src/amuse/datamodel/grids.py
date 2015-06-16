@@ -123,10 +123,11 @@ class AbstractGrid(AbstractSet):
         
     def __str__(self):
         dimensionstr = ' x '.join(([str(x) for x in self.shape]))
-        
-        return "{0} ({1})".format(
+        attrstr= ', '.join(self.get_attribute_names_defined_in_store())
+        return "{0} ({1}) ({2})".format(
             self.__class__.__name__, 
-            dimensionstr
+            dimensionstr,
+            attrstr
         )
         
 class Grid(AbstractGrid):
@@ -285,6 +286,8 @@ def new_rectilinear_grid(shape, axes_cell_boundaries, axes_names = "xyz",offset=
         result = Grid(*shape)
 
         all_indices = numpy.indices(shape)
+    
+        #~ axes_cell_boundaries=[numpy.sort(b) for b in axes_cell_boundaries]
     
         positions=[(b[1:]+b[:-1])/2 for b in axes_cell_boundaries]
         
