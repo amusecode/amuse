@@ -38,7 +38,7 @@ class Parameters(object):
             return
         
         self._instance().before_set_parameter()
-            
+
         return self.get_parameter(name).set_value(value)
 
     def names(self):
@@ -427,13 +427,14 @@ class ParameterDefinition(AbstractParameterDefinition):
         return False
     
 class InterfaceParameterDefinition(ParameterDefinition):
-    def __init__(self, name, description, default_value):
+    def __init__(self, name, description, default_value,state_guard=None):
         AbstractParameterDefinition.__init__(self, name, description)
         if default_value is None:
           raise Exception("interface parameters need default value")
         self.default_value = default_value
         self.must_set_before_get = False
         self.value=default_value
+        self.state_guard=state_guard
         
     def get_value(self, parameter, object):
         try:
@@ -443,6 +444,8 @@ class InterfaceParameterDefinition(ParameterDefinition):
         return x
         
     def set_value(self, parameter, object, quantity):
+        if self.state_guard:
+          getattr(object, self.state_guard)()
         try:
           self.value=quantity.copy()
         except:

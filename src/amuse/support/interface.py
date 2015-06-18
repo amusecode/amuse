@@ -961,8 +961,8 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         )
         self.definitions.append(definition)
 
-    def add_interface_parameter(self, name, description, default_value):        
-        definition=parameters.InterfaceParameterDefinition(name,description,default_value)
+    def add_interface_parameter(self, name, description, default_value,state_guard=None):        
+        definition=parameters.InterfaceParameterDefinition(name,description,default_value,state_guard=state_guard)
         self.definitions.append(definition)
     
 class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):

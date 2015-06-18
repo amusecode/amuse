@@ -386,7 +386,7 @@ class TestInterfaceParameterDefintions(amusetest.TestCase):
         parameter_definition = parameters.InterfaceParameterDefinition(
             "test_name",
             "a test parameter",
-            0.1 | units.m
+            0.1 | units.m,
         )
 
         class TestModule(BaseTestModule):
@@ -414,7 +414,43 @@ class TestInterfaceParameterDefintions(amusetest.TestCase):
 
         self.assertEquals(1 | units.km, instance.parameters.test_name)
 
+    def test5(self):
+        parameter_definition = parameters.InterfaceParameterDefinition(
+            "test_name",
+            "a test parameter",
+            0.1 | units.m,
+            "before_"
+        )
 
+        class TestModule(BaseTestModule):
+            def get_test(self):
+                return self.x
+            def set_test(self, value):
+                self.x = value
+            def before_(self):
+                self.before_called=True
+                pass
+
+        class TestModuleBinding(object):
+            parameter_definitions = [parameter_definition]
+
+            def __init__(self):
+                self.parameters = parameters.Parameters(self.parameter_definitions, self)
+
+        class TestInterface(TestModule, TestModuleBinding):
+
+            def __init__(self):
+                TestModuleBinding.__init__(self)
+
+        instance = TestInterface()
+
+        self.assertTrue('test_name' in list(instance.parameters.names()))
+
+        self.assertRaises(Exception,lambda: getattr(instance,"before_called"))
+        instance.parameters.test_name = 1 | units.km
+
+        self.assertEquals(1 | units.km, instance.parameters.test_name)
+        self.assertEqual(instance.before_called,True)
 
 class TestParameters(amusetest.TestCase):
     def test1(self):
