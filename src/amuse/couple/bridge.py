@@ -210,11 +210,14 @@ class CalculateFieldForParticles(object):
     """
 
     def __init__(self, particles = None, gravity_constant = None,
-            softening_mode="shared"):
+            softening_mode="shared", G = None):
         if particles is None:
             self.particles=datamodel.Particles()
         else:
             self.particles = particles
+        if gravity_constant is None:
+            gravity_constant = G
+            
         if gravity_constant is None:
             if len(particles) and hasattr(particles, 'mass'):
                 try:
@@ -285,6 +288,7 @@ class CalculateFieldForParticles(object):
             result_ay.append(ay)
             result_az.append(az)
         return result_ax, result_ay, result_az
+
 
 
 class GravityCodeInField(object):
