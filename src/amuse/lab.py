@@ -98,10 +98,13 @@ def vector(value = [], unit = None):
         elif isinstance(value, ScalarQuantity):
             return value.as_vector_with_length(1)
         else:
-            return AdaptingVectorQuantity(value)
+            result = AdaptingVectorQuantity()
+            result.extend(value)
+            return result
     else:
         if isinstance(value, ScalarQuantity):
             return value.as_vector_with_length(1)
         else:
             return VectorQuantity(value, unit)
             
+
