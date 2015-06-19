@@ -1326,7 +1326,7 @@ class Athena(CommonCode):
         self.overridden().commit_parameters()
     
     def define_state(self, object): 
-        CommonCode.define_state(self, object)   
+        CommonCode.define_state(self, object)       
         #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
@@ -1371,3 +1371,6 @@ class Athena(CommonCode):
                     'get_boundary_index_range_inclusive'
                 ]:
                 object.add_method(state, methodname)
+                
+        self.stopping_conditions.define_state(object)
+

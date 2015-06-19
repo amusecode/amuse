@@ -279,6 +279,8 @@ class MI6(GravitationalDynamics, GravityFieldCode):
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
         GravityFieldCode.define_state(self, object)
+        self.stopping_conditions.define_state(object)
+
 
     def define_parameters(self, object):
         GravitationalDynamics.define_parameters(self, object)

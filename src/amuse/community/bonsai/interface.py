@@ -315,3 +315,8 @@ class Bonsai(GravitationalDynamics):
         object.add_errorcode(-4, 'The tree has become too deep, consider the removal of far away particles to prevent a too large box.')
     
 
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+          
+        self.stopping_conditions.define_state(object)         
+

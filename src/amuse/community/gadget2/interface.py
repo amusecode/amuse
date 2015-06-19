@@ -1256,7 +1256,11 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         object.add_method('RUN', 'get_center_of_mass_velocity')
         object.add_method('RUN', 'get_total_mass')
         object.add_method('RUN', 'get_hydro_state_at_point')
+        
+        
+        self.stopping_conditions.define_state(object)
     
+
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_epsilon_squared", 

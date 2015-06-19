@@ -632,3 +632,15 @@ class StoppingConditions(object):
         
     def define_particle_set(self, object, name_of_the_set = 'particles'):
         object.add_query(name_of_the_set, 'get_stopping_condition_particle_index')
+    def define_state(self, object): 
+        for method_name in [
+            'get_stopping_condition_particle_index',
+            'has_stopping_condition',
+            'is_stopping_condition_enabled',
+            'is_stopping_condition_set',
+            'get_stopping_condition_info',
+            'get_number_of_stopping_conditions_set',
+            'enable_stopping_condition',
+            'disable_stopping_condition']:
+            object.add_method('!UNINITIALIZED!END', method_name)
+

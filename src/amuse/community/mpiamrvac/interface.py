@@ -2712,7 +2712,7 @@ class MpiAmrVac(CommonCode):
     
     
     def define_state(self, object): 
-        CommonCode.define_state(self, object)   
+        CommonCode.define_state(self, object)       
         #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
@@ -2753,5 +2753,8 @@ class MpiAmrVac(CommonCode):
                     'get_level_of_grid',
                     'refine_grid'
                 ]:
-                object.add_method(state, methodname)    
+                object.add_method(state, methodname)     
+                
+        self.stopping_conditions.define_state(object)    
     
+

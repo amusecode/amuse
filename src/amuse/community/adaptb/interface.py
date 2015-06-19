@@ -231,3 +231,7 @@ class Adaptb(GravitationalDynamics):
         self.stopping_conditions.define_particle_set(object)
 
 
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        self.stopping_conditions.define_state(object)
+

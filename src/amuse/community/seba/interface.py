@@ -959,3 +959,8 @@ class SeBa(se.StellarEvolution):
         object.add_setter('binaries', 'set_semi_major_axis', names = ('semi_major_axis',))
         object.add_setter('binaries', 'set_eccentricity', names = ('eccentricity',))
         object.add_method('binaries', 'merge_the_binary')
+    def define_state(self, object):
+        se.StellarEvolution.define_state(self, object)
+        
+        self.stopping_conditions.define_state(object)
+

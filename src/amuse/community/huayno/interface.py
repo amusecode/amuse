@@ -314,3 +314,6 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
         
         object.add_method('RUN', 'get_kinetic_energy')
         object.add_method('RUN', 'get_potential_energy')
+
+        self.stopping_conditions.define_state(object)
+

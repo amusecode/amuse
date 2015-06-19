@@ -315,6 +315,10 @@ class ph4(GravitationalDynamics,GravityFieldCode):
         object.add_method('CHANGED', 'get_velocity')
         object.add_method('CHANGED', 'get_particle_timestep')
         
+        
+        self.stopping_conditions.define_state(object)
+        
+
     def define_parameters(self, object):
 
         # Set/get parameters specific to the module, not part of the

@@ -761,7 +761,7 @@ class Ramses(CommonCode):
     
     
     def define_state(self, object): 
-        CommonCode.define_state(self, object)   
+        CommonCode.define_state(self, object)       
         #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
         object.add_method('INITIALIZED', 'set_parallel_decomposition')
@@ -805,8 +805,11 @@ class Ramses(CommonCode):
                     'get_boundary_position_if_index',
                     'get_boundary_index_range_inclusive'
                 ]:
-                object.add_method(state, methodname)    
+                object.add_method(state, methodname)
+                
+        self.stopping_conditions.define_state(object)    
     
+
     def specify_boundary_grid(self, definition, index_of_boundary, index_of_grid = 1):
         definition.set_grid_range('get_boundary_index_range_inclusive')
         

@@ -404,3 +404,8 @@ class SmallN(GravitationalDynamics):
             print "dir(incode_storage)=", dir(incode_storage)
             raise
 
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+          
+        self.stopping_conditions.define_state(object)     
+

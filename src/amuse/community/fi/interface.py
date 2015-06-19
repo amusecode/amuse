@@ -1732,10 +1732,14 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         
         
         object.add_method('RUN', 'get_hydro_state_at_point')
-    
+
         object.add_method('EDIT', 'get_gravity_at_point')
         object.add_method('EDIT', 'get_potential_at_point')
+        
+        
+        self.stopping_conditions.define_state(object)
     
+
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_eps2", 

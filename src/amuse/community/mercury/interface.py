@@ -762,6 +762,8 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_method('UPDATE', 'new_orbiter')
         object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
         object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
+        self.stopping_conditions.define_state(object)
+
 
 
     def define_particle_sets(self, object):

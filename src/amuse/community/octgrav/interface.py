@@ -183,8 +183,11 @@ class Octgrav(GravitationalDynamics, GravityFieldCode):
         object.add_method('EDIT', 'get_gravity_at_point')
         object.add_method('EDIT', 'get_potential_at_point')
         
+        self.stopping_conditions.define_state(object)
+        
         
     
+
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
         self.stopping_conditions.define_particle_set(object)
