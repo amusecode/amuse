@@ -866,11 +866,12 @@ class TestInterface(TestWithMPI):
         instance2 = ForTestingInterface()
         portname, error = instance1.internal__open_port()
         self.assertTrue(len(portname) > 0)
+        self.assertEquals(error, 0)
         request1 = instance1.internal__accept_on_port.async(portname)
         request2 = instance2.internal__connect_to_port.async(portname)
         request1.wait()
         request2.wait()
-        port_id1, error1 = request1.result() 
+        port_id1, error1 = request1.result()             
         port_id2, error2 = request2.result()
         self.assertTrue(port_id1 >= 0)
         self.assertTrue(port_id2 >= 0)
@@ -879,6 +880,7 @@ class TestInterface(TestWithMPI):
         
         
         
+
     def test27(self):
         instance1 = ForTestingInterface(redirection="none")
         instance2 = ForTestingInterface(redirection="none")
@@ -966,7 +968,7 @@ class TestInterface(TestWithMPI):
         pool.wait()
         self.assertEquals(len(finished_requests), 2)
         self.assertEquals(len(pool), 0)
-        
+        x.sleep(0.1)
         self.assertEquals(sequenced_requests_indices, [0,1,2,3])
         
         self.assertTrue(request1.is_result_available())
@@ -979,6 +981,7 @@ class TestInterface(TestWithMPI):
         x.stop()
         
     
+
     def test30(self):
         instance= ForTesting()
         input = [1.0,2.0,3.0]
