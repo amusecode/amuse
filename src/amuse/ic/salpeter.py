@@ -36,8 +36,9 @@ class SalpeterIMF(object):
         return self.mass_min * (pow(1.0 + (factor * random_number), 1.0 / alpha1))
         
     def next_mass(self,N=1):
-        return self.mass(self.random.random(N))
+        return self.mass(self.random.random_sample(N))
     
+
     def next_set(self, number_of_stars):
         set_of_masses=self.next_mass(number_of_stars).in_(self.mass_min.unit)
         total_mass=set_of_masses.sum()
