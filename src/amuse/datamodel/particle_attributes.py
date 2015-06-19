@@ -100,16 +100,10 @@ def center_of_mass(particles):
     """
 
     masses = particles.mass
-    pos=particles.position
-
+    position=particles.position
     total_mass = masses.sum()
-    massx = (masses * pos[:,0]).sum()
-    massy = (masses * pos[:,1]).sum()
-    massz = (masses * pos[:,2]).sum()
+    return (position * masses.reshape((len(masses),1))).sum(0) / total_mass
 
-    return quantities.VectorQuantity.new_from_scalar_quantities(massx/total_mass,
-        massy/total_mass,
-        massz/total_mass)
 
 def center_of_mass_velocity(particles):
     """
@@ -129,16 +123,12 @@ def center_of_mass_velocity(particles):
 
 
     masses = particles.mass
-    vel=particles.velocity
+    velocity=particles.velocity
 
     total_mass = masses.sum()
-    massx = (masses * vel[:,0]).sum()
-    massy = (masses * vel[:,1]).sum()
-    massz = (masses * vel[:,2]).sum()
+    
+    return (velocity * masses.reshape((len(masses),1))).sum(0) / total_mass
 
-    return quantities.VectorQuantity.new_from_scalar_quantities(massx/total_mass,
-        massy/total_mass,
-        massz/total_mass)
 
 def total_momentum(particles):
     """

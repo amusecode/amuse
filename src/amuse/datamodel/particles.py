@@ -2915,7 +2915,7 @@ class ParticleInformationChannel(object):
             (self.from_version == self.from_particles._get_version()) and
             (self.to_version == self.to_particles._get_version())
            ):
-           return
+            return
 
 
         self.keys = self.intersecting_keys()
@@ -2923,6 +2923,7 @@ class ParticleInformationChannel(object):
         self.to_indices = self.to_particles.get_indices_of_keys(self.keys)
         self.from_version = self.from_particles._get_version()
         self.to_version = self.to_particles._get_version()
+
 
     def reverse(self):
         if self.target_names is None:
@@ -2949,7 +2950,10 @@ class ParticleInformationChannel(object):
             target_names = attributes
 
         self._reindex()
-
+        
+        if len(self.keys) == 0:
+            return
+        
         values = self.from_particles.get_values_in_store(self.from_indices, attributes)
         converted = []
         for x in values:
@@ -2959,6 +2963,7 @@ class ParticleInformationChannel(object):
                 converted.append(x)
         if len(self.to_indices) > 0:
             self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
+
 
     def copy(self):
         if not self.attributes is None:
