@@ -275,11 +275,16 @@ class AsyncRequestWithHandler(object):
     
     def __init__(self, pool, async_request, result_handler, args=(), kwargs={}):
         self.async_request = async_request
+        if result_handler is None:
+            def empty(request):
+                request.result()
+            result_handler = empty
         self.result_handler = result_handler
         self.args = args
         self.kwargs = kwargs
         self.pool = pool
     
+
     def run(self):
         self.result_handler(self.async_request, *self.args, **self.kwargs)
         
@@ -290,7 +295,7 @@ class AsyncRequestsPool(object):
         self.registered_requests = set([])
         self.result_handlers = []
         
-    def add_request(self, async_request, result_handler, args=(), kwargs={}):
+    def add_request(self, async_request, result_handler = None, args=(), kwargs={}):
         if async_request in self.registered_requests:
             raise Exception("Request is already registered, cannot register a request more than once")
             
@@ -306,6 +311,7 @@ class AsyncRequestsPool(object):
             )
         )
     
+
     def waitall(self):
         while len(self) > 0:
             self.wait()
