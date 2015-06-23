@@ -88,6 +88,7 @@ int commit_particles(){
 }
 
 int get_time(double * time){
+    *time = t;
     return 0;
 }
 

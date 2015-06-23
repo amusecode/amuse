@@ -166,11 +166,13 @@ class TestRebound(TestWithMPI):
         
         interface.evolve_model(365.0 + (365.0 / 2) | units.day)
         
+        self.assertAlmostRelativeEqual(interface.model_time, 365.0 + (365.0 / 2) | units.day, 3)
         interface.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostRelativeEqual(-position_at_start, position_after_half_a_rotation, 3)
                 
         interface.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
+        self.assertAlmostRelativeEqual(interface.model_time, 365.0 + (365.0 / 2) + (365.0 / 4)  | units.day, 3)
         
         interface.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
