@@ -1,0 +1,21 @@
+Index: rebound/src/rebound/src/Makefile
+===================================================================
+--- rebound.orig/src/rebound/src/Makefile	2015-06-21 05:23:57.000000000 +0200
++++ rebound/src/rebound/src/Makefile	2015-06-23 09:40:51.289849546 +0200
+@@ -103,7 +103,7 @@
+ 
+ 
+ # This part of the Makefile compiles the shared dynamic library librebound.
+-librebound: OPT+=-DCOLLISIONS_NONE -DLIBREBOUND
++librebound: OPT+=-DCOLLISIONS_DUMMY -DLIBREBOUND
+ librebound:
+ 	$(CC) $(OPT) -c -fPIC integrator_ias15.c
+ 	$(CC) $(OPT) -c -fPIC integrator_whfast.c
+@@ -113,6 +113,7 @@
+ 	$(CC) $(OPT) -c -fPIC integrator_wh.c
+ 	$(CC) $(OPT) -c -fPIC integrator.c
+ 	$(CC) $(OPT) -c -fPIC gravity_direct.c
++	$(CC) $(OPT) -c -fPIC collisions_dummy.c
+ 	$(CC) $(OPT) -c -fPIC tools.c
+ 	$(CC) $(OPT) -c -fPIC particle.c
+ 	$(CC) $(OPT) -c -fPIC librebound.c
