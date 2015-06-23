@@ -147,7 +147,7 @@ class TestRebound(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        interface = self.new_instance_of_an_optional_code(Rebound)
+        interface = self.new_instance_of_an_optional_code(Rebound, convert_nbody)
         interface.initialize_code()
         interface.parameters.epsilon_squared = 0.0 | units.AU**2
         interface.parameters.end_time_accuracy_factor = 0.0
@@ -187,7 +187,7 @@ class TestRebound(TestWithMPI):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = self.new_instance_of_an_optional_code(Rebound)
+        instance = self.new_instance_of_an_optional_code(Rebound, convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.dt_dia = 5000
