@@ -14,7 +14,7 @@ except ImportError:
 class ReboundInterfaceTests(TestWithMPI):
     
     def test1(self):
-        instance = ReboundInterface()
+        instance = self.new_instance_of_an_optional_code(ReboundInterface)
         instance.initialize_code()
     
         res1,error = instance.new_particle(mass = 11.0, radius = 2.0, x = 1.0, y = 2.0, z = 3.0, vx = 4.0, vy = 5.0, vz = 6.0)
@@ -48,7 +48,7 @@ class ReboundInterfaceTests(TestWithMPI):
         instance.stop()
     
     def test2(self):
-        instance = ReboundInterface()
+        instance = self.new_instance_of_an_optional_code(ReboundInterface)
         instance.initialize_code()
         
         instance.new_particle([10,20],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0],[1,1])
@@ -85,7 +85,7 @@ class ReboundInterfaceTests(TestWithMPI):
         
     def test4(self):
         
-        instance = ReboundInterface(redirection="none")
+        instance = self.new_instance_of_an_optional_code(ReboundInterface)
         instance.initialize_code()
         
         integrator, error = instance.get_integrator()
@@ -100,7 +100,7 @@ class ReboundInterfaceTests(TestWithMPI):
         instance.stop()
         
     def test5(self):
-        instance = ReboundInterface()
+        instance = self.new_instance_of_an_optional_code(ReboundInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
         
@@ -146,7 +146,7 @@ class TestRebound(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        interface = Rebound(convert_nbody)
+        interface = self.new_instance_of_an_optional_code(Rebound)
         interface.initialize_code()
         interface.parameters.epsilon_squared = 0.0 | units.AU**2
         interface.parameters.end_time_accuracy_factor = 0.0
@@ -186,7 +186,7 @@ class TestRebound(TestWithMPI):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
     
-        instance = Rebound(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(Rebound)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.dt_dia = 5000
@@ -233,7 +233,7 @@ class TestRebound(TestWithMPI):
         particles.z = 0 | nbody_system.length
         particles.velocity = [[2, 0, 0], [-2, 0, 0]]*3 + [[-4, 0, 0]] | nbody_system.speed
         
-        instance = Rebound()
+        instance = self.new_instance_of_an_optional_code(Rebound)
         instance.initialize_code()
         instance.parameters.set_defaults()
         instance.particles.add_particles(particles)
