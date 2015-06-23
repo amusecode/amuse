@@ -822,7 +822,7 @@ class StoreHDF(object):
                     group, 
                     index, 
                     ref_dataset, 
-                    object._original_set()
+                    object#.copy() #._original_set()
                 ))
             else:
                 raise Exception("unsupported type {0}".format(type(object)))
@@ -833,6 +833,7 @@ class StoreHDF(object):
         subgroup.create_dataset('kind', data=kind_array)
         subgroup.attrs["units"] = "link"
     
+
     def store_timestamp(self, container, group):
         quantity = container.get_timestamp()
         if not quantity is None:

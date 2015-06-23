@@ -939,3 +939,32 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         self.assertTrue(y[1].sub==x[1].sub==None)
 
         os.remove(output_file)
+    def test58(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test58"+self.store_version()+".h5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        x = Particles(keys = (1,2))
+        x.mass = [1,2] | units.kg
+        y = Particles(keys = (11,12,13,14))
+        y.mass = [40,50,60,70] | units.kg
+        
+        x.sub = None
+        x[0].sub = y[0:2]
+        y[0].sub = y[2:]
+        
+        io.write_set_to_file(x, output_file,"amuse", version=self.store_version())
+        z = io.read_set_from_file(output_file,"amuse")
+        
+        self.assertEqual(len(x), len(z))
+        self.assertEqual(len(x[0].sub), len(z[0].sub))
+        self.assertEqual(x[0].sub[0].sub.key, (13,14))
+        self.assertEqual(z[0].sub[0].sub.key, (13,14))
+        self.assertEqual(id(x[0].sub._original_set()), id(x[0].sub[0].sub._original_set()))
+        # no more subsets, could this be fixed, would be very nice to do so
+        # self.assertEqual(id(z[0].sub._original_set()), id(z[0].sub[0].sub._original_set()))
+        self.assertTrue(z[1].sub==x[1].sub==None)
+
+        os.remove(output_file)
+
