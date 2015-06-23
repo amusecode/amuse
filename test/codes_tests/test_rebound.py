@@ -64,7 +64,7 @@ class ReboundInterfaceTests(TestWithMPI):
         
     def test3(self):
         
-        instance = ReboundInterface()
+        instance = self.new_instance_of_an_optional_code(ReboundInterface)
         instance.initialize_code()
         
         indices, error = instance.new_particle([10,20, 30],[1,2,3],[0,0,0], [0,0,0], [0,0,0], [0,0,0], [0,0,0],[1,0,1])
@@ -80,9 +80,10 @@ class ReboundInterfaceTests(TestWithMPI):
         self.assertEquals(30.0,  retrieved_state['mass'][1])
         mass, error = instance.get_mass(1)
         self.assertEquals(error, -1)
-        instance.cleanup_code() 
+        instance.cleanup_code()     
         instance.stop()
         
+
     def test4(self):
         
         instance = self.new_instance_of_an_optional_code(ReboundInterface)
