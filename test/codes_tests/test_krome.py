@@ -297,7 +297,7 @@ class TestKromeInterface(TestWithMPI):
         id,err=instance.new_particle(dens,t,ion)
         
         abundances={"E":0.000369180975425,
-                     "H+":0.0001,"HE":0.0851224751475, 
+                     "H+":0.0001,"HE":0.0775, 
                      "C+":0.000269180975425, "SI": 3.2362683404e-05,
                      "O": 0.000489828841345}
          
@@ -308,6 +308,7 @@ class TestKromeInterface(TestWithMPI):
           name,err=instance.get_name_of_species(i)
           if name in abundances:
             self.assertAlmostEqual(x,abundances[name],12)
+
 
     def test11(self):
         print "evolve test, comparison"
@@ -402,7 +403,7 @@ class TestKrome(TestWithMPI):
           i=instance.species["H+"]
           self.assertAlmostEqual(p.abundances[i],0.0001)
           i=instance.species["HE"]
-          self.assertAlmostEqual(p.abundances[i],0.0851224751475)
+          self.assertAlmostEqual(p.abundances[i],0.0775)
           i=instance.species["C+"]
           self.assertAlmostEqual(p.abundances[i],0.000269180975425)
           i=instance.species["SI"]
@@ -412,6 +413,7 @@ class TestKrome(TestWithMPI):
           
         instance.cleanup_code()
         instance.stop()
+
 
     def test2(self):
         print "test2: adding particles w abund."
