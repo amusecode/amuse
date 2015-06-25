@@ -147,6 +147,8 @@ int evolve_model(double _tmax){
     );
     int is_condition_set = 0;
     
+    reset_stopping_conditions();
+    
     // original : rebound_integrate
     int exact_finish_time = 1;
     double maxR = 0;
