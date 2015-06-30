@@ -3011,6 +3011,10 @@ class ParticleInformationChannel(object):
             target_name = name
 
         self._reindex()
+        
+        if len(self.keys) == 0:
+            return
+            
         data = self.from_particles.get_values_in_store(self.from_indices, [name,])
         self.to_particles.set_values_in_store(self.to_indices, [target_name,], data)
 

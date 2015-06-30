@@ -277,3 +277,19 @@ class TestRebound(TestWithMPI):
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
+    def test4(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+        instance = self.new_instance_of_an_optional_code(Rebound, convert_nbody)
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
+        instance.dt_dia = 5000
+        
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
+        instance.particles.add_particles(stars)
+        self.assertAlmostRelativeEquals(instance.kinetic_energy, stars.kinetic_energy())
+        self.assertAlmostRelativeEquals(instance.potential_energy, stars.potential_energy(), 10)
+        
+        instance.stop()
+        
+

@@ -141,9 +141,15 @@ int get_total_mass(double * mass){
 int evolve_model(double _tmax){
     int error = 0;
     int is_collision_detection_enabled = 0;
+    int is_timeout_detection_enabled = 0;
+    
     error = is_stopping_condition_enabled(
-                COLLISION_DETECTION, 
-                &is_collision_detection_enabled
+        COLLISION_DETECTION, 
+        &is_collision_detection_enabled
+    );
+    error = is_stopping_condition_enabled(
+        TIMEOUT_DETECTION, 
+        &is_timeout_detection_enabled
     );
     int is_condition_set = 0;
     
@@ -161,7 +167,11 @@ int evolve_model(double _tmax){
 	int last_step = 0;
 	int ret_value = 0;
 	const double dtsign = copysign(1.,dt); 				// Used to determine integration direction
-	while(t*dtsign<tmax*dtsign && last_step<2 && ret_value==0){
+    
+    time_t starttime, currenttime;
+    time(&starttime);
+	
+    while(t*dtsign<tmax*dtsign && last_step<2 && ret_value==0){
 		if (N<=0){
 			fprintf(stderr,"\n\033[1mError!\033[0m No particles found. Exiting.\n");
 			return(1);
@@ -217,6 +227,16 @@ int evolve_model(double _tmax){
                 break;
             }
 		}
+        
+        // AMUSE STOPPING CONDITIONS
+        if(is_timeout_detection_enabled) {
+            time(&currenttime);
+            if((currenttime - starttime) > timeout_parameter) {
+                int stopping_index  = next_index_for_stopping_condition();
+                set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
+                break;
+            }
+        }
 	}
 	integrator_synchronize();
 	dt = dt_last_done;
@@ -314,6 +334,12 @@ int recommit_particles(){
 }
 
 int get_kinetic_energy(double * kinetic_energy){
+    double e_kin = 0.;
+    for (int i=0;i<N-N_megno;i++){
+        struct particle pi = particles[i];
+        e_kin += 0.5 * pi.m * (pi.vx*pi.vx + pi.vy*pi.vy + pi.vz*pi.vz);
+    }
+    *kinetic_energy = e_kin;
     return 0;
 }
 
@@ -383,7 +409,7 @@ int initialize_code(){
     integrator = WHFAST;
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
-    //set_support_for_condition(TIMEOUT_DETECTION);
+    set_support_for_condition(TIMEOUT_DETECTION);
     //set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
     //set_support_for_condition(OUT_OF_BOX_DETECTION);
     
@@ -391,6 +417,18 @@ int initialize_code(){
 }
 
 int get_potential_energy(double * potential_energy){
+    double e_pot = 0.;
+    for (int i=0;i<N-N_megno;i++){
+        struct particle pi = particles[i];
+        for (int j=i+1;j<N-N_megno;j++){
+            struct particle pj = particles[j];
+            double dx = pi.x - pj.x;
+            double dy = pi.y - pj.y;
+            double dz = pi.z - pj.z;
+            e_pot -= G*pj.m*pi.m/sqrt(dx*dx + dy*dy + dz*dz);
+        }
+    }
+    *potential_energy = e_pot;
     return 0;
 }
 

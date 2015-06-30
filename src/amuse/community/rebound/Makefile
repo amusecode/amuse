@@ -50,6 +50,9 @@ download:
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ rebound_worker worker_code.cc
+	$(RM) -Rf $(CODEDIR)/src/*.o
+	$(RM) -Rf $(CODEDIR)/src/*.so
+	$(RM) -Rf src/librebound.a
 	-make -C $(CODEDIR) clean
 	
 distclean:
@@ -57,10 +60,13 @@ distclean:
 	$(RM) *~ rebound_worker
 	$(RM) -Rf src
 	$(RM) -Rf src.*
+	$(RM) -Rf $(CODEDIR)/src/*.o
+	$(RM) -Rf $(CODEDIR)/src/*.so
+	$(RM) -Rf src/librebound.a
 	$(RM) -Rf .pc
 
 $(CODELIB): $(CODEDIR)/Makefile
-	make -C $(CODEDIR) all
+	make -C $(CODEDIR) all CC=$(CC)
 	ar rv $(CODELIB) $(LIB_OBJ)
 	ranlib $(CODELIB)
 
