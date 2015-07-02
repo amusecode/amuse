@@ -517,13 +517,14 @@ def memoize(f):
         try:
             return memof.d[arg]
         except:
-            if len(memof.d)>1000:
+            if len(memof.d)>5000:
                 raise Exception("long memo dict:"+str(len(memof.d)))
             result=f(*arg)
             memof.d[arg]=result
             return result
     memof.d={}
     return memof
+
 
 class MultitonMetaClass(type):
     def __new__(mcs, name, bases, dict):
