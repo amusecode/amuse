@@ -3402,6 +3402,15 @@ class Particle(object):
     def get_containing_set(self):
         return self.particles_set._original_set()
 
+    def update(self, attribute_names, callback):
+        if self._set_index is None or self._set_version != self.particles_set._get_version():
+            object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
+            object.__setattr__(self, "_set_version", self.particles_set._get_version())
+        values = self.particles_set.get_values_in_store((self._set_index), attribute_names)
+        updated_values = callback(*values)
+        self.particles_set.set_values_in_store((self._set_index), attribute_names, updated_values)
+        
+
 def create_particle_set(**args):
     """
     Returns a particle set from the input vector quantities. input should be named

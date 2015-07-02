@@ -5,9 +5,9 @@ from amuse.units.derivedsi import *
 from amuse.units import constants
 
 # misc every day
-minute = named('minute', 'min', 60 * s)
-hour   = named('hour',   'hr',  60 * minute)
-day    = named('day',    'day', 24 * hour)
+minute = named('minute', 'min', 60.0 * s)
+hour   = named('hour',   'hr',  60.0 * minute)
+day    = named('day',    'day', 24.0 * hour)
 yr     = named('year',   'yr',  365.242199 * day)
 julianyr = named('julian yr','julianyr',365.25* day)
 ms = named('meter per seconds', 'ms', m / s)

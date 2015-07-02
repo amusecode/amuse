@@ -512,3 +512,30 @@ class OrderedSet(collections.MutableSet):
         self.discard(key)
         return key
 
+def memoize(f):
+    def memof(*arg):
+        try:
+            return memof.d[arg]
+        except:
+            if len(memof.d)>1000:
+                raise Exception("long memo dict:"+str(len(memof.d)))
+            result=f(*arg)
+            memof.d[arg]=result
+            return result
+    memof.d={}
+    return memof
+
+class MultitonMetaClass(type):
+    def __new__(mcs, name, bases, dict):
+        dict['__INSTANCES__'] = {}
+        return type.__new__(mcs, name, bases, dict)
+        
+    def __call__(mcls, *arguments):
+        if arguments in mcls.__INSTANCES__:
+            return  mcls.__INSTANCES__[arguments]
+        else:
+            instance = type.__call__(mcls, *arguments)
+            mcls.__INSTANCES__[arguments] = instance
+            return instance
+
+        

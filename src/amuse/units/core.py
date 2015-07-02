@@ -3,6 +3,10 @@ from amuse.support import exceptions
 import numpy
 
 
+from amuse.support.core import memoize
+
+from amuse.support.core import MultitonMetaClass
+
 class system(object):
     ALL = {}
     
@@ -114,14 +118,14 @@ class unit(object):
         return self.new_quantity(x)
     
     def __eq__(self, other):
-        if isinstance(other, unit):
-            if (isinstance(self, base_unit) and isinstance(other, base_unit)) or \
-                    isinstance(self, nonnumeric_unit) or isinstance(other, nonnumeric_unit):
-                return NotImplemented
+        if self is other:
+            return True
+        elif isinstance(other, unit):
             return self.base == other.base and self.factor == other.factor
         else:
             return False
     
+
     def __ne__(self, other):
         if isinstance(other, unit):
             if (isinstance(self, base_unit) and isinstance(other, base_unit)) or \
@@ -278,6 +282,7 @@ class unit(object):
                     return False
         return True
             
+    @memoize
     def conversion_factor_from(self, x):
         if x.base is None:
             return self.factor * 1.0
@@ -288,6 +293,7 @@ class unit(object):
         else:
             raise IncompatibleUnitsException(x, self)
       
+
     def in_(self, x):
         """Express this quantity in the given unit
         
@@ -492,6 +498,15 @@ class base_unit(unit):
         return (get_base_unit_with_name, (self.system, self.quantity,))
     
     
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif isinstance(other, base_unit):
+            return NotImplemented
+        else:
+            return False
+
+
 class no_system(object):
     ALL = {}
     
@@ -638,6 +653,14 @@ class nonnumeric_unit(unit):
     def is_valid_value(self, value):
         return False
         
+    def __eq__(self, other):
+        if self is other:
+            return True
+        elif isinstance(other, nonnumeric_unit):
+            return NotImplemented
+        else:
+            return False
+
 class string_unit(nonnumeric_unit):
     """
     String unit objects define quantities with a string value.
@@ -782,12 +805,12 @@ class named_unit(unit):
     :argument unit: The unit to alias
     
     >>> from amuse.units import si
-    >>> 60 * si.s
-    unit<60 * s>
+    >>> 60.0 * si.s
+    unit<60.0 * s>
     >>> minute = named_unit("minute","min", 60*si.s)
     >>> minute
     unit<min>
-    >>> (20 | (60 * si.s)).as_quantity_in(minute)
+    >>> (20 | (60.0 * si.s)).as_quantity_in(minute)
     quantity<20.0 min>
     """
     def __init__(self, name, symbol, unit):
@@ -816,8 +839,11 @@ class derived_unit(unit):
     can be derived from base_units. Each operation on
     a unit creates a new derived_unit.
     """
+    
+    __metaclass__ = MultitonMetaClass
     pass
     
+
 class factor_unit(derived_unit):
     """
     A factor_unit object defines a unit multiplied by
@@ -839,6 +865,7 @@ class factor_unit(derived_unit):
     quantity<3600.0 s>
     
     """
+    
     def __init__(self, factor, unit, name = None, symbol = None):
         self.name = name
         self.symbol = symbol
@@ -876,6 +903,7 @@ class factor_unit(derived_unit):
         return result
         
         
+
 class mul_unit(derived_unit):
     """
     A mul_unit object defines a unit multiplied by

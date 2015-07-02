@@ -149,11 +149,11 @@ class ConvertBetweenGenericAndSiUnits(object):
         return None, None
 
     def find_generic_unit_for(self, unit):
-        for unit_generic, unit_in_si in self.units:
-            base_in_si = unit_in_si.base[0][1]
+        for unit_generic, unit_in_si, base_in_si in self.unit_gerenic_to_unit_in_si:
             if base_in_si == unit:
                 return unit_generic, unit_in_si
         return None, None
+
 
     def to_si(self, value):
         """     
@@ -251,5 +251,23 @@ class ConvertBetweenGenericAndSiUnits(object):
 #        string+= self.new_base_inv                                                     
 #                                                                                       
 #        return string                                                                  
+
+
+    @late
+    def mapping_from_base_in_si_to_unit_generic(self):
+        result = {}
+        for unit_generic, unit_in_si in self.units:
+            base_in_si = unit_in_si.base[0][1]
+            result[base_in_si] = unit_generic, unit_in_si      
+        return result
+
+
+    @late
+    def unit_gerenic_to_unit_in_si(self):
+        result = []
+        for unit_generic, unit_in_si in self.units:
+            base_in_si = unit_in_si.base[0][1]
+            result.append((unit_generic, unit_in_si, base_in_si,))          
+        return result
 
 

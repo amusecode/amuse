@@ -20,9 +20,9 @@ class TestUnitConversions(amusetest.TestCase):
         self.assertEqual(10000, val.value_in(m))
         
     def test3(self):
-        km = 1000 * m
+        km = 1000.0 * m
         val = km(10)
-        self.assertEqual("10 1000 * m", str(val))
+        self.assertEqual("10 1000.0 * m", str(val))
         
         km = named('kilometer','km',1000 * m)
         val = km(10)
@@ -106,6 +106,7 @@ class TestUnitConversions(amusetest.TestCase):
         self.assertAlmostRelativeEquals( (s / m).to_array_of_floats(), [1, 1, -1, 0, 1, 0, 0, 0, 0])
         self.assertAlmostRelativeEquals( (kg ** 2/ s).to_array_of_floats(), [1, 1,  0, 2, -1, 0, 0, 0, 0])
         
+
 
 class TestNonNumericUnits(amusetest.TestCase):
     def test1(self):

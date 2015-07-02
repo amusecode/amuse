@@ -157,9 +157,11 @@ class StoppingCondition(object):
             self._particles[i].add_particles(particle_set)
     
     def unset(self):
-        self._is_set = False
-        self._particles = [datamodel.Particles() for x in range(256)]
+        if self._is_set:
+            self._is_set = False
+            self._particles = [datamodel.Particles() for x in range(10)]
         
+
     def particles(self, index):
         if index >= len(self._particles):
             return datamodel.Particles()
