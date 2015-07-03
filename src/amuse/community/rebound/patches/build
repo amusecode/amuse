@@ -1,7 +1,7 @@
 Index: rebound/src/rebound/src/Makefile
 ===================================================================
---- rebound.orig/src/rebound/src/Makefile	2015-06-21 05:23:57.000000000 +0200
-+++ rebound/src/rebound/src/Makefile	2015-06-23 09:40:51.289849546 +0200
+--- rebound.orig/src/rebound/src/Makefile	2015-06-23 09:50:36.053860051 +0200
++++ rebound/src/rebound/src/Makefile	2015-07-03 14:27:15.455276630 +0200
 @@ -103,7 +103,7 @@
  
  
@@ -11,7 +11,7 @@ Index: rebound/src/rebound/src/Makefile
  librebound:
  	$(CC) $(OPT) -c -fPIC integrator_ias15.c
  	$(CC) $(OPT) -c -fPIC integrator_whfast.c
-@@ -113,6 +113,7 @@
+@@ -113,12 +113,13 @@
  	$(CC) $(OPT) -c -fPIC integrator_wh.c
  	$(CC) $(OPT) -c -fPIC integrator.c
  	$(CC) $(OPT) -c -fPIC gravity_direct.c
@@ -19,3 +19,10 @@ Index: rebound/src/rebound/src/Makefile
  	$(CC) $(OPT) -c -fPIC tools.c
  	$(CC) $(OPT) -c -fPIC particle.c
  	$(CC) $(OPT) -c -fPIC librebound.c
+ 	$(CC) $(OPT) -c -fPIC output.c
+ 	$(CC) $(OPT) -c -fPIC input.c
+-	$(CC) $(OPT) -shared -o librebound.so particle.o tools.o integrator.o integrator_ias15.o integrator_whfast.o integrator_leapfrog.o integrator_sei.o integrator_hybrid.o integrator_wh.o gravity_direct.o librebound.o input.o output.o
++	$(CC) $(OPT) -shared -o librebound.so particle.o tools.o collisions_dummy.o integrator.o integrator_ias15.o integrator_whfast.o integrator_leapfrog.o integrator_sei.o integrator_hybrid.o integrator_wh.o gravity_direct.o librebound.o input.o output.o
+ 	
+ 	@echo ""        
+ 	@echo "The shared library librebound.so has been created successfully."
