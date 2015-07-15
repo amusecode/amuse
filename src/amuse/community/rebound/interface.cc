@@ -326,7 +326,12 @@ int get_state(int index_of_the_particle, double * mass, double * x,
 }
 
 int get_time_step(double * time_step){
-  return 0;
+    *time_step = dt;
+    return 0;
+}
+int set_time_step(double time_step){
+    dt = time_step;
+    return 0;
 }
 
 int recommit_particles(){

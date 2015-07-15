@@ -50,6 +50,21 @@ class ReboundInterface(CodeInterface,
                 return key, error
         return "none", -1
     
+    @legacy_function
+    def set_time_step():
+        """
+        Update timestep.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('timestep', dtype='float64', direction=function.IN,
+            description = "timestep")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            timestep was changed
+        """
+        return function
+
 class Rebound(GravitationalDynamics, GravityFieldCode):
 
 
@@ -75,11 +90,35 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
 
     def define_parameters(self, object):
         self.stopping_conditions.define_parameters(object)
+        
+        object.add_method_parameter(
+            "get_time_step",
+            "set_time_step",
+            "timestep",
+            "constant timestep for iteration", 
+            default_value = 0.01 | nbody_system.time
+        )
+
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
+        
+        
+        object.add_method(
+            "get_time_step",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_time_step",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
         self.stopping_conditions.define_methods(object)
     
+
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
         

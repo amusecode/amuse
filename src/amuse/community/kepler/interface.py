@@ -681,3 +681,41 @@ class Kepler(CommonCode):
         self.particles = particles.copy()
         
     
+    def define_state(self, object):
+        CommonCode.define_state(self, object)
+        for method_name in [
+            'initialize_from_dyn',
+            'initialize_from_elements',
+            'transform_to_time',
+            'advance_to_radius',
+            'return_to_radius',
+            'advance_to_periastron',
+            'advance_to_apastron',
+            'return_to_periastron',
+            'return_to_apastron',
+            'get_total_mass',
+            'get_time',
+            'get_period',
+            'get_elements',
+            'get_integrals',
+            'get_separation_vector',
+            'get_separation',
+            'set_periastron',
+            'get_periastron',
+            'get_apastron',
+            'get_velocity_vector',
+            'get_angles',
+            'set_longitudinal_unit_vector',
+            'set_normal_unit_vector',
+            'get_longitudinal_unit_vector',
+            'get_transverse_unit_vector',
+            'set_transverse_unit_vector',
+            'get_normal_unit_vector',
+            'print_all',
+            'set_random',
+            'get_random',
+            'make_binary_scattering']:
+            object.add_method('!UNINITIALIZED!END', method_name)
+        
+
+
