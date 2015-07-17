@@ -34,6 +34,7 @@ import nl.esciencecenter.xenon.files.Path;
 import nl.esciencecenter.xenon.files.RelativePath;
 import nl.esciencecenter.xenon.jobs.Scheduler;
 import nl.esciencecenter.xenon.util.Utils;
+import nl.esciencecenter.xenon.adaptors.slurm.SlurmAdaptor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -157,6 +158,8 @@ public class ResourceManager {
             if (gateway != null && !gateway.isEmpty()) {
                 properties.put(SshAdaptor.GATEWAY, gateway);
             }
+
+            properties.put(SlurmAdaptor.IGNORE_VERSION_PROPERTY, "true");
 
             return xenon.jobs().newScheduler(getSchedulerType(), getLocation(), credential, properties);
         } catch (XenonException e) {
