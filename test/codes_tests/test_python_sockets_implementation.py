@@ -563,3 +563,25 @@ class TestInterface(TestWithMPI):
 
 
 
+    def test18(self):
+        print "Testing the splitting of very long MPI messages into blocks"
+        x = ForTesting(max_message_length=10, channel_type = 'sockets')
+        N = 100
+        doubles = x.echo_double([1.0*i for i in range(N)])
+        self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
+        sums = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
+        self.assertTrue(list(sums) == [2.0*i for i in range(N)])
+        products = x.multiply_ints(range(N),range(N))
+        self.assertTrue(list(products) == [i*i for i in range(N)])
+        N = 101
+        doubles = x.echo_double([1.0*i for i in range(N)])
+        self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
+        sums = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
+        self.assertTrue(list(sums) == [2.0*i for i in range(N)])
+        products = x.multiply_ints(range(N),range(N))
+        self.assertTrue(list(products) == [i*i for i in range(N)])
+        x.stop()
+        
+        
+
+

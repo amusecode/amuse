@@ -100,6 +100,15 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
         )
 
 
+        object.add_method_parameter(
+            "get_integrator",
+            "set_integrator",
+            "integrator",
+            "name of the integrator to use", 
+            default_value = "ias15"
+        )
+
+
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
         

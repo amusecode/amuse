@@ -157,6 +157,14 @@ class Parameters(object):
                 setattr(self, name, getattr(memento, name))
             
 
+    def has_writable_parameter(self, name):
+        if not name in self._mapping_from_name_to_definition:
+            return False
+        return not self.get_parameter(name).is_readonly()
+
+
+
+
 class ParametersMemento(object):
     __name__ = 'Parameters'
     

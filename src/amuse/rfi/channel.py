@@ -1935,9 +1935,11 @@ class SocketChannel(AbstractMessageChannel):
         logger.debug("full name of worker is %s", self.full_name_of_the_worker)
         
         self._is_inuse = False
+        self._communicated_splitted_message = False
         self.socket = None
     
     
+
     @option(sections=("channel",))
     def mpiexec(self):
         """mpiexec with arguments"""
@@ -2117,14 +2119,26 @@ class SocketChannel(AbstractMessageChannel):
         if self.socket is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
-        message = SocketMessage(call_id, function_id, call_count, dtype_to_arguments)
-        message.send(self.socket)
         
-        self._is_inuse = True
+        if call_count > self.max_message_length:
+            self.split_message(call_id, function_id, call_count, dtype_to_arguments, encoded_units)
+        else:
+            message = SocketMessage(call_id, function_id, call_count, dtype_to_arguments)
+            message.send(self.socket)
+
+            self._is_inuse = True
         
+
     def recv_message(self, call_id, function_id, handle_as_array, has_units=False):
            
         self._is_inuse = False
+        
+        if self._communicated_splitted_message:
+            x = self._merged_results_splitted_message
+            self._communicated_splitted_message = False
+            del self._merged_results_splitted_message
+            return x
+        
         
         message = SocketMessage()
         
@@ -2143,6 +2157,7 @@ class SocketChannel(AbstractMessageChannel):
 
         return message.to_result(handle_as_array)
         
+
     def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
         request = SocketMessage().nonblocking_receive(self.socket)
     
@@ -2167,6 +2182,65 @@ class SocketChannel(AbstractMessageChannel):
         request.add_result_handler(handle_result)
     
         return request
+
+    @option(type="int", sections=("channel",))
+    def max_message_length(self):
+        """
+        For calls to functions that can handle arrays, MPI messages may get too long for large N.
+        The MPI channel will split long messages into blocks of size max_message_length.
+        """     
+        return 1000000
+
+    def split_message(self, call_id, function_id, call_count, dtype_to_arguments, encoded_units = ()):
+        
+        def split_input_array(i, arr_in):
+            if call_count == 1:
+                return [tmp[i * self.max_message_length] for tmp in arr_in]
+            else:
+                result = []
+                for x in arr_in:
+                    if hasattr(x, '__iter__'):
+                        result.append(x[i * self.max_message_length:(i + 1) * self.max_message_length])
+                    else:
+                        result.append(x)
+                return result
+        
+        dtype_to_result = {}
+        for i in range(1 + (call_count - 1) / self.max_message_length):
+            split_dtype_to_argument = {}
+            for key, value in dtype_to_arguments.iteritems():
+                split_dtype_to_argument[key] = split_input_array(i, value)
+            
+            
+            self.send_message(
+                call_id,
+                function_id,
+                # min(call_count,self.max_message_length),
+                split_dtype_to_argument,
+                encoded_units=encoded_units
+            )
+            
+            partial_dtype_to_result = self.recv_message(call_id, function_id, True)
+            for datatype, value in partial_dtype_to_result.iteritems():
+                if not datatype in dtype_to_result:
+                    dtype_to_result[datatype] = []                             
+                    for j, element in enumerate(value):
+                        if datatype == 'string':
+                            dtype_to_result[datatype].append([])
+                        else:
+                            dtype_to_result[datatype].append(numpy.zeros((call_count,), dtype=datatype))
+                            
+                for j, element in enumerate(value):
+                    if datatype == 'string':
+                        dtype_to_result[datatype][j].extend(element)
+                    else:
+                        dtype_to_result[datatype][j][i * self.max_message_length:(i + 1) * self.max_message_length] = element
+                
+            # print partial_dtype_to_result
+            call_count -= self.max_message_length
+        self._communicated_splitted_message = True
+        self._merged_results_splitted_message = dtype_to_result
+
 
 class OutputHandler(threading.Thread):
     
