@@ -1,6 +1,7 @@
 import weakref
 import atexit
-import os.path
+import errno
+import os
 import sys
 import logging
 import pydoc
@@ -879,6 +880,12 @@ class CodeInterface(OptionalAttributes):
         """
         pass
         
+    def before_set_interface_parameter(self):
+        """
+        Called everytime just before a interface parameter is updated in using::
+            instance.parameter.name = newvalue
+        """
+        pass
     
     
 
@@ -893,29 +900,14 @@ class CodeWithDataDirectories(object):
         directory = os.path.expanduser(directory)
         directory = os.path.expandvars(directory)
         
-        if os.path.exists(directory):
-            if os.path.isdir(directory):
-                return
+        try:
+            os.makedirs(directory)
+        except OSError as ex:
+            if ex.errno == errno.EEXIST and os.path.isdir(directory):
+                pass
             else:
-                raise exceptions.AmuseException("Path exists but is not a directory {0}".format(directory))
-        
-        stack_to_make = [directory]
-        previous = None
-        current = os.path.dirname(directory)
-        while previous != current:
-            if not os.path.exists(current):
-                stack_to_make.append(current)
-            else:
-                if not os.path.isdir(current):
-                    raise exceptions.AmuseException("Path exists but is not a directory {0}".format(current))
-                break
-            previous = current
-            current = os.path.dirname(current)
-        
-        for x in reversed(stack_to_make):
-            if(x):
-                os.mkdir(x)
-    
+                raise ex
+
     @property
     def module_name(self):
         return self.__module__.split('.')[-2]
