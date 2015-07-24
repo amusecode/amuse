@@ -291,6 +291,38 @@ class StoppingConditionInterface(object):
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_stopping_condition_out_of_box_use_center_of_mass_parameter():
+        """
+        If True use the center of mass to determine the location of the box, if False use (0,0,0)
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('value', dtype='bool', direction=function.OUT, description = "True if detection should use center of mass")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - Value out of range
+        """
+        return function
+
+
+    @legacy_function
+    def set_stopping_condition_out_of_box_use_center_of_mass_parameter():
+        """
+        If True use the center of mass to determine the location of the box, if False use (0,0,0)
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('value', dtype='bool', direction=function.IN, description = "True if detection should use center of mass")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - Value out of range
+        """
+        return function
+
+
 class StoppingCondition(object):
     
     def __init__(self, conditions, type, description):
@@ -475,7 +507,7 @@ class StoppingConditions(object):
         object.add_method_parameter(
             "get_stopping_condition_maximum_density_parameter",
             "set_stopping_condition_maximum_density_parameter", 
-            "stopping_condition_maximum_density", 
+            "stopping_conditions_maximum_density", 
             "maximum density of a gas particle", 
             default_value = -1.0 | generic_unit_system.density
         )
@@ -496,6 +528,15 @@ class StoppingConditions(object):
             default_value = -1.0 | generic_unit_system.specific_energy
         )
         
+        object.add_method_parameter(
+            "get_stopping_condition_out_of_box_use_center_of_mass_parameter",
+            "set_stopping_condition_out_of_box_use_center_of_mass_parameter", 
+            "stopping_conditions_out_of_box_use_center_of_mass", 
+            "if True use the center of mass to determine the location of the box, if False use (0,0,0), is not used by all codes", 
+            default_value = False
+        )
+        
+
     def define_methods(self, object):
         object.add_method(
             'get_stopping_condition_particle_index',

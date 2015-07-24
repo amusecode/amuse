@@ -26,6 +26,8 @@ int set_stopping_condition_maximum_density_parameter(double value);
 int get_stopping_condition_maximum_density_parameter(double *value);
 int set_stopping_condition_maximum_internal_energy_parameter(double value);
 int get_stopping_condition_maximum_internal_energy_parameter(double *value);
+int set_stopping_condition_out_of_box_use_center_of_mass_parameter(int value);
+int get_stopping_condition_out_of_box_use_center_of_mass_parameter(int *value);
 
 
 #ifdef __cplusplus
@@ -72,6 +74,7 @@ extern double minimum_density_parameter;
 extern double maximum_density_parameter;
 extern double minimum_internal_energy_parameter;
 extern double maximum_internal_energy_parameter;
+extern int use_center_of_mass_parameter;
 
 int reset_stopping_conditions();
 int next_index_for_stopping_condition();

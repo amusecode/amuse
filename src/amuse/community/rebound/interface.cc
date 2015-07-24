@@ -142,7 +142,11 @@ int evolve_model(double _tmax){
     int error = 0;
     int is_collision_detection_enabled = 0;
     int is_timeout_detection_enabled = 0;
-    
+    int is_out_of_box_detection_enabled = 0;
+    double center_of_mass[3];
+    double box_size_squared = out_of_box_parameter*out_of_box_parameter;    
+  
+ 
     error = is_stopping_condition_enabled(
         COLLISION_DETECTION, 
         &is_collision_detection_enabled
@@ -150,6 +154,10 @@ int evolve_model(double _tmax){
     error = is_stopping_condition_enabled(
         TIMEOUT_DETECTION, 
         &is_timeout_detection_enabled
+    );
+    error = is_stopping_condition_enabled(
+        OUT_OF_BOX_DETECTION,
+        &is_out_of_box_detection_enabled
     );
     int is_condition_set = 0;
     
@@ -227,7 +235,52 @@ int evolve_model(double _tmax){
                 break;
             }
 		}
-        
+        // AMUSE STOPPING CONDITIONS
+        if (is_out_of_box_detection_enabled) {
+            int i,k;
+            for (k = 0; k < 3; k++) {
+                center_of_mass[k] = 0.0;
+            }
+            if(use_center_of_mass_parameter) {
+                
+                double total = 0.0;
+                for (i = 0; i < N-N_megno; i++) {
+                    double mass = particles[i].m;
+                    center_of_mass[0] +=  mass * particles[i].x;
+                    center_of_mass[1] +=  mass * particles[i].y;
+                    center_of_mass[2] +=  mass * particles[i].z;
+                    
+                    total += mass;
+                }
+                for (k = 0; k < 3; k++) {
+                    center_of_mass[k] /= total;
+                }
+            } 
+            for (i = 0; i < N-N_megno; i++) {
+               
+                double dx = (particles[i].x - center_of_mass[0]);
+                double dy = (particles[i].y - center_of_mass[1]);
+                double dz = (particles[i].z - center_of_mass[2]);
+                double sqr_distance_wrt_origin = 0.0;
+                sqr_distance_wrt_origin += dx*dx;
+                sqr_distance_wrt_origin += dy*dy;
+                sqr_distance_wrt_origin += dz*dz;
+                
+                if (sqr_distance_wrt_origin > box_size_squared) {
+                    is_condition_set = 1;
+                    int stopping_index = next_index_for_stopping_condition();
+                    if(stopping_index >= 0){
+                        set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION);
+                        set_stopping_condition_particle_index(stopping_index, 0, get_identity_from_index(i));
+                    } else {
+                        printf("Run out of storable out of box events\n");
+                    }
+                }
+            }
+            if(is_condition_set) {
+                break;
+            }
+        }
         // AMUSE STOPPING CONDITIONS
         if(is_timeout_detection_enabled) {
             time(&currenttime);
@@ -416,7 +469,7 @@ int initialize_code(){
     set_support_for_condition(COLLISION_DETECTION);
     set_support_for_condition(TIMEOUT_DETECTION);
     //set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
-    //set_support_for_condition(OUT_OF_BOX_DETECTION);
+    set_support_for_condition(OUT_OF_BOX_DETECTION);
     
     return 0;
 }

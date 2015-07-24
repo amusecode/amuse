@@ -7,6 +7,7 @@
 #include "simple_map.h"
 #include "simple_hash.h"
 
+#define NDIM 3
 #define NMAX 10000
 static struct sys mainsys;
 
@@ -39,6 +40,7 @@ int initialize_code()
   init_code();
   // AMUSE STOPPING CONDITIONS SUPPORT
   set_support_for_condition(COLLISION_DETECTION);
+  set_support_for_condition(OUT_OF_BOX_DETECTION);
   return 0;
 }
 
@@ -319,10 +321,55 @@ int evolve_model(double t_end)
 {
   double dt=SIGN(t_end-t_now)*dtime;
   if(dt==0.) dt=t_end-t_now;
+  int is_out_of_box_detection_enabled = 0;
+  double center_of_mass[NDIM];
+  double box_size_squared = out_of_box_parameter*out_of_box_parameter;    
+  
+  is_stopping_condition_enabled(OUT_OF_BOX_DETECTION,
+                    &is_out_of_box_detection_enabled);
   reset_stopping_conditions();
+  
   while(SIGN(dt)*(t_end - t_now) > SIGN(dt)*dt/2) 
   {
     if(mainsys.n > 0) do_evolve(mainsys,dt,inttype);
+    
+    if (mainsys.n > 0 && is_out_of_box_detection_enabled) {
+        int i,k;
+        for (k = 0; k < NDIM; k++) {
+            center_of_mass[k] = 0.0;
+        }
+        if(use_center_of_mass_parameter) {
+            
+            double total = 0.0;
+            for (i = 0; i < mainsys.n; i++) {
+                for (k = 0; k < NDIM; k++) {
+                    center_of_mass[k] +=  mainsys.part[i].mass * mainsys.part[i].pos[k];
+                }
+                total += mainsys.part[i].mass;
+            }
+            for (k = 0; k < NDIM; k++) {
+                center_of_mass[k] /= total;
+            }
+        } 
+        for (i = 0; i < mainsys.n; i++) {
+            double sqr_distance_wrt_origin = 0.0;
+            for (k = 0; k < NDIM; k++) {
+                double dx = (mainsys.part[i].pos[k] - center_of_mass[k]);
+                sqr_distance_wrt_origin += dx*dx;
+            }
+            if (sqr_distance_wrt_origin > box_size_squared) {
+                int stopping_index = next_index_for_stopping_condition();
+                if(stopping_index >= 0){
+                    set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION);
+                    set_stopping_condition_particle_index(stopping_index, 0, mainsys.part[i].id);
+                } else {
+                    printf("Run out of storable out of box events\n");
+                }
+            }
+        }
+    }
+    
+    
     if (set_conditions & enabled_conditions) {
       printf("Stopping condition set!\n");
       break;
@@ -335,16 +382,14 @@ int evolve_model(double t_end)
   if (set_conditions & enabled_conditions) {
     int err,type, number_of_particles, id;
     size_t p;
-    // COLLISION_DETECTION is currently the only supported stopping condition,
-    // so we know that the first one set should be a collision:
+    // COLLISION_DETECTION may break te code at any time and we need to use that time,
     err=get_stopping_condition_info(0, &type, &number_of_particles);
-    if ((err < 0) || (type != COLLISION_DETECTION)) {
-      printf("get_stopping_condition_info error: %d\n", err);
-      return -1;
+    if ((err < 0) || (type == COLLISION_DETECTION)) {
+        get_stopping_condition_particle_index(0, 0, &id);
+        LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
+        t_now += mainsys.part[p].postime;
     }
-    get_stopping_condition_particle_index(0, 0, &id);
-    LOOKUPSYMBOL(,_lookup)( &lookup, id,&p);
-    t_now += mainsys.part[p].postime;
+   
   }
 
   return 0;

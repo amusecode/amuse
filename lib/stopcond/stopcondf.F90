@@ -35,6 +35,7 @@ module StoppingConditions
     double precision, private, save :: minimum_internal_energy_parameter = -1.0
     double precision, private, save :: maximum_internal_energy_parameter = DBL_MAX
     double precision, private, save :: INTERACTION_OVER_parameter = 0.0
+    integer*4, private, save :: use_center_of_mass_parameter = 0.0
     
     integer, private, save :: sc_mpi_size;
     integer, private, save :: sc_mpi_rank;
@@ -404,6 +405,21 @@ function get_stopping_condition_out_of_box_parameter(value)
     double precision, intent(out) :: value
     value = out_of_box_parameter
     get_stopping_condition_out_of_box_parameter = 0
+end function
+
+
+function set_stopping_condition_out_of_box_use_center_of_mass_parameter(value) 
+    integer, intent(in) :: value
+    integer :: set_stopping_condition_out_of_box_use_center_of_mass_parameter
+    use_center_of_mass_parameter = value
+    set_stopping_condition_out_of_box_use_center_of_mass_parameter = 0
+end function
+
+function get_stopping_condition_out_of_box_use_center_of_mass_parameter(value) 
+    integer :: get_stopping_condition_out_of_box_use_center_of_mass_parameter
+    integer, intent(out) :: value
+    value = use_center_of_mass_parameter
+    get_stopping_condition_out_of_box_use_center_of_mass_parameter = 0
 end function
 
 function set_stopping_condition_minimum_density_parameter(value) 

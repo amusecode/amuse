@@ -209,6 +209,9 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
         )
 
     def define_parameters(self, object):
+        
+        self.stopping_conditions.define_parameters(object)
+        
         object.add_method_parameter(
             "get_eps2",
             "set_eps2", 
@@ -249,6 +252,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
+
 
 
 

@@ -747,3 +747,24 @@ class TestHuayno(TestWithMPI):
         self.assertAlmostEqual(particles.center_of_mass(),instance.center_of_mass_position)
         self.assertAlmostEqual(particles.center_of_mass_velocity(),instance.center_of_mass_velocity)
 
+    def test29(self):
+        instance = Huayno()
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        particles = datamodel.Particles(2)
+        particles.position = ([0,0,0], [1,0,0] )| nbody_system.length
+        particles.velocity = ([-1,0,0], [2,0,0] )| nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles.mass = 0.1| nbody_system.mass
+                
+        instance.particles.add_particles(particles)
+        instance.stopping_conditions.out_of_box_detection.enable()
+        instance.parameters.stopping_conditions_out_of_box_size = 2 | nbody_system.length
+        instance.parameters.stopping_conditions_out_of_box_use_center_of_mass = False
+        instance.evolve_model(1 | nbody_system.time)
+        self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
+        self.assertEquals(len(instance.stopping_conditions.out_of_box_detection.particles(0)), 1)
+        self.assertEquals(instance.stopping_conditions.out_of_box_detection.particles(0)[0].key, particles[1].key)
+        instance.stop()
+        
+

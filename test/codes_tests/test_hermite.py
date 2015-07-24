@@ -798,3 +798,27 @@ class TestHermite(TestWithMPI):
         decoded_interface = pickle.loads(encoded_interface)
         
         
+    def test22(self):
+        hermite = Hermite()
+        hermite.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        particles = datamodel.Particles(2)
+        particles.position = ([0,0,0], [1,0,0] )| nbody_system.length
+        particles.velocity = ([-2,0,0], [2,0,0] )| nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles.mass = 0.1| nbody_system.mass
+                
+        hermite.particles.add_particles(particles)
+        hermite.stopping_conditions.out_of_box_detection.enable()
+        hermite.parameters.stopping_conditions_out_of_box_size = 2 | nbody_system.length
+        hermite.parameters.stopping_conditions_out_of_box_use_center_of_mass = False
+        hermite.evolve_model(1 | nbody_system.time)
+        print hermite.particles.x
+        print hermite.particles.key, particles[1].key
+        print hermite.stopping_conditions.out_of_box_detection.particles(0)
+        self.assertTrue(hermite.stopping_conditions.out_of_box_detection.is_set())
+        self.assertEquals(len(hermite.stopping_conditions.out_of_box_detection.particles(0)), 1)
+        self.assertEquals(hermite.stopping_conditions.out_of_box_detection.particles(0)[0].key, particles[1].key)
+        hermite.stop()
+        
+

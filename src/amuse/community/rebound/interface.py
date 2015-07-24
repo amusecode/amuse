@@ -104,7 +104,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             "get_integrator",
             "set_integrator",
             "integrator",
-            "name of the integrator to use", 
+            "name of the integrator to use ({0})".format(sorted(self.INTEGRATORS.keys())), 
             default_value = "ias15"
         )
 

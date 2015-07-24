@@ -787,7 +787,9 @@ int evolve_system(real t_end)
     error = is_stopping_condition_enabled(OUT_OF_BOX_DETECTION,
                     &is_out_of_box_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
-    get_stopping_condition_out_of_box_parameter(&box_size);    
+    get_stopping_condition_out_of_box_parameter(&box_size);
+    
+     double box_size_squared = box_size*box_size;    
     // AMUSE STOPPING CONDITIONS
     
     while (true) {
@@ -856,33 +858,31 @@ int evolve_system(real t_end)
                 for (k = 0; k < NDIM; k++) {
                     center_of_mass[k] = 0.0;
                 }
-                total = 0.0;
-                for (i = 0; i < n; i++) {
-                    for (k = 0; k < NDIM; k++) {
-                        center_of_mass[k] += mass[i] * pos[i][k] * pos[i][k];
+                if(use_center_of_mass_parameter) {
+                    total = 0.0;
+                    for (i = 0; i < n; i++) {
+                        for (k = 0; k < NDIM; k++) {
+                            center_of_mass[k] += mass[i] * pos[i][k];
+                        }
                         total += mass[i];
                     }
-                }
-                for (k = 0; k < NDIM; k++) {
-                    center_of_mass[k] /= total;
-                }
-            }
-            if (is_out_of_box_detection_enabled) {
+                    for (k = 0; k < NDIM; k++) {
+                        center_of_mass[k] /= total;
+                    }
+                } 
+                
                 for (i = 0; i < n; i++) {
                     sqr_distance_wrt_origin = 0.0;
                     for (k = 0; k < NDIM; k++) {
-                        sqr_distance_wrt_origin += (pos[i][k] - center_of_mass[k])*(pos[i][k] - center_of_mass[k]);
+                        double dx = (pos[i][k] - center_of_mass[k]);
+                        sqr_distance_wrt_origin += dx*dx;
                     }
-                    if (sqr_distance_wrt_origin > box_size*box_size) {
+                    if (sqr_distance_wrt_origin > box_size_squared) {
                         int stopping_index = next_index_for_stopping_condition();
-                        set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION);
-                        if (n_particles_out_of_box < 10) {
-                            set_stopping_condition_particle_index(stopping_index,
-                                                  n_particles_out_of_box,
-                                                  ident[i]);
-                            n_particles_out_of_box++;
-                        }
-                        else {
+                        if(stopping_index >= 0){
+                            set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION);
+                            set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
+                        } else {
                             printf("Run out of storable out of box events\n");
                         }
                     }

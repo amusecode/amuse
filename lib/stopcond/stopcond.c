@@ -24,6 +24,7 @@ double maximum_density_parameter = DBL_MAX;
 double minimum_internal_energy_parameter = -1.0;
 double maximum_internal_energy_parameter = DBL_MAX;
 double size_limit_parameter = 0.0;
+int use_center_of_mass_parameter = 1;
 
 static int sc_mpi_size;
 
@@ -323,6 +324,26 @@ int get_stopping_condition_number_of_steps_parameter_(int *value) {
     return get_stopping_condition_number_of_steps_parameter(value);
 }
 
+int set_stopping_condition_out_of_box_use_center_of_mass_parameter(int value) {
+    use_center_of_mass_parameter = value;
+    return 0;
+}
+
+int set_stopping_condition_out_of_box_use_center_of_mass_parameter_(int *value) {
+    return set_stopping_condition_out_of_box_use_center_of_mass_parameter(*value);
+}
+
+int get_stopping_condition_out_of_box_use_center_of_mass_parameter(int *value) {
+    *value = use_center_of_mass_parameter;
+    return 0;
+}
+
+int get_stopping_condition_out_of_box_use_center_of_mass_parameter_(int *value) {
+    return get_stopping_condition_out_of_box_use_center_of_mass_parameter(value);
+}
+
+
+
 int set_stopping_condition_out_of_box_parameter(double value) {
     out_of_box_parameter = value;
     return 0;
@@ -340,6 +361,8 @@ int get_stopping_condition_out_of_box_parameter(double *value) {
 int get_stopping_condition_out_of_box_parameter_(double *value) {
     return get_stopping_condition_out_of_box_parameter(value);
 }
+
+
 
 
 int set_stopping_condition_minimum_density_parameter(double value) {
