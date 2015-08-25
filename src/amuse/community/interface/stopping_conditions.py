@@ -507,7 +507,7 @@ class StoppingConditions(object):
         object.add_method_parameter(
             "get_stopping_condition_maximum_density_parameter",
             "set_stopping_condition_maximum_density_parameter", 
-            "stopping_conditions_maximum_density", 
+            "stopping_condition_maximum_density", 
             "maximum density of a gas particle", 
             default_value = -1.0 | generic_unit_system.density
         )
