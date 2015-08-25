@@ -294,7 +294,7 @@ class TestRebound(TestWithMPI):
         
 
     def test5(self):
-        instance = Rebound()
+        instance = self.new_instance_of_an_optional_code(Rebound)
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
         
         particles = datamodel.Particles(2)
