@@ -158,9 +158,9 @@ public class ResourceManager {
             if (gateway != null && !gateway.isEmpty()) {
                 properties.put(SshAdaptor.GATEWAY, gateway);
             }
-
-            properties.put(SlurmAdaptor.IGNORE_VERSION_PROPERTY, "true");
-
+            if(getSchedulerType() == "slurm") {
+                properties.put(SlurmAdaptor.IGNORE_VERSION_PROPERTY, "true");
+            }
             return xenon.jobs().newScheduler(getSchedulerType(), getLocation(), credential, properties);
         } catch (XenonException e) {
             throw new DistributedAmuseException("cannot create scheduler connection for resource " + this.name, e);
