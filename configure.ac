@@ -201,6 +201,8 @@ AC_LANG(C)
     
 AX_HDF5()
 
+AX_NETCDF()
+
 AX_PATH_GSL(1.0, [FOUND_GSL=yes], [
 	FOUND_GSL=no
 	AC_MSG_WARN([gsl not found, please specify --with-gsl])
