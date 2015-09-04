@@ -680,6 +680,9 @@ GSL_CONFIG
 GSL_FLAGS
 GSL_LIBS
 GSL_CFLAGS
+NETCDFF_PREFIX
+NETCDFF_LIBS
+NETCDFF_FLAGS
 NETCDF_PREFIX
 NETCDF_LIBS
 NETCDF_FLAGS
@@ -8221,7 +8224,7 @@ if test "${with_netcdf+set}" = set; then :
                 test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: netcdf is a required package for some modules" >&5
 $as_echo "$as_me: WARNING: netcdf is a required package for some modules" >&2;}
                 test "$withval" = yes || netcdf_prefix="$withval"
-                with_netcdf=yes
+                with_netcdf=$withval
 else
    with_netcdf=yes
 
@@ -8273,6 +8276,54 @@ fi
                     CFLAGS="$save_CFLAGS"
                     CPPFLAGS="$save_CPPFLAGS"
 
+
+                    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+                    save_FCFLAGS="$FCFLAGS"
+                    FCFLAGS="$ac_NETCDF_CFLAGS -lnetcdff $save_FCFLAGS"
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
+$as_echo_n "checking Fortran netcdf presence... " >&6; }
+                    cat > conftest.$ac_ext <<_ACEOF
+
+
+                            program conftest
+                            use netcdf
+                            include "netcdf.inc"
+
+                            character, dimension(80) :: n
+                            n=nf90_inq_libvers()
+                            end
+
+
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"; then :
+
+                        NETCDFF_FLAGS="$ac_NETCDF_CFLAGS"
+                        NETCDFF_LIBS="$ac_NETCDF_LDOPTS -lnetcdff -lnetcdf"
+                        NETCDFF_PREFIX="$netcdf_prefix"
+                        FOUND_NETCDFF="yes"
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot compile or link against library Fortran NETCDF in $netcdf_prefix" >&5
+$as_echo "$as_me: WARNING: Cannot compile or link against library Fortran NETCDF in $netcdf_prefix" >&2;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+                    FCFLAGS="$save_FCFLAGS"
+                    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
                     save_LIBS="$LIBS"
                     LIBS="$ac_NETCDF_LDOPTS -lnetcdf  $save_LIBS"
                     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nc_inq_libvers in -lnetcdf" >&5
@@ -8322,6 +8373,7 @@ fi
                     LIBS="$save_LIBS"
 	fi
 	if test x$FOUND_NETCDF != xyes; then
+                    netcdf_prefix=$PREFIX
                     ac_fn_c_check_header_mongrel "$LINENO" "netcdf.h" "ac_cv_header_netcdf_h" "$ac_includes_default"
 if test "x$ac_cv_header_netcdf_h" = xyes; then :
   NETCDF_FLAGS=""
@@ -8380,6 +8432,53 @@ $as_echo "$as_me: WARNING: libnetcdf : library missing. (Cannot find symbol nc_i
 
 fi
 
+
+                    ac_ext=${ac_fc_srcext-f}
+ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
+ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_fc_compiler_gnu
+
+                    save_FCFLAGS="$FCFLAGS"
+                    FCFLAGS="-lnetcdff $save_FCFLAGS"
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
+$as_echo_n "checking Fortran netcdf presence... " >&6; }
+                    cat > conftest.$ac_ext <<_ACEOF
+
+
+                            program conftest
+                            use netcdf
+                            include "netcdf.inc"
+
+                            character, dimension(80) :: n
+                            n=nf90_inq_libvers()
+                            end
+
+
+_ACEOF
+if ac_fn_fc_try_link "$LINENO"; then :
+
+                        NETCDFF_FLAGS=""
+                        NETCDFF_LIBS="-lnetcdff -lnetcdf"
+                        NETCDFF_PREFIX=""
+                        FOUND_NETCDFF="yes"
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+else
+
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot compile or link against library Fortran NETCDF in $netcdf_prefix/" >&5
+$as_echo "$as_me: WARNING: Cannot compile or link against library Fortran NETCDF in $netcdf_prefix/" >&2;}
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+                    FCFLAGS="$save_FCFLAGS"
+                    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 		fi
 
 
@@ -8387,6 +8486,9 @@ fi
 fi
 
 fi
+
+
+
 
 
 

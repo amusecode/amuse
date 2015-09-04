@@ -8,7 +8,7 @@ AC_DEFUN([AX_NETCDF],[
              [
                 test "$withval" = no && AC_MSG_WARN([netcdf is a required package for some modules])
                 test "$withval" = yes || netcdf_prefix="$withval" 
-                with_netcdf=yes ],
+                with_netcdf=$withval ],
              [ with_netcdf=yes ] 
         )
     
@@ -50,6 +50,33 @@ AC_DEFUN([AX_NETCDF],[
                     )
                     CFLAGS="$save_CFLAGS"
                     CPPFLAGS="$save_CPPFLAGS"
+
+
+                    AC_LANG_PUSH(Fortran)
+                    save_FCFLAGS="$FCFLAGS"
+                    FCFLAGS="$ac_NETCDF_CFLAGS -lnetcdff $save_FCFLAGS"
+                    AC_MSG_CHECKING([Fortran netcdf presence])
+                    AC_LINK_IFELSE([
+                        AC_LANG_SOURCE([
+                            program conftest
+                            use netcdf
+                            include "netcdf.inc"
+                            
+                            character, dimension(80) :: n
+                            n=nf90_inq_libvers()
+                            end
+                        ])
+                    ],[
+                        NETCDFF_FLAGS="$ac_NETCDF_CFLAGS"
+                        NETCDFF_LIBS="$ac_NETCDF_LDOPTS -lnetcdff -lnetcdf"
+                        NETCDFF_PREFIX="$netcdf_prefix"
+                        FOUND_NETCDFF="yes"
+                        AC_MSG_RESULT([yes])
+                    ],[
+                        AC_MSG_WARN([Cannot compile or link against library Fortran NETCDF in $netcdf_prefix])
+                    ])
+                    FCFLAGS="$save_FCFLAGS"
+                    AC_LANG_POP(Fortran)
                     
                     save_LIBS="$LIBS"
                     LIBS="$ac_NETCDF_LDOPTS -lnetcdf  $save_LIBS"
@@ -60,6 +87,7 @@ AC_DEFUN([AX_NETCDF],[
                     LIBS="$save_LIBS"
 	fi
 	if test x$FOUND_NETCDF != xyes; then
+                    netcdf_prefix=$PREFIX
                     AC_CHECK_HEADER(
                         [netcdf.h],
                         [NETCDF_FLAGS=""
@@ -75,6 +103,32 @@ AC_DEFUN([AX_NETCDF],[
                         FOUND_NETCDF="no"
                         AC_MSG_WARN([libnetcdf : library missing. (Cannot find symbol nc_inq_libvers). Check if libnetcdf is installed and if the version is correct])]
                     )
+                    
+                    AC_LANG_PUSH(Fortran)
+                    save_FCFLAGS="$FCFLAGS"
+                    FCFLAGS="-lnetcdff $save_FCFLAGS"
+                    AC_MSG_CHECKING([Fortran netcdf presence])
+                    AC_LINK_IFELSE([
+                        AC_LANG_SOURCE([
+                            program conftest
+                            use netcdf
+                            include "netcdf.inc"
+                            
+                            character, dimension(80) :: n
+                            n=nf90_inq_libvers()
+                            end
+                        ])
+                    ],[
+                        NETCDFF_FLAGS=""
+                        NETCDFF_LIBS="-lnetcdff -lnetcdf"
+                        NETCDFF_PREFIX=""
+                        FOUND_NETCDFF="yes"
+                        AC_MSG_RESULT([yes])
+                    ],[
+                        AC_MSG_WARN([Cannot compile or link against library Fortran NETCDF in $netcdf_prefix/])
+                    ])
+                    FCFLAGS="$save_FCFLAGS"
+                    AC_LANG_POP(Fortran)
 		fi
                 
                
@@ -85,5 +139,8 @@ AC_DEFUN([AX_NETCDF],[
         AC_SUBST(NETCDF_FLAGS)
         AC_SUBST(NETCDF_LIBS)
         AC_SUBST(NETCDF_PREFIX)
+        AC_SUBST(NETCDFF_FLAGS)
+        AC_SUBST(NETCDFF_LIBS)
+        AC_SUBST(NETCDFF_PREFIX)
     ]
 )
