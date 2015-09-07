@@ -429,15 +429,17 @@ class InMemoryAttributeStorageUseSimpleHash(InMemoryAttributeStorage):
         self._hash.reindex(self.particle_keys)
 
     def __getstate__(self):
-        state=self.__dict__
+        state=self.__dict__.copy()
         state.pop("_hash")
         return state
       
+
     def __setstate__(self,state):
-        self.__dict__=state
+        self.__dict__ = state
         self._hash=SimpleHash()
         if len(self.particle_keys):
           self._hash.reindex(self.particle_keys)
+
 
 
 def get_in_memory_attribute_storage_factory():

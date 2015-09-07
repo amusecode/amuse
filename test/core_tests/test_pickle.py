@@ -178,6 +178,19 @@ class TestPicklingOfParticleSets(amusetest.TestCase):
         self.assertEqual(unpickled_particles.center_of_mass(), [2, 3, 0] | m)
     
 
+    def test3(self):
+        particles = Particles(4)
+        particles.mass = [1, 2, 3, 6] | kg
+        particles.position = [[0, 0, 0], [3, 0, 0], [0, 4, 0], [3, 4, 0]] | m
+        self.assertEqual(particles.center_of_mass(), [2, 3, 0] | m)
+        pickled_particles = pickle.dumps(particles)
+        unpickled_particles = pickle.loads(pickled_particles)
+        pickled_particles = pickle.dumps(particles)     #dump it twice! 
+        unpickled_particles = pickle.loads(pickled_particles)
+        self.assertAlmostRelativeEquals(unpickled_particles.mass, [1, 2, 3, 6] | kg)
+        self.assertEqual(unpickled_particles.center_of_mass(), [2, 3, 0] | m)
+
+
 class BaseTestModule(object):
     def before_get_parameter(self):
         return
