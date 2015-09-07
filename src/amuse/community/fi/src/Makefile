@@ -2,7 +2,6 @@
 AMUSE_DIR?=../../../../..
 -include ${AMUSE_DIR}/config.mk
 
-SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 FC=ifort
@@ -65,10 +64,13 @@ F2PYFLAGS=--quiet --f90exec=$(FC) --f77exec=$(FC) \
 all: $(APPS)
 
 %.o: %.f90 globals.h Makefile
-	$(FC) $(FFLAGS) $(SCINC)  -c -o $@ $< 
+	$(FC) $(FFLAGS) -c -o $@ $< 
 
 %.o: %.f globals.h Makefile
-	$(FC) $(F77FLAGS) $(FFLAGS) $(SCINC) -c -o $@ $< 
+	$(FC) $(F77FLAGS) $(FFLAGS) -c -o $@ $< 
+
+muse_helpers.o: muse_helpers.f90 globals.h Makefile
+	$(FC) $(FFLAGS) $(SCINC)  -c -o $@ $< 
 
 stars3d.o: stars3d.f90 mem.o
 	$(FC) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<

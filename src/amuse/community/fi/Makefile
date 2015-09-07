@@ -6,7 +6,8 @@ AMUSE_DIR?=../../../..
 MPIFC ?= mpif90
 FORTRAN=$(FC)
 PYTHON ?= python
-GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
+GL_PATH ?= ${AMUSE_DIR}/sandbox/pelupes/f90gl
+#/home/inti/libraries/f90gl-1.2.11
 
 SRC=src
 BUILDDIR = build
@@ -60,7 +61,7 @@ endif
 
 
 
-FFLAGS+= -I. -I..
+#FFLAGS+= -I. -I..
 
 LIBS+=$(FFTW_LIBS)
 
