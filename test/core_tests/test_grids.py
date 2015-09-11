@@ -310,6 +310,7 @@ class TestGrids(amusetest.TestCase):
     def test23(self):
         grid1 = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
         grid2 = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertEqual(grid1[1:3,...].shape,(2,4,2))
         slice1 = grid1[1:3,...,...].copy()
         slice2 = grid2[1:3,...,...]
         slice1.x = -10 | units.m
@@ -411,6 +412,23 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(grid[-1:1:-1][-1:1].mass,grid.mass[-1:1:-1][-1:1])
         self.assertEquals(grid[-1:1:-1][-1:1:-3].mass,grid.mass[-1:1:-1][-1:1:-3])
         self.assertEquals(grid[300:1:-2][-1:5:-3].mass,grid.mass[300:1:-2][-1:5:-3])
+        self.assertEquals(grid[100::-2][::3].mass,grid.mass[100::-2][::3])
+        self.assertEquals(grid[100::-2][::-3].mass,grid.mass[100::-2][::-3])
+
+
+    def test32b(self):
+        grid = datamodel.Grid(200)
+        grid.mass=numpy.arange(200)
+
+        self.assertEquals(grid[::-1].mass,grid.mass[::-1])
+        self.assertEquals(grid[10::-1].mass,grid.mass[10::-1])
+        self.assertEquals(grid[:100:2].mass,grid.mass[:100:2])        
+        self.assertEquals(grid[-1::-1].mass,grid.mass[-1::-1])
+        self.assertEquals(grid[-1:-300:-1].mass,grid.mass[-1:-300:-1])
+        self.assertEquals(grid[300:-300:-1].mass,grid.mass[300:-300:-1])        
+        self.assertEquals(grid[300:-300:-7].mass,grid.mass[300:-300:-7])        
+        
+        
         
     def test33(self):
         grid = datamodel.Grid(20)

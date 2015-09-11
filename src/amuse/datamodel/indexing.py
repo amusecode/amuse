@@ -16,44 +16,69 @@ if hasattr(numpy, 'count_nonzero'):
 else:
     def count_nonzero(array):
         return len(numpy.flatnonzero(array))
+
+ceil=lambda x,y: (x/y+(x%y>0))
         
-def unpack_slice(slice):
-    start = 0 if slice.start is None else slice.start
-    stop = None if slice.stop is None else slice.stop
-    step = 1 if slice.step is None else slice.step
+# unpack_slice: get start,stop step infsofar possible w/o length
+def unpack_slice(s):
+    step = 1 if s.step is None else s.step
+    if step==0: raise ValueError("slice step can't be zero")
+    if step>0:
+        start = 0 if s.start is None else s.start 
+        stop = s.stop
+    else:
+        start = -1 if s.start is None else s.start
+        stop = s.stop
     return start, stop, step
 
-def combine_slices(slice0, slice1):
-    start0,stop0,step0 = unpack_slice(slice0)
-    start1,stop1,step1 = unpack_slice(slice1)
+# resolve_slice: determine consistent start,stop, step given length
+# note the difference with slice().indices(length)
+def resolve_slice(s,length):
+    step = 1 if s.step is None else s.step
+    if step==0: raise ValueError("slice step can't be zero")
+    if step>0:
+        start = 0 if s.start is None else s.start
+        stop  = length if s.stop is None else s.stop
+        if start<0: start=length+start
+        if start<0: start=0
+        if stop<0: stop=length+stop
+        if stop>length: stop=length
+        if stop<start: stop=start
+    else:
+        start = -1 if s.start is None else s.start
+        stop  = -(length+1) if s.stop is None else s.stop
+        if start>=0: start=-length+start
+        if start>-1: start=-1  
+        if stop>=0: stop=-length+stop
+        if stop<-length: stop=-(length+1)
+        if stop>start: stop=start
+    return start,stop,step
 
-    if step0>0:
-      newstart = start0 + (start1 * step0) if stop0 is None else min(start0 + (start1 * step0),stop0)
-    else:
-      newstart = max(start0 + (start1 * step0),stop0)
-    if stop0 is None:
-        if stop1 is None:
-            newstop = None
-        else:
-            newstop = (stop1 * step0) + start0
-    elif stop0<0:
-        if stop1 is None:
-          newstop = stop0
-        elif stop1<0:
-          newstop = stop0+stop1*step0
-        else:
-          newstop = stop1*step0+start0
-    elif stop1 is None:
-        newstop = stop0
-    else:
-        if step0>0:
-          newstop = start0 + (stop1 * step0) if stop0 is None else min(start0 + (stop1 * step0),stop0)
-        else:
-          newstop = max((stop1 * step0) + start0, stop0)
+# combine slices: s1, s2 must be resolved slices!! 
+# note that it can return a 'unresolved slice'
+def combine_slices(s1,s2):
+    a1,b1,c1=unpack_slice(s1)
+    a2,b2,c2=unpack_slice(s2)
+  
+    if b1 is None or b2 is None:
+        raise Exception("combining slices not possible")
+  
+    c3=c1*c2
+    imax= ceil( abs(b1-a1), abs(c1))
+    if c2<0:
+        a2=imax+a2
+        b2=imax+b2
     
-    newstep = step0 * step1
-    return newstart, newstop, newstep
-
+    a3=a1+a2*c1
+      
+    jmax=ceil( abs(b2-a2), abs(c2))
+    b3=jmax*c3+a3
+    if a3<0:
+        if b3>-1: b3=None
+    else:
+        if b3<0: b3=None
+    return a3,b3,c3
+  
 def combine_indices(index0, index1):
     if index1 is None or index0 is None:
         raise Exception("unhandled case, think about numpy")
@@ -190,14 +215,14 @@ def normalize_slices(shape,index):
             first_ellipsis = True
             for length,x in zip(shape,index):
                 if isinstance(x, slice):
-                    result.append( slice(*x.indices(length)))
+                    result.append( slice(*resolve_slice(x,length)) )
                 elif isinstance(x,EllipsisType):
                     if first_ellipsis:
                       n=len(shape)-len(index)+1
                       result.extend([slice(0,shape[i],1) for i in range(n)])
                       first_ellipsis=False
                     else:
-                      result.append(slice(None))
+                      result.append(slice(*resolve_slice(slice(None),length)))
                 else:
                     result.append(x)
             n=len(shape)-len(result)
@@ -206,7 +231,7 @@ def normalize_slices(shape,index):
                     
     if isinstance(index, slice):
         if isinstance(shape,int) or isinstance(shape,long):
-            return slice(*index.indices(shape))
+            return slice(*resolve_slice(index,shape))
         else:   
             return normalize_slices(shape,(index,))
     else:
@@ -227,7 +252,7 @@ def shape_after_index(shape, index):
             for i,x in enumerate(index):
                 if isinstance(x, slice):
                     
-                    start,stop,step = x.indices(shape_as_list[i])
+                    start,stop,step = resolve_slice(x, shape_as_list[i])
                     if step>0:
                       nitems = (stop - 1 - start) // step + 1
                     else:
