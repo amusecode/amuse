@@ -4,41 +4,26 @@ include ${AMUSE_DIR}/config.mk
 MPICC ?= mpicc
 
 LIBNAME = libstopcond.a
-LIBFNAME = libstopcondf.a
 LIBNAMEMPI = libstopcondmpi.a
-LIBFNAMEMPI = libstopcondfmpi.a
 
 OBJS = stopcond.o
-OBJSF = stopcondf.o
+OBJSF = stopcondf_isoc.o
 OBJSMPI = stopcond.mo
-OBJSFMPI = mpi/stopcondf.o
 
-all:$(LIBNAME) $(LIBNAMEMPI) $(LIBFNAME) $(LIBFNAMEMPI)
+all:$(LIBNAME) $(LIBNAMEMPI)
 
 CFLAGS += -O2
 
-$(LIBNAME): $(OBJS)
-	ar -r  $(LIBNAME) $(OBJS)
+$(LIBNAME): $(OBJS) $(OBJSF) 
+	ar -r  $(LIBNAME) $^
 	ranlib $(LIBNAME)
 	
-$(LIBFNAME): $(OBJSF)
-	ar -r  $(LIBFNAME) $(OBJSF)
-	ranlib $(LIBFNAME)
-
-$(LIBNAMEMPI): $(OBJSMPI)
-	ar -r  $(LIBNAMEMPI) $(OBJSMPI)
+$(LIBNAMEMPI): $(OBJSMPI) $(OBJSF)
+	ar -r  $(LIBNAMEMPI) $^
 	ranlib $(LIBNAMEMPI)
-
-$(LIBFNAMEMPI): $(OBJSFMPI)
-	ar -r  $(LIBFNAMEMPI) $(OBJSFMPI)
-	ranlib $(LIBFNAMEMPI)
 
 %.mo: %.c
 	$(MPICC) $(CFLAGS) -DMPILIB  -c -o $@ $<
-
-mpi/%.o: %.F90
-	make -C mpi
-
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -48,4 +33,3 @@ mpi/%.o: %.F90
 
 clean:
 	rm -Rf *.o *.lo *.a *.mo *.mod
-	make -C mpi clean

@@ -169,9 +169,9 @@ AC_SUBST(FS_LIBS)
 SC_FLAGS="-I\$(AMUSE_DIR)/lib/stopcond"
 
 SC_CLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcond"
-SC_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondf"
+SC_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcond"
 SC_MPI_CLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondmpi"
-SC_MPI_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondfmpi"
+SC_MPI_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondmpi"
 
 AC_SUBST(SC_FLAGS)
 

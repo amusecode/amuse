@@ -28,7 +28,7 @@ int set_stopping_condition_maximum_internal_energy_parameter(double value);
 int get_stopping_condition_maximum_internal_energy_parameter(double *value);
 int set_stopping_condition_out_of_box_use_center_of_mass_parameter(int value);
 int get_stopping_condition_out_of_box_use_center_of_mass_parameter(int *value);
-
+int is_any_condition_set();
 
 #ifdef __cplusplus
 }

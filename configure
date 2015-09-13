@@ -6847,9 +6847,9 @@ fi
 SC_FLAGS="-I\$(AMUSE_DIR)/lib/stopcond"
 
 SC_CLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcond"
-SC_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondf"
+SC_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcond"
 SC_MPI_CLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondmpi"
-SC_MPI_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondfmpi"
+SC_MPI_FCLIBS="-L\$(AMUSE_DIR)/lib/stopcond -lstopcondmpi"
 
 
 
@@ -8221,8 +8221,8 @@ fi
 # Check whether --with-netcdf was given.
 if test "${with_netcdf+set}" = set; then :
   withval=$with_netcdf;
-                test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: netcdf is a required package for some modules" >&5
-$as_echo "$as_me: WARNING: netcdf is a required package for some modules" >&2;}
+                test "$withval" = no && { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: netcdf is optional" >&5
+$as_echo "$as_me: WARNING: netcdf is optional" >&2;}
                 test "$withval" = yes || netcdf_prefix="$withval"
                 with_netcdf=$withval
 else

@@ -876,7 +876,7 @@ class TestInterfaceFortran(_TestInterfaceFortranSingleProcess):
 class TestInterfaceFortranModule(_TestInterfaceFortranSingleProcess):
     
     def get_libname(self):
-        return 'stopcondf'
+        return 'stopcond'
         
     def get_codestring(self):
         return codestringFModule
@@ -887,7 +887,7 @@ class TestInterfaceFortranModule(_TestInterfaceFortranSingleProcess):
 class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
     
     def get_libname(self):
-        return 'stopcondfmpi'
+        return 'stopcondmpi'
         
     def get_codestring(self):
         return codestringFModule
@@ -899,7 +899,7 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         return 3
     
     def get_mpidir(self):
-        return '/mpi'
+        return ''
         
     def test1(self):
         instance = ForTesting(
