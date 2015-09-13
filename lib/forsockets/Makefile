@@ -2,24 +2,21 @@ AMUSE_DIR?=../..
 include ${AMUSE_DIR}/config.mk
 
 LIBNAME = libforsockets.a
-LIBFNAME = libforsocketsf.a
 OBJS = forsockets.o
-OBJSF = forsocketsf.o
+ifeq ($(FC_ISO_C_AVAILABLE), yes)
+OBJS += forsocketsf.o
+endif
 
-MPIF90 ?= openmpif90
+MPIF90 ?= mpif90
 MPICC ?= openmpicc
 
-all:$(LIBNAME) $(LIBFNAME)
+all:$(LIBNAME) 
 
 CFLAGS += -O2
 
 $(LIBNAME): $(OBJS)
-	ar -r  $(LIBNAME) $(OBJS)
+	ar -r  $(LIBNAME) $^
 	ranlib $(LIBNAME)
-
-$(LIBFNAME): $(OBJSF)
-	ar -r  $(LIBFNAME) $(OBJSF)
-	ranlib $(LIBFNAME)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -Wall -c -o $@ $<

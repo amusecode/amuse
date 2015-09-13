@@ -154,7 +154,7 @@ AC_SUBST(SAPPORO_LIBS)
 
 AS_IF([test x"$FC_ISO_C_BINDINGS" != xno],[
 	FS_FLAGS="-I\$(AMUSE_DIR)/lib/forsockets"
-	FS_LIBS="-L\$(AMUSE_DIR)/lib/forsockets -lforsockets -lforsocketsf"
+	FS_LIBS="-L\$(AMUSE_DIR)/lib/forsockets -lforsockets"
 ], [
 	FS_FLAGS=""
 	FS_LIBS=""
