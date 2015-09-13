@@ -6,7 +6,7 @@ AC_DEFUN([AX_NETCDF],[
         AC_ARG_WITH(netcdf,
              AC_HELP_STRING([--with-netcdf=PFX], [Prefix where NETCDF has been installed] ),
              [
-                test "$withval" = no && AC_MSG_WARN([netcdf is a required package for some modules])
+                test "$withval" = no && AC_MSG_WARN([netcdf is optional])
                 test "$withval" = yes || netcdf_prefix="$withval" 
                 with_netcdf=$withval ],
              [ with_netcdf=yes ] 
