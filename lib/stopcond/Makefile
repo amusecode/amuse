@@ -7,18 +7,21 @@ LIBNAME = libstopcond.a
 LIBNAMEMPI = libstopcondmpi.a
 
 OBJS = stopcond.o
-OBJSF = stopcondf_isoc.o
 OBJSMPI = stopcond.mo
+ifeq ($(FC_ISO_C_AVAILABLE), yes)
+OBJS += stopcondf_isoc.o
+OBJSMPI += stopcondf_isoc.o
+endif
 
 all:$(LIBNAME) $(LIBNAMEMPI)
 
 CFLAGS += -O2
 
-$(LIBNAME): $(OBJS) $(OBJSF) 
+$(LIBNAME): $(OBJS)
 	ar -r  $(LIBNAME) $^
 	ranlib $(LIBNAME)
 	
-$(LIBNAMEMPI): $(OBJSMPI) $(OBJSF)
+$(LIBNAMEMPI): $(OBJSMPI)
 	ar -r  $(LIBNAMEMPI) $^
 	ranlib $(LIBNAMEMPI)
 
