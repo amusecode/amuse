@@ -1,3 +1,6 @@
+from amuse.support.interface import InCodeComponentImplementation
+
+
 from amuse.test.amusetest import TestWithMPI
 import subprocess
 import os
@@ -168,7 +171,7 @@ class ForTestingInterface(CodeInterface):
     @legacy_function
     def echo_int():
         function = LegacyFunctionSpecification()  
-        function.addParameter('int_in', dtype='int32', direction=function.IN)
+        function.addParameter('int_in', dtype='int32', direction=function.IN, unit=units.m)
         function.addParameter('int_out', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         function.can_handle_array = True
@@ -284,8 +287,23 @@ class ForTestingInterface(CodeInterface):
         function.can_handle_array = True
         return function  
     
+class ForTesting(InCodeComponentImplementation):
     
+    def __init__(self, exefile, **options):
+        InCodeComponentImplementation.__init__(self, ForTestingInterface(exefile, **options), **options)
     
+    """
+    def define_methods(self, object):
+        object.add_method(
+            'echo_int',
+            (units.m,)
+            ,
+            (
+                units.m,
+                object.ERROR_CODE,
+            )
+        )    
+    """
 class TestInterface(TestWithMPI):
     
     def get_mpif90_name(self):
@@ -378,8 +396,6 @@ class TestInterface(TestWithMPI):
         arguments.append("-L{0}/lib/forsockets".format(self.get_amuse_root_dir()))
         arguments.append("-Wall")
         arguments.append("-lforsockets")
-        if self.has_fortran_iso_c_binding():
-            arguments.append("-lforsocketsf")
         
         arguments.append("-o")
         arguments.append(exename)
@@ -678,3 +694,23 @@ class TestInterface(TestWithMPI):
         self.assertTrue(port_id2 >= 0)
         self.assertEquals(error1, 0)
         self.assertEquals(error2, 0)
+
+    def test31(self):
+        import time
+        instance = ForTestingInterface(self.exefile)
+        N=5000
+        t1=time.time()
+        for i in range(N):
+          res,err= instance.echo_int([i])
+        t2=time.time()
+        print "1 time:",t2-t1,(t2-t1)/N  
+        instance.stop()
+
+        instance = ForTesting(self.exefile)
+        N=5000
+        t1=time.time()
+        for i in range(N):
+          res= instance.echo_int([i]| units.m)
+        t2=time.time()
+        print "2 time:",t2-t1,(t2-t1)/N  
+        instance.stop()
