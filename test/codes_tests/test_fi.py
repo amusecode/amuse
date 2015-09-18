@@ -466,7 +466,8 @@ class TestFi(TestWithMPI):
     
     def test5(self):
         print "Test 5: testing Fi double precision parameters"
-        instance = Fi(nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
+        conv=nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
+        instance = Fi(conv)
         instance.initialize_code()
         
         par_names=['epsilon_squared','timestep','periodic_box_size','code_mass_unit','code_length_unit',
@@ -481,7 +482,7 @@ class TestFi(TestWithMPI):
             1.0e9 | units.MSun, 1.0 | units.kpc, 1.0, 0.25, 0.5, 0.35, 
             0.0, -1.0, 0.5, 0.01, 0.1, 0.005 | nbody_system.length, 1.6666667, 0.5, 1.0, 0.01, 0.3, 
             0.25, 0.2 | nbody_system.length, 0.1, 0.05, 3.6 | 1.8e-17 * units.s**-1, 0.0, 0.0, 1.0, 
-            0.0, 1.0, 1.0e5 | units.MSun, 0.25, 3.0e7 | units.Myr, 0.0, 3.e6 | units.Myr, 100.0]
+            0.0, 1.0, 1.0e5 | units.MSun, 0.25, 3.0e7 | units.Myr, 0.0, 3.e6 | units.Myr, conv.to_si(100.0 | nbody_system.density)]
         defaults = [instance.unit_converter.to_si(val) if not isinstance(val,float) and  nbody_system.is_nbody_unit(val.unit) else val for val in defaults]
         for double_par, value in zip(par_names, defaults):
             self.assertAlmostRelativeEquals(getattr(instance.parameters,double_par), value, 7)

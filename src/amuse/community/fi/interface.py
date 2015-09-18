@@ -1385,14 +1385,14 @@ class FiInterface(
 
     @legacy_function
     def set_rhomax():
-        """ Maximum permissible density (code dens units, 100) """
+        """ Maximum density in case of star formation (force SF if exceeded, ignored if star formation is off) """
         function = LegacyFunctionSpecification()  
         function.addParameter('rhomax', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_rhomax():
-        """ Maximum permissible density (code dens units, 100) """
+        """ Maximum density in case of star formation (force SF if exceeded, ignored if star formation is off) """
         function = LegacyFunctionSpecification()  
         function.addParameter('rhomax', dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -2254,8 +2254,8 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             "get_rhomax", 
             "set_rhomax",
             "max_density", 
-            "Maximum permissible density (code density units, 100)", 
-            default_value = 100.0
+            "Maximum density in case of star formation (force SF if exceeded, ignored if star formation is off)", 
+            default_value = 100.0 |nbody_system.density
         )
         
         object.add_method_parameter(
@@ -3132,12 +3132,12 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         object.add_method(
             "get_rhomax",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (nbody_system.density, object.ERROR_CODE,)
         )
         
         object.add_method(
             "set_rhomax",
-            (object.NO_UNIT, ),
+            (nbody_system.density, ),
             (object.ERROR_CODE,)
         )
         
