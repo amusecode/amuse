@@ -378,6 +378,18 @@ class TestQuantities(amusetest.TestCase):
         self.assertAlmostEqual(trigo.arccos(trigo.cos(a)),45. | units.deg,13)
         self.assertAlmostEqual(trigo.arctan(trigo.tan(a)),45. | units.deg,13)
 
+    def test32(self):
+        a=numpy.array([[1,2,3],[4,5,6]]) |  units.m
+        b=numpy.array([[1,2,3],[4,5,6]])
+        self.assertEquals(list(a.flatten()), list(a.flat))
+        flat1=b.flat
+        flat2=a.flat
+        self.assertEqual(flat1[2:5],flat2[2:5].number)
+        flat1.next()
+        flat2.next()
+        self.assertEqual(flat1.index,flat2.index)
+        self.assertEqual(flat1.base,flat2.base.number)
+        self.assertEqual(flat1.copy(),flat2.copy().number)
 
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):

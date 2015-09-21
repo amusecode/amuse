@@ -388,7 +388,33 @@ class VectorQuantity(Quantity):
 
     def flatten(self):
         return new_quantity(self.number.flatten(), self.unit)
-
+    
+    @property
+    def flat(self):
+        flat=self.number.flat
+        class flatiter_wrapper(object):
+            def __init__(self, quantity):
+                self.flat=quantity.number.flat
+                self.quantity=quantity
+            def __iter__(self):
+                return self
+            def next(self):
+                return new_quantity(self.flat.next(),self.quantity.unit)
+            def __getitem__(self,x): 
+                return new_quantity(self.flat[x], self.quantity.unit)
+            @property
+            def base(self):
+                return self.quantity
+            def copy(self):
+                return new_quantity(self.flat.copy(), self.quantity.unit)
+            @property
+            def index(self):
+                return self.flat.index
+            @property
+            def coords(self):
+                return self.flat.coords
+        return flatiter_wrapper(self)
+        
     def is_vector(self):
         return True
 
