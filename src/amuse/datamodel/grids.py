@@ -222,7 +222,7 @@ class Grid(AbstractGrid):
         print ("Grid.create deprecated, use new_regular_grid instead")
         return new_regular_grid(*args,**kwargs)
 
-# tbd new_structured_grid and new_unstructured_grid
+# tbd new_unstructured_grid
 def new_cartesian_grid(shape, cellsize, axes_names = "xyz",offset=None):
         """Returns a cartesian grid with cells of size cellsize.
         """
@@ -244,6 +244,7 @@ def new_cartesian_grid(shape, cellsize, axes_names = "xyz",offset=None):
                  
         result.add_vector_attribute("position", axes_names[0:len(shape)])
 
+        object.__setattr__(result,"_grid_type","cartesian") # for now for convenience, eventually to be converted in seperate classes
         object.__setattr__(result,"_cellsize",cellsize)
        
         return result
@@ -271,6 +272,7 @@ def new_regular_grid(shape, lengths, axes_names = "xyz",offset=None):
                  
         result.add_vector_attribute("position", axes_names[0:len(shape)])
 
+        object.__setattr__(result,"_grid_type","regular")
         object.__setattr__(result,"_lengths",lengths)
        
         return result
@@ -279,9 +281,12 @@ def new_rectilinear_grid(shape, axes_cell_boundaries, axes_names = "xyz",offset=
         """Returns a rectilinear grid with cells at positions midway given cell boundaries.
         """
         if len(axes_names)<len(shape):
-          raise Exception("provide enough axes names")
+            raise Exception("provide enough axes names")
         if len(axes_cell_boundaries)!=len(shape):
-          raise Exception("length of shape and axes positions do not conform")
+            raise Exception("length of shape and axes positions do not conform")
+        for s,b in zip(shape,axes_cell_boundaries):
+            if len(b)!=s+1:
+                raise Exception("number of cell boundaries error (must be {0} instead of {1})".format(s+1,len(b)))
 
         result = Grid(*shape)
 
@@ -299,11 +304,58 @@ def new_rectilinear_grid(shape, axes_cell_boundaries, axes_names = "xyz",offset=
        
         result.add_vector_attribute("position", axes_names[0:len(shape)])
         
+        object.__setattr__(result,"_grid_type","rectilinear")
         object.__setattr__(result,"_axes_cell_boundaries",axes_cell_boundaries)
        
         return result
 
+def new_structured_grid(shape, cell_corners, cell_positions=None, axes_names = "xyz", offset=None):
+        """Returns a structured grid with cells with given corners and cell_positions.
+           if not present, cell positions default to average of corner positions.
+        """
+        if len(axes_names)<len(shape):
+            raise Exception("provide enough axes names")
+        if len(cell_corners)!=len(shape):
+            raise Exception("dimensions of shape and cell_boundaries do not conform")
+        for s,b in zip(shape,cell_corners):
+            if len(b)!=s+1:
+                raise Exception("size of cell_corner arrays must be {0} instead of {1}".format(s+1,len(b)))        
 
+        if cell_positions is None:
+              cell_positions=[]
+              for cc in cell_corners:
+                  cp=numpy.zeros((shape[0],shape[1]))
+                  for i in range(2**len(shape)):
+                      slicing=[]
+                      for j in range(len(shape)):
+                          if i & 2**j:
+                              slicing.append(slice(1,None)) 
+                          else:
+                              slicing.append(slice(None,-1))
+                      cp=cp+cc[slicing]              
+                  cell_positions.append(cp/2**len(shape))          
+
+        if len(cell_positions)!=len(shape):
+            raise Exception("dimensions of shape and cell_positions do not conform")
+        for s,b in zip(shape,cell_positions):
+            if len(b)!=s:
+                raise Exception("size of cell_position arrays must be {0} instead of {1}".format(s+1,len(b)))        
+
+        if offset is None:
+            offset=[0.*l.flat[0] for l in cell_positions]
+
+        result = Grid(*shape)
+
+        for axis_name, pos, of in zip(axes_names, cell_positions, offset):
+            setattr(result, axis_name, pos + of)
+
+        result.add_vector_attribute("position", axes_names[0:len(shape)])
+        
+        object.__setattr__(result,"_grid_type","structured")
+        object.__setattr__(result,"_cell_corners", cell_corners)
+       
+        return result
+        
 
 class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):

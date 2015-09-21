@@ -491,12 +491,35 @@ class TestGridFactories(amusetest.TestCase):
     def test1(self):
         grid1 = datamodel.new_cartesian_grid( (4,5), 1.0 | units.m)
         grid2 = datamodel.new_regular_grid( (4,5), [4.0,5.0] | units.m)
-        grid3 = datamodel.new_rectilinear_grid( (4,5), [numpy.arange(6) | units.m,numpy.arange(6) | units.m])
+        grid3 = datamodel.new_rectilinear_grid( (4,5), [numpy.arange(5) | units.m,numpy.arange(6) | units.m])
         
         self.assertEqual(grid1.position,grid2.position)
         self.assertEqual(grid2.position,grid3.position)
 
-            
+    def test2(self):
+        grid=datamodel.new_rectilinear_grid((10,),(1.*numpy.arange(11),))
+        self.assertEqual(grid._axes_cell_boundaries,1.*numpy.arange(11))
+        grid=datamodel.new_regular_grid((10,),[10.])
+        self.assertEqual(grid._lengths,[10.])
+        grid=datamodel.new_cartesian_grid((10,),1.)
+        self.assertEqual(grid._cellsize,1.)
+        grid=datamodel.new_regular_grid((10,20,),[10.,15.])
+        self.assertEquals(grid._lengths,[10.,15.])
+
+    def test3(self):
+        N=10
+        x,y=numpy.indices((N+1,N+1))
+        grid=datamodel.new_structured_grid((N,N),[x,y])
+        self.assertEqual(grid.shape,(10,10))
+        x,y=numpy.indices((N,N))
+        x=x+0.5
+        y=y+0.5
+        self.assertEqual(grid.x,x)
+        self.assertEqual(grid.y,y)
+        
+
+
+
 class TestGridAttributes(amusetest.TestCase):
     
     def test1(self):
