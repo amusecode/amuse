@@ -317,14 +317,15 @@ def new_structured_grid(shape, cell_corners, cell_positions=None, axes_names = "
             raise Exception("provide enough axes names")
         if len(cell_corners)!=len(shape):
             raise Exception("dimensions of shape and cell_boundaries do not conform")
-        for s,b in zip(shape,cell_corners):
-            if len(b)!=s+1:
-                raise Exception("size of cell_corner arrays must be {0} instead of {1}".format(s+1,len(b)))        
+        for c in cell_corners:
+            if not numpy.all([s1==s2+1 for s1,s2 in zip(c.shape,shape)]):
+                shape1=[s+1 for s in shape]
+                raise Exception("size of cell_corner arrays must be {0} instead of {1}".format(shape1.__str__(),c.shape.__str__()))        
 
         if cell_positions is None:
               cell_positions=[]
               for cc in cell_corners:
-                  cp=numpy.zeros((shape[0],shape[1]))
+                  cp=numpy.zeros(shape)
                   for i in range(2**len(shape)):
                       slicing=[]
                       for j in range(len(shape)):
@@ -337,9 +338,9 @@ def new_structured_grid(shape, cell_corners, cell_positions=None, axes_names = "
 
         if len(cell_positions)!=len(shape):
             raise Exception("dimensions of shape and cell_positions do not conform")
-        for s,b in zip(shape,cell_positions):
-            if len(b)!=s:
-                raise Exception("size of cell_position arrays must be {0} instead of {1}".format(s+1,len(b)))        
+        for c in cell_positions:
+            if not numpy.all([s1==s2 for s1,s2 in zip(c.shape,shape)]):
+                raise Exception("size of cell_position arrays must be {0} instead of {1}".format(shape1.__str__(),c.shape.__str__()))        
 
         if offset is None:
             offset=[0.*l.flat[0] for l in cell_positions]

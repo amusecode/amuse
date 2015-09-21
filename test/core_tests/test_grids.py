@@ -510,13 +510,25 @@ class TestGridFactories(amusetest.TestCase):
         N=10
         x,y=numpy.indices((N+1,N+1))
         grid=datamodel.new_structured_grid((N,N),[x,y])
-        self.assertEqual(grid.shape,(10,10))
+        self.assertEqual(grid.shape,(N,N))
         x,y=numpy.indices((N,N))
         x=x+0.5
         y=y+0.5
         self.assertEqual(grid.x,x)
         self.assertEqual(grid.y,y)
         
+    def test4(self):
+        N=2
+        x,y,z=numpy.indices((N+1,N+1,2*N+1))
+        grid=datamodel.new_structured_grid((N,N,2*N),[x,y,z])
+        self.assertEqual(grid.shape,(N,N,2*N))
+        x,y,z=numpy.indices((N,N,2*N))
+        x=x+0.5
+        y=y+0.5
+        z=z+0.5
+        self.assertEqual(grid.x,x)
+        self.assertEqual(grid.y,y)
+        self.assertEqual(grid.z,z)
 
 
 
