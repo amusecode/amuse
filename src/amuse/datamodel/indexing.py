@@ -136,9 +136,7 @@ def combine_indices(index0, index1):
               start,stop,step = combine_slices(index0, index1)
               return numpy.s_[start:stop:step]
             else:
-              if len(index1)!=1:
-                raise IndexError("invalid index")
-              return combine_indices(index0, index1[0])
+              return (combine_indices(index0, index1[0]),)+index1[1:]
 
     elif isinstance(index0, EllipsisType):
         if isinstance(index1, slice):
@@ -227,7 +225,7 @@ def normalize_slices(shape,index):
                 else:
                     result.append(x)
             n=len(shape)-len(result)
-            result.extend([slice(0,shape[i],1) for i in range(n)])
+            result.extend([slice(0,shape[n-i],1) for i in range(n)])
             return tuple(result)
                     
     if isinstance(index, slice):
