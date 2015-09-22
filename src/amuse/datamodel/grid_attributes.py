@@ -10,12 +10,12 @@ grids.AbstractGrid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B
 
 @grids.BaseGrid.caching_function_for_set
 def cellsize(grid):
-    raise Exception("not implemented")
+    raise Exception("a {0} does not have a constant cellsize, use the cellsizes method instead".format(grid.__class__.__name__))
 
 @grids.RegularBaseGrid.caching_function_for_set
 def cellsize(grid):
     """Returns the lenght of each direction in the grid.
-    Works for regular cartesion grids.
+    Works for regular and cartesian grids.
     """
     result = grid[tuple(grid.get_minimum_index())].position*0.
     Ndim=len(grid.shape)

@@ -30,10 +30,33 @@ class TestGridAttributes(amusetest.TestCase):
     def test2(self):
         grid=new_regular_grid((10,20),(10,10))
         self.assertEqual(grid.cellsize(),[1.,0.5])
+        self.assertEqual(grid.get_minimum_index(), [0,0])
+        self.assertEqual(grid.get_maximum_index(), [9,19])
+        self.assertEqual(grid.get_minimum_position(), [0.,0.])
+        self.assertEqual(grid.get_maximum_position(), [10.,10.])
+        self.assertEqual(grid.get_volume(), 10*10.)
+        self.assertEqual(grid.contains(numpy.asarray([[1,1],[-10,-10]])), [True,False])
+        points=grid.points()
+        x=points[:,:,0]
+        y=points[:,:,1]
+        xp,yp=numpy.indices((11,21))
+        self.assertEqual(x,xp)
+        self.assertEqual(y,yp*0.5)
 
-    def xtest3(self):
-        grid=new_rectilinear_grid((10,20),(10,10))
-        self.assertEqual(grid.cellsize(),[1.,0.5])
+        grid2=new_cartesian_grid((10,20),1., offset=(5,5))
+        self.assertTrue(grid.overlaps(grid2))
+        grid3=new_cartesian_grid((10,20),1., offset=(15,25))
+        self.assertFalse(grid.overlaps(grid3))
+        overlap=grid.get_overlap_with(grid2)
+        self.assertEqual(overlap.shape,(5,10))
+
+
+    def test3(self):
+        x=numpy.arange(11)/10.
+        y=numpy.arange(21)/20.
+        grid=new_rectilinear_grid((10,20),(x,y**2))
+        self.assertRaises(Exception, grid.cellsize,
+          expected_message="a RectilinearGrid does not have a constant cellsize, use the cellsizes method instead")
 
     def xtest4(self):
         grid=new_structured_grid((10,20),(10,10))

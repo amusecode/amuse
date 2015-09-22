@@ -223,23 +223,23 @@ class BaseGrid(AbstractGrid):
         return new_regular_grid(*args,**kwargs)
 
 class UnstructuredGrid(BaseGrid):
-    pass
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(BaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class StructuredBaseGrid(BaseGrid):
-    pass
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(BaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class StructuredGrid(StructuredBaseGrid):
-    pass
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(StructuredBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class RectilinearBaseGrid(StructuredBaseGrid):
-    pass
-class RectiliniearGrid(RectilinearBaseGrid):
-    pass
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(StructuredBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
+class RectilinearGrid(RectilinearBaseGrid):
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(RectilinearBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class RegularBaseGrid(RectilinearBaseGrid):
-    pass
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(RectilinearBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class RegularGrid(RegularBaseGrid):
-    pass
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(RegularBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class CartesianBaseGrid(RegularBaseGrid):
-    pass
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(RegularBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 class CartesianGrid(CartesianBaseGrid):
-    pass
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(CartesianBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 
 # maintains compatibility with previous def.
 Grid=RegularGrid
@@ -250,7 +250,7 @@ def new_cartesian_grid(shape, cellsize, axes_names = "xyz",offset=None):
         if len(axes_names)<len(shape):
           raise Exception("provide enough axes names")
 
-        result = Grid(*shape)
+        result = CartesianGrid(*shape)
     
         all_indices = numpy.indices(shape)+0.5
         
@@ -278,7 +278,7 @@ def new_regular_grid(shape, lengths, axes_names = "xyz",offset=None):
         if len(lengths)!=len(shape):
           raise Exception("shape and lengths do not conform")
 
-        result = Grid(*shape)
+        result = RegularGrid(*shape)
     
         all_indices = numpy.indices(shape)+0.5
         
@@ -309,7 +309,7 @@ def new_rectilinear_grid(shape, axes_cell_boundaries, axes_names = "xyz",offset=
             if len(b)!=s+1:
                 raise Exception("number of cell boundaries error (must be {0} instead of {1})".format(s+1,len(b)))
 
-        result = Grid(*shape)
+        result = RectilinearGrid(*shape)
 
         all_indices = numpy.indices(shape)
     
@@ -366,7 +366,7 @@ def new_structured_grid(shape, cell_corners, cell_positions=None, axes_names = "
         if offset is None:
             offset=[0.*l.flat[0] for l in cell_positions]
 
-        result = Grid(*shape)
+        result = StructuredGrid(*shape)
 
         for axis_name, pos, of in zip(axes_names, cell_positions, offset):
             setattr(result, axis_name, pos + of)
