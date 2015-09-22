@@ -130,7 +130,7 @@ class AbstractGrid(AbstractSet):
             attrstr
         )
         
-class Grid(AbstractGrid):
+class BaseGrid(AbstractGrid):
     def __init__(self, *args, **kwargs):
         AbstractGrid.__init__(self)
         
@@ -222,7 +222,28 @@ class Grid(AbstractGrid):
         print ("Grid.create deprecated, use new_regular_grid instead")
         return new_regular_grid(*args,**kwargs)
 
-# tbd new_unstructured_grid
+class UnstructuredGrid(BaseGrid):
+    pass
+class StructuredBaseGrid(BaseGrid):
+    pass
+class StructuredGrid(StructuredBaseGrid):
+    pass
+class RectilinearBaseGrid(StructuredBaseGrid):
+    pass
+class RectiliniearGrid(RectilinearBaseGrid):
+    pass
+class RegularBaseGrid(RectilinearBaseGrid):
+    pass
+class RegularGrid(RegularBaseGrid):
+    pass
+class CartesianBaseGrid(RegularBaseGrid):
+    pass
+class CartesianGrid(CartesianBaseGrid):
+    pass
+
+# maintains compatibility with previous def.
+Grid=RegularGrid
+
 def new_cartesian_grid(shape, cellsize, axes_names = "xyz",offset=None):
         """Returns a cartesian grid with cells of size cellsize.
         """
@@ -325,7 +346,7 @@ def new_structured_grid(shape, cell_corners, cell_positions=None, axes_names = "
         if cell_positions is None:
               cell_positions=[]
               for cc in cell_corners:
-                  cp=numpy.zeros(shape)
+                  cp=numpy.zeros(shape) * cc.flat[0]
                   for i in range(2**len(shape)):
                       slicing=[]
                       for j in range(len(shape)):
@@ -356,7 +377,9 @@ def new_structured_grid(shape, cell_corners, cell_positions=None, axes_names = "
         object.__setattr__(result,"_cell_corners", cell_corners)
        
         return result
-        
+
+def new_unstructured_grid( cell_corners, cell_positions=None, axes_names="xyz", offset=None):
+        pass
 
 class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):
