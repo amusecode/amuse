@@ -573,8 +573,10 @@ class CachingFunctionAttribute(DerivedAttribute):
         return self.particles_function_attribute._function, self.particle_function_attribute._function
     
     def __setstate__(self, state):
-        self.particles_function_attribute = new_caching_particles_function_attribute_with_doc(state[0])
-        self.particle_function_attribute = new_particle_function_attribute_with_doc(state[1])
+        if state[0]:
+          self.particles_function_attribute = new_caching_particles_function_attribute_with_doc(state[0].__name__,state[0])
+        if state[1]:
+          self.particle_function_attribute = new_particle_function_attribute_with_doc(state[1].__name__,state[1])
 
 
 class CollectionAttributes(object):
