@@ -486,6 +486,18 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(cp.mass.shape,(20,5))
         self.assertEquals(cp[2].mass,5-numpy.arange(5))
         self.assertEquals(cp[-1].mass,numpy.arange(5))
+
+    def test38(self):
+        grid=datamodel.new_cartesian_grid((10,),1)
+        sub=grid[::2]
+        self.assertEqual(sub[0].x,0.5)
+        self.assertEqual(sub[(0,)].x,0.5)
+
+        grid=datamodel.new_cartesian_grid((10,10),1)
+        sub=grid[::2,::]
+        self.assertEqual(sub[0,0].x,0.5)
+        self.assertEqual(sub[(0,1)].y,1.5)
+
         
 class TestGridFactories(amusetest.TestCase):
     def test1(self):

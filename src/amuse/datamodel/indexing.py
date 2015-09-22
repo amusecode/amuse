@@ -136,8 +136,9 @@ def combine_indices(index0, index1):
               start,stop,step = combine_slices(index0, index1)
               return numpy.s_[start:stop:step]
             else:
-              start,stop,step = combine_slices(index0, index1[0])
-              return numpy.s_[start:stop:step]
+              if len(index1)!=1:
+                raise IndexError("invalid index")
+              return combine_indices(index0, index1[0])
 
     elif isinstance(index0, EllipsisType):
         if isinstance(index1, slice):
