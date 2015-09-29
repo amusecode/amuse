@@ -498,6 +498,13 @@ class TestGrids(amusetest.TestCase):
         self.assertEqual(sub[0,0].x,0.5)
         self.assertEqual(sub[(0,1)].y,1.5)
 
+    def test38(self):
+        grid=datamodel.new_cartesian_grid((10,10),1)
+        sub=grid[3:6,5:8]
+        #~ print sub[0:-1,0:-1].x,sub.x[0:-1,0:-1]
+        #~ self.assertEqual(sub[0:-1,0:-1].x,sub.x[0:-1,0:-1])
+        self.assertEqual(sub[-1,-1].x,sub.x[-1,-1])
+
         
 class TestGridFactories(amusetest.TestCase):
     def test1(self):

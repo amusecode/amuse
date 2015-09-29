@@ -208,7 +208,7 @@ def normalize_slices(shape,index):
         index=(Ellipsis,)
     if isinstance(index, tuple):
         if is_all_int(index):
-            return index
+            return tuple([ind if ind>=0 else shape[i]+ind for i,ind in enumerate(index)])
         else:
             result = []
             first_ellipsis = True
