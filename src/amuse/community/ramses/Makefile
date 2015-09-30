@@ -17,7 +17,7 @@ DEFINES1D = -DNVECTOR=$(NVECTOR) -DNDIM=1 -DNPRE=$(NPRE) -DNVAR=$(NVAR) -DSOLVER
 DEFINES2D = -DNVECTOR=$(NVECTOR) -DNDIM=2 -DNPRE=$(NPRE) -DNVAR=$(NVAR) -DSOLVER$(SOLVER)
 DEFINES3D = -DNVECTOR=$(NVECTOR) -DNDIM=3 -DNPRE=$(NPRE) -DNVAR=$(NVAR) -DSOLVER$(SOLVER)
 
-ifeq ($(findstring ifort, $(notdir $(FC))), gfortran)
+ifeq ($(findstring gfortran, $(notdir $(FC))), gfortran)
 FFLAGS = $(FCFLAGS) -O3 -frecord-marker=4 -ffree-line-length-none -g 
 FFLAGS += -x f95-cpp-input -DWITHOUTMPI
 endif
