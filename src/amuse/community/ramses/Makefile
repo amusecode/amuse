@@ -16,10 +16,18 @@ SOLVER = hydro
 DEFINES1D = -DNVECTOR=$(NVECTOR) -DNDIM=1 -DNPRE=$(NPRE) -DNVAR=$(NVAR) -DSOLVER$(SOLVER)
 DEFINES2D = -DNVECTOR=$(NVECTOR) -DNDIM=2 -DNPRE=$(NPRE) -DNVAR=$(NVAR) -DSOLVER$(SOLVER)
 DEFINES3D = -DNVECTOR=$(NVECTOR) -DNDIM=3 -DNPRE=$(NPRE) -DNVAR=$(NVAR) -DSOLVER$(SOLVER)
-#FFLAGS = $(FCFLAGS) -O3 -frecord-marker=4 -fbacktrace -ffree-line-length-none -g 
+
+ifeq ($(findstring ifort, $(notdir $(FC))), gfortran)
 FFLAGS = $(FCFLAGS) -O3 -frecord-marker=4 -ffree-line-length-none -g 
-#FFLAGS = -O3 -frecord-marker=4 -fbacktrace -ffree-line-length-none -g 
 FFLAGS += -x f95-cpp-input -DWITHOUTMPI
+endif
+
+ifeq ($(findstring ifort, $(notdir $(FC))), ifort)
+# ifort flags
+FFLAGS = $(FCFLAGS) -O3 -g -fpp 
+FFLAGS +=  -DWITHOUTMPI
+endif
+
 FFLAGS1D = $(FFLAGS) $(DEFINES1D)
 FFLAGS2D = $(FFLAGS) $(DEFINES2D)
 FFLAGS3D = $(FFLAGS) $(DEFINES3D)
