@@ -13,7 +13,7 @@ def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, d
     
     result.move_to_center()
     if do_scale:
-        result.scale_to_standard()
+        result.scale_to_standard(convert_nbody=unit_system_converter)
     
     if not unit_system_converter is None:
         result = ParticlesWithUnitsConverted(result, unit_system_converter.as_converter_from_si_to_generic())
