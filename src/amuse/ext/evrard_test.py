@@ -170,10 +170,10 @@ class uniform_unit_sphere(object):
             x=[]
             while len(x) < self.targetN:
                 estimadedN=estimatedN*1.1+1
-                x,y,z=self.cutout_sphere(*(self.base_grid(estimatedN)).make_xyz())
+                x,y,z=self.cutout_sphere(*(self.base_grid(int(estimatedN))).make_xyz())
             return x[0:self.targetN],y[0:self.targetN],z[0:self.targetN]  
         else:
-            return self.cutout_sphere(*(self.base_grid(self.estimatedN)).make_xyz())
+            return self.cutout_sphere(*(self.base_grid(int(self.estimatedN))).make_xyz())
         
 class MakeEvrardTest(object):
     def __init__(self, targetN, base_grid=None, size=1.,
