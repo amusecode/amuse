@@ -205,12 +205,12 @@ class JobServer(object):
       if not self.use_threading:
         for host in hosts:
           self.number_starting_codes+=1
-          self._startup( channel_type=channel_type,hostname=host,
+          self._startup( channel_type=channel_type,hostname=host,label=host,
                            copy_worker_code=True,redirection="none" )
       else:  
         threads=[]
         for host in hosts:
-          kwargs=dict( channel_type=channel_type,hostname=host,
+          kwargs=dict( channel_type=channel_type,hostname=host,label=host,
                          copy_worker_code=True,redirection="none" )
           threads.append( threading.Thread(target=self._startup,kwargs=kwargs) )
         for thread in threads:
