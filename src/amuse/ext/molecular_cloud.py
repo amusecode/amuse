@@ -200,6 +200,9 @@ class molecular_cloud(object):
         vz=interpolate_trilinear(x,y,z,vz_field)
         mass=numpy.ones_like(x)/self.actualN
 
+        vx=vx-vx.mean()
+        vy=vy-vy.mean()
+        vz=vz-vz.mean()
 
         Ep=3./5
         self.internalE=Ep*self.ethep_ratio
@@ -227,7 +230,6 @@ class molecular_cloud(object):
         result.vz = nbody_system.speed.new_quantity(vz)
         result.u = (nbody_system.speed**2).new_quantity(u)
 
-        result.move_to_center()
         if not self.convert_nbody is None:
             result = datamodel.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_generic())
             result = result.copy()
