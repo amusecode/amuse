@@ -150,8 +150,8 @@ def interpolate_trilinear(x,y,z,farray):
     zint=zint.astype('i')
 
     xint1=numpy.mod(xint+1,nx)
-    yint1=numpy.mod(yint+1,nx)
-    zint1=numpy.mod(zint+1,nx)
+    yint1=numpy.mod(yint+1,ny)
+    zint1=numpy.mod(zint+1,nz)
 
     q111 = farray[xint, yint, zint]
     q211 = farray[xint1, yint, zint]
@@ -227,6 +227,7 @@ class molecular_cloud(object):
         result.vz = nbody_system.speed.new_quantity(vz)
         result.u = (nbody_system.speed**2).new_quantity(u)
 
+        result.move_to_center()
         if not self.convert_nbody is None:
             result = datamodel.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_generic())
             result = result.copy()
