@@ -391,6 +391,13 @@ class TestQuantities(amusetest.TestCase):
         self.assertEqual(flat1.base,flat2.base.number)
         self.assertEqual(flat1.copy(),flat2.copy().number)
 
+    def test33(self):
+        a=[1,2,3,4]
+        b=new_quantity_nonone(a,units.none)
+        self.assertEqual(len(a),len(b))
+        b=new_quantity_nonone(a,2*units.none)
+        self.assertEqual(len(a),len(b))
+
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):
 

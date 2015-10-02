@@ -355,10 +355,11 @@ class VectorQuantity(Quantity):
 
     @classmethod
     def new_from_scalar_quantities(cls, *values):
-        unit=values[0].unit
-        if filter(lambda x:not x.unit.has_same_base_as(unit),values):
-          raise exceptions.AmuseException("not all values have conforming units")
-        array=map(lambda x: x.value_in(unit),values)
+        unit=to_quantity(values[0]).unit
+        try:
+            array=map(lambda x: value_in(x,unit),values)
+        except core.IncompatibleUnitsException:
+            raise exceptions.AmuseException("not all values have conforming units")
         return cls(array, unit)
 
     def aszeros(self):
@@ -1171,7 +1172,10 @@ def new_quantity_nonone(value, unit):
     :returns: new ScalarQuantity or VectorQuantity object
     """
     if not unit.base:
-         return value * unit.factor
+        if isinstance(value, __array_like):
+            return numpy.asarray(value) * unit.factor
+        else:
+            return value * unit.factor
     if isinstance(value, list):
         return VectorQuantity(value, unit)
     if isinstance(value, tuple):
