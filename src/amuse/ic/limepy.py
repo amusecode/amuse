@@ -1,6 +1,7 @@
 from amuse.support.exceptions import AmuseWarning
 from amuse.datamodel import Particles, ParticlesWithUnitsConverted
 from amuse.units import nbody_system
+from amuse.community import LiteratureReferencesMixIn
 
 try:
     from _limepy import limepy, sample
@@ -11,10 +12,19 @@ except ImportError:
     raise AmuseWarning("import limepy failed, maybe scipy is not installed")
 
 
-class Limepy(object):
-    __doc__ = limepy.__init__.__doc__ + sample.__init__.__doc__
+class Limepy(LiteratureReferencesMixIn):
+    """
+    LIMEPY : Lowered Isothermal Model Explorer in PYthon
+    for help:
+    print help(limepy.limepy)
+    print help(limepy.sample)
+
+    Relevant references:
+        .. [#] Gieles & Zocchi 2015, MNRAS, 454,576
+    """
 
     def __init__(self, *args, **kwargs):
+        LiteratureReferencesMixIn.__init__(self)
         kwargs["scale"] = True
         kwargs["MS"] = 1
         kwargs["GS"] = 1
@@ -23,6 +33,8 @@ class Limepy(object):
 
         self.model = limepy(*args, **kwargs)
         self.kwargs = kwargs
+
+
 
     @property
     def result(self):
