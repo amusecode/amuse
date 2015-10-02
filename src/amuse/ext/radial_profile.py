@@ -4,15 +4,25 @@ def radial_profile(r,dat,N=100):
   n=len(r)
   a=r.argsort()
   i=0
-  r_a=[]
-  dat_a=[]
+  if hasattr(r,"unit"):
+    r_a=[] | r.unit
+  else:
+    r_a=[]
+  if hasattr(dat,"unit"):
+    dat_a=[] | dat.unit
+  else:
+    dat_a=[]
   while i < n:
     ra=r[a[i:i+N]].sum()/min(n-i,N)
     da=dat[a[i:i+N]].sum()/min(n-i,N)
     r_a.append(ra)
     dat_a.append(da)
     i=i+N
-  return numpy.array(r_a),numpy.array(dat_a)
+  if not hasattr(r_a, "unit"):
+    r_a=numpy.array(r_a)
+  if not hasattr(dat_a, "unit"):
+    dens=numpy.array(dat_a)    
+  return r_a,dat_a
 
 def radial_density(r,mass,N=100,dim=3, start_at_zero=False):
   if dim==3:
@@ -25,8 +35,15 @@ def radial_density(r,mass,N=100,dim=3, start_at_zero=False):
   n=len(r)
   a=r.argsort()
   i=0
-  r_a=[]
-  dens=[]
+  if hasattr(r,"unit"):
+    r_a=[] | r.unit
+  else:
+    r_a=[]
+  dummy_dens=mass[0]/r[0]**dim
+  if hasattr(dummy_dens,"unit"):
+    dens=[] | dummy_dens.unit
+  else:
+    dens=[]
   oldrshell=r[a[0]]
   if start_at_zero:
     oldrshell=0.*r[0]  
@@ -39,8 +56,12 @@ def radial_density(r,mass,N=100,dim=3, start_at_zero=False):
     r_a.append(ra)
     dens.append(da)
     i=i1
-    
-  return numpy.array(r_a),numpy.array(dens)/volfac
+  
+  if not hasattr(r_a, "unit"):
+    r_a=numpy.array(r_a)
+  if not hasattr(dens, "unit"):
+    dens=numpy.array(dens)    
+  return r_a,dens/volfac
 
 if __name__=="__main__":
   from matplotlib import pyplot
@@ -52,8 +73,8 @@ if __name__=="__main__":
   
   ascl=1/1.695
   
-  ra=numpy.array(map(lambda x: x.number,ra))
-  dens=numpy.array(map(lambda x: x.number,dens))
+  ra=ra.number
+  dens=dens.number
   pyplot.subplot(211)
   pyplot.loglog(ra,dens)
   pyplot.loglog(ra, 3./4./numpy.pi/ascl**3/(1+(ra**2/ascl**2))**(5./2))
