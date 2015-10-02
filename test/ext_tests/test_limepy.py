@@ -24,3 +24,7 @@ class TestLimepy(amusetest.TestCase):
 
           self.assertAlmostEqual(cluster.total_mass(), 200. | units.MSun)
           self.assertEqual(len(cluster),100)
+
+    def setUp(self):
+          if not limepy.scipy_imported:
+            self.skip("scipy not installed")

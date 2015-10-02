@@ -9,7 +9,7 @@ try:
 except ImportError:
     scipy_imported = False
 
-    raise AmuseWarning("import limepy failed, maybe scipy is not installed")
+    AmuseWarning("import limepy failed, maybe scipy is not installed")
 
 
 class Limepy(LiteratureReferencesMixIn):
