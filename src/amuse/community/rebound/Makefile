@@ -5,7 +5,7 @@ AMUSE_DIR?=../../../..
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g -DCOLLISIONS_DUMMY -DLIBREBOUND
+CFLAGS   += -Wall -g -DCOLLISIONS_DUMMY -DLIBREBOUND 
 CXXFLAGS += $(CFLAGS)  
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -13,7 +13,7 @@ OBJS = interface.o
 
 CODELIB = src/librebound.a
 CODEDIR = src/rebound
-LIB_OBJ = $(CODEDIR)/src/collisions_dummy.o $(CODEDIR)/src/particle.o $(CODEDIR)/src/tools.o $(CODEDIR)/src/integrator.o $(CODEDIR)/src/integrator_ias15.o $(CODEDIR)/src/integrator_whfast.o $(CODEDIR)/src/integrator_leapfrog.o $(CODEDIR)/src/integrator_sei.o $(CODEDIR)/src/integrator_hybrid.o $(CODEDIR)/src/integrator_wh.o $(CODEDIR)/src/gravity_direct.o $(CODEDIR)/src/librebound.o $(CODEDIR)/src/input.o $(CODEDIR)/src/output.o
+LIB_OBJ = $(CODEDIR)/src/collision.o $(CODEDIR)/src/particle.o $(CODEDIR)/src/tools.o $(CODEDIR)/src/integrator.o $(CODEDIR)/src/integrator_ias15.o $(CODEDIR)/src/integrator_whfast.o $(CODEDIR)/src/integrator_leapfrog.o $(CODEDIR)/src/integrator_sei.o $(CODEDIR)/src/integrator_hybrid.o $(CODEDIR)/src/integrator_wh.o $(CODEDIR)/src/gravity.o $(CODEDIR)/src/rebound.o $(CODEDIR)/src/input.o $(CODEDIR)/src/output.o $(CODEDIR)/src/boundary.o $(CODEDIR)/src/tree.o
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_http.py
 PATCH_FILES = $(PYTHON) ./patch_files.py

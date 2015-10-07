@@ -1,19 +1,16 @@
 #include "worker_code.h"
 
 extern "C" {
+#define restrict 
 
+#include "rebound.h"
 #include "integrator.h"
 #include "integrator_whfast.h"
-#include "boundaries.h"
+#include "boundary.h"
 #include "gravity.h"
 #include "output.h"
 #include "particle.h"
-#include "librebound.h"
-
-//missing from librebound.h
-void reset(void); 
-int rebound_integrate(double _tmax, int exact_finish_time, double maxR, double minD);
-//missing from librebound.h
+#include "collision.h"
 
 }
 
@@ -28,30 +25,53 @@ int rebound_integrate(double _tmax, int exact_finish_time, double maxR, double m
 
 #include <string>
 #include <map>
+#include <vector>
 #include <iostream>
 
 #include <stopcond.h>
 
+typedef struct _particle_location {
+    reb_simulation * code;
+    int index;
+    int subset;
+    _particle_location():code(0),index(-1),subset(-1){}
+    _particle_location(reb_simulation * c, int i, int s):code(c),index(i),subset(s) {}
+} particle_location;
 
-typedef std::map<int, int> IndexMap;
+typedef struct _code_state {
+    reb_simulation * code;
+    bool has_removal;
+    double time_offset;
+    int subset;
+    _code_state(reb_simulation * c):code(c),has_removal(false), time_offset(0), subset(0) {}
+    _code_state(reb_simulation * c, double time_offset, int s):code(c),has_removal(false), time_offset(time_offset),subset(s) {}
+} code_state;
+
+typedef std::map<int, particle_location> IndexMap;
 static IndexMap indexMap;
 
 static int max_id = 0;
-static bool has_removal = false;
+//m ,m mnstatic reb_simulation * code;
 
-static inline int get_index_from_identity(int id)
+typedef std::vector<code_state> ReboundSimulationVector;
+static ReboundSimulationVector codes;
+static particle_location sentinel = particle_location();
+static double _time;
+
+static inline particle_location get_index_from_identity(int id)
 {
     IndexMap::iterator i = indexMap.find(id);
     if(i == indexMap.end()) {
-        return -1;
+        return sentinel;
     }
     return (*i).second;
 }
 
-static inline int get_identity_from_index(int id)
+
+static inline int get_identity_from_index(particle_location location)
 {
     for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
-        if(indexMap [(*i).first] == id) {
+        if((*i).second.index == location.index &&  indexMap [(*i).first].code == location.code) {
             return (*i).first;
         }
     }
@@ -59,44 +79,61 @@ static inline int get_identity_from_index(int id)
 }
 
 int get_mass(int index_of_the_particle, double * mass){
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {*mass = 0; return -1;}
-    *mass = particles[index].m;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {*mass = 0;  return -1;}
+    *mass = loc.code->particles[loc.index].m;
     return 0;
 }
 
 int commit_particles(){
-    if(has_removal) {
-        /*
-         * after deletion of one or more particles, clear out
-         * the original data and rebuild without these particles.
-         */
-        struct particle * previous = (struct particle *) malloc(sizeof(struct particle) * N);
-        memcpy(previous, particles, sizeof(struct particle) * N);
-        particles_remove_all();
-        IndexMap newMap;
-        for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
-            struct particle * p = previous + (*i).second;
-            particles_add(*p);
-            newMap[(*i).first] = N - 1;
+    /*
+     * after deletion of one or more particles, clear out
+     * the original data and rebuild without these particles.
+     */
+    for( ReboundSimulationVector::iterator j = codes.begin(); j != codes.end(); j++) {
+        code_state cs = *j;
+        if(cs.has_removal) {
+            if(cs.code) {
+                struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
+                memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
+                reb_remove_all(cs.code);
+                for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
+                    if( (*i).second.code == cs.code ) {
+                        struct reb_particle * p = previous + (*i).second.index;
+                        reb_add(cs.code, *p);
+                        indexMap[(*i).first] = particle_location(cs.code, cs.code->N - 1, cs.subset);
+                    }
+                }
+            }
+            cs.has_removal = false;
+            *j = cs;
         }
-        indexMap = newMap;
-        has_removal = false;
     }
-    
     return 0;
 }
 
-int get_time(double * time){
-    *time = t;
+int get_time(int code_index, double * time){
+    if(code_index < 0) {
+        *time = _time;
+        return 0;
+    }
+    if(code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    *time = codes[code_index].code->t;
     return 0;
 }
 
 int set_mass(int index_of_the_particle, double mass){
-    
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
-    particles[index].m = mass;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
+    loc.code->particles[loc.index].m = mass;
     return 0;
 }
 
@@ -109,9 +146,12 @@ int get_total_radius(double * radius){
 }
 
 int new_particle(int * index_of_the_particle, double mass, double x, 
-  double y, double z, double vx, double vy, double vz, double radius){
+  double y, double z, double vx, double vy, double vz, double radius, int code_index){
+      if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+      }
       int new_id = max_id++;
-      struct particle pt;
+      struct reb_particle pt;
       pt.x = x;
       pt.y = y;
       pt.z = z;
@@ -121,15 +161,13 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.m = mass;
       pt.ax = 0;
       pt.ay = 0;
-#ifndef COLLISIONS_NONE
       pt.r = radius; 
       pt.lastcollision = 0;
-#endif // COLLISIONS_NONE
-#if defined(GRAVITY_TREE) || defined(COLLISIONS_TREE)
-      pt.cell = NULL;
-#endif // TREE
-      particles_add(pt);
-      indexMap[new_id] = N - 1;
+      pt.c = NULL;
+      pt.id = new_id;
+      reb_add(codes[code_index].code, pt);
+      //std::cout<<"code_index"<<code_index<<std::endl;
+      indexMap[new_id] = particle_location(codes[code_index].code, codes[code_index].code->N - 1, code_index);
       *index_of_the_particle = new_id;
       return 0;
 }
@@ -137,8 +175,34 @@ int new_particle(int * index_of_the_particle, double mass, double x,
 int get_total_mass(double * mass){
     return 0;
 }
+int _evolve_code(double _tmax, code_state * cs);
+int evolve_model(double _tmax, int code_index){
+    int result = 0;
+    if(code_index == -1){
+        for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+            code_state cs = *i;
+            if(cs.code) {
+                _evolve_code(_tmax, &cs);
+            }
+        }
+        _time = _tmax;
+        return result;
+    }else if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    } else {
+        result = _evolve_code(_tmax, &codes[code_index]);
+        return result;
+    }   
+}
 
-int evolve_model(double _tmax){
+
+int _evolve_code(double _tmax, code_state * cs){
+    reb_simulation * code = cs->code;
+    if(!code) {return -1;}
+    
     int error = 0;
     int is_collision_detection_enabled = 0;
     int is_timeout_detection_enabled = 0;
@@ -170,33 +234,33 @@ int evolve_model(double _tmax){
     struct timeval tim;
 	gettimeofday(&tim, NULL);
 	double timing_initial = tim.tv_sec+(tim.tv_usec/1000000.0);
-	tmax = _tmax;
-	double dt_last_done = dt;
+	double tmax = _tmax;
+	code-> dt_last_done = code->dt;
 	int last_step = 0;
 	int ret_value = 0;
-	const double dtsign = copysign(1.,dt); 				// Used to determine integration direction
+	const double dtsign = copysign(1.,code->dt); 				// Used to determine integration direction
     
     time_t starttime, currenttime;
     time(&starttime);
 	
-    while(t*dtsign<tmax*dtsign && last_step<2 && ret_value==0){
-		if (N<=0){
+    while(code->t*dtsign<tmax*dtsign && last_step<2 && ret_value==0){
+		if (code->N<=0){
 			fprintf(stderr,"\n\033[1mError!\033[0m No particles found. Exiting.\n");
 			return(1);
 		}
-		rebound_step(0); 								// 0 to not do timing within step
-		if ((t+dt)*dtsign>=tmax*dtsign && exact_finish_time==1){
-			integrator_synchronize();
-			dt = tmax-t;
+		reb_step(code); 								// 0 to not do timing within step
+		if ((code->t+code->dt)*dtsign>=tmax*dtsign && exact_finish_time==1){
+			reb_integrator_synchronize(code);
+			code->dt = tmax-code->t;
 			last_step++;
 		}else{
-			dt_last_done = dt;
+			code->dt_last_done = code->dt;
 		}
 		if (maxR){
 			// Check for escaping particles
 			const double maxR2 = maxR*maxR;
-			for (int i=0;i<N-N_megno;i++){
-				struct particle p = particles[i];
+			for (int i=0;i<code->N-code->N_var;i++){
+				struct reb_particle p = code->particles[i];
 				double r2 = p.x*p.x + p.y*p.y + p.z*p.z;
 				if (r2>maxR2){
 					ret_value = 2;
@@ -205,10 +269,10 @@ int evolve_model(double _tmax){
 		}
 		if (is_collision_detection_enabled){
 			// Check for close encounters
-			for (int i=0;i<N-N_megno;i++){
-				struct particle pi = particles[i];
+			for (int i=0;i<code->N-code->N_var;i++){
+				struct reb_particle pi = code->particles[i];
 				for (int j=0;j<i;j++){
-					struct particle pj = particles[j];
+					struct reb_particle pj = code->particles[j];
 					const double x = pi.x-pj.x;
 					const double y = pi.y-pj.y;
 					const double z = pi.z-pj.z;
@@ -224,8 +288,8 @@ int evolve_model(double _tmax){
                         else
                         {
                             set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-                            set_stopping_condition_particle_index(stopping_index, 0, get_identity_from_index(i));
-                            set_stopping_condition_particle_index(stopping_index, 1, get_identity_from_index(j));
+                            set_stopping_condition_particle_index(stopping_index, 0, get_identity_from_index(particle_location(code,i, -1)));
+                            set_stopping_condition_particle_index(stopping_index, 1, get_identity_from_index(particle_location(code,j, -1)));
                         }
                         is_condition_set = 1;
 					}
@@ -244,11 +308,11 @@ int evolve_model(double _tmax){
             if(use_center_of_mass_parameter) {
                 
                 double total = 0.0;
-                for (i = 0; i < N-N_megno; i++) {
-                    double mass = particles[i].m;
-                    center_of_mass[0] +=  mass * particles[i].x;
-                    center_of_mass[1] +=  mass * particles[i].y;
-                    center_of_mass[2] +=  mass * particles[i].z;
+                for (i = 0; i < code->N-code->N_var; i++) {
+                    double mass = code->particles[i].m;
+                    center_of_mass[0] +=  mass * code->particles[i].x;
+                    center_of_mass[1] +=  mass * code->particles[i].y;
+                    center_of_mass[2] +=  mass * code->particles[i].z;
                     
                     total += mass;
                 }
@@ -256,11 +320,11 @@ int evolve_model(double _tmax){
                     center_of_mass[k] /= total;
                 }
             } 
-            for (i = 0; i < N-N_megno; i++) {
+            for (i = 0; i < code->N-code->N_var; i++) {
                
-                double dx = (particles[i].x - center_of_mass[0]);
-                double dy = (particles[i].y - center_of_mass[1]);
-                double dz = (particles[i].z - center_of_mass[2]);
+                double dx = (code->particles[i].x - center_of_mass[0]);
+                double dy = (code->particles[i].y - center_of_mass[1]);
+                double dz = (code->particles[i].z - center_of_mass[2]);
                 double sqr_distance_wrt_origin = 0.0;
                 sqr_distance_wrt_origin += dx*dx;
                 sqr_distance_wrt_origin += dy*dy;
@@ -271,7 +335,7 @@ int evolve_model(double _tmax){
                     int stopping_index = next_index_for_stopping_condition();
                     if(stopping_index >= 0){
                         set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION);
-                        set_stopping_condition_particle_index(stopping_index, 0, get_identity_from_index(i));
+                        set_stopping_condition_particle_index(stopping_index, 0, get_identity_from_index(particle_location(code,i, -1)));
                     } else {
                         printf("Run out of storable out of box events\n");
                     }
@@ -291,11 +355,11 @@ int evolve_model(double _tmax){
             }
         }
 	}
-	integrator_synchronize();
-	dt = dt_last_done;
+	reb_integrator_synchronize(code);
+	code->dt = code->dt_last_done;
 	gettimeofday(&tim, NULL);
 	double timing_final = tim.tv_sec+(tim.tv_usec/1000000.0);
-	timing = timing_final-timing_initial;
+	double timing = timing_final-timing_initial;
 	return ret_value;
 }
 
@@ -317,12 +381,17 @@ int get_index_of_next_particle(int index_of_the_particle,
 }
 
 int delete_particle(int index_of_the_particle){
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
     
     indexMap.erase(index_of_the_particle);
-    
-    has_removal = true;
+    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+        code_state cs = *i;
+        if(cs.code == loc.code){
+            cs.has_removal = true;
+        }
+        *i = cs;
+    }
     return 0;
 }
 
@@ -336,54 +405,65 @@ int synchronize_model(){
 
 int set_state(int index_of_the_particle, double mass, double x, double y, 
     double z, double vx, double vy, double vz, double radius){
-     int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
     
     
-    particles[index].x = x;
-    particles[index].y = y;
-    particles[index].z = z;
-    particles[index].vx = vx;
-    particles[index].vy = vy;
-    particles[index].vz = vz;
+    loc.code->particles[loc.index].x = x;
+    loc.code->particles[loc.index].y = y;
+    loc.code->particles[loc.index].z = z;
+    loc.code->particles[loc.index].vx = vx;
+    loc.code->particles[loc.index].vy = vy;
+    loc.code->particles[loc.index].vz = vz;
     
-    particles[index].m = mass;
-    
-#ifndef COLLISIONS_NONE
-    particles[index].r = radius;
-#endif // COLLISIONS_NONE
+    loc.code->particles[loc.index].m = mass;
+    loc.code->particles[loc.index].r = radius;
     return 0;
 }
 
 int get_state(int index_of_the_particle, double * mass, double * x, 
     double * y, double * z, double * vx, double * vy, double * vz, 
-    double * radius){
+    double * radius, int * subset){
     
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
     
-    *x = particles[index].x;
-    *y = particles[index].y;
-    *z = particles[index].z;
-    *vx = particles[index].vx;
-    *vy = particles[index].vy;
-    *vz = particles[index].vz;
-    *mass = particles[index].m;
-    
+    *x = loc.code->particles[loc.index].x;
+    *y = loc.code->particles[loc.index].y;
+    *z = loc.code->particles[loc.index].z;
+    *vx = loc.code->particles[loc.index].vx;
+    *vy = loc.code->particles[loc.index].vy;
+    *vz = loc.code->particles[loc.index].vz;
+    *mass = loc.code->particles[loc.index].m;
+    *subset = loc.subset;
 #ifndef COLLISIONS_NONE
-    *radius = particles[index].r;
+    *radius = loc.code->particles[loc.index].r;
 #else
     *radius = 0;
 #endif // COLLISIONS_NONE
     return 0;
 }
 
-int get_time_step(double * time_step){
-    *time_step = dt;
+int get_time_step(int code_index, double * time_step){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    *time_step = code->dt;
     return 0;
 }
-int set_time_step(double time_step){
-    dt = time_step;
+int set_time_step(double time_step, int code_index){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    code->dt = time_step;
     return 0;
 }
 
@@ -391,10 +471,18 @@ int recommit_particles(){
     return commit_particles();
 }
 
-int get_kinetic_energy(double * kinetic_energy){
+int get_kinetic_energy(int code_index, double * kinetic_energy){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    
     double e_kin = 0.;
-    for (int i=0;i<N-N_megno;i++){
-        struct particle pi = particles[i];
+    for (int i=0;i<code->N-code->N_var;i++){
+        struct reb_particle pi = code->particles[i];
         e_kin += 0.5 * pi.m * (pi.vx*pi.vx + pi.vy*pi.vy + pi.vz*pi.vz);
     }
     *kinetic_energy = e_kin;
@@ -408,11 +496,11 @@ int get_number_of_particles(int * number_of_particles){
 
 int set_acceleration(int index_of_the_particle, double ax, double ay, 
   double az){
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
-    particles[index].ax = ax;
-    particles[index].ay = ay;
-    particles[index].az = az;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
+    loc.code->particles[loc.index].ax = ax;
+    loc.code->particles[loc.index].ay = ay;
+    loc.code->particles[loc.index].az = az;
     return 0;
 }
 
@@ -426,9 +514,16 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
 
 int get_radius(int index_of_the_particle, double * radius){
     
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {*radius = 0; return -1;}
-    *radius = particles[index].r;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {*radius = 0; return -1;}
+    *radius = loc.code->particles[loc.index].r;
+    return 0;
+}
+int get_subset(int index_of_the_particle, int * subset){
+    
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {*subset = 0; return -1;}
+    *subset = loc.subset;
     return 0;
 }
 
@@ -438,20 +533,32 @@ int set_begin_time(double time){
 
 int set_radius(int index_of_the_particle, double radius){
     
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
-    particles[index].r = radius;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
+    loc.code->particles[loc.index].r = radius;
+    return 0;
+}
+int set_subset(int index_of_the_particle, int subset){
+    
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
+    if(loc.subset != subset) {return -2;}
     return 0;
 }
 
-int cleanup_code(){
-    if(particles != NULL) {
-        particles_remove_all();
+int cleanup_code() {
+    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+        code_state cs = *i;
+        if(cs.code){
+            reb_remove_all(cs.code);
+            reb_free_simulation(cs.code);
+            cs.code = 0;
+            *i = cs;
+        }
     }
     indexMap.clear();
+    codes.clear();
     max_id = 0;
-    has_removal = false;
-    reset();
     return 0;
 }
 
@@ -461,10 +568,10 @@ int recommit_parameters(){
 
 int initialize_code(){
     max_id = 0;
-    
-    reset();
-    
-    integrator = WHFAST;
+    _time=0;
+    reb_simulation * code = reb_create_simulation();
+    codes.push_back(code_state(code));
+    code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
     set_support_for_condition(TIMEOUT_DETECTION);
@@ -474,16 +581,23 @@ int initialize_code(){
     return 0;
 }
 
-int get_potential_energy(double * potential_energy){
+int get_potential_energy(int code_index, double * potential_energy){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
     double e_pot = 0.;
-    for (int i=0;i<N-N_megno;i++){
-        struct particle pi = particles[i];
-        for (int j=i+1;j<N-N_megno;j++){
-            struct particle pj = particles[j];
+    for (int i=0;i<code->N-code->N_var;i++){
+        struct reb_particle pi = code->particles[i];
+        for (int j=i+1;j<code->N-code->N_var;j++){
+            struct reb_particle pj = code->particles[j];
             double dx = pi.x - pj.x;
             double dy = pi.y - pj.y;
             double dz = pi.z - pj.z;
-            e_pot -= G*pj.m*pi.m/sqrt(dx*dx + dy*dy + dz*dz);
+            e_pot -= code->G*pj.m*pi.m/sqrt(dx*dx + dy*dy + dz*dz);
         }
     }
     *potential_energy = e_pot;
@@ -493,12 +607,11 @@ int get_potential_energy(double * potential_energy){
 int get_velocity(int index_of_the_particle, double * vx, double * vy, 
     double * vz){
     
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) { return -1;}
-    
-    *vx = particles[index].vx;
-    *vy = particles[index].vy;
-    *vz = particles[index].vz;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
+    *vx = loc.code->particles[loc.index].vx;
+    *vy = loc.code->particles[loc.index].vy;
+    *vz = loc.code->particles[loc.index].vz;
     
     return 0;
 }
@@ -506,21 +619,21 @@ int get_velocity(int index_of_the_particle, double * vx, double * vy,
 int get_position(int index_of_the_particle, double * x, double * y, 
       double * z){
     
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
-    *x = particles[index].x;
-    *y = particles[index].y;
-    *z = particles[index].z;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
+    *x = loc.code->particles[loc.index].x;
+    *y = loc.code->particles[loc.index].y;
+    *z = loc.code->particles[loc.index].z;
     return 0;
 }
 
 int set_position(int index_of_the_particle, double x, double y, double z){
     
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
-    particles[index].x = x;
-    particles[index].y = y;
-    particles[index].z = z;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
+    loc.code->particles[loc.index].x = x;
+    loc.code->particles[loc.index].y = y;
+    loc.code->particles[loc.index].z = z;
     return 0;
 }
 
@@ -528,12 +641,12 @@ int get_acceleration(int index_of_the_particle, double * ax, double * ay,
       double * az){
     
     
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
     
-    *ax = particles[index].ax;
-    *ay = particles[index].ay;
-    *az = particles[index].az;
+    *ax = loc.code->particles[loc.index].ax;
+    *ay = loc.code->particles[loc.index].ay;
+    *az = loc.code->particles[loc.index].az;
     
     return 0;
 }
@@ -545,41 +658,73 @@ int commit_parameters(){
 int set_velocity(int index_of_the_particle, double vx, double vy, 
     double vz){
     
-    int index = get_index_from_identity(index_of_the_particle);
-    if(index < 0) {return -1;}
-    particles[index].vx = vx;
-    particles[index].vy = vy;
-    particles[index].vz = vz;
+    particle_location loc = get_index_from_identity(index_of_the_particle);
+    if(loc.index < 0) {return -1;}
+    loc.code->particles[loc.index].vx = vx;
+    loc.code->particles[loc.index].vy = vy;
+    loc.code->particles[loc.index].vz = vz;
     return 0;
 }
 
-
-int _set_integrator(int value){
+int new_subset(int * index, double time_offset) {
+    reb_simulation * code = reb_create_simulation();
+    if(time_offset < 0) {time_offset = _time;}
+    codes.push_back(code_state(code, time_offset, codes.size()));
+    code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
+    code->t = time_offset;
+    *index = codes.size() - 1;
+    return 0;
+}
+int stop_subset(int code_index) {
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    code_state cs = codes[code_index];
+    if(cs.code) {
+        reb_simulation * code = cs.code;
+        reb_remove_all(code);
+        reb_free_simulation(code);
+        cs.code = 0;
+        codes[code_index] = cs;
+    }
+    return 0;
+}
+int _set_integrator(int value, int code_index){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
     
     switch(value){
         case 0:
-            integrator = IAS15;
+             code->integrator = reb_simulation::REB_INTEGRATOR_IAS15;
             break;
         case 1:
-            integrator = WHFAST;
+            code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
             break;
         case 2:
-            integrator = SEI;
+            code->integrator = reb_simulation::REB_INTEGRATOR_SEI;
             break;
         case 3:
-            integrator = WH;
+            code->integrator = reb_simulation::REB_INTEGRATOR_WH;
             break;
         case 4:
-            integrator = LEAPFROG;
+            code->integrator = reb_simulation::REB_INTEGRATOR_LEAPFROG;
             break;
         case 5:
-            integrator = HYBRID;
+            code->integrator = reb_simulation::REB_INTEGRATOR_HYBRID;
             break;
         case 6:
-            integrator = NONE;
+            code->integrator = reb_simulation::REB_INTEGRATOR_NONE;
             break;
         default:
-            integrator = NONE;
+            code->integrator = reb_simulation::REB_INTEGRATOR_NONE;
             return -1;
             break;
             
@@ -587,8 +732,17 @@ int _set_integrator(int value){
     return 0;
 }
 
-int _get_integrator(int * value){
-    *value = integrator; 
+int _get_integrator(int code_index, int * value){
+    
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    
+    *value = code->integrator; 
     return 0;
 }
 

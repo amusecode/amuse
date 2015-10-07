@@ -126,6 +126,17 @@ class ReboundInterfaceTests(TestWithMPI):
         instance.stop()
 
 
+    def test6(self):
+        instance = self.new_instance_of_an_optional_code(ReboundInterface)
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.commit_parameters())
+        
+        # Set up an equal-mass binary on a circular orbit:
+        self.assertEquals([0, -10], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01, 1).values())
+        
+        instance.stop()
+
+
 class TestRebound(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = datamodel.Stars(2)
@@ -263,7 +274,7 @@ class TestRebound(TestWithMPI):
         print instance.particles
         instance.particles.remove_particles(collisions.particles(0) + collisions.particles(1))
         instance.particles.add_particles(sticky_merged)
-        
+        print instance.particles
         instance.evolve_model(1.0 | nbody_system.time)
         print
         print instance.model_time
@@ -277,6 +288,7 @@ class TestRebound(TestWithMPI):
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True])
         instance.stop()
+
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         instance = self.new_instance_of_an_optional_code(Rebound, convert_nbody)
@@ -312,5 +324,108 @@ class TestRebound(TestWithMPI):
         self.assertEquals(len(instance.stopping_conditions.out_of_box_detection.particles(0)), 1)
         self.assertEquals(instance.stopping_conditions.out_of_box_detection.particles(0)[0].key, particles[1].key)
         instance.stop()
+        
+
+    def test6(self):
+        instance = self.new_instance_of_an_optional_code(Rebound)
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        particles = datamodel.Particles(2)
+        particles.position = ([0,0,0], [1,0,0] )| nbody_system.length
+        particles.velocity = ([-1,0,0], [2,0,0] )| nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles.mass = 0.1| nbody_system.mass
+                
+        instance.particles.add_particles(particles)
+        self.assertAlmostRelativeEquals(instance.kinetic_energy, particles.kinetic_energy())
+        self.assertAlmostRelativeEquals(instance.potential_energy, particles.potential_energy(G = nbody_system.G))
+        
+
+
+    def test7(self):
+        instance = self.new_instance_of_an_optional_code(Rebound)
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        subset0 = 0
+        subset1 = instance.new_subset()
+        print subset1
+        self.assertEquals(subset1, 1)
+        
+        particles = datamodel.Particles(2)
+        particles.position = ([0,0,0], [1,0,0] )| nbody_system.length
+        particles.velocity = ([-1,0,0], [2,0,0] )| nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles.mass = 0.1| nbody_system.mass
+                
+        particles2 = datamodel.Particles(2)
+        particles2.position = ([0,0,0], [1,0,0] )| nbody_system.length
+        particles2.velocity = ([-1,0,0], [2,0,0] )| nbody_system.speed
+        particles2.radius = 0| nbody_system.length
+        particles2.mass = 2 | nbody_system.mass
+        particles2.subset = subset1
+        
+        instance.particles.add_particles(particles)
+        instance.particles.add_particles(particles2)
+        print instance.particles
+        self.assertAlmostRelativeEquals(instance.kinetic_energy, particles.kinetic_energy())
+        self.assertAlmostRelativeEquals(instance.potential_energy, particles.potential_energy(G = nbody_system.G))
+        self.assertAlmostRelativeEquals(instance.get_kinetic_energy(subset1), particles2.kinetic_energy())
+        self.assertAlmostRelativeEquals(instance.get_potential_energy(subset1), particles2.potential_energy(G = nbody_system.G))
+        
+
+
+    def test8(self):
+        instance = self.new_instance_of_an_optional_code(Rebound)
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        subset0 = 0
+        subset1 = instance.new_subset()
+        print subset1
+        self.assertEquals(subset1, 1)
+        
+        particles = datamodel.Particles(2)
+        particles.position = ([0,0,0], [1,0,0] )| nbody_system.length
+        particles.velocity = ([0,0,0], [0,0.5,0] )| nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles.mass = 0.1| nbody_system.mass
+                
+        particles2 = datamodel.Particles(2)
+        particles2.position = ([0,0,0], [2,0,0] )| nbody_system.length
+        particles2.velocity = ([0,0,0], [0,1,0] )| nbody_system.speed
+        particles2.radius = 0| nbody_system.length
+        particles2.mass = 1 | nbody_system.mass
+        particles2.subset = subset1
+        
+        instance.particles.add_particles(particles)
+        instance.particles.add_particles(particles2)
+        instance.evolve_model(0.1 | nbody_system.time)
+        self.assertAlmostRelativeEquals(instance.kinetic_energy, particles.kinetic_energy(), 2)
+        self.assertAlmostRelativeEquals(instance.potential_energy, particles.potential_energy(G = nbody_system.G), 2)
+        self.assertAlmostRelativeEquals(instance.get_kinetic_energy(subset1), particles2.kinetic_energy(), 2)
+        self.assertAlmostRelativeEquals(instance.get_potential_energy(subset1), particles2.potential_energy(G = nbody_system.G), 2)
+        particles_evolved = instance.particles.copy()
+        
+        instance1 = self.new_instance_of_an_optional_code(Rebound)
+        instance1.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        particles1c = particles.copy()
+        instance1.particles.add_particles(particles1c)
+        instance1.evolve_model(0.1 | nbody_system.time)
+        particles1evolved = particles_evolved[particles_evolved.subset == 0]
+        print "HHH:", particles_evolved.subset
+        print "p2e:", particles1evolved
+        print instance1.particles
+        self.assertAlmostRelativeEquals(instance1.particles.position, particles1evolved.position, 10)
+        self.assertAlmostRelativeEquals(instance1.particles.velocity, particles1evolved.velocity, 10)
+        
+        instance2 = self.new_instance_of_an_optional_code(Rebound)
+        instance2.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        particles2c = particles2.copy()
+        particles2c.subset = 0
+        instance2.particles.add_particles(particles2c)
+        instance2.evolve_model(0.1 | nbody_system.time)
+        particles2evolved = particles_evolved[particles_evolved.subset == subset1]
+        print "HHH:", particles_evolved.subset
+        print "p2e:", particles2evolved
+        print instance2.particles
+        self.assertAlmostRelativeEquals(instance2.particles.position, particles2evolved.position, 10)
+        self.assertAlmostRelativeEquals(instance2.particles.velocity, particles2evolved.velocity, 10)
         
 

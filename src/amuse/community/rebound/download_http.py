@@ -140,7 +140,7 @@ def new_option_parser():
     
     result.add_option(
         "--version", 
-        default = '99855803b586b1e9af6bc8c54bf2328dc0cf325c',
+        default = '86026787c72c900ac729d727c2a293d2854e0c77',
         dest="version",
         help="git revision to download from github",
         type="string"
