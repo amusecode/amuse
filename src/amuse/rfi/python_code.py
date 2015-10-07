@@ -159,6 +159,7 @@ class PythonImplementation(object):
         units = [False] * len(specification.output_parameters)
         if specification.must_handle_array:
             keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification, input_units)
+            print keyword_arguments
             result = method(**keyword_arguments)
             self.fill_output_message(output_message, None, result, keyword_arguments, specification, units)
         else:
@@ -179,6 +180,7 @@ class PythonImplementation(object):
         if specification.has_units:
             output_message.encoded_units = self.convert_output_units_to_floats(units)
     
+
     def new_keyword_arguments_from_message(self, input_message, index, specification, units = []):
         keyword_arguments = OrderedDictionary()
         for parameter in specification.parameters:
@@ -207,9 +209,11 @@ class PythonImplementation(object):
                 argument_value = ValueHolder(None)
             elif parameter.direction == LegacyFunctionSpecification.LENGTH:
                 argument_value = input_message.call_count
-            keyword_arguments[parameter.name] = argument_value
+            name = 'in_' if parameter.name == 'in' else parameter.name
+            keyword_arguments[name] = argument_value
         return keyword_arguments
         
+
     def fill_output_message(self, output_message, index, result, keyword_arguments, specification, units):
         from amuse.units import quantities
         
@@ -406,4 +410,64 @@ class PythonImplementation(object):
             result.append(unit)
         return result
         
+
+class CythonImplementation(PythonImplementation):
+    
+        
+    def handle_message(self, input_message, output_message):
+        legacy_function = self.mapping_from_tag_to_legacy_function[input_message.function_id]
+        specification = legacy_function.specification
+        
+        dtype_to_count = self.get_dtype_to_count(specification)
+        
+        
+        if specification.name.startswith('internal__'):
+            method = getattr(self, specification.name)
+        else:
+            method = getattr(self.implementation, specification.name)
+        
+        if specification.has_units:
+            input_units = self.convert_floats_to_units(input_message.encoded_units)
+        else:
+            input_units = ()
+        
+        for type, attribute in self.dtype_to_message_attribute.iteritems():
+            count = dtype_to_count.get(type,0)
+            for x in range(count):
+                if type == 'string':
+                    getattr(output_message, attribute).append([""] * output_message.call_count)
+                else:
+                    getattr(output_message, attribute).append(numpy.zeros(output_message.call_count, dtype=type))
+
+        for type, attribute in self.dtype_to_message_attribute.iteritems():
+            array = getattr(input_message, attribute)
+            unpacked = unpack_array(array, input_message.call_count, type)
+            setattr(input_message,attribute, unpacked)
+        
+        units = [False] * len(specification.output_parameters)
+        if specification.must_handle_array:
+            keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification, input_units)
+            result = method(**keyword_arguments)
+            self.fill_output_message(output_message, None, result, keyword_arguments, specification, units)
+        else:
+            for index in range(input_message.call_count):
+                #print "INDEX:", index
+                keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification, input_units)
+                try:
+                    result = method(**keyword_arguments)
+                except TypeError:
+                    result = method(*list(keyword_arguments))
+                self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
+        
+            
+        for type, attribute in self.dtype_to_message_attribute.iteritems():
+            array = getattr(output_message, attribute)
+            packed = pack_array(array, input_message.call_count, type)
+            setattr(output_message, attribute, packed)
+        
+        if specification.has_units:
+            output_message.encoded_units = self.convert_output_units_to_floats(units)
+    
+        
+
 

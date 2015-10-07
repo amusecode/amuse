@@ -27,6 +27,7 @@ class compilers(object):
 
     fc_iso_c_bindings = '@FC_ISO_C_BINDINGS@'=='yes'
     
+    cython = '@CYTHON@'
     pythondev_cflags = '@PYTHONDEV_CFLAGS@'
     pythondev_ldflags = '@PYTHONDEV_LDFLAGS@'
 

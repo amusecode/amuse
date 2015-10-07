@@ -1170,6 +1170,8 @@ class MpiChannel(AbstractMessageChannel):
             raise exceptions.CodeException("Another code has crashed, cannot spawn a new code, please stop the script and retry")
         
         if not self.hostname is None:
+            print self.hostname
+            dddd
             self.info = MPI.Info.Create()
             self.info['host'] = self.hostname
         else:
@@ -1181,6 +1183,7 @@ class MpiChannel(AbstractMessageChannel):
         self._communicated_splitted_message = False
     
     
+
     @classmethod
     def ensure_mpi_initialized(cls):
         if not MPI.Is_initialized():

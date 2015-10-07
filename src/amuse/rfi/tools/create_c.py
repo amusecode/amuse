@@ -1272,18 +1272,24 @@ class GenerateACHeaderStringFromASpecificationClass\
         
     def start(self):  
         if self.make_extern_c:
-            self.out + 'extern "C" {'
-            self.out.indent().lf()
+            self.out + "#ifdef __cplusplus"
+            self.out.lf() + 'extern "C" {'
+            self.out.lf() + "#endif"
+            self.out.lf()
             
         self.output_sourcecode_for_functions()
         
         if self.make_extern_c:
-            self.out.dedent().lf() + '}'
+            self.out + "#ifdef __cplusplus"
+            self.out.lf() + '}'
+            self.out.lf() + "#endif"
+            self.out.lf()
         
         self.out.lf()
         
         self._result = self.out.string
         
+
 
 class GenerateACStubStringFromASpecificationClass\
     (GenerateASourcecodeStringFromASpecificationClass):

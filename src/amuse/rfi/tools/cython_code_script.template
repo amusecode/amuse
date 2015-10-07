@@ -1,0 +1,79 @@
+import sys
+import os
+
+
+
+if __name__ == '__main__':
+
+    if len(sys.argv) > 1:
+
+        portnumber = int(sys.argv[1])
+        host = sys.argv[2]
+        usempi= sys.argv[3]
+
+
+        
+        syspath = ({syspath})
+        existing_syspath = set(sys.path)
+        for x in syspath:
+            if not x in existing_syspath:
+                sys.path.append(x)
+        
+        
+        if usempi=="true":
+            from mpi4py import rc
+            rc.initialize = False
+            from mpi4py import MPI
+            MPI.Init()
+
+        try:
+            syspath = ({syspath})
+            existing_syspath = set(sys.path)
+            for x in syspath:
+                if not x in existing_syspath:
+                      sys.path.append(x)
+    
+            from amuse.rfi import core
+    
+            import {worker_module}
+            from {interface_module} import {interface}
+    
+            instance = {worker_module}
+    
+            from amuse.rfi.python_code import CythonImplementation
+    
+            x = CythonImplementation(instance, {interface})
+    
+            x.start_socket(portnumber, host)
+        finally:  
+            if usempi:
+                MPI.Finalize()
+
+    else:
+
+
+        syspath = ({syspath})
+        existing_syspath = set(sys.path)
+        for x in syspath:
+            if not x in existing_syspath:
+                sys.path.append(x)
+        
+        from mpi4py import rc
+        rc.initialize = False
+        from mpi4py import MPI
+        
+        MPI.Init()
+        try:
+            from amuse.rfi import core
+
+            import {worker_module}
+            from {interface_module} import {interface}
+    
+            instance = {worker_module}
+
+            from amuse.rfi.python_code import CythonImplementation
+
+            x = CythonImplementation(instance, {interface})
+            x.start()
+        finally:
+            MPI.Finalize()
