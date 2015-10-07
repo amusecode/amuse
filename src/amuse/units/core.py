@@ -134,8 +134,12 @@ class unit(object):
             return self.base != other.base and self.factor != other.factor
         else:
             return True
-    
+   
     def __hash__(self):
+        return self._hash
+        
+    @late
+    def _hash(self):
         return hash(id(self))
         
     @property
