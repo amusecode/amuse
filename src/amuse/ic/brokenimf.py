@@ -22,17 +22,21 @@ class MultiplePartIMF(object):
         self.alphas = numpy.array(alphas)
         
         if random:
-            self.random = numpy.random.random
+            if random is True:
+                self.random = numpy.random.random
+            else:
+                self.random = random.random_sample
         else:
             self.random = self.evenly_distributed
         
         self.number_of_bins = len(self.alphas)
         self.fraction_per_bin = self.calculate_fraction_per_bin()
         self.cumulative_fractions = numpy.array([sum(self.fraction_per_bin[:i]) for i in range(self.number_of_bins+1)])
-        self.cumulative_fractions[-1] = 1.0 # In case of round-off errors
+        self.cumulative_fractions[-1] = 1.0     # In case of round-off errors
         self.factors = pow(self.mass_boundaries[1:] / self.mass_boundaries[:-1], self.alphas + 1.0) - 1.0
         self.inv_alpha1s = numpy.array([numpy.inf if alpha==-1 else (1.0 / (alpha + 1.0)) for alpha in self.alphas])
     
+
     def evenly_distributed(self, size=1):
         return numpy.linspace(0.0, 1.0, size)
     
@@ -89,6 +93,7 @@ class MultiplePartIMF(object):
         total_mass = set_of_masses.sum()
         return (total_mass, set_of_masses)
     
+
 
 def new_broken_power_law_mass_distribution(number_of_particles, *list_arguments, **keyword_arguments):
     """Returns a broken (multiple-part) power-law mass distribution in SI units.
