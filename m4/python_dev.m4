@@ -7,11 +7,13 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
     
     AC_ARG_VAR([PYTHONCONFIG], [Python config script to determine python module compile flags (python-config)])
     AS_IF([test "x$PYTHONCONFIG" = "x"], [PYTHONCONFIG=python-config])
-    AC_PATH_PROG([PYTHONCONFIG], [$PYTHONCONFIG], [PYTHON_DEV='no'])
+    AC_PATH_PROGS([PYTHONCONFIG], [$PYTHONCONFIG], ['no'])
+    AS_IF([test "x$PYTHONCONFIG" = "xno"], [PYTHON_DEV='no'])
     AC_ARG_VAR([CYTHON], [cython script to compile code in the Cython language])
     AS_IF([test "x$CYTHON" = "x"], [CYTHON=cython])
     AC_PATH_PROG([CYTHON], [$CYTHON], [PYTHON_DEV='no'])
     AS_IF([test "x$PYTHON_DEV" = "xyes"], [
+        
         PYTHONDEV_CFLAGS=`$PYTHONCONFIG --cflags`
         PYTHONDEV_LDFLAGS=`$PYTHONCONFIG --ldflags`
         save_CFLAGS="$CFLAGS"
@@ -31,13 +33,15 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
         AS_IF([test "x$PYTHON_DEV" = "xyes"], [
         
             save_LDFLAGS="$LDFLAGS"
+            save_LIBS="$LIBS"
+            LIBS=`$PYTHONCONFIG --libs`
             LDFLAGS="$PYTHONDEV_LDFLAGS $save_LDFLAGS"
             AC_MSG_CHECKING([if possible to embed python])
-            AC_LINK_IFELSE(
-                [AC_LANG_PROGRAM([[#include <Python.h>]],
+            AC_RUN_IFELSE(
+                [AC_LANG_PROGRAM([[#include "Python.h"]],
                    [[
                        Py_Initialize();
-                       PyRun_SimpleString("print 'embedded python'");
+                       PyRun_SimpleString("print 'embedded python',");
                        Py_Finalize();
                    ]])],
                 [AC_MSG_RESULT([yes])],
@@ -48,6 +52,7 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
                 AC_MSG_RESULT([no])]
             )
             LDFLAGS="$save_LDFLAGS"
+            LIBS="$save_LIBS"
         ])
         CFLAGS="$save_CFLAGS"
         CPPFLAGS="$save_CPPFLAGS"
