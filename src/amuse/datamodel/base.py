@@ -1150,10 +1150,14 @@ class AbstractSet(object):
         >>> print particles1.x
         [2.0] m
         """
+        if len(particles) == 0:
+            return
+        
         keys = particles.get_all_keys_in_store()
         self.remove_particles_from_store(keys)
         
     
+
     def remove_particle(self, particle):
         """
         Removes a particle from this set.

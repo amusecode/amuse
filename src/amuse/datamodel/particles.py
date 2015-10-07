@@ -700,8 +700,13 @@ class AbstractParticleSet(AbstractSet):
         >>> print particles1.x
         [2.0] m
         """
+        
+        if len(particles) == 0:
+            return
+        
         indices = self.get_indices_of_keys(particles.get_all_keys_in_store())
         self.remove_particles_from_store(indices)
+
 
 
     def remove_particle(self, particle):
@@ -2294,8 +2299,11 @@ class ParticlesOverlay(AbstractParticleSet):
                 indices_inoverlay.append(i)
         return (attributes_inbase, indices_inbase), (attributes_inoverlay, indices_inoverlay)
 
-    def _split_attributes_and_values(self, attributes, values):
-        inbase = set(self._private.base_set.get_attribute_names_defined_in_store())
+    def _split_attributes_and_values(self, attributes, values, is_setter = True):
+        if is_setter:
+            inbase = set(self._private.base_set.get_settable_attribute_names_defined_in_store())
+        else:
+            inbase = set(self._private.base_set.get_attribute_names_defined_in_store())
         attributes_inbase = []
         attributes_inoverlay = []
         values_inbase = []
@@ -2308,6 +2316,7 @@ class ParticlesOverlay(AbstractParticleSet):
                 attributes_inoverlay.append(x)
                 values_inoverlay.append(y)
         return (attributes_inbase, values_inbase), (attributes_inoverlay, values_inoverlay)
+
 
     def add_particles_to_store(self, keys, attributes = [], values = []):
         self._ensure_updated_set_properties()
@@ -3437,6 +3446,214 @@ def create_particle_set(**args):
         setattr(particles,a,args[a])
 
     return particles
+
+
+
+
+class UpdatingParticlesSubset(AbstractParticleSet):
+    """A subset of particles that reruns the selection criteria each time the superset is updated (particles added or removed). 
+    Attribute values are not stored by the subset. The subset provides a limited view
+    to the particles.
+
+    Particle subset objects are not supposed to be created
+    directly. Instead use the ``to_set`` or ``select`` methods.
+
+    """
+
+    def __init__(self, particles, selection_function):
+        AbstractParticleSet.__init__(self, particles)
+        self._private.particles = particles
+        self._private.selection_function = selection_function
+        
+        self._private.keys = []                     # numpy.array(keys, dtype='uint64')
+        self._private.set_of_keys = set([])
+        self._private.version = -1
+        self._private.indices = None
+
+
+    def __getitem__(self, index):
+        keys = self.get_all_keys_in_store()[index]
+        if hasattr(keys, '__iter__'):
+            return self._subset(keys)
+        else:
+            key = keys
+            if key > 0 and key < 18446744073709551615L: #2**64 - 1
+                return self._private.particles._get_particle_unsave(key, self.get_all_indices_in_store()[index])
+            else:
+                return None
+
+    def _get_version(self):
+        return self._private.particles._get_version()
+
+
+
+    def compressed(self):
+        self._sync_with_set()
+        keys = self._private.keys
+        return self._subset(keys[numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)])
+
+
+    def get_valid_particles_mask(self):
+        self._sync_with_set()
+        keys = self._private.keys
+        return numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)
+
+
+    def unconverted_set(self):
+        return UpdatedParticlesSubset(self._private.particles.unconverted_set(), self._private.selection_function)
+
+
+    def add_particles_to_store(self, keys, attributes = [], values = []):
+        """
+        Adds particles from to the subset, also
+        adds the particles to the superset
+        """
+        self._private.keys = None
+        self._private.set_of_keys = set([])
+        self._private.version = -1
+        self._private.particles.add_particles_to_store(keys, attributes, values)
+
+
+    def remove_particles_from_store(self, indices):
+        """
+        Removes particles from the subset, and removes particles
+        from the super set
+        """
+
+        indices_to_remove = set(indices)
+
+        index = 0
+        index_in_local_list = []
+        for x in self._private.indices:
+            if x in indices_to_remove:
+                index_in_local_list.append(index)
+            index += 1
+        set_to_remove = set(self._private.keys[index_in_local_list])
+        self._private.keys = []     # will rerun the selection
+        self._private.set_of_keys = set([])
+        self._private.particles.remove_particles_from_store(indices)
+
+        self._private.version = -1
+        self._private.indices = None
+
+
+
+    def get_values_in_store(self, indices, attributes):
+        if indices is None:
+            indices = self.get_all_indices_in_store()
+
+        return self._private.particles.get_values_in_store(indices, attributes)
+
+    def set_values_in_store(self, indices, attributes, values):
+        if indices is None:
+            indices = self.get_all_indices_in_store()
+
+        self._private.particles.set_values_in_store(indices, attributes, values)
+
+    def get_attribute_names_defined_in_store(self):
+        return self._private.particles.get_attribute_names_defined_in_store()
+
+    def get_settable_attribute_names_defined_in_store(self):
+        return self._private.particles.get_settable_attribute_names_defined_in_store()
+
+    def get_all_keys_in_store(self):
+        self._sync_with_set()
+            
+        return self._private.keys
+
+    def get_all_indices_in_store(self):
+        self._sync_with_set()
+
+        return self._private.indices
+
+    def has_key_in_store(self, key):
+        self._sync_with_set()
+        return key in self._private.set_of_keys
+
+
+    def _original_set(self):
+        return self._private.particles
+
+    def get_timestamp(self):
+        return self._original_set().get_timestamp()
+
+    def get_indices_of_keys(self, keys):
+        self._sync_with_set()
+        
+        return self._private.particles.get_indices_of_keys(keys)
+        
+    def _sync_with_set(self):
+        if self._private.particles is None:
+            return
+        if not self._private.version == self._private.particles._get_version():
+            try:
+                keys = self._private.particles.get_all_keys_in_store()[self._private.selection_function(self._private.particles)]
+                self._private.keys = numpy.array(keys, dtype='uint64')
+                self._private.set_of_keys = set(keys)
+                self._private.indices = self._private.particles.get_indices_of_keys(self._private.keys)
+                self._private.version = self._private.particles._get_version()
+            except exceptions.KeysNotInStorageException as ex:
+                self._private.indices = ex.found_indices
+                self._private.keys = numpy.array(ex.found_keys, dtype='uint64')
+                self._private.set_of_keys = set(self._private.keys)
+                self._private.version = self._private.particles._get_version()
+
+
+
+    def previous_state(self):
+        return ParticlesSubset(self._private.particles.previous_state(), self._private.selection_function)
+
+
+    def difference(self, other):
+        self._sync_with_set()
+        
+        new_set_of_keys = self._private.set_of_keys.difference(other.as_set()._private.set_of_keys)
+        return ParticlesSubset(self._private.particles, list(new_set_of_keys))
+
+
+    def union(self, other):
+        """
+        Returns a new subset containing the union between
+        this set and the provided set.
+
+        >>> particles = Particles(3)
+        >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
+        >>> subset1 = particles.select(lambda x : x > 25.0 | units.kg, ["mass"])
+        >>> subset2 = particles.select(lambda x : x < 15.0 | units.kg, ["mass"])
+        >>> union = subset1.union(subset2)
+        >>> len(union)
+        2
+        >>> sorted(union.mass.value_in(units.kg))
+        [10.0, 30.0]
+        """
+
+        self._sync_with_set()
+        new_set_of_keys = self._private.set_of_keys.union(other.as_set()._private.set_of_keys)
+        return ParticlesSubset(self._private.particles, list(new_set_of_keys))
+
+    def as_set(self):
+        return self
+
+    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+        self._sync_with_set()
+        if keep_structure:
+            result = UpdatingParticlesSubset(None, self._private.seleciton_function)
+            if memento is None:
+                memento = dict()
+            memento[id(self)] = result
+            if id(self._private.particles) in memento:
+                result._private.particles = memento[id(self._private.particles)]
+            else:
+                result._private.particles = self._private.particles.copy(memento, keep_structure, filter_attributes)
+            result._private.selection_function = self._private.seleciton_function
+            result._private.keys = []
+            result._private.set_of_keys = set([])
+
+            result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
+
+            return result
+        else:
+            return super(UpdatingParticlesSubset, self).copy(memento, keep_structure, filter_attributes)
 
 
 
