@@ -153,12 +153,9 @@ class interpolating_2D_remapper(object):
         ypos=value_in( getattr(target,self._axes_names[1]), self._ypos_unit)
                 
         for attribute in attributes:
-            values=getattr(nodes,attribute) 
-            if is_quantity(values):
-              unit=values.unit
-              values=values.number
-            else:
-              unit=units.none
+            values=to_quantity( getattr(nodes,attribute) ) 
+            unit=values.unit
+            values=values.number
             samples=self.sample(values,xpos,ypos)
             setattr(target, attribute, (samples if unit is units.none else (samples | unit)))
 
