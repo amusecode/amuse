@@ -99,6 +99,8 @@ static bool reeval = false;
 static bool test_mode = false;
 static ostream* sout = &cout;
 
+static real potential_energy = 0.0;
+
 // Accessors for use by the C++ main driver only:
 
 //void set_t(real tt)                {t = tt;}
@@ -383,7 +385,6 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     int n = 0;
     int error;
     int is_collision_detection_enabled;
-
     if(mpi_rank == 0){
         n = ident.size();
     }
@@ -1351,50 +1352,54 @@ int get_kinetic_energy(double *kinetic_energy)
     return 0;
 }
 
-int get_potential_energy(double *potential_energy)
+int get_potential_energy(double *value)
 {
     int n = 0;
     real (* save_pos)[NDIM] = 0;
     real (* save_vel)[NDIM] = 0;
 
     real dt = t_evolve-t;
-    if(mpi_rank == 0) {
-        n = ident.size();
-        save_pos = new real[n][NDIM];
-        save_vel = new real[n][NDIM];
-        dt = t_evolve-t;
+    if(dt > 0) {
+        if(mpi_rank == 0) {
+            n = ident.size();
+            save_pos = new real[n][NDIM];
+            save_vel = new real[n][NDIM];
+            dt = t_evolve-t;
 
-        if (dt > 0)
-        {
-          for (int i = 0; i < n ; i++)
+            if (dt > 0)
             {
-              for (int k = 0; k < NDIM ; k++)
+              for (int i = 0; i < n ; i++)
                 {
-                  save_pos[i][k] = pos[i][k];
-                  save_vel[i][k] = vel[i][k];
+                  for (int k = 0; k < NDIM ; k++)
+                    {
+                      save_pos[i][k] = pos[i][k];
+                      save_vel[i][k] = vel[i][k];
+                    }
                 }
+              predict_step(t_evolve-t);
             }
-          predict_step(t_evolve-t);
         }
-    }
-    real epot, coll_time;
-    get_acc_jerk_pot_coll(&epot, &coll_time);
-    if(mpi_rank == 0) {
-        if (dt > 0)
-        {
-            for (int i = 0; i < n ; i++)
-              {
-                for (int k = 0; k < NDIM ; k++)
+        real epot, coll_time;
+        get_acc_jerk_pot_coll(&potential_energy, &coll_time);
+        if(mpi_rank == 0) {
+            if (dt > 0)
+            {
+                for (int i = 0; i < n ; i++)
                   {
-                    pos[i][k] = save_pos[i][k];
-                    vel[i][k] = save_vel[i][k];
+                    for (int k = 0; k < NDIM ; k++)
+                      {
+                        pos[i][k] = save_pos[i][k];
+                        vel[i][k] = save_vel[i][k];
+                      }
                   }
-              }
+            }
+            delete[] save_pos;
+            delete[] save_vel;
         }
-        delete[] save_pos;
-        delete[] save_vel;
+        *value = potential_energy;
+    } else {
+        *value = potential_energy;
     }
-    *potential_energy = epot;
     return 0;
 }
 
@@ -1625,7 +1630,7 @@ int get_dynamical_time_scale(double *ts)
         ekin += 0.5*mass[i]*dekin;
       }
 
-    get_acc_jerk_pot_coll(&epot, &coll_time);
+    get_acc_jerk_pot_coll(&potential_energy, &coll_time);
 
     real tdyn = (-0.5*mtot*mtot/epot) / sqrt(2*ekin/mtot);
     return tdyn;
@@ -1637,7 +1642,7 @@ int get_time_step(double *time_step)
         return 0;
     }
     real epot, coll_time;
-    get_acc_jerk_pot_coll(&epot, &coll_time);
+    get_acc_jerk_pot_coll(&potential_energy, &coll_time);
     *time_step = calculate_step(coll_time);
     return 0;
 }
@@ -1673,7 +1678,7 @@ int get_testmode(int * value) {
 int recommit_particles(){
     real epot, coll_time;
 
-    get_acc_jerk_pot_coll(&epot, &coll_time);
+    get_acc_jerk_pot_coll(&potential_energy, &coll_time);
 
     return 0;
 }
@@ -1681,7 +1686,7 @@ int recommit_particles(){
 int recommit_parameters(){
     real epot, coll_time;
 
-    get_acc_jerk_pot_coll(&epot, &coll_time);
+    get_acc_jerk_pot_coll(&potential_energy, &coll_time);
 
     return 0;
 }
@@ -1690,7 +1695,7 @@ int recommit_parameters(){
 int commit_particles()
 {
     real epot, coll_time;
-    get_acc_jerk_pot_coll(&epot, &coll_time);
+    get_acc_jerk_pot_coll(&potential_energy, &coll_time);
     return 0;
 }
 
