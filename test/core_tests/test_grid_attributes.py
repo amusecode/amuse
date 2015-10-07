@@ -9,8 +9,8 @@ class TestGridAttributes(amusetest.TestCase):
     def test1(self):
         grid=new_cartesian_grid((10,20),1.)
         self.assertEqual(grid.cellsize(),[1.,1.])
-        self.assertEqual(grid.get_minimum_index(), [0,0])
-        self.assertEqual(grid.get_maximum_index(), [9,19])
+        self.assertEqual(grid.get_minimum_index(), (0,0))
+        self.assertEqual(grid.get_maximum_index(), (9,19))
         self.assertEqual(grid.get_minimum_position(), [0.,0.])
         self.assertEqual(grid.get_maximum_position(), [10.,20.])
         self.assertEqual(grid.get_volume(), 10*20.)
@@ -30,8 +30,8 @@ class TestGridAttributes(amusetest.TestCase):
     def test2(self):
         grid=new_regular_grid((10,20),(10,10))
         self.assertEqual(grid.cellsize(),[1.,0.5])
-        self.assertEqual(grid.get_minimum_index(), [0,0])
-        self.assertEqual(grid.get_maximum_index(), [9,19])
+        self.assertEqual(grid.get_minimum_index(), (0,0))
+        self.assertEqual(grid.get_maximum_index(), (9,19))
         self.assertEqual(grid.get_minimum_position(), [0.,0.])
         self.assertEqual(grid.get_maximum_position(), [10.,10.])
         self.assertEqual(grid.get_volume(), 10*10.)

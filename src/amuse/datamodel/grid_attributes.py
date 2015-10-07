@@ -17,7 +17,7 @@ def cellsize(grid):
     """Returns the lenght of each direction in the grid.
     Works for regular and cartesian grids.
     """
-    result = grid[tuple(grid.get_minimum_index())].position*0.
+    result = grid[grid.get_minimum_index()].position*0.
     Ndim=len(grid.shape)
     cell1 = grid[(0,)*Ndim]
     for i in range(len(result)):
@@ -32,7 +32,7 @@ def get_minimum_index(grid):
 
 @grids.StructuredBaseGrid.caching_function_for_set
 def get_minimum_index(grid):
-    return numpy.zeros_like(grid.shape)
+    return tuple(numpy.zeros_like(grid.shape))
     
 @grids.BaseGrid.caching_function_for_set
 def get_maximum_index(grid):
@@ -40,7 +40,7 @@ def get_maximum_index(grid):
 
 @grids.StructuredBaseGrid.caching_function_for_set
 def get_maximum_index(grid):
-    return grid.shape - numpy.ones_like(grid.shape)
+    return tuple(grid.shape - numpy.ones_like(grid.shape))
 
 @grids.BaseGrid.caching_function_for_set
 def get_minimum_position(grid):
@@ -48,7 +48,7 @@ def get_minimum_position(grid):
 
 @grids.RectilinearBaseGrid.caching_function_for_set
 def get_minimum_position(grid):
-    return grid[tuple(grid.get_minimum_index())].position - 0.5 * grid.cellsize()
+    return grid[grid.get_minimum_index()].position - 0.5 * grid.cellsize()
 
 @grids.BaseGrid.caching_function_for_set
 def get_maximum_position(grid):
@@ -56,7 +56,7 @@ def get_maximum_position(grid):
 
 @grids.RectilinearBaseGrid.caching_function_for_set
 def get_maximum_position(grid):
-    return grid[tuple(grid.get_maximum_index())].position + 0.5 * grid.cellsize()
+    return grid[grid.get_maximum_index()].position + 0.5 * grid.cellsize()
 
 @grids.BaseGrid.caching_function_for_set
 def get_volume(grid):
