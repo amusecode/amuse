@@ -39,8 +39,6 @@ worker_code.f90: interface.py
 flash_worker: worker_code.f90 $(CODELIB) $(OBJS)
 	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS)  $(FS_LIBS) -o $@ $(flash_obj) $(HDF5_LIBS)
 	cp $(drive_loc)/flash.par .
-# This line makes copies for the git repository of the important stuff.
-	cp Makefile interface.F90 interface.py worker_code.f90 ~/amuse/
 
 %.o: %.F90
 	$(FC) $(FCFLAGS) -I$(drive_loc) -c -o $@ $<
