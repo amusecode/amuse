@@ -61,6 +61,8 @@ class AbstractGrid(AbstractSet):
         
     def new_channel_to(self, other):
         return GridInformationChannel(self, other)
+    def new_remapping_channel_to(self, other, remapper):
+        return GridRemappingChannel(self, other, remapper)
     
     def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
         attributes = self.get_attribute_names_defined_in_store()
@@ -472,6 +474,40 @@ class GridPoint(object):
     def get_containing_set(self):
         return self.grid
         
+class GridRemappingChannel(object):
+    """
+    A channel to remap attributes from one grid to another.
+    """
+    
+    def __init__(self, source, target, remapper):
+        self.source = source
+        self.target = target
+        self.remapper = remapper( source, target)
+
+    def get_overlapping_attributes(self):
+        from_names = self.source.get_attribute_names_defined_in_store()
+        to_names = self.target.get_defined_settable_attribute_names()
+        names_to_copy = set(from_names).intersection(set(to_names))
+        return list(names_to_copy)
+
+    def copy_attributes(self, attributes):
+        self.remapper.forward_mapping(attributes)
+                
+    def copy(self):
+        if not self.target.can_extend_attributes():
+            self.copy_overlapping_attributes()
+        else:
+            self.copy_all_attributes()
+        
+    def copy_all_attributes(self):
+        names_to_copy = self.source.get_attribute_names_defined_in_store()
+        self.copy_attributes(list(names_to_copy))    
+
+    def copy_overlapping_attributes(self):
+        names_to_copy = self.get_overlapping_attributes()
+        self.copy_attributes(names_to_copy)  
+
+
 class GridInformationChannel(object):
     """
     A channel to copy attributes from one grid to another.
@@ -493,20 +529,6 @@ class GridInformationChannel(object):
         
         self.index = index
         
-        
-    def copy_attributes(self, attributes):
-        values = self.source.get_values_in_store(self.index, attributes)
-        
-        converted = []
-        for x in values:
-            if isinstance(x, LinkedArray):
-                converted.append(x.copy_with_link_transfer(self.source, self.target))
-            else:
-                converted.append(x)
-                
-        self.target.set_values_in_store(self.index, attributes, converted)
-    
-    
     def get_values(self, attributes):
         values = self.source.get_values_in_store(self.index, attributes)
         converted = []
@@ -516,12 +538,16 @@ class GridInformationChannel(object):
             else:
                 converted.append(x)
         return converted
-        
+
     def get_overlapping_attributes(self):
         from_names = self.source.get_attribute_names_defined_in_store()
         to_names = self.target.get_defined_settable_attribute_names()
         names_to_copy = set(from_names).intersection(set(to_names))
         return list(names_to_copy)
+    
+    def copy_attributes(self, attributes):
+        converted=self.get_values(attributes)        
+        self.target.set_values_in_store(self.index, attributes, converted)
         
     def copy(self):
         if not self.target.can_extend_attributes():
@@ -534,12 +560,8 @@ class GridInformationChannel(object):
         self.copy_attributes(list(names_to_copy))    
 
     def copy_overlapping_attributes(self):
-
-        from_names = self.source.get_attribute_names_defined_in_store()
-        to_names = self.target.get_defined_settable_attribute_names()
-        names_to_copy = set(from_names).intersection(set(to_names))
-             
-        self.copy_attributes(list(names_to_copy))  
+        names_to_copy = self.get_overlapping_attributes()
+        self.copy_attributes(names_to_copy)  
 
 class SamplePointOnCellCenter(object):
     def __init__(self, grid, point):
