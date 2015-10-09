@@ -7,7 +7,9 @@ import re
 
 def compare_version_strings(version1, version2):
     def normalize(v):
-        return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")]
+	# Split the version number at "." and return just the first two
+	# numbers (major and minor release) from the array returned.
+        return [int(x) for x in re.sub(r'(\.0+)*$','', v).split(".")[:2]]
     version1 = normalize(version1)
     version2 = normalize(version2)
     
