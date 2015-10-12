@@ -1,4 +1,4 @@
-/import inspect
+import inspect
 import numpy
 import os.path
 import cPickle as pickle
