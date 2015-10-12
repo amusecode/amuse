@@ -15,9 +15,9 @@ if __name__ == '__main__':
         
         syspath = ({syspath})
         existing_syspath = set(sys.path)
-        for x in syspath:
+        for x in reversed(syspath):
             if not x in existing_syspath:
-                sys.path.append(x)
+                sys.path.insert(0,x)
         
         
         if usempi=="true":
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         try:
             syspath = ({syspath})
             existing_syspath = set(sys.path)
-            for x in syspath:
+            for x in reversed(syspath):
                 if not x in existing_syspath:
                       sys.path.append(x)
     
@@ -56,7 +56,7 @@ if __name__ == '__main__':
         existing_syspath = set(sys.path)
         for x in syspath:
             if not x in existing_syspath:
-                sys.path.append(x)
+                sys.path.insert(0,x)
         
         from mpi4py import rc
         rc.initialize = False
