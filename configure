@@ -4591,7 +4591,6 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_CYTHON" && ac_cv_path_CYTHON="PYTHON_DEV='no'"
   ;;
 esac
 fi
