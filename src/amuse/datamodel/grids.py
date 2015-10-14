@@ -380,8 +380,54 @@ def new_structured_grid(shape, cell_corners, cell_positions=None, axes_names = "
        
         return result
 
-def new_unstructured_grid( cell_corners, cell_positions=None, axes_names="xyz", offset=None):
-        pass
+def new_unstructured_grid(size, num_corners, cell_corners, cell_positions=None, axes_names="xyz", offset=None):
+        """Returns an unstructured grid with cells with given corners and cell_positions.
+           if not present, cell positions default to average of corner positions.
+        """
+        dimensions = cell_corners.size / (num_corners * size)
+        if len(axes_names)<dimensions:
+            raise Exception("provide enough axes names")
+        if len(cell_corners.shape) != 2:
+            raise Exception("incorrect shape for cell_corners, the number of dimensions of the array should be exactly three (dimensions, size, corners)")
+        if cell_corners.shape[0] != dimensions:
+            raise Exception("incorrect shape for cell_corners, first dimension should equal the number of dimensions of the space in which the grid is defined")
+        if cell_corners.shape[1] != size * num_corners:
+            raise Exception("incorrect shape for cell_corners, second dimension should equal the grid size times the number of corners per cell")
+
+        if cell_positions is None:
+            cell_positions=[]
+            for cc in cell_corners:
+                c = cc.reshape(size, num_corners)
+                cp=numpy.zeros(size)
+                for i in range(size):
+                    cp[i] = c[i].sum() / num_corners
+
+                cell_positions.append(cp)
+
+        cell_positions = numpy.array(cell_positions)
+
+        if len(cell_positions.shape) != 2:
+            raise Exception("incorrect shape for cell_positions, the number of dimensions of the array should be exactly two (dimensions, size)")
+        if cell_positions.shape[0] != dimensions:
+            raise Exception("dimensions of cell_positions and cell_corners do not conform")
+        if cell_positions.shape[1] != size:
+            raise Exception("size of cell_positions and size do not conform")
+
+        if offset is None:
+            offset=[0.*l.flat[0] for l in cell_positions]
+
+        result = UnstructuredGrid(size)
+
+        for axis_name, pos, of in zip(axes_names, cell_positions, offset):
+            setattr(result, axis_name, pos + of)
+
+        result.add_vector_attribute("position", axes_names[0:dimensions])
+        
+        object.__setattr__(result,"_grid_type","unstructured")
+        object.__setattr__(result,"_num_corners", num_corners)
+        object.__setattr__(result,"_cell_corners", cell_corners)
+       
+        return result
 
 class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):
