@@ -620,6 +620,8 @@ class CollectionAttributes(object):
     def _copy_for_collection(self, newcollection):
         return CollectionAttributes(self._attributes)
         
+    def iteritems(self):
+        return self._attributes.iteritems()
 class CachedResults(object):
     """
     Stores results for functions that only need to be called once
