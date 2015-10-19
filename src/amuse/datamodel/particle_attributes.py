@@ -853,7 +853,6 @@ def Qparameter(parts, distfunc=None):
   
     graph=Graph()
   
-    print "making graph"
     for p in parts:
       d=distfunc(p,parts)
       for i,q in enumerate(parts):
@@ -864,14 +863,12 @@ def Qparameter(parts, distfunc=None):
   
     ml=reduce(lambda x,y: x+y[0],all_edges,zero )/len(all_edges)
   
-    print "constructing MST"
     mst=MinimumSpanningTreeFromEdges(all_edges)
   
     mlmst=reduce(lambda x,y: x+y[0],mst, zero )/len(mst)
 # normalize  
     mlmst=mlmst/(N*numpy.pi)**0.5*(N-1)
   
-    print "Q:",mlmst/ml
     return mlmst/ml
 
 def connected_components(parts, threshold=None, distfunc=None, verbose=False):
