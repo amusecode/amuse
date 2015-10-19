@@ -822,3 +822,26 @@ class TestHermite(TestWithMPI):
         hermite.stop()
         
 
+    def test23(self):
+        hermite = Hermite()
+        hermite.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        particles = datamodel.Particles(1)
+        particles.position = ([0,0,0] )| nbody_system.length
+        particles.velocity = ([1,0,0] )| nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles.mass = 0.1| nbody_system.mass
+                
+        hermite.particles.add_particles(particles)
+        hermite.evolve_model(1 | nbody_system.time)
+        print hermite.particles.x
+        self.assertAlmostRelativeEquals(hermite.model_time, 1 | nbody_system.time)
+        self.assertAlmostRelativeEquals(hermite.particles[0].x, 1 | nbody_system.length)
+        hermite.evolve_model(1.5 | nbody_system.time)
+        print hermite.particles.x
+        self.assertAlmostRelativeEquals(hermite.model_time, 1.5 | nbody_system.time)
+        self.assertAlmostRelativeEquals(hermite.particles[0].x, 1.5 | nbody_system.length)
+        hermite.stop()
+        
+
+

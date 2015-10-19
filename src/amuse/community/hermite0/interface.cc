@@ -388,7 +388,7 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     if(mpi_rank == 0){
         n = ident.size();
     }
-    
+    *coll_time = 0.0;
     n = mpi_distribute_data(n);
     
     for (int i = 0; i < n ; i++)
@@ -423,6 +423,7 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     );
     for (int i = istart; i < iend ; i+= mpi_size)
       {
+          
         for (int j = i+1; j < n ; j++)             // rji[] is the vector from
           {
             real rji[NDIM];                        // particle i to particle j
@@ -756,7 +757,7 @@ int evolve_system(real t_end)
             dt = t_end - t;
         }
     }
-   
+    if(n <=  1) {dt = t_end - t;}
     std::cout<<"t0"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
     
     if (
@@ -792,7 +793,7 @@ int evolve_system(real t_end)
     
      double box_size_squared = box_size*box_size;    
     // AMUSE STOPPING CONDITIONS
-    
+    double t_before = -1;
     while (true) {
         while (
             (!is_time_reversed && t < t_dia && t + dt <= t_end + (end_time_accuracy_factor*dt))
@@ -808,11 +809,16 @@ int evolve_system(real t_end)
 
             dt = calculate_step(coll_time);
             
+            
+            if (n == 1) {
+                dt = t_end - t;
+            }
+            
             if(is_time_reversed) {
                 dt *= -1;
             }
             
-            std::cout<<"t1"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
+            std::cout<<"t1"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<"--"<<((t + dt) / t)-1<<std::endl;
             if(
                 (!is_time_reversed && end_time_accuracy_factor == 0.0 && t < t_end && t + dt > t_end)
                 ||
@@ -820,7 +826,9 @@ int evolve_system(real t_end)
             ) {
                 dt = t_end - t;
             }
-            
+            if(((t + dt) / t) - 1 < 1e-12) {
+                break;
+            }
             std::cout<<"t2"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
             if (test_mode) {
                 real E = 0.0;
@@ -1359,7 +1367,7 @@ int get_potential_energy(double *value)
     real (* save_vel)[NDIM] = 0;
 
     real dt = t_evolve-t;
-    if(dt > 0) {
+   
         if(mpi_rank == 0) {
             n = ident.size();
             save_pos = new real[n][NDIM];
@@ -1397,9 +1405,7 @@ int get_potential_energy(double *value)
             delete[] save_vel;
         }
         *value = potential_energy;
-    } else {
-        *value = potential_energy;
-    }
+    
     return 0;
 }
 
