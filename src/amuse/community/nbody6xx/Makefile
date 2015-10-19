@@ -8,6 +8,16 @@ FC      = $(MPIFC)
 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS) 
 
+ifeq ($(findstring ifort, $(notdir $(FORTRAN))), gfortran)
+FCFLAGS2+=-ffixed-form -xf77-cpp-input
+endif
+
+ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
+FCFLAGS2=-fpp -fixed
+endif
+
+
+
 OBJS = interface.o
 
 CODELIB = src/libnbody6xx.a
@@ -36,4 +46,4 @@ nbody6xx_worker: worker_code.f90 $(CODELIB) $(OBJS)
 	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS) $(CODELIB) $(FS_LIBS) -o $@  $(LIBS)
 
 %.o: %.f90 
-	$(FC) $(FCFLAGS) -Isrc/ -ffixed-form -xf77-cpp-input -c -o $@ $<
+	$(FC) $(FCFLAGS) $(FCFLAGS2) -Isrc/ -c -o $@ $<

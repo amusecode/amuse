@@ -383,6 +383,7 @@
       FUNCTION recommit_particles()
         INCLUDE 'src/common6.h'
         INTEGER :: recommit_particles
+        recommit_particles=0
       END FUNCTION
       
       FUNCTION commit_parameters()
@@ -397,6 +398,7 @@
       FUNCTION recommit_parameters()
         INCLUDE 'src/common6.h'
         INTEGER :: recommit_parameters
+        recommit_parameters=0
       END FUNCTION
       
       FUNCTION get_time(t_amuse)
@@ -419,6 +421,8 @@
         INCLUDE 'src/common6.h'
         DOUBLE PRECISION :: kinetic_energy
         INTEGER :: get_kinetic_energy
+        kinetic_energy= ZKIN
+        get_kinetic_energy=0
       END FUNCTION
       
       FUNCTION get_potential_energy(potential_energy)
@@ -426,6 +430,7 @@
         DOUBLE PRECISION :: potential_energy
         INTEGER :: get_potential_energy
         potential_energy = POT
+        get_potential_energy=0
       END FUNCTION
       
       FUNCTION get_center_of_mass_velocity(cm_vx, cm_vy, cm_vz)
@@ -499,6 +504,7 @@
       FUNCTION cleanup_code()
         INCLUDE 'src/common6.h'
         INTEGER :: cleanup_code
+        cleanup_code=0
       END FUNCTION
       
       FUNCTION evolve_model(t_end)
@@ -515,6 +521,7 @@
 *            PRINT *, "CALLING integration"
             CALL INTAMUSE
         END DO
+        evolve_model=0
       END FUNCTION
       
       FUNCTION get_begin_time(output)
