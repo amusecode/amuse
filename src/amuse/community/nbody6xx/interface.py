@@ -116,7 +116,7 @@ class Nbody6xxInterface(
         """
         function = LegacyFunctionSpecification()
         function.addParameter('val', dtype='float64',
-                              direction=function.IN)
+                              direction=function.IN, unit=units.parsec)
         function.result_type = 'int32'
         return function
 
@@ -127,7 +127,7 @@ class Nbody6xxInterface(
         """
         function = LegacyFunctionSpecification()
         function.addParameter('val', dtype='float64',
-                              direction=function.OUT)
+                              direction=function.OUT, unit=units.parsec)
         function.result_type = 'int32'
         return function
 
@@ -138,7 +138,7 @@ class Nbody6xxInterface(
         """
         function = LegacyFunctionSpecification()
         function.addParameter('val', dtype='float64',
-                              direction=function.IN)
+                              direction=function.IN,unit=units.MSun)
         function.result_type = 'int32'
         return function
 
@@ -149,7 +149,7 @@ class Nbody6xxInterface(
         """
         function = LegacyFunctionSpecification()
         function.addParameter('val', dtype='float64',
-                              direction=function.OUT)
+                              direction=function.OUT,unit=units.MSun)
         function.result_type = 'int32'
         return function
 
@@ -182,6 +182,11 @@ class Nbody6xx(GravitationalDynamics, GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **kargs):
         GravitationalDynamics.__init__(self,  Nbody6xxInterface(**kargs), convert_nbody, **kargs)
+#        RBAR= virial radius in parsec
+#        ZMBAR= mean particle mass in solar units
+#        if convert_nbody is not None:
+#          self.parameters.RBAR=convert_nbody.to_si(1 | nbody_system.length)
+#          self.parameters.ZMBAR=convert_nbody.to_si(1 | nbody_system.mass)
 
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
