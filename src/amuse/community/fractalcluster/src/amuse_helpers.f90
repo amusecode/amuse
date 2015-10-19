@@ -30,8 +30,8 @@ function amuse_generator() result(err)
   endif  
   if(allocated(r)) deallocate(r,v)
   allocate(r(3,nstar),v(3,nstar))
-  call makefractal(nstar,r,v,fdim,iseed)
   n_generated = nstar
+  call makefractal(n_generated,r,v,fdim,iseed)
 end function
 
 end module
