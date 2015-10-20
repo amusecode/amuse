@@ -106,6 +106,6 @@ with two versions of the Sapporo library:
    OpenCL devices but this is still a work in progress.
 
 By default AMUSE will use the older ```sapporo_light``` version, to enable
-the latests version do::
+the latests version do:
 
     > ./configure --enable-cuda --enable-sapporo2
