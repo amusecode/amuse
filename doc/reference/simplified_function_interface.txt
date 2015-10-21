@@ -78,3 +78,6 @@ Below are some more examples of valid specifications:
         def function_with_float_return():
             return (__result=0.)
 
+One limitation of this type of specification is that they won't
+work if generated dynamically (so don't try, for example, to generate
+a bunch of functions based on a list of parameter names).
