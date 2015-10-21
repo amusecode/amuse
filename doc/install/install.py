@@ -79,9 +79,9 @@ class InstallPrerequisites(object):
           (
             'mpich2', 
             [], 
-            '3.1', 
+            '3.1.2', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/downloads/3.1/', 
+            'http://www.mpich.org/static/tarballs/3.1.2/', 
             self.mpich2_build
           ) ,
           (
@@ -98,7 +98,7 @@ class InstallPrerequisites(object):
           (
             'fftw3' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '3.2.2' ,                  #version string
+            '3.3.3' ,                  #version string
             'fftw-', '.tar.gz',        #pre- and postfix for filename
             'http://www.fftw.org/',    #download url, filename is appended
             self.fftw_build            #method to use for building
@@ -106,7 +106,7 @@ class InstallPrerequisites(object):
           (
             'gsl' ,                    #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.14' ,                   #version string
+            '1.16' ,                   #version string
             'gsl-', '.tar.gz',         #pre- and postfix for filename
             'http://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
             self.fftw_build            #method to use for building - same as for FFTW should work

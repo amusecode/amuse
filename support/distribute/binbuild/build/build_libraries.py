@@ -66,9 +66,9 @@ class InstallPrerequisites(object):
           (
             'hdf' ,
             [],  
-            '1.8.10',
+            '1.8.14',
             'hdf5-' , '.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.10/src/', 
+            'http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src/',
             #'http://www.hdfgroup.org/ftp/HDF5/current/src/',
             self.hdf5_build
           ) ,
