@@ -33,9 +33,9 @@ this can be converted to:
 
 As can be seen the parameters are specified in keyword/value style. 
 ``can_handle_array`` and ``must_handle_array`` are supplied, if 
-necessary, as keywords to the decorator (but can be overridden, see 
-below). A default integer return value (for the error code) is implied. 
-The following table lists the options for the parameter specifications:
+necessary, as keywords to the decorator. A default integer return value 
+(for the error code) is implied (but can be overridden, see below). The 
+following table lists the options for the parameter specifications:
 
 =========  ================  ===============================
 data type  no default value  default value (for input) 
