@@ -13,6 +13,7 @@ support/config.py
 *.egg
 *.mod
 *.mo
+*.ptx
 # files created running make / setup.py
 amuse.cfg
 amuse.sh

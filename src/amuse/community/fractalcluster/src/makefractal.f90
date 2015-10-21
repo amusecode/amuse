@@ -235,17 +235,20 @@ END FUNCTION
      IF (ndo==nsnow) EXIT
    END DO
    nsmax=ndo - 1
-   IF (nsmax<nstar) STOP 'nsmax<nstar - change random number seed'
+   IF (nsmax<nstar) THEN
+     WRITE(6,*) 'nsmax<nstar - change random number seed'
+     nstar=nsmax
+  ENDIF
 !
 ! we now have a fractal of nsmax stars
 ! need to randomly remove stars until we get nstar
    DO
 ! star to remove
+     IF (nsmax==nstar) EXIT
      is=INT(ran2(idum)*REAL(nsmax)) + 1
      r(1:3,is)=r(1:3,nsmax)
      v(1:3,is)=v(1:3,nsmax)
      nsmax=nsmax - 1
-     IF (nsmax==nstar) EXIT
    END DO
    WRITE(6,*) 'Cut to size', nsmax
 !

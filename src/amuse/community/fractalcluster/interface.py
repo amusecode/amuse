@@ -212,7 +212,7 @@ class FractalCluster(CommonCode):
 class MakeFractalCluster(object):
     
     def __init__(self, N=None, convert_nbody=None, masses=None, do_scale=True,
-            random_seed=None, fractal_dimension=1.6, virial_ratio=0.5, verbose=False):
+            random_seed=None, fractal_dimension=1.6, virial_ratio=0.5, verbose=False, match_N=True):
         if masses is None:
             if N is None:
                 raise exceptions.AmuseException("Either keyword argument 'N' (number of particles) or "
@@ -231,6 +231,7 @@ class MakeFractalCluster(object):
         self.fractal_dimension=fractal_dimension
         self.virial_ratio=virial_ratio
         self.verbose=verbose
+        self.match_N=match_N
 
     def new_model(self):
         generator = FractalCluster(redirection=("none" if self.verbose else "null"))
@@ -239,6 +240,9 @@ class MakeFractalCluster(object):
         if self.random_seed is not None:
             generator.parameters.random_seed = self.random_seed
         generator.generate_particles()
+        if self.match_N:
+            while len(generator.particles)<self.N:
+                generator.generate_particles()
         result = generator.particles.copy()
         generator.stop()
         result.mass = self.masses

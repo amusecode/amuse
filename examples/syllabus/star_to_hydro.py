@@ -19,7 +19,7 @@ def convert_star_to_hydro_model(M, t_end):
     return sph_particles
 
 if __name__ in ("__main__", "__plot__"):
-    sph_particles = convert_star_to_hydro_model(2.0|units.MSun, 1100|units.Myr)
+    sph_particles = convert_star_to_hydro_model(2.0|units.MSun, 110|units.Myr)
     native_plot.figure(figsize = (10, 10), dpi = 50)
     sph_particles_plot(sph_particles)
     native_plot.show()

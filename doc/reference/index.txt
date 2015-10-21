@@ -22,6 +22,7 @@ Reference documentation
    directory-structure
    incode_storage
    cuda-setup
+   simplified_function_interface
    interface_specification
    message-protocol
    distributed
