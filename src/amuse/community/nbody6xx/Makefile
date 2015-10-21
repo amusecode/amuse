@@ -4,19 +4,17 @@ AMUSE_DIR?=../../../..
 -include $(AMUSE_DIR)/config.mk
 
 MPIFC ?= mpif90
-FC      = $(MPIFC)
+FORTRAN ?= $(FC)
 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS) 
 
-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), gfortran)
+ifeq ($(findstring gfortran, $(notdir $(FORTRAN))), gfortran)
 FCFLAGS2+=-ffixed-form -xf77-cpp-input
 endif
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
 FCFLAGS2=-fpp -fixed
 endif
-
-
 
 OBJS = interface.o
 
