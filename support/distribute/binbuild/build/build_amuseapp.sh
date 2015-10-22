@@ -62,9 +62,10 @@ if [ ! -e "installed" ]; then
         
         make install  || exit $?
         
+        cd ${BASEDIR}
+        
         tar -xvf certs.tar.gz -C ${INSTALLDIR}/openssl/certs  || exit $?
         
-        cd ${BASEDIR}
         # delete previous source
         rm -rf Python-${PYTHONVERSION} || exit $?
         if [ ! -e "Python-${PYTHONVERSION}.tgz" ]; then
@@ -115,9 +116,9 @@ if [ ! -e "installed" ]; then
         
         make install  || exit $?
         
-        tar -xvf certs.tar.gz -C ${INSTALLDIR}/openssl/certs  || exit $?
-        
         cd ${BASEDIR}
+        
+        tar -xvf certs.tar.gz -C ${INSTALLDIR}/openssl/certs  || exit $?
     
         if [ ! -e "Python-${PYTHONVERSION}.tgz" ]; then
             # download
