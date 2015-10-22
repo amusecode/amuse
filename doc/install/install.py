@@ -256,11 +256,11 @@ class InstallPrerequisites(object):
           '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
-            command.append('--with-pm=hydra:mpd:gforker')
+            command.append('--with-pm=hydra:gforker')
         elif self.use_gforker_process_manager:
             command.append('--with-pm=gforker:hydra')
         else:
-            command.append('--with-pm=mpd:hydra:gforker')
+            command.append('--with-pm=gforker:hydra')
         if not self.fortran90_compiler is None:
             command.append('FC=' + self.fortran90_compiler)
         
