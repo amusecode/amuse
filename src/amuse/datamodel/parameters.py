@@ -20,7 +20,10 @@ class Parameters(object):
         object.__setattr__(self, '_mapping_from_name_to_definition', OrderedDictionary())
         object.__setattr__(self, '_mapping_from_name_to_parameter', OrderedDictionary())
 
-        for x in definitions:
+        self._update()
+    
+    def _update(self):
+        for x in self._definitions:
             self._mapping_from_name_to_definition[x.name] = x
         
         

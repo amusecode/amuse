@@ -861,6 +861,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         self.interface = interface
         self.definitions = []
         self.parameters = None
+        self.update = True
 
     def supports(self, name, was_found):
         return name == 'parameters'
@@ -868,7 +869,11 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def get_attribute(self, name, value):
         if not self.parameters:
             self.parameters =  parameters.new_parameters_instance_with_docs(self.definitions, self.interface)
-       
+            self.update=False
+        if self.update:
+            self.parameters._update()
+            self.update=False
+
         return self.parameters
 
     def attribute_names(self):
@@ -894,6 +899,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
                 must_set_before_get = must_set_before_get
             )
         self.definitions.append(definition)
+        self.update=True
         
     def add_alias_parameter(self, name, aliased_name, description):
         definition = parameters.AliasParameterDefinition(
@@ -902,7 +908,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             description
         )
         self.definitions.append(definition)
-
+        self.update=True
 
     def add_caching_parameter(self, function_name, parameter_name, name, description, default_value = None):
         definition = parameters.ModuleCachingParameterDefinition(
@@ -913,6 +919,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             default_value
         )
         self.definitions.append(definition)
+        self.update=True
 
     def add_boolean_parameter(self, get_method, set_method, name, description, default_value = None):
         definition = parameters.ModuleBooleanParameterDefinition(
@@ -923,6 +930,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             default_value
         )
         self.definitions.append(definition)
+        self.update=True
 
     def add_default_form_parameter(self,name,description,default):
         if isinstance(default,bool):
@@ -966,10 +974,12 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             default_value
         )
         self.definitions.append(definition)
+        self.update=True
 
     def add_interface_parameter(self, name, description, default_value,state_guard=None):        
         definition=parameters.InterfaceParameterDefinition(name,description,default_value,state_guard=state_guard)
         self.definitions.append(definition)
+        self.update=True
     
 class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
