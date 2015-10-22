@@ -79,9 +79,9 @@ class InstallPrerequisites(object):
           (
             'mpich2', 
             [], 
-            '3.1.2', 
+            '3.1.4', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/3.1.2/', 
+            'http://www.mpich.org/static/tarballs/3.1.4/', 
             self.mpich2_build
           ) ,
           (
