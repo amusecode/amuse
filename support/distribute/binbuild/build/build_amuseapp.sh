@@ -115,6 +115,8 @@ if [ ! -e "installed" ]; then
         
         make install  || exit $?
         
+        tar -xvf certs.tar.gz -C ${INSTALLDIR}/openssl/certs  || exit $?
+        
         cd ${BASEDIR}
     
         if [ ! -e "Python-${PYTHONVERSION}.tgz" ]; then
