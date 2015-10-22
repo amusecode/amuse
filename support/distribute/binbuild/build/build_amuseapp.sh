@@ -161,7 +161,7 @@ if [ ! -e "installed" ]; then
     export PYTHON=${PYTHONHOME}/bin/python
     export LD_LIBRARY_PATH=${PYTHONHOME}/lib/
     
-    ${BASEDIR}/bin/python make_cert_links.py ${INSTALLDIR}/openssl/certs || exit $?
+    ${PYTHONHOME}/bin/python make_cert_links.py ${INSTALLDIR}/openssl/certs || exit $?
     
     # we're done
     cd ${BASEDIR}
