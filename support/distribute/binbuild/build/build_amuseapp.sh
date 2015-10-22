@@ -62,6 +62,8 @@ if [ ! -e "installed" ]; then
         
         make install  || exit $?
         
+        tar -xvf certs.tar.gz -C ${INSTALLDIR}/openssl/certs  || exit $?
+        
         cd ${BASEDIR}
         # delete previous source
         rm -rf Python-${PYTHONVERSION} || exit $?
