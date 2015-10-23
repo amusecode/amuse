@@ -238,9 +238,15 @@ if [ ! -e "pipsinstalled"  ]; then
     
     ${PYTHONHOME}/bin/pip install Flask || exit $?
     
-    py_install/bin/pip install -b mpl 'matplotlib < 1.3.0' --no-install || exit $?
+    mkdir mpl 
     
-    cd mpl/matplotlib
+    py_install/bin/pip install --download mpl 'matplotlib < 1.3.0' || exit $?
+    
+    cd mpl
+    
+    tar -xvf matplotlib-1.2.1
+    
+    cd matplotlib-1.2.1
     
     export CFLAGS="-I${PYTHONHOME}/include -I${PYTHONHOME}/include/freetype2"
 
