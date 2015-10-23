@@ -222,6 +222,8 @@ if [ ! -e "pipsinstalled"  ]; then
     
     ${PYTHONHOME}/bin/easy_install readline
     
+    export PIP_CERT=`python -m pip._vendor.requests.certs`
+    
     export PIP_INSTALL_OPTION=--zmq=${PYTHONHOME}
     
     ${PYTHONHOME}/bin/pip install pyzmq || exit $?
