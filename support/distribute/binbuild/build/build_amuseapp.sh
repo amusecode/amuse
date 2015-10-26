@@ -240,11 +240,11 @@ if [ ! -e "pipsinstalled"  ]; then
     
     mkdir mpl 
     
-    py_install/bin/pip install --download mpl 'matplotlib < 1.3.0' || exit $?
+    py_install/bin/pip install --download mpl 'matplotlib==1.2.1' || exit $?
     
     cd mpl
     
-    tar -xvf matplotlib-1.2.1
+    tar -xvf matplotlib-1.2.1.tar.gz
     
     cd matplotlib-1.2.1
     
