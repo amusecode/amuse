@@ -232,24 +232,26 @@ class ParticleGetGriddedAttributesMethod(ParticleGetAttributesMethod):
         minmax_per_dimension = self.get_range_method( **storage.extra_keyword_arguments_for_getters_and_setters)
         
         result = [slice(0, len(indices[0]))]
+        gridshape=[len(indices[0])]
+        for ind in indices[1:]:
+            result.append(slice(0, 1))
         for i in range(0, len(minmax_per_dimension), 2):
             minval = minmax_per_dimension[i]
             maxval = minmax_per_dimension[i+1]
             result.append(slice(minval, maxval+1))
+            gridshape.append(maxval+1-minval)
         
         grid_indices = numpy.mgrid[tuple(result)]
-        gridshape = grid_indices[0].shape
-        newshape = [1]*len(result)
-        newshape[0] = len(indices[0])
-        a =  numpy.array(indices[0]).reshape(newshape)
-        grid_indices[0] = a
-        
+        u=grid_indices[0].copy()
+        for i, ind in enumerate(indices):
+            grid_indices[i] = numpy.asarray(ind)[u]
         one_dimensional_arrays_of_indices = [x.reshape(-1) for x in grid_indices]
         try:
             return_value = self.method(*one_dimensional_arrays_of_indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
             print self.method
             raise
+            
         mapping_from_name_to_value = self.convert_return_value(return_value, storage, attributes_to_return)
         for key, value in mapping_from_name_to_value.iteritems():
             mapping_from_name_to_value[key] = value.reshape(gridshape)
@@ -384,21 +386,23 @@ class ParticleSetGriddedAttributesMethod(ParticleSetAttributesMethod):
     
     def set_attribute_values(self, storage, attributes, values, *indices):
         list_args, keyword_args = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
+
         minmax_per_dimension = self.get_range_method( **storage.extra_keyword_arguments_for_getters_and_setters)
         
         result = [slice(0, len(indices[0]))]
+        gridshape=[len(indices[0])]
+        for ind in indices[1:]:
+            result.append(slice(0, 1))
         for i in range(0, len(minmax_per_dimension), 2):
             minval = minmax_per_dimension[i]
             maxval = minmax_per_dimension[i+1]
             result.append(slice(minval, maxval+1))
+            gridshape.append(maxval+1-minval)
         
         grid_indices = numpy.mgrid[tuple(result)]
-        gridshape = grid_indices[0].shape
-        newshape = [1]*len(result)
-        newshape[0] = len(indices[0])
-        a =  numpy.array(indices[0]).reshape(newshape)
-        grid_indices[0] = a
-        
+        u=grid_indices[0].copy()
+        for i, ind in enumerate(indices):
+            grid_indices[i] = numpy.asarray(ind)[u]
         one_dimensional_arrays_of_indices = [x.reshape(-1) for x in grid_indices]
         
         list_arguments = list(grid_indices)
@@ -418,24 +422,25 @@ class ParticleSetGriddedAttributesMethod(ParticleSetAttributesMethod):
         keyword_args.update(storage.extra_keyword_arguments_for_getters_and_setters)
         list_args, keyword_args2 = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
         keyword_args.update(keyword_args2)
-        print keyword_args2
+#        print keyword_args2
         minmax_per_dimension = self.get_range_method( **storage.extra_keyword_arguments_for_getters_and_setters)
         
         result = [slice(0, len(indices[0]))]
+        gridshape=[len(indices[0])]
+        for ind in indices[1:]:
+            result.append(slice(0, 1))
         for i in range(0, len(minmax_per_dimension), 2):
             minval = minmax_per_dimension[i]
             maxval = minmax_per_dimension[i+1]
             result.append(slice(minval, maxval+1))
+            gridshape.append(maxval+1-minval)
         
         grid_indices = numpy.mgrid[tuple(result)]
-        gridshape = grid_indices[0].shape
-        newshape = [1]*len(result)
-        newshape[0] = len(indices[0])
-        a =  numpy.array(indices[0]).reshape(newshape)
-        grid_indices[0] = a
-        
+        u=grid_indices[0].copy()
+        for i, ind in enumerate(indices):
+            grid_indices[i] = numpy.asarray(ind)[u]
         one_dimensional_arrays_of_indices = [x.reshape(-1) for x in grid_indices]
-        
+
         list_arguments = list(grid_indices)
         list_arguments.extend(list_args)
         one_dimensional_arrays_of_args = [x.reshape(-1) for x in list_arguments]
@@ -1082,8 +1087,9 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             if len(array_of_indices[0].shape) == 0:
                 value = returned_value[0]
             else:
-                n=len(returned_value.shape)-len(array_of_indices[0].shape)
-                value = returned_value.reshape(array_of_indices[0].shape+(-1,)*n)
+                if returned_value.shape[0]!=numpy.product(array_of_indices[0].shape):
+                    raise Exception("unexpected mismatch of array shapes")
+                value = returned_value.reshape(array_of_indices[0].shape+returned_value.shape[1:])
                 
             results.append(value)
             

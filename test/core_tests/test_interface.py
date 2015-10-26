@@ -1386,20 +1386,13 @@ class TestGridWithBinding3(amusetest.TestCase):
             return (0,self.shape[0]-1)
         def get_range2(self):
             return (0,self.shape[1]-1)
-        
-        def get_position(self, i_s):
-            return [numpy.asarray(i_s)]
-        
+                
         def get_a(self,i_s,j_s):
-            #print "indices:", i_s, j_s, k_s
-            #print "values:", numpy.asarray([(self.storage[i][j][k]) for i,j,k in zip(i_s, j_s, k_s)])
             return [numpy.asarray([(self.storage[i][j]) for i,j in zip(i_s, j_s)]),]
             
         def set_a(self, i_s, j_s, values):
-            index = 0
-            for i,j in zip(i_s, j_s):
-                self.storage[i][j] = values[index]
-                index += 1
+            for i,j,val in zip(i_s, j_s,values):
+                self.storage[i][j] = val
         
     def test1(self):
         original = self.TestInterface()
@@ -1409,9 +1402,7 @@ class TestGridWithBinding3(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,), (units.kg,))
         handler.add_method('set_a',(handler.INDEX, handler.INDEX, units.kg,), ())
-      
-        print instance.get_a([1],[2])
-        
+              
         self.assertEquals(instance.get_a([1],[2]), [7] | units.kg)
         
         handler = instance.get_handler('PARTICLES')
@@ -1423,8 +1414,112 @@ class TestGridWithBinding3(amusetest.TestCase):
   
         self.assertEquals(grid[1].mass, original.storage[1] | units.kg)
         self.assertEquals(len(grid[1].mass), len(original.storage[1]))
+
+        self.assertEquals(grid[2:4].mass, original.storage[2:4] | units.kg)
+
+        self.assertEquals(grid[-3:].mass, original.storage[-3:] | units.kg)
   
         grid[1].mass=[5.]*5 | units.kg
+
+        self.assertEquals(original.storage[1],5)
+        self.assertEquals(grid[1].mass, original.storage[1] | units.kg)
+
+class TestGridWithBinding4(amusetest.TestCase):
+    class TestInterface(object):
+        
+        shape = (3,4,5)
+        
+        def __init__(self):
+            self.storage = numpy.arange(
+                self.shape[0]*self.shape[1]*self.shape[2]).reshape(self.shape)
+            
+        def get_range(self):
+            return (0, self.shape[0]-1, 0, self.shape[1]-1)
+        def get_range2(self):
+            return (0, self.shape[2]-1)
+                
+        def get_a(self, i_s, j_s, k_s):
+            return [numpy.asarray([self.storage[i,j,k] for i,j,k in zip(i_s, j_s, k_s)]),]
+            
+        def set_a(self, i_s, j_s, k_s, values):
+            for i,j,k,val in zip(i_s, j_s,k_s,values):
+                self.storage[i,j,k] = val
+        
+    def test1(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_a',(handler.INDEX, handler.INDEX, handler.INDEX,), (units.kg,))
+        handler.add_method('set_a',(handler.INDEX, handler.INDEX,handler.INDEX, units.kg,), ())
+              
+        self.assertEquals(instance.get_a([1],[2],[3]), [33] | units.kg)
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid',)
+        handler.add_gridded_setter('grid', 'set_a','get_range2', names = ('mass',))
+        handler.add_gridded_getter('grid', 'get_a','get_range2', names = ('mass',))
+        
+        grid = instance.grid
+  
+        self.assertEquals(grid[1,1].mass, original.storage[1,1] | units.kg)
+        self.assertEquals(grid[0:2,1:3].mass, original.storage[0:2,1:3] | units.kg)
+        self.assertEquals(len(grid[1].mass), len(original.storage[1]))
+        self.assertEquals(grid[2:4].mass, original.storage[2:4] | units.kg)
+        self.assertEquals(grid[-3:].mass, original.storage[-3:] | units.kg)
+  
+        grid[1].mass=numpy.ones((4,5))*5 | units.kg
+
+        self.assertEquals(original.storage[1],5)
+        self.assertEquals(grid[1].mass, original.storage[1] | units.kg)
+
+class TestGridWithBinding5(amusetest.TestCase):
+    class TestInterface(object):
+        
+        shape = (3,4,5,6)
+        
+        def __init__(self):
+            self.storage = numpy.arange(
+                numpy.product(self.shape)).reshape(self.shape)
+            
+        def get_range(self):
+            return (0, self.shape[0]-1, 0, self.shape[1]-1)
+        def get_range2(self):
+            return (0, self.shape[2]-1, 0, self.shape[3]-1)
+                
+        def get_a(self, i_s, j_s, k_s,l_s):
+            return [numpy.asarray([self.storage[i,j,k,l] for i,j,k,l in zip(i_s, j_s, k_s,l_s)]),]
+            
+        def set_a(self, i_s, j_s, k_s,l_s, values):
+            for i,j,k,l,val in zip(i_s, j_s,k_s,l_s,values):
+                self.storage[i,j,k,l] = val
+        
+    def test1(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_a',(handler.INDEX, handler.INDEX,handler.INDEX,handler.INDEX,), (units.kg,))
+        handler.add_method('set_a',(handler.INDEX, handler.INDEX,handler.INDEX,handler.INDEX, units.kg,), ())
+              
+        self.assertEquals(instance.get_a([1],[2],[3],[4]), original.storage[1,2,3,4] | units.kg)
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid',)
+        handler.add_gridded_setter('grid', 'set_a','get_range2', names = ('mass',))
+        handler.add_gridded_getter('grid', 'get_a','get_range2', names = ('mass',))
+        
+        grid = instance.grid
+  
+        self.assertEquals(grid[1,1].mass, original.storage[1,1] | units.kg)
+        self.assertEquals(grid[0:2,1:3].mass, original.storage[0:2,1:3] | units.kg)
+        self.assertEquals(len(grid[1].mass), len(original.storage[1]))
+        self.assertEquals(grid[2:4].mass, original.storage[2:4] | units.kg)
+        self.assertEquals(grid[-3:].mass, original.storage[-3:] | units.kg)
+  
+        grid[1].mass=numpy.ones((4,5,6))*5 | units.kg
 
         self.assertEquals(original.storage[1],5)
         self.assertEquals(grid[1].mass, original.storage[1] | units.kg)
