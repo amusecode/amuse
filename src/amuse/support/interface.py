@@ -1234,7 +1234,7 @@ class ParticleSupersetDefinition(AbstractParticleSetDefinition):
 
 class GridDefinition(AbstractParticleSetDefinition):
 
-    def __init__(self, handler):
+    def __init__(self, handler, grid_class=datamodel.Grid):
         self.handler = handler
         self.axes_names = None
         self.name_of_the_get_range_method = 'get_range'
@@ -1242,7 +1242,7 @@ class GridDefinition(AbstractParticleSetDefinition):
         self.getters = []
         self.gridded_setters=[]
         self.gridded_getters=[]
-        self.particles_factory = datamodel.Grid
+        self.particles_factory = grid_class
         self.extra_keyword_arguments_for_getters_and_setters = {}
 
     def new_storage(self, interface):
@@ -1340,8 +1340,8 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         definition.particles_factory = particles_factory
         self.mapping_from_name_to_set_definition[name] = definition
     
-    def define_grid(self, name, name_of_indexing_attribute = 'index_of_the_particle', axes_names = None):
-        definition = GridDefinition(self)
+    def define_grid(self, name, name_of_indexing_attribute = 'index_of_the_particle', axes_names = None, grid_class=datamodel.Grid):
+        definition = GridDefinition(self, grid_class = grid_class)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
         definition.axes_names = axes_names
         self.mapping_from_name_to_set_definition[name] = definition
@@ -1491,7 +1491,7 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         
     def _create_new_grid(self, builder_function, **extra_arguments):
         handler = self.get_handler('PARTICLES')
-        definition = GridDefinition(handler)
+        definition = GridDefinition(handler, **extra_arguments)
         builder_function(definition, **extra_arguments)
         return definition.new_set_instance(handler)
         

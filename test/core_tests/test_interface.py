@@ -1318,6 +1318,39 @@ class TestGridWithBinding(amusetest.TestCase):
         self.assertEquals(grid[1][2].position, [[1,2],[1,2],[1,2],[1,2],[1,2]] |units.m)
         self.assertEquals(grid[0][1][1].position, [0,1] |units.m)
 
+    def test3(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_position',(handler.INDEX, handler.INDEX,handler.INDEX,), (units.m, units.m,))
+      
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid', axes_names = ['x','y'])
+        handler.add_getter('grid', 'get_position', names = ('x','y',))
+        
+        grid = instance.grid
+        
+        self.assertEqual(grid.__class__.__name__, "RegularGrid")
+        
+    def test4(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_position',(handler.INDEX, handler.INDEX,handler.INDEX,), (units.m, units.m,))
+      
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid', axes_names = ['x','y'], grid_class=datamodel.CartesianGrid)
+        handler.add_getter('grid', 'get_position', names = ('x','y',))
+        
+        grid = instance.grid
+        
+        self.assertEqual(grid.__class__.__name__, "CartesianGrid")
+        
+
 class TestGridWithBinding2(amusetest.TestCase):
     class TestInterface(object):
         
