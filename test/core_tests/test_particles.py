@@ -3191,7 +3191,7 @@ class TestIterateOverParticles(amusetest.TestCase):
 
         print  dt0, dt1, dt1 / dt0
 
-        self.assertTrue((dt1 / dt0) < 400)
+        self.assertTrue((dt1 / dt0) < 1000)
 
 class TestParticlesIndexing(amusetest.TestCase):
 
