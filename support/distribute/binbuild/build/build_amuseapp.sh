@@ -185,6 +185,10 @@ export LD_LIBRARY_PATH=${PYTHONHOME}/lib/
 export PKG_CONFIG_PATH=${PYTHONHOME}/lib/pkgconfig/
 export FC=gfortran
 export F77=gfortran
+if [ ${PLATFORM} == 'Darwin' ]; then
+    export CC=cc
+    export CXX=c++
+fi
 
 if [ ! -e "libsinstalled" ]; then
     ${PYTHON} build_libraries.py install || exit $?
