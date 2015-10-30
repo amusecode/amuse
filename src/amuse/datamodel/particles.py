@@ -1129,14 +1129,18 @@ class Particles(AbstractParticleSet):
 
 
     def __getitem__(self, index):
-
-        keys = self.get_all_keys_in_store()[index]
-        index = self.get_all_indices_in_store()[index]
+        if index is None:
+            keys = self.get_all_keys_in_store()
+            index = self.get_all_indices_in_store()
+        else:
+            keys = self.get_all_keys_in_store()[index]
+            index = self.get_all_indices_in_store()[index]
 
         if hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:
             return Particle(keys, self, index, self._get_version())
+
 
     def _get_version(self):
         return self._private.version
@@ -1278,8 +1282,15 @@ class Particles(AbstractParticleSet):
             defined_attributes,
             self._private.attribute_storage.get_values_in_store(indices, defined_attributes)
         ))
+        #print missing_attributes, "shape" in missing_attributes
+        #if "shape" in missing_attributes:
+        #    import traceback
+        #    traceback.print_stack()
+        #    raise Exception("hello is this ok????")
         subset = self[indices]
-        return [defined_values[attribute] if attribute in defined_values else subset._get_derived_attribute_value(attribute) for attribute in attributes]
+        tmp = [defined_values[attribute] if attribute in defined_values else subset._get_derived_attribute_value(attribute) for attribute in attributes]
+        return tmp
+
 
     def get_indices_of_keys(self, keys):
         return self._private.attribute_storage.get_indices_of(keys)
@@ -1317,6 +1328,8 @@ class Particles(AbstractParticleSet):
         self._private.attribute_storage._add_indices(indices)
         self._private.version += 1
 
+    def is_quantity(self):
+        return False
 class BoundSupersetParticlesFunctionAttribute(object):
     def  __init__(self, name, superset):
         self.name = name
@@ -1831,6 +1844,7 @@ class ParticlesSubset(AbstractParticleSet):
 
         self._private.version = -1
         self._private.indices = None
+
 
     def __getitem__(self, index):
         keys = self.get_all_keys_in_store()[index]
