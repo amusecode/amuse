@@ -310,6 +310,10 @@ src/amuse/community/rebound/src/
 src/amuse/community/tupan/install/
 src/amuse/community/tupan/tupan/
 src/amuse/community/rebound/rebound_worker
+data/mesa/output/star_data/starting_models/*.data
+doc/examples/
+doc/build/
+doc/amuse_examples
 /amuserc
 /nbody6xx.input
 
