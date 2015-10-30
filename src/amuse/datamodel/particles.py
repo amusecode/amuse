@@ -1328,8 +1328,10 @@ class Particles(AbstractParticleSet):
         self._private.attribute_storage._add_indices(indices)
         self._private.version += 1
 
-    def is_quantity(self):
+    @staticmethod
+    def is_quantity():
         return False
+        
 class BoundSupersetParticlesFunctionAttribute(object):
     def  __init__(self, name, superset):
         self.name = name
