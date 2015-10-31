@@ -23,8 +23,16 @@ def make_plot(radius_profile, brunt_profile, mass, age):
     pyplot.title('Brunt-Vaisala frequency squared of a {0} star at {1}'.format(mass, age))
     pyplot.legend(loc=3)
     pyplot.show()   
+
+if __name__ == '__plot':
+    mass = 1.0 | units.MSun
+    age = 1.0 | units.Myr
     
-if __name__ in ('__main__', '__plot__'):
+    radius_profile, brunt_profile = brunt_vaisala_frequency_squared_profile(mass, age)
+    make_plot(radius_profile, brunt_profile, mass, age)
+    
+    
+if __name__ == '__main__':
     mass = 1.0 | units.MSun
     age = 1.0 | units.Gyr
     
