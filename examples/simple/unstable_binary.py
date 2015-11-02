@@ -84,9 +84,7 @@ def simulate_binary_evolution(binary, orbital_period, t_offset_stars, t_end):
         distance.append(separation)
         mass.append(primary.mass)
         time.append(current_time)
-        print("System evolved to time: ", current_time, end=' ') 
-        print(", primary mass:", primary.mass.as_quantity_in(units.MSun), end=' ')
-        print(", separation:", separation.as_quantity_in(units.AU))
+        print("System evolved to time: ", current_time, ", primary mass:", primary.mass.as_quantity_in(units.MSun), ", separation:", separation.as_quantity_in(units.AU))
     
     print("Evolution done")
     return distance, mass, time
