@@ -1,6 +1,7 @@
 """
 Evolves an equal mass stellar cluster.
 """
+from __future__ import print_function
 
 import numpy
 
@@ -20,8 +21,8 @@ def print_log(time, gravity, particles, total_energy_at_t0):
     kinetic_energy = gravity.kinetic_energy
     potential_energy = gravity.potential_energy
     total_energy_at_this_time = kinetic_energy + potential_energy
-    print "time                    : " , time
-    print "energy error            : " , (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
+    print("time                    : " , time)
+    print("energy error            : " , (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0)
 
     
 def simulate_small_cluster(
@@ -47,7 +48,7 @@ def simulate_small_cluster(
     times = []
     times.append(time)
     
-    print "evolving the model until t = " + str(end_time)
+    print("evolving the model until t = " + str(end_time))
     while time < end_time:
         time +=  end_time / 3.0
         

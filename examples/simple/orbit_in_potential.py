@@ -15,9 +15,9 @@ from amuse.plot import plot
 
 class MilkyWay_galaxy(object):
     def __init__(self,potential="point_particle", M=1.6e10 | units.MSun):
-        print "pot=", potential
+        print("pot=", potential)
         if potential.find("Milky")>=0:
-            print "Milky Way Potential"
+            print("Milky Way Potential")
             self.potential = self.Milky_Way_potential
         else:
             self.potential = self.point_particle_potential
@@ -97,7 +97,7 @@ def evolve_particle_trajectory_in_potential(single_star, potential, dt_diag, t_e
     while time < t_end:
         evolve_particle_in_potential(single_star, potential, dt_diag)
         time += dt_diag
-        print "time=", time, single_star.position.length().as_quantity_in(units.AU)
+        print("time=", time, single_star.position.length().as_quantity_in(units.AU))
         x.append(single_star.x)
         y.append(single_star.y)
         z.append(single_star.y)

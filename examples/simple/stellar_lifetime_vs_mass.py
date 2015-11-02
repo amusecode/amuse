@@ -38,7 +38,7 @@ def main(n=10, mmin=1.0, mmax=100, z=0.02):
     mZAMS = numpy.arange(mmin, mmax, dm) | units.MSun
     mmin=mmin|units.MSun
     mmax=mmax|units.MSun
-    print mZAMS
+    print(mZAMS)
     t_sse = [] | units.Myr
     t_analytic = [] | units.Myr
     for mi in mZAMS:

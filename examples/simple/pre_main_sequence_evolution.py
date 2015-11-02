@@ -24,10 +24,10 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 1.25, 1.5, 2.25, 3.0, 5.0, 9.0
         temperature = [] | units.K
         time = [] | units.yr
         
-        print 'Evolving pre main sequence star with'
-        print '    mass:', star.mass
-        print '    luminosity:', star.luminosity
-        print '    radius:', star.radius
+        print('Evolving pre main sequence star with')
+        print('    mass:', star.mass)
+        print('    luminosity:', star.luminosity)
+        print('    radius:', star.radius)
         
         while star.stellar_type == 17 | units.stellar_type:
             luminosity.append(star.luminosity)
@@ -35,12 +35,12 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 1.25, 1.5, 2.25, 3.0, 5.0, 9.0
             time.append(star.age)
             star.evolve_one_step()
             
-        print 'Evolved pre main sequence star to:', star.stellar_type
-        print '    age:', star.age
-        print '    mass:', star.mass
-        print '    luminosity:', star.luminosity
-        print '    radius:', star.radius
-        print
+        print('Evolved pre main sequence star to:', star.stellar_type)
+        print('    age:', star.age)
+        print('    mass:', star.mass)
+        print('    luminosity:', star.luminosity)
+        print('    radius:', star.radius)
+        print()
         
         stardata = {}
         stardata['luminosity'] = luminosity

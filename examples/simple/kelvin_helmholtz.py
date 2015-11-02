@@ -75,7 +75,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     instance=new_instance_of_hydro_code()
     set_parameters(instance)
     
-    print "setup grid"
+    print("setup grid")
     for x in instance.itergrids():
         inmem = x.copy()
         
@@ -86,21 +86,21 @@ def simulate_kelvin_helmholtz_instability(end_time):
         from_model_to_code = inmem.new_channel_to(x)
         from_model_to_code.copy()
     
-    print "start evolve"
+    print("start evolve")
     dt = end_time / 10.0
     t = dt
     while t < end_time:
         instance.evolve_model(t)
         
-        print "time : ", t
+        print("time : ", t)
         t += dt
     
-    print "copying results"
+    print("copying results")
     result = []
     for x in instance.itergrids():
         result.append(x.copy())
 
-    print "terminating code"
+    print("terminating code")
     instance.stop()
 
     return result

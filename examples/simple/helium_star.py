@@ -1,6 +1,7 @@
 """
 Creates a helium burning star from the inner shells of a main sequence star.
 """
+from __future__ import print_function
 
 from amuse.units import units
 from amuse.datamodel import Particle
@@ -21,8 +22,8 @@ def main():
     stellar_evolution = MESA()
     se_star = stellar_evolution.particles.add_particle(star)
     
-    print "Evolving a", star.mass, "star with", stellar_evolution.__class__.__name__, 
-    print "until its radius exceeds", stop_radius
+    print("Evolving a", star.mass, "star with", stellar_evolution.__class__.__name__, end=' ') 
+    print("until its radius exceeds", stop_radius)
     while (se_star.radius < stop_radius):
         se_star.evolve_one_step()
         temperatures_original.append(se_star.temperature)
@@ -32,7 +33,7 @@ def main():
     composition     = se_star.get_chemical_abundance_profiles(number_of_zones = number_of_zones)
     index = (composition[0] > 1.0e-9).nonzero()[0][0] # first index where H fraction > 1.0e-9
     
-    print "Creating helium star, from the inner", index, "(out of", str(number_of_zones)+") shells."
+    print("Creating helium star, from the inner", index, "(out of", str(number_of_zones)+") shells.")
     helium_star = stellar_evolution.new_particle_from_model(dict(
         mass = (se_star.get_cumulative_mass_profile(number_of_zones = number_of_zones) * se_star.mass)[:index],
         radius = se_star.get_radius_profile(number_of_zones = number_of_zones)[:index],
@@ -49,12 +50,12 @@ def main():
         X_Si = composition[7][:index]*0.0,
         X_Fe = composition[7][:index]*0.0), 0.0 | units.Myr)
     
-    print "\nStar properties before helium star evolution:\n", stellar_evolution.particles
+    print("\nStar properties before helium star evolution:\n", stellar_evolution.particles)
     for i in range(1000):
         helium_star.evolve_one_step()
         temperatures_helium.append(helium_star.temperature)
         luminosities_helium.append(helium_star.luminosity)
-    print "\nStar properties after helium star evolution:\n", stellar_evolution.particles
+    print("\nStar properties after helium star evolution:\n", stellar_evolution.particles)
     
     stellar_evolution.stop()
     return temperatures_original, luminosities_original, temperatures_helium, luminosities_helium

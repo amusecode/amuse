@@ -12,7 +12,7 @@ def simulate_stellar_evolution(particles, endtime):
     stellar_evolution = SeBa()
     stellar_evolution.particles.add_particles(particles)
     from_code_to_model = stellar_evolution.particles.new_channel_to(particles)
-    print "Evolving {0} stars using {1} up to {2}.".format(len(particles), stellar_evolution.__class__.__name__, endtime)
+    print("Evolving {0} stars using {1} up to {2}.".format(len(particles), stellar_evolution.__class__.__name__, endtime))
     stellar_evolution.evolve_model(endtime)
     from_code_to_model.copy_all_attributes()
     stellar_evolution.stop()

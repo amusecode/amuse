@@ -1,6 +1,8 @@
 """
 Converts a 1d stellar model into a 3d spherical gas model for a star
 """
+from __future__ import print_function
+
 from amuse.units import units
 from amuse.community.evtwin.interface import EVtwin
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
@@ -14,10 +16,10 @@ def create_particles():
     stellar_evolution = EVtwin()
     se_star = stellar_evolution.particles.add_particle(star)
     
-    print "Evolving", star.mass, "star with", stellar_evolution.__class__.__name__, "up to", 100 | units.Myr
+    print("Evolving", star.mass, "star with", stellar_evolution.__class__.__name__, "up to", 100 | units.Myr)
     stellar_evolution.evolve_model(100 | units.Myr)
     
-    print "Creating SPH particles from the (1D) stellar evolution model"
+    print("Creating SPH particles from the (1D) stellar evolution model")
     sph_particles = convert_stellar_model_to_SPH(
         se_star, 
         1000

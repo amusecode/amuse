@@ -1,7 +1,8 @@
 """
 Evolves an the sun in it's AGB star phase using SSE
 """
-    
+from __future__ import print_function
+
 import numpy
 from matplotlib import pyplot
 
@@ -30,7 +31,7 @@ def plottillagb():
         sse.evolve_model(time)
         channel_from_se_to_memory.copy()
         masses.append(sun.mass)
-        print time.as_quantity_in(units.Myr), sun.mass.as_quantity_in(units.MSun)
+        print(time.as_quantity_in(units.Myr), sun.mass.as_quantity_in(units.MSun))
         
     sse.stop()
     

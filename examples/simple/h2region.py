@@ -1,6 +1,7 @@
 """
 Evolves the steady state solution of a star irridiating a H2 region.
 """
+from __future__ import print_function
 
 import numpy
 import os
@@ -112,7 +113,7 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
         radiative_transfer.step()
         
         percentage_converged = radiative_transfer.get_percentage_converged()
-        print "percentage converged :", percentage_converged, ", step :", i, ", photons:", radiative_transfer.parameters.total_number_of_photons
+        print("percentage converged :", percentage_converged, ", step :", i, ", photons:", radiative_transfer.parameters.total_number_of_photons)
         
         if percentage_converged >= min_convergence:
             break

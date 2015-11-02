@@ -123,9 +123,9 @@ def initialize_grid(grid, magentic_field_grid):
 
 
 
-    print "sum rho vx:", grid.rhovx.sum()
-    print "sum rho vy:",grid.rhovy.sum()
-    print "sum rho vz:",grid.rhovz.sum()
+    print("sum rho vx:", grid.rhovx.sum())
+    print("sum rho vy:",grid.rhovy.sum())
+    print("sum rho vz:",grid.rhovz.sum())
 
     grid.energy = (
       P0 / (GAMMA - 1) + 
@@ -139,7 +139,7 @@ def simulate_orszag_tang_problem(end_time):
     instance=new_instance_of_hydro_code()
     set_parameters(instance)
 
-    print "setup grid"
+    print("setup grid")
     for hydro_grid, mhd_grid in instance.iter_hydro_and_mhd_grids():
         inmem = hydro_grid.copy()
         inmem_mhd = mhd_grid.copy()
@@ -156,28 +156,28 @@ def simulate_orszag_tang_problem(end_time):
         
     instance.initialize_grid()
 
-    print "start evolve"
+    print("start evolve")
     dt = end_time / 10
     t = dt
     while t < end_time:
         instance.evolve_model(t)
 
-        print "time : ", t
+        print("time : ", t)
         t += dt
 
-    print "copying results"
+    print("copying results")
     result = []
     for x in instance.itergrids():
       result.append(x.copy())
 
-    print "terminating code"
+    print("terminating code")
     instance.stop()
 
     return result
 
 if __name__ == "__main__":
     rho = grid.rho[...,...,0].value_in(density)
-    print rho
+    print(rho)
     figure = pyplot.figure(figsize=(6,6))
     plot = figure.add_subplot(1,1,1)
     plot.imshow(rho, origin = 'lower')

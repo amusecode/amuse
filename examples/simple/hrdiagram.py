@@ -1,6 +1,7 @@
 """
 Generates a Hertzsprung-Russell diagram for a single star
 """
+from __future__ import print_function
 
 import sys
 import numpy
@@ -26,7 +27,7 @@ def simulate_evolution_tracks():
     luminosity_at_time = [] | units.LSun
     temperature_at_time = [] | units.K
     
-    print "Evolving a star with mass:", stellar_mass
+    print("Evolving a star with mass:", stellar_mass)
     is_evolving = True
     while is_evolving and star.age < end_time:
         luminosity_at_time.append(star.luminosity)

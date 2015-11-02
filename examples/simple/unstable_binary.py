@@ -24,20 +24,20 @@ from amuse.datamodel import Particles
 
 
 def set_up_initial_conditions(orbital_period, kinetic_to_potential_ratio):
-    print "Setting up initial conditions"
+    print("Setting up initial conditions")
     stars =  Particles(2)
     stars.mass = [10.0, 1.0] | units.MSun
     stars.radius = 0 | units.RSun
     stars.position = [0.0, 0.0, 0.0] | units.AU
     stars.velocity = [0.0, 0.0, 0.0] | units.km / units.s
     
-    print "Binary with masses: "+str(stars.mass)+", and orbital period: ", orbital_period
+    print("Binary with masses: "+str(stars.mass)+", and orbital period: ", orbital_period)
     semimajor_axis = ((constants.G * stars.total_mass() * (orbital_period / (2 * pi))**2.0)**(1.0/3.0))
     separation = 2 * semimajor_axis * (1 - kinetic_to_potential_ratio)
-    print "Initial separation:", separation.as_quantity_in(units.AU)
+    print("Initial separation:", separation.as_quantity_in(units.AU))
     relative_velocity = ( (kinetic_to_potential_ratio / (1.0 - kinetic_to_potential_ratio)) * 
         constants.G * stars.total_mass() / semimajor_axis).sqrt()
-    print "Initial relative velocity:", relative_velocity.as_quantity_in(units.km / units.s)
+    print("Initial relative velocity:", relative_velocity.as_quantity_in(units.km / units.s))
     
     stars[0].x = separation
     stars[0].vy = relative_velocity
@@ -74,7 +74,7 @@ def simulate_binary_evolution(binary, orbital_period, t_offset_stars, t_end):
     current_time = 0.0 * t_end
     
         
-    print "Evolving with stellar wind"
+    print("Evolving with stellar wind")
     while current_time < t_end:
         current_time += orbital_period / 10
         gravitational_dynamics.evolve_model(current_time)
@@ -84,11 +84,11 @@ def simulate_binary_evolution(binary, orbital_period, t_offset_stars, t_end):
         distance.append(separation)
         mass.append(primary.mass)
         time.append(current_time)
-        print "System evolved to time: ", current_time, 
-        print ", primary mass:", primary.mass.as_quantity_in(units.MSun),
-        print ", separation:", separation.as_quantity_in(units.AU)
+        print("System evolved to time: ", current_time, end=' ') 
+        print(", primary mass:", primary.mass.as_quantity_in(units.MSun), end=' ')
+        print(", separation:", separation.as_quantity_in(units.AU))
     
-    print "Evolution done"
+    print("Evolution done")
     return distance, mass, time
 
 def orbit_plot(distance, mass, time):

@@ -23,7 +23,7 @@ def structure_from_star(mass, age):
         radii_cubed = radius_profile**3
         radii_cubed.prepend(0|units.m**3)
         mass_profile = (4.0/3.0 * numpy.pi) * density_profile * (radii_cubed[1:] - radii_cubed[:-1])
-        print "Derived mass profile from density and radius."
+        print("Derived mass profile from density and radius.")
     
     return dict(
         radius = radius_profile.as_quantity_in(units.RSun),

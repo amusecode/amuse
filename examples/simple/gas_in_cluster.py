@@ -8,6 +8,7 @@ The force of the star particles on the gas particles is calculated by the star c
 The bridge works in S.I. units, but for this example all times and energies are
 reported in nbody units.
 """
+from __future__ import print_function
 
 from amuse.couple import bridge
 
@@ -159,7 +160,7 @@ class BridgeStarAndGasPlummerCode(object):
         while self.time < time_end_in_si:
             self.time += self.diagnostic_timestep_in_si
             self.code.evolve_model(self.time)
-            print "evolved to time:", self.converter.to_nbody(self.code.time)
+            print("evolved to time:", self.converter.to_nbody(self.code.time))
             self.store_values()
             
         self.channel_from_code_to_memory_for_stars.copy()
@@ -173,9 +174,9 @@ class BridgeStarAndGasPlummerCode(object):
         energy = self.converter.to_nbody(sum_energy).value_in(nbody_system.energy)
         coreradius = self.star_code.particles.virial_radius().value_in(self.rscale.to_unit())
         
-        print "Time          :", time
-        print "Energy        :", energy
-        print "Virial radius :", coreradius
+        print("Time          :", time)
+        print("Energy        :", energy)
+        print("Virial radius :", coreradius)
         
     def store_values(self):
         

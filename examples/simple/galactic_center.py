@@ -4,6 +4,7 @@ Evolves a cluster in the potention of the galactic center
 Uses the bridge integrator to couple different codes.
 In this example a cluster is evolved  circling the galactic center, represented by a static potential.
 """
+from __future__ import print_function
 
 import numpy
 

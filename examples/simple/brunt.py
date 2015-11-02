@@ -1,4 +1,5 @@
 #-*-noplot-*-
+from __future__ import print_function
 from matplotlib import pyplot
 from amuse.plot import semilogy, xlabel, ylabel
 
