@@ -61,7 +61,7 @@ def temperature_density_plot(data, mass, age):
     pyplot.suptitle('Structure of a {0} star at {1}'.format(mass, age))
     pyplot.show()   
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     mass = 1.0 | units.MSun
     age = 5.0 | units.Gyr
     

@@ -96,6 +96,6 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
     print "done. press key to exit"
     raw_input()
     
-if __name__ in ("__main__","__plot__"):
+if __name__ == "__main__":
     run_mc(N=1000, Mcloud=2000. | units.MSun, Rcloud=.5 | units.parsec)
 

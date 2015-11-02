@@ -28,6 +28,5 @@ def make_plot(radius_profile, brunt_profile, mass, age):
 if __name__ == '__main__':
     mass = 1.0 | units.MSun
     age = 1.0 | units.Gyr
-    
     radius_profile, brunt_profile = brunt_vaisala_frequency_squared_profile(mass, age)
     make_plot(radius_profile, brunt_profile, mass, age)

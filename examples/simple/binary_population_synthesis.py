@@ -182,7 +182,7 @@ def make_hr_diagram(binaries):
     pyplot.show()
     
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print "generating a binary population..."
     
     binaries, stars = generate_initial_population_grid(

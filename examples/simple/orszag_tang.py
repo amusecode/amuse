@@ -175,7 +175,7 @@ def simulate_orszag_tang_problem(end_time):
 
     return result
 
-def plot_grid(grid):
+if __name__ == "__main__":
     rho = grid.rho[...,...,0].value_in(density)
     print rho
     figure = pyplot.figure(figsize=(6,6))

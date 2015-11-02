@@ -151,7 +151,7 @@ def bb79_cloud_evolve(N=50000,
   
   sph.stop()
   
-if __name__ in ("__main__","__plot__"):
+if __name__ == "__main__":
   bb79_cloud_evolve(N=50000,
                     Mcloud=1. | units.MSun, 
                     Rcloud=3.2e16 | units.cm, 

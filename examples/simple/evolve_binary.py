@@ -85,7 +85,7 @@ def plot_masses(table):
    
     pyplot.show()
     
-if __name__ in ('__main__', '__plot__'):        
+if __name__ == "__main__":     
     table = evolve_binary(
         3.0 | units.MSun,
         0.3 | units.MSun,

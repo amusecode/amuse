@@ -67,7 +67,7 @@ def plot_track(data):
     plot.set_ylim(1.0e-2,1.e5)
     pyplot.show()   
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     data = simulate_evolution_tracks(masses = [0.5, 1.0, 1.25] | units.MSun)
     plot_track(data)
     

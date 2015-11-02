@@ -73,6 +73,6 @@ def plot_tracks(temperatures_original, luminosities_original, temperatures_heliu
     pyplot.show()
 
 
-if __name__ in ('__main__', '__plot__'):        
+if __name__ == "__main__":       
     temperatures_original, luminosities_original, temperatures_helium, luminosities_helium = main()
     plot_tracks(temperatures_original, luminosities_original, temperatures_helium, luminosities_helium)

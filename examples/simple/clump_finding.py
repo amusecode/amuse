@@ -88,7 +88,7 @@ def plot_clumps(groups, total_mass):
     figure.savefig('x.png')
     pyplot.show()
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     number_of_stars = 10000
     stars = new_cluster(number_of_stars)
     total_mass = stars.mass.sum()

@@ -15,7 +15,7 @@ from amuse.plot import *
 def simulate_massloss(time):
     return units.MSun(0.5*(1.0+1.0/(1.0+numpy.exp((time.value_in(time.unit)-70.0)/15.))))
 
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
 
     convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
     

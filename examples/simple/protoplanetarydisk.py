@@ -36,7 +36,7 @@ def make_map(sph,N=100,L=1):
 
     return numpy.transpose(rho)
                     
-if __name__ in ("__main__","__plot__"):
+if __name__ == "__main__":
 
     N=20000
     tend=1. | units.yr

@@ -63,7 +63,7 @@ def new_option_parser():
                       help="metalicity [0.02]")
     return result
 
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     o, arguments  = new_option_parser().parse_args()
     main(**o.__dict__)
 

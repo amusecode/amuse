@@ -134,7 +134,7 @@ def new_option_parser():
                       unit = units.km/units.s, help="z-velocity [%unit]")
     return result
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     o, arguments  = new_option_parser().parse_args()
 
     t_end = o.t_end 

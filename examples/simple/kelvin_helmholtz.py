@@ -113,6 +113,6 @@ def plot_grid(grid):
     figure.savefig('kelvin_helmholtz.png')
     pyplot.show()
     
-if __name__ in ("__main__", "__plot__"):
+if __name__ == "__main__":
     grids = simulate_kelvin_helmholtz_instability(1.0 | time)
     plot_grid(grids[0])

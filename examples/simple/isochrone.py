@@ -38,7 +38,7 @@ def plot_isochrone(particles):
     pyplot.gca().set_axis_bgcolor('#808080')
     pyplot.show()
 
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     particles = Particles(mass=new_scalo_mass_distribution(4000))
     simulate_stellar_evolution(particles, 0.5 | units.Gyr)
     plot_isochrone(particles)

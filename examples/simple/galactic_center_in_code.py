@@ -50,7 +50,7 @@ def shift_particles(particles,dx,dy,dz,dvx,dvy,dvz):
     particles.vy += dvy
     particles.vz += dvz
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     # parameter setup:
     N=128
     W0=3

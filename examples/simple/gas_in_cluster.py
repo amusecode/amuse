@@ -188,7 +188,7 @@ class BridgeStarAndGasPlummerCode(object):
         self.energy_at_time.append(energy)
         self.coreradius_at_time.append(coreradius)
     
-if __name__ in ("__main__", "__plot__"):
+if __name__ == "__main__":
     code = BridgeStarAndGasPlummerCode(
         nstars = 100,
         diagnostic_timestep = 0.5 | nbody_system.time

@@ -14,7 +14,7 @@ from amuse.lab import *
 
 from optparse import OptionParser
     
-if __name__ in ('__main__', '__plot__'):        
+if __name__ == "__main__":    
 
     result = OptionParser()
     result.add_option("-t", dest="t_end", type="float",default = 12000,
