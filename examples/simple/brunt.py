@@ -1,3 +1,4 @@
+#-*-noplot-*-
 from matplotlib import pyplot
 from amuse.plot import semilogy, xlabel, ylabel
 
