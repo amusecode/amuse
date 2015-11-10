@@ -76,7 +76,7 @@ def make_effective_iso_potential_plot(gravity_code):
     ylabel('y')
     pyplot.show()   
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     gravity = setup_gravity_code()
     make_effective_iso_potential_plot(gravity)
     gravity.stop()

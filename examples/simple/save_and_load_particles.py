@@ -14,7 +14,7 @@ from amuse.io import read_set_from_file
 
 import os.path
 
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     if os.path.exists('plummer128.hdf'):
         os.remove('plummer128.hdf')
         

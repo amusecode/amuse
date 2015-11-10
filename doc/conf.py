@@ -34,8 +34,8 @@ extensions = [
  'sphinx.ext.graphviz',
  'sphinx.ext.inheritance_diagram',
  'sphinx.ext.doctest',
- #'matplotlib.sphinxext.only_directives',
- #'matplotlib.sphinxext.plot_directive',
+ 'matplotlib.sphinxext.only_directives',
+ 'matplotlib.sphinxext.plot_directive',
  'gen_rst',
  'gen_gallery', 
  'io_directive',
@@ -57,7 +57,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'AMUSE'
-copyright = u'2009, 2010, 2011 The AMUSE Team'
+copyright = u'2009-2015 The AMUSE Team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

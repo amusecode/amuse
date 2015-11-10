@@ -14,7 +14,7 @@ from amuse.lab import *
 
 from optparse import OptionParser
     
-if __name__ in ('__main__', '__plot__'):        
+if __name__ == "__main__":    
 
     result = OptionParser()
     result.add_option("-t", dest="t_end", type="float",default = 12000,
@@ -43,10 +43,10 @@ if __name__ in ('__main__', '__plot__'):
     Mmin = o.Mmin | units.MSun
     Mmax = o.Mmax | units.MSun
     if o.verbose:
-        print "#Selected parameters: "
-        print "#\tN=", o.N
-        print "#\tIMF=", o.Mmin, "MSun", o.Mmax, "MSun", o.x_imf
-        print "#\t t [Myr] \t <m> [MSun] \t\t d<m>/dt [MSun/Myr]"
+        print("#Selected parameters: ")
+        print("#\tN=", o.N)
+        print("#\tIMF=", o.Mmin, "MSun", o.Mmax, "MSun", o.x_imf)
+        print("#\t t [Myr] \t <m> [MSun] \t\t d<m>/dt [MSun/Myr]")
         
     stars.mass = new_salpeter_mass_distribution(
         o.N, mass_min=Mmin, mass_max=Mmax, alpha=o.x_imf)
@@ -62,7 +62,7 @@ if __name__ in ('__main__', '__plot__'):
         mm = stars.mass.sum()/len(stars)
         dmm_dt = (mm_last-mm)/dt
         if o.verbose:
-            print "t = ", t, "<m>=", mm.as_quantity_in(units.MSun), " d<m>/dt = ", dmm_dt.as_quantity_in(units.MSun/units.Myr)
+            print("t = ", t, "<m>=", mm.as_quantity_in(units.MSun), " d<m>/dt = ", dmm_dt.as_quantity_in(units.MSun/units.Myr))
         else:
-            print "\t", t, "\t", mm.as_quantity_in(units.MSun), " \t ", dmm_dt.as_quantity_in(units.MSun/units.Myr)
+            print("\t", t, "\t", mm.as_quantity_in(units.MSun), " \t ", dmm_dt.as_quantity_in(units.MSun/units.Myr))
 

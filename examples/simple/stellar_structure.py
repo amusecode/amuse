@@ -23,7 +23,7 @@ def structure_from_star(mass, age):
         radii_cubed = radius_profile**3
         radii_cubed.prepend(0|units.m**3)
         mass_profile = (4.0/3.0 * numpy.pi) * density_profile * (radii_cubed[1:] - radii_cubed[:-1])
-        print "Derived mass profile from density and radius."
+        print("Derived mass profile from density and radius.")
     
     return dict(
         radius = radius_profile.as_quantity_in(units.RSun),
@@ -61,7 +61,7 @@ def temperature_density_plot(data, mass, age):
     pyplot.suptitle('Structure of a {0} star at {1}'.format(mass, age))
     pyplot.show()   
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     mass = 1.0 | units.MSun
     age = 5.0 | units.Gyr
     

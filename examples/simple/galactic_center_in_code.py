@@ -1,6 +1,7 @@
 """
 Evolves a cluster orbiting a massive central particle.
 """
+from __future__ import print_function
 
 import numpy
 
@@ -50,7 +51,7 @@ def shift_particles(particles,dx,dy,dz,dvx,dvy,dvz):
     particles.vy += dvy
     particles.vz += dvz
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     # parameter setup:
     N=128
     W0=3
@@ -80,13 +81,13 @@ if __name__ in ('__main__', '__plot__'):
     code.particles.add_particle(galactic_center)
 
 
-    print "Start evolution"
+    print("Start evolution")
     # evolve and make plots
     times=units.Myr([0.,0.2,0.4,0.6])
     f=pyplot.figure(figsize=(8,8))
     for i,time in enumerate(times):
         code.evolve_model(time)
-        print "Evolved to time:", time
+        print("Evolved to time:", time)
 
         x=code.particles.x.value_in(units.parsec)
         y=code.particles.y.value_in(units.parsec)

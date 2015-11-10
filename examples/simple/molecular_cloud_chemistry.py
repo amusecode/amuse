@@ -48,9 +48,9 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
 
     update_chem(parts,parts)
 
-    print "Tcloud:", parts.temperature.max().in_(units.K)
-    print "cloud n_H:",parts.number_density.max().in_(units.cm**-3)
-    print "freefall time:",tff.in_(units.Myr)
+    print("Tcloud:", parts.temperature.max().in_(units.K))
+    print("cloud n_H:",parts.number_density.max().in_(units.cm**-3))
+    print("freefall time:",tff.in_(units.Myr))
 
     sph=Fi(conv)
     chem=Krome(redirection="none")
@@ -77,7 +77,7 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
     while i<(end_time/timestep+0.5):
       evolve_sph_with_chemistry(sph,chem,i*timestep)
       tnow=sph.model_time
-      print "done with step:",i,tnow.in_(units.Myr)
+      print("done with step:",i,tnow.in_(units.Myr))
       i+=1
 
       n=(sph.particles.density/meanmwt).value_in(units.cm**-3)
@@ -93,9 +93,9 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
       pyplot.ylabel("H_2,CO abundance")
       pyplot.draw()
     
-    print "done. press key to exit"
+    print("done. press key to exit")
     raw_input()
     
-if __name__ in ("__main__","__plot__"):
+if __name__ == "__main__":
     run_mc(N=1000, Mcloud=2000. | units.MSun, Rcloud=.5 | units.parsec)
 

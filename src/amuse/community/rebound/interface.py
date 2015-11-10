@@ -79,15 +79,15 @@ class ReboundInterface(CodeInterface,
     
 
     INTEGRATORS = {"ias15": 0, "whfast": 1, "sei": 2, "wh": 3, "leapfrog": 4, "hybrid": 5, "none": 6}
-    def set_integrator(self, name):
-        return self._set_integrator(self.INTEGRATORS[name])
+    def set_integrator(self, name, code_index = 0 ):
+        return self._set_integrator(self.INTEGRATORS[name], code_index)
     
-    def get_integrator(self):
-        value, error = self._get_integrator()
+    def get_integrator(self, code_index = 0):
+        value, error = self._get_integrator(code_index)
         for key, index in self.INTEGRATORS.iteritems():
             if value == index:
-                return key, error
-        return "none", -1
+                return key
+        return "none"
     
     @legacy_function
     def set_time_step():

@@ -1,14 +1,14 @@
 """
 Evolves an the sun in it's AGB star phase using SSE
 """
-    
+from __future__ import print_function
+
 import numpy
 from matplotlib import pyplot
 
 from amuse.community.sse.interface import SSE
 from amuse.units import units
 from amuse.ext import solarsystem
-from amuse import plot
 
 from amuse import datamodel
 
@@ -31,12 +31,18 @@ def plottillagb():
         sse.evolve_model(time)
         channel_from_se_to_memory.copy()
         masses.append(sun.mass)
-        print time.as_quantity_in(units.Myr), sun.mass.as_quantity_in(units.MSun)
+        print(time.as_quantity_in(units.Myr), sun.mass.as_quantity_in(units.MSun))
         
     sse.stop()
     
-    plot.plot(timerange, masses,'.')
+    figure = pyplot.figure(figsize= (6,6))
+    
+    subplot = figure.add_subplot(1, 1, 1)
+    subplot.plot(timerange.value_in(units.Gyr), masses.value_in(units.MSun),'.')
+    subplot.set_xlabel('t (Gyr)')
+    subplot.set_ylabel('mass (MSun)')
+    
     pyplot.show()
 
-if __name__ in ("__main__", "__plot__"):
+if __name__ == '__main__':
     plottillagb()
