@@ -172,7 +172,7 @@ class TestStaggeredGrid(amusetest.TestCase):
 
         print 'before', before_sum, 'after', after_sum
 
-        self.assertEquals(after_sum, before_sum, msg="Sum of values before and after remapping should be the same")
+        self.assertAlmostEquals(after_sum, before_sum, msg="Sum of values before and after remapping should be the same")
 
 
 
