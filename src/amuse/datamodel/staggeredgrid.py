@@ -135,7 +135,6 @@ class StaggeredGrid(object):
 
         if type(elements) is StructuredGrid:
             if len(elements.shape) != len(nodes.shape):
-                print elements.shape, nodes.shape
                 raise Exception("elements and nodes should have the same number of the dimensions")
 
             if numpy.all([s1+1==s2 for s1,s2 in zip(elements.shape,nodes.shape)]):

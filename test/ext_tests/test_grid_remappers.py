@@ -48,7 +48,6 @@ class TestConservativeSphericalRemapper(TestCase):
         except:
             self.skip("conservative spherical remapper requires omuse.community.cdo.interface")
 
-    def test1(self):
         #this test creates a structured staggered grid and an unstructured staggered grid
         #and then uses the conservative_spherical_remapper to remap values between the grids
 
@@ -111,7 +110,7 @@ class TestConservativeSphericalRemapper(TestCase):
         nodes.lon = (xy[:,0] | units.rad)
         nodes.lat = (xy[:,1] | units.rad)
 
-        target = StaggeredGrid(elements, nodes)
+        self.unstructured = StaggeredGrid(elements, nodes)
 
         #generate corners for a simple structured grid as source grid
         shape = [5,5]
@@ -130,7 +129,17 @@ class TestConservativeSphericalRemapper(TestCase):
         nodes = StructuredGrid(*ind[0].shape)
         nodes.lat = (lats | units.rad)
         nodes.lon = (lons | units.rad)
-        source = StaggeredGrid(elements, nodes)
+        self.structured = StaggeredGrid(elements, nodes)
+
+        corners += 0.01 #shift the grid
+        nodes = StructuredGrid(*ind[0].shape)
+        nodes.lat = (corners[1] | units.rad)
+        nodes.lon = (corners[0] | units.rad)
+        self.structured2 = StaggeredGrid(elements, nodes)
+
+    def test1(self):
+        target = self.unstructured
+        source = self.structured
 
         #set some values on the grid
         constant_field = numpy.zeros(source.nodes.shape, dtype=numpy.double)
@@ -149,6 +158,53 @@ class TestConservativeSphericalRemapper(TestCase):
 
         self.assertTrue(numpy.all(target.nodes.const >= 0.0), msg="Expecting all remapped values values to be larger than zero")
         self.assertTrue(numpy.all(target.elements.const2 >= 0.0), msg="Expecting all remapped values values to be larger than zero")
+
+    def test2(self):
+        target = self.structured2
+        source = self.structured
+
+        #set some values on the grid
+        constant_field = numpy.zeros(source.nodes.shape, dtype=numpy.double)
+        constant_field += 1.0
+        source.nodes.const = constant_field
+
+        constant_field = numpy.zeros(source.elements.shape, dtype=numpy.double)
+        constant_field += 1.0
+        source.elements.const2 = constant_field
+
+        #create remapper
+        remapper = grid_remappers.conservative_spherical_remapper(source, target)
+
+        #remap values        
+        remapper.forward_mapping(["const", "const2"])
+
+        self.assertTrue(numpy.all(target.nodes.const >= 0.0), msg="Expecting all remapped values values to be larger than zero")
+        self.assertTrue(numpy.all(target.elements.const2 >= 0.0), msg="Expecting all remapped values values to be larger than zero")
+
+    def test3(self):
+        target = self.unstructured
+        source = self.structured
+
+        #set some values on the grid
+        constant_field = numpy.zeros(source.nodes.shape, dtype=numpy.double)
+        constant_field += 1.0
+        source.nodes.const = constant_field
+
+        constant_field = numpy.zeros(source.elements.shape, dtype=numpy.double)
+        constant_field += 1.0
+        source.elements.const2 = constant_field
+
+        #use a remapping channel
+        channel = source.new_remapping_channel_to(target, remapper=grid_remappers.conservative_spherical_remapper)
+
+        #remap values        
+        channel.copy_attributes(["const", "const2"])
+
+        self.assertTrue(numpy.all(target.nodes.const >= 0.0), msg="Expecting all remapped values values to be larger than zero")
+        self.assertTrue(numpy.all(target.elements.const2 >= 0.0), msg="Expecting all remapped values values to be larger than zero")
+
+
+
 
 class TestGridRemappingChannel(TestCase):
     def setUp(self):
