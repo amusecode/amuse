@@ -607,7 +607,42 @@ class GridInformationChannel(object):
 
     def copy_overlapping_attributes(self):
         names_to_copy = self.get_overlapping_attributes()
-        self.copy_attributes(names_to_copy)  
+        self.copy_attributes(names_to_copy)
+
+    def transform_values(self, attributes, f):
+        values = self.source.get_values_in_store(self.index, attributes)
+        return f(*values)
+        
+    def transform(self, target, function, source):
+        """ Copy and transform values of one attribute from the source set to the target set.
+
+        :argument target: name of the attributes in the target set
+        :argument function: function used for transform, should return tuple
+        :argument source: name of the attribute in the source set
+
+        >>> from amuse.datamodel import Grid
+        >>> grid1 = Grid(2)
+        >>> grid2 = Grid(2)
+        >>> grid1.attribute1 = 1
+        >>> grid1.attribute2 = 2
+        >>> channel = grid1.new_channel_to(grid2)
+        >>> channel.transform(["attribute3","attribute4"], lambda x,y: (y+x,y-x), ["attribute1","attribute2"])
+        >>> print grid2.attribute3
+        [3 3]
+        >>> print grid2.attribute4
+        [1 1]
+
+        """
+        if not self.target.can_extend_attributes():
+            target_attributes = self.target.get_defined_settable_attribute_names()
+            if not set(target).issubset(set(target_attributes)):
+                raise Exception("trying to set unsettable attributes {0}".format(
+                                list(set(target)-set(target_attributes))) )
+        converted=self.transform_values(source, function)
+        if len(converted) != len(target):
+            raise Exception("function {0} returns {1} values while target attributes are {2} of length {3}".format(
+                            function.__name__, len(converted), target, len(target)))
+        self.target.set_values_in_store(self.index, target, converted)        
 
 class SamplePointOnCellCenter(object):
     def __init__(self, grid, point):

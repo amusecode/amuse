@@ -506,6 +506,22 @@ class TestGrids(amusetest.TestCase):
         self.assertEqual(sub[-1,-1].x,sub.x[-1,-1])
         self.assertEqual(sub[-1,-2].x,sub.x[-1,-2])
 
+    def test40(self):
+        grid1 = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid2 = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        grid1.m1 = 1
+        grid1.m2 = 2
+        channel = grid1.new_channel_to(grid2)
+        channel.transform(["m3"],lambda x,y: (x,),["m1","m2"])
+        self.assertEquals(grid2.m3, 1)
+        channel.transform(["m3"],lambda x,y: (y,),["m1","m2"])
+        self.assertEquals(grid2.m3, 2)
+        channel.transform(["m3"],lambda x,y: (x+y,),["m1","m2"])
+        self.assertEquals(grid2.m3, 3)
+        channel.transform(["m3","m4"],lambda x,y: (x+y,2*x-y),["m1","m2"])
+        self.assertEquals(grid2.m3, 3)
+        self.assertEquals(grid2.m4, 0)
+
         
 class TestGridFactories(amusetest.TestCase):
     def test1(self):
