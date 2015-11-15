@@ -1,8 +1,7 @@
-This directory contains the AMUSE software. With AMUSE you
-can write scripts to simulate astrophysical problems in
-different domains.
+This directory contains the AMUSE software. With AMUSE you can write 
+scripts to simulate astrophysical problems in different domains.
 
-AMUSE documentation and software can be found at:
+The documentation and the software can be found at:
 
     http://www.amusecode.org
 
@@ -10,18 +9,18 @@ Getting Started
 ===============
 
 To build amuse you need a working build environment and install some 
-prerequisites. This documet contains the quick install instructions, 
-if these fail please look at the detailed descriptions of the 
-installation procedure in the documents in the 'doc/install' 
+prerequisites. This document contains the quick install 
+instructions, if these fail please look at the detailed descriptions 
+of the installation procedure in the documents in the 'doc/install' 
 directory. 
 
 Compilers
 =========
 
-To build AMUSE from source you need to have a working 
-build environment. The AMUSE build system needs
-a C++ and fortan 90 compiler. Please check first if you
-have a working build environment on your system.
+To build AMUSE from source you need to have a working build 
+environment. The AMUSE build system needs a C++ and a fortan 90 
+compiler. Please check first if you have a working build environment 
+on your system.
 
 In Ubuntu you can setup the environment with (as root):
 
@@ -31,20 +30,22 @@ In Fedora you can setup the environment with (as root)::
 
     yum groupinstall "Development Tools" "Development Libraries"
     
-In OS X you can install fink or  macports and the Apple Developer 
-Tools. The Apple Developer Tools do not include a gfortran compiler, 
-you can find one at:
+In OS X you can install homebrew or macports package managers (both 
+need the Apple Developer Tools). If you do not want to use any of 
+these package managers you will need to install a fortran compiler 
+as the Apple Developer Tools do not include a fortran compiler, you 
+can find one at:
 
-    http://r.research.att.com/tools/
+    http://hpc.sourceforge.net/
 
 Installing Prerequisites
 ========================
 
-This document describes installation of the pre-requisite 
-software packages to a user directory. If you have an
-recent Ubuntu or Fedora distribution you can follow the installation
-instructions in `doc/install/howto-install-prerequisites.txt` 
-to install the packages as part of the system.
+This document describes installation of the pre-requisite software 
+packages to a user directory. If you have a recent Ubuntu or Fedora 
+distribution you can follow the installation instructions in 
+`doc/install/howto-install-prerequisites.txt` to install the 
+packages as part of the system.
 
 1. Make a prerequisite software directory (can be set to any directory)
 
@@ -73,9 +74,9 @@ to install the packages as part of the system.
     
 Set Environment
 ===============
-You can set the the PREFIX, PATH and LD_LIBRARY_PATH
-environment variables in you bashrc file. Please make sure
-the ${PREFIX}/bin directory is first in the path.
+You can set the the PREFIX, PATH and LD_LIBRARY_PATH environment 
+variables in you bashrc file. Please make sure the ${PREFIX}/bin 
+directory is first in the path.
 
 In bash, you can extend your `.bashrc` file with:
 
@@ -95,21 +96,9 @@ prerequisite packages have been installed.
 
     ./configure 
     
-1. Build the code with make
+2. Build the code with make
 
     make 
-    
-
-Starting the MPI daemon process
-===============================
-For MPICH2, you need to start the mpd daemon process. If run for the 
-firt time, the daemon will complain about a .mpd.conf file. If so, 
-please create the .mpd.conf file as instructed by the mpd command.
-
-1. Start the mpd daemon
-
-    mpd &
-    
 
 Running the tests
 =================
