@@ -3063,6 +3063,9 @@ class ParticleInformationChannel(object):
         >>> channel.transform(["attribute3"], lambda x,y: (x+y,), ["attribute1","attribute2"])
         >>> print particles2.attribute3
         [3 3 3]
+        >>> channel.transform(["attribute1","attribute1b"], lambda x: (x,2*x), ["attribute1"])
+        >>> print particles2.attribute1b
+        [2 2 2]
 
         """
         self._reindex()
