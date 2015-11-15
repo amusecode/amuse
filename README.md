@@ -80,9 +80,9 @@ directory is first in the path.
 
 In bash, you can extend your `.bashrc` file with:
 
-export PREFIX=~/amuse/prerequisites
-export PATH=${PREFIX}/bin:${PATH}
-export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+    export PREFIX=~/amuse/prerequisites
+    export PATH=${PREFIX}/bin:${PATH}
+    export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 
 Building AMUSE
 ==============

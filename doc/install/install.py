@@ -6,6 +6,8 @@ import urllib
 import subprocess
 import shutil
 
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 IS_ON_OSX = sys.platform == 'darwin'
 PYTHON    = sys.executable
