@@ -156,7 +156,7 @@ def combine_indices(index0, index1):
             ndarray1[ndarray] = ndarray2
             return ndarray1
         else:
-            raise Exception("index must be a integer, slice or sequence")
+            return index0[index1]
                 
     else:
         raise Exception("index must be a integer, slice or sequence")
@@ -196,7 +196,9 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
         if ndarray.dtype == 'bool':
             return number_of_dimensions - len(ndarray.shape) + 1
         else:
-            raise Exception("Not handled yet")
+            if isinstance(index, list):
+                raise Exception("indexing with lists is inconsistent with indexing numpy arrays, hence not permitted atm")
+            return number_of_dimensions + len(ndarray.shape) - 1
     else:
         raise Exception("Not handled yet")
     
@@ -280,8 +282,14 @@ def shape_after_index(shape, index):
             else:
                 
                 raise Exception("Not handled yet")
+
         else:
-            raise Exception("Not handled yet")
+            if isinstance(index, list):
+                raise Exception("indexing with lists is inconsistent with indexing numpy array, hence not permitted atm")
+
+            return ndarray.shape+shape[1:]
+            #~ return numpy.zeros(shape)[ndarray].shape # this is cheating a bit..
+
     else:
         raise Exception("Not handled yet")
         
