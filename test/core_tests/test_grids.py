@@ -506,6 +506,14 @@ class TestGrids(amusetest.TestCase):
         self.assertEqual(sub[-1,-1].x,sub.x[-1,-1])
         self.assertEqual(sub[-1,-2].x,sub.x[-1,-2])
 
+    def test40(self):
+        grid = datamodel.new_regular_grid((50,), [1.0] | units.m)
+        for index in [ [0], [0,3,4], [1,2,2],[[2,3]],[[0,1],[2,3]],range(50) ]:
+          i=numpy.array(index)
+          self.assertEquals(grid[i].x, grid.x[ i ])
+          self.assertEquals(grid[i][1:].x, grid.x[ i ][1:])
+          self.assertEquals(grid[i][1::2].x, grid.x[ i ][1::2])
+
         
 class TestGridFactories(amusetest.TestCase):
     def test1(self):
