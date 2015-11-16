@@ -3043,6 +3043,48 @@ class ParticleInformationChannel(object):
         data = self.from_particles.get_values_in_store(self.from_indices, [name,])
         self.to_particles.set_values_in_store(self.to_indices, [target_name,], data)
 
+    def transform_values(self, attributes, f):
+        values = self.from_particles.get_values_in_store(self.from_indices, attributes)
+        return f(*values)
+
+    def transform(self, target, function, source):
+        """ Copy and transform values of one attribute from the source set to the target set.
+
+        :argument target: name of the attributes in the target set
+        :argument function: function used for transform, should return tuple 
+        :argument source: name of the attribute in the source set
+
+        >>> from amuse.datamodel import Particles
+        >>> particles1 = Particles(3)
+        >>> particles2 = particles1.copy()
+        >>> particles1.attribute1 = 1
+        >>> particles1.attribute2 = 2
+        >>> channel = particles1.new_channel_to(particles2)
+        >>> channel.transform(["attribute3"], lambda x,y: (x+y,), ["attribute1","attribute2"])
+        >>> print particles2.attribute3
+        [3 3 3]
+        >>> channel.transform(["attribute1","attribute1b"], lambda x: (x,2*x), ["attribute1"])
+        >>> print particles2.attribute1b
+        [2 2 2]
+
+        """
+        self._reindex()
+        
+        if len(self.keys) == 0:
+            return
+
+        if not self.to_particles.can_extend_attributes():
+            target_attributes = self.to_particles.get_defined_settable_attribute_names()
+            if not set(target).issubset(set(target_attributes)):
+                raise Exception("trying to set unsettable attributes {0}".format(
+                                list(set(target)-set(target_attributes))) )
+        converted=self.transform_values(source, function)
+        if len(converted) != len(target):
+            raise Exception("function {0} returns {1} values while target attributes are {2} of length {3}".format(
+                            function.__name__, len(converted), target, len(target)))
+        self.to_particles.set_values_in_store(self.to_indices, target, converted)        
+
+
 class Channels(object):
     def __init__(self, channels=None):
         self._channels = []

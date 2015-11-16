@@ -299,7 +299,25 @@ class TestIndexing(amusetest.TestCase):
           self.assertTrue(big[s1][s2]==big[s3])
 
     def test26(self):
-          pass
+        oned=numpy.zeros(5)
+        threed=numpy.zeros((4,5,6))
+        for index in [0,[1],[1,2],[[1,2],[2,3]],[[2]],[[0,1]]]:
+          i=numpy.array(index)
+          self.assertEquals(len(oned[i].shape), number_of_dimensions_after_index(1, i ))
+        for index in [0,[1],[1,2],[[1,2],[2,3]],[[2]],[[2,1]]]:
+          i=numpy.array(index)
+          self.assertEquals(len(threed[i].shape), number_of_dimensions_after_index(3, i ))
+
+    def test27(self):
+        oned=numpy.zeros(5)
+        threed=numpy.zeros((4,5,6))
+        for index in [0,[1],[1,2],[[1,2],[2,3]],[[2]],[[0,1]]]:
+          i=numpy.array(index)
+          self.assertEquals(oned[i].shape, shape_after_index(oned.shape, i ))
+        for index in [0,[1],[1,2],[[1,2],[2,3]],[[2]],[[2,1]],[[[[0],[1],[1]]]]]:
+          i=numpy.array(index)
+          self.assertEquals(threed[i].shape, shape_after_index(threed.shape, i ))
+
         
 class TestSplitOverDimensions(amusetest.TestCase):
     
