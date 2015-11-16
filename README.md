@@ -49,27 +49,27 @@ packages as part of the system.
 
 1. Make a prerequisite software directory (can be set to any directory)
 
-    mkdir ~/amuse/prerequsites
+        mkdir ~/amuse/prerequsites
     
 2. Set the PREFIX, PATH and LD_LIBRARY_PATH environement variables
 
-    export PREFIX=~/amuse/prerequisites
-    export PATH=${PREFIX}/bin:${PATH}
-    export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+        export PREFIX=~/amuse/prerequisites
+        export PATH=${PREFIX}/bin:${PATH}
+        export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 
 2b. If you have ifort and/or icc, you need to also set:  
 
-    export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
+        export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
 
 3. Download and install python
 
-    cd doc/install
-    ./install-python.sh
+        cd doc/install
+        ./install-python.sh
 
 4. Download and install the other pre-requisites
    (script is also in the `doc/install` directory)
 
-    ./install.py install
+        ./install.py install
     
     
 Set Environment
@@ -94,11 +94,11 @@ prerequisite packages have been installed.
 
 1. Configure the source code 
 
-    ./configure 
+        ./configure 
     
 2. Build the code with make
 
-    make 
+        make 
 
 Running the tests
 =================
@@ -110,5 +110,5 @@ To run these tests do:
 
 1. Run the automatic tests
 
-    nosetests -v
+        nosetests -v
     
