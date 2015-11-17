@@ -528,14 +528,61 @@ class TestGrids(amusetest.TestCase):
 
     def test42(self):
         grid = datamodel.new_regular_grid((3,4,5,6), [1.0,2.0,3.0,4.0],axes_names="abcd")
-        for _i,_j in [ ([0,1],[2,3]) ]:
+        for _i,_j in [ ([0],[3]),([0,1],[2,3]) ]:
           i=numpy.array(_i)
           j=numpy.array(_j)
           self.assertEquals(grid[i,j].a, grid.a[ i,j ])
           self.assertEquals(grid[0,1,i,j].a, grid.a[0,1, i,j ])
           self.assertEquals(grid[i,j,0,0].a, grid.a[ i,j,0,0 ])
           self.assertEquals(grid[i,1,2,j].a, grid.a[ i,1,2,j])
-        
+
+    def test43(self):
+        grid = datamodel.new_regular_grid((3,4,5,6), [1.0,2.0,3.0,4.0],axes_names="abcd")
+        for _i,_j in [ ([0,1],[2,3]) ]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          subgrid=grid[:,0,:,:]
+          self.assertEquals(subgrid[i,j].a, subgrid.a[ i,j ])
+          subgrid=grid[:,0,2,:]
+          self.assertEquals(subgrid[i,j].a, subgrid.a[ i,j ])
+          subgrid=grid[:,0,-2,:]
+          self.assertEquals(subgrid[i,j].a, subgrid.a[ i,j ])
+
+    def test44(self):
+        grid = datamodel.new_regular_grid((3,4,5,6), [1.0,2.0,3.0,4.0],axes_names="abcd")
+        for _i,_j in [ ([-2],[-4]),([0,-1],[-2,3]) ]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          subgrid=grid[:,0,:,:]
+          self.assertEquals(subgrid[i,j].a, subgrid.a[ i,j ])
+          subgrid=grid[:,0,2,:]
+          self.assertEquals(subgrid[i,j].a, subgrid.a[ i,j ])
+          subgrid=grid[:,0,-2,:]
+          self.assertEquals(subgrid[i,j].a, subgrid.a[ i,j ])
+
+    def test45(self):
+        grid = datamodel.new_regular_grid((3,4,5,6), [1.0,2.0,3.0,4.0],axes_names="abcd")
+        for _i,_j in [ ([-1],[-4]) ]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          subgrid=grid[::2,0,:,:]
+          print subgrid,subgrid.a[ i,j ]
+          self.assertEquals(subgrid[i,j].a, subgrid.a[ i,j ])
+
+    def test46(self):
+        grid = datamodel.new_regular_grid((6,), [1.0],axes_names="abcd")
+        subgrid=grid[::2]
+        self.assertEquals(subgrid[-2].a, subgrid.a[ -2 ])
+
+        grid = datamodel.new_regular_grid((7,), [1.0],axes_names="abcd")
+        subgrid=grid[::2]
+        self.assertEquals(subgrid[-2].a, subgrid.a[ -2 ])
+
+        grid = datamodel.new_regular_grid((7,), [1.0],axes_names="abcd")
+        subgrid=grid[6:0:-2]
+        self.assertEquals(subgrid[-2].a, subgrid.a[ -2 ])
+
+
 class TestGridFactories(amusetest.TestCase):
     def test1(self):
         grid1 = datamodel.new_cartesian_grid( (4,5), 1.0 | units.m)
