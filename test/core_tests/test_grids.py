@@ -566,7 +566,6 @@ class TestGrids(amusetest.TestCase):
           i=numpy.array(_i)
           j=numpy.array(_j)
           subgrid=grid[::2,0,:,:]
-          print subgrid,subgrid.a[ i,j ]
           self.assertEquals(subgrid[i,j].a, subgrid.a[ i,j ])
 
     def test46(self):
