@@ -136,9 +136,19 @@ def combine_indices(index0, index1):
     elif isinstance(index0, slice):
         if isinstance(index1, int) or isinstance(index1, long):
             start,stop,step = unpack_slice(index0)
-            return start + (index1 * step)
+            if index1>=0:
+              return start + (index1 * step)
+            else:
+              imax= ceil( abs(stop-start), abs(step))
+              stop=start+imax*step
+              return stop + index1*step
         elif isinstance(index1, EllipsisType):
             return index0
+        elif isinstance(index1, numpy.ndarray):
+            start,stop,step = unpack_slice(index0)
+            imax= ceil( abs(stop-start), abs(step))
+            stop=start+imax*step
+            return start+ (index1 *step)*(index1>=0)+(stop + index1*step)*(index1<0)
         else:
             if isinstance(index1, slice):
               start,stop,step = combine_slices(index0, index1)
