@@ -915,6 +915,20 @@ class TestParticlesChannel(amusetest.TestCase):
 
         return channel1, channel2, particles1, particles2
 
+    def test16(self):
+
+        particles1 = datamodel.Particles(keys=[10,11])
+        particles1.mass = [1,2] | units.kg
+        particles1.vx = [10,12] | units.m/units.s
+
+        particles2 = datamodel.Particles(keys=[11,10])
+
+        channel = particles1.new_channel_to(particles2)
+        channel.transform(["momentum"], lambda x,y: (x*y,),["mass","vx"])
+
+        self.assertEquals(particles2.momentum,[2*12,1*10] | units.kg*units.m/units.s)
+
+
 class TestParticlesSuperset(amusetest.TestCase):
 
     def test1(self):
