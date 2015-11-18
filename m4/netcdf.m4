@@ -63,7 +63,7 @@ AC_DEFUN([AX_NETCDF],[
                             include "netcdf.inc"
                             
                             character, dimension(80) :: n
-                            n=nf90_inq_libvers()
+                            n=nf_inq_libvers()
                             end
                         ])
                     ],[
@@ -115,7 +115,7 @@ AC_DEFUN([AX_NETCDF],[
                             include "netcdf.inc"
                             
                             character, dimension(80) :: n
-                            n=nf90_inq_libvers()
+                            n=nf_inq_libvers()
                             end
                         ])
                     ],[
