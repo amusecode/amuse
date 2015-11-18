@@ -1,6 +1,6 @@
 module fractalMod
 
- integer :: nstar=0, iseed=1234321, n_generated=0
+ integer :: nstar=0, iseed=-1, n_generated=0
  real :: fdim=1.6
  
  real, allocatable :: r(:,:), v(:,:)
@@ -22,7 +22,7 @@ function amuse_get_state(id,x,y,z,vx,vy,vz,n) result(err)
 end function
 
 function amuse_generator() result(err)
-  integer :: err
+  integer :: err, Count
   err=0
   if(nstar.LE.0) then 
     err=-1
@@ -30,6 +30,10 @@ function amuse_generator() result(err)
   endif  
   if(allocated(r)) deallocate(r,v)
   allocate(r(3,nstar),v(3,nstar))
+  if (iseed.LE.0) then
+     call system_clock(Count)
+     iseed = Count
+  endif
   call makefractal(nstar,r,v,fdim,iseed)
   n_generated = nstar
 end function
