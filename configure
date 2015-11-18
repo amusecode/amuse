@@ -8302,7 +8302,8 @@ ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest
 ac_compiler_gnu=$ac_cv_fc_compiler_gnu
 
                     save_FCFLAGS="$FCFLAGS"
-                    FCFLAGS="$ac_NETCDF_CFLAGS -lnetcdff $save_FCFLAGS"
+                    FCFLAGS="$ac_NETCDF_CFLAGS $save_FCFLAGS"
+                    LIBS="$ac_NETCDF_LDOPTS -lnetcdff"
                     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
 $as_echo_n "checking Fortran netcdf presence... " >&6; }
                     cat > conftest.$ac_ext <<_ACEOF
@@ -8458,7 +8459,8 @@ ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest
 ac_compiler_gnu=$ac_cv_fc_compiler_gnu
 
                     save_FCFLAGS="$FCFLAGS"
-                    FCFLAGS="-lnetcdff $save_FCFLAGS"
+                    FCFLAGS="$save_FCFLAGS"
+                    LDFLAGS="-lnetcdff"
                     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
 $as_echo_n "checking Fortran netcdf presence... " >&6; }
                     cat > conftest.$ac_ext <<_ACEOF
