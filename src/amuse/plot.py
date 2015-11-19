@@ -27,7 +27,11 @@ except ImportError:
 import numpy
 try:
     from pynbody.array import SimArray
-    from pynbody.snapshot import SimSnap, _new
+    from pynbody.snapshot import SimSnap
+    try:
+        from pynbody.snapshot import new
+    except:
+        from pynbody.snapshot import _new as new
     import pynbody.plot.sph as pynbody_sph
     HAS_PYNBODY = True
 except ImportError:
@@ -442,9 +446,9 @@ def convert_particles_to_pynbody_data(particles, length_unit=units.kpc, pynbody_
         raise AmuseException("Couldn't find pynbody")
 
     if hasattr(particles, "u"):
-        pynbody_data = _new(gas=len(particles))
+        pynbody_data = new(gas=len(particles))
     else:
-        pynbody_data = _new(dm=len(particles))
+        pynbody_data = new(dm=len(particles))
     pynbody_data._filename = "AMUSE"
     if hasattr(particles, "mass"):
         pynbody_data['mass'] = SimArray(particles.mass.value_in(units.MSun), "Msol")
