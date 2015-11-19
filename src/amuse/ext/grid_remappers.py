@@ -248,13 +248,11 @@ class conservative_spherical_remapper(object):
             values=to_quantity( getattr(source_copy, attribute) )
             unit=values.unit
             values=numpy.array(values.number)
-            if len(source.shape) > 1 and len(target.shape) == 1:
-                values = numpy.swapaxes(values, 0, 1)
 
             #do the remapping
-            self.cdo_remapper.set_src_grid_values(index_i_src, values.flatten())
+            self.cdo_remapper.set_src_grid_values(index_i_src, values.ravel(order='F'))
             self.cdo_remapper.perform_remap()
-            result = self.cdo_remapper.get_dst_grid_values(index_i_dst).reshape(target.shape)
+            result = self.cdo_remapper.get_dst_grid_values(index_i_dst).reshape(target.shape, order='F')
 
             #store result in copy target grid
             setattr(target_copy, attribute, (result if unit is units.none else (result | unit)))
