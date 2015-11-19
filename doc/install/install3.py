@@ -60,22 +60,22 @@ class InstallPrerequisites(object):
           (
             'hdf' ,
             [],  
-            '1.8.9',
+            '1.8.14',
             'hdf5-' , '.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.9/src/',
+            'http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src/',
             self.hdf5_build
           ) ,
           (
             'h5py', 
             ['hdf'], 
-            '2.2.0', 
+            '2.4.0', 
             'h5py-' , '.tar.gz', 
-            'http://h5py.googlecode.com/files/', self.h5py_build
+            'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
             'docutils', 
             [], 
-            '0.11', 
+            '0.7', 
             'docutils-','.tar.gz', 
             'http://pypi.python.org/packages/source/d/docutils/', 
             self.python_build
@@ -83,9 +83,9 @@ class InstallPrerequisites(object):
           (
             'mpich', 
             [], 
-            '3.0.4', 
+            '3.1.4', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/downloads/3.0.4/', 
+            'http://www.mpich.org/static/tarballs/3.1.4/', 
             self.mpich2_build
           ) ,
           (
@@ -265,11 +265,11 @@ class InstallPrerequisites(object):
           '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
-            command.append('--with-pm=hydra:mpd:gforker')
+            command.append('--with-pm=hydra:gforker')
         elif self.use_gforker_process_manager:
-            command.append('--with-pm=gforker:hydra:mpd')
+            command.append('--with-pm=gforker:hydra')
         else:
-            command.append('--with-pm=mpd:hydra:gforker')
+            command.append('--with-pm=gforker:hydra')
         if not self.fortran90_compiler is None:
             command.append('FC=' + self.fortran90_compiler)
         
