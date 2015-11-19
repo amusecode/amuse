@@ -281,22 +281,23 @@ class TestIndexing(amusetest.TestCase):
         
         slicings=[]
         for x in zip(start0,stop0,step0,start1,stop1,step1):
-          slicings.append(((x[0],x[1],x[2]),(x[3],x[4],x[5])))
+            slicings.append(((x[0],x[1],x[2]),(x[3],x[4],x[5])))
         
         for t1,t2 in slicings:
-          s1=slice(*t1)
-          s2=slice(*t2)
+            s1=slice(*t1)
+            s2=slice(*t2)
 
-          t3=combine_slices(normalize_slices(len(tiny),s1),normalize_slices(len(tiny[s1]),s2))
-          s3=slice(*t3)
-          self.assertTrue(tiny[s1][s2]==tiny[s3])
+            t3=combine_slices(normalize_slices(len(tiny),s1),normalize_slices(len(tiny[s1]),s2))
+            s3=slice(*t3)
+            print s1,s2,s3
+            self.assertTrue(tiny[s1][s2]==tiny[s3])
 
-          t3=combine_slices(normalize_slices(len(small),s1),normalize_slices(len(small[s1]),s2))
-          s3=slice(*t3)
-          self.assertTrue(small[s1][s2]==small[s3])
-          t3=combine_slices(normalize_slices(len(big),s1),normalize_slices(len(big[s1]),s2))
-          s3=slice(*t3)
-          self.assertTrue(big[s1][s2]==big[s3])
+            t3=combine_slices(normalize_slices(len(small),s1),normalize_slices(len(small[s1]),s2))
+            s3=slice(*t3)
+            self.assertTrue(small[s1][s2]==small[s3])
+            t3=combine_slices(normalize_slices(len(big),s1),normalize_slices(len(big[s1]),s2))
+            s3=slice(*t3)
+            self.assertTrue(big[s1][s2]==big[s3])
 
     def test26(self):
           pass

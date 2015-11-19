@@ -64,14 +64,14 @@ def combine_slices(s1,s2):
         raise Exception("combining slices not possible")
   
     c3=c1*c2
-    imax= ceil( abs(b1-a1), abs(c1))
+    imax= int(ceil( abs(b1-a1), abs(c1)))
     if c2<0:
         a2=imax+a2
         b2=imax+b2
     
     a3=a1+a2*c1
       
-    jmax=ceil( abs(b2-a2), abs(c2))
+    jmax=int(ceil( abs(b2-a2), abs(c2)))
     b3=jmax*c3+a3
     if a3<0:
         if b3>-1: b3=None

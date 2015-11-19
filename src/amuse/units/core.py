@@ -759,6 +759,9 @@ class enumeration_unit(nonnumeric_unit):
                 return [str(x) for x in possible_values]
         else:
             return list(names_for_values)
+            
+    def __hash__(self):
+        return self._hash
         
     def is_valid_value(self, value):
         return value in self.mapping_from_values_to_names
