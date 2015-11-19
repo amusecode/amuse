@@ -476,6 +476,21 @@ class CodeCommand(Command):
                     output_path
                 )
             
+            #
+            # HACK FOR RAMSES
+            # NEED TO COPY THE SRC DIR
+            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
+            # MAKEFILE
+            #
+            if shortname == 'ramses':
+                output_path = os.path.join(lib_builddir, 'src', 'namelist')
+                input_path = os.path.join(temp_builddir, 'src', 'namelist')
+                self.mkpath(output_path)
+                self.copy_tree(
+                    input_path, 
+                    output_path
+                )
+            
     def subdirs_in_codes_src_dir(self):
         names = sorted(os.listdir(self.codes_src_dir))
         for name in names:

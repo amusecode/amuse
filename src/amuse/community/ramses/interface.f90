@@ -6,8 +6,16 @@ end module amuse_globals
 
 integer function initialize_code()
     implicit none
-    call read_params
     initialize_code = 0
+end function
+
+
+integer function set_input_directory(path)
+    use amr_commons
+    implicit none
+    CHARACTER(LEN=*) path
+    input_directory = TRIM(path)
+    set_input_directory = 0
 end function
 
 function cleanup_code() result(ret)
@@ -19,6 +27,7 @@ end function
 function commit_parameters() result(ret)
     implicit none
     integer :: ret
+    call read_params
     ret = 0
 end function  
 

@@ -235,7 +235,7 @@ if __name__ == '__main__':
     
     command.insert(0, sys.executable)
     
-    returncode = call(command)
+    returncode = call(command, close_fds=False)
     
     with open('pythonexe.log', 'a') as stream:
         stream.write('end {{0}} {{1}}\\n'.format(command[0], returncode))
@@ -776,9 +776,8 @@ class TestInterface(TestWithMPI):
         instance = ForTestingInterface(
             use_python_interpreter = True,
             python_interpreter = "./pythonexe",
-            redirection="null"
+            redirection="none"
         )
-        
         x,y,z,err = instance.get_position(range(100))
         self.assertEquals(err, 0)
         self.assertEquals(x, numpy.arange(0.0, 300.0, 3.0))
@@ -897,8 +896,7 @@ class TestInterface(TestWithMPI):
         request2.wait()
         port_id1, error1 = request1.result() 
         port_id2, error2 = request2.result()
-        print "P1, P2", port_id1, port_id2
-        instance2.copy_over_interface(port_id2, pickle.dumps(instance1,0))
+        instance2.copy_over_interface(port_id2, pickle.dumps(instance1,0).decode('latin-1'))
         instance1.internal__activate_communicator(port_id1)
         result, errorcode = instance2.deep_echo_string("hello")
         self.assertEquals(errorcode, 0)
@@ -1002,7 +1000,7 @@ class TestInterface(TestWithMPI):
     
     def test32(self):
         x = ForTestingInterface()
-        quantity_out, error = x.echo_quantity(20 | units.m)
+        quantity_out, error = x.echo_quantity(20.0 | units.m)
         self.assertEquals(error, 0)
         self.assertEquals(quantity_out, 200 | (units.m/units.s))
         quantity_out, error = x.echo_quantity(30)

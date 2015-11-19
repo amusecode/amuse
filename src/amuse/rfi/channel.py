@@ -368,7 +368,7 @@ class AsyncRequestsPool(object):
                     
                     del self.requests_and_handlers[x]
                 
-                if indices_to_delete > 0:
+                if len(indices_to_delete) > 0:
                     break
             
             
@@ -1372,7 +1372,7 @@ class MpiChannel(AbstractMessageChannel):
         
         dtype_to_result = {}
         
-        for i in range(1 + (call_count - 1) / self.max_message_length):
+        for i in range(1 + (call_count - 1) // self.max_message_length):
             split_dtype_to_argument = {}
             for key, value in dtype_to_arguments.iteritems():
                 split_dtype_to_argument[key] = split_input_array(i, value)
@@ -1704,15 +1704,18 @@ class SocketMessage(AbstractMessage):
             result.append(data_bytes)
             nbytes -= len(data_bytes)
             # logger.debug("got %d bytes, result length = %d", len(data_bytes), len(result))
+        
+        if len(result) > 0:
+            return type(result[0])().join(result)
+        else:
+            return b""
             
-        return "".join(result)
-     
     def receive(self, socket):
         
         # logger.debug("receiving message")
         
         header_bytes = self._receive_all(44, socket)
-
+        
         flags = numpy.frombuffer(header_bytes, dtype="b", count=4, offset=0)
         
         if flags[0] != self.big_endian:
@@ -2207,7 +2210,7 @@ class SocketChannel(AbstractMessageChannel):
                 return result
         
         dtype_to_result = {}
-        for i in range(1 + (call_count - 1) / self.max_message_length):
+        for i in range(1 + (call_count - 1) // self.max_message_length):
             split_dtype_to_argument = {}
             for key, value in dtype_to_arguments.iteritems():
                 split_dtype_to_argument[key] = split_input_array(i, value)

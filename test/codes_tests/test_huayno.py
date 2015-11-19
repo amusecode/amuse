@@ -345,7 +345,7 @@ class TestHuayno(TestWithMPI):
         self.assertAlmostEquals(final_direction[-1], initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
-        self.assertEquals(delta[len(final_direction)/2 -1], max(delta))
+        self.assertEquals(delta[len(final_direction)//2 -1], max(delta))
         
         
     def test13(self):
@@ -399,7 +399,13 @@ class TestHuayno(TestWithMPI):
             instance.particles.add_particles(particles)
             instance.evolve_model(0.125 | nbody_system.time)
             part_out= instance.particles.copy()
-            sha.update(part_out.position.number.data)
+            position = part_out.position.number
+            if hasattr(position,'tobytes'):
+                as_bytes = position.tobytes()
+            else:
+                as_bytes = position.data
+            sha.update(as_bytes)
+            
             instance.stop()
         
         # this result is probably dependent on system architecture hence no good for assert

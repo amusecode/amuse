@@ -109,6 +109,7 @@ class CodeFunction(object):
             
             dtype_to_result = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array)
         except Exception, ex:
+            raise
             CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
             raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
@@ -1211,7 +1212,7 @@ class CodeFunctionWithUnits(CodeFunction):
         
     def convert_floats_to_units(self, floats):
         result = []
-        for index in range(len(floats) / 9):
+        for index in range(len(floats) // 9):
             offset = index*9
             unit_floats = floats[offset:offset+10]
             unit = self.convert_float_to_unit(unit_floats)

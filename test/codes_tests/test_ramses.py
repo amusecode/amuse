@@ -15,12 +15,16 @@ class TestRamsesInterface(TestWithMPI):
     
     def test0(self):
         instance=RamsesInterface(redirection="none")
+        instance.set_input_directory(instance.get_default_input_directory())
         instance.initialize_code()
+        instance.commit_parameters()
         instance.stop()
         
     def test1(self):
         instance=RamsesInterface(mode="1d", redirection="none")
+        instance.set_input_directory(instance.get_default_input_directory())
         self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.commit_parameters())
         self.assertEquals(0, instance.setup_mesh(10, 1, 1, 1.0, 0.0, 0.0))
         self.assertEquals(0, instance.initialize_grid())
         nx, ny, nz, error = instance.get_mesh_size()

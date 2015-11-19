@@ -425,7 +425,7 @@ class TestPhigrape(TestWithMPI):
         x = nbody_system.length.new_quantity(numpy.linspace(0.1, 1.9, n))
         zero = nbody_system.length.new_quantity(numpy.zeros(n))
         fx, fy, fz = instance.get_gravity_at_point(zero, x, zero, zero)
-        for i in range(n/2):
+        for i in range(n//2):
             self.assertAlmostRelativeEqual(fx[i], - fx[n - 1 - i], 5)
         
         instance.stop()

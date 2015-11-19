@@ -403,7 +403,7 @@ class PythonImplementation(object):
 
     def convert_floats_to_units(self, floats):
         result = []
-        for index in range(len(floats) / 9):
+        for index in range(len(floats) // 9):
             offset = index*9
             unit_floats = floats[offset:offset+10]
             unit = self.convert_float_to_unit(unit_floats)

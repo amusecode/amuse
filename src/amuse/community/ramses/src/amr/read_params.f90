@@ -91,7 +91,13 @@ subroutine read_params
   !-----------------------------------------------------------------------------------
   CALL getarg(0, commandname)
   index_tail = index(commandname, '/', .TRUE.)
-  IF (commandname(index_tail+1:index_tail+13).EQ."ramses_worker") THEN
+  IF (LEN(input_directory).GT.0) THEN
+     write(*,*) "This program was given an input directory:"
+     write(*,*) trim(input_directory)
+     write(*,*) "Will pick a simple namelist to start with:"
+     write(*,*) trim(input_directory) // "/sedov1d.nml"
+     infile = trim(input_directory) // "/sedov1d.nml"
+  ELSE IF (commandname(index_tail+1:index_tail+13).EQ."ramses_worker") THEN
      write(*,*) "This program was executed with:"
      write(*,*) trim(commandname)
      write(*,*) "Will pick a simple namelist to start with:"

@@ -93,8 +93,11 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
                      
     def skip_if_no_cython(self):
         
+        if not hasattr(config.compilers, 'cython') or len(config.compilers.cython) == 0:
+            self.skip("cython not configured")
+            
         process = subprocess.Popen(
-            ['cython','-V'],
+            [config.compilers.cython,'-V'],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
@@ -103,7 +106,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         if process.returncode:
             self.skip("cython not available")
         
-        error = error.strip()
+        error = error.strip()[0:7].decode('utf-8')
         if not error.startswith('Cython'):
             self.skip("cython not available")
         
@@ -144,7 +147,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         
         with open(sourcename, "w") as f:
             f.write(code)
-            
+        
         process = subprocess.Popen(
             [config.compilers.cython, '--embed', sourcename, '-o', cname],
             stdin = subprocess.PIPE,

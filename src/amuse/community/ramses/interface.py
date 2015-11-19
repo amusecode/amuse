@@ -3,6 +3,8 @@ from amuse.community.interface.hydro import HydrodynamicsInterface
 from amuse.community.interface.common import CommonCode
 from amuse.units.generic_unit_system import *
 
+import os.path
+
 class RamsesInterface(CodeInterface, HydrodynamicsInterface, 
         StoppingConditionInterface, LiteratureReferencesMixIn, CodeWithDataDirectories):
     """
@@ -34,13 +36,23 @@ class RamsesInterface(CodeInterface, HydrodynamicsInterface,
         else:
             return 'ramses_worker'
     
-#    @legacy_function
-#    def set_ramses_data_directory():
-#        function = LegacyFunctionSpecification()  
-#        function.addParameter('data_directory', dtype='string', direction=function.IN,
-#            description = "Name of the data directory")
-#        function.result_type = 'int32'
-#        return function
+    @legacy_function
+    def set_input_directory():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('data_directory', dtype='string', direction=function.IN,
+            description = "Name of the data directory")
+        function.result_type = 'int32'
+        return function
+        
+        
+    def get_code_src_directory(self):
+        """
+        Returns the root name of the application's source code directory.
+        """
+        return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'ramses', 'src')
+    
+    def get_default_input_directory(self):
+        return os.path.join(os.path.dirname(__file__), 'src', 'namelist')
     
     @legacy_function   
     def setup_mesh():

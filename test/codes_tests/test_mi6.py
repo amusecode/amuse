@@ -454,7 +454,7 @@ class TestMI6(TestWithMPI):
         self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(tan_final_direction[i+1]-tan_final_direction[i]) for i in range(len(tan_final_direction)-1)]
-        self.assertEquals(delta[len(tan_final_direction)/2 -1], max(delta))
+        self.assertEquals(delta[len(tan_final_direction)//2 -1], max(delta))
     
     def test8(self):
         print "Testing MI6 get_gravity_at_point and get_potential_at_point"
