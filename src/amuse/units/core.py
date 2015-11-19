@@ -478,6 +478,9 @@ class base_unit(unit):
     def __str__(self):
         return self.symbol
     
+    def __hash__(self):
+        return self._hash
+        
     @property
     def factor(self):
         """
