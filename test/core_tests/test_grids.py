@@ -494,7 +494,6 @@ class TestGrids(amusetest.TestCase):
         self.assertEqual(sub[-1,-2].x,sub.x[-1,-2])
 
     def test40(self):
-<<<<<<< HEAD
         grid1 = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
         grid2 = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
         grid1.m1 = 1
@@ -511,8 +510,6 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(grid2.m4, 0)
 
     def test40b(self):
-=======
->>>>>>> a662f6eccc3433d3a5c49c0bf3d2b1eb8e10b4f7
         grid = datamodel.new_regular_grid((50,), [1.0] | units.m)
         for index in [ [0], [0,3,4], [1,2,2],[[2,3]],[[0,1],[2,3]],range(50) ]:
           i=numpy.array(index)
