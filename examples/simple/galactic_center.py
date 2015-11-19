@@ -4,6 +4,7 @@ Evolves a cluster in the potention of the galactic center
 Uses the bridge integrator to couple different codes.
 In this example a cluster is evolved  circling the galactic center, represented by a static potential.
 """
+from __future__ import print_function
 
 import numpy
 
@@ -87,7 +88,7 @@ def shift_sys(system,dx,dy,dz,dvx,dvy,dvz):
     channel.copy_attributes(["x","y","z","vx","vy","vz"])
     #      parts.copy_values_of_state_attributes_to(system.particles)
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
 
 # parameter setup:
     N=1024

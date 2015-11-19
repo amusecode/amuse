@@ -101,7 +101,7 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
         
     for i in range(nplot):
         ttarget=i*plot_timestep
-        print "evolving to time:", ttarget.as_quantity_in(units.Myr)
+        print("evolving to time:", ttarget.as_quantity_in(units.Myr))
         bridged_system.evolve_model(ttarget) 
         
         rho=make_map(sph,N=200,grid_size=grid_size)
@@ -117,6 +117,6 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
     sph.stop()
     pyplot.show()
   
-if __name__ in ("__main__","__plot__"):
+if __name__ == "__main__":
     run_mc(10000, Mcloud=1000. | units.MSun, Rcloud=1. | units.parsec)
   

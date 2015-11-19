@@ -16,6 +16,7 @@ Fragmentation in a rotating protostar -- Boss & Bodenheimer (1979, BB79,
   
   Plots 10 snapshots of the simulations (bb79_rho_*.png) -- log10(rho [amu/cm**3]).
 """
+from __future__ import print_function
 
 import numpy
 import string
@@ -102,10 +103,10 @@ def bb79_cloud_evolve(N=50000,
   
   # mean density of the cloud
   rho_uni = Mcloud / (4./3.*numpy.pi*Rcloud**3)
-  print " ** mean density = ", rho_uni.in_(units.g/units.cm**3)
+  print(" ** mean density = ", rho_uni.in_(units.g/units.cm**3))
   # free fall time of the cloud
   t_ff = numpy.sqrt(3.*numpy.pi / (32.*units.constants.G*rho_uni))
-  print " ** free-fall time = ", t_ff.in_(units.yr)
+  print(" ** free-fall time = ", t_ff.in_(units.yr))
   
   conv = nbody_system.nbody_to_si(Mcloud,Rcloud)
   sph = Fi(conv)
@@ -124,7 +125,7 @@ def bb79_cloud_evolve(N=50000,
   sph.parameters.verbosity = 0
   sph.parameters.timestep=0.1*t_ff
   
-  print " ** evolving to time: (end time = ~ {0:.3f} t_ff)".format(t_total/t_ff)
+  print(" ** evolving to time: (end time = ~ {0:.3f} t_ff)".format(t_total/t_ff))
   
   # setting snapshots to be plotted
   nplot = 10
@@ -144,14 +145,14 @@ def bb79_cloud_evolve(N=50000,
     tt_tff = "{0:.3f}".format(t_tff)
     title_i = "$%s\,t_{\mathrm{ff}}$" % (tt_tff)
      
-    print "\t {0:.3f} t_ff -> {1}".format(t_tff,plot_i)
+    print("\t {0:.3f} t_ff -> {1}".format(t_tff,plot_i))
   
     plot_sph_rho(sph,N=300,grid_size= 0.025 | units.parsec, 
                  plot_name = plot_i, plot_title = title_i)
   
   sph.stop()
   
-if __name__ in ("__main__","__plot__"):
+if __name__ == "__main__":
   bb79_cloud_evolve(N=50000,
                     Mcloud=1. | units.MSun, 
                     Rcloud=3.2e16 | units.cm, 

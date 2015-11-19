@@ -5,6 +5,7 @@ config.mk
 config.status
 src/amuse/config.py
 support/config.py
+
 # general build / compile files
 *.a
 *.so
@@ -14,6 +15,7 @@ support/config.py
 *.mod
 *.mo
 *.ptx
+
 # files created running make / setup.py
 amuse.cfg
 amuse.sh
@@ -310,11 +312,18 @@ src/amuse/community/rebound/src/
 src/amuse/community/tupan/install/
 src/amuse/community/tupan/tupan/
 src/amuse/community/rebound/rebound_worker
+data/mesa/output/star_data/starting_models/*.data
+doc/examples/
+doc/build/
+doc/amuse_examples
 /amuserc
 /nbody6xx.input
+/test_results
 
-
-
+#files generated during documentation build
+examples/simple/*.data
+examples/simple/*.png
+examples/simple/*.hdf
 
 
 

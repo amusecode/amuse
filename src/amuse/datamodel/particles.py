@@ -1129,14 +1129,18 @@ class Particles(AbstractParticleSet):
 
 
     def __getitem__(self, index):
-
-        keys = self.get_all_keys_in_store()[index]
-        index = self.get_all_indices_in_store()[index]
+        if index is None:
+            keys = self.get_all_keys_in_store()
+            index = self.get_all_indices_in_store()
+        else:
+            keys = self.get_all_keys_in_store()[index]
+            index = self.get_all_indices_in_store()[index]
 
         if hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:
             return Particle(keys, self, index, self._get_version())
+
 
     def _get_version(self):
         return self._private.version
@@ -1278,8 +1282,15 @@ class Particles(AbstractParticleSet):
             defined_attributes,
             self._private.attribute_storage.get_values_in_store(indices, defined_attributes)
         ))
+        #print missing_attributes, "shape" in missing_attributes
+        #if "shape" in missing_attributes:
+        #    import traceback
+        #    traceback.print_stack()
+        #    raise Exception("hello is this ok????")
         subset = self[indices]
-        return [defined_values[attribute] if attribute in defined_values else subset._get_derived_attribute_value(attribute) for attribute in attributes]
+        tmp = [defined_values[attribute] if attribute in defined_values else subset._get_derived_attribute_value(attribute) for attribute in attributes]
+        return tmp
+
 
     def get_indices_of_keys(self, keys):
         return self._private.attribute_storage.get_indices_of(keys)
@@ -1317,6 +1328,10 @@ class Particles(AbstractParticleSet):
         self._private.attribute_storage._add_indices(indices)
         self._private.version += 1
 
+    @staticmethod
+    def is_quantity():
+        return False
+        
 class BoundSupersetParticlesFunctionAttribute(object):
     def  __init__(self, name, superset):
         self.name = name
@@ -1831,6 +1846,7 @@ class ParticlesSubset(AbstractParticleSet):
 
         self._private.version = -1
         self._private.indices = None
+
 
     def __getitem__(self, index):
         keys = self.get_all_keys_in_store()[index]
@@ -3026,6 +3042,48 @@ class ParticleInformationChannel(object):
             
         data = self.from_particles.get_values_in_store(self.from_indices, [name,])
         self.to_particles.set_values_in_store(self.to_indices, [target_name,], data)
+
+    def transform_values(self, attributes, f):
+        values = self.from_particles.get_values_in_store(self.from_indices, attributes)
+        return f(*values)
+
+    def transform(self, target, function, source):
+        """ Copy and transform values of one attribute from the source set to the target set.
+
+        :argument target: name of the attributes in the target set
+        :argument function: function used for transform, should return tuple 
+        :argument source: name of the attribute in the source set
+
+        >>> from amuse.datamodel import Particles
+        >>> particles1 = Particles(3)
+        >>> particles2 = particles1.copy()
+        >>> particles1.attribute1 = 1
+        >>> particles1.attribute2 = 2
+        >>> channel = particles1.new_channel_to(particles2)
+        >>> channel.transform(["attribute3"], lambda x,y: (x+y,), ["attribute1","attribute2"])
+        >>> print particles2.attribute3
+        [3 3 3]
+        >>> channel.transform(["attribute1","attribute1b"], lambda x: (x,2*x), ["attribute1"])
+        >>> print particles2.attribute1b
+        [2 2 2]
+
+        """
+        self._reindex()
+        
+        if len(self.keys) == 0:
+            return
+
+        if not self.to_particles.can_extend_attributes():
+            target_attributes = self.to_particles.get_defined_settable_attribute_names()
+            if not set(target).issubset(set(target_attributes)):
+                raise Exception("trying to set unsettable attributes {0}".format(
+                                list(set(target)-set(target_attributes))) )
+        converted=self.transform_values(source, function)
+        if len(converted) != len(target):
+            raise Exception("function {0} returns {1} values while target attributes are {2} of length {3}".format(
+                            function.__name__, len(converted), target, len(target)))
+        self.to_particles.set_values_in_store(self.to_indices, target, converted)        
+
 
 class Channels(object):
     def __init__(self, channels=None):

@@ -3,6 +3,8 @@ Evolves a stellar binary and reports the mass of each star during the evolution.
 
 Shows the type of each star as they change.
 """
+from __future__ import print_function
+
 from amuse.lab import *
 import numpy
 from matplotlib import pyplot
@@ -52,10 +54,10 @@ def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
         from_seba_to_model_binaries.copy()
         
         if not binary.child1.stellar_type == previous_type_child1:
-            print binary.age, "Child 1, change of stellar type", previous_type_child1, ' -> ',binary.child1.stellar_type
+            print(binary.age, "Child 1, change of stellar type", previous_type_child1, ' -> ',binary.child1.stellar_type)
             previous_type_child1 = binary.child1.stellar_type
         if not binary.child2.stellar_type == previous_type_child2:
-            print binary.age, "Child 2, change of stellar type", previous_type_child2, ' -> ',binary.child2.stellar_type
+            print(binary.age, "Child 2, change of stellar type", previous_type_child2, ' -> ',binary.child2.stellar_type)
             previous_type_child2 = binary.child2.stellar_type
         results.append((binary.age, binary.child1.mass, binary.child1.stellar_type, binary.child2.mass, binary.child2.stellar_type))
         
@@ -85,7 +87,7 @@ def plot_masses(table):
    
     pyplot.show()
     
-if __name__ in ('__main__', '__plot__'):        
+if __name__ == "__main__":     
     table = evolve_binary(
         3.0 | units.MSun,
         0.3 | units.MSun,

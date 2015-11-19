@@ -2,6 +2,7 @@
 Generates a grid of binaries with different, primary mass, mass ratio
 and separation and evolves these over time.
 """
+from __future__ import print_function
 
 from amuse.units import units
 from amuse.units import quantities
@@ -155,12 +156,12 @@ def evolve_population(binaries, stars, end_time, time_step):
     channel_from_code_to_model_for_stars = code.particles.new_channel_to(stars)
     
     #we evolve in steps of timestep, just to get some feedback
-    print "start evolving..."
+    print("start evolving...")
     time = 0.0 * end_time
     while time < end_time:
         time += time_step
         code.evolve_model(time)
-        print "evolved to time: ", time.as_quantity_in(units.Myr)
+        print("evolved to time: ", time.as_quantity_in(units.Myr))
         
     channel_from_code_to_model_for_stars.copy()
     channel_from_code_to_model_for_binaries.copy()
@@ -182,8 +183,8 @@ def make_hr_diagram(binaries):
     pyplot.show()
     
 
-if __name__ == '__main__':
-    print "generating a binary population..."
+if __name__ == "__main__":
+    print("generating a binary population...")
     
     binaries, stars = generate_initial_population_grid(
         0.5 | units.MSun, 1.5 | units.MSun, 3, #mass range
@@ -192,7 +193,7 @@ if __name__ == '__main__':
         0.0 , 1.0, 120                          #eccentricity range
     )
     
-    print "generated a population of", len(binaries), "binaries"
+    print("generated a population of", len(binaries), "binaries")
     
     evolve_population(binaries, stars,  1 | units.Gyr, 250 | units.Myr)
     

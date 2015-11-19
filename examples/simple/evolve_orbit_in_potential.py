@@ -6,6 +6,8 @@
     is handled by bridge (externally) there should not be any difference
     between the codes.
 """
+from __future__ import print_function
+
 import numpy
 from itertools import cycle
 
@@ -144,7 +146,7 @@ def evolve_bridged_orbit_in_potential(potential, cluster, code, timestep,
     bridge, gravity, gravity_to_orbit = setup_bridge(
         potential, cluster, current_age, timestep, orbit, code)
 
-    print current_age, "->", orbit.particle.position
+    print(current_age, "->", orbit.particle.position)
     # Evolving backward
     gravity.particles.velocity *= -1
     while bridge.model_time < current_age-(timestep/2.):
@@ -161,7 +163,7 @@ def evolve_bridged_orbit_in_potential(potential, cluster, code, timestep,
     bridge, gravity, gravity_to_orbit = setup_bridge(
         potential, cluster, current_age, timestep, orbit, code)
 
-    print bridge.model_time, "->", orbit.particle.position
+    print(bridge.model_time, "->", orbit.particle.position)
 
     # Evolving forward
     full_orbit = Particles()
@@ -170,7 +172,7 @@ def evolve_bridged_orbit_in_potential(potential, cluster, code, timestep,
         bridge.evolve_model(bridge.model_time + timestep)
         gravity_to_orbit.copy()
     full_orbit.add_particle(orbit.particle.copy())
-    print bridge.model_time, "->", orbit.particle.position
+    print(bridge.model_time, "->", orbit.particle.position)
 
     full_orbit.position -= coordinate_correction
     return full_orbit
@@ -181,14 +183,14 @@ def evolve_orbit_and_plot(codes, filename, parameters):
 
     orbits = []
     for code in codes:
-        print "evolving with", code
+        print("evolving with", code)
         if code in codelist:
             full_orbit = evolve_bridged_orbit_in_potential(
                 potential, cluster.copy(), code, **parameters)
         else:
             raise AmuseException("Unknow code: {}".format(code))
         orbits.append(full_orbit)
-        print
+        print()
     fit_orbit = load_fit_orbit()
 
     plot_orbit(potential, orbits, codes, fit_orbit, filename)

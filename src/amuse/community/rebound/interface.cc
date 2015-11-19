@@ -158,6 +158,9 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.vx = vx;
       pt.vy = vy;
       pt.vz = vz;
+      pt.ax = 0;
+      pt.ay = 0;
+      pt.az = 0;
       pt.m = mass;
       pt.ax = 0;
       pt.ay = 0;
@@ -166,7 +169,7 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.c = NULL;
       pt.id = new_id;
       reb_add(codes[code_index].code, pt);
-      //std::cout<<"code_index"<<code_index<<std::endl;
+      //std::cout<<"new particle :"<<pt.id<< " << "<<code_index<<" << "<<pt.x<<std::endl;
       indexMap[new_id] = particle_location(codes[code_index].code, codes[code_index].code->N - 1, code_index);
       *index_of_the_particle = new_id;
       return 0;
@@ -178,6 +181,9 @@ int get_total_mass(double * mass){
 int _evolve_code(double _tmax, code_state * cs);
 int evolve_model(double _tmax, int code_index){
     int result = 0;
+    
+    reset_stopping_conditions();
+    
     if(code_index == -1){
         for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
             code_state cs = *i;
@@ -225,7 +231,6 @@ int _evolve_code(double _tmax, code_state * cs){
     );
     int is_condition_set = 0;
     
-    reset_stopping_conditions();
     
     // original : rebound_integrate
     int exact_finish_time = 1;
@@ -242,13 +247,15 @@ int _evolve_code(double _tmax, code_state * cs){
     
     time_t starttime, currenttime;
     time(&starttime);
-	
+    
     while(code->t*dtsign<tmax*dtsign && last_step<2 && ret_value==0){
 		if (code->N<=0){
 			fprintf(stderr,"\n\033[1mError!\033[0m No particles found. Exiting.\n");
 			return(1);
 		}
-		reb_step(code); 								// 0 to not do timing within step
+       
+		reb_step(code); 								// 0 to not do timing within step 
+        
 		if ((code->t+code->dt)*dtsign>=tmax*dtsign && exact_finish_time==1){
 			reb_integrator_synchronize(code);
 			code->dt = tmax-code->t;
@@ -668,6 +675,7 @@ int set_velocity(int index_of_the_particle, double vx, double vy,
 
 int new_subset(int * index, double time_offset) {
     reb_simulation * code = reb_create_simulation();
+    reb_integrator_reset(code);
     if(time_offset < 0) {time_offset = _time;}
     codes.push_back(code_state(code, time_offset, codes.size()));
     code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;

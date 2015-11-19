@@ -1,6 +1,7 @@
 """
     simple coupling of a stellar evolution and a gravitational code to simulate a cluster of stars.
 """
+from __future__ import print_function
 
 import os
 
@@ -54,7 +55,7 @@ def plot_results(stars, time):
         os.mkdir("plots")
 
     name = "plots/plot_{0:=05}.png".format(int(time.value_in(units.Myr)))
-    print "creating", name
+    print("creating", name)
     pyplot.savefig(name)
     pyplot.close()
 

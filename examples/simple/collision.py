@@ -8,6 +8,7 @@ By default the radii of all stars are equal and very large.
 
 All units are in nbody units.
 """
+from __future__ import print_function
 
 import numpy 
 from matplotlib import pyplot
@@ -69,7 +70,7 @@ def plot_particles_and_highlight_collision(particles, particles1, particles2):
     
     pyplot.show()
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == "__main__":
     numpy.random.seed(1212)
     
     particles = new_cluster(128)

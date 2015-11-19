@@ -71,7 +71,7 @@ class TestFractalCluster(amusetest.TestCase):
             particles = new_fractal_cluster_model(
                 N=number_of_particles, 
                 fractal_dimension=target_fractal_dimension, 
-                do_scale=False)
+                do_scale=False, random_seed=1234321)
             self.assertAlmostRelativeEquals(particles.box_counting_dimension(), 
                 target_fractal_dimension, 1)
             self.assertAlmostRelativeEquals(particles.correlation_dimension(), 

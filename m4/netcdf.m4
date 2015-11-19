@@ -54,7 +54,8 @@ AC_DEFUN([AX_NETCDF],[
 
                     AC_LANG_PUSH(Fortran)
                     save_FCFLAGS="$FCFLAGS"
-                    FCFLAGS="$ac_NETCDF_CFLAGS -lnetcdff $save_FCFLAGS"
+                    FCFLAGS="$ac_NETCDF_CFLAGS $save_FCFLAGS"
+                    LIBS="$ac_NETCDF_LDOPTS -lnetcdff"
                     AC_MSG_CHECKING([Fortran netcdf presence])
                     AC_LINK_IFELSE([
                         AC_LANG_SOURCE([
@@ -63,7 +64,7 @@ AC_DEFUN([AX_NETCDF],[
                             include "netcdf.inc"
                             
                             character, dimension(80) :: n
-                            n=nf90_inq_libvers()
+                            n=nf_inq_libvers()
                             end
                         ])
                     ],[
@@ -106,7 +107,8 @@ AC_DEFUN([AX_NETCDF],[
                     
                     AC_LANG_PUSH(Fortran)
                     save_FCFLAGS="$FCFLAGS"
-                    FCFLAGS="-lnetcdff $save_FCFLAGS"
+                    FCFLAGS="$save_FCFLAGS"
+                    LIBS="-lnetcdff"
                     AC_MSG_CHECKING([Fortran netcdf presence])
                     AC_LINK_IFELSE([
                         AC_LANG_SOURCE([
@@ -115,7 +117,7 @@ AC_DEFUN([AX_NETCDF],[
                             include "netcdf.inc"
                             
                             character, dimension(80) :: n
-                            n=nf90_inq_libvers()
+                            n=nf_inq_libvers()
                             end
                         ])
                     ],[

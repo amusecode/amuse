@@ -1,3 +1,5 @@
+#-*-noplot-*-
+from __future__ import print_function
 from matplotlib import pyplot
 from amuse.plot import semilogy, xlabel, ylabel
 
@@ -24,9 +26,8 @@ def make_plot(radius_profile, brunt_profile, mass, age):
     pyplot.legend(loc=3)
     pyplot.show()   
     
-if __name__ in ('__main__', '__plot__'):
+if __name__ == '__main__':
     mass = 1.0 | units.MSun
     age = 1.0 | units.Gyr
-    
     radius_profile, brunt_profile = brunt_vaisala_frequency_squared_profile(mass, age)
     make_plot(radius_profile, brunt_profile, mass, age)
