@@ -300,7 +300,65 @@ class TestIndexing(amusetest.TestCase):
             self.assertTrue(big[s1][s2]==big[s3])
 
     def test26(self):
-          pass
+        oned=numpy.zeros(5)
+        threed=numpy.zeros((4,5,6))
+        for index in [0,[1],[1,2],[[1,2],[2,3]],[[2]],[[0,1]]]:
+          i=numpy.array(index)
+          self.assertEquals(len(oned[i].shape), number_of_dimensions_after_index(1, i ))
+        for index in [0,[1],[1,2],[[1,2],[2,3]],[[2]],[[2,1]]]:
+          i=numpy.array(index)
+          self.assertEquals(len(threed[i].shape), number_of_dimensions_after_index(3, i ))
+
+    def test27(self):
+        oned=numpy.zeros(5)
+        threed=numpy.zeros((4,5,6))
+        for index in [0,[1],[1,2],[[1,2],[2,3]],[[2]],[[0,1]]]:
+          i=numpy.array(index)
+          self.assertEquals(oned[i].shape, shape_after_index(oned.shape, i ))
+        for index in [0,[1],[1,2],[[1,2],[2,3]],[[2]],[[2,1]],[[[[0],[1],[1]]]]]:
+          i=numpy.array(index)
+          self.assertEquals(threed[i].shape, shape_after_index(threed.shape, i ))
+
+    def test28(self):
+        twod=numpy.zeros((5,6))
+        threed=numpy.zeros((4,5,6))
+        for _i,_j in [([0],[1]),([0,2],[1,3]),([0,2],[1,3]),([[0,1],[1,2]],[[2,3],[3,4]])]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          self.assertEquals(len(twod[i,j].shape), number_of_dimensions_after_index(2, (i,j) ))
+        for _i,_j in [([0],[1]),([0,2],[1,3]),([0,2],[1,3]),([[0,1],[1,2]],[[2,3],[3,4]])]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          self.assertEquals(len(threed[i,j].shape), number_of_dimensions_after_index(3, (i,j) ))
+
+    def test29(self):
+        twod=numpy.zeros((5,6))
+        for _i,_j in [([0],[1]),([0,2],[1,3]),([0,2],[1,3]),([[0,1],[1,2]],[[2,3],[3,4]])]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          self.assertEquals(twod[i,j].shape, shape_after_index(twod.shape, (i,j) ))
+
+        threed=numpy.zeros((4,5,6))
+        for _i,_j in [([0],[1]),([0,2],[1,3]),([0,2],[1,3]),([[0,1],[1,2]],[[2,3],[3,4]])]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          self.assertEquals(threed[i,j].shape, shape_after_index(threed.shape, (i,j) ))
+
+        fourd=numpy.zeros((4,5,6,7))
+        for _i,_j in [([0],[1]),([0,2],[1,3])]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          self.assertEquals(fourd[i,j].shape, shape_after_index(fourd.shape, (i,j) ))
+        for _i,_j in [([0,2],[1,3])]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          self.assertEquals(fourd[i,Ellipsis,j].shape, shape_after_index(fourd.shape, (i,Ellipsis,j) ))
+        for _i,_j in [([0,2],[1,3])]:
+          i=numpy.array(_i)
+          j=numpy.array(_j)
+          self.assertEquals(fourd[i,slice(None),j].shape, shape_after_index(fourd.shape, (i,slice(None),j) ))
+
+
         
 class TestSplitOverDimensions(amusetest.TestCase):
     

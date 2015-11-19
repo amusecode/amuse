@@ -89,9 +89,17 @@ def combine_indices(index0, index1):
         elif isinstance(index1, tuple):
             result=[]
             offset=0
+            array_offset=None
             for i0 in index0:
                 if isinstance(i0, (int,long)):
                   result.append(i0)
+                elif isinstance(i0, numpy.ndarray) and i0.dtype != "bool":
+                  if array_offset is None:
+                    result.append(combine_indices(i0,index1[offset]))
+                    array_offset=offset
+                    offset+=1
+                  else:
+                    result.append(combine_indices(i0,index1[array_offset]))                    
                 else:
                   result.append(combine_indices(i0,index1[offset]))
                   offset+=1
@@ -128,9 +136,19 @@ def combine_indices(index0, index1):
     elif isinstance(index0, slice):
         if isinstance(index1, int) or isinstance(index1, long):
             start,stop,step = unpack_slice(index0)
-            return start + (index1 * step)
+            if index1>=0:
+              return start + (index1 * step)
+            else:
+              imax= ceil( abs(stop-start), abs(step))
+              stop=start+imax*step
+              return stop + index1*step
         elif isinstance(index1, EllipsisType):
             return index0
+        elif isinstance(index1, numpy.ndarray):
+            start,stop,step = unpack_slice(index0)
+            imax= ceil( abs(stop-start), abs(step))
+            stop=start+imax*step
+            return start+ (index1 *step)*(index1>=0)+(stop + index1*step)*(index1<0)
         else:
             if isinstance(index1, slice):
               start,stop,step = combine_slices(index0, index1)
@@ -156,7 +174,7 @@ def combine_indices(index0, index1):
             ndarray1[ndarray] = ndarray2
             return ndarray1
         else:
-            raise Exception("index must be a integer, slice or sequence")
+            return index0[index1]
                 
     else:
         raise Exception("index must be a integer, slice or sequence")
@@ -178,13 +196,20 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
             return number_of_dimensions - len(index)
         else:
             result = number_of_dimensions
+            arrays=[]
             for x in index:
                 if isinstance(x, EllipsisType):
                     pass
                 elif isinstance(x, slice):
                     pass 
+                elif isinstance(x, numpy.ndarray):
+                    arrays.append(x)
+                    result-=1
                 else:
                     result -= 1
+            if arrays:
+                b=numpy.broadcast(*arrays)
+                result+=b.nd
             return result
                     
     elif isinstance(index, int) or isinstance(index, long):
@@ -196,7 +221,9 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
         if ndarray.dtype == 'bool':
             return number_of_dimensions - len(ndarray.shape) + 1
         else:
-            raise Exception("Not handled yet")
+            if isinstance(index, list):
+                raise Exception("indexing with lists is inconsistent with indexing numpy arrays, hence not permitted atm")
+            return number_of_dimensions + len(ndarray.shape) - 1
     else:
         raise Exception("Not handled yet")
     
@@ -212,20 +239,21 @@ def normalize_slices(shape,index):
         else:
             result = []
             first_ellipsis = True
+            arrays = filter(lambda x: isinstance(x,numpy.ndarray), index)
             for length,x in zip(shape,index):
                 if isinstance(x, slice):
                     result.append( slice(*resolve_slice(x,length)) )
                 elif isinstance(x,EllipsisType):
                     if first_ellipsis:
                       n=len(shape)-len(index)+1
-                      result.extend([slice(0,shape[i],1) for i in range(n)])
+                      result.extend([slice(0,shape[i+len(result)],1) for i in range(n)])
                       first_ellipsis=False
                     else:
                       result.append(slice(*resolve_slice(slice(None),length)))
                 else:
                     result.append(x)
             n=len(shape)-len(result)
-            result.extend([slice(0,shape[n-i],1) for i in range(n)])
+            result.extend([slice(0,shape[len(shape)-n+i],1) for i in range(n)])
             return tuple(result)
                     
     if isinstance(index, slice):
@@ -248,16 +276,20 @@ def shape_after_index(shape, index):
 
             shape_as_list = list(shape)
             result = []
+            arrays = filter(lambda x: isinstance(x,numpy.ndarray), index)
             for i,x in enumerate(index):
                 if isinstance(x, slice):
-                    
                     start,stop,step = resolve_slice(x, shape_as_list[i])
                     if step>0:
                       nitems = (stop - 1 - start) // step + 1
                     else:
                       nitems = (start- stop -1) // (-step) + 1
-                    
                     result.append(nitems)
+                elif isinstance(x, numpy.ndarray):
+                    if arrays:
+                        b=numpy.broadcast(*arrays)
+                        result+=b.shape
+                        arrays=None
                 else:
                     pass
             return tuple(result)
@@ -280,8 +312,14 @@ def shape_after_index(shape, index):
             else:
                 
                 raise Exception("Not handled yet")
+
         else:
-            raise Exception("Not handled yet")
+            if isinstance(index, list):
+                raise Exception("indexing with lists is inconsistent with indexing numpy array, hence not permitted atm")
+
+            return ndarray.shape+shape[1:]
+            #~ return numpy.zeros(shape)[ndarray].shape # this is cheating a bit..
+
     else:
         raise Exception("Not handled yet")
         
