@@ -23,7 +23,10 @@ if sys.hexversion > 0x03000000:
     from support3.setup_codes import GenerateInstallIni
     from support3.run_tests import run_tests
     from distutils.command.build_py import build_py_2to3
-    from os import walk
+    from os import walk as py_walk
+    def walk(top, callback, args):
+        for root, dirs, files in py_walk(top):
+            callback(args, root, files)
 else:
     from support.generate_main import generate_main
     from support.build_latex import build_latex
@@ -126,6 +129,7 @@ def find_data_files(srcdir, destdir, *wildcards, **kw):
     file_list = []
     recursive = kw.get('recursive', True)
     converter = re.compile('^({0})'.format(srcdir))
+    
     if recursive:
         walk(srcdir, walk_helper, (file_list, wildcards, converter, destdir))
     else:
@@ -149,6 +153,9 @@ package_data = {
         '*.txt', '*.dyn', '*.ini', 
         '*.nemo',
         '*.dat', 'gadget_snapshot'
+    ],
+    'amuse.test.suite.codes_tests': [
+        '*.txt', 'test_sphray_data*'
     ],
     'amuse.test.suite.ticket_tests': [
         '*.out'

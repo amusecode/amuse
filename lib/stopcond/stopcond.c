@@ -445,11 +445,11 @@ int mpi_setup_stopping_conditions() {
     int error;
     error = MPI_Comm_rank(MPI_COMM_WORLD, &sc_mpi_rank);
     if(error) {
-	return -1;
+        return -1;
     }
     error = MPI_Comm_size(MPI_COMM_WORLD, &sc_mpi_size);
     if(error) {
-	return -1;
+        return -1;
     }
     return 0;
 }
@@ -460,7 +460,10 @@ int mpi_distribute_stopping_conditions() {
     if(sc_mpi_size <= 1) {
         return 0;
     }
-    if(!enabled_conditions) {return 0;}
+    if(!enabled_conditions) {
+        return 0;
+    }
+    return 0;
 }
 
 
