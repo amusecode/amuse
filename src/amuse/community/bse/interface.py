@@ -255,9 +255,7 @@ class BSEBinaries(Particles):
         for attribute, value in zip(attributes, values):
             all_attributes.append(attribute)
             if attribute == 'child1' or attribute == 'child2':
-                print len(value), value.shape
                 value = value.copy_with_link_transfer(None, self._private.code_interface.particles)
-                print len(value), value.shape
                 all_values.append(value)
             else:
                 all_values.append(value)
