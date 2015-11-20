@@ -139,14 +139,14 @@ def combine_indices(index0, index1):
             if index1>=0:
               return start + (index1 * step)
             else:
-              imax= ceil( abs(stop-start), abs(step))
+              imax= int(ceil( abs(stop-start), abs(step)))
               stop=start+imax*step
               return stop + index1*step
         elif isinstance(index1, EllipsisType):
             return index0
         elif isinstance(index1, numpy.ndarray):
             start,stop,step = unpack_slice(index0)
-            imax= ceil( abs(stop-start), abs(step))
+            imax= int(ceil( abs(stop-start), abs(step)))
             stop=start+imax*step
             return start+ (index1 *step)*(index1>=0)+(stop + index1*step)*(index1<0)
         else:
@@ -189,6 +189,7 @@ def number_of_dimensions(array, index):
     return number_of_dimensions_after_index(array.ndim, index)
 
 def number_of_dimensions_after_index(number_of_dimensions, index):
+    print type(index), index
     if isinstance(index, EllipsisType):
         return number_of_dimensions
     elif isinstance(index, tuple):
