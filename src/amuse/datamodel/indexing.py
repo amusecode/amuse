@@ -17,7 +17,7 @@ else:
     def count_nonzero(array):
         return len(numpy.flatnonzero(array))
 
-ceil=lambda x,y: (x/y+(x%y>0))
+ceil=lambda x,y: (x//y+(x%y>0))
         
 # unpack_slice: get start,stop step infsofar possible w/o length
 def unpack_slice(s):
@@ -64,14 +64,14 @@ def combine_slices(s1,s2):
         raise Exception("combining slices not possible")
   
     c3=c1*c2
-    imax= int(ceil( abs(b1-a1), abs(c1)))
+    imax= ceil( abs(b1-a1), abs(c1))
     if c2<0:
         a2=imax+a2
         b2=imax+b2
     
     a3=a1+a2*c1
       
-    jmax=int(ceil( abs(b2-a2), abs(c2)))
+    jmax=ceil( abs(b2-a2), abs(c2))
     b3=jmax*c3+a3
     if a3<0:
         if b3>-1: b3=None
@@ -139,14 +139,14 @@ def combine_indices(index0, index1):
             if index1>=0:
               return start + (index1 * step)
             else:
-              imax= int(ceil( abs(stop-start), abs(step)))
+              imax= ceil( abs(stop-start), abs(step))
               stop=start+imax*step
               return stop + index1*step
         elif isinstance(index1, EllipsisType):
             return index0
         elif isinstance(index1, numpy.ndarray):
             start,stop,step = unpack_slice(index0)
-            imax= int(ceil( abs(stop-start), abs(step)))
+            imax= ceil( abs(stop-start), abs(step))
             stop=start+imax*step
             return start+ (index1 *step)*(index1>=0)+(stop + index1*step)*(index1<0)
         else:
