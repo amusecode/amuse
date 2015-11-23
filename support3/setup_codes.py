@@ -35,6 +35,7 @@ try:
 except ImportError:
     is_configured = False
     
+from glob import glob
 class GenerateInstallIni(Command):
     user_options =   (
         ('build-dir=', 'd', "directory to install to"),
@@ -635,6 +636,21 @@ class CodeCommand(Command):
         return result, content
     
     
+    def run_2to3_on_build_dirs(self):
+        for dir in self.makefile_src_paths():
+            buildir = os.path.join(self.codes_dir,  os.path.relpath(dir, self.codes_src_dir))
+            run_2to3(self.pyfiles_in_build_dir(buildir))
+            
+        
+
+    def pyfiles_in_build_dir(self, builddir):
+        module_files = glob(os.path.join(builddir, "*.py"))
+        result = []
+        for x in module_files:
+            result.append(os.path.abspath(x))
+        return result
+        
+
 class SplitOutput(object) :
     def __init__(self, file1, file2) :
         self.file1 = file1
@@ -732,7 +748,9 @@ class BuildCodes(CodeCommand):
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
-        
+            if sys.hexversion > 0x03000000:
+                self.run_2to3_on_build_dirs()
+                
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
             pass
@@ -776,7 +794,7 @@ class BuildCodes(CodeCommand):
             #
             if not self.inplace and shortname == 'mesa':
                 self.announce("[{1:%H:%M:%S}] skipping {0}".format(shortname, starttime), level =  log.INFO)
-                continue 
+                continue         
                 
             self.announce("[{1:%H:%M:%S}] building {0}".format(shortname, starttime), level =  log.INFO)
             returncode, outputlog = self.run_make_on_directory(shortname, x, 'all', environment)
@@ -906,6 +924,7 @@ class BuildCodes(CodeCommand):
             )
         
  
+
 class BuildLibraries(CodeCommand):
 
     description = "build just the supporting libraries"
