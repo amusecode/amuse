@@ -7,7 +7,7 @@ AMUSE_DIR?=../../../..
 # subsequent versions are hand-coded, so save a copy.  Note that
 # all compiles must use MPICXX, not CXX.
 
-ALL	 = kepler_worker
+ALL	 = keplerorbiters_worker
 OPT	  =-fopenmp # -O4 don't use O4 it is not defined on normal gcc, but has special meaning on LLVM/clang gcc
 #OPT	  =
 
@@ -34,7 +34,7 @@ worker_code.cc: interface.py
 interface.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py KeplerInterface -o $@
 
-kepler_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
+keplerorbiters_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LIBS)
 
 %.o: %.cc
@@ -42,5 +42,5 @@ kepler_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 
 clean:
 	$(RM) -r -f *.so *.dSYM *.o *.pyc worker_code.cc interface.h 
-	$(RM) -f *~ kepler_worker worker_code.cc worker_code-sockets.cc
+	$(RM) -f *~ kepler_worker keplerorbiters_worker worker_code.cc worker_code-sockets.cc
 	make -C src clean

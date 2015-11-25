@@ -43,7 +43,7 @@ class KeplerInterface(CodeInterface,
 
     def __init__(self, **options):
         CodeInterface.__init__(self,
-                               name_of_the_worker = "kepler_worker",
+                               name_of_the_worker = "keplerorbiters_worker",
                                **options)
 
     @legacy_function
