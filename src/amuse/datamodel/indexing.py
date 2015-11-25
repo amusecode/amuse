@@ -189,7 +189,6 @@ def number_of_dimensions(array, index):
     return number_of_dimensions_after_index(array.ndim, index)
 
 def number_of_dimensions_after_index(number_of_dimensions, index):
-    print type(index), index
     if isinstance(index, EllipsisType):
         return number_of_dimensions
     elif isinstance(index, tuple):
