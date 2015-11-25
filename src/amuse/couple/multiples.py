@@ -303,7 +303,7 @@ class Multiples(object):
         except:						# if code understands
             binaries_energy = zero
         total_energy = code.potential_energy + code.kinetic_energy \
-				             + binaries_energy
+                + binaries_energy
 
         return total_energy
 
@@ -413,8 +413,8 @@ class Multiples(object):
             # detected and break out of the evaluate loop before the
             # time reached end_time
 
-	    if newtime == time and (stopping_condition.is_set() == False):
-		 break
+            if newtime == time and (stopping_condition.is_set() == False):
+                break
             
             #self.gravity_code.evolve_model(end_time)
             time = newtime
@@ -469,7 +469,7 @@ class Multiples(object):
     
                 EPS = 0.001
                 if True or vr < EPS*r*v:    # True ==> keep all encounters
-					    # returned by gravity_code
+                    # returned by gravity_code
 
                     print '\n'+'~'*60
                     print 'interaction at time', time
@@ -786,7 +786,7 @@ class Multiples(object):
                         print 'unknown star',
                     print 'to scattering list'
                     sys.stdout.flush()
-		    #initial_scale = sorted_distances[i]    # don't expand!
+                    #initial_scale = sorted_distances[i]    # don't expand!
                 else:
                     print 'encounter vetoed by', \
                         star.id, 'at distance', sorted_distances[i].number, \
@@ -795,7 +795,7 @@ class Multiples(object):
 
         self.before.add_particles(scattering_stars)
 
-	# Note: sorted_stars, etc. are used once more, when checking
+        # Note: sorted_stars, etc. are used once more, when checking
         # for wide binaries (at 6b below).
 
         #----------------------------------------------------------------
@@ -867,7 +867,7 @@ class Multiples(object):
         #    calculation.
 
         particles_in_encounter, Emul_init \
-		= self.expand_encounter(scattering_stars)
+                = self.expand_encounter(scattering_stars)
 
         # Terminology from the PDF description:
 
@@ -892,7 +892,7 @@ class Multiples(object):
         particles_in_encounter.velocity -= cmvel
 
         #E1CM = particles_in_encounter.kinetic_energy() + \
-	#       particles_in_encounter.potential_energy(G=self.gravity_constant)
+        #       particles_in_encounter.potential_energy(G=self.gravity_constant)
         #print 'E1 (CM) =', E1CM
 
         # Relevant available length and time scales:
@@ -934,9 +934,9 @@ class Multiples(object):
             print 'Resonance:'
             print '    rvir =', rvir
             print '    tvir =', tvir
-	else:
-	    print 'M =', M, ' E/mu =', E
-	    print 'a =', a, ' e =', e, ' P =', period
+        else:
+            print 'M =', M, ' E/mu =', E
+            print 'a =', a, ' e =', e, ' P =', period
 
         sys.stdout.flush()
 
@@ -1122,7 +1122,7 @@ class Multiples(object):
 
             stars_to_check = Particles()
             for t in binaries.iter_binary_trees():
-	        if t.particle != root:		# exclude self interaction
+                if t.particle != root:		# exclude self interaction
                     stars_to_check.add_particles(t.get_leafs_subset())
 
             #while len(roots_to_check) > 0:
@@ -1136,15 +1136,15 @@ class Multiples(object):
             try:
                 stars_to_check.remove_particle(star1)
             except KeysNotInStorageException:
-		#print 'failed to remove star1'
+                #print 'failed to remove star1'
                 pass
             try:
                 stars_to_check.remove_particle(star2)
             except KeysNotInStorageException:
-		#print 'failed to remove star2'
+                #print 'failed to remove star2'
                 pass
 
-	    # Check perturbation due to stars_to_check on root.
+                # Check perturbation due to stars_to_check on root.
 
             for s in stars_to_check:
                 distance = (s.position - root.position).length()
@@ -1203,8 +1203,8 @@ class Multiples(object):
                     print 'advancing binary to', final_scale
                     self.kepler.advance_to_radius(final_scale)
 
-	            ### Question to Arjen: what is the right syntax to
-	            ### do this??  We want to say
+                    ### Question to Arjen: what is the right syntax to
+                    ### do this??  We want to say
                     ###
                     ###     rel_pos = self.kepler.get_separation_vector()
                     ###     comp1.position = cmpos - f1*rel_pos
@@ -1568,7 +1568,7 @@ class Multiples(object):
 
                         resolve_collision_code.update_particle_set()
                         resolve_collision_code.particles \
-					.synchronize_to(particles)
+                                            .synchronize_to(particles)
                         #print "resolve_collision_code.particles.radius", \
                         #       resolve_collision_code.particles.radius
                         channel.copy()
@@ -1691,14 +1691,14 @@ def openup_tree(star, tree, particles_in_encounter):
     
     particles_in_encounter.add_particles(leaves)
 
-def sep2(star1, star2):			# squared separation of star1 and star2
+def sep2(star1, star2):         # squared separation of star1 and star2
     return ((star1.position-star2.position).number**2).sum()
 
-def sep(star1, star2):			# separation of star1 and star2
+def sep(star1, star2):          # separation of star1 and star2
     return math.sqrt(sep2(star1, star2))
 
-def phi_tidal(star1, star2, star3):	# compute tidal potential of
-					# (star1,star2) relative to star3
+def phi_tidal(star1, star2, star3): # compute tidal potential of
+                                    # (star1,star2) relative to star3
     phi13 = -star1.mass*star3.mass/sep(star1,star3)
     phi23 = -star2.mass*star3.mass/sep(star2,star3)
     m12 = star1.mass + star2.mass
@@ -1711,8 +1711,8 @@ def phi_tidal(star1, star2, star3):	# compute tidal potential of
                                        + (star3.z.number-cmz)**2)
     return (phi13+phi23-phicm).number
 
-def find_nnn(star1, star2, stars):	# print next nearest neighbor
-				        # of (star1, star2)
+def find_nnn(star1, star2, stars):  # print next nearest neighbor
+                                    # of (star1, star2)
     top_level = stars
 
     min_dr = 1.e10
@@ -1908,7 +1908,7 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
         print pre, sep12, scale**2, min_scale**2
 
     rescale = (compress and sep12 > scale**2) \
-	        or (not compress and sep12 < scale**2)
+                or (not compress and sep12 < scale**2)
 
     min_scale = 0.1*scale			# see note above
 
@@ -1953,8 +1953,8 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
                     print pre, 'return_to_radius', scale
                     kep.return_to_radius(scale)
 
-	    # Note: Always end up on an outgoing orbit.  If periastron
-	    # > scale, we are now just past periastron.
+            # Note: Always end up on an outgoing orbit.  If periastron
+            # > scale, we are now just past periastron.
 
         else:
             limit = apo - 0.01*(apo-peri)
@@ -2098,7 +2098,7 @@ def print_elements(s, a, e, r, Emu, E):
     # Print binary elements in standard form.
 
     print '{0} elements  a = {1}  e = {2}  r = {3}  E/mu = {4}  E = {5}'\
-	.format(s, a, e, r, Emu, E)
+            .format(s, a, e, r, Emu, E)
     sys.stdout.flush()
 
 def print_pair_of_stars(s, star1, star2, kep):
@@ -2175,7 +2175,7 @@ def print_multiple_detailed(node, kep, pre, kT, dcen):
                 D += (cm[k].number - dcen[k].number)**2
             D = numpy.sqrt(D)
             print 'a=%.6f e=%4f r=%6f D=%.4f E/mu=%.5f E=%.5f E/kT=%.5f' % \
-		(a.number, e, r.number, D, Emu.number, E.number, E/kT)
+                    (a.number, e, r.number, D, Emu.number, E.number, E/kT)
             sys.stdout.flush()
         else:
             print '%s%d m=%.5f' % (init, id, M)
@@ -2232,8 +2232,8 @@ def get_multiple_energy2(node, G):
         else:			# list leaves
             leaves_in_node.add_particle(particle)
     return is_bin, leaves_in_node.kinetic_energy() \
-			+ leaves_in_node.potential_energy(G=G) \
-			- Ecm
+            + leaves_in_node.potential_energy(G=G) \
+            - Ecm
 
 def add_leaves(node, leaf_list):
     if node.child1 == None:
@@ -2258,8 +2258,8 @@ def get_multiple_energy3(root, G):
     add_leaves(root, leaves_in_root)
     Ecm = 0.5*root.mass*(root.velocity**2).sum()
     return leaves_in_root.kinetic_energy() \
-			+ leaves_in_root.potential_energy(G=G) \
-			- Ecm
+            + leaves_in_root.potential_energy(G=G) \
+            - Ecm
 
 def get_energy_of_leaves(particles, G):
     leaves = datamodel.Particles(0)

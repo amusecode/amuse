@@ -416,8 +416,8 @@ class TestInterface(TestWithMPI):
             print "Could not build {0}, error = {1}".format(exename, stderr)
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
 
-	print stdout
-	print stderr
+        print stdout
+        print stderr
     
     def build_worker(self):
         
