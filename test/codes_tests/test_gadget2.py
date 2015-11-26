@@ -152,7 +152,7 @@ class TestGadget2Interface(TestWithMPI):
         evrard = MakeEvrardTest(target_number_of_particles)
         mass, x,y,z, vx,vy,vz, u = evrard.new_model()
         number_of_particles = len(mass)
-        first_half = number_of_particles/2
+        first_half = number_of_particles//2
         indices, results = instance.new_sph_particle(mass[:first_half],x[:first_half],y[:first_half],z[:first_half],
             vx[:first_half],vy[:first_half],vz[:first_half],u[:first_half])
         self.assertEquals([0 for i in range(first_half)], list(results))
