@@ -678,9 +678,9 @@ function set_parallel_decomposition(nx, ny, nz) result(ret)
   if(ntotal .EQ. 0) then
     localdims=0
     call set_dims(dims)
+    return
   end if
   if(ntotal .GT. npr) then
-    call set_dims(dims)
     ret = -1
     return
   end if

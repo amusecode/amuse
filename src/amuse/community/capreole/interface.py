@@ -569,101 +569,12 @@ class Capreole(CommonCode):
 
     def define_parameters(self, object):
         
-        
         object.add_method_parameter(
             "get_gamma", 
             "set_gamma",
             "gamma", 
             "ratio of specific heats used in equation of state", 
             default_value = 1.6666666666666667
-        )
-        
-        object.add_caching_parameter(
-            "setup_mesh", 
-            "nmeshx",
-            "nx", 
-            "number of cells in the x direction",
-            10,
-        )
-        
-        
-        object.add_caching_parameter(
-            "setup_mesh", 
-            "nmeshy",
-            "ny", 
-            "number of cells in the y direction",
-            10,
-        )
-        
-        
-        object.add_caching_parameter(
-            "setup_mesh", 
-            "nmeshz",
-            "nz", 
-            "number of cells in the z direction",
-            10,
-        )
-        
-        object.add_caching_parameter(
-            "setup_mesh", 
-            "xlength",
-            "length_x", 
-            "length of model in the x direction", 
-            10 | length,
-        )
-        object.add_caching_parameter(
-            "setup_mesh", 
-            "ylength",
-            "length_y", 
-            "length of model in the x direction",
-            10 | length,
-        )
-        object.add_caching_parameter(
-            "setup_mesh", 
-            "zlength",
-            "length_z", 
-            "length of model in the z direction",
-            10 | length,
-        )
-        
-        object.add_vector_parameter(
-            "mesh_size",
-            "number of cells in the x, y and z directions",
-            ("nx", "ny", "nz")
-        )
-        
-        object.add_vector_parameter(
-            "mesh_length",
-            "length of the model in the x, y and z directions",
-            ("length_x", "length_y", "length_z")
-        )
-    
-        object.add_caching_parameter(
-            "set_parallel_decomposition", 
-            "nx",
-            "nproc_x", 
-            "number of processors for the x direction",
-            0,
-        )
-        object.add_caching_parameter(
-            "set_parallel_decomposition", 
-            "ny",
-            "nproc_y", 
-            "number of processors for the y direction",
-            0,
-        )
-        object.add_caching_parameter(
-            "set_parallel_decomposition", 
-            "nz",
-            "nproc_z", 
-            "number of processors for the z direction",
-            0,
-        )
-        
-        object.add_vector_parameter(
-            "parallel_decomposition",
-            "number of processors for each dimensions",
-            ("nproc_x", "nproc_y", "nproc_z")
         )
         
         object.add_caching_parameter(
@@ -736,6 +647,97 @@ class Capreole(CommonCode):
             "boundary conditions for the Z directorion",
             ("zbound1", "zbound2")
         )
+        object.add_caching_parameter(
+            "set_parallel_decomposition", 
+            "nx",
+            "nproc_x", 
+            "number of processors for the x direction",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_parallel_decomposition", 
+            "ny",
+            "nproc_y", 
+            "number of processors for the y direction",
+            0,
+        )
+        object.add_caching_parameter(
+            "set_parallel_decomposition", 
+            "nz",
+            "nproc_z", 
+            "number of processors for the z direction",
+            0,
+        )
+        
+        object.add_vector_parameter(
+            "parallel_decomposition",
+            "number of processors for each dimensions",
+            ("nproc_x", "nproc_y", "nproc_z")
+        )
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshx",
+            "nx", 
+            "number of cells in the x direction",
+            10,
+        )
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshy",
+            "ny", 
+            "number of cells in the y direction",
+            10,
+        )
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshz",
+            "nz", 
+            "number of cells in the z direction",
+            10,
+        )
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "xlength",
+            "length_x", 
+            "length of model in the x direction", 
+            10 | length,
+        )
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "ylength",
+            "length_y", 
+            "length of model in the x direction",
+            10 | length,
+        )
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "zlength",
+            "length_z", 
+            "length of model in the z direction",
+            10 | length,
+        )
+        
+        object.add_vector_parameter(
+            "mesh_size",
+            "number of cells in the x, y and z directions",
+            ("nx", "ny", "nz")
+        )
+        
+        object.add_vector_parameter(
+            "mesh_length",
+            "length of the model in the x, y and z directions",
+            ("length_x", "length_y", "length_z")
+        )
+    
+        
+        
         
         self.stopping_conditions.define_parameters(object)
     

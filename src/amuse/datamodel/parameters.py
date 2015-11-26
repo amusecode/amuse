@@ -9,19 +9,22 @@ from amuse.support import exceptions
 
 import warnings
 
+from amuse.support.core import OrderedDictionary
+
 class Parameters(object):
     __name__ = 'Parameters'
     
     def __init__(self, definitions, instance):
         object.__setattr__(self, '_instance', weakref.ref(instance))
         object.__setattr__(self, '_definitions', definitions)
-        object.__setattr__(self, '_mapping_from_name_to_definition', {})
-        object.__setattr__(self, '_mapping_from_name_to_parameter', {})
-    
+        object.__setattr__(self, '_mapping_from_name_to_definition', OrderedDictionary())
+        object.__setattr__(self, '_mapping_from_name_to_parameter', OrderedDictionary())
+
         for x in definitions:
             self._mapping_from_name_to_definition[x.name] = x
         
         
+
     def __getattr__(self, name):
         #if name.startswith('__'):
         #    return object.__getattribute__(self, name)
@@ -102,7 +105,7 @@ class Parameters(object):
             if not x.is_set:
                 x.set_default_value()
         
-        functions = {}
+        functions = OrderedDictionary()
         for x in cached_parameters:
             definition = x.definition
             if not definition.functionname in functions:
@@ -118,6 +121,7 @@ class Parameters(object):
             errorcode = method(**keyword_arguments)
     
     
+
 
     def send_not_set_parameters_to_code(self):
         parameters = [x for x in self.iter_parameters() if x.must_set_to_default()]
