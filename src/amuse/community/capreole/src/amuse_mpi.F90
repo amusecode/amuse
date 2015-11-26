@@ -118,6 +118,7 @@ contains
     call flush(log_unit)
 
     call mpi_topology
+    write(log_unit,*) "The topology is: ",dims(0), dims(1), dims(2)
 
   end subroutine mpi_setup
 
