@@ -537,6 +537,10 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         return function
 
 
+    def get_code_src_directory(self):
+        return os.path.join(os.path.dirname(os.path.normpath(os.path.abspath(__file__))),'src')
+
+
 class GalactICs(CommonCode):
     
     def __init__(self, unit_converter = None, **options):
