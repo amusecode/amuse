@@ -238,7 +238,7 @@ class GalactICsImplementation(object):
             
             proc=Popen([os.path.join(self._bin_path, "dbh")], 
                 cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-            stdout,stderr=proc.communicate(in_dbh)
+            stdout,stderr=proc.communicate(in_dbh.encode('UTF-8'))
             print "(stdout, stderr) =", stdout,stderr
             if proc.returncode==0:
               open(os.path.join(dbh_dir,"dbh.finished"),'a').close()
@@ -253,7 +253,7 @@ class GalactICsImplementation(object):
             if self._generate_disk_flag:
               proc=Popen([os.path.join(self._bin_path, "diskdf")], 
                       cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-              stdout,stderr=proc.communicate(in_diskdf)
+              stdout,stderr=proc.communicate(in_diskdf.encode('UTF-8'))
               print "(stdout, stderr) =", stdout,stderr
               if proc.returncode==0:
                 open(os.path.join(dbh_dir,"diskdf.finished"),'a').close()
@@ -261,7 +261,7 @@ class GalactICsImplementation(object):
             return 0
         except Exception as ex:
             print "Exception occurred in commit_parameters:", ex
-            return -1
+            raise
     
     def recommit_parameters(self):
         return self.commit_parameters()
@@ -280,7 +280,7 @@ class GalactICsImplementation(object):
                 in_disk  = self.generate_in_disk_string()
                 process = Popen([os.path.join(self._bin_path, "gendisk")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out,err=process.communicate(in_disk)
+                out,err=process.communicate(in_disk.encode('UTF-8'))
                 if process.returncode != 0:
                     print "error:", err
                     return -2
@@ -292,7 +292,7 @@ class GalactICsImplementation(object):
                 in_bulge = self.generate_in_bulge_string()
                 process = Popen([os.path.join(self._bin_path, "genbulge")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out,err=process.communicate(in_bulge)
+                out,err=process.communicate(in_bulge.encode('UTF-8'))
                 if process.returncode != 0:
                     print "error:", err
                     return -3 
@@ -304,7 +304,7 @@ class GalactICsImplementation(object):
                 in_halo  = self.generate_in_halo_string()
                 process = Popen([os.path.join(self._bin_path, "genhalo")], 
                     cwd = self._cwd, stdin = PIPE, stdout = PIPE, stderr = PIPE)
-                out, err = process.communicate(in_halo)
+                out, err = process.communicate(in_halo.encode('UTF-8'))
                 if process.returncode != 0:
                     print "error:", err
                     return -4 
