@@ -279,7 +279,7 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
                 first = False
             else:
                 self.out + ', '
-            name = 'in_' if parameter.name == 'in' else parameter.name                                                
+            name = 'in_' if parameter.name == 'in' else parameter.name                                                        
             if self.specification.must_handle_array and parameter.direction == LegacyFunctionSpecification.IN:
 
                 if parameter.datatype == 'string':
@@ -306,7 +306,10 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
                 elif parameter.direction == LegacyFunctionSpecification.INOUT:
                     self.out + '&inout_'
                 self.out + name
+                if parameter.datatype == 'string' and parameter.direction == LegacyFunctionSpecification.IN:
+                    self.out + ".encode('UTF-8')"
                     
+
 
     def output_parameters(self):
         for parameter in self.specification.parameters:
@@ -320,11 +323,17 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
         for parameter in self.specification.parameters:
             if parameter.direction == LegacyFunctionSpecification.OUT:
                 self.out.lf() +  parameter.name + '.value = ' +  'output_' + parameter.name
+                if parameter.datatype == 'string':
+                    self.out + ".decode('UTF-8')"
             elif parameter.direction == LegacyFunctionSpecification.INOUT:
                 self.out.lf() +  parameter.name + '.value = ' +  'inout_' + parameter.name
+
+                if parameter.datatype == 'string':
+                    self.out + ".decode('UTF-8')"
                 
                 
         
+
 
     def first_input_parameter(self):
         
