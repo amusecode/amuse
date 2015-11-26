@@ -27,13 +27,13 @@ def new_option_parser():
     result = OptionParser()
     result.add_option("-M", unit= units.MSun,
                       dest="M", type="float",default = 1.0 | units.MSun,
-                      help="stellar mass [1.0] %unit")
+                      help="stellar mass [%default]")
     result.add_option("-t", unit = units.Myr,
                       dest="model_time", type="float", 
                       default = 4700.0|units.Myr,
-                      help="end time of the simulation [4.7] %unit")
-    result.add_option("-z", dest="z", type="float", default = 0.02,
-                      help="metalicity [0.02]")
+                      help="end time of the simulation [%default]")
+    result.add_option("-z", dest="z", type="float", 
+                      default = 0.02, help="metalicity [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):
