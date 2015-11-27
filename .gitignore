@@ -327,7 +327,9 @@ examples/simple/*.png
 examples/simple/*.hdf
 
 
-
+#files generated during testing
+log.?
+fort.*
 
 
 
