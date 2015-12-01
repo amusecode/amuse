@@ -886,7 +886,12 @@ class CodeInterface(OptionalAttributes):
             instance.parameter.name = newvalue
         """
         pass
-    
+
+    def before_new_set_instance(self):
+        """
+        (Can be) called everytime just before a new set is created
+        """
+        pass    
     
 
 class CodeWithDataDirectories(object):

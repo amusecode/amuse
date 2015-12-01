@@ -108,7 +108,7 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
             return getattr(definition.wrapped_object, self.linked_set_name)
         except Exception as ex:
             print ex
-            rais
+            raise ex
         
     def convert_result_value(self, method, definition, value):
         linked_set = self.get_linked_set(method, definition)
@@ -124,7 +124,6 @@ class LinkMethodArgumentOrResultType(MethodArgumentOrResultType):
     def convert_argument_value(self, method, definition, value):
         linked_set = self.get_linked_set(method, definition)
         storage = linked_set._private.attribute_storage
-        print value
         if isinstance(value, datamodel.Particle):
             indices = storage.get_indices_of([value.key])
             return indices
@@ -1308,8 +1307,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def get_attribute(self, name, value):
         if name in self.mapping_from_name_to_set_instance:
             return self.mapping_from_name_to_set_instance[name]
-        else:
+        else:          
             set_definition = self.mapping_from_name_to_set_definition[name]
+            if set_definition.state_guard:
+                getattr(self.interface, set_definition.state_guard)()
             result = set_definition.new_set_instance(self)
                 
             self.mapping_from_name_to_set_instance[name] = result
@@ -1325,25 +1326,29 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def setup(self, object):
         object.define_particle_sets(self)
 
-    def define_set(self, name, name_of_indexing_attribute = 'index_of_the_particle'):
+    def define_set(self, name, name_of_indexing_attribute = 'index_of_the_particle', state_guard=None):
         definition = ParticleSetDefinition(self)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
+        definition.state_guard = state_guard
         self.mapping_from_name_to_set_definition[name] = definition
 
-    def define_super_set(self, name, particle_subsets, index_to_default_set = None):
+    def define_super_set(self, name, particle_subsets, index_to_default_set = None, state_guard=None):
         definition = ParticleSupersetDefinition(self, particle_subsets, index_to_default_set)
+        definition.state_guard = state_guard
         self.mapping_from_name_to_set_definition[name] = definition
 
-    def define_inmemory_set(self, name, particles_factory = CodeInMemoryParticles):
+    def define_inmemory_set(self, name, particles_factory = CodeInMemoryParticles, state_guard=None):
         definition = ParticleSetDefinition(self)
         definition.is_inmemory = True
         definition.particles_factory = particles_factory
+        definition.state_guard = state_guard
         self.mapping_from_name_to_set_definition[name] = definition
     
-    def define_grid(self, name, name_of_indexing_attribute = 'index_of_the_particle', axes_names = None, grid_class=datamodel.Grid):
+    def define_grid(self, name, name_of_indexing_attribute = 'index_of_the_particle', axes_names = None, grid_class=datamodel.Grid, state_guard=None):
         definition = GridDefinition(self, grid_class = grid_class)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
         definition.axes_names = axes_names
+        definition.state_guard = state_guard
         self.mapping_from_name_to_set_definition[name] = definition
         
     def set_new(self, name_of_the_set, name_of_new_particle_method, names = None):
@@ -1497,6 +1502,7 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         
     def __setstate__(self, state):
         self.__dict__ = state
+
     
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
     formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
