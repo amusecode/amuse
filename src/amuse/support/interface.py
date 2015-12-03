@@ -591,10 +591,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 elif self.units[index] == self.UNIT:
                     result[parameter] = keyword_arguments[parameter]
                 else:
-                    if not self.units[index].base and not is_quantity(keyword_arguments[parameter]):
-                        result[parameter] = keyword_arguments[parameter]
-                    else:
-                        result[parameter] = keyword_arguments[parameter].value_in(self.units[index])
+                    result[parameter] = quantities.value_in(keyword_arguments[parameter],self.units[index])
 
         for index, argument in enumerate(list_arguments):
             parameter = input_parameters[index]
@@ -617,10 +614,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                     if self.units[index].is_none() and not hasattr(argument,'unit'):
                         result[parameter] = argument
                     else:
-                        if not self.units[index].base and not is_quantity(argument):
-                            result[parameter] = argument
-                        else:
-                            result[parameter] = argument.value_in(self.units[index])
+                        result[parameter] = quantities.value_in(argument,self.units[index])
             except core.IncompatibleUnitsException as ex:
                 raise ConvertArgumentsException("error while converting parameter '{0}', error: {1}".format(parameter, ex))
             except Exception as ex:

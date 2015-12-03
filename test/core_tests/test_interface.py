@@ -154,6 +154,29 @@ class CodeInterfaceWithUnitsOnLegacyFunctionTests(amusetest.TestCase):
         
         instance.get_handler("LEGACY").legacy_interface = TestImplementation()
         self.assertRaises(Exception,instance.return_error, " Error when calling 'echo_one' of a 'InCodeComponentImplementation', errorcode is -1")
+
+    def test4(self): 
+        class TestImplementation(object):
+        
+            def echo_one(self, input):
+                return input, 0
+                
+        class TestInterface(object):
+           
+            @legacy_function
+            def echo_one():
+                function = LegacyFunctionSpecification()
+                function.addParameter('input', dtype='d', direction=function.IN, unit=units.deg)
+                function.addParameter('output', dtype='d', direction=function.OUT, unit=units.deg)
+                function.result_type = 'i'
+                return function
+            
+        original = TestInterface()
+        instance = interface.InCodeComponentImplementation(original)
+        
+        instance.get_handler("LEGACY").legacy_interface = TestImplementation()
+        self.assertAlmostRelativeEquals(instance.echo_one(1. | units.rad), 1. | units.rad)
+        self.assertAlmostRelativeEquals(instance.echo_one(1.), 1. | units.rad)
         
         
 class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
