@@ -3073,6 +3073,9 @@ class ParticleInformationChannel(object):
         if len(self.keys) == 0:
             return
 
+        if function is None:
+            function=lambda *x : x
+
         if not self.to_particles.can_extend_attributes():
             target_attributes = self.to_particles.get_defined_settable_attribute_names()
             if not set(target).issubset(set(target_attributes)):

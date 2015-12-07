@@ -928,6 +928,10 @@ class TestParticlesChannel(amusetest.TestCase):
 
         self.assertEquals(particles2.momentum,[2*12,1*10] | units.kg*units.m/units.s)
 
+        channel.transform(["vx_by_another_name"], None,["vx"])
+
+        self.assertEquals(particles2.vx_by_another_name,[12,10] | units.m/units.s)
+
 
 class TestParticlesSuperset(amusetest.TestCase):
 

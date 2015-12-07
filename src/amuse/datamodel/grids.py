@@ -633,6 +633,9 @@ class GridInformationChannel(object):
         [1 1]
 
         """
+        if function is None:
+            function=lambda *x : x
+        
         if not self.target.can_extend_attributes():
             target_attributes = self.target.get_defined_settable_attribute_names()
             if not set(target).issubset(set(target_attributes)):
