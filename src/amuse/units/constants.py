@@ -281,11 +281,12 @@ triton_hyphen_proton_mag_mom_ratio = 1.066639908 | none
 triton_hyphen_proton_mass_ratio = 2.9937170309 | none
 weak_mixing_angle = 0.22255 | none
 #DERIVED CONSTANTS***********************************************
-pi = numpy.pi | none
+pi = numpy.pi
 hbar = h / (2.0 * numpy.pi)
 four_pi_stefan_boltzmann = 4.0 * numpy.pi * Stefan_hyphen_Boltzmann_constant
 mu0 = 4 * numpy.pi * 1.e-7 | N/A**2
 eps0 = mu0**-1 * c**-2
+sidereal_day = 0.99726968 | units.day
 #machine constants
 eps = numpy.finfo(numpy.double).eps
 precision = int(numpy.log10(2/eps))

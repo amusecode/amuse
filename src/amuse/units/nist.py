@@ -15,7 +15,8 @@ MESSAGE = \
 #or change them, change the nist.txt file and run nist.py
 
 import numpy
-from amuse.units.units import *
+from amuse.units.si import *
+from amuse.units.derivedsi import *
 
 """
 ADDITIONAL_DERIVED_CONSTANTS = \
@@ -25,6 +26,7 @@ hbar = h / (2.0 * numpy.pi)
 four_pi_stefan_boltzmann = 4.0 * numpy.pi * Stefan_hyphen_Boltzmann_constant
 mu0 = 4 * numpy.pi * 1.e-7 | N/A**2
 eps0 = mu0**-1 * c**-2
+sidereal_day = 0.99726968 | units.day
 #machine constants
 eps = numpy.finfo(numpy.double).eps
 precision = int(numpy.log10(2/eps))
