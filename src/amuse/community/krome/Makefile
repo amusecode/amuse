@@ -66,7 +66,7 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 
 krome_worker: src/libchem.a worker_code.f90 interface.o
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) worker_code.f90 interface.o -o $@ src/libchem.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
+	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 interface.o -o $@ src/libchem.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 
 
 %.o: %.f90

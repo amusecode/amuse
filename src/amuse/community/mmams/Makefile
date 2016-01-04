@@ -45,7 +45,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ MakeMeAMassiveStarInterface -o $@
 
 mmams_worker: worker_code.cc worker_code.h $(OBJECTS)
-	$(MPICXX) $(CXXFLAGS) $< $(OBJECTS) -o $@  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) $< $(OBJECTS) -o $@  $(LIBS)
 
 interface.o: interface.cc
 	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $< $(LIBS)

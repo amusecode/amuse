@@ -77,7 +77,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface ReboundInterface -o $@
 
 rebound_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I$(CODEDIR)/src $< $(OBJS) $(CODELIB) $(SC_CLIBS)  -o $@
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I$(CODEDIR)/src $< $(OBJS) $(CODELIB) $(SC_CLIBS)  -o $@
 	
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SC_FLAGS) -I$(CODEDIR)/src -c -o $@ $< 

@@ -78,7 +78,7 @@ $(CODELIB): $(BUILDDIR)/Makefile
 	make -C $(BUILDDIR) all "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)" VPATH=../src
 
 phigrape_worker: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -DNOMPI $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
+	$(MPIF90) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -DNOMPI $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
 
 $(MPI_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
 	-mkdir $(MPI_BUILDDIR) 
@@ -88,23 +88,23 @@ $(MPI_BUILDDIR)/libphigrape.a:  $(MPI_BUILDDIR)/Makefile
 	make -C $(MPI_BUILDDIR) all "FC=$(FC)" "OPTS=-DMPI" "CC=$(CC)" VPATH=../src
 	
 phigrape_worker_mpi: worker_code.f90 interface.mpio $(MPI_BUILDDIR)/libphigrape.a
-	$(MPIF90) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) -DMPI $^ $(MPI_BUILDDIR)/libphigrape.a -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
+	$(MPIF90) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -DMPI $^ $(MPI_BUILDDIR)/libphigrape.a -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
 
 phigrape_worker_gl: glworker_code.f90 interface.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)"
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
 
 phigrape_worker_gpu: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
 
 phigrape_worker_gl_gpu: glworker_code.f90 interface.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=-DNOMPI" "CC=$(CC)"
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(GPULIBS) $(SC_MPI_CLIBS) $(FS_LIBS)  $(LIBS)
 
 phigrape_worker_grape: worker_code.f90 interface.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
+	$(MPIF90) $(FFLAGS) -DNOMPI $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@

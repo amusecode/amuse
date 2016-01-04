@@ -330,6 +330,13 @@ examples/simple/*.hdf
 #files generated during testing
 log.?
 fort.*
+Capreole.log
+test.dyn
+test.csv
+test_unit.dyn
+test9.pickle
+test10.pickle
+
 
 
 

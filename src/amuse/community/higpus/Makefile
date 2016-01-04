@@ -70,7 +70,8 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py HiGPUsInterface -o $@
 
 higpus_worker_gpu: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LDFLAGS)  $(LIBS)
+
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
 

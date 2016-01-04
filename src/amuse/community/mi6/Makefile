@@ -56,7 +56,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py MI6Interface -o $@
 
 mi6_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src  $< $(OBJS) $(CODELIB) -o $@ -L./src -lmi6 $(SC_CLIBS)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src  $< $(OBJS) $(CODELIB) -o $@ -L./src -lmi6 $(SC_CLIBS)  $(LIBS)
 
 mi6_worker_gpu: worker_code.cc worker_code.h $(CODELIB_GPU) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src  $< $(OBJS) $(CODELIB_GPU) -o $@ -L./src -lmi6_gpu $(SC_CLIBS) $(SAPPORO_LIBS) $(CUDA_LIBS)  $(LIBS)

@@ -38,7 +38,7 @@ all: sphray_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
 
 sphray_worker: sphray_worker.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $^ -o $@ $(CODE_LIBS) $(SC_MPI_CLIBS) $(FS_LIBS) $(LIBS) 
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(CODE_LIBS) $(SC_MPI_CLIBS) $(FS_LIBS) $(LIBS) 
 
 sphray_worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"

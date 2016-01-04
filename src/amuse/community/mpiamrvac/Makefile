@@ -173,22 +173,22 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MpiAmrVacInterface -o $@
 
 mpiamrvac_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR) $< $(OBJS) $(CODELIB) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(BUILDDIR) $< $(OBJS) $(CODELIB) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
 	
 mpiamrvac_worker_acc: worker_code.f90 $(CODELIBACC) $(OBJSACC)
-	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(BUILDDIR_ACC) $< $(OBJSACC) $(CODELIBACC) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(BUILDDIR_ACC) $< $(OBJSACC) $(CODELIBACC) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
 	
 mpiamrvac_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D)
-	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(TWOD_BUILDDIR) $< $(OBJS2D) $(CODELIB2D) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(TWOD_BUILDDIR) $< $(OBJS2D) $(CODELIB2D) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
 	
 mpiamrvac_worker_2dacc: worker_code.f90 $(CODELIB2DACC) $(OBJS2DACC)
-	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(TWOD_BUILDDIR_ACC) $< $(OBJS2DACC) $(CODELIB2DACC) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(TWOD_BUILDDIR_ACC) $< $(OBJS2DACC) $(CODELIB2DACC) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
 	
 mpiamrvac_worker_1d: worker_code.f90 $(CODELIB1D) $(OBJS1D)
-	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(ONED_BUILDDIR) $< $(OBJS1D) $(CODELIB1D) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(ONED_BUILDDIR) $< $(OBJS1D) $(CODELIB1D) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
 	
 mpiamrvac_worker_1dacc: worker_code.f90 $(CODELIB1DACC) $(OBJS1DACC)
-	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) -I$(ONED_BUILDDIR_ACC) $< $(OBJS1DACC) $(CODELIB1DACC) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
+	$(MPIFC) $(CXXFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) -I$(ONED_BUILDDIR_ACC) $< $(OBJS1DACC) $(CODELIB1DACC) $(SC_MPI_FCLIBS) $(FS_LIBS) -o $@  $(LIBS)
 	
 
 $(BUILDDIR)/interface.f90: interface.t

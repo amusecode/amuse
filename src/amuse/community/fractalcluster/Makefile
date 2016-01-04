@@ -38,7 +38,7 @@ all: fractal_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $<
 
 fractal_worker: fractal_worker.f90 interface.o
-	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $^ -o $@ $(LIBS) $(FS_LIBS)  $(LIBS)
+	$(MPIF90) $(FFLAGS) $(FFLAGS2) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) $(FS_LIBS)  $(LIBS)
 
 fractal_worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"

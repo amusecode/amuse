@@ -35,7 +35,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py AdaptbInterface -o $@
 
 adaptb_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -ladaptb $(SC_CLIBS) $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -ladaptb $(SC_CLIBS) $(LIBS)
 
 interface.o: interface.cc
 	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS)  $(SC_FLAGS) -I./src -c -o $@ $< 

@@ -56,7 +56,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py OctgravInterface -o $@
 
 octgrav_worker: worker_code.cc worker_code.h $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) $< $(OBJS) $(CODELIB) -o $@ $(SC_MPI_CLIBS) $(LIBS)
 
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h

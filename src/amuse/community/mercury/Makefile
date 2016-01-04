@@ -35,7 +35,7 @@ all: mercury_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS) -c -o $@ $< 
 
 mercury_worker: worker.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS) $(FS_FLAGS) $^ -o $@ $(CODE_LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) $^ -o $@ $(CODE_LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 	
 worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)" F77FLAGS="$(F77FLAGS)"

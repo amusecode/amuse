@@ -13,6 +13,7 @@ class compilers(object):
     cxx_flags = '@CXXFLAGS@'
     cc_flags  = '@CFLAGS@'
     fc_flags = '@FCFLAGS@'
+    ld_flags = '@LDFLAGS@'
     
     found_fftw = '@FOUND_FFTW@'
     fftw_flags = '@FFTW_FLAGS@'

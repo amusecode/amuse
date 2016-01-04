@@ -58,7 +58,7 @@ worker_code.h: interface.py
 
 
 bonsai_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) -o $@ $(SC_MPI_CLIBS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $(SC_MPI_CLIBS) $(INCLUDES) $< $(OBJS) $(CODELIB) $(LIBS)
 
 .cpp.o: $<
 	$(MPICXX) $(CXXFLAGS) $(INCLUDES) -c -o $@ $< 

@@ -12,7 +12,7 @@ CXX = $(MPICXX)
 CFLAGS ?= -O3 -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR) 
 CXXFLAGS ?= $(CFLAGS) 
 
-LDFLAGS = -lm $(MUSE_LD_FLAGS)
+LDFLAGS += -lm $(MUSE_LD_FLAGS)
 
 A_OBJS = interface.o
 
@@ -32,7 +32,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py HermiteInterface -o $@
 
 hermite_worker:	worker_code.cc worker_code.h $(A_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)   $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)   $(LIBS)
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SC_FLAGS) -c -o $@ $< 

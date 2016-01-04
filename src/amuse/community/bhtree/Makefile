@@ -32,10 +32,10 @@ GPULIBS  =  $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread
 all:	compile bhtree_worker
 
 python_worker.o: python_worker.c
-	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SC_FLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SC_FLAGS) $(LDFLAGS) -c -o $@ $< 
 	
 bhtree_worker_python: python_worker.o
-	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(SC_FLAGS) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS)
+	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(SC_FLAGS) $(LDFLAGS) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS)
     
 
 compile: $(BHTC)
@@ -72,7 +72,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
 
 bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) w$(LDFLAGS) orker_code.cc $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(LIBS)
 	
 #bhtree_worker_g6: worker_code.cc worker_code.h $(GPUCODELIB) $(OBJS)
 #	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) worker_code.cc $(OBJS) $(GPUCODELIB) -o $@ $(SC_LIBS) $(G6LIBS)

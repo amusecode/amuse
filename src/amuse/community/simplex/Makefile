@@ -73,7 +73,7 @@ worker_code-gl.h: interface.py
 	$(CODE_GENERATOR) --type=H $< GlSimpleXInterface -o $@
 
 simplex_worker: worker_code.cc worker_code.h $(OBJS)
-	$(MPICXX) $< $(OBJS) -o $@ $(LIBS)
+	$(MPICXX) $(LDFLAGS) $< $(OBJS) -o $@ $(LIBS)
 
 #simplex_worker_gl: worker_code-gl.cc worker_code-gl.h $(OBJS) $(GLOBJS)
 #	$(MPICXX) $^ -o $@ $(LIBS) $(GLLIBS)

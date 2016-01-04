@@ -37,7 +37,7 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py FlashInterface -o $@
 
 flash_worker: worker_code.f90 $(CODELIB) $(OBJS)
-	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $< $(OBJS)  $(FS_LIBS) -o $@ $(flash_obj) $(HDF5_LIBS)
+	$(MPIFC) $(FCFLAGS) $(FS_FLAGS) $(LDFLAGS) $< $(OBJS)  $(FS_LIBS) -o $@ $(flash_obj) $(HDF5_LIBS)
 	cp $(drive_loc)/flash.par .
 
 %.o: %.F90
