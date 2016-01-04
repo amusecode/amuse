@@ -8587,7 +8587,7 @@ fi
     if test "x$GSL_LIBS" != x ; then
         GSL_FLAGS="$GSL_CFLAGS"
         GSL_LIBS="$GSL_LIBS"
-        FOUND_GSL=yessir
+        FOUND_GSL=yes
 
     fi
   fi
