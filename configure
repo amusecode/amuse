@@ -697,9 +697,9 @@ PYTHON_numpy_VERSION
 PYTHON_numpy
 FOUND_GSL
 GSL_CONFIG
-GSL_FLAGS
 GSL_LIBS
 GSL_CFLAGS
+GSL_FLAGS
 NETCDFF_PREFIX
 NETCDFF_LIBS
 NETCDFF_FLAGS
@@ -8583,7 +8583,16 @@ fi
     fi
   fi
   FOUND_GSL=no
-  if test "x$gsl_config_exists" != xyes ; then
+  if test "x$GSL_CFLAGS" != x ; then
+    if test "x$GSL_LIBS" != x ; then
+        GSL_FLAGS="$GSL_CFLAGS"
+        GSL_LIBS="$GSL_LIBS"
+        FOUND_GSL=yessir
+
+    fi
+  fi
+  if test "$FOUND_GSL" = "no"; then
+      if test "x$gsl_config_exists" != xyes ; then
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GSL" >&5
@@ -8658,13 +8667,15 @@ else
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
-        GSL_FLAGS="$GSL_CFLAGS"
-        FOUND_GSL=yes
+            GSL_FLAGS="$GSL_CFLAGS"
+            GSL_LIBS="$GSL_LIBS"
+            FOUND_GSL=yes
 
 
-        FOUND_GSL=yes
+            FOUND_GSL=yes
 
 fi
+      fi
   fi
   if test "$FOUND_GSL" = "no"; then
       # Extract the first word of "gsl-config", so it can be a program name with args.

@@ -29,18 +29,29 @@ AC_ARG_ENABLE(gsltest, [  --disable-gsltest       Do not try to compile and run 
     fi
   fi
   FOUND_GSL=no
-  if test "x$gsl_config_exists" != xyes ; then
-    PKG_CHECK_MODULES([GSL],[gsl >= 1.0],
-        [
+  if test "x$GSL_CFLAGS" != x ; then
+    if test "x$GSL_LIBS" != x ; then
         GSL_FLAGS="$GSL_CFLAGS"
+        GSL_LIBS="$GSL_LIBS"
         FOUND_GSL=yes
         AC_SUBST(GSL_FLAGS)
-        
-        ifelse([$2], , :, [$2]) 
-        ],
-        [
-        ]
-    )
+    fi
+  fi
+  if test "$FOUND_GSL" = "no"; then
+      if test "x$gsl_config_exists" != xyes ; then
+        PKG_CHECK_MODULES([GSL],[gsl >= 1.0],
+            [
+            GSL_FLAGS="$GSL_CFLAGS"
+            GSL_LIBS="$GSL_LIBS"
+            FOUND_GSL=yes
+            AC_SUBST(GSL_FLAGS)
+            
+            ifelse([$2], , :, [$2]) 
+            ],
+            [
+            ]
+        )
+      fi
   fi
   if test "$FOUND_GSL" = "no"; then
       AC_PATH_PROG(GSL_CONFIG, gsl-config, no)
