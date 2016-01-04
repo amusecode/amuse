@@ -7,7 +7,7 @@
       INCLUDE 'common6.h'
       LOGICAL LSCALE
 *      Scaling if initial model is constructed or King model is read
-      LSCALE = KZ(22).LT.2.OR.KZ(22).GE.6
+      LSCALE = (KZ(22).LT.2.OR.KZ(22).GE.6).and.KZ(22).LT.99
 *
 #ifdef PARALLEL
 #define MPIINIT 1

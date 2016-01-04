@@ -36,43 +36,24 @@
         INTEGER :: initialize_code
         INTEGER :: J, VAL, N_DUMMY, ioerror
         print *, "initialization..."
-        OPEN (UNIT=99, FILE='nbody6xx.input', IOSTAT=ioerror)
-        
-        if (ioerror.EQ.0) then
-            READ (99,*,IOSTAT=ioerror)  KSTART_AMUSE, TCOMP_AMUSE, 
-     &          TCRITp, isernb, iserreg
-        end if
-        
-        if (ioerror.NE.0)  then
+
             KSTART_AMUSE = 1
             TCOMP_AMUSE = 10000.0
             TCRITp = 1.E6
             isernb = 40
             iserreg = 40  
-        end if
         
         PRINT *, KSTART_AMUSE, TCOMP_AMUSE, TCRITp, isernb, iserreg
-        if (ioerror.EQ.0)  then
-            READ (99,*,IOSTAT=ioerror)  N_DUMMY, NFIX, NCRIT, 
-     &       NRAND_AMUSE, NNBOPT, NRUN
-        end if
         
-        if (ioerror.NE.0)  then
             N_DUMMY = 1000
             NFIX = 1
             NCRIT = 10
             NRAND_AMUSE = 4353
             NNBOPT = 2
             NRUN = 1
-        end if
         
         PRINT *,  N, NFIX, NCRIT, NRAND_AMUSE, NNBOPT, NRUN
-        if (ioerror.EQ.0)  then
-            READ (99,*,IOSTAT=ioerror)  ETAI, ETAR, RS0_AMUSE, DTADJ,
-     &              DELTAT, TCRIT, QE, RBAR, ZMBAR
-        end if
-        
-        if (ioerror.NE.0)  then
+
             ETAI = 0.05
             ETAR = 0.05
             RS0_AMUSE = 0.12
@@ -82,44 +63,24 @@
             QE = 2.0E-05
             RBAR = 1.0
             ZMBAR = 0.7    
-        end if
         
-        if (ioerror.EQ.0)  then
-            READ (99,*,IOSTAT=ioerror)  (KZ(J),J=1,50)
-        end if
-        
-        if (ioerror.NE.0)  then
             KZ(1:50) = (/ 
      &           1, 0, 1, 0, 1, 1, 4, 0, 0, 2,
      &           1, 0, 0, 0, 2, 1, 0, 0, 3, 2,
-     &           1, 0, 2, 0, 0, 2, 0, 0, 0, 2,
+     &           1, 99, 2, 0, 0, 2, 0, 0, 0, 2,
      &           0, 0, 2, 0, 1, 0, 1, 1, 0, 1,
      &           0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
      &       /)
-        end if
         
         PRINT *, (KZ(J),J=1,50)
     
-        if (ioerror.EQ.0)  then
-            READ (99,*,IOSTAT=ioerror)  DTMIN, RMIN, ETAU, ECLOSE, 
-     &       GMIN, GMAX
-        end if
-        
-        if (ioerror.NE.0)  then
             DTMIN = 1.0E-04 
             RMIN = 0.01 
             ETAU = 0.1 
             ECLOSE = 1.0 
             GMIN = 1.0E-06 
             GMAX = 0.01
-        end if
         
-        if (ioerror.EQ.0)  then
-            READ (99,*,IOSTAT=ioerror) ALPHAS, BODY1, BODYN, NBIN0,
-     &             EPOCH0, DTPLOT
-        end if
-        
-        if (ioerror.NE.0)  then
             ALPHAS = 2.35
             BODY1 =  20.0 
             BODYN = 0.1 
@@ -128,34 +89,18 @@
             ZMET =  0.0 
             EPOCH0 = 0 
             DTPLOT = 0.0
-        end if
         
-        if (ioerror.EQ.0)  then
-            READ (99,*,IOSTAT=ioerror)  Q, VXROT, VZROT, RSPH2
-        end if
-        
-        if (ioerror.NE.0)  then
-            Q = 0.5
+            QVIR = 0.5
             VXROT =  0.0 
             VZROT = 0.0
             RSPH2 =  0.0
-        end if
         
-        if (ioerror.EQ.0)  then
-            READ (99,*,IOSTAT=ioerror)  SEMI0, ECC0, RATIO,RANGE,
-     &         NSKIP, IDORM
-        end if
-        
-        if (ioerror.NE.0)  then
             SEMI0 = 0.005
             ECC0 =  -1.0
             RATIO =  1.0 
             RANGE = 5.0
             NSKIP =  5
             IDORM = 0
-        end if
-        
-        CLOSE (99, IOSTAT=ioerror)
         
         N = last_index - 1
         amusein = 1

@@ -10,6 +10,9 @@
 
       COMMON/AMUSE/amusein, KSTART_AMUSE, TCOMP_AMUSE, RS0_AMUSE,
      &              NRAND_AMUSE
+      
+      REAL*8 VXROT, VZROT, RSPH6
+      COMMON/AMUSEVAR/VXROT, VZROT, RSPH6
 
       INCLUDE 'mpif.h'
       INTEGER group,rank,ierr,isize,status(MPI_STATUS_SIZE)
