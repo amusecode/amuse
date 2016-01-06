@@ -1185,10 +1185,17 @@ class MpiChannel(AbstractMessageChannel):
     @classmethod
     def ensure_mpi_initialized(cls):
         if not MPI.Is_initialized():
-            if rc.threaded:
-                MPI.Init_thread(MPI.THREAD_MULTIPLE)
-            else:
-                MPI.Init()
+            try:
+                if rc.threaded:
+                    MPI.Init_thread(MPI.THREAD_MULTIPLE)
+                else:
+                    MPI.Init()
+            except AttributeError:
+                if rc.threads:
+                    MPI.Init_thread(MPI.THREAD_MULTIPLE)
+                else:
+                    MPI.Init()
+    
         cls.register_finalize_code()
 
     @classmethod
