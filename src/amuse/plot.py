@@ -172,6 +172,14 @@ def scatter(x, y, **kwargs):
     native_plot.ylabel(UnitlessArgs.y_label())
     return result
 
+def fill_between(x, y1, y2, **kwargs):
+    x, y1 = UnitlessArgs.strip(x,y1)
+    y2 = UnitlessArgs.value_in_y_unit(y2)
+    result = native_plot.fill_between(x, y1, y2, **kwargs)
+    native_plot.xlabel(UnitlessArgs.x_label())
+    native_plot.ylabel(UnitlessArgs.y_label())
+    return result
+
 def hist(x, **kwargs):
     args = UnitlessArgs.strip(x)
     result = native_plot.hist(args[0], **kwargs)
@@ -234,12 +242,20 @@ def ylim(*args, **kwargs):
 
     native_plot.ylim(*args, **kwargs)
 
+def axvline(x, **kwargs):
+    x_number = UnitlessArgs.value_in_x_unit(x)
+    return native_plot.axvline(x_number, **kwargs)
+
+def axhline(y, **kwargs):
+    y_number = UnitlessArgs.value_in_y_unit(y)
+    return native_plot.axhline(y_number, **kwargs)
+
 def circle_with_radius(x, y, radius, **kwargs):
     x, y =  UnitlessArgs.strip(x, y)[:2]
     radius = UnitlessArgs.value_in_x_unit(radius)
 
     circle = native_plot.Circle((x, y), radius, **kwargs)
-    native_plot.gca().add_artist(circle)
+    return native_plot.gca().add_artist(circle)
 
 def fix_xyz_axes(X, Y, Z):
     if not (X.shape == Z.shape and Y.shape == Z.shape):
@@ -249,8 +265,8 @@ def fix_xyz_axes(X, Y, Z):
 def log_norm(Z, vmin, vmax):
     # for log scale, 0 is considered a missing value
     masked_Z = numpy.ma.masked_equal(Z, 0.0, copy=False)
-    vmin = UnitlessArgs.value_in_z_unit(vmin or masked_Z.min())
-    vmax = UnitlessArgs.value_in_z_unit(vmax or masked_Z.max())
+    vmin = UnitlessArgs.value_in_z_unit(vmin) if vmin else masked_Z.min()
+    vmax = UnitlessArgs.value_in_z_unit(vmax) if vmax else masked_Z.max()
 
     from matplotlib.colors import LogNorm
     return masked_Z, LogNorm(vmin=vmin, vmax=vmax)
