@@ -1,0 +1,17 @@
+aduaderdiep /data1/vanelteren/env/bin/python
+bakkerskil /usr/bin/python
+blekekil /data1/vanelteren/env/bin/python
+buurserbeek /data1/vanelteren/env/bin/python
+dedemsvaart /data1/vanelteren/env/bin/python
+dodder /data1/vanelteren/env/bin/python
+kiekpoel /usr/bin/python
+negenoord /data1/vanelteren/env/bin/python
+oolderplas /usr/bin/python
+polderveld /usr/bin/python
+schenk /data1/vanelteren/env/bin/python
+slufter /usr/bin/python
+spaarne /data1/vanelteren/env/bin/python
+wantij /data1/vanelteren/env/bin/python
+zandkreek /usr/bin/python
+zoom /data1/vanelteren/env/bin/python
+zuidplas /usr/bin/python

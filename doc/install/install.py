@@ -7,8 +7,11 @@ import subprocess
 import shutil
 
 import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
-
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except:
+    pass
+    
 IS_ON_OSX = sys.platform == 'darwin'
 PYTHON    = sys.executable
  
@@ -404,6 +407,15 @@ class InstallPrerequisites(object):
             if skip and name in skip:
                 continue
             print name, " - dowloaded from", url_prefix
+            
+    def list_download_urls(self, names, skip):
+        for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
+            if skip and name in skip:
+                continue
+            app_file = prefix + version + suffix
+            app_dir = prefix + version 
+            url = url_prefix + app_file
+            print url 
                 
     def unpack_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
@@ -610,11 +622,15 @@ def install(names, skip):
     
 def listpackages(names, skip):
     INSTALL.list_apps(names, skip)
+    
+def list_download_urls(names, skip):
+    INSTALL.list_download_urls(names, skip)
 
 _commands = {
     'download' : download,
     'install' : install,
     'list' : listpackages,
+    'url' : list_download_urls,
 }
 
 if __name__ == '__main__':
