@@ -1185,13 +1185,15 @@ class MpiChannel(AbstractMessageChannel):
     @classmethod
     def ensure_mpi_initialized(cls):
         if not MPI.Is_initialized():
-            if self.is_threaded():
+            if cls.is_threaded():
                 MPI.Init_thread(MPI.THREAD_MULTIPLE)
             else:
                 MPI.Init()
         cls.register_finalize_code()
 
-    def is_threaded(self):
+    @classmethod
+    def is_threaded(cls):
+        #We want this for backwards compatibility with mpi4py versions < 2.0.0
         try:
             return rc.threaded
         except AttributeError:
