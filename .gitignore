@@ -193,6 +193,7 @@ src/amuse/community/kepler/worker_code.cc
 src/amuse/community/kepler_orbiters/interface.h
 src/amuse/community/kepler_orbiters/kepler_worker
 src/amuse/community/kepler_orbiters/worker_code.cc
+src/amuse/community/kepler_orbiters/keplerorbiters_worker
 src/amuse/community/mameclot/mameclot_worker
 src/amuse/community/mameclot/src/mameclot
 src/amuse/community/mercury/mercury_worker
