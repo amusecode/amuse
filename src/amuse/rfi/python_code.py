@@ -159,7 +159,6 @@ class PythonImplementation(object):
         units = [False] * len(specification.output_parameters)
         if specification.must_handle_array:
             keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification, input_units)
-            print keyword_arguments
             result = method(**keyword_arguments)
             self.fill_output_message(output_message, None, result, keyword_arguments, specification, units)
         else:
@@ -180,6 +179,7 @@ class PythonImplementation(object):
         if specification.has_units:
             output_message.encoded_units = self.convert_output_units_to_floats(units)
     
+
 
     def new_keyword_arguments_from_message(self, input_message, index, specification, units = []):
         keyword_arguments = OrderedDictionary()
