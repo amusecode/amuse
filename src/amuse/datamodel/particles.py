@@ -252,6 +252,9 @@ class AbstractParticleSet(AbstractSet):
         attributes = sorted(self.get_attribute_names_defined_in_store())
         if attributes_to_show:
             attributes = [x for x in attributes if x in attributes_to_show]
+        
+        if len(self) == 0:
+            return self.empty_particles_set_string(attributes)
 
         format_float = '{0: >11.3e}'.format
         format_str20 = '{0: >20}'.format
@@ -328,6 +331,7 @@ class AbstractParticleSet(AbstractSet):
 
         lines = map(lambda  x : '  '.join(x), rows)
         return '\n'.join(lines)
+
 
     def _get_particle(self, key):
         if self.has_key_in_store(key):
@@ -1048,6 +1052,27 @@ class AbstractParticleSet(AbstractSet):
         return self.__getitem__(random.sample(xrange(len(self)), number_of_particles))
 
 
+    def empty_particles_set_string(self, attributes = ()):
+        result = 'empty particles set ('+self.__class__.__name__+')'
+        if len(attributes) > 0:
+            sorted_attributes = sorted(attributes)
+            sorted_attributes.insert(0, 'key')
+            header = 'attributes:'
+            result += '\n' + header
+            for x in self.divide_attributes(sorted_attributes):
+                result += '\n'
+                result += ' ' * len(header)
+                result += ','.join(x)
+        return result
+
+    def divide_attributes(self, attributes = (), n = 3):
+        y = []
+        for x in attributes:
+            y.append(x)
+            if len(y) == n:
+                yield y
+                y = []
+            
 class Particles(AbstractParticleSet):
     """
     A set of particles. Attributes and values are stored in
@@ -3406,7 +3431,7 @@ class Particle(object):
         output += ', set=<{0}>'.format(id(self.particles_set))
         
         for name, value in self.particles_set._values_of_particle(self._set_index):
-            output += ', '
+            output += '\n    , '
             output += name
             output += '='
             if isinstance(value, Particle):
@@ -3421,6 +3446,7 @@ class Particle(object):
                 output += str(value)
         output += ')'
         return output
+
 
 
     def __dir__(self):
