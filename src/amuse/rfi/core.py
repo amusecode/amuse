@@ -1057,7 +1057,7 @@ class CodeFunctionWithUnits(CodeFunction):
             dtype_to_result , output_encoded_units = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array, has_units = True)
         except Exception, ex:
             CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
-            exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
+            raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
         output_units = self.convert_floats_to_units(output_encoded_units)
         result = self.converted_results(dtype_to_result, handle_as_array, output_units)
