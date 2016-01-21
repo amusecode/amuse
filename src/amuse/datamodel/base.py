@@ -1528,7 +1528,7 @@ class LinkedArray(numpy.ndarray):
         
         return result.reshape(self.shape)
     
-    def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None, filer_attributes = lambda particle_set, x : True):
+    def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None, filter_attributes = lambda particle_set, x : True):
         from amuse.datamodel.particles import Particle
         from amuse.datamodel.grids import GridPoint
         
@@ -1540,7 +1540,7 @@ class LinkedArray(numpy.ndarray):
         for index in numpy.ndindex(*self.shape):
             if len(index) == 1:
                 index = index[0]
-            x = self[index]            
+            x = self[index]                
             if x is None:
                 result[index] = None
             elif isinstance(x, Particle):
@@ -1557,7 +1557,7 @@ class LinkedArray(numpy.ndarray):
                     result[index] = x
             elif isinstance(x, AbstractSet):
                 if must_copy:
-                    copy_of_container = x.copy(memento, keep_structure = True, filer_attributes = filer_attributes)
+                    copy_of_container = x.copy(memento, keep_structure = True, filter_attributes = filter_attributes)
                     result[index] = copy_of_container
                 else:
                     if from_container is None or x is from_container:
@@ -1569,6 +1569,7 @@ class LinkedArray(numpy.ndarray):
                 
         return result
         
+
     def as_set(self):
         from amuse.datamodel.particles import Particle
         from amuse.datamodel.particles import ParticlesMaskedSubset

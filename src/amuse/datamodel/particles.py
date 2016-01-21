@@ -770,9 +770,12 @@ class AbstractParticleSet(AbstractSet):
             attributes = self.get_attribute_names_defined_in_store()
             values = self.get_values_in_store(self.get_indices_of_keys(added_keys), attributes)
             converted = []
+            memento = {}
+
             for x in values:
                 if isinstance(x, LinkedArray):
-                    converted.append(x.copy_with_link_transfer(self._original_set(), other_particles))
+                    converted.append(x.copy_with_link_transfer(self._original_set(), other_particles, True, memento))
+                    #converted.append(x.copy(memento, False))
                 else:
                     converted.append(x)
             try:
@@ -789,6 +792,7 @@ class AbstractParticleSet(AbstractSet):
         removed_keys = list(removed_keys)
         if removed_keys:
             other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
+
 
     def compressed(self):
         return self
