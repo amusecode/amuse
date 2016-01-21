@@ -217,6 +217,8 @@ class CalculateFieldForParticles(object):
             self.particles = particles
         if gravity_constant is None:
             gravity_constant = G
+        elif not G is None:
+            raise Exception("both the parameter 'gravity_constant'({0}) and the parameter 'G'({1}) are given, please specify only one!".format(gravity_constant, G))
             
         if gravity_constant is None:
             if len(particles) and hasattr(particles, 'mass'):
@@ -288,6 +290,7 @@ class CalculateFieldForParticles(object):
             result_ay.append(ay)
             result_az.append(az)
         return result_ax, result_ay, result_az
+
 
 
 
