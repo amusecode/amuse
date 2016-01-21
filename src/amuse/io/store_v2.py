@@ -68,16 +68,22 @@ class HDF5Attribute(object):
     def new_attribute(cls, name, shape, input, group):
         if is_quantity(input):
             dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
-            return HDF5VectorQuantityAttribute(name, dataset, input.unit) 
+            return HDF5VectorQuantityAttribute(name, dataset, input.unit)             
         elif hasattr(input, 'as_set'):
             subgroup = group.create_group(name)
             group.create_dataset('keys', shape=shape, dtype=input.key.dtype)
             group.create_dataset('masked', shape=shape, dtype=numpy.bool)
-            return HDF5LinkedAttribute(name, subgroup) 
+            return HDF5LinkedAttribute(name, subgroup)             
         else:
             dtype = numpy.asanyarray(input).dtype
-            dataset = group.create_dataset(name, shape=shape, dtype=dtype)
-            return HDF5UnitlessAttribute(name, dataset)
+            if dtype.kind == 'U':
+                new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
+                dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+                return HDF5UnicodeAttribute(name, dataset)
+            else:
+                dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+                return HDF5UnitlessAttribute(name, dataset)
+
 
     @classmethod
     def load_attribute(cls, name, dataset, loader):
@@ -86,9 +92,12 @@ class HDF5Attribute(object):
             return HDF5UnitlessAttribute(name, dataset)
         elif units_string == "link":
             return HDF5LinkedAttribute(name, dataset, loader)
+        elif units_string == "UNICODE":
+            return HDF5UnicodeAttribute(name, dataset)
         else:
             unit = eval(units_string, core.__dict__)
             return HDF5VectorQuantityAttribute(name, dataset, unit) 
+
 
     def get_value(self, index):
         pass
@@ -761,10 +770,16 @@ class StoreHDF(object):
             elif isinstance(quantity, LinkedArray):
                 self.store_linked_array(attribute, attributes_group, quantity, group, links)
             else:
-                dataset = attributes_group.create_dataset(attribute, data=quantity)
-                dataset.attrs["units"] = "none"
+                dtype = numpy.asanyarray(quantity).dtype
+                if dtype.kind == 'U':
+                    dataset = attributes_group.create_dataset(attribute, data=numpy.char.encode(quantity,  'UTF-32BE'))
+                    dataset.attrs["units"] = "UNICODE"
+                else:
+                    dataset = attributes_group.create_dataset(attribute, data=quantity)
+                    dataset.attrs["units"] = "none"
                 
     
+
     def store_linked_array(self, attribute, attributes_group, quantity, group, links):
         subgroup = attributes_group.create_group(attribute)
         shape = quantity.shape
@@ -1041,3 +1056,27 @@ class StoreHDF(object):
             self.hdf5file.flush()
             self.hdf5file.close()
             self.hdf5file = None
+class HDF5UnicodeAttribute(HDF5UnitlessAttribute):
+    
+    def __init__(self, name, dataset):
+        HDF5UnitlessAttribute.__init__(self, name, dataset)
+        
+    def get_values(self, indices):
+        if indices is None:
+            encoded = self.dataset[:]
+        elif len(self.get_shape()) > 1:
+            encoded = self.dataset[:][indices]
+        else:
+            encoded = self.dataset[:][indices]
+        return numpy.char.decode(encoded, 'UTF-32BE')
+
+
+    def set_values(self, indices, values):
+        self.dataset[indices] = numpy.char.encode(values, 'UTF-32LE')
+    
+
+    def get_value(self, index):
+        return self.dataset[index].decode('UTF-32BE')
+
+
+

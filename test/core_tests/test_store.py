@@ -732,6 +732,10 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
         io.write_set_to_file(particles,output_file, format='amuse', version = self.store_version())
         
+        output = io.read_set_from_file(output_file, format='amuse')
+        self.assertEquals(output[0].attribute2, u"unicode")
+        
+
 
 
 class TestStoreHDFV1(_AbstractTestStoreHDF):
