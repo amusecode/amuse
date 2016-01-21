@@ -248,7 +248,8 @@ class TestParticles(amusetest.TestCase):
         particles[1].child = particles2[1]
         outputstring = str(particles[0])
         print outputstring
-        self.assertEquals(outputstring.strip(), "Particle(10, set=<{1}>, child=Particle(12, set=<{0}>), mass=1.0 kg)".format(id(particles2), id(particles)).strip())
+        self.assertEquals(outputstring.strip(), "Particle(10, set=<{1}>\n    , child=Particle(12, set=<{0}>)\n    , mass=1.0 kg)".format(id(particles2), id(particles)).strip())
+
 
 
 
