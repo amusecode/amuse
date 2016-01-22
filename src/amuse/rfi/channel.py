@@ -1106,7 +1106,9 @@ def is_mpd_running():
     """
     if not MpiChannel.is_supported():
         return True
-        
+    
+    MpiChannel.ensure_mpi_initialized()
+    
     name_of_the_vendor, version = MPI.get_vendor()
     if name_of_the_vendor == 'MPICH2':
         must_check_mpd = True
@@ -1264,7 +1266,10 @@ class MpiChannel(AbstractMessageChannel):
     
     @classmethod
     def is_supported(cls):
-        return not MPI is None
+        try:
+            return True
+        except ImportError:
+            return False
     
     @option(type="boolean", sections=("channel",))
     def can_redirect_output(self):
