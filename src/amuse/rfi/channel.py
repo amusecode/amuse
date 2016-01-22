@@ -18,10 +18,13 @@ import shlex
 
 logger = logging.getLogger(__name__)
 
-try:
-    from mpi4py import MPI
-except ImportError:
-    MPI = None
+#
+# we want to use the automatic initialization and finalization
+# of the MPI library, but sometime MPI should not be imported
+# when importing the channel
+# so actual import is in function ensure_mpi_initialized
+#
+MPI = None
     
 from subprocess import Popen, PIPE
 
@@ -1182,7 +1185,12 @@ class MpiChannel(AbstractMessageChannel):
 
     @classmethod
     def ensure_mpi_initialized(cls):
-        cls.register_finalize_code()
+        global MPI
+        
+        if MPI is None:
+            import mpi4py.MPI
+            MPI = mpi4py.MPI
+            cls.register_finalize_code()
 
     @classmethod
     def is_threaded(cls):
