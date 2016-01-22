@@ -19,8 +19,6 @@ import shlex
 logger = logging.getLogger(__name__)
 
 try:
-    from mpi4py import rc
-    rc.initialize = False
     from mpi4py import MPI
 except ImportError:
     MPI = None
@@ -1184,11 +1182,6 @@ class MpiChannel(AbstractMessageChannel):
 
     @classmethod
     def ensure_mpi_initialized(cls):
-        if not MPI.Is_initialized():
-            if cls.is_threaded():
-                MPI.Init_thread(MPI.THREAD_MULTIPLE)
-            else:
-                MPI.Init()
         cls.register_finalize_code()
 
     @classmethod
@@ -1215,7 +1208,6 @@ class MpiChannel(AbstractMessageChannel):
             for x in cls._intercomms_to_disconnect:
                 x.Disconnect()
                 
-            MPI.Finalize()
         except MPI.Exception as ex:
             return
             
