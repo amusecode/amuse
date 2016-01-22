@@ -9,6 +9,9 @@ from amuse.ext import stellar_wind
 from amuse.support.console import set_preferred_units
 
 
+from amuse.support.console import set_printing_strategy
+
+
 class TestStellarWind(amusetest.TestCase):
     def setUp(self):
         set_preferred_units(units.MSun, units.RSun, units.yr, units.kms,
@@ -56,6 +59,8 @@ class TestStellarWind(amusetest.TestCase):
         return stars
 
 
+    def tearDown(self):
+        set_printing_strategy('default')
 class TestStarsWithMassLoss(TestStellarWind):
     def test_add_particles(self):
         star_particles = self.create_star(2)

@@ -5,7 +5,9 @@
 #include <map>
 #include "Bs_integrator.h"
 #include "Clock.h"
+#include <string.h>
 
+#define MAX_STRING_LEN 1024
 using namespace mpfr;
 using namespace std;
 
@@ -15,6 +17,9 @@ using namespace std;
 int numBits = 64;  
 int Lw = numBits/4;
 static double begin_time = 0;
+
+static char string_output[MAX_STRING_LEN];
+
 ofstream odata;
 
 ////////////////////////////////////////////////////////
@@ -105,7 +110,9 @@ int set_bs_tolerance_string(char *bs_tolerance) {
     return 0;
 }
 int get_bs_tolerance_string(char **bs_tolerance) {
-    *bs_tolerance = (char*) mpreal_globals::epsilon.toString().c_str();
+    strncpy(string_output, (char*) mpreal_globals::epsilon.toString().c_str(), MAX_STRING_LEN - 1);
+    string_output[MAX_STRING_LEN - 1] = 0;
+    *bs_tolerance = string_output;
     return 0;
 }
 int set_bs_tolerance_float64(double bs_tolerance) {

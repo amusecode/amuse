@@ -199,3 +199,5 @@ class TestPlot(amusetest.TestCase):
 
     def skip(self):
         print "Matplotlib not installed. Skipping test."
+    def tearDown(self):
+        set_printing_strategy('default')
