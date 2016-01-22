@@ -8,7 +8,7 @@ if __name__ == '__main__':
     if use_sockets:
         portnumber = int(sys.argv[1])
         host = sys.argv[2]
-        usempi= sys.argv[3]
+        usempi= sys.argv[3] == "true"
     else:
         usempi = True
         host = None
@@ -22,6 +22,8 @@ if __name__ == '__main__':
     
     if usempi:
         from mpi4py import MPI
+        from amuse.rfi.channel import MpiChannel
+        MpiChannel.ensure_mpi_initialized()
 
     from amuse.rfi import core
 

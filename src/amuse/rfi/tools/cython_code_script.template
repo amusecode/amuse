@@ -4,76 +4,41 @@ import os
 
 
 if __name__ == '__main__':
-
-    if len(sys.argv) > 1:
-
+    use_sockets = len(sys.argv) > 1
+    if use_sockets:
         portnumber = int(sys.argv[1])
         host = sys.argv[2]
-        usempi= sys.argv[3]
-
-
-        
-        syspath = ({syspath})
-        existing_syspath = set(sys.path)
-        for x in reversed(syspath):
-            if not x in existing_syspath:
-                sys.path.insert(0,x)
-        
-        
-        if usempi=="true":
-            from mpi4py import rc
-            rc.initialize = False
-            from mpi4py import MPI
-            MPI.Init()
-
-        try:
-            syspath = ({syspath})
-            existing_syspath = set(sys.path)
-            for x in reversed(syspath):
-                if not x in existing_syspath:
-                      sys.path.append(x)
-    
-            from amuse.rfi import core
-    
-            import {worker_module}
-            from {interface_module} import {interface}
-    
-            instance = {worker_module}
-    
-            from amuse.rfi.python_code import CythonImplementation
-    
-            x = CythonImplementation(instance, {interface})
-    
-            x.start_socket(portnumber, host)
-        finally:  
-            if usempi:
-                MPI.Finalize()
-
+        usempi= sys.argv[3] == "true" or sys.argv[3] == "1"
     else:
-
-
-        syspath = ({syspath})
-        existing_syspath = set(sys.path)
-        for x in syspath:
-            if not x in existing_syspath:
-                sys.path.insert(0,x)
+        usempi = True
+        host = None
+        portnumber = -1
         
-        from mpi4py import rc
-        rc.initialize = False
-        from mpi4py import MPI
-        
-        MPI.Init()
-        try:
-            from amuse.rfi import core
+    syspath = ({syspath})
+    existing_syspath = set(sys.path)
+    for x in syspath:
+        if not x in existing_syspath:
+            sys.path.insert(0,x)
 
-            import {worker_module}
-            from {interface_module} import {interface}
     
-            instance = {worker_module}
+    if usempi:
+        from mpi4py import MPI
+        from amuse.rfi.channel import MpiChannel
+        MpiChannel.ensure_mpi_initialized()
+        
+    from amuse.rfi import core
 
-            from amuse.rfi.python_code import CythonImplementation
+    import {worker_module}
+    from {interface_module} import {interface}
 
-            x = CythonImplementation(instance, {interface})
-            x.start()
-        finally:
-            MPI.Finalize()
+    instance = {worker_module}
+
+    from amuse.rfi.python_code import CythonImplementation
+    
+    x = CythonImplementation(instance, {interface})
+    
+    if use_sockets:
+        x.start_socket(portnumber, host)
+    else:
+        x.start()
+    print "done!"
