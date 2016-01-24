@@ -283,6 +283,7 @@ src/amuse/community/sse/src/sse
 src/amuse/community/sse/sse_worker
 src/amuse/community/sse/worker_code.f90
 src/amuse/community/twobody/twobody_worker
+src/amuse/community/tupan/tupan_worker
 src/amuse/community/krome/latest_tested.tar.gz
 src/amuse/community/krome/src/krome/
 src/amuse/community/krome/krome_worker
@@ -321,6 +322,8 @@ doc/amuse_examples
 /amuserc
 /nbody6xx.input
 /test_results
+autom4te.cache/
+
 
 #files generated during documentation build
 examples/simple/*.data
@@ -337,6 +340,17 @@ test.csv
 test_unit.dyn
 test9.pickle
 test10.pickle
+data/gadget2/output/cpu.txt
+data/gadget2/output/energy.txt
+data/gadget2/output/info.txt
+data/gadget2/output/timings.txt
+data/adaptb/output/file.log
+data/adaptb/output/file.out
+examples/syllabus/*.h5
+SeBa.data
+binev.data
+daltons.txt
+
 
 
 
