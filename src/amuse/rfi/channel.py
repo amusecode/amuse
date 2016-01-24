@@ -458,7 +458,7 @@ class MPIMessage(AbstractMessage):
     def receive_content(self, comm, header):
         # 4 flags as 8bit booleans in 1st 4 bytes of header
         # endiannes(not supported by MPI channel), error, unused, unused 
-    
+
         flags = header.view(dtype='bool8')
         self.big_endian = flags[0]
         self.error = flags[1]
@@ -482,8 +482,9 @@ class MPIMessage(AbstractMessage):
         self.booleans = self.receive_booleans(comm, number_of_booleans)
         self.strings = self.receive_strings(comm, number_of_strings)
         
-        self.encoded_units = self.receive_floats(comm, number_of_units)
+        self.encoded_units = self.receive_doubles(comm, number_of_units)
         
+
     def nonblocking_receive(self, comm):
         header = numpy.zeros(11, dtype='i')
         request = self.mpi_nonblocking_receive(comm, [header, MPI.INT])
@@ -591,8 +592,9 @@ class MPIMessage(AbstractMessage):
         self.send_doubles(comm, self.doubles)
         self.send_booleans(comm, self.booleans)
         self.send_strings(comm, self.strings)
-        self.send_floats(comm, self.encoded_units)
+        self.send_doubles(comm, self.encoded_units)
         
+
     def send_ints(self, comm, array):
         if len(array) > 0:
             sendbuffer = numpy.array(array, dtype='int32')
