@@ -814,6 +814,7 @@ class CodeInterface(OptionalAttributes):
     def channel_type(self):
         return 'mpi'
     
+
     @option(type="boolean", sections=("channel",))
     def initialize_mpi(self):
         """Is MPI initialized in the code or not. Defaults to True if MPI is available"""

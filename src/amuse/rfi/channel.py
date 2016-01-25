@@ -462,6 +462,7 @@ class MPIMessage(AbstractMessage):
         flags = header.view(dtype='bool8')
         self.big_endian = flags[0]
         self.error = flags[1]
+        self.is_continued = flags[2]
 
         self.call_id = header[1]
         self.function_id = header[2]
@@ -678,7 +679,7 @@ class ServerSideMPIMessage(MPIMessage):
 
     def receive_header(self, comm):
         header = numpy.zeros(11, dtype='i')
-        request = comm.Irecv([header, MPI.INT], source=0, tag=999)
+        request = self.mpi_nonblocking_receive(comm, [header, MPI.INT])
         if self.polling_interval > 0:
             is_finished = request.Test()
             while not is_finished:
@@ -690,6 +691,7 @@ class ServerSideMPIMessage(MPIMessage):
         return header
         
     
+
 class ClientSideMPIMessage(MPIMessage):
     
     def mpi_receive(self, comm, array):
@@ -1268,11 +1270,16 @@ class MpiChannel(AbstractMessageChannel):
     
     @classmethod
     def is_supported(cls):
+        if hasattr(config, 'mpi') and hasattr(config.mpi, 'is_enabled'):
+            if not config.mpi.is_enabled:
+                return False
         try:
+            from mpi4py import MPI
             return True
         except ImportError:
             return False
     
+
     @option(type="boolean", sections=("channel",))
     def can_redirect_output(self):
         name_of_the_vendor, version = MPI.get_vendor()
@@ -1998,13 +2005,13 @@ class SocketChannel(AbstractMessageChannel):
         server_socket.listen(1)
         
         logger.debug("starting socket worker process, listening for worker connection on %s", server_socket.getsockname())
-    
+
         #this option set by CodeInterface
         logger.debug("mpi_enabled: %s", str(self.initialize_mpi))
         
         # set arguments to name of the worker, and port number we listen on 
-    
-    
+
+
         self.stdout = None
         self.stderr = None
         
@@ -2066,6 +2073,7 @@ class SocketChannel(AbstractMessageChannel):
         
         # logger.info("worker %s initialized", self.name_of_the_worker)
         
+
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
         """Name of the debugger to use when starting the code"""
