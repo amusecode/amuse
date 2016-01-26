@@ -11,8 +11,8 @@ mol = core.base_unit('amount of substance', 'mole', 'mol', system)
 cd = core.base_unit('luminous intensity', 'candela', 'cd', system)
 
 no_system = core.no_system
-no_unit = core.none_unit('no unit','none')
 none = core.none_unit('none','none')
+no_unit = none
 
 named = core.named_unit
 
