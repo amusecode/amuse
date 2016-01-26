@@ -1479,7 +1479,7 @@ CONTAINS
         
 
         print*, 'in setup_mother_grid'
-
+        nullify(MdMg)
         ! this is the mother grid
         grid%motherP = 0
         setup_mother_grid = -1
@@ -2187,7 +2187,9 @@ CONTAINS
 
 
 
-           if(associated(MdMg)) deallocate(MdMg)
+           if(associated(MdMg)) then
+                deallocate(MdMg)
+           end if
 
            if (taskid == 0) then
 

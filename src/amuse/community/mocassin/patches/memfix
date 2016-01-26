@@ -1,0 +1,13 @@
+Index: mocassin/src/mocassin.2.02.70/source/grid_mod.f90
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.70/source/grid_mod.f90	2015-10-15 15:37:16.755902637 +0200
++++ mocassin/src/mocassin.2.02.70/source/grid_mod.f90	2016-01-26 15:19:37.051774315 +0100
+@@ -954,7 +954,7 @@
+         character(len=40)              :: keyword      ! character string readers
+ 
+         print*, 'in setMotherGrid'
+-
++        nullify(MdMg)
+         ! this is the mother grid
+         grid%motherP = 0
+ 
