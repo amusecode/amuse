@@ -814,6 +814,7 @@ class CodeInterface(OptionalAttributes):
     def channel_type(self):
         return 'mpi'
     
+
     @option(type="boolean", sections=("channel",))
     def initialize_mpi(self):
         """Is MPI initialized in the code or not. Defaults to True if MPI is available"""
@@ -1206,6 +1207,7 @@ class CodeFunctionWithUnits(CodeFunction):
         else:
             return unit.to_array_of_floats()
         
+
     def convert_input_units_to_floats(self, units):
         result = numpy.zeros(len(units) * 9, dtype = numpy.float64)
         for index, unit in enumerate(units):
@@ -1217,11 +1219,12 @@ class CodeFunctionWithUnits(CodeFunction):
         result = []
         for index in range(len(floats) // 9):
             offset = index*9
-            unit_floats = floats[offset:offset+10]
+            unit_floats = floats[offset:offset+9]
             unit = self.convert_float_to_unit(unit_floats)
             result.append(unit)
         return result
         
+
     def convert_float_to_unit(self, floats):
         from amuse.units import core
         from amuse.units import units
