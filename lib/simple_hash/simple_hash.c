@@ -33,6 +33,7 @@ size_t upper_power_of_two(size_t x)
 {
    size_t y=1;
    while(y<x)y*=2;
+   return y;
 }
 
 // from code.google.com/p/smhasher/wiki/MurmurHash3
@@ -60,7 +61,7 @@ uint64_t integerHash64(uint64_t k)
 int init_hash(struct simple_hash *hash, size_t initialSize)
 {
   hash->m_arraySize = upper_power_of_two(4*initialSize/3+1);
-  if(hash->m_arraySize & (hash->m_arraySize - 1) != 0) return -1;   // array must be a power of 2
+  if( hash->m_arraySize==0 || (hash->m_arraySize & (hash->m_arraySize - 1)) != 0) return -1;   // array must be a power of 2
   hash->m_cells = (struct cell*) malloc(hash->m_arraySize*sizeof(struct cell));
   if(hash->m_cells==NULL) return -2;
   memset(hash->m_cells, 0, sizeof(struct cell) * hash->m_arraySize);
