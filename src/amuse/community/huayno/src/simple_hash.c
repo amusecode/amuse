@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 //----------------------------------------------
 //  HashTable
@@ -117,10 +118,12 @@ int repopulate_hash(struct simple_hash *hash, size_t desiredSize)
     // Get start/end pointers of old array
     struct cell *oldCells = hash->m_cells;
     struct cell *end = hash->m_cells + hash->m_arraySize;
-
     // Allocate new array
+    struct cell *new = (struct cell*) malloc(desiredSize*sizeof(struct cell));
+    if(new==NULL) return -3;
+    
     hash->m_arraySize = desiredSize;
-    hash->m_cells = (struct cell*) malloc(hash->m_arraySize*sizeof(struct cell));
+    hash->m_cells = new;
     memset(hash->m_cells, 0, sizeof(struct cell) * hash->m_arraySize);
 
     // Iterate through old array
@@ -168,7 +171,8 @@ struct cell* hash_cell_insert(struct simple_hash *hash, size_t key)
                     if ((hash->m_population + 1) * 4 >= hash->m_arraySize * 3)
                     {
                         // Time to resize
-                        repopulate_hash(hash,hash->m_arraySize * 2);
+                        int err = repopulate_hash(hash,hash->m_arraySize * 2);
+                        if(err != 0) return NULL;
                         break;
                     }
                     hash->m_population++;
@@ -187,7 +191,8 @@ struct cell* hash_cell_insert(struct simple_hash *hash, size_t key)
             if (++(hash->m_population) * 4 >= hash->m_arraySize * 3)
 			      {
 				// Even though we didn't use a regular slot, let's keep the sizing rules consistent
-                repopulate_hash(hash,hash->m_arraySize * 2);
+                int err = repopulate_hash(hash,hash->m_arraySize * 2);
+                if(err != 0) return NULL;
             }
         }
         return &(hash->m_zeroCell);
@@ -248,7 +253,8 @@ int hash_delete(struct simple_hash *hash, size_t key)
 {
   struct cell *cell_ = hash_cell_lookup(hash,key);
   if (cell_) {
-    hash_cell_delete(hash,cell_);
+    int ret = hash_cell_delete(hash,cell_);
+    if(ret != 0) return -2;
     if(hash->m_population<hash->m_arraySize/8) return compact_hash(hash);
     return 0;
   } else 
@@ -275,4 +281,44 @@ int clear_hash(struct simple_hash *hash)
     hash->m_zeroUsed = false;
     hash->m_zeroCell.value = 0;
     return 0;
+}
+
+int hash_lookups(struct simple_hash *hash,size_t n, size_t *key, size_t *value, int * errors)
+{
+  int err = 0;
+  for(size_t i=0;i<n;i++) {
+    errors[i]=hash_lookup(hash, *(key+i), value+i); 
+    if(errors[i]) {err = errors[i];}
+  }
+  return err;
+}
+int hash_inserts(struct simple_hash *hash,size_t n, size_t *key, size_t *value)
+{
+  int err;
+  for(size_t i=0;i<n;i++) {
+    err=hash_insert(hash, *(key+i), *(value+i)); 
+    if(err!=0) break;
+  }
+  return err;
+  
+}
+int hash_updates(struct simple_hash *hash,size_t n, size_t *key, size_t *value)
+{
+  int err;
+  for(size_t i=0;i<n;i++) {
+    err=hash_update(hash, *(key+i), *(value+i)); 
+    if(err!=0) break;
+  }
+  return err;
+  
+}
+int hash_deletes(struct simple_hash *hash,size_t n, size_t *key)
+{
+  int err=0, errout=0;
+  for(size_t i=0;i<n;i++) {
+    err=hash_delete(hash, *(key+i)); 
+    if(err<errout) errout=err;
+  }
+  return errout;
+  
 }

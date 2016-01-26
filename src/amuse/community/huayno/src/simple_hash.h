@@ -30,4 +30,9 @@ int hash_insert(struct simple_hash *hash,size_t key, size_t value);
 int hash_update(struct simple_hash *hash,size_t key, size_t value);
 int hash_delete(struct simple_hash *hash,size_t key);
 
+int hash_lookups(struct simple_hash *hash,size_t n, size_t *key, size_t *value, int * errors);
+int hash_inserts(struct simple_hash *hash,size_t n, size_t *key, size_t *value);
+int hash_updates(struct simple_hash *hash,size_t n, size_t *key, size_t *value);
+int hash_deletes(struct simple_hash *hash,size_t n, size_t *key);
+
 #endif 
