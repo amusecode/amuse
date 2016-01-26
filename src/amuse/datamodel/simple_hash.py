@@ -65,7 +65,9 @@ class SimpleHash(object):
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
 
-        self._lib.hash_inserts(ctypes.byref(self._map),N,ckeys,cvalues)
+        err=self._lib.hash_inserts(ctypes.byref(self._map),N,ckeys,cvalues)
+        if err!=0:
+            raise Exception("simple hash insert error")
 
     def reindex(self, keys,values=None):
 
