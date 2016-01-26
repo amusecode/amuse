@@ -25,9 +25,11 @@ struct LOOKUPSYMBOL(simple_,) lookup;
 
 int initialize_code()
 {
+  int err;
   pcounter=0;
   nmax=NMAX;
-  LOOKUPSYMBOL(init_,)(&lookup, nmax*sizeof(struct particle)/sizeof(int));
+  err=LOOKUPSYMBOL(init_,)(&lookup, nmax*sizeof(struct particle)/sizeof(int));
+  if(err != 0) return err;
   mainsys.n=0;
   mainsys.part=(struct particle*) malloc(nmax*sizeof(struct particle));
   if(mainsys.part == NULL) return -1;

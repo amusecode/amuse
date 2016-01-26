@@ -32,6 +32,7 @@ size_t upper_power_of_two(size_t x)
 {
    size_t y=1;
    while(y<x)y*=2;
+   return y;
 }
 
 // from code.google.com/p/smhasher/wiki/MurmurHash3
@@ -58,8 +59,8 @@ uint64_t integerHash64(uint64_t k)
 
 int init_hash(struct simple_hash *hash, size_t initialSize)
 {
-  hash->m_arraySize = initialSize;
-  if(hash->m_arraySize & (hash->m_arraySize - 1) != 0) return -1;   // array must be a power of 2
+  hash->m_arraySize = upper_power_of_two(4*initialSize/3+1);
+  if( hash->m_arraySize==0 || (hash->m_arraySize & (hash->m_arraySize - 1)) != 0) return -1;   // array must be a power of 2
   hash->m_cells = (struct cell*) malloc(hash->m_arraySize*sizeof(struct cell));
   if(hash->m_cells==NULL) return -2;
   memset(hash->m_cells, 0, sizeof(struct cell) * hash->m_arraySize);
@@ -74,7 +75,8 @@ int init_hash(struct simple_hash *hash, size_t initialSize)
 
 int end_hash(struct simple_hash *hash) 
 {
-  free(hash->m_cells);
+  if(hash->m_cells) free(hash->m_cells);
+  hash->m_cells=NULL;
   return 0;
 }
 
@@ -141,6 +143,7 @@ int repopulate_hash(struct simple_hash *hash, size_t desiredSize)
 
     // Delete old array
     free(oldCells);
+    return 0;
 }
 
 int compact_hash(struct simple_hash *hash)
@@ -197,8 +200,9 @@ int hash_insert(struct simple_hash *hash, size_t key, size_t value)
   if(cell_) {
     cell_->value=value;
     return 0;
-  } else 
+  } else {
     return -1;
+  }
 }
 
 int hash_cell_delete(struct simple_hash *hash, struct cell* cell_)
@@ -245,6 +249,7 @@ int hash_delete(struct simple_hash *hash, size_t key)
   struct cell *cell_ = hash_cell_lookup(hash,key);
   if (cell_) {
     hash_cell_delete(hash,cell_);
+    if(hash->m_population<hash->m_arraySize/8) return compact_hash(hash);
     return 0;
   } else 
     return -1;  
