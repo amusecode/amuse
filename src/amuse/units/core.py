@@ -526,6 +526,7 @@ class no_system(object):
         return cls.ALL[name]
         
 class none_unit(unit):
+    __metaclass__ = MultitonMetaClass
     def __init__(self, name,  symbol):
         self.name = name
         self.symbol = symbol
