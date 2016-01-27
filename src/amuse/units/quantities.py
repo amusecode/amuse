@@ -660,7 +660,7 @@ class VectorQuantity(Quantity):
         >>> print vector
         [1.0, 2.0, 3.0, 4.0] kg
         """
-        append_number = numpy.array(scalar_quantity.value_in(self.unit))
+        append_number = numpy.array(scalar_quantity.value_in(self.unit)) # fix for deg, unitless
         # The following lines make sure that appending vectors works as expected,
         # e.g. ([]|units.m).append([1,2,3]|units.m) -> [[1,2,3]] | units.m
         # e.g. ([[1,2,3]]|units.m).append([4,5,6]|units.m) -> [[1,2,3],[4,5,6]] | units.m

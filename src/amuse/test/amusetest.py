@@ -8,7 +8,6 @@ import inspect
 from amuse.support import exceptions
 from amuse.support import literature
 from amuse.support import options
-from amuse.units.si import no_unit
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import to_quantity
 from amuse.units.quantities import is_quantity
