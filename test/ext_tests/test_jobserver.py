@@ -11,7 +11,7 @@ def example_parallel_jobs(N,Nhosts=1):
     
   jobserver=JobServer(hosts=[gethostname()]*Nhosts)
     
-  for i in range(N):
+  for i in range(1,N+1):
     jobserver.submit_job(new_plummer_model, (i,))
   
   result=dict()
@@ -25,7 +25,7 @@ def example_parallel_jobs2(N,Nhosts=1):
     
   jobserver=JobServer(hosts=[gethostname()]*Nhosts)
     
-  for i in range(N):
+  for i in range(1,N+1):
     jobserver.submit_job(new_plummer_model, (i,))
   
   jobserver.waitall()
