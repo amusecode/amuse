@@ -951,13 +951,13 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
-            "get_inner_radius_of_the_ionised_region",
-            "set_inner_radius_of_the_ionised_region", 
-            "inner_radius_of_the_ionised_region", 
-            "Inner radius of the ionised region", 
-            default_value = 0.0 | units.cm
-        )
+        #~ object.add_method_parameter(
+            #~ "get_inner_radius_of_the_ionised_region",
+            #~ "set_inner_radius_of_the_ionised_region", 
+            #~ "inner_radius_of_the_ionised_region", 
+            #~ "Inner radius of the ionised region", 
+            #~ default_value = 0.0 | units.cm
+        #~ )
     
     
         object.add_method_parameter(
