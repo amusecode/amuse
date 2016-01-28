@@ -86,8 +86,8 @@ class ReboundInterface(CodeInterface,
         value, error = self._get_integrator(code_index)
         for key, index in self.INTEGRATORS.iteritems():
             if value == index:
-                return key
-        return "none"
+                return key, error
+        return "none", error
     
     @legacy_function
     def set_time_step():
@@ -340,6 +340,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
 
     def define_parameters(self, object):
         self.stopping_conditions.define_parameters(object)
+        GravitationalDynamics.define_parameters(self, object)
         
         object.add_method_parameter(
             "get_time_step",

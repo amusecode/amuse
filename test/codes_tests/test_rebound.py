@@ -428,4 +428,31 @@ class TestRebound(TestWithMPI):
         self.assertAlmostRelativeEquals(instance2.particles.position, particles2evolved.position, 10)
         self.assertAlmostRelativeEquals(instance2.particles.velocity, particles2evolved.velocity, 10)
         
-
+    
+    def test8(self):
+        instance = self.new_instance_of_an_optional_code(Rebound)
+        #instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+       
+        particles = datamodel.Particles(10)
+        particles.x = numpy.arange(0,10,1) | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [0,1,0] | nbody_system.speed
+        particles[5].velocity = [0,0,0] | nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles[5].mass = 1 | nbody_system.mass
+        
+        instance.particles.add_particles(particles)
+        self.assertEquals(instance.particles[5].mass, 1 | nbody_system.mass)
+        self.assertEquals(instance.particles[6].mass, 0 | nbody_system.mass)
+        
+        instance.evolve_model(1 | nbody_system.time)
+        self.assertEquals(instance.particles[5].mass, 1 | nbody_system.mass)
+        self.assertEquals(instance.particles[6].mass, 0 | nbody_system.mass)
+        self.assertEquals(instance.particles[5].x, 5 | nbody_system.length)
+        self.assertAlmostRelativeEquals(instance.particles[6].x, 5.5403023 | nbody_system.length, 5)
+        instance.particles.remove_particle(particles[4])
+        self.assertEquals(instance.particles[4].mass, 1 | nbody_system.mass)
+        self.assertEquals(instance.particles[5].mass, 0 | nbody_system.mass)
+        instance.evolve_model(1 | nbody_system.time)
+        self.assertEquals(instance.particles[4].x, 5 | nbody_system.length)

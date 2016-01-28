@@ -27,6 +27,7 @@ extern "C" {
 #include <map>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 #include <stopcond.h>
 
@@ -41,14 +42,22 @@ typedef struct _particle_location {
 typedef struct _code_state {
     reb_simulation * code;
     bool has_removal;
+    bool has_unsorted_massless_particles;
     double time_offset;
     int subset;
-    _code_state(reb_simulation * c):code(c),has_removal(false), time_offset(0), subset(0) {}
-    _code_state(reb_simulation * c, double time_offset, int s):code(c),has_removal(false), time_offset(time_offset),subset(s) {}
+    _code_state(reb_simulation * c):code(c),has_removal(false), has_unsorted_massless_particles(false), time_offset(0), subset(0) {}
+    _code_state(reb_simulation * c, double time_offset, int s):code(c),has_removal(false), has_unsorted_massless_particles(false), time_offset(time_offset),subset(s) {}
 } code_state;
 
 typedef std::map<int, particle_location> IndexMap;
 static IndexMap indexMap;
+
+typedef struct _particle_sort {
+    int ref_index;
+    reb_particle * p;
+    _particle_sort(int i, reb_particle * p):ref_index(i),p(p){}
+} particle_sort;
+typedef std::vector<_particle_sort>  ParticleSortVector;
 
 static int max_id = 0;
 //m ,m mnstatic reb_simulation * code;
@@ -85,14 +94,21 @@ int get_mass(int index_of_the_particle, double * mass){
     return 0;
 }
 
+
+bool sort_particles (particle_sort i,particle_sort j) { 
+    return (i.p->m > j.p->m); 
+}
+
 int commit_particles(){
     /*
      * after deletion of one or more particles, clear out
      * the original data and rebuild without these particles.
      */
+     
     for( ReboundSimulationVector::iterator j = codes.begin(); j != codes.end(); j++) {
         code_state cs = *j;
-        if(cs.has_removal) {
+        bool has_removal = cs.has_removal;
+        if(has_removal) {
             if(cs.code) {
                 struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
                 memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
@@ -106,6 +122,43 @@ int commit_particles(){
                 }
             }
             cs.has_removal = false;
+            *j = cs;
+        }
+        if(cs.has_unsorted_massless_particles || has_removal) {
+            if(cs.code) {
+                //std::cout<<"HAS MASSLESS, WILL SORT"<<std::endl;
+                ParticleSortVector sortvector;
+                
+                //std::cout<<"NA:"<<(cs.code)->N_active<<std::endl;
+                struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
+                memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
+                reb_remove_all(cs.code);
+                for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
+                    if( (*i).second.code == cs.code ) {
+                        struct reb_particle * p = previous + (*i).second.index;
+                        sortvector.push_back(particle_sort((*i).first, p));
+                        
+                        /*reb_add(cs.code, *p);
+                        indexMap[(*i).first] = particle_location(cs.code, cs.code->N - 1, cs.subset);*/
+                        
+                    }
+                }
+                
+                std::sort (sortvector.begin(), sortvector.end(), sort_particles);
+                cs.code->N_active = 0;
+                for( ParticleSortVector::iterator i = sortvector.begin(); i != sortvector.end(); i++) {
+                    reb_add(cs.code,*(*i).p);
+                    
+                    //std::cout<<"p:"<<(*i).ref_index<<", m:"<<(*i).p->m<<std::endl;
+                    if((*i).p->m > 0) {
+                        cs.code->N_active++;
+                    }
+                    indexMap[(*i).ref_index] = particle_location(cs.code, cs.code->N - 1, cs.subset);
+                }
+                //std::cout<<"NA:"<<(cs.code)->N_active<<std::endl;
+                sortvector.clear();
+            }
+            cs.has_unsorted_massless_particles = false;
             *j = cs;
         }
     }
@@ -168,6 +221,9 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.lastcollision = 0;
       pt.c = NULL;
       pt.id = new_id;
+      if(pt.m == 0.0) {
+          codes[code_index].has_unsorted_massless_particles = true;
+      }
       reb_add(codes[code_index].code, pt);
       //std::cout<<"new particle :"<<pt.id<< " << "<<code_index<<" << "<<pt.x<<std::endl;
       indexMap[new_id] = particle_location(codes[code_index].code, codes[code_index].code->N - 1, code_index);
