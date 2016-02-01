@@ -353,7 +353,7 @@ subroutine muse_stepsys(tend,sync)
  
  integer :: clock_init, clock_current, count_rate, count_max
  integer :: number_of_steps_innerloop
- real :: u(nsph)
+ real :: minu,maxu
  integer :: stopping_index, error
  integer,save :: n=0
  
@@ -419,19 +419,21 @@ subroutine muse_stepsys(tend,sync)
       enddo
    endif
    if (is_internal_energy_limit_detection_enabled.GT.0) then
-      if(uentropy) then
-        u=entropy(1:nsph)/gamma1*rho(1:nsph)**gamma1
-      else
-        u=ethermal(1:nsph)
-      endif
       do p=1,nsph
-         if ((u(p).GT.maximum_internal_energy_parameter).OR.(u(p).LT.minimum_internal_energy_parameter)) then
-            stopping_index = next_index_for_stopping_condition()
-            if (stopping_index.GE.0) then
+        if(uentropy) then
+          minu=minimum_internal_energy_parameter*gamma1/rho(p)**gamma1
+          maxu=maximum_internal_energy_parameter*gamma1/rho(p)**gamma1
+        else
+          minu=minimum_internal_energy_parameter
+          maxu=maximum_internal_energy_parameter
+        endif
+        if ((ethermal(p).GT.maxu).OR.(ethermal(p).LT.minu)) then
+          stopping_index = next_index_for_stopping_condition()
+          if (stopping_index.GE.0) then
                error = set_stopping_condition_info(stopping_index, INTERNAL_ENERGY_LIMIT_DETECTION)
                error = set_stopping_condition_particle_index(stopping_index, 0, nbexist(p))
-            endif
-         endif
+          endif
+        endif
       enddo
    endif
 
