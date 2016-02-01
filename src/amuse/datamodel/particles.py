@@ -1077,6 +1077,17 @@ class AbstractParticleSet(AbstractSet):
                 yield y
                 y = []
             
+    def get_all_values_of_attribute_in_store(self, attribute):
+        return self.get_values_in_store(None, [attribute])[0]
+        
+
+    def __setattr__(self, name_of_the_attribute, value):
+        value = self.check_attribute(value)
+        if name_of_the_attribute in self._derived_attributes:
+            self._derived_attributes[name_of_the_attribute].set_values_for_entities(self, value)
+        else:
+            self.set_values_in_store(None, [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
+
 class Particles(AbstractParticleSet):
     """
     A set of particles. Attributes and values are stored in
@@ -1623,8 +1634,8 @@ class ParticlesSuperset(AbstractParticleSet):
             offset = 0
 
             for setindex, x in enumerate(self._private.particle_sets):
-                split_sets[setindex].extend(x.get_all_indices_in_store())
-                split_indices[setindex].extend(range(offset, offset + len(x)))
+                split_sets[setindex] = x.get_all_indices_in_store()
+                split_indices[setindex] = numpy.arange(offset, offset + len(x))
                 offset = offset + len(x)
         elif len(indices) == 0:
             for setindex, x in enumerate(self._private.particle_sets):
@@ -1639,6 +1650,7 @@ class ParticlesSuperset(AbstractParticleSet):
                 split_indices[setindex] = result_indices_array[mask]
                 offset = offset + len(x)
         return split_sets, split_indices
+
 
 
     def add_particles_to_store(self, keys, attributes = [], values = []):
@@ -1708,29 +1720,36 @@ class ParticlesSuperset(AbstractParticleSet):
 
     def set_values_in_store(self, indices, attributes, values):
         split_indices_in_subset, split_indices_in_input = self._split_indices_over_sets(indices)
-
+        if indices is None:
+            len_indices = 0
+            for x in split_indices_in_subset:
+                len_indices += len(split_indices_in_subset)
+            print len_indices, len(self)
+        else:
+            len_indices = len(indices)
         for indices_in_subset, indices_in_input, set in zip(split_indices_in_subset, split_indices_in_input, self._private.particle_sets):
             quantities = [None] * len(attributes)
-
+            print indices_in_subset
             for valueindex, quantity in enumerate(values):
                 if is_quantity(quantity):
                     if quantity.is_scalar():
                         numbers = [quantity.number]*len(indices_in_input)
-                    elif quantity.is_vector() and len(quantity) < len(indices):
-                        numbers = numpy.take([quantity.number]*len(indices),indices_in_input)
+                    elif quantity.is_vector() and len(quantity) < len_indices:
+                        numbers = numpy.take([quantity.number]*len_indices,indices_in_input)
                     else:
                         numbers = numpy.take(quantity.number, indices_in_input)
                     quantities[valueindex] = quantity.unit.new_quantity(numbers)
                 else:
                     if not hasattr(quantity, 'ndim'):
                         numbers = numpy.asarray([quantity]*len(indices_in_input))
-                    elif len(quantity) < len(indices):
-                        numbers = numpy.take([quantity]*len(indices),indices_in_input)
+                    elif len(quantity) < len_indices:
+                        numbers = numpy.take([quantity]*len_indices,indices_in_input)
                     else:
                         numbers = numpy.take(quantity, indices_in_input)
                     quantities[valueindex] = numbers
 
             set.set_values_in_store(indices_in_subset, attributes, quantities)
+
 
     def get_attribute_names_defined_in_store(self):
         self._ensure_updated_set_properties()

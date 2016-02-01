@@ -188,9 +188,10 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
             self.masses = self.read_fortran_block_floats(file)
         else:
             self.masses = None
-    
+
         if self.number_of_gas_particles > 0:
-            self.u = self.read_fortran_block_floats(file)
+            self.u = self.read_fortran_block_floats(file)[:self.number_of_gas_particles]
+            #print self.u, self.number_of_gas_particles, len(self.u)
         else:
             self.u = None
         
@@ -230,6 +231,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         else:
             self.dt = None
     
+
     def new_sets_from_arrays(self):
         offset = 0
         ids_per_set = []

@@ -943,12 +943,16 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         return request
         
     def set_values_in_store(self, indices_in_the_code, attributes, values):
+        if indices_in_the_code is None:
+            indices_in_the_code = self.code_indices
+
         if len(indices_in_the_code) == 0:
             return
             
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(self, attributes, values, indices_in_the_code)
     
+
     def remove_particles_from_store(self, indices_in_the_code):
         if indices_in_the_code is None:
             return

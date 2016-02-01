@@ -554,7 +554,7 @@ class TestParticlesSubset(amusetest.TestCase):
 
     def test16(self):
         set1 = datamodel.Particles(3)
-        set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
+        set1.x = [1.0, 2.0, 3.0] | units.kg
         subset1 = set1[0:2]
         subset2 = set1[1:3]
         self.assertAlmostRelativeEquals(subset1.x, [1.0, 2.0] | units.kg)
@@ -563,9 +563,10 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
         self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
         
+
     def test17(self):
         set1 = datamodel.Particles(3, storage = memory_storage.InMemoryAttributeStorageUseSortedKeys())
-        set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
+        set1.x = [1.0, 2.0, 3.0] | units.kg
         subset1 = set1[0:2]
         subset2 = set1[1:3]
         self.assertAlmostRelativeEquals(subset1.x, [1.0, 2.0] | units.kg)
@@ -574,9 +575,10 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
         self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
     
+
     def test18(self):
         set1 = datamodel.Particles(3, storage = memory_storage.InMemoryAttributeStorageUseDictionaryForKeySet())
-        set1.x = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
+        set1.x = [1.0, 2.0, 3.0] | units.kg
         subset1 = set1[0:2]
         subset2 = set1[1:3]
         self.assertAlmostRelativeEquals(subset1.x, [1.0, 2.0] | units.kg)
@@ -585,6 +587,7 @@ class TestParticlesSubset(amusetest.TestCase):
         self.assertAlmostRelativeEquals(subset1.x, [1.0] | units.kg)
         self.assertAlmostRelativeEquals(subset2.x, [3.0] | units.kg)
     
+
     def test19(self):
         particles = datamodel.Particles(keys = [10,11])
         particles.x = [1,2] | units.m
@@ -1431,12 +1434,13 @@ class TestParticlesExtra(amusetest.TestCase):
         self.assertEquals(particles[0].a, 1.0)
         # should be able to set the attribute with a unitless array
         # this code will be obsoleted when units.none is completely gone
-        particles.a = [4.0, 5.0, 6,0] | units.none
+        particles.a = [4.0, 5.0, 6.0] | units.none
         self.assertEquals(particles[0].a, 4.0)
         particles.b = [1, 2, 3] | units.none
         self.assertEquals(particles[0].b, 1 | units.none)
         particles.b = [4, 5, 6]
         self.assertEquals(particles[0].b, 4 | units.none)
+
 
     def test21(self):
         particles = datamodel.Particles(3)
@@ -3098,7 +3102,7 @@ class TestSubtractParticles(amusetest.TestCase):
     def test2(self):
         print "Test2: create a particle subset by removing a set from a set."
         set1 = datamodel.Particles(5)
-        set1.x = [1.0, 2.0, -789.0, 3.0, 4.0, -456.0] | units.m
+        set1.x = [1.0, 2.0, -789.0, 3.0, 4.0] | units.m
         set2 = set1[2::3]
         self.assertTrue(isinstance(set1, datamodel.Particles))
         self.assertTrue(isinstance(set2, datamodel.ParticlesSubset))
@@ -3112,6 +3116,7 @@ class TestSubtractParticles(amusetest.TestCase):
         self.assertTrue(isinstance(set1, datamodel.ParticlesSubset))
         self.assertEqual(len(set1),4)
         self.assertEqual(set1.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
+
 
     def test3(self):
         print "Test3: check if the particle is actually part of the set."
@@ -4721,7 +4726,7 @@ class TestParticlesWithSpecificDtypes(amusetest.TestCase):
             self.skip("test does a conversion that is not supported on older numpy versions")
         print "Stored unit with dtype remains, only number can be changed"
         set = self.new_set_with_specific_dtype()
-        temp_x = set.x
+        temp_x = set.x.copy()
         set.x = set.z
         set.y = set.z
         set.z = 2 * temp_x
@@ -4735,6 +4740,7 @@ class TestParticlesWithSpecificDtypes(amusetest.TestCase):
         self.assertTrue((set.x.number == [1, 2, 3]).all())
         self.assertAlmostEqual(set.y.number, [1.0, 2.0, 3.0], 6)
         self.assertEqual(set.z.number, [2, 5, 6])
+
 
     def test3(self):
         print "Adding particles: stored unit with dtype remains"
@@ -4752,5 +4758,6 @@ class TestParticlesWithSpecificDtypes(amusetest.TestCase):
         self.assertTrue((set.x.number == [1.3, 2.7, numpy.pi, 1.3, 2.7, numpy.pi]).all())
         self.assertAlmostEqual(set.y.number, [1.3, 2.7, numpy.pi, 1.3, 2.7, numpy.pi], 6)
         self.assertEqual(set.z.number, [1, 2, 3, 1, 2, 3])
+
 
 

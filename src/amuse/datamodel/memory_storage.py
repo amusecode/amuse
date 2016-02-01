@@ -531,8 +531,11 @@ class InMemoryVectorQuantityAttribute(InMemoryAttribute):
         else:
             return self.quantity[indices]
     
+
     def set_values(self, indices, values):
         try:
+            if indices is None:
+                indices = slice(None)
             self.quantity[indices] = values
         except AttributeError:
             if not is_quantity(values):
@@ -540,6 +543,7 @@ class InMemoryVectorQuantityAttribute(InMemoryAttribute):
             else:
                 raise
     
+
     def get_shape(self):
         return self.quantity.shape
     
@@ -588,8 +592,11 @@ class InMemoryUnitlessAttribute(InMemoryAttribute):
             return self.values[indices]
     
     def set_values(self, indices, values):
+        if indices is None:
+            indices = slice(None)
         self.values[indices] = values
     
+
     def get_length(self):
         return self.values.shape
     
@@ -624,6 +631,8 @@ class InMemoryUnitlessAttribute(InMemoryAttribute):
 class InMemoryStringAttribute(InMemoryUnitlessAttribute):
     
     def set_values(self, indices, values):
+        if indices is None:
+            indices = slice(None)
         if isinstance(values, basestring):
             dtype=numpy.dtype(self.values.dtype.kind+str(max(1,len(values))))
         else:
@@ -639,6 +648,7 @@ class InMemoryStringAttribute(InMemoryUnitlessAttribute):
 
 
         
+
 class InMemoryLinkedAttribute(InMemoryAttribute):
     
     def __init__(self, name, shape):
@@ -659,8 +669,11 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
         return objects
                         
     def set_values(self, indices, values):
+        if indices is None:
+            indices = slice(None)
         self.values[indices] = values
             
+
     def get_length(self):
         return self.values.shape
         
