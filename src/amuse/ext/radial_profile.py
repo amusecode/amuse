@@ -24,7 +24,7 @@ def radial_profile(r,dat,N=100):
     dens=numpy.array(dat_a)    
   return r_a,dat_a
 
-def radial_density(r,mass,N=100,dim=3, start_at_zero=False):
+def radial_density(r,mass,N=100,dim=3, start_at_zero=False, enforce_finite_bins=True):
   if dim==3:
     volfac=numpy.pi*4./3.
   elif dim==2:
@@ -34,7 +34,6 @@ def radial_density(r,mass,N=100,dim=3, start_at_zero=False):
   
   n=len(r)
   a=r.argsort()
-  i=0
   if hasattr(r,"unit"):
     r_a=[] | r.unit
   else:
@@ -47,15 +46,18 @@ def radial_density(r,mass,N=100,dim=3, start_at_zero=False):
   oldrshell=r[a[0]]
   if start_at_zero:
     oldrshell=0.*r[0]  
+  i=0
+  i1=i
   while i < n:
-    i1=min(n,i+N)
+    i1=min(n,i1+N)
     rshell=r[a[i1-1]]
-    ra=r[a[i:i1]].sum()/(i1-i)
-    da=mass[a[i:i1]].sum()/(rshell**dim-oldrshell**dim)
-    oldrshell=rshell
-    r_a.append(ra)
-    dens.append(da)
-    i=i1
+    if rshell!=oldrshell or not enforce_finite_bins:
+      ra=r[a[i:i1]].sum()/(i1-i)
+      da=mass[a[i:i1]].sum()/(rshell**dim-oldrshell**dim)
+      oldrshell=rshell
+      r_a.append(ra)
+      dens.append(da)
+      i=i1
   
   if not hasattr(r_a, "unit"):
     r_a=numpy.array(r_a)
