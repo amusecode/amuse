@@ -381,7 +381,7 @@ class MakeMeAMassiveStar(CommonCode):
             object.add_getter(particle_set_name, 'get_number_of_zones')
             object.add_getter(particle_set_name, 'get_mass')
             object.add_method(particle_set_name, 'add_shell') 
-            object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
+            object.add_method(particle_set_name, 'get_stellar_model', 'get_internal_structure') 
     
     
     def get_stellar_model(self, index_of_the_particle):

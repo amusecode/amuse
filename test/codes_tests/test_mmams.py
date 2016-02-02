@@ -222,7 +222,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             [0.05, 0.01], [0.04, 0.02], [0.03, 0.03], 
             [0.02, 0.04], [0.01, 0.05])
         self.assertEqual(instance.particles[1].number_of_zones, 2)
-        stellar_model = instance.particles[1].internal_structure()
+        stellar_model = instance.particles[1].get_internal_structure()
         self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 'entropy', 
             'temperature', 'luminosity', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
             'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']).issubset(
@@ -267,7 +267,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.imported_stars.number_of_zones, [187, 181])
         self.assertEqual(instance.particles.number_of_zones, [0, 0, 187, 181])
         
-        stellar_model = instance.imported_stars[0].internal_structure()
+        stellar_model = instance.imported_stars[0].get_internal_structure()
         self.assertAlmostEqual(stellar_model.mass[0],  0.0 | units.MSun, 3)
         self.assertAlmostEqual(stellar_model.mass[-1], 20.0 | units.MSun, 0)
         self.assertAlmostEqual(stellar_model.radius[0], 0.0 | units.RSun, 1)
@@ -299,7 +299,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.number_of_particles, 3)
         self.assertEqual(instance.particles.number_of_zones, [187, 181, 12289])
         
-        stellar_model = instance.merge_products[0].internal_structure()
+        stellar_model = instance.merge_products[0].get_internal_structure()
         self.assertAlmostEqual(stellar_model.mass[[0, 10000, 12288]],  [0.0, 24.5169, 25.6762] | units.MSun, 3)
         self.assertAlmostEqual(stellar_model.radius[[0, 10000, 12288]], [0.0, 10.3786, 19.3713] | units.RSun, 3)
         self.assertAlmostEqual(stellar_model.temperature[[0, 10000, 12288]], [38998355.9, 3478242.6, 49264.9] | units.K, 0)
@@ -372,7 +372,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
                 composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
             
             self.assertEqual(instance.particles[i].number_of_zones, number_of_zones)
-            stellar_model[i] = instance.particles[i].internal_structure()
+            stellar_model[i] = instance.particles[i].get_internal_structure()
             self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 
                 'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
                 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']).issubset(
@@ -397,7 +397,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.number_of_particles, 3)
         self.assertIsOfOrder(instance.parameters.target_n_shells, instance.merge_products[0].number_of_zones)
         
-        stellar_model = instance.merge_products[0].internal_structure()
+        stellar_model = instance.merge_products[0].get_internal_structure()
         self.assertAlmostEqual(stellar_model.mass[[0, -1]], [0.0, 25.7] | units.MSun, 1)
         self.assertAlmostEqual(stellar_model.radius[[0, -1]], [0.0,  8.4] | units.RSun, 1)
         
@@ -485,7 +485,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
                     composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
                 
                 self.assertEqual(instance.particles[i].number_of_zones, number_of_zones)
-                stellar_model[i] = instance.particles[i].internal_structure()
+                stellar_model[i] = instance.particles[i].get_internal_structure()
                 self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 
                     'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
                     'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']).issubset(
@@ -510,7 +510,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             self.assertEqual(instance.number_of_particles, 3)
             self.assertIsOfOrder(instance.parameters.target_n_shells_mixing, instance.merge_products[0].number_of_zones)
             
-            mmams_merged_model = instance.merge_products[0].internal_structure()
+            mmams_merged_model = instance.merge_products[0].get_internal_structure()
             stellar_model = dict(
                 mass        = mmams_merged_model.mass,
                 radius      = mmams_merged_model.radius,
@@ -600,7 +600,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             print "Successfully merged particles. number_of_zones:", new_merge_product.number_of_zones
             self.assertEqual(len(instance.merge_products)+len(stellar_evolution.particles), number_of_stars-1)
             
-            new_merge_product_model = new_merge_product.internal_structure()
+            new_merge_product_model = new_merge_product.get_internal_structure()
             stellar_evolution.new_particle_from_model(new_merge_product_model, 0 | units.yr)
             print stellar_evolution.particles
             self.assertEqual(len(instance.merge_products)+len(stellar_evolution.particles), number_of_stars)
@@ -663,7 +663,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
                 composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
             
             self.assertEqual(instance.particles[i].number_of_zones, number_of_zones)
-            stellar_model[i] = instance.particles[i].internal_structure()
+            stellar_model[i] = instance.particles[i].get_internal_structure()
             self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 
                 'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
                 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']).issubset(
@@ -682,7 +682,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.merge_products.add_particle(merge_product)
         self.assertEqual(instance.number_of_particles, 3)
         
-        mmams_merged_model = instance.merge_products[0].internal_structure()
+        mmams_merged_model = instance.merge_products[0].get_internal_structure()
         print mmams_merged_model.mass[[0, -1]]
         print mmams_merged_model.radius[[0, -1]]
         print mmams_merged_model.X_H[[0, -1]]
@@ -734,7 +734,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         print stellar_evolution.particles
         
         for i in [0, 1]:
-            stellar_model = stellar_evolution.particles[i].internal_structure()
+            stellar_model = stellar_evolution.particles[i].get_internal_structure()
             instance.particles[i].add_shell(
                 stellar_model.d_mass, stellar_model.mass, stellar_model.radius, 
                 stellar_model.rho, stellar_model.pressure, stellar_model.temperature, 
@@ -753,7 +753,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.native_stars.number_of_zones, [199, 199])
         self.assertIsOfOrder(instance.merge_products[0].number_of_zones, instance.parameters.target_n_shells_mixing)
         
-        stellar_model = instance.merge_products[0].internal_structure()
+        stellar_model = instance.merge_products[0].get_internal_structure()
         print stellar_model.mass[[0, -1]]
         print stellar_model.radius[[0, -1]]
         print stellar_model.X_H[[0, -1]]
@@ -830,7 +830,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
                 self.assertEqual(instance.number_of_particles, 3 + len(stellar_models))
                 instance.particles.remove_particles(stars[[index_1, index_2]])
                 self.assertEqual(instance.number_of_particles, 1 + len(stellar_models))
-                stellar_models.append(instance.particles[len(stellar_models)].internal_structure().copy())
+                stellar_models.append(instance.particles[len(stellar_models)].get_internal_structure().copy())
             except CodeException as ex:
                 print ex
                 crashed = True
@@ -925,7 +925,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.particles[1].add_shell(d_mass*2, cumul_mass*2, radius[1:], density*2,
             pressure*4, temperature*2, luminosity, mu, X, Y, Z, Z, Z, Z, Z, Z, Z)
         self.assertEqual(instance.particles[1].number_of_zones, 4)
-        stellar_model = instance.particles[1].internal_structure()
+        stellar_model = instance.particles[1].get_internal_structure()
         self.assertTrue(set(['d_mass', 'mass', 'radius', 'rho', 'pressure', 'entropy', 
             'temperature', 'luminosity', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
             'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']).issubset(
