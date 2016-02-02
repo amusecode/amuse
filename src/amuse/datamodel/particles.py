@@ -604,6 +604,7 @@ class AbstractParticleSet(AbstractSet):
             return ParticlesSubset(self._original_set(),[])
 
         attributes = particles.get_attribute_names_defined_in_store()
+        attributes= [x for x in attributes if x not in self._derived_attributes]
         indices = particles.get_all_indices_in_store()
         keys =  particles.get_all_keys_in_store()
         values = particles.get_values_in_store(indices, attributes)
@@ -779,6 +780,7 @@ class AbstractParticleSet(AbstractSet):
                 added_keys = added_keys[sort_indices]
             
             attributes = self.get_attribute_names_defined_in_store()
+            attributes= [x for x in attributes if x not in other_particles._derived_attributes]
             values = self.get_values_in_store(added_indices, attributes)
             converted = []
             memento = {}

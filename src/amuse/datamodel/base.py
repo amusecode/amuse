@@ -1216,6 +1216,7 @@ class AbstractSet(object):
         added_keys = list(added_keys)
         if added_keys:
             attributes = self.get_attribute_names_defined_in_store()
+            attributes= [x for x in attributes if x not in other_particles._derived_attributes]
             values = self.get_values_in_store(added_keys, attributes)
             other_particles.add_particles_to_store(added_keys, attributes, values)
         
