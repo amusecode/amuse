@@ -869,7 +869,7 @@ class TestBHTree(TestWithMPI):
         
     def test21(self):
         particles = datamodel.Particles(2)
-        particles.x = [0.0,10.0, 20] | nbody_system.length
+        particles.x = [0.0,10.0] | nbody_system.length
         particles.y = 0.0 | nbody_system.length
         particles.z = 0.0 | nbody_system.length
         particles.radius = 0.005 | nbody_system.length
@@ -884,12 +884,13 @@ class TestBHTree(TestWithMPI):
         instance = BHTree()
         instance.initialize_code()
         instance.parameters.epsilon_squared = (1e-5 | nbody_system.length)**2
-        instance.particles.add_particles(particles) 
+        instance.particles.add_particles(particles)     
         instance.commit_particles()
         self.assertAlmostRelativeEquals(instance.potential_energy, -0.1 | nbody_system.energy, 5)
         instance.stop()
 
     
+
     def test22(self):
         particles = datamodel.Particles(2)
         particles.x = [0.0,10.0] | nbody_system.length

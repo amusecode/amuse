@@ -947,8 +947,9 @@ class TestMakeMeAMassiveStar(TestWithMPI):
 class ParticlesForTesting(list):
     def has_key_in_store(self, key):
         return key in [x.key for x in self]
-    def _subset(self, selected):
+    def _subset(self, selected, indices = None):
         return ParticlesForTesting([x for x in self if x.key in selected])
+
     def remove_particles(self, particles):
         particles_in_self = self._subset(particles.key)
         for particle in particles_in_self:

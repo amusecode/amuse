@@ -1663,7 +1663,8 @@ class TestFi(TestWithMPI):
         print "Testing Fi get_hydro_state_at_point in periodic mode"
         gas = datamodel.Particles(8000)
         gas.mass = 1.0e10/8000 | units.MSun
-        gas.x, gas.y, gas.z = numpy.mgrid[-1:0.9:20j, -1:0.9:20j, -1:0.9:20j] | units.kpc
+        x,y,z = numpy.mgrid[-1:0.9:20j, -1:0.9:20j, -1:0.9:20j] | units.kpc
+        gas.x, gas.y, gas.z = x.flatten(), y.flatten(), z.flatten()
         gas.velocity = [0, 0, 0] | units.m / units.s
         gas.u = (1 + 0.8 * numpy.sin(gas.x * (numpy.pi | units.kpc**-1))) | nbody_system.specific_energy
         
@@ -1708,3 +1709,4 @@ class TestFi(TestWithMPI):
         self.assertAlmostEqual(state_bottom[4].std() / (1.25e9 | units.MSun * units.kpc**-3 * units.km**2 * units.s**-2), 0.8 * numpy.sqrt(0.5), 1)
         instance.stop()
     
+

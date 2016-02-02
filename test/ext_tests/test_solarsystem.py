@@ -11,7 +11,7 @@ class TestSolarSystem(TestCase):
         print "Test 1: testing new_solar_system_for_mercury"
         sun, orbiters = new_solar_system_for_mercury()
         
-        expected_attributes = set(["name", "mass", "radius", "j2", "j4", "j6", "angularmomentum"])
+        expected_attributes = set(["name", "mass", "radius", "j2", "j4", "j6", "lx", "ly", "lz"])
         self.assertEqual(set(sun.get_attribute_names_defined_in_store()), expected_attributes)
         
         expected_attributes = set(["name", "mass", "radius", "density", "x", "y", "z", "vx", "vy", "vz", "Lx", "Ly", "Lz", "celimit"])
@@ -42,3 +42,4 @@ class TestSolarSystem(TestCase):
         expected = (constants.G * (particles[1:].mass + particles[0].mass) * semimajor_axis * (1 - eccentricity**2)).sqrt()
         self.assertAlmostRelativeEqual(particles[1:].position.cross(particles[1:].velocity).lengths(), expected, 2)
     
+
