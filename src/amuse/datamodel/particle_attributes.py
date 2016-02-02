@@ -753,9 +753,9 @@ def distances_squared(particles, other_particles):
     >>> field_particles.y = [0.0, 0.0] | units.m
     >>> field_particles.z = [0.0, 0.0] | units.m
     >>> particles = Particles(3)
-    >>> particles.x = [1.0, 3.0, 4] | units.m
-    >>> particles.y = [0.0, 0.0] | units.m
-    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.x = [1.0, 3.0, 4.0] | units.m
+    >>> particles.y = [0.0, 0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0, 0.0] | units.m
     >>> particles.distances_squared(field_particles)
     quantity<[[1.0, 1.0], [9.0, 1.0], [16.0, 4.0]] m**2>
     """
@@ -774,9 +774,9 @@ def nearest_neighbour(particles, neighbours=None, max_array_length=10000000):
     
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(3)
-    >>> particles.x = [1.0, 3.0, 4] | units.m
-    >>> particles.y = [0.0, 0.0] | units.m
-    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.x = [1.0, 3.0, 4.0] | units.m
+    >>> particles.y = [0.0, 0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0, 0.0] | units.m
     >>> particles.nearest_neighbour().x
     quantity<[3.0, 4.0, 3.0] m>
     >>> field_particles = Particles(2)
@@ -825,8 +825,8 @@ def velocity_diff_squared(particles,field_particles):
     >>> field_particles.vz = [0.0, 0.0] | units.m
     >>> particles = Particles(3)
     >>> particles.vx = [1.0, 3.0, 4] | units.m
-    >>> particles.vy = [0.0, 0.0] | units.m
-    >>> particles.vz = [0.0, 0.0] | units.m
+    >>> particles.vy = [0.0, 0.0, 0.0] | units.m
+    >>> particles.vz = [0.0, 0.0, 0.0] | units.m
     >>> velocity_diff_squared(particles, field_particles)
     quantity<[[1.0, 1.0], [9.0, 1.0], [16.0, 4.0]] m**2>
     """

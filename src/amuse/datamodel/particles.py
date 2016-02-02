@@ -877,10 +877,10 @@ class AbstractParticleSet(AbstractSet):
 
 
         >>> particles = Particles(1000)
-        >>> particles.x = units.m.new_quantity(numpy.arange(1,1000))
+        >>> particles.x = units.m.new_quantity(numpy.arange(1,1001))
         >>> subset = particles.select_array(lambda x : x > (500 | units.m), ("x",) )
         >>> print len(subset)
-        499
+        500
         """
         keys = self.get_all_keys_in_store()
         #values = self._get_values(keys, attributes) #fast but no vectors

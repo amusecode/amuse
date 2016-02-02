@@ -1299,7 +1299,7 @@ class AbstractSet(object):
         [2.0, 3.0] m
         
         
-        >>> particles = Particles(1000)
+        >>> particles = Particles(999)
         >>> particles.x = units.m.new_quantity(numpy.arange(1,1000))
         >>> subset = particles.select_array(lambda x : x > (500 | units.m), ("x",) )
         >>> print len(subset)
