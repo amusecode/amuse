@@ -785,7 +785,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         object.add_method('particles', 'evolve_one_step')
         object.add_method('particles', 'evolve_for')
         InternalStellarStructure.define_particle_sets(self, object, set_name = 'particles')
-        object.add_method('particles', 'get_stellar_model', 'internal_structure')
+        object.add_method('particles', 'get_stellar_model', 'get_internal_structure')
         object.add_method('particles', 'write_star_to_file')
     
     def define_state(self, object):
