@@ -69,7 +69,7 @@ class StellarEncounterInHydrodynamics(object):
         return self.new_particles_with_internal_structure_from_models()
     
     def new_particles_with_internal_structure_from_models(self):
-        def internal_structure(set, particle=None):
+        def get_internal_structure(set, particle=None):
             return self.models[(set.key == particle.key).nonzero()[0]]
         
         result = Particles(len(self.models))
