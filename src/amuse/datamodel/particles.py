@@ -763,12 +763,21 @@ class AbstractParticleSet(AbstractSet):
         """
         other_keys = set(other_particles.get_all_keys_in_store())
         my_keys = set(self.get_all_keys_in_store())
-        added_keys = my_keys - other_keys
+        added_keys = numpy.asarray(list(my_keys - other_keys))
         removed_keys = other_keys - my_keys
-        added_keys = list(added_keys)
-        if added_keys:
+        
+        removed_keys = list(removed_keys)
+        if removed_keys:
+            other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
+            
+        if len(added_keys) > 0:
+            added_indices = self.get_indices_of_keys(added_keys)
+            sort_indices = numpy.argsort(added_indices)
+            added_indices = added_indices[sort_indices]
+            added_keys = added_keys[sort_indices]
+            
             attributes = self.get_attribute_names_defined_in_store()
-            values = self.get_values_in_store(self.get_indices_of_keys(added_keys), attributes)
+            values = self.get_values_in_store(added_indices, attributes)
             converted = []
             memento = {}
 
@@ -789,9 +798,6 @@ class AbstractParticleSet(AbstractSet):
                         raise
                 other_particles.add_particles_to_store(added_keys, attributes, converted)
 
-        removed_keys = list(removed_keys)
-        if removed_keys:
-            other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
 
 
     def compressed(self):
@@ -1724,12 +1730,10 @@ class ParticlesSuperset(AbstractParticleSet):
             len_indices = 0
             for x in split_indices_in_subset:
                 len_indices += len(split_indices_in_subset)
-            print len_indices, len(self)
         else:
             len_indices = len(indices)
         for indices_in_subset, indices_in_input, set in zip(split_indices_in_subset, split_indices_in_input, self._private.particle_sets):
             quantities = [None] * len(attributes)
-            print indices_in_subset
             for valueindex, quantity in enumerate(values):
                 if is_quantity(quantity):
                     if quantity.is_scalar():
