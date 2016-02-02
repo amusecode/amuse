@@ -141,19 +141,22 @@ class UniformSphericalDistribution(object):
         z = numpy.random.uniform(-1.0, 1.0, number_of_particles)
         return x, y, z
     
-    def random(self, number_of_particles = None):
+    def random(self, number_of_particles = None, try_number_of_particles = None):
         if number_of_particles is None:
             number_of_particles = self.number_of_particles
-        x, y, z = self._random_cube(2*number_of_particles)
+        if try_number_of_particles is None:
+            try_number_of_particles = number_of_particles
+        x, y, z = self._random_cube(2*try_number_of_particles)
         r_squared = x*x + y*y + z*z
         select_sphere = numpy.where( r_squared < self.mass_cutoff**(2.0/3.0))
-        if len(select_sphere[0]) < self.number_of_particles:
-            return self.random( numpy.ceil(number_of_particles*1.1) )
+        if len(select_sphere[0]) < number_of_particles:
+            return self.random(number_of_particles, numpy.ceil(try_number_of_particles*1.1) )
         else:
-            return (x[select_sphere][0:self.number_of_particles], 
-                y[select_sphere][0:self.number_of_particles], 
-                z[select_sphere][0:self.number_of_particles])
+            return (x[select_sphere][0:number_of_particles], 
+                y[select_sphere][0:number_of_particles], 
+                z[select_sphere][0:number_of_particles])
     
+
     def sobol(self):
         x, y, z = i4_sobol_generate(3, 2*self.number_of_particles, 2) * 2.0 - 1.0
         return self._cutout_sphere(x, y, z)
@@ -178,9 +181,9 @@ class UniformSphericalDistribution(object):
         p.y = L * y
         p.z = L * z
         p.h_smooth = 0.0 | nbody_system.length
-        p.vx = (0.1 | nbody_system.speed) * vx
-        p.vy = (0.1 | nbody_system.speed) * vy
-        p.vz = (0.1 | nbody_system.speed) * vz
+        p.vx = (0.1 | nbody_system.speed) * vx[:N]
+        p.vy = (0.1 | nbody_system.speed) * vy[:N]
+        p.vz = (0.1 | nbody_system.speed) * vz[:N]
         p.u = (0.1*0.1) | nbody_system.speed**2
         p.mass = (8.0/N) | nbody_system.mass
         
@@ -227,6 +230,7 @@ class UniformSphericalDistribution(object):
         del sph
         return self._cutout_sphere(x, y, z)
     
+
     def _cutout_sphere(self, x, y, z):
         r_squared = x*x + y*y + z*z
         sorted_indices = numpy.argsort(r_squared)
