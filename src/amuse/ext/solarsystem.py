@@ -93,8 +93,9 @@ def new_solar_system_for_mercury():
     centre.j2 = .0001|units.AU**2
     centre.j4 = .0|units.AU**4
     centre.j6 = .0|units.AU**6
-    centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
+    centre.angular_momentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
     return centre, planets
+
 
 def new_kepler():
   converter = nbody_system.nbody_to_si(1|units.MSun,1|units.AU)
