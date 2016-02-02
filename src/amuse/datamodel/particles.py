@@ -767,14 +767,16 @@ class AbstractParticleSet(AbstractSet):
         removed_keys = other_keys - my_keys
         
         removed_keys = list(removed_keys)
+        
         if removed_keys:
             other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
             
         if len(added_keys) > 0:
             added_indices = self.get_indices_of_keys(added_keys)
-            sort_indices = numpy.argsort(added_indices)
-            added_indices = added_indices[sort_indices]
-            added_keys = added_keys[sort_indices]
+            if len(added_indices) > 1:
+                sort_indices = numpy.argsort(added_indices)
+                added_indices = added_indices[sort_indices]
+                added_keys = added_keys[sort_indices]
             
             attributes = self.get_attribute_names_defined_in_store()
             values = self.get_values_in_store(added_indices, attributes)
@@ -797,6 +799,7 @@ class AbstractParticleSet(AbstractSet):
                     else:
                         raise
                 other_particles.add_particles_to_store(added_keys, attributes, converted)
+
 
 
 
