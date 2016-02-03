@@ -33,54 +33,70 @@ class SimpleHash(object):
         self._map=simple_hash()
         self._dummy=ctypes.c_size_t()
         self._lib=lib_simple_hash
+        self._map_ref = ctypes.byref(self._map)
         if self._lib.init_hash(ctypes.byref(self._map),128)!=0:
           raise MemoryError("allocation of SimpleHash")
-        
-    def __del__(self):
-        self._lib.end_hash(ctypes.byref(self._map))
 
-    def lookup(self,keys):
-        N=len(keys)
-        keys=numpy.ascontiguousarray(keys, dtype="uintp")
+    def __del__(self):
+        self._lib.end_hash(self._map_ref)
+
+    def lookup(self,inkeys):
+        N=len(inkeys)
+        keys=numpy.ascontiguousarray(inkeys, dtype="uintp")
+
         values=numpy.ascontiguousarray(numpy.zeros(N),dtype="uintp")
-        errors=numpy.ascontiguousarray(numpy.zeros(N),dtype="int")
+        errors=numpy.ascontiguousarray(numpy.zeros(N),dtype="int32")
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
         cerrors=errors.ctypes.data_as(c_int_pointer)
-        err=self._lib.hash_lookups(ctypes.byref(self._map),N,ckeys,cvalues, cerrors)
-        if err!=0:
-            missing_keys = keys[errors != 0]
-            raise exceptions.KeysNotInStorageException(keys[errors==0], values[errors==0], missing_keys)
+        err=self._lib.hash_lookups(self._map_ref,N,ckeys,cvalues, cerrors)
+        if err != 0:
+            has_errors = errors!=0
+            missing_keys = keys[has_errors]
+            no_errors = ~has_errors
+            raise exceptions.KeysNotInStorageException(keys[no_errors], values[no_errors], missing_keys)
         return values
 
     def insert(self,keys,values=None):
         N=len(keys)
         keys=numpy.ascontiguousarray(keys, dtype="uintp")
         if values is None:
-            values=numpy.arange(N)
+            values=numpy.arange(N,dtype="uintp")
         else:
             assert len(keys)==len(values)
-        values=numpy.ascontiguousarray(values,dtype="uintp")
+            values=numpy.ascontiguousarray(values,dtype="uintp")
       
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
 
-        err=self._lib.hash_inserts(ctypes.byref(self._map),N,ckeys,cvalues)
+        err=self._lib.hash_inserts(self._map_ref,N,ckeys,cvalues)
         if err!=0:
             raise Exception("simple hash insert error")
 
-    def reindex(self, keys,values=None):
-
-        self._lib.end_hash(ctypes.byref(self._map))
-        if self._lib.init_hash(ctypes.byref(self._map),len(keys))!=0:
-          raise MemoryError("allocation of SimpleHash")
-        self.insert(keys,values)
+    def reindex(self, keys, values=None):
+        self._lib.end_hash(self._map_ref)
+        if self._lib.init_hash(self._map_ref,len(keys))!=0:
+            raise MemoryError("allocation of SimpleHash")
+        self.insert(keys, values)
 
     def key_present(self,key):
-        return self._lib.hash_lookup(ctypes.byref(self._map),ctypes.c_size_t(key),ctypes.byref(self._dummy))==0
+        return self._lib.hash_lookup(self._map_ref,ctypes.c_size_t(key),ctypes.byref(self._dummy))==0
+
 
     def keys_present(self,keys):
         pass
+
+    def match(self,keys):
+        N=len(keys)
+        keys=numpy.ascontiguousarray(keys, dtype="uintp")
+        values=numpy.ascontiguousarray(numpy.zeros(N),dtype="uintp")
+        errors=numpy.ascontiguousarray(numpy.zeros(N),dtype="int32")
+        ckeys=keys.ctypes.data_as(c_size_t_pointer)
+        cvalues=values.ctypes.data_as(c_size_t_pointer)
+        cerrors=errors.ctypes.data_as(c_int_pointer)
+        err=self._lib.hash_lookups(self._map_ref,N,ckeys,cvalues, cerrors)
+        state = errors != 0
+        return keys[state], values[state], keys[~state]
 
 if __name__=="__main__":
 
