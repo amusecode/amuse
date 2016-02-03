@@ -29,10 +29,10 @@ class CollisionCodeForTesting(object):
             se_colliders = (primary + secondary).get_intersecting_subset_in(stellar_evolution_code.particles)
             result.radius = se_colliders.radius.sum()
             
-            def internal_structure(set, particle=None):
+            def get_internal_structure(set, particle=None):
                 return dict(mass=result.mass, radius=result.radius)
             
-            result.add_function_attribute("internal_structure", None, internal_structure)
+            result.add_function_attribute("get_internal_structure", None, get_internal_structure)
         
         return result
     

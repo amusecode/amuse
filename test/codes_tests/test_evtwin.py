@@ -445,7 +445,7 @@ class TestEVtwin(TestWithMPI):
         particles = Particles(3)
         particles.mass = 0.3 | units.MSun
 
-        instance = EVtwin(redirection="none")
+        instance = EVtwin()#redirection="none")
         instance.initialize_code()
         instance.parameters.verbosity = True
         instance.commit_parameters()
@@ -562,7 +562,7 @@ class TestEVtwin(TestWithMPI):
         print "Test for saving and loading the stellar structure model"
         filenames = ["test1.dump", "test2.dump"]
         filenames = [os.path.join(get_path_to_results(), name) for name in filenames]
-        instance = EVtwin(redirection="none")
+        instance = EVtwin()#redirection="none")
         instance.parameters.verbosity = True
         instance.particles.add_particles(Particles(mass = [0.5, 0.8] | units.MSun))
         instance.evolve_model()
