@@ -2648,8 +2648,8 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
 }
 int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz,
         double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
-    double pos[3], vel[3];
-    double h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
+    FLOAT pos[3], vel[3];
+    FLOAT h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
     int error;
     double a, a_inv, a3_inv, a4_inv, a5_inv;
     if (All.ComovingIntegrationOn) {
