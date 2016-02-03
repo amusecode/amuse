@@ -64,7 +64,7 @@ class SimpleHash(object):
             values=numpy.arange(N,dtype="uintp")
         else:
             assert len(keys)==len(values)
-            values=numpy.ascontiguousarray(values,dtype="uintp")
+        values=numpy.ascontiguousarray(values,dtype="uintp")
       
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
