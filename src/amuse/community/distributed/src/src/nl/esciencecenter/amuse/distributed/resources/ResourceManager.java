@@ -158,7 +158,7 @@ public class ResourceManager {
             if (gateway != null && !gateway.isEmpty()) {
                 properties.put(SshAdaptor.GATEWAY, gateway);
             }
-            if(getSchedulerType() == "slurm") {
+            if(getSchedulerType().equals("slurm")) {
                 properties.put(SlurmAdaptor.IGNORE_VERSION_PROPERTY, "true");
             }
             return xenon.jobs().newScheduler(getSchedulerType(), getLocation(), credential, properties);
