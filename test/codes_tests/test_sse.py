@@ -809,4 +809,13 @@ class TestSSE(TestWithMPI):
         instance.evolve_model(14 | units.Gyr)
         self.assertTrue(numpy.all(stars.gyration_radius > gyration_radius))
         instance.stop()
+
+    def test23(self):
+        instance = SSE()
+        p=Particles(mass = [1.0, 10.0] | units.MSun, temperature=[10,10] | units.K)
+        stars = instance.particles.add_particles(p)
+        channel=stars.new_channel_to(p)
+        channel.copy_attributes(["mass","temperature"])
+        self.assertEqual(stars.temperature, p.temperature)
+        instance.stop()
     

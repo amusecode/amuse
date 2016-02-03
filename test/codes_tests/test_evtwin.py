@@ -653,10 +653,10 @@ class TestEVtwin(TestWithMPI):
         instance.particles.add_particles(Particles(mass = [0.8] | units.MSun))
         instance.evolve_model()
 
-        instance.new_particle_from_model(instance.particles[0].internal_structure())
+        instance.new_particle_from_model(instance.particles[0].get_internal_structure())
         # The above line is equivalent with:
         #copy = Particles(1)
-        #copy.internal_structure = instance.particles[0].internal_structure()
+        #copy.internal_structure = instance.particles[0].get_internal_structure()
         #instance.particles.add_particles(copy)
 
         number_of_zones = instance.particles[0].get_number_of_zones()
@@ -681,7 +681,7 @@ class TestEVtwin(TestWithMPI):
         instance.evolve_model()
 
         copy = Particles(1)
-        copy.internal_structure = instance.particles[0].internal_structure()
+        copy.internal_structure = instance.particles[0].get_internal_structure()
         instance.particles.add_particles(copy)
 
         number_of_zones = instance.particles[0].get_number_of_zones()
@@ -714,7 +714,7 @@ class TestEVtwin(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
-        stellar_models = instance.native_stars.internal_structure()
+        stellar_models = instance.native_stars.get_internal_structure()
 
         self.assertEqual(len(stellar_models), 3)
         self.assertEqual(len(stellar_models[0]), 199)
@@ -726,7 +726,7 @@ class TestEVtwin(TestWithMPI):
         instance.new_particle_from_model(stellar_models[0], instance.particles[0].age)
         self.assertEqual(len(instance.particles), 4)
         self.assertEqual(len(instance.imported_stars), 1)
-        imported_stellar_model = instance.imported_stars[0].internal_structure()
+        imported_stellar_model = instance.imported_stars[0].get_internal_structure()
         self.assertEqual(len(imported_stellar_model), 199)
         self.assertAlmostEqual(imported_stellar_model.mass[198], 1.0 | units.MSun, 2)
         self.assertAlmostEqual(imported_stellar_model.mass[0], 0.0 | units.MSun, 2)

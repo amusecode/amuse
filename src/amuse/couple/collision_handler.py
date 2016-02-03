@@ -81,10 +81,10 @@ class CollisionHandler(object):
         
         if not self.stellar_evolution_code is None:
             if (hasattr(self.stellar_evolution_code, "new_particle_from_model") and 
-                (hasattr(merge_products, "internal_structure"))):
+                (hasattr(merge_products, "get_internal_structure"))):
                 for merge_product in merge_products:
                     self.stellar_evolution_code.new_particle_from_model(
-                        merge_product.internal_structure(), 
+                        merge_product.get_internal_structure(), 
                         0.0 | units.Myr, 
                         key = merge_product.key
                     )

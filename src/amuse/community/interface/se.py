@@ -1115,7 +1115,7 @@ def merge_colliding_in_stellar_evolution_code(stellar_evolution_code, primaries,
         merge_product.primary = primary
         merge_product.secondary = secondary
         new_particle = star_collider.merge_products.add_particle(merge_product)
-        stellar_model = new_particle.internal_structure()
+        stellar_model = new_particle.get_internal_structure()
         if create_new_key:
             new_key = merge_product.key
         else:

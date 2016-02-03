@@ -69,11 +69,11 @@ class StellarEncounterInHydrodynamics(object):
         return self.new_particles_with_internal_structure_from_models()
     
     def new_particles_with_internal_structure_from_models(self):
-        def internal_structure(set, particle=None):
+        def get_internal_structure(set, particle=None):
             return self.models[(set.key == particle.key).nonzero()[0]]
         
         result = Particles(len(self.models))
-        result.add_function_attribute("internal_structure", None, internal_structure)
+        result.add_function_attribute("get_internal_structure", None, get_internal_structure)
         result.mass = [model.dmass.sum().as_quantity_in(self.mass_unit) for model in self.models]
         result.radius = [model.radius[-1].as_quantity_in(self.radius_unit) for model in self.models]
         result.position = (self.original_center_of_mass + self.stars_after_encounter.position).as_quantity_in(self.position_unit)
