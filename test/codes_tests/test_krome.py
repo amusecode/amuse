@@ -485,8 +485,8 @@ class TestKrome(TestWithMPI):
         parts.ionrate=2.e-17 | units.s**-1
 
         Ns=len(instance.species)
-
-        parts.abundances=numpy.zeros((1,Ns))        
+        
+        parts.abundances=numpy.zeros((10,Ns))        
 
         instance.particles.add_particles(parts)
   
