@@ -125,6 +125,10 @@ contains
       ! Stage 1: evolve until correct core properties
       do while (H(VAR_H1, kh) > xc)
          status = evolve_one_timestep(star_id)
+         if (status /= 0)  then
+            import_stellar_merger = status
+            return
+         end if
       end do
    
       fac_min_backup = fac_min
