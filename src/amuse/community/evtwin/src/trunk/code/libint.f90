@@ -1242,7 +1242,7 @@ contains
          do while (jo /= 0)
             call backup ( dty, jo )
             if ( jo == 2 ) then
-               evolve_one_timestep = jo
+               evolve_one_timestep = -1000-jo
                ! If not converged, figure out why.
                ! If we're at the He flash, build a ZAHB model.
                call make_zahb_model(star_id, jo, dty)
@@ -1255,12 +1255,12 @@ contains
 
             ! If the timestep is (well) below the dynamical timescale for the star, abort
             if (dty < tdyn) then
-               evolve_one_timestep = 2
+               evolve_one_timestep = -1002
                return
             end if
 
             if ( jo == 3 ) then
-               evolve_one_timestep = jo
+               evolve_one_timestep = -1002
                return
             end if
             jnn = jnn + 1
@@ -1268,8 +1268,12 @@ contains
             call smart_solver ( iter, star%eqns, kt5, jo )
          end do
       end if
-
-      evolve_one_timestep = jo
+     
+      if(jo /= 0) then
+        evolve_one_timestep = -1000-jo
+      else
+         evolve_one_timestep = 0
+      end if
       if (my_verbose) then
          call update_quantities_if_needed(star_id)
          call write_summary ( 1, jnn, 6 )
