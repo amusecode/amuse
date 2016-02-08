@@ -840,18 +840,14 @@ class TestInterface(TestWithMPI):
         self.assertTrue(loglines[1].startswith('end '))
 
     def test25(self):
-        instance = ForTestingInterface()
+        self.check_for_mpi()
+        instance = ForTestingInterface(polling_interval_in_milliseconds = 100)
         (output1, error1) = instance.internal__get_message_polling_interval()
-        error2 = instance.internal__set_message_polling_interval(1234)
-        (output2, error3) = instance.internal__get_message_polling_interval()
-        instance.internal__set_message_polling_interval(0)
         instance.stop()
         self.assertEquals(error1, 0)
-        self.assertEquals(output1, 0)
-        self.assertEquals(error2, 0)
-        self.assertEquals(error3, 0)
-        self.assertEquals(output2, 1234)
+        self.assertEquals(output1, 100000)
     
+
     def test25(self):
         instance = ForTestingInterface(polling_interval_in_milliseconds = 100)
         (output1, error1) = instance.internal__get_message_polling_interval()
@@ -861,6 +857,7 @@ class TestInterface(TestWithMPI):
         
         
     def test26(self):
+        self.check_for_mpi()
         instance1 = ForTestingInterface()
         instance2 = ForTestingInterface()
         portname, error = instance1.internal__open_port()
@@ -870,7 +867,7 @@ class TestInterface(TestWithMPI):
         request2 = instance2.internal__connect_to_port.async(portname)
         request1.wait()
         request2.wait()
-        port_id1, error1 = request1.result()             
+        port_id1, error1 = request1.result()                 
         port_id2, error2 = request2.result()
         self.assertTrue(port_id1 >= 0)
         self.assertTrue(port_id2 >= 0)
@@ -880,7 +877,9 @@ class TestInterface(TestWithMPI):
         
         
 
+
     def test27(self):
+        self.check_for_mpi()
         instance1 = ForTestingInterface(redirection="none")
         instance2 = ForTestingInterface(redirection="none")
         print type(instance1)
@@ -894,7 +893,7 @@ class TestInterface(TestWithMPI):
         request2 = instance1.internal__connect_to_port.async(portname)
         request1.wait()
         request2.wait()
-        port_id1, error1 = request1.result() 
+        port_id1, error1 = request1.result()     
         port_id2, error2 = request2.result()
         instance2.copy_over_interface(port_id2, pickle.dumps(instance1,0).decode('latin-1'))
         instance1.internal__activate_communicator(port_id1)
@@ -909,6 +908,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(errorcode, 0)
         self.assertEquals(result, "world")
         
+
     def test28(self):
         x = ForTestingInterface()
         def next_request(index):

@@ -775,6 +775,7 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertEquals(output2, 1234)
     
     def test22(self):
+        self.check_for_mpi()
         instance = ForTestingInterface(self.exefile)
         t0 = time.time()
         (output1, error1) = instance.internal__get_message_polling_interval()
@@ -791,6 +792,7 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertEquals(output2, 500 * 1000)
         print t1 - t0, t3 - t2
         self.assertTrue((t3 - t2) > 0.25)
+
 
 
     def test23(self):
@@ -849,6 +851,7 @@ class TestCImplementationInterface(TestWithMPI):
 
         
     def test29(self):
+        self.check_for_mpi()
         instance1 = ForTestingInterface(self.exefile)
         instance2 = ForTestingInterface(self.exefile)
         portname, error = instance1.internal__open_port()
@@ -857,12 +860,13 @@ class TestCImplementationInterface(TestWithMPI):
         request2 = instance2.internal__connect_to_port.async(portname)
         request1.wait()
         request2.wait()
-        port_id1, error1 = request1.result() 
+        port_id1, error1 = request1.result()     
         port_id2, error2 = request2.result()
         self.assertTrue(port_id1 >= 0)
         self.assertTrue(port_id2 >= 0)
         self.assertEquals(error1, 0)
         self.assertEquals(error2, 0)
+
 
     def test30(self):
         from amuse.support.interface import ConvertArgumentsException

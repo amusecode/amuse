@@ -126,6 +126,7 @@ class _TestGravityCodes(TestWithMPI):
             instance.particles.remove_particle(particles[40])
             instance.particles.remove_particle(particles[70])
             instance.particles.add_particle(new_particles[0])
+            print new_particles[0].key
             instance.recommit_particles()
             # test the get_mass, get_position and get_velocity functions
             # if they are implemented for the code, otherwise will call
@@ -140,6 +141,7 @@ class _TestGravityCodes(TestWithMPI):
         finally:
             instance.stop()
             
+
     def test8(self):
         factory = self.gravity_code_factory()
         instance = self.new_instance_of_an_optional_code(factory)

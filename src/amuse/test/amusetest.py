@@ -271,6 +271,22 @@ class TestWithMPI(TestCase):
             self.skip('will not run tests that compile codes')
 
 
+    def check_for_mpi(self):
+        if not self.is_mpi_enabled():
+            self.skip('mpi is not enabled')
+
+
+
+
+    def is_mpi_enabled(self):
+        try:
+            from amuse import config
+            if hasattr(config,'mpi'):
+                return config.mpi.is_enabled
+        except ImportError:
+            return True
+
+
 class TestDefaults(options.OptionalAttributes):
 
     @options.option(sections=['test'])
