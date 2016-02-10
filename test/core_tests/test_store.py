@@ -984,3 +984,19 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
 
         os.remove(output_file)
 
+    def test59(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test59"+self.store_version()+".h5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        g=Grid(10,10)
+
+        p=Particles(2)
+
+        p[0].sub=g[0:5]
+
+        io.write_set_to_file(p, output_file,"amuse", version=self.store_version())
+        z = io.read_set_from_file(output_file,"amuse")
+        
+        os.remove(output_file)

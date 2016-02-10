@@ -19,6 +19,10 @@ import random
 import numpy
 from numpy import ma
 
+try:
+    from types import EllipsisType
+except:
+    EllipsisType = type(Ellipsis)
 
 class AbstractParticleSet(AbstractSet):
     """
@@ -1641,7 +1645,7 @@ class ParticlesSuperset(AbstractParticleSet):
         if isinstance(indices, set):
             indices = numpy.array(list(indices))
 
-        if indices is None:
+        if indices is None or isinstance(indices,EllipsisType):
             offset = 0
 
             for setindex, x in enumerate(self._private.particle_sets):
@@ -1691,7 +1695,7 @@ class ParticlesSuperset(AbstractParticleSet):
                 values_for_set = set.get_values_in_store(indices_in_subset, attributes)
                 indices_and_values.append( (indices_in_input, values_for_set) )
 
-        if indices is None:
+        if indices is None or isinstance(indices, EllipsisType):
             resultlength = len(self)
         else:
             resultlength = len(indices)
@@ -2431,7 +2435,7 @@ class ParticlesOverlay(AbstractParticleSet):
         ) = self._split_attributes(attributes)
 
 
-        if indices is None:
+        if indices is None or isinstance(indices,EllipsisType):
             indices0 = self._private.base_set.get_all_indices_in_store()
             indices1 = self._private.overlay_set.get_all_indices_in_store()
         else:
