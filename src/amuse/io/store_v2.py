@@ -761,7 +761,7 @@ class StoreHDF(object):
     def store_values(self, container, group, links = []):
         attributes_group = group.create_group("attributes")
         
-        all_values = container.get_values_in_store(None, container.get_attribute_names_defined_in_store())
+        all_values = container.get_values_in_store(Ellipsis, container.get_attribute_names_defined_in_store())
         for attribute, quantity in zip(container.get_attribute_names_defined_in_store(), all_values):
             if is_quantity(quantity):
                 value = quantity.value_in(quantity.unit)
