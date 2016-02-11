@@ -16,7 +16,7 @@ APP_DIR=Python-${APPVER}
 URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 
-OPENSSLVERSION="1.0.1t"
+OPENSSLVERSION="1.0.1r"
 OPENSSLFILE=openssl-${OPENSSLVERSION}.tar.gz 
 OPENSSLURL=http://mirrors.ibiblio.org/openssl/source/${OPENSSLFILE}
 OPENSSLDIR=openssl-${OPENSSLVERSION}
@@ -82,7 +82,7 @@ echo "..Done"
 cd ${SOURCE_DIR}
 rm -Rf ${OPENSSLDIR}
 echo "Unpacking openssl source files.."
-tar -xf ${DOWNLOAD_DIR}/${OPENSSLFILE}
+tar -xf ${DOWNLOAD_DIR}/${OPENSSLFILE} || exit $?
 echo "..Done"
 cd ..
 
