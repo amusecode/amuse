@@ -609,6 +609,7 @@ class AbstractParticleSet(AbstractSet):
 
         attributes = particles.get_attribute_names_defined_in_store()
         attributes= [x for x in attributes if x not in self._derived_attributes]
+        
         indices = particles.get_all_indices_in_store()
         keys =  particles.get_all_keys_in_store()
         values = particles.get_values_in_store(indices, attributes)
@@ -630,6 +631,7 @@ class AbstractParticleSet(AbstractSet):
                     raise
             self.add_particles_to_store(keys, attributes, converted)
         return ParticlesSubset(self._original_set(),keys)
+
 
 
     def add_particle(self, particle):
@@ -770,14 +772,14 @@ class AbstractParticleSet(AbstractSet):
         my_keys = set(self.get_all_keys_in_store())
         added_keys = numpy.asarray(list(my_keys - other_keys))
         removed_keys = other_keys - my_keys
-        
         removed_keys = list(removed_keys)
-        
-        if removed_keys:
+       
+        if len(removed_keys) > 0:
             other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
             
         if len(added_keys) > 0:
             added_indices = self.get_indices_of_keys(added_keys)
+            
             if len(added_indices) > 1:
                 sort_indices = numpy.argsort(added_indices)
                 added_indices = added_indices[sort_indices]
@@ -805,6 +807,7 @@ class AbstractParticleSet(AbstractSet):
                     else:
                         raise
                 other_particles.add_particles_to_store(added_keys, attributes, converted)
+
 
 
 
@@ -1103,6 +1106,8 @@ class AbstractParticleSet(AbstractSet):
         else:
             self.set_values_in_store(None, [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
 
+    def get_containing_set(self):
+        return self
 class Particles(AbstractParticleSet):
     """
     A set of particles. Attributes and values are stored in

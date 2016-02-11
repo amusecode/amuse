@@ -16,7 +16,7 @@ APP_DIR=Python-${APPVER}
 URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 
-OPENSSLVERSION="1.0.1p"
+OPENSSLVERSION="1.0.1t"
 OPENSSLFILE=openssl-${OPENSSLVERSION}.tar.gz 
 OPENSSLURL=http://mirrors.ibiblio.org/openssl/source/${OPENSSLFILE}
 OPENSSLDIR=openssl-${OPENSSLVERSION}
