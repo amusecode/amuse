@@ -179,4 +179,10 @@ class TestAttributeError(amusetest.TestCase):
             HDFstorage.close()
             del HDFstorage
     
-   
+    def test7(self):
+        print "Test7: testing whether nonexistent particle attribute access raises correct error"
+        p=Particles(2)
+        q=p[0]
+        p.remove_particle(p[0])
+        self.assertRaises(exceptions.KeysNotInStorageException, lambda : q.position)
+        
