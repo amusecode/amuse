@@ -1478,6 +1478,14 @@ class AbstractSet(object):
     
     
 
+    def are_all_keys_in_set(self, keys):
+        try:
+            self.get_indices_of_keys(keys)
+            return True
+        except Exception as ex:
+            return False
+
+
 class LinkedArray(numpy.ndarray):
     """Links between particles and particle sets are stored in LinkedArrays.
     """
@@ -1632,3 +1640,77 @@ class LinkedArray(numpy.ndarray):
                 result.append(type(x))
                 
         return result
+class FixedLinkedArray(LinkedArray):
+    """Links between particles and particle sets are stored in LinkedArrays.
+    """
+    def __new__(cls, input_array, linked_set):
+        result = numpy.asarray(input_array).view(cls)
+        result.linked_set = linked_set
+        return result
+
+
+    def __array_finalize__(self, array_object):
+        if array_object is None:
+            return
+        self.linked_set = getattr(array_object, 'linked_set', None)
+        
+
+    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+        if memento is None:
+            memento = {}
+
+        if id(self.linked_set) in memento:
+            copy_of_container = memento[id(self.linked_set)]
+        else:
+            copy_of_container = self.linked_set.copy(memento, keep_structure, filter_attributes)
+      
+        return FixedLinkedArray(numpy.array(self, copy=True), copy_of_container)
+    
+
+
+    def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None, filter_attributes = lambda particle_set, x : True):
+        if memento is None:
+            memento = dict()
+
+        if must_copy:
+            new_container = x.copy(memento, keep_structure = True, filter_attributes = filter_attributes)
+        else:
+            if from_container is None or self.linked_set is from_container:
+                new_container = to_container
+            else:
+                new_container = self.linked_set
+        return FixedLinkedArray(numpy.array(self, copy=True), new_container)
+        
+
+
+
+    def as_set(self):
+        from amuse.datamodel.particles import ParticlesSubset
+        
+        
+        return self.linked_set._subset(self)
+    
+
+    def to_print_list(self):
+        return list(self)
+
+
+    def get_particles(self, index):
+        keys = self.__getitem__(index)
+        if isinstance(keys, numpy.ndarray):
+            return self.linked_set._subset(keys)
+        else:
+            return self.linked_set._get_particle_unsave(keys)
+        
+
+
+
+    def set_particles(self, index, value):
+        if not self.linked_set.are_all_keys_in_set(value.key):
+            raise Exception("trying to link to a particle that is not in the linked set")
+        self.__setitem__(index, value.key)
+
+
+
+
+
