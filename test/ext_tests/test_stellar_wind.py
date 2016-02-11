@@ -668,11 +668,11 @@ class TestAcceleratingWind(TestStellarWind):
 
         self.assertGreaterEqual(radii.min(), star.radius)
         self.assertLessEqual(radii.max(), 12.023 | units.RSun)
-        self.assertAlmostEqual(radii.mean(), 2.0623944068 | units.RSun)
+        self.assertAlmostEqual(radii.mean(), 2.06872960025 | units.RSun)
 
         self.assertGreaterEqual(velocities.min(), star.initial_wind_velocity)
         self.assertLessEqual(velocities.max(), star.terminal_wind_velocity)
-        self.assertAlmostEqual(velocities.mean(), 0.108901976178 | units.kms)
+        self.assertAlmostEqual(velocities.mean(), 0.103550548126 | units.kms)
 
     def test_acceleration(self):
         star = self.create_star()
@@ -682,6 +682,7 @@ class TestAcceleratingWind(TestStellarWind):
             mode="accelerate",
             acceleration_function="rsquared",
             compensate_gravity=False,
+            r_out_ratio=5,
             )
         star = star_wind.particles.add_particles(star)
 
@@ -706,7 +707,7 @@ class TestAcceleratingWind(TestStellarWind):
         distances = [2, 4, 5, 10, 20] | units.RSun
         accelerations = star_wind.acceleration(star, distances)
         expected = ([137.213699216, 34.3034248039, 21.9541918745,
-                     5.48854796862, 0.0] | units.m/units.s**2)
+                     5.48854796862, 1.37213699216] | units.m/units.s**2)
 
         self.assertAlmostEqual(accelerations, expected)
 
@@ -726,7 +727,7 @@ class TestAcceleratingWind(TestStellarWind):
         accelerations = star_wind.acceleration(star, distances)
         print accelerations
         expected = ([-0.0187296577097, -0.00371643479392, -0.00220802076676,
-                     0.] | units.m/units.s**2)
+                     -0.000438126811] | units.m/units.s**2)
 
         self.assertAlmostEqual(accelerations, expected)
 
@@ -739,6 +740,7 @@ class TestAcceleratingWind(TestStellarWind):
             acceleration_function="rsquared",
             compensate_gravity=False,
             compensate_pressure=False,
+            r_out_ratio=5,
             )
         star_wind.particles.add_particles(star)
 
