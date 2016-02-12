@@ -569,7 +569,6 @@ class AccelerationFunction(object):
         pass
 
     def velocity_from_radius(self, radius, star):
-
         def stripped_acceleration(r1):
             acc = self.acceleration_from_radius(r1 | units.RSun, star)
             return acc.value_in(units.RSun/units.yr**2)
@@ -648,10 +647,15 @@ class AccelerationFunction(object):
         return value
 
     def fix_acc_cutoff(self, r, acc, star):
+        if star.acc_cutoff is None:
+            return acc
+
         test = r > star.acc_cutoff
         return self.fix_cutoffs(test, acc, star, quantities.zero)
 
     def fix_v_cutoff(self, r, v, star):
+        if star.acc_cutoff is None:
+            return v
         test = r > star.acc_cutoff
         return self.fix_cutoffs(test, v, star, star.terminal_wind_velocity)
 
@@ -686,9 +690,13 @@ class ConstantVelocityAcceleration(AccelerationFunction):
 
 class RSquaredAcceleration(AccelerationFunction):
     def scaling(self, star):
-        return 0.5 * ((star.terminal_wind_velocity**2
-                       - star.initial_wind_velocity**2)
-                      / (1./star.radius - 1./star.acc_cutoff))
+        denominator = 1./star.radius
+
+        if star.acc_cutoff is not None:
+            denominator = denominator - 1./star.acc_cutoff
+
+        numerator = star.terminal_wind_velocity**2 - star.initial_wind_velocity**2
+        return 0.5 * numerator / denominator
 
     def acceleration_from_radius(self, r, star):
         acc = self.scaling(star)/r**2
@@ -702,9 +710,13 @@ class RSquaredAcceleration(AccelerationFunction):
 
 class DelayedRSquaredAcceleration(AccelerationFunction):
     def scaling(self, star):
-        return 0.5 * ((star.terminal_wind_velocity**2
-                       - star.initial_wind_velocity**2)
-                      / (1./star.acc_start - 1./star.acc_cutoff))
+        denominator = 1./star.acc_start
+
+        if star.acc_cutoff is not None:
+            denominator = denominator - 1./star.acc_cutoff
+
+        numerator = star.terminal_wind_velocity**2 - star.initial_wind_velocity**2
+        return 0.5 * numerator / denominator
 
     def fix_acc_start_cutoff(self, r, acc, star):
         return self.fix_cutoffs(r < star.acc_start, acc, star, quantities.zero)
@@ -747,7 +759,7 @@ class BetaLawAcceleration(AccelerationFunction):
 class LogisticVelocityAcceleration(AccelerationFunction):
     """ The velocity follows the Logistic (Sigmoid) Function """
 
-    def __init__(self, steepness=10, r_mid=None):
+    def __init__(self, steepness=10, r_mid=3.):
         super(LogisticVelocityAcceleration, self).__init__()
         self.steepness = steepness
         self.r_mid = r_mid
@@ -756,10 +768,7 @@ class LogisticVelocityAcceleration(AccelerationFunction):
         v_init = star.initial_wind_velocity
         v_end = star.terminal_wind_velocity
 
-        if self.r_mid is None:
-            r_mid = (star.acc_cutoff + star.radius)/2.
-        else:
-            r_mid = self.r_mid * star.radius
+        r_mid = self.r_mid * star.radius
         exp = numpy.exp(-self.steepness * (r - r_mid) / (r_mid))
 
         return v_init, v_end, r_mid, exp
@@ -828,9 +837,9 @@ class AcceleratingWind(SimpleWind):
                      }
 
     def __init__(self, *args, **kwargs):
-        r_out_ratio = kwargs.pop("r_out_ratio", 5)
+        r_out_ratio = kwargs.pop("r_out_ratio", None)
         acc_start_ratio = kwargs.pop("acc_start_ratio", 2)
-        grav_r_out_ratio = kwargs.pop("grav_r_out_ratio", 10)
+        grav_r_out_ratio = kwargs.pop("grav_r_out_ratio", None)
         acc_func = kwargs.pop("acceleration_function", "constant_velocity")
         acc_func_args = kwargs.pop("acceleration_function_args", {})
         self.critical_timestep = kwargs.pop("critical_timestep", None)
@@ -844,16 +853,28 @@ class AcceleratingWind(SimpleWind):
 
         self.acc_function = acc_func(**acc_func_args)
 
+        def r_out_function(r):
+            if r_out_ratio is None:
+                return None
+            else:
+                return r_out_ratio * r
+
         self.particles.add_calculated_attribute(
-            "acc_cutoff", lambda r: r_out_ratio * r,
+            "acc_cutoff", r_out_function,
+            attributes_names=['radius'])
+
+        def grav_r_out_function(r):
+            if r_out_ratio is None:
+                return None
+            else:
+                return grav_r_out_ratio * r
+
+        self.particles.add_calculated_attribute(
+            "grav_acc_cutoff", grav_r_out_function,
             attributes_names=['radius'])
 
         self.particles.add_calculated_attribute(
             "acc_start", lambda r: acc_start_ratio * r,
-            attributes_names=['radius'])
-
-        self.particles.add_calculated_attribute(
-            "grav_acc_cutoff", lambda r: grav_r_out_ratio * r,
             attributes_names=['radius'])
 
         self.internal_energy_formula = self.scaled_u_from_T
@@ -953,30 +974,32 @@ class AcceleratingWind(SimpleWind):
     def acceleration(self, star, radii):
         accelerations = numpy.zeros(radii.shape) | units.m/units.s**2
 
-        i_acc = ((radii >= star.radius) & (radii < star.acc_cutoff))
-        i_all = radii < star.acc_cutoff
-        i_all_grav = radii < star.grav_acc_cutoff
+        i_acc = radii >= star.radius
+        if star.acc_cutoff is not None:
+            i_acc = i_acc & (radii < star.acc_cutoff)
 
-        accelerations[i_acc] += self.acc_function.acceleration_from_radius(
-            radii[i_acc], star)
+
+        accelerations[i_acc] += self.acc_function.acceleration_from_radius(radii[i_acc], star)
 
         if self.compensate_pressure:
             if self.staging_radius is not None:
                 i_pres = radii > star.radius * self.staging_radius
             else:
-                i_pres = i_all
+                i_pres = i_acc
             accelerations[i_pres] -= self.pressure_accelerations(
                 i_pres, radii[i_pres], star)
 
         if self.compensate_gravity:
-            r = radii[i_all_grav]
-            accelerations[i_all_grav] += constants.G * star.mass / r**2
+            if star.grav_acc_cutoff is not None:
+                indices = radii < star.grav_acc_cutoff
+                accelerations[indices] += constants.G * star.mass / radii[indices]**2
+            else:
+                accelerations += constants.G * star.mass / radii**2
 
         if self.staging_radius is not None:
             i_stag = radii < star.radius * self.staging_radius
             if i_stag.any():
-                accelerations[i_stag] += self.staging_accelerations(
-                    i_stag, radii[i_stag], star)
+                accelerations[i_stag] += self.staging_accelerations(i_stag, radii[i_stag], star)
 
         return accelerations
 

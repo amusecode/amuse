@@ -3386,10 +3386,10 @@ class Particle(object):
 
 
     def __getattr__(self, name_of_the_attribute):
+        if self._set_index is None or self._set_version != self.particles_set._get_version():
+            object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
+            object.__setattr__(self, "_set_version", self.particles_set._get_version())
         try:
-            if self._set_index is None or self._set_version != self.particles_set._get_version():
-                object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
-                object.__setattr__(self, "_set_version", self.particles_set._get_version())
             return self.particles_set._get_value_of_attribute(self, self._set_index, name_of_the_attribute)
         except Exception as ex:
             raise AttributeError("You tried to access attribute '{0}' but this attribute is not defined for this set.".format(name_of_the_attribute, ex))

@@ -221,6 +221,8 @@ src/amuse/community/mocassin/worker_code.f90
 src/amuse/community/mpiamrvac/worker_code.f90
 src/amuse/community/nbody6xx/worker_code.f90
 src/amuse/community/nbody6xx/nbody6xx_worker
+src/amuse/community/pikachu/worker_code.cc
+src/amuse/community/pikachu/worker_code.h
 src/amuse/community/ph4/interface.h
 src/amuse/community/ph4/ph4_worker
 src/amuse/community/ph4/src/close_encounter.gpuo
@@ -350,9 +352,3 @@ examples/syllabus/*.h5
 SeBa.data
 binev.data
 daltons.txt
-
-
-
-
-
-
