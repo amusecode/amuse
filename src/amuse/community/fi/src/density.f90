@@ -291,6 +291,7 @@ subroutine densnhsmooth
   integer :: ib,buf(nbuf),todo(nbuf),ntodo,totalsearches
   real :: time1,time2,mintime,maxtime,tottime,utime1,utime2
   real oldrho, drhosum
+  integer ndens, chunksize
  
   if(nsphact.EQ.0) return
   imax=0
@@ -301,20 +302,23 @@ subroutine densnhsmooth
 
   maxthread=1
   nchunk=1
+  ndens=0
 !$  maxthread=omp_get_max_threads()
 !$  nchunk=MAX(MIN(10*maxthread,nsphact/nbuf),maxthread)
+  chunksize=nsphact/nchunk
+  if(mod(nsphact,nchunk).GT.0) chunksize=chunksize+1
   totalsearches=0
 !$omp parallel shared(nchunk) &
 !$omp private(i,j,p,k,nneigh,kmin,kmax, buf,todo,ntodo,ib,chunk,oldrho) &
 !$omp reduction( max : imax,nnmax,maxtime) &
-!$omp reduction(+ : jtot,nntot,tottime,totalsearches,drhosum) &
+!$omp reduction(+ : jtot,nntot,tottime,totalsearches,drhosum,ndens) &
 !$omp reduction( min : nnmin,mintime) 
   call cpu_time(time1)
   ncalls=0;nsearches=0
 !$omp do schedule(guided,1) 
   do chunk=1,nchunk
-    kmin=((chunk-1)*nsphact)/nchunk+1
-    kmax=(chunk*nsphact)/nchunk
+    kmin=(chunk-1)*chunksize+1
+    kmax=min(nsphact,chunk*chunksize)
     buf=0
     reuseflag=1
     searchreuse=0
@@ -325,6 +329,7 @@ subroutine densnhsmooth
         call phsm(p,i,j)  
         call pcond_srch(root,p,nneigh,srlist)
         oldrho=rho(p)
+        ndens=ndens+1
         call pdensity(p,nneigh)
         if(oldrho.NE.0) drhosum=drhosum+abs(rho(p)-oldrho)/oldrho
         nnmin=MIN(nnmin,nneigh)
@@ -356,7 +361,7 @@ subroutine densnhsmooth
     write(*,'(" <densnhsmooth> time:", 3f8.2)') maxtime,mintime,tottime
     print*,'<densnhsmooth> max iter, fails:',imax,jtot
   endif
-  
+  if(ndens.NE.nsphact) call terror("inconsistent particle dens count")
   if(verbosity.GT.0.AND.drhosum/npactive.GT.0.01) &
       print*,' *** drho warning *** ',drhosum/npactive, npactive
 end subroutine
