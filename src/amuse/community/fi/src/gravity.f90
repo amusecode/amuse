@@ -34,6 +34,7 @@
   integer, parameter :: nbuf=32
   integer :: omp_get_max_threads,totalsearches
   integer :: maxthread, nchunk,k,imin,imax,ib, buf(nbuf),todo(nbuf),ntodo
+  integer :: niter
 
   if(npactive.EQ.0) return
   nttot=0; ntmin=nbodies; ntmax=0
@@ -41,6 +42,7 @@
 
   maxthread=1
   nchunk=1
+  niter=0
 !$  maxthread=omp_get_max_threads()
 !$  nchunk=MAX(MIN(10*maxthread,npactive/nbuf),maxthread)	
    totalsearches=0
@@ -48,7 +50,7 @@
 !$omp shared(root,nchunk) & 
 !$omp private(p,nterms,lesoft,time1,time2, &
 !$omp imin,imax,ib,i,k,buf,todo,ntodo) &
-!$omp reduction( + : nttot, esofttot,tottime,totalsearches) & 
+!$omp reduction( + : nttot, esofttot,tottime,totalsearches,niter) & 
 !$omp reduction( MIN : ntmin,mintime) &
 !$omp reduction( MAX : ntmax,maxtime)
    call cpu_time(time1)
@@ -56,12 +58,13 @@
 !$omp do schedule(guided,1)
    do k=1,nchunk
     buf=0
-    imin=((k-1)*npactive)/nchunk+1
-    imax=(k*npactive)/nchunk
+    imin=int(npactive*float(k-1)/nchunk)+1
+    imax=int(npactive*float(k)/nchunk)
     reuseflag=1; searchreuse=0
     do i=imin,imax
       call pretreewalk(i,imax,nbuf,buf,ntodo,todo)	   
-      do ib=1,ntodo	 
+      do ib=1,ntodo
+       niter=niter+1	 
        p=todo(ib)
        if(.NOT.directsum) then
         call pcond_treewalk(root,p,nterms)
@@ -99,6 +102,7 @@
    write(*,'(" <accgrav> time:", 2f8.2)') maxtime,mintime
    print*,'<accgrav> < a > t:',ntmin,ntavg,ntmax,nttot
   endif
+  if(niter.NE.npactive) call terror("accgrav inconsistent iter count")
  end subroutine
 
  subroutine pmaccgrav(option)

@@ -5,6 +5,7 @@ subroutine omp_entdotaccsphco
  integer :: ib,buf(nbuf),todo(nbuf),ntodo,totalsearches
  integer omp_get_max_threads,nchunk,chunk,maxthread
  real time1,time2,mintime,maxtime,tottime,utime1,utime2
+ integer :: niter
 
  if(nsphact.EQ.0) return
  nnmin=nbodies; nnmax=0; nntot=0
@@ -12,26 +13,28 @@ subroutine omp_entdotaccsphco
 
  maxthread=1
  nchunk=1
+ niter=0
 !$  maxthread=omp_get_max_threads()
 !$  nchunk=MAX(MIN(10*maxthread,nsphact/nbuf),maxthread)	
  totalsearches=0
 !$omp parallel private(p,k,nneigh,time1,time2,kmin,kmax, &
 !$omp  buf,todo,ntodo,ib,chunk) shared(nchunk)&
-!$omp reduction( + : tottime,nntot,totalsearches) & 
+!$omp reduction( + : tottime,nntot,totalsearches,niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
  call cpu_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
-  kmin=((chunk-1)*nsphact)/nchunk+1
-  kmax=(chunk*nsphact)/nchunk
+  kmin=int(nsphact*float(chunk-1)/nchunk)+1
+  kmax=int(nsphact*float(chunk)/nchunk)
   buf=0
   reuseflag=1
   searchreuse=0
   do k=kmin,kmax
    call precomsearch(k,kmax,nbuf,buf,ntodo,todo)
    do ib=1,ntodo
+    niter=niter+1
     p=todo(ib)
     call pcond_comsrch(root,p,nneigh,srlist)
     call pentdotaccsphco(p,nneigh)
@@ -52,6 +55,7 @@ subroutine omp_entdotaccsphco
  if(verbosity.GT.0) print*,'<dentacc> parts,searches', nsphact,totalsearches 
  if(verbosity.GT.0) print*,'<dentacc> < a > t',nnmin,nnavg,nnmax,nntot
  if(verbosity.GT.0) write(*,'(" <dentacc> time:", 3f8.2)') mintime,maxtime,tottime
+ if(niter.NE.nsphact) call terror("inconsistent omp_entdotaccsphco iter count")
 end
 
 subroutine omp_accsphco
@@ -61,6 +65,7 @@ subroutine omp_accsphco
  integer :: ib,buf(nbuf),todo(nbuf),ntodo,totalsearches
  integer omp_get_max_threads,nchunk,chunk,maxthread
  real time1,time2,mintime,maxtime,tottime,utime1,utime2
+ integer :: niter
 
  if(nsphact.EQ.0) return
  nnmin=nbodies; nnmax=0; nntot=0
@@ -68,26 +73,28 @@ subroutine omp_accsphco
 
  maxthread=1
  nchunk=1
+ niter=0
 !$  maxthread=omp_get_max_threads()
 !$  nchunk=MAX(MIN(10*maxthread,nsphact/nbuf),maxthread)	
 totalsearches=0
 !$omp parallel private(p,k,nneigh,time1,time2,kmin,kmax, &
 !$omp  buf,todo,ntodo,ib,chunk) shared(nchunk)&
-!$omp reduction( + : tottime,nntot) & 
+!$omp reduction( + : tottime,nntot,niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
  call cpu_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
-  kmin=((chunk-1)*nsphact)/nchunk+1
-  kmax=(chunk*nsphact)/nchunk
+  kmin=int(nsphact*float(chunk-1)/nchunk)+1
+  kmax=int(nsphact*float(chunk)/nchunk)
   buf=0
   reuseflag=1
   searchreuse=0
   do k=kmin,kmax
    call precomsearch(k,kmax,nbuf,buf,ntodo,todo)
    do ib=1,ntodo
+    niter=niter+1
     p=todo(ib)
     call pcond_comsrch(root,p,nneigh,srlist)
     call paccsphco(p,nneigh)
@@ -107,6 +114,7 @@ totalsearches=0
  if(verbosity.GT.0) print*,'<accsph> parts,searches', nsphact,totalsearches 
  if(verbosity.GT.0) print*,'<accsph> < a > t',nnmin,nnavg,nnmax,nntot
  if(verbosity.GT.0) write(*,'(" <accsph> time:", 3f8.2)') mintime,maxtime,tottime
+ if(niter.NE.nsphact) call terror("inconsistent omp_accsphco iter count")
 end
 
 
@@ -117,6 +125,7 @@ subroutine omp_entdot
  integer :: ib,buf(nbuf),todo(nbuf),ntodo,totalsearches
  integer omp_get_max_threads,nchunk,chunk,maxthread
  real time1,time2,mintime,maxtime,tottime,utime1,utime2
+ integer :: niter
 
  if(nsphact.EQ.0) return
  nnmin=nbodies; nnmax=0; nntot=0
@@ -124,26 +133,28 @@ subroutine omp_entdot
 
  maxthread=1
  nchunk=1
+ niter=0
 !$  maxthread=omp_get_max_threads()
 !$  nchunk=MAX(MIN(10*maxthread,nsphact/nbuf),maxthread)	
  totalsearches=0 
 !$omp parallel private(p,k,nneigh,time1,time2,kmin,kmax, &
 !$omp  buf,todo,ntodo,ib,chunk) shared(nchunk)&
-!$omp reduction( + : tottime,nntot) & 
+!$omp reduction( + : tottime,nntot, niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
  call cpu_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
-  kmin=((chunk-1)*nsphact)/nchunk+1
-  kmax=(chunk*nsphact)/nchunk
+  kmin=int(nsphact*float(chunk-1)/nchunk)+1
+  kmax=int(nsphact*float(chunk)/nchunk)
   buf=0
   reuseflag=1
   searchreuse=0
   do k=kmin,kmax
    call precomsearch(k,kmax,nbuf,buf,ntodo,todo)
    do ib=1,ntodo
+    niter=niter+1
     p=todo(ib)
     call pcond_comsrch(root,p,nneigh,srlist)
     call pentdot(p,nneigh)
@@ -165,6 +176,7 @@ subroutine omp_entdot
  if(verbosity.GT.0) print*,'<entdot> parts,searches', nsphact,totalsearches
  if(verbosity.GT.0) print*,'<entdot> < a > t',nnmin,nnavg,nnmax,nntot
  if(verbosity.GT.0) write(*,'(" <entdot> time:", 3f8.2)') mintime,maxtime,tottime
+ if(niter.NE.nsphact) call terror("inconsistent omp_entdot iter count")
 end
 
 subroutine pentdot(p,n)
@@ -531,6 +543,7 @@ subroutine omp_ethdotaccsphco
  integer :: ib,buf(nbuf),todo(nbuf),ntodo,totalsearches
  integer omp_get_max_threads,nchunk,chunk,maxthread
  real time1,time2,mintime,maxtime,tottime,utime1,utime2
+ integer :: niter
 
  if(nsphact.EQ.0) return
  nnmin=nbodies; nnmax=0; nntot=0
@@ -538,26 +551,28 @@ subroutine omp_ethdotaccsphco
 
  maxthread=1
  nchunk=1
+ niter=0
 !$  maxthread=omp_get_max_threads()
 !$  nchunk=MAX(MIN(10*maxthread,nsphact/nbuf),maxthread)	
  totalsearches=0
 !$omp parallel private(p,k,nneigh,time1,time2,kmin,kmax, &
 !$omp  buf,todo,ntodo,ib,chunk) shared(nchunk)&
-!$omp reduction( + : tottime,nntot,totalsearches) & 
+!$omp reduction( + : tottime,nntot,totalsearches,niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
  call cpu_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
-  kmin=((chunk-1)*nsphact)/nchunk+1
-  kmax=(chunk*nsphact)/nchunk
+  kmin=int(nsphact*float(chunk-1)/nchunk)+1
+  kmax=int(nsphact*float(chunk)/nchunk)
   buf=0
   reuseflag=1
   searchreuse=0
   do k=kmin,kmax
    call precomsearch(k,kmax,nbuf,buf,ntodo,todo)
    do ib=1,ntodo
+    niter=niter+1
     p=todo(ib)
     call pcond_comsrch(root,p,nneigh,srlist)
     call pethdotaccsphco(p,nneigh)
@@ -578,6 +593,7 @@ subroutine omp_ethdotaccsphco
  if(verbosity.GT.0) print*,'<dethacc> parts,searches', nsphact,totalsearches 
  if(verbosity.GT.0) print*,'<dethacc> < a > t',nnmin,nnavg,nnmax,nntot
  if(verbosity.GT.0) write(*,'(" <dethacc> time:", 3f8.2)') mintime,maxtime,tottime
+ if(niter.NE.nsphact) call terror("inconsistent omp_ethdotaccsphco iter count")
 end
 
 subroutine omp_ethdotco
@@ -587,6 +603,7 @@ subroutine omp_ethdotco
  integer :: ib,buf(nbuf),todo(nbuf),ntodo,totalsearches
  integer omp_get_max_threads,nchunk,chunk,maxthread
  real time1,time2,mintime,maxtime,tottime,utime1,utime2
+ integer :: niter
 
  if(nsphact.EQ.0) return
  nnmin=nbodies; nnmax=0; nntot=0
@@ -594,26 +611,28 @@ subroutine omp_ethdotco
 
  maxthread=1
  nchunk=1
+ niter=0
 !$  maxthread=omp_get_max_threads()
 !$  nchunk=MAX(MIN(10*maxthread,nsphact/nbuf),maxthread)	
  totalsearches=0
 !$omp parallel private(p,k,nneigh,time1,time2,kmin,kmax, &
 !$omp  buf,todo,ntodo,ib,chunk) shared(nchunk)&
-!$omp reduction( + : tottime,nntot,totalsearches) & 
+!$omp reduction( + : tottime,nntot,totalsearches,niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
  call cpu_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
-  kmin=((chunk-1)*nsphact)/nchunk+1
-  kmax=(chunk*nsphact)/nchunk
+  kmin=int(nsphact*float(chunk-1)/nchunk)+1
+  kmax=int(nsphact*float(chunk)/nchunk)
   buf=0
   reuseflag=1
   searchreuse=0
   do k=kmin,kmax
    call precomsearch(k,kmax,nbuf,buf,ntodo,todo)
    do ib=1,ntodo
+    niter=niter+1
     p=todo(ib)
     call pcond_comsrch(root,p,nneigh,srlist)
     call pethdotco(p,nneigh)
@@ -634,6 +653,7 @@ subroutine omp_ethdotco
  if(verbosity.GT.0) print*,'<deth> parts,searches', nsphact,totalsearches 
  if(verbosity.GT.0) print*,'<deth> < a > t',nnmin,nnavg,nnmax,nntot
  if(verbosity.GT.0) write(*,'(" <deth> time:", 3f8.2)') mintime,maxtime,tottime
+ if(niter.NE.nsphact) call terror("inconsistent omp_ethdotco iter count")
 end
 
 

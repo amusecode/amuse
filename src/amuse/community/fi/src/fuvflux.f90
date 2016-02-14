@@ -5,6 +5,7 @@ subroutine fuvflux
   integer, parameter :: nbuf=32
   integer :: omp_get_max_threads
   integer :: maxthread, nchunk,k,imin,imax,ib, buf(nbuf),todo(nbuf),ntodo
+  integer :: niter
   
   if(nstar.LE.0.OR.nsphact.LE.0) return
   if(.NOT.directsum.AND.nstar.GT.ntreemin) call startree
@@ -15,6 +16,7 @@ subroutine fuvflux
 
   maxthread=1
   nchunk=1
+  niter=0
 !$  maxthread=omp_get_max_threads()
 !$  nchunk=MAX(MIN(10*maxthread,nsphact/nbuf),maxthread)	
 
@@ -22,7 +24,7 @@ subroutine fuvflux
 !$omp shared(root,nchunk) & 
 !$omp private(p,nterms,time1,time2, &
 !$omp imin,imax,ib,i,k,buf,todo,ntodo) &
-!$omp reduction( + : nttotfuv,tottime,totalsearches) & 
+!$omp reduction( + : nttotfuv,tottime,totalsearches,niter) & 
 !$omp reduction( MIN : ntminfuv, mintime) &
 !$omp reduction( MAX : ntmaxfuv, maxtime)
   call cpu_time(time1)
@@ -30,12 +32,13 @@ subroutine fuvflux
 !$omp do schedule(guided,1)
   do k=1,nchunk
     buf=0
-    imin=((k-1)*nsphact)/nchunk+1
-    imax=(k*nsphact)/nchunk
+    imin=int(nsphact*float(k-1)/nchunk)+1
+    imax=int(nsphact*float(k)/nchunk)
     reuseflag=1; searchreuse=0
     do i=imin,imax
       call prefuvwalk(i,imax,nbuf,buf,ntodo,todo)	   
-      do ib=1,ntodo	 
+      do ib=1,ntodo
+        niter=niter+1
         p=todo(ib)
         if(.NOT.directsum.AND.nstar.GT.ntreemin) then
           call pcond_fuvwalk(root,p,nterms)
@@ -71,6 +74,7 @@ subroutine fuvflux
     write(*,'(" <fuvflux> time:", 3f8.2)') maxtime,mintime
     print*,'<fuvflux> < a > t:',ntminfuv,ntavgfuv,ntmaxfuv,nttotfuv
   endif
+  if(niter.NE.nsphact) call terror("fuvflux inconsistent iter count")
 end subroutine
 				
 subroutine zerofuv
