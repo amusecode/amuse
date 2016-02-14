@@ -1382,7 +1382,7 @@ class MpiChannel(AbstractMessageChannel):
         
         def split_input_array(i, arr_in):
             if call_count == 1:
-                return [tmp[i * self.max_message_length] for tmp in arr_in]
+                return [tmp[i * self.max_message_length] if hasattr(tmp, '__iter__') else tmp for tmp in arr_in]
             else:
                 result = []
                 for x in arr_in:
@@ -2222,7 +2222,7 @@ class SocketChannel(AbstractMessageChannel):
         
         def split_input_array(i, arr_in):
             if call_count == 1:
-                return [tmp[i * self.max_message_length] for tmp in arr_in]
+                return [tmp[i * self.max_message_length] if hasattr(tmp, '__iter__') else tmp for tmp in arr_in]
             else:
                 result = []
                 for x in arr_in:
@@ -2588,7 +2588,7 @@ class DistributedChannel(AbstractMessageChannel):
         
         def split_input_array(i, arr_in):
             if call_count == 1:
-                return [tmp[i * self.max_message_length] for tmp in arr_in]
+                return [tmp[i * self.max_message_length] if hasattr(tmp, '__iter__') else tmp for tmp in arr_in]
             else:
                 result = []
                 for x in arr_in:
