@@ -30,7 +30,7 @@ subroutine mech_feedback
 subroutine pp_feedback(dt,tnu)
  include 'globals.h'
  
-   integer i,p,npp
+   integer i,p,npp, niter
    integer mythread,totalthread,low,up
 !$ integer omp_get_thread_num,omp_get_num_threads 
    real tnu,dt
@@ -55,7 +55,7 @@ subroutine pp_feedback(dt,tnu)
    mintime=1.e10; maxtime=0.; tottime=0
    lsnheat=0.
 !$omp  parallel &
-!$omp private(p,i,sn_energy,starpos,searchrad, &
+!$omp private(niter, p,i,sn_energy,starpos,searchrad, &
 !$omp  mythread,totalthread,starent,low,up,time1,time2,p_acc) &
 !$omp shared( npp,tnu,dt,lsnheat,ts) if(npp.gt.50) &
 !$omp reduction( max : maxtime) &
@@ -111,16 +111,23 @@ if(nsphact.GT.0) then
   enddo
  p_acc(pactive(nsphact)+1:nsph,1:3)=0.
 
+ niter=0
  do i=0,totalthread-1
-  low=mod(i+mythread,totalthread)*nsph/totalthread+1
-  up=min(nsph,(mod(i+mythread,totalthread)+1)*nsph/totalthread)
+  low=int(float(mod(i+mythread,totalthread))/totalthread*nsph)+1
+  up= int(float(mod(i+mythread,totalthread)+1)/totalthread*nsph)
   do p=low,up
+   niter=niter+1
    acc(p,1)=acc(p,1)+p_acc(p,1)
    acc(p,2)=acc(p,2)+p_acc(p,2)
    acc(p,3)=acc(p,3)+p_acc(p,3)
   enddo
 !$omp barrier
  enddo
+ if(niter.NE.nsph) then
+!$omp critical   
+    call terror(' pp_feedback inconsistent iter count')
+!$omp end critical
+ endif
 endif 
  mintime=MIN(mintime,time2-time1)
  maxtime=MAX(maxtime,time2-time1)
@@ -285,7 +292,7 @@ end function sn_activity
 subroutine randomvelfeedback(dt,tnu)
  include 'globals.h'
  
-   integer i,p,npp
+   integer i,p,npp,niter
    integer mythread,totalthread,low,up
 !$ integer omp_get_thread_num,omp_get_num_threads 
    real tnu,dt
@@ -307,7 +314,7 @@ subroutine randomvelfeedback(dt,tnu)
    
    lsnheat=0.
 !$omp parallel &
-!$omp private(p,i,sn_energy,starpos,searchrad,mythread,totalthread,low,up,p_vel) &
+!$omp private(niter, p,i,sn_energy,starpos,searchrad,mythread,totalthread,low,up,p_vel) &
 !$omp shared( npp,tnu,dt,lsnheat) if(npp.gt.50)
         mythread=0
         totalthread=1
@@ -354,16 +361,23 @@ subroutine randomvelfeedback(dt,tnu)
   enddo
   p_vel(pactive(nsphact)+1:nsph,1:3)=0.
 
+ niter=0
  do i=0,totalthread-1
-  low=mod(i+mythread,totalthread)*nsph/totalthread+1
-  up=min(nsph,(mod(i+mythread,totalthread)+1)*nsph/totalthread)
+  low=int(float(mod(i+mythread,totalthread))/totalthread*nsph)+1
+  up= int(float(mod(i+mythread,totalthread)+1)/totalthread*nsph)
   do p=low,up
+   niter=niter+1
    vel(p,1)=vel(p,1)+p_vel(p,1)
    vel(p,2)=vel(p,2)+p_vel(p,2)
    vel(p,3)=vel(p,3)+p_vel(p,3)
   enddo
 !$omp barrier
  enddo
+ if(niter.NE.nsph) then
+!$omp critical   
+    call terror(' randomvelfeedback inconsistent iter count')
+!$omp end critical
+ endif
  endif
  deallocate(p_vel)
 !$omp end parallel
@@ -440,7 +454,7 @@ end
 subroutine energyfeedback(dt,tnu)
  include 'globals.h'
  
-   integer i,p,npp
+   integer i,p,npp,niter
    integer mythread,totalthread,low,up
 !$ integer omp_get_thread_num,omp_get_num_threads 
    real tnu,dt
@@ -459,7 +473,7 @@ subroutine energyfeedback(dt,tnu)
    enddo
    lsnheat=0.
 !$omp parallel &
-!$omp private(p,i,sn_energy,starpos,searchrad,mythread,totalthread,low,up,p_eth) &
+!$omp private(niter,p,i,sn_energy,starpos,searchrad,mythread,totalthread,low,up,p_eth) &
 !$omp shared( npp,tnu,dt,lsnheat) if(npp.gt.50)
         mythread=0
         totalthread=1
@@ -495,15 +509,22 @@ subroutine energyfeedback(dt,tnu)
   enddo
   p_eth(pactive(nsphact)+1:nsph)=0.
 
+  niter=0
   do i=0,totalthread-1
-  low=mod(i+mythread,totalthread)*nsph/totalthread+1
-  up=min(nsph,(mod(i+mythread,totalthread)+1)*nsph/totalthread)
+  low=int(float(mod(i+mythread,totalthread))/totalthread*nsph)+1
+  up= int(float(mod(i+mythread,totalthread)+1)/totalthread*nsph)
   do p=low,up
+   niter=niter+1
    ethermal(p)=ethermal(p)+p_eth(p)
    ethold(p)=ethold(p)+p_eth(p)
   enddo
 !$omp barrier
   enddo
+ if(niter.NE.nsph) then
+!$omp critical   
+    call terror(' energyfeedback inconsistent iter count')
+!$omp end critical
+ endif
  endif
  deallocate(p_eth)
 !$omp end parallel
@@ -562,7 +583,7 @@ end
 subroutine heatingfeedback(dt,tnu)
  include 'globals.h'
  
-   integer i,p,npp
+   integer i,p,npp,niter
    integer mythread,totalthread,low,up
 !$ integer omp_get_thread_num,omp_get_num_threads 
    real tnu,dt
@@ -587,7 +608,7 @@ subroutine heatingfeedback(dt,tnu)
    enddo
    lsnheat=0.
 !$omp parallel &
-!$omp private(p,i,sn_energy,starpos,searchrad,mythread,totalthread,low,up,pesn) &
+!$omp private(niter,p,i,sn_energy,starpos,searchrad,mythread,totalthread,low,up,pesn) &
 !$omp shared( npp,tnu,dt,lsnheat) if(npp.gt.50)
         mythread=0
         totalthread=1
@@ -623,14 +644,21 @@ subroutine heatingfeedback(dt,tnu)
   enddo
   pesn(pactive(nsphact)+1:nsph)=0.
 
+  niter=0
   do i=0,totalthread-1
-  low=mod(i+mythread,totalthread)*nsph/totalthread+1
-  up=min(nsph,(mod(i+mythread,totalthread)+1)*nsph/totalthread)
+  low=int(float(mod(i+mythread,totalthread))/totalthread*nsph)+1
+  up= int(float(mod(i+mythread,totalthread)+1)/totalthread*nsph)
   do p=low,up
+   niter=niter+1
    esnthdt(p)=esnthdt(p)+pesn(p)
   enddo
 !$omp barrier
   enddo
+ if(niter.NE.nsph) then
+!$omp critical   
+    call terror(' heatingfeedback inconsistent iter count')
+!$omp end critical
+ endif
  endif
  deallocate(pesn)
 !$omp end parallel
