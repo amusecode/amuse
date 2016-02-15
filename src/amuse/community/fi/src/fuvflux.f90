@@ -27,7 +27,7 @@ subroutine fuvflux
 !$omp reduction( + : nttotfuv,tottime,totalsearches,niter) & 
 !$omp reduction( MIN : ntminfuv, mintime) &
 !$omp reduction( MAX : ntmaxfuv, maxtime)
-  call cpu_time(time1)
+  call wall_time(time1)
   ncalls=0;nsearches=0		
 !$omp do schedule(guided,1)
   do k=1,nchunk
@@ -62,7 +62,7 @@ subroutine fuvflux
     enddo  
   enddo	  
 !$omp enddo nowait 
-  call cpu_time(time2)
+  call wall_time(time2)
   mintime=MIN(mintime,time2-time1)
   maxtime=MAX(maxtime,time2-time1)
   tottime=tottime+time2-time1
@@ -71,7 +71,7 @@ subroutine fuvflux
   ntavgfuv=nttotfuv/nsphact
   if(verbosity.GT.0) then
     print*,'<fuvflux> searches', nsphact,totalsearches
-    write(*,'(" <fuvflux> time:", 3f8.2)') maxtime,mintime
+    write(*,'(" <fuvflux> time:", 3f8.2)') maxtime,mintime,tottime
     print*,'<fuvflux> < a > t:',ntminfuv,ntavgfuv,ntmaxfuv,nttotfuv
   endif
   if(niter.NE.nsphact) call terror("fuvflux inconsistent iter count")

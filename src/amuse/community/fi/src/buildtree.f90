@@ -208,7 +208,7 @@ subroutine loadtree5(option,startcell)
 !$omp reduction( MIN : mintime) & 
 !$omp reduction( MAX : maxtime) &
 !$omp reduction(+ : totredu,totcell,totbody,tottime) if(hcell-lcell.gt.maxthread)
-  call cpu_time(time1)
+  call wall_time(time1)
   mythread=0
   totalthread=1
 !$ mythread=omp_get_thread_num()    
@@ -260,7 +260,7 @@ subroutine loadtree5(option,startcell)
   totcell=totcell+checkcell
   totbody=totbody+checkbody
   totredu=totredu+checkredu
-  call cpu_time(time2)
+  call wall_time(time2)
   mintime=MIN(mintime,time2-time1)
   maxtime=MAX(maxtime,time2-time1)
   tottime=tottime+time2-time1

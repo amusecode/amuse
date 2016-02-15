@@ -53,7 +53,7 @@
 !$omp reduction( + : nttot, esofttot,tottime,totalsearches,niter) & 
 !$omp reduction( MIN : ntmin,mintime) &
 !$omp reduction( MAX : ntmax,maxtime)
-   call cpu_time(time1)
+   call wall_time(time1)
    ncalls=0;nsearches=0		
 !$omp do schedule(guided,1)
    do k=1,nchunk
@@ -90,7 +90,7 @@
     enddo  
    enddo	  
 !$omp enddo nowait 
-   call cpu_time(time2)
+   call wall_time(time2)
    mintime=MIN(mintime,time2-time1)
    maxtime=MAX(maxtime,time2-time1)
    tottime=tottime+time2-time1
@@ -99,7 +99,7 @@
   ntavg=nttot/npactive
   if(verbosity.GT.0) then
    print*,'<accgrav> searches', npactive,totalsearches
-   write(*,'(" <accgrav> time:", 2f8.2)') maxtime,mintime
+   write(*,'(" <accgrav> time:", 3f8.2)') maxtime,mintime, tottime
    print*,'<accgrav> < a > t:',ntmin,ntavg,ntmax,nttot
   endif
   if(niter.NE.npactive) call terror("accgrav inconsistent iter count")
@@ -120,7 +120,7 @@
 ! and in the acc. (hence they do not experience grav acc)
 ! this could be changed later to be more flexible)
  
-   call cpu_time(utime1)
+   call wall_time(utime1)
    if(tnow.GE.tpm) then 
     call pmgrav(nbodies,mass,pos)
     vmax=maxval(vel(1:nbodies,1:3))
@@ -128,20 +128,20 @@
     if(verbosity.GT.0) print*,'<pmaccgrav> timestep:',dtpm
     tpm=tpm+dtpm
    endif
-   call cpu_time(utime2)
+   call wall_time(utime2)
 !$omp parallel  &
 !$omp private(p,i,time1,time2) &
 !$omp reduction( + : tottime) &
 !$omp reduction( MIN : mintime) & 
 !$omp reduction( MAX : maxtime)
-   call cpu_time(time1)
+   call wall_time(time1)
 !$omp do schedule(guided,200)
    do i=1,npactive
     p=pactive(i) 
     if(mass(p).GT.0) call pmgravsum(p,option)
    enddo
 !$omp enddo nowait 
-   call cpu_time(time2)
+   call wall_time(time2)
    mintime=MIN(mintime,time2-time1)
    maxtime=MAX(maxtime,time2-time1)
    tottime=tottime+time2-time1

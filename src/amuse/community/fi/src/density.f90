@@ -311,7 +311,7 @@ subroutine densnhsmooth
 !$omp reduction( max : imax,nnmax,maxtime) &
 !$omp reduction(+ : jtot,nntot,tottime,totalsearches,drhosum,niter) &
 !$omp reduction( min : nnmin,mintime) 
-  call cpu_time(time1)
+  call wall_time(time1)
   ncalls=0;nsearches=0
 !$omp do schedule(guided,1) 
   do chunk=1,nchunk
@@ -346,7 +346,7 @@ subroutine densnhsmooth
     enddo
   enddo
 !$omp enddo nowait
-  call cpu_time(time2)
+  call wall_time(time2)
   mintime=MIN(mintime,time2-time1)
   maxtime=MAX(maxtime,time2-time1)
   tottime=tottime+time2-time1

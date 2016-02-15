@@ -159,7 +159,7 @@ subroutine extrapeth(dt)
 !$omp reduction(+ : tottime) & 
 !$omp reduction(max : jmax,imax,maxtime)	&
 !$omp reduction(min : mintime)
-  call cpu_time(time1)
+  call wall_time(time1)
 !$omp do
   do p=1,nsph
    if(rho(p).EQ.0) cycle
@@ -199,7 +199,7 @@ subroutine extrapeth(dt)
    derad(p)=drad  
   enddo
 !$omp enddo nowait 
-  call cpu_time(time2)
+  call wall_time(time2)
   mintime=MIN(mintime,time2-time1)
   maxtime=MAX(maxtime,time2-time1)
   tottime=tottime+time2-time1
@@ -238,7 +238,7 @@ subroutine exstep2(pc)
 !$omp reduction(+ : eradiate,snheat,efuvheat,eradcool,tottime) & 
 !$omp reduction(max : jmax,imax,maxtime)	 &
 !$omp reduction(min : mintime) 
-        call cpu_time(time1)
+        call wall_time(time1)
 !$omp do
   do k=1,nsphact
    p=pactive(k)
@@ -272,7 +272,7 @@ subroutine exstep2(pc)
    endif 
   enddo
 !$omp enddo nowait 
-  call cpu_time(time2)
+  call wall_time(time2)
   mintime=MIN(mintime,time2-time1)
   maxtime=MAX(maxtime,time2-time1)
   tottime=tottime+time2-time1

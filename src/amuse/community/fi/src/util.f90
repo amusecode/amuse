@@ -238,6 +238,10 @@ function rtime()
   rtime=(ttot+float(c)/float(cr))/3600.0
 end function
 
+subroutine wall_time(x)
+  real :: x
+  x=rtime()*3600.
+end subroutine
 
 subroutine aggtimers(k)
  integer k,i

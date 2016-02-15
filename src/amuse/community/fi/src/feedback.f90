@@ -66,7 +66,7 @@ subroutine pp_feedback(dt,tnu)
 !$      mythread=omp_get_thread_num()
 !$      totalthread=omp_get_num_threads()
   allocate(p_acc(nsph,3))
-  call cpu_time(time1)
+  call wall_time(time1)
   p_acc(1:nsph,1:3)=0.
 !$omp do reduction(+ : lsnheat)
  do i=1,npp   
@@ -97,7 +97,7 @@ subroutine pp_feedback(dt,tnu)
   endif
  enddo
 !$omp enddo nowait
- call cpu_time(time2)
+ call wall_time(time2)
 
 if(nsphact.GT.0) then
   p_acc(1:pactive(1)-1,1:3)=0.
