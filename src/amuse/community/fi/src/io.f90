@@ -126,10 +126,10 @@ subroutine outlog(istep)
   else
     write(ulog,'("time, ncells = ",(1pe17.9),i9)') tnow,incellsg
   endif
-  write(ulog,'("nttot,ntmin,ntmax,ntavg = ",4i9)') nttot,ntmin,ntmax,ntavg
-  write(ulog,'("nntot,ntmin,ntmax,ntavg = ",4i9)') nntot,nnmin,nnmax,nnavg
+  write(ulog,'("nttot,ntmin,ntmax,ntavg = ",4i12)') nttot,ntmin,ntmax,ntavg
+  write(ulog,'("nntot,ntmin,ntmax,ntavg = ",4i12)') nntot,nnmin,nnmax,nnavg
   if(adaptive_eps) &
-    write(ulog,'("nstot,ntmin,ntmax,ntavg = ",4i9)') nstot,nsmin,nsmax,nsavg
+    write(ulog,'("nstot,ntmin,ntmax,ntavg = ",4i12)') nstot,nsmin,nsmax,nsavg
   if(usesph) then
     tstepbin(1:20)=0
     do p=1,nsph

@@ -53,7 +53,7 @@ subroutine omp_entdotaccsphco
 !$omp end parallel
  nnavg=nntot/nsphact
  if(verbosity.GT.0) print*,'<dentacc> parts,searches', nsphact,totalsearches 
- if(verbosity.GT.0) print*,'<dentacc> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<dentacc> < a > t',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <dentacc> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_entdotaccsphco iter count")
 end
@@ -113,7 +113,7 @@ totalsearches=0
 !$omp end parallel
  nnavg=nntot/nsphact
  if(verbosity.GT.0) print*,'<accsph> parts,searches', nsphact,totalsearches 
- if(verbosity.GT.0) print*,'<accsph> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<accsph> < a > t',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <accsph> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_accsphco iter count")
 end
@@ -174,7 +174,7 @@ subroutine omp_entdot
 !$omp end parallel
  nnavg=nntot/nsphact
  if(verbosity.GT.0) print*,'<entdot> parts,searches', nsphact,totalsearches
- if(verbosity.GT.0) print*,'<entdot> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<entdot> < a > t',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <entdot> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_entdot iter count")
 end
@@ -591,7 +591,7 @@ subroutine omp_ethdotaccsphco
 !$omp end parallel
  nnavg=nntot/nsphact
  if(verbosity.GT.0) print*,'<dethacc> parts,searches', nsphact,totalsearches 
- if(verbosity.GT.0) print*,'<dethacc> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<dethacc> < a > t',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <dethacc> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_ethdotaccsphco iter count")
 end
@@ -651,7 +651,7 @@ subroutine omp_ethdotco
 !$omp end parallel
  nnavg=nntot/nsphact
  if(verbosity.GT.0) print*,'<deth> parts,searches', nsphact,totalsearches 
- if(verbosity.GT.0) print*,'<deth> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<deth> < a > t',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <deth> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_ethdotco iter count")
 end

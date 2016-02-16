@@ -72,7 +72,7 @@ subroutine fuvflux
   if(verbosity.GT.0) then
     print*,'<fuvflux> searches', nsphact,totalsearches
     write(*,'(" <fuvflux> time:", 3f8.2)') maxtime,mintime,tottime
-    print*,'<fuvflux> < a > t:',ntminfuv,ntavgfuv,ntmaxfuv,nttotfuv
+    print*,'<fuvflux> < a > t:',ntminfuv,ntavgfuv,ntmaxfuv
   endif
   if(niter.NE.nsphact) call terror("fuvflux inconsistent iter count")
 end subroutine

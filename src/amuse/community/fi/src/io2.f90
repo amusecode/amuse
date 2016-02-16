@@ -393,9 +393,9 @@ write(uboddump) n
       write(uboddump)  nbodies,nsnap
       write(uboddump)  rmin,rsize,incells,incellsg
       write(uboddump)  root
-      write(uboddump)  nttot,ntmin,ntmax,ntavg,nttotfuv,ntminfuv,        &
+      write(uboddump)  int(nttot),ntmin,ntmax,ntavg,int(nttotfuv),ntminfuv,        &
    ntmaxfuv,ntavgfuv
-      write(uboddump)  nstot,nsmin,nsmax,nsavg
+      write(uboddump)  int(nstot),nsmin,nsmax,nsavg
       write(uboddump)  tnow,tpos
       write(uboddump)  tiny
       write(uboddump)  mtot,etot,ektot,eptot,mstar,mgas,snheat,esofttot, &
@@ -410,7 +410,7 @@ write(uboddump) n
       write(uboddump)  massres
       write(uboddump)  deldr2i
       write(uboddump)  wsmooth,dwsmooth
-      write(uboddump)  nntot,nnmin,nnmax,nnavg
+      write(uboddump)  int(nntot),nnmin,nnmax,nnavg
       write(uboddump)  hboxsize
       write(uboddump)  poshalo,masshalo
       write(uboddump)  eradiate,trad,meanmwt,     &
@@ -469,7 +469,7 @@ end subroutine
 
 subroutine readdump(n) 
  include 'globals.h' 
- integer ioerror,n,i 
+ integer ioerror,n,i,idummy,idummy2
  real dummy 
  logical ldummy
  open(unit=uboddump,file=dumpfile,status='OLD',form='UNFORMATTED',iostat=ioerror) 
@@ -501,9 +501,12 @@ read(uboddump) n
       read(uboddump)  nbodies,nsnap
       read(uboddump)  rmin,rsize,incells,incellsg
       read(uboddump)  root
-      read(uboddump)  nttot,ntmin,ntmax,ntavg,nttotfuv,ntminfuv,        &
+      read(uboddump)  idummy,ntmin,ntmax,ntavg,idummy2,ntminfuv,        &
    ntmaxfuv,ntavgfuv
-      read(uboddump)  nstot,nsmin,nsmax,nsavg
+      nttot=idummy ! nttot, nstot, nttotfuv, nntot=8byte int, io format expects 4
+      nttotfuv=idummy2
+      read(uboddump)  idummy,nsmin,nsmax,nsavg
+      nstot=idummy
       read(uboddump)  tnow,tpos
       read(uboddump)  tiny
       read(uboddump)  mtot,etot,ektot,eptot,mstar,mgas,snheat,esofttot, &
@@ -518,7 +521,8 @@ read(uboddump) n
       read(uboddump)  massres
       read(uboddump)  deldr2i
       read(uboddump)  wsmooth,dwsmooth
-      read(uboddump)  nntot,nnmin,nnmax,nnavg
+      read(uboddump)  idummy,nnmin,nnmax,nnavg
+      nntot=idummy 
       read(uboddump)  hboxsize
       read(uboddump)  poshalo,masshalo
       read(uboddump)  eradiate,trad,meanmwt,     &

@@ -100,7 +100,7 @@
   if(verbosity.GT.0) then
    print*,'<accgrav> searches', npactive,totalsearches
    write(*,'(" <accgrav> time:", 3f8.2)') maxtime,mintime, tottime
-   print*,'<accgrav> < a > t:',ntmin,ntavg,ntmax,nttot
+   print*,'<accgrav> < a > t:',ntmin,ntavg,ntmax
   endif
   if(niter.NE.npactive) call terror("accgrav inconsistent iter count")
  end subroutine

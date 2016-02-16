@@ -114,9 +114,10 @@
       INTEGER sfrfilenr,bhfilenr,erasenr
       PARAMETER(sfrfilenr=23,bhfilenr=24,erasenr=25)
       
-      INTEGER root,nbodies,incells,nttot,ntmin,ntmax,ntavg,nsteps,       &
-     &  stepout,steplog,incellsg,targetnn,nstot,nsmin,nsmax,nsavg,       &
-     &  nttotfuv,ntminfuv,ntmaxfuv,ntavgfuv
+      INTEGER*8 nttot,nttotfuv,nstot
+      INTEGER root,nbodies,incells,ntmin,ntmax,ntavg,nsteps,             &
+     &  stepout,steplog,incellsg,targetnn,nsmin,nsmax,nsavg,             &
+     &  ntminfuv,ntmaxfuv,ntavgfuv
       LOGICAL usequad,usesph,fixthalo,selfgrav,adaptive_eps, directsum,  &
      &  isotherm
       REAL bh_tol,eps,rsize,rmin,tnow,tpos,dtime,tiny,                   &
@@ -134,7 +135,7 @@
       COMMON/paramcom/ nbodies,nsnap
       COMMON/cellcom/ rmin(ndim),rsize,incells,incellsg
       COMMON/pointers/ root
-      COMMON/forcecom/ nttot,ntmin,ntmax,ntavg,nttotfuv,ntminfuv,        &
+      COMMON/forcecom/ nttot,nttotfuv,ntmin,ntmax,ntavg,ntminfuv,        &
      &  ntmaxfuv,ntavgfuv
       COMMON/softcom/ nstot,nsmin,nsmax,nsavg
       COMMON/timecom/ tnow,tpos
@@ -177,7 +178,8 @@
       COMMON/interpoc/ deldr2i
       COMMON/skerncom/ wsmooth(0:1+ninterp),dwsmooth(0:1+ninterp)
       
-      INTEGER nntot,nnmin,nnmax,nnavg
+      INTEGER*8 nntot
+      INTEGER nnmin,nnmax,nnavg
       
       COMMON/neighcom/ nntot,nnmin,nnmax,nnavg
       
