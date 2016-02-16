@@ -469,7 +469,7 @@ end subroutine
 
 subroutine readdump(n) 
  include 'globals.h' 
- integer ioerror,n,i 
+ integer ioerror,n,i,idummy,idummy2
  real dummy 
  logical ldummy
  open(unit=uboddump,file=dumpfile,status='OLD',form='UNFORMATTED',iostat=ioerror) 

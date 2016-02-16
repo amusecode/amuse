@@ -22,7 +22,7 @@ subroutine omp_entdotaccsphco
 !$omp reduction( + : tottime,nntot,totalsearches,niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
- call cpu_time(time1)
+ call wall_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
@@ -45,15 +45,15 @@ subroutine omp_entdotaccsphco
   enddo
  enddo
 !$omp enddo nowait  
- call cpu_time(time2)
+ call wall_time(time2)
  mintime=MIN(mintime,time2-time1)
  maxtime=MAX(maxtime,time2-time1)
  tottime=tottime+time2-time1
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<dentacc> parts,searches', nsphact,totalsearches 
- if(verbosity.GT.0) print*,'<dentacc> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<dentacc> parts,searches:', nsphact,totalsearches 
+ if(verbosity.GT.0) print*,'<dentacc> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <dentacc> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_entdotaccsphco iter count")
 end
@@ -82,7 +82,7 @@ totalsearches=0
 !$omp reduction( + : tottime,nntot,niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
- call cpu_time(time1)
+ call wall_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
@@ -105,14 +105,15 @@ totalsearches=0
   enddo
  enddo
 !$omp enddo nowait  
+ call wall_time(time2)
  mintime=MIN(mintime,time2-time1)
  maxtime=MAX(maxtime,time2-time1)
  tottime=tottime+time2-time1
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<accsph> parts,searches', nsphact,totalsearches 
- if(verbosity.GT.0) print*,'<accsph> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<accsph> parts,searches:', nsphact,totalsearches 
+ if(verbosity.GT.0) print*,'<accsph> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <accsph> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_accsphco iter count")
 end
@@ -142,7 +143,7 @@ subroutine omp_entdot
 !$omp reduction( + : tottime,nntot, niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
- call cpu_time(time1)
+ call wall_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
@@ -165,16 +166,15 @@ subroutine omp_entdot
   enddo
  enddo
 !$omp enddo nowait  
- call cpu_time(time2)
+ call wall_time(time2)
  mintime=MIN(mintime,time2-time1)
  maxtime=MAX(maxtime,time2-time1)
  tottime=tottime+time2-time1
  totalsearches=totalsearches+nsearches
 !$omp end parallel
- call cpu_time(utime2)
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<entdot> parts,searches', nsphact,totalsearches
- if(verbosity.GT.0) print*,'<entdot> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<entdot> parts,searches:', nsphact,totalsearches
+ if(verbosity.GT.0) print*,'<entdot> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <entdot> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_entdot iter count")
 end
@@ -560,7 +560,7 @@ subroutine omp_ethdotaccsphco
 !$omp reduction( + : tottime,nntot,totalsearches,niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
- call cpu_time(time1)
+ call wall_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
@@ -583,15 +583,15 @@ subroutine omp_ethdotaccsphco
   enddo
  enddo
 !$omp enddo nowait  
- call cpu_time(time2)
+ call wall_time(time2)
  mintime=MIN(mintime,time2-time1)
  maxtime=MAX(maxtime,time2-time1)
  tottime=tottime+time2-time1
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<dethacc> parts,searches', nsphact,totalsearches 
- if(verbosity.GT.0) print*,'<dethacc> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<dethacc> parts,searches:', nsphact,totalsearches 
+ if(verbosity.GT.0) print*,'<dethacc> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <dethacc> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_ethdotaccsphco iter count")
 end
@@ -620,7 +620,7 @@ subroutine omp_ethdotco
 !$omp reduction( + : tottime,nntot,totalsearches,niter) & 
 !$omp reduction( MIN : mintime,nnmin) & 
 !$omp reduction( MAX : maxtime,nnmax)
- call cpu_time(time1)
+ call wall_time(time1)
  ncalls=0;nsearches=0
 !$omp do schedule(guided,1)
  do chunk=1,nchunk
@@ -643,15 +643,15 @@ subroutine omp_ethdotco
   enddo
  enddo
 !$omp enddo nowait  
- call cpu_time(time2)
+ call wall_time(time2)
  mintime=MIN(mintime,time2-time1)
  maxtime=MAX(maxtime,time2-time1)
  tottime=tottime+time2-time1
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<deth> parts,searches', nsphact,totalsearches 
- if(verbosity.GT.0) print*,'<deth> < a > t',nnmin,nnavg,nnmax,nntot
+ if(verbosity.GT.0) print*,'<deth> parts,searches:', nsphact,totalsearches 
+ if(verbosity.GT.0) print*,'<deth> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <deth> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_ethdotco iter count")
 end

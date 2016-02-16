@@ -314,7 +314,6 @@ C=======================================================================
 
         IF(bdummy) THEN
 	 print*,'  > detailed info: loud =.TRUE.'   
-         print*,'  >  (< a > t: min average max total)'
 	ELSE
 	 print*,'  > sparse info: loud=.FALSE.' 
         ENDIF
@@ -525,7 +524,6 @@ C=======================================================================
 		
         IF(bdummy) THEN
 	 print*,'  > detailed info: loud =.TRUE.'   
-         print*,'  >  (< a > t: min average max total)'
 	ELSE
 	 print*,'  > sparse info: loud=.FALSE.' 
         ENDIF

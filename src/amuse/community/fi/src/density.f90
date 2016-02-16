@@ -311,7 +311,7 @@ subroutine densnhsmooth
 !$omp reduction( max : imax,nnmax,maxtime) &
 !$omp reduction(+ : jtot,nntot,tottime,totalsearches,drhosum,niter) &
 !$omp reduction( min : nnmin,mintime) 
-  call cpu_time(time1)
+  call wall_time(time1)
   ncalls=0;nsearches=0
 !$omp do schedule(guided,1) 
   do chunk=1,nchunk
@@ -346,15 +346,15 @@ subroutine densnhsmooth
     enddo
   enddo
 !$omp enddo nowait
-  call cpu_time(time2)
+  call wall_time(time2)
   mintime=MIN(mintime,time2-time1)
   maxtime=MAX(maxtime,time2-time1)
   tottime=tottime+time2-time1
   totalsearches=totalsearches+nsearches
 !$omp end parallel 
   nnavg=nntot/nsphact
-  if(verbosity.GT.0) print*,'<densnhsmooth> parts,searches', nsphact,totalsearches 
-  if(verbosity.GT.0) print*,'<densnhsmooth> < a > t',nnmin,nnavg,nnmax,nntot
+  if(verbosity.GT.0) print*,'<densnhsmooth> parts,searches:', nsphact,totalsearches 
+  if(verbosity.GT.0) print*,'<densnhsmooth> mn,av,mx:',nnmin,nnavg,nnmax
   if(verbosity.GT.0) then
     write(*,'(" <densnhsmooth> time:", 3f8.2)') maxtime,mintime,tottime
     print*,'<densnhsmooth> max iter, fails:',imax,jtot
