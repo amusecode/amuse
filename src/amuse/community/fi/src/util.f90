@@ -239,7 +239,7 @@ function rtime()
 end function
 
 subroutine wall_time(x)
-  real :: x
+  real :: x,rtime
   x=rtime()*3600.
 end subroutine
 
