@@ -55,7 +55,7 @@ subroutine epscal(option)
   enddo
   nsavg=nstot/(up-low+1)
 
-  if(verbosity.GT.0) print*,'<epscal> < a > t:',nsmin,nsavg,nsmax,nstot
+  if(verbosity.GT.0) print*,'<epscal> mn,av,mx:',nsmin,nsavg,nsmax
 
 end subroutine
 
@@ -91,7 +91,7 @@ subroutine hsmcal
     nnmin=MIN(nnmin,inear)
   enddo
   nnavg=nntot/(up-low+1)
-  if(verbosity.GT.0) print*,'<hsmcal> < a > t:',nnmin,nnavg,nnmax,nntot
+  if(verbosity.GT.0) print*,'<hsmcal> mn,av,mx:',nnmin,nnavg,nnmax
 
 end subroutine
 
