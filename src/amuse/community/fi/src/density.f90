@@ -353,7 +353,7 @@ subroutine densnhsmooth
   totalsearches=totalsearches+nsearches
 !$omp end parallel 
   nnavg=nntot/nsphact
-  if(verbosity.GT.0) print*,'<densnhsmooth> parts,searches', nsphact,totalsearches 
+  if(verbosity.GT.0) print*,'<densnhsmooth> parts,searches:', nsphact,totalsearches 
   if(verbosity.GT.0) print*,'<densnhsmooth> mn,av,mx:',nnmin,nnavg,nnmax
   if(verbosity.GT.0) then
     write(*,'(" <densnhsmooth> time:", 3f8.2)') maxtime,mintime,tottime

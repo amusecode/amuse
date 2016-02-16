@@ -52,7 +52,7 @@ subroutine omp_entdotaccsphco
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<dentacc> parts,searches', nsphact,totalsearches 
+ if(verbosity.GT.0) print*,'<dentacc> parts,searches:', nsphact,totalsearches 
  if(verbosity.GT.0) print*,'<dentacc> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <dentacc> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_entdotaccsphco iter count")
@@ -112,7 +112,7 @@ totalsearches=0
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<accsph> parts,searches', nsphact,totalsearches 
+ if(verbosity.GT.0) print*,'<accsph> parts,searches:', nsphact,totalsearches 
  if(verbosity.GT.0) print*,'<accsph> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <accsph> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_accsphco iter count")
@@ -173,7 +173,7 @@ subroutine omp_entdot
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<entdot> parts,searches', nsphact,totalsearches
+ if(verbosity.GT.0) print*,'<entdot> parts,searches:', nsphact,totalsearches
  if(verbosity.GT.0) print*,'<entdot> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <entdot> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_entdot iter count")
@@ -590,7 +590,7 @@ subroutine omp_ethdotaccsphco
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<dethacc> parts,searches', nsphact,totalsearches 
+ if(verbosity.GT.0) print*,'<dethacc> parts,searches:', nsphact,totalsearches 
  if(verbosity.GT.0) print*,'<dethacc> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <dethacc> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_ethdotaccsphco iter count")
@@ -650,7 +650,7 @@ subroutine omp_ethdotco
  totalsearches=totalsearches+nsearches
 !$omp end parallel
  nnavg=nntot/nsphact
- if(verbosity.GT.0) print*,'<deth> parts,searches', nsphact,totalsearches 
+ if(verbosity.GT.0) print*,'<deth> parts,searches:', nsphact,totalsearches 
  if(verbosity.GT.0) print*,'<deth> mn,av,mx:',nnmin,nnavg,nnmax
  if(verbosity.GT.0) write(*,'(" <deth> time:", 3f8.2)') mintime,maxtime,tottime
  if(niter.NE.nsphact) call terror("inconsistent omp_ethdotco iter count")

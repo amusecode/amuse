@@ -70,7 +70,7 @@ subroutine fuvflux
 !$omp end parallel
   ntavgfuv=nttotfuv/nsphact
   if(verbosity.GT.0) then
-    print*,'<fuvflux> searches', nsphact,totalsearches
+    print*,'<fuvflux> parts,searches:', nsphact,totalsearches
     write(*,'(" <fuvflux> time:", 3f8.2)') maxtime,mintime,tottime
     print*,'<fuvflux> mn,av,mx:',ntminfuv,ntavgfuv,ntmaxfuv
   endif
