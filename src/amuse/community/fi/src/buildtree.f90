@@ -275,7 +275,7 @@ subroutine loadtree5(option,startcell)
   incells=totcell
   if(verbosity.GT.0) then
     write(*,'(" <loadtree> time:", 3f8.2)') mintime,maxtime,tottime
-    print*,'<loadtree> ',option,incells
+    print*,'<loadtree> option, parts, cells: ',option,iupper-ilower+1, incells
   endif
 end subroutine loadtree5
 
