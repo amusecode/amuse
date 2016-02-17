@@ -1018,7 +1018,7 @@ Please do a 'make clean; make' in the root directory.
             
             found = os.path.exists(full_name_of_the_worker)
             if not found:
-                raise exceptions.CodeException("The worker application does not exists, it should be at: \n{0}".format('\n'.join(tried_workers)))
+                raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
             else:
                 found = True
             
