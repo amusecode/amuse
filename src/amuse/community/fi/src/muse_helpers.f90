@@ -8,12 +8,15 @@ subroutine muse_start
   include 'globals.h'
   real*8 rtime, dum
   logical, save :: firstcall=.TRUE.
+!$  integer :: omp_get_max_threads
 
   dum = rtime()
   
   if(firstcall) then
     firstcall=.FALSE.
+    print*,' --- FI Amuse interface ---'
     call initmem(nbodsmax,nsphmax,ncells)
+!$  print*,' omp threads:',omp_get_max_threads()
   endif
 
   call set_parameters_to_defaults
