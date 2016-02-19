@@ -137,6 +137,12 @@ int echo_string_array(char ** in, char ** out, int len) {
     return len;
 }
 */
+
+
+int sum_doubles(double in1, double in2, double * out) {
+    *out = in1 + in2;
+    return 0;
+}
 """
 
 class ForTestingInterface(CodeInterface):
@@ -324,6 +330,17 @@ class ForTestingInterface(CodeInterface):
         return function  
     
     
+    @legacy_function
+    def sum_doubles():
+        function = LegacyFunctionSpecification()
+        function.addParameter('double_in1', dtype='float64', direction=function.IN)
+        function.addParameter('double_in2', dtype='float64', direction=function.IN, default = 1.0)
+        function.addParameter('double_out', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
+
+
 class ForTesting(InCodeComponentImplementation):
     
     def __init__(self, exefile, **options):
@@ -874,3 +891,23 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertRaises(ConvertArgumentsException,instance.dummy_3_int,2,3,i=1, expected_message=
           "got multiple values for argument 'i' of method dummy_3_int")
         instance.stop()
+        
+    def test31(self):
+        x = ForTesting(self.exefile, max_message_length=10)
+        N = 10
+        doubles = x.echo_double([1.0*i for i in range(N)])
+        self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
+        sums = x.sum_doubles([3.0*i for i in range(N)])
+        print sums
+        self.assertTrue(list(sums) == [3.0*i + 1 for i in range(N)])
+        N = 11
+        doubles = x.echo_double([1.0*i for i in range(N)])
+        self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
+        sums = x.sum_doubles([3.0*i for i in range(N)])
+        self.assertTrue(list(sums) == [3.0*i +1 for i in range(N)])
+        x.stop()
+        
+        
+
+
+
