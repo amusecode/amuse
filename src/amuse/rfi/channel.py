@@ -1114,55 +1114,6 @@ Please do a 'make clean; make' in the root directory.
         self._merged_results_splitted_message = dtype_to_result
 
 
- 
-    def split_message(self, call_id, function_id, call_count, dtype_to_arguments, encoded_units = ()):
-        
-        def split_input_array(i, arr_in):
-            if call_count == 1:
-                index = i*self.max_message_length
-            else:
-                index = slice(i * self.max_message_length,(i + 1) * self.max_message_length)
-            return [x[index] if hasattr(x, '__iter__') else x for x in arr_in]
-           
-        
-        dtype_to_result = {}
-        
-        for i in range(1 + (call_count - 1) // self.max_message_length):
-            split_dtype_to_argument = {}
-            for key, value in dtype_to_arguments.iteritems():
-                split_dtype_to_argument[key] = split_input_array(i, value)
-                
-            self.send_message(
-                call_id,
-                function_id,
-                # min(call_count,self.max_message_length),
-                split_dtype_to_argument,
-                encoded_units=encoded_units
-            )
-            
-            partial_dtype_to_result = self.recv_message(call_id, function_id, True)
-            for datatype, value in partial_dtype_to_result.iteritems():
-                if not datatype in dtype_to_result:
-                    dtype_to_result[datatype] = []                 
-                    for j, element in enumerate(value):
-                        if datatype == 'string':
-                            dtype_to_result[datatype].append([])
-                        else:
-                            dtype_to_result[datatype].append(numpy.zeros((call_count,), dtype=datatype))
-                            
-                for j, element in enumerate(value):
-                    if datatype == 'string':
-                        dtype_to_result[datatype][j].extend(element)
-                    else:
-                        dtype_to_result[datatype][j][i * self.max_message_length:(i + 1) * self.max_message_length] = element
-                
-            # print partial_dtype_to_result
-            call_count -= self.max_message_length
-        
-        self._communicated_splitted_message = True
-        self._merged_results_splitted_message = dtype_to_result
-
-
 
 AbstractMessageChannel.DEBUGGERS = {
     "none":None,
