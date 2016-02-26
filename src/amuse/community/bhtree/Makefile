@@ -29,15 +29,28 @@ CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
 GPULIBS  =  $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread
 
+export CXXFLAGS 
+
 all:	compile bhtree_worker
 
 python_worker.o: python_worker.c
 	$(CXX) $(CXXFLAGS) $(PYTHONDEV_CFLAGS) $(SC_FLAGS) $(LDFLAGS) -c -o $@ $< 
 	
-bhtree_worker_python: python_worker.o
-	$(MPICXX) $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(SC_FLAGS) $(LDFLAGS) python_worker.o $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS)
-    
+bhtree_worker_cython: bhtree_worker_cython.so
+	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.bhtree.interface BHTreeInterface -o $@
+	
+bhtree_worker_cython.so: bhtree_worker_cython.o worker_code.h  $(CODELIB) $(OBJS)
+	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(SC_FLAGS) $(LDFLAGS) bhtree_worker_cython.o $(OBJS) $(CODELIB) -o $@ $(SC_CLIBS)
 
+bhtree_worker_cython.o: bhtree_worker_cython.c worker_code.h
+	$(CXX) $(CXXFLAGS) $(SC_FLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
+
+bhtree_worker_cython.pyx: interface.py
+	$(CODE_GENERATOR) --type=cython -m mpi interface.py BHTreeInterface -o $@
+
+bhtree_worker_cython.c: bhtree_worker_cython.pyx
+	$(CYTHON) $< -o $@
+	
 compile: $(BHTC)
 
 $(BUILDDIR)/Makefile: $(BHTCDIR)/Makefile 
@@ -50,7 +63,7 @@ $(GPU_BUILDDIR)/Makefile: $(BHTCDIR)/Makefile
 	cp $(BHTCDIR)/Makefile $(GPU_BUILDDIR)/Makefile
 	
 $(BHTC): $(BUILDDIR)/Makefile src/*.c src/*.h src/*.C
-	make -C $(BUILDDIR) all VPATH=../src
+	make -C $(BUILDDIR) all VPATH=../src 
 $(CODELIB): $(BUILDDIR)/Makefile src/*.c src/*.h src/*.C
 	make -C $(BUILDDIR) all VPATH=../src
 	

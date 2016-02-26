@@ -95,12 +95,12 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
             first_input_parameter = self.first_input_parameter()
             if 0:
                 length_parameter = self.length_parameter()
-                self.out.lf() + 'cdef int LENGTH_' + length_parameter.name + ' = '                         
+                self.out.lf() + 'cdef int LENGTH_' + length_parameter.name + ' = '                             
                 if first_input_parameter.direction == LegacyFunctionSpecification.IN:
                     self.out + 'len('+first_input_parameter.name + ')'
                 else:
                     self.out + 'len('+first_input_parameter.name + '.value)'
-                self.out.lf()                                     
+                self.out.lf()                                         
             
         self.output_function_start()
         
@@ -123,13 +123,14 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
                 self.out.lf() + '}'
                 
         if not self.specification.result_type is None:
-            self.out.lf() + 'return result'
+            self.out.lf() + 'return __result__'
             
             
         self.out.dedent().lf()
         
         self._result = self.out.string
     
+
 
     def index_string(self, index, must_copy_in_to_out=False):
         if self.specification.must_handle_array and not must_copy_in_to_out:
@@ -251,7 +252,7 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
         
 
     def output_function_start(self):
-        self.out.n()                                 
+        self.out.n()                                     
         
         
 
@@ -262,11 +263,12 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
             if self.specification.result_type == 'string':
                 self.out + 'char *'
             else:
-                self.out + spec.type                                 
-            self.out + ' result'
+                self.out + spec.type                                     
+            self.out + ' __result__'
             self.out + ' = '
         self.out + 'c_' + self.specification.name + '('
         
+
 
     def output_casestmt_start(self):
         self.out + 'case ' + self.specification.id + ':'
@@ -427,6 +429,11 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
     def start(self):
         self.out + 'import numpy'
         self.out.lf() + 'cimport numpy'
+
+        self.output_local_includes()
+
+        self.output_mpi_defs()
+
         self.out.lf() + 'cdef extern from "worker_code.h":'
         
         self.out.indent().lf()
@@ -437,10 +444,11 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
         
         self.output_sourcecode_for_functions()
         
-        self.out + self.new_executable_script_string()
+        #self.out + self.new_executable_script_string()
         
         self._result = self.out.string
         
+
 
     def output_definitions_for_functions(self):
         for x in self.interface_functions:
@@ -487,6 +495,24 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
             interface_module = inspect.getmodule(self.specification_class).__name__,
             interface = self.specification_class.__name__,
         )
+
+
+
+    def output_local_includes(self):
+        if hasattr(self.specification_class, 'include_headers'):
+            for x in self.specification_class.include_headers:
+                self.out.n() + 'cdef extern from "' + x + '":'
+                self.out.n() + '    '+'pass'
+        self.out.lf()
+
+    def output_mpi_defs(self):
+        self.out.lf() + "cimport mpi4py.MPI"
+        self.out.lf() + 'cdef extern from "mpi.h":\n    pass'
+        self.out.lf() + 'cdef extern from "amuse_mpi.h":'
+        self.out.lf() + "    " + 'int c_set_comm_world "set_comm_world" (mpi4py.MPI.MPI_Comm world)'
+        self.out.lf().lf() + "def set_comm_world(mpi4py.MPI.Comm comm not None):"
+        self.out.lf() + "    " + 'return c_set_comm_world(comm.ob_mpi)'
+        self.out.lf()
 
 
 class GenerateACHeaderStringFromASpecificationClass\
@@ -583,3 +609,56 @@ class GenerateACStubStringFromASpecificationClass\
         
         
         
+class GenerateACythonStartScriptStringFromASpecificationClass\
+    (GenerateASourcecodeStringFromASpecificationClass):
+
+    @late
+    def specification_class(self):
+        raise exceptions.AmuseException("No specification_class set, please set the specification_class first")
+    
+   
+    def start(self):
+        self.out + self.new_executable_script_string()
+        
+        self._result = self.out.string
+        
+    
+    @late
+    def template_string(self):
+        path = self.template_dir
+        path = os.path.join(path, 'cython_code_script.template')
+            
+        with open(path, "r") as f:
+            template_string = f.read()
+        
+        return template_string
+
+    @late
+    def template_dir(self):
+        return os.path.dirname(__file__)
+
+    def new_executable_script_string(self):
+        return self.template_string.format(
+            executable = sys.executable,
+            syspath = ','.join(map(repr, sys.path)),
+            worker_module = self.worker_module,
+            interface_module = inspect.getmodule(self.specification_class).__name__,
+            interface = self.specification_class.__name__,
+        )
+
+
+
+
+
+    @late
+    def worker_module(self):
+        return self.name_of_outputfile
+
+
+
+    @late
+    def name_of_outputfile(self):
+        return 'interface'
+
+
+
