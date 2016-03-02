@@ -35,20 +35,21 @@ worker_code.h: interface.py
 hermite0_worker:	worker_code.cc worker_code.h $(A_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)  $(LIBS)  $(AM_LIBS)
 
-hermite0_worker_cython: hermite0_worker_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.hermite0.interface HermiteInterface -o $@
+hermite0_worker_cython: hermite0_cython.so
+	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.hermite0.interface HermiteInterface -o $@ --cython-import hermite0_cython
 	
-hermite0_worker_cython.so: hermite0_worker_cython.o worker_code.h  $(CODELIB) $(A_OBJS)
-	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) hermite0_worker_cython.o $(A_OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(AM_LIBS)
+hermite0_cython.so: hermite0_cython.o worker_code.h  $(CODELIB) $(A_OBJS)
+	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) hermite0_cython.o $(A_OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(AM_LIBS)
 
-hermite0_worker_cython.o: hermite0_worker_cython.c worker_code.h
+hermite0_cython.o: hermite0_cython.c worker_code.h
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
 
-hermite0_worker_cython.pyx: interface.py
+hermite0_cython.c: hermite0_cython.pyx
+	$(CYTHON) $< -o $@
+	
+hermite0_cython.pyx: interface.py
 	$(CODE_GENERATOR) --type=cython -m mpi interface.py HermiteInterface -o $@
 
-hermite0_worker_cython.c: hermite0_worker_cython.pyx
-	$(CYTHON) $< -o $@
 	
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) -c -o $@ $< 
@@ -58,6 +59,6 @@ hermite0_worker_cython.c: hermite0_worker_cython.pyx
 
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
-	rm -f hermite0_worker worker_code-sockets.cc hermite0_worker_sockets
+	rm -f hermite0_worker hermite_worker worker_code-sockets.cc hermite0_worker_sockets
 	rm -rf *.dSYM
-	rm -f hermite0_worker_cython.* hermite0_worker_cython
+	rm -f hermite0_cython.* hermite0_worker_cython hermite0_worker_cython.*

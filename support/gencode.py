@@ -135,6 +135,12 @@ class ParseCommandLine(object):
             dest="make_executable",
             help="Set the executable bit when generating the output file")
         
+        self.parser.add_option(
+            "--cython-import",
+            default="",
+            dest="cython_import",
+            help="Name of the module to import for the cython worker (name of the .so file)")
+        
         self.options = None
         self.arguments = None
         
@@ -286,6 +292,7 @@ def make_file(settings):
         builder.needs_mpi = settings.needs_mpi.lower() == 'true'
         builder.is_mpi_enabled = config.mpi.is_enabled
         builder.name_of_outputfile = settings.output
+        builder.cython_import = settings.cython_import
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     

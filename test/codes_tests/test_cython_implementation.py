@@ -121,6 +121,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         codefile = os.path.join(path,"code.o")
         interfacefile = os.path.join(path,"interface.o")
         headerfile = os.path.join(path,"worker_code.h")
+        self.sofile = os.path.join(path,"interface.so")
         self.exefile = os.path.join(path,"c_worker")
         
         self.c_compile(codefile, test_c_implementation.codestring)
@@ -144,12 +145,28 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         uc.specification_class = test_c_implementation.ForTestingInterface
         uc.needs_mpi = True
         code =  uc.result
+
+        
+
+
         
         with open(sourcename, "w") as f:
             f.write(code)
+
+
+        uc = create_cython.GenerateACythonStartScriptStringFromASpecificationClass()
+        uc.specification_class = test_c_implementation.ForTestingInterface
+        uc.needs_mpi = True
+        script =  uc.result
+        
+        with open(self.exefile, "w") as f:
+            f.write(script)
+
+        os.chmod(self.exefile, 0777)
         
         process = subprocess.Popen(
-            [config.compilers.cython, '--embed', sourcename, '-o', cname],
+           # [config.compilers.cython, '--embed', sourcename, '-o', cname],
+            [config.compilers.cython,  sourcename, '-o', cname],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
@@ -168,7 +185,9 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
             string = f.read()
             
         self.c_pythondev_compile(interfacefile, string)
-        self.c_pythondev_build(self.exefile, [interfacefile, codefile] )
+        # self.c_pythondev_build(self.exefile, [interfacefile, codefile] )
+        self.c_pythondev_buildso(self.sofile,  [interfacefile, codefile] )
+
 
 
     def c_pythondev_compile(self, objectname, string):
@@ -184,7 +203,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         mpicc = self.get_mpicc_name()
         arguments = [mpicc]
         arguments.extend(self.get_mpicc_flags().split())
-        arguments.extend(["-I", "lib/stopcond", "-c",  "-o", objectname, sourcename])
+        arguments.extend(["-I", "lib/stopcond","-I", "lib/amuse_mpi",  "-fPIC", "-c",  "-o", objectname, sourcename])
         arguments.extend(shlex.split(config.compilers.pythondev_cflags))
             
         process = subprocess.Popen(
@@ -201,6 +220,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         if process.returncode != 0 or not os.path.exists(objectname):
             print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
+
 
     def c_pythondev_build(self, exename, objectnames):
         
@@ -247,3 +267,74 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
     def test14(self):
         self.skip("needs python support")
                      
+    def c_pythondev_buildso(self, soname, objectnames):
+        
+        if os.path.exists(soname):
+            os.remove(soname)
+            
+        mpicxx = self.get_mpicxx_name()
+        arguments = [mpicxx]
+        arguments.extend(objectnames)
+        arguments.extend(shlex.split(config.compilers.pythondev_ldflags))
+        arguments.append("-shared")
+        arguments.append("-o")
+        arguments.append(soname)
+        arguments.append("-Llib/amuse_mpi")
+        arguments.append("-lamuse_mpi")
+        
+        if 'LIBS' in os.environ:
+            libs = os.environ['LIBS'].split()
+            arguments.extend(libs)
+            
+        process = subprocess.Popen(
+            arguments,
+            stdin = subprocess.PIPE,
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE
+        )
+        stdout, stderr = process.communicate()
+        
+        if process.returncode == 0:
+            self.wait_for_file(soname)
+            
+        if process.returncode != 0 or not (os.path.exists(soname)):
+            print "Could not compile {0}, error = {1}".format(soname, stderr)
+            raise Exception("Could not build {0}, error = {1}".format(soname, stderr))
+
+        print stdout
+        print stderr
+
+
+
+
+    def c_compile(self, objectname, string):
+        root, ext = os.path.splitext(objectname)
+        sourcename = root + '.c'
+        
+        if os.path.exists(objectname):
+            os.remove(objectname)
+        
+        with open(sourcename, "w") as f:
+            f.write(string)
+            
+        mpicc = self.get_mpicc_name()
+        arguments = [mpicc]
+        arguments.extend(self.get_mpicc_flags().split())
+        arguments.extend(["-I", "lib/stopcond", "-fPIC", "-c",  "-o", objectname, sourcename])
+            
+        process = subprocess.Popen(
+            arguments,
+            stdin = subprocess.PIPE,
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE
+        )
+        stdout, stderr = process.communicate()
+        
+        if process.returncode == 0:
+            self.wait_for_file(objectname)
+        
+        if process.returncode != 0 or not os.path.exists(objectname):
+            print "Could not compile {0}, error = {1}".format(objectname, stderr)
+            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
+
+

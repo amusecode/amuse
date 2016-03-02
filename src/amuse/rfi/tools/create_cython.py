@@ -433,8 +433,11 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
         self.output_local_includes()
 
         self.output_mpi_defs()
-
-        self.out.lf() + 'cdef extern from "worker_code.h":'
+        
+        if self.include_filename_for_functions is None:
+            self.out.lf() + 'cdef extern:'
+        else:
+            self.out.lf() + 'cdef extern from "{0}":'.format(self.include_filename_for_functions)
         
         self.out.indent().lf()
         
@@ -448,6 +451,7 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
         
         self._result = self.out.string
         
+
 
 
     def output_definitions_for_functions(self):
@@ -513,6 +517,14 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
         self.out.lf().lf() + "def set_comm_world(mpi4py.MPI.Comm comm not None):"
         self.out.lf() + "    " + 'return c_set_comm_world(comm.ob_mpi)'
         self.out.lf()
+
+
+    @late
+    def include_filename_for_functions(self):
+        if hasattr(self.specification_class, 'include_headers') and len(self.specification_class.include_headers) >= 1:
+            return self.specification_class.include_headers[0]
+        return None
+
 
 
 class GenerateACHeaderStringFromASpecificationClass\
@@ -652,7 +664,8 @@ class GenerateACythonStartScriptStringFromASpecificationClass\
 
     @late
     def worker_module(self):
-        return self.name_of_outputfile
+        return self.cython_import if self.cython_import else self.name_of_outputfile
+
 
 
 
@@ -660,5 +673,10 @@ class GenerateACythonStartScriptStringFromASpecificationClass\
     def name_of_outputfile(self):
         return 'interface'
 
+
+
+    @late
+    def cython_import(self):
+        return ""
 
 

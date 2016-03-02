@@ -146,7 +146,8 @@ int sum_doubles(double in1, double in2, double * out) {
 """
 
 class ForTestingInterface(CodeInterface):
-    
+    include_headers = ['worker_code.h']
+ 
     def __init__(self, exefile, **options):
         CodeInterface.__init__(self, exefile, **options)
 
