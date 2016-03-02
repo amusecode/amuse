@@ -692,7 +692,23 @@ class Gadget2Interface(
         function.addParameter('alpha', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
+
+    @legacy_function
+    def set_beta():
+        """ SPH artificial viscosity beta parameter (2*viscosity alpha parameter) """        
+        function = LegacyFunctionSpecification()
+        function.addParameter('beta', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
         
+    @legacy_function
+    def get_beta():
+        """ SPH artificial viscosity beta parameter (2*viscosity alpha parameter) """        
+        function = LegacyFunctionSpecification()
+        function.addParameter('beta', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function   
+     
     @legacy_function
     def set_courant():
         """ SPH courant condition parameter (0.3) """            
@@ -1394,7 +1410,16 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             "SPH artificial viscosity alpha parameter (0.5)", 
             default_value = 0.5
         )
-        
+ 
+
+        object.add_method_parameter(
+            "get_beta", 
+            "set_beta",
+            "artificial_viscosity_beta", 
+            "SPH artificial viscosity beta parameter (2*viscosity alpha parameter)", 
+            default_value = 1.0
+        )
+       
         object.add_method_parameter(
             "get_courant", 
             "set_courant",
@@ -2112,7 +2137,21 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             (object.NO_UNIT, ),
             (object.ERROR_CODE,)
         )
+
+
+        object.add_method(
+            "get_beta",
+            (),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
         
+        object.add_method(
+            "set_beta",
+            (object.NO_UNIT, ),
+            (object.ERROR_CODE,)
+        )
+
+
         object.add_method(
             "get_courant",
             (),

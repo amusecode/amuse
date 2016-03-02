@@ -103,6 +103,7 @@ void begrun(void)
       All.NumFilesPerSnapshot = all.NumFilesPerSnapshot;
       All.MaxNumNgbDeviation = all.MaxNumNgbDeviation;
       All.ArtBulkViscConst = all.ArtBulkViscConst;
+      All.ArtBulkViscBeta = 2*all.ArtBulkViscConst;
 
 
       All.OutputListOn = all.OutputListOn;
