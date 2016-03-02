@@ -62,6 +62,7 @@ void set_default_parameters(){
     All.DesNumNgb = 50;
     All.MaxNumNgbDeviation = 5.;
     All.ArtBulkViscConst = 0.5;
+    All.ArtBulkViscBeta = 1.;
     All.MinGasTemp = 0;
     All.UnitLength_in_cm = 3.085678e21;
     All.UnitMass_in_g = 1.989e43;
@@ -1005,6 +1006,15 @@ int get_alpha(double *artificial_viscosity_alpha){
 }
 int set_alpha(double artificial_viscosity_alpha){
     All.ArtBulkViscConst = artificial_viscosity_alpha;
+    return 0;
+}
+int get_beta(double *artificial_viscosity_beta){
+    if (ThisTask) {return 0;}
+    *artificial_viscosity_beta = All.ArtBulkViscBeta;
+    return 0;
+}
+int set_beta(double artificial_viscosity_beta){
+    All.ArtBulkViscBeta = artificial_viscosity_beta;
     return 0;
 }
 int get_courant(double *courant){
