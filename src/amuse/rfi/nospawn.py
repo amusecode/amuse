@@ -7,7 +7,7 @@ from collections import namedtuple
 import sys
 import importlib
 
-Code = namedtuple("Code", ['cls', 'number_of_workers'])
+Code = namedtuple("Code", ['cls', 'number_of_workers', 'args', 'kwargs'])
 
 def get_number_of_workers_needed(codes):
     result = 1
@@ -56,10 +56,12 @@ def start_all(codes):
     number_of_workers_needed = get_number_of_workers_needed(codes)
     
     world = MPI.COMM_WORLD
-    if world.size < number_of_workers_needed:
-        raise Exception("cannot start all codes, the world size ({0}) is smaller than the number of requested codes ({1}) (which is always 1 + the sum of the all the number_of_worker fields)".format(world.size, number_of_workers_needed))
-        
     rank = world.rank
+    if world.size < number_of_workers_needed:
+        if rank == 0:
+            raise Exception("cannot start all codes, the world size ({0}) is smaller than the number of requested codes ({1}) (which is always 1 + the sum of the all the number_of_worker fields)".format(world.size, number_of_workers_needed))
+        else:
+            return None
     
     color = get_color(world.rank, codes)
     key = get_key(world.rank, codes)
@@ -76,7 +78,7 @@ def start_all(codes):
             new_intercomm = newcomm.Create_intercomm(0, localdup, remote_leader, tag)
             remote_leader += x.number_of_workers
             tag += 1
-            instance = x.cls(check_mpi = False, must_start_worker = False)
+            instance = x.cls(*x.args, check_mpi = False, must_start_worker = False, **x.kwargs)
             instance.legacy_interface.channel = channel.MpiChannel('_',None)
             instance.legacy_interface.channel.intercomm = new_intercomm
             result.append(instance)

@@ -1,6 +1,6 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+AMUSE_DIR?=./././.
 -include $(AMUSE_DIR)/config.mk
 
 MPICXX   ?= mpicxx
@@ -57,7 +57,7 @@ clean:
 	$(RM) -Rf $(CODEDIR)/src/*.o
 	$(RM) -Rf $(CODEDIR)/src/*.so
 	$(RM) -Rf src/librebound.a
-	$(RM) -f rebound_worker_cython*
+	$(RM) -f rebound_cython.* rebound_cython_worker rebound_cython_worker.*
 	-make -C $(CODEDIR) clean
 	
 distclean:
@@ -69,7 +69,7 @@ distclean:
 	$(RM) -Rf $(CODEDIR)/src/*.so
 	$(RM) -Rf src/librebound.a
 	$(RM) -Rf .pc
-	$(RM) rebound_worker_cython*
+	$(RM) rebound_cython.*
 
 $(CODELIB): $(CODEDIR)/Makefile
 	make -C $(CODEDIR) all CC=$(CC)
@@ -86,19 +86,19 @@ rebound_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I$(CODEDIR)/src $< $(OBJS) $(CODELIB) $(SC_CLIBS)  -o $@
 	
 
-rebound_worker_cython: rebound_worker_cython.so
-	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.rebound.interface ReboundInterface -o $@
+rebound_worker_cython: rebound_cython.so
+	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.rebound.interface ReboundInterface -o $@ --cython-import rebound_cython
 	
-rebound_worker_cython.so: rebound_worker_cython.o $(CODELIB) $(OBJS)
-	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) rebound_worker_cython.o  -o $@ $(SC_CLIBS) $(AM_LIBS) $(OBJS) $(CODELIB)
+rebound_cython.so: rebound_cython.o $(CODELIB) $(OBJS)
+	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) rebound_cython.o  -o $@ $(SC_CLIBS) $(AM_LIBS) $(OBJS) $(CODELIB)
 
-rebound_worker_cython.o: rebound_worker_cython.cc
+rebound_cython.o: rebound_cython.cc
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
 
-rebound_worker_cython.pyx: interface.py worker_code.h
+rebound_cython.pyx: interface.py worker_code.h
 	$(CODE_GENERATOR) --type=cython -m mpi interface.py ReboundInterface -o $@
 
-rebound_worker_cython.cc: rebound_worker_cython.pyx
+rebound_cython.cc: rebound_cython.pyx
 	$(CYTHON) --cplus $< -o $@
 
 

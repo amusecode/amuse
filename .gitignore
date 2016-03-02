@@ -325,6 +325,26 @@ doc/amuse_examples
 /nbody6xx.input
 /test_results
 autom4te.cache/
+src/amuse/community/hermite0/hermite0_cython.c
+src/amuse/community/hermite0/hermite0_cython.pyx
+src/amuse/community/hermite0/hermite0_worker
+src/amuse/community/hermite0/hermite0_worker_cython
+src/amuse/community/huayno/huayno_cython.c
+src/amuse/community/huayno/huayno_cython.pyx
+src/amuse/community/huayno/huayno_worker_cython
+src/amuse/community/kepler/kepler_cython.cc
+src/amuse/community/kepler/kepler_cython.pyx
+src/amuse/community/kepler/kepler_worker_cython
+src/amuse/community/rebound/rebound_cython.cc
+src/amuse/community/rebound/rebound_cython.pyx
+src/amuse/community/rebound/rebound_worker_cython
+src/amuse/community/seba/seba_cython.cc
+src/amuse/community/seba/seba_cython.pyx
+src/amuse/community/seba/seba_worker_cython
+src/amuse/community/bhtree/bhtree_cython.c
+src/amuse/community/bhtree/bhtree_cython.pyx
+src/amuse/community/bhtree/bhtree_worker_cython
+
 
 
 #files generated during documentation build
@@ -352,3 +372,4 @@ examples/syllabus/*.h5
 SeBa.data
 binev.data
 daltons.txt
+riken
