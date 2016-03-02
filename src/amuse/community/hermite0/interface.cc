@@ -1330,7 +1330,7 @@ int initialize_code()
     mpi_rank = 0;
     mpi_size = 1;
 #endif
-    cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
+    //cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
     
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);

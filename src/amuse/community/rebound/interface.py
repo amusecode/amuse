@@ -86,9 +86,10 @@ class ReboundInterface(CodeInterface,
         value, error = self._get_integrator(code_index)
         for key, index in self.INTEGRATORS.iteritems():
             if value == index:
-                return key, error
-        return "none", error
+                return key
+        return "none"
     
+
     @legacy_function
     def set_time_step():
         """
@@ -308,16 +309,19 @@ class ReboundInterface(CodeInterface,
         -1 - ERROR
             particle could not be found
         """
-        return function
+        return function 
+
 
 
 class Rebound(GravitationalDynamics, GravityFieldCode):
 
+    __interface__ = ReboundInterface
+    __so_module__ = 'rebound_cython'
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
 
-        legacy_interface = ReboundInterface(**options)
+        legacy_interface = self.__interface__(**options)
         self.legacy_doc = legacy_interface.__doc__
 
         GravitationalDynamics.__init__(
@@ -347,7 +351,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             "set_time_step",
             "timestep",
             "constant timestep for iteration", 
-            default_value = 0.01 | nbody_system.time
+            default_value = 0.0001 | nbody_system.time
         )
 
 
