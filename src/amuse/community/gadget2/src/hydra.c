@@ -389,6 +389,9 @@ void hydro_evaluate(int target, int mode)
   double dx, dy, dz, dvx, dvy, dvz;
   double h_i2, hinv, hinv4;
   double p_over_rho2_i, p_over_rho2_j, soundspeed_i, soundspeed_j;
+#ifdef MONAGHANVISC
+  double soundspeed_ij, h_ij;
+#endif
   double hfc, dwk_i, vdotr, vdotr2, visc, mu_ij, rho_ij, vsig;
   double h_j, dwk_j, r, r2, u, hfc_visc;
 
@@ -523,19 +526,32 @@ void hydro_evaluate(int target, int mode)
 
 		  if(vdotr2 < 0)	/* ... artificial viscosity */
 		    {
+#ifndef MONAGHANVISC
 		      mu_ij = fac_mu * vdotr2 / r;	/* note: this is negative! */
-
+#else		      
+		      h_ij = 0.5 * (h_i + h_j);
+		      mu_ij = fac_mu * h_ij * vdotr2 / (r2 + 0.0001 * h_ij * h_ij);
+#endif
                       vsig = soundspeed_i + soundspeed_j - 3 * mu_ij;
+
+
 
 		      if(vsig > maxSignalVel)
 			maxSignalVel = vsig;
 
 		      rho_ij = 0.5 * (rho + SphP[j].Density);
+
 		      f2 =
 			fabs(SphP[j].DivVel) / (fabs(SphP[j].DivVel) + SphP[j].CurlVel +
 						0.0001 * soundspeed_j / fac_mu / SphP[j].Hsml);
 
+#ifndef MONAGHANVISC
 		      visc = 0.25 * All.ArtBulkViscConst * vsig * (-mu_ij) / rho_ij * (f1 + f2);
+#else			      
+		      soundspeed_ij = (soundspeed_i+soundspeed_j) * 0.5;
+
+		      visc = ((-All.ArtBulkViscConst) * soundspeed_ij * mu_ij + All.ArtBulkViscBeta * mu_ij * mu_ij) / rho_ij;
+#endif
 
 		      /* .... end artificial viscosity evaluation */
 #ifndef NOVISCOSITYLIMITER
