@@ -101,18 +101,29 @@ def ecc_random_power_with_min_peri(n, semi, min_peri, power=2.):
 
 class SphericalIsotropicCloud(object):
   """
-  spherical isotropic cloud ~ Oort cloud
-  -- targetN -- number of comets
-  -- m_star -- mass of the central star
-  -- m_cloud -- total mass of the cloud (comets are equal mass)
-  -- a_min -- minimal semimajor axis
-  -- a_max -- maximal semimajor axis, a_min < a_max
-  -- q_min -- minimal pericenter
-  -- gamma -- exponent of the semimajor axis distribution, f(a) ~ a^(gamma)
-  -- seed -- random seed -- to reproduce exactly the same IC
+  Spherical isotropic cloud ~ Oort cloud given by distributions of orbital elements:
+    semi-major axes -- power law, default: dn/da ~ a^(-1.5),
+    eccentricities -- dn/de ~ e,
+    constrain on the minimum pericenter,
+    isotropic orbits -- distribution of orbital inclinations: cos(i) = -1--1,
+        longitude of ascending node: 0--2pi,
+        argument of periastron: 0--2pi,
+        mean anomaly: 0--2pi,
+    equal mass particles
+  
   The default values correspond to papers:
   * Duncan, M.; Quinn, T.; Tremaine, S. -- http://adsabs.harvard.edu/abs/1987AJ.....94.1330D
   * Feng, F.; Bailer-Jones, C. A. L. -- http://adsabs.harvard.edu/abs/2014MNRAS.442.3653F (their DQT model)
+  
+  :argument targetN: number of particles to include in the cloud
+  :argument m_star: mass of the central star
+  :argument m_cloud: total mass of the cloud (particles are equal mass)
+  :argument a_min: minimal semimajor axis
+  :argument a_max: maximal semimajor axis, a_min < a_max
+  :argument q_min: minimal pericenter
+  :argument gamma: exponent of the semimajor axis distribution, f(a) ~ a^(gamma)
+  :argument seed: random seed -- set to reproduce exactly the same IC
+  
   """
   def __init__(self,
                targetN=10,

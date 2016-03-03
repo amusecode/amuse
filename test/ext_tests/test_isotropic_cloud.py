@@ -1,6 +1,6 @@
 from amuse.test import amusetest
 from amuse.units import units, nbody_system, constants
-from amuse.ext.isotropic_cloud import SphericalIsotropicCloud
+from amuse.ic.isotropic_cloud import SphericalIsotropicCloud
 from amuse.ext.orbital_elements import orbital_elements_from_binary
 from amuse.datamodel import Particles
 
