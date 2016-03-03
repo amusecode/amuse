@@ -558,6 +558,10 @@ extern struct sph_particle_data
   int   FeedbackFlag;
   FLOAT FeedAccel[3];  /*!< acceleration due to feedback force */
 #endif
+#ifdef MORRIS97VISC
+  FLOAT Alpha;		        /*!< viscosity coefficient */
+  FLOAT DtAlpha;       		/*!< time rate of change of viscosity coefficient */
+#endif
 }
  *SphP,                        	/*!< holds SPH particle data on local processor */
  *DomainSphBuf;                 /*!< buffer for SPH particle data in domain decomposition */
@@ -767,6 +771,9 @@ extern struct hydrodata_in
   int   Timestep;
   int   Task;
   int   Index;
+#ifdef MORRIS97VISC
+  FLOAT Alpha;
+#endif
 }
  *HydroDataIn,                  /*!< holds particle data for SPH hydro-force computation to be exported to other processors */
  *HydroDataGet;                 /*!< holds imported particle data for SPH hydro-force computation */

@@ -170,6 +170,9 @@ void hydro_force(void)
 
 		    HydroDataIn[nexport].Index = i;
 		    HydroDataIn[nexport].Task = j;
+#ifdef MORRIS97VISC
+                    HydroDataIn[nexport].Alpha = SphP[i].Alpha;
+#endif
 		    nexport++;
 		    nsend_local[j]++;
 		  }
@@ -385,11 +388,14 @@ void hydro_evaluate(int target, int mode)
   int j, k, n, timestep, startnode, numngb;
   FLOAT *pos, *vel;
   FLOAT mass, h_i, dhsmlDensityFactor, rho, pressure, f1, f2;
+#ifdef MORRIS97VISC
+  FLOAT alpha_visc, alpha_visc_j;
+#endif
   double acc[3], dtEntropy, maxSignalVel;
   double dx, dy, dz, dvx, dvy, dvz;
   double h_i2, hinv, hinv4;
   double p_over_rho2_i, p_over_rho2_j, soundspeed_i, soundspeed_j;
-#ifdef MONAGHANVISC
+#ifdef MONAGHAN83VISC
   double soundspeed_ij, h_ij;
 #endif
   double hfc, dwk_i, vdotr, vdotr2, visc, mu_ij, rho_ij, vsig;
@@ -410,9 +416,13 @@ void hydro_evaluate(int target, int mode)
       pressure = SphP[target].Pressure;
       timestep = P[target].Ti_endstep - P[target].Ti_begstep;
       soundspeed_i = sqrt(GAMMA * pressure / rho);
+#ifdef MORRIS97VISC
+      alpha_visc = SphP[target].Alpha;
+#else
       f1 = fabs(SphP[target].DivVel) /
 	(fabs(SphP[target].DivVel) + SphP[target].CurlVel +
 	 0.0001 * soundspeed_i / SphP[target].Hsml / fac_mu);
+#endif
     }
   else
     {
@@ -426,6 +436,9 @@ void hydro_evaluate(int target, int mode)
       timestep = HydroDataGet[target].Timestep;
       soundspeed_i = sqrt(GAMMA * pressure / rho);
       f1 = HydroDataGet[target].F1;
+#ifdef MORRIS97VISC
+      alpha_visc = HydroDataGet[target].Alpha;
+#endif
     }
 
 
@@ -449,6 +462,10 @@ void hydro_evaluate(int target, int mode)
 	  dx = pos[0] - P[j].Pos[0];
 	  dy = pos[1] - P[j].Pos[1];
 	  dz = pos[2] - P[j].Pos[2];
+#ifdef MORRIS97VISC
+          alpha_visc_j = SphP[j].Alpha;
+#endif	
+
 
 #ifdef PERIODIC			/*  find the closest image in the given box size  */
 	  if(dx > boxHalf_X)
@@ -526,7 +543,7 @@ void hydro_evaluate(int target, int mode)
 
 		  if(vdotr2 < 0)	/* ... artificial viscosity */
 		    {
-#ifndef MONAGHANVISC
+#ifndef MONAGHAN83VISC
 		      mu_ij = fac_mu * vdotr2 / r;	/* note: this is negative! */
 #else		      
 		      h_ij = 0.5 * (h_i + h_j);
@@ -541,17 +558,23 @@ void hydro_evaluate(int target, int mode)
 
 		      rho_ij = 0.5 * (rho + SphP[j].Density);
 
+#ifdef MORRIS97VISC		      
+                      visc = 0.25 * (alpha_visc + alpha_visc_j) * vsig * (-mu_ij) / rho_ij;
+#else
+
 		      f2 =
 			fabs(SphP[j].DivVel) / (fabs(SphP[j].DivVel) + SphP[j].CurlVel +
 						0.0001 * soundspeed_j / fac_mu / SphP[j].Hsml);
 
-#ifndef MONAGHANVISC
+#ifndef MONAGHAN83VISC
 		      visc = 0.25 * All.ArtBulkViscConst * vsig * (-mu_ij) / rho_ij * (f1 + f2);
 #else			      
 		      soundspeed_ij = (soundspeed_i+soundspeed_j) * 0.5;
 
 		      visc = ((-All.ArtBulkViscConst) * soundspeed_ij * mu_ij + All.ArtBulkViscBeta * mu_ij * mu_ij) / rho_ij;
-#endif
+#endif //MONAGHAN83VISC
+
+#endif //MORRIS97VISC
 
 		      /* .... end artificial viscosity evaluation */
 #ifndef NOVISCOSITYLIMITER

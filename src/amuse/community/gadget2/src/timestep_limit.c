@@ -105,6 +105,9 @@ void advance_and_find_timesteps(void)
 #ifdef MAKEGLASS
   double disp, dispmax, globmax, dmean, fac, disp2sum, globdisp2sum;
 #endif
+#ifdef MORRIS97VISC
+  double soundspeed, tau, f_fac;
+#endif
 
 #ifdef PERIODIC
   boxSize = All.BoxSize;
@@ -584,6 +587,23 @@ void advance_and_find_timesteps(void)
 
 	  if(P[i].Type == 0)	/* SPH stuff */
 	    {
+#ifdef MORRIS97VISC
+
+	      soundspeed  = sqrt(GAMMA * SphP[i].Pressure / SphP[i].Density);
+	      f_fac = fabs(SphP[i].DivVel) / (fabs(SphP[i].DivVel) + SphP[i].CurlVel +
+					      0.0001 * soundspeed / SphP[i].Hsml);
+	      tau = 2.5 * SphP[i].Hsml / soundspeed;
+	      SphP[i].DtAlpha = f_fac*dmax(-SphP[i].DivVel, 0) * (2.0 - SphP[i].Alpha) - (SphP[i].Alpha - .1)/tau;
+
+	      /*printf("f_fac = %g, tau = %g, Alpha = %g, DivVel = %g, DtAlpha = %g \n",
+		f_fac,
+		tau,
+		SphP[i].Alpha,
+		SphP[i].DivVel,
+		SphP[i].DtAlpha);*/	
+	    /* change this to input the maximum the viscosity can get to. */      
+	    /*  SphP[i].DtAlpha = f_fac*dmax(-SphP[i].DivVel, 0) * (All.ArtBulkViscConst - SphP[i].Alpha) - (SphP[i].Alpha - .1)/tau;*/
+#endif	
 	      for(j = 0; j < 3; j++)
 		{
 		  dv[j] += SphP[i].HydroAccel[j] * dt_hydrokick;

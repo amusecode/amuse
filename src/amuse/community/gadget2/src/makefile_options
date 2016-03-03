@@ -53,7 +53,10 @@ OPT   +=  -DNOSTOP_WHEN_BELOW_MINTIMESTEP
 #OPT   +=  -DISOTHERM_EQS
 #OPT   +=  -DADAPTIVE_GRAVSOFT_FORGAS
 #OPT   +=  -DSELECTIVE_NO_GRAVITY=2+4+8+16
-#OPT   +=  -DMONAGHANVISC
+#OPT   +=  -DMONAGHAN83VISC
+#OPT   +=  -DMORRIS97VISC
+
+#-- Note that both MONAGHAN83VISC and MORRIS97VISC do not contain the Balsara 1995 shear flow correction
 
 #--------------------------------------- Testing and Debugging options
 #OPT   +=  -DFORCETEST=0.1

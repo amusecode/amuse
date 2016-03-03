@@ -16,6 +16,9 @@ typedef struct {
     double x, y, z;                                     /// position
     double vx, vy, vz;                                  /// velocity
     double u;                                           /// entropy
+#ifdef MORRIS97VISC
+    double alpha, dtalpha;				///viscosity
+#endif
 } sph_state;
 
 
