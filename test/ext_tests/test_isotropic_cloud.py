@@ -1,13 +1,13 @@
 from amuse.test import amusetest
 from amuse.units import units, nbody_system, constants
-from amuse.ic.isotropic_cloud import SphericalIsotropicCloud
+from amuse.ic.isotropic_cloud import new_isotropic_cloud
 from amuse.ext.orbital_elements import orbital_elements_from_binary
 from amuse.datamodel import Particles
 
 class TestSphericalIsotropicCloud(amusetest.TestCase):
   
   def test1(self):
-    cloud = SphericalIsotropicCloud(targetN=2,m_cloud=0.|units.MSun).result
+    cloud = new_isotropic_cloud(2, m_cloud=0.|units.MSun)
     self.assertEqual(len(cloud),2)
     self.assertEqual(cloud.mass.sum(), 0.|units.MSun)
     
@@ -16,11 +16,11 @@ class TestSphericalIsotropicCloud(amusetest.TestCase):
     a_min=666.|units.AU
     a_max=6666.|units.AU
     q_min=6.|units.AU
-    cloud = SphericalIsotropicCloud(targetN=66,
-                                    m_star=m_star,
-                                    a_min=a_min,
-                                    a_max=a_max,
-                                    q_min=q_min).result
+    cloud = new_isotropic_cloud(66,
+                                m_star=m_star,
+                                a_min=a_min,
+                                a_max=a_max,
+                                q_min=q_min)
     binary = Particles(1)
     binary[0].mass = m_star
     binary[0].position = (0.,0.,0.) | units.AU

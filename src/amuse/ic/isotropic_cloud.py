@@ -87,8 +87,8 @@ def ecc_random_power_with_min_peri(n, semi, min_peri, power=2.):
   """
   x = numpy.random.power(power,size=n)
   peri = semi*(1.-x)
-  while numpy.any(peri.value_in(units.AU)<min_peri.value_in(units.AU)):
-    filter_small_peri = (peri.value_in(units.AU)<min_peri.value_in(units.AU))
+  while numpy.any(peri<min_peri):
+    filter_small_peri = (peri<min_peri)
     n_new = sum(filter_small_peri)
     #print "\t updating q", peri.min().in_(units.AU), n_new
     x_random_new = numpy.random.power(power,size=n_new)
@@ -100,33 +100,8 @@ def ecc_random_power_with_min_peri(n, semi, min_peri, power=2.):
 
 
 class SphericalIsotropicCloud(object):
-  """
-  Spherical isotropic cloud ~ Oort cloud given by distributions of orbital elements:
-    semi-major axes -- power law, default: dn/da ~ a^(-1.5),
-    eccentricities -- dn/de ~ e,
-    constrain on the minimum pericenter,
-    isotropic orbits -- distribution of orbital inclinations: cos(i) = -1--1,
-        longitude of ascending node: 0--2pi,
-        argument of periastron: 0--2pi,
-        mean anomaly: 0--2pi,
-    equal mass particles
-  
-  The default values correspond to papers:
-  * Duncan, M.; Quinn, T.; Tremaine, S. -- http://adsabs.harvard.edu/abs/1987AJ.....94.1330D
-  * Feng, F.; Bailer-Jones, C. A. L. -- http://adsabs.harvard.edu/abs/2014MNRAS.442.3653F (their DQT model)
-  
-  :argument targetN: number of particles to include in the cloud
-  :argument m_star: mass of the central star
-  :argument m_cloud: total mass of the cloud (particles are equal mass)
-  :argument a_min: minimal semimajor axis
-  :argument a_max: maximal semimajor axis, a_min < a_max
-  :argument q_min: minimal pericenter
-  :argument gamma: exponent of the semimajor axis distribution, f(a) ~ a^(gamma)
-  :argument seed: random seed -- set to reproduce exactly the same IC
-  
-  """
   def __init__(self,
-               targetN=10,
+               targetN,
                m_star=1.|units.MSun,
                m_cloud=0.|units.MSun,
                a_min=3000.|units.AU,
@@ -181,9 +156,34 @@ class SphericalIsotropicCloud(object):
     result.velocity = velocity_vectors
     return result
   
-if __name__=="__main__":
+def new_isotropic_cloud(number_of_particles, *list_arguments, **keyword_arguments):
+  """
+  Spherical isotropic cloud ~ Oort cloud given by distributions of orbital elements:
+    semi-major axes -- power law, default: dn/da ~ a^(-1.5),
+    eccentricities -- dn/de ~ e,
+    constrain on the minimum pericenter,
+    isotropic orbits -- distribution of orbital inclinations: cos(i) = -1--1,
+        longitude of ascending node: 0--2pi,
+        argument of periastron: 0--2pi,
+        mean anomaly: 0--2pi,
+    equal mass particles
   
-  cloud = SphericalIsotropicCloud().result
+  The default values correspond to papers:
+  * Duncan, M.; Quinn, T.; Tremaine, S. -- http://adsabs.harvard.edu/abs/1987AJ.....94.1330D
+  * Feng, F.; Bailer-Jones, C. A. L. -- http://adsabs.harvard.edu/abs/2014MNRAS.442.3653F (their DQT model)
+  
+  :argument number_of_particles: number of particles to include in the cloud
+  :argument m_star: mass of the central star
+  :argument m_cloud: total mass of the cloud (particles are equal mass)
+  :argument a_min: minimal semimajor axis
+  :argument a_max: maximal semimajor axis, a_min < a_max
+  :argument q_min: minimal pericenter
+  :argument gamma: exponent of the semimajor axis distribution, f(a) ~ a^(gamma)
+  :argument seed: random seed -- set to reproduce exactly the same IC
+  """
+  uc = SphericalIsotropicCloud(number_of_particles, *list_arguments, **keyword_arguments)
+  return uc.result
+
+if __name__ in ('__main__'):
+  cloud = new_isotropic_cloud(10)
   print cloud
-    
-    
