@@ -21,7 +21,7 @@ class HermiteInterface(CodeInterface,
 
 
     def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker="hermite_worker",
+        CodeInterface.__init__(self, name_of_the_worker="hermite0_worker",
                                  **options)
         LiteratureReferencesMixIn.__init__(self)
 
