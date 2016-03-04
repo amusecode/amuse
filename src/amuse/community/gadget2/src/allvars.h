@@ -560,7 +560,7 @@ extern struct sph_particle_data
 #endif
 #ifdef MORRIS97VISC
   FLOAT Alpha;		        /*!< viscosity coefficient */
-  FLOAT DtAlpha;       		/*!< time rate of change of viscosity coefficient */
+  FLOAT DAlphaDt;       		/*!< time rate of change of viscosity coefficient */
 #endif
 }
  *SphP,                        	/*!< holds SPH particle data on local processor */

@@ -300,7 +300,7 @@ int commit_particles(){
         SphP[i].Hsml = 0;
 #ifdef MORRIS97VISC
         SphP[i].Alpha = (*state_iter).second.alpha;
-        SphP[i].DtAlpha = (*state_iter).second.dtalpha;
+        SphP[i].DAlphaDt = (*state_iter).second.dalphadt;
 #endif
     }
     sph_states.clear();
@@ -367,7 +367,7 @@ int commit_particles(){
         force_treeallocate(10 * All.TreeAllocFactor * All.MaxPart, 10 * All.MaxPart);
     } else {
         ngb_treeallocate(MAX_NGB);
-        force_treeallocate(All.TreeAllocFactor * All.MaxPart, All.MaxPart);
+        force_treeallocate(10*All.TreeAllocFactor * All.MaxPart, 10*All.MaxPart);
     }
     
     All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
@@ -445,7 +445,7 @@ void push_particle_data_on_state_vectors(){
 
 #ifdef MORRIS97VISC
             state.alpha = SphP[i].Alpha;
-            state.dtalpha = SphP[i].DtAlpha;
+            state.dalphadt = SphP[i].DAlphaDt;
 #endif
 
 
@@ -783,7 +783,7 @@ int new_sph_particle(int *id, double mass, double x, double y, double z, double 
         state.u = u;
 #ifdef MORRIS97VISC
         state.alpha = All.ArtBulkViscConst;
-        state.dtalpha = 0;
+        state.dalphadt = 0;
 #endif
         sph_states.insert(std::pair<long long, sph_state>(particle_id_counter, state));
     }
@@ -2290,7 +2290,7 @@ int get_alpha_visc(int *index, double *alpha_visc, int length){
     return 0;
 }
 
-int get_dtalpha_visc(int *index, double *dtalpha_visc, int length){
+int get_dalphadt_visc(int *index, double *dalphadt_visc, int length){
     int errors = 0;
     double *buffer = new double[length];
     int *count = new int[length];
@@ -2300,7 +2300,7 @@ int get_dtalpha_visc(int *index, double *dtalpha_visc, int length){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
             count[i] = 1;
 #ifdef MORRIS97VISC
-            buffer[i] = SphP[local_index].DtAlpha;
+            buffer[i] = SphP[local_index].DAlphaDt;
 #else
             buffer[i] = 0;
 #endif
@@ -2318,9 +2318,9 @@ int get_dtalpha_visc(int *index, double *dtalpha_visc, int length){
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
-                dtalpha_visc[i] = 0;
+                dalphadt_visc[i] = 0;
             } else
-                dtalpha_visc[i] = buffer[i];
+                dalphadt_visc[i] = buffer[i];
         }
     }
     delete[] buffer;

@@ -374,18 +374,18 @@ class Gadget2Interface(
     def get_alpha_visc():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN, description="alpha_SPH, the artificial viscosity of a particle")
         function.addParameter('alpha', dtype='float64', direction=function.OUT)
         function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     
     @legacy_function
-    def get_dtalpha_visc():
+    def get_dalphadt_visc():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter('dtalpha', dtype='float64', direction=function.OUT)
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN, description="dalpha/dt, the rate of change with time of the artificial viscosity parameter alpha_SPH")
+        function.addParameter('dalphadt', dtype='float64', direction=function.OUT)
         function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
@@ -1727,7 +1727,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         object.add_getter('gas_particles', 'get_internal_energy')
         object.add_getter('gas_particles', 'get_smoothing_length')
         object.add_getter('gas_particles', 'get_alpha_visc', names = ('alpha',))
-        object.add_getter('gas_particles', 'get_dtalpha_visc', names = ('dtalpha',))
+        object.add_getter('gas_particles', 'get_dalphadt_visc', names = ('dalphadt',))
         object.add_getter('gas_particles', 'get_density', names = ('rho',))
         object.add_getter('gas_particles', 'get_density', names = ('density',))
         object.add_getter('gas_particles', 'get_pressure')
