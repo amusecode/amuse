@@ -494,6 +494,9 @@ class SubGrid(AbstractGrid):
         
     def __ne__(self,other):
         return not(self==other)
+
+    def _factory_for_new_collection(self):
+        return Grid
         
 class GridPoint(object):
 
