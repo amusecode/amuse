@@ -89,7 +89,7 @@ class AbstractGrid(AbstractSet):
         
     
     def _factory_for_new_collection(self):
-        return Grid
+        return self.__class__
         
     def empty_copy(self):
         result = self._factory_for_new_collection()(*self.shape)
