@@ -171,10 +171,7 @@ class BaseGrid(AbstractGrid):
         return self._private.attribute_storage.get_all_keys_in_store()
     
     def __getitem__(self, index):
-        if indexing.number_of_dimensions_after_index(self.number_of_dimensions(), index) == 0:
-            return GridPoint(index, self)
-        else:
-            return SubGrid(self, index)
+        return new_subgrid_from_index(self, index)
     
     def iter_cells(self):
         shape = numpy.asarray(self.shape)
@@ -464,12 +461,8 @@ class SubGrid(AbstractGrid):
     def __getitem__(self, index):
         normalized_index= indexing.normalize_slices(self.shape,index)
         combined_index = indexing.combine_indices(self._private.indices, normalized_index)
-        if indexing.number_of_dimensions_after_index(self._original_set().number_of_dimensions(), combined_index) == 0:
-            return GridPoint(combined_index, self._original_set())
-        else:
-            return SubGrid(self._original_set(), combined_index)
-            
-    
+        return new_subgrid_from_index(self._original_set(), combined_index)
+                
     def get_attribute_names_defined_in_store(self):
         return self._private.grid.get_attribute_names_defined_in_store()
         
@@ -523,6 +516,12 @@ class GridPoint(object):
     def get_containing_set(self):
         return self.grid
         
+def new_subgrid_from_index(grid, index):
+    if indexing.number_of_dimensions_after_index(grid.number_of_dimensions(), index) == 0:
+        return GridPoint(index, grid)
+    else:
+        return SubGrid(grid, index)
+
 class GridRemappingChannel(object):
     """
     A channel to remap attributes from one grid to another.
