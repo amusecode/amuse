@@ -1046,6 +1046,10 @@ function amuse_set_internal_energy(id,u) result(ret)
     return
   endif  
   if(nbexist(p).NE.id) call terror("id error 2")
+  if(.not.(u.GT.0.AND.u.LT.HUGE(u))) then
+    ret=-3
+    return
+  endif
   if(uentropy) then
     entropy(p)=u*gamma1/rho(p)**gamma1
     entold(p)=entropy(p)
