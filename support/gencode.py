@@ -278,6 +278,7 @@ def make_file(settings):
         ('py','mpi'): make_a_mpi_python_worker,    
         ('cython','script'): create_cython.GenerateACythonStartScriptStringFromASpecificationClass,
         ('cython','mpi'): create_cython.GenerateACythonSourcecodeStringFromASpecificationClass,
+        ('cython', 'interface'): create_cython.GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass
     }
     
     try:
@@ -311,6 +312,7 @@ def make_file(settings):
             uc.show_error_and_exit(exception)
             
             
+
 
 
 

@@ -858,10 +858,11 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
                 numpy.asarray(indices_in_the_code), 
                 numpy.asarray(notfoundkeys)
             )
-                
-        return indices_in_the_code
+        
+        return numpy.asarray(indices_in_the_code)
         
    
+
     def get_key_indices_of(self, keys):
         result = []
         if keys is None:
