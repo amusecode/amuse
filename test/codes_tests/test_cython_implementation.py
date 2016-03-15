@@ -91,7 +91,7 @@ class TestCreateCython(TestCase):
         uc.start()
         code =  uc.result
         print '<c>' + code + '</c>'
-        self.assertTrue('INTEGER(kind = c_int) function c_3f33a9ce(int_in, int_out) &\n & result(rrreeesss) &\n & bind(c, name = "echo_int")' in code)
+        self.assertTrue('INTEGER(kind = c_int) function c_3f33a9ce(int_in, int_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_int")' in code)
         self.assertTrue('  INTEGER(kind = c_int), intent(in), value :: int_in' in code)
         self.assertTrue('  INTEGER(kind = c_int), intent(out) :: int_out' in code)
         self.assertTrue('  INTEGER :: echo_int' in code)
@@ -108,7 +108,7 @@ class TestCreateCython(TestCase):
         uc.start()
         code =  uc.result
         print '<c>' + code + '</c>'
-        self.assertTrue('INTEGER(kind = c_int) function c_64452f1a(string_in, string_out) &\n & result(rrreeesss) &\n & bind(c, name = "echo_string")' in code)
+        self.assertTrue('INTEGER(kind = c_int) function c_64452f1a(string_in, string_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_string")' in code)
         self.assertTrue('  type(C_ptr), intent(in), value :: string_in' in code)
         self.assertTrue('  character(len=4096) :: string_string_in' in code)
         self.assertTrue('  call C_F_string_ptr(string_in, string_string_in)' in code)
@@ -453,6 +453,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         
         uc = create_cython.GenerateACythonSourcecodeStringFromASpecificationClass()
         uc.specification_class = test_fortran_implementation.ForTestingInterface
+        uc.function_name_prefix = "ci_"
         uc.needs_mpi = True
         code =  uc.result
         
@@ -495,6 +496,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         
         uc = create_cython.GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass()
         uc.specification_class = test_fortran_implementation.ForTestingInterface
+        uc.function_name_prefix = "ci_"
         uc.needs_mpi = False
         code =  uc.result
 

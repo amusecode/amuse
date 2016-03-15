@@ -467,15 +467,23 @@ class GenerateACythonDefinitionStringFromAFunctionSpecification(MakeCythonCodeSt
         self.out + ')' + ';'
         
     def output_function_start(self):
-        self.out.n()         
+        self.out.n()                     
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             self.out + spec.type
             self.out + ' '
         else:
             self.out + 'void' + ' '
-        self.out + 'c_'+self.specification.name +' "'+self.specification.name +'" '+ '('
+
+        self.out + 'c_'+self.specification.name +' "' + self.function_name_prefix + self.specification.name +'" '+ '('
         
+
+
+
+    @late
+    def function_name_prefix(self):
+        return ''
+
 
 
 class GenerateACythonSourcecodeStringFromASpecificationClass\
@@ -589,9 +597,16 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
             self.out.lf()
             uc = GenerateACythonDefinitionStringFromAFunctionSpecification()
             uc.specification = x.specification
+            uc.function_name_prefix = self.function_name_prefix
             uc.out = self.out
             uc.start()
             self.out.lf()
+
+    @late
+    def function_name_prefix(self):
+        return ''
+
+
 class GenerateACHeaderStringFromASpecificationClass\
     (GenerateASourcecodeStringFromASpecificationClass):
 
@@ -774,7 +789,7 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
         self.output_function_parameters()
         self.out + ') &\n &'
         self.out + ' result(rrreeesss) &\n &'
-        self.out + ' ' + 'bind(c, name = "' + self.specification.name + '")'
+        self.out + ' ' + 'bind(c, name = "' + self.function_name_prefix + self.specification.name + '")'
         self.out.n()
         self.out.indent().lf()
         self.out.lf() + 'implicit none'
@@ -1143,6 +1158,12 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
 
 
 
+    @late
+    def function_name_prefix(self):
+        return "ci_"
+
+
+
 class GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass\
     (GenerateASourcecodeStringFromASpecificationClass):
 
@@ -1198,10 +1219,12 @@ class GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass\
             uc.specification = x.specification
             uc.out = self.out
             uc.has_modules = self.has_modules
+            uc.function_name_prefix = self.function_name_prefix
             uc.start()
             self.out.lf()
     
     
+
 
     def must_include_interface_function_in_output(self, x):
         if x.specification.name.startswith("internal__"):
@@ -1241,3 +1264,6 @@ class GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass\
         self.out.n()
         self.out + INTERFACE_DEFINITION
         self.out.n()
+    def function_name_prefix(self):
+        return "ci_"
+
