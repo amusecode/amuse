@@ -1187,11 +1187,12 @@ class ParticleSpecificSelectSubsetMethod(object):
         
         if not self.get_number_of_particles_in_set_method is None:
             number_of_particles_in_set = self.get_number_of_particles_in_set_method(from_indices)[0]
-            indices = self.method(from_indices * number_of_particles_in_set, range(number_of_particles_in_set))
+            indices = self.method([from_indices[0]] * number_of_particles_in_set, range(number_of_particles_in_set))
         else:
             index = self.method()
             indices = [index]
             
-        keys = set._private.attribute_storage._get_keys_for_indices_in_the_code(indices)  
+        keys = set._private.attribute_storage._get_keys_for_indices_in_the_code(indices)                          
      
         return particle.as_set()._subset(keys)
+
