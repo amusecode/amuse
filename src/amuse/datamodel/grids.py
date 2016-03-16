@@ -534,7 +534,7 @@ class GridRemappingChannel(object):
         if inspect.isclass(remapper):
             self.remapper = remapper( source, target)
         else:
-            self.remaper = remapper
+            self.remapper = remapper
 
     def get_overlapping_attributes(self):
         from_names = self.source.get_attribute_names_defined_in_store()
