@@ -485,7 +485,7 @@ class TestGadget2(TestWithMPI):
                 ('courant',0.3), ('type_of_timestep_criterion',0), ('hubble_parameter', 0.7),
                 ('omega_zero',0.0), ('omega_lambda',0.0), ('omega_baryon',0.0), 
                 ('min_gas_hsmooth_fractional',0.0), ('timestep_accuracy_parameter',0.025), 
-                ('tree_domain_update_frequency',0.05)]:
+                ('tree_domain_update_frequency',0.05),('artificial_viscosity_beta',1.0)]:
             self.assertEquals(value, getattr(instance.parameters, par))
             setattr(instance.parameters, par, 1)
             self.assertEquals(1, getattr(instance.parameters, par))

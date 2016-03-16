@@ -700,6 +700,7 @@ GSL_CONFIG
 GSL_LIBS
 GSL_CFLAGS
 GSL_FLAGS
+PIC_FLAGS
 NETCDFF_PREFIX
 NETCDFF_LIBS
 NETCDFF_FLAGS
@@ -845,6 +846,7 @@ with_gmp
 with_mpfr
 with_hdf5
 with_netcdf
+enable_pic
 with_gsl_prefix
 with_gsl_exec_prefix
 enable_gsltest
@@ -884,6 +886,7 @@ GMP_LIBS
 MPFR_CFLAGS
 MPFR_LIBS
 CXXCPP
+PIC_FLAGS
 GSL_CFLAGS
 GSL_LIBS'
 
@@ -1502,6 +1505,8 @@ Optional Features:
   --enable-cuda           Enable CUDA for codes
   --enable-sapporo2       Use the provided sapporo library version 2, instead
                           of sapporo_light
+  --disable-pic           compile PIC objects [default=enabled for shared
+                          builds on supported platforms]
   --disable-gsltest       Do not try to compile and run a test GSL program
 
 Optional Packages:
@@ -1556,6 +1561,7 @@ Some influential environment variables:
   MPFR_CFLAGS C compiler flags for MPFR, overriding pkg-config
   MPFR_LIBS   linker flags for MPFR, overriding pkg-config
   CXXCPP      C++ preprocessor
+  PIC_FLAGS   compiler flags for PIC code
   GSL_CFLAGS  C compiler flags for GSL, overriding pkg-config
   GSL_LIBS    linker flags for GSL, overriding pkg-config
 
@@ -8539,6 +8545,116 @@ fi
 
 
 
+
+
+# Check whether --enable-pic was given.
+if test "${enable_pic+set}" = set; then :
+  enableval=$enable_pic; enable_pic="$enableval"
+    test "x$enable_pic" = x && enable_pic=auto
+else
+  enable_pic=auto
+fi
+
+# disable PIC by default for static builds
+if test "$enable_pic" = auto && test "$enable_static" = yes; then
+    enable_pic=no
+fi
+# if PIC hasn't been explicitly disabled, try to figure out the flags
+if test "$enable_pic" != no; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $CC option to produce PIC" >&5
+$as_echo_n "checking for $CC option to produce PIC... " >&6; }
+    # allow the user's flags to override
+    if test "x$PIC_FLAGS" = x; then
+        # see if we're using GCC
+        if test "x$GCC" = xyes; then
+            case "$host_os" in
+            aix*|beos*|cygwin*|irix5*|irix6*|osf3*|osf4*|osf5*)
+                # PIC is the default for these OSes.
+                ;;
+            mingw*|os2*|pw32*)
+                # This hack is so that the source file can tell whether
+                # it is being built for inclusion in a dll (and should
+                # export symbols for example).
+                PIC_FLAGS="-DDLL_EXPORT"
+                ;;
+            darwin*|rhapsody*)
+                # PIC is the default on this platform
+                # Common symbols not allowed in MH_DYLIB files
+                PIC_FLAGS="-fno-common"
+                ;;
+            hpux*)
+                # PIC is the default for IA64 HP-UX and 64-bit HP-UX,
+                # but not for PA HP-UX.
+                case $host_cpu in
+                hppa*64*|ia64*)
+                    ;;
+                *)
+                    PIC_FLAGS="-fPIC"
+                    ;;
+                esac
+                ;;
+            *)
+                # Everyone else on GCC uses -fPIC
+                PIC_FLAGS="-fPIC"
+                ;;
+            esac
+        else # !GCC
+            case "$host_os" in
+            hpux9*|hpux10*|hpux11*)
+                # PIC is the default for IA64 HP-UX and 64-bit HP-UX,
+                # but not for PA HP-UX.
+                case "$host_cpu" in
+                hppa*64*|ia64*)
+                    # +Z the default
+                    ;;
+                *)
+                    PIC_FLAGS="+Z"
+                    ;;
+                esac
+                ;;
+            linux*|k*bsd*-gnu)
+                case `basename "$CC"` in
+                icc*|ecc*|ifort*)
+                    PIC_FLAGS="-KPIC"
+                    ;;
+                pgcc*|pgf77*|pgf90*|pgf95*)
+                    # Portland Group compilers (*not* the Pentium gcc
+                    # compiler, which looks to be a dead project)
+                    PIC_FLAGS="-fpic"
+                    ;;
+                ccc*)
+                    # All Alpha code is PIC.
+                    ;;
+                xl*)
+                    # IBM XL C 8.0/Fortran 10.1 on PPC
+                    PIC_FLAGS="-qpic"
+                    ;;
+                *)
+                    case `$CC -V 2>&1 | sed 5q` in
+                    *Sun\ C*|*Sun\ F*)
+                        # Sun C 5.9 or Sun Fortran
+                        PIC_FLAGS="-KPIC"
+                        ;;
+                    esac
+                esac
+                ;;
+            solaris*)
+                PIC_FLAGS="-KPIC"
+                ;;
+            sunos4*)
+                PIC_FLAGS="-PIC"
+                ;;
+            esac
+        fi # GCC
+    fi # PIC_FLAGS
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PIC_FLAGS" >&5
+$as_echo "$PIC_FLAGS" >&6; }
+fi
+
+
+CFLAGS="$CFLAGS $PIC_FLAGS"
+CXXFLAGS="$CXXFLAGS $PIC_FLAGS"
+FCFLAGS="$FCFLAGS $PIC_FLAGS"
 
 
 

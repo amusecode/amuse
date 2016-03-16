@@ -136,7 +136,7 @@ class interpolating_2D_remapper(object):
 
     def forward_mapping(self, attributes):
         if attributes is None:
-            attributes=grid.get_attribute_names_defined_in_store()
+            attributes=self.source.get_attribute_names_defined_in_store()
         
         source=self.source.empty_copy()
         channel1=self.source.new_channel_to(source)
@@ -254,7 +254,7 @@ class conservative_spherical_remapper(object):
             values=numpy.array(values.number)
 
             #do the remapping
-            self.cdo_remapper.set_src_grid_values(index_i_src, values.ravel(order='F'))
+            self.cdo_remapper.set_src_grid_values(index_i_src, values.ravel('F'))
             self.cdo_remapper.perform_remap()
             result = self.cdo_remapper.get_dst_grid_values(index_i_dst).reshape(target.shape, order='F')
 

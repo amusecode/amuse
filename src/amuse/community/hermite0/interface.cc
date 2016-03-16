@@ -38,6 +38,10 @@
 #include <stopcond.h>
 #include <time.h>
 
+#ifndef NOMPI
+#include <amuse_mpi.h>
+static MPI_Comm WORLD;
+#endif
 
 using namespace std;
 typedef double  real;
@@ -323,7 +327,7 @@ static int id_coll_primary = -1, id_coll_secondary = -1;
 inline int mpi_distribute_data(int n) {
 
 #ifndef NOMPI
-    MPI_Bcast(&n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&n, 1, MPI_INTEGER, 0, WORLD);
     
     if(mpi_rank) {
         vel.resize(n+1);
@@ -337,11 +341,11 @@ inline int mpi_distribute_data(int n) {
     }
     
     
-    MPI_Bcast(&vel[0], n * 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&pos[0], n * 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&mass[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&radius[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-    MPI_Bcast(&ident[0], n, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&vel[0], n * 3, MPI_DOUBLE, 0, WORLD);
+    MPI_Bcast(&pos[0], n * 3, MPI_DOUBLE, 0, WORLD);
+    MPI_Bcast(&mass[0], n, MPI_DOUBLE, 0, WORLD);
+    MPI_Bcast(&radius[0], n, MPI_DOUBLE, 0, WORLD);
+    MPI_Bcast(&ident[0], n, MPI_INTEGER, 0, WORLD);
     
     mpi_distribute_stopping_conditions();
 #endif
@@ -353,11 +357,11 @@ inline void mpi_collect_data(int n, real *epot, real *coll_time_q_out, real coll
 
 #ifndef NOMPI
     real summed = 0.0;
-    MPI_Reduce(&coll_time_q_in, &summed, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&coll_time_q_in, &summed, 1, MPI_DOUBLE, MPI_MIN, 0, WORLD);
     *coll_time_q_out = summed;
     
     summed = 0.0;
-    MPI_Reduce(epot, &summed, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(epot, &summed, 1, MPI_DOUBLE, MPI_SUM, 0, WORLD);
     *epot = summed;
     
     if(!mpi_rank) {
@@ -366,9 +370,9 @@ inline void mpi_collect_data(int n, real *epot, real *coll_time_q_out, real coll
         potential_reduced.resize(n+1);
     }
     
-    MPI_Reduce(&acc[0], &acc_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&jerk[0], &jerk_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&potential[0], &potential_reduced[0], n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&acc[0], &acc_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, WORLD);
+    MPI_Reduce(&jerk[0], &jerk_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, WORLD);
+    MPI_Reduce(&potential[0], &potential_reduced[0], n, MPI_DOUBLE, MPI_SUM, 0, WORLD);
     
     if(!mpi_rank) {
         acc = acc_reduced;
@@ -723,7 +727,7 @@ int evolve_system(real t_end)
     // velocities.
     
 #ifndef NOMPI
-    MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, WORLD);
 #endif
 
     get_acc_jerk_pot_coll(&epot, &coll_time);
@@ -740,7 +744,7 @@ int evolve_system(real t_end)
         dt *= -1;
     }
     
-    std::cout<<"t"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
+    //std::cout<<"t"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
     t_wanted = t_end;
     if (!init_flag)
       {
@@ -758,7 +762,7 @@ int evolve_system(real t_end)
         }
     }
     if(n <=  1) {dt = t_end - t;}
-    std::cout<<"t0"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
+    //std::cout<<"t0"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
     
     if (
         (!is_time_reversed && t + dt > t_end + (end_time_accuracy_factor * dt))
@@ -769,7 +773,7 @@ int evolve_system(real t_end)
     {
         must_run = 0;
 #ifndef NOMPI
-        MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, WORLD);
 #endif
         return -1;
     
@@ -802,7 +806,7 @@ int evolve_system(real t_end)
         ) {
             
             #ifndef NOMPI
-            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, WORLD);
             #endif
 
             evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
@@ -818,7 +822,7 @@ int evolve_system(real t_end)
                 dt *= -1;
             }
             
-            std::cout<<"t1"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<"--"<<((t + dt) / t)-1<<std::endl;
+            //std::cout<<"t1"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<"--"<<((t + dt) / t)-1<<std::endl;
             if(
                 (!is_time_reversed && end_time_accuracy_factor == 0.0 && t < t_end && t + dt > t_end)
                 ||
@@ -829,7 +833,7 @@ int evolve_system(real t_end)
             if(((t + dt) / t) - 1 < 1e-12) {
                 break;
             }
-            std::cout<<"t2"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
+            //std::cout<<"t2"<<t<<", DT:"<<dt<<", coll_time:"<<coll_time<<std::endl;
             if (test_mode) {
                 real E = 0.0;
                 nest_err = get_kinetic_energy(&E);
@@ -926,7 +930,7 @@ int evolve_system(real t_end)
       {
 
 #ifndef NOMPI
-        MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+        MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, WORLD);
 #endif
         get_acc_jerk_pot_coll(&epot, &coll_time);
         dt = calculate_step(coll_time);
@@ -946,7 +950,7 @@ int evolve_system(real t_end)
     
     must_run = 0;
 #ifndef NOMPI
-    MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, WORLD);
 #endif
 
     return nest_err;
@@ -1275,14 +1279,14 @@ int evolve_not_on_root() {
 
 #ifndef NOMPI
     int must_run = 1;
-    int mpi_error = MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    int mpi_error = MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, WORLD);
     if(mpi_error) {
         return -1;
     }
     while(must_run) {
         real epot, coll_time;
         get_acc_jerk_pot_coll(&epot, &coll_time);
-        int mpi_error = MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+        int mpi_error = MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, WORLD);
         if(mpi_error) {
             return -1;
         }
@@ -1308,13 +1312,16 @@ int initialize_code()
     is_time_reversed_allowed = false;
     
 #ifndef NOMPI
+    get_comm_world(&WORLD);
+    mpi_set_communicator(&WORLD);
+    
     int error = 0;
-    error = MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+    error = MPI_Comm_rank(WORLD, &mpi_rank);
     if(error) {
         cerr << error << endl;
         return -1;
     }
-    error = MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    error = MPI_Comm_size(WORLD, &mpi_size);
     if(error) {
         cerr << error << endl;
         return -1;

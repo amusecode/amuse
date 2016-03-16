@@ -21,7 +21,7 @@ class HermiteInterface(CodeInterface,
 
 
     def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker="hermite_worker",
+        CodeInterface.__init__(self, name_of_the_worker="hermite0_worker",
                                  **options)
         LiteratureReferencesMixIn.__init__(self)
 
@@ -201,11 +201,13 @@ class HermiteDoc(object):
 class Hermite(GravitationalDynamics, GravityFieldCode):
 
     __doc__ = HermiteDoc()
+    __interface__ = HermiteInterface
+    __so_module__ = 'hermite0_cython'
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
 
-        legacy_interface = HermiteInterface(**options)
+        legacy_interface = self.__interface__(**options)
         self.legacy_doc = legacy_interface.__doc__
 
         GravitationalDynamics.__init__(
