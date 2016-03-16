@@ -810,3 +810,72 @@ int _get_integrator(int code_index, int * value){
     return 0;
 }
 
+int _set_solver(int value, int code_index){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    
+    switch(value){
+        case 0:
+            code->gravity = reb_simulation::REB_GRAVITY_NONE;
+            break;
+        case 1:
+            code->gravity = reb_simulation::REB_GRAVITY_BASIC;
+            break;
+        case 2:
+            code->gravity = reb_simulation::REB_GRAVITY_COMPENSATED;
+            break;
+        case 3:
+            code->gravity = reb_simulation::REB_GRAVITY_TREE;
+            break;
+        default:
+            code->gravity = reb_simulation::REB_GRAVITY_NONE;
+            return -1;
+            break;
+            
+    }
+    return 0;
+}
+
+int _get_solver(int code_index, int * value){
+    
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    
+    *value = code->gravity; 
+    return 0;
+}
+
+int get_opening_angle2(int code_index, double * opening_angle2){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    *opening_angle2 = code->opening_angle2;
+    return 0;
+}
+
+int set_opening_angle2(double opening_angle2, int code_index){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    code->opening_angle2 = opening_angle2;
+    return 0;
+}
+
