@@ -157,6 +157,9 @@ class HuaynoInterface(CodeInterface,
         return function
     
 class Huayno(GravitationalDynamics,GravityFieldCode):
+    
+    __interface__ = HuaynoInterface
+    __so_module__ = 'huayno_cython'
 
     class inttypes(object):
         # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python
@@ -198,7 +201,7 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
-        legacy_interface = HuaynoInterface(**options)
+        legacy_interface = self.__interface__(**options)
 #        self.legacy_doc = legacy_interface.__doc__
 
         GravitationalDynamics.__init__(

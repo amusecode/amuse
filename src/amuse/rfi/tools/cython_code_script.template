@@ -1,3 +1,4 @@
+#!{executable}
 import sys
 import os
 

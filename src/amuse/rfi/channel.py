@@ -1070,7 +1070,51 @@ Please do a 'make clean; make' in the root directory.
             return 1
             
         return max(1, max(lengths))
- 
+
+    def split_message(self, call_id, function_id, call_count, dtype_to_arguments, encoded_units = ()):
+        
+        if call_count<=1:
+            raise Exception("split message called with call_count<=1")
+                
+        dtype_to_result = {}
+        
+        ndone=0
+        while ndone<call_count:
+            split_dtype_to_argument = {}
+            for key, value in dtype_to_arguments.iteritems():
+                split_dtype_to_argument[key] = \
+                  [tmp[ndone:ndone+self.max_message_length] if hasattr(tmp, '__iter__') else tmp for tmp in value]
+
+            self.send_message(
+                call_id,
+                function_id,
+                split_dtype_to_argument,
+                encoded_units=encoded_units
+            )
+            
+            partial_dtype_to_result = self.recv_message(call_id, function_id, True)
+            for datatype, value in partial_dtype_to_result.iteritems():
+                if not datatype in dtype_to_result:
+                    dtype_to_result[datatype] = [] 
+                    for j, element in enumerate(value):
+                        if datatype == 'string':
+                            dtype_to_result[datatype].append([])
+                        else:
+                            dtype_to_result[datatype].append(numpy.zeros((call_count,), dtype=datatype))
+                            
+                for j, element in enumerate(value):
+                    if datatype == 'string':
+                        dtype_to_result[datatype][j].extend(element)
+                    else:
+                        dtype_to_result[datatype][j][ndone:ndone+self.max_message_length] = element
+                
+            ndone+=self.max_message_length
+        
+        self._communicated_splitted_message = True
+        self._merged_results_splitted_message = dtype_to_result
+
+
+
 AbstractMessageChannel.DEBUGGERS = {
     "none":None,
     "gdb":AbstractMessageChannel.GDB,
@@ -1377,58 +1421,7 @@ class MpiChannel(AbstractMessageChannel):
             message.send(self.intercomm)
 
             self._is_inuse = True
-        
-    def split_message(self, call_id, function_id, call_count, dtype_to_arguments, encoded_units = ()):
-        
-        def split_input_array(i, arr_in):
-            if call_count == 1:
-                return [tmp[i * self.max_message_length] for tmp in arr_in]
-            else:
-                result = []
-                for x in arr_in:
-                    if hasattr(x, '__iter__'):
-                        result.append(x[i * self.max_message_length:(i + 1) * self.max_message_length])
-                    else:
-                        result.append(x)
-                return result
-        
-        dtype_to_result = {}
-        
-        for i in range(1 + (call_count - 1) // self.max_message_length):
-            split_dtype_to_argument = {}
-            for key, value in dtype_to_arguments.iteritems():
-                split_dtype_to_argument[key] = split_input_array(i, value)
-                
-            self.send_message(
-                call_id,
-                function_id,
-                # min(call_count,self.max_message_length),
-                split_dtype_to_argument,
-                encoded_units=encoded_units
-            )
-            
-            partial_dtype_to_result = self.recv_message(call_id, function_id, True)
-            for datatype, value in partial_dtype_to_result.iteritems():
-                if not datatype in dtype_to_result:
-                    dtype_to_result[datatype] = [] 
-                    for j, element in enumerate(value):
-                        if datatype == 'string':
-                            dtype_to_result[datatype].append([])
-                        else:
-                            dtype_to_result[datatype].append(numpy.zeros((call_count,), dtype=datatype))
-                            
-                for j, element in enumerate(value):
-                    if datatype == 'string':
-                        dtype_to_result[datatype][j].extend(element)
-                    else:
-                        dtype_to_result[datatype][j][i * self.max_message_length:(i + 1) * self.max_message_length] = element
-                
-            # print partial_dtype_to_result
-            call_count -= self.max_message_length
-        
-        self._communicated_splitted_message = True
-        self._merged_results_splitted_message = dtype_to_result
-    
+
     def recv_message(self, call_id, function_id, handle_as_array, has_units = False):
         
         self._is_inuse = False
@@ -2218,56 +2211,6 @@ class SocketChannel(AbstractMessageChannel):
         """     
         return 1000000
 
-    def split_message(self, call_id, function_id, call_count, dtype_to_arguments, encoded_units = ()):
-        
-        def split_input_array(i, arr_in):
-            if call_count == 1:
-                return [tmp[i * self.max_message_length] for tmp in arr_in]
-            else:
-                result = []
-                for x in arr_in:
-                    if hasattr(x, '__iter__'):
-                        result.append(x[i * self.max_message_length:(i + 1) * self.max_message_length])
-                    else:
-                        result.append(x)
-                return result
-        
-        dtype_to_result = {}
-        for i in range(1 + (call_count - 1) // self.max_message_length):
-            split_dtype_to_argument = {}
-            for key, value in dtype_to_arguments.iteritems():
-                split_dtype_to_argument[key] = split_input_array(i, value)
-            
-            
-            self.send_message(
-                call_id,
-                function_id,
-                # min(call_count,self.max_message_length),
-                split_dtype_to_argument,
-                encoded_units=encoded_units
-            )
-            
-            partial_dtype_to_result = self.recv_message(call_id, function_id, True)
-            for datatype, value in partial_dtype_to_result.iteritems():
-                if not datatype in dtype_to_result:
-                    dtype_to_result[datatype] = []                             
-                    for j, element in enumerate(value):
-                        if datatype == 'string':
-                            dtype_to_result[datatype].append([])
-                        else:
-                            dtype_to_result[datatype].append(numpy.zeros((call_count,), dtype=datatype))
-                            
-                for j, element in enumerate(value):
-                    if datatype == 'string':
-                        dtype_to_result[datatype][j].extend(element)
-                    else:
-                        dtype_to_result[datatype][j][i * self.max_message_length:(i + 1) * self.max_message_length] = element
-                
-            # print partial_dtype_to_result
-            call_count -= self.max_message_length
-        self._communicated_splitted_message = True
-        self._merged_results_splitted_message = dtype_to_result
-
 
 class OutputHandler(threading.Thread):
     
@@ -2583,55 +2526,4 @@ class DistributedChannel(AbstractMessageChannel):
         The MPI channel will split long messages into blocks of size max_message_length.
         """         
         return 1000000
-
-    def split_message(self, call_id, function_id, call_count, dtype_to_arguments, encoded_units = ()):
-        
-        def split_input_array(i, arr_in):
-            if call_count == 1:
-                return [tmp[i * self.max_message_length] for tmp in arr_in]
-            else:
-                result = []
-                for x in arr_in:
-                    if hasattr(x, '__iter__'):
-                        result.append(x[i * self.max_message_length:(i + 1) * self.max_message_length])
-                    else:
-                        result.append(x)
-                return result
-        
-        dtype_to_result = {}
-        for i in range(1 + (call_count - 1) / self.max_message_length):
-            split_dtype_to_argument = {}
-            for key, value in dtype_to_arguments.iteritems():
-                split_dtype_to_argument[key] = split_input_array(i, value)
-            
-            
-            self.send_message(
-                call_id,
-                function_id,
-                # min(call_count,self.max_message_length),
-                split_dtype_to_argument,
-                encoded_units=encoded_units
-            )
-            
-            partial_dtype_to_result = self.recv_message(call_id, function_id, True)
-            for datatype, value in partial_dtype_to_result.iteritems():
-                if not datatype in dtype_to_result:
-                    dtype_to_result[datatype] = []                                 
-                    for j, element in enumerate(value):
-                        if datatype == 'string':
-                            dtype_to_result[datatype].append([])
-                        else:
-                            dtype_to_result[datatype].append(numpy.zeros((call_count,), dtype=datatype))
-                            
-                for j, element in enumerate(value):
-                    if datatype == 'string':
-                        dtype_to_result[datatype][j].extend(element)
-                    else:
-                        dtype_to_result[datatype][j][i * self.max_message_length:(i + 1) * self.max_message_length] = element
-                
-            # print partial_dtype_to_result
-            call_count -= self.max_message_length
-        self._communicated_splitted_message = True
-        self._merged_results_splitted_message = dtype_to_result
-
 

@@ -79,7 +79,7 @@ end function
 
 function hello_string(string_out)
     implicit none
-    character(len=30) :: string_out
+    character(len=4096) :: string_out
     integer :: hello_string
     
     string_out = 'hello'

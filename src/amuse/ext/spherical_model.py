@@ -158,7 +158,7 @@ class UniformSphericalDistribution(object):
     
 
     def sobol(self):
-        x, y, z = i4_sobol_generate(3, 2*self.number_of_particles, 2) * 2.0 - 1.0
+        x, y, z = i4_sobol_generate(3, 2*self.number_of_particles, 3) * 2.0 - 1.0
         return self._cutout_sphere(x, y, z)
     
     def glass(self):

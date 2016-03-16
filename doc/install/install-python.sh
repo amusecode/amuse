@@ -18,7 +18,7 @@ URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 OPENSSLVERSION="1.0.1r"
 OPENSSLFILE=openssl-${OPENSSLVERSION}.tar.gz 
-OPENSSLURL=http://mirrors.ibiblio.org/openssl/source/${OPENSSLFILE}
+OPENSSLURL=http://mirrors.ibiblio.org/openssl/source/old/1.0.1/${OPENSSLFILE}
 OPENSSLDIR=openssl-${OPENSSLVERSION}
 
 if [ -z ${PREFIX} ]; then

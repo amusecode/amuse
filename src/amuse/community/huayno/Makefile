@@ -13,8 +13,8 @@ CFLAGS += -qlanglvl=extc99
 else
 CFLAGS += -std=gnu99
 endif
-CFLAGS +=
-CXXFLAGS +=  
+CFLAGS += 
+CXXFLAGS += 
 LIBS += -lm
 INCLUDE =
 
@@ -35,6 +35,9 @@ BUILDDIR = build
 OPENCL_BUILDDIR = build_cl
 OPENMP_BUILDDIR = build_mp
 
+AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
+AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
+
 CL_LIBS?=-L$(OPENCL)/lib/x86_64 -lOpenCL -lpthread -ldl -L$(STDCL)/lib -lstdcl
 CL_FLAGS?=-I$(OPENCL)/include -I$(STDCL)/include
 
@@ -45,6 +48,7 @@ clean:
 	rm -Rf $(BUILDDIR)
 	rm -Rf $(OPENCL_BUILDDIR)
 	rm -Rf $(OPENMP_BUILDDIR)
+	rm -f huayno_cython.* huayno_worker_cython huayno_worker_cython.* 
 	rm -f huayno_worker huayno_worker_cl huayno_worker_mp huayno_worker_sockets
 	-make -C $(SRCDIR) clean
 
@@ -81,6 +85,23 @@ worker_code.h: interface.py
 
 huayno_worker: __init__.py worker_code.cc worker_code.h  $(BUILDDIR)/libhuayno.a $(BUILDDIR)/interface.o
 	$(MPICXX) $(SC_FLAGS) $(CXXFLAGS) $(INCLUDE) $(LDFLAGS) worker_code.cc $(BUILDDIR)/interface.o $(BUILDDIR)/libhuayno.a -o $@ $(LIBS) $(SC_CLIBS)
+	
+	
+	
+huayno_worker_cython: huayno_cython.so
+	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.huayno.interface HuaynoInterface -o $@ --cython-import huayno_cython
+	
+huayno_cython.so: huayno_cython.o worker_code.h  $(BUILDDIR)/libhuayno.a  $(BUILDDIR)/interface.o
+	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) huayno_cython.o  $(BUILDDIR)/interface.o -o $@ $(SC_CLIBS) $(AM_LIBS) $(BUILDDIR)/libhuayno.a  
+
+huayno_cython.o: huayno_cython.c worker_code.h
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
+
+huayno_cython.pyx: interface.py
+	$(CODE_GENERATOR) --type=cython -m mpi interface.py HuaynoInterface -o $@
+
+huayno_cython.c: huayno_cython.pyx
+	$(CYTHON) $< -o $@
 	
 huayno_worker_mp: CFLAGS   += $(OPENMP_CFLAGS) 
 huayno_worker_mp: CXXFLAGS   += $(OPENMP_CFLAGS)	

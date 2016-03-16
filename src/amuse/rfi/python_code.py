@@ -51,13 +51,12 @@ class PythonImplementation(object):
         self.implementation._interface = self
         
     def start(self):
-        parent = MPI.Comm.Get_parent()
+        parent = self.intercomm
         self.communicators.append(parent)
         self.activeid = 0
         self.lastid += 1
         
         rank = parent.Get_rank()
-        
         
         self.must_run = True
         while self.must_run:
@@ -68,7 +67,7 @@ class PythonImplementation(object):
                 rank = parent.Get_rank()
             message = ClientSideMPIMessage(polling_interval = self.polling_interval)
             message.receive(parent)
-                
+
             result_message = ClientSideMPIMessage(message.call_id, message.function_id, message.call_count)
             
             if message.function_id == 0:
@@ -93,12 +92,14 @@ class PythonImplementation(object):
             
             if rank == 0:
                 result_message.send(parent)
-        
-        for x in self.communicators:
-            x.Disconnect()
+
+        if self.must_disconnect:
+            for x in self.communicators:
+                x.Disconnect()
             
         
     
+
     def start_socket(self, port, host):
         client_socket = socket.create_connection((host, port))
         
@@ -413,6 +414,13 @@ class PythonImplementation(object):
         
 
 
+    @late
+    def intercomm(self):
+        return MPI.Comm.Get_parent()
+    @late
+    def must_disconnect(self):
+        return True
+
 class CythonImplementation(PythonImplementation):
     
         
@@ -471,5 +479,6 @@ class CythonImplementation(PythonImplementation):
             output_message.encoded_units = self.convert_output_units_to_floats(units)
     
         
+
 
 

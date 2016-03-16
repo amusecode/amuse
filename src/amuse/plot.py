@@ -52,7 +52,7 @@ class UnitlessArgs(object):
     def strip(self, *args, **kwargs):
         if self.current_plot is native_plot.gca():
             args = [arg.as_quantity_in(unit) if quantities.is_quantity(arg) else arg
-                for arg, unit in map(None, args, self.arg_units)]
+                for arg, unit in map(lambda *x : tuple(x), args, self.arg_units)]
         self.clear()
         self.current_plot = native_plot.gca()
         for arg in args:
@@ -68,6 +68,7 @@ class UnitlessArgs(object):
                 self.unitnames_of_args.append("")
 
         return self.stripped_args
+
 
     @classmethod
     def clear(self):

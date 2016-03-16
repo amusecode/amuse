@@ -86,8 +86,8 @@ class ReboundInterface(CodeInterface,
         value, error = self._get_integrator(code_index)
         for key, index in self.INTEGRATORS.iteritems():
             if value == index:
-                return key, error
-        return "none", error
+                return key
+        return "none"
 
     @legacy_function
     def _set_solver():

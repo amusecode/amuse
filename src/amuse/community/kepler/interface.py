@@ -649,12 +649,16 @@ class KeplerInterface(CodeInterface,
         return function
 
 class Kepler(CommonCode):
+    
+    __interface__ = KeplerInterface
+    __so_module__ = 'kepler_cython'
+
 
     def __init__(self, unit_converter = None,  **options):
         self.unit_converter = unit_converter
         
         CommonCode.__init__(self,
-                               KeplerInterface(**options),
+                               self.__interface__(**options),
                                **options)
 
     def define_converter(self, object):
