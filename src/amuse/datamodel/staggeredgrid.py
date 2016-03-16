@@ -10,11 +10,7 @@ class StaggeredGrid(object):
         self.elements=elements
         self.nodes=nodes
         self._get_corners_func = get_corners
-
-        if hasattr(elements, '_cell_corners'):
-            self.corners = elements._cell_corners
-        else:
-            self.get_corners()
+        self.get_corners()
 
     def new_remapping_channel_to(self, other, remapper):
         return GridRemappingChannel(self, other, remapper)
