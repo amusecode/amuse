@@ -530,8 +530,7 @@ class GridRemappingChannel(object):
     def __init__(self, source, target, remapper):
         self.source = source
         self.target = target
-        import inspect
-        if inspect.isclass(remapper):
+        if callable(remapper):
             self.remapper = remapper( source, target)
         else:
             self.remapper = remapper
