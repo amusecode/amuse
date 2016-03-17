@@ -1170,6 +1170,8 @@ class GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass\
         self.out.n()
         self.out + INTERFACE_DEFINITION
         self.out.n()
+    @late
     def function_name_prefix(self):
         return "ci_"
+
 
