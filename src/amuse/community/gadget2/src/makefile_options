@@ -50,10 +50,10 @@ OPT   +=  -DNOSTOP_WHEN_BELOW_MINTIMESTEP
 #OPT   +=  -DNOVISCOSITYLIMITER
 #OPT   +=  -DCOMPUTE_POTENTIAL_ENERGY
 #OPT   +=  -DLONGIDS
-OPT   +=  -DISOTHERM_EQS
-OPT   +=  -DADAPTIVE_GRAVSOFT_FORGAS
+#OPT   +=  -DISOTHERM_EQS
+#OPT   +=  -DADAPTIVE_GRAVSOFT_FORGAS
 #OPT   +=  -DSELECTIVE_NO_GRAVITY=2+4+8+16
-OPT   +=  -DMONAGHAN83VISC
+#OPT   +=  -DMONAGHAN83VISC
 #OPT   +=  -DMORRIS97VISC
 
 #-- Note that both MONAGHAN83VISC and MORRIS97VISC are mutually exclusive and neither of them contains the Balsara 1995 shear flow correction
@@ -75,8 +75,8 @@ OPT   +=  -DMONAGHAN83VISC
 #                                                                           #
 #############################################################################
 
-#OPT   +=  -DTIMESTEP_LIMITER=4
-#OPT   +=  -DTIMESTEP_UPDATE
+OPT   +=  -DTIMESTEP_LIMITER=4
+OPT   +=  -DTIMESTEP_UPDATE
 
 # NB: the variable TIMESTEP_LIMITER has been defined to 4 (recommended value), 
 # but can be changed to any other power of 2 before compilation.
