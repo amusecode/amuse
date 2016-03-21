@@ -4,13 +4,14 @@
 from amuse.lab import *
     
 def main(M, z, model_time):
-    stellar = MESA()
+#    stellar = MESA()
+    stellar = SSE()
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(Particle(mass=M))
     stellar.commit_particles()
 
     initial_luminosity = stellar.particles.luminosity
-    dt = 1 | units.Myr
+    dt = 0.1 | units.Myr
     time = 0 | units.Myr
     while stellar.particles[0].age<model_time:
         time+=dt
@@ -19,7 +20,8 @@ def main(M, z, model_time):
     final_luminosity = stellar.particles.luminosity
     print "L(t=0)=", initial_luminosity, \
         ", L (t=", stellar.particles.age, ")=", \
-        final_luminosity, stellar.particles.radius
+        final_luminosity, stellar.particles.radius, stellar.particles.mass.in_(units.MSun)
+        
     stellar.stop()
     
 def new_option_parser():
