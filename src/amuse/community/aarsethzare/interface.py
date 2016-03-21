@@ -10,7 +10,7 @@ class AarsethZareInterface(CodeInterface, LiteratureReferencesMixIn):
         .. [#] Aarseth, S. & Zare, K., 1974, Celestial Mechanics 10, 185.
         .. [#] Aarseth, S. & Zare, K., 1974, Celestial Mechanics 10, 516.
     """    
-    include_headers = ['worker_code.h']
+    #include_headers = ['worker_code.h']
 
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker = 'aarsethzare_worker', **keyword_arguments)

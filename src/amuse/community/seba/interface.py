@@ -661,6 +661,9 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
         return self.evolve_system(end_time)
 
 class SeBa(se.StellarEvolution):
+    
+    __interface__ = SeBaInterface
+    __so_module__ = 'seba_cython'
 
     def __init__(self, **options):
         self.stopping_conditions = StoppingConditions(self)

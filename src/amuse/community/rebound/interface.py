@@ -86,9 +86,61 @@ class ReboundInterface(CodeInterface,
         value, error = self._get_integrator(code_index)
         for key, index in self.INTEGRATORS.iteritems():
             if value == index:
+                return key
+        return "none"
+
+    @legacy_function
+    def _set_solver():
+        function = LegacyFunctionSpecification()      
+        function.addParameter('solver_name', dtype='i', direction=function.IN)
+        function.addParameter('code_index', dtype='int32', direction=function.IN, description = "Index of the code in rebound", default = 0)
+        function.result_type = 'int32'
+        function.can_handle_array = False
+        return function  
+        
+
+    @legacy_function
+    def _get_solver():
+        function = LegacyFunctionSpecification()      
+        function.addParameter('code_index', dtype='int32', direction=function.IN, description = "Index of the code in rebound", default = 0)
+        function.addParameter('solver_name', dtype='i', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = False
+        return function  
+    
+
+    SOLVERS = {"none": 0, "basic": 1, "compensated": 2, "tree": 3}
+    def set_solver(self, name, code_index = 0 ):
+        print "set_solver name: %s code_index: %i"%(name,code_index)
+        print self.SOLVERS[name]
+        return self._set_solver(self.SOLVERS[name], code_index)
+    
+    def get_solver(self, code_index = 0):
+        print "get_solver code_index: %i"%code_index
+        value, error = self._get_solver(code_index)
+        for key, index in self.SOLVERS.iteritems():
+            if value == index:
                 return key, error
         return "none", error
-    
+
+    @legacy_function
+    def get_opening_angle2():
+        function = LegacyFunctionSpecification()
+        function.addParameter('code_index', dtype='int32', direction=function.IN, description = "Index of the code in rebound", default = 0)
+        function.addParameter('opening_angle2', dtype='float64', direction=function.OUT,
+                description = "theta, the opening angle for building the tree: between 0 and 1")
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_opening_angle2():
+        function = LegacyFunctionSpecification()
+        function.addParameter('opening_angle2', dtype='float64', direction=function.IN,
+                description = "theta, the opening angle for building the tree: between 0 and 1")
+        function.addParameter('code_index', dtype='int32', direction=function.IN, description = "Index of the code in rebound", default = 0)
+        function.result_type = 'int32'
+        return function
+
     @legacy_function
     def set_time_step():
         """
@@ -309,15 +361,19 @@ class ReboundInterface(CodeInterface,
             particle could not be found
         """
         return function
+    
 
 
 class Rebound(GravitationalDynamics, GravityFieldCode):
+
+    __interface__ = ReboundInterface
+    __so_module__ = 'rebound_cython'
 
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
 
-        legacy_interface = ReboundInterface(**options)
+        legacy_interface = self.__interface__(**options)
         self.legacy_doc = legacy_interface.__doc__
 
         GravitationalDynamics.__init__(
@@ -347,7 +403,7 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             "set_time_step",
             "timestep",
             "constant timestep for iteration", 
-            default_value = 0.01 | nbody_system.time
+            default_value = 0.0001 | nbody_system.time
         )
 
 
@@ -357,6 +413,24 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             "integrator",
             "name of the integrator to use ({0})".format(sorted(self.INTEGRATORS.keys())), 
             default_value = "ias15"
+        )
+
+
+        object.add_method_parameter(
+            "get_solver",
+            "set_solver",
+            "solver",
+            "name of the gravity solver to use ({0})".format(sorted(self.SOLVERS.keys())), 
+            default_value = "compensated"
+        )
+
+
+        object.add_method_parameter(
+            "get_opening_angle2",
+            "set_opening_angle2",
+            "opening_angle2",
+            "opening angle, theta, for building the tree in case of tree solver: between 0 and 1", 
+            default_value = 0.5
         )
 
 

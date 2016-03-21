@@ -236,10 +236,13 @@ class BHTreeInterface(
     
 class BHTree(GravitationalDynamics, GravityFieldCode):
 
+    __interface__ = BHTreeInterface
+    __so_module__ = 'bhtree_cython'
+    
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
         
-        legacy_interface = BHTreeInterface(**options)
+        legacy_interface = self.__interface__(**options)
         
         GravitationalDynamics.__init__(
             self,

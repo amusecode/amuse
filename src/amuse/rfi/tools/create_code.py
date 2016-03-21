@@ -20,12 +20,15 @@ class DTypeSpec(object):
 dtypes = ['int32', 'int64', 'float32', 'float64', 'bool', 'string']
 
 class GenerateASourcecodeString(object):
+    _result = None
+
     def __init__(self):
         pass
     
     @late  
     def result(self):
-        self.start()
+        if self._result is None:
+            self.start()
         return self._result
         
     @late
@@ -38,6 +41,7 @@ class GenerateASourcecodeString(object):
             return not (os.environ['CFLAGS'].find('-DNOMPI') >= 0)
         else:
             return True
+
 
 class GenerateASourcecodeStringFromASpecificationClass(GenerateASourcecodeString):
     
