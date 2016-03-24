@@ -501,6 +501,15 @@ class Gadget2Interface(
             description = "The path to the Gadget-2 OutputDir.")
         function.result_type = 'int32'
         return function
+
+
+    @legacy_function
+    def get_viscosity_switch():
+        function = LegacyFunctionSpecification()
+        function.addParameter('viscosity_switch', dtype='string', direction=function.OUT,
+            description = "The viscosity switch used by Gadget2.")
+        function.result_type = 'int32'
+        return function
         
     @legacy_function
     def set_gadget_output_directory():
@@ -1465,6 +1474,15 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             default_value = ""
         )
         
+        object.add_method_parameter(
+            "get_viscosity_switch", 
+            None,
+            "viscosity_switch", 
+            "Viscosity switch used by Gadget2", 
+            default_value = "standard Gadget2 viscosity"
+        )
+
+
         object.add_method_parameter(
             "get_energy_file", 
             "set_energy_file",

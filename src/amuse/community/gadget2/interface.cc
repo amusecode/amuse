@@ -367,7 +367,7 @@ int commit_particles(){
         force_treeallocate(10 * All.TreeAllocFactor * All.MaxPart, 10 * All.MaxPart);
     } else {
         ngb_treeallocate(MAX_NGB);
-        force_treeallocate(10*All.TreeAllocFactor * All.MaxPart, 10*All.MaxPart);
+        force_treeallocate(All.TreeAllocFactor * All.MaxPart, All.MaxPart);
     }
     
     All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
@@ -929,6 +929,18 @@ int get_gadget_output_directory(char **output_directory){
     *output_directory = All.OutputDir;
     return 0;
 }
+int get_viscosity_switch(char **viscosity_switch){
+    if (ThisTask) {return 0;}
+#ifdef MONAGHAN83VISC
+    *viscosity_switch = "Monaghan & Gingold 1983";
+#elif MORRIS97VISC
+    *viscosity_switch = "Morris & Monaghan 1997";
+#else
+    *viscosity_switch = "standard Gadget2 viscosity";
+#endif
+    return 0;
+}
+
 int set_gadget_output_directory(char *output_directory){
     int length = strlen(output_directory);
     if (length >= MAXLEN_FILENAME)
