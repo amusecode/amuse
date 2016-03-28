@@ -73,12 +73,12 @@ The suggested procedure for creating a new interface is as follows:
    need to be defined for the parameters in this step
 5. **Define sets or grids.** A code usually handles objects or gridpoints with
    attributes. In this step a generic interface is defined for these
-   objects so that the interopability between codes increases.
+   objects so that the interoperability between codes increases.
 
 Before we start
 ---------------
 
-This tutorial asumes you have a working amuse environment. Please 
+This tutorial assumes you have a working amuse environment. Please 
 ensure that amuse is setup correctly by running 'nosetests' in the 
 amuse directory.
 
@@ -312,7 +312,7 @@ to the NearestNeighborInterface class:
             
 In the *find_nearest_neighbors* method we specify every parameter of 
 the C++ function and the result type. For each parameter we need 
-to define a name, data type and wether we will input, output (or 
+to define a name, data type and whether we will input, output (or 
 input and output) data using this parameter. AMUSE knows only a 
 limited amount of data types for parameters: float64, float32, int32, \
 string, bool and int64. We also have a special parameter, with LENGTH as 
@@ -379,7 +379,7 @@ Defining the Object Oriented Interface
 
 The object oriented interface sits on top of the legacy interface.
 It decorates this interface with sets, unit handling, state engine
-and more. We start creating the object oriented interfacy by inheriting
+and more. We start creating the object oriented interface by inheriting
 from InCodeComponentImplementation and writing the __init__ function. The build script
 has added this class to the interface.py file for us. Open an editor
 on interface.py and make sure this code is in the file (at the end
@@ -396,7 +396,7 @@ of the file):
 Configuring the handlers
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-We configure the object oriented interfacy by implementing several 
+We configure the object oriented interface by implementing several 
 methods. The object oriented interface is implement by several 
 "handlers". Each handler provides support for a specific aspect of 
 the interface. AMUSE defines a handler for the unit conversion, a 
@@ -679,7 +679,7 @@ The code builds, but does not have any functionality yet::
 .. note::
     
     Compiling the interface code will result in a lot of warnings about
-    unused dummy arguments. These warnings can be savely ignored for now.
+    unused dummy arguments. These warnings can be safely ignored for now.
     
 The tests are broken (the echo_int function has been removed):
 
@@ -744,7 +744,7 @@ we run the test, it still fails.
     Ran 1 test in 0.319s
 
 When you look closely at the output of the test you see that the result from the
-method is 0 and not the excpeted 1. We need to edit the fortan code to make this 
+method is 0 and not the expected 1. We need to edit the c code to make this 
 test work. Open an editor on interface.cc and go to the *new_particle* function.
 
 .. code-block:: c++
@@ -802,7 +802,7 @@ directory do:
 
     OK
     
-Let's check some more functionaly by adding another test
+Let's check some more functionality by adding another test
 
 .. code-block:: python
 
@@ -1044,7 +1044,7 @@ the method we defined in the previous step. Finally you can set
 the name of the attribute in the particles set with the **names**
 argument. This is optional for legacy functions, if not given the names 
 of the attributes will be derived from the names of the arguments in
-the orginal calls. For example, the **get_position** call we specified
+the original calls. For example, the **get_position** call we specified
 earlier has parameter name **x**, **y** and **z**, these names are 
 also used in the particles set.
 
