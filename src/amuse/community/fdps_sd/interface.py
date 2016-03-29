@@ -6,7 +6,7 @@ from amuse.community.interface.gd import GravityFieldCode
 
 class FDPSInterface(
         CodeInterface,
-        #LiteratureReferencesMixIn,
+        LiteratureReferencesMixIn,
         GravitationalDynamicsInterface,
         #StoppingConditionInterface,
         #SinglePointGravityFieldInterface,
@@ -17,7 +17,7 @@ class FDPSInterface(
     def __init__(self, **options):
         CodeInterface.__init__(
                 self,
-                name_of_the_worker="fdpsgravity_worker", 
+                name_of_the_worker="fdps_sd_worker", 
                 **options)
     
     @legacy_function
@@ -32,5 +32,5 @@ class FDPSInterface(
 class FDPS(InCodeComponentImplementation):
 
     def __init__(self):
-        InCodeComponentImplementation.__init__(self,  FDPSGravityInterface())
+        InCodeComponentImplementation.__init__(self,  FDPSInterface())
     
