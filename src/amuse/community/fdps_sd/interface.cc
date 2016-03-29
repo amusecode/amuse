@@ -41,6 +41,7 @@ int get_total_radius(double * radius){
 
 int new_particle(int * index_of_the_particle, double mass, double x, 
   double y, double z, double vx, double vy, double vz, double radius){
+
   return 0;
 }
 
@@ -146,7 +147,7 @@ int initialize_code(){
     std::cout<<std::setprecision(15);
     std::cerr<<std::setprecision(15);
 
-    PS::Initialize(argc, argv);
+//    PS::Initialize(argc, argv);
     PS::F32 theta = 0.5;
     PS::S32 n_leaf_limit = 8;
     PS::S32 n_group_limit = 64;
@@ -154,62 +155,62 @@ int initialize_code(){
     PS::F32 dt = 1.0 / 128.0;
     PS::F32 dt_diag = 1.0 / 8.0;
     PS::F32 dt_snap = 1.0;
-    char dir_name[1024];
+//    char dir_name[1024];
     PS::S64 n_tot = 1024;
     PS::S32 c;
-    sprintf(dir_name,"./result");
-    opterr = 0;
-    while((c=getopt(argc,argv,"i:o:d:D:t:T:l:n:N:hs:")) != -1){
-        switch(c){
-        case 'o':
-            sprintf(dir_name,optarg);
-            break;
-        case 't':
-            theta = atof(optarg);
-            std::cerr << "theta =" << theta << std::endl;
-            break;
-        case 'T':
-            time_end = atof(optarg);
-            std::cerr << "time_end = " << time_end << std::endl;
-            break;
-        case 's':
-            dt = atof(optarg);
-            std::cerr << "time_step = " << dt << std::endl;
-            break;
-	case 'd':
-            dt_diag = atof(optarg);
-            std::cerr << "dt_diag = " << dt_diag << std::endl;
-            break;
-	case 'D':
-            dt_snap = atof(optarg);
-            std::cerr << "dt_snap = " << dt_snap << std::endl;
-            break;
-	case 'l':
-            n_leaf_limit = atoi(optarg);
-            std::cerr << "n_leaf_limit = " << n_leaf_limit << std::endl;
-            break;
-        case 'n':
-            n_group_limit = atoi(optarg);
-            std::cerr << "n_group_limit = " << n_group_limit << std::endl;
-            break;
-        case 'N':
-            n_tot = atoi(optarg);
-            std::cerr << "n_tot = " << n_tot << std::endl;
-            break;
-        case 'h':
-            if(PS::Comm::getRank() == 0) {
-                printHelp();
-            }
-            PS::Finalize();
-            return 0;
-        default:
-            if(PS::Comm::getRank() == 0) {
-                std::cerr<<"No such option! Available options are here."<<std::endl;
-                printHelp();
-            }
-            PS::Abort();
-        }
-    }
+//    sprintf(dir_name,"./result");
+//    opterr = 0;
+//    while((c=getopt(argc,argv,"i:o:d:D:t:T:l:n:N:hs:")) != -1){
+//        switch(c){
+//        case 'o':
+//            sprintf(dir_name,optarg);
+//            break;
+//        case 't':
+//            theta = atof(optarg);
+//            std::cerr << "theta =" << theta << std::endl;
+//            break;
+//        case 'T':
+//            time_end = atof(optarg);
+//            std::cerr << "time_end = " << time_end << std::endl;
+//            break;
+//        case 's':
+//            dt = atof(optarg);
+//            std::cerr << "time_step = " << dt << std::endl;
+//            break;
+//        case 'd':
+//            dt_diag = atof(optarg);
+//            std::cerr << "dt_diag = " << dt_diag << std::endl;
+//            break;
+//        case 'D':
+//            dt_snap = atof(optarg);
+//            std::cerr << "dt_snap = " << dt_snap << std::endl;
+//            break;
+//        case 'l':
+//            n_leaf_limit = atoi(optarg);
+//            std::cerr << "n_leaf_limit = " << n_leaf_limit << std::endl;
+//            break;
+//        case 'n':
+//            n_group_limit = atoi(optarg);
+//            std::cerr << "n_group_limit = " << n_group_limit << std::endl;
+//            break;
+//        case 'N':
+//            n_tot = atoi(optarg);
+//            std::cerr << "n_tot = " << n_tot << std::endl;
+//            break;
+//        case 'h':
+//            if(PS::Comm::getRank() == 0) {
+//                printHelp();
+//            }
+//            PS::Finalize();
+//            return 0;
+//        default:
+//            if(PS::Comm::getRank() == 0) {
+//                std::cerr<<"No such option! Available options are here."<<std::endl;
+//                printHelp();
+//            }
+//            PS::Abort();
+//        }
+//    }
 
 //    makeOutputDirectory(dir_name);
 
