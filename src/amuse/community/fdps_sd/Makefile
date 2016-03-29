@@ -12,7 +12,10 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 OBJS = interface.o
 
 CODELIB = src/libfdps_sd.a
+CODEDIR = src/FDPS
+LIB_OBJ = $(CODEDIR)/sample/nbody/nbody.o
 
+DOWNLOAD_FROM_WEB = $(PYTHON) ./download_http.py
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: fdps_sd_worker 
@@ -20,19 +23,23 @@ all: fdps_sd_worker
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ fdps_sd_worker worker_code.cc
-	make -C src clean
+	$(RM) -Rf $(CODEDIR)/sample/nbody/*.o
+	$(RM) -Rf src/libfdps_sd.a
+	#make -C $(CODEDIR) clean
 
-$(CODELIB):
-	make -C src all
+$(CODELIB): $(CODEDIR)/sample/nbody/Makefile
+	make -C $(CODEDIR)/sample/nbody nbody.o CC=$(MPICXX) 
+	ar rv $(CODELIB) $(LIB_OBJ)
+	ranlib $(CODELIB)
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py fdps_sdInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py FDPSInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py fdps_sdInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py FDPSInterface -o $@
 
 fdps_sd_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
+	$(MPICXX) $(CXXFLAGS) -I$(CODEDIR)/src -I$(CODEDIR)/sample/nbody $< $(OBJS) $(CODELIB) -o $@
 
 .cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) -I$(CODEDIR)/src -I$(CODEDIR)/sample/nbody -c -o $@ $< 
