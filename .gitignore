@@ -389,5 +389,7 @@ data/mocassin/output/tmp_abundancies_file
 data/halogen/output/test*.out
 data/halogen/output/test*.ascii
 data/gadget2/output/ewald_spc_table_64_dbl.dat
+core
+core.*
 
 
