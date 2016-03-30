@@ -64,13 +64,13 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c $< SimpleXInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H $< SimpleXInterface -o $@
+	$(CODE_GENERATOR) --type=h $< SimpleXInterface -o $@
 
 worker_code-gl.cc: interface.py
 	$(CODE_GENERATOR) --type=c $< GlSimpleXInterface -o $@
 
 worker_code-gl.h: interface.py
-	$(CODE_GENERATOR) --type=H $< GlSimpleXInterface -o $@
+	$(CODE_GENERATOR) --type=h $< GlSimpleXInterface -o $@
 
 simplex_worker: worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(LDFLAGS) $< $(OBJS) -o $@ $(LIBS)
