@@ -56,7 +56,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py PikachuInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py PikachuInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py PikachuInterface -o $@
 
 pikachu_worker: worker_code.cc worker_code.h $(CODELIB_GPU) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src $< -o $@ $(OBJ) $(CODELIB_GPU) $(SC_CLIBS) $(SEQUOIA_LIBS) $(CUDA_LIBS)  $(LIBS)

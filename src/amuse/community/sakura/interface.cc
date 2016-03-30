@@ -18,6 +18,7 @@ using namespace std;
 
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
+#include "worker_code.h"
 
 ////////////////////////////////////////////////////////
 // Declare global variables

@@ -11,6 +11,7 @@
   // AMUSE STOPPING CONDITIONS SUPPORT
   #include <stopcond.h>
 #endif  
+#include "worker_code.h"
 
 
 octree *bonsai;

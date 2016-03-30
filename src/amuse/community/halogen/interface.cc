@@ -1,4 +1,5 @@
 #include "interface.h"
+#include "worker_code.h"
 #define MAXLEN_PATH 250
 
 // Default parameters:

@@ -16,7 +16,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py FastKickInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py FastKickInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py FastKickInterface -o $@
 
 fastkick_worker: worker_code.cc worker_code.h $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) $< $(OBJ) -o $@   $(LIBS)
