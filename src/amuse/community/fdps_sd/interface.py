@@ -217,7 +217,7 @@ class FDPS(GravitationalDynamics, GravityFieldCode):
             "set_epsilon_squared",
             "epsilon_squared",
             "smoothing parameter for gravity calculations", 
-            default_value = 0.0 | nbody_system.length * nbody_system.length
+            default_value = 0.125 | nbody_system.length * nbody_system.length
         )
         
         object.add_method_parameter(
@@ -225,7 +225,7 @@ class FDPS(GravitationalDynamics, GravityFieldCode):
             "set_theta_for_tree",
             "opening_angle", 
             "opening angle, theta, for building the tree: between 0 and 1", 
-            default_value = 0.5
+            default_value = 0.75
         )
 
         object.add_method_parameter(
@@ -249,7 +249,7 @@ class FDPS(GravitationalDynamics, GravityFieldCode):
             "set_time_step",
             "timestep",
             "constant timestep for iteration", 
-            default_value = (1.0/32.0)| nbody_system.time
+            default_value = (1.0/64.0)| nbody_system.time
         )        
 
     def define_methods(self, object):
