@@ -21,19 +21,16 @@ PS::F64 Epot0, Ekin0, Etot0, Epot1, Ekin1, Etot1;
 PS::S32 n_loc = 0;
 PS::S64 n_tot = 0;
 PS::F32 time_sys = 0.0;
-//PS::F64 FPGrav::eps = 0.0;
-PS::F64 FPGrav::eps = 1.0/32.0;
+PS::F64 FPGrav::eps = sqrt(1.0/8.0);
 
 // Not sure if these are needed, but they're used in the example so
 // let's set them.
-PS::F32 theta = 0.5;
+PS::F32 theta = 0.75;
 PS::S32 n_leaf_limit = 8;
 PS::S32 n_group_limit = 64;
 
 PS::F32 time_end = 10.0;
-PS::F32 dt = 1.0 / 128.0;
-PS::F32 dt_diag = 1.0 / 8.0;
-PS::F32 dt_snap = 1.0;
+PS::F32 dt = 1.0 / 64.0;
 PS::S32 c;
 PS::F32 coef_ema = 0.3;
 PS::DomainInfo dinfo;
@@ -144,8 +141,13 @@ void calcKineticEnergy(const Tpsys & system,
 
 int get_mass(int index_of_the_particle, double * mass){
   int j = get_inverse_id(index_of_the_particle);
-  *mass = system_grav[j].mass;
-  return 0;
+  
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    *mass = system_grav[j].mass;
+    return 0;
+  }
+  return -1;
 }
 
 int commit_particles(){
@@ -176,8 +178,13 @@ int get_time(double * time){
 
 int set_mass(int index_of_the_particle, double mass){
   int j = get_inverse_id(index_of_the_particle);
-  system_grav[j].mass = mass;
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    system_grav[j].mass = mass;
+    return 0;
+  }
+  return -1;
 }
 
 int get_index_of_first_particle(int * index_of_the_particle){
@@ -218,6 +225,14 @@ int new_particle(int * index_of_the_particle, double mass, double x,
 }
 
 int get_total_mass(double * mass){
+
+  *mass = 0;
+
+  for(int j = 0; j < system_grav.getNumberOfParticleLocal(); j++)
+  {
+    *mass += system_grav[j].mass;
+  }
+  
   return 0;
 }
 
@@ -297,8 +312,8 @@ int get_index_of_next_particle(int index_of_the_particle,
   int j = get_inverse_id(index_of_the_particle);
   n_loc = system_grav.getNumberOfParticleLocal();
 
-  if (j < 0) return -1;
-  else if (j >= n_loc-1) return 1;
+  if (j < 0) return -1;//means "not found"
+  else if (j >= n_loc-1) return 1;//means "at the end of the array"
   else *index_of_the_next_particle = system_grav[j+1].id;
   return 0;
 }
@@ -318,14 +333,21 @@ int delete_particle(int index_of_the_particle){
   }
   n_loc--;
   n_tot--;
-  system_grav.setNumberOfParticleLocal(n_loc);    
+  system_grav.setNumberOfParticleLocal(n_loc);
+  inverse_id.erase(index_of_the_particle);
 
   return 0;
 }
 
 int get_potential(int index_of_the_particle, double * potential){
   int j = get_inverse_id(index_of_the_particle);
-  *potential = system_grav[j].pot;
+  double pot;
+  double r2_inv;
+  double r_inv;
+  r2_inv = FPGrav::eps * FPGrav::eps;
+  r_inv = 1.0/sqrt(r2_inv);
+  pot = system_grav[j].pot + system_grav[j].mass * r_inv;
+  *potential = pot;
   return 0;
 }
 
@@ -336,16 +358,21 @@ int synchronize_model(){
 int set_state(int index_of_the_particle, double mass, double x, double y, 
   double z, double vx, double vy, double vz, double radius){
   int j = get_inverse_id(index_of_the_particle);
-  system_grav[j].mass = mass;
-  system_grav[j].pos.x = x;
-  system_grav[j].pos.y = y;
-  system_grav[j].pos.z = z;
-  system_grav[j].vel.x = vx;
-  system_grav[j].vel.y = vy;
-  system_grav[j].vel.z = vz;
-  system_grav[j].radius = radius;
-  
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    system_grav[j].mass = mass;
+    system_grav[j].pos.x = x;
+    system_grav[j].pos.y = y;
+    system_grav[j].pos.z = z;
+    system_grav[j].vel.x = vx;
+    system_grav[j].vel.y = vy;
+    system_grav[j].vel.z = vz;
+    system_grav[j].radius = radius;
+    
+    return 0;
+  }
+  return -1;
 }
 
 int get_state(int index_of_the_particle, double * mass, double * x, 
@@ -394,17 +421,58 @@ int get_number_of_particles(int * value){
 int set_acceleration(int index_of_the_particle, double ax, double ay, 
   double az){
   int j = get_inverse_id(index_of_the_particle);
-  system_grav[j].acc.x = ax;
-  system_grav[j].acc.y = ay;
-  system_grav[j].acc.z = az;
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    system_grav[j].acc.x = ax;
+    system_grav[j].acc.y = ay;
+    system_grav[j].acc.z = az;
+    return 0;
+  }
+  return -1;
 }
 
 int get_center_of_mass_position(double * x, double * y, double * z){
+  *x = 0; *y = 0; *z = 0;
+  double M;
+  double mass;
+
+  get_total_mass(&M);
+
+  for(int j = 0; j<system_grav.getNumberOfParticleLocal(); j++)
+  {
+    mass = system_grav[j].mass;
+    *x += mass*system_grav[j].pos.x;
+    *y += mass*system_grav[j].pos.y;
+    *z += mass*system_grav[j].pos.z;
+  }
+
+  *x /= M;
+  *y /= M;
+  *z /= M;
+
   return 0;
 }
 
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
+  *vx = 0; *vy = 0; *vz = 0;
+  double M;
+  double mass;
+
+  get_total_mass(&M);
+
+  for(int j = 0; j<system_grav.getNumberOfParticleLocal(); j++)
+  {
+    mass = system_grav[j].mass;
+    *vx += mass*system_grav[j].vel.x;
+    *vy += mass*system_grav[j].vel.y;
+    *vz += mass*system_grav[j].vel.z;
+  }
+
+  *vx /= M;
+  *vy /= M;
+  *vz /= M;
+
   return 0;
 }
 
@@ -420,8 +488,13 @@ int set_begin_time(double time){
 
 int set_radius(int index_of_the_particle, double radius){
   int j = get_inverse_id(index_of_the_particle);
-  system_grav[j].radius = radius;
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    system_grav[j].radius = radius;
+    return 0;
+  }
+  return -1;
 }
 
 int cleanup_code(){
@@ -635,36 +708,56 @@ int get_potential_energy(double * potential_energy){
 int get_velocity(int index_of_the_particle, double * vx, double * vy, 
   double * vz){
   int j = get_inverse_id(index_of_the_particle);
-  *vx = system_grav[j].vel.x;
-  *vy = system_grav[j].vel.y;
-  *vz = system_grav[j].vel.z;
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    *vx = system_grav[j].vel.x;
+    *vy = system_grav[j].vel.y;
+    *vz = system_grav[j].vel.z;
+    return 0;
+  }
+  return -1;
 }
 
 int get_position(int index_of_the_particle, double * x, double * y, 
   double * z){
   int j = get_inverse_id(index_of_the_particle);
-  *x = system_grav[j].pos.x;
-  *y = system_grav[j].pos.y;
-  *z = system_grav[j].pos.z;
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    *x = system_grav[j].pos.x;
+    *y = system_grav[j].pos.y;
+    *z = system_grav[j].pos.z;
+    return 0;
+  }
+  return -1;
 }
 
 int set_position(int index_of_the_particle, double x, double y, double z){
   int j = get_inverse_id(index_of_the_particle);
-  system_grav[j].pos.x = x;
-  system_grav[j].pos.y = y;
-  system_grav[j].pos.z = z;
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    system_grav[j].pos.x = x;
+    system_grav[j].pos.y = y;
+    system_grav[j].pos.z = z;
+    return 0;
+  }
+  return -1;
 }
 
 int get_acceleration(int index_of_the_particle, double * ax, double * ay, 
   double * az){
   int j = get_inverse_id(index_of_the_particle);
-  *ax = system_grav[j].acc.x;
-  *ay = system_grav[j].acc.y;
-  *az = system_grav[j].acc.z;
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    *ax = system_grav[j].acc.x;
+    *ay = system_grav[j].acc.y;
+    *az = system_grav[j].acc.z;
+    return 0;
+  }
+  return -1;
 }
 
 int commit_parameters(){
@@ -674,9 +767,14 @@ int commit_parameters(){
 int set_velocity(int index_of_the_particle, double vx, double vy, 
   double vz){
   int j = get_inverse_id(index_of_the_particle);
-  system_grav[j].vel.x = vx;
-  system_grav[j].vel.y = vy;
-  system_grav[j].vel.z = vz;
-  return 0;
+
+  if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+  {
+    system_grav[j].vel.x = vx;
+    system_grav[j].vel.y = vy;
+    system_grav[j].vel.z = vz;
+    return 0;
+  }
+  return -1;
 }
 
