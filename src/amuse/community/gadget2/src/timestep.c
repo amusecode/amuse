@@ -299,13 +299,7 @@ void advance_and_find_timesteps(void)
 					      0.0001 * soundspeed / SphP[i].Hsml);
 	      tau = 2.5 * SphP[i].Hsml / soundspeed;
 	      SphP[i].DAlphaDt = f_fac*dmax(-SphP[i].DivVel, 0) * (2.0 - SphP[i].Alpha) - (SphP[i].Alpha - .1)/tau;
-
-	      //printf("f_fac = %g, tau = %g, Alpha = %g, DivVel = %g, DtAlpha = %g \n",
-		f_fac,
-		tau,
-		SphP[i].Alpha,
-		SphP[i].DivVel,
-		SphP[i].DAlphaDt);	
+	
 	    /* change this to input the maximum the viscosity can get to. */      
 	    /*  SphP[i].DAlphaDt = f_fac*dmax(-SphP[i].DivVel, 0) * (All.ArtBulkViscConst - SphP[i].Alpha) - (SphP[i].Alpha - .1)/tau;*/
 #endif	
