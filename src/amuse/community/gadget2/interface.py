@@ -50,7 +50,7 @@ class Gadget2Interface(
         
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:
-            return 'gadget2_worker'
+            return 'gadget2_worker_normal'
         elif mode == self.MODE_PERIODIC_BOUNDARIES:
             return 'gadget2_worker_periodic'
         elif mode == self.MODE_PERIODIC_NOGRAVITY:
@@ -58,7 +58,7 @@ class Gadget2Interface(
         elif mode == self.MODE_NOGRAVITY:
             return 'gadget2_worker_nogravity'
         else:
-            return 'gadget2_worker'
+            return 'gadget2_worker_'+mode
     
     @legacy_function
     def new_dm_particle():
