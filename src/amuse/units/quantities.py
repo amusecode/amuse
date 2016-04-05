@@ -464,8 +464,8 @@ class VectorQuantity(Quantity):
         quantity<[6.0, 8.0, 15.0] m**2>
 
         >>> v1 = [[[2.0, 3.0], [2.0, 4.0]],[[5.0, 2.0], [3.0, 4.0]]] | units.m
-        >>> v1.prod()
-        quantity<5760.0 m**8>
+        >>> v1.prod() # doctest:+ELLIPSIS
+        quantity<5760.0 m**8...>
         >>> v1.prod(0)
         quantity<[[10.0, 6.0], [6.0, 16.0]] m**2>
         >>> v1.prod(1)
@@ -477,6 +477,7 @@ class VectorQuantity(Quantity):
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))
         else:
             return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** self.number.shape[axis])
+
 
 
     def inner(self, other):
