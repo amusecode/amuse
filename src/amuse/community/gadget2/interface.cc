@@ -41,7 +41,11 @@ void set_default_parameters(){
     All.TimeLimitCPU = 36000;
     All.ComovingIntegrationOn = 0;
     All.TypeOfTimestepCriterion = 0;
+#ifdef PERIODIC
+    All.PeriodicBoundariesOn = 1;
+#else
     All.PeriodicBoundariesOn = 0;
+#endif
     All.Time = 0.0;
     All.TimeBegin = 0.0;
     All.TimeMax = 100.0;
@@ -1276,8 +1280,8 @@ int get_periodic_boundaries_flag(int *value)
 
 int set_periodic_boundaries_flag(int value)
 {
-    All.PeriodicBoundariesOn = value;
-    return 0;
+// All.PeriodicBoundariesOn is read only because compile time determined
+    return -2;
 }
 
 int get_interpret_kicks_as_feedback_flag(int *value)

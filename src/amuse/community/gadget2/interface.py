@@ -37,28 +37,19 @@ class Gadget2Interface(
         .. [#] Durier F., Dalla Vecchia C., 2011, MNRAS (Time integration scheme fix)
     """
     include_headers = ['interface.h', 'worker_code.h', 'stopcond.h']
-    
+
     MODE_NORMAL = 'normal'
     MODE_PERIODIC_BOUNDARIES   = 'periodic'
     MODE_PERIODIC_NOGRAVITY   = 'periodic_nogravity'
     MODE_NOGRAVITY = 'nogravity'
-    
+            
     def __init__(self, mode = MODE_NORMAL,  **options):
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
         
     def name_of_the_worker(self, mode):
-        if mode == self.MODE_NORMAL:
-            return 'gadget2_worker_normal'
-        elif mode == self.MODE_PERIODIC_BOUNDARIES:
-            return 'gadget2_worker_periodic'
-        elif mode == self.MODE_PERIODIC_NOGRAVITY:
-            return 'gadget2_worker_periodic_nogravity'
-        elif mode == self.MODE_NOGRAVITY:
-            return 'gadget2_worker_nogravity'
-        else:
-            return 'gadget2_worker_'+mode
+        return 'gadget2_worker_'+mode
     
     @legacy_function
     def new_dm_particle():
@@ -1204,11 +1195,6 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
     
     def initialize_code(self):
         result = self.overridden().initialize_code()
-        if self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES:
-            self.parameters.periodic_boundaries_flag = True
-        elif self.mode == self.legacy_interface.MODE_PERIODIC_NOGRAVITY:
-            self.parameters.periodic_boundaries_flag = True
-        print self.get_output_directory()
         self.parameters.gadget_output_directory = self.get_output_directory()
         # The code's units are read-only, and set here to ensure they always match with the unit_converter
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))
@@ -1647,9 +1633,9 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         
         object.add_boolean_parameter(
             "get_periodic_boundaries_flag",
-            "set_periodic_boundaries_flag",
+            None,
             "periodic_boundaries_flag",
-            "Periodic boundaries flag. True means: use periodic boundary conditions",
+            "Periodic boundaries flag. Read-only. True means: use periodic boundary conditions",
             False
         )
         
