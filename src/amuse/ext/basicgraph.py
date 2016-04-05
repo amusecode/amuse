@@ -84,8 +84,13 @@ class UnionFind(object):
 
 class Graph(dict):
     def add_edge(self, n1, n2, w):
+        if callable(w): w=w(n1,n2)
         self.setdefault(n1, {}).update({n2: w})
         self.setdefault(n2, {}).update({n1: w})
+
+    def remove_edge(self, n1, n2):
+        self[n1].pop(n2)
+        self[n2].pop(n1)
 
     def add_node(self,n):
         self.setdefault(n, {})
