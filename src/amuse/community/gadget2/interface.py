@@ -1251,7 +1251,10 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
             self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g/h))
             self.set_unit_length(self.unit_converter.to_si(generic_unit_system.length).value_in(units.cm/h))
             self.set_unit_time(self.unit_converter.to_si(generic_unit_system.time).value_in(units.s/h))
+        handler=self.get_handler("PARTICLES")
+        self.define_additional_particle_attributes(handler)
         return self.overridden().commit_parameters()
+        
     
     def define_properties(self, object):
         object.add_property("get_kinetic_energy")
@@ -1268,6 +1271,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         GravitationalDynamics.define_state(self, object)
         GravityFieldCode.define_state(self, object)
         
+        object.add_method('EDIT', 'before_new_set_instance')
         object.add_method('EDIT', 'new_dm_particle')
         object.add_method('UPDATE', 'new_dm_particle')
         object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
@@ -1280,6 +1284,9 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         object.add_method('RUN', 'get_acceleration')
         object.add_method('RUN', 'get_internal_energy')
         object.add_method('RUN', 'get_smoothing_length')
+        object.add_method('RUN', 'get_density')
+        object.add_method('RUN', 'get_alpha_visc')
+        object.add_method('RUN', 'get_dalphadt_visc')
         object.add_method('RUN', 'get_density')
         object.add_method('RUN', 'get_pressure')
         object.add_method('RUN', 'get_d_internal_energy_dt')
@@ -1729,7 +1736,7 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         object.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('radius',))
         object.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('epsilon',))
         
-        object.define_set('gas_particles', 'index_of_the_particle')
+        object.define_set('gas_particles', 'index_of_the_particle',state_guard="before_new_set_instance")
         object.set_new('gas_particles', 'new_sph_particle')
         object.set_delete('gas_particles', 'delete_particle')
         object.add_setter('gas_particles', 'set_state_sph')
@@ -1744,8 +1751,6 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         object.add_setter('gas_particles', 'set_internal_energy')
         object.add_getter('gas_particles', 'get_internal_energy')
         object.add_getter('gas_particles', 'get_smoothing_length')
-        object.add_getter('gas_particles', 'get_alpha_visc', names = ('alpha',))
-        object.add_getter('gas_particles', 'get_dalphadt_visc', names = ('dalphadt',))
         object.add_getter('gas_particles', 'get_density', names = ('rho',))
         object.add_getter('gas_particles', 'get_density', names = ('density',))
         object.add_getter('gas_particles', 'get_pressure')
@@ -1755,7 +1760,12 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('epsilon',))
 
         self.stopping_conditions.define_particle_set(object)
-    
+
+    def define_additional_particle_attributes(self, object):
+        if self.parameters.viscosity_switch=="Morris & Monaghan 1997":
+            object.add_getter('gas_particles', 'get_alpha_visc', names = ('viscosity_alpha',))
+            object.add_getter('gas_particles', 'get_dalphadt_visc', names = ('viscosity_dalphadt',))
+              
     def define_errorcodes(self, object):
         object.add_errorcode(-1, 'Unspecified, other error.')
         object.add_errorcode(-2, 'Called function is not implemented.')
