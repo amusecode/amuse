@@ -99,7 +99,10 @@ class TestFDPSInterface(TestWithMPI):
         interface.cleanup_code()
         interface.stop()
     
-    
+
+##FIXME:
+## In the current FDPS interface, a particle's ID can be re-used if the original particle was deleted. 
+## That makes this test fail.
 #    def test6(self):
 #        instance = FDPSInterface()
 #        instance.initialize_code()
@@ -433,7 +436,8 @@ class TestFDPS(TestWithMPI):
         self.assertEquals(instance.get_mass(0), 17.0| units.kg) 
         instance.cleanup_code()
         instance.stop()
-        
+
+##FIXME: test fails because get_potential_at_point and get_gravity_at_point are not yet supported.        
 #    def test9(self):
 #        instance = FDPS()
 #        instance.initialize_code()
@@ -471,7 +475,8 @@ class TestFDPS(TestWithMPI):
 #            self.assertAlmostEqual(potential0, potential1, 5)
 #        instance.cleanup_code()
 #        instance.stop()
-            
+
+##FIXME: Fails because get_gravity_at_point is not yet supported.
 #    def test10(self):
 #        instance = FDPS()
 #        instance.initialize_code()
@@ -604,7 +609,8 @@ class TestFDPS(TestWithMPI):
         com = instance.center_of_mass_position
         self.assertAlmostEqual(com[0], quantities.new_quantity(0.0, units.m), constants.precision)
         instance.stop()
-    
+
+##FIXME: fails because parameters are different from BHTree
 #    def test14(self):
 #        print "Test14: Testing FDPS parameters (I)"
 #        convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
@@ -722,7 +728,8 @@ class TestFDPS(TestWithMPI):
         self.assertAlmostRelativeEqual(energy_total_t0, energy_total_t1, 3)
         instance.stop()
         numpy.random.seed()
-    
+
+##FIXME: stopping conditions / collision detection is not yet supported.    
 #    def test17(self):
 #        print "Testing FDPS collision_detection"
 #        particles = datamodel.Particles(7)
@@ -781,7 +788,8 @@ class TestFDPS(TestWithMPI):
 #                (collisions.particles(0).radius + collisions.particles(1).radius),
 #                [True])
 #        instance.stop()
-    
+
+##FIXME: stopping conditions are not yet supported.
 #    def test18(self):
 #        particles = datamodel.Particles(2)
 #        particles.x = [0.0,10.0] | nbody_system.length
@@ -805,6 +813,7 @@ class TestFDPS(TestWithMPI):
 #        self.assertTrue(instance.model_time < 10 | nbody_system.time)
 #        instance.stop()
 
+##FIXME: stopping conditions are not yet supported.
 #    def test19(self):
 #        particles = datamodel.Particles(2)
 #        particles.x = [0.0,10.0] | nbody_system.length
@@ -833,6 +842,7 @@ class TestFDPS(TestWithMPI):
 #        self.assertTrue((end-start) < very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
 #        instance.stop()
     
+##FIXME: stopping conditions are not yet supported.
 #    def test20(self):
 #        particles = datamodel.Particles(2)
 #        particles.x = [0.0,10.0] | nbody_system.length
