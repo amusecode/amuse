@@ -936,11 +936,11 @@ int get_gadget_output_directory(char **output_directory){
 int get_viscosity_switch(char **viscosity_switch){
     if (ThisTask) {return 0;}
 #ifdef MONAGHAN83VISC
-    *viscosity_switch = "Monaghan & Gingold 1983";
+    *viscosity_switch = (char *)"Monaghan & Gingold 1983";
 #elif MORRIS97VISC
-    *viscosity_switch = "Morris & Monaghan 1997";
+    *viscosity_switch = (char *)"Morris & Monaghan 1997";
 #else
-    *viscosity_switch = "standard Gadget2 viscosity";
+    *viscosity_switch = (char *)"standard Gadget2 viscosity";
 #endif
     return 0;
 }
