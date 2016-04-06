@@ -66,6 +66,7 @@ typedef std::vector<code_state> ReboundSimulationVector;
 static ReboundSimulationVector codes;
 static particle_location sentinel = particle_location();
 static double _time;
+static double timestep = 0.0001;
 
 static inline particle_location get_index_from_identity(int id)
 {
@@ -511,6 +512,10 @@ int get_time_step(int code_index, double * time_step){
     if(code_index < 0 || code_index >= (signed) codes.size()){
         return -10;
     }
+    if(code_index == 0) {
+        *time_step = timestep;
+        return 0;
+    }
     if(!codes[code_index].code) {
         return -11;
     }
@@ -518,15 +523,20 @@ int get_time_step(int code_index, double * time_step){
     *time_step = code->dt;
     return 0;
 }
+
 int set_time_step(double time_step, int code_index){
     if(code_index < 0 || code_index >= (signed) codes.size()){
         return -10;
     }
-    if(!codes[code_index].code) {
+    if(code_index == 0) {
+        timestep = time_step;
+    } else if(!codes[code_index].code) {
         return -11;
     }
-    reb_simulation * code = codes[code_index].code;
-    code->dt = time_step;
+    if(codes[code_index].code) {
+        reb_simulation * code = codes[code_index].code;
+        code->dt = time_step;
+    }
     return 0;
 }
 
@@ -732,6 +742,7 @@ int set_velocity(int index_of_the_particle, double vx, double vy,
 int new_subset(int * index, double time_offset) {
     reb_simulation * code = reb_create_simulation();
     reb_integrator_reset(code);
+    code->dt = timestep;
     if(time_offset < 0) {time_offset = _time;}
     codes.push_back(code_state(code, time_offset, codes.size()));
     code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;

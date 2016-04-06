@@ -607,100 +607,6 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
         return ''
 
 
-class GenerateACHeaderStringFromASpecificationClass\
-    (GenerateASourcecodeStringFromASpecificationClass):
-
-    @late
-    def ignore_functions_from_specification_classes(self):
-        return []
-        
-    @late
-    def underscore_functions_from_specification_classes(self):
-        return []
-        
-    @late
-    def dtype_to_spec(self):
-        return dtype_to_spec
-        
-    @late
-    def make_extern_c(self):
-        return True
-    
-    def must_include_interface_function_in_output(self, x):
-        if x.specification.name.startswith("internal__"):
-            return False
-            
-        for cls in self.ignore_functions_from_specification_classes:
-            if hasattr(cls, x.specification.name):
-                return False
-        
-        return True
-        
-    def output_sourcecode_for_function(self):
-        return GenerateACHeaderDefinitionStringFromAFunctionSpecification()
-        
-    def start(self):  
-        if self.make_extern_c:
-            self.out + 'extern "C" {'
-            self.out.indent().lf()
-            
-        self.output_sourcecode_for_functions()
-        
-        if self.make_extern_c:
-            self.out.dedent().lf() + '}'
-        
-        self.out.lf()
-        
-        
-        self._result = self.out.string
-        
-
-class GenerateACStubStringFromASpecificationClass\
-    (GenerateASourcecodeStringFromASpecificationClass):
-
-    @late
-    def dtype_to_spec(self):
-        return dtype_to_spec
-        
-    @late
-    def make_extern_c(self):
-        return False
-    
-    def output_sourcecode_for_function(self):
-        return create_definition.CreateCStub()
-
-    def must_include_interface_function_in_output(self, x):
-        return not x.specification.name.startswith("internal__")
-     
-    def start(self):  
-    
-        self.output_local_includes()
-        
-        self.out.lf()
-        
-        if self.make_extern_c:
-            self.out + 'extern "C" {'
-            self.out.indent().lf()
-            
-        self.output_sourcecode_for_functions()
-        
-        if self.make_extern_c:
-            self.out.dedent().lf() + '}'
-        
-        self.out.lf()
-        
-        self._result = self.out.string
-        
-    
-    def output_local_includes(self):
-        self.out.n()
-        if hasattr(self.specification_class, 'include_headers'):
-            for x in self.specification_class.include_headers:
-                self.out.n() + '#include "' + x + '"'
-    
-        
-        
-        
 class GenerateACythonStartScriptStringFromASpecificationClass\
     (GenerateASourcecodeStringFromASpecificationClass):
 
@@ -1264,6 +1170,8 @@ class GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass\
         self.out.n()
         self.out + INTERFACE_DEFINITION
         self.out.n()
+    @late
     def function_name_prefix(self):
         return "ci_"
+
 

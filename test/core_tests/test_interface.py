@@ -877,13 +877,14 @@ class ParticlesWithBindingInterface(object):
         return (map(lambda x : x+1, id), map(lambda x : 0, id))
         
     def add_1_to_mass(self, id):
-        if isinstance(id, int):
+        if isinstance(id, (int, numpy.int64, numpy.int32)):
             self.masses[id] += 1.0
             return [0]
         for i in id:
             self.masses[i] += 1.0
         return map(lambda x : 0, id)
     
+
     def get_heaviest_particle(self):
         max = -1
         id = -1

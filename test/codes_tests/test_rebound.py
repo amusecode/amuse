@@ -88,13 +88,13 @@ class ReboundInterfaceTests(TestWithMPI):
         
         instance = self.new_instance_of_an_optional_code(ReboundInterface)
         instance.initialize_code()
-        
-        integrator, error = instance.get_integrator()
+        error = 0
+        integrator = instance.get_integrator()
         self.assertEquals(error, 0)
         self.assertEquals("whfast", integrator)
         error = instance.set_integrator("ias15")
         self.assertEquals(error, 0)
-        integrator, error = instance.get_integrator()
+        integrator = instance.get_integrator()
         self.assertEquals(error, 0)
         self.assertEquals("ias15", integrator)
         instance.cleanup_code()
@@ -429,7 +429,7 @@ class TestRebound(TestWithMPI):
         self.assertAlmostRelativeEquals(instance2.particles.velocity, particles2evolved.velocity, 10)
         
     
-    def test8(self):
+    def test9(self):
         instance = self.new_instance_of_an_optional_code(Rebound)
         #instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
        
@@ -456,3 +456,22 @@ class TestRebound(TestWithMPI):
         self.assertEquals(instance.particles[5].mass, 0 | nbody_system.mass)
         instance.evolve_model(1 | nbody_system.time)
         self.assertEquals(instance.particles[4].x, 5 | nbody_system.length)
+
+    def test10(self):
+        instance = self.new_instance_of_an_optional_code(Rebound)
+        #instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+       
+        particles = datamodel.Particles(1)
+        particles.x = 0 | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [0,2,0] | nbody_system.speed
+        particles.radius = 1| nbody_system.length
+        particles.mass = 1 | nbody_system.mass
+        
+        instance.particles.add_particles(particles)
+        instance.evolve_model(4 | nbody_system.time)
+        self.assertAlmostRelativeEquals(instance.particles[0].velocity, [0, 2,0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(instance.particles[0].position, [0, 2 * 4, 0] | nbody_system.length, 8)
+
+

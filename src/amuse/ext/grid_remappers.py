@@ -166,7 +166,7 @@ from amuse.datamodel.staggeredgrid import StaggeredGrid
 
 class conservative_spherical_remapper(object):
 
-    def __init__(self, source, target, axes_names=['lon', 'lat']):
+    def __init__(self, source, target, axes_names=['lon', 'lat'], cdo_remapper=None):
         """ This class maps a source grid to a target grid using second-
             order conservative remapping by calling the re-implementation of
             SCRIP within CDO. The source grid should be a structured grid
@@ -198,12 +198,16 @@ class conservative_spherical_remapper(object):
         except:
             raise Exception("conservative spherical remapper requires omuse.community.cdo.interface")  
 
-        self.cdo_remapper = CDORemapper(channel="sockets", redirection="none")
-        self.cdo_remapper.parameters.src_grid = self.src_elements
-        self.cdo_remapper.parameters.dst_grid = self.tgt_elements
+        if cdo_remapper == None:
+            self.cdo_remapper = CDORemapper(channel="sockets", redirection="none")
+            self.cdo_remapper.parameters.src_grid = self.src_elements
+            self.cdo_remapper.parameters.dst_grid = self.tgt_elements
 
-        #force start of the computation of remapping weights
-        self.cdo_remapper.commit_parameters()
+            #force start of the computation of remapping weights
+            self.cdo_remapper.commit_parameters()
+        else:
+            self.cdo_remapper = cdo_remapper
+
 
     def _get_grid_copies_and_channel(self, source, target, attributes):
         source_copy=source.empty_copy()

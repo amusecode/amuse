@@ -530,7 +530,10 @@ class GridRemappingChannel(object):
     def __init__(self, source, target, remapper):
         self.source = source
         self.target = target
-        self.remapper = remapper( source, target)
+        if callable(remapper):
+            self.remapper = remapper( source, target)
+        else:
+            self.remapper = remapper
 
     def get_overlapping_attributes(self):
         from_names = self.source.get_attribute_names_defined_in_store()

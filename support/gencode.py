@@ -141,6 +141,12 @@ class ParseCommandLine(object):
             dest="cython_import",
             help="Name of the module to import for the cython worker (name of the .so file)")
         
+        self.parser.add_option(
+            "--prefix",
+            default="",
+            dest="function_name_prefix",
+            help="Prefix for generated function names, relevant for cython")
+        
         self.options = None
         self.arguments = None
         
@@ -294,6 +300,7 @@ def make_file(settings):
         builder.is_mpi_enabled = config.mpi.is_enabled
         builder.name_of_outputfile = settings.output
         builder.cython_import = settings.cython_import
+        builder.function_name_prefix = settings.function_name_prefix
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     

@@ -58,6 +58,7 @@ clean:
 	$(RM) -Rf $(CODEDIR)/src/*.so
 	$(RM) -Rf src/librebound.a
 	$(RM) -f rebound_cython.* rebound_cython_worker rebound_cython_worker.*
+	$(RM) -f rebound_worker_cython
 	-make -C $(CODEDIR) clean
 	
 distclean:
@@ -80,7 +81,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py ReboundInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface ReboundInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py  -i amuse.support.codes.stopping_conditions.StoppingConditionInterface ReboundInterface -o $@
 
 rebound_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I$(CODEDIR)/src $< $(OBJS) $(CODELIB) $(SC_CLIBS)  -o $@
@@ -99,7 +100,7 @@ rebound_cython.pyx: interface.py worker_code.h
 	$(CODE_GENERATOR) --type=cython -m mpi interface.py ReboundInterface -o $@
 
 rebound_cython.cc: rebound_cython.pyx
-	$(CYTHON) --cplus $< -o $@
+	$(CYTHON) $< -o $@
 
 
 
