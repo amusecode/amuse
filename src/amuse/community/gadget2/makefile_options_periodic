@@ -1,6 +1,6 @@
 #!/bin/bash
 #--------------------------------------- Basic operation mode of code
-#OPT   +=  -DPERIODIC
+OPT   +=  -DPERIODIC
 OPT   +=  -DUNEQUALSOFTENINGS
 
 

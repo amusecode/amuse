@@ -39,7 +39,7 @@ OPT   +=  -DNOSTOP_WHEN_BELOW_MINTIMESTEP
 
 
 #--------------------------------------- Things for special behaviour
-#OPT   +=  -DNOGRAVITY
+OPT   +=  -DNOGRAVITY
 #OPT   +=  -DNOTREERND
 #OPT   +=  -DNOTYPEPREFIX_FFTW
 #OPT   +=  -DLONG_X=60
