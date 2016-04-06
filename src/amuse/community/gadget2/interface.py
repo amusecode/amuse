@@ -1287,7 +1287,6 @@ class Gadget2(GravitationalDynamics, GravityFieldCode):
         object.add_method('RUN', 'get_density')
         object.add_method('RUN', 'get_alpha_visc')
         object.add_method('RUN', 'get_dalphadt_visc')
-        object.add_method('RUN', 'get_density')
         object.add_method('RUN', 'get_pressure')
         object.add_method('RUN', 'get_d_internal_energy_dt')
         object.add_method('RUN', 'get_n_neighbours')
