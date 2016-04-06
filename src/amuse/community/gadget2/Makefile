@@ -41,7 +41,7 @@ LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 
 .SECONDARY:
 
-.PHONY: all worker*
+.PHONY: all 
 
 gadget2_worker: ${TARGETS}
 
@@ -53,10 +53,10 @@ worker_%: worker_code.cc interface_%.o $(BUILDDIR)_%/libgadget.a $(BUILDDIR)_%/a
 $(BUILDDIR)_%:
 	-mkdir $@
 
-$(BUILDDIR)_%/Makefile: $(BUILDDIR)_%
+$(BUILDDIR)_%/Makefile: $(SRCDIR)/Makefile | $(BUILDDIR)_%
 	cp $(SRCDIR)/Makefile $@
 
-$(BUILDDIR)_%/makefile_options: $(BUILDDIR)_%
+$(BUILDDIR)_%/makefile_options: makefile_options_% | $(BUILDDIR)_%
 	cp makefile_options_$* $@
 
 $(BUILDDIR)_%/libgadget.a: $(BUILDDIR)_%/Makefile $(BUILDDIR)_%/makefile_options
