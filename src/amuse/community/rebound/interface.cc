@@ -427,7 +427,16 @@ int _evolve_code(double _tmax, code_state * cs){
 	return ret_value;
 }
 
-int set_eps2(double epsilon_squared){
+int set_eps2(double epsilon_squared, int code_index){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+
+    code->softening = sqrt(epsilon_squared);
     return 0;
 }
 
@@ -435,7 +444,16 @@ int get_begin_time(double * time){
     return 0;
 }
 
-int get_eps2(double * epsilon_squared){
+int get_eps2(int code_index, double * epsilon_squared){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+
+    *epsilon_squared = code->softening * code->softening;
     return 0;
 }
 
@@ -887,6 +905,76 @@ int set_opening_angle2(double opening_angle2, int code_index){
     }
     reb_simulation * code = codes[code_index].code;
     code->opening_angle2 = opening_angle2;
+    return 0;
+}
+
+int _set_boundary(int value, int code_index){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    
+    switch(value){
+        case 0:
+            code->boundary = reb_simulation::REB_BOUNDARY_NONE;
+            break;
+        case 1:
+            code->boundary = reb_simulation::REB_BOUNDARY_OPEN;
+            break;
+        case 2:
+            code->boundary = reb_simulation::REB_BOUNDARY_PERIODIC;
+            break;
+        case 3:
+            code->boundary = reb_simulation::REB_BOUNDARY_SHEAR;
+            break;
+        default:
+            code->boundary = reb_simulation::REB_BOUNDARY_NONE;
+            return -1;
+            break;
+            
+    }
+    return 0;
+}
+
+int _get_boundary(int code_index, int * value){
+    
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    
+    *value = code->boundary; 
+    return 0;
+}
+
+int get_boundary_size(int code_index, double * boundary_size){
+        if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    
+    *boundary_size = code->root_size; 
+    return 0;
+}
+
+int set_boundary_size(double boundary_size, int code_index){
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    if(!codes[code_index].code) {
+        return -11;
+    }
+    reb_simulation * code = codes[code_index].code;
+    reb_configure_box(code,boundary_size,1,1,1);
     return 0;
 }
 
