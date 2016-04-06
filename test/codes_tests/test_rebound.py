@@ -137,6 +137,41 @@ class ReboundInterfaceTests(TestWithMPI):
         instance.stop()
 
 
+    def test7(self):
+        
+        instance = self.new_instance_of_an_optional_code(ReboundInterface)
+        instance.initialize_code()
+
+        instance.set_eps2(0.1 * 0.1)
+
+        eps2 = instance.get_eps2()['epsilon_squared']
+
+        self.assertEquals(0.1 * 0.1, eps2)
+        instance.cleanup_code()
+        instance.stop()
+
+
+    def test8(self):
+        
+        instance = self.new_instance_of_an_optional_code(ReboundInterface)
+        instance.initialize_code()
+
+        instance.set_boundary("none")
+        boundary_type = instance.get_boundary()
+        self.assertEquals("none", boundary_type)
+
+        instance.set_boundary("periodic")
+        boundary_type = instance.get_boundary()
+        self.assertEquals("periodic", boundary_type)
+
+        instance.set_boundary_size(42.1)
+        boundary_size = instance.get_boundary_size()['boundary_size']
+        self.assertEquals(42.1, boundary_size)
+
+        instance.cleanup_code()
+        instance.stop()
+        
+
 class TestRebound(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = datamodel.Stars(2)
