@@ -20,6 +20,28 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 all: fdps_sd_worker 
 
+ifdef DOWNLOAD_CODES
+$(CODEDIR)/sample/nbody/Makefile:
+	make -C . download
+else
+$(CODEDIR)/sample/nbody/Makefile:
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "DOWNLOAD_CODES is not set. FDPS will not be downloaded and built."
+	@echo "If you do want FDPS, set DOWNLOAD_CODES to 1."
+	@echo "bash> export DOWNLOAD_CODES=1"
+	@echo "csh> setenv DOWNLOAD_CODES 1"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+endif
+
+download:
+	$(DOWNLOAD_FROM_WEB)
+	#$(PATCH_FILES)
+
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ fdps_sd_worker worker_code.cc
