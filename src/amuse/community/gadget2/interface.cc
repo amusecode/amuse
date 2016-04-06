@@ -298,6 +298,10 @@ int commit_particles(){
         SphP[i].Entropy = (*state_iter).second.u;
         SphP[i].Density = -1;
         SphP[i].Hsml = 0;
+#ifdef MORRIS97VISC
+        SphP[i].Alpha = (*state_iter).second.alpha;
+        SphP[i].DAlphaDt = (*state_iter).second.dalphadt;
+#endif
     }
     sph_states.clear();
 
@@ -438,6 +442,13 @@ void push_particle_data_on_state_vectors(){
 #else
             state.u = SphP[i].Entropy * pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
 #endif
+
+#ifdef MORRIS97VISC
+            state.alpha = SphP[i].Alpha;
+            state.dalphadt = SphP[i].DAlphaDt;
+#endif
+
+
             sph_states.insert(std::pair<long long, sph_state>(P[i].ID, state));
         } else {
             // store dark matter particle data
@@ -770,6 +781,10 @@ int new_sph_particle(int *id, double mass, double x, double y, double z, double 
         state.vy = vy;
         state.vz = vz;
         state.u = u;
+#ifdef MORRIS97VISC
+        state.alpha = All.ArtBulkViscConst;
+        state.dalphadt = 0;
+#endif
         sph_states.insert(std::pair<long long, sph_state>(particle_id_counter, state));
     }
     sph_particles_in_buffer++;
@@ -914,6 +929,18 @@ int get_gadget_output_directory(char **output_directory){
     *output_directory = All.OutputDir;
     return 0;
 }
+int get_viscosity_switch(char **viscosity_switch){
+    if (ThisTask) {return 0;}
+#ifdef MONAGHAN83VISC
+    *viscosity_switch = "Monaghan & Gingold 1983";
+#elif MORRIS97VISC
+    *viscosity_switch = "Morris & Monaghan 1997";
+#else
+    *viscosity_switch = "standard Gadget2 viscosity";
+#endif
+    return 0;
+}
+
 int set_gadget_output_directory(char *output_directory){
     int length = strlen(output_directory);
     if (length >= MAXLEN_FILENAME)
@@ -2231,6 +2258,94 @@ int get_smoothing_length(int *index, double *smoothing_length, int length){
     }
     return result;
 }
+
+
+int get_alpha_visc(int *index, double *alpha_visc, int length){
+    int errors = 0;
+    double *buffer = new double[length];
+    int *count = new int[length];
+    int local_index;
+
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            count[i] = 1;
+#ifdef MORRIS97VISC
+            buffer[i] = SphP[local_index].Alpha;
+#else
+	    buffer[i] = All.ArtBulkViscConst;
+#endif
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+        }
+    }
+    if(ThisTask) {
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                alpha_visc[i] = 0;
+            } else
+                alpha_visc[i] = buffer[i];
+        }
+    }
+    delete[] buffer;
+    delete[] count;
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
+}
+
+int get_dalphadt_visc(int *index, double *dalphadt_visc, int length){
+    int errors = 0;
+    double *buffer = new double[length];
+    int *count = new int[length];
+    int local_index;
+
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            count[i] = 1;
+#ifdef MORRIS97VISC
+            buffer[i] = SphP[local_index].DAlphaDt;
+#else
+            buffer[i] = 0;
+#endif
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+        }
+    }
+    if(ThisTask) {
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                dalphadt_visc[i] = 0;
+            } else
+                dalphadt_visc[i] = buffer[i];
+        }
+    }
+    delete[] buffer;
+    delete[] count;
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
+}
+
+
+
 
 int get_density_comoving(int *index, double *density_out, int length){
     int errors = 0;
