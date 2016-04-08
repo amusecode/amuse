@@ -247,7 +247,7 @@ class FormatTests(amusetest.TestCase):
         
         options = base.get_options_for_format('hdf5')
         options.sort(key = lambda x: x[0])
-        name, description, default = options[0]
+        name, description, default = options[1]
         self.assertEquals(name, 'append_to_file')
         self.assertTrue(description.find('If set to True, new data is appended to HDF5 files.') >= 0)
         self.assertTrue(description.find('If set to False, the existing file is removed and overwritten.') >= 0)
