@@ -60,23 +60,29 @@ class HDF5Attribute(object):
     @classmethod
     def new_attribute(cls, name, shape, input, group):
         if is_quantity(input):
+            if not hasattr(shape, '__iter__'): 
+                shape = shape,
             dataset = group.create_dataset(name, shape=shape, dtype=input.number.dtype)
-            return HDF5VectorQuantityAttribute(name, dataset, input.unit)             
+            dataset.attrs["units"] = input.unit.to_simple_form().reference_string()
+            return HDF5VectorQuantityAttribute(name, dataset, input.unit)                                 
         elif hasattr(input, 'as_set'):
             subgroup = group.create_group(name)
             group.create_dataset('keys', shape=shape, dtype=input.key.dtype)
             group.create_dataset('masked', shape=shape, dtype=numpy.bool)
-            return HDF5LinkedAttribute(name, subgroup)             
+            return HDF5LinkedAttribute(name, subgroup)                                 
         else:
             dtype = numpy.asanyarray(input).dtype
             if dtype.kind == 'U':
                 new_dtype = numpy.dtype('S' + dtype.itemsize * 4)
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+                dataset.attrs["units"] = "UNICODE"
                 return HDF5UnicodeAttribute(name, dataset)
             else:
                 dtype = numpy.asanyarray(input).dtype
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
+                dataset.attrs["units"] = "none"
                 return HDF5UnitlessAttribute(name, dataset)
+
 
 
     @classmethod

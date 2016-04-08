@@ -738,6 +738,29 @@ class _AbstractTestStoreHDF(amusetest.TestCase):
 
 
 
+    def test30(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test30"+self.store_version()+".hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+        particles = Particles(10)
+        particles.mass = 10 | units.kg
+
+        io.write_set_to_file(particles,output_file, format='amuse', version = self.store_version())
+        
+        output = io.read_set_from_file(output_file, format='amuse', allow_writing = True)
+        output.new_attribute= 2 * output.mass
+
+        self.assertEquals(output.new_attribute, 2 * output.mass)
+        output = output.iter_history().next()
+        output.new_attribute= 2 * output.mass
+
+        self.assertEquals(output.new_attribute, 2 * output.mass)
+        
+
+
+
 class TestStoreHDFV1(_AbstractTestStoreHDF):
     
     def store_factory(self):
