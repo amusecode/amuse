@@ -711,6 +711,9 @@ class CodeInterface(OptionalAttributes):
         
     
     def _start(self, name_of_the_worker = 'worker_code', interpreter_executable = None, **options):
+        if interpreter_executable is None and self.use_interpreter:
+            interpreter_executable = self.interpreter
+
         self.channel = self.channel_factory(name_of_the_worker, type(self), interpreter_executable = interpreter_executable, **options)
         
         self._check_if_worker_is_up_to_date()
@@ -731,6 +734,7 @@ class CodeInterface(OptionalAttributes):
             if self.polling_interval_in_milliseconds > 0:
                 self.internal__set_message_polling_interval(int(self.polling_interval_in_milliseconds * 1000))
         
+
     @option(type="int", sections=("channel",))
     def polling_interval_in_milliseconds(self):
         return 0
@@ -894,6 +898,19 @@ class CodeInterface(OptionalAttributes):
         """
         pass    
     
+
+    @option(type='string', sections=("channel",))
+    def interpreter(self):
+        return sys.executable
+
+
+
+
+    @option(type='boolean', sections=("channel",))
+    def use_interpreter(self):
+        return False
+
+        
 
 class CodeWithDataDirectories(object):
     

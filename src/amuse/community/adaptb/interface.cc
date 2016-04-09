@@ -6,6 +6,7 @@
 #include "Bs_integrator.h"
 #include "Clock.h"
 #include <string.h>
+#include "worker_code.h"
 
 #define MAX_STRING_LEN 1024
 using namespace mpfr;

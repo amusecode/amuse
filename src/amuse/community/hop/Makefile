@@ -26,7 +26,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py HopInterface -o $@
 	
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py HopInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py HopInterface -o $@
 
 hop_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) $< $(OBJ) $(CODELIB) -o $@  $(LIBS)

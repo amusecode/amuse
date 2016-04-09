@@ -41,4 +41,16 @@ void copy_SMBH_NEW_TO_OLD();
 int set_speed_of_light(double value);
 int get_speed_of_light(double *value);
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int get_calculate_postnewtonian(int *value);
+int set_calculate_postnewtonian(int value);
+int get_calculate_postnewtonian_only_first_order(int *value);
+int set_calculate_postnewtonian_only_first_order(int value);
+
+#ifdef __cplusplus
+}
+#endif
 #endif //EXTERNAL_FIELD_H

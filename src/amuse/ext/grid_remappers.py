@@ -136,7 +136,7 @@ class interpolating_2D_remapper(object):
 
     def forward_mapping(self, attributes):
         if attributes is None:
-            attributes=grid.get_attribute_names_defined_in_store()
+            attributes=self.source.get_attribute_names_defined_in_store()
         
         source=self.source.empty_copy()
         channel1=self.source.new_channel_to(source)
@@ -166,7 +166,7 @@ from amuse.datamodel.staggeredgrid import StaggeredGrid
 
 class conservative_spherical_remapper(object):
 
-    def __init__(self, source, target, axes_names=['lon', 'lat']):
+    def __init__(self, source, target, axes_names=['lon', 'lat'], cdo_remapper=None):
         """ This class maps a source grid to a target grid using second-
             order conservative remapping by calling the re-implementation of
             SCRIP within CDO. The source grid should be a structured grid
@@ -198,12 +198,16 @@ class conservative_spherical_remapper(object):
         except:
             raise Exception("conservative spherical remapper requires omuse.community.cdo.interface")  
 
-        self.cdo_remapper = CDORemapper(channel="sockets", redirection="none")
-        self.cdo_remapper.parameters.src_grid = self.src_elements
-        self.cdo_remapper.parameters.dst_grid = self.tgt_elements
+        if cdo_remapper == None:
+            self.cdo_remapper = CDORemapper(channel="sockets", redirection="none")
+            self.cdo_remapper.parameters.src_grid = self.src_elements
+            self.cdo_remapper.parameters.dst_grid = self.tgt_elements
 
-        #force start of the computation of remapping weights
-        self.cdo_remapper.commit_parameters()
+            #force start of the computation of remapping weights
+            self.cdo_remapper.commit_parameters()
+        else:
+            self.cdo_remapper = cdo_remapper
+
 
     def _get_grid_copies_and_channel(self, source, target, attributes):
         source_copy=source.empty_copy()
@@ -250,7 +254,7 @@ class conservative_spherical_remapper(object):
             values=numpy.array(values.number)
 
             #do the remapping
-            self.cdo_remapper.set_src_grid_values(index_i_src, values.ravel(order='F'))
+            self.cdo_remapper.set_src_grid_values(index_i_src, values.ravel('F'))
             self.cdo_remapper.perform_remap()
             result = self.cdo_remapper.get_dst_grid_values(index_i_dst).reshape(target.shape, order='F')
 

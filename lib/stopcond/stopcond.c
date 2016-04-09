@@ -440,14 +440,25 @@ int get_stopping_condition_maximum_internal_energy_parameter_(double *value) {
 
 #include <mpi.h>
 static int sc_mpi_rank;
+static MPI_Comm world = MPI_COMM_WORLD;
+static int is_world_set = 0;
+
+int mpi_set_communicator(void * comm) {
+    world = *(MPI_Comm *)comm;
+    is_world_set = 1;
+}
 
 int mpi_setup_stopping_conditions() {
+    if(!is_world_set) {
+        world = MPI_COMM_WORLD;
+        is_world_set = 1;
+    }
     int error;
-    error = MPI_Comm_rank(MPI_COMM_WORLD, &sc_mpi_rank);
+    error = MPI_Comm_rank(world, &sc_mpi_rank);
     if(error) {
         return -1;
     }
-    error = MPI_Comm_size(MPI_COMM_WORLD, &sc_mpi_size);
+    error = MPI_Comm_size(world, &sc_mpi_size);
     if(error) {
         return -1;
     }
@@ -483,11 +494,11 @@ int mpi_collect_stopping_conditions() {
     memset(displs, 0, sizeof(displs));
     long set = 0;
     
-    MPI_Allreduce(&set_conditions, &set, 1, MPI_INTEGER,  MPI_BOR, MPI_COMM_WORLD);
+    MPI_Allreduce(&set_conditions, &set, 1, MPI_INTEGER,  MPI_BOR, world);
     
     set_conditions = set;
     
-    MPI_Gather(&number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Gather(&number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, world);
     
     if(sc_mpi_rank == 0) {
         local_number_of_stopping_conditions_set = 0;
@@ -522,7 +533,7 @@ int mpi_collect_stopping_conditions() {
         displs, 
         MPI_INTEGER,
         0,
-        MPI_COMM_WORLD
+        world
     );
 
     if(sc_mpi_rank == 0) {
@@ -543,7 +554,7 @@ int mpi_collect_stopping_conditions() {
         displs,
         MPI_INTEGER,
         0, 
-        MPI_COMM_WORLD
+        world
     );
 
     if(sc_mpi_rank == 0) {
@@ -561,6 +572,7 @@ int mpi_collect_stopping_conditions() {
 
 #else
 
+int mpi_set_communicator(void * comm) {return 0;}
 int mpi_setup_stopping_conditions() {sc_mpi_size = 1; return 0;}
 int mpi_collect_stopping_conditions() {return 0;}
 int mpi_distribute_stopping_conditions() {return 0;}

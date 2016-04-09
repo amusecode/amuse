@@ -30,7 +30,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py SakuraInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py SakuraInterface -o $@
+	$(CODE_GENERATOR) --type=h -i amuse.support.codes.stopping_conditions.StoppingConditionInterface interface.py SakuraInterface -o $@
 
 sakura_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -lsakura $(SC_CLIBS)

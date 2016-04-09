@@ -9,6 +9,8 @@ extern "C" {
 #include "src/universal_variable_kepler.h"
 }
 
+#include "interface.h"
+
 using namespace std;
 
 

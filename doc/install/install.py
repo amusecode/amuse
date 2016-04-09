@@ -140,6 +140,14 @@ class InstallPrerequisites(object):
             'http://ftp.gnu.org/gnu/mpfr/', #download url, filename is appended
             self.mpfr_build             #method to use for building
           ) ,
+          (
+            'cython', 
+            [], 
+            '0.23.4', 
+            'Cython-' , '.tar.gz', 
+            'https://pypi.python.org/packages/source/C/Cython/', 
+            self.python_build
+          ),
         ]
         
     @late

@@ -85,6 +85,7 @@ int set_stopping_condition_particle_index(int index, int index_in_the_condition,
 int mpi_setup_stopping_conditions();
 int mpi_distribute_stopping_conditions();
 int mpi_collect_stopping_conditions();
+int mpi_set_communicator(void * comm);
 
 #ifdef __cplusplus
 }

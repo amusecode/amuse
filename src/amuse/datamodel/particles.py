@@ -779,12 +779,11 @@ class AbstractParticleSet(AbstractSet):
             
         if len(added_keys) > 0:
             added_indices = self.get_indices_of_keys(added_keys)
-            
             if len(added_indices) > 1:
                 sort_indices = numpy.argsort(added_indices)
                 added_indices = added_indices[sort_indices]
                 added_keys = added_keys[sort_indices]
-            
+                
             attributes = self.get_attribute_names_defined_in_store()
             attributes= [x for x in attributes if x not in other_particles._derived_attributes]
             values = self.get_values_in_store(added_indices, attributes)
@@ -2530,6 +2529,73 @@ class ParticlesOverlay(AbstractParticleSet):
 
     def _original_set(self):
         return self
+    
+    
+    def synchronize_to(self, other_particles):
+        """
+        Synchronize the particles of this set
+        with the contents of the provided set.
+
+        After this call the `other_particles` set will have
+        the same particles as this set.
+
+        This call will check if particles have been removed or
+        added it will not copy values of existing particles
+        over.
+
+        :parameter other_particles: particle set wich has to be updated
+
+        >>> particles = Particles(2)
+        >>> particles.x = [1.0, 2.0] | units.m
+        >>> copy = particles.copy()
+        >>> new_particle = Particle()
+        >>> new_particle.x = 3.0 | units.m
+        >>> particles.add_particle(new_particle)# doctest:+ELLIPSIS
+        <amuse.datamodel.particles.Particle object at ...>
+        >>> print particles.x
+        [1.0, 2.0, 3.0] m
+        >>> print copy.x
+        [1.0, 2.0] m
+        >>> particles.synchronize_to(copy)
+        >>> print copy.x
+        [1.0, 2.0, 3.0] m
+
+        """
+        other_keys = set(other_particles.get_all_keys_in_store())
+        my_keys = set(self.get_all_keys_in_store())
+        added_keys = numpy.asarray(list(my_keys - other_keys))
+        removed_keys = other_keys - my_keys
+        removed_keys = list(removed_keys)
+       
+        if len(removed_keys) > 0:
+            other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
+            
+        if len(added_keys) > 0:
+            added_indices = self.get_indices_of_keys(added_keys)
+                
+            attributes = self.get_attribute_names_defined_in_store()
+            attributes= [x for x in attributes if x not in other_particles._derived_attributes]
+            values = self.get_values_in_store(added_indices, attributes)
+            converted = []
+            memento = {}
+
+            for x in values:
+                if isinstance(x, LinkedArray):
+                    converted.append(x.copy_with_link_transfer(self._original_set(), other_particles, True, memento))
+                    #converted.append(x.copy(memento, False))
+                else:
+                    converted.append(x)
+            try:
+                other_particles.add_particles_to_store(added_keys, attributes, converted)
+            except exceptions.MissingAttributesAmuseException as caught_exception:
+                for attribute_name in caught_exception.missing_attributes:
+                    if attribute_name in self._derived_attributes:
+                        attributes.append(attribute_name)
+                        converted.append(getattr(self._subset(added_keys), attribute_name))
+                    else:
+                        raise
+                other_particles.add_particles_to_store(added_keys, attributes, converted)
+
 
 
 class ParticlesWithFilteredAttributes(AbstractParticleSet):

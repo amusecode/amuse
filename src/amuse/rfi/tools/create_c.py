@@ -549,11 +549,13 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
   struct sockaddr_in serv_addr;
   struct hostent *server;
   int on = 1;
+  int provided = 0;
+  int rank = -1;
   
   mpiIntercom = false;
 
-  MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);
-  int rank = MPI::COMM_WORLD.Get_rank();
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   
   if (rank == 0) {  
     //fprintf(stderr, "C worker: running in sockets+mpi mode\\n");
@@ -597,7 +599,7 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
   while(must_run_loop) {
     //fprintf(stderr, "sockets_mpi: receiving header\\n");
     receive_array_sockets(header_in, HEADER_SIZE * sizeof(int), socketfd, rank);
-    MPI::COMM_WORLD.Bcast(header_in, HEADER_SIZE, MPI_INT, 0);
+    MPI_Bcast(header_in, HEADER_SIZE, MPI_INT, 0, MPI_COMM_WORLD);
     
     //fprintf(stderr, "C sockets_mpi worker code: got header %d %d %d %d %d %d %d %d %d %d\\n", header_in[0], header_in[1], header_in[2], header_in[3], header_in[4], header_in[5], header_in[6], header_in[7], header_in[8], header_in[9]);
     
@@ -611,22 +613,22 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     
     if (header_in[HEADER_INTEGER_COUNT] > 0) {
       receive_array_sockets(ints_in, header_in[HEADER_INTEGER_COUNT] * sizeof(int), socketfd, rank);
-      MPI::COMM_WORLD.Bcast(ints_in, header_in[HEADER_INTEGER_COUNT], MPI_INTEGER, 0);
+      MPI_Bcast(ints_in, header_in[HEADER_INTEGER_COUNT], MPI_INTEGER, 0, MPI_COMM_WORLD);
     }
      
     if (header_in[HEADER_LONG_COUNT] > 0) {
       receive_array_sockets(longs_in, header_in[HEADER_LONG_COUNT] * sizeof(long long int), socketfd, rank);
-      MPI::COMM_WORLD.Bcast(longs_in, header_in[HEADER_LONG_COUNT], MPI_LONG_LONG_INT, 0);
+      MPI_Bcast(longs_in, header_in[HEADER_LONG_COUNT], MPI_LONG_LONG_INT, 0, MPI_COMM_WORLD);
     }
     
     if(header_in[HEADER_FLOAT_COUNT] > 0) {
       receive_array_sockets(floats_in, header_in[HEADER_FLOAT_COUNT] * sizeof(float), socketfd, rank);
-      MPI::COMM_WORLD.Bcast(floats_in, header_in[HEADER_FLOAT_COUNT], MPI_FLOAT, 0);
+      MPI_Bcast(floats_in, header_in[HEADER_FLOAT_COUNT], MPI_FLOAT, 0, MPI_COMM_WORLD);
     }
     
     if(header_in[HEADER_DOUBLE_COUNT] > 0) {
       receive_array_sockets(doubles_in, header_in[HEADER_DOUBLE_COUNT] * sizeof(double), socketfd, rank);
-      MPI::COMM_WORLD.Bcast(doubles_in, header_in[HEADER_DOUBLE_COUNT], MPI_DOUBLE, 0);
+      MPI_Bcast(doubles_in, header_in[HEADER_DOUBLE_COUNT], MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
@@ -635,16 +637,16 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
         booleans_in[i] = 0;
         receive_array_sockets(&booleans_in[i], 1, socketfd , rank);
       }
-      MPI::COMM_WORLD.Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_INTEGER, 0);
+      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_INTEGER, 0, MPI_COMM_WORLD);
     }
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
       receive_array_sockets(string_sizes_in, header_in[HEADER_STRING_COUNT] * sizeof(int), socketfd, rank);
-      MPI::COMM_WORLD.Bcast(string_sizes_in, header_in[HEADER_STRING_COUNT], MPI_INT, 0);
+      MPI_Bcast(string_sizes_in, header_in[HEADER_STRING_COUNT], MPI_INT, 0, MPI_COMM_WORLD);
       for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {
         strings_in[i] = new char[string_sizes_in[i] + 1];
         receive_array_sockets(strings_in[i], string_sizes_in[i], socketfd, rank);
-        MPI::COMM_WORLD.Bcast(strings_in[i], string_sizes_in[i], MPI_CHARACTER, 0);
+        MPI_Bcast(strings_in[i], string_sizes_in[i], MPI_CHARACTER, 0, MPI_COMM_WORLD);
         strings_in[i][string_sizes_in[i]] = '\\0';
       }
     }

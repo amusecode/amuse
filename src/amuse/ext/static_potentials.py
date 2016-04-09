@@ -213,7 +213,7 @@ class Galactic_Center_Potential_Kruijssen(Abstract_Potential):
 class Position_In_Potential(Abstract_Potential):
     """
         Wrapper around any other potential that has a test particle.
-        Any call to get_potentail_at_point will shift the coordinates to
+        Any call to get_potential_at_point will shift the coordinates to
         put the center on the location of that test particle.
         The particle is put in a Particles set to allow channels to be used,
         however, only a single particle is allowed at a time.

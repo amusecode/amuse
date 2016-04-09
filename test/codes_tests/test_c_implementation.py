@@ -146,7 +146,8 @@ int sum_doubles(double in1, double in2, double * out) {
 """
 
 class ForTestingInterface(CodeInterface):
-    
+    include_headers = ['worker_code.h']
+ 
     def __init__(self, exefile, **options):
         CodeInterface.__init__(self, exefile, **options)
 
@@ -515,6 +516,7 @@ class TestCImplementationInterface(TestWithMPI):
         
         path = os.path.abspath(self.get_path_to_results())
         codefile = os.path.join(path,"code.o")
+        headerfile = os.path.join(path,"worker_code.h")
         interfacefile = os.path.join(path,"interface.o")
         self.exefile = os.path.join(path,"c_worker")
         
@@ -524,19 +526,23 @@ class TestCImplementationInterface(TestWithMPI):
         uc.specification_class = ForTestingInterface
         uc.needs_mpi = False
         header =  uc.result
+
+        with open(headerfile, "w") as f:
+            f.write(header)
         
         uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
         uc.needs_mpi = False
         code =  uc.result
         
-        string = '\n\n'.join([header, code])
+        
         
         #print string
         
-        self.cxx_compile(interfacefile, string)
+        self.cxx_compile(interfacefile, code)
         self.c_build(self.exefile, [interfacefile, codefile] )
     
+
     def setUp(self):
         super(TestCImplementationInterface, self).setUp()
         print "building...",

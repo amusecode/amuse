@@ -6,31 +6,22 @@ AMUSE_DIR?=../../../..
 MPICXX ?= mpicxx
 
 SRCDIR		= src
-include $(SRCDIR)/makefile_options
+
+TARGETS := $(patsubst makefile_options_%, gadget2_worker_%, ${shell ls makefile_options_*})
 
 BUILDDIR = build
-PERIODIC_BUILDDIR = build_periodic
-PERIODIC_NOGRAVITY_BUILDDIR = build_periodic_nogravity
-NOGRAVITY_BUILDDIR = build_nogravity
-
-PERIODIC_OPT := $(OPT) -DPERIODIC
-PERIODIC_NOGRAVITY_OPT := $(OPT) -DPERIODIC -DNOGRAVITY
-NOGRAVITY_OPT := $(OPT) -DNOGRAVITY
-
-CXXFLAGS += -g -DTOOLBOX $(OPT)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 #PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
 
+ifneq ($(MAKEFILE_OPTIONS_FILE), )
+include $(MAKEFILE_OPTIONS_FILE)
+endif
+
 GSL_FLAGS ?= $(shell gsl-config --cflags)
 GSL_LIBS ?= $(shell gsl-config --libs)
 GSL_INCL = $(GSL_FLAGS)
-
-
-CODELIB = $(BUILDDIR)/libgadget.a
-
-ALLVARS = $(BUILDDIR)/allvars.o
 
 LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 	$(SRCDIR)/endrun.c  $(SRCDIR)/global.c  \
@@ -48,100 +39,47 @@ LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 #	$(SRCDIR)/timestep.c
 #  ^^^ original timestepping ^^^
 
-INTERFACE_OBJ = interface.o
-INTERFACE_SRC  = $(INTERFACE_OBJ:.o=.cc)
+.SECONDARY:
 
-all:	gadget2_worker
+.PHONY: all 
 
+gadget2_worker: ${TARGETS}
+
+gadget2_%: % ;
+
+worker_%: worker_code.cc interface_%.o $(BUILDDIR)_%/libgadget.a $(BUILDDIR)_%/allvars.o
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) -o gadget2_$@ $(GSL_LIBS) -lgsl -lgslcblas $(LIBS) $^ $(SC_MPI_CLIBS)
+ 
+$(BUILDDIR)_%:
+	-mkdir $@
+
+$(BUILDDIR)_%/Makefile: $(SRCDIR)/Makefile | $(BUILDDIR)_%
+	cp $(SRCDIR)/Makefile $@
+
+$(BUILDDIR)_%/makefile_options: makefile_options_% | $(BUILDDIR)_%
+	cp makefile_options_$* $@
+
+$(BUILDDIR)_%/libgadget.a: $(BUILDDIR)_%/Makefile $(BUILDDIR)_%/makefile_options
+	make -C $(BUILDDIR)_$* all VPATH=../src
+
+$(BUILDDIR)_%/allvars.o: $(BUILDDIR)_%/libgadget.a ;
+
+interface_%.o:  interface.cc makefile_options_%  worker_code.h
+ifeq ($(MAKEFILE_OPTIONS_FILE), )
+	make -C . $@ MAKEFILE_OPTIONS_FILE=makefile_options_$*
+else
+	$(MPICXX) $(CXXFLAGS) -DTOOLBOX $(OPT) $(SC_FLAGS) $(GSL_FLAGS) -c -o $@ $< 
+endif
 
 clean:
-	-rm -f *.o *.po *.pngo *.ngo *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
-	-rm -f gadget2_worker gadget2_worker_periodic gadget2_worker_sockets worker_code-sockets.cc
-	-rm -f gadget2_worker_periodic_sockets gadget2_worker_nogravity_sockets gadget2_worker_nogravity
-	-rm -f gadget2_worker_periodic_nogravity gadget2_worker_*.exe
+	-rm -f *.o worker_code.cc worker_code.h
+	-rm -f gadget2_worker* gadget2_worker_*.exe
 	-rm -rf *.dSYM
-	-make -C $(SRCDIR) clean
-	-rm -Rf $(PERIODIC_BUILDDIR)
-	-rm -Rf $(PERIODIC_NOGRAVITY_BUILDDIR)
-	-rm -Rf $(NOGRAVITY_BUILDDIR)
-	-rm -Rf $(BUILDDIR)
+	-rm -Rf build_*
     
-worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c $^ Gadget2Interface -o $@ 
+worker_code.cc: interface.py worker_code.h
+	$(CODE_GENERATOR) --type=c $< Gadget2Interface -o $@ 
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H $^ -i amuse.support.codes.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
-
-
-$(BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(BUILDDIR) 
-	cp $(SRCDIR)/Makefile $(BUILDDIR)/Makefile
-	
-$(BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options 
-	-mkdir $(BUILDDIR) 
-	cp $(SRCDIR)/makefile_options $(BUILDDIR)/makefile_options
-	
-$(CODELIB): $(BUILDDIR)/Makefile $(BUILDDIR)/makefile_options $(LIBFILES) $(SRCDIR)/Makefile $(SRCDIR)/makefile_options
-	make -C $(BUILDDIR) all VPATH=../src
-
-gadget2_worker: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(ALLVARS)  $(LIBS)
-	
-interface.o: interface.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)  $(LIBS)
-
-
-$(PERIODIC_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(PERIODIC_BUILDDIR) 
-	cp $(SRCDIR)/Makefile $(PERIODIC_BUILDDIR)/Makefile
-	
-$(PERIODIC_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options 
-	-mkdir $(PERIODIC_BUILDDIR) 
-	cp $(SRCDIR)/makefile_options $(PERIODIC_BUILDDIR)/makefile_options
-	
-$(PERIODIC_BUILDDIR)/libgadget.a:  $(PERIODIC_BUILDDIR)/Makefile $(PERIODIC_BUILDDIR)/makefile_options
-	make -C $(PERIODIC_BUILDDIR) all OPT="$(PERIODIC_OPT)" VPATH=../src
-	
-gadget2_worker_periodic: worker_code.cc worker_code.h interface.po $(PERIODIC_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) $< interface.po -o $@  $(PERIODIC_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(PERIODIC_BUILDDIR)/allvars.o  $(LIBS)
-
-interface.po: interface.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DPERIODIC -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)  $(LIBS)
-	
-
-$(PERIODIC_NOGRAVITY_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(PERIODIC_NOGRAVITY_BUILDDIR) 
-	cp $(SRCDIR)/Makefile $(PERIODIC_NOGRAVITY_BUILDDIR)/Makefile
-	
-$(PERIODIC_NOGRAVITY_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options 
-	-mkdir $(PERIODIC_NOGRAVITY_BUILDDIR) 
-	cp $(SRCDIR)/makefile_options $(PERIODIC_NOGRAVITY_BUILDDIR)/makefile_options
-	
-$(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a:  $(PERIODIC_NOGRAVITY_BUILDDIR)/Makefile $(PERIODIC_NOGRAVITY_BUILDDIR)/makefile_options
-	make -C $(PERIODIC_NOGRAVITY_BUILDDIR) all OPT="$(PERIODIC_NOGRAVITY_OPT)" VPATH=../src
-	
-gadget2_worker_periodic_nogravity: worker_code.cc worker_code.h interface.pngo $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC -DNOGRAVITY $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) $< interface.pngo -o $@  $(PERIODIC_NOGRAVITY_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas  $(LIBS) $(PERIODIC_NOGRAVITY_BUILDDIR)/allvars.o
-
-interface.pngo: interface.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DPERIODIC -DNOGRAVITY -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)  $(LIBS)
-	
-
-$(NOGRAVITY_BUILDDIR)/Makefile: $(SRCDIR)/Makefile 
-	-mkdir $(NOGRAVITY_BUILDDIR)
-	cp $(SRCDIR)/Makefile $(NOGRAVITY_BUILDDIR)/Makefile
-
-$(NOGRAVITY_BUILDDIR)/makefile_options: $(SRCDIR)/makefile_options 
-	-mkdir $(NOGRAVITY_BUILDDIR)
-	cp $(SRCDIR)/makefile_options $(NOGRAVITY_BUILDDIR)/makefile_options
-
-$(NOGRAVITY_BUILDDIR)/libgadget.a:  $(NOGRAVITY_BUILDDIR)/Makefile $(NOGRAVITY_BUILDDIR)/makefile_options
-	make -C $(NOGRAVITY_BUILDDIR) all OPT="$(NOGRAVITY_OPT)" VPATH=../src
-
-gadget2_worker_nogravity: worker_code.cc worker_code.h interface.ngo $(NOGRAVITY_BUILDDIR)/libgadget.a  $(INTERFACE_SRC) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) -DNOGRAVITY $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) $< interface.ngo -o $@  $(NOGRAVITY_BUILDDIR)/libgadget.a  $(SC_MPI_CLIBS) $(GSL_LIBS) -lgsl -lgslcblas $(NOGRAVITY_BUILDDIR)/allvars.o  $(LIBS)
-
-interface.ngo: interface.cc $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) -DNOGRAVITY -c -o $@ $< $(SC_MPI_CLIBS) $(GSL_LIBS)  $(LIBS)
-
+	$(CODE_GENERATOR) --type=h $< -i amuse.support.codes.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 

@@ -556,7 +556,7 @@ class TestPH4(TestWithMPI):
             self.assertTrue(collisions.is_set())
             self.assertTrue(instance.model_time < 0.5 | nbody_system.time)
             self.assertEquals(len(collisions.particles(0)), 1)
-            self.assertEquals(len(collisions.particles(0)), 1)
+            self.assertEquals(len(collisions.particles(1)), 1)
             self.assertEquals(len(instance.particles - collisions.particles(0) - collisions.particles(1)), 5 - i)
             self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) < 
                 (collisions.particles(0).radius + collisions.particles(1).radius), True)

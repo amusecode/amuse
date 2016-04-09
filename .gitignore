@@ -317,6 +317,7 @@ src/amuse/community/rebound/src/
 src/amuse/community/tupan/install/
 src/amuse/community/tupan/tupan/
 src/amuse/community/rebound/rebound_worker
+src/amuse/community/octgrav/worker_code.h
 data/mesa/output/star_data/starting_models/*.data
 doc/examples/
 doc/build/
@@ -325,6 +326,32 @@ doc/amuse_examples
 /nbody6xx.input
 /test_results
 autom4te.cache/
+src/amuse/community/hermite0/hermite0_cython.c
+src/amuse/community/hermite0/hermite0_cython.pyx
+src/amuse/community/hermite0/hermite0_worker
+src/amuse/community/hermite0/hermite0_worker_cython
+src/amuse/community/huayno/huayno_cython.c
+src/amuse/community/huayno/huayno_cython.pyx
+src/amuse/community/huayno/huayno_worker_cython
+src/amuse/community/kepler/kepler_cython.cc
+src/amuse/community/kepler/kepler_cython.pyx
+src/amuse/community/kepler/kepler_worker_cython
+src/amuse/community/rebound/rebound_cython.cc
+src/amuse/community/rebound/rebound_cython.pyx
+src/amuse/community/rebound/rebound_worker_cython
+src/amuse/community/seba/seba_cython.cc
+src/amuse/community/seba/seba_cython.pyx
+src/amuse/community/seba/seba_worker_cython
+src/amuse/community/bhtree/bhtree_cython.c
+src/amuse/community/bhtree/bhtree_cython.pyx
+src/amuse/community/bhtree/bhtree_worker_cython
+src/amuse/community/aarsethzare/aarsethzare_c.f90
+src/amuse/community/aarsethzare/aarsethzare_cython.c
+src/amuse/community/aarsethzare/aarsethzare_cython.pyx
+src/amuse/community/aarsethzare/aarsethzare_worker_cython
+lib/sapporo_2/src/sapporo2-master
+lib/sapporo_2/src/master.tgz
+
 
 
 #files generated during documentation build
@@ -337,6 +364,7 @@ examples/simple/*.hdf
 log.?
 fort.*
 Capreole.log
+*.log
 test.dyn
 test.csv
 test_unit.dyn
@@ -348,7 +376,20 @@ data/gadget2/output/info.txt
 data/gadget2/output/timings.txt
 data/adaptb/output/file.log
 data/adaptb/output/file.out
+data/galactics/output/model-*
 examples/syllabus/*.h5
 SeBa.data
 binev.data
 daltons.txt
+riken
+test_distributed_particles
+test_python_implementation
+data/mocassin/output/*.out
+data/mocassin/output/tmp_abundancies_file
+data/halogen/output/test*.out
+data/halogen/output/test*.ascii
+data/gadget2/output/ewald_spc_table_64_dbl.dat
+core
+core.*
+
+
