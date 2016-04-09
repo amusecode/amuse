@@ -3907,12 +3907,12 @@ class FiMap(CommonCode):
             default_value = 0.001 | generic_unit_system.length
         )
 
-        object.add_method_parameter(
+        object.add_boolean_parameter(
             "get_extinction_flag", 
             "set_extinction_flag",
-            "extinction flag", 
-            "extinction flag (0=no extinction, 1=with extinction)", 
-            default_value = 0
+            "extinction_flag", 
+            "extinction flag (whether to use extinction)", 
+            default_value = False
         )
 
         object.add_method_parameter(
