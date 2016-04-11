@@ -196,6 +196,11 @@ int get_total_radius(double * radius){
   return 0;
 }
 
+int new_sph_particle(int * index_of_the_particle, double mass, double x, 
+  double y, double z, double vx, double vy, double vz, double radius){
+  return 0;
+}
+
 int new_particle(int * index_of_the_particle, double mass, double x, 
   double y, double z, double vx, double vy, double vz, double radius){
   n_loc = system_grav.getNumberOfParticleLocal();
@@ -355,6 +360,19 @@ int synchronize_model(){
   return 0;
 }
 
+int set_internal_energy(int index_of_the_particle, double u, int length){
+  return 0;
+}
+
+int get_internal_energy(int index_of_the_particle, double * u, int * length){
+  return 0;
+}
+
+int set_state_sph(int index_of_the_particle, double mass, double x, double y, 
+  double z, double vx, double vy, double vz, double u){
+  return 0;
+}
+
 int set_state(int index_of_the_particle, double mass, double x, double y, 
   double z, double vx, double vy, double vz, double radius){
   int j = get_inverse_id(index_of_the_particle);
@@ -373,6 +391,12 @@ int set_state(int index_of_the_particle, double mass, double x, double y,
     return 0;
   }
   return -1;
+}
+
+int get_state_sph(int index_of_the_particle, double * mass, double * x, 
+  double * y, double * z, double * vx, double * vy, double * vz, 
+  double * u){
+  return 0;
 }
 
 int get_state(int index_of_the_particle, double * mass, double * x, 
