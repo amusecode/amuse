@@ -7,7 +7,7 @@ import numpy
 import time
 import math
 
-from amuse.community.fdps_sd.interface import FDPSInterface, FDPS
+from amuse.community.fdps.interface import FDPSInterface, FDPS
 from amuse.support.exceptions import AmuseException
 from amuse.units import constants
 from amuse.units import nbody_system
