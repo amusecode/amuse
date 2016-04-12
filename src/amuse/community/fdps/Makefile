@@ -40,7 +40,9 @@ endif
 
 download:
 	$(DOWNLOAD_FROM_WEB)
-	#$(PATCH_FILES)
+	tr -d '\r' < src/FDPS/sample/nbody/Makefile > src/FDPS/sample/nbody/Makefile.tmp
+	mv src/FDPS/sample/nbody/Makefile.tmp src/FDPS/sample/nbody/Makefile
+	$(PATCH_FILES)
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
