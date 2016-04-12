@@ -11,7 +11,12 @@ class FDPSInterface(
         #StoppingConditionInterface,
         #SinglePointGravityFieldInterface,
         ):
-    
+    """
+    FDPS - a general-purpose, high-performance library for particle simulations
+
+    .. [#] Iwasawa, M., Tanikawa, A., Hosono, N., Nitadori, K., Muranushi, T., Makino, J., *arXiv*, 1601.03138
+
+    """
     include_headers = ['worker_code.h']
     
     def __init__(self, **options):
@@ -19,6 +24,7 @@ class FDPSInterface(
                 self,
                 name_of_the_worker="fdps_worker", 
                 **options)
+        LiteratureReferencesMixIn.__init__(self)
     
 #    @legacy_function
 #    def get_number_of_particles():
