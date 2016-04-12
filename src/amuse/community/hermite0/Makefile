@@ -39,7 +39,7 @@ hermite0_worker_cython: hermite0_cython.so
 	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.hermite0.interface HermiteInterface -o $@ --cython-import hermite0_cython
 	
 hermite0_cython.so: hermite0_cython.o worker_code.h  $(CODELIB) $(A_OBJS)
-	$(MPICC) -shared $(CFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) hermite0_cython.o $(A_OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(AM_LIBS)
+	$(MPICXX) -shared $(CFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) hermite0_cython.o $(A_OBJS) $(CODELIB) -o $@ $(SC_CLIBS) $(AM_LIBS)
 
 hermite0_cython.o: hermite0_cython.c worker_code.h
 	$(MPICC) $(CFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
