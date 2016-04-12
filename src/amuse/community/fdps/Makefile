@@ -17,6 +17,7 @@ LIB_OBJ = $(CODEDIR)/sample/nbody/nbody.o
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_http.py
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
+PATCH_FILES = $(PYTHON) ./patch_files.py
 
 all: fdps_worker 
 
