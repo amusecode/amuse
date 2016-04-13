@@ -111,12 +111,9 @@ class ReboundInterface(CodeInterface,
 
     SOLVERS = {"none": 0, "basic": 1, "compensated": 2, "tree": 3}
     def set_solver(self, name, code_index = 0 ):
-        print "set_solver name: %s code_index: %i"%(name,code_index)
-        print self.SOLVERS[name]
         return self._set_solver(self.SOLVERS[name], code_index)
     
     def get_solver(self, code_index = 0):
-        print "get_solver code_index: %i"%code_index
         value, error = self._get_solver(code_index)
         for key, index in self.SOLVERS.iteritems():
             if value == index:
