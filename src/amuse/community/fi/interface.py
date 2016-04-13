@@ -4091,7 +4091,13 @@ class FiMap(CommonCode):
         object.add_transition('IMAGE','INITIALIZED','reset_map')
         object.add_method('IMAGE','get_image')
         object.add_method('IMAGE','get_opdepth_map')
-        
+        object.add_method('PROJ', 'new_particle')
+        object.add_method('PROJ', 'delete_particle')
+        object.add_method('PROJ', 'set_state')
+        object.add_method('PROJ', 'set_weight')
+        object.add_method('PROJ', 'set_opacity_area')
+
         object.add_method('INITIALIZED', 'before_set_parameter')  
         object.add_method('PROJ', 'before_get_parameter')
         object.add_method('PROJ', 'get_image_pixel_size')
+        object.add_method('IMAGE', 'get_image_pixel_size')
