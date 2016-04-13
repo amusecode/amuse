@@ -3,6 +3,7 @@ import numpy
 from amuse.test import amusetest
 from amuse.units import units, quantities
 from amuse.datamodel.particles import Particles, Particle
+from amuse.community.sse.interface import SSE
 
 from amuse.ext import stellar_wind
 
@@ -15,7 +16,7 @@ from amuse.support.console import set_printing_strategy
 class TestStellarWind(amusetest.TestCase):
     def setUp(self):
         set_preferred_units(units.MSun, units.RSun, units.yr, units.kms,
-                            units.kms**2, units.m/units.s**2, units.W, units.J)
+                            units.kms**2, units.m/units.s**2, units.W, units.erg)
 
     def skip_no_scipy(self):
         try:
@@ -61,6 +62,8 @@ class TestStellarWind(amusetest.TestCase):
 
     def tearDown(self):
         set_printing_strategy('default')
+
+
 class TestStarsWithMassLoss(TestStellarWind):
     def test_add_particles(self):
         star_particles = self.create_star(2)
@@ -769,7 +772,7 @@ class TestAcceleratingWind(TestStellarWind):
         self.assertAlmostEquals(result, expected)
 
 
-class TestMechanicalLuminosityWind(TestStellarWind):
+class TestHeatingWind(TestStellarWind):
     def test_wind_creation(self):
         numpy.random.seed(123456789)
         star = self.create_star()
@@ -805,3 +808,57 @@ class TestMechanicalLuminosityWind(TestStellarWind):
         self.assertLessEqual(max_dist, r_max + star.radius)
 
         self.assertAllAlmostEqual(wind.u, expected_u)
+
+    def test_supernova(self):
+        numpy.random.seed(123456789)
+
+        stars = Particles(2)
+        stars.mass = [9, 10] | units.MSun
+        stars[0].position = [1, 1, 1] | units.parsec
+        stars[1].position = [-1, -1, -1] | units.parsec
+        stars[0].velocity = [-1000, 0, 1000] | units.ms
+        stars[1].velocity = [0, 0, 0] | units.ms
+
+        stev = SSE()
+        stars = stev.particles.add_particles(stars)
+
+        r_max = .1 | units.parsec
+        star_wind = stellar_wind.new_stellar_wind(
+            3e-5 | units.MSun,
+            mode="heating",
+            r_max=r_max,
+            derive_from_evolution=True,
+            tag_gas_source=True
+            )
+        star_wind.particles.add_particles(stars)
+
+        chan = stev.particles.new_channel_to(
+            star_wind.particles,
+            attributes=["age", "radius", "mass", "luminosity", "temperature", "stellar_type"])
+
+
+        dt = 5 | units.Myr
+        t = 0 | units.Myr
+        t_end = 31 | units.Myr
+
+        wind_N = []
+        while t < t_end:
+            stev.evolve_model(t)
+            chan.copy()
+            star_wind.evolve_model(t)
+            if star_wind.has_new_wind_particles():
+                wind = star_wind.create_wind_particles()
+                wind_1 = wind[wind.source == stars[0].key]
+                wind_2 = wind - wind_1
+                wind_N.append([len(wind_1), len(wind_2)])
+                if len(wind_2) > 0:
+                    print "time", t, "wind energy", (wind_2.u * wind_2.mass).sum()
+            else:
+                wind_N.append([0, 0])
+
+            t += dt
+
+        self.assertEqual(wind_N, [[0, 0], [37, 335], [215, 429], [310, 589], [416, 887], [597, 6318], [2823, 279133]])
+        supernova = wind_2
+        sn_energy = (supernova.u * supernova.mass).sum()
+        self.assertAlmostRelativeEqual(sn_energy, 1e49 | units.erg, 2)

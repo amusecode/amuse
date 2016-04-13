@@ -165,6 +165,7 @@ class StarsWithMassLoss(Particles):
                                              "age",
                                              "temperature",
                                              "luminosity",
+                                             "stellar_type",
                                              "x",
                                              "y",
                                              "z",
@@ -181,6 +182,7 @@ class StarsWithMassLoss(Particles):
                                       age=0 | units.Myr,
                                       temperature=0 | units.K ,
                                       luminosity = 0 | units.LSun,
+                                      stellar_type = 1 | units.stellar_type,
                                       x=0 | units.m,
                                       y=0 | units.m,
                                       z=0 | units.m,
@@ -202,8 +204,8 @@ class StarsWithMassLoss(Particles):
 
         return new_particles
 
-    # def can_extend_attributes(self):
-        # return False
+    def can_extend_attributes(self):
+        return False
 
     def get_attribute_names_defined_in_store(self):
         return list(self._private.attribute_names) if len(self) > 0 else []
@@ -1047,17 +1049,28 @@ class HeatingWind(SimpleWind):
         self.previous_time = 0 | units.Myr
         self.particles.track_mechanical_energy()
 
+        self.supernova_energy = 1e51 | units.erg
+
     def evolve_particles(self):
         self.particles.evolve_mass_loss(self.model_time)
 
+    def went_supernova(self, star, mass_lost):
+        post_SN = star.stellar_type in [13, 14, 15] | units.stellar_type
+        enough_lost = mass_lost > (.1 | units.MSun)
+
+        return post_SN and enough_lost
+
     def mechanical_internal_energy(self, star, wind):
         mass_lost = wind.mass.sum()
-        mechanical_energy_to_remove = star.mechanical_energy / (
-            star.lost_mass/mass_lost + 1)
-        star.mechanical_energy -= mechanical_energy_to_remove
+        lmech = star.mechanical_energy
 
-        return (self.feedback_efficiency * mechanical_energy_to_remove
-                / mass_lost)
+        lmech_wind = lmech / (star.lost_mass/mass_lost + 1)
+        star.mechanical_energy -= lmech_wind
+
+        if self.went_supernova(star, mass_lost):
+            lmech_wind = self.supernova_energy
+
+        return self.feedback_efficiency * lmech_wind / mass_lost
 
     def wind_sphere(self, star, Ngas):
         wind = Particles(Ngas)
