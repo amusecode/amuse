@@ -3424,6 +3424,15 @@ class FiMapInterface(CodeInterface):
         return function
 
     @legacy_function    
+    def set_opacity_area():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('opacity_area', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
     def get_state():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
@@ -3713,6 +3722,16 @@ class FiMap(CommonCode):
               )
         )
         object.add_method(
+             'set_opacity_area', 
+              (
+                object.INDEX,                    
+                generic_unit_system.length**2,
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
              'get_state', 
               (
                 object.INDEX,
@@ -3857,6 +3876,7 @@ class FiMap(CommonCode):
         object.set_delete('particles', 'delete_particle')
         object.add_setter('particles', 'set_state')
         object.add_setter('particles', 'set_weight')
+        object.add_setter('particles', 'set_opacity_area')
         object.add_getter('particles', 'get_state')
 
 
@@ -3887,12 +3907,12 @@ class FiMap(CommonCode):
             default_value = 0.001 | generic_unit_system.length
         )
 
-        object.add_method_parameter(
+        object.add_boolean_parameter(
             "get_extinction_flag", 
             "set_extinction_flag",
-            "extinction flag", 
-            "extinction flag (0=no extinction, 1=with extinction)", 
-            default_value = 0
+            "extinction_flag", 
+            "extinction flag (whether to use extinction)", 
+            default_value = False
         )
 
         object.add_method_parameter(
@@ -4066,11 +4086,18 @@ class FiMap(CommonCode):
         object.add_transition('IMAGE','PROJ','delete_particle',False)        
         object.add_transition('IMAGE','PROJ','set_state',False)
         object.add_transition('IMAGE','PROJ','set_weight',False)
+        object.add_transition('IMAGE','PROJ','set_opacity_area',False)
         object.add_transition('PROJ','INITIALIZED','reset_map')
         object.add_transition('IMAGE','INITIALIZED','reset_map')
         object.add_method('IMAGE','get_image')
         object.add_method('IMAGE','get_opdepth_map')
-        
+        object.add_method('PROJ', 'new_particle')
+        object.add_method('PROJ', 'delete_particle')
+        object.add_method('PROJ', 'set_state')
+        object.add_method('PROJ', 'set_weight')
+        object.add_method('PROJ', 'set_opacity_area')
+
         object.add_method('INITIALIZED', 'before_set_parameter')  
         object.add_method('PROJ', 'before_get_parameter')
         object.add_method('PROJ', 'get_image_pixel_size')
+        object.add_method('IMAGE', 'get_image_pixel_size')

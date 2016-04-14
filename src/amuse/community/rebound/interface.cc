@@ -613,7 +613,7 @@ int get_radius(int index_of_the_particle, double * radius){
 int get_subset(int index_of_the_particle, int * subset){
     
     particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {*subset = 0; return -1;}
+    if(loc.index < 0) {*subset = -2; return -1;}
     *subset = loc.subset;
     return 0;
 }
