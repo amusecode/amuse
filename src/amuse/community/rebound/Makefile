@@ -34,7 +34,7 @@ $(CODEDIR)/Makefile:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
-	@echo "DOWNLOAD_CODES is not set. Rebound will not be downloaded and build."
+	@echo "DOWNLOAD_CODES is not set. Rebound will not be downloaded and built."
 	@echo "If you do want Rebound, set DOWNLOAD_CODES to 1."
 	@echo "bash> export DOWNLOAD_CODES=1"
 	@echo "csh> setenv DOWNLOAD_CODES 1"
