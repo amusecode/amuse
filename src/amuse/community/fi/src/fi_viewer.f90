@@ -481,7 +481,7 @@ end subroutine attachmenu
 function starscale() result(box)
 
 	include 'globals.h'
-	real(kind=gldouble) :: maxcor,maxcorg,maxcors,box
+  real(kind=gldouble) :: maxcor=0,maxcorg=0,maxcors=0,box
 ! schaal:
 	maxcor=maxval(abs(pos(1:nbodies,1:3)))	
 	if(maxcor.le.0) maxcor=1.
