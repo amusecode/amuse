@@ -636,10 +636,10 @@ class TestCImplementationInterface(TestWithMPI):
     def test7d(self):
         instance = ForTestingInterface(self.exefile)
 
-        out, error = instance.echo_string(["abc"]*100)
+        out, error = instance.echo_string(["abc"]*100000)
         
-        self.assertEquals(error, [0]*100)
-        self.assertEquals(out, ["abc"]*100)
+        self.assertEquals(error, [0]*100000)
+        self.assertEquals(out, ["abc"]*100000)
 
         instance.stop()
 
