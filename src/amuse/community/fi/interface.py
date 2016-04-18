@@ -1582,12 +1582,32 @@ class GlFiInterface(FiInterface):
         return function;
 
     @legacy_function   
+    def set_image_target():
+        """ target point of image """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.addParameter('y', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.addParameter('z', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
     def get_viewpoint():
         """ camera position (for perspective proj) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('x', dtype='d', direction=function.OUT, unit=nbody_system.length)
         function.addParameter('y', dtype='d', direction=function.OUT, unit=nbody_system.length)
         function.addParameter('z', dtype='d', direction=function.OUT, unit=nbody_system.length)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def set_viewpoint():
+        """ camera position (for perspective proj) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.addParameter('y', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.addParameter('z', dtype='d', direction=function.IN, unit=nbody_system.length)
         function.result_type = 'i'
         return function;
 
@@ -1605,7 +1625,15 @@ class GlFiInterface(FiInterface):
     def get_image_angle():
         """ angle of image in x direction (for perpective proj.) """            
         function = LegacyFunctionSpecification()  
-        function.addParameter('image_angle', dtype='d', direction=function.OUT, unit=None)
+        function.addParameter('image_angle', dtype='d', direction=function.OUT, unit=units.deg)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def set_image_angle():
+        """ angle of image in x direction (for perpective proj.) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('image_angle', dtype='d', direction=function.IN, unit=units.deg)
         function.result_type = 'i'
         return function;
 
@@ -3278,17 +3306,17 @@ class FiViewer(Fi):
 
         object.add_method_parameter(
             "get_viewpoint",
-            None,
+            "set_viewpoint",
             "viewpoint",
-            "viewpoint (location of the camera, readonly)",
+            "viewpoint (location of the camera)",
             [0,1,0] | nbody_system.length, is_vector=True
         )
 
         object.add_method_parameter(
             "get_image_target",
-            None,
+            "set_image_target",
             "image_target",
-            "image_target (location the camera points to, readonly)",
+            "image_target (location the camera points to)",
             [0,0,0] | nbody_system.length, is_vector=True
         )
         
@@ -3302,10 +3330,10 @@ class FiViewer(Fi):
 
         object.add_method_parameter(
             "get_image_angle", 
-            None,
+            "set_image_angle",
             "image_angle", 
-            "image angle - vertical!! (readonly)", 
-            default_value = 45
+            "image angle - vertical (?)!! ", 
+            default_value = 45 | units.deg
         )
         
         object.add_method_parameter(
@@ -3504,14 +3532,14 @@ class FiMapInterface(CodeInterface):
     def set_image_angle():
         """ angle of image in x direction (for perpective proj.) """            
         function = LegacyFunctionSpecification()  
-        function.addParameter('image_angle', dtype='d', direction=function.IN)
+        function.addParameter('image_angle', dtype='d', direction=function.IN,unit=units.deg)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_image_angle():
         """ angle of image in x direction (for perpective proj.) """            
         function = LegacyFunctionSpecification()  
-        function.addParameter('image_angle', dtype='d', direction=function.OUT)
+        function.addParameter('image_angle', dtype='d', direction=function.OUT,unit=units.deg)
         function.result_type = 'i'
         return function;
 
@@ -3920,7 +3948,7 @@ class FiMap(CommonCode):
             "set_image_angle",
             "image_angle", 
             "image angle - horizontal (used in perspective proj.)", 
-            default_value = 45
+            default_value = 45 | units.deg
         )
 
         object.add_method_parameter(
