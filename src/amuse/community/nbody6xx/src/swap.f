@@ -1,3 +1,0 @@
-      SUBROUTINE SWAP
-      RETURN
-      END
