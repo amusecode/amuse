@@ -114,7 +114,9 @@ if [ ! -e "installed" ]; then
         cd openssl-${OPENSSLVERSION}
         
         ./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
-        
+        if [ ${ARCHITECTURE} == 'x86_64' ]; then
+            ./Configure linux-x86_64 --prefix=${INSTALLDIR} --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+        fi
         make || exit $?
         
         make install  || exit $?
