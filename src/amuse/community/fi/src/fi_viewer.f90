@@ -12,7 +12,8 @@ implicit none
            MouseClickMotion,NormalKeyUp,menu_handler             !  to  'take over'
  public :: freeflightQ, leftbuttonQ, rightbuttonQ,slewQ,outputtext
  public :: request_refresh,refresh
- public :: spot,cam, viewangle,ratio                                            
+ public :: spot,cam, viewangle,ratio
+ public :: set_rfitheta, pointCamera                                            
                                                      
 integer, parameter :: MouseMovementScale=200
 real(kind=gldouble), parameter :: curveScale=0.02
@@ -47,6 +48,23 @@ subroutine request_refresh()
   refresh=.TRUE.
 end subroutine
 
+subroutine set_rfitheta(newspot,newcam)
+  real(kind=gldouble), dimension(3), intent(in) :: newspot,newcam
+  real(kind=gldouble) :: x,y,z
+  
+  x=newcam(1)-newspot(1)
+  y=newcam(2)-newspot(2)
+  z=newcam(3)-newspot(3)
+  r=(x**2+y**2+z**2)**0.5
+  theta=asin(z/r)
+  fi=atan2(x,y)
+  spot=newspot
+  cam=newcam
+  call request_refresh()
+  
+end subroutine
+
+
 subroutine rotate(moving,fixed,r,fi,theta)
   real(kind=gldouble), dimension(3), intent(inout) :: moving
   real(kind=gldouble), dimension(3), intent(in) :: fixed
@@ -77,6 +95,9 @@ end function distance2
 
 subroutine pointCamera()
 
+ call glMatrixMode(GL_PROJECTION)
+ call glLoadIdentity()
+ call gluPerspective(viewangle, ratio, nearplane, farplane)
  call glMatrixMode(GL_MODELVIEW)
  call glLoadIdentity()
  call gluLookAt( cam(1), cam(2), cam(3), &
@@ -92,9 +113,6 @@ subroutine ReshapeWindow( width, height)
  if(height.LT.1) height=1
  ratio=width/real(height)
  call glViewPort(0,0,width,height)
- call glMatrixMode(GL_PROJECTION)
- call glLoadIdentity()
- call gluPerspective(viewangle, ratio, nearplane, farplane);
  call pointCamera()
  
 end subroutine ReshapeWindow
@@ -160,9 +178,6 @@ subroutine MouseClickMotion(x,y)
   viewangle=viewangle*(1+(y-mousexyzero(2))/MouseMovementScale)
   if(viewangle.LT.1) viewangle=1
   if(viewangle.GT.120) viewangle=120
-  call glMatrixMode(GL_PROJECTION)
-  call glLoadIdentity()
-  call gluPerspective(viewangle, ratio, nearplane, farplane)
  endif
  mousexyzero(1)=x;mousexyzero(2)=y;
  call pointCamera
@@ -481,7 +496,7 @@ end subroutine attachmenu
 function starscale() result(box)
 
 	include 'globals.h'
-	real(kind=gldouble) :: maxcor,maxcorg,maxcors,box
+  real(kind=gldouble) :: maxcor=0,maxcorg=0,maxcors=0,box
 ! schaal:
 	maxcor=maxval(abs(pos(1:nbodies,1:3)))	
 	if(maxcor.le.0) maxcor=1.
@@ -536,6 +551,7 @@ recursive subroutine check_for_refresh(dummy)
     refresh=.FALSE.
     call selectparticles
     call prerender
+    call pointCamera
     call glutPostRedisplay
   endif
   call glutTimerFunc(100,check_for_refresh,0)
@@ -997,11 +1013,36 @@ function get_image_target(x,y,z) result(ret)
   ret=0
 end function
 
+function set_image_target(x,y,z) result(ret)
+  use viewer
+  real :: x,y,z, newspot(3),newcam(3)
+  integer :: ret
+  newspot(1)=x;
+  newspot(2)=y;
+  newspot(3)=z
+  newcam=cam
+  call set_rfitheta(newspot,newcam)
+  ret=0
+end function
+
 function get_viewpoint(x,y,z) result(ret)
   use viewer
   real :: x,y,z
   integer :: ret
   x=cam(1);y=cam(2);z=cam(3)
+  ret=0
+end function
+
+function set_viewpoint(x,y,z) result(ret)
+  use viewer
+  real :: x,y,z
+  real :: newspot(3),newcam(3)
+  integer :: ret
+  newcam(1)=x
+  newcam(2)=y
+  newcam(3)=z
+  newspot=spot
+  call set_rfitheta(newspot,newcam)
   ret=0
 end function
 
@@ -1012,11 +1053,25 @@ function get_upvector(x,y,z) result(ret)
   ret=0
 end function
 
+function set_upvector(x,y,z) result(ret)
+  real :: x,y,z
+  integer :: ret
+  ret=-2
+end function
+
 function get_image_angle(x) result(ret)
   use viewer
   real :: x
   integer :: ret
   x=viewangle
+  ret=0
+end function
+
+function set_image_angle(x) result(ret)
+  use viewer
+  real :: x
+  integer :: ret
+  viewangle=x
   ret=0
 end function
 

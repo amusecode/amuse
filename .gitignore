@@ -317,6 +317,7 @@ src/amuse/community/rebound/src/
 src/amuse/community/tupan/install/
 src/amuse/community/tupan/tupan/
 src/amuse/community/rebound/rebound_worker
+src/amuse/community/octgrav/worker_code.h
 data/mesa/output/star_data/starting_models/*.data
 doc/examples/
 doc/build/
@@ -388,5 +389,7 @@ data/mocassin/output/tmp_abundancies_file
 data/halogen/output/test*.out
 data/halogen/output/test*.ascii
 data/gadget2/output/ewald_spc_table_64_dbl.dat
+core
+core.*
 
 

@@ -34,7 +34,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py KeplerInterface -o $@
 
 interface.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py KeplerInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py KeplerInterface -o $@
 
 kepler_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(LIBS)
@@ -52,7 +52,7 @@ kepler_cython.pyx: interface.py interface.h
 	$(CODE_GENERATOR) --type=cython -m mpi interface.py KeplerInterface -o $@
 
 kepler_cython.cc: kepler_cython.pyx
-	$(CYTHON) --cplus $< -o $@
+	$(CYTHON) $< -o $@
 
 
 

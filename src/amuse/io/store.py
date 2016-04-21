@@ -52,8 +52,8 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         if self.version == '1.0':
             processor = store_v1.StoreHDF(
                 self.filename, 
-                False, 
-                open_for_writing = False, 
+                open_for_writing = self.allow_writing, 
+                append_to_file = self.allow_writing,
                 copy_history = self.copy_history
             )
             if not processor.is_correct_version():
@@ -61,20 +61,20 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                 processor.close()
                 processor = store_v2.StoreHDF(
                     self.filename, 
-                    False, 
-                    open_for_writing = False, 
+                    open_for_writing = self.allow_writing, 
+                    append_to_file = self.allow_writing, 
                     copy_history = self.copy_history,
                     return_working_copy = self.return_working_copy
                 )
         else:
                 processor = store_v2.StoreHDF(
                     self.filename, 
-                    False, 
-                    open_for_writing = False, 
+                    open_for_writing = self.allow_writing, 
+                    append_to_file = self.allow_writing,
                     copy_history = self.copy_history,
                     return_working_copy = self.return_working_copy
                 )
-	    
+     
         if len(self.names) > 0:
             result = processor.load_sets(self.names)
             if self.close_file:
@@ -91,6 +91,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                 processor.close()
         return processor, result
         
+
     def store(self):
         
         if self.version == '1.0':
@@ -161,7 +162,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         savepoint etc. Only available for version 2.0 in version 1.0
         a working copy (i.e. a particles set or grid in memory)
         is always returned. (default: False)"""
-        return False
+        return True
     
     @base.format_option
     def return_context(self):
@@ -178,3 +179,9 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         Usefull for cases where close_file == False. (default: False)"""
         return False
         
+    @base.format_option
+    def allow_writing(self):
+        """If set to True, data can be written to the file, even if read_set_from_file is used"""
+        return False
+
+

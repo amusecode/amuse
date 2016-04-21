@@ -48,7 +48,6 @@ def get_code_class(rank, codes):
             index += x.number_of_workers
     return None
             
-       
             
 def start_all(codes):
     
@@ -107,3 +106,7 @@ def start_all(codes):
         instance.start()
         
         return None
+        
+def stop_all(instances):
+    for x in instances:
+        x.stop()

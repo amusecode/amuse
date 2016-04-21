@@ -279,11 +279,10 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEqual(error, 0)
         self.assertEqual(value, 2.)
         
-        self.assertEqual(instance.get_periodic_boundaries_flag()['value'], False) # default, has to be changed for periodic runs
-        self.assertEqual(instance.commit_parameters(), -4)
-        instance.set_periodic_boundaries_flag(True)
-        self.assertEqual(instance.get_periodic_boundaries_flag()['value'], True)
-        self.assertEqual(instance.recommit_parameters(), 0)
+        self.assertEqual(instance.get_periodic_boundaries_flag()['value'], True) 
+        self.assertEqual(instance.set_periodic_boundaries_flag(True),-2) # read-only
+        self.assertEqual(instance.get_nogravity()['no_gravity_flag'], True)
+        self.assertEqual(instance.commit_parameters(), 0)
         ids,err=instance.new_particle( 
            [1.0,1.0,1.0],
            [0.5,0.0,0.0],
@@ -318,9 +317,7 @@ class TestGadget2Interface(TestWithMPI):
         
         self.assertEqual(instance.get_periodic_boundaries_flag()['value'], False) # default, has to be changed for periodic runs
         self.assertEqual(instance.commit_parameters(), 0)
-        instance.set_periodic_boundaries_flag(True)
-        self.assertEqual(instance.get_periodic_boundaries_flag()['value'], True)
-        self.assertEqual(instance.recommit_parameters(), -4)
+        self.assertEqual(instance.set_periodic_boundaries_flag(True), -2) # read-only
         instance.stop()
         
     
@@ -468,7 +465,6 @@ class TestGadget2(TestWithMPI):
         
         for par, value in [('gadget_cell_opening_flag', True), 
                 ('comoving_integration_flag', False), 
-                ('periodic_boundaries_flag', False),
                 ('interpret_kicks_as_feedback', False),
                 ('interpret_heat_as_feedback', True)]:
             self.assertTrue(value is getattr(instance.parameters, par))
@@ -525,6 +521,7 @@ class TestGadget2(TestWithMPI):
         for par, value in [ ('no_gravity_flag', testing_isotherm_no_gravity),
                             ('isothermal_flag', testing_isotherm_no_gravity),
                             ('eps_is_h_flag',   False),
+                            ('periodic_boundaries_flag', False),
                             ('code_mass_unit',     self.default_converter.to_si(generic_unit_system.mass)),
                             ('code_length_unit',   self.default_converter.to_si(generic_unit_system.length)),
                             ('code_time_unit',     self.default_converter.to_si(generic_unit_system.time)),
@@ -826,17 +823,9 @@ class TestGadget2(TestWithMPI):
     def test16(self):
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
             **few_particles_default_options)
-        self.assertEqual(instance.parameters.periodic_boundaries_flag, True) # Automatically set correctly by initialize_code()
-        instance.parameters.periodic_boundaries_flag = False # but we are stubborn...
-        self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
-        self.assertRaises(AmuseException, instance.commit_parameters, expected_message = "Error when "
-            "calling 'commit_parameters' of a 'Gadget2', errorcode is -4, error is 'Parameter check failed.'")
-        instance.parameters.periodic_boundaries_flag = True
-        instance.commit_parameters() # Now it's ok again.
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, True) 
+        instance.commit_parameters() # its ok because read-only
         instance.dm_particles.add_particles(self.three_particles_IC)
-        instance.parameters.periodic_boundaries_flag = False # suppose we are REALLY stubborn...
-        self.assertRaises(AmuseException, instance.evolve_model, 1.0 | generic_unit_system.time, expected_message = "Error when "
-            "calling 'recommit_parameters' of a 'Gadget2', errorcode is -4, error is 'Parameter check failed.'")
         instance.stop()
     
     def test17(self):

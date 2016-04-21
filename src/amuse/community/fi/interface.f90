@@ -2,7 +2,7 @@ MODULE AmuseInterface
     use MuseHelpers
     
     integer, external :: get_image_angle, get_upvector, get_image_target, &
-      get_viewpoint, get_image_ratio
+      get_viewpoint, set_viewpoint, get_image_ratio, set_image_angle, set_image_target
     
 CONTAINS
 

@@ -1582,12 +1582,32 @@ class GlFiInterface(FiInterface):
         return function;
 
     @legacy_function   
+    def set_image_target():
+        """ target point of image """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.addParameter('y', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.addParameter('z', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
     def get_viewpoint():
         """ camera position (for perspective proj) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('x', dtype='d', direction=function.OUT, unit=nbody_system.length)
         function.addParameter('y', dtype='d', direction=function.OUT, unit=nbody_system.length)
         function.addParameter('z', dtype='d', direction=function.OUT, unit=nbody_system.length)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def set_viewpoint():
+        """ camera position (for perspective proj) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('x', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.addParameter('y', dtype='d', direction=function.IN, unit=nbody_system.length)
+        function.addParameter('z', dtype='d', direction=function.IN, unit=nbody_system.length)
         function.result_type = 'i'
         return function;
 
@@ -1605,7 +1625,15 @@ class GlFiInterface(FiInterface):
     def get_image_angle():
         """ angle of image in x direction (for perpective proj.) """            
         function = LegacyFunctionSpecification()  
-        function.addParameter('image_angle', dtype='d', direction=function.OUT, unit=None)
+        function.addParameter('image_angle', dtype='d', direction=function.OUT, unit=units.deg)
+        function.result_type = 'i'
+        return function;
+
+    @legacy_function   
+    def set_image_angle():
+        """ angle of image in x direction (for perpective proj.) """            
+        function = LegacyFunctionSpecification()  
+        function.addParameter('image_angle', dtype='d', direction=function.IN, unit=units.deg)
         function.result_type = 'i'
         return function;
 
@@ -3278,17 +3306,17 @@ class FiViewer(Fi):
 
         object.add_method_parameter(
             "get_viewpoint",
-            None,
+            "set_viewpoint",
             "viewpoint",
-            "viewpoint (location of the camera, readonly)",
+            "viewpoint (location of the camera)",
             [0,1,0] | nbody_system.length, is_vector=True
         )
 
         object.add_method_parameter(
             "get_image_target",
-            None,
+            "set_image_target",
             "image_target",
-            "image_target (location the camera points to, readonly)",
+            "image_target (location the camera points to)",
             [0,0,0] | nbody_system.length, is_vector=True
         )
         
@@ -3302,10 +3330,10 @@ class FiViewer(Fi):
 
         object.add_method_parameter(
             "get_image_angle", 
-            None,
+            "set_image_angle",
             "image_angle", 
-            "image angle - vertical!! (readonly)", 
-            default_value = 45
+            "image angle - vertical (?)!! ", 
+            default_value = 45 | units.deg
         )
         
         object.add_method_parameter(
@@ -3424,6 +3452,15 @@ class FiMapInterface(CodeInterface):
         return function
 
     @legacy_function    
+    def set_opacity_area():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('opacity_area', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
     def get_state():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
@@ -3495,14 +3532,14 @@ class FiMapInterface(CodeInterface):
     def set_image_angle():
         """ angle of image in x direction (for perpective proj.) """            
         function = LegacyFunctionSpecification()  
-        function.addParameter('image_angle', dtype='d', direction=function.IN)
+        function.addParameter('image_angle', dtype='d', direction=function.IN,unit=units.deg)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_image_angle():
         """ angle of image in x direction (for perpective proj.) """            
         function = LegacyFunctionSpecification()  
-        function.addParameter('image_angle', dtype='d', direction=function.OUT)
+        function.addParameter('image_angle', dtype='d', direction=function.OUT,unit=units.deg)
         function.result_type = 'i'
         return function;
 
@@ -3713,6 +3750,16 @@ class FiMap(CommonCode):
               )
         )
         object.add_method(
+             'set_opacity_area', 
+              (
+                object.INDEX,                    
+                generic_unit_system.length**2,
+              ), 
+              (
+                object.ERROR_CODE,
+              )
+        )
+        object.add_method(
              'get_state', 
               (
                 object.INDEX,
@@ -3857,6 +3904,7 @@ class FiMap(CommonCode):
         object.set_delete('particles', 'delete_particle')
         object.add_setter('particles', 'set_state')
         object.add_setter('particles', 'set_weight')
+        object.add_setter('particles', 'set_opacity_area')
         object.add_getter('particles', 'get_state')
 
 
@@ -3887,12 +3935,12 @@ class FiMap(CommonCode):
             default_value = 0.001 | generic_unit_system.length
         )
 
-        object.add_method_parameter(
+        object.add_boolean_parameter(
             "get_extinction_flag", 
             "set_extinction_flag",
-            "extinction flag", 
-            "extinction flag (0=no extinction, 1=with extinction)", 
-            default_value = 0
+            "extinction_flag", 
+            "extinction flag (whether to use extinction)", 
+            default_value = False
         )
 
         object.add_method_parameter(
@@ -3900,7 +3948,7 @@ class FiMap(CommonCode):
             "set_image_angle",
             "image_angle", 
             "image angle - horizontal (used in perspective proj.)", 
-            default_value = 45
+            default_value = 45 | units.deg
         )
 
         object.add_method_parameter(
@@ -4066,11 +4114,18 @@ class FiMap(CommonCode):
         object.add_transition('IMAGE','PROJ','delete_particle',False)        
         object.add_transition('IMAGE','PROJ','set_state',False)
         object.add_transition('IMAGE','PROJ','set_weight',False)
+        object.add_transition('IMAGE','PROJ','set_opacity_area',False)
         object.add_transition('PROJ','INITIALIZED','reset_map')
         object.add_transition('IMAGE','INITIALIZED','reset_map')
         object.add_method('IMAGE','get_image')
         object.add_method('IMAGE','get_opdepth_map')
-        
+        object.add_method('PROJ', 'new_particle')
+        object.add_method('PROJ', 'delete_particle')
+        object.add_method('PROJ', 'set_state')
+        object.add_method('PROJ', 'set_weight')
+        object.add_method('PROJ', 'set_opacity_area')
+
         object.add_method('INITIALIZED', 'before_set_parameter')  
         object.add_method('PROJ', 'before_get_parameter')
         object.add_method('PROJ', 'get_image_pixel_size')
+        object.add_method('IMAGE', 'get_image_pixel_size')
