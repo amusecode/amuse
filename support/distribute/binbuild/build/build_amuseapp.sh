@@ -22,7 +22,7 @@ PYTHONPRERELEASE=0
 PYTHONMAJORMINOR="${PYTHONMAJOR}.${PYTHONMINOR}"
 PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 
-OPENSSLVERSION="1.0.1p"
+OPENSSLVERSION="1.0.1s"
 
 if [ ${PYTHONPRERELEASE} == 1 ]; then
     FTPPATH="http://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
@@ -114,7 +114,9 @@ if [ ! -e "installed" ]; then
         cd openssl-${OPENSSLVERSION}
         
         ./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
-        
+        if [ ${ARCHITECTURE} == 'x86_64' ]; then
+            ./Configure linux-x86_64 --prefix=${INSTALLDIR} --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+        fi
         make || exit $?
         
         make install  || exit $?
