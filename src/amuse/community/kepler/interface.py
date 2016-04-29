@@ -17,6 +17,7 @@ class KeplerInterface(CodeInterface,
     # Interface specification.
 
     include_headers = ['interface.h']
+    __so_module__ = 'kepler_cython'
     
     def __init__(self, **options):
         CodeInterface.__init__(self,
@@ -651,7 +652,6 @@ class KeplerInterface(CodeInterface,
 class Kepler(CommonCode):
     
     __interface__ = KeplerInterface
-    __so_module__ = 'kepler_cython'
 
 
     def __init__(self, unit_converter = None,  **options):

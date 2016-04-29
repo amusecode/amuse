@@ -17,6 +17,7 @@ class ReboundInterface(CodeInterface,
     
     """
     include_headers = ['worker_code.h', 'stopcond.h']
+    __so_module__ = 'rebound_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="rebound_worker",
@@ -367,7 +368,6 @@ class ReboundInterface(CodeInterface,
 class Rebound(GravitationalDynamics, GravityFieldCode):
 
     __interface__ = ReboundInterface
-    __so_module__ = 'rebound_cython'
 
 
     def __init__(self, convert_nbody = None, **options):
@@ -531,6 +531,16 @@ class Rebound(GravitationalDynamics, GravityFieldCode):
             ),
             (
                 
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            'new_subset',
+            (
+                nbody_system.time,
+            ),
+            (
+                object.INDEX,
                 object.ERROR_CODE,
             )
         )
