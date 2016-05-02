@@ -443,6 +443,10 @@ class AbstractMessage(object):
     def send(self, comm):
         raise NotImplementedError
         
+    def set_error(self, message):
+        self.strings = [message]
+        self.error = True
+        
     
 class MPIMessage(AbstractMessage):
         
@@ -2049,7 +2053,7 @@ class SocketChannel(AbstractMessageChannel):
         
             #do not initialize MPI inside worker executable
             arguments.append('false')
-
+            
         logger.debug("starting process with command `%s`, arguments `%s` and environment '%s'", command, arguments, os.environ)
         self.process = Popen(arguments, executable=command, stdin=PIPE, stdout=None, stderr=None, close_fds=True)
         logger.debug("waiting for connection from worker")
