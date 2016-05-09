@@ -9,7 +9,7 @@ def main(N=10, W0=7.0, t_end=10, dt=1, filename="nbody.hdf5"):
     bodies = new_king_model(N, W0)
     bodies.scale_to_standard()
     bodies.radius = 0 |  nbody_system.length
-    gravity = ph4()
+    gravity = ph4(number_of_workers=4)
     gravity.parameters.timestep_parameter = 0.01
     gravity.particles.add_particles(bodies)
 
