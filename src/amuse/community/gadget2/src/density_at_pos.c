@@ -70,8 +70,8 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
             up = SphP[i].Hsml;
     }
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &low, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &up,  1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &low, 1, MPI_DOUBLE, MPI_MIN, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &up,  1, MPI_DOUBLE, MPI_MAX, GADGET_WORLD);
 #endif
     low *= 1.26;
     up /= 1.26;
@@ -81,7 +81,7 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
         low /= 1.26;
         hydro_state_evaluate(low, pos, vel, &low_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
-        MPI_Allreduce(MPI_IN_PLACE, &low_ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(MPI_IN_PLACE, &low_ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
 #endif
         if (iter > MAXITER)
             endrun(3210);
@@ -93,7 +93,7 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
         up *= 1.26;
         hydro_state_evaluate(up, pos, vel, &up_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
-        MPI_Allreduce(MPI_IN_PLACE, &up_ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(MPI_IN_PLACE, &up_ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
 #endif
         if (iter > MAXITER)
             endrun(3211);
@@ -107,7 +107,7 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
         h = pow(0.5 * (pow(low, 3) + pow(up, 3)), 1.0 / 3);
         hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
-        MPI_Allreduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        MPI_Allreduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
 #endif
 
         if (ngb > All.DesNumNgb){
@@ -129,12 +129,12 @@ void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_o
 //    ngb = dhsml = rho = rhov2 = rhoe = rhov[0] = rhov[1] = rhov[2] = 0;
     hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &ngb,   1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &dhsml, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &rho,   1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &rhov,  3, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &rhov2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-    MPI_Allreduce(MPI_IN_PLACE, &rhoe,  1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &ngb,   1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &dhsml, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &rho,   1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &rhov,  3, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &rhov2, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &rhoe,  1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
 #endif
 
     *h_out      = h;

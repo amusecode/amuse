@@ -27,8 +27,8 @@ int main(int argc, char **argv)
 
 #ifndef NOMPI
   MPI_Init(&argc, &argv);
-  MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
-  MPI_Comm_size(MPI_COMM_WORLD, &NTask);
+  MPI_Comm_rank(GADGET_WORLD, &ThisTask);
+  MPI_Comm_size(GADGET_WORLD, &NTask);
 #else
     ThisTask = 0;
     NTask = 1;

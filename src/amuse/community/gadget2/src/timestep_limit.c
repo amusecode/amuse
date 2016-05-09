@@ -194,8 +194,8 @@ void advance_and_find_timesteps(void)
     }
 
 #ifndef NOMPI
-  MPI_Allreduce(&dispmax, &globmax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-  MPI_Allreduce(&disp2sum, &globdisp2sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(&dispmax, &globmax, 1, MPI_DOUBLE, MPI_MAX, GADGET_WORLD);
+  MPI_Allreduce(&disp2sum, &globdisp2sum, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
 #else
     globmax = dispmax;
     globdisp2sum = disp2sum;
@@ -254,7 +254,7 @@ void advance_and_find_timesteps(void)
   ti_step = All.PresentMinStep;
 
 #ifndef NOMPI
-  MPI_Allreduce(&ti_step, &All.PresentMinStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&ti_step, &All.PresentMinStep, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
 #else
     All.PresentMinStep = ti_step;
 #endif
@@ -361,7 +361,7 @@ void advance_and_find_timesteps(void)
   numlist = (int*)malloc(NTask * sizeof(int) * NTask);
 
 #ifndef NOMPI
-  MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
 #else
     numlist[0] = NumSphUpdate;
 #endif
@@ -440,7 +440,7 @@ void advance_and_find_timesteps(void)
 	  t0 = second();
 
 #ifndef NOMPI
-	  MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
+	  MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
 #else
     nsend[0] = nsend_local[0];
 #endif
@@ -480,7 +480,7 @@ void advance_and_find_timesteps(void)
 				       recvTask, 0,
 				       &TimeDataGet[nbuffer[ThisTask]],
 				       nsend[recvTask * NTask + ThisTask] * sizeof(struct timedata_in),
-				       MPI_BYTE, recvTask, 0, MPI_COMM_WORLD, &status);
+				       MPI_BYTE, recvTask, 0, GADGET_WORLD, &status);
 			}
 		    }
 #endif
@@ -503,7 +503,7 @@ void advance_and_find_timesteps(void)
 	      /* do a block to explicitly measure imbalance */
 	      t0 = second();
 #ifndef NOMPI
-	      MPI_Barrier(MPI_COMM_WORLD);
+	      MPI_Barrier(GADGET_WORLD);
 #endif
 	      t1 = second();
 	      timeimbalance += timediff(t0, t1);
@@ -514,7 +514,7 @@ void advance_and_find_timesteps(void)
 	  t0 = second();
 
 #ifndef NOMPI
-	  MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+	  MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
 #else
     ndonelist[0] = ndone;
 #endif
@@ -528,7 +528,7 @@ void advance_and_find_timesteps(void)
       numlist = (int*)malloc(NTask * sizeof(int) * NTask);
 
 #ifndef NOMPI
-      MPI_Allgather(&NDone, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(&NDone, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
 #else
     numlist[0] = NDone;
 #endif
@@ -951,8 +951,8 @@ void find_dt_displacement_constraint(double hfac /*!<  should be  a^2*H(a)  */ )
 	}
 
 #ifndef NOMPI
-      MPI_Allreduce(v, v_sum, 6, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-      MPI_Allreduce(mim, min_mass, 6, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(v, v_sum, 6, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+      MPI_Allreduce(mim, min_mass, 6, MPI_DOUBLE, MPI_MIN, GADGET_WORLD);
 #else
     for(i = 0; i < 6; i++){
         v_sum[i] = v[i];
@@ -961,7 +961,7 @@ void find_dt_displacement_constraint(double hfac /*!<  should be  a^2*H(a)  */ )
 #endif
       temp = malloc(NTask * 6 * sizeof(int));
 #ifndef NOMPI
-      MPI_Allgather(count, 6, MPI_INT, temp, 6, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(count, 6, MPI_INT, temp, 6, MPI_INT, GADGET_WORLD);
 #else
     for(i = 0; i < 6; i++){
         temp[i] = count[i];

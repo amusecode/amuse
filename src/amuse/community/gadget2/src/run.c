@@ -86,13 +86,13 @@ void run(void)
 	}
 
 #ifndef NOMPI
-      MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
+      MPI_Bcast(&stopflag, 1, MPI_INT, 0, GADGET_WORLD);
 #endif
       if(stopflag)
 	{
 	  restart(0);		/* write restart file */
 #ifndef NOMPI
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(GADGET_WORLD);
 #endif
 
 	  if(stopflag == 2 && ThisTask == 0)
@@ -122,7 +122,7 @@ void run(void)
 	}
 
 #ifndef NOMPI
-      MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
+      MPI_Bcast(&stopflag, 1, MPI_INT, 0, GADGET_WORLD);
 #endif
       if(stopflag == 3)
 	{
@@ -169,7 +169,7 @@ void find_next_sync_point_and_drift(void)
       min = P[n].Ti_endstep;
 
 #ifndef NOMPI
-  MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
 #else
     min_glob = min;
 #endif
@@ -180,7 +180,7 @@ void find_next_sync_point_and_drift(void)
       flag = 0;
 
 #ifndef NOMPI
-  MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
 #else
     Flag_FullStep = flag;
 #endif
@@ -205,7 +205,7 @@ void find_next_sync_point_and_drift(void)
   /* note: NumForcesSinceLastDomainDecomp has type "long long" */
   temp = malloc(NTask * sizeof(int));
 #ifndef NOMPI
-  MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, GADGET_WORLD);
 #else
     temp[0] = NumForceUpdate;
 #endif

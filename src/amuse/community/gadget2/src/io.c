@@ -84,7 +84,7 @@ void savepositions(int num)
   temp = malloc(NTask * 6 * sizeof(int));
 
 #ifndef NOMPI
-  MPI_Allgather(n_type, 6, MPI_INT, temp, 6, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(n_type, 6, MPI_INT, temp, 6, MPI_INT, GADGET_WORLD);
 #else
 
   for(i = 0; i < 6; i++){
@@ -119,7 +119,7 @@ void savepositions(int num)
       if((filenr / All.NumFilesWrittenInParallel) == gr)	/* ok, it's this processor's turn */
 	write_file(buf, masterTask, lastTask);
 #ifndef NOMPI
-	      MPI_Barrier(MPI_COMM_WORLD);
+	      MPI_Barrier(GADGET_WORLD);
 #endif
     }
 
@@ -715,20 +715,20 @@ void write_file(char *fname, int writeTask, int lastTask)
 #ifndef NOMPI
       for(task = writeTask + 1; task <= lastTask; task++)
 	{
-	  MPI_Recv(&nn[0], 6, MPI_INT, task, TAG_LOCALN, MPI_COMM_WORLD, &status);
+	  MPI_Recv(&nn[0], 6, MPI_INT, task, TAG_LOCALN, GADGET_WORLD, &status);
 	  for(n = 0; n < 6; n++)
 	    ntot_type[n] += nn[n];
 	}
 
       for(task = writeTask + 1; task <= lastTask; task++)
-	MPI_Send(&ntot_type[0], 6, MPI_INT, task, TAG_N, MPI_COMM_WORLD);
+	MPI_Send(&ntot_type[0], 6, MPI_INT, task, TAG_N, GADGET_WORLD);
 #endif
     }
 #ifndef NOMPI
   else
     {
-      MPI_Send(&n_type[0], 6, MPI_INT, writeTask, TAG_LOCALN, MPI_COMM_WORLD);
-      MPI_Recv(&ntot_type[0], 6, MPI_INT, writeTask, TAG_N, MPI_COMM_WORLD, &status);
+      MPI_Send(&n_type[0], 6, MPI_INT, writeTask, TAG_LOCALN, GADGET_WORLD);
+      MPI_Recv(&ntot_type[0], 6, MPI_INT, writeTask, TAG_N, GADGET_WORLD, &status);
     }
 #endif
 
@@ -910,12 +910,12 @@ void write_file(char *fname, int writeTask, int lastTask)
 #ifndef NOMPI
 			      for(p = writeTask; p <= lastTask; p++)
 				if(p != ThisTask)
-				  MPI_Send(&n_for_this_task, 1, MPI_INT, p, TAG_NFORTHISTASK, MPI_COMM_WORLD);
+				  MPI_Send(&n_for_this_task, 1, MPI_INT, p, TAG_NFORTHISTASK, GADGET_WORLD);
 #endif
 			    }
 #ifndef NOMPI
 			  else
-			    MPI_Recv(&n_for_this_task, 1, MPI_INT, task, TAG_NFORTHISTASK, MPI_COMM_WORLD,
+			    MPI_Recv(&n_for_this_task, 1, MPI_INT, task, TAG_NFORTHISTASK, GADGET_WORLD,
 				     &status);
 #endif
 			  while(n_for_this_task > 0)
@@ -930,11 +930,11 @@ void write_file(char *fname, int writeTask, int lastTask)
 #ifndef NOMPI
 			      if(ThisTask == writeTask && task != writeTask)
 				MPI_Recv(CommBuffer, bytes_per_blockelement * pc, MPI_BYTE, task,
-					 TAG_PDATA, MPI_COMM_WORLD, &status);
+					 TAG_PDATA, GADGET_WORLD, &status);
 
 			      if(ThisTask != writeTask && task == ThisTask)
 				MPI_Ssend(CommBuffer, bytes_per_blockelement * pc, MPI_BYTE, writeTask,
-					  TAG_PDATA, MPI_COMM_WORLD);
+					  TAG_PDATA, GADGET_WORLD);
 #endif
 			      if(ThisTask == writeTask)
 				{

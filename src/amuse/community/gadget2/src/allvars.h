@@ -802,4 +802,10 @@ extern struct hydrodata_out
   *TimeDataGet;
 #endif
 
+#ifndef NOMPI
+#ifdef MPI_VERSION
+    extern MPI_Comm GADGET_WORLD;
+#endif
+#endif
+
 #endif

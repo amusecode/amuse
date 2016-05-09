@@ -1,5 +1,6 @@
 #ifndef NOMPI
 #include <mpi.h>
+#include <amuse_mpi.h>
 #endif
 #include <iostream>
 #include <string.h>
@@ -112,9 +113,11 @@ void set_default_parameters(){
 int initialize_code(){
     double t0, t1;
 #ifndef NOMPI
-    MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
-    MPI_Comm_size(MPI_COMM_WORLD, &NTask);
+    get_comm_world(&GADGET_WORLD);
+    MPI_Comm_rank(GADGET_WORLD, &ThisTask);
+    MPI_Comm_size(GADGET_WORLD, &NTask);
 #else
+    GADGET_WORLD = 0;
     ThisTask = 0;
     NTask = 1;
 #endif
@@ -159,7 +162,7 @@ int cleanup_code(){
 
 int check_parameters(){
 #ifndef NOMPI
-    MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, GADGET_WORLD);
 #endif
     if (ThisTask){
         return 0;
@@ -380,7 +383,7 @@ int commit_particles(){
     update_particle_map();
     index_of_highest_mapped_particle = local_index_map.rbegin()->first;
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &index_of_highest_mapped_particle, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &index_of_highest_mapped_particle, 1, MPI_LONG_LONG_INT, MPI_MAX, GADGET_WORLD);
 #endif
     ngb_treebuild();                /* will build tree */
     setup_smoothinglengths();
@@ -493,7 +496,7 @@ bool drift_to_t_end(int ti_end){
         }
     }
 #ifndef NOMPI
-    MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
 #else
     min_glob = min;
 #endif
@@ -503,7 +506,7 @@ bool drift_to_t_end(int ti_end){
         if(P[n].Ti_endstep > min_glob)
             flag = 0;
 #ifndef NOMPI
-    MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
 #else
     Flag_FullStep = flag;
 #endif
@@ -525,7 +528,7 @@ bool drift_to_t_end(int ti_end){
     temp = (int*) malloc(NTask * sizeof(int));
 
 #ifndef NOMPI
-    MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, MPI_COMM_WORLD);
+    MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, GADGET_WORLD);
 #else
     temp[0] = NumForceUpdate;
 #endif
@@ -675,7 +678,7 @@ int evolve_model_generic(double t_end){
 
             /* Check whether we need to interrupt the run */
 #ifndef NOMPI
-            MPI_Allreduce(MPI_IN_PLACE, &ZeroTimestepEncountered, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+            MPI_Allreduce(MPI_IN_PLACE, &ZeroTimestepEncountered, 1, MPI_INT, MPI_MAX, GADGET_WORLD);
 #endif
             if(ZeroTimestepEncountered)
                 return -8;
@@ -688,7 +691,7 @@ int evolve_model_generic(double t_end){
                 }
             }
 #ifndef NOMPI
-            MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            MPI_Bcast(&stopflag, 1, MPI_INT, 0, GADGET_WORLD);
 #endif
             if(stopflag)
                 return -5;
@@ -810,7 +813,7 @@ int delete_particle(int id){
         found = 1 + P[(*it).second].Type; // 1 for sph; 2 for dm
     }
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_MAX, GADGET_WORLD);
 #endif
     if (found){
         if (found == 2)
@@ -826,7 +829,7 @@ int delete_particle(int id){
         found = 1;
     }
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, GADGET_WORLD);
 #endif
     if (found){
         dm_particles_in_buffer--;
@@ -839,7 +842,7 @@ int delete_particle(int id){
         found = 1;
     }
 #ifndef NOMPI
-    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, GADGET_WORLD);
 #endif
     if (found){
         sph_particles_in_buffer--;
@@ -1360,7 +1363,7 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
 
     if (ThisTask == 0){
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, &next_local_index, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &next_local_index, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, GADGET_WORLD);
 #endif
         *index_of_the_next_particle = next_local_index;
         if (next_local_index < index_of_highest_mapped_particle){
@@ -1372,7 +1375,7 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
         }
     } else {
 #ifndef NOMPI
-        MPI_Reduce(&next_local_index, NULL, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&next_local_index, NULL, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, GADGET_WORLD);
 #endif
         return 0;
     }
@@ -1420,13 +1423,13 @@ int get_mass(int *index, double *mass, int length){
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -1449,12 +1452,12 @@ int check_counts_and_free(int *count, int length){
     int errors = 0;
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         return 0;
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1)
@@ -1516,13 +1519,13 @@ int get_position_comoving(int *index, double *x, double *y, double *z, int lengt
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
 #ifdef PERIODIC
         for (int i = 0; i < 3*length; i++){
@@ -1612,13 +1615,13 @@ int get_velocity_gadget_u(int *index, double *vx, double *vy, double *vz, int le
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -1746,13 +1749,13 @@ int get_state_gadget(int *index, double *mass, double *x, double *y, double *z, 
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
 #ifdef PERIODIC
         for (int i = length; i < 4*length; i++){
@@ -1921,13 +1924,13 @@ int get_state_sph_gadget(int *index, double *mass, double *x, double *y, double 
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
 #ifdef PERIODIC
         for (int i = length; i < 4*length; i++){
@@ -2070,13 +2073,13 @@ int get_acceleration_comoving(int *index, double * ax, double * ay, double * az,
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2145,13 +2148,13 @@ int get_internal_energy(int *index, double *internal_energy, int length){
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2229,13 +2232,13 @@ int get_smoothing_length_comoving(int *index, double *smoothing_length, int leng
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2284,11 +2287,11 @@ int get_alpha_visc(int *index, double *alpha_visc, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2326,11 +2329,11 @@ int get_dalphadt_visc(int *index, double *dalphadt_visc, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -2375,13 +2378,13 @@ int get_density_comoving(int *index, double *density_out, int length){
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2434,13 +2437,13 @@ int get_pressure_comoving(int *index, double *pressure_out, int length){
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2507,13 +2510,13 @@ int get_d_internal_energy_dt(int *index, double *d_internal_energy_dt_out, int l
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2554,13 +2557,13 @@ int get_n_neighbours(int *index, double *n_neighbours, int length){
     }
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
@@ -2644,11 +2647,11 @@ int get_total_radius(double *radius){
 
     if(ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, GADGET_WORLD);
 #endif
         if (All.ComovingIntegrationOn){
             *radius = All.Time * sqrt(local_max);
@@ -2690,13 +2693,13 @@ int get_potential(int *index, double *potential, int length) {
 
     if (ThisTask) {
 #ifndef NOMPI
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
     } else {
 #ifndef NOMPI
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
 #endif
         double a2;
         if (All.ComovingIntegrationOn) {a2 = All.Time * All.Time;} else {a2 = 1;}

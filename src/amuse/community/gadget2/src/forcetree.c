@@ -726,7 +726,7 @@ void force_exchange_pseudodata(void)
 		     MPI_BYTE, recvTask, TAG_DMOM,
 		     &DomainMoment[DomainStartList[recvTask]],
 		     (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * sizeof(struct DomainNODE),
-		     MPI_BYTE, recvTask, TAG_DMOM, MPI_COMM_WORLD, &status);
+		     MPI_BYTE, recvTask, TAG_DMOM, GADGET_WORLD, &status);
     }
 #endif
 }
@@ -917,7 +917,7 @@ void force_update_len(void)
 		     MPI_BYTE, recvTask, TAG_NODELEN,
 		     &DomainTreeNodeLen[DomainStartList[recvTask]],
 		     (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * sizeof(FLOAT),
-		     MPI_BYTE, recvTask, TAG_NODELEN, MPI_COMM_WORLD, &status);
+		     MPI_BYTE, recvTask, TAG_NODELEN, GADGET_WORLD, &status);
     }
 #endif
 
@@ -1050,7 +1050,7 @@ void force_update_hmax(void)
 		     MPI_BYTE, recvTask, TAG_HMAX,
 		     &DomainHmax[DomainStartList[recvTask]],
 		     (DomainEndList[recvTask] - DomainStartList[recvTask] + 1) * sizeof(FLOAT),
-		     MPI_BYTE, recvTask, TAG_HMAX, MPI_COMM_WORLD, &status);
+		     MPI_BYTE, recvTask, TAG_HMAX, GADGET_WORLD, &status);
     }
 #endif
 
@@ -2974,15 +2974,15 @@ void ewald_init(void)
 	    len = (EN + 1) * (EN + 1) * (EN + 1) - beg;
 #ifndef NOMPI
 #ifdef DOUBLEPRECISION
-	  MPI_Bcast(&fcorrx[0][0][beg], len, MPI_DOUBLE, task, MPI_COMM_WORLD);
-	  MPI_Bcast(&fcorry[0][0][beg], len, MPI_DOUBLE, task, MPI_COMM_WORLD);
-	  MPI_Bcast(&fcorrz[0][0][beg], len, MPI_DOUBLE, task, MPI_COMM_WORLD);
-	  MPI_Bcast(&potcorr[0][0][beg], len, MPI_DOUBLE, task, MPI_COMM_WORLD);
+	  MPI_Bcast(&fcorrx[0][0][beg], len, MPI_DOUBLE, task, GADGET_WORLD);
+	  MPI_Bcast(&fcorry[0][0][beg], len, MPI_DOUBLE, task, GADGET_WORLD);
+	  MPI_Bcast(&fcorrz[0][0][beg], len, MPI_DOUBLE, task, GADGET_WORLD);
+	  MPI_Bcast(&potcorr[0][0][beg], len, MPI_DOUBLE, task, GADGET_WORLD);
 #else
-	  MPI_Bcast(&fcorrx[0][0][beg], len, MPI_FLOAT, task, MPI_COMM_WORLD);
-	  MPI_Bcast(&fcorry[0][0][beg], len, MPI_FLOAT, task, MPI_COMM_WORLD);
-	  MPI_Bcast(&fcorrz[0][0][beg], len, MPI_FLOAT, task, MPI_COMM_WORLD);
-	  MPI_Bcast(&potcorr[0][0][beg], len, MPI_FLOAT, task, MPI_COMM_WORLD);
+	  MPI_Bcast(&fcorrx[0][0][beg], len, MPI_FLOAT, task, GADGET_WORLD);
+	  MPI_Bcast(&fcorry[0][0][beg], len, MPI_FLOAT, task, GADGET_WORLD);
+	  MPI_Bcast(&fcorrz[0][0][beg], len, MPI_FLOAT, task, GADGET_WORLD);
+	  MPI_Bcast(&potcorr[0][0][beg], len, MPI_FLOAT, task, GADGET_WORLD);
 #endif
 #endif
 	}

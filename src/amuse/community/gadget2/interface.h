@@ -1,9 +1,12 @@
+#ifdef __cplusplus
 extern "C" {
-    #include "src/allvars.h"
-    #include "src/proto.h"
-    #include "src/tags.h"
-    #include <gsl/gsl_rng.h>
-}
+#endif
+
+#include "src/allvars.h"
+#include "src/proto.h"
+#include "src/tags.h"
+#include <gsl/gsl_rng.h>
+
 
 typedef struct {
     double mass;                                        /// mass
@@ -21,15 +24,16 @@ typedef struct {
 #endif
 } sph_state;
 
-
-extern "C" void   begrun(void);
-extern "C" double second(void);
+void   begrun(void);
+double second(void);
 
 int found_particle(int index_of_the_particle, int *local_index);
 void update_particle_map(void);
 
-extern "C" void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out,
+void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out,
   FLOAT *ngb_out, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out,
   FLOAT *rhov2_out, FLOAT *rhoe_out);
 
-
+#ifdef __cplusplus
+}
+#endif

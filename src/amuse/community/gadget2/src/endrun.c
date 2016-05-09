@@ -48,7 +48,7 @@ void original_endrun(int ierr)
       sleep(60);
 #else
 #ifndef NOMPI
-      MPI_Abort(MPI_COMM_WORLD, ierr);
+      MPI_Abort(GADGET_WORLD, ierr);
 #endif
 #endif
       exit(0);

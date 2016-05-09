@@ -105,8 +105,8 @@ void domain_Decomposition(void)
       list_work = malloc(sizeof(double) * NTask);
 
 #ifndef NOMPI
-      MPI_Allgather(&NumPart, 1, MPI_INT, list_NumPart, 1, MPI_INT, MPI_COMM_WORLD);
-      MPI_Allgather(&N_gas, 1, MPI_INT, list_N_gas, 1, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(&NumPart, 1, MPI_INT, list_NumPart, 1, MPI_INT, GADGET_WORLD);
+      MPI_Allgather(&N_gas, 1, MPI_INT, list_N_gas, 1, MPI_INT, GADGET_WORLD);
 #else
       list_NumPart[0] = NumPart;
       list_N_gas[0] = N_gas;
@@ -176,7 +176,7 @@ void domain_decompose(void)
    */
   temp = malloc(NTask * 6 * sizeof(int));
 #ifndef NOMPI
-  MPI_Allgather(NtypeLocal, 6, MPI_INT, temp, 6, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(NtypeLocal, 6, MPI_INT, temp, 6, MPI_INT, GADGET_WORLD);
 #else
     for(i = 0; i < 6; i++){temp[i] = NtypeLocal[i];}
 #endif
@@ -678,14 +678,14 @@ void domain_exchangeParticles(int partner, int sphflag, int send_count, int recv
 	  if(send_count > 0)
 	    {
 	      MPI_Ssend(&DomainPartBuf[0], send_count * sizeof(struct particle_data), MPI_BYTE, partner,
-			TAG_PDATA, MPI_COMM_WORLD);
+			TAG_PDATA, GADGET_WORLD);
 
 	      MPI_Ssend(&DomainKeyBuf[0], send_count * sizeof(peanokey), MPI_BYTE, partner, TAG_KEY,
-			MPI_COMM_WORLD);
+			GADGET_WORLD);
 
 	      if(sphflag)
 		MPI_Ssend(&DomainSphBuf[0], send_count * sizeof(struct sph_particle_data), MPI_BYTE, partner,
-			  TAG_SPHDATA, MPI_COMM_WORLD);
+			  TAG_SPHDATA, GADGET_WORLD);
 	    }
 	}
 
@@ -713,20 +713,20 @@ void domain_exchangeParticles(int partner, int sphflag, int send_count, int recv
 		    }
 
 		  MPI_Recv(&P[N_gas], recv_count * sizeof(struct particle_data), MPI_BYTE, partner, TAG_PDATA,
-			   MPI_COMM_WORLD, &status);
+			   GADGET_WORLD, &status);
 		  MPI_Recv(&Key[N_gas], recv_count * sizeof(peanokey), MPI_BYTE, partner, TAG_KEY,
-			   MPI_COMM_WORLD, &status);
+			   GADGET_WORLD, &status);
 		  MPI_Recv(&SphP[N_gas], recv_count * sizeof(struct sph_particle_data), MPI_BYTE, partner,
-			   TAG_SPHDATA, MPI_COMM_WORLD, &status);
+			   TAG_SPHDATA, GADGET_WORLD, &status);
 
 		  N_gas += recv_count;
 		}
 	      else
 		{
 		  MPI_Recv(&P[NumPart], recv_count * sizeof(struct particle_data), MPI_BYTE, partner,
-			   TAG_PDATA, MPI_COMM_WORLD, &status);
+			   TAG_PDATA, GADGET_WORLD, &status);
 		  MPI_Recv(&Key[NumPart], recv_count * sizeof(peanokey), MPI_BYTE, partner,
-			   TAG_KEY, MPI_COMM_WORLD, &status);
+			   TAG_KEY, GADGET_WORLD, &status);
 		}
 
 	      NumPart += recv_count;
@@ -767,8 +767,8 @@ void domain_countToGo(void)
 	}
     }
 #ifndef NOMPI
-  MPI_Allgather(local_toGo, NTask, MPI_INT, toGo, NTask, MPI_INT, MPI_COMM_WORLD);
-  MPI_Allgather(local_toGoSph, NTask, MPI_INT, toGoSph, NTask, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(local_toGo, NTask, MPI_INT, toGo, NTask, MPI_INT, GADGET_WORLD);
+  MPI_Allgather(local_toGoSph, NTask, MPI_INT, toGoSph, NTask, MPI_INT, GADGET_WORLD);
 #else
     toGo[0] = local_toGo[0];
     toGoSph[0] = local_toGoSph[0];
@@ -848,9 +848,9 @@ void domain_sumCost(void)
     }
 
 #ifndef NOMPI
-  MPI_Allreduce(local_DomainWork, DomainWork, NTopleaves, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-  MPI_Allreduce(local_DomainCount, DomainCount, NTopleaves, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-  MPI_Allreduce(local_DomainCountSph, DomainCountSph, NTopleaves, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(local_DomainWork, DomainWork, NTopleaves, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+  MPI_Allreduce(local_DomainCount, DomainCount, NTopleaves, MPI_INT, MPI_SUM, GADGET_WORLD);
+  MPI_Allreduce(local_DomainCountSph, DomainCountSph, NTopleaves, MPI_INT, MPI_SUM, GADGET_WORLD);
 #else
     for(i = 0; i < NTopleaves; i++){
         DomainWork[i] = local_DomainWork[i];
@@ -891,8 +891,8 @@ void domain_findExtent(void)
 	}
     }
 #ifndef NOMPI
-  MPI_Allreduce(xmin, xmin_glob, 3, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
-  MPI_Allreduce(xmax, xmax_glob, 3, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(xmin, xmin_glob, 3, MPI_DOUBLE, MPI_MIN, GADGET_WORLD);
+  MPI_Allreduce(xmax, xmax_glob, 3, MPI_DOUBLE, MPI_MAX, GADGET_WORLD);
 #else
     for(j = 0; j < 3; j++){
         xmin_glob[j] = xmin[j];
@@ -963,7 +963,7 @@ void domain_determineTopTree(void)
   ntopnodelist = malloc(sizeof(int) * NTask);
   ntopoffset = malloc(sizeof(int) * NTask);
 #ifndef NOMPI
-  MPI_Allgather(&ntop_local, 1, MPI_INT, ntopnodelist, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&ntop_local, 1, MPI_INT, ntopnodelist, 1, MPI_INT, GADGET_WORLD);
 #else
    ntopnodelist[0] = ntop_local;
 #endif
@@ -985,7 +985,7 @@ void domain_determineTopTree(void)
 
 #ifndef NOMPI
   MPI_Allgatherv(toplist_local, ntop_local * sizeof(struct topnode_exchange), MPI_BYTE,
-		 toplist, ntopnodelist, ntopoffset, MPI_BYTE, MPI_COMM_WORLD);
+		 toplist, ntopnodelist, ntopoffset, MPI_BYTE, GADGET_WORLD);
 #else
    for(i = 0; i < ntop; i++) {
     toplist[i].Count = toplist_local[i].Count;

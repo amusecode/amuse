@@ -77,7 +77,7 @@ void gravity_tree(void)
   /* Note: 'NumForceUpdate' has already been determined in find_next_sync_point_and_drift() */
   numlist = malloc(NTask * sizeof(int) * NTask);
 #ifndef NOMPI
-  MPI_Allgather(&NumForceUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&NumForceUpdate, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
 #else
   numlist[0] = NumForceUpdate;
 #endif
@@ -165,7 +165,7 @@ void gravity_tree(void)
       tstart = second();
 
 #ifndef NOMPI
-      MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
 #else
     nsend[0] = nsend_local[0];
 #endif
@@ -205,7 +205,7 @@ void gravity_tree(void)
 				   recvTask, TAG_GRAV_A,
 				   &GravDataGet[nbuffer[ThisTask]],
 				   nsend[recvTask * NTask + ThisTask] * sizeof(struct gravdata_in), MPI_BYTE,
-				   recvTask, TAG_GRAV_A, MPI_COMM_WORLD, &status);
+				   recvTask, TAG_GRAV_A, GADGET_WORLD, &status);
 		    }
 		}
 	      for(j = 0; j < NTask; j++)
@@ -229,7 +229,7 @@ void gravity_tree(void)
 	  timetree += timediff(tstart, tend);
 
 	  tstart = second();
-      MPI_Barrier(MPI_COMM_WORLD);
+      MPI_Barrier(GADGET_WORLD);
 	  tend = second();
 	  timeimbalance += timediff(tstart, tend);
 
@@ -261,7 +261,7 @@ void gravity_tree(void)
 				   MPI_BYTE, recvTask, TAG_GRAV_B,
 				   &GravDataOut[noffset[recvTask]],
 				   nsend_local[recvTask] * sizeof(struct gravdata_in),
-				   MPI_BYTE, recvTask, TAG_GRAV_B, MPI_COMM_WORLD, &status);
+				   MPI_BYTE, recvTask, TAG_GRAV_B, GADGET_WORLD, &status);
 
 		      /* add the result to the particles */
 		      for(j = 0; j < nsend_local[recvTask]; j++)
@@ -286,7 +286,7 @@ void gravity_tree(void)
 	}
 #endif
 #ifndef NOMPI
-      MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
 #else
     ndonelist[0] = ndone;
 #endif
@@ -392,14 +392,14 @@ void gravity_tree(void)
 
   numnodes = Numnodestree;
 #ifndef NOMPI
-  MPI_Gather(&costtotal, 1, MPI_DOUBLE, costtreelist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Gather(&numnodes, 1, MPI_INT, numnodeslist, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  MPI_Gather(&timetree, 1, MPI_DOUBLE, timetreelist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Gather(&timecommsumm, 1, MPI_DOUBLE, timecommlist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Gather(&NumPart, 1, MPI_INT, nrecv, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  MPI_Gather(&ewaldcount, 1, MPI_DOUBLE, ewaldlist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&nexportsum, &nexport, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Gather(&costtotal, 1, MPI_DOUBLE, costtreelist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+  MPI_Gather(&numnodes, 1, MPI_INT, numnodeslist, 1, MPI_INT, 0, GADGET_WORLD);
+  MPI_Gather(&timetree, 1, MPI_DOUBLE, timetreelist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+  MPI_Gather(&timecommsumm, 1, MPI_DOUBLE, timecommlist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+  MPI_Gather(&NumPart, 1, MPI_INT, nrecv, 1, MPI_INT, 0, GADGET_WORLD);
+  MPI_Gather(&ewaldcount, 1, MPI_DOUBLE, ewaldlist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+  MPI_Reduce(&nexportsum, &nexport, 1, MPI_INT, MPI_SUM, 0, GADGET_WORLD);
+  MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
 #else
     costtreelist[0] = costtotal;
     numnodeslist[0] = numnodes;

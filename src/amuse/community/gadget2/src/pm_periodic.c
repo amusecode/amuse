@@ -65,9 +65,9 @@ void pm_init_periodic(void)
   /* Set up the FFTW plan files. */
 
 #ifndef NOMPI
-  fft_forward_plan = rfftw3d_mpi_create_plan(MPI_COMM_WORLD, PMGRID, PMGRID, PMGRID,
+  fft_forward_plan = rfftw3d_mpi_create_plan(GADGET_WORLD, PMGRID, PMGRID, PMGRID,
 					     FFTW_REAL_TO_COMPLEX, FFTW_ESTIMATE | FFTW_IN_PLACE);
-  fft_inverse_plan = rfftw3d_mpi_create_plan(MPI_COMM_WORLD, PMGRID, PMGRID, PMGRID,
+  fft_inverse_plan = rfftw3d_mpi_create_plan(GADGET_WORLD, PMGRID, PMGRID, PMGRID,
 					     FFTW_COMPLEX_TO_REAL, FFTW_ESTIMATE | FFTW_IN_PLACE);
 #else
   fft_forward_plan = rfftw3d_create_plan(PMGRID, PMGRID, PMGRID,
@@ -87,11 +87,11 @@ void pm_init_periodic(void)
 
   slabs_per_task = malloc(NTask * sizeof(int));
 #ifndef NOMPI
-  MPI_Allreduce(slab_to_task_local, slab_to_task, PMGRID, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(slab_to_task_local, slab_to_task, PMGRID, MPI_INT, MPI_SUM, GADGET_WORLD);
 
-  MPI_Allreduce(&nslab_x, &smallest_slab, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&nslab_x, &smallest_slab, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
 
-  MPI_Allgather(&nslab_x, 1, MPI_INT, slabs_per_task, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&nslab_x, 1, MPI_INT, slabs_per_task, 1, MPI_INT, GADGET_WORLD);
 #else
     slab_to_task = slab_to_task_local;
     smallest_slab = nslab_x;
@@ -104,7 +104,7 @@ void pm_init_periodic(void)
     }
 
   first_slab_of_task = malloc(NTask * sizeof(int));
-  MPI_Allgather(&slabstart_x, 1, MPI_INT, first_slab_of_task, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&slabstart_x, 1, MPI_INT, first_slab_of_task, 1, MPI_INT, GADGET_WORLD);
 
   meshmin_list = malloc(3 * NTask * sizeof(int));
   meshmax_list = malloc(3 * NTask * sizeof(int));
@@ -113,7 +113,7 @@ void pm_init_periodic(void)
   to_slab_fac = PMGRID / All.BoxSize;
 
 #ifndef NOMPI
-  MPI_Allreduce(&fftsize, &maxfftsize, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(&fftsize, &maxfftsize, 1, MPI_INT, MPI_MAX, GADGET_WORLD);
 #else
     maxfftsize = fftsize;
 #endif
@@ -134,7 +134,7 @@ void pm_init_periodic_allocate(int dimprod)
   double bytes_tot = 0;
   size_t bytes;
 
-  MPI_Allreduce(&dimprod, &dimprodmax, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  MPI_Allreduce(&dimprod, &dimprodmax, 1, MPI_INT, MPI_MAX, GADGET_WORLD);
 
   /* allocate the memory to hold the FFT fields */
 
@@ -253,8 +253,8 @@ void pmforce_periodic(void)
     }
 
 #ifndef NOMPI
-  MPI_Allgather(meshmin, 3, MPI_INT, meshmin_list, 3, MPI_INT, MPI_COMM_WORLD);
-  MPI_Allgather(meshmax, 3, MPI_INT, meshmax_list, 3, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(meshmin, 3, MPI_INT, meshmin_list, 3, MPI_INT, GADGET_WORLD);
+  MPI_Allgather(meshmax, 3, MPI_INT, meshmax_list, 3, MPI_INT, GADGET_WORLD);
 #else
     for( i = 0; i < 3; i++){
         mesmmin_list[0+i] = meshmin[i];
@@ -356,7 +356,7 @@ void pmforce_periodic(void)
 			       (sendmax - sendmin + 1) * dimy * dimz * sizeof(fftw_real), MPI_BYTE, recvTask,
 			       TAG_PERIODIC_A, forcegrid,
 			       (recvmax - recvmin + 1) * recv_dimy * recv_dimz * sizeof(fftw_real), MPI_BYTE,
-			       recvTask, TAG_PERIODIC_A, MPI_COMM_WORLD, &status);
+			       recvTask, TAG_PERIODIC_A, GADGET_WORLD, &status);
 #else
 		  memcpy(forcegrid, workspace + (sendmin - meshmin[0]) * dimy * dimz,
 			 (sendmax - sendmin + 1) * dimy * dimz * sizeof(fftw_real));
@@ -597,7 +597,7 @@ void pmforce_periodic(void)
 				   MPI_BYTE, recvTask, TAG_PERIODIC_B,
 				   workspace + (recvmin - (meshmin[0] - 2)) * dimy * dimz,
 				   (recvmax - recvmin + 1) * dimy * dimz * sizeof(fftw_real), MPI_BYTE,
-				   recvTask, TAG_PERIODIC_B, MPI_COMM_WORLD, &status);
+				   recvTask, TAG_PERIODIC_B, GADGET_WORLD, &status);
 #else
 		      memcpy(workspace + (recvmin - (meshmin[0] - 2)) * dimy * dimz,
 			     forcegrid, (recvmax - recvmin + 1) * dimy * dimz * sizeof(fftw_real));
@@ -782,8 +782,8 @@ void pmpotential_periodic(void)
     }
 
 #ifndef NOMPI
-  MPI_Allgather(meshmin, 3, MPI_INT, meshmin_list, 3, MPI_INT, MPI_COMM_WORLD);
-  MPI_Allgather(meshmax, 3, MPI_INT, meshmax_list, 3, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(meshmin, 3, MPI_INT, meshmin_list, 3, MPI_INT, GADGET_WORLD);
+  MPI_Allgather(meshmax, 3, MPI_INT, meshmax_list, 3, MPI_INT, GADGET_WORLD);
 #else
     for( i = 0; i < 3; i++){
         mesmmin_list[0+i] = meshmin[i];
@@ -885,7 +885,7 @@ void pmpotential_periodic(void)
 			       (sendmax - sendmin + 1) * dimy * dimz * sizeof(fftw_real), MPI_BYTE, recvTask,
 			       TAG_PERIODIC_C, forcegrid,
 			       (recvmax - recvmin + 1) * recv_dimy * recv_dimz * sizeof(fftw_real), MPI_BYTE,
-			       recvTask, TAG_PERIODIC_C, MPI_COMM_WORLD, &status);
+			       recvTask, TAG_PERIODIC_C, GADGET_WORLD, &status);
 #else
 		  memcpy(forcegrid, workspace + (sendmin - meshmin[0]) * dimy * dimz,
 			 (sendmax - sendmin + 1) * dimy * dimz * sizeof(fftw_real))
@@ -1124,7 +1124,7 @@ void pmpotential_periodic(void)
 				   MPI_BYTE, recvTask, TAG_PERIODIC_D,
 				   workspace + (recvmin - (meshmin[0] - 2)) * dimy * dimz,
 				   (recvmax - recvmin + 1) * dimy * dimz * sizeof(fftw_real), MPI_BYTE,
-				   recvTask, TAG_PERIODIC_D, MPI_COMM_WORLD, &status);
+				   recvTask, TAG_PERIODIC_D, GADGET_WORLD, &status);
 #else
 		      memcpy(workspace + (recvmin - (meshmin[0] - 2)) * dimy * dimz,
 			     forcegrid, (recvmax - recvmin + 1) * dimy * dimz * sizeof(fftw_real));
