@@ -200,6 +200,11 @@ int internal__activate_communicator(int comm_identifier){
     return 0;
 }
 
+int internal__become_code(int number_of_workers, char * modulename, char * classname)
+{
+    return 0;
+}
+
 """
 
 RECV_HEADER_SLEEP_STRING = """

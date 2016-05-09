@@ -22,6 +22,7 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
     """
 
     include_headers = ['worker_code.h', 'stopcond.h']
+    __so_module__ = 'seba_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="seba_worker", **options)
@@ -663,7 +664,6 @@ class SeBaInterface(CodeInterface, se.StellarEvolutionInterface, LiteratureRefer
 class SeBa(se.StellarEvolution):
     
     __interface__ = SeBaInterface
-    __so_module__ = 'seba_cython'
 
     def __init__(self, **options):
         self.stopping_conditions = StoppingConditions(self)
