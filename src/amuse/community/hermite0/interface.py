@@ -18,7 +18,7 @@ class HermiteInterface(CodeInterface,
     .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
     """
     include_headers = ['worker_code.h', 'stopcond.h']
-
+    __so_module__ = 'hermite0_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="hermite0_worker",
@@ -202,7 +202,6 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
 
     __doc__ = HermiteDoc()
     __interface__ = HermiteInterface
-    __so_module__ = 'hermite0_cython'
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)

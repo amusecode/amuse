@@ -48,8 +48,10 @@ class PythonImplementation(object):
         self.lastid = -1
         self.activeid = -1
         self.id_to_activate = -1
-        self.implementation._interface = self
+        if not self.implementation is None:
+            self.implementation._interface = self
         
+
     def start(self):
         parent = self.intercomm
         self.communicators.append(parent)
@@ -61,6 +63,7 @@ class PythonImplementation(object):
         self.must_run = True
         while self.must_run:
             if self.id_to_activate >= 0 and self.id_to_activate != self.activeid:
+                print "activating:", self.id_to_activate
                 self.activeid = self.id_to_activate
                 self.id_to_activate = -1
                 parent = self.communicators[self.activeid]
@@ -88,7 +91,7 @@ class PythonImplementation(object):
                             setattr(result_message, attribute, packed)
                         
                 else:
-                    result_message.set_error("unknown function id " + message.function_id)
+                    result_message.set_error("unknown function id " + str(message.function_id))
             
             if rank == 0:
                 result_message.send(parent)
@@ -99,6 +102,8 @@ class PythonImplementation(object):
             
         
     
+
+
 
     def start_socket(self, port, host):
         client_socket = socket.create_connection((host, port))
@@ -167,8 +172,12 @@ class PythonImplementation(object):
                 keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification, input_units)
                 try:
                     result = method(**keyword_arguments)
+                    if result < 0:
+                        print result, keyword_arguments
                 except TypeError:
                     result = method(*list(keyword_arguments))
+                    if result < 0:
+                        print "list", result, keyword_arguments, list(keyword_arguments)
                 self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         
             
@@ -283,6 +292,7 @@ class PythonImplementation(object):
         return interface_functions
     
     
+
     def internal__set_message_polling_interval(self, inval):
         self.polling_interval = inval
         return 0
@@ -421,6 +431,30 @@ class PythonImplementation(object):
     def must_disconnect(self):
         return True
 
+    def internal__become_code(self, number_of_workers, modulename, classname):
+        print number_of_workers, modulename, classname
+        world = self.freeworld
+        color = 0 if world.rank < number_of_workers else 1
+        key = world.rank if world.rank < number_of_workers else world.rank - number_of_workers
+        print "CC,", color, key, world.rank, world.size
+        newcomm = world.Split(color, key)
+        print ("nc:", newcomm.size, newcomm.rank)
+        print ("AA", self.world, color, self.world.rank, self.world.size)
+        try:
+            new_intercomm = newcomm.Create_intercomm(0, self.world, 0, color)
+        except Exception as ex:
+            print ex
+            raise
+        print ("nccc:", new_intercomm.Get_remote_size(), new_intercomm.rank)
+        
+        self.communicators.append(new_intercomm)
+        self.id_to_activate = len(self.communicators) - 1
+        self.freeworld = newcomm
+        return 0
+        
+
+
+
 class CythonImplementation(PythonImplementation):
     
         
@@ -430,8 +464,9 @@ class CythonImplementation(PythonImplementation):
         
         dtype_to_count = self.get_dtype_to_count(specification)
         
-        
-        if specification.name.startswith('internal__'):
+        if specification.name == '_stop_worker':
+            method = lambda : None
+        elif specification.name.startswith('internal__'):
             method = getattr(self, specification.name)
         else:
             method = getattr(self.implementation, specification.name)
@@ -479,6 +514,7 @@ class CythonImplementation(PythonImplementation):
             output_message.encoded_units = self.convert_output_units_to_floats(units)
     
         
+
 
 
 

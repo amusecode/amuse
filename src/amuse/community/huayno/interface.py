@@ -19,6 +19,7 @@ class HuaynoInterface(CodeInterface,
     
     """
     include_headers = ['worker_code.h']
+    __so_module__ = 'huayno_cython'
     
     MODE_OPENCL='opencl'
     MODE_OPENMP='openmp'
@@ -159,7 +160,6 @@ class HuaynoInterface(CodeInterface,
 class Huayno(GravitationalDynamics,GravityFieldCode):
     
     __interface__ = HuaynoInterface
-    __so_module__ = 'huayno_cython'
 
     class inttypes(object):
         # http://stackoverflow.com/questions/36932/whats-the-best-way-to-implement-an-enum-in-python

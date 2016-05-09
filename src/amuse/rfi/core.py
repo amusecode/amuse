@@ -46,6 +46,8 @@ class for all community codes.
 
 import numpy
 
+from amuse.rfi.channel import LocalChannel
+
 def ensure_mpd_is_running():
     from mpi4py import MPI
     if not is_mpd_running():
@@ -119,6 +121,7 @@ class CodeFunction(object):
         
         return result
     
+
     def async(self, *arguments_list, **keyword_arguments):
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
@@ -814,10 +817,11 @@ class CodeInterface(OptionalAttributes):
     def stop(self):
         self._stop()
     
-    @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
+    @option(choices=['mpi','remote','distributed', 'sockets', 'local'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
     
+
 
     @option(type="boolean", sections=("channel",))
     def initialize_mpi(self):
@@ -868,9 +872,12 @@ class CodeInterface(OptionalAttributes):
             return DistributedChannel
         elif self.channel_type == 'sockets':
             return SocketChannel
+        elif self.channel_type == 'local':
+            return LocalChannel
         else:
             raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
     
+
     def before_get_parameter(self):
         """
         Called everytime just before a parameter is retrieved in using::
@@ -911,6 +918,17 @@ class CodeInterface(OptionalAttributes):
         return False
 
         
+
+    @legacy_function
+    def internal__become_code():
+        function = LegacyFunctionSpecification()                      
+        function.addParameter('number_of_workers', dtype='int32', direction=function.IN)
+        function.addParameter('modulename', dtype='string', direction=function.IN)
+        function.addParameter('classname', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+        
+
 
 class CodeWithDataDirectories(object):
     

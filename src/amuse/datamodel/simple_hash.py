@@ -2,6 +2,7 @@ import os
 import ctypes
 import numpy
 from amuse.support import exceptions
+import threading
 
 # run a little code, to create import error 
 # for numpy in pypy
@@ -36,6 +37,7 @@ class SimpleHash(object):
         self._map_ref = ctypes.byref(self._map)
         if self._lib.init_hash(ctypes.byref(self._map),128)!=0:
           raise MemoryError("allocation of SimpleHash")
+        self.lock=threading.Lock()
 
     def __del__(self):
         self._lib.end_hash(self._map_ref)
@@ -49,7 +51,8 @@ class SimpleHash(object):
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
         cerrors=errors.ctypes.data_as(c_int_pointer)
-        err=self._lib.hash_lookups(self._map_ref,N,ckeys,cvalues, cerrors)
+        with self.lock:
+            err=self._lib.hash_lookups(self._map_ref,N,ckeys,cvalues, cerrors)
         if err != 0:
             has_errors = errors!=0
             missing_keys = keys[has_errors]
@@ -68,19 +71,21 @@ class SimpleHash(object):
       
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
-
-        err=self._lib.hash_inserts(self._map_ref,N,ckeys,cvalues)
+        with self.lock:
+            err=self._lib.hash_inserts(self._map_ref,N,ckeys,cvalues)
         if err!=0:
             raise Exception("simple hash insert error")
 
     def reindex(self, keys, values=None):
-        self._lib.end_hash(self._map_ref)
-        if self._lib.init_hash(self._map_ref,len(keys))!=0:
-            raise MemoryError("allocation of SimpleHash")
+        with self.lock:
+            self._lib.end_hash(self._map_ref)
+            if self._lib.init_hash(self._map_ref,len(keys))!=0:
+                raise MemoryError("allocation of SimpleHash")
         self.insert(keys, values)
 
     def key_present(self,key):
-        return self._lib.hash_lookup(self._map_ref,ctypes.c_size_t(key),ctypes.byref(self._dummy))==0
+        with self.lock:
+            return self._lib.hash_lookup(self._map_ref,ctypes.c_size_t(key),ctypes.byref(self._dummy))==0
 
 
     def keys_present(self,keys):
@@ -94,7 +99,8 @@ class SimpleHash(object):
         ckeys=keys.ctypes.data_as(c_size_t_pointer)
         cvalues=values.ctypes.data_as(c_size_t_pointer)
         cerrors=errors.ctypes.data_as(c_int_pointer)
-        err=self._lib.hash_lookups(self._map_ref,N,ckeys,cvalues, cerrors)
+        with self.lock:
+            err=self._lib.hash_lookups(self._map_ref,N,ckeys,cvalues, cerrors)
         state = errors != 0
         return keys[state], values[state], keys[~state]
 

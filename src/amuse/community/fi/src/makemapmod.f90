@@ -338,16 +338,30 @@ end subroutine
   integer :: size
   real :: offset(2),hsmooth,pimage(:,:)
   real :: r,di,dj,dens,norm,hinv
+  real :: xx,yy,fx(3),fy(3)
   integer :: i,j
   
   if(size.eq.3) then
-   i=2;j=2   
-   if(offset(1)+maxx*hsmooth.LT.dx/2) i=1
-   if(offset(2)+maxx*hsmooth.LT.dx/2) j=1
-   if(offset(1)+maxx*hsmooth.GT.3*dx/2.) i=3
-   if(offset(2)+maxx*hsmooth.GT.3*dx/2.) j=3
-   pimage(1:3,1:3)=0
-   pimage(i,j)=1
+!~    i=2;j=2
+!~    if(offset(1)+maxx*hsmooth.LT.dx/2) i=1
+!~    if(offset(2)+maxx*hsmooth.LT.dx/2) j=1
+!~    if(offset(1)+maxx*hsmooth.GT.3*dx/2.) i=3
+!~    if(offset(2)+maxx*hsmooth.GT.3*dx/2.) j=3
+!~    pimage(1:3,1:3)=0
+!~    pimage(i,j)=1
+   xx=(offset(1)+maxx*hsmooth)/dx
+   yy=(offset(2)+maxx*hsmooth)/dx   
+   fx(1)=max(0.,min(1.,1-xx))
+   fx(2)=max(0.,min(1.,1-abs(xx-1)))
+   fx(3)=max(0.,min(1.,xx-1))
+   fy(1)=max(0.,min(1.,1-yy))
+   fy(2)=max(0.,min(1.,1-abs(yy-1)))
+   fy(3)=max(0.,min(1.,yy-1))
+   do i=1,3
+     do j=1,3
+       pimage(i,j)=fx(i)*fy(j)
+     enddo
+   enddo
    return
   endif 
 
@@ -411,18 +425,32 @@ subroutine makesimage(pimage,offset,size,hsmooth,magic_number)
   real :: offset(2),hsmooth,pimage(:,:)
   integer :: k,i,j,ix,iy,im
   real :: rr,x(2),dr,mir,bright,norm,pRND
+  real :: xx,yy,fx(3),fy(3)
   integer, parameter :: ndepth=4
   real, parameter :: brightfac=1.5
   integer magic_number
 
   if(size.eq.3) then
-   i=2;j=2   
-   if(offset(1)+maxx*hsmooth.LT.dx/2) i=1
-   if(offset(2)+maxx*hsmooth.LT.dx/2) j=1
-   if(offset(1)+maxx*hsmooth.GT.3*dx/2.) i=3
-   if(offset(2)+maxx*hsmooth.GT.3*dx/2.) j=3
-   pimage(1:3,1:3)=0
-   pimage(i,j)=1
+!~    i=2;j=2   
+!~    if(offset(1)+maxx*hsmooth.LT.dx/2) i=1
+!~    if(offset(2)+maxx*hsmooth.LT.dx/2) j=1
+!~    if(offset(1)+maxx*hsmooth.GT.3*dx/2.) i=3
+!~    if(offset(2)+maxx*hsmooth.GT.3*dx/2.) j=3
+!~    pimage(1:3,1:3)=0
+!~    pimage(i,j)=1
+   xx=(offset(1)+maxx*hsmooth)/dx
+   yy=(offset(2)+maxx*hsmooth)/dx   
+   fx(1)=max(0.,min(1.,1-xx))
+   fx(2)=max(0.,min(1.,1-abs(xx-1)))
+   fx(3)=max(0.,min(1.,xx-1))
+   fy(1)=max(0.,min(1.,1-yy))
+   fy(2)=max(0.,min(1.,1-abs(yy-1)))
+   fy(3)=max(0.,min(1.,yy-1))
+   do i=1,3
+     do j=1,3
+       pimage(i,j)=fx(i)*fy(j)
+     enddo
+   enddo
    return
   endif 
 

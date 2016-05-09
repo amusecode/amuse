@@ -162,7 +162,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         savepoint etc. Only available for version 2.0 in version 1.0
         a working copy (i.e. a particles set or grid in memory)
         is always returned. (default: False)"""
-        return False
+        return True
     
     @base.format_option
     def return_context(self):
