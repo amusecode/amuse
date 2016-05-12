@@ -47,7 +47,7 @@ def import_unique(modulename):
             initfunc()
             return sys.modules[modulename]
     finally:
-        if prevmodule is None:
+        if prevmodule is None and modulename in sys.modules:
             del sys.modules[modulename]
         else:
             sys.modules[modulename] = prevmodule
