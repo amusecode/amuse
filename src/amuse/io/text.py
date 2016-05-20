@@ -193,9 +193,48 @@ class TableFormattedText(base.FileFormatProcessor):
             self.read_header_line(self.cursor.line()[len(self.header_prefix_string):])
             self.cursor.forward()
     
+
     def read_header_line(self, line):
-        pass
+        line = line.strip()
+        if line == 'AMUSE CSV: 1.0':
+            self.has_amuse_header = True
+        if self.has_amuse_header:
+            KEY_IN_COLUMN_HDR='KEY IN COLUMN:'
+            if line.startswith(KEY_IN_COLUMN_HDR):
+                self.key_in_column = int(line[len(KEY_IN_COLUMN_HDR):].strip())
+            
+            COLUMN_HDR='COL:'
+            if line.startswith(COLUMN_HDR):
+                line = line[len(COLUMN_HDR):].strip()
+                parts = line.split(':')
+                parts = map(lambda x : x.strip(), parts)
+                index = int(parts[0])
+                if self.key_in_column >= 0 and index > self.key_in_column:
+                    index -= 1
+                name = parts[1]
+                is_on = parts[2] == 'on'
+                dtype = map(float, parts[3:])
+                unit = self.convert_float_to_unit(dtype)
+                if self.attribute_names is None:
+                    current = []
+                else:
+                    current = self.attribute_names[:]
+                print index
+                while len(current)<=index:
+                    current.append("")
+                current[index] = name
+                self.attribute_names = current
+                if self.attribute_types is None:
+                    current = []
+                else:
+                    current = self.attribute_types[:]
+                while len(current)<=index:
+                    current.append(None)
+                current[index] = unit
+                self.attribute_types = current
+                self.attribute_dtypes = self._get_attribute_dtypes()
         
+
     def read_rows(self):
         values = map(lambda x : [], range(len(self.attribute_names)))
         
@@ -338,11 +377,27 @@ class TableFormattedText(base.FileFormatProcessor):
         
     def header_lines(self):
         result = []
-        if len(self.attribute_names) > 0:
-            result.append(self.column_separator.join(self.attribute_names))
-        result.append(self.column_separator.join(self.units_row))
+        if self.has_amuse_header:
+            result.append('AMUSE CSV: 1.0')
+            result.append('KEY IN COLUMN: '+str(self.key_in_column))
+            result.append('HEADERS:')
+            for i, (x, unit) in enumerate(zip(self.attribute_names, self.attribute_types)):
+                column = i
+                if self.key_in_column >= 0:
+                    if i >= self.key_in_column:
+                        column += 1
+                unitstring = '{0:.18g}:{1:.0f}:{2:.18g}:{3:.18g}:{4:.18g}:{5:.18g}:{6:.18g}:{7:.18g}:{8:.18g}'.format(*unit.to_array_of_floats())
+
+                result.append('COL:{0}:{1}:{2}:{3}'.format(column, x, 'on', unitstring))
+            
+            result.append('')
+        else:
+            if len(self.attribute_names) > 0:
+                result.append(self.column_separator.join(self.attribute_names))
+            result.append(self.column_separator.join(self.units_row))
         return result
         
+
     def footer_lines(self):
         return []
         
@@ -393,8 +448,12 @@ class TableFormattedText(base.FileFormatProcessor):
         
 
     def convert_number_to_string(self, number):
-        return str(number)
+        if self.is_precise:
+            return '{:.18e}'.format(number)
+        else:
+            return str(number)
     
+
 
     def convert_long_to_string(self, number):
         return str(number)
@@ -423,6 +482,52 @@ class TableFormattedText(base.FileFormatProcessor):
     
     
     
+    @base.format_option
+    def is_precise(self):
+        """"Output most precise text output for floats (9 digitst) and doubles (17 digits)"""
+        return False
+
+
+
+
+    @base.format_option
+    def has_amuse_header(self):
+        """If true, store the decription of the attributes and units in the header, better format than must_store_units_in_header provides """
+        return False
+
+
+
+
+
+
+    def convert_float_to_unit(self, floats):
+        from amuse.units import core
+        from amuse.units import units
+        if numpy.all(floats == 0):
+            return None
+        print floats
+        factor = floats[0]
+        result = factor
+        system_index = floats[1]
+        unit_system = None
+        for x in core.system.ALL.values():
+            if x.index == system_index:
+                unit_system = x
+                break
+        for x in unit_system.bases:
+            power = floats[x.index + 2]
+            if not power == 0.0:
+                result = result * (x ** power)
+        return result
+        
+
+
+
+
+
+
+
+
 class CsvFileText(TableFormattedText):
     """Process comma separated files
     
@@ -504,3 +609,30 @@ class Athena3DText(TableFormattedText):
             
         
     
+class AmuseText(TableFormattedText):
+    """Process text files with AMUSE header format
+    """
+    
+    provided_formats = ['amuse-txt']
+    
+    
+    @base.format_option
+    def has_amuse_header(self):
+        """If true, store the decription of the attributes and units in the header, better format than must_store_units_in_header provides (default True for amuse csv format)"""
+        return True
+
+
+
+
+
+
+
+    @base.format_option
+    def is_precise(self):
+        """"Output most precise text output for floats (9 digitst) and doubles (17 digits) (True for amuse text)"""
+        return True
+
+
+
+
+
