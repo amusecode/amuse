@@ -933,11 +933,18 @@ class StoreHDF(object):
             setattr(container.collection_attributes, name, quantity)
                 
     def load(self):
-        if len(self.data_group()) > 0:
+        if not self.data_group()is None and len(self.data_group()) > 0:
             return self.load_container(self.data_group())
         else:
-            pass
+            result = {}
+            for x in self.hdf5file.keys():
+                if x == 'AMUSE_INF':
+                    continue
+                result[x] = self.load_container(self.named_group(x))
+            return result
                 
+
+
     def load_sets(self, names):
         result = []
         for x in names:
@@ -1057,8 +1064,15 @@ class StoreHDF(object):
         return self.named_group(self.DATA_GROUP_NAME)
         
     def named_group(self, name):
-        return self.hdf5file.require_group(name)
+        if self.hdf5file.mode == 'r':
+            if not name in self.hdf5file:
+                return None
+            else:
+                return self.hdf5file[name]
+        else:
+            return self.hdf5file.require_group(name)
         
+
     def close(self):
         if not self.hdf5file is None:
             self.hdf5file.flush()
