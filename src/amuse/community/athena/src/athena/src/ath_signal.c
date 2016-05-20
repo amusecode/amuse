@@ -22,6 +22,7 @@
 #include "defs.h"
 #include "athena.h"
 #include "prototypes.h"
+#include "globals.h"
 
 static volatile int sig_caught = 0;   /* caught signal */
 
@@ -53,7 +54,7 @@ int ath_sig_act(int *piquit)
 #ifdef MPI_PARALLEL
   int ierr, sig = sig_caught > *piquit ? sig_caught : *piquit;
 
-  ierr = MPI_Allreduce(&sig, piquit, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+  ierr = MPI_Allreduce(&sig, piquit, 1, MPI_INT, MPI_MAX, AMUSE_MPI_COMM_WORLD);
 
 #else /* SERIAL */
 

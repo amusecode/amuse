@@ -143,7 +143,7 @@ void selfg_multig_3d(DomainS *pD)
   }
 
 #ifdef MPI_PARALLEL
-  mpi_err = MPI_Allreduce(&mass, &tmass,1,MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+  mpi_err = MPI_Allreduce(&mass, &tmass,1,MPI_DOUBLE,MPI_SUM,AMUSE_MPI_COMM_WORLD);
   if (mpi_err) ath_error("[selfg_multigrid]: MPI_Reduce returned err = %d\n",
     mpi_err);
 #else
@@ -562,7 +562,7 @@ void set_mg_bvals(MGrid *pMG)
   if (pMG->rx1_id >= 0 && pMG->lx1_id >= 0) {
     /* Post a non-blocking receive for the input data from the left grid */
     err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->lx1_id,
-      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
     swap_mg_ox1(pMG,cnt,0,&rq);  /* send R */
@@ -570,7 +570,7 @@ void set_mg_bvals(MGrid *pMG)
 
     /* Post a non-blocking receive for the input data from the right grid */
     err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->rx1_id,
-      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
     swap_mg_ix1(pMG,cnt,0,&rq);  /* send L */
@@ -581,7 +581,7 @@ void set_mg_bvals(MGrid *pMG)
   if (pMG->rx1_id >= 0 && pMG->lx1_id < 0) {
     /* Post a non-blocking receive for the input data from the right grid */
     err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->rx1_id,
-      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
     swap_mg_ox1(pMG,cnt,0,&rq);  /* send R */
@@ -592,7 +592,7 @@ void set_mg_bvals(MGrid *pMG)
   if (pMG->rx1_id < 0 && pMG->lx1_id >= 0) {
     /* Post a non-blocking receive for the input data from the left grid */
     err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->lx1_id,
-      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
     swap_mg_ix1(pMG,cnt,0,&rq);  /* send L */
@@ -610,7 +610,7 @@ void set_mg_bvals(MGrid *pMG)
   if (pMG->rx2_id >= 0 && pMG->lx2_id >= 0) {
     /* Post a non-blocking receive for the input data from the left grid */
     err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->lx2_id,
-      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
     swap_mg_ox2(pMG,cnt,0,&rq);  /* send R */
@@ -618,7 +618,7 @@ void set_mg_bvals(MGrid *pMG)
 
     /* Post a non-blocking receive for the input data from the right grid */
     err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->rx2_id,
-      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
     swap_mg_ix2(pMG,cnt,0,&rq);  /* send L */
@@ -629,7 +629,7 @@ void set_mg_bvals(MGrid *pMG)
   if (pMG->rx2_id >= 0 && pMG->lx2_id < 0) {
     /* Post a non-blocking receive for the input data from the right grid */
     err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->rx2_id,
-      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
     swap_mg_ox2(pMG,cnt,0,&rq);  /* send R */
@@ -640,7 +640,7 @@ void set_mg_bvals(MGrid *pMG)
   if (pMG->rx2_id < 0 && pMG->lx2_id >= 0) {
     /* Post a non-blocking receive for the input data from the left grid */
     err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->lx2_id,
-      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
     swap_mg_ix2(pMG,cnt,0,&rq);  /* send L */
@@ -658,7 +658,7 @@ void set_mg_bvals(MGrid *pMG)
     if (pMG->rx3_id >= 0 && pMG->lx3_id >= 0) {
       /* Post a non-blocking receive for the input data from the left grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->lx3_id,
-		      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+		      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
       swap_mg_ox3(pMG,cnt,0,&rq);  /* send R */
@@ -666,7 +666,7 @@ void set_mg_bvals(MGrid *pMG)
 
       /* Post a non-blocking receive for the input data from the right grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->rx3_id,
-		      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+		      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
       swap_mg_ix3(pMG,cnt,0,&rq);  /* send L */
@@ -677,7 +677,7 @@ void set_mg_bvals(MGrid *pMG)
     if (pMG->rx3_id >= 0 && pMG->lx3_id < 0) {
       /* Post a non-blocking receive for the input data from the right grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->rx3_id,
-		      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+		      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
       swap_mg_ox3(pMG,cnt,0,&rq);  /* send R */
@@ -688,7 +688,7 @@ void set_mg_bvals(MGrid *pMG)
     if (pMG->rx3_id < 0 && pMG->lx3_id >= 0) {
       /* Post a non-blocking receive for the input data from the left grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pMG->lx3_id,
-		      boundary_cells_tag, MPI_COMM_WORLD, &rq);
+		      boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_mg_bvals]: MPI_Irecv error = %d\n",err);
 
       swap_mg_ix3(pMG,cnt,0,&rq);  /* send L */
@@ -735,7 +735,7 @@ void swap_mg_ix1(MGrid *pMG, int cnt, int swap_flag, MPI_Request *prq)
 
     /* send contents of buffer to the neighboring grid on L-x1 */
     err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pMG->lx1_id,
-                   boundary_cells_tag, MPI_COMM_WORLD);
+                   boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
     if(err) ath_error("[swap_mg_ix1]: MPI_Send error = %d\n",err);
   }
 
@@ -793,7 +793,7 @@ void swap_mg_ox1(MGrid *pMG, int cnt, int swap_flag, MPI_Request *prq)
 
     /* send contents of buffer to the neighboring grid on R-x1 */
     err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pMG->rx1_id,
-      boundary_cells_tag, MPI_COMM_WORLD);
+      boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
     if(err) ath_error("[swap_mg_ox1]: MPI_Send error = %d\n",err);
   }
 
@@ -850,7 +850,7 @@ void swap_mg_ix2(MGrid *pMG, int cnt, int swap_flag, MPI_Request *prq)
 
     /* send contents of buffer to the neighboring grid on L-x2 */
     err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pMG->lx2_id,
-       boundary_cells_tag, MPI_COMM_WORLD);
+       boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
     if(err) ath_error("[swap_mg_ix2]: MPI_Send error = %d\n",err);
   }
 
@@ -907,7 +907,7 @@ void swap_mg_ox2(MGrid *pMG, int cnt, int swap_flag, MPI_Request *prq)
 
     /* send contents of buffer to the neighboring grid on R-x2 */
     err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pMG->rx2_id,
-                   boundary_cells_tag, MPI_COMM_WORLD);
+                   boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
     if(err) ath_error("[swap_mg_ox2]: MPI_Send error = %d\n",err);
   }
 
@@ -959,7 +959,7 @@ void swap_mg_ix3(MGrid *pMG, int cnt, int swap_flag, MPI_Request *prq)
 
     /* send contents of buffer to the neighboring grid on L-x3 */
     err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pMG->lx3_id,
-                   boundary_cells_tag, MPI_COMM_WORLD);
+                   boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
     if(err) ath_error("[swap_mg_ix3]: MPI_Send error = %d\n",err);
   }
 
@@ -1011,7 +1011,7 @@ void swap_mg_ox3(MGrid *pMG, int cnt, int swap_flag, MPI_Request *prq)
 
     /* send contents of buffer to the neighboring grid on R-x3 */
     err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pMG->rx3_id,
-                   boundary_cells_tag, MPI_COMM_WORLD);
+                   boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
     if(err) ath_error("[swap_mg_ox3]: MPI_Send error = %d\n",err);
   }
 

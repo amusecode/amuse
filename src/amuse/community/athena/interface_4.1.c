@@ -10,14 +10,16 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+#include <amuse_mpi.h>
+#endif
+
 #include "defs.h"
 #include "athena.h"
 #include "globals.h"
 #include "prototypes.h"
 
-#ifdef MPI_PARALLEL
-#include <mpi.h>
-#endif
 
 #include <math.h>
 
@@ -398,12 +400,13 @@ int initialize_code(){
   set_support_for_condition(TIMEOUT_DETECTION);
 
 #ifdef MPI_PARALLEL
+    get_comm_world(&AMUSE_MPI_COMM_WORLD);
     /* Get my task id (rank in MPI) */
-    if(MPI_SUCCESS != MPI_Comm_rank(MPI_COMM_WORLD,&myID_Comm_world))
+    if(MPI_SUCCESS != MPI_Comm_rank(AMUSE_MPI_COMM_WORLD,&myID_Comm_world))
     {
         ath_error("Error on calling MPI_Comm_rank\n");
     }
-    if(MPI_SUCCESS != MPI_Comm_size(MPI_COMM_WORLD,&(mpi_comm_size_interface)))
+    if(MPI_SUCCESS != MPI_Comm_size(AMUSE_MPI_COMM_WORLD,&(mpi_comm_size_interface)))
     {
         ath_error("Error on calling mpi_comm_size_interface\n");
     }
@@ -987,13 +990,13 @@ int get_position_of_index(int *i, int *j, int *k, int *index_of_grid, double * x
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(x, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(y, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(z, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(x, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(y, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(z, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, x, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, y, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, z, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, x, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, y, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, z, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1045,9 +1048,9 @@ int get_index_of_position(double x, double y,
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(pos, NULL, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(pos, NULL, 3, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, pos, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, pos, 3, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1125,17 +1128,17 @@ int get_grid_state(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1203,9 +1206,9 @@ int get_grid_gravitational_potential(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(phi, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(phi, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
      } else {
-        MPI_Reduce(MPI_IN_PLACE, phi, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, phi, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1328,13 +1331,13 @@ int get_grid_gravitational_acceleration(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(fx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(fy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(fz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(fx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(fy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(fz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
      } else {
-        MPI_Reduce(MPI_IN_PLACE, fx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, fy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, fz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, fx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, fy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, fz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1397,13 +1400,13 @@ int get_grid_acceleration(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(ax, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(ay, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(az, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(ax, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(ay, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(az, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
      } else {
-        MPI_Reduce(MPI_IN_PLACE, ax, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, ay, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, az, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, ax, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, ay, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, az, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1521,9 +1524,9 @@ int get_grid_density(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1590,9 +1593,9 @@ int get_grid_scalar(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(scalar, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(scalar, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, scalar, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, scalar, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1660,13 +1663,13 @@ int get_grid_momentum_density(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -1730,9 +1733,9 @@ int get_grid_energy_density(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -2095,9 +2098,9 @@ int get_potential(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(potential, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(potential, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, potential, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, potential, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -2861,17 +2864,17 @@ int get_boundary_state(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
     return 0;
@@ -2938,13 +2941,13 @@ int get_grid_magnetic_field(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(B1i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(B2i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(B3i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(B1i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(B2i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(B3i, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, B1i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, B2i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, B3i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, B1i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, B2i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, B3i, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -3177,13 +3180,13 @@ int get_boundary_position_of_index(
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(x, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(y, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(z, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(x, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(y, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(z, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, x, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, y, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, z, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, x, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, y, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, z, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -3306,17 +3309,17 @@ int get_hydro_state_for_cell(
     }
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(rho  , NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhoen, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rho  , NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhoen, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, rho  , number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhoen, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rho  , number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhoen, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 
@@ -3414,17 +3417,17 @@ int get_hydro_state_at_point(
     }
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-        MPI_Reduce(rho  , NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(rhoen, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rho  , NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(rhoen, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, rho  , number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, rhoen, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rho  , number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhoen, number_of_points, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
     }
 #endif
 

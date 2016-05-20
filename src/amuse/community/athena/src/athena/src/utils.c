@@ -24,6 +24,7 @@
 #include "defs.h"
 #include "athena.h"
 #include "prototypes.h"
+#include "globals.h"
 
 /*----------------------------------------------------------------------------*/
 /*! \fn char *ath_strdup(const char *in)
@@ -127,7 +128,7 @@ void ath_error(char *fmt, ...)
   va_end(ap);                     /* end varargs */
 
 #ifdef MPI_PARALLEL
-  MPI_Abort(MPI_COMM_WORLD, 1);
+  MPI_Abort(AMUSE_MPI_COMM_WORLD, 1);
 #endif
 
   exit(EXIT_FAILURE);

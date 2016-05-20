@@ -19,7 +19,7 @@ Real Iso_csound2;            /*!< isothermal sound speed squared */
 Real Gamma;                  /*!< adiabatic index (ratio of specific heats) */
 Real Gamma_1, Gamma_2;       /*!< (Gamma)-1 and (Gamma)-2 */
 #endif
-int myID_Comm_world; /*!< Rank (proc ID) in MPI_COMM_WORLD, 0 for single proc */
+int myID_Comm_world; /*!< Rank (proc ID) in AMUSE_MPI_COMM_WORLD, 0 for single proc */
 
 GravPotFun_t StaticGravPot = NULL;
 CoolingFun_t CoolingFunc = NULL;
@@ -56,6 +56,13 @@ Real *r=NULL, *ri=NULL;
 #ifdef FARGO
 OrbitalFun_t OrbitalProfile = NULL;
 ShearFun_t ShearProfile = NULL;
+#endif
+#endif
+
+
+#ifdef MPI_PARALLEL
+#ifdef MPI_VERSION
+MPI_Comm AMUSE_MPI_COMM_WORLD;
 #endif
 #endif
 
@@ -108,6 +115,12 @@ extern Real *r, *ri;
 #ifdef FARGO
 extern OrbitalFun_t OrbitalProfile;
 extern ShearFun_t ShearProfile;
+#endif
+#endif
+
+#ifdef MPI_PARALLEL
+#ifdef MPI_VERSION
+extern MPI_Comm AMUSE_MPI_COMM_WORLD;
 #endif
 #endif
 

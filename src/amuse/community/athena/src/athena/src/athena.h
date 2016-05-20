@@ -64,7 +64,7 @@ typedef struct Side_s{
 typedef struct GridsData_s{
   int Nx[3];       /*!< number of zones in each dir [0,1,2]=[x1,x2,x3] */
   int Disp[3];   /*!< i,j,k displacements from origin of root [0,1,2]=[i,j,k] */
-  int ID_Comm_world;      /*!< ID of process for this Grid in MPI_COMM_WORLD */
+  int ID_Comm_world;      /*!< ID of process for this Grid in AMUSE_MPI_COMM_WORLD */
   int ID_Comm_Domain;     /*!< ID of process for this Grid in Comm_Domain    */
 #ifdef STATIC_MESH_REFINEMENT
   int ID_Comm_Children;     /*!< ID updating this Grid in Comm_Domain    */

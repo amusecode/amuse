@@ -169,7 +169,7 @@ void new_dt(MeshS *pM)
 
 #ifdef MPI_PARALLEL
   my_dt = pM->dt;
-  ierr = MPI_Allreduce(&my_dt, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+  ierr = MPI_Allreduce(&my_dt, &dt, 1, MPI_DOUBLE, MPI_MIN, AMUSE_MPI_COMM_WORLD);
   pM->dt = dt;
 #endif /* MPI_PARALLEL */
 

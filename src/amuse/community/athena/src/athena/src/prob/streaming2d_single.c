@@ -667,7 +667,7 @@ void OutputModeAmplitude(Grid *pGrid, Domain *pDomain, Output *pOut)
   sendbuf[4]=uym;       sendbuf[5]=wym;
   sendbuf[6]=uzm;       sendbuf[7]=wzm;
 
-  err = MPI_Reduce(sendbuf,recvbuf,8,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
+  err = MPI_Reduce(sendbuf,recvbuf,8,MPI_DOUBLE,MPI_MAX,0,AMUSE_MPI_COMM_WORLD);
   if(err) ath_error("[streaming2d]: MPI_Reduce returned error code %d\n",err);
 
   if (pGrid->my_id == 0) {

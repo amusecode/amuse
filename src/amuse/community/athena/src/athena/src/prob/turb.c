@@ -323,7 +323,7 @@ static void perturb(Grid *pGrid, Real dt)
 #ifdef MPI_PARALLEL
   /* Sum the perturbations over all processors */
   m[0] = t0;  m[1] = t1;  m[2] = t2;  m[3] = t3;
-  mpierr = MPI_Allreduce(m, gm, 4, MPI_RL, MPI_SUM, MPI_COMM_WORLD);
+  mpierr = MPI_Allreduce(m, gm, 4, MPI_RL, MPI_SUM, AMUSE_MPI_COMM_WORLD);
   if (mpierr) ath_error("[normalize]: MPI_Allreduce error = %d\n", mpierr);
   t0 = gm[0];  t1 = gm[1];  t2 = gm[2];  t3 = gm[3];
 #endif /* MPI_PARALLEL */
@@ -365,7 +365,7 @@ static void perturb(Grid *pGrid, Real dt)
 #ifdef MPI_PARALLEL
   /* Sum the perturbations over all processors */
   m[0] = t1;  m[1] = t2;
-  mpierr = MPI_Allreduce(m, gm, 2, MPI_RL, MPI_SUM, MPI_COMM_WORLD);
+  mpierr = MPI_Allreduce(m, gm, 2, MPI_RL, MPI_SUM, AMUSE_MPI_COMM_WORLD);
   if (mpierr) ath_error("[normalize]: MPI_Allreduce error = %d\n", mpierr);
   t1 = gm[0];  t2 = gm[1];
 #endif /* MPI_PARALLEL */

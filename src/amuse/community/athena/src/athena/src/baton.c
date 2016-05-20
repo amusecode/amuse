@@ -19,6 +19,7 @@
 /*============================================================================*/
 #include "defs.h"
 #include "prototypes.h"
+#include "globals.h"
 
 
 #ifdef MPI_PARALLEL
@@ -48,7 +49,7 @@ void baton_start(const int Nb, const int tag){
   MPI_Status stat;
   int status, isig, fr_id, my_id;
 
-  status = MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
+  status = MPI_Comm_rank(AMUSE_MPI_COMM_WORLD, &my_id);
   if(status != MPI_SUCCESS)
     ath_error("[baton_start]: MPI_Comm_rank error = %d\n",status);
 
@@ -56,7 +57,7 @@ void baton_start(const int Nb, const int tag){
 
   if(Nb > 0 && fr_id >= 0){
     /* Wait for another process to signal before beginning. */
-    status = MPI_Recv(&isig, 0, MPI_INT, fr_id, tag, MPI_COMM_WORLD, &stat);
+    status = MPI_Recv(&isig, 0, MPI_INT, fr_id, tag, AMUSE_MPI_COMM_WORLD, &stat);
 
     if(status != MPI_SUCCESS)
       ath_error("[baton_start]: MPI_Recv error = %d\n",status);
@@ -77,11 +78,11 @@ void baton_stop(const int Nb, const int tag){
 
   int status, isig, to_id, my_id, nproc;
 
-  status = MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
+  status = MPI_Comm_rank(AMUSE_MPI_COMM_WORLD, &my_id);
   if(status != MPI_SUCCESS)
     ath_error("[baton_stop]: MPI_Comm_rank error = %d\n",status);
 
-  status = MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+  status = MPI_Comm_size(AMUSE_MPI_COMM_WORLD, &nproc);
   if(status != MPI_SUCCESS)
     ath_error("[baton_stop]: MPI_Comm_size error = %d\n",status);
 
@@ -89,7 +90,7 @@ void baton_stop(const int Nb, const int tag){
 
   if(Nb > 0 && to_id < nproc){
     /* Signal the next process to begin. */
-    status = MPI_Send(&isig, 0, MPI_INT, to_id, tag, MPI_COMM_WORLD);
+    status = MPI_Send(&isig, 0, MPI_INT, to_id, tag, AMUSE_MPI_COMM_WORLD);
 
     if(status != MPI_SUCCESS)
       ath_error("[baton_stop]: MPI_Send error = %d\n",status);

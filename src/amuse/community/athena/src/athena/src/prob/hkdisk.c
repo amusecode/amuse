@@ -252,14 +252,14 @@ Real divB=0.0, maxdivB=0.0;
   }
 #endif //MHD
 #ifdef MPI_PARALLEL
-  MPI_Reduce(&Pgas, &TotPgas, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&Pb, &TotPb, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&Pgas, &TotPgas, 1, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
+  MPI_Reduce(&Pb, &TotPb, 1, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
   if (pG->my_id == 0) {
     printf("Total gas pressure = %f\n", TotPgas);
     printf("Total magnetic pressure = %f\n", TotPb);
   }
-  MPI_Bcast(&TotPgas, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Bcast(&TotPb, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&TotPgas, 1, MPI_DOUBLE, 0, AMUSE_MPI_COMM_WORLD);
+  MPI_Bcast(&TotPb, 1, MPI_DOUBLE, 0, AMUSE_MPI_COMM_WORLD);
 #else
   TotPgas = Pgas;
   TotPb = Pb;

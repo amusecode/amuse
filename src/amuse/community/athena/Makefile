@@ -22,6 +22,8 @@ else
   LDFLAGS += -ldl -lm
 endif
 
+AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
+AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
 BUILDDIR = build
 SELFGRAV_BUILDDIR = build_selfgrav
@@ -90,30 +92,45 @@ else
 endif
 	cd $(BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
-	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
+	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC) OPT="$(CXXFLAGS)"
 	rm -f $(CODELIB)
-	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
+	cd $(BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC) OPT="$(CXXFLAGS)"
 
 athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS) $(AM_LIBS)
 
+athena_worker_cython: athena_cython.so
+	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.athena.interface AthenaInterface -o $@ --cython-import athena_cython
+	
+athena_cython.so: athena_cython.o worker_code.h  $(CODELIB)  $(AMUSE_OBJS)
+	$(MPICXX) -shared $(CXXFLAGS) $(PYTHONDEV_LDFLAGS) $(AM_CFLAGS) $(SC_FLAGS) $(LDFLAGS) $<  $(AMUSE_OBJS) -o $@ $(SC_CLIBS) $(AM_LIBS) $(CODELIB)
+
+athena_%.o: athena_%.c worker_code.h
+	$(MPICC) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(PYTHONDEV_CFLAGS) -c -o $@ $< 
+
+athena_%.pyx: interface.py
+	$(CODE_GENERATOR) --type=cython -m mpi interface.py AthenaInterface -o $@
+
+athena_%.c: athena_%.pyx
+	$(CYTHON) $< -o $@
+	
 $(SELFGRAV_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(SELFGRAV_BUILDDIR)
 
 $(SELFGRAV_CODELIB): $(SELFGRAV_BUILDDIR)/Makefile
 ifeq ($(MPI_ENABLED),no)
-	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --disable-mpi --with-gravity=fft --enable-fft --disable-cooling
+	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --disable-mpi --with-gravity=fft --enable-fft --disable-cooling CFLAGS="$(CXXFLAGS)"
 else
-	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --disable-cooling
+	cd $(SELFGRAV_BUILDDIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --disable-cooling CFLAGS="$(CXXFLAGS)"
 endif
 	cd $(SELFGRAV_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
-	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
+	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 	rm -f $(CODELIB)
-	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
+	cd $(SELFGRAV_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 	
 athena_worker_selfgrav: worker_code.cc worker_code.h $(SELFGRAV_CODELIB) $(SELFGRAV_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(FFTW_FLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SELFGRAV_AMUSE_OBJS) $(SELFGRAV_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(FFTWLIB)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(FFTW_FLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SELFGRAV_AMUSE_OBJS) $(SELFGRAV_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(AM_LIBS) $(FFTWLIB)  $(LIBS)
 
 $(MHD_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
 	cp -r $(ATHENA_DIR) $(MHD_BUILDDIR)
@@ -122,16 +139,16 @@ $(MHD_CODELIB): $(MHD_BUILDDIR)/Makefile
 ifeq ($(MPI_ENABLED),no)
 	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --disable-mpi --enable-smr --with-order=3 --with-flux=hlld
 else
-	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld
+	cd $(MHD_BUILDDIR); ./configure --with-gas=mhd --with-eos=adiabatic --enable-mpi --enable-smr --with-order=3 --with-flux=hlld CFLAGS="$(CXXFLAGS)"
 endif
 	cd $(MHD_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
-	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
+	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 	rm -f $(CODELIB)
-	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
+	cd $(MHD_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 
 athena_worker_mhd: worker_code.cc worker_code.h $(MHD_CODELIB) $(MHD_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(MHD_AMUSE_OBJS) $(MHD_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(MHD_AMUSE_OBJS) $(MHD_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS) $(AM_LIBS)  $(LIBS)
 
 
 $(SCALAR_BUILDDIR)/Makefile: $(ATHENA_DIR)/Makefile.in
@@ -145,12 +162,12 @@ else
 endif
 	cd $(SCALAR_BUILDDIR); ln -fs ../../amuse_problem_$(VERSION).c src/problem.c
 	exit
-	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
+	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 	rm -f $(CODELIB)
-	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)
+	cd $(SCALAR_BUILDDIR); make all CC=$(MPICC) LDR=$(MPICC)  OPT="$(CXXFLAGS)"
 
 athena_worker_scalar: worker_code.cc worker_code.h $(SCALAR_CODELIB) $(SCALAR_AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SCALAR_AMUSE_OBJS) $(SCALAR_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(LIBS)
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(LDFLAGS) worker_code.cc $(SCALAR_AMUSE_OBJS) $(SCALAR_CODELIB) $(LDFLAGS) -o $@ $(SC_CLIBS)  $(AM_LIBS)  $(LIBS)
 
 $(BUILDDIR)/%.o: %.c
 	$(CC) $(CXXFLAGS) -I$(BUILDDIR)/src $(SC_FLAGS) -c -o $@ $< 

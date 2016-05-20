@@ -127,7 +127,7 @@ struct ath_3d_fft_plan *ath_3d_fft_create_plan(int gnx3, int gnx2,
   /* Create the plan */
 #ifdef FFT_BLOCK_DECOMP
   /* Block decomp library plans don't care if forward or backward */
-  ath_plan->plan = fft_3d_create_plan(MPI_COMM_WORLD, gnx3, gnx2, gnx1, 
+  ath_plan->plan = fft_3d_create_plan(AMUSE_MPI_COMM_WORLD, gnx3, gnx2, gnx1, 
 					gks, gke, gjs, gje, gis, gie, 
 			    		gks, gke, gjs, gje, gis, gie, 
                             		0, 0, &nbuf);
@@ -283,7 +283,7 @@ struct ath_2d_fft_plan *ath_2d_fft_create_plan(int gnx2, int gnx1,
   /* Create the plan */
 #ifdef FFT_BLOCK_DECOMP
   /* Block decomp plans don't care if forward/backward */
-  ath_plan->plan = fft_2d_create_plan(MPI_COMM_WORLD, gnx2, gnx1, gjs, gje,
+  ath_plan->plan = fft_2d_create_plan(AMUSE_MPI_COMM_WORLD, gnx2, gnx1, gjs, gje,
 					gis, gie, gjs, gje, gis, gie, 
                             		0, 0, &nbuf);
 #else /* FFT_BLOCK_DECOMP */
