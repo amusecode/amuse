@@ -36,6 +36,14 @@ typedef double Real;
 # error "Not a valid precision flag"
 #endif
 
+#ifdef MPI_PARALLEL
+#ifndef MAIN_C
+extern MPI_Comm AMUSE_MPI_COMM_WORLD;
+#undef MPI_COMM_WORLD
+#define MPI_COMM_WORLD AMUSE_MPI_COMM_WORLD
+#endif
+#endif
+
 /*! \struct Real3Vect
  *  \brief General 3-vectors of Reals.
  */
@@ -64,7 +72,7 @@ typedef struct Side_s{
 typedef struct GridsData_s{
   int Nx[3];       /*!< number of zones in each dir [0,1,2]=[x1,x2,x3] */
   int Disp[3];   /*!< i,j,k displacements from origin of root [0,1,2]=[i,j,k] */
-  int ID_Comm_world;      /*!< ID of process for this Grid in AMUSE_MPI_COMM_WORLD */
+  int ID_Comm_world;      /*!< ID of process for this Grid in MPI_COMM_WORLD */
   int ID_Comm_Domain;     /*!< ID of process for this Grid in Comm_Domain    */
 #ifdef STATIC_MESH_REFINEMENT
   int ID_Comm_Children;     /*!< ID updating this Grid in Comm_Domain    */

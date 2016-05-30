@@ -846,9 +846,9 @@ int main(int argc, char *argv[])
   if(MPI_SUCCESS != MPI_Init(&argc,&argv))
     ath_error("Error on calling MPI_Init\n");
 /* Get the number of processes */
-/* MPI_Comm_size(AMUSE_MPI_COMM_WORLD,&numprocs); */
+/* MPI_Comm_size(MPI_COMM_WORLD,&numprocs); */
 /* Get my task id, or rank as it is called in MPI */
-  MPI_Comm_rank(AMUSE_MPI_COMM_WORLD,&mytid);
+  MPI_Comm_rank(MPI_COMM_WORLD,&mytid);
 /* Get the name of the processor or machine name */
   MPI_Get_processor_name(processor_name,&namelen);
 
@@ -878,7 +878,7 @@ int main(int argc, char *argv[])
     }
   }
  
-  par_dist_mpi(mytid,AMUSE_MPI_COMM_WORLD);
+  par_dist_mpi(mytid,MPI_COMM_WORLD);
   par_dump(0,stdout);
   par_close();
 

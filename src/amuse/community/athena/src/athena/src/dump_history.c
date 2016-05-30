@@ -324,7 +324,7 @@ void dump_history(MeshS *pM, OutputS *pOut)
           }
 
 /* Create filename and open file.  History files are always written in lev#
- * directories of root process (rank=0 in AMUSE_MPI_COMM_WORLD) */
+ * directories of root process (rank=0 in MPI_COMM_WORLD) */
 #ifdef MPI_PARALLEL
           if (nl>0) {
             plev = &levstr[0];

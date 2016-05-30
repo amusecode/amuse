@@ -1221,7 +1221,7 @@ static void pack_Phi_ix3(GridS *pGrid)
 /* send contents of buffer to the neighboring grid on L-x3 */
 
   ierr = MPI_Send(send_buf, cnt, MPI_DOUBLE, pG->lx3_id,
-		  boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
+		  boundary_cells_tag, MPI_COMM_WORLD);
 
   return;
 }

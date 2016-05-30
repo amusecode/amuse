@@ -189,10 +189,10 @@ void problem(Grid *pGrid, Domain *pDomain)
   }
 
 #ifdef MPI_PARALLEL
-  MPI_Bcast(name,50,MPI_CHAR,0,AMUSE_MPI_COMM_WORLD);
-  MPI_Bcast(&x0,3,MPI_DOUBLE,0,AMUSE_MPI_COMM_WORLD);
-  MPI_Bcast(&idlab,1,MPI_LONG,0,AMUSE_MPI_COMM_WORLD);
-  MPI_Bcast(&cpuid,1,MPI_INT,0,AMUSE_MPI_COMM_WORLD);
+  MPI_Bcast(name,50,MPI_CHAR,0,MPI_COMM_WORLD);
+  MPI_Bcast(&x0,3,MPI_DOUBLE,0,MPI_COMM_WORLD);
+  MPI_Bcast(&idlab,1,MPI_LONG,0,MPI_COMM_WORLD);
+  MPI_Bcast(&cpuid,1,MPI_INT,0,MPI_COMM_WORLD);
 #endif
 
   return;

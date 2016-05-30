@@ -593,9 +593,9 @@ void data_output_destruct(void)
 /* get global min/max with MPI calculation */
 #ifdef MPI_PARALLEL
         ierr = MPI_Allreduce(&OutArray[i].gmin, &global_min, 1, MPI_DOUBLE,
-          MPI_MIN, AMUSE_MPI_COMM_WORLD);
+          MPI_MIN, MPI_COMM_WORLD);
         ierr = MPI_Allreduce(&OutArray[i].gmax, &global_max, 1, MPI_DOUBLE,
-          MPI_MAX, AMUSE_MPI_COMM_WORLD);
+          MPI_MAX, MPI_COMM_WORLD);
 #else
         global_min = OutArray[i].gmin;
         global_max = OutArray[i].gmax;

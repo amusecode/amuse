@@ -109,7 +109,7 @@ Real diff_dt(MeshS *pM)
 /* Find minimum timestep over all processors */
 #ifdef MPI_PARALLEL
   my_dt = dtmin_diffusion;
-  ierr = MPI_Allreduce(&my_dt, &dt, 1, MPI_DOUBLE, MPI_MIN, AMUSE_MPI_COMM_WORLD);
+  ierr = MPI_Allreduce(&my_dt, &dt, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
   dtmin_diffusion = dt;
 #endif /* MPI_PARALLEL */
 

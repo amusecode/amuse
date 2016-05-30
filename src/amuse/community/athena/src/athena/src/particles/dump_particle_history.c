@@ -182,9 +182,9 @@ void dump_particle_history(Grid *pGrid, Domain *pD, Output *pOut)
     my_scal[i] = scal[i];
 
   err = MPI_Reduce(&(my_scal[1]),&(scal[1]),2,
-                                 MPI_DOUBLE,MPI_MAX,0,AMUSE_MPI_COMM_WORLD);
+                                 MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
   err = MPI_Reduce(&(my_scal[3]),&(scal[3]),8+usr_scal_cnt,
-                                 MPI_DOUBLE,MPI_SUM,0,AMUSE_MPI_COMM_WORLD);
+                                 MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
 #endif
 
   /* Average the sums */
@@ -240,9 +240,9 @@ void dump_particle_history(Grid *pGrid, Domain *pD, Output *pOut)
   }
 
   err = MPI_Allreduce(my_npar, npar,  pGrid->partypes,
-                                      MPI_LONG,  MPI_SUM,AMUSE_MPI_COMM_WORLD);
+                                      MPI_LONG,  MPI_SUM,MPI_COMM_WORLD);
   err = MPI_Allreduce(sendbuf,recvbuf,6*pGrid->partypes,
-                                      MPI_DOUBLE,MPI_SUM,AMUSE_MPI_COMM_WORLD);
+                                      MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
 
   for (j=0; j<6; j++)
   {
@@ -287,7 +287,7 @@ void dump_particle_history(Grid *pGrid, Domain *pD, Output *pOut)
   }
 
   err = MPI_Reduce(sendbuf,recvbuf,(tot_aray_cnt-6)*pGrid->partypes,
-                                   MPI_DOUBLE,MPI_SUM,0,AMUSE_MPI_COMM_WORLD);
+                                   MPI_DOUBLE,MPI_SUM,0,MPI_COMM_WORLD);
 
   if (pGrid->my_id == 0)
   {

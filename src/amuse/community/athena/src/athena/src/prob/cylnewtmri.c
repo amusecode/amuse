@@ -545,10 +545,10 @@ void ScaleToBeta(GridS *pG, Real beta) {
   }
 
 #ifdef MPI_PARALLEL
-  MPI_Reduce(&Pgas, &TotPgas, 1, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
-  MPI_Reduce(&Pb, &TotPb, 1, MPI_DOUBLE, MPI_SUM, 0, AMUSE_MPI_COMM_WORLD);
-  MPI_Bcast(&TotPgas, 1, MPI_DOUBLE, 0, AMUSE_MPI_COMM_WORLD);
-  MPI_Bcast(&TotPb, 1, MPI_DOUBLE, 0, AMUSE_MPI_COMM_WORLD);
+  MPI_Reduce(&Pgas, &TotPgas, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&Pb, &TotPb, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&TotPgas, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&TotPb, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 #else
   TotPgas = Pgas;
   TotPb = Pb;

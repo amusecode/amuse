@@ -98,8 +98,8 @@ void init_mesh(MeshS *pM)
   int ierr,child_found,groupn,Nranks,Nranks0,max_rank,irank,*ranks;
   MPI_Group world_group;
 
-/* Get total # of processes, in AMUSE_MPI_COMM_WORLD */
-  ierr = MPI_Comm_size(AMUSE_MPI_COMM_WORLD, &Nproc_Comm_world);
+/* Get total # of processes, in MPI_COMM_WORLD */
+  ierr = MPI_Comm_size(MPI_COMM_WORLD, &Nproc_Comm_world);
 #endif
 
 /* Start by initializing some quantaties in Mesh structure */
@@ -558,7 +558,7 @@ nl,next_domainid[nl],pM->DomainsPerLevel[nl]);
       }
 
 /* Distribute cells in Domain to Grids.  Assign each Grid to a processor ID in
- * the AMUSE_MPI_COMM_WORLD communicator.  For single-processor jobs, there is only
+ * the MPI_COMM_WORLD communicator.  For single-processor jobs, there is only
  * one ID=0, and the GData array will have only one element. */
 
       for(n=0; n<(pD->NGrid[2]); n++){
@@ -675,15 +675,15 @@ nl,next_domainid[nl],pM->DomainsPerLevel[nl]);
   }}
   ranks = (int*)calloc_1d_array(max_rank,sizeof(int));
 
-/* Extract handle of group defined by AMUSE_MPI_COMM_WORLD communicator */
+/* Extract handle of group defined by MPI_COMM_WORLD communicator */
 
-  ierr = MPI_Comm_group(AMUSE_MPI_COMM_WORLD, &world_group);
+  ierr = MPI_Comm_group(MPI_COMM_WORLD, &world_group);
 
   for (nl=0; nl<=maxlevel; nl++){
   for (nd=0; nd<(pM->DomainsPerLevel[nl]); nd++){
     pD = (DomainS*)&(pM->Domain[nl][nd]);  /* set ptr to this Domain */
 
-/* Load integer array with ranks of processes in AMUSE_MPI_COMM_WORLD updating Grids
+/* Load integer array with ranks of processes in MPI_COMM_WORLD updating Grids
  * on this Domain.  The ranks of these processes in the new Comm_Domain
  * communicator created below are equal to the indices of this array */
 
@@ -704,7 +704,7 @@ printf("Domain_Comm ProcID=%d Nranks=%d ranks=",myID_Comm_world,Nranks);
 for (i=0; i<Nranks; i++) printf("%d ",ranks[i]);
 printf("\n");
     ierr = MPI_Group_incl(world_group,Nranks,ranks,&(pD->Group_Domain));
-    ierr = MPI_Comm_create(AMUSE_MPI_COMM_WORLD,pD->Group_Domain,&(pD->Comm_Domain));
+    ierr = MPI_Comm_create(MPI_COMM_WORLD,pD->Group_Domain,&(pD->Comm_Domain));
 
 /*
 int myrank=0;
@@ -743,7 +743,7 @@ printf("WorldID=%d Domain_CommID=%d\n",myID_Comm_world,myrank);
     pD = (DomainS*)&(pM->Domain[nl][nd]);  /* set ptr to this Domain */
     child_found = 0;
 
-/* Load integer array with ranks of processes in AMUSE_MPI_COMM_WORLD updating Grids
+/* Load integer array with ranks of processes in MPI_COMM_WORLD updating Grids
  * on this Domain, in case a child Domain is found.  Set IDs in Comm_Children
  * communicator based on index in rank array, in case child found.  If no
  * child is found these ranks will never be used. */
@@ -815,7 +815,7 @@ printf("Children_Comm ProcID=%d Nranks=%d ranks=",myID_Comm_world,Nranks);
 for (i=0; i<Nranks; i++) printf("%d ",ranks[i]);
 printf("\n");
       ierr = MPI_Group_incl(world_group, Nranks, ranks, &(pD->Group_Children));
-      ierr = MPI_Comm_create(AMUSE_MPI_COMM_WORLD,pD->Group_Children,
+      ierr = MPI_Comm_create(MPI_COMM_WORLD,pD->Group_Children,
         &pD->Comm_Children);
 
 /*

@@ -194,9 +194,9 @@ int main(int argc, char *argv[])
  * input file and distributes information to children  */
 
 #ifdef MPI_PARALLEL
-/* Get proc id (rank) in AMUSE_MPI_COMM_WORLD, store as global variable */
+/* Get proc id (rank) in MPI_COMM_WORLD, store as global variable */
 
-  if(MPI_SUCCESS != MPI_Comm_rank(AMUSE_MPI_COMM_WORLD, &myID_Comm_world))
+  if(MPI_SUCCESS != MPI_Comm_rank(MPI_COMM_WORLD, &myID_Comm_world))
     ath_error("[main]: Error on calling MPI_Comm_rank\n");
 
 /* Only rank=0 processor reads input parameter file, parses command line,
@@ -206,7 +206,7 @@ int main(int argc, char *argv[])
     par_open(athinput);   /* for restarts, default is athinput=resfile */ 
     par_cmdline(argc,argv);
   }
-  par_dist_mpi(myID_Comm_world,AMUSE_MPI_COMM_WORLD);
+  par_dist_mpi(myID_Comm_world,MPI_COMM_WORLD);
 
 /* Modify the problem_id name in the <job> block to include information about
  * processor ids, so that all output filenames constructed from this name will
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 
 /* Share the restart flag with the children */
 
-  if(MPI_SUCCESS != MPI_Bcast(&ires, 1, MPI_INT, 0, AMUSE_MPI_COMM_WORLD))
+  if(MPI_SUCCESS != MPI_Bcast(&ires, 1, MPI_INT, 0, MPI_COMM_WORLD))
     ath_error("[main]: Error on calling MPI_Bcast\n");
 
 /* rank=0 needs to send the restart file name to the children.  This requires 
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 
 /* Share this length with the children */
 
-    if(MPI_SUCCESS != MPI_Bcast(&len, 1, MPI_INT, 0, AMUSE_MPI_COMM_WORLD))
+    if(MPI_SUCCESS != MPI_Bcast(&len, 1, MPI_INT, 0, MPI_COMM_WORLD))
       ath_error("[main]: Error on calling MPI_Bcast\n");
 
     if(len + 10 > MAXLEN)
@@ -248,7 +248,7 @@ int main(int argc, char *argv[])
 /* Share the restart filename with the children */
 
     if(myID_Comm_world == 0) strcpy(new_name, res_file);
-    if(MPI_SUCCESS != MPI_Bcast(new_name, len, MPI_CHAR, 0, AMUSE_MPI_COMM_WORLD))
+    if(MPI_SUCCESS != MPI_Bcast(new_name, len, MPI_CHAR, 0, MPI_COMM_WORLD))
       ath_error("[main]: Error on calling MPI_Bcast\n");
 
 /* Assume the restart file name is of the form
@@ -752,7 +752,7 @@ void change_rundir(const char *name)
   int rerr, gerr, my_id, status;
   char mydir[80];
 
-  status = MPI_Comm_rank(AMUSE_MPI_COMM_WORLD, &my_id);
+  status = MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
   if(status != MPI_SUCCESS)
     ath_error("[change_rundir]: MPI_Comm_rank error = %d\n",status);
 
@@ -765,7 +765,7 @@ void change_rundir(const char *name)
       mkdir(name); /* May return an error, e.g. the directory exists */
 #endif //_WIN32
     }
-    MPI_Barrier(AMUSE_MPI_COMM_WORLD); /* Wait for rank 0 to mkdir() */
+    MPI_Barrier(MPI_COMM_WORLD); /* Wait for rank 0 to mkdir() */
 
     baton_start(MAX_FILE_OP, ch_rundir0_tag);
 
@@ -777,11 +777,11 @@ void change_rundir(const char *name)
     baton_stop(MAX_FILE_OP, ch_rundir0_tag);
 
     /* Did anyone fail to make and change to the run directory? */
-    rerr = MPI_Allreduce(&err, &gerr, 1, MPI_INT, MPI_MAX, AMUSE_MPI_COMM_WORLD);
+    rerr = MPI_Allreduce(&err, &gerr, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if(rerr) ath_perr(-1,"[change_rundir]: MPI_Allreduce error = %d\n",rerr);
 
     if(rerr || gerr){
-      MPI_Abort(AMUSE_MPI_COMM_WORLD, 1);
+      MPI_Abort(MPI_COMM_WORLD, 1);
       exit(EXIT_FAILURE);
     }
   }
@@ -806,11 +806,11 @@ void change_rundir(const char *name)
   baton_stop(MAX_FILE_OP, ch_rundir1_tag);
 
   /* Did anyone fail to make and change to the local run directory? */
-  rerr = MPI_Allreduce(&err, &gerr, 1, MPI_INT, MPI_MAX, AMUSE_MPI_COMM_WORLD);
+  rerr = MPI_Allreduce(&err, &gerr, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
   if(rerr) ath_perr(-1,"[change_rundir]: MPI_Allreduce error = %d\n",rerr);
 
   if(rerr || gerr){
-    MPI_Abort(AMUSE_MPI_COMM_WORLD, 1);
+    MPI_Abort(MPI_COMM_WORLD, 1);
     exit(EXIT_FAILURE);
   }
 

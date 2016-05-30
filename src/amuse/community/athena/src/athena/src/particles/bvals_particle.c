@@ -201,7 +201,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the left grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->lx1_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* packing particle on the right to send buffer */
@@ -209,7 +209,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the right grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->rx1_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix1_particle]: MPI_Send error = %d\n",err);
 
       if (my_iproc == pD->NGrid_x1-1) {
@@ -236,14 +236,14 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the left grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->lx1_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->rx1_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ix1_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -260,7 +260,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the right grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->rx1_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* packing particle on the left to send buffer */
@@ -268,7 +268,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the left grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->lx1_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix1_particle]: MPI_Send error = %d\n",err);
 
       if (my_iproc == 0) {
@@ -295,14 +295,14 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the right grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->rx1_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->lx1_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ox1_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -326,13 +326,13 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the right grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->rx1_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix1_particle]: MPI_Send error = %d\n",err);
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->rx1_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ix1_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -343,7 +343,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the right grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->rx1_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
      /* receive buffer size from the right grid */
@@ -357,7 +357,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the right grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->rx1_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
         /* receive buffer from the left grid */
@@ -376,7 +376,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the left grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->lx1_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* receive buffer size from the left grid */
@@ -390,7 +390,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the left grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->lx1_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
@@ -404,13 +404,13 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the left grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->lx1_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix1_particle]: MPI_Send error = %d\n",err);
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->lx1_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ox1_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -460,7 +460,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the left grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->lx2_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* packing particle on the right to send buffer */
@@ -468,7 +468,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the right grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->rx2_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix2_particle]: MPI_Send error = %d\n",err);
 
       /* physical boundary on the rignt in periodic B.C. */
@@ -487,14 +487,14 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the left grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->lx2_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->rx2_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ix2_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -511,7 +511,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the right grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->rx2_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* packing particle on the left to send buffer */
@@ -519,7 +519,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the left grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->lx2_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix2_particle]: MPI_Send error = %d\n",err);
 
       if (my_jproc == 0) /* physical boundary on the left in periodic B.C. */
@@ -537,14 +537,14 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the right grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->rx2_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->lx2_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ox2_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -568,13 +568,13 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the right grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->rx2_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix1_particle]: MPI_Send error = %d\n",err);
 
       /* send buffer to the right grid */
       if (cnt_send > 0) {
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->rx2_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ix1_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -586,7 +586,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the right grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->rx2_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* receive buffer size from the right grid */
@@ -600,7 +600,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the right grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->rx2_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
         /* receive buffer from the left grid */
@@ -619,7 +619,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the left grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->lx2_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* receive buffer size from the left grid */
@@ -632,7 +632,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the left grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->lx2_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
@@ -647,13 +647,13 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the left grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->lx2_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix2_particle]: MPI_Send error = %d\n",err);
 
       /* send buffer to the right grid */
       if (cnt_send > 0) {
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->lx2_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ox2_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -691,7 +691,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the left grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->lx3_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* packing particle on the right to send buffer */
@@ -699,7 +699,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the right grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->rx3_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix3_particle]: MPI_Send error = %d\n",err);
 
       /* physical boundary on the rignt in periodic B.C. */
@@ -718,14 +718,14 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the left grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->lx3_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->rx3_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ix3_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -742,7 +742,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the right grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->rx3_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* packing particle on the left to send buffer */
@@ -750,7 +750,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the left grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->lx3_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix3_particle]: MPI_Send error = %d\n",err);
 
       if (my_kproc == 0) /* physical boundary on the left in periodic B.C. */
@@ -768,14 +768,14 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the right grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->rx3_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->lx3_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ox3_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -799,13 +799,13 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the right grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->rx3_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix3_particle]: MPI_Send error = %d\n",err);
 
       /* send buffer to the right grid */
       if (cnt_send > 0) {
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->rx3_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ix3_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -817,7 +817,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the right grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->rx3_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       /* receive buffer size from the right grid */
       err = MPI_Wait(&rq, &stat);
@@ -830,7 +830,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the right grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->rx3_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
         /* receive buffer from the left grid */
         err = MPI_Wait(&rq, &stat);
@@ -848,7 +848,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the data size from the left grid */
       err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, pG->lx3_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                 boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
       /* receive buffer size from the left grid */
@@ -862,7 +862,7 @@ void set_bvals_particle(Grid *pG, Domain *pD)
       if (cnt_recv > 0) {
         /* Post a non-blocking receive for the input data from the left grid */
         err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, pG->lx3_id,
-                                  boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                  boundary_particle_tag, MPI_COMM_WORLD, &rq);
         if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
       }
 
@@ -877,13 +877,13 @@ void set_bvals_particle(Grid *pG, Domain *pD)
 
       /* send buffer size to the left grid */
       err = MPI_Send(&cnt_send, 1, MPI_LONG, pG->lx3_id,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ix3_particle]: MPI_Send error = %d\n",err);
 
       if (cnt_send > 0) {
         /* send buffer to the right grid */
         err = MPI_Send(send_buf, cnt_send*NVAR_P, MPI_DOUBLE, pG->lx3_id,
-                                 boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                                 boundary_particle_tag, MPI_COMM_WORLD);
         if(err) ath_error("[send_ox3_particle]: MPI_Send error = %d\n",err);
       }
 
@@ -967,7 +967,7 @@ void advect_particles(Grid *pG, Domain *pD)
 
     /* Post a non-blocking receive for the data size */
     err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, idr, boundary_particle_tag,
-                                                 AMUSE_MPI_COMM_WORLD, &rq);
+                                                 MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
     /* packing particles */
@@ -975,7 +975,7 @@ void advect_particles(Grid *pG, Domain *pD)
     n = packing_particle_fargo(pG, yl, yu);
 
     /* send buffer size */
-    err = MPI_Send(&n, 1, MPI_LONG, ids, boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+    err = MPI_Send(&n, 1, MPI_LONG, ids, boundary_particle_tag, MPI_COMM_WORLD);
     if(err) ath_error("[send_ox1_particle_shear]: MPI_Send error = %d\n",err);
 
     /* receive buffer size */
@@ -989,14 +989,14 @@ void advect_particles(Grid *pG, Domain *pD)
     /* Post a non-blocking receive for data */
     if (cnt_recv > 0) {
       err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, idr,
-                                boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                boundary_particle_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
     }
 
     /* send buffer */
     if (n > 0) {
       err = MPI_Send(send_buf, n*NVAR_P, MPI_DOUBLE, ids,
-                               boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                               boundary_particle_tag, MPI_COMM_WORLD);
       if(err) ath_error("[send_ox1_particle_shear]: MPI_Send error = %d\n",err);
     }
 
@@ -2193,11 +2193,11 @@ static void shearingbox_ix1_particle(Grid *pG, Domain *pD, long numpar)
   /* send and receive buffer size to/from region I (id1) */
   /* Post a non-blocking receive for the data size */
   err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, id1r,
-                             boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                             boundary_particle_tag, MPI_COMM_WORLD, &rq);
   if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
   /* send buffer size */
-  err = MPI_Send(&n1, 1, MPI_LONG, id1s, boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+  err = MPI_Send(&n1, 1, MPI_LONG, id1s, boundary_particle_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ix1_particle_shear]: MPI_Send error = %d\n",err);
 
   /* receive buffer size from */
@@ -2212,14 +2212,14 @@ static void shearingbox_ix1_particle(Grid *pG, Domain *pD, long numpar)
   if (cnt_recv > 0) {
     /* Post a non-blocking receive for the data from outer region I */
     err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, id1r,
-                              boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                              boundary_particle_tag, MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
   }
 
   if (n1 > 0) {
     /* send buffer */
     err = MPI_Send(send_buf, n1*NVAR_P, MPI_DOUBLE, id1s,
-                             boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                             boundary_particle_tag, MPI_COMM_WORLD);
     if(err) ath_error("[send_ix1_particle_shear]: MPI_Send error = %d\n",err);
   }
 
@@ -2239,11 +2239,11 @@ static void shearingbox_ix1_particle(Grid *pG, Domain *pD, long numpar)
   /* send and receive buffer size to/from region II (id2) */
   /* Post a non-blocking receive for the data size */
   err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, id2r,
-                             boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                             boundary_particle_tag, MPI_COMM_WORLD, &rq);
   if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
   /* send buffer size */
-  err = MPI_Send(&n2, 1, MPI_LONG, id2s, boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+  err = MPI_Send(&n2, 1, MPI_LONG, id2s, boundary_particle_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ix1_particle_shear]: MPI_Send error = %d\n",err);
 
   /* receive buffer size */
@@ -2258,14 +2258,14 @@ static void shearingbox_ix1_particle(Grid *pG, Domain *pD, long numpar)
   if (cnt_recv > 0) {
     /* Post a non-blocking receive for the data */
     err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, id2r,
-                              boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                              boundary_particle_tag, MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
   }
 
   if (n2 > 0) {
     /* send buffer */
     err = MPI_Send(send_buf, n2*NVAR_P, MPI_DOUBLE, id2s,
-                             boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                             boundary_particle_tag, MPI_COMM_WORLD);
     if(err) ath_error("[send_ix1_particle_shear]: MPI_Send error = %d\n",err);
   }
 
@@ -2344,11 +2344,11 @@ static void shearingbox_ox1_particle(Grid *pG, Domain *pD, long numpar)
   /* send and receive buffer size to/from inner region I (id1) */
   /* Post a non-blocking receive for the data size from inner regiion I */
   err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, id1r,
-                             boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                             boundary_particle_tag, MPI_COMM_WORLD, &rq);
   if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
   /* send buffer size to inner region I */
-  err = MPI_Send(&n1, 1, MPI_LONG, id1s, boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+  err = MPI_Send(&n1, 1, MPI_LONG, id1s, boundary_particle_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ox1_particle_shear]: MPI_Send error = %d\n",err);
 
   /* receive buffer size from the inner region I */
@@ -2363,14 +2363,14 @@ static void shearingbox_ox1_particle(Grid *pG, Domain *pD, long numpar)
   if (cnt_recv > 0) {
     /* Post a non-blocking receive for the data from inner region I */
     err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, id1r,
-                              boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                              boundary_particle_tag, MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
   }
 
   if (n1 > 0) {
     /* send buffer to inner region I */
     err = MPI_Send(send_buf, n1*NVAR_P, MPI_DOUBLE, id1s,
-                             boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                             boundary_particle_tag, MPI_COMM_WORLD);
     if(err) ath_error("[send_ox1_particle_shear]: MPI_Send error = %d\n",err);
   }
 
@@ -2390,11 +2390,11 @@ static void shearingbox_ox1_particle(Grid *pG, Domain *pD, long numpar)
   /* send and receive buffer size to/from inner region II (id2) */
   /* Post a non-blocking receive for the data size from inner region II */
   err = MPI_Irecv(&cnt_recv, 1, MPI_LONG, id2r,
-                             boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                             boundary_particle_tag, MPI_COMM_WORLD, &rq);
   if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
 
   /* send buffer size to inner region II */
-  err = MPI_Send(&n2, 1, MPI_LONG, id2s, boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+  err = MPI_Send(&n2, 1, MPI_LONG, id2s, boundary_particle_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ox1_particle_shear]: MPI_Send error = %d\n",err);
 
   /* receive buffer size from inner region II */
@@ -2409,14 +2409,14 @@ static void shearingbox_ox1_particle(Grid *pG, Domain *pD, long numpar)
   if (cnt_recv > 0) {
     /* Post a non-blocking receive for the data from inner region II */
     err = MPI_Irecv(recv_buf, cnt_recv*NVAR_P, MPI_DOUBLE, id2r,
-                              boundary_particle_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                              boundary_particle_tag, MPI_COMM_WORLD, &rq);
     if(err) ath_error("[set_bvals_particle]: MPI_Irecv error = %d\n",err);
   }
 
   if (n2 > 0) {
     /* send buffer to inner region II */
     err = MPI_Send(send_buf, n2*NVAR_P, MPI_DOUBLE, id2s,
-                             boundary_particle_tag, AMUSE_MPI_COMM_WORLD);
+                             boundary_particle_tag, MPI_COMM_WORLD);
     if(err) ath_error("[send_ox1_particle_shear]: MPI_Send error = %d\n",err);
   }
 

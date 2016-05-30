@@ -155,7 +155,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx3_id >= 0 && pG->lx3_id >= 0) {
       /* Post a non-blocking receive for the input data from the left grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->lx3_id, 
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ox3_feedback(pG);       /* send R */
@@ -163,7 +163,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the input data from the right grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->rx3_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ix3_feedback(pG);       /* send L */
@@ -174,7 +174,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx3_id >= 0 && pG->lx3_id < 0) {
       /* Post a non-blocking receive for the input data from the right grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->rx3_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ox3_feedback(pG);       /* send R */
@@ -186,7 +186,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx3_id < 0 && pG->lx3_id >= 0) {
       /* Post a non-blocking receive for the input data from the left grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->lx3_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ix3_feedback(pG);       /* send L */
@@ -217,7 +217,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx2_id >= 0 && pG->lx2_id >= 0) {
       /* Post a non-blocking receive for the input data from the left grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->lx2_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ox2_feedback(pG);       /* send R */
@@ -225,7 +225,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the input data from the right grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->rx2_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ix2_feedback(pG);       /* send L */
@@ -236,7 +236,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx2_id >= 0 && pG->lx2_id < 0) {
       /* Post a non-blocking receive for the input data from the right grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->rx2_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ox2_feedback(pG);       /* send R */
@@ -248,7 +248,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx2_id < 0 && pG->lx2_id >= 0) {
       /* Post a non-blocking receive for the input data from the left grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->lx2_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ix2_feedback(pG);       /* send L */
@@ -294,7 +294,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx1_id >= 0 && pG->lx1_id >= 0) {
       /* Post a non-blocking receive for the input data from the left grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->lx1_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ox1_feedback(pG);       /* send R */
@@ -302,7 +302,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
 
       /* Post a non-blocking receive for the input data from the right grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->rx1_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ix1_feedback(pG);       /* send L */
@@ -313,7 +313,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx1_id >= 0 && pG->lx1_id < 0) {
       /* Post a non-blocking receive for the input data from the right grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->rx1_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ox1_feedback(pG);       /* send R */
@@ -325,7 +325,7 @@ void exchange_feedback(Grid *pG, Domain *pD)
     if (pG->rx1_id < 0 && pG->lx1_id >= 0) {
       /* Post a non-blocking receive for the input data from the left grid */
       err = MPI_Irecv(recv_buf, cnt, MPI_DOUBLE, pG->lx1_id,
-                                     boundary_cells_tag, AMUSE_MPI_COMM_WORLD, &rq);
+                                     boundary_cells_tag, MPI_COMM_WORLD, &rq);
       if(err) ath_error("[exchange_feedback]: MPI_Irecv error = %d\n",err);
 
       send_ix1_feedback(pG);       /* send L */
@@ -1029,7 +1029,7 @@ static void send_ix3_feedback(Grid *pG)
 
 /* send contents of buffer to the neighboring grid on L-x3 */
   err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pG->lx3_id, 
-                                boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_cells_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ix3_feedback]: MPI_Send error = %d\n",err);
 
   return;
@@ -1066,7 +1066,7 @@ static void send_ox3_feedback(Grid *pG)
 
 /* send contents of buffer to the neighboring grid on R-x3 */
   err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pG->rx3_id,
-                                boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_cells_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ox3_feedback]: MPI_Send error = %d\n",err);
 
   return;
@@ -1103,7 +1103,7 @@ static void send_ix2_feedback(Grid *pG)
 
 /* send contents of buffer to the neighboring grid on L-x2 */
   err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pG->lx2_id,
-                                boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_cells_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ix2_feedback]: MPI_Send error = %d\n",err);
 
   return;
@@ -1140,7 +1140,7 @@ static void send_ox2_feedback(Grid *pG)
 
 /* send contents of buffer to the neighboring grid on R-x2 */
   err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pG->rx2_id,
-                                boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_cells_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ox2_feedback]: MPI_Send error = %d\n",err);
 
   return;
@@ -1177,7 +1177,7 @@ static void send_ix1_feedback(Grid *pG)
 
 /* send contents of buffer to the neighboring grid on L-x1 */
   err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pG->lx1_id,
-                                boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_cells_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ix1_feedback]: MPI_Send error = %d\n",err);
 
   return;
@@ -1214,7 +1214,7 @@ static void send_ox1_feedback(Grid *pG)
 
 /* send contents of buffer to the neighboring grid on R-x1 */
   err = MPI_Send(send_buf, cnt, MPI_DOUBLE, pG->rx1_id,
-                                boundary_cells_tag, AMUSE_MPI_COMM_WORLD);
+                                boundary_cells_tag, MPI_COMM_WORLD);
   if(err) ath_error("[send_ox1_feedback]: MPI_Send error = %d\n",err);
 
   return;
