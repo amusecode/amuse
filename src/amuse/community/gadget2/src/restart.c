@@ -99,7 +99,7 @@ void restart(int modus)
 #ifndef NOMPI
 	  if(modus > 0 && groupTask == 0)	/* read */
 	    {
-	      MPI_Bcast(&all_task0, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
+	      MPI_Bcast(&all_task0, sizeof(struct global_data_all_processes), MPI_BYTE, 0, GADGET_WORLD);
 	    }
 #endif
 	  old_MaxPart = All.MaxPart;
@@ -278,13 +278,13 @@ void restart(int modus)
 #ifndef NOMPI
 	  if(modus > 0 && groupTask == 0)	/* read */
 	    {
-	      MPI_Bcast(&all_task0, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
+	      MPI_Bcast(&all_task0, sizeof(struct global_data_all_processes), MPI_BYTE, 0, GADGET_WORLD);
 	    }
 #endif
 	}
 
 #ifndef NOMPI
-	      MPI_Barrier(MPI_COMM_WORLD);
+	      MPI_Barrier(GADGET_WORLD);
 #endif
     }
 }

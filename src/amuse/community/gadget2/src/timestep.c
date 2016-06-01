@@ -107,8 +107,8 @@ void advance_and_find_timesteps(void)
     }
 
 #ifndef NOMPI
-  MPI_Allreduce(&dispmax, &globmax, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
-  MPI_Allreduce(&disp2sum, &globdisp2sum, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(&dispmax, &globmax, 1, MPI_DOUBLE, MPI_MAX, GADGET_WORLD);
+  MPI_Allreduce(&disp2sum, &globdisp2sum, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
 #else
     globmax = dispmax;
     globdisp2sum = disp2sum;
@@ -167,7 +167,7 @@ void advance_and_find_timesteps(void)
 
   ti_step = All.PresentMinStep;
 #ifndef NOMPI
-  MPI_Allreduce(&ti_step, &All.PresentMinStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+  MPI_Allreduce(&ti_step, &All.PresentMinStep, 1, MPI_INT, MPI_MIN, GADGET_WORLD);
 #else
   All.PresentMinStep = ti_step;
 #endif
@@ -612,8 +612,8 @@ void find_dt_displacement_constraint(double hfac /*!<  should be  a^2*H(a)  */ )
 	}
 
 #ifndef NOMPI
-      MPI_Allreduce(v, v_sum, 6, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-      MPI_Allreduce(mim, min_mass, 6, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+      MPI_Allreduce(v, v_sum, 6, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
+      MPI_Allreduce(mim, min_mass, 6, MPI_DOUBLE, MPI_MIN, GADGET_WORLD);
 #else
     for(i = 0; i < 6; i++){
         v_sum[i] = v[i];
@@ -622,7 +622,7 @@ void find_dt_displacement_constraint(double hfac /*!<  should be  a^2*H(a)  */ )
 #endif
       temp = malloc(NTask * 6 * sizeof(int));
 #ifndef NOMPI
-      MPI_Allgather(count, 6, MPI_INT, temp, 6, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(count, 6, MPI_INT, temp, 6, MPI_INT, GADGET_WORLD);
 #else
     for(i = 0; i < 6; i++){
         temp[i] = count[i];

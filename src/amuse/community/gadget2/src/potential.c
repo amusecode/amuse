@@ -68,7 +68,7 @@ void compute_potential(void)
 
   numlist = malloc(NTask * sizeof(int) * NTask);
 #ifndef NOMPI
-  MPI_Allgather(&NumPart, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&NumPart, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
 #else
    numlist[0] = NumPart;
 #endif
@@ -138,7 +138,7 @@ void compute_potential(void)
 	noffset[j] = noffset[j - 1] + nsend_local[j - 1];
 
 #ifndef NOMPI
-      MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
 #else
     nsend[0] = nsend_local[0];
 #endif
@@ -174,7 +174,7 @@ void compute_potential(void)
 				   recvTask, TAG_POTENTIAL_A,
 				   &GravDataGet[nbuffer[ThisTask]],
 				   nsend[recvTask * NTask + ThisTask] * sizeof(struct gravdata_in), MPI_BYTE,
-				   recvTask, TAG_POTENTIAL_A, MPI_COMM_WORLD, &status);
+				   recvTask, TAG_POTENTIAL_A, GADGET_WORLD, &status);
 		    }
 		}
 #endif
@@ -223,7 +223,7 @@ void compute_potential(void)
 				   MPI_BYTE, recvTask, TAG_POTENTIAL_B,
 				   &GravDataOut[noffset[recvTask]],
 				   nsend_local[recvTask] * sizeof(struct gravdata_in),
-				   MPI_BYTE, recvTask, TAG_POTENTIAL_B, MPI_COMM_WORLD, &status);
+				   MPI_BYTE, recvTask, TAG_POTENTIAL_B, GADGET_WORLD, &status);
 
 		      /* add the result to the particles */
 		      for(j = 0; j < nsend_local[recvTask]; j++)
@@ -244,7 +244,7 @@ void compute_potential(void)
 	}
 
 #ifndef NOMPI
-      MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
 #else
     ndonelist[0] = ndone;
 #endif // NOMPI

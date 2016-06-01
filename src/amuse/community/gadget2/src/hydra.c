@@ -110,7 +110,7 @@ void hydro_force(void)
 
   numlist = malloc(NTask * sizeof(int) * NTask);
 #ifndef NOMPI
-  MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
 #else
     numlist[0] = NumSphUpdate;
 #endif
@@ -188,7 +188,7 @@ void hydro_force(void)
 
       tstart = second();
 #ifndef NOMPI
-      MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
 #else
     nsend[0] = nsend_local[0];
 #endif
@@ -230,7 +230,7 @@ void hydro_force(void)
 				   recvTask, TAG_HYDRO_A,
 				   &HydroDataGet[nbuffer[ThisTask]],
 				   nsend[recvTask * NTask + ThisTask] * sizeof(struct hydrodata_in), MPI_BYTE,
-				   recvTask, TAG_HYDRO_A, MPI_COMM_WORLD, &status);
+				   recvTask, TAG_HYDRO_A, GADGET_WORLD, &status);
 #else
     fprintf(stderr, "NOT SUPPORTED");
     exit(1);
@@ -255,7 +255,7 @@ void hydro_force(void)
 	  /* do a block to measure imbalance */
 	  tstart = second();
 #ifndef NOMPI
-      MPI_Barrier(MPI_COMM_WORLD);
+      MPI_Barrier(GADGET_WORLD);
 #endif
 	  tend = second();
 	  timeimbalance += timediff(tstart, tend);
@@ -290,7 +290,7 @@ void hydro_force(void)
 				   MPI_BYTE, recvTask, TAG_HYDRO_B,
 				   &HydroDataPartialResult[noffset[recvTask]],
 				   nsend_local[recvTask] * sizeof(struct hydrodata_out),
-				   MPI_BYTE, recvTask, TAG_HYDRO_B, MPI_COMM_WORLD, &status);
+				   MPI_BYTE, recvTask, TAG_HYDRO_B, GADGET_WORLD, &status);
 #else
     fprintf(stderr, "NOT SUPPORTED");
     exit(1);
@@ -323,7 +323,7 @@ void hydro_force(void)
 	}
 
 #ifndef NOMPI
-      MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
 #else
     ndonelist[0] = ndone;
 #endif
@@ -362,9 +362,9 @@ void hydro_force(void)
   /* collect some timing information */
 
 #ifndef NOMPI
-  MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
 #else
     sumt = timecomp;
     sumcomm = timecommsumm;

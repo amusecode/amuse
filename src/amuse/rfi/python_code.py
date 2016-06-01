@@ -7,7 +7,7 @@ import sys
 import os
 import socket
 import traceback
-
+import types
 
 from amuse.rfi.channel import ClientSideMPIMessage
 from amuse.rfi.channel import SocketMessage
@@ -80,6 +80,7 @@ class PythonImplementation(object):
                     try:
                         self.handle_message(message, result_message)
                     except Exception as ex:
+                        print ex
                         traceback.print_exc()
                         result_message.set_error(str(ex))
                         #for type, attribute in self.dtype_to_message_attribute.iteritems():
@@ -122,9 +123,14 @@ class PythonImplementation(object):
                 if message.function_id in self.mapping_from_tag_to_legacy_function:
                     try:
                         self.handle_message(message, result_message)
-                    except Exception as ex:
-                        print ex
+                    except  BaseException as ex:
+                        traceback.print_exc()
                         result_message.set_error(ex.__str__())
+                        for type, attribute in self.dtype_to_message_attribute.iteritems():
+                            array = getattr(result_message, attribute)
+                            packed = pack_array(array, result_message.call_count, type)
+                            setattr(result_message, attribute, packed)
+    
                 else:
                     result_message.set_error("unknown function id " + message.function_id)
             
@@ -132,6 +138,7 @@ class PythonImplementation(object):
         
         client_socket.close()
         
+
     def handle_message(self, input_message, output_message):
         legacy_function = self.mapping_from_tag_to_legacy_function[input_message.function_id]
         specification = legacy_function.specification
@@ -500,7 +507,7 @@ class CythonImplementation(PythonImplementation):
                 keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification, input_units)
                 try:
                     result = method(**keyword_arguments)
-                except TypeError:
+                except TypeError as ex:
                     result = method(*list(keyword_arguments))
                 self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         

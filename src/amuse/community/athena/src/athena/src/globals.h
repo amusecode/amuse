@@ -59,6 +59,15 @@ ShearFun_t ShearProfile = NULL;
 #endif
 #endif
 
+
+#ifdef MPI_PARALLEL
+#ifdef MPI_VERSION
+MPI_Comm AMUSE_MPI_COMM_WORLD;
+#undef MPI_COMM_WORLD
+#define MPI_COMM_WORLD AMUSE_MPI_COMM_WORLD
+#endif
+#endif
+
 /*----------------------------------------------------------------------------*/
 /* definitions included everywhere except main.c  */
 
@@ -108,6 +117,14 @@ extern Real *r, *ri;
 #ifdef FARGO
 extern OrbitalFun_t OrbitalProfile;
 extern ShearFun_t ShearProfile;
+#endif
+#endif
+
+#ifdef MPI_PARALLEL
+#ifdef MPI_VERSION
+extern MPI_Comm AMUSE_MPI_COMM_WORLD;
+#undef MPI_COMM_WORLD
+#define MPI_COMM_WORLD AMUSE_MPI_COMM_WORLD
 #endif
 #endif
 

@@ -1023,3 +1023,24 @@ class TestStoreHDFV2(_AbstractTestStoreHDF):
         z = io.read_set_from_file(output_file,"amuse")
         
         os.remove(output_file)
+    def test60(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test60"+self.store_version()+".h5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+       
+        x = Particles(2)
+        x.mass = 1 | units.kg
+        y = Particles(2)
+        y.mass = 2 | units.kg
+        io.write_set_to_file((x,y), output_file,"amuse", version=self.store_version(), names = ("x", "y"))
+        z = io.read_set_from_file(output_file,"amuse")
+        
+        os.remove(output_file)
+        self.assertTrue("x" in z)
+        self.assertTrue("y" in z)
+        self.assertAlmostRelativeEquals(z["x"].mass, 1 | units.kg)
+        self.assertAlmostRelativeEquals(z["y"].mass, 2 | units.kg)
+
+

@@ -210,3 +210,8 @@ struct hydrodata_out
 struct timedata_in *TimeDataIn, *TimeDataGet;
 #endif
 
+#ifndef NOMPI
+#include <mpi.h>
+MPI_Comm GADGET_WORLD;
+#endif
+

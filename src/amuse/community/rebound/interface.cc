@@ -306,7 +306,7 @@ int _evolve_code(double _tmax, code_state * cs){
     time_t starttime, currenttime;
     time(&starttime);
     get_kinetic_energy(cs->subset, &ke);
-    printf("Code time: %d ,  %f -> %f (%f)\n",cs->subset , code->t, tmax, ke);
+    //printf("Code time: %d ,  %f -> %f (%f)\n",cs->subset , code->t, tmax, ke);
     while(code->t*dtsign<tmax*dtsign && last_step<2 && ret_value==0){
 		if (code->N<=0){
 			fprintf(stderr,"\n\033[1mError!\033[0m No particles found. Exiting.\n");
@@ -424,7 +424,7 @@ int _evolve_code(double _tmax, code_state * cs){
 	reb_integrator_synchronize(code);
 	code->dt = code->dt_last_done;
     get_kinetic_energy(cs->subset, &ke1);
-    printf("Code time: %d ,  %f -> %f (%f,%f)\n",cs->subset , code->t, tmax, ke1, (ke1-ke)/ke);
+    //printf("Code time: %d ,  %f -> %f (%f,%f)\n",cs->subset , code->t, tmax, ke1, (ke1-ke)/ke);
 	gettimeofday(&tim, NULL);
 	double timing_final = tim.tv_sec+(tim.tv_usec/1000000.0);
 	double timing = timing_final-timing_initial;
@@ -752,7 +752,7 @@ int new_subset(int * index, double time_offset) {
     code->t = time_offset;
     codes.push_back(code_state(code, time_offset, codes.size()));
     *index = codes.size() - 1;
-    printf("Code time: %d ,  %f\n",*index , code->t);
+    //printf("Code time: %d ,  %f\n",*index , code->t);
     return 0;
 }
 int stop_subset(int code_index) {

@@ -22,6 +22,7 @@
 #include "defs.h"
 #include "athena.h"
 #include "prototypes.h"
+#include "globals.h"
 
 static volatile int sig_caught = 0;   /* caught signal */
 

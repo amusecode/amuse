@@ -69,7 +69,7 @@ void gravity_forcetest(void)
 
   /* NumForceUpdate is the number of particles on this processor that want a force update */
 #ifndef NOMPI
-  MPI_Allreduce(&NumForceUpdate, &ntot, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(&NumForceUpdate, &ntot, 1, MPI_INT, MPI_SUM, GADGET_WORLD);
 #else
   ntot = NumForceUpdate;
 #endif
@@ -137,7 +137,7 @@ void gravity_forcetest(void)
 	noffset[j] = noffset[j - 1] + nsend_local[j - 1];
 
 #ifndef NOMPI
-      MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
 #else
     nsend[0] = nsend_local[i];
 #endif
@@ -172,7 +172,7 @@ void gravity_forcetest(void)
 				   recvTask, TAG_DIRECT_A,
 				   &GravDataGet[nbuffer[ThisTask]],
 				   nsend[recvTask * NTask + ThisTask] * sizeof(struct gravdata_in), MPI_BYTE,
-				   recvTask, TAG_DIRECT_A, MPI_COMM_WORLD, &status);
+				   recvTask, TAG_DIRECT_A, GADGET_WORLD, &status);
 		    }
 		}
 
@@ -217,7 +217,7 @@ void gravity_forcetest(void)
 				   MPI_BYTE, recvTask, TAG_DIRECT_B,
 				   &GravDataOut[noffset[recvTask]],
 				   nsend_local[recvTask] * sizeof(struct gravdata_in),
-				   MPI_BYTE, recvTask, TAG_DIRECT_B, MPI_COMM_WORLD, &status);
+				   MPI_BYTE, recvTask, TAG_DIRECT_B, GADGET_WORLD, &status);
 
 		      /* add the result to the particles */
 		      for(j = 0; j < nsend_local[recvTask]; j++)
@@ -238,7 +238,7 @@ void gravity_forcetest(void)
 	  level = ngrp - 1;
 	}
 
-      MPI_Allreduce(&ndone, &ndonetot, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+      MPI_Allreduce(&ndone, &ndonetot, 1, MPI_INT, MPI_SUM, GADGET_WORLD);
 
       ntotleft -= ndonetot;
     }
@@ -322,7 +322,7 @@ void gravity_forcetest(void)
 	}
 
 #ifndef NOMPI
-	      MPI_Barrier(MPI_COMM_WORLD);
+	      MPI_Barrier(GADGET_WORLD);
 #endif
     }
 
@@ -337,8 +337,8 @@ void gravity_forcetest(void)
   timetreelist = malloc(sizeof(double) * NTask);
   costtreelist = malloc(sizeof(double) * NTask);
 
-  MPI_Gather(&costtotal, 1, MPI_DOUBLE, costtreelist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-  MPI_Gather(&timetree, 1, MPI_DOUBLE, timetreelist, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Gather(&costtotal, 1, MPI_DOUBLE, costtreelist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
+  MPI_Gather(&timetree, 1, MPI_DOUBLE, timetreelist, 1, MPI_DOUBLE, 0, GADGET_WORLD);
 
   if(ThisTask == 0)
     {

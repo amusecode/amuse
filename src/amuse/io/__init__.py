@@ -17,6 +17,7 @@ from amuse.io.vtk import VtkUnstructuredGrid
 
 text.TableFormattedText.register()
 text.CsvFileText.register()
+text.AmuseText.register()
 
 NemoFileFormatProcessor.register()
 NemoBinaryFileFormatProcessor.register()

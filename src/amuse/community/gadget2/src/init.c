@@ -176,7 +176,7 @@ void check_omega(void)
     mass += P[i].Mass;
 
 #ifndef NOMPI
-  MPI_Allreduce(&mass, &masstot, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce(&mass, &masstot, 1, MPI_DOUBLE, MPI_SUM, GADGET_WORLD);
 #else
   masstot = mass;
 #endif

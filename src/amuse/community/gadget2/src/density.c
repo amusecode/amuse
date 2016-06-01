@@ -102,7 +102,7 @@ void density(void)
 
   numlist = malloc(NTask * sizeof(int) * NTask);
 #ifndef NOMPI
-  MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+  MPI_Allgather(&NumSphUpdate, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
 #else
    numlist[0] = NumSphUpdate;
 #endif
@@ -166,7 +166,7 @@ void density(void)
 	  tstart = second();
 
 #ifndef NOMPI
-	  MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, MPI_COMM_WORLD);
+	  MPI_Allgather(nsend_local, NTask, MPI_INT, nsend, NTask, MPI_INT, GADGET_WORLD);
 #else
     nsend[0] = nsend_local[0];
 #endif
@@ -207,7 +207,7 @@ void density(void)
 				       recvTask, TAG_DENS_A,
 				       &DensDataGet[nbuffer[ThisTask]],
 				       nsend[recvTask * NTask + ThisTask] * sizeof(struct densdata_in),
-				       MPI_BYTE, recvTask, TAG_DENS_A, MPI_COMM_WORLD, &status);
+				       MPI_BYTE, recvTask, TAG_DENS_A, GADGET_WORLD, &status);
 #else
             fprintf(stderr, "NO MPI, SO NO SENDING");
             exit(1);
@@ -232,7 +232,7 @@ void density(void)
 	      /* do a block to explicitly measure imbalance */
 	      tstart = second();
 #ifndef NOMPI
-	      MPI_Barrier(MPI_COMM_WORLD);
+	      MPI_Barrier(GADGET_WORLD);
 #endif
 	      tend = second();
 	      timeimbalance += timediff(tstart, tend);
@@ -267,7 +267,7 @@ void density(void)
 				       MPI_BYTE, recvTask, TAG_DENS_B,
 				       &DensDataPartialResult[noffset[recvTask]],
 				       nsend_local[recvTask] * sizeof(struct densdata_out),
-				       MPI_BYTE, recvTask, TAG_DENS_B, MPI_COMM_WORLD, &status);
+				       MPI_BYTE, recvTask, TAG_DENS_B, GADGET_WORLD, &status);
 #else
             fprintf(stderr, "NO MPI, SO NO SENDING");
             exit(1);
@@ -303,7 +303,7 @@ void density(void)
 	    }
 
 #ifndef NOMPI
-	  MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, MPI_COMM_WORLD);
+	  MPI_Allgather(&ndone, 1, MPI_INT, ndonelist, 1, MPI_INT, GADGET_WORLD);
 #else
 	  ndonelist[0] = ndone;
 #endif
@@ -436,7 +436,7 @@ void density(void)
       numlist = malloc(NTask * sizeof(int) * NTask);
 
 #ifndef NOMPI
-      MPI_Allgather(&npleft, 1, MPI_INT, numlist, 1, MPI_INT, MPI_COMM_WORLD);
+      MPI_Allgather(&npleft, 1, MPI_INT, numlist, 1, MPI_INT, GADGET_WORLD);
 #else
      numlist[0] = npleft;
 #endif
@@ -490,10 +490,10 @@ void density(void)
     timengb = 0;
 
 #ifndef NOMPI
-  MPI_Reduce(&timengb, &sumtimengb, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-  MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&timengb, &sumtimengb, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  MPI_Reduce(&timecomp, &sumt, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  MPI_Reduce(&timecommsumm, &sumcomm, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
+  MPI_Reduce(&timeimbalance, &sumimbalance, 1, MPI_DOUBLE, MPI_SUM, 0, GADGET_WORLD);
 #else
     sumtimengb = timengb;
     sumt = timecomp;

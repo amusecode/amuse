@@ -31,8 +31,7 @@
 #include <string.h>
 #include "defs.h"
 #include "athena.h"
-#include "prototypes.h"
-#include "globals.h"
+#include "prototypes.h
 
 #ifndef ISOTHERMAL
 #error Problem generator only works for isothermal turbulence
@@ -46,6 +45,8 @@
 #define MPI_RL MPI_FLOAT
 #endif /* DOUBLE_PREC */
 #endif /* MPI_PARALLEL */
+
+#include "globals.h"
 
 /* Uncomment the following define to drive the flow in an impulsive manner
    as was done originally.  Restarts for this mode not yet implemented! */

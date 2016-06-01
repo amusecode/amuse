@@ -36,6 +36,14 @@ typedef double Real;
 # error "Not a valid precision flag"
 #endif
 
+#ifdef MPI_PARALLEL
+#ifndef MAIN_C
+extern MPI_Comm AMUSE_MPI_COMM_WORLD;
+#undef MPI_COMM_WORLD
+#define MPI_COMM_WORLD AMUSE_MPI_COMM_WORLD
+#endif
+#endif
+
 /*! \struct Real3Vect
  *  \brief General 3-vectors of Reals.
  */

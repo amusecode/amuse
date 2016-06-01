@@ -51,15 +51,15 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
         e.append(double_star[0].eccentricity)
     code.stop()
 
-    pyplot.figure(figsize = (8,8))
+    fig = pyplot.figure(figsize = (8,8))
     fta = fig.add_subplot(2,1,1)
-    fte = fig.add_subplot(2,2,1)
+#    fte = fig.add_subplot(2,2,1)
     pyplot.title('Binary evolution', fontsize=12)
     fta.plot(t, a)
-    fta.xlabel('time [Myr]')
-    fta.ylabel('semi major axis (AU)')
-    fta.plot(t, 3)
-    fta.ylabel('eccentricity')
+    pyplot.xlabel('time [Myr]')
+    pyplot.ylabel('semi major axis (AU)')
+#    fta.plot(t, e)
+    #pyplot.ylabel('eccentricity')
     pyplot.show()
 
 def new_option_parser():
@@ -72,14 +72,14 @@ def new_option_parser():
                       dest="Msec", type="float",default =  10|units.MSun,
                       help="secondary mass [%defailt]")
     result.add_option("-T", unit=units.Myr,
-                      dest="end_time", type="float", default = 100.0 |units.Myr,
+                      dest="end_time", type="float", default = 25.0 |units.Myr,
                       help="end time of the simulation [%defailt]")
     result.add_option("-a", unit=units.RSun,
                       dest="a", type="float",default =  205|units.RSun,
                       help="orbital separation [%defailt]")
     result.add_option("-e", dest="e", type="float", default = 0.0,
                       help="orbital eccentricity [%defailt]")
-    result.add_option("-n", dest="n_steps", type="float", default = 10,
+    result.add_option("-n", dest="n_steps", type="float", default = 100,
                       help="number of output steps [%defailt]")
     return result
 

@@ -247,6 +247,8 @@ if [ ! -e "pipsinstalled"  ]; then
     
     ${PYTHONHOME}/bin/pip install Flask || exit $?
     
+    ${PYTHONHOME}/bin/pip install pillow || exit $?
+    
     mkdir mpl 
     
     py_install/bin/pip install --download mpl 'matplotlib==1.2.1' || exit $?

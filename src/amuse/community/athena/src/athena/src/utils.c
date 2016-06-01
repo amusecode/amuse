@@ -24,6 +24,7 @@
 #include "defs.h"
 #include "athena.h"
 #include "prototypes.h"
+#include "globals.h"
 
 /*----------------------------------------------------------------------------*/
 /*! \fn char *ath_strdup(const char *in)

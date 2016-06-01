@@ -681,7 +681,7 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
             if first:
                 first = False
             else:
-                self.out + ', '
+                self.out + ', &\n &'
             name = parameter.name                                                                                      
             self.out + name
                     
@@ -694,7 +694,10 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
         self.output_function_start()
         self.output_function_parameters()
         self.out + ') &\n &'
-        self.out + ' result(rrreeesss) &\n &'
+        
+        if not self.specification.result_type is None: 
+            self.out + ' result(rrreeesss) &\n &'
+            
         self.out + ' ' + 'bind(c, name = "' + self.function_name_prefix + self.specification.name + '")'
         self.out.n()
         self.out.indent().lf()
@@ -762,8 +765,11 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
     
     def output_function_end(self):
        
-        self.out.lf() + 'END FUNCTION ' + self.function_name
-        
+        if not self.specification.result_type is None:
+            self.out.lf() + 'END FUNCTION ' + self.function_name
+        else:
+            self.out.lf() + 'END SUBROUTINE ' + self.function_name
+            
 
 
 
@@ -774,7 +780,9 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
             fortran_type = self.dtype_to_fortran_type[self.specification.result_type]      
             self.out + fortran_type
                             
-        self.out +  ' function '  + self.function_name + '('
+            self.out +  ' function '  + self.function_name + '('
+        else:
+            self.out +  ' subroutine '  + self.function_name + '('
         
 
 
@@ -788,7 +796,7 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
             if first:
                 first = False
             else:
-                self.out + ', '
+                self.out + ', &\n &'
             name = parameter.name                          
             if parameter.datatype == 'string':
                 self.out + 'string_' + name              

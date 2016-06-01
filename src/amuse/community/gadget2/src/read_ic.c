@@ -70,7 +70,7 @@ void read_ic(char *fname)
 	    read_file(buf, ThisTask, ThisTask);
 
 #ifndef NOMPI
-	      MPI_Barrier(MPI_COMM_WORLD);
+	      MPI_Barrier(GADGET_WORLD);
 #endif
 	}
 
@@ -105,7 +105,7 @@ void read_ic(char *fname)
 	    read_file(buf, masterTask, lastTask);
 
 #ifndef NOMPI
-	      MPI_Barrier(MPI_COMM_WORLD);
+	      MPI_Barrier(GADGET_WORLD);
 #endif
 	}
     }
@@ -155,7 +155,7 @@ void read_ic(char *fname)
 
 
 #ifndef NOMPI
-    MPI_Barrier(MPI_COMM_WORLD);
+    MPI_Barrier(GADGET_WORLD);
 #endif
 
   if(ThisTask == 0)
@@ -331,12 +331,12 @@ void read_file(char *fname, int readTask, int lastTask)
 
 #ifndef NOMPI
       for(task = readTask + 1; task <= lastTask; task++)
-	MPI_Ssend(&header, sizeof(header), MPI_BYTE, task, TAG_HEADER, MPI_COMM_WORLD);
+	MPI_Ssend(&header, sizeof(header), MPI_BYTE, task, TAG_HEADER, GADGET_WORLD);
 #endif
     }
 #ifndef NOMPI
   else
-    MPI_Recv(&header, sizeof(header), MPI_BYTE, readTask, TAG_HEADER, MPI_COMM_WORLD, &status);
+    MPI_Recv(&header, sizeof(header), MPI_BYTE, readTask, TAG_HEADER, GADGET_WORLD, &status);
 #endif
 
   if(All.TotNumPart == 0)
@@ -554,11 +554,11 @@ void read_file(char *fname, int readTask, int lastTask)
 #ifndef NOMPI
 			      if(ThisTask == readTask && task != readTask)
 				MPI_Ssend(CommBuffer, bytes_per_blockelement * pc, MPI_BYTE, task, TAG_PDATA,
-					  MPI_COMM_WORLD);
+					  GADGET_WORLD);
 
 			      if(ThisTask != readTask && task == ThisTask)
 				MPI_Recv(CommBuffer, bytes_per_blockelement * pc, MPI_BYTE, readTask,
-					 TAG_PDATA, MPI_COMM_WORLD, &status);
+					 TAG_PDATA, GADGET_WORLD, &status);
 #endif
 			      if(ThisTask == task)
 				{
@@ -683,7 +683,7 @@ int find_files(char *fname)
     }
 
 #ifndef NOMPI
-  MPI_Bcast(&header, sizeof(header), MPI_BYTE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&header, sizeof(header), MPI_BYTE, 0, GADGET_WORLD);
 #endif // NOMPI
 
   if(header.num_files > 0)
@@ -718,7 +718,7 @@ int find_files(char *fname)
     }
 
 #ifndef NOMPI
-  MPI_Bcast(&header, sizeof(header), MPI_BYTE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&header, sizeof(header), MPI_BYTE, 0, GADGET_WORLD);
 #endif
 
   if(header.num_files > 0)

@@ -19,6 +19,7 @@
 /*============================================================================*/
 #include "defs.h"
 #include "prototypes.h"
+#include "globals.h"
 
 
 #ifdef MPI_PARALLEL

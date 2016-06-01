@@ -10,14 +10,16 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+#include <amuse_mpi.h>
+#endif
+
 #include "defs.h"
 #include "athena.h"
 #include "globals.h"
 #include "prototypes.h"
 
-#ifdef MPI_PARALLEL
-#include <mpi.h>
-#endif
 
 #include <math.h>
 
@@ -398,6 +400,7 @@ int initialize_code(){
   set_support_for_condition(TIMEOUT_DETECTION);
 
 #ifdef MPI_PARALLEL
+    get_comm_world(&AMUSE_MPI_COMM_WORLD);
     /* Get my task id (rank in MPI) */
     if(MPI_SUCCESS != MPI_Comm_rank(MPI_COMM_WORLD,&myID_Comm_world))
     {
