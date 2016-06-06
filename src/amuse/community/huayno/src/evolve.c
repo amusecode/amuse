@@ -116,14 +116,6 @@ void init_evolve(struct sys s,int inttype)
   if (inttype == OK) evolve_ok_init(s);
 }
 
-void evolve_constant(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
-{
-  CHECK_TIMESTEP(etime,stime,dt,clevel);
-  diag->deepsteps++;
-  diag->simtime+=dt;
-  dkd(clevel,s,zerosys, stime, etime, dt);
-}
-
 void zero_diagnostics(struct diagnostics* diag)
 {
   diag->deepsteps=0;
@@ -194,7 +186,20 @@ void do_evolve(struct sys s, double dt, int inttype)
   switch (inttype)
   {
     case CONSTANT:
-      evolve_constant(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+    case CONSTANT2:
+      evolve_constant2(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
+    case CONSTANT4:
+      evolve_constant4(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
+    case CONSTANT6:
+      evolve_constant6(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
+    case CONSTANT8:
+      evolve_constant8(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
+      break;
+    case CONSTANT10:
+      evolve_constant10(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt);
       break;
     case SHARED2:
       evolve_shared2(clevel,s, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
