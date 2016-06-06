@@ -88,6 +88,11 @@ enum intopt
   SHARED6_COLLISIONS, // 31
   SHARED8_COLLISIONS, // 32
   SHARED10_COLLISIONS, // 33
+  CONSTANT2,   // 34
+  CONSTANT4,   // 35
+  CONSTANT6,   // 36
+  CONSTANT8,   // 37
+  CONSTANT10,   // 38
 };
 
 extern FLOAT eps2;
