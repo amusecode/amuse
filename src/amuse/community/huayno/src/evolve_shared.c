@@ -86,3 +86,43 @@ void evolve_shared10(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE
     dkd10(clevel,s, stime, etime, dt);
   }
 }
+
+void evolve_constant2(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
+  diag->deepsteps++;
+  diag->simtime+=dt;
+  dkd(clevel,s,zerosys, stime, etime, dt);
+}
+
+void evolve_constant4(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
+  diag->deepsteps++;
+  diag->simtime+=dt;
+  dkd4(clevel,s, stime, etime, dt);
+}
+
+void evolve_constant6(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
+  diag->deepsteps++;
+  diag->simtime+=dt;
+  dkd6(clevel,s, stime, etime, dt);
+}
+
+void evolve_constant8(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
+  diag->deepsteps++;
+  diag->simtime+=dt;
+  dkd8(clevel,s, stime, etime, dt);
+}
+
+void evolve_constant10(int clevel,struct sys s, DOUBLE stime, DOUBLE etime, DOUBLE dt)
+{
+  CHECK_TIMESTEP(etime,stime,dt,clevel);
+  diag->deepsteps++;
+  diag->simtime+=dt;
+  dkd10(clevel,s, stime, etime, dt);
+}

@@ -403,7 +403,7 @@ class TestHuayno(TestWithMPI):
             if hasattr(position,'tobytes'):
                 as_bytes = position.tobytes()
             else:
-                as_bytes = numpy.copy(position.data, order='C')
+                as_bytes = numpy.array(position.data, copy=True, order='C')
             sha.update(as_bytes)
             
             instance.stop()
