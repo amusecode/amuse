@@ -196,7 +196,6 @@ class TestRebound(TestWithMPI):
         interface = self.new_instance_of_an_optional_code(Rebound, convert_nbody)
         interface.initialize_code()
         interface.parameters.epsilon_squared = 0.0 | units.AU**2
-        interface.parameters.end_time_accuracy_factor = 0.0
         interface.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
