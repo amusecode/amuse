@@ -115,13 +115,13 @@ int get_manage_encounters(int * m)
 
 int set_time(double sys_time)
 {
-    jd->system_time = sys_time;
+    jd->system_time = sys_time - begin_time;
     return 0;
 }
 
 int get_time(double * sys_time)
 {
-    *sys_time = jd->system_time;
+    *sys_time = jd->system_time + begin_time;
     return 0;
 }
 
@@ -145,7 +145,7 @@ int commit_parameters()
     if (jd->use_gpu && !jd->have_gpu) jd->use_gpu = false;
 
     if(jd->system_time == 0) {
-        jd->system_time = begin_time;
+        jd->system_time = 0;
     }
     
     if (jd->mpi_rank == 0) {
@@ -451,8 +451,8 @@ int evolve_model(double to_time)
 
     reset_stopping_conditions();    
     jd->UpdatedParticles.clear();
-    while (jd->system_time < to_time)
-	if (jd->advance_and_check_encounter()) break;
+    while (jd->system_time < (to_time - begin_time))
+        if (jd->advance_and_check_encounter()) break;
 
     return 0;
 }
