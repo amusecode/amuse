@@ -213,7 +213,7 @@ class TableFormattedText(base.FileFormatProcessor):
                     index -= 1
                 name = parts[1]
                 is_on = parts[2] == 'on'
-                dtype = map(float, parts[3:])
+                dtype = map(float, parts[3:-1])
                 unit = self.convert_float_to_unit(dtype)
                 if self.attribute_names is None:
                     current = []
@@ -387,8 +387,8 @@ class TableFormattedText(base.FileFormatProcessor):
                     if i >= self.key_in_column:
                         column += 1
                 unitstring = '{0:.18g}:{1:.0f}:{2:.18g}:{3:.18g}:{4:.18g}:{5:.18g}:{6:.18g}:{7:.18g}:{8:.18g}'.format(*unit.to_array_of_floats())
-
-                result.append('COL:{0}:{1}:{2}:{3}'.format(column, x, 'on', unitstring))
+                description = '(' + unit.describe_array_of_floats() + ')'
+                result.append('COL:{0}:{1}:{2}:{3}:{4}'.format(column, x, 'on', unitstring, description))
             
             result.append('')
         else:
@@ -631,6 +631,22 @@ class AmuseText(TableFormattedText):
     def is_precise(self):
         """"Output most precise text output for floats (9 digitst) and doubles (17 digits) (True for amuse text)"""
         return True
+
+
+
+
+
+    def convert_number_to_string(self, number):
+        if self.is_precise:
+            return '{:.18e}'.format(number)
+        else:
+            return str(number)
+
+    @base.format_option
+    def use_fractions(self):
+        """"Output floats as fractions, will be more precise"""
+        return True
+
 
 
 

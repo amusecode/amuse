@@ -1203,6 +1203,8 @@ class MpiChannel(AbstractMessageChannel):
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, **options):
         AbstractMessageChannel.__init__(self, **options)
         
+        self.inuse_semaphore = threading.Semaphore()
+
         # logging.basicConfig(level=logging.WARN)
         # logger.setLevel(logging.DEBUG)
         # logging.getLogger("code").setLevel(logging.DEBUG)
@@ -1236,6 +1238,7 @@ class MpiChannel(AbstractMessageChannel):
         self._communicated_splitted_message = False
     
     
+
 
     @classmethod
     def ensure_mpi_initialized(cls):
@@ -1407,8 +1410,7 @@ class MpiChannel(AbstractMessageChannel):
         
     def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = ()):
 
-        if self.is_inuse():
-            raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
+        
         if self.intercomm is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
@@ -1417,6 +1419,16 @@ class MpiChannel(AbstractMessageChannel):
         if call_count > self.max_message_length:
             self.split_message(call_id, function_id, call_count, dtype_to_arguments, encoded_units)
         else:
+            if self.is_inuse():
+                raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
+            self.inuse_semaphore.acquire()
+            try:
+                if self._is_inuse:
+                    raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
+                self._is_inuse = True
+            finally:
+                self.inuse_semaphore.release()
+
             message = ServerSideMPIMessage(
                 call_id, function_id,
                 call_count, dtype_to_arguments, 
@@ -1424,11 +1436,8 @@ class MpiChannel(AbstractMessageChannel):
             )
             message.send(self.intercomm)
 
-            self._is_inuse = True
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units = False):
-        
-        self._is_inuse = False
         
         if self._communicated_splitted_message:
             x = self._merged_results_splitted_message
@@ -1442,9 +1451,17 @@ class MpiChannel(AbstractMessageChannel):
         try:
             message.receive(self.intercomm)
         except MPI.Exception as ex:
+            self._is_inuse = False
             self.stop()
             raise ex
-        
+        self.inuse_semaphore.acquire()
+        try:
+            if not self._is_inuse:
+                raise exceptions.CodeException("You've tried to recv a message to a code that is not handling a message, this is not correct")
+            self._is_inuse = False
+        finally:
+            self.inuse_semaphore.release()
+
         if message.call_id != call_id:
             self.stop()
             raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
@@ -1465,6 +1482,7 @@ class MpiChannel(AbstractMessageChannel):
         else:
             return message.to_result(handle_as_array)
         
+
     def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units = False):
         request = ServerSideMPIMessage().nonblocking_receive(self.intercomm)
         def handle_result(function):
@@ -1510,7 +1528,9 @@ class MpiChannel(AbstractMessageChannel):
         self.intercomm = None
         self._is_inuse = False
         self._communicated_splitted_message = False
+        self.inuse_semaphore = threading.Semaphore()
         
+
 
 
 class MultiprocessingMPIChannel(AbstractMessageChannel):
@@ -1972,9 +1992,10 @@ class SocketChannel(AbstractMessageChannel):
     def mpiexec(self):
         """mpiexec with arguments"""
         if len(config.mpi.mpiexec):
-            return shlex.split(config.mpi.mpiexec)
-        return []
+            return config.mpi.mpiexec
+        return ''
     
+
 
     @late
     def debugger_method(self):
@@ -2036,12 +2057,13 @@ class SocketChannel(AbstractMessageChannel):
         #start arguments with command        
         arguments.insert(0, command)
 
-        if self.initialize_mpi and len(self.mpiexec) > 0 and len(self.mpiexec[0]) > 0:
+        if self.initialize_mpi and len(self.mpiexec) > 0:
+            mpiexec = shlex.split(self.mpiexec)
             # prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
             arguments.insert(0, "-np")
-            arguments[:0] = self.mpiexec
-            command = self.mpiexec[0]
+            arguments[:0] = mpiexec
+            command = mpiexec[0]
 
             #append with port and hostname where the worker should connect            
             arguments.append(str(server_socket.getsockname()[1]))
@@ -2075,6 +2097,7 @@ class SocketChannel(AbstractMessageChannel):
         
         # logger.info("worker %s initialized", self.name_of_the_worker)
         
+
 
 
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
@@ -2571,6 +2594,7 @@ class LocalChannel(AbstractMessageChannel):
         import python_code
         
         module = import_module.import_unique(self.package + "." + self.so_module)
+        print module, self.package + "." + self.so_module
         module.set_comm_world(MPI.COMM_SELF)
         self.local_implementation = python_code.CythonImplementation(module, self.legacy_interface_type)
         
