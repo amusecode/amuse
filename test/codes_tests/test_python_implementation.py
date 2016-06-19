@@ -19,6 +19,8 @@ from amuse.rfi.channel import AsyncRequestsPool
 from amuse.rfi.channel import ASyncRequestSequence
 from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
 
+from amuse.support import exceptions
+
 class ForTestingInterface(PythonCodeInterface):
     
     def __init__(self, **options):
@@ -223,6 +225,21 @@ class ForTestingInterface(PythonCodeInterface):
 
 
 
+    @legacy_function
+    def echo_quantities_error():
+        function = LegacyFunctionSpecification()                  
+        function.addParameter('quantity_in', dtype='float64', direction=function.IN)
+        function.addParameter('quantity_out', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        function.has_units = True
+        function.id = 25
+        return function          
+
+
+
+
+
 basic_python_exe = """#!{executable}
 import sys
 from subprocess import call
@@ -357,6 +374,13 @@ class ForTestingImplementation(object):
         quantity_out.value = quantity_in * (10 | (1.0/units.s))
         return 0
         
+
+    def echo_quantities_error(self, quantity_in, quantity_out):
+        raise Exception("an unexpected event")
+        return 0
+        
+
+
 
 class ForTesting(InCodeComponentImplementation):
     
@@ -1020,10 +1044,12 @@ class TestInterface(TestWithMPI):
 
     def test34(self):
         x = ForTestingInterface()
-        quantity_out, error = x.echo_quantities([20, 30, 40] | units.m)
+        quantity_out, error = x.echo_quantities()
+        self.assertError(x.echo_quantities, [20, 30, 40] | units.m)
         self.assertEquals(error, 0)
         self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()
+
 
 
     def test35(self):
@@ -1042,6 +1068,15 @@ class TestInterface(TestWithMPI):
         x.stop()
         
         
+
+
+
+    def test36(self):
+        x = ForTestingInterface()
+        self.assertRaises(exceptions.CodeException, x.echo_quantities_error, ([20, 30, 40] | units.m), expected_message = 
+                "Exception when calling function 'echo_quantities_error', of code 'ForTestingInterface', exception was 'Error in code: an unexpected event'")
+        x.stop()
+
 
 
 
