@@ -150,6 +150,7 @@ class TableFormattedText(base.FileFormatProcessor):
         else:
             return self.convert_string_to_long
     
+
     @base.format_option
     def header_prefix_string(self):
         """
@@ -271,9 +272,10 @@ class TableFormattedText(base.FileFormatProcessor):
             self.cursor.forward()
             if number_of_particles >= self.maximum_number_of_lines_buffered:
                 quantities = map(
-                    lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
+                    lambda value, unit, dtype : unit.new_quantity(value) if not unit is None else (numpy.asarray(value, dtype=dtype) if not dtype is None else value), 
                     values, 
-                    units_with_dtype
+                    units_with_dtype,
+                    self.attribute_dtypes
                 )
                 if self.set is None:
                     self.set = self.new_set(number_of_particles, keys = keys)
@@ -289,9 +291,10 @@ class TableFormattedText(base.FileFormatProcessor):
         
         if number_of_particles > 0:
             quantities = map(
-                lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
+                lambda value, unit, dtype : unit.new_quantity(value) if not unit is None else (numpy.asarray(value, dtype=dtype) if not dtype is None else value), 
                 values, 
-                units_with_dtype
+                units_with_dtype,
+                self.attribute_dtypes
             )
             if self.set is None:
                 self.set = self.new_set(number_of_particles, keys = keys)
@@ -305,6 +308,7 @@ class TableFormattedText(base.FileFormatProcessor):
             
         self.cursor.forward()
         
+
     def read_footer(self):
         while not self.cursor.is_at_end() and self.cursor.line().startswith(self.footer_prefix_string):
             self.read_footer_line(self.cursor.line()[len(self.footer_prefix_string):])
@@ -407,6 +411,7 @@ class TableFormattedText(base.FileFormatProcessor):
     def convert_string_to_long(self, string):
         return long(string)
         
+
     def new_set(self, number_of_items, keys = []):
         if len(keys) > 0:
             return datamodel.Particles(number_of_items, keys = keys)
@@ -461,6 +466,7 @@ class TableFormattedText(base.FileFormatProcessor):
     
 
     
+
 
     @base.format_option
     def float_format_string(self):
