@@ -38,6 +38,9 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.rfi import run_command_redirected
 
+from amuse.rfi import slurm
+
+
 class ASyncRequest(object):
         
     def __init__(self, request, message, comm, header):
@@ -1198,6 +1201,10 @@ class MpiChannel(AbstractMessageChannel):
     _mpi_is_broken_after_possible_code_crash = False
     _intercomms_to_disconnect = []
     _is_registered = False
+    _scheduler_nodes = []
+    _scheduler_index = 0
+    _scheduler_initialized = False
+
 
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, **options):
@@ -1230,7 +1237,10 @@ class MpiChannel(AbstractMessageChannel):
             self.info = MPI.Info.Create()
             self.info['host'] = self.hostname
         else:
-            self.info = MPI.INFO_NULL
+            if self.job_scheduler:
+                self.info = self.get_info_from_job_scheduler(self.job_scheduler)
+            else:
+                self.info = MPI.INFO_NULL
             
         self.cached = None
         self.intercomm = None
@@ -1238,6 +1248,7 @@ class MpiChannel(AbstractMessageChannel):
         self._communicated_splitted_message = False
     
     
+
 
 
     @classmethod
@@ -1530,6 +1541,51 @@ class MpiChannel(AbstractMessageChannel):
         self._communicated_splitted_message = False
         self.inuse_semaphore = threading.Semaphore()
         
+
+
+
+    @option(sections=("channel",))
+    def job_scheduler(self):
+        """Name of the job scheduler to use when starting the code, if given will use job scheduler to find list of hostnames for spawning"""
+        return ""
+        
+
+
+
+    def get_info_from_job_scheduler(self, name, number_of_workers = 1):
+        if name == "slurm":
+            return self.get_info_from_slurm(number_of_workers)
+        return MPI.INFO_NULL
+
+    @classmethod
+    def get_info_from_slurm(cls, number_of_workers):
+        has_slurm_env_variables = 'SLURM_NODELIST' in os.environ and 'SLURM_TASKS_PER_NODE' in os.environ
+        if not has_slurm_env_variables:
+            return MPI.INFO_NULL
+        if not cls._scheduler_initialized:
+            nodelist = slurm.parse_slurm_nodelist(os.environ['SLURM_NODELIST'])
+            tasks_per_node = slurm.parse_slurm_tasks_per_node(os.environ['SLURM_TASKS_PER_NODE'])
+            all_nodes = []
+            for node, tasks in zip(nodelist, tasks_per_node):
+                for _ in range(tasks):
+                    all_nodes.append(node)
+            cls._scheduler_nodes = all_nodes
+            cls._scheduler_index = 1     # start at 1 assumes that the python script is running on the first node as the first task
+            cls._scheduler_initialized = True
+            print "NODES:", cls._scheduler_nodes
+        hostnames = []
+        count = 0
+        while count < number_of_workers:
+                hostnames.append(cls._scheduler_nodes[cls._scheduler_index])
+                count += 1
+                cls._scheduler_index += 1
+                if cls._scheduler_index >= len(cls._scheduler_nodes):
+                    cls._scheduler_index  = 0
+        host = ','.join(hostnames)
+        print "HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE']
+        info = MPI.Info.Create()
+        info['host'] = host                                                     #actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
+        return info
 
 
 

@@ -1080,3 +1080,13 @@ class TestInterface(TestWithMPI):
 
 
 
+    def test37(self):
+        x = ForTestingInterface()
+        request = x.echo_quantity.async([20, 30, 40] | units.m)
+        quantity_out, error = request.result()
+        self.assertEquals(error, 0)
+        self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
+        x.stop()
+
+
+
