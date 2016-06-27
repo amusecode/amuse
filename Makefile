@@ -53,6 +53,10 @@ clean:
 	$(PYTHON) setup.py clean
 	$(PYTHON) setup.py clean_codes --inplace
 
+oclean:
+	$(PYTHON) setup.py clean
+	$(PYTHON) setup.py clean_codes --inplace --codes-dir=src/omuse/community
+
 distclean:
 	-rm -f config.mk
 	-rm -f support/config.py
@@ -72,6 +76,7 @@ distclean:
 	$(PYTHON) setup.py clean
 	$(PYTHON) setup.py dist_clean
 	$(PYTHON) setup.py dist_clean --inplace
+	$(PYTHON) setup.py clean_codes --inplace --codes-dir=src/omuse/community
 	
 	make -C doc clean
 	-find src -name "*.pyc" -exec rm \{} \;
@@ -125,3 +130,22 @@ else
 	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$*
 endif
 
+%.ocode: | src/omuse
+ifneq (,$(findstring s,$(MAKEFLAGS)))
+	$(PYTHON) setup.py build_code --inplace --clean=$(CLEAN) --code-name=$* --codes-dir=src/omuse/community
+else
+	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$* --codes-dir=src/omuse/community
+endif
+
+omuse: build.py  | src/omuse
+	@-mkdir -p test_results
+	$(PYTHON) setup.py generate_main
+ifneq ($(python_version_major),3)
+	$(PYTHON) setup.py build_codes --inplace --codes-dir=src/omuse/community
+else
+	$(error you cannot build the omuse codes in the source directories with Python 3 yet)
+endif
+
+src/omuse:
+	@echo "src/omuse not present"
+	@false
