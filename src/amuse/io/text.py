@@ -44,9 +44,11 @@ class TableFormattedText(base.FileFormatProcessor):
         base.FileFormatProcessor.__init__(self, filename, set, format)
         
         self.filename = filename
-        self.stream = stream
+        if not stream is None:
+            self.stream = stream
         self.set = set
     
+
     def forward(self):
         line = self.data_file.readline()
         return line.rstrip('\r\n')
@@ -385,13 +387,19 @@ class TableFormattedText(base.FileFormatProcessor):
             result.append('AMUSE CSV: 1.0')
             result.append('KEY IN COLUMN: '+str(self.key_in_column))
             result.append('HEADERS:')
+            print self.attribute_names
+            print self.attribute_types
             for i, (x, unit) in enumerate(zip(self.attribute_names, self.attribute_types)):
                 column = i
                 if self.key_in_column >= 0:
                     if i >= self.key_in_column:
                         column += 1
-                unitstring = '{0:.18g}:{1:.0f}:{2:.18g}:{3:.18g}:{4:.18g}:{5:.18g}:{6:.18g}:{7:.18g}:{8:.18g}'.format(*unit.to_array_of_floats())
-                description = '(' + unit.describe_array_of_floats() + ')'
+                if unit is None:
+                    unitstring= '1:-1:0:0:0:0:0:0:0'
+                    desctiption = '(-)'
+                else:
+                    unitstring = '{0:.18g}:{1:.0f}:{2:.18g}:{3:.18g}:{4:.18g}:{5:.18g}:{6:.18g}:{7:.18g}:{8:.18g}'.format(*unit.to_array_of_floats())
+                    description = '(' + unit.describe_array_of_floats() + ')'
                 result.append('COL:{0}:{1}:{2}:{3}:{4}'.format(column, x, 'on', unitstring, description))
             
             result.append('')
@@ -509,12 +517,13 @@ class TableFormattedText(base.FileFormatProcessor):
     def convert_float_to_unit(self, floats):
         from amuse.units import core
         from amuse.units import units
-        if numpy.all(floats == 0):
+        
+        print floats, int(floats[1]) == -1, numpy.all(numpy.asarray(floats[2:]) == 0.0), numpy.asarray(floats[2:]) == 0.0
+        if int(floats[1]) == -1 and numpy.all(numpy.asarray(floats[2:]) == 0.0):
             return None
-        print floats
         factor = floats[0]
         result = factor
-        system_index = floats[1]
+        system_index = int(floats[1])
         unit_system = None
         for x in core.system.ALL.values():
             if x.index == system_index:
@@ -529,6 +538,15 @@ class TableFormattedText(base.FileFormatProcessor):
 
 
 
+
+
+
+
+
+    @base.format_option
+    def stream(self):
+        """"Set the stream to output to"""
+        return None
 
 
 
