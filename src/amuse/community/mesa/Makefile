@@ -10,7 +10,7 @@ GFORTRAN_MAJOR_MINOR=$(shell echo $(GFORTRAN_VERSION) | cut -s -d'.' -f1,2)
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 PYTHON ?= python
-FC      = $(FORTRAN)
+FC      ?= $(FORTRAN)
 MPIFC+= $(FCFLAGS)
 export FC MPIFC
 
