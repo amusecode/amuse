@@ -149,3 +149,15 @@ endif
 src/omuse:
 	@echo "src/omuse not present"
 	@false
+
+help:
+	@echo "brief overview of most important make options:"
+	@echo "make              - build all AMUSE libraries and community codes "
+	@echo "make <name>.code  - clean & build the community code <name> (or matching name*)"
+	@echo "make clean        - clean codes and libraries"
+	@echo "make distclean    - clean codes and libraries and all configuration files"
+ifeq (src/omuse ,$(wildcard src/omuse))
+	@echo "make omuse        - build OMUSE community codes"
+	@echo "make oclean       - clean OMUSE community codes"
+	@echo "make <name>.ocode - build OMUSE community code <name>"
+endif
