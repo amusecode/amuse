@@ -1341,5 +1341,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
    
    def evolve_model(self, t_end):
       self.parameters.time = t_end
-      
-   
+
+   @property
+   def model_time(self):
+      return self.parameters.time
