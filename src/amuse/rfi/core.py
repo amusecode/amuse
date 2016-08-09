@@ -122,6 +122,7 @@ class CodeFunction(object):
         return result
     
 
+
     def async(self, *arguments_list, **keyword_arguments):
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
@@ -1105,27 +1106,30 @@ class CodeFunctionWithUnits(CodeFunction):
     
     def async(self, *arguments_list, **keyword_arguments):
         dtype_to_values, units = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
+        encoded_units = self.convert_input_units_to_floats(units)
         
         handle_as_array = self.must_handle_as_array(dtype_to_values)
         
         call_id = random.randint(0, 1000)
               
-        self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
+        self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values, encoded_units = encoded_units)
         
-        request = self.interface.channel.nonblocking_recv_message(call_id, self.specification.id, handle_as_array)
+        request = self.interface.channel.nonblocking_recv_message(call_id, self.specification.id, handle_as_array, has_units = True)
         
         def handle_result(function):
             try:
-                dtype_to_result = function()
+                dtype_to_result, output_encoded_units = function()
             except Exception, ex:
                 raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
-            return self.converted_results(dtype_to_result, handle_as_array)
+            output_units = self.convert_floats_to_units(output_encoded_units)
+            return self.converted_results(dtype_to_result, handle_as_array, output_units)
             
         request.add_result_handler(handle_result)
         return request
         
         
     
+
     def must_handle_as_array(self, keyword_arguments):
         for argument_type, argument_values in keyword_arguments.items():
             if argument_values:

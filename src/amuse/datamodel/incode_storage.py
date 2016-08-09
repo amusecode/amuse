@@ -832,6 +832,8 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             
         index = 0
         for key in keys:
+            if key in self.mapping_from_particle_key_to_index_in_the_code:
+                raise Exception("particle with same key added twice: {0}".format(key))
             self.mapping_from_particle_key_to_index_in_the_code[key] = indices[index]
             self.mapping_from_index_in_the_code_to_particle_key[indices[index]] = key
             index = index + 1

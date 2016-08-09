@@ -363,6 +363,9 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
             return
         else:
             self.state_machine._current_state = to_state
+            
+    def __str__(self):
+        return "<StateMethod {0}>".format(self.function_name)
 
 
 class HandleState(HandleCodeInterfaceAttributeAccess):

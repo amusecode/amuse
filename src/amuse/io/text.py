@@ -44,9 +44,11 @@ class TableFormattedText(base.FileFormatProcessor):
         base.FileFormatProcessor.__init__(self, filename, set, format)
         
         self.filename = filename
-        self.stream = stream
+        if not stream is None:
+            self.stream = stream
         self.set = set
     
+
     def forward(self):
         line = self.data_file.readline()
         return line.rstrip('\r\n')
@@ -150,6 +152,7 @@ class TableFormattedText(base.FileFormatProcessor):
         else:
             return self.convert_string_to_long
     
+
     @base.format_option
     def header_prefix_string(self):
         """
@@ -213,7 +216,7 @@ class TableFormattedText(base.FileFormatProcessor):
                     index -= 1
                 name = parts[1]
                 is_on = parts[2] == 'on'
-                dtype = map(float, parts[3:])
+                dtype = map(float, parts[3:-1])
                 unit = self.convert_float_to_unit(dtype)
                 if self.attribute_names is None:
                     current = []
@@ -271,9 +274,10 @@ class TableFormattedText(base.FileFormatProcessor):
             self.cursor.forward()
             if number_of_particles >= self.maximum_number_of_lines_buffered:
                 quantities = map(
-                    lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
+                    lambda value, unit, dtype : unit.new_quantity(value) if not unit is None else (numpy.asarray(value, dtype=dtype) if not dtype is None else value), 
                     values, 
-                    units_with_dtype
+                    units_with_dtype,
+                    self.attribute_dtypes
                 )
                 if self.set is None:
                     self.set = self.new_set(number_of_particles, keys = keys)
@@ -289,9 +293,10 @@ class TableFormattedText(base.FileFormatProcessor):
         
         if number_of_particles > 0:
             quantities = map(
-                lambda value, unit : unit.new_quantity(value) if not unit is None else value, 
+                lambda value, unit, dtype : unit.new_quantity(value) if not unit is None else (numpy.asarray(value, dtype=dtype) if not dtype is None else value), 
                 values, 
-                units_with_dtype
+                units_with_dtype,
+                self.attribute_dtypes
             )
             if self.set is None:
                 self.set = self.new_set(number_of_particles, keys = keys)
@@ -305,6 +310,7 @@ class TableFormattedText(base.FileFormatProcessor):
             
         self.cursor.forward()
         
+
     def read_footer(self):
         while not self.cursor.is_at_end() and self.cursor.line().startswith(self.footer_prefix_string):
             self.read_footer_line(self.cursor.line()[len(self.footer_prefix_string):])
@@ -381,14 +387,20 @@ class TableFormattedText(base.FileFormatProcessor):
             result.append('AMUSE CSV: 1.0')
             result.append('KEY IN COLUMN: '+str(self.key_in_column))
             result.append('HEADERS:')
+            print self.attribute_names
+            print self.attribute_types
             for i, (x, unit) in enumerate(zip(self.attribute_names, self.attribute_types)):
                 column = i
                 if self.key_in_column >= 0:
                     if i >= self.key_in_column:
                         column += 1
-                unitstring = '{0:.18g}:{1:.0f}:{2:.18g}:{3:.18g}:{4:.18g}:{5:.18g}:{6:.18g}:{7:.18g}:{8:.18g}'.format(*unit.to_array_of_floats())
-
-                result.append('COL:{0}:{1}:{2}:{3}'.format(column, x, 'on', unitstring))
+                if unit is None:
+                    unitstring= '1:-1:0:0:0:0:0:0:0'
+                    desctiption = '(-)'
+                else:
+                    unitstring = '{0:.18g}:{1:.0f}:{2:.18g}:{3:.18g}:{4:.18g}:{5:.18g}:{6:.18g}:{7:.18g}:{8:.18g}'.format(*unit.to_array_of_floats())
+                    description = '(' + unit.describe_array_of_floats() + ')'
+                result.append('COL:{0}:{1}:{2}:{3}:{4}'.format(column, x, 'on', unitstring, description))
             
             result.append('')
         else:
@@ -407,6 +419,7 @@ class TableFormattedText(base.FileFormatProcessor):
     def convert_string_to_long(self, string):
         return long(string)
         
+
     def new_set(self, number_of_items, keys = []):
         if len(keys) > 0:
             return datamodel.Particles(number_of_items, keys = keys)
@@ -462,6 +475,7 @@ class TableFormattedText(base.FileFormatProcessor):
 
     
 
+
     @base.format_option
     def float_format_string(self):
         "format specification string to convert numbers to strings, see format_spec in python documentation"
@@ -503,12 +517,13 @@ class TableFormattedText(base.FileFormatProcessor):
     def convert_float_to_unit(self, floats):
         from amuse.units import core
         from amuse.units import units
-        if numpy.all(floats == 0):
+        
+        print floats, int(floats[1]) == -1, numpy.all(numpy.asarray(floats[2:]) == 0.0), numpy.asarray(floats[2:]) == 0.0
+        if int(floats[1]) == -1 and numpy.all(numpy.asarray(floats[2:]) == 0.0):
             return None
-        print floats
         factor = floats[0]
         result = factor
-        system_index = floats[1]
+        system_index = int(floats[1])
         unit_system = None
         for x in core.system.ALL.values():
             if x.index == system_index:
@@ -523,6 +538,15 @@ class TableFormattedText(base.FileFormatProcessor):
 
 
 
+
+
+
+
+
+    @base.format_option
+    def stream(self):
+        """"Set the stream to output to"""
+        return None
 
 
 
@@ -631,6 +655,22 @@ class AmuseText(TableFormattedText):
     def is_precise(self):
         """"Output most precise text output for floats (9 digitst) and doubles (17 digits) (True for amuse text)"""
         return True
+
+
+
+
+
+    def convert_number_to_string(self, number):
+        if self.is_precise:
+            return '{:.18e}'.format(number)
+        else:
+            return str(number)
+
+    @base.format_option
+    def use_fractions(self):
+        """"Output floats as fractions, will be more precise"""
+        return True
+
 
 
 

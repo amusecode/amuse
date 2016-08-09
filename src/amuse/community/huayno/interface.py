@@ -105,6 +105,20 @@ class HuaynoInterface(CodeInterface,
         return function
 
     @legacy_function      
+    def get_verbosity_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('verbosity', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function      
+    def set_verbosity_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('verbosity', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function      
     def get_number_of_particles():
         function = LegacyFunctionSpecification()
         function.addParameter('number_of_particles', dtype='i', direction=function.OUT)
@@ -239,6 +253,13 @@ class Huayno(GravitationalDynamics,GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
+        object.add_method_parameter(
+            "get_verbosity_parameter",
+            "set_verbosity_parameter", 
+            "verbosity_parameter", 
+            "verbosity parameter (0 mean silent)", 
+            default_value = 0
+        )
 
         object.add_method_parameter(
             "get_inttype_parameter",

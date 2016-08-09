@@ -206,8 +206,8 @@ class InstallPrerequisites(object):
     
     def h5py_build(self, path):
         
-        #self.run_application([PYTHON,'setup.py','build','--hdf5='+self.prefix], cwd=path)
-        self.run_application([PYTHON,'setup.py','build','--hdf5='+'/cm/shared/apps/hdf5_18/1.8.12'], cwd=path)
+        self.run_application([PYTHON,'setup.py','build','--hdf5='+self.prefix], cwd=path)
+        #self.run_application([PYTHON,'setup.py','build','--hdf5='+'/cm/shared/apps/hdf5_18/1.8.12'], cwd=path)
         self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path)
         
     def setuptools_install(self, path):

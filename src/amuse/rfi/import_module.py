@@ -4,6 +4,13 @@ import tempfile
 import shutil
 import os
 
+import atexit
+
+
+class _ModuleRegister(object):
+    is_cleanup_registered = False
+    files_to_cleanup = []
+
 def find_shared_object_file(dirpath, base_libname):
     for path in sys.path:
         fullpath = os.path.join(path, dirpath)
@@ -34,13 +41,19 @@ def import_unique(modulename):
         prevmodule = sys.modules[modulename]
     else:
         prevmodule = None
-    
-    
+    if not _ModuleRegister.is_cleanup_registered:
+        _ModuleRegister.is_cleanup_registered = True
+        atexit.register(cleanup)
+        
+    if not os.path.exists('__modules__'):
+        os.mkdir('__modules__')
     try:
-        with tempfile.NamedTemporaryFile(suffix=".so") as target:
+        with tempfile.NamedTemporaryFile(suffix=".so", dir='__modules__', delete=False) as target:
             with open(libname, "rb") as source:
                 shutil.copyfileobj(source, target)
             target.flush()
+            
+            _ModuleRegister.files_to_cleanup.append(target.name)
             
             lib = ctypes.pydll.LoadLibrary(target.name)
             initfunc = getattr(lib, "init"+modulename)
@@ -51,3 +64,11 @@ def import_unique(modulename):
             del sys.modules[modulename]
         else:
             sys.modules[modulename] = prevmodule
+            
+def cleanup():
+    for filename in _ModuleRegister.files_to_cleanup:
+        if os.path.exists(filename):
+            try:
+                os.remove(filename)
+            except Exception as ex:
+                print "Could not delete file:",filename,", exception:",ex

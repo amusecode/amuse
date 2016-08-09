@@ -18,6 +18,7 @@ class SmallNInterface(CodeInterface,
     # Interface specification.
 
     include_headers = ['interface.h', 'stopcond.h']
+    __so_module__ = 'smalln_cython'
 
     def __init__(self, **options):
         CodeInterface.__init__(

@@ -112,7 +112,7 @@ class CodeCommand(Command):
          "forcibly build everything (ignore file timestamps)"),
         ('variant', 'V',
          "build variants of the codes (gpu versions etc)"),
-        ('code-dir=', 'd', "directory containing codes"),
+        ('codes-dir=', 'd', "directory containing codes"),
         ('lib-dir=', 'l', "directory containing libraries to build"),
     ]
 
@@ -155,7 +155,7 @@ class CodeCommand(Command):
                 self.codes_dir = os.path.join(self.build_temp, 'codes')
                 self.codes_src_dir = os.path.join(self.amuse_src_dir,'community')
         else:
-            self.self.codes_src_dir  = self.codes_dir
+            self.codes_src_dir  = self.codes_dir
             
         if self.lib_dir is None:
             if self.inplace:

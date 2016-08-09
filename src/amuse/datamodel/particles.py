@@ -379,7 +379,7 @@ class AbstractParticleSet(AbstractSet):
 
         converted = []
         for x in values:
-            if isinstance(x, LinkedArray):
+            if isinstance(x, (LinkedArray, ParticlesSubset)):
                 converted.append(x.copy(memento, keep_structure, filter_attributes))
             else:
                 converted.append(x)
@@ -388,6 +388,7 @@ class AbstractParticleSet(AbstractSet):
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
 
         return result
+
 
 
     def copy_to_new_particles(self, keys = None, keys_generator = None, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
@@ -1394,6 +1395,7 @@ class Particles(AbstractParticleSet):
     def new_particle(key = None, **keyword_arguments):
         return self.add_particle(Particle(key = key, **keyword_arguments))
         
+
 class BoundSupersetParticlesFunctionAttribute(object):
     def  __init__(self, name, superset):
         self.name = name
@@ -1739,7 +1741,7 @@ class ParticlesSuperset(AbstractParticleSet):
 
     def set_values_in_store(self, indices, attributes, values):
         split_indices_in_subset, split_indices_in_input = self._split_indices_over_sets(indices)
-        if indices is None:
+        if indices is None or indices is Ellipsis:
             len_indices = 0
             for x in split_indices_in_subset:
                 len_indices += len(split_indices_in_subset)
@@ -1766,7 +1768,6 @@ class ParticlesSuperset(AbstractParticleSet):
                     quantities[valueindex] = numbers
 
             set.set_values_in_store(indices_in_subset, attributes, quantities)
-
 
     def get_attribute_names_defined_in_store(self):
         self._ensure_updated_set_properties()
@@ -1974,13 +1975,13 @@ class ParticlesSubset(AbstractParticleSet):
 
 
     def get_values_in_store(self, indices, attributes):
-        if indices is None:
+        if indices is None or indices is Ellipsis:
             indices = self.get_all_indices_in_store()
 
         return self._private.particles.get_values_in_store(indices, attributes)
 
     def set_values_in_store(self, indices, attributes, values):
-        if indices is None:
+        if indices is None or indices is Ellipsis:
             indices = self.get_all_indices_in_store()
 
         self._private.particles.set_values_in_store(indices, attributes, values)
@@ -2940,11 +2941,12 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
         )
 
     def compressed(self):
-        return ParticlesWithTransformatedAttributes(
+        return ParticlesWithAttributesTransformed(
             self._private.particles.compressed(),
             self._private.get_function,
             self._private.set_function
         )
+
 
     def get_valid_particles_mask(self):
         return self._private.particles.get_valid_particles_mask()
@@ -2996,15 +2998,16 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
                         convert_objects.append(x)
                     else:
                         if isinstance(x, Particle):
-                            convert_objects.append(ParticlesWithTransformatedAttributes(x.as_set(), self._private.get_function, self._private.set_function)[0])
+                            convert_objects.append(ParticlesWithAttributesTransformed(x.as_set(), self._private.get_function, self._private.set_function)[0])
                         else:
-                            convert_objects.append(ParticlesWithTransformatedAttributes(x, self._private.get_function, self._private.set_function))
+                            convert_objects.append(ParticlesWithAttributesTransformed(x, self._private.get_function, self._private.set_function))
                 convert_objects = LinkedArray(convert_objects)
                 converted_values.append(convert_objects)
             else:
                 converted_quantity = self._private.get_function(attribute, quantity)
                 converted_values.append(converted_quantity)
         return converted_values
+
 
     def set_values_in_store(self, indices, attributes, values):
         converted_values = []
@@ -3117,6 +3120,7 @@ class ParticleInformationChannel(object):
             return
         
         values = self.from_particles.get_values_in_store(self.from_indices, attributes)
+        
         converted = []
         for x in values:
             if isinstance(x, LinkedArray):
@@ -3125,6 +3129,7 @@ class ParticleInformationChannel(object):
                 converted.append(x)
         if len(self.to_indices) > 0:
             self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
+
 
 
     def copy(self):
@@ -3138,6 +3143,7 @@ class ParticleInformationChannel(object):
     def copy_all_attributes(self):
         names_to_copy = self.from_particles.get_attribute_names_defined_in_store()
         self.copy_attributes(list(names_to_copy))
+
 
     def copy_overlapping_attributes(self):
         from_names = self.from_particles.get_attribute_names_defined_in_store()
@@ -3744,6 +3750,7 @@ class UpdatingParticlesSubset(AbstractParticleSet):
             indices = self.get_all_indices_in_store()
 
         return self._private.particles.get_values_in_store(indices, attributes)
+
 
     def set_values_in_store(self, indices, attributes, values):
         if indices is None:

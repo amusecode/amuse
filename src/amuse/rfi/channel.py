@@ -38,6 +38,9 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.rfi import run_command_redirected
 
+from amuse.rfi import slurm
+
+
 class ASyncRequest(object):
         
     def __init__(self, request, message, comm, header):
@@ -1198,11 +1201,17 @@ class MpiChannel(AbstractMessageChannel):
     _mpi_is_broken_after_possible_code_crash = False
     _intercomms_to_disconnect = []
     _is_registered = False
+    _scheduler_nodes = []
+    _scheduler_index = 0
+    _scheduler_initialized = False
+
 
     
     def __init__(self, name_of_the_worker, legacy_interface_type=None, interpreter_executable=None, **options):
         AbstractMessageChannel.__init__(self, **options)
         
+        self.inuse_semaphore = threading.Semaphore()
+
         # logging.basicConfig(level=logging.WARN)
         # logger.setLevel(logging.DEBUG)
         # logging.getLogger("code").setLevel(logging.DEBUG)
@@ -1228,7 +1237,10 @@ class MpiChannel(AbstractMessageChannel):
             self.info = MPI.Info.Create()
             self.info['host'] = self.hostname
         else:
-            self.info = MPI.INFO_NULL
+            if self.job_scheduler:
+                self.info = self.get_info_from_job_scheduler(self.job_scheduler)
+            else:
+                self.info = MPI.INFO_NULL
             
         self.cached = None
         self.intercomm = None
@@ -1236,6 +1248,8 @@ class MpiChannel(AbstractMessageChannel):
         self._communicated_splitted_message = False
     
     
+
+
 
     @classmethod
     def ensure_mpi_initialized(cls):
@@ -1407,8 +1421,7 @@ class MpiChannel(AbstractMessageChannel):
         
     def send_message(self, call_id, function_id, dtype_to_arguments={}, encoded_units = ()):
 
-        if self.is_inuse():
-            raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
+        
         if self.intercomm is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
@@ -1417,6 +1430,16 @@ class MpiChannel(AbstractMessageChannel):
         if call_count > self.max_message_length:
             self.split_message(call_id, function_id, call_count, dtype_to_arguments, encoded_units)
         else:
+            if self.is_inuse():
+                raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
+            self.inuse_semaphore.acquire()
+            try:
+                if self._is_inuse:
+                    raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
+                self._is_inuse = True
+            finally:
+                self.inuse_semaphore.release()
+
             message = ServerSideMPIMessage(
                 call_id, function_id,
                 call_count, dtype_to_arguments, 
@@ -1424,11 +1447,8 @@ class MpiChannel(AbstractMessageChannel):
             )
             message.send(self.intercomm)
 
-            self._is_inuse = True
 
     def recv_message(self, call_id, function_id, handle_as_array, has_units = False):
-        
-        self._is_inuse = False
         
         if self._communicated_splitted_message:
             x = self._merged_results_splitted_message
@@ -1442,9 +1462,17 @@ class MpiChannel(AbstractMessageChannel):
         try:
             message.receive(self.intercomm)
         except MPI.Exception as ex:
+            self._is_inuse = False
             self.stop()
             raise ex
-        
+        self.inuse_semaphore.acquire()
+        try:
+            if not self._is_inuse:
+                raise exceptions.CodeException("You've tried to recv a message to a code that is not handling a message, this is not correct")
+            self._is_inuse = False
+        finally:
+            self.inuse_semaphore.release()
+
         if message.call_id != call_id:
             self.stop()
             raise exceptions.CodeException('Received reply for call id {0} but expected {1}'.format(message.call_id, call_id))
@@ -1465,6 +1493,7 @@ class MpiChannel(AbstractMessageChannel):
         else:
             return message.to_result(handle_as_array)
         
+
     def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units = False):
         request = ServerSideMPIMessage().nonblocking_receive(self.intercomm)
         def handle_result(function):
@@ -1510,7 +1539,54 @@ class MpiChannel(AbstractMessageChannel):
         self.intercomm = None
         self._is_inuse = False
         self._communicated_splitted_message = False
+        self.inuse_semaphore = threading.Semaphore()
         
+
+
+
+    @option(sections=("channel",))
+    def job_scheduler(self):
+        """Name of the job scheduler to use when starting the code, if given will use job scheduler to find list of hostnames for spawning"""
+        return ""
+        
+
+
+
+    def get_info_from_job_scheduler(self, name, number_of_workers = 1):
+        if name == "slurm":
+            return self.get_info_from_slurm(number_of_workers)
+        return MPI.INFO_NULL
+
+    @classmethod
+    def get_info_from_slurm(cls, number_of_workers):
+        has_slurm_env_variables = 'SLURM_NODELIST' in os.environ and 'SLURM_TASKS_PER_NODE' in os.environ
+        if not has_slurm_env_variables:
+            return MPI.INFO_NULL
+        if not cls._scheduler_initialized:
+            nodelist = slurm.parse_slurm_nodelist(os.environ['SLURM_NODELIST'])
+            tasks_per_node = slurm.parse_slurm_tasks_per_node(os.environ['SLURM_TASKS_PER_NODE'])
+            all_nodes = []
+            for node, tasks in zip(nodelist, tasks_per_node):
+                for _ in range(tasks):
+                    all_nodes.append(node)
+            cls._scheduler_nodes = all_nodes
+            cls._scheduler_index = 1     # start at 1 assumes that the python script is running on the first node as the first task
+            cls._scheduler_initialized = True
+            print "NODES:", cls._scheduler_nodes
+        hostnames = []
+        count = 0
+        while count < number_of_workers:
+                hostnames.append(cls._scheduler_nodes[cls._scheduler_index])
+                count += 1
+                cls._scheduler_index += 1
+                if cls._scheduler_index >= len(cls._scheduler_nodes):
+                    cls._scheduler_index  = 0
+        host = ','.join(hostnames)
+        print "HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE']
+        info = MPI.Info.Create()
+        info['host'] = host                                                     #actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
+        return info
+
 
 
 class MultiprocessingMPIChannel(AbstractMessageChannel):
@@ -1972,9 +2048,10 @@ class SocketChannel(AbstractMessageChannel):
     def mpiexec(self):
         """mpiexec with arguments"""
         if len(config.mpi.mpiexec):
-            return shlex.split(config.mpi.mpiexec)
-        return []
+            return config.mpi.mpiexec
+        return ''
     
+
 
     @late
     def debugger_method(self):
@@ -2036,12 +2113,13 @@ class SocketChannel(AbstractMessageChannel):
         #start arguments with command        
         arguments.insert(0, command)
 
-        if self.initialize_mpi and len(self.mpiexec) > 0 and len(self.mpiexec[0]) > 0:
+        if self.initialize_mpi and len(self.mpiexec) > 0:
+            mpiexec = shlex.split(self.mpiexec)
             # prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
             arguments.insert(0, "-np")
-            arguments[:0] = self.mpiexec
-            command = self.mpiexec[0]
+            arguments[:0] = mpiexec
+            command = mpiexec[0]
 
             #append with port and hostname where the worker should connect            
             arguments.append(str(server_socket.getsockname()[1]))
@@ -2075,6 +2153,7 @@ class SocketChannel(AbstractMessageChannel):
         
         # logger.info("worker %s initialized", self.name_of_the_worker)
         
+
 
 
     @option(choices=AbstractMessageChannel.DEBUGGERS.keys(), sections=("channel",))
@@ -2571,6 +2650,7 @@ class LocalChannel(AbstractMessageChannel):
         import python_code
         
         module = import_module.import_unique(self.package + "." + self.so_module)
+        print module, self.package + "." + self.so_module
         module.set_comm_world(MPI.COMM_SELF)
         self.local_implementation = python_code.CythonImplementation(module, self.legacy_interface_type)
         

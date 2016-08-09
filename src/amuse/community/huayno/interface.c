@@ -319,6 +319,19 @@ int get_timestep(double *t)
   return 0;
 }
 
+int set_verbosity_parameter(int t)
+{
+  verbosity=t;
+  return 0;
+}
+
+int get_verbosity_parameter(int *t)
+{
+  *t=verbosity;
+  return 0;
+}
+
+
 int evolve_model(double t_end)
 {
   double dt=SIGN(t_end-t_now)*dtime;

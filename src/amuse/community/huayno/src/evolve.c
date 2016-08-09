@@ -17,6 +17,8 @@
 #include "evolve_cl.h"
 #endif
 
+int verbosity=0;
+
 FLOAT eps2;
 FLOAT dt_param;
 struct sys zerosys ={ 0, NULL,NULL};
@@ -303,7 +305,7 @@ void do_evolve(struct sys s, double dt, int inttype)
   } 
   for(p=0;p<s.n;p++) s.part[p].pot=0;
   potential(s,s);
-  report(s,(DOUBLE) dt, inttype);
+  if(verbosity>0) report(s,(DOUBLE) dt, inttype);
 }
 
 void drift(int clevel,struct sys s, DOUBLE etime, DOUBLE dt)

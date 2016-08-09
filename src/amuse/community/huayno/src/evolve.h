@@ -95,6 +95,7 @@ enum intopt
   CONSTANT10,   // 38
 };
 
+extern int verbosity;
 extern FLOAT eps2;
 extern FLOAT dt_param;
 #pragma omp threadprivate(dt_param)

@@ -1,5 +1,5 @@
 FORTRAN ?= gfortran
-FC = $(FORTRAN)
+FC ?= $(FORTRAN)
 
 MESA_DIR = ../src/mesa
 WORK_DIR = .

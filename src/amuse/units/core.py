@@ -43,6 +43,10 @@ class system(object):
         return (get_system_with_name, (self.name,))
     
     
+    def __str__(self):
+        return self.name
+            
+
 class unit(object):
     """
     Abstract base class for unit objects.
@@ -450,6 +454,26 @@ class unit(object):
             result[base.index + 2] = n
             result[1] = base.system.index
         return result
+
+    def describe_array_of_floats(self):
+        """Create a human readable description of the array of floats
+        """
+        if not self.base:
+            return 'not a numerical unit'
+        
+        parts = ['factor']
+        parts.extend(['-']*8)
+        
+        for n, base in self.base:
+            if n != 0:
+                parts[base.index + 2] = str(base)
+            else:
+                parts[base.index + 2] = '-'
+
+            parts[1] = str(base.system)
+        return ', '.join(parts)
+
+
 
 class base_unit(unit):
     """
