@@ -1103,3 +1103,57 @@ class TestParameters(amusetest.TestCase):
         self.assertTrue("mesh_length" in str(y))
         self.assertTrue("[0.0, 20.0, 40.0] m" in str(y))
         
+    def test17(self):
+        print "Testing ParametersWithUnitsConverted on vector parameters, using add_vector_parameter"
+        
+        class TestModule(BaseTestModule):
+            x = [1.,2.,3.] | generic_unit_system.length
+            
+            def get_length(self,i):
+                return self.x[i]
+            def set_length(self, i,value):
+                self.x[i] = value
+            def range(self):
+                return 0,len(self.x)-1
+        
+        o = TestModule()
+        parameters_handler = HandleParameters(o)
+        parameters_handler.add_array_parameter(
+            "get_length",
+            "set_length",
+            "range",
+            "length",
+            "description"
+        )
+        
+        x = parameters_handler.get_attribute(None, None)
+        self.assertTrue("length" in str(x))
+        self.assertTrue("[1.0, 2.0, 3.0] length" in str(x))
+        
+    def test18(self):
+        print "Testing array parameters"
+        definitions = []
+        definitions.append(parameters.ModuleArrayParameterDefinition(
+                "get",
+                "set",
+                "range",
+                "param",
+                "a test parameter"
+        ))
+        
+        class TestModule(BaseTestModule):
+            x = [1.,2.,3.] | generic_unit_system.length
+            
+            def get(self,i):
+                return self.x[i]
+            def set(self,i, value):
+                self.x[i] = value
+            def range(self):
+                return 0, len(self.x)-1
+        
+        o = TestModule()
+        x = parameters.Parameters(definitions, o)
+        
+        self.assertEqual(x.param, [1.,2.,3.] | generic_unit_system.length)
+        x.param*=2
+        self.assertEqual(x.param, [2.,4.,6.] | generic_unit_system.length)

@@ -930,6 +930,16 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         else:
           self.add_method_parameter("get_"+name,"set_"+name,name,description,default)
 
+    def add_array_parameter(self, get_method, set_method, range_method, name, description):
+        definition = parameters.ModuleArrayParameterDefinition(
+            get_method,
+            set_method,
+            range_method,
+            name,
+            description
+        )
+        self.definitions.append(definition)
+
     def has_name(self, name):
         return name == 'PARAMETER'
 
