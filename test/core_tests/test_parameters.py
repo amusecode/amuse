@@ -1071,7 +1071,7 @@ class TestParameters(amusetest.TestCase):
         b*=2
         self.assertEqual(set.test_name,2)
         
-    def test11(self):
+    def test16(self):
         print "Testing add_interface_parameter"
         
         class TestModule(BaseTestModule):
