@@ -659,4 +659,36 @@ class VectorParameterDefinition(AbstractParameterDefinition):
                 result = parameter.definition.unit
         return result
     
-    
+# to do: higher dimensional array parameters
+class ModuleArrayParameterDefinition(ParameterDefinition):
+    def __init__(self, get_method, set_method, range_method, name, description):
+        ParameterDefinition.__init__(self, name, description, None, False)
+        self.get_method = get_method
+        self.set_method = set_method
+        self.range_method = range_method
+        self.stored_value = None
+
+    def get_value(self, parameter, object):        
+        if self.get_method is None:
+            return self.stored_value
+        else:
+            irange=getattr(object, self.range_method)()
+            index=numpy.arange(irange[0],irange[1]+1)
+            return getattr(object, self.get_method)(index)
+
+    def set_value(self, parameter, object, quantity):
+        
+        if self.set_method is None:
+            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+        
+        irange=getattr(object, self.range_method)()
+        index=numpy.arange(irange[0],irange[1]+1)
+        getattr(object, self.set_method)(index,quantity)
+        
+        if self.get_method is None:
+            self.stored_value = quantity
+        
+        parameter.is_set = True
+
+    def is_readonly(self):
+        return self.set_method is None
