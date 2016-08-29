@@ -21,14 +21,6 @@ def integrate_solar_system(particles, end_time):
     y_label = "eccentricty"
     figure = single_frame(x_label, y_label, xsize=14, ysize=10)
 
-    """
-    from matplotlib import pyplot, rc
-    figure = pyplot.figure(figsize=(10,10))
-    font = {'size' : 20}
-    rc('font', **font)
-    plot = figure.add_subplot(1,1,1)
-    """
-
     from amuse.plot import scatter
     from matplotlib import pyplot, rc
     kep = Kepler(convert_nbody)
@@ -46,7 +38,6 @@ def integrate_solar_system(particles, end_time):
 
         kep.initialize_from_particles(SunEarth)
         a, e = kep.get_elements()
-        #scatter(gravity.model_time.in_(units.yr), e, c="b")
         scatter((a-a0).in_(units.AU), e, c=color[0], lw=0)
         if gravity.model_time> dt_dia:
             dt_dia += 10000 |units.yr
@@ -84,10 +75,6 @@ def integrate_solar_system(particles, end_time):
     return
     
 if __name__ in ('__main__','__plot__'):
-    #particles = new_solar_system()
-    #particles = new_solar_system(Julian_date=2438871.5|units.day)
     particles = solar_system_in_time(time_JD=2474649.5|units.day)
-#    integrate_solar_system(particles, 1000 | units.yr)
-#    integrate_solar_system(particles, 90200 | units.yr)
     integrate_solar_system(particles, 84000 | units.yr)
     

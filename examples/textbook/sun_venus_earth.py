@@ -48,6 +48,8 @@ def integrate_solar_system(particles, end_time):
         y_earth.append(earth.y)
         x_venus.append(venus.x)
         y_venus.append(venus.y)
+#        from amuse.lab import *
+#        write_set_to_file(gravity.particles, "gravity.h5", "hdf5")
     gravity.stop()
     return x_earth, y_earth, x_venus, y_venus
     
