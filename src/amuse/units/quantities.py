@@ -213,10 +213,7 @@ class Quantity(object):
 
         """
         value_of_unit_in_another_unit = self.unit.value_in(unit)
-        if value_of_unit_in_another_unit == 1.0:
-            return self.number * 1
-        else:
-            return self.number * value_of_unit_in_another_unit
+        return self.number * value_of_unit_in_another_unit
 
     def __abs__(self):
         """
