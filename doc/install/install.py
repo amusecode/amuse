@@ -94,7 +94,7 @@ class InstallPrerequisites(object):
             ['mpich2'], 
             '1.3.1', 
             'mpi4py-', '.tar.gz', 
-            'http://mpi4py.googlecode.com/files/', 
+            'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
           ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
@@ -207,7 +207,7 @@ class InstallPrerequisites(object):
     def h5py_build(self, path):
         
         self.run_application([PYTHON,'setup.py','build','--hdf5='+self.prefix], cwd=path)
-        #self.run_application([PYTHON,'setup.py','build','--hdf5='+'/cm/shared/apps/hdf5_18/1.8.12'], cwd=path)
+        #self.run_application([PYTHON,'setup.py','build','--hdf5='+'/cm/shared/apps/hdf5_18/1.8.16'], cwd=path)
         self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path)
         
     def setuptools_install(self, path):
