@@ -1328,10 +1328,12 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
 
 
     def has_name(self, name):
-        return name == 'PARTICLES'
+        return name == 'PARTICLES' or name == 'DATASETS' or name == 'GRIDS'
 
     def setup(self, object):
         object.define_particle_sets(self)
+        object.define_data_sets(self)
+        object.define_grids(self)
 
     def define_set(self, name, name_of_indexing_attribute = 'index_of_the_particle', state_guard=None):
         definition = ParticleSetDefinition(self)
@@ -1466,6 +1468,12 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         pass
 
     def define_particle_sets(self, handler):
+        pass
+
+    def define_data_sets(self, handler):
+        pass
+
+    def define_grids(self, handler):
         pass
 
     def define_errorcodes(self, handler):
