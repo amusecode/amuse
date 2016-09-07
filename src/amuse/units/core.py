@@ -297,7 +297,7 @@ class unit(object):
         elif self._compare_bases(x):
             this_factor = self.factor * 1.0
             other_factor = x.factor
-            return this_factor / other_factor
+            return 1*(this_factor == other_factor) or this_factor / other_factor
         else:
             raise IncompatibleUnitsException(x, self)
       
