@@ -69,7 +69,11 @@ real scheduler::get_list(int *ilist, int& n) const
     if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     li ib;
-    for (n = 0, ib = bp[0]; ib != bp[1]; ib++) ilist[n++] = ib->jindex;
+
+    // NOTE: ilist = NULL means just return tnext.
+
+    if (ilist)
+        for (n = 0, ib = bp[0]; ib != bp[1]; ib++) ilist[n++] = ib->jindex;
     return bp[0]->t_next;
 }
 

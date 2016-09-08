@@ -16,6 +16,9 @@ static jdata *jd = NULL;
 static idata *id = NULL;
 static scheduler *s = NULL;
 static double begin_time = 0;
+static bool force_sync = false;
+static int block_steps = 0;
+static int total_steps = 0;
 
 // Setup and parameters.
 
@@ -49,6 +52,10 @@ int initialize_code()
     //PRL(6);
     jd->set_manage_encounters(4);	// 4 ==> enable AMUSE suport
     //PRL(7);
+
+    force_sync = false;
+    block_steps = 0;
+    total_steps = 0;
 
     return 0;
 }
@@ -135,6 +142,35 @@ int get_begin_time(double * output) {
     return 0;
 }
 
+int set_force_sync(int f) {
+    force_sync = f;
+    return 0;
+}
+
+int get_force_sync(int *f) {
+    *f = force_sync;
+    return 0;
+}
+
+int set_block_steps(int s) {
+    block_steps = s;
+    return 0;
+}
+
+int get_block_steps(int *s) {
+    *s = block_steps;
+    return 0;
+}
+
+int set_total_steps(int s) {
+    total_steps = s;
+    return 0;
+}
+
+int get_total_steps(int *s) {
+    *s = total_steps;
+    return 0;
+}
 
 int commit_parameters()
 {
@@ -440,8 +476,10 @@ int evolve_model(double to_time)
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=
     // system_time < time[j] + timestep[j].  If synchronization is
-    // needed, do it with synchronize_model().  The function breaks
-    // out of the jd->advance() loop if an encounter is detected.
+    // needed, do it with synchronize_model() to sync at final
+    // system_time, or use force_sync if we need to end at exactly
+    // to_time.  The function breaks out of the jd->advance() loop
+    // (without synchronization) if an encounter is detected.
 
     if (jd->mpi_rank == 0) {
 	//cout << "in evolve_model: "; PRC(to_time); PRL(jd->nj);
@@ -451,8 +489,29 @@ int evolve_model(double to_time)
 
     reset_stopping_conditions();    
     jd->UpdatedParticles.clear();
-    while (jd->system_time < (to_time - begin_time))
-        if (jd->advance_and_check_encounter()) break;
+
+    real tt = to_time - begin_time;
+    int nb = jd->block_steps;
+    int ns = jd->total_steps;
+
+    if (!force_sync) {
+        while (jd->system_time < tt)
+            if (jd->advance_and_check_encounter()) break;
+    } else {
+        bool b = false;
+	while (jd->get_tnext() <= tt) {
+	    b = jd->advance_and_check_encounter();
+            if (b) break;
+	}
+	if (!b) {
+	    jd->system_time = tt;
+	    jd->synchronize_all();
+	}
+    }
+
+    block_steps += jd->block_steps - nb;
+    total_steps += jd->total_steps - ns;
+    force_sync = false;
 
     return 0;
 }
@@ -466,6 +525,7 @@ int synchronize_model()
     //cout << "synchronize_model" << endl << flush;
     jd->UpdatedParticles.clear();
     jd->synchronize_all();
+    force_sync = false;
     return 0;
 }
 

@@ -204,6 +204,7 @@ class jdata {
     void print();
     void spec_output(const char *s = NULL);
     void to_com();
+    real get_tnext();
 
     // In gpu.cc:
 

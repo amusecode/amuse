@@ -473,15 +473,15 @@ void jdata::set_initial_timestep()
 	    // Force the time step to a power of 2 commensurate with
 	    // system_time.
         
-        if(isnan(firststep)) {  
-            firststep = 0.0625 * eta;
-        }
+	    if (isnan(firststep)) {  
+	        firststep = 0.0625 * eta;
+	    }
 
 	    int exponent;
 	    firststep /= 2*frexp(firststep, &exponent);
 	    while (fmod(system_time, firststep) != 0) {
-            firststep /= 2;
-        }
+	        firststep /= 2;
+	    }
 
 	    timestep[j] = firststep;
 	}
@@ -1087,4 +1087,11 @@ void jdata::to_com()
 	    vel[j][k] -= cmvel[k];
 	}
     }
+}
+
+real jdata::get_tnext()
+{
+    if (!sched) return 0;
+    int ndum;
+    return sched->get_list(NULL, ndum);
 }
