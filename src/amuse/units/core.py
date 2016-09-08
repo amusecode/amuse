@@ -845,7 +845,7 @@ class named_unit(unit):
     >>> minute = named_unit("minute","min", 60*si.s)
     >>> minute
     unit<min>
-    >>> (20 | (60.0 * si.s)).as_quantity_in(minute)
+    >>> (20.0 | (60.0 * si.s)).as_quantity_in(minute)
     quantity<20.0 min>
     """
     def __init__(self, name, symbol, unit):
@@ -1020,7 +1020,7 @@ class pow_unit(derived_unit):
     >>> area
     unit<m**2>
     >>> area.as_quantity_in(si.m * si.m)
-    quantity<1.0 m * m>
+    quantity<1 m * m>
     >>> hectare = (100 * si.m) ** 2
     >>> hectare.as_quantity_in(area)
     quantity<10000.0 m**2>
@@ -1077,7 +1077,7 @@ class div_unit(derived_unit):
     unit<m / s>
     >>> speed_with_powers = si.m * si.s ** -1
     >>> speed.as_quantity_in(speed_with_powers)
-    quantity<1.0 m * s**-1>
+    quantity<1 m * s**-1>
     
     """
     def __init__(self, left_hand, right_hand):
