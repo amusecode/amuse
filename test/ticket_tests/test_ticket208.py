@@ -1,6 +1,7 @@
 from amuse.test import amusetest
 
 import os.path
+import numpy
 
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.community.hermite0.interface import Hermite
@@ -25,20 +26,20 @@ class TestsForTicket208(amusetest.TestCase):
         instance.initialize_code()
     
         particles = datamodel.Particles(10)
-        particles.mass = xrange(1,11) | mass_unit
-        particles.radius = xrange(1,11) | length_unit
-        particles.x = xrange(1,11) | length_unit
-        particles.y = xrange(1,11) | length_unit
-        particles.z = xrange(1,11) | length_unit
-        particles.vx = xrange(1,11) | speed_unit
-        particles.vy = xrange(1,11) | speed_unit
-        particles.vz = xrange(1,11) | speed_unit
+        particles.mass = numpy.arange(1,11) | mass_unit
+        particles.radius = numpy.arange(1,11) | length_unit
+        particles.x = numpy.arange(1,11) | length_unit
+        particles.y = numpy.arange(1,11) | length_unit
+        particles.z = numpy.arange(1,11) | length_unit
+        particles.vx = numpy.arange(1,11) | speed_unit
+        particles.vy = numpy.arange(1,11) | speed_unit
+        particles.vz = numpy.arange(1,11) | speed_unit
         
         instance.particles.add_particles(particles)
         instance.commit_particles()
         
         self.assertEquals(len(instance.particles), 10)
-        self.assertAlmostRelativeEquals(instance.particles.mass.as_quantity_in(mass_unit), list(xrange(1,11)) | mass_unit)
+        self.assertAlmostRelativeEquals(instance.particles.mass.as_quantity_in(mass_unit), list(numpy.arange(1,11)) | mass_unit)
                 
         instance.particles.remove_particle(particles[2])
         instance.particles.remove_particle(particles[5])
