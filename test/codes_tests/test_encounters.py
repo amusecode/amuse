@@ -501,7 +501,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         self.assertTrue(particle_in_multiples.components[1] in x.released_singles)
         
     
-    def test8(self):
+    def xtest8(self):
         particles_in_encounter = Particles(3)
         particles_in_encounter.mass = 1. | nbody_system.mass
         particles_in_encounter[0].position = [0.,0.,0.] | nbody_system.length
