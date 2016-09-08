@@ -83,7 +83,7 @@ density = mass / volume
 pressure = mass / length / (time ** 2)
 momentum_density = density * speed
 energy_density = density * specific_energy
-G = 1 | (length**3) / (mass * (time**2))
+G = 1. | (length**3) / (mass * (time**2))
 
 def is_nbody_unit(unit):
     for factor, x in unit.base:
