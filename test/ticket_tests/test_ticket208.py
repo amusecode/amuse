@@ -2,6 +2,7 @@ import numpy
 from amuse.test import amusetest
 
 import os.path
+import numpy
 
 from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.community.hermite0.interface import Hermite
