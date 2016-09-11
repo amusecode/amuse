@@ -4,9 +4,15 @@
 /*********************************/
 /*********************************/
 
-void octree::set_src_directory(string src_dir) {                                                                                                                                 
-    this->src_directory = (char*)src_dir.c_str();                                                                                                                                
-}   
+void octree::set_src_directory(string src_dir) {
+  fprintf(stderr, "In the function to set src_directory to %s", src_dir.c_str());
+  if (this->src_directory != NULL)
+  {
+    delete[] this->src_directory;
+  }
+  this->src_directory = new char[src_dir.length()+1];
+  strcpy(this->src_directory, src_dir.c_str());
+}
 
 double octree::get_time() {
   struct timeval Tvalue;
