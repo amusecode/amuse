@@ -333,6 +333,9 @@ if [ ${PLATFORM} == "Darwin" ]; then
     ${PYTHON} mvref.py -p /usr/local/lib/ -b ${PYTHONHOME}/lib -r ./
 else
     echo 'move refs'
+    
+    chmod u+w ${PYTHONHOME}/lib/engines/*.so
+    
     ${PYTHON} linux_set_rpath.py --path=${PYTHONHOME}/lib/ --bin-path=${PYTHONHOME}/ || exit $?
 fi
 

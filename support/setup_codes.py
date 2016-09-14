@@ -155,7 +155,11 @@ class CodeCommand(Command):
                 self.codes_dir = os.path.join(self.build_temp, 'codes')
                 self.codes_src_dir = os.path.join(self.amuse_src_dir,'community')
         else:
-            self.codes_src_dir  = self.codes_dir
+            if self.inplace:
+                self.codes_src_dir = self.codes_dir
+            else:
+                self.codes_src_dir = self.codes_dir
+                self.codes_dir=os.path.join(self.build_temp, 'codes')
             
         if self.lib_dir is None:
             if self.inplace:

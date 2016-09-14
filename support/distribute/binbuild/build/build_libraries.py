@@ -82,6 +82,30 @@ class InstallPrerequisites(object):
             'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
+            'netcdf-c' ,
+            ['hdf'],  
+            '4.4.1',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-c/archive/',
+            self.basic_build
+          ) ,
+          (
+            'netcdf-fortran' ,
+            ['netcdf-c'],  
+            '4.4.4',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-fortran/archive/',
+            self.basic_build
+          ) ,
+          (
+            'netcdf4-python' ,
+            ['netcdf-c'],  
+            '1.2.4rel',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf4-python/archive/',
+            self.netcdfpython_build
+          ) ,
+          (
             'docutils', 
             [], 
             '0.9.1', 
@@ -180,7 +204,14 @@ class InstallPrerequisites(object):
             'http://download.zeromq.org/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
-          
+          (
+            'patchelf' ,
+            [],  
+            '0.8',
+            'patchelf-' , '.tar.gz' , 
+            'https://nixos.org/releases/patchelf/patchelf-0.8/',
+            self.basic_build
+          ) ,          
         ]
         
     @late
@@ -258,6 +289,10 @@ class InstallPrerequisites(object):
             self.run_application(x, path)
     
     def python_build(self, path):
+        self.run_application([sys.executable,'setup.py','build'], cwd=path)
+        self.run_application([sys.executable,'setup.py','install'], cwd=path)
+
+    def netcdfpython_build(self, path):
         self.run_application([sys.executable,'setup.py','build'], cwd=path)
         self.run_application([sys.executable,'setup.py','install'], cwd=path)
     
@@ -495,6 +530,12 @@ class InstallPrerequisites(object):
                 sys.exit(1)
             print "...Finished"
             
+    def extract_path(self, app_file):
+        proc=subprocess.Popen(["tar","tf",app_file], stdout=subprocess.PIPE)
+        out,err=proc.communicate()
+        out=out.split("\n")
+        return os.path.split(out[0])[0]
+            
     def build_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
@@ -503,7 +544,8 @@ class InstallPrerequisites(object):
                 continue
             app_file = prefix + version + suffix
             app_dir = prefix + version 
-            temp_app_dir = os.path.join(self.temp_dir , app_dir)
+            temp_app_dir = self.extract_path(os.path.join(self.temp_dir , app_file) )
+            temp_app_dir=os.path.join(self.temp_dir, temp_app_dir)
             if not os.path.exists(temp_app_dir):
                 if prefix.endswith('-'):
                     app_dir = prefix[:-1]
