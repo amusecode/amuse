@@ -573,17 +573,17 @@ class CodeCommand(Command):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
                     targetname = line[len('muse_worker_'):index_of_the_colon]
-                    result.append((line[:index_of_the_colon], targetname,))
+                    if '%' not in targetname: result.append((line[:index_of_the_colon], targetname,))
             elif line.startswith('worker_code_'):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
                     targetname = line[len('worker_code_'):index_of_the_colon]
-                    result.append((line[:index_of_the_colon], targetname,))
+                    if '%' not in targetname: result.append((line[:index_of_the_colon], targetname,))
             elif line.startswith(name + '_worker_'):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
                     targetname = line[len(name + '_worker_'):index_of_the_colon]
-                    result.append((line[:index_of_the_colon], targetname,))
+                    if '%' not in targetname: result.append((line[:index_of_the_colon], targetname,))
                     
         return result
     
