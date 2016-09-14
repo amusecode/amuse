@@ -50,10 +50,8 @@ LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 
 gadget2_worker: ${TARGETS}
 
-gadget2_%: % ;
-
-worker_%: worker_code.cc interface_%.o $(BUILDDIR)_%/libgadget.a $(BUILDDIR)_%/allvars.o
-	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) -o gadget2_$@ $^ $(SC_MPI_CLIBS) $(GSL_LIBS) $(AM_LIBS) $(LIBS)
+gadget2_worker_%: worker_code.cc interface_%.o $(BUILDDIR)_%/libgadget.a $(BUILDDIR)_%/allvars.o
+	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(GSL_FLAGS) $(LDFLAGS) -o $@ $^ $(SC_MPI_CLIBS) $(GSL_LIBS) $(AM_LIBS) $(LIBS)
  
 $(BUILDDIR)_%:
 	-mkdir $@
