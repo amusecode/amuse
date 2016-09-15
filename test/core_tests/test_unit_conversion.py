@@ -89,7 +89,7 @@ class TestUnitConversions(amusetest.TestCase):
             expected_message = "Cannot express m / s in s / m, the units do not have the same bases")
     
     def test12(self):
-        self.assertEquals((1234 | g).as_string_in(g), '1234.0 g')
+        self.assertEquals((1234 | g).as_string_in(g), '1234 g')
         self.assertEquals((1234 | g).as_string_in(kg), '1.234 kg')
         self.assertEquals((1.234 | kg).as_string_in(g), '1234.0 g')
         self.assertEquals((1.0 | km * s**-1).as_string_in(m / s), '1000.0 m / s')

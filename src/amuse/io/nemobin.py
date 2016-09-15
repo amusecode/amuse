@@ -376,13 +376,13 @@ class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
             particlesitem = snapshot.data['Particles'][0]
             if 'PhaseSpace' in particlesitem.data:
                 positions_and_velocities = particlesitem.data['PhaseSpace'][0].data
-                positions = positions_and_velocities[...,0,...]
-                velocities = positions_and_velocities[...,1,...]
+                positions = positions_and_velocities[...,0,:]
+                velocities = positions_and_velocities[...,1,:]
             else:
                 positions =  particlesitem.data['Position'][0].data
-                positions = positions.reshape(positions.shape[:-1])
-                velocities = particlesitem.data['Vecolity'][0].data
-                velocities = velocities.reshape(velocities.shape[:-1])
+                #positions = positions.reshape(positions.shape[:-1])
+                velocities = particlesitem.data['Velocity'][0].data
+                #velocities = velocities.reshape(velocities.shape[:-1])
             
             result.position = nbody_system.length.new_quantity(positions)
             result.velocity = nbody_system.speed.new_quantity(velocities)
@@ -396,26 +396,26 @@ class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
         return result
     
     def store_file(self, file):
-        
+
         nemofile = NemoBinaryFile(file)
         item = SetItem('SnapShot')
         parameters_item = SetItem('Parameters')
         item.add_item(parameters_item)
-        parameters_item.add_item(DoubleItem('Nobj', data = len(self.set)))
+        parameters_item.add_item(IntItem('Nobj', data = len(self.set)))
         if self.set.get_timestamp() is None:
             parameters_item.add_item(DoubleItem('Time', data = 0.0))
         else:
             parameters_item.add_item(DoubleItem('Time', data = set.get_timestamp().value_in(nbody_system.time)))
-        
+
         particles_item = SetItem('Particles')
         item.add_item(particles_item)
         particles_item.add_item(
             DoubleItem(
                 'Position', 
-                dimensions=(len(self.set), 3, 1,), 
+                dimensions=(len(self.set), 3), 
                 data = self.set.position.value_in(nbody_system.length)
             )
         )
-        particles_item.add_item(DoubleItem('Vecolity', dimensions=(len(self.set), 3, 1,), data = self.set.velocity.value_in(nbody_system.speed)))
+        particles_item.add_item(DoubleItem('Velocity', dimensions=(len(self.set), 3), data = self.set.velocity.value_in(nbody_system.speed)))
         particles_item.add_item(DoubleItem('Mass', dimensions=(len(self.set), ), data = self.set.mass.value_in(nbody_system.mass)))
         nemofile.write({'a':item})

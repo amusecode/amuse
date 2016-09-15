@@ -351,13 +351,40 @@ src/amuse/community/aarsethzare/aarsethzare_cython.pyx
 src/amuse/community/aarsethzare/aarsethzare_worker_cython
 lib/sapporo_2/src/sapporo2-master
 lib/sapporo_2/src/master.tgz
+src/amuse/community/athena/athena_worker_cython
+src/amuse/community/gadget2/build_normal/Gadget2
+src/amuse/community/gadget2/build_normal/Makefile
+src/amuse/community/gadget2/build_normal/makefile_options
+src/amuse/community/gadget2/gadget2_cython_nogravity.c
+src/amuse/community/gadget2/gadget2_cython_nogravity.pyx
+src/amuse/community/gadget2/gadget2_cython_normal.c
+src/amuse/community/gadget2/gadget2_cython_normal.pyx
+src/amuse/community/gadget2/gadget2_cython_periodic.c
+src/amuse/community/gadget2/gadget2_cython_periodic.pyx
+src/amuse/community/gadget2/gadget2_cython_periodic_nogravity.c
+src/amuse/community/gadget2/gadget2_cython_periodic_nogravity.pyx
+src/amuse/community/gadget2/gadget2_worker_cython_nogravity
+src/amuse/community/gadget2/gadget2_worker_cython_normal
+src/amuse/community/gadget2/gadget2_worker_cython_periodic
+src/amuse/community/gadget2/gadget2_worker_cython_periodic_nogravity
+src/amuse/community/gadget2/gadget2_worker_normal
+src/amuse/community/huayno/huayno_worker_cython_mp
+src/amuse/community/sse/sse_c.f90
+src/amuse/community/sse/sse_cython.c
+src/amuse/community/sse/sse_cython.pyx
+src/amuse/community/sse/sse_worker_cython
+
 
 
 
 #files generated during documentation build
 examples/simple/*.data
 examples/simple/*.png
+examples/simple/*.hdf??
 examples/simple/*.hdf
+examples/syllabus/*.hdf5
+examples/applications/*.png
+
 
 
 #files generated during testing

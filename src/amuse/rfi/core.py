@@ -46,6 +46,8 @@ class for all community codes.
 
 import numpy
 
+from amuse.rfi.channel import LocalChannel
+
 def ensure_mpd_is_running():
     from mpi4py import MPI
     if not is_mpd_running():
@@ -119,6 +121,8 @@ class CodeFunction(object):
         
         return result
     
+
+
     def async(self, *arguments_list, **keyword_arguments):
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
@@ -814,10 +818,11 @@ class CodeInterface(OptionalAttributes):
     def stop(self):
         self._stop()
     
-    @option(choices=['mpi','remote','distributed', 'sockets'], sections=("channel",))
+    @option(choices=['mpi','remote','distributed', 'sockets', 'local'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
     
+
 
     @option(type="boolean", sections=("channel",))
     def initialize_mpi(self):
@@ -868,9 +873,12 @@ class CodeInterface(OptionalAttributes):
             return DistributedChannel
         elif self.channel_type == 'sockets':
             return SocketChannel
+        elif self.channel_type == 'local':
+            return LocalChannel
         else:
             raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
     
+
     def before_get_parameter(self):
         """
         Called everytime just before a parameter is retrieved in using::
@@ -911,6 +919,17 @@ class CodeInterface(OptionalAttributes):
         return False
 
         
+
+    @legacy_function
+    def internal__become_code():
+        function = LegacyFunctionSpecification()                      
+        function.addParameter('number_of_workers', dtype='int32', direction=function.IN)
+        function.addParameter('modulename', dtype='string', direction=function.IN)
+        function.addParameter('classname', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+        
+
 
 class CodeWithDataDirectories(object):
     
@@ -1087,27 +1106,30 @@ class CodeFunctionWithUnits(CodeFunction):
     
     def async(self, *arguments_list, **keyword_arguments):
         dtype_to_values, units = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
+        encoded_units = self.convert_input_units_to_floats(units)
         
         handle_as_array = self.must_handle_as_array(dtype_to_values)
         
         call_id = random.randint(0, 1000)
               
-        self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
+        self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values, encoded_units = encoded_units)
         
-        request = self.interface.channel.nonblocking_recv_message(call_id, self.specification.id, handle_as_array)
+        request = self.interface.channel.nonblocking_recv_message(call_id, self.specification.id, handle_as_array, has_units = True)
         
         def handle_result(function):
             try:
-                dtype_to_result = function()
+                dtype_to_result, output_encoded_units = function()
             except Exception, ex:
                 raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
-            return self.converted_results(dtype_to_result, handle_as_array)
+            output_units = self.convert_floats_to_units(output_encoded_units)
+            return self.converted_results(dtype_to_result, handle_as_array, output_units)
             
         request.add_result_handler(handle_result)
         return request
         
         
     
+
     def must_handle_as_array(self, keyword_arguments):
         for argument_type, argument_values in keyword_arguments.items():
             if argument_values:

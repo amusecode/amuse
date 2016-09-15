@@ -175,6 +175,7 @@ class StarsWithMassLoss(Particles):
                                              "wind_mass_loss_rate",
                                              "initial_wind_velocity",
                                              "terminal_wind_velocity",
+                                             "mass_loss_type",
                                              ])
         self._private.defaults = dict(lost_mass=0 | units.MSun,
                                       mass=0 | units.MSun,
@@ -193,6 +194,7 @@ class StarsWithMassLoss(Particles):
                                       initial_wind_velocity=0 | units.ms,
                                       terminal_wind_velocity=0 | units.ms,
                                       mechanical_energy=0 | units.J,
+                                      mass_loss_type="wind",
                                       )
 
         self.set_global_mu()
@@ -1040,7 +1042,6 @@ class HeatingWind(SimpleWind):
 
     def __init__(self, *args, **kwargs):
         self.feedback_efficiency = kwargs.pop("feedback_efficiency", 0.01)
-        self.r_max = kwargs.pop("r_max", None)
         self.r_max_ratio = kwargs.pop("r_max_ratio", 5)
         super(HeatingWind, self).__init__(*args, **kwargs)
 
@@ -1055,10 +1056,11 @@ class HeatingWind(SimpleWind):
         self.particles.evolve_mass_loss(self.model_time)
 
     def went_supernova(self, star, mass_lost):
+        manual = star.mass_loss_type == "supernova"
         post_SN = star.stellar_type in [13, 14, 15] | units.stellar_type
         enough_lost = mass_lost > (.1 | units.MSun)
 
-        return post_SN and enough_lost
+        return manual or (post_SN and enough_lost)
 
     def mechanical_internal_energy(self, star, wind):
         mass_lost = wind.mass.sum()
@@ -1069,6 +1071,7 @@ class HeatingWind(SimpleWind):
 
         if self.went_supernova(star, mass_lost):
             lmech_wind = self.supernova_energy
+            star.mass_loss_type = "wind"
 
         return self.feedback_efficiency * lmech_wind / mass_lost
 

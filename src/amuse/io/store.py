@@ -161,9 +161,10 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
         """If set to True, return a working copy in memory you can manipulate,
         savepoint etc. Only available for version 2.0 in version 1.0
         a working copy (i.e. a particles set or grid in memory)
-        is always returned. (default: False)"""
-        return False
+        is always returned. (default: True)"""
+        return True
     
+
     @base.format_option
     def return_context(self):
         """If set to True, will return a context manager instead of

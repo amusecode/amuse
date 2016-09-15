@@ -91,11 +91,11 @@ class TestCreateCython(TestCase):
         uc.start()
         code =  uc.result
         print '<c>' + code + '</c>'
-        self.assertTrue('INTEGER(kind = c_int) function c_3f33a9ce(int_in, int_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_int")' in code)
+        self.assertTrue('INTEGER(kind = c_int) function c_3f33a9ce(int_in, &\n &int_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_int")' in code)
         self.assertTrue('  INTEGER(kind = c_int), intent(in), value :: int_in' in code)
         self.assertTrue('  INTEGER(kind = c_int), intent(out) :: int_out' in code)
         self.assertTrue('  INTEGER :: echo_int' in code)
-        self.assertTrue('  rrreeesss = echo_int(int_in, int_out)' in code)
+        self.assertTrue('  rrreeesss = echo_int(int_in, &\n &int_out)' in code)
         self.assertTrue('END FUNCTION c_3f33a9ce' in code)
         
 
@@ -108,12 +108,12 @@ class TestCreateCython(TestCase):
         uc.start()
         code =  uc.result
         print '<c>' + code + '</c>'
-        self.assertTrue('INTEGER(kind = c_int) function c_64452f1a(string_in, string_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_string")' in code)
+        self.assertTrue('INTEGER(kind = c_int) function c_64452f1a(string_in, &\n &string_out) &\n & result(rrreeesss) &\n & bind(c, name = "ci_echo_string")' in code)
         self.assertTrue('  type(C_ptr), intent(in), value :: string_in' in code)
         self.assertTrue('  character(len=4096) :: string_string_in' in code)
         self.assertTrue('  call C_F_string_ptr(string_in, string_string_in)' in code)
         self.assertTrue('  call C_F_string_ptr(string_in, string_string_in)' in code)
-        self.assertTrue('  rrreeesss = echo_string(string_string_in, string_string_out)' in code)
+        self.assertTrue('  rrreeesss = echo_string(string_string_in, &\n &string_string_out)' in code)
         self.assertTrue('     string_buffer1 = C_malloc(sz)' in code)
         self.assertTrue('  call F_C_string_ptr(trim(string_string_out), string_buffer1, 4096)' in code)
         self.assertTrue('END FUNCTION c_64452f1a' in code)

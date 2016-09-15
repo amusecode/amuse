@@ -299,6 +299,54 @@ class TableFormattedTextTests(amusetest.TestCase):
         self.assertEquals(str(read.age.value_in(units.yr).dtype), "int32")
     
 
+    def test13(self):
+        p = datamodel.Particles(100)
+        p.a = numpy.arange(0,1,0.01) | units.m
+        
+        io.write_set_to_file(
+            p, 
+            "test.csv",
+            "amuse-txt", 
+            attribute_names = ('a'),
+            maximum_number_of_lines_buffered = 10,
+            key_in_column = 0
+        )
+        p2 = io.read_set_from_file(
+            "test.csv",
+            "txt", 
+            maximum_number_of_lines_buffered = 10,
+            key_in_column = 0
+        )
+        self.assertEquals(p2.key, p.key)
+        self.assertAlmostRelativeEquals(p2.a, p.a)
+        
+
+
+    def test14(self):
+        p = datamodel.Particles(100)
+        p.a = numpy.arange(0,1,0.01) | units.m
+        p.b = numpy.arange(0,1,0.01)     
+        
+        io.write_set_to_file(
+            p, 
+            "test.csv",
+            "amuse-txt", 
+            maximum_number_of_lines_buffered = 10,
+            key_in_column = 0
+        )
+        p2 = io.read_set_from_file(
+            "test.csv",
+            "txt", 
+            maximum_number_of_lines_buffered = 10,
+            key_in_column = 0
+        )
+        self.assertEquals(p2.key, p.key)
+        self.assertAlmostRelativeEquals(p2.a, p.a)
+        self.assertAlmostRelativeEquals(p2.b, p.b)
+        
+
+
+
 class CsvFileTextTests(amusetest.TestCase):
     
     

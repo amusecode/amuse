@@ -8,6 +8,7 @@ import sys
 import importlib
 
 Code = namedtuple("Code", ['cls', 'number_of_workers', 'args', 'kwargs'])
+PythonCode = namedtuple("Code", ['cls', 'number_of_workers', 'args', 'kwargs', 'implementation_factory'])
 
 def get_number_of_workers_needed(codes):
     result = 1
@@ -49,6 +50,7 @@ def get_code_class(rank, codes):
     return None
             
             
+
 def start_all(codes):
     
     channel.MpiChannel.ensure_mpi_initialized()
@@ -92,14 +94,20 @@ def start_all(codes):
             return None
         
         new_intercomm = newcomm.Create_intercomm(0, localdup, 0, color)
+        x = get_code(world.rank, codes)
+        instance =  code_cls(*x.args, check_mpi = False, must_start_worker = False, **x.kwargs)
+        interface = instance.legacy_interface
+       
+        if hasattr(interface, '__so_module__'):
+            package, _ =  code_cls.__module__.rsplit('.',1)
+            modulename = package + '.' + interface.__so_module__
+            module = importlib.import_module(modulename)
+            module.set_comm_world(newcomm)
+        else:
+            module = x.implementation_factory()
         
-        package, _ =  code_cls.__module__.rsplit('.',1)
-        modulename = package + '.' + code_cls.__so_module__
-        module = importlib.import_module(modulename)
         
-        module.set_comm_world(newcomm)
-        
-        instance = CythonImplementation(module, code_cls.__interface__)
+        instance = CythonImplementation(module, interface.__class__)
         instance.intercomm = new_intercomm
         instance.must_disconnect = False
         world.Barrier()
@@ -107,6 +115,66 @@ def start_all(codes):
         
         return None
         
+
 def stop_all(instances):
     for x in instances:
         x.stop()
+def start_empty():
+    
+    channel.MpiChannel.ensure_mpi_initialized()
+    
+    world = MPI.COMM_WORLD
+    rank = world.rank
+    
+    color = 0 if world.rank == 0 else 1
+    key = 0 if world.rank == 0 else world.rank -1 
+    newcomm = world.Split(color, key)
+    
+    localdup = world.Dup()
+    if world.rank == 0:
+        result = []
+        remote_leader = 1
+        tag = 1
+        
+        new_intercomm = newcomm.Create_intercomm(0, localdup, remote_leader, tag)
+        
+        instance = core.CodeInterface(check_mpi = False, must_start_worker = False)
+        instance.channel = channel.MpiChannel('_',None)
+        instance.channel.intercomm = new_intercomm
+        instance.world = localdup  
+        instance.remote_leader = 1
+        world.Barrier()
+        
+        return instance    
+    else:
+        
+        new_intercomm = newcomm.Create_intercomm(0, localdup, 0, color)
+        
+        
+        instance = CythonImplementation(None, core.CodeInterface)
+        instance.intercomm = new_intercomm
+        instance.world = localdup
+        instance.freeworld = newcomm
+        instance.localworld = newcomm
+        instance.must_disconnect = False
+        world.Barrier()
+        instance.start()
+        print "STOP...", world.rank
+        return None
+        
+
+
+def get_code(rank, codes):
+    if rank == 0:
+        return None
+    else:
+        index = 1
+        for color, x in enumerate(codes):
+            if rank >= index and rank < index + x.number_of_workers:
+                return x
+            index += x.number_of_workers
+    return None
+            
+            
+
+

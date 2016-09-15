@@ -240,7 +240,9 @@ class MWpotentialBovy2015(LiteratureReferencesMixIn):
     fits to observational data. In addition to these constraints, the solar
     distance to the Galactic center is set to R0=8kpc and the circular velocity
     at the Sun to V0=220km/s.
+    
     .. [#] Bovy, J; ApJSS, Volume 216, Issue 2, article id. 29, 27 pp. (2015)
+    
     """
     def __init__(self):
         LiteratureReferencesMixIn.__init__(self)

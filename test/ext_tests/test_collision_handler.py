@@ -60,14 +60,14 @@ class StellarEvolutionCodeWithInternalStructureForTesting(object):
     def __init__(self, particles=Particles(6)):
         particles.mass = 1 | units.MSun
         particles.radius = range(1, len(particles)+1) | units.RSun
-        particles.type = "native star" | units.string
+        particles.type = "native star" 
         self.particles = particles
     
     def new_particle_from_model(self, internal_structure, current_age, key=None):
         tmp_star = Particle(key=key)
         tmp_star.mass = internal_structure["mass"]
         tmp_star.radius = internal_structure["radius"]
-        tmp_star.type = "new particle from model" | units.string
+        tmp_star.type = "new particle from model" 
         return self.particles.add_particle(tmp_star)
     
 
@@ -177,7 +177,7 @@ class TestCollisionHandler(TestCase):
         print "Test CollisionHandler with stellar evolution code, type II"
         stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting()
         self.assertEqual(len(stellar_evolution.particles), 6)
-        self.assertEqual(stellar_evolution.particles.type, ["native star"]*6  | units.string)
+        self.assertEqual(stellar_evolution.particles.type, ["native star"]*6 )
         
         collision_code = CollisionCodeForTesting()
         collision_code.stellar_evolution_code_required = True
@@ -195,7 +195,7 @@ class TestCollisionHandler(TestCase):
         self.assertEqual(len(stellar_evolution.particles), 3)
         self.assertEqual(stellar_evolution.particles.mass, [1, 2, 3] | units.kg)
         self.assertEqual(stellar_evolution.particles.radius, [3, 7, 11] | units.RSun)
-        self.assertEqual(stellar_evolution.particles.type, ["new particle from model"]*3 | units.string)
+        self.assertEqual(stellar_evolution.particles.type, ["new particle from model"]*3 )
     
     def test8(self):
         print "Test CollisionHandler with stellar evolution and gravity code"

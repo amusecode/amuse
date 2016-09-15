@@ -191,6 +191,16 @@ FUNCTION  internal__activate_communicator(comm_identifier)
     internal__activate_communicator = 0
     id_to_activate = comm_identifier
 END FUNCTION
+
+FUNCTION internal__become_code(number_of_workers, modulename, classname)
+    IMPLICIT NONE
+    character(len=*), intent(in) :: modulename, classname
+    integer, intent(in) :: number_of_workers
+    INTEGER :: internal__become_code
+    
+    internal__become_code = 0
+END FUNCTION
+
 """
 
 
@@ -227,6 +237,16 @@ FUNCTION  internal__activate_communicator(comm_identifier)
     INTEGER, intent(in) :: comm_identifier
     INTEGER :: internal__activate_communicator
     internal__activate_communicator = 0
+END FUNCTION
+
+
+FUNCTION internal__become_code(number_of_workers, modulename, classname)
+    IMPLICIT NONE
+    character(len=*), intent(in) :: modulename, classname
+    integer, intent(in) :: number_of_workers
+    INTEGER :: internal__become_code
+    
+    internal__become_code = 0
 END FUNCTION
 
 """

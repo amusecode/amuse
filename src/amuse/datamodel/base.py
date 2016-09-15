@@ -51,15 +51,18 @@ class BasicUniqueKeyGenerator(KeyGenerator):
 class RandomNumberUniqueKeyGenerator(KeyGenerator):
     DEFAULT_NUMBER_OF_BITS = 64
     
-    def __init__(self, number_of_bits = None):
+    def __init__(self, number_of_bits = None, random = None):
         if number_of_bits is None:
             number_of_bits = self.DEFAULT_NUMBER_OF_BITS
         if number_of_bits > 64:
             raise exceptions.AmuseException("number of bits is larger than 64, this is currently unsupported!")
         self.number_of_bits = number_of_bits
         
-        self.random = numpy.random.mtrand.RandomState()
+        if random is None:
+            random = numpy.random.mtrand.RandomState()
+        self.random = random
         
+
     def next(self):
         return numpy.array([random.getrandbits(self.number_of_bits)], dtype=numpy.uint64)[0]
         
@@ -660,6 +663,20 @@ class PrivateProperties(object):
     """
     pass
 
+    def __str__(self):
+        output = 'PrivateProperties('
+        output += str(id(self))
+        sorted_keys = sorted(self.__dict__.keys())
+        for name in sorted_keys:
+            value = self.__dict__[name]
+            output += '\n    , '
+            output += name
+            output += '='
+            output += str(value)
+        output += ')'
+        return output
+
+
 class UndefinedAttribute(object):
     def __get__(self, obj, type=None):
         raise AttributeError()
@@ -696,6 +713,7 @@ class AbstractSet(object):
         self._private.collection_attributes = CollectionAttributes()
         self._private.cached_results = CachedResults()
     
+
     @property
     def collection_attributes(self):
         return self._private.collection_attributes 
@@ -1485,7 +1503,6 @@ class AbstractSet(object):
         except Exception as ex:
             return False
 
-
 class LinkedArray(numpy.ndarray):
     """Links between particles and particle sets are stored in LinkedArrays.
     """
@@ -1706,9 +1723,11 @@ class FixedLinkedArray(LinkedArray):
 
 
     def set_particles(self, index, value):
-        if not self.linked_set.are_all_keys_in_set(value.key):
+        if not self.linked_set.are_all_keys_in_set(value.as_set().key):
             raise Exception("trying to link to a particle that is not in the linked set")
         self.__setitem__(index, value.key)
+
+
 
 
 

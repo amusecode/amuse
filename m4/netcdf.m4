@@ -55,7 +55,7 @@ AC_DEFUN([AX_NETCDF],[
                     AC_LANG_PUSH(Fortran)
                     save_FCFLAGS="$FCFLAGS"
                     FCFLAGS="$ac_NETCDF_CFLAGS $save_FCFLAGS"
-                    LIBS="$ac_NETCDF_LDOPTS -lnetcdff"
+                    LIBS="$ac_NETCDF_LDOPTS -lnetcdf -lnetcdff"
                     AC_MSG_CHECKING([Fortran netcdf presence])
                     AC_LINK_IFELSE([
                         AC_LANG_SOURCE([
@@ -69,7 +69,7 @@ AC_DEFUN([AX_NETCDF],[
                         ])
                     ],[
                         NETCDFF_FLAGS="$ac_NETCDF_CFLAGS"
-                        NETCDFF_LIBS="$ac_NETCDF_LDOPTS -lnetcdff -lnetcdf"
+                        NETCDFF_LIBS="$ac_NETCDF_LDOPTS -lnetcdf -lnetcdff"
                         NETCDFF_PREFIX="$netcdf_prefix"
                         FOUND_NETCDFF="yes"
                         AC_MSG_RESULT([yes])
@@ -108,7 +108,7 @@ AC_DEFUN([AX_NETCDF],[
                     AC_LANG_PUSH(Fortran)
                     save_FCFLAGS="$FCFLAGS"
                     FCFLAGS="$save_FCFLAGS"
-                    LIBS="-lnetcdff"
+                    LIBS="-lnetcdf -lnetcdff"
                     AC_MSG_CHECKING([Fortran netcdf presence])
                     AC_LINK_IFELSE([
                         AC_LANG_SOURCE([
@@ -122,7 +122,7 @@ AC_DEFUN([AX_NETCDF],[
                         ])
                     ],[
                         NETCDFF_FLAGS=""
-                        NETCDFF_LIBS="-lnetcdff -lnetcdf"
+                        NETCDFF_LIBS="-lnetcdf -lnetcdff"
                         NETCDFF_PREFIX=""
                         FOUND_NETCDFF="yes"
                         AC_MSG_RESULT([yes])

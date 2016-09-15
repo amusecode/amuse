@@ -22,7 +22,7 @@ PYTHONPRERELEASE=0
 PYTHONMAJORMINOR="${PYTHONMAJOR}.${PYTHONMINOR}"
 PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 
-OPENSSLVERSION="1.0.1p"
+OPENSSLVERSION="1.0.1s"
 
 if [ ${PYTHONPRERELEASE} == 1 ]; then
     FTPPATH="http://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
@@ -114,7 +114,9 @@ if [ ! -e "installed" ]; then
         cd openssl-${OPENSSLVERSION}
         
         ./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
-        
+        if [ ${ARCHITECTURE} == 'x86_64' ]; then
+            ./Configure linux-x86_64 --prefix=${INSTALLDIR} --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+        fi
         make || exit $?
         
         make install  || exit $?
@@ -245,6 +247,8 @@ if [ ! -e "pipsinstalled"  ]; then
     
     ${PYTHONHOME}/bin/pip install Flask || exit $?
     
+    ${PYTHONHOME}/bin/pip install pillow || exit $?
+    
     mkdir mpl 
     
     py_install/bin/pip install --download mpl 'matplotlib==1.2.1' || exit $?
@@ -329,6 +333,9 @@ if [ ${PLATFORM} == "Darwin" ]; then
     ${PYTHON} mvref.py -p /usr/local/lib/ -b ${PYTHONHOME}/lib -r ./
 else
     echo 'move refs'
+    
+    chmod u+w ${PYTHONHOME}/lib/engines/*.so
+    
     ${PYTHON} linux_set_rpath.py --path=${PYTHONHOME}/lib/ --bin-path=${PYTHONHOME}/ || exit $?
 fi
 
