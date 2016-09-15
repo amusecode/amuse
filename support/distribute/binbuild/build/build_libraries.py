@@ -57,14 +57,14 @@ class InstallPrerequisites(object):
             'http://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
-          (
-            'distribute', 
-            [], 
-            '0.6.49', 
-            'distribute-' , '.tar.gz', 
-            'http://pypi.python.org/packages/source/d/distribute/', 
-            self.python_build
-          ),
+          #~ (
+            #~ 'distribute', 
+            #~ [], 
+            #~ '0.6.49', 
+            #~ 'distribute-' , '.tar.gz', 
+            #~ 'http://pypi.python.org/packages/source/d/distribute/', 
+            #~ self.python_build
+          #~ ),
           (
             'hdf' ,
             [],  
@@ -130,7 +130,11 @@ class InstallPrerequisites(object):
             self.python_build
           ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
-          #('setuptools', [], '0.6c11', 'setuptools-', '-py2.6.egg', 'http://pypi.python.org/packages/2.6/s/setuptools/', self.setuptools_install) ,
+          ('setuptools', 
+           [], 
+           '27.2.0',
+           'setuptools-', '.tar.gz',
+           'https://pypi.python.org/packages/87/ba/54197971d107bc06f5f3fbdc0d728a7ae0b10cafca46acfddba65a0899d8/', self.python_build) ,
           #http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg#md5=bfa92100bd772d5a213eedd356d64086
           (
             'fftw3' ,                  #name to refer by
