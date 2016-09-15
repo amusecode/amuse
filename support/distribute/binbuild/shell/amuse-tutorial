@@ -17,6 +17,6 @@ mkdir -p $RUNDIR
 
 cp ${PYTHONHOME}/tutorial/* ${RUNDIR}/
 
-exec python ${PYTHONHOME}/bin/ipython notebook --pylab inline --notebook-dir=${RUNDIR} --profile=nbserver
+exec python ${PYTHONHOME}/bin/jupyter notebook --notebook-dir=${RUNDIR}
 
 
