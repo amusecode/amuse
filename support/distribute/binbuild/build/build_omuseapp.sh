@@ -36,10 +36,10 @@ INSTALLDIR="${BASEDIR}/py_install"
 SHELLDIR="${BASEDIR}/../shell"
 TUTORIALDIR="${BASEDIR}/../../../../doc/interactive_tutorial"
 
-RELEASEDIR=amuse-${VERSION}-${PLATFORM}_${ARCHITECTURE}
+RELEASEDIR=omuse-${VERSION}-${PLATFORM}_${ARCHITECTURE}
 DISTFILE=${RELEASEDIR}.tar.gz
 
-rm -f amuse-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
+rm -f omuse-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
 
 echo "Distfile = ${DISTFILE}"
 
