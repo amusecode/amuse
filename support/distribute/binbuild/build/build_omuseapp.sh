@@ -36,10 +36,10 @@ INSTALLDIR="${BASEDIR}/py_install"
 SHELLDIR="${BASEDIR}/../shell"
 TUTORIALDIR="${BASEDIR}/../../../../doc/interactive_tutorial"
 
-RELEASEDIR=amuse-${VERSION}-${PLATFORM}_${ARCHITECTURE}
+RELEASEDIR=omuse-${VERSION}-${PLATFORM}_${ARCHITECTURE}
 DISTFILE=${RELEASEDIR}.tar.gz
 
-rm -f amuse-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
+rm -f omuse-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
 
 echo "Distfile = ${DISTFILE}"
 
@@ -180,6 +180,7 @@ fi
 
  
 # run the python build script
+export PREFIX="${BASEDIR}/py_install"
 export PYTHONHOME="${BASEDIR}/py_install"
 export PATH=${PYTHONHOME}/bin:$PATH
 export PYTHON=${PYTHONHOME}/bin/python
@@ -225,12 +226,11 @@ if [ ! -e "libsinstalled" ]; then
 fi
 
 
-#${PYTHONHOME}/bin/pip install ipython || exit $?
 if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/easy_install pip
 
     export PIP_CERT=`python -m pip._vendor.requests.certs`    
-    #~ ${PYTHONHOME}/bin/easy_install readline
+
     ${PYTHONHOME}/bin/pip install readline || exit $?
         
     export PIP_INSTALL_OPTION=--zmq=${PYTHONHOME}
@@ -239,15 +239,11 @@ if [ ! -e "pipsinstalled"  ]; then
     
     export PIP_INSTALL_OPTION=
     
-    #~ ${PYTHONHOME}/bin/pip install enum34 || exit $?
-    #~ ${PYTHONHOME}/bin/pip install pexpect || exit $?
 
-    #~ ${PYTHONHOME}/bin/easy_install tornado
     ${PYTHONHOME}/bin/pip install tornado || exit $?
-    
-    #~ ${PYTHONHOME}/bin/easy_install IPython
-    
+        
     ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
+    # is this equivalent to..(?)
     #~ ${PYTHONHOME}/bin/pip install jupyter  || exit $?
     
     ${PYTHONHOME}/bin/pip install Cython || exit $?
@@ -317,7 +313,9 @@ if [ ! -e "amuseinstalled" ]; then
         export CXXCPP="g++ -E"
     fi
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
-    
+
+    export PYTHONPATH=${PYTHONPATH}:`pwd`/src
+
     # first build omuse codes..
     ${PYTHON} setup.py build_codes --codes-dir=src/omuse/community || exit $?
     ${PYTHON} setup.py install || exit $?

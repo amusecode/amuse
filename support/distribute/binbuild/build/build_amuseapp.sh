@@ -180,6 +180,7 @@ fi
 
  
 # run the python build script
+export PREFIX="${BASEDIR}/py_install"
 export PYTHONHOME="${BASEDIR}/py_install"
 export PATH=${PYTHONHOME}/bin:$PATH
 export PYTHON=${PYTHONHOME}/bin/python
@@ -225,30 +226,32 @@ if [ ! -e "libsinstalled" ]; then
 fi
 
 
-#${PYTHONHOME}/bin/pip install ipython || exit $?
 if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/easy_install pip
-    
-    ${PYTHONHOME}/bin/easy_install readline
-    
-    export PIP_CERT=`python -m pip._vendor.requests.certs`
-    
+
+    export PIP_CERT=`python -m pip._vendor.requests.certs`    
+
+    ${PYTHONHOME}/bin/pip install readline || exit $?
+        
     export PIP_INSTALL_OPTION=--zmq=${PYTHONHOME}
     
     ${PYTHONHOME}/bin/pip install pyzmq || exit $?
     
     export PIP_INSTALL_OPTION=
     
-    ${PYTHONHOME}/bin/easy_install tornado
-    
-    ${PYTHONHOME}/bin/easy_install IPython
+
+    ${PYTHONHOME}/bin/pip install tornado || exit $?
+        
+    ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
+    # is this equivalent to..(?)
+    #~ ${PYTHONHOME}/bin/pip install jupyter  || exit $?
     
     ${PYTHONHOME}/bin/pip install Cython || exit $?
     
     ${PYTHONHOME}/bin/pip install Flask || exit $?
     
     ${PYTHONHOME}/bin/pip install pillow || exit $?
-    
+        
     mkdir mpl 
     
     py_install/bin/pip install --download mpl 'matplotlib==1.2.1' || exit $?
@@ -304,13 +307,15 @@ if [ ! -e "amuseinstalled" ]; then
     
     cd ../../../.. # cd to amuse root directory
     
-    #make distclean PYTHON=${PYTHON}
+    make distclean PYTHON=${PYTHON}
 
     if [ ${PLATFORM} == "Darwin" ]; then
         export CXXCPP="g++ -E"
     fi
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
-    
+
+    export PYTHONPATH=${PYTHONPATH}:`pwd`/src
+
     ${PYTHON} setup.py install || exit $?
 
     make distclean PYTHON=${PYTHON}
