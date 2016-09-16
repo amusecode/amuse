@@ -180,6 +180,7 @@ fi
 
  
 # run the python build script
+export PREFIX="${BASEDIR}/py_install"
 export PYTHONHOME="${BASEDIR}/py_install"
 export PATH=${PYTHONHOME}/bin:$PATH
 export PYTHON=${PYTHONHOME}/bin/python
@@ -317,7 +318,9 @@ if [ ! -e "amuseinstalled" ]; then
         export CXXCPP="g++ -E"
     fi
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
-    
+
+    export PYTHONPATH=${PYTHONPATH}:`pwd`/src
+
     # first build omuse codes..
     ${PYTHON} setup.py build_codes --codes-dir=src/omuse/community || exit $?
     ${PYTHON} setup.py install || exit $?
