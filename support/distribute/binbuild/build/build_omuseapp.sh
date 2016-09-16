@@ -226,12 +226,11 @@ if [ ! -e "libsinstalled" ]; then
 fi
 
 
-#${PYTHONHOME}/bin/pip install ipython || exit $?
 if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/easy_install pip
 
     export PIP_CERT=`python -m pip._vendor.requests.certs`    
-    #~ ${PYTHONHOME}/bin/easy_install readline
+
     ${PYTHONHOME}/bin/pip install readline || exit $?
         
     export PIP_INSTALL_OPTION=--zmq=${PYTHONHOME}
@@ -240,15 +239,11 @@ if [ ! -e "pipsinstalled"  ]; then
     
     export PIP_INSTALL_OPTION=
     
-    #~ ${PYTHONHOME}/bin/pip install enum34 || exit $?
-    #~ ${PYTHONHOME}/bin/pip install pexpect || exit $?
 
-    #~ ${PYTHONHOME}/bin/easy_install tornado
     ${PYTHONHOME}/bin/pip install tornado || exit $?
-    
-    #~ ${PYTHONHOME}/bin/easy_install IPython
-    
+        
     ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
+    # is this equivalent to..(?)
     #~ ${PYTHONHOME}/bin/pip install jupyter  || exit $?
     
     ${PYTHONHOME}/bin/pip install Cython || exit $?
