@@ -58,7 +58,8 @@ if [ ! -e "installed" ]; then
         
         ./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
         if [ ${ARCHITECTURE} == 'x86_64' ]; then
-            ./Configure darwin64-x86_64-cc --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+            ./Configure darwin64-x86_64-cc --prefix=${INSTALLDIR} --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+            make depend || exit $?
         fi
         
         make || exit $?
