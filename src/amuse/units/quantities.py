@@ -359,6 +359,12 @@ class VectorQuantity(Quantity):
             raise exceptions.AmuseException("not all values have conforming units")
         return cls(array, unit)
 
+    @classmethod
+    def new_from_array(cls, array):
+        shape=array.shape
+        vector=cls.new_from_scalar_quantities(*array.flat)
+        return vector.reshape(shape)
+
     def aszeros(self):
         return new_quantity(numpy.zeros(self.shape, dtype=self.number.dtype), self.unit)
 
