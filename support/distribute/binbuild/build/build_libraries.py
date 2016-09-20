@@ -87,7 +87,7 @@ class InstallPrerequisites(object):
             '4.4.1',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-c/archive/',
-            self.basic_build
+            self.netcdf_build
           ) ,
           (
             'netcdf-fortran' ,
@@ -95,7 +95,7 @@ class InstallPrerequisites(object):
             '4.4.4',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-fortran/archive/',
-            self.basic_build
+            self.netcdf_fortran_build
           ) ,
           (
             'netcdf4-python' ,
@@ -296,6 +296,19 @@ class InstallPrerequisites(object):
         self.run_application([sys.executable,'setup.py','build'], cwd=path)
         self.run_application([sys.executable,'setup.py','install'], cwd=path)
 
+    def netcdf_build(self,path):
+        env = os.environ.copy()
+        env['CFLAGS'] = "-I"+ self.prefix + '/include'
+        env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
+        env['LDFLAGS'] = "-L"+ self.prefix + '/lib'
+        self.basic_build(path, env)
+
+# somehow doesn't work if LDFLAGS set..
+    def netcdf_fortran_build(self,path):
+        env = os.environ.copy()
+        env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
+        self.basic_build(path, env)
+
     def netcdfpython_build(self, path):
         self.run_application([sys.executable,'setup.py','build'], cwd=path)
         self.run_application([sys.executable,'setup.py','install'], cwd=path)
@@ -383,7 +396,7 @@ class InstallPrerequisites(object):
         for x in commands:
             self.run_application(x, path)
             
-    def basic_build(self, path):
+    def basic_build(self, path, env=None):
         commands = []
         command = [
           './configure',
@@ -395,7 +408,7 @@ class InstallPrerequisites(object):
         commands.append(['make', 'install'])
         
         for x in commands:
-            self.run_application(x, path)
+            self.run_application(x, path, env = env)
             
     def tcl_build(self, path):
         commands = []
