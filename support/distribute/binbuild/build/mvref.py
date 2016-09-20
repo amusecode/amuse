@@ -20,13 +20,17 @@ def get_dylib_files(path='.'):
 
 
 def get_bin_files(path='.'):
+    # this seems to fix an issue where file chokes on certain files
+    env=os.environ.copy()
+    env["LC_CTYPE"]="C"
+
     for dirname, subdirs, names in os.walk(path):
         for name in names:
             fullname = os.path.join(dirname, name)
             if os.path.islink(fullname):
                 continue
                     
-            outputstring = subprocess.check_output(['file', fullname])
+            outputstring = subprocess.check_output(['file', fullname], env=env)
             if not outputstring.find('Mach-O') >= 0:
                 continue
 
