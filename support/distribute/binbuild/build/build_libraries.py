@@ -47,7 +47,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.8.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
+            'https://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -55,7 +55,7 @@ class InstallPrerequisites(object):
             [], 
             '1.3.0', 
             'nose-' , '.tar.gz', 
-            'http://pypi.python.org/packages/source/n/nose/', 
+            'https://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
           #~ (
@@ -111,7 +111,7 @@ class InstallPrerequisites(object):
             [], 
             '0.9.1', 
             'docutils-','.tar.gz', 
-            'http://downloads.sourceforge.net/project/docutils/docutils/0.9.1/', 
+            'https://sourceforge.net/projects/docutils/files/docutils/0.9.1/', 
             self.python_build
           ) ,
           (
@@ -119,7 +119,7 @@ class InstallPrerequisites(object):
             [], 
             '3.1.2', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/3.1.2/', 
+            'https://www.mpich.org/static/tarballs/3.1.2/', 
             self.mpich2_build
           ) ,
           (
@@ -150,7 +150,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.16' ,                   #version string
             'gsl-', '.tar.gz',         #pre- and postfix for filename
-            'http://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
+            'https://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
             self.fftw_build            #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -158,7 +158,7 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '2.8.12' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
-            'http://www.cmake.org/files/v2.8/', #download url, filename is appended
+            'https://www.cmake.org/files/v2.8/', #download url, filename is appended
             self.cmake_build             #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -166,7 +166,7 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '2.4.12' ,                   #version string
             'freetype-', '.tar.gz',        #pre- and postfix for filename
-            'http://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
+            'https://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -174,7 +174,7 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '1.2.8' ,                   #version string
             'zlib-', '.tar.gz',        #pre- and postfix for filename
-            'http://zlib.net/', #download url, filename is appended
+            'https://sourceforge.net/projects/libpng/files/zlib/1.2.8/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -182,7 +182,7 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '1.6.24' ,                   #version string
             'libpng-', '.tar.gz',        #pre- and postfix for filename
-            'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.24/', #download url, filename is appended
+            'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.24/', #download url, filename is appended
             self.png_build             #method to use for building - same as for FFTW should work
           ) ,
           #(
@@ -206,7 +206,7 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '3.2.1' ,                   #version string
             'zeromq-', '-rc2.tar.gz',        #pre- and postfix for filename
-            'http://download.zeromq.org/', #download url, filename is appended
+            'https://archive.org/download/zeromq_3.2.1/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -302,7 +302,20 @@ class InstallPrerequisites(object):
         env['CFLAGS'] = "-I"+ self.prefix + '/include'
         env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
         env['LDFLAGS'] = "-L"+ self.prefix + '/lib'
-        self.basic_build(path, env)
+
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--disable-dap',
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path, env = env)
 
     def png_build(self,path):
         env = os.environ.copy()

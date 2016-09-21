@@ -1,5 +1,13 @@
 #!/bin/bash
 
+BUILD=amuse
+while getopts O option
+do
+case "${option}"
+in
+O) BUILD=omuse;;
+esac
+done
 
 BASEDIR=`pwd`
 PLATFORM=`uname`
@@ -25,9 +33,9 @@ PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 OPENSSLVERSION="1.0.1s"
 
 if [ ${PYTHONPRERELEASE} == 1 ]; then
-    FTPPATH="http://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
+    FTPPATH="https://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
 else
-    FTPPATH="http://www.python.org/ftp/python/${PYTHONVERSION}"
+    FTPPATH="https://www.python.org/ftp/python/${PYTHONVERSION}"
 fi
 
 UNICODETYPE="ucs4"
@@ -36,10 +44,10 @@ INSTALLDIR="${BASEDIR}/py_install"
 SHELLDIR="${BASEDIR}/../shell"
 TUTORIALDIR="${BASEDIR}/../../../../doc/interactive_tutorial"
 
-RELEASEDIR=amuse-${VERSION}-${PLATFORM}_${ARCHITECTURE}
+RELEASEDIR=${BUILD}-${VERSION}-${PLATFORM}_${ARCHITECTURE}
 DISTFILE=${RELEASEDIR}.tar.gz
 
-rm -f amuse-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
+rm -f ${BUILD}-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
 
 echo "Distfile = ${DISTFILE}"
 
@@ -49,7 +57,7 @@ if [ ! -e "installed" ]; then
         
         if [ ! -e "openssl-${OPENSSLVERSION}.tar.gz" ]; then
             # download
-            curl -OL http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
+            curl -OL https://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
         fi
         
         tar zxf openssl-${OPENSSLVERSION}.tar.gz || exit $?
@@ -58,7 +66,8 @@ if [ ! -e "installed" ]; then
         
         ./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
         if [ ${ARCHITECTURE} == 'x86_64' ]; then
-            ./Configure darwin64-x86_64-cc --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+            ./Configure darwin64-x86_64-cc --prefix=${INSTALLDIR} --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+            make depend || exit $?
         fi
         
         make || exit $?
@@ -106,7 +115,7 @@ if [ ! -e "installed" ]; then
         
         if [ ! -e "openssl-${OPENSSLVERSION}.tar.gz" ]; then
             # download
-            wget http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
+            wget https://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
         fi
         
         tar zxf openssl-${OPENSSLVERSION}.tar.gz || exit $?
@@ -265,6 +274,11 @@ if [ ! -e "pipsinstalled"  ]; then
     export CFLAGS="-I${PYTHONHOME}/include -I${PYTHONHOME}/include/freetype2"
 
     export LDFLAGS="-L${PYTHONHOME}/lib"
+
+    # hopefully maxosx backend will be enough
+    if [ ${PLATFORM} == 'Darwin' ]; then
+      sed 's/#tkagg/tkagg/' < setup.cfg.template > setup.cfg
+    fi
     
     ${PYTHONHOME}/bin/python setup.py install || exit $?
     
@@ -280,7 +294,7 @@ if [ ! -e "ytinstalled"  ]; then
 
     rm -Rf yt-hg || exit $?
     
-    curl -OL http://bitbucket.org/yt_analysis/yt/get/tip.tar.gz  || exit $?
+    curl -OL https://bitbucket.org/yt_analysis/yt/get/tip.tar.gz  || exit $?
     
     tar zxf tip.tar.gz || exit $?
     
@@ -316,6 +330,10 @@ if [ ! -e "amuseinstalled" ]; then
 
     export PYTHONPATH=${PYTHONPATH}:`pwd`/src
 
+    # first build omuse codes..
+    if [ "${BUILD}" == "omuse" ]; then
+      ${PYTHON} setup.py build_codes --codes-dir=src/omuse/community || exit $?
+    fi
     ${PYTHON} setup.py install || exit $?
 
     make distclean PYTHON=${PYTHON}
@@ -349,6 +367,11 @@ rm -Rf ${RELEASEDIR}
 cp -R ${INSTALLDIR} ${RELEASEDIR}
 
 cp -R ${SHELLDIR}/* ${RELEASEDIR}
+
+if [ "${BUILD}" == "omuse" ]; then
+  mv ${SHELLDIR}/amuse ${SHELLDIR}/omuse
+  mv ${SHELLDIR}/amuse-tutorial ${SHELLDIR}/omuse-tutorial
+fi
 
 cp -R ${TUTORIALDIR} ${RELEASEDIR}/tutorial
 
