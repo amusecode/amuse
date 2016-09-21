@@ -183,7 +183,7 @@ class InstallPrerequisites(object):
             '1.6.24' ,                   #version string
             'libpng-', '.tar.gz',        #pre- and postfix for filename
             'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.24/', #download url, filename is appended
-            self.basic_build             #method to use for building - same as for FFTW should work
+            self.png_build             #method to use for building - same as for FFTW should work
           ) ,
           #(
           #  'tcl' ,                   #name to refer by
@@ -298,6 +298,13 @@ class InstallPrerequisites(object):
         self.run_application([sys.executable,'setup.py','install'], cwd=path)
 
     def netcdf_build(self,path):
+        env = os.environ.copy()
+        env['CFLAGS'] = "-I"+ self.prefix + '/include'
+        env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
+        env['LDFLAGS'] = "-L"+ self.prefix + '/lib'
+        self.basic_build(path, env)
+
+    def png_build(self,path):
         env = os.environ.copy()
         env['CFLAGS'] = "-I"+ self.prefix + '/include'
         env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
