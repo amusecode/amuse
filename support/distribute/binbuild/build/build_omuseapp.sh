@@ -25,9 +25,9 @@ PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 OPENSSLVERSION="1.0.1s"
 
 if [ ${PYTHONPRERELEASE} == 1 ]; then
-    FTPPATH="http://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
+    FTPPATH="https://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
 else
-    FTPPATH="http://www.python.org/ftp/python/${PYTHONVERSION}"
+    FTPPATH="https://www.python.org/ftp/python/${PYTHONVERSION}"
 fi
 
 UNICODETYPE="ucs4"
@@ -49,7 +49,7 @@ if [ ! -e "installed" ]; then
         
         if [ ! -e "openssl-${OPENSSLVERSION}.tar.gz" ]; then
             # download
-            curl -OL http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
+            curl -OL https://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
         fi
         
         tar zxf openssl-${OPENSSLVERSION}.tar.gz || exit $?
@@ -107,7 +107,7 @@ if [ ! -e "installed" ]; then
         
         if [ ! -e "openssl-${OPENSSLVERSION}.tar.gz" ]; then
             # download
-            wget http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
+            wget https://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
         fi
         
         tar zxf openssl-${OPENSSLVERSION}.tar.gz || exit $?
@@ -286,7 +286,7 @@ if [ ! -e "ytinstalled"  ]; then
 
     rm -Rf yt-hg || exit $?
     
-    curl -OL http://bitbucket.org/yt_analysis/yt/get/tip.tar.gz  || exit $?
+    curl -OL https://bitbucket.org/yt_analysis/yt/get/tip.tar.gz  || exit $?
     
     tar zxf tip.tar.gz || exit $?
     
