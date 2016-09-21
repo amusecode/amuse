@@ -358,6 +358,9 @@ cp -R ${INSTALLDIR} ${RELEASEDIR}
 
 cp -R ${SHELLDIR}/* ${RELEASEDIR}
 
+mv ${SHELLDIR}/amuse ${SHELLDIR}/omuse
+mv ${SHELLDIR}/amuse-tutorial ${SHELLDIR}/omuse-tutorial
+
 cp -R ${TUTORIALDIR} ${RELEASEDIR}/tutorial
 
 tar -czf ${DISTFILE} ${RELEASEDIR}
