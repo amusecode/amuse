@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo starting the AMUSE tutorial..
+echo starting the tutorial..
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
@@ -17,6 +17,6 @@ mkdir -p $RUNDIR
 
 cp ${PYTHONHOME}/tutorial/* ${RUNDIR}/
 
-exec python ${PYTHONHOME}/bin/jupyter notebook --notebook-dir=${RUNDIR}
+exec python ${PYTHONHOME}/bin/jupyter-notebook --notebook-dir=${RUNDIR}
 
 
