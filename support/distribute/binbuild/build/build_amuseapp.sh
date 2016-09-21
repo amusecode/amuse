@@ -106,7 +106,7 @@ if [ ! -e "installed" ]; then
         
         if [ ! -e "openssl-${OPENSSLVERSION}.tar.gz" ]; then
             # download
-            wget http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
+            wget http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz --no-check-certificate || exit $?
         fi
         
         tar zxf openssl-${OPENSSLVERSION}.tar.gz || exit $?
