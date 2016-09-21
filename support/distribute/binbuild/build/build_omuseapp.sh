@@ -266,6 +266,11 @@ if [ ! -e "pipsinstalled"  ]; then
     export CFLAGS="-I${PYTHONHOME}/include -I${PYTHONHOME}/include/freetype2"
 
     export LDFLAGS="-L${PYTHONHOME}/lib"
+
+    # hopefully maxosx backend will be enough
+    if [ ${PLATFORM} == 'Darwin' ]; then
+      sed 's/#tkagg/tkagg/' < setup.cfg.template > setup.cfg
+    fi
     
     ${PYTHONHOME}/bin/python setup.py install || exit $?
     
