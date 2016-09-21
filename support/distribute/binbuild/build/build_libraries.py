@@ -302,7 +302,20 @@ class InstallPrerequisites(object):
         env['CFLAGS'] = "-I"+ self.prefix + '/include'
         env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
         env['LDFLAGS'] = "-L"+ self.prefix + '/lib'
-        self.basic_build(path, env)
+
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--disable-dap',
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path, env = env)
 
     def png_build(self,path):
         env = os.environ.copy()
