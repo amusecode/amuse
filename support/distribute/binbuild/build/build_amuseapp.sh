@@ -32,6 +32,16 @@ PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 
 OPENSSLVERSION="1.0.1s"
 
+PIPVERSION=8.1.2
+READLINEVERSION=6.2.4.1
+PYZMQVERSION=15.4.0
+TORNADOVERSION=4.4.1
+JUPYTERVERSION=1.0.0
+CYTHONVERSION=0.24.1
+FLASKVERSION=0.11.1
+PILLOWVERSION=3.3.1
+
+
 if [ ${PYTHONPRERELEASE} == 1 ]; then
     FTPPATH="https://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
 else
@@ -240,26 +250,28 @@ if [ ! -e "pipsinstalled"  ]; then
 
     export PIP_CERT=`python -m pip._vendor.requests.certs`    
 
-    ${PYTHONHOME}/bin/pip install readline || exit $?
+    ${PYTHONHOME}/bin/pip install readline==${READLINEVERSION} || exit $?
         
     export PIP_INSTALL_OPTION=--zmq=${PYTHONHOME}
     
-    ${PYTHONHOME}/bin/pip install pyzmq || exit $?
+    ${PYTHONHOME}/bin/pip install pyzmq==${PYZMQVERSION} || exit $?
     
     export PIP_INSTALL_OPTION=
     
 
     ${PYTHONHOME}/bin/pip install tornado || exit $?
         
-    ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
+    #~ ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
     # is this equivalent to..(?)
-    #~ ${PYTHONHOME}/bin/pip install jupyter  || exit $?
+    ${PYTHONHOME}/bin/pip install jupyter==${JUPYTERVERSION}  || exit $?
     
-    ${PYTHONHOME}/bin/pip install Cython || exit $?
+    ${PYTHONHOME}/bin/pip install Cython==${CYTHONVERSION} || exit $?
     
-    ${PYTHONHOME}/bin/pip install Flask || exit $?
+    ${PYTHONHOME}/bin/pip install Flask==${FLASKVERSION} || exit $?
     
-    ${PYTHONHOME}/bin/pip install pillow || exit $?
+    ${PYTHONHOME}/bin/pip install pillow==${PILLOWVERSION} || exit $?
+    
+    rm -Rf mpl || exit $?
         
     mkdir mpl 
     
@@ -283,8 +295,6 @@ if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/python setup.py install || exit $?
     
     cd ../../
-    
-    rm -Rf mpl || exit $?
     
     touch "pipsinstalled" || exit $?
 fi
@@ -369,8 +379,8 @@ cp -R ${INSTALLDIR} ${RELEASEDIR}
 cp -R ${SHELLDIR}/* ${RELEASEDIR}
 
 if [ "${BUILD}" == "omuse" ]; then
-  mv ${SHELLDIR}/amuse ${SHELLDIR}/omuse
-  mv ${SHELLDIR}/amuse-tutorial ${SHELLDIR}/omuse-tutorial
+  mv ${RELEASEDIR}/amuse ${RELEASEDIR}/omuse
+  mv ${RELEASEDIR}/amuse-tutorial ${RELEASEDIR}/omuse-tutorial
 fi
 
 cp -R ${TUTORIALDIR} ${RELEASEDIR}/tutorial
