@@ -369,8 +369,8 @@ cp -R ${INSTALLDIR} ${RELEASEDIR}
 cp -R ${SHELLDIR}/* ${RELEASEDIR}
 
 if [ "${BUILD}" == "omuse" ]; then
-  mv ${SHELLDIR}/amuse ${SHELLDIR}/omuse
-  mv ${SHELLDIR}/amuse-tutorial ${SHELLDIR}/omuse-tutorial
+  mv ${RELEASEDIR}/amuse ${RELEASEDIR}/omuse
+  mv ${RELEASEDIR}/amuse-tutorial ${RELEASEDIR}/omuse-tutorial
 fi
 
 cp -R ${TUTORIALDIR} ${RELEASEDIR}/tutorial
