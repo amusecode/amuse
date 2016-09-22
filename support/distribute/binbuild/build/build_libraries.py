@@ -83,30 +83,6 @@ class InstallPrerequisites(object):
             'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
-            'netcdf-c' ,
-            ['hdf'],  
-            '4.4.1',
-            'v' , '.tar.gz' , 
-            'https://github.com/Unidata/netcdf-c/archive/',
-            self.netcdf_build
-          ) ,
-          (
-            'netcdf-fortran' ,
-            ['netcdf-c'],  
-            '4.4.4',
-            'v' , '.tar.gz' , 
-            'https://github.com/Unidata/netcdf-fortran/archive/',
-            self.netcdf_fortran_build
-          ) ,
-          (
-            'netcdf4-python' ,
-            ['netcdf-c'],  
-            '1.2.4rel',
-            'v' , '.tar.gz' , 
-            'https://github.com/Unidata/netcdf4-python/archive/',
-            self.netcdfpython_build
-          ) ,
-          (
             'docutils', 
             [], 
             '0.9.1', 
@@ -184,6 +160,30 @@ class InstallPrerequisites(object):
             'libpng-', '.tar.gz',        #pre- and postfix for filename
             'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.24/', #download url, filename is appended
             self.png_build             #method to use for building - same as for FFTW should work
+          ) ,
+          (
+            'netcdf-c' ,
+            ['hdf'],  
+            '4.4.1',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-c/archive/',
+            self.netcdf_build
+          ) ,
+          (
+            'netcdf-fortran' ,
+            ['netcdf-c'],  
+            '4.4.4',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-fortran/archive/',
+            self.netcdf_fortran_build
+          ) ,
+          (
+            'netcdf4-python' ,
+            ['netcdf-c'],  
+            '1.2.4rel',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf4-python/archive/',
+            self.netcdfpython_build
           ) ,
           #(
           #  'tcl' ,                   #name to refer by
