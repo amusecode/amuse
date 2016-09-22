@@ -106,6 +106,14 @@ class InstallPrerequisites(object):
             'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
           ) ,
+          (
+            'zlib' ,                   #name to refer by
+            [],                         #names of prerequisites (unused)
+            '1.2.8' ,                   #version string
+            'zlib-', '.tar.gz',        #pre- and postfix for filename
+            'https://sourceforge.net/projects/libpng/files/zlib/1.2.8/', #download url, filename is appended
+            self.basic_build             #method to use for building - same as for FFTW should work
+          ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
           ('setuptools', 
            [], 
@@ -143,14 +151,6 @@ class InstallPrerequisites(object):
             '2.4.12' ,                   #version string
             'freetype-', '.tar.gz',        #pre- and postfix for filename
             'https://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
-            self.basic_build             #method to use for building - same as for FFTW should work
-          ) ,
-          (
-            'zlib' ,                   #name to refer by
-            [],                         #names of prerequisites (unused)
-            '1.2.8' ,                   #version string
-            'zlib-', '.tar.gz',        #pre- and postfix for filename
-            'https://sourceforge.net/projects/libpng/files/zlib/1.2.8/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
           (
