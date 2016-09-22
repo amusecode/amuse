@@ -151,7 +151,7 @@ class InstallPrerequisites(object):
             '2.4.12' ,                   #version string
             'freetype-', '.tar.gz',        #pre- and postfix for filename
             'https://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
-            self.basic_build             #method to use for building - same as for FFTW should work
+            self.freetype_build             #method to use for building - same as for FFTW should work
           ) ,
           (
             'png' ,                   #name to refer by
@@ -296,6 +296,13 @@ class InstallPrerequisites(object):
     def python_build(self, path):
         self.run_application([sys.executable,'setup.py','build'], cwd=path)
         self.run_application([sys.executable,'setup.py','install'], cwd=path)
+
+    def freetype_build(self,path):
+        env = os.environ.copy()
+        env['CFLAGS'] = "-I"+ self.prefix + '/include'
+        env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
+        env['LDFLAGS'] = "-L"+ self.prefix + '/lib'
+        self.basic_build(path, env)
 
     def netcdf_build(self,path):
         env = os.environ.copy()

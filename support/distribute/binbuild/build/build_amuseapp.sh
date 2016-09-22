@@ -62,6 +62,14 @@ rm -f ${BUILD}-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
 echo "Distfile = ${DISTFILE}"
 
 if [ ! -e "installed" ]; then
+
+    if [ ${PLATFORM} != 'Darwin' ]; then
+        tar xvzf bzip2-1.0.6_light.tar.gz
+        cd bzip2-1.0.6_light
+        make install PREFIX="${BASEDIR}/py_install"
+        cd ..
+    fi
+
     if [ ${PLATFORM} == 'Darwin' ]; then
         rm -rf openssl-${OPENSSLVERSION} || exit $?
         
