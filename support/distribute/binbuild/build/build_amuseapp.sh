@@ -53,6 +53,9 @@ UNICODETYPE="ucs4"
 INSTALLDIR="${BASEDIR}/py_install"
 SHELLDIR="${BASEDIR}/../shell"
 TUTORIALDIR="${BASEDIR}/../../../../doc/interactive_tutorial"
+if [ "${BUILD}" == "omuse" ]; then
+  TUTORIALDIR="${BASEDIR}/../../../../doc/omuse_tutorial"
+fi
 
 RELEASEDIR=${BUILD}-${VERSION}-${PLATFORM}_${ARCHITECTURE}
 DISTFILE=${RELEASEDIR}.tar.gz
