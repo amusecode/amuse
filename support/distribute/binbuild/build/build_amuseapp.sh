@@ -288,10 +288,10 @@ if [ ! -e "pipsinstalled"  ]; then
         
     mkdir mpl 
     
-    py_install/bin/pip install --download mpl matplotlib==${MATPLOTLIBVERSION} || exit $?
-    
     cd mpl
     
+    py_install/bin/pip download --no-deps --no-binary matplotlib matplotlib==${MATPLOTLIBVERSION} || exit $?
+        
     tar -xvf matplotlib-${MATPLOTLIBVERSION}.tar.gz || exit $?
     
     cd matplotlib-${MATPLOTLIBVERSION} || exit $?
@@ -302,7 +302,8 @@ if [ ! -e "pipsinstalled"  ]; then
 
     # hopefully maxosx backend will be enough
     if [ ${PLATFORM} == 'Darwin' ]; then
-      sed 's/#tkagg/tkagg/' < setup.cfg.template > setup.cfg
+      echo "[gui_support]" > setup.cfg
+      echo tkagg = False >> setup.cfg
     fi
     
     ${PYTHONHOME}/bin/python setup.py install || exit $?
@@ -386,6 +387,10 @@ if [ "${FIXREFS}" == "yes" ]; then
 
       ${PYTHON} linux_set_rpath.py --path=${PYTHONHOME}/lib/ --bin-path=${PYTHONHOME}/ || exit $?
   fi
+fi
+
+if [ -e local_fixes ]; then
+  source local_fixes
 fi
 
 rm -Rf ${RELEASEDIR}
