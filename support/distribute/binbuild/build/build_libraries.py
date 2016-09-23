@@ -206,7 +206,7 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '3.2.1' ,                   #version string
             'zeromq-', '-rc2.tar.gz',        #pre- and postfix for filename
-            'https://archive.org/download/zeromq_3.2.1/', #download url, filename is appended
+            'https://github.com/zeromq/zeromq3-x/releases/download/v3.2.1/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
           (
