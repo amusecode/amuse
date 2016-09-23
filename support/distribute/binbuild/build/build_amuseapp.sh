@@ -42,7 +42,7 @@ JUPYTERVERSION=1.0.0
 CYTHONVERSION=0.24.1
 FLASKVERSION=0.11.1
 PILLOWVERSION=3.3.1
-
+MATPLOTLIBVERSION=1.3.1
 
 if [ ${PYTHONPRERELEASE} == 1 ]; then
     FTPPATH="https://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
@@ -288,13 +288,13 @@ if [ ! -e "pipsinstalled"  ]; then
         
     mkdir mpl 
     
-    py_install/bin/pip install --download mpl 'matplotlib==1.2.1' || exit $?
+    py_install/bin/pip install --download mpl matplotlib==${MATPLOTLIBVERSION} || exit $?
     
     cd mpl
     
-    tar -xvf matplotlib-1.2.1.tar.gz
+    tar -xvf matplotlib-${MATPLOTLIBVERSION}.tar.gz || exit $?
     
-    cd matplotlib-1.2.1
+    cd matplotlib-${MATPLOTLIBVERSION} || exit $?
     
     export CFLAGS="-I${PYTHONHOME}/include -I${PYTHONHOME}/include/freetype2"
 
