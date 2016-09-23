@@ -1,2 +1,2 @@
 #!/bin/bash
-./build_amuseapp.sh -O
+./build_amuseapp.sh -O $1

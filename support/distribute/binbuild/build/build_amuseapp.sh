@@ -1,11 +1,13 @@
 #!/bin/bash
 
 BUILD=amuse
-while getopts O option
+FIXREFS=yes
+while getopts OR option
 do
 case "${option}"
 in
 O) BUILD=omuse;;
+R) FIXREFS=no;;
 esac
 done
 
@@ -365,22 +367,25 @@ if [ ! -e "amuseinstalled" ]; then
 fi
 
 
-if [ ${PLATFORM} == "Darwin" ]; then
-    echo 'move refs'
-   
-    cp /usr/local/lib/*.dylib ${PYTHONHOME}/lib 
+if [ "${FIXREFS}" == "yes" ]; then
+  if [ ${PLATFORM} == "Darwin" ]; then
+      echo 'move refs'
+     
+      cp /usr/local/lib/*.dylib ${PYTHONHOME}/lib 
+  
+      chmod u+w ${PYTHONHOME}/lib/lib*.dylib
+  
+      ${PYTHON} mvpath.py -p ${PYTHONHOME}/lib/
+      ${PYTHON} mvref.py -p ${PYTHONHOME}/lib/ -b ${PYTHONHOME}
+      ${PYTHON} mvref.py -p /usr/local/lib/ -b ${PYTHONHOME}/lib -r ./
+  else
+      echo 'move refs'
+      
+      chmod u+w ${PYTHONHOME}/lib/engines/*.so
+      chmod u+w ${PYTHONHOME}/lib/*.so
 
-    chmod u+w ${PYTHONHOME}/lib/lib*.dylib
-
-    ${PYTHON} mvpath.py -p ${PYTHONHOME}/lib/
-    ${PYTHON} mvref.py -p ${PYTHONHOME}/lib/ -b ${PYTHONHOME}
-    ${PYTHON} mvref.py -p /usr/local/lib/ -b ${PYTHONHOME}/lib -r ./
-else
-    echo 'move refs'
-    
-    chmod u+w ${PYTHONHOME}/lib/engines/*.so
-    
-    ${PYTHON} linux_set_rpath.py --path=${PYTHONHOME}/lib/ --bin-path=${PYTHONHOME}/ || exit $?
+      ${PYTHON} linux_set_rpath.py --path=${PYTHONHOME}/lib/ --bin-path=${PYTHONHOME}/ || exit $?
+  fi
 fi
 
 rm -Rf ${RELEASEDIR}
