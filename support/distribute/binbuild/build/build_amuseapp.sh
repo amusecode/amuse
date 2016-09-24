@@ -290,7 +290,7 @@ if [ ! -e "pipsinstalled"  ]; then
     
     cd mpl
     
-    py_install/bin/pip download --no-deps --no-binary matplotlib matplotlib==${MATPLOTLIBVERSION} || exit $?
+    ${PYTHONHOME}/bin/pip download --no-deps --no-binary matplotlib matplotlib==${MATPLOTLIBVERSION} || exit $?
         
     tar -xvf matplotlib-${MATPLOTLIBVERSION}.tar.gz || exit $?
     
