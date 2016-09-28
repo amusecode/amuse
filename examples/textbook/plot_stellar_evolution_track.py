@@ -9,7 +9,6 @@ def get_stellar_track(mass):
 
     stars = Particles(1)
     stars[0].mass = mass
-#    stellar = SeBa()
     stellar = SSE()
     stellar.particles.add_particles(stars)
     attributes = ["temperature", "luminosity", "stellar_type"]
@@ -20,7 +19,6 @@ def get_stellar_track(mass):
     T = [] | units.K
     L = [] | units.LSun
     stp = [] | units.stellar_type
-    #dt = 0.1|units.Myr
     Helium_White_Dwarf = 10 | units.stellar_type
     while stellar:
         #dt = stellar.stars[0].time_step
@@ -43,7 +41,6 @@ if __name__ == "__main__":
     x_label = "T [$K$]"
     y_label = "L [$L_\odot$]"
     figure = single_frame(x_label, y_label, logx=True, logy=True, xsize=12, ysize=10)
-#    figure = single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=10)
     pyplot.xlim(1e+6, 1e+3)
     pyplot.ylim(1.e-1, 3e+5)
 
@@ -66,11 +63,13 @@ if __name__ == "__main__":
     for i in range(len(T)-2):
         pyplot.plot(T[i:i+2].value_in(units.K), L[i:i+2].value_in(units.LSun),
                     lw=4, c=color[stp[i].value_in(units.stellar_type)], label='$10M_\odot$')
+
+    Ttext = 700000
+    Ltext = 0.1
+    stellar_type = ["", "main sequence", "Hertzsprung gap", "first giant branch", "core helium burning", "first asymptotic giant brach", "second AGB"]
+    dL = 2.0
+    for sti in range(len(stellar_type)):
+        pyplot.text(Ttext, dL**sti*Ltext, stellar_type[sti], color=color[sti])
         
-
-#    pyplot.text(20., 1.1e+7,'$1M_\odot$')
-#    pyplot.text(100, 6.8e+7,'$10M_\odot$')
-#    pyplot.text(48000., 2.4e+9,'$100M_\odot$')
-
-#    pyplot.show()
+    #pyplot.show()
     pyplot.savefig("fig_stellar_evolution_track")
