@@ -38,28 +38,27 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     channel_from_code_to_model_for_binaries = code.binaries.new_channel_to(double_star)
     channel_from_code_to_model_for_stars = code.particles.new_channel_to(stars)
     
-    t = []
-    a = []
-    e = []
+    t = [] | units.Myr
+    a = [] | units.RSun
+    e = [] 
     while time < end_time:
         time += time_step
         code.evolve_model(time)
         channel_from_code_to_model_for_stars.copy()
         channel_from_code_to_model_for_binaries.copy()
-        t.append(time.value_in(units.Myr))
-        a.append(double_star[0].semi_major_axis.value_in(units.RSun))
+        t.append(time)
+        a.append(double_star[0].semi_major_axis)
         e.append(double_star[0].eccentricity)
     code.stop()
 
-    fig = pyplot.figure(figsize = (8,8))
+    fig = pyplot.figure(figsize = (14,10))
     fta = fig.add_subplot(2,1,1)
-#    fte = fig.add_subplot(2,2,1)
-    pyplot.title('Binary evolution', fontsize=12)
-    fta.plot(t, a)
-    pyplot.xlabel('time [Myr]')
+    fta.plot(t.value_in(units.Myr), a.value_in(units.AU))
     pyplot.ylabel('semi major axis (AU)')
-#    fta.plot(t, e)
-    #pyplot.ylabel('eccentricity')
+    fte = fig.add_subplot(2,1,2)
+    fte.plot(t.value_in(units.Myr), e)
+    pyplot.ylabel('eccentricity')
+    pyplot.xlabel('time [Myr]')
     pyplot.show()
 
 def new_option_parser():
