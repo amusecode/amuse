@@ -35,7 +35,17 @@ def get_stellar_track(mass):
             stp.append(stars[0].stellar_type)
             
     return t, T, L, stp
-        
+
+sigma = constants.Stefan_hyphen_Boltzmann_constant
+def stellar_radius(L, T):
+    return numpy.sqrt(L/(4*numpy.pi*sigma*T**4))
+
+def stellar_luminosity(R, T):
+    return R**2 * 4*numpy.pi*sigma*T**4
+
+def stellar_temperature(R, L):
+    return (L/(4*numpy.pi*sigma*R**2))**(1./4.)
+
 if __name__ == "__main__":
 
     x_label = "T [$K$]"
@@ -44,6 +54,19 @@ if __name__ == "__main__":
     pyplot.xlim(1e+6, 1e+3)
     pyplot.ylim(1.e-1, 3e+5)
 
+    L = [20, 1.e+4] | units.LSun
+    T = stellar_temperature(0.01|units.RSun, L)
+    pyplot.plot(T.value_in(units.K), L.value_in(units.LSun), lw=1, c='k')
+    L = [1, 1.e+5] | units.LSun
+    T = stellar_temperature(1|units.RSun, L)
+    pyplot.plot(T.value_in(units.K), L.value_in(units.LSun), lw=1, c='k')
+    L = [1, 1.e+5] | units.LSun
+    T = stellar_temperature(100|units.RSun, L)
+    pyplot.plot(T.value_in(units.K), L.value_in(units.LSun), lw=1, c='k')
+    L = [1, 1.e+5] | units.LSun
+    T = stellar_temperature(10000|units.RSun, L)
+    pyplot.plot(T.value_in(units.K), L.value_in(units.LSun), lw=1, c='k')
+    
     color = get_distinct(10)
 
     t, T, L, stp = get_stellar_track(1|units.MSun)
