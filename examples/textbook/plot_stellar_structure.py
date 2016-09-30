@@ -55,4 +55,4 @@ if __name__ == "__main__":
     pyplot.ylabel(y_label)
 
     pyplot.show()
-    pyplot.savefig("fig_1_5_10_MSun_stellar_core_luminosoty")
+    pyplot.savefig("fig_1_5_10_MSun_stellar_core_luminosity")
