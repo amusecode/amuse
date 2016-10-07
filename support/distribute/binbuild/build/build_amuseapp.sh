@@ -254,12 +254,12 @@ if [ ! -e "libsinstalled" ]; then
     
     touch "libsinstalled" || exit $?
     
-    ${PYTHONHOME}/bin/easy_install pip
+    ${PYTHONHOME}/bin/easy_install pip==${PIPVERSION}
 fi
 
 
 if [ ! -e "pipsinstalled"  ]; then
-    ${PYTHONHOME}/bin/easy_install pip
+    ${PYTHONHOME}/bin/easy_install pip==${PIPVERSION}
 
     export PIP_CERT=`python -m pip._vendor.requests.certs`    
 

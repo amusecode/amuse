@@ -3,7 +3,8 @@
 # 1) amuse python path    (src/amuse, used for binary installs)
 # 2) amuse root directory (set by the AMUSE_DIR environment variable)
 # 3) your home directory  (under the name .amuserc, so a hidden file)
-# 4) the current working directory
+# 4) a file set in the AMUSERC environment variable
+# 5) the current working directory
 # AMUSE will combine the files it finds in these paths. 
 # The file in the path with the higher number will overwrite the values
 # in the file(s) in the path with lower number. For example

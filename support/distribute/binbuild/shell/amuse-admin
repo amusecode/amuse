@@ -4,12 +4,7 @@ SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-export PYTHONHOME=${DIR}
-export PATH=${PYTHONHOME}/bin:${PATH}
-export LD_LIBRARY_PATH=${PYTHONHOME}/lib:${LD_LIBRARY_PATH}
-export DYLD_FALLBACK_LIBRARY_PATH=${PYTHONHOME}/lib:${DYLD_FALLBACK_LIBRARY_PATH}
-export PYTHONPATH=${PYTHONHOME}/customize
-export PYTHON=${PYTHONHOME}/python
+. ${DIR}/common
 
 exec python -m amuse_admin "$@" 
 
