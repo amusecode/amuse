@@ -34,7 +34,9 @@ class GlobalOptions(object):
             self.config.readfp(preloadfp, "<amuserc>")
             
         self.config.read(homedirrc)  
-        self.config.read(os.path.join(self.homedirectory, '.' + platform.node() + '_' + self.rcfilename))
+        self.config.read(os.path.join(self.homedirectory, '.' + platform.node() + '_' + self.rcfilename))        
+        if 'AMUSERC' in os.environ:
+            self.config.read(os.environ['AMUSERC'])
         self.config.read(self.rcfilepath)
         
         
