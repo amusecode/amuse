@@ -43,6 +43,7 @@ def star_to_sph(mass, age, omega, Nsph):
         base_grid_options=dict(type="fcc")
     )
     print "Final star:", star
+    age = stellar.model_time
     M_scale = star.mass
     R_scale = star.radius
     stellar.stop()
@@ -58,10 +59,10 @@ def star_to_sph(mass, age, omega, Nsph):
     print "Add Spin to star:", omega
     sph_star.add_spin(omega)
 
-    relaxed_sph_star, core_particles, age = relax_sph_realization(sph_star)
+    relaxed_sph_star, core_particles = relax_sph_realization(sph_star, core)
     return relaxed_sph_star, core_particles, age
 
-def relax_sph_realization(sph_star):
+def relax_sph_realization(sph_star, core):
     
     dynamical_timescale = sph_star.dynamical_timescale()
     converter = nbody_system.nbody_to_si(dynamical_timescale, 1|units.RSun)
@@ -78,15 +79,14 @@ def relax_sph_realization(sph_star):
     hydro.gas_particles.add_particles(sph_star)
     to_framework = hydro.gas_particles.new_channel_to(sph_star)
 
-    stellar_to_framework = stellar.particles.new_channel_to(stars)
     if core.mass>0|units.MSun:
         hydro.dm_particles.add_particles(core)
     for i_step, time in enumerate(t_end * numpy.linspace(1.0/n_steps, 1.0, n_steps)):
         hydro.evolve_model(time)
-        to_framwork.copy()
+        to_framework.copy()
         hydro.gas_particles.velocity = velocity_damp_factor * hydro.gas_particles.velocity
     
-    return hydro.gas_particles, hydro.dm_particles, age
+    return hydro.gas_particles, hydro.dm_particles
 
     
 def new_option_parser():
@@ -98,7 +98,7 @@ def new_option_parser():
                       help="number of SPH particles[%default]")
     result.add_option("-M", unit=units.MSun,
                       dest="mass", type="float", 
-                      default = 10 | units.MSun,
+                      default = 0.6 | units.MSun,
                       help="stellar mass [%default]")
     result.add_option("-t", unit=units.Myr,
                       dest="age", type="float", 
