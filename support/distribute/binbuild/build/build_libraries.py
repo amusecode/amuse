@@ -382,7 +382,7 @@ class InstallPrerequisites(object):
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
         else:
-            command.append('--with-pm=gforker')
+            command.append('--with-pm=gforker:hydra')
         if not self.fortran90_compiler is None:
             command.append('FC=' + self.fortran90_compiler)
         
@@ -649,7 +649,7 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
         else:
-            command.append('--with-pm=gforker')
+            command.append('--with-pm=gforker:hydra')
             
         commands.append(command)
         commands.append(['make'])
