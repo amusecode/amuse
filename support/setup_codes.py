@@ -155,7 +155,11 @@ class CodeCommand(Command):
                 self.codes_dir = os.path.join(self.build_temp, 'codes')
                 self.codes_src_dir = os.path.join(self.amuse_src_dir,'community')
         else:
-            self.codes_src_dir  = self.codes_dir
+            if self.inplace:
+                self.codes_src_dir = self.codes_dir
+            else:
+                self.codes_src_dir = self.codes_dir
+                self.codes_dir=os.path.join(self.build_temp, 'codes')
             
         if self.lib_dir is None:
             if self.inplace:
@@ -573,17 +577,17 @@ class CodeCommand(Command):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
                     targetname = line[len('muse_worker_'):index_of_the_colon]
-                    result.append((line[:index_of_the_colon], targetname,))
+                    if '%' not in targetname: result.append((line[:index_of_the_colon], targetname,))
             elif line.startswith('worker_code_'):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
                     targetname = line[len('worker_code_'):index_of_the_colon]
-                    result.append((line[:index_of_the_colon], targetname,))
+                    if '%' not in targetname: result.append((line[:index_of_the_colon], targetname,))
             elif line.startswith(name + '_worker_'):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
                     targetname = line[len(name + '_worker_'):index_of_the_colon]
-                    result.append((line[:index_of_the_colon], targetname,))
+                    if '%' not in targetname: result.append((line[:index_of_the_colon], targetname,))
                     
         return result
     

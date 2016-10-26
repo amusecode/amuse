@@ -10,7 +10,8 @@ import subprocess
 import shutil
 
 import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
+if hasattr(ssl, '_create_unverified_context'):
+    ssl._create_default_https_context = ssl._create_unverified_context
 
 IS_ON_OSX = sys.platform == 'darwin'
 
@@ -46,7 +47,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.8.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
+            'https://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -54,23 +55,23 @@ class InstallPrerequisites(object):
             [], 
             '1.3.0', 
             'nose-' , '.tar.gz', 
-            'http://pypi.python.org/packages/source/n/nose/', 
+            'https://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
-          (
-            'distribute', 
-            [], 
-            '0.6.49', 
-            'distribute-' , '.tar.gz', 
-            'http://pypi.python.org/packages/source/d/distribute/', 
-            self.python_build
-          ),
+          #~ (
+            #~ 'distribute', 
+            #~ [], 
+            #~ '0.6.49', 
+            #~ 'distribute-' , '.tar.gz', 
+            #~ 'http://pypi.python.org/packages/source/d/distribute/', 
+            #~ self.python_build
+          #~ ),
           (
             'hdf' ,
             [],  
             '1.8.14',
             'hdf5-' , '.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src/',
+            'https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src/',
             #'http://www.hdfgroup.org/ftp/HDF5/current/src/',
             self.hdf5_build
           ) ,
@@ -86,7 +87,7 @@ class InstallPrerequisites(object):
             [], 
             '0.9.1', 
             'docutils-','.tar.gz', 
-            'http://downloads.sourceforge.net/project/docutils/docutils/0.9.1/', 
+            'https://sourceforge.net/projects/docutils/files/docutils/0.9.1/', 
             self.python_build
           ) ,
           (
@@ -94,7 +95,7 @@ class InstallPrerequisites(object):
             [], 
             '3.1.2', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/3.1.2/', 
+            'https://www.mpich.org/static/tarballs/3.1.2/', 
             self.mpich2_build
           ) ,
           (
@@ -102,11 +103,23 @@ class InstallPrerequisites(object):
             ['mpich2'], 
             '1.3.1', 
             'mpi4py-', '.tar.gz', 
-            'http://mpi4py.googlecode.com/files/', 
+            'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
           ) ,
+          (
+            'zlib' ,                   #name to refer by
+            [],                         #names of prerequisites (unused)
+            '1.2.8' ,                   #version string
+            'zlib-', '.tar.gz',        #pre- and postfix for filename
+            'https://sourceforge.net/projects/libpng/files/zlib/1.2.8/', #download url, filename is appended
+            self.basic_build             #method to use for building - same as for FFTW should work
+          ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
-          #('setuptools', [], '0.6c11', 'setuptools-', '-py2.6.egg', 'http://pypi.python.org/packages/2.6/s/setuptools/', self.setuptools_install) ,
+          ('setuptools', 
+           [], 
+           '27.2.0',
+           'setuptools-', '.tar.gz',
+           'https://pypi.python.org/packages/87/ba/54197971d107bc06f5f3fbdc0d728a7ae0b10cafca46acfddba65a0899d8/', self.python_build) ,
           #http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg#md5=bfa92100bd772d5a213eedd356d64086
           (
             'fftw3' ,                  #name to refer by
@@ -121,7 +134,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.16' ,                   #version string
             'gsl-', '.tar.gz',         #pre- and postfix for filename
-            'http://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
+            'https://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
             self.fftw_build            #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -129,7 +142,7 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '2.8.12' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
-            'http://www.cmake.org/files/v2.8/', #download url, filename is appended
+            'https://www.cmake.org/files/v2.8/', #download url, filename is appended
             self.cmake_build             #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -137,24 +150,40 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '2.4.12' ,                   #version string
             'freetype-', '.tar.gz',        #pre- and postfix for filename
-            'http://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
-            self.basic_build             #method to use for building - same as for FFTW should work
-          ) ,
-          (
-            'zlib' ,                   #name to refer by
-            [],                         #names of prerequisites (unused)
-            '1.2.8' ,                   #version string
-            'zlib-', '.tar.gz',        #pre- and postfix for filename
-            'http://zlib.net/', #download url, filename is appended
-            self.basic_build             #method to use for building - same as for FFTW should work
+            'https://download.savannah.gnu.org/releases/freetype/', #download url, filename is appended
+            self.freetype_build             #method to use for building - same as for FFTW should work
           ) ,
           (
             'png' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '1.6.20' ,                   #version string
+            '1.6.24' ,                   #version string
             'libpng-', '.tar.gz',        #pre- and postfix for filename
-            'http://downloads.sourceforge.net/project/libpng/libpng16/1.6.20/', #download url, filename is appended
-            self.basic_build             #method to use for building - same as for FFTW should work
+            'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.24/', #download url, filename is appended
+            self.png_build             #method to use for building - same as for FFTW should work
+          ) ,
+          (
+            'netcdf-c' ,
+            ['hdf'],  
+            '4.4.1',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-c/archive/',
+            self.netcdf_build
+          ) ,
+          (
+            'netcdf-fortran' ,
+            ['netcdf-c'],  
+            '4.4.4',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-fortran/archive/',
+            self.netcdf_fortran_build
+          ) ,
+          (
+            'netcdf4-python' ,
+            ['netcdf-c'],  
+            '1.2.4rel',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf4-python/archive/',
+            self.netcdfpython_build
           ) ,
           #(
           #  'tcl' ,                   #name to refer by
@@ -177,10 +206,17 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '3.2.1' ,                   #version string
             'zeromq-', '-rc2.tar.gz',        #pre- and postfix for filename
-            'http://download.zeromq.org/', #download url, filename is appended
+            'https://github.com/zeromq/zeromq3-x/releases/download/v3.2.1/', #download url, filename is appended
             self.basic_build             #method to use for building - same as for FFTW should work
           ) ,
-          
+          (
+            'patchelf' ,
+            [],  
+            '0.8',
+            'patchelf-' , '.tar.gz' , 
+            'https://nixos.org/releases/patchelf/patchelf-0.8/',
+            self.basic_build
+          ) ,          
         ]
         
     @late
@@ -260,6 +296,50 @@ class InstallPrerequisites(object):
     def python_build(self, path):
         self.run_application([sys.executable,'setup.py','build'], cwd=path)
         self.run_application([sys.executable,'setup.py','install'], cwd=path)
+
+    def freetype_build(self,path):
+        env = os.environ.copy()
+        env['CFLAGS'] = "-I"+ self.prefix + '/include'
+        env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
+        env['LDFLAGS'] = "-L"+ self.prefix + '/lib'
+        self.basic_build(path, env)
+
+    def netcdf_build(self,path):
+        env = os.environ.copy()
+        env['CFLAGS'] = "-I"+ self.prefix + '/include'
+        env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
+        env['LDFLAGS'] = "-L"+ self.prefix + '/lib'
+
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--disable-dap',
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path, env = env)
+
+    def png_build(self,path):
+        env = os.environ.copy()
+        env['CFLAGS'] = "-I"+ self.prefix + '/include'
+        env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
+        env['LDFLAGS'] = "-L"+ self.prefix + '/lib'
+        self.basic_build(path, env)
+
+# somehow doesn't work if LDFLAGS set..
+    def netcdf_fortran_build(self,path):
+        env = os.environ.copy()
+        env['CPPFLAGS'] = "-I"+ self.prefix + '/include'
+        self.basic_build(path, env)
+
+    def netcdfpython_build(self, path):
+        self.run_application([sys.executable,'setup.py','build'], cwd=path)
+        self.run_application([sys.executable,'setup.py','install'], cwd=path)
     
     def numpy_build(self, path):
         env = os.environ.copy()
@@ -302,7 +382,7 @@ class InstallPrerequisites(object):
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
         else:
-            command.append('--with-pm=gforker')
+            command.append('--with-pm=gforker:hydra')
         if not self.fortran90_compiler is None:
             command.append('FC=' + self.fortran90_compiler)
         
@@ -344,7 +424,7 @@ class InstallPrerequisites(object):
         for x in commands:
             self.run_application(x, path)
             
-    def basic_build(self, path):
+    def basic_build(self, path, env=None):
         commands = []
         command = [
           './configure',
@@ -356,7 +436,7 @@ class InstallPrerequisites(object):
         commands.append(['make', 'install'])
         
         for x in commands:
-            self.run_application(x, path)
+            self.run_application(x, path, env = env)
             
     def tcl_build(self, path):
         commands = []
@@ -495,6 +575,12 @@ class InstallPrerequisites(object):
                 sys.exit(1)
             print "...Finished"
             
+    def extract_path(self, app_file):
+        proc=subprocess.Popen(["tar","tf",app_file], stdout=subprocess.PIPE)
+        out,err=proc.communicate()
+        out=out.split("\n")
+        return os.path.split(out[0])[0]
+            
     def build_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
@@ -503,7 +589,8 @@ class InstallPrerequisites(object):
                 continue
             app_file = prefix + version + suffix
             app_dir = prefix + version 
-            temp_app_dir = os.path.join(self.temp_dir , app_dir)
+            temp_app_dir = self.extract_path(os.path.join(self.temp_dir , app_file) )
+            temp_app_dir=os.path.join(self.temp_dir, temp_app_dir)
             if not os.path.exists(temp_app_dir):
                 if prefix.endswith('-'):
                     app_dir = prefix[:-1]
@@ -562,7 +649,7 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         if self.use_hydra_process_manager:
             command.append('--with-pm=hydra:mpd:gforker')
         else:
-            command.append('--with-pm=gforker')
+            command.append('--with-pm=gforker:hydra')
             
         commands.append(command)
         commands.append(['make'])

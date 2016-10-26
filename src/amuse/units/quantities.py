@@ -213,10 +213,7 @@ class Quantity(object):
 
         """
         value_of_unit_in_another_unit = self.unit.value_in(unit)
-        if value_of_unit_in_another_unit == 1.0:
-            return self.number
-        else:
-            return self.number * value_of_unit_in_another_unit
+        return self.number * value_of_unit_in_another_unit
 
     def __abs__(self):
         """
@@ -361,6 +358,12 @@ class VectorQuantity(Quantity):
         except core.IncompatibleUnitsException:
             raise exceptions.AmuseException("not all values have conforming units")
         return cls(array, unit)
+
+    @classmethod
+    def new_from_array(cls, array):
+        shape=array.shape
+        vector=cls.new_from_scalar_quantities(*array.flat)
+        return vector.reshape(shape)
 
     def aszeros(self):
         return new_quantity(numpy.zeros(self.shape, dtype=self.number.dtype), self.unit)

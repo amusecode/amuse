@@ -8331,7 +8331,7 @@ ac_compiler_gnu=$ac_cv_fc_compiler_gnu
 
                     save_FCFLAGS="$FCFLAGS"
                     FCFLAGS="$ac_NETCDF_CFLAGS $save_FCFLAGS"
-                    LIBS="$ac_NETCDF_LDOPTS -lnetcdff"
+                    LIBS="$ac_NETCDF_LDOPTS -lnetcdf -lnetcdff"
                     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
 $as_echo_n "checking Fortran netcdf presence... " >&6; }
                     cat > conftest.$ac_ext <<_ACEOF
@@ -8350,7 +8350,7 @@ _ACEOF
 if ac_fn_fc_try_link "$LINENO"; then :
 
                         NETCDFF_FLAGS="$ac_NETCDF_CFLAGS"
-                        NETCDFF_LIBS="$ac_NETCDF_LDOPTS -lnetcdff -lnetcdf"
+                        NETCDFF_LIBS="$ac_NETCDF_LDOPTS -lnetcdf -lnetcdff"
                         NETCDFF_PREFIX="$netcdf_prefix"
                         FOUND_NETCDFF="yes"
                         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
@@ -8488,7 +8488,7 @@ ac_compiler_gnu=$ac_cv_fc_compiler_gnu
 
                     save_FCFLAGS="$FCFLAGS"
                     FCFLAGS="$save_FCFLAGS"
-                    LIBS="-lnetcdff"
+                    LIBS="-lnetcdf -lnetcdff"
                     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
 $as_echo_n "checking Fortran netcdf presence... " >&6; }
                     cat > conftest.$ac_ext <<_ACEOF
@@ -8507,7 +8507,7 @@ _ACEOF
 if ac_fn_fc_try_link "$LINENO"; then :
 
                         NETCDFF_FLAGS=""
-                        NETCDFF_LIBS="-lnetcdff -lnetcdf"
+                        NETCDFF_LIBS="-lnetcdf -lnetcdff"
                         NETCDFF_PREFIX=""
                         FOUND_NETCDFF="yes"
                         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5

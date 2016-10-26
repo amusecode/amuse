@@ -398,6 +398,17 @@ class TestQuantities(amusetest.TestCase):
         b=new_quantity_nonone(a,2*units.none)
         self.assertEqual(len(a),len(b))
 
+    def test34(self):
+        a= [1,2,3,4,5] | units.m
+        x= a.value_in(units.cm)
+        x[0]=-1
+        self.assertEqual(a, [1,2,3,4,5] | units.m)
+
+        a= [1,2,3,4,5] | units.m
+        x= a.value_in(units.m)
+        x[0]=-1
+        self.assertEqual(a, [1,2,3,4,5] | units.m)
+
 
 class TestAdaptingVectorQuantities(amusetest.TestCase):
 

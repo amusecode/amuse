@@ -1781,7 +1781,7 @@ def find_nn3(plist, field, G):
         phimin = 0.0 | nbody_system.energy
         dxmin = 1.e30
         pmin = None
-        j = numpy.argmin(phi)
+        j = numpy.argmin(phi.number)
         phimin = phi[j]
         dxmin = dx[j]
         pmin = p

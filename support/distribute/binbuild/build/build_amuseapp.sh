@@ -1,5 +1,15 @@
 #!/bin/bash
 
+BUILD=amuse
+FIXREFS=yes
+while getopts OR option
+do
+case "${option}"
+in
+O) BUILD=omuse;;
+R) FIXREFS=no;;
+esac
+done
 
 BASEDIR=`pwd`
 PLATFORM=`uname`
@@ -24,10 +34,20 @@ PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 
 OPENSSLVERSION="1.0.1s"
 
+PIPVERSION=8.1.2
+READLINEVERSION=6.2.4.1
+PYZMQVERSION=15.4.0
+TORNADOVERSION=4.4.1
+JUPYTERVERSION=1.0.0
+CYTHONVERSION=0.24.1
+FLASKVERSION=0.11.1
+PILLOWVERSION=3.3.1
+MATPLOTLIBVERSION=1.4.3
+
 if [ ${PYTHONPRERELEASE} == 1 ]; then
-    FTPPATH="http://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
+    FTPPATH="https://www.python.org/ftp/python/${PYTHONMAJORMINOR}"
 else
-    FTPPATH="http://www.python.org/ftp/python/${PYTHONVERSION}"
+    FTPPATH="https://www.python.org/ftp/python/${PYTHONVERSION}"
 fi
 
 UNICODETYPE="ucs4"
@@ -35,21 +55,32 @@ UNICODETYPE="ucs4"
 INSTALLDIR="${BASEDIR}/py_install"
 SHELLDIR="${BASEDIR}/../shell"
 TUTORIALDIR="${BASEDIR}/../../../../doc/interactive_tutorial"
+if [ "${BUILD}" == "omuse" ]; then
+  TUTORIALDIR="${BASEDIR}/../../../../doc/omuse_tutorial"
+fi
 
-RELEASEDIR=amuse-${VERSION}-${PLATFORM}_${ARCHITECTURE}
+RELEASEDIR=${BUILD}-${VERSION}-${PLATFORM}_${ARCHITECTURE}
 DISTFILE=${RELEASEDIR}.tar.gz
 
-rm -f amuse-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
+rm -f ${BUILD}-*-${PLATFORM}_${ARCHITECTURE}.tar.gz
 
 echo "Distfile = ${DISTFILE}"
 
 if [ ! -e "installed" ]; then
+
+    if [ ${PLATFORM} != 'Darwin' ]; then
+        tar xvzf bzip2-1.0.6_light.tar.gz
+        cd bzip2-1.0.6_light
+        make install PREFIX="${BASEDIR}/py_install"
+        cd ..
+    fi
+
     if [ ${PLATFORM} == 'Darwin' ]; then
         rm -rf openssl-${OPENSSLVERSION} || exit $?
         
         if [ ! -e "openssl-${OPENSSLVERSION}.tar.gz" ]; then
             # download
-            curl -OL http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
+            curl -OL https://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
         fi
         
         tar zxf openssl-${OPENSSLVERSION}.tar.gz || exit $?
@@ -58,7 +89,8 @@ if [ ! -e "installed" ]; then
         
         ./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
         if [ ${ARCHITECTURE} == 'x86_64' ]; then
-            ./Configure darwin64-x86_64-cc --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+            ./Configure darwin64-x86_64-cc --prefix=${INSTALLDIR} --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
+            make depend || exit $?
         fi
         
         make || exit $?
@@ -106,7 +138,7 @@ if [ ! -e "installed" ]; then
         
         if [ ! -e "openssl-${OPENSSLVERSION}.tar.gz" ]; then
             # download
-            wget http://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
+            wget https://www.openssl.org/source/openssl-${OPENSSLVERSION}.tar.gz || exit $?
         fi
         
         tar zxf openssl-${OPENSSLVERSION}.tar.gz || exit $?
@@ -180,6 +212,7 @@ fi
 
  
 # run the python build script
+export PREFIX="${BASEDIR}/py_install"
 export PYTHONHOME="${BASEDIR}/py_install"
 export PATH=${PYTHONHOME}/bin:$PATH
 export PYTHON=${PYTHONHOME}/bin/python
@@ -221,53 +254,61 @@ if [ ! -e "libsinstalled" ]; then
     
     touch "libsinstalled" || exit $?
     
-    ${PYTHONHOME}/bin/easy_install pip
+    ${PYTHONHOME}/bin/easy_install pip==${PIPVERSION}
 fi
 
 
-#${PYTHONHOME}/bin/pip install ipython || exit $?
 if [ ! -e "pipsinstalled"  ]; then
-    ${PYTHONHOME}/bin/easy_install pip
-    
-    ${PYTHONHOME}/bin/easy_install readline
-    
-    export PIP_CERT=`python -m pip._vendor.requests.certs`
-    
+    ${PYTHONHOME}/bin/easy_install pip==${PIPVERSION}
+
+    export PIP_CERT=`python -m pip._vendor.requests.certs`    
+
+    ${PYTHONHOME}/bin/pip install readline==${READLINEVERSION} || exit $?
+        
     export PIP_INSTALL_OPTION=--zmq=${PYTHONHOME}
     
-    ${PYTHONHOME}/bin/pip install pyzmq || exit $?
+    ${PYTHONHOME}/bin/pip install pyzmq==${PYZMQVERSION} || exit $?
     
     export PIP_INSTALL_OPTION=
     
-    ${PYTHONHOME}/bin/easy_install tornado
+
+    ${PYTHONHOME}/bin/pip install tornado || exit $?
+        
+    #~ ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
+    # is this equivalent to..(?)
+    ${PYTHONHOME}/bin/pip install jupyter==${JUPYTERVERSION}  || exit $?
     
-    ${PYTHONHOME}/bin/easy_install IPython
+    ${PYTHONHOME}/bin/pip install Cython==${CYTHONVERSION} || exit $?
     
-    ${PYTHONHOME}/bin/pip install Cython || exit $?
+    ${PYTHONHOME}/bin/pip install Flask==${FLASKVERSION} || exit $?
     
-    ${PYTHONHOME}/bin/pip install Flask || exit $?
+    ${PYTHONHOME}/bin/pip install pillow==${PILLOWVERSION} || exit $?
     
-    ${PYTHONHOME}/bin/pip install pillow || exit $?
-    
+    rm -Rf mpl || exit $?
+        
     mkdir mpl 
-    
-    py_install/bin/pip install --download mpl 'matplotlib==1.2.1' || exit $?
     
     cd mpl
     
-    tar -xvf matplotlib-1.2.1.tar.gz
+    ${PYTHONHOME}/bin/pip download --no-deps --no-binary matplotlib matplotlib==${MATPLOTLIBVERSION} || exit $?
+        
+    tar -xvf matplotlib-${MATPLOTLIBVERSION}.tar.gz || exit $?
     
-    cd matplotlib-1.2.1
+    cd matplotlib-${MATPLOTLIBVERSION} || exit $?
     
     export CFLAGS="-I${PYTHONHOME}/include -I${PYTHONHOME}/include/freetype2"
 
     export LDFLAGS="-L${PYTHONHOME}/lib"
+
+    # hopefully maxosx backend will be enough
+    if [ ${PLATFORM} == 'Darwin' ]; then
+      echo "[gui_support]" > setup.cfg
+      echo tkagg = False >> setup.cfg
+    fi
     
     ${PYTHONHOME}/bin/python setup.py install || exit $?
     
     cd ../../
-    
-    rm -Rf mpl || exit $?
     
     touch "pipsinstalled" || exit $?
 fi
@@ -277,7 +318,7 @@ if [ ! -e "ytinstalled"  ]; then
 
     rm -Rf yt-hg || exit $?
     
-    curl -OL http://bitbucket.org/yt_analysis/yt/get/tip.tar.gz  || exit $?
+    curl -OL https://bitbucket.org/yt_analysis/yt/get/tip.tar.gz  || exit $?
     
     tar zxf tip.tar.gz || exit $?
     
@@ -304,13 +345,19 @@ if [ ! -e "amuseinstalled" ]; then
     
     cd ../../../.. # cd to amuse root directory
     
-    #make distclean PYTHON=${PYTHON}
+    make distclean PYTHON=${PYTHON}
 
     if [ ${PLATFORM} == "Darwin" ]; then
         export CXXCPP="g++ -E"
     fi
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
-    
+
+    export PYTHONPATH=${PYTHONPATH}:`pwd`/src
+
+    # first build omuse codes..
+    if [ "${BUILD}" == "omuse" ]; then
+      ${PYTHON} setup.py build_codes --codes-dir=src/omuse/community || exit $?
+    fi
     ${PYTHON} setup.py install || exit $?
 
     make distclean PYTHON=${PYTHON}
@@ -321,19 +368,29 @@ if [ ! -e "amuseinstalled" ]; then
 fi
 
 
-if [ ${PLATFORM} == "Darwin" ]; then
-    echo 'move refs'
-   
-    cp /usr/local/lib/*.dylib ${PYTHONHOME}/lib 
+if [ "${FIXREFS}" == "yes" ]; then
+  if [ ${PLATFORM} == "Darwin" ]; then
+      echo 'move refs'
+     
+      cp /usr/local/lib/*.dylib ${PYTHONHOME}/lib 
+  
+      chmod u+w ${PYTHONHOME}/lib/lib*.dylib
+  
+      ${PYTHON} mvpath.py -p ${PYTHONHOME}/lib/
+      ${PYTHON} mvref.py -p ${PYTHONHOME}/lib/ -b ${PYTHONHOME}
+      ${PYTHON} mvref.py -p /usr/local/lib/ -b ${PYTHONHOME}/lib -r ./
+  else
+      echo 'move refs'
+      
+      chmod u+w ${PYTHONHOME}/lib/engines/*.so
+      chmod u+w ${PYTHONHOME}/lib/*.so
 
-    chmod u+w ${PYTHONHOME}/lib/lib*.dylib
+      ${PYTHON} linux_set_rpath.py --path=${PYTHONHOME}/lib/ --bin-path=${PYTHONHOME}/ || exit $?
+  fi
+fi
 
-    ${PYTHON} mvpath.py -p ${PYTHONHOME}/lib/
-    ${PYTHON} mvref.py -p ${PYTHONHOME}/lib/ -b ${PYTHONHOME}
-    ${PYTHON} mvref.py -p /usr/local/lib/ -b ${PYTHONHOME}/lib -r ./
-else
-    echo 'move refs'
-    ${PYTHON} linux_set_rpath.py --path=${PYTHONHOME}/lib/ --bin-path=${PYTHONHOME}/ || exit $?
+if [ -e local_fixes ]; then
+  source local_fixes
 fi
 
 rm -Rf ${RELEASEDIR}
@@ -341,6 +398,11 @@ rm -Rf ${RELEASEDIR}
 cp -R ${INSTALLDIR} ${RELEASEDIR}
 
 cp -R ${SHELLDIR}/* ${RELEASEDIR}
+
+if [ "${BUILD}" == "omuse" ]; then
+  mv ${RELEASEDIR}/amuse ${RELEASEDIR}/omuse
+  mv ${RELEASEDIR}/amuse-tutorial ${RELEASEDIR}/omuse-tutorial
+fi
 
 cp -R ${TUTORIALDIR} ${RELEASEDIR}/tutorial
 
