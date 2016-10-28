@@ -207,7 +207,7 @@ int commit_particles()
     id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
     jd->set_initial_timestep();		// set timesteps (needs acc and jerk)
     s = new scheduler(jd);
-#if 10
+#if 0
     cout << "commit_particles:";
     for (int j = 0; j < jd->nj; j++) cout << " " << jd->id[j];
     cout << endl << flush;
