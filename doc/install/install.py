@@ -74,6 +74,30 @@ class InstallPrerequisites(object):
             'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
+            'netcdf-c' ,
+            ['hdf'],  
+            '4.4.1',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-c/archive/',
+            self.basic_build
+          ) ,
+          (
+            'netcdf-fortran' ,
+            ['netcdf-c'],  
+            '4.4.4',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf-fortran/archive/',
+            self.basic_build
+          ) ,
+          (
+            'netcdf4-python' ,
+            ['netcdf-c'],  
+            '1.2.4rel',
+            'v' , '.tar.gz' , 
+            'https://github.com/Unidata/netcdf4-python/archive/',
+            self.python_build
+          ) ,          
+          (
             'docutils', 
             [], 
             '0.7', 
@@ -94,7 +118,7 @@ class InstallPrerequisites(object):
             ['mpich2'], 
             '1.3.1', 
             'mpi4py-', '.tar.gz', 
-            'http://mpi4py.googlecode.com/files/', 
+            'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
           ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
@@ -207,7 +231,7 @@ class InstallPrerequisites(object):
     def h5py_build(self, path):
         
         self.run_application([PYTHON,'setup.py','build','--hdf5='+self.prefix], cwd=path)
-        #self.run_application([PYTHON,'setup.py','build','--hdf5='+'/cm/shared/apps/hdf5_18/1.8.12'], cwd=path)
+        #self.run_application([PYTHON,'setup.py','build','--hdf5='+'/cm/shared/apps/hdf5_18/1.8.16'], cwd=path)
         self.run_application([PYTHON,'setup.py','install', '--prefix='+self.prefix], cwd=path)
         
     def setuptools_install(self, path):
@@ -294,6 +318,20 @@ class InstallPrerequisites(object):
           '--prefix='+self.prefix,
           '--enable-shared',
           '--enable-threads'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
+
+    def basic_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared'
         ]
         commands.append(command)
         commands.append(['make'])
@@ -465,6 +503,12 @@ class InstallPrerequisites(object):
                 print "Note: The name of the output file must not be changed (after the -o or -O parameter)"
                 sys.exit(1)
             print "...Finished"
+
+    def extract_path(self, app_file):
+        proc=subprocess.Popen(["tar","tf",app_file], stdout=subprocess.PIPE)
+        out,err=proc.communicate()
+        out=out.split("\n")
+        return os.path.split(out[0])[0]
             
     def build_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
@@ -474,7 +518,8 @@ class InstallPrerequisites(object):
                 continue
             app_file = prefix + version + suffix
             app_dir = prefix + version 
-            temp_app_dir = os.path.join(self.temp_dir , app_dir)
+            temp_app_dir = self.extract_path(os.path.join(self.temp_dir , app_file) )
+            temp_app_dir=os.path.join(self.temp_dir, temp_app_dir)
             if not os.path.exists(temp_app_dir):
                 if prefix.endswith('-'):
                     app_dir = prefix[:-1]

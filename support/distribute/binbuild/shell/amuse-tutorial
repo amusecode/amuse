@@ -1,15 +1,12 @@
 #!/bin/bash
 
-echo starting the AMUSE tutorial..
+echo starting the tutorial..
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-export PYTHONHOME=${DIR}
-export PATH=${PYTHONHOME}/bin:${PATH}
-export PYTHONPATH=${PYTHONHOME}/customize
-export PYTHON=${PYTHONHOME}/python
+. ${DIR}/common
 
 RUNDIR=/tmp/${USER}/amuse-tutorial
 
@@ -17,6 +14,6 @@ mkdir -p $RUNDIR
 
 cp ${PYTHONHOME}/tutorial/* ${RUNDIR}/
 
-exec python ${PYTHONHOME}/bin/ipython notebook --pylab inline --notebook-dir=${RUNDIR} --profile=nbserver
+exec python ${PYTHONHOME}/bin/jupyter-notebook --notebook-dir=${RUNDIR}
 
 

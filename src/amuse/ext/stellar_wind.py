@@ -1042,7 +1042,6 @@ class HeatingWind(SimpleWind):
 
     def __init__(self, *args, **kwargs):
         self.feedback_efficiency = kwargs.pop("feedback_efficiency", 0.01)
-        self.r_max = kwargs.pop("r_max", None)
         self.r_max_ratio = kwargs.pop("r_max_ratio", 5)
         super(HeatingWind, self).__init__(*args, **kwargs)
 

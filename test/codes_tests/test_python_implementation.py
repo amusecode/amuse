@@ -1044,8 +1044,8 @@ class TestInterface(TestWithMPI):
 
     def test34(self):
         x = ForTestingInterface()
-        quantity_out, error = x.echo_quantities()
-        self.assertError(x.echo_quantities, [20, 30, 40] | units.m)
+        #self.assertException(x.echo_quantities_error, [20, 30, 40] | units.m)
+        quantity_out, error = x.echo_quantities([20, 30, 40] | units.m)
         self.assertEquals(error, 0)
         self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()

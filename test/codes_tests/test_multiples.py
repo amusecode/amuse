@@ -37,8 +37,8 @@ class TestSimpleMultiples(TestWithMPI):
         
     def new_kepler_si(self):
         unit_converter = nbody_system.nbody_to_si(
-            1 | units.MSun,
-            1 | units.AU
+            1.0 | units.MSun,
+            1.0 | units.AU
         )
         kepler = Kepler(unit_converter)
         kepler.initialize_code()
@@ -113,11 +113,11 @@ class TestSimpleMultiples(TestWithMPI):
         stars = datamodel.Particles(2)
         stars.mass = 1 | nbody_system.mass
         stars.position = [
-            [0,0,0],
+            [0.0, 0,0],
             [1.2, 0, 0]
         ]|nbody_system.length
         stars.velocity = [
-            [0,0,0],
+            [0.0,0,0],
             [0,0.1, 0]
         ]|nbody_system.speed
         stars.radius = 0.5 | nbody_system.length
@@ -145,13 +145,13 @@ class TestSimpleMultiples(TestWithMPI):
         stars = datamodel.Particles(keys = (1,2,3, 4))
         stars.mass = 1 | nbody_system.mass
         stars.position = [
-            [0,0,0],
+            [0.0,0,0],
             [0.5, 0, 0],
-            [2, 0, 0],
-            [-10, 0, 0],
+            [2.0, 0, 0],
+            [-10.0, 0, 0],
         ]|nbody_system.length
         stars.velocity = [
-            [0,0,0],
+            [0.0,0,0],
             [0,0.1, 0],
             [0,-0.1, 0],
             [0,0.2, 0],
@@ -190,13 +190,13 @@ class TestSimpleMultiples(TestWithMPI):
         stars = datamodel.Particles(keys = (1,2,3, 4))
         stars.mass = 1 | nbody_system.mass
         stars.position = [
-            [0,0,0],
+            [0.0,0,0],
             [0.5, 0, 0],
             [2, 0, 0],
             [-10, 0, 0],
         ]|nbody_system.length
         stars.velocity = [
-            [0,0,0],
+            [0.0,0,0],
             [0,0.1, 0],
             [0,-0.1, 0],
             [0,0.2, 0],
@@ -264,7 +264,7 @@ class TestSimpleMultiples(TestWithMPI):
         stars = datamodel.Particles(keys = (1,2,3, 4))
         stars.mass = 1 | nbody_system.mass
         stars.position = [
-            [0,0,0],
+            [0.0,0,0],
             [0.5, 0, 0],
             [2, 0, 0],
             [-10, 0, 0],
@@ -690,8 +690,8 @@ class TestSimpleMultiples(TestWithMPI):
         code = Hermite()
         
         particles_in_binary = self.new_binary(
-            1 | nbody_system.mass,
-            1 | nbody_system.mass,
+            1.0 | nbody_system.mass,
+            1.0 | nbody_system.mass,
             0.001 | nbody_system.length,
             keyoffset = 1
         )
@@ -753,8 +753,8 @@ class TestSimpleMultiples(TestWithMPI):
         code = Hermite()
         
         particles_in_binary = self.new_binary(
-            1 | nbody_system.mass,
-            1 | nbody_system.mass,
+            1.0 | nbody_system.mass,
+            1.0 | nbody_system.mass,
             0.001 | nbody_system.length,
             keyoffset = 10
         )

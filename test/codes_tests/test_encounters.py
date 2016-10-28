@@ -501,15 +501,14 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
         self.assertTrue(particle_in_multiples.components[1] in x.released_singles)
         
     
-    def test8(self):
+    def xtest8(self):
         particles_in_encounter = Particles(3)
-        particles_in_encounter.mass = 1 | nbody_system.mass
-        particles_in_encounter[0].position = [0,0,0] | nbody_system.length
-        particles_in_encounter[1].position = [1,0,0] | nbody_system.length
-        particles_in_encounter[2].position = [2,0,0] | nbody_system.length
-        particles_in_encounter.velocity = [0,0.5,0] | nbody_system.speed
-        particles_in_encounter.radius = [0.5, 1, 0.2] | nbody_system.length
-        
+        particles_in_encounter.mass = 1. | nbody_system.mass
+        particles_in_encounter[0].position = [0.,0.,0.] | nbody_system.length
+        particles_in_encounter[1].position = [1.,0.,0.] | nbody_system.length
+        particles_in_encounter[2].position = [2.,0.,0.] | nbody_system.length
+        particles_in_encounter.velocity = [0.,0.5,0.] | nbody_system.speed
+        particles_in_encounter.radius = [0.5, 1., 0.2] | nbody_system.length
         
         x = TryHandleEncounter(
             G = nbody_system.G,
@@ -525,7 +524,7 @@ class TestAbstractHandleEncounter(amusetest.TestWithMPI):
     
     
     
-    def test8(self):
+    def test8b(self):
         particles_in_encounter = Particles(2)
         particles_in_encounter.mass = 1 | nbody_system.mass
         particles_in_encounter[0].position = [0,0,0] | nbody_system.length
@@ -965,12 +964,12 @@ class TestHandleEncounter(amusetest.TestWithMPI):
         
     def test1(self):
         particles_in_encounter = Particles(keys=(1,2,3))
-        particles_in_encounter.mass = 1 | nbody_system.mass
-        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
-        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
-        particles_in_encounter[2].position = [0,0.5,0] | nbody_system.length
-        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
-        particles_in_encounter.radius = 0 | nbody_system.length
+        particles_in_encounter.mass = 1. | nbody_system.mass
+        particles_in_encounter[0].position = [1.,0.,0.] | nbody_system.length
+        particles_in_encounter[1].position = [0.,0.,0.] | nbody_system.length
+        particles_in_encounter[2].position = [0.,0.5,0.] | nbody_system.length
+        particles_in_encounter.velocity = [0.,0.0,0.] | nbody_system.speed
+        particles_in_encounter.radius = 0. | nbody_system.length
         
         particles_in_field = Particles()
         
@@ -996,22 +995,22 @@ class TestHandleEncounter(amusetest.TestWithMPI):
 
     def test2(self):
         particles_in_encounter = Particles(keys=(1,2))
-        particles_in_encounter.mass = 2 | nbody_system.mass
-        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
-        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
-        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
-        particles_in_encounter.radius = 0 | nbody_system.length
+        particles_in_encounter.mass = 2. | nbody_system.mass
+        particles_in_encounter[0].position = [1.,0.,0.] | nbody_system.length
+        particles_in_encounter[1].position = [0.,0.,0.] | nbody_system.length
+        particles_in_encounter.velocity = [0.,0.0,0.] | nbody_system.speed
+        particles_in_encounter.radius = 0. | nbody_system.length
         
         
         binary1 = new_binary(
-            1 | nbody_system.mass, 
-            1 | nbody_system.mass, 
+            1. | nbody_system.mass, 
+            1. | nbody_system.mass, 
             0.01 | nbody_system.length,
             keyoffset = 30
         )
         binary2 = new_binary(
-            1 | nbody_system.mass, 
-            1 | nbody_system.mass, 
+            1. | nbody_system.mass, 
+            1. | nbody_system.mass, 
             0.01 | nbody_system.length,
             keyoffset = 40
         )
@@ -1064,16 +1063,16 @@ class TestHandleEncounter(amusetest.TestWithMPI):
 
     def test3(self):
         particles_in_encounter = Particles(keys=(1,2))
-        particles_in_encounter.mass = 2 | nbody_system.mass
-        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
-        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
-        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
-        particles_in_encounter.radius = 0 | nbody_system.length
+        particles_in_encounter.mass = 2. | nbody_system.mass
+        particles_in_encounter[0].position = [1.,0.,0.] | nbody_system.length
+        particles_in_encounter[1].position = [0.,0.,0.] | nbody_system.length
+        particles_in_encounter.velocity = [0.,0.0,0.] | nbody_system.speed
+        particles_in_encounter.radius = 0. | nbody_system.length
         
         
         binary1 = new_binary(
-            1 | nbody_system.mass, 
-            1 | nbody_system.mass,
+            1. | nbody_system.mass, 
+            1. | nbody_system.mass,
             0.01 | nbody_system.length,
             keyoffset = 30
         )
@@ -1215,16 +1214,16 @@ class TestHandleEncounter(amusetest.TestWithMPI):
     
     def test7(self):
         particles_in_encounter = Particles(keys=(1,2))
-        particles_in_encounter.mass = 2 | nbody_system.mass
-        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
-        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
-        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
-        particles_in_encounter.radius = 0 | nbody_system.length
+        particles_in_encounter.mass = 2. | nbody_system.mass
+        particles_in_encounter[0].position = [1.,0.,0.] | nbody_system.length
+        particles_in_encounter[1].position = [0.,0.,0.] | nbody_system.length
+        particles_in_encounter.velocity = [0.,0.0,0.] | nbody_system.speed
+        particles_in_encounter.radius = 0. | nbody_system.length
         
         
         binary1 = new_binary(
-            1 | nbody_system.mass, 
-            1 | nbody_system.mass, 
+            1. | nbody_system.mass, 
+            1. | nbody_system.mass, 
             0.01 | nbody_system.length,
             keyoffset = 30
         )
@@ -1272,20 +1271,21 @@ class TestHandleEncounter(amusetest.TestWithMPI):
     
     def test8(self):
         particles_in_encounter = Particles(keys=(1,2))
-        particles_in_encounter[0].mass = 2 | nbody_system.mass
+        particles_in_encounter[0].mass = 2. | nbody_system.mass
         particles_in_encounter[1].mass = 0.1 | nbody_system.mass
-        particles_in_encounter[0].position = [1,0,0] | nbody_system.length
-        particles_in_encounter[1].position = [0,0,0] | nbody_system.length
-        particles_in_encounter.velocity = [0,0.0,0] | nbody_system.speed
-        particles_in_encounter.radius = 0 | nbody_system.length
+        particles_in_encounter[0].position = [1.,0.,0.] | nbody_system.length
+        particles_in_encounter[1].position = [0.,0.,0.] | nbody_system.length
+        particles_in_encounter.velocity = [0.,0.0,0.] | nbody_system.speed
+        particles_in_encounter.radius = 0. | nbody_system.length
         
         
         binary1 = new_binary(
-            1 | nbody_system.mass, 
-            1 | nbody_system.mass, 
+            1. | nbody_system.mass, 
+            1. | nbody_system.mass, 
             0.01 | nbody_system.length,
             keyoffset = 30
         )
+
         binary_energy = binary1.kinetic_energy() + binary1.potential_energy(G = nbody_system.G)
         self.assertAlmostRelativeEqual(binary_energy, -50 | nbody_system.energy)
         

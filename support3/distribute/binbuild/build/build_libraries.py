@@ -100,7 +100,7 @@ class InstallPrerequisites(object):
             ['mpich2'], 
             '1.3', 
             'mpi4py-', '.tar.gz', 
-            'http://mpi4py.googlecode.com/files/', 
+            'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
           ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
