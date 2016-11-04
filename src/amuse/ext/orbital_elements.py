@@ -217,11 +217,11 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
     
     neg_ecc_arg = (rel_position.cross(rel_velocity)**2).sum(axis=-1)/(G * total_masses * semimajor_axis)   
     filter_ecc0 = (1. <= neg_ecc_arg)
-    eccentricity = numpy.zeros_like(separation)
     if one_particle:
         if filter_ecc0: eccentricity = 0.
         else: eccentricity = numpy.sqrt( 1.0 - neg_ecc_arg)
     else:
+        eccentricity = numpy.zeros(separation.shape)
         eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg)
         eccentricity[filter_ecc0] = 0.
     
@@ -235,8 +235,7 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
     else: inc = numpy.arccos(mom[:,2]/mom.lengths())
     
     # Longitude of ascending nodes, with reference direction along x-axis
-    long_asc_node = numpy.zeros_like(separation, dtype=numpy.float)
-    asc_node_matrix_unit = numpy.zeros_like(rel_position, dtype=numpy.float)
+    asc_node_matrix_unit = numpy.zeros(rel_position.shape)
     z_vectors = numpy.zeros([n_vec,3])
     z_vectors[:,2] = 1.
     z_vectors = z_vectors | units.none
@@ -256,8 +255,6 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
         long_asc_node = numpy.arctan2(asc_node_matrix_unit[:,1],asc_node_matrix_unit[:,0])
     
     # Argument of periapsis using eccentricity a.k.a. Laplace-Runge-Lenz vector
-    arg_per_mat = numpy.zeros_like(long_asc_node, dtype=numpy.float)
-    cos_arg_per = numpy.zeros_like(long_asc_node, dtype=numpy.float)
     mu = G*total_masses
     pos_unit_vecs = normalize_vector(rel_position,
                                      separation,
@@ -278,10 +275,11 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
             arg_per_mat = 0.
             cos_arg_per = 1.
     else:
+        arg_per_mat = numpy.zeros(long_asc_node.shape)
+        cos_arg_per = numpy.zeros(long_asc_node.shape)
         arg_per_mat[~filter_non0_ecc] = 0.
         cos_arg_per[~filter_non0_ecc] = 1.
     
-    e_vecs_unit = numpy.zeros_like(rel_position, dtype=numpy.float)
     if one_particle:
         if filter_non0_ecc:
             e_vecs_unit = e_vecs/e_vecs.lengths()
@@ -300,11 +298,12 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
                 if filter_negative_zmom: 
                     arg_per_mat = 2.*numpy.pi - arg_per_mat
     else:
+        e_vecs_unit = numpy.zeros(rel_position.shape)
         e_vecs_unit[filter_non0_ecc] = normalize_vector(e_vecs[filter_non0_ecc],
                                                         e_vecs[filter_non0_ecc].lengths(),
                                                         one_dim=one_particle)
         cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
-        e_cross_an = numpy.zeros_like(e_vecs_unit, dtype=numpy.float)
+        e_cross_an = numpy.zeros(e_vecs_unit.shape)
         e_cross_an[filter_non0_ecc] = (e_vecs_unit[filter_non0_ecc]|units.none).cross(asc_node_matrix_unit[filter_non0_ecc]|units.none)
         filter_non0_e_cross_an = ((e_cross_an|units.none).lengths() != 0.)
         ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
@@ -325,12 +324,12 @@ def normalize_vector(vecs, norm, one_dim = False):
     normalize array of vector quantities
     """
     if one_dim:
-        vecs_norm = numpy.zeros_like(vecs, dtype=numpy.float)
+        vecs_norm = numpy.zeros(vecs.shape)
         vecs_norm[0] = vecs[0]/norm
         vecs_norm[1] = vecs[1]/norm
         vecs_norm[2] = vecs[2]/norm
     else:
-        vecs_norm = numpy.zeros_like(vecs, dtype=numpy.float)
+        vecs_norm = numpy.zeros(vecs.shape)
         vecs_norm[:,0] = vecs[:,0]/norm
         vecs_norm[:,1] = vecs[:,1]/norm
         vecs_norm[:,2] = vecs[:,2]/norm
