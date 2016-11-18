@@ -73,8 +73,9 @@ def main(filename):
     stars.mass = (1.924785833858, 1.0) | units.MSun # age=1494.4Myr
 #    stars.mass = (2.0, 1.0) | units.MSun # age=1494.4Myr
     separation = 10|units.AU
+    vc = numpy.sqrt(constants.G*stars.mass.sum()/separation**2)
     stars[0].position = (1, 0, 0) * separation
-    stars[0].velocity = (0, 0, 0) | units.kms
+    stars[0].velocity = (0, 1, 0) | vc
     stars[1].position = (0, 0, 0) | units.AU
     stars[1].velocity = (0, 0, 0) | units.kms
     stars.move_to_center()
@@ -102,11 +103,12 @@ def main(filename):
 
     hydro = new_hydro_code(Fi, dt, converter)
     hydro.gas_particles.add_particles(gas)
+    hydro.dm_particles.add_particles(stars)
     hydro_to_framework = hydro.gas_particles.new_channel_to(gas, 
         attributes=["x", "y", "z", "vx", "vy", "vz", "mass", "u", "rho", "h_smooth"]) 
 
 
-    moving_bodies = ParticlesSuperset([stars, gas])
+#    moving_bodies = ParticlesSuperset([stars, gas])
     generated_gas = Particles()
     accreted_gas = Particles()
     escaped_gas = Particles()
