@@ -23,6 +23,9 @@ from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 
 def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
               cpu0 = 0.0, wall0 = 0.0):
+
+    # Standard log output.
+
     cpu = cputime()
     wall = wallclocktime()
     N = len(gravity.particles)
@@ -81,10 +84,10 @@ def run_ph4(infile = None, number_of_stars = 40,
     print "n_workers =", n_workers
     print "use_gpu =", use_gpu
     print "manage_encounters =", manage_encounters
-    print "\ninitializing the gravity module"
+    print "initializing the gravity module"
     sys.stdout.flush()
 
-    # Note that there are actually three GPU options to test:
+    # Note that there are actually really three GPU options to test:
     #
     #	1. use the GPU code and allow GPU use (default)
     #	2. use the GPU code but disable GPU use (-g)
@@ -100,7 +103,8 @@ def run_ph4(infile = None, number_of_stars = 40,
             #              debugger='valgrind')
             gpu = 1
         except Exception as ex:
-            print '*** GPU worker code not found. Reverting to non-GPU code. ***'
+            print \
+                '*** GPU worker code not found. Reverting to non-GPU code. ***'
             gpu = 0
 
     if gpu == 0:
@@ -183,15 +187,15 @@ def run_ph4(infile = None, number_of_stars = 40,
     cpu0 = cputime()
     t0 = 0.
     pi = math.pi
-    times = [1., 2., math.pi, 4.*pi/3, 2*pi, 2*pi + pi/100, 2*pi + pi/25,
-             7., 8., 10.]
+    times = [1., 2., pi, 4*pi/3, 5., 2*pi, 2*pi + pi/100,
+             2*pi + pi/5, 7., 8., 3*pi, 10.]
 
     for t in times:
         time = t|nbody_system.time
 
-        gravity.parameters.force_sync = 1
         gravity.parameters.block_steps = 0
         gravity.parameters.total_steps = 0
+        gravity.parameters.force_sync = 1
         gravity.evolve_model(time)
 
         dt = t - t0
