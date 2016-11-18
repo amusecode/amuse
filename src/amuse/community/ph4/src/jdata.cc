@@ -231,7 +231,7 @@ int jdata::add_particle(real pmass, real pradius,
     nj++;
 
     if (0 && system_time > 0 && mpi_rank == 0) {
- 	cout << "add_particle: "; PRC(system_time);
+      cout << "add_particle: "; PRC(system_time); PRC(true_system_time());
  	PRC(pmass); PRC(pid); PRL(nj);
 	cout << "    pos:";
 	for (int k = 0; k < 3; k++) cout << " " << pos[nj-1][k];
@@ -292,7 +292,7 @@ void jdata::remove_particle(int j)
     nj--;
 
     if (0 && system_time > 0 && mpi_rank == 0) {
- 	cout << "remove_particle: "; PRC(system_time);
+      cout << "remove_particle: "; PRC(system_time); PRC(true_system_time());
 	cout << "id = " << id[j] << ",  mass = " << mass[j] << ",  ";
  	PRL(nj);
 	cout << "    pos:";
@@ -814,7 +814,7 @@ bool jdata::advance_and_check_encounter()
     return status;
 }
 
-void jdata::synchronize_all()
+void jdata::synchronize_all(bool reinit_sched)
 {
     const char *in_function = "jdata::synchronize_all";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -841,7 +841,7 @@ void jdata::synchronize_all()
     block_steps += 1;
     total_steps += idat->ni;
 
-    if (sched) sched->initialize();	// default is to reinitialize later
+    if (sched && reinit_sched) sched->initialize();
 }
 
 void jdata::synchronize_list(int jlist[], int njlist)
@@ -957,7 +957,8 @@ void jdata::print()
     if (mpi_rank == 0) {
 
 	cout << endl;
-	PRC(system_time); PRC(nj); PRC(total_mass); PRL(n_async);
+	PRC(system_time); PRL(true_system_time());
+	PRC(nj); PRC(total_mass); PRL(n_async);
 	real rvir = -0.5*total_mass*total_mass/pe;
 	PRC(pe); PRL(rvir);
 	int p = cout.precision(12);

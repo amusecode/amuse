@@ -15,10 +15,51 @@
 static jdata *jd = NULL;
 static idata *id = NULL;
 static scheduler *s = NULL;
-static double begin_time = 0;
 static bool force_sync = false;
 static int block_steps = 0;
 static int total_steps = 0;
+
+static double begin_time = -1;
+
+// Note on internal and external times:
+//
+//	begin_time	is the external time at which the simulation starts;
+//			it should be set only at the start of the simulation,
+//			through the interface function set_begin_time(), and
+//			can't be changed by the internal integrator
+//	jd.system_time	is the internal time used by the integrator; it 
+//			always starts at 0 and should be reset when a
+//			synchronization occurs; the scheduler requires that
+//			time steps be commensurate with system_time, so we
+//			don't want it to become something that will force
+//			very short steps
+//	jd.sync_time	is the last time we forced system_time back to 0,
+//			to preserve the scheduler
+//
+// Sync_time is measured relative to begin_time. System_time is measured
+// relative to sync_time. Thus
+//
+//	sync_time + system_time is the total time since the simulation started
+//	begin_time + sync_time + system_time is the absolute ("external") value
+//					     of the current system time
+//
+// All time bookkeeping is handled in this file, in function sync_times().
+// Sync_time exists in ph4 only for use by diagnostics that need to print
+// the true system time (currently updated only in jdata.cc).
+
+int sync_times()
+{
+  // Update sync_time and reset all times prior to resetting the
+  // scheduler.
+
+    cout << "sync_times: updating sync_time to " << jd->system_time << endl;
+
+    jd->predict_time -= jd->system_time - jd->sync_time;
+    jd->sync_time += jd->system_time;
+    jd->system_time = 0;
+
+    for (int j = 0; j < jd->nj; j++) jd->time[j] = 0;
+}
 
 // Setup and parameters.
 
@@ -41,8 +82,9 @@ int initialize_code()
     }
     
     //PRL(4);
-    begin_time = 0.0;
-    jd->system_time = 0;		// ? TBD
+    if (begin_time == -1) begin_time = 0.0;
+    jd->system_time = 0;
+    jd->sync_time = 0;
 
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
@@ -120,15 +162,15 @@ int get_manage_encounters(int * m)
     return 0;
 }
 
-int set_time(double sys_time)
+int set_time(double sys_time)		// should probably never do this...
 {
-    jd->system_time = sys_time - begin_time;
+    jd->sync_time = sys_time - jd->system_time - begin_time;
     return 0;
 }
 
 int get_time(double * sys_time)
 {
-    *sys_time = jd->system_time + begin_time;
+    *sys_time = jd->system_time + jd->sync_time + begin_time;
     return 0;
 }
 
@@ -180,9 +222,9 @@ int commit_parameters()
 
     if (jd->use_gpu && !jd->have_gpu) jd->use_gpu = false;
 
-    if(jd->system_time == 0) {
-        jd->system_time = 0;
-    }
+    // if(jd->system_time == 0) {
+    //    jd->system_time = 0;
+    // }
     
     if (jd->mpi_rank == 0) {
 	cout << "commit_parameters: ";
@@ -202,6 +244,8 @@ int recommit_parameters()
 int commit_particles()
 {
     // Complete the initialization, after all particles have been loaded.
+
+    sync_times();
 
     jd->initialize_arrays();
     id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
@@ -239,14 +283,15 @@ int recommit_particles()
 int recompute_timesteps()
 {
     // Same as recommit_particles(), except that the name isn't
-    // reserved for the state model and we always recompute the time
-    // steps.
+    // reserved for the state model and we always recompute the
+    // time steps. Assume that we don't need to change sync_time.
 
     //cout << "recompute_timesteps" << endl << flush;
     if (!jd->use_gpu)
 	jd->predict_all(jd->system_time, true);	// set pred quantities
     else
 	jd->initialize_gpu(true);		// reload the GPU
+
     id->setup();				// compute acc and jerk
     jd->force_initial_timestep();
     s->initialize();				// reconstruct the scheduler
@@ -265,8 +310,6 @@ int cleanup_code()
         s->cleanup();
     return 0;
 }
-
-
 
 // Setters and getters for individual particles.
 
@@ -490,7 +533,8 @@ int evolve_model(double to_time)
     reset_stopping_conditions();    
     jd->UpdatedParticles.clear();
 
-    real tt = to_time - begin_time;
+    real tt = to_time - jd->sync_time - begin_time;	// actual delta_t for
+							// internal calculation
     int nb = jd->block_steps;
     int ns = jd->total_steps;
 
@@ -505,7 +549,9 @@ int evolve_model(double to_time)
 	}
 	if (!b) {
 	    jd->system_time = tt;
-	    jd->synchronize_all();
+	    jd->synchronize_all(false);
+	    sync_times();
+	    s->initialize();
 	}
     }
 
@@ -520,7 +566,8 @@ int synchronize_model()
 {
     // Synchronize all particles at the current system time.  The
     // default is not to reinitialize the scheduler, as this will be
-    // handled later, in recommit_particles().
+    // handled later, in recommit_particles(), and not to modify
+    // sync_time.
 
     //cout << "synchronize_model" << endl << flush;
     jd->UpdatedParticles.clear();
