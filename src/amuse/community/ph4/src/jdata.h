@@ -94,6 +94,8 @@ class jdata {
 
     real block_steps, total_steps, gpu_calls, gpu_total;
     real system_time, predict_time;
+    real sync_time;			// last time all particles were synced
+					// represents the internal offset time
 
     int close1, close2;			// close particles (within rmin)
     int coll1, coll2;			// colliding particles
@@ -147,7 +149,7 @@ class jdata {
 	use_gpu = false;		// run time, in setup_gpu()
 	eps2 = eta = rmin = dtmin = 0;
 	block_steps = total_steps = gpu_calls = gpu_total = 0;
-	system_time = predict_time = -1;
+	system_time = predict_time = sync_time = 0;
 	coll1 = coll2 = -1;
 	id = nn = NULL;
 	inverse_id.clear();
@@ -169,6 +171,8 @@ class jdata {
 
     void cleanup();		// (in jdata.cc)
     ~jdata() {cleanup();}
+
+    real true_system_time() {return sync_time + system_time;}
 
     // In jdata.cc:
 
@@ -196,7 +200,7 @@ class jdata {
     void predict_all(real t, bool full_range = false);
     void advance();
     bool advance_and_check_encounter();
-    void synchronize_all();
+    void synchronize_all(bool reinit_sched = true);
     void synchronize_list(int jlist[], int njlist);
     void update_merger_energy(real dEmerge);
     real get_binary_energy();
@@ -204,6 +208,7 @@ class jdata {
     void print();
     void spec_output(const char *s = NULL);
     void to_com();
+    real get_tnext();
 
     // In gpu.cc:
 
