@@ -215,6 +215,72 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
+    def get_force_sync():
+        """
+        Get the value of force_sync.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('force_sync', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_force_sync():
+        """
+        Set the value of force_sync.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('force_sync', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_block_steps():
+        """
+        Get the value of block_steps.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('get_block_steps', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_block_steps():
+        """
+        Set the value of block_steps.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('set_block_steps', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_total_steps():
+        """
+        Get the value of total_steps.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('get_total_steps', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_total_steps():
+        """
+        Set the value of total_steps.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('set_total_steps', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def get_manage_encounters():
         """
         Get the value of manage_encounters.
@@ -272,7 +338,7 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def recompute_timesteps():
         """
-        Force recomputation of all timesteos (assume a synchronized system),
+        Force recomputation of all timesteps (assume a synchronized system),
         """
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
@@ -375,6 +441,31 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             "model time to start the simulation at",
             default_value = 0.0 | nbody_system.time
         )
+
+        object.add_method_parameter(
+            "get_force_sync",
+            "set_force_sync",
+            "force_sync",
+            "force evolve_model to sync at specified time",
+            default_value = 0
+        )
+
+        object.add_method_parameter(
+            "get_block_steps",
+            "set_block_steps",
+            "block_steps",
+            "number of block steps",
+            default_value = 0
+        )
+
+        object.add_method_parameter(
+            "get_total_steps",
+            "set_total_steps",
+            "total_steps",
+            "total number of steps",
+            default_value = 0
+        )
+
         self.stopping_conditions.define_parameters(object)
         
     def update_particle_set(self):

@@ -54,6 +54,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 	// virial mean square velocity is 0.6 (G=1).
 
 	jd.system_time = system_time = 0;
+	jd.sync_time = 0;
 
 	srandom(seed);
 	real v2scale = 0.6;
