@@ -179,7 +179,7 @@ def orbital_elements_from_binary( binary, G=nbody_system.G):
         
     return mass1, mass2, semimajor_axis, eccentricity, true_anomaly, inclination, long_asc_node, arg_per
 
-def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_masses, G=nbody_system.G):
+def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, total_masses, G=nbody_system.G):
     """
     Orbital elements from array of relative positions and velocities vectors,
     based on orbital_elements_from_binary and adapted to work for arrays (each line
@@ -202,13 +202,21 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
     :output long_asc_node: array of longitude of ascending nodes [radians]
     :output arg_per_mat: array of argument of pericenters [radians]
     """
-    separation = rel_position.lengths()
-    if numpy.shape(separation) is (): 
-        one_particle = True
-        n_vec = 1
-    else: 
-        one_particle = False
-        n_vec = len(rel_position)
+    if len(numpy.shape(rel_position_raw))==1:
+        rel_position = numpy.zeros([1,3]) * rel_position_raw[0]
+        rel_position[0,0] = rel_position_raw[0]
+        rel_position[0,1] = rel_position_raw[1]
+        rel_position[0,2] = rel_position_raw[2]
+        rel_velocity = numpy.zeros([1,3]) * rel_velocity_raw[0]
+        rel_velocity[0,0] = rel_velocity_raw[0]
+        rel_velocity[0,1] = rel_velocity_raw[1]
+        rel_velocity[0,2] = rel_velocity_raw[2]
+    else:
+        rel_position = rel_position_raw
+        rel_velocity = rel_velocity_raw
+    
+    separation = rel_position.lengths()    
+    n_vec = len(rel_position)
     
     speed_squared = rel_velocity.lengths_squared()
     
@@ -217,13 +225,9 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
     
     neg_ecc_arg = (rel_position.cross(rel_velocity)**2).sum(axis=-1)/(G * total_masses * semimajor_axis)   
     filter_ecc0 = (1. <= neg_ecc_arg)
-    if one_particle:
-        if filter_ecc0: eccentricity = 0.
-        else: eccentricity = numpy.sqrt( 1.0 - neg_ecc_arg)
-    else:
-        eccentricity = numpy.zeros(separation.shape)
-        eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg)
-        eccentricity[filter_ecc0] = 0.
+    eccentricity = numpy.zeros(separation.shape)
+    eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg)
+    eccentricity[filter_ecc0] = 0.
     
     period = (2 * numpy.pi * (semimajor_axis**1.5) / ((G * total_masses).sqrt()))
     
@@ -231,8 +235,7 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
     mom = rel_position.cross(rel_velocity)        
     
     # inclination
-    if one_particle: inc = numpy.arccos(mom[2]/mom.lengths()) 
-    else: inc = numpy.arccos(mom[:,2]/mom.lengths())
+    inc = numpy.arccos(mom[:,2]/mom.lengths())
     
     # Longitude of ascending nodes, with reference direction along x-axis
     asc_node_matrix_unit = numpy.zeros(rel_position.shape)
@@ -241,83 +244,45 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
     z_vectors = z_vectors | units.none
     ascending_node_vectors = z_vectors.cross(mom)
     filter_non0_incl = (ascending_node_vectors.lengths().number>0.)
-    if one_particle:
-        if ~filter_non0_incl: 
-            asc_node_matrix_unit = numpy.array([1.,0.,0.])
-        else:
-            an_vectors_len = ascending_node_vectors.lengths()
-            asc_node_matrix_unit = normalize_vector(ascending_node_vectors, an_vectors_len)[0,:]
-        long_asc_node = numpy.arctan2(asc_node_matrix_unit[1],asc_node_matrix_unit[0])
-    else:
-        asc_node_matrix_unit[~filter_non0_incl] = numpy.array([1.,0.,0.])
-        an_vectors_len = ascending_node_vectors[filter_non0_incl].lengths()
-        asc_node_matrix_unit[filter_non0_incl] = normalize_vector(ascending_node_vectors[filter_non0_incl], an_vectors_len)
-        long_asc_node = numpy.arctan2(asc_node_matrix_unit[:,1],asc_node_matrix_unit[:,0])
+    asc_node_matrix_unit[~filter_non0_incl] = numpy.array([1.,0.,0.])
+    an_vectors_len = ascending_node_vectors[filter_non0_incl].lengths()
+    asc_node_matrix_unit[filter_non0_incl] = normalize_vector(ascending_node_vectors[filter_non0_incl], an_vectors_len)
+    long_asc_node = numpy.arctan2(asc_node_matrix_unit[:,1],asc_node_matrix_unit[:,0])
     
     # Argument of periapsis using eccentricity a.k.a. Laplace-Runge-Lenz vector
     mu = G*total_masses
-    pos_unit_vecs = normalize_vector(rel_position,
-                                     separation,
-                                     one_dim=one_particle)
+    pos_unit_vecs = normalize_vector(rel_position, separation)
     mom_len = mom.lengths()
-    mom_unit_vecs = normalize_vector(mom,
-                                     mom_len,
-                                     one_dim=one_particle)
-    e_vecs = (normalize_vector(rel_velocity.cross(mom),
-                               mu,
-                               one_dim=one_particle) - pos_unit_vecs)
+    mom_unit_vecs = normalize_vector(mom, mom_len)
+    e_vecs = (normalize_vector(rel_velocity.cross(mom), mu) - pos_unit_vecs)
     
     # Argument of pericenter cannot be determined for e = 0,
     # in this case return 0.0 and 1.0 for the cosines
-    if one_particle:
-        filter_non0_ecc = (numpy.linalg.norm(e_vecs) > 1.e-15)
-        if ~filter_non0_ecc: 
-            arg_per_mat = 0.
-            cos_arg_per = 1.
-    else:
-        filter_non0_ecc = (numpy.linalg.norm(e_vecs, axis=1) > 1.e-15)
-        arg_per_mat = numpy.zeros(long_asc_node.shape)
-        cos_arg_per = numpy.zeros(long_asc_node.shape)
-        arg_per_mat[~filter_non0_ecc] = 0.
-        cos_arg_per[~filter_non0_ecc] = 1.
+    filter_non0_ecc = (numpy.linalg.norm(e_vecs, axis=1) > 1.e-15)
+    arg_per_mat = numpy.zeros(long_asc_node.shape)
+    cos_arg_per = numpy.zeros(long_asc_node.shape)
+    arg_per_mat[~filter_non0_ecc] = 0.
+    cos_arg_per[~filter_non0_ecc] = 1.
     
-    if one_particle:
-        if filter_non0_ecc:
-            e_vecs_unit = e_vecs/numpy.linalg.norm(e_vecs)
-            cos_arg_per = numpy.dot(e_vecs_unit,asc_node_matrix_unit.T)
-            e_cross_an = numpy.cross(e_vecs_unit,asc_node_matrix_unit)
-            filter_non0_e_cross_an = (numpy.linalg.norm(e_cross_an)!= 0.)
-            if filter_non0_e_cross_an:
-                ss = -numpy.sign(numpy.dot(mom_unit_vecs, e_cross_an.T))
-                sin_arg_per = ss*numpy.linalg.norm(e_cross_an)
-                arg_per_mat = numpy.arctan2(sin_arg_per,cos_arg_per)
-            else:
-                # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
-                arg_per_mat = numpy.arctan2(e_vecs[1],e_vecs[0])
-                filter_negative_zmom = (~filter_non0_e_cross_an & (mom[2]<0.*mom[0]))
-                if filter_negative_zmom: 
-                    arg_per_mat = 2.*numpy.pi - arg_per_mat
-    else:
-        e_vecs_unit = numpy.zeros(rel_position.shape)
-        e_vecs_unit[filter_non0_ecc] = normalize_vector(e_vecs[filter_non0_ecc],
-                                                        numpy.linalg.norm(e_vecs[filter_non0_ecc], axis=1),
-                                                        one_dim=one_particle)
-        #~ cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
-        cos_arg_per = (e_vecs_unit[filter_non0_ecc]*asc_node_matrix_unit[filter_non0_ecc]).sum(axis=-1)
-        e_cross_an = numpy.zeros(e_vecs_unit.shape)
-        e_cross_an[filter_non0_ecc] = numpy.cross(e_vecs_unit[filter_non0_ecc],asc_node_matrix_unit[filter_non0_ecc])
-        filter_non0_e_cross_an = (numpy.linalg.norm(e_cross_an, axis=1)!= 0.)
-        #~ ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
-        ss = -numpy.sign((mom_unit_vecs[filter_non0_e_cross_an]*e_cross_an[filter_non0_e_cross_an]).sum(axis=-1))
-        sin_arg_per = ss*(numpy.linalg.norm(e_cross_an[filter_non0_e_cross_an], axis=1))
-        arg_per_mat[filter_non0_e_cross_an] = numpy.arctan2(sin_arg_per,cos_arg_per)
-        
-        # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
-        arg_per_mat[~filter_non0_e_cross_an & filter_non0_ecc] = \
-            numpy.arctan2(e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,1], \
-                          e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,0])
-        filter_negative_zmom = (~filter_non0_e_cross_an & filter_non0_ecc & (mom[:,2]<0.*mom[0,0]))
-        arg_per_mat[filter_negative_zmom] = 2.*numpy.pi - arg_per_mat[filter_negative_zmom]
+    e_vecs_unit = numpy.zeros(rel_position.shape)
+    e_vecs_unit[filter_non0_ecc] = normalize_vector(e_vecs[filter_non0_ecc],
+                                                    numpy.linalg.norm(e_vecs[filter_non0_ecc], axis=1))
+    #~ cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
+    cos_arg_per = (e_vecs_unit[filter_non0_ecc]*asc_node_matrix_unit[filter_non0_ecc]).sum(axis=-1)
+    e_cross_an = numpy.zeros(e_vecs_unit.shape)
+    e_cross_an[filter_non0_ecc] = numpy.cross(e_vecs_unit[filter_non0_ecc],asc_node_matrix_unit[filter_non0_ecc])
+    filter_non0_e_cross_an = (numpy.linalg.norm(e_cross_an, axis=1)!= 0.)
+    #~ ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
+    ss = -numpy.sign((mom_unit_vecs[filter_non0_e_cross_an]*e_cross_an[filter_non0_e_cross_an]).sum(axis=-1))
+    sin_arg_per = ss*(numpy.linalg.norm(e_cross_an[filter_non0_e_cross_an], axis=1))
+    arg_per_mat[filter_non0_e_cross_an] = numpy.arctan2(sin_arg_per,cos_arg_per)
+    
+    # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
+    arg_per_mat[~filter_non0_e_cross_an & filter_non0_ecc] = \
+        numpy.arctan2(e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,1], \
+                      e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,0])
+    filter_negative_zmom = (~filter_non0_e_cross_an & filter_non0_ecc & (mom[:,2]<0.*mom[0,0]))
+    arg_per_mat[filter_negative_zmom] = 2.*numpy.pi - arg_per_mat[filter_negative_zmom]
     
     return semimajor_axis, eccentricity, period, inc, long_asc_node, arg_per_mat
     
