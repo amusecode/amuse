@@ -265,16 +265,17 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
                                      one_dim=one_particle)
     e_vecs = (normalize_vector(rel_velocity.cross(mom),
                                mu,
-                               one_dim=one_particle) - pos_unit_vecs) | units.none
+                               one_dim=one_particle) - pos_unit_vecs)
     
     # Argument of pericenter cannot be determined for e = 0,
     # in this case return 0.0 and 1.0 for the cosines
-    filter_non0_ecc = (e_vecs.lengths() > 1.e-15)
     if one_particle:
+        filter_non0_ecc = (numpy.linalg.norm(e_vecs) > 1.e-15)
         if ~filter_non0_ecc: 
             arg_per_mat = 0.
             cos_arg_per = 1.
     else:
+        filter_non0_ecc = (numpy.linalg.norm(e_vecs, axis=1) > 1.e-15)
         arg_per_mat = numpy.zeros(long_asc_node.shape)
         cos_arg_per = numpy.zeros(long_asc_node.shape)
         arg_per_mat[~filter_non0_ecc] = 0.
@@ -282,39 +283,38 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
     
     if one_particle:
         if filter_non0_ecc:
-            e_vecs_unit = e_vecs/e_vecs.lengths()
-            cos_arg_per = e_vecs_unit.dot(asc_node_matrix_unit.T)
-            e_cross_an = (e_vecs_unit|units.none).cross(asc_node_matrix_unit|units.none)
-            filter_non0_e_cross_an = ((e_cross_an|units.none).lengths() != 0.)
+            e_vecs_unit = e_vecs/numpy.linalg.norm(e_vecs)
+            cos_arg_per = numpy.dot(e_vecs_unit,asc_node_matrix_unit.T)
+            e_cross_an = numpy.cross(e_vecs_unit,asc_node_matrix_unit)
+            filter_non0_e_cross_an = (numpy.linalg.norm(e_cross_an)!= 0.)
             if filter_non0_e_cross_an:
                 ss = -numpy.sign(numpy.dot(mom_unit_vecs, e_cross_an.T))
-                sin_arg_per = ss*(e_cross_an|units.none).lengths()
+                sin_arg_per = ss*numpy.linalg.norm(e_cross_an)
                 arg_per_mat = numpy.arctan2(sin_arg_per,cos_arg_per)
             else:
                 # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
-                arg_per_mat = numpy.arctan2(e_vecs[1].value_in(units.none), \
-                                            e_vecs[0].value_in(units.none))
-                filter_negative_zmom = (~filter_non0_e_cross_an & (mom[2]<0.|(units.m*units.kms)))
+                arg_per_mat = numpy.arctan2(e_vecs[1],e_vecs[0])
+                filter_negative_zmom = (~filter_non0_e_cross_an & (mom[2]<0.*mom[0]))
                 if filter_negative_zmom: 
                     arg_per_mat = 2.*numpy.pi - arg_per_mat
     else:
         e_vecs_unit = numpy.zeros(rel_position.shape)
         e_vecs_unit[filter_non0_ecc] = normalize_vector(e_vecs[filter_non0_ecc],
-                                                        e_vecs[filter_non0_ecc].lengths(),
+                                                        numpy.linalg.norm(e_vecs[filter_non0_ecc], axis=1),
                                                         one_dim=one_particle)
         cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
         e_cross_an = numpy.zeros(e_vecs_unit.shape)
-        e_cross_an[filter_non0_ecc] = (e_vecs_unit[filter_non0_ecc]|units.none).cross(asc_node_matrix_unit[filter_non0_ecc]|units.none)
-        filter_non0_e_cross_an = ((e_cross_an|units.none).lengths() != 0.)
+        e_cross_an[filter_non0_ecc] = numpy.cross(e_vecs_unit[filter_non0_ecc],asc_node_matrix_unit[filter_non0_ecc])
+        filter_non0_e_cross_an = (numpy.linalg.norm(e_cross_an, axis=1)!= 0.)
         ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
-        sin_arg_per = ss*(e_cross_an[filter_non0_e_cross_an]|units.none).lengths()
+        sin_arg_per = ss*(numpy.linalg.norm(e_cross_an[filter_non0_e_cross_an], axis=1))
         arg_per_mat[filter_non0_e_cross_an] = numpy.arctan2(sin_arg_per,cos_arg_per)
         
         # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
         arg_per_mat[~filter_non0_e_cross_an & filter_non0_ecc] = \
-            numpy.arctan2(e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,1].value_in(units.none), \
-                          e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,0].value_in(units.none))
-        filter_negative_zmom = (~filter_non0_e_cross_an & filter_non0_ecc & (mom[:,2]<0.|(units.m*units.kms)))
+            numpy.arctan2(e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,1], \
+                          e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,0])
+        filter_negative_zmom = (~filter_non0_e_cross_an & filter_non0_ecc & (mom[:,2]<0.*mom[0,0]))
         arg_per_mat[filter_negative_zmom] = 2.*numpy.pi - arg_per_mat[filter_negative_zmom]
     
     return semimajor_axis, eccentricity, period, inc, long_asc_node, arg_per_mat
