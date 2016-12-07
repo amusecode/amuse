@@ -178,3 +178,163 @@ def orbital_elements_from_binary( binary, G=nbody_system.G):
 
         
     return mass1, mass2, semimajor_axis, eccentricity, true_anomaly, inclination, long_asc_node, arg_per
+
+def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_masses, G=nbody_system.G):
+    """
+    Orbital elements from array of relative positions and velocities vectors,
+    based on orbital_elements_from_binary and adapted to work for arrays (each line
+    characterises a two body problem).
+    
+    For circular orbits (eccentricity=0): returns argument of pericenter = 0.
+    
+    For equatorial orbits (inclination=0): longitude of ascending node = 0,
+        argument of pericenter = arctan2(e_y,e_x).
+    
+    :argument rel_position: array of vectors of relative positions of the two-body systems
+    :argument rel_velocity: array of vectors of relative velocities of the two-body systems
+    :argument total_masses: array of total masses for two-body systems
+    :argument G: gravitational constant
+    
+    :output semimajor_axis: array of semi-major axes
+    :output eccentricity: array of eccentricities
+    :output period: array of orbital periods
+    :output inc: array of inclinations [radians]
+    :output long_asc_node: array of longitude of ascending nodes [radians]
+    :output arg_per_mat: array of argument of pericenters [radians]
+    """
+    separation = rel_position.lengths()
+    if numpy.shape(separation) is (): 
+        one_particle = True
+        n_vec = 1
+    else: 
+        one_particle = False
+        n_vec = len(rel_position)
+    
+    speed_squared = rel_velocity.lengths_squared()
+    
+    semimajor_axis = (G * total_masses * separation / \
+        (2. * G * total_masses - separation * speed_squared))
+    
+    neg_ecc_arg = (rel_position.cross(rel_velocity)**2).sum(axis=-1)/(G * total_masses * semimajor_axis)   
+    filter_ecc0 = (1. <= neg_ecc_arg)
+    if one_particle:
+        if filter_ecc0: eccentricity = 0.
+        else: eccentricity = numpy.sqrt( 1.0 - neg_ecc_arg)
+    else:
+        eccentricity = numpy.zeros(separation.shape)
+        eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg)
+        eccentricity[filter_ecc0] = 0.
+    
+    period = (2 * numpy.pi * (semimajor_axis**1.5) / ((G * total_masses).sqrt()))
+    
+    # angular momentum
+    mom = rel_position.cross(rel_velocity)        
+    
+    # inclination
+    if one_particle: inc = numpy.arccos(mom[2]/mom.lengths()) 
+    else: inc = numpy.arccos(mom[:,2]/mom.lengths())
+    
+    # Longitude of ascending nodes, with reference direction along x-axis
+    asc_node_matrix_unit = numpy.zeros(rel_position.shape)
+    z_vectors = numpy.zeros([n_vec,3])
+    z_vectors[:,2] = 1.
+    z_vectors = z_vectors | units.none
+    ascending_node_vectors = z_vectors.cross(mom)
+    filter_non0_incl = (ascending_node_vectors.lengths().number>0.)
+    if one_particle:
+        if ~filter_non0_incl: 
+            asc_node_matrix_unit = numpy.array([1.,0.,0.])
+        else:
+            an_vectors_len = ascending_node_vectors.lengths()
+            asc_node_matrix_unit = normalize_vector(ascending_node_vectors, an_vectors_len)[0,:]
+        long_asc_node = numpy.arctan2(asc_node_matrix_unit[1],asc_node_matrix_unit[0])
+    else:
+        asc_node_matrix_unit[~filter_non0_incl] = numpy.array([1.,0.,0.])
+        an_vectors_len = ascending_node_vectors[filter_non0_incl].lengths()
+        asc_node_matrix_unit[filter_non0_incl] = normalize_vector(ascending_node_vectors[filter_non0_incl], an_vectors_len)
+        long_asc_node = numpy.arctan2(asc_node_matrix_unit[:,1],asc_node_matrix_unit[:,0])
+    
+    # Argument of periapsis using eccentricity a.k.a. Laplace-Runge-Lenz vector
+    mu = G*total_masses
+    pos_unit_vecs = normalize_vector(rel_position,
+                                     separation,
+                                     one_dim=one_particle)
+    mom_len = mom.lengths()
+    mom_unit_vecs = normalize_vector(mom,
+                                     mom_len,
+                                     one_dim=one_particle)
+    e_vecs = (normalize_vector(rel_velocity.cross(mom),
+                               mu,
+                               one_dim=one_particle) - pos_unit_vecs) | units.none
+    
+    # Argument of pericenter cannot be determined for e = 0,
+    # in this case return 0.0 and 1.0 for the cosines
+    filter_non0_ecc = (e_vecs.lengths() > 1.e-15)
+    if one_particle:
+        if ~filter_non0_ecc: 
+            arg_per_mat = 0.
+            cos_arg_per = 1.
+    else:
+        arg_per_mat = numpy.zeros(long_asc_node.shape)
+        cos_arg_per = numpy.zeros(long_asc_node.shape)
+        arg_per_mat[~filter_non0_ecc] = 0.
+        cos_arg_per[~filter_non0_ecc] = 1.
+    
+    if one_particle:
+        if filter_non0_ecc:
+            e_vecs_unit = e_vecs/e_vecs.lengths()
+            cos_arg_per = e_vecs_unit.dot(asc_node_matrix_unit.T)
+            e_cross_an = (e_vecs_unit|units.none).cross(asc_node_matrix_unit|units.none)
+            filter_non0_e_cross_an = ((e_cross_an|units.none).lengths() != 0.)
+            if filter_non0_e_cross_an:
+                ss = -numpy.sign(numpy.dot(mom_unit_vecs, e_cross_an.T))
+                sin_arg_per = ss*(e_cross_an|units.none).lengths()
+                arg_per_mat = numpy.arctan2(sin_arg_per,cos_arg_per)
+            else:
+                # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
+                arg_per_mat = numpy.arctan2(e_vecs[1].value_in(units.none), \
+                                            e_vecs[0].value_in(units.none))
+                filter_negative_zmom = (~filter_non0_e_cross_an & (mom[2]<0.|(units.m*units.kms)))
+                if filter_negative_zmom: 
+                    arg_per_mat = 2.*numpy.pi - arg_per_mat
+    else:
+        e_vecs_unit = numpy.zeros(rel_position.shape)
+        e_vecs_unit[filter_non0_ecc] = normalize_vector(e_vecs[filter_non0_ecc],
+                                                        e_vecs[filter_non0_ecc].lengths(),
+                                                        one_dim=one_particle)
+        cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
+        e_cross_an = numpy.zeros(e_vecs_unit.shape)
+        e_cross_an[filter_non0_ecc] = (e_vecs_unit[filter_non0_ecc]|units.none).cross(asc_node_matrix_unit[filter_non0_ecc]|units.none)
+        filter_non0_e_cross_an = ((e_cross_an|units.none).lengths() != 0.)
+        ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
+        sin_arg_per = ss*(e_cross_an[filter_non0_e_cross_an]|units.none).lengths()
+        arg_per_mat[filter_non0_e_cross_an] = numpy.arctan2(sin_arg_per,cos_arg_per)
+        
+        # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
+        arg_per_mat[~filter_non0_e_cross_an & filter_non0_ecc] = \
+            numpy.arctan2(e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,1].value_in(units.none), \
+                          e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,0].value_in(units.none))
+        filter_negative_zmom = (~filter_non0_e_cross_an & filter_non0_ecc & (mom[:,2]<0.|(units.m*units.kms)))
+        arg_per_mat[filter_negative_zmom] = 2.*numpy.pi - arg_per_mat[filter_negative_zmom]
+    
+    return semimajor_axis, eccentricity, period, inc, long_asc_node, arg_per_mat
+    
+def normalize_vector(vecs, norm, one_dim = False):
+    """
+    normalize array of vector quantities
+    """
+    if one_dim:
+        vecs_norm = numpy.zeros(vecs.shape)
+        vecs_norm[0] = vecs[0]/norm
+        vecs_norm[1] = vecs[1]/norm
+        vecs_norm[2] = vecs[2]/norm
+    else:
+        vecs_norm = numpy.zeros(vecs.shape)
+        vecs_norm[:,0] = vecs[:,0]/norm
+        vecs_norm[:,1] = vecs[:,1]/norm
+        vecs_norm[:,2] = vecs[:,2]/norm
+    return vecs_norm
+    
+    
+    
+
