@@ -5,7 +5,7 @@ import numpy
 from amuse.test import amusetest
 
 
-from amuse.ext.orbital_elements import new_binary_from_orbital_elements,orbital_elements_from_binary
+from amuse.ext.orbital_elements import new_binary_from_orbital_elements,orbital_elements_from_binary, orbital_elements_for_rel_posvel_arrays
 
 from amuse.units import units
 from amuse.units import constants
@@ -172,8 +172,8 @@ class KeplerTests(amusetest.TestCase):
     
     def test6(self):
         """
-        testing orbital_elements_for_rel_posvel_arrays forN particles with 
-        random orbital elements
+        testing orbital_elements_for_rel_posvel_arrays for N particles 
+        with random orbital elements
         """
         numpy.random.seed(666)
         N = 100
