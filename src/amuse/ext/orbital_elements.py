@@ -3,6 +3,8 @@ import numpy
 from amuse.units import units,nbody_system,constants
 from amuse.datamodel import Particles,rotation
 
+from amuse.units.quantities import to_quantity
+
 def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
     if fprime is None:
         print "provide fprime"
@@ -68,13 +70,13 @@ def new_binary_from_orbital_elements(
     alphax = cos_long_asc_nodes*cos_arg_per - sin_long_asc_nodes*sin_arg_per*cos_inclination
     alphay = sin_long_asc_nodes*cos_arg_per + cos_long_asc_nodes*sin_arg_per*cos_inclination
     alphaz = sin_arg_per*sin_inclination
-    alpha = [alphax,alphay,alphaz]
+    alpha = numpy.array([alphax,alphay,alphaz])
 
     ### beta is a unit vector perpendicular to alpha and the orbital angular momentum vector ###
     betax = -cos_long_asc_nodes*sin_arg_per - sin_long_asc_nodes*cos_arg_per*cos_inclination
     betay = -sin_long_asc_nodes*sin_arg_per + cos_long_asc_nodes*cos_arg_per*cos_inclination
     betaz = cos_arg_per*sin_inclination
-    beta = [betax,betay,betaz]
+    beta = numpy.array([betax,betay,betaz])
 
 #    print 'alpha',alphax**2+alphay**2+alphaz**2 # For debugging; should be 1
 #    print 'beta',betax**2+betay**2+betaz**2 # For debugging; should be 1
@@ -82,7 +84,7 @@ def new_binary_from_orbital_elements(
     ### Relative position and velocity ###
     separation = semimajor_axis*(1.0 - eccentricity**2)/(1.0 + eccentricity*cos_true_anomaly) # Compute the relative separation
     position_vector = separation*cos_true_anomaly*alpha + separation*sin_true_anomaly*beta
-    velocity_tilde = (G*(mass1 + mass2)/(semimajor_axis*(1.0 - eccentricity**2))).sqrt() # Common factor
+    velocity_tilde = (G*(mass1 + mass2)/(semimajor_axis*(1.0 - eccentricity**2)))**0.5 # Common factor
     velocity_vector = -1.0*velocity_tilde*sin_true_anomaly*alpha + velocity_tilde*(eccentricity + cos_true_anomaly)*beta
 
     result = Particles(2)
@@ -91,7 +93,7 @@ def new_binary_from_orbital_elements(
     
     result[1].position = position_vector
     result[1].velocity = velocity_vector
-    
+
     result.move_to_center()
     return result
     
@@ -215,27 +217,27 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
         rel_position = rel_position_raw
         rel_velocity = rel_velocity_raw
     
-    separation = rel_position.lengths()    
+    separation = (rel_position**2).sum(axis=1)**0.5    
     n_vec = len(rel_position)
     
-    speed_squared = rel_velocity.lengths_squared()
+    speed_squared = (rel_velocity**2).sum(axis=1)
     
     semimajor_axis = (G * total_masses * separation / \
         (2. * G * total_masses - separation * speed_squared))
     
-    neg_ecc_arg = (rel_position.cross(rel_velocity)**2).sum(axis=-1)/(G * total_masses * semimajor_axis)   
+    neg_ecc_arg = (to_quantity(rel_position).cross(rel_velocity)**2).sum(axis=-1)/(G * total_masses * semimajor_axis)   
     filter_ecc0 = (1. <= neg_ecc_arg)
     eccentricity = numpy.zeros(separation.shape)
     eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg[~filter_ecc0])
     eccentricity[filter_ecc0] = 0.
         
-    period = (2 * numpy.pi * (semimajor_axis**1.5) / ((G * total_masses).sqrt()))
+    period = (2 * numpy.pi * (semimajor_axis**1.5) / ((G * total_masses)**0.5))
     
     # angular momentum
-    mom = rel_position.cross(rel_velocity)        
+    mom = to_quantity(rel_position).cross(rel_velocity)        
     
     # inclination
-    inc = numpy.arccos(mom[:,2]/mom.lengths())
+    inc = numpy.arccos(mom[:,2]/to_quantity(mom).lengths())
     
     # Longitude of ascending nodes, with reference direction along x-axis
     asc_node_matrix_unit = numpy.zeros(rel_position.shape)
@@ -243,18 +245,18 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     z_vectors[:,2] = 1.
     z_vectors = z_vectors | units.none
     ascending_node_vectors = z_vectors.cross(mom)
-    filter_non0_incl = (ascending_node_vectors.lengths().number>0.)
+    filter_non0_incl = (to_quantity(ascending_node_vectors).lengths().number>0.)
     asc_node_matrix_unit[~filter_non0_incl] = numpy.array([1.,0.,0.])
-    an_vectors_len = ascending_node_vectors[filter_non0_incl].lengths()
+    an_vectors_len = to_quantity(ascending_node_vectors[filter_non0_incl]).lengths()
     asc_node_matrix_unit[filter_non0_incl] = normalize_vector(ascending_node_vectors[filter_non0_incl], an_vectors_len)
     long_asc_node = numpy.arctan2(asc_node_matrix_unit[:,1],asc_node_matrix_unit[:,0])
     
     # Argument of periapsis using eccentricity a.k.a. Laplace-Runge-Lenz vector
     mu = G*total_masses
     pos_unit_vecs = normalize_vector(rel_position, separation)
-    mom_len = mom.lengths()
+    mom_len = to_quantity(mom).lengths()
     mom_unit_vecs = normalize_vector(mom, mom_len)
-    e_vecs = (normalize_vector(rel_velocity.cross(mom), mu) - pos_unit_vecs)
+    e_vecs = (normalize_vector(to_quantity(rel_velocity).cross(mom), mu) - pos_unit_vecs)
     
     # Argument of pericenter cannot be determined for e = 0,
     # in this case return 0.0 and 1.0 for the cosines
