@@ -302,11 +302,13 @@ def orbital_elements_for_rel_posvel_arrays(rel_position, rel_velocity, total_mas
         e_vecs_unit[filter_non0_ecc] = normalize_vector(e_vecs[filter_non0_ecc],
                                                         numpy.linalg.norm(e_vecs[filter_non0_ecc], axis=1),
                                                         one_dim=one_particle)
-        cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
+        #~ cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
+        cos_arg_per = (e_vecs_unit[filter_non0_ecc]*asc_node_matrix_unit[filter_non0_ecc]).sum(axis=-1)
         e_cross_an = numpy.zeros(e_vecs_unit.shape)
         e_cross_an[filter_non0_ecc] = numpy.cross(e_vecs_unit[filter_non0_ecc],asc_node_matrix_unit[filter_non0_ecc])
         filter_non0_e_cross_an = (numpy.linalg.norm(e_cross_an, axis=1)!= 0.)
-        ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
+        #~ ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
+        ss = -numpy.sign((mom_unit_vecs[filter_non0_e_cross_an]*e_cross_an[filter_non0_e_cross_an]).sum(axis=-1))
         sin_arg_per = ss*(numpy.linalg.norm(e_cross_an[filter_non0_e_cross_an], axis=1))
         arg_per_mat[filter_non0_e_cross_an] = numpy.arctan2(sin_arg_per,cos_arg_per)
         
