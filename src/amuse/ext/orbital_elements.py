@@ -226,9 +226,9 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     neg_ecc_arg = (rel_position.cross(rel_velocity)**2).sum(axis=-1)/(G * total_masses * semimajor_axis)   
     filter_ecc0 = (1. <= neg_ecc_arg)
     eccentricity = numpy.zeros(separation.shape)
-    eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg)
+    eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg[~filter_ecc0])
     eccentricity[filter_ecc0] = 0.
-    
+        
     period = (2 * numpy.pi * (semimajor_axis**1.5) / ((G * total_masses).sqrt()))
     
     # angular momentum
@@ -258,7 +258,8 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     
     # Argument of pericenter cannot be determined for e = 0,
     # in this case return 0.0 and 1.0 for the cosines
-    filter_non0_ecc = (numpy.linalg.norm(e_vecs, axis=1) > 1.e-15)
+    e_vecs_norm = (e_vecs**2).sum(axis=1)**0.5
+    filter_non0_ecc = (e_vecs_norm > 1.e-15)
     arg_per_mat = numpy.zeros(long_asc_node.shape)
     cos_arg_per = numpy.zeros(long_asc_node.shape)
     arg_per_mat[~filter_non0_ecc] = 0.
@@ -266,15 +267,16 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     
     e_vecs_unit = numpy.zeros(rel_position.shape)
     e_vecs_unit[filter_non0_ecc] = normalize_vector(e_vecs[filter_non0_ecc],
-                                                    numpy.linalg.norm(e_vecs[filter_non0_ecc], axis=1))
+                                                    e_vecs_norm[filter_non0_ecc])
     #~ cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
     cos_arg_per = (e_vecs_unit[filter_non0_ecc]*asc_node_matrix_unit[filter_non0_ecc]).sum(axis=-1)
     e_cross_an = numpy.zeros(e_vecs_unit.shape)
     e_cross_an[filter_non0_ecc] = numpy.cross(e_vecs_unit[filter_non0_ecc],asc_node_matrix_unit[filter_non0_ecc])
-    filter_non0_e_cross_an = (numpy.linalg.norm(e_cross_an, axis=1)!= 0.)
+    e_cross_an_norm=(e_cross_an**2).sum(axis=1)**0.5
+    filter_non0_e_cross_an = (e_cross_an_norm != 0.)
     #~ ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
     ss = -numpy.sign((mom_unit_vecs[filter_non0_e_cross_an]*e_cross_an[filter_non0_e_cross_an]).sum(axis=-1))
-    sin_arg_per = ss*(numpy.linalg.norm(e_cross_an[filter_non0_e_cross_an], axis=1))
+    sin_arg_per = ss*e_cross_an_norm[filter_non0_e_cross_an]
     arg_per_mat[filter_non0_e_cross_an] = numpy.arctan2(sin_arg_per,cos_arg_per)
     
     # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
