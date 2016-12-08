@@ -187,7 +187,8 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     based on orbital_elements_from_binary and adapted to work for arrays (each line
     characterises a two body problem).
     
-    For circular orbits (eccentricity=0): returns argument of pericenter = 0.
+    For circular orbits (eccentricity=0): returns argument of pericenter = 0.,
+        true anomaly = 0.
     
     For equatorial orbits (inclination=0): longitude of ascending node = 0,
         argument of pericenter = arctan2(e_y,e_x).
@@ -203,6 +204,7 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     :output inc: array of inclinations [radians]
     :output long_asc_node: array of longitude of ascending nodes [radians]
     :output arg_per_mat: array of argument of pericenters [radians]
+    :output true_anomaly: array of true anomalies [radians]
     """
     if len(numpy.shape(rel_position_raw))==1:
         rel_position = numpy.zeros([1,3]) * rel_position_raw[0]
@@ -281,14 +283,21 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     sin_arg_per = ss*e_cross_an_norm[filter_non0_e_cross_an]
     arg_per_mat[filter_non0_e_cross_an] = numpy.arctan2(sin_arg_per,cos_arg_per)
     
-    # in case longitude of ascenfing node is 0, omega=arctan2(e_y,e_x)
+    # in case longitude of ascending node is 0, omega=arctan2(e_y,e_x)
     arg_per_mat[~filter_non0_e_cross_an & filter_non0_ecc] = \
         numpy.arctan2(e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,1], \
                       e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,0])
     filter_negative_zmom = (~filter_non0_e_cross_an & filter_non0_ecc & (mom[:,2]<0.*mom[0,0]))
     arg_per_mat[filter_negative_zmom] = 2.*numpy.pi - arg_per_mat[filter_negative_zmom]
     
-    return semimajor_axis, eccentricity, period, inc, long_asc_node, arg_per_mat
+    # true anomaly
+    cos_true_anomaly = (e_vecs_unit*pos_unit_vecs).sum(axis=-1)
+    e_cross_pos = numpy.cross(e_vecs_unit,pos_unit_vecs)
+    ss2 = numpy.sign((mom_unit_vecs*e_cross_pos).sum(axis=-1))
+    sin_true_anomaly = ss2*(e_cross_pos**2).sum(axis=1)**0.5
+    true_anomaly = numpy.arctan2(sin_true_anomaly,cos_true_anomaly)
+    
+    return semimajor_axis, eccentricity, period, inc, long_asc_node, arg_per_mat, true_anomaly
     
 def normalize_vector(vecs, norm, one_dim = False):
     """
