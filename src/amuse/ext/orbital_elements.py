@@ -191,6 +191,8 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     
     For equatorial orbits (inclination=0): longitude of ascending node = 0,
         argument of pericenter = arctan2(e_y,e_x).
+        
+    For unbound orbits: eccentricity>1, semimajor_axis<0, period=nan.
     
     :argument rel_position: array of vectors of relative positions of the two-body systems
     :argument rel_velocity: array of vectors of relative velocities of the two-body systems
