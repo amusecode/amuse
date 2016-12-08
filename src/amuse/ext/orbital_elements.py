@@ -5,6 +5,8 @@ from amuse.datamodel import Particles,rotation
 
 from amuse.units.quantities import to_quantity
 
+# to do: have consistent use of angles (radians + units.deg)
+
 def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
     if fprime is None:
         print "provide fprime"
@@ -232,9 +234,7 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     eccentricity = numpy.zeros(separation.shape)
     eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg[~filter_ecc0])
     eccentricity[filter_ecc0] = 0.
-        
-    period = (2 * numpy.pi * (semimajor_axis**1.5) / ((G * total_masses)**0.5))
-    
+            
     # angular momentum
     mom = to_quantity(rel_position).cross(rel_velocity)        
     
@@ -297,7 +297,7 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     sin_true_anomaly = ss2*(e_cross_pos**2).sum(axis=1)**0.5
     true_anomaly = numpy.arctan2(sin_true_anomaly,cos_true_anomaly)
     
-    return semimajor_axis, eccentricity, period, inc, long_asc_node, arg_per_mat, true_anomaly
+    return semimajor_axis, eccentricity, true_anomaly,inc, long_asc_node, arg_per_mat 
     
 def normalize_vector(vecs, norm, one_dim = False):
     """

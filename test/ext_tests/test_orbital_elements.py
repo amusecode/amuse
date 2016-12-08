@@ -196,8 +196,8 @@ class KeplerTests(amusetest.TestCase):
             comets[i].position = sun_and_comet[1].position
             comets[i].velocity = sun_and_comet[1].velocity
         
-        semi_major_axis_ext, eccentricity_ext, period_ext, inclination_ext, \
-        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext, ta_ext = \
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
         orbital_elements_for_rel_posvel_arrays(comets.position,
                                                comets.velocity,
                                                comets.mass + mass_sun,
@@ -239,7 +239,7 @@ class KeplerTests(amusetest.TestCase):
         rel_pos = binary[1].position - binary[0].position
         rel_vel = binary[1].velocity - binary[0].velocity
         mass_12 = binary[1].mass + binary[0].mass
-        sem_ext, ecc_ext, per_ext, inc_ext, lon_ext, arg_ext, ta_ext = \
+        sem_ext, ecc_ext, ta_ext, inc_ext, lon_ext, arg_ext = \
         orbital_elements_for_rel_posvel_arrays(rel_pos, rel_vel, mass_12, G=constants.G)
         
         rad_to_deg = 180./numpy.pi
@@ -278,8 +278,8 @@ class KeplerTests(amusetest.TestCase):
         rel_vel = numpy.array([vec_i.value_in(units.kms) for vec_i in rel_velocity]) | units.kms
         mass_12 = numpy.array([m_i.value_in(units.MSun) for m_i in mass12]) | units.MSun
         
-        semi_major_axis_ext, eccentricity_ext, period_ext, inclination_ext, \
-        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext, ta_ext = \
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
         orbital_elements_for_rel_posvel_arrays(rel_pos,
                                                rel_vel,
                                                mass_12,
@@ -319,8 +319,8 @@ class KeplerTests(amusetest.TestCase):
             comets[i].position = sun_and_comet[1].position
             comets[i].velocity = sun_and_comet[1].velocity
         
-        semi_major_axis_ext, eccentricity_ext, period_ext, inclination_ext, \
-        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext, ta_ext = \
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
         orbital_elements_for_rel_posvel_arrays(comets.position,
                                                comets.velocity,
                                                comets.mass + mass_sun,
@@ -360,8 +360,8 @@ class KeplerTests(amusetest.TestCase):
             comets[i].position = sun_and_comet[1].position
             comets[i].velocity = sun_and_comet[1].velocity
         
-        semi_major_axis_ext, eccentricity_ext, period_ext, inclination_ext, \
-        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext, ta_ext = \
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
         orbital_elements_for_rel_posvel_arrays(comets.position,
                                                comets.velocity,
                                                comets.mass + mass_sun,
@@ -391,7 +391,7 @@ class KeplerTests(amusetest.TestCase):
         mass2 = numpy.zeros(N) | units.MSun
         semi_major_axis=-1000.*(random.random(N)) | units.AU 
         eccentricity = (1.+random.random(N))*10.-9.
-        true_anomaly = 360.*random.random(N)-180.
+        true_anomaly = (360.*random.random(N)-180.)
         inclination = numpy.pi*random.random(N)
         longitude_of_the_ascending_node = 2.*numpy.pi*random.random(N)-numpy.pi
         argument_of_periapsis = 2.*numpy.pi*random.random(N)-numpy.pi      
@@ -435,16 +435,18 @@ class KeplerTests(amusetest.TestCase):
         
         kepler.stop()
         
-        semi_major_axis_ext, eccentricity_ext, period_ext, inclination_ext, \
-        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext, ta_ext = \
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
         orbital_elements_for_rel_posvel_arrays(comets.position,
                                                comets.velocity,
                                                comets.mass + mass_sun,
                                                G=constants.G)
-                                               
+                                                       
         for i in range(N):
             self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
             self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
             self.assertAlmostEqual(inclination[i],inclination_ext[i])
             self.assertAlmostEqual(longitude_of_the_ascending_node[i],longitude_of_the_ascending_node_ext[i])
             self.assertAlmostEqual(argument_of_periapsis[i],argument_of_periapsis_ext[i])
+            # no match: (?)
+            #~ self.assertAlmostEqual(true_anomaly[i],ta_ext[i])
