@@ -391,10 +391,12 @@ class KeplerTests(amusetest.TestCase):
         mass2 = numpy.zeros(N) | units.MSun
         semi_major_axis=-1000.*(random.random(N)) | units.AU 
         eccentricity = (1.+random.random(N))*10.-9.
-        true_anomaly = (360.*random.random(N)-180.)
         inclination = numpy.pi*random.random(N)
         longitude_of_the_ascending_node = 2.*numpy.pi*random.random(N)-numpy.pi
         argument_of_periapsis = 2.*numpy.pi*random.random(N)-numpy.pi      
+        
+        # kepler.initialize_from_elements initializes orbits with mean_anomaly=0 and true_anomaly=0
+        true_anomaly = 0.*(360.*random.random(N)-180.)
         
         comets = datamodel.Particles(N)
         
@@ -441,12 +443,12 @@ class KeplerTests(amusetest.TestCase):
                                                comets.velocity,
                                                comets.mass + mass_sun,
                                                G=constants.G)
-                                                       
+        print ta_ext
+        
         for i in range(N):
             self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
             self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
             self.assertAlmostEqual(inclination[i],inclination_ext[i])
             self.assertAlmostEqual(longitude_of_the_ascending_node[i],longitude_of_the_ascending_node_ext[i])
             self.assertAlmostEqual(argument_of_periapsis[i],argument_of_periapsis_ext[i])
-            # no match: (?)
-            #~ self.assertAlmostEqual(true_anomaly[i],ta_ext[i])
+            self.assertAlmostEqual(true_anomaly[i],ta_ext[i])
