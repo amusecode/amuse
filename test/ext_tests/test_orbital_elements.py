@@ -443,7 +443,6 @@ class KeplerTests(amusetest.TestCase):
                                                comets.velocity,
                                                comets.mass + mass_sun,
                                                G=constants.G)
-        print ta_ext
         
         for i in range(N):
             self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
