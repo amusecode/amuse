@@ -74,3 +74,50 @@ class TestRotatingBridge(amusetest.TestCase):
         pos3=pi.position.copy()
         
         self.assertAlmostEqual(pos1,pos3,12)
+
+    def test2(self):
+        p0=Particles(1)
+        p0.position = [0.0, 1.0, 0.0] | units.m
+        p0.velocity = [1.0, 0.0, 0.0] | units.m/units.s
+        
+        pos1=p0.position.copy()
+        vel1=p0.velocity.copy()
+        
+        omega=1. | units.s**-1
+        N=0.25
+        dt=0.01
+        method = SPLIT_6TH_SS_M13
+
+        tend=N*2*numpy.pi/omega
+        dt=dt*2*numpy.pi/omega
+
+        pr=inertial_to_rotating(0*dt,omega, p0)
+        
+        drift=drift_without_gravity(pr, time=0 | units.s)
+        sys=Rotating_Bridge(omega, timestep=dt, method=method)
+        sys.add_system(drift)
+        
+        sys.evolve_model(tend)
+        
+        pi=rotating_to_inertial(tend, omega,pr)
+        
+        pos2=pi.position.copy()
+        
+        
+        self.assertAlmostEqual(sys.model_time,tend)
+        self.assertAlmostEqual(pos1+vel1*tend,pos2,12)
+        
+        pi.velocity=-pi.velocity
+        
+        pr=inertial_to_rotating(0*dt,-omega,pi)
+        drift=drift_without_gravity(pr,time=0| units.s)
+        sys=Rotating_Bridge(-omega, timestep=dt,method=method)
+        sys.add_system(drift)
+        
+        sys.evolve_model(tend)        
+
+        pi=rotating_to_inertial(tend,-omega,pr)
+        
+        pos3=pi.position.copy()
+        
+        self.assertAlmostEqual(pos1,pos3,12)
