@@ -99,6 +99,7 @@ class Quantity(object):
 
     def __add__(self, other):
         if self.unit.is_zero():
+            other=to_quantity(other)
             return new_quantity(other.number, other.unit)
         else:
             other = to_quantity(other)
