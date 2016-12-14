@@ -60,8 +60,8 @@ class Rotating_Bridge(bridge):
                 az+=_az
 
         if self.omega.value_in(self.omega.unit) !=0.:
-            vx0=parts.vx
-            vy0=parts.vy
+            vx0=parts.vx.copy()
+            vy0=parts.vy.copy()
             omega=2*self.omega
             a1_omega=(ax+self.omega**2*parts.x)/omega
             a2_omega=(ay+self.omega**2*parts.y)/omega
