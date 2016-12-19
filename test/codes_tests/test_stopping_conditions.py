@@ -93,8 +93,8 @@ CONTAINS
       
       FUNCTION fire_condition(condition_to_set, particle_index1, particle_index2, rank)
           use StoppingConditions
-          use mpi
           IMPLICIT NONE
+          include "mpif.h"
           INTEGER :: fire_condition
           INTEGER :: my_rank
           INTEGER :: error, stopping_index
