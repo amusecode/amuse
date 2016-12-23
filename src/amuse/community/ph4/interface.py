@@ -95,9 +95,15 @@ class ph4Interface(CodeInterface,
         Retrieve the timestep of a particle.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the timestep from. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('timestep', dtype='float64', unit=nbody_system.time, direction=function.OUT, description = "The current timestep of the particle")
+        function.addParameter('index_of_the_particle',
+                              dtype='int32',
+                              direction=function.IN,
+                              description = "Index of the particle to get the timestep from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('timestep',
+                              dtype='float64',
+                              unit=nbody_system.time,
+                              direction=function.OUT,
+                              description = "The current timestep of the particle")
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
@@ -233,6 +239,28 @@ class ph4Interface(CodeInterface,
         function = LegacyFunctionSpecification()
         function.addParameter('force_sync', dtype='int32',
                               direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_sync_time():
+        """
+        Get the value of sync_time.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('sync_time', dtype='float64',
+                              direction=function.OUT, unit = nbody_system.time)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_sync_time():
+        """
+        Set the value of sync_time.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('sync_time', dtype='float64',
+                              direction=function.IN, unit = nbody_system.time)
         function.result_type = 'int32'
         return function
 
@@ -381,9 +409,7 @@ class ph4(GravitationalDynamics,GravityFieldCode):
         object.add_method('CHANGED', 'get_velocity')
         object.add_method('CHANGED', 'get_particle_timestep')
         
-        
         self.stopping_conditions.define_state(object)
-        
 
     def define_parameters(self, object):
 
@@ -438,7 +464,15 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             "get_begin_time",
             "set_begin_time",
             "begin_time",
-            "model time to start the simulation at",
+            "model time at which to start the simulation",
+            default_value = 0.0 | nbody_system.time
+        )
+
+        object.add_method_parameter(
+            "get_sync_time",
+            "set_sync_time",
+            "sync_time",
+            "last model synchronization time",
             default_value = 0.0 | nbody_system.time
         )
 
@@ -483,7 +517,8 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             return
         
         indices_in_update_list = range(number_of_updated_particles)
-        particle_indices, updates = self.get_id_of_updated_particle(indices_in_update_list)
+        particle_indices, updates \
+            = self.get_id_of_updated_particle(indices_in_update_list)
         
         incode_storage = self.particles._private.attribute_storage
         
@@ -546,14 +581,14 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             )
         )
 
-     
-        
         self.stopping_conditions.define_methods(object)
 
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
         
-        object.add_getter('particles', 'get_particle_timestep', names = ('timestep',))
-        object.add_getter('particles', 'get_potential', names=('potential_in_code',))
+        object.add_getter('particles', 'get_particle_timestep',
+                          names = ('timestep',))
+        object.add_getter('particles', 'get_potential',
+                          names=('potential_in_code',))
         
         self.stopping_conditions.define_particle_set(object)

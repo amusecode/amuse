@@ -190,8 +190,8 @@ class jdata {
     void initialize_arrays();
     int get_inverse_id(int i);
     void check_inverse_id(const char *s = NULL);
-    void set_initial_timestep();
-    void force_initial_timestep();
+    void set_initial_timestep(real fac = 0.0625);
+    void force_initial_timestep(real fac = 0.0625);
     real get_pot(bool reeval = false);
     real get_kin();
     real get_energy(bool reeval = false);

@@ -9,7 +9,9 @@ static hdyn *b;		// root node for all smallN data
 static hdyn *b_copy;
 
 static double begin_time = 0;
-
+static real smalln_dtlog = 0;
+static int smalln_verbose = 0;
+static string smalln_outfile("");
 
 class UpdatedParticle {
 
@@ -86,7 +88,6 @@ int get_begin_time(double * output) {
     return 0;
 }
 
-
 int set_eps2(double softening_parameter_sq)		// not used
 {
     return 0;
@@ -156,6 +157,20 @@ int set_time(double sys_time)
 int get_time(double * sys_time)
 {
     *sys_time = b->get_system_time();
+    return 0;
+}
+
+int set_outfile(char * file)
+{
+    smalln_outfile = string(file);
+    cout << "file = " << file << endl;
+    cout << "smalln_outfile = " << smalln_outfile << endl;
+    return 0;
+}
+
+int get_outfile(char ** file)
+{
+    *file = (char*)smalln_outfile.c_str();
     return 0;
 }
 
@@ -418,7 +433,8 @@ int evolve_model(double to_time)
     // interaction is over.
 
     // int status = 
-    smallN_evolve(b, to_time, break_scale_sq, structure_check_interval);
+    smallN_evolve(b, to_time, break_scale_sq, structure_check_interval,
+		  smalln_dtlog, smalln_verbose, smalln_outfile);
     //myprint(b);
 
     // Note: return status is currently independent of the termination reason...

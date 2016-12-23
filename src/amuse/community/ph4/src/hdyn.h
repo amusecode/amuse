@@ -259,7 +259,8 @@ int smallN_evolve(hdyn *b,
 		  real break_r2 = _INFINITY_,
 		  real dt_check = _INFINITY_,
 		  real dt_log = _INFINITY_,
-		  int  verbose = 0);
+		  int  verbose = 0,
+		  string outfile = "");
 
 // In smallN_unpert.cc:
 
