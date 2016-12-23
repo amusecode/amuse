@@ -28,13 +28,26 @@ SPLIT_10TH_SS_M35
 from amuse.support.exceptions import AmuseException
 import threading
 from amuse.units import quantities
-from amuse.units import units
-from amuse.units import quantities
 from amuse import datamodel
 from amuse.ext.bridge import bridge
 import numpy
 
+from numpy import cos,sin
 
+def inertial_to_rotating(t,omega,parts):
+  x=parts.x
+  y=parts.y
+  vx=parts.vx
+  vy=parts.vy
+  rotating=parts.copy()
+  rotating.x=x*cos(omega*t)+y*sin(omega*t)
+  rotating.y=-x*sin(omega*t)+y*cos(omega*t)
+  rotating.vx=(vx+y*omega)*cos(omega*t)+(vy-x*omega)*sin(omega*t)
+  rotating.vy=-(vx+y*omega)*sin(omega*t)+(vy-x*omega)*cos(omega*t)
+  return rotating
+  
+def rotating_to_inertial(t,omega,parts):     
+  return inertial_to_rotating(t,-omega,parts)
 
 class Rotating_Bridge(bridge):
     def __init__(self, omega, **kwargs):
@@ -59,9 +72,9 @@ class Rotating_Bridge(bridge):
                 ay+=_ay
                 az+=_az
 
-        if self.omega.value_in(self.omega.unit) !=0.:
-            vx0=parts.vx
-            vy0=parts.vy
+        if self.omega != quantities.zero:
+            vx0=parts.vx.copy()
+            vy0=parts.vy.copy()
             omega=2*self.omega
             a1_omega=(ax+self.omega**2*parts.x)/omega
             a2_omega=(ay+self.omega**2*parts.y)/omega
