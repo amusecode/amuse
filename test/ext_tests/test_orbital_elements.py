@@ -5,7 +5,7 @@ import numpy
 from amuse.test import amusetest
 
 
-from amuse.ext.orbital_elements import new_binary_from_orbital_elements,orbital_elements_from_binary
+from amuse.ext.orbital_elements import new_binary_from_orbital_elements,orbital_elements_from_binary, orbital_elements_for_rel_posvel_arrays
 
 from amuse.units import units
 from amuse.units import constants
@@ -169,3 +169,285 @@ class KeplerTests(amusetest.TestCase):
           arg_=orbital_elements_from_binary(new_binary_from_orbital_elements(*arg,G=constants.G),G=constants.G)
           for i,(copy,org) in enumerate(zip(arg_,arg)):
             self.assertAlmostEquals(copy,org)
+    
+    def test6(self):
+        """
+        testing orbital_elements_for_rel_posvel_arrays for N particles 
+        with random orbital elements
+        """
+        numpy.random.seed(666)
+        N = 100
+        
+        mass_sun = 1. | units.MSun
+        mass1 = numpy.ones(N) * mass_sun
+        mass2 = numpy.zeros(N) | units.MSun
+        semi_major_axis=(-numpy.log(random.random(N))) | units.AU 
+        eccentricity = random.random(N)
+        true_anomaly = 360.*random.random(N)-180.
+        inclination = 180*random.random(N)
+        longitude_of_the_ascending_node = 360*random.random(N)-180
+        argument_of_periapsis = 360*random.random(N)-180       
+        
+        comets = datamodel.Particles(N)
+        for i,arg in enumerate(zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
+                                   longitude_of_the_ascending_node,argument_of_periapsis)):
+            sun_and_comet = new_binary_from_orbital_elements(*arg,G=constants.G)
+            comets[i].mass = sun_and_comet[1].mass
+            comets[i].position = sun_and_comet[1].position
+            comets[i].velocity = sun_and_comet[1].velocity
+        
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
+        orbital_elements_for_rel_posvel_arrays(comets.position,
+                                               comets.velocity,
+                                               comets.mass + mass_sun,
+                                               G=constants.G)        
+        rad_to_deg = 180./numpy.pi
+        for i in range(N):
+            self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
+            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
+            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
+            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
+            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
+            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+
+    def test7(self):
+        """
+        testing orbital_elements_for_rel_posvel_arrays for the case of one particle
+        """
+        numpy.random.seed(999)
+        
+        mass1 = 0.5 | units.MSun
+        mass2 = 0.8 | units.MSun
+        sem = 12. | units.AU
+        ecc = 0.05
+        inc = 20.
+        lon = 10.
+        arg = 0.4
+        ta = 360.*random.random()-180.
+        
+        binary = new_binary_from_orbital_elements(mass1, 
+                                                  mass2,
+                                                  sem,
+                                                  ecc,
+                                                  ta,
+                                                  inc,
+                                                  lon,
+                                                  arg,
+                                                  G=constants.G)
+
+        rel_pos = binary[1].position - binary[0].position
+        rel_vel = binary[1].velocity - binary[0].velocity
+        mass_12 = binary[1].mass + binary[0].mass
+        sem_ext, ecc_ext, ta_ext, inc_ext, lon_ext, arg_ext = \
+        orbital_elements_for_rel_posvel_arrays(rel_pos, rel_vel, mass_12, G=constants.G)
+        
+        rad_to_deg = 180./numpy.pi
+        self.assertAlmostEqual(sem.value_in(units.AU), sem_ext.value_in(units.AU))
+        self.assertAlmostEqual(ecc, ecc_ext)
+        self.assertAlmostEqual(inc, rad_to_deg*inc_ext)
+        self.assertAlmostEqual(lon, rad_to_deg*lon_ext)
+        self.assertAlmostEqual(arg, rad_to_deg*arg_ext)
+        self.assertAlmostEqual(ta,rad_to_deg*ta_ext)
+    
+    def test8(self):
+        """
+        testing orbital_elements_for_rel_posvel_arrays for extreme cases
+        """
+        N = 3
+        mass1 = (1.2*numpy.ones(N)) | units.MSun
+        mass2 = (0.1, 0.05, 0.003) | units.MSun
+        semi_major_axis = (1., 2., 3.) | units.AU
+        eccentricity = (0., 0.5, 0.6)
+        true_anomaly = (0., 0., 66.)
+        inclination = (12., 0., 180.)
+        longitude_of_the_ascending_node = (0., 0., 0.,)
+        argument_of_periapsis = (0., 23., 90.)
+        mass12 = []
+        rel_position = []
+        rel_velocity = []
+        for i,arg in enumerate(zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
+                                   longitude_of_the_ascending_node,argument_of_periapsis)):
+            sun_and_comet = new_binary_from_orbital_elements(*arg,G=constants.G)
+            mass12.append(sun_and_comet[0].mass + sun_and_comet[1].mass)
+            rel_position.append(sun_and_comet[1].position - sun_and_comet[0].position)
+            rel_velocity.append(sun_and_comet[1].velocity - sun_and_comet[0].velocity)
+            
+        # to convert lists to vector quantities
+        rel_pos = numpy.array([vec_i.value_in(units.AU) for vec_i in rel_position]) | units.AU
+        rel_vel = numpy.array([vec_i.value_in(units.kms) for vec_i in rel_velocity]) | units.kms
+        mass_12 = numpy.array([m_i.value_in(units.MSun) for m_i in mass12]) | units.MSun
+        
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
+        orbital_elements_for_rel_posvel_arrays(rel_pos,
+                                               rel_vel,
+                                               mass_12,
+                                               G=constants.G)        
+        rad_to_deg = 180./numpy.pi
+        for i in range(N):
+            self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
+            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
+            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
+            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
+            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
+            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+
+    def test9(self):
+        """
+        testing orbital_elements_for_rel_posvel_arrays for N particles 
+        with random orbital elements, nbody_system
+        """
+        numpy.random.seed(666)
+        N = 100
+        
+        mass_sun = 1. | nbody_system.mass
+        mass1 = numpy.ones(N) * mass_sun
+        mass2 = numpy.zeros(N) | nbody_system.mass
+        semi_major_axis=(-numpy.log(random.random(N))) | nbody_system.length 
+        eccentricity = random.random(N)
+        true_anomaly = 360.*random.random(N)-180.
+        inclination = 180*random.random(N)
+        longitude_of_the_ascending_node = 360*random.random(N)-180
+        argument_of_periapsis = 360*random.random(N)-180       
+        
+        comets = datamodel.Particles(N)
+        for i,arg in enumerate(zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
+                                   longitude_of_the_ascending_node,argument_of_periapsis)):
+            sun_and_comet = new_binary_from_orbital_elements(*arg,G=nbody_system.G)
+            comets[i].mass = sun_and_comet[1].mass
+            comets[i].position = sun_and_comet[1].position
+            comets[i].velocity = sun_and_comet[1].velocity
+        
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
+        orbital_elements_for_rel_posvel_arrays(comets.position,
+                                               comets.velocity,
+                                               comets.mass + mass_sun,
+                                               G=nbody_system.G)        
+        rad_to_deg = 180./numpy.pi
+        for i in range(N):
+            self.assertAlmostEqual(semi_major_axis[i],semi_major_axis_ext[i])
+            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
+            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
+            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
+            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
+            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+
+    def test10(self):
+        """
+        testing orbital_elements_for_rel_posvel_arrays for N particles 
+        with random orbital elements, unitless
+        """
+        numpy.random.seed(666)
+        N = 100
+        
+        mass_sun = 1. 
+        mass1 = numpy.ones(N) * mass_sun
+        mass2 = numpy.zeros(N) 
+        semi_major_axis=(-numpy.log(random.random(N)))  
+        eccentricity = random.random(N)
+        true_anomaly = 360.*random.random(N)-180.
+        inclination = 180*random.random(N)
+        longitude_of_the_ascending_node = 360*random.random(N)-180
+        argument_of_periapsis = 360*random.random(N)-180       
+        
+        comets = datamodel.Particles(N)
+        for i,arg in enumerate(zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
+                                   longitude_of_the_ascending_node,argument_of_periapsis)):
+            sun_and_comet = new_binary_from_orbital_elements(*arg,G=1)
+            comets[i].mass = sun_and_comet[1].mass
+            comets[i].position = sun_and_comet[1].position
+            comets[i].velocity = sun_and_comet[1].velocity
+        
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
+        orbital_elements_for_rel_posvel_arrays(comets.position,
+                                               comets.velocity,
+                                               comets.mass + mass_sun,
+                                               G=1)        
+        rad_to_deg = 180./numpy.pi
+        for i in range(N):
+            self.assertAlmostEqual(semi_major_axis[i],semi_major_axis_ext[i])
+            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
+            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
+            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
+            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
+            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+            
+            
+    def test11(self):
+        """
+        testing orbital_elements_for_rel_posvel_arrays for unbound orbits
+        """
+        
+        from amuse.community.kepler.interface import Kepler
+        
+        numpy.random.seed(66)
+        N = 10
+        
+        mass_sun = 1. | units.MSun
+        mass1 = numpy.ones(N) * mass_sun
+        mass2 = numpy.zeros(N) | units.MSun
+        semi_major_axis=-1000.*(random.random(N)) | units.AU 
+        eccentricity = (1.+random.random(N))*10.-9.
+        inclination = numpy.pi*random.random(N)
+        longitude_of_the_ascending_node = 2.*numpy.pi*random.random(N)-numpy.pi
+        argument_of_periapsis = 2.*numpy.pi*random.random(N)-numpy.pi      
+        
+        # kepler.initialize_from_elements initializes orbits with mean_anomaly=0 and true_anomaly=0
+        true_anomaly = 0.*(360.*random.random(N)-180.)
+        
+        comets = datamodel.Particles(N)
+        
+        converter = nbody_system.nbody_to_si(1|units.MSun,1|units.AU)
+        kepler = Kepler(converter)
+        kepler.initialize_code()
+        for i,arg in enumerate(zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
+                                   longitude_of_the_ascending_node,argument_of_periapsis)):
+            kepler.initialize_from_elements(mass=(mass1[i]+mass2[i]),
+                                            semi=semi_major_axis[i],
+                                            ecc=eccentricity[i])
+            ri = kepler.get_separation_vector()
+            vi = kepler.get_velocity_vector()
+            
+            om = longitude_of_the_ascending_node[i]
+            w = argument_of_periapsis[i]
+            incl = inclination[i]
+            a1 = ([numpy.cos(om), -numpy.sin(om), 0.0], [numpy.sin(om), numpy.cos(om), 0.0], [0.0, 0.0, 1.0])
+            a2 = ([1.0, 0.0, 0.0], [0.0, numpy.cos(incl), -numpy.sin(incl)], [0.0, numpy.sin(incl), numpy.cos(incl)])
+            a3 = ([numpy.cos(w), -numpy.sin(w), 0.0], [numpy.sin(w), numpy.cos(w), 0.0], [0.0, 0.0, 1.0])
+            A = numpy.dot(numpy.dot(a1,a2),a3)
+
+            r_vec = numpy.dot(A,numpy.reshape(ri,3,1))
+            v_vec = numpy.dot(A,numpy.reshape(vi,3,1))
+          
+            r = (0.0, 0.0, 0.0) | units.AU
+            v = (0.0, 0.0, 0.0) | (units.AU / units.day)
+            r[0] = r_vec[0]
+            r[1] = r_vec[1]
+            r[2] = r_vec[2]
+            v[0] = v_vec[0]
+            v[1] = v_vec[1]
+            v[2] = v_vec[2]
+  
+            comets[i].mass = mass2[i]
+            comets[i].position = r_vec
+            comets[i].velocity = v_vec
+        
+        kepler.stop()
+        
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
+        orbital_elements_for_rel_posvel_arrays(comets.position,
+                                               comets.velocity,
+                                               comets.mass + mass_sun,
+                                               G=constants.G)
+        
+        for i in range(N):
+            self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
+            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
+            self.assertAlmostEqual(inclination[i],inclination_ext[i])
+            self.assertAlmostEqual(longitude_of_the_ascending_node[i],longitude_of_the_ascending_node_ext[i])
+            self.assertAlmostEqual(argument_of_periapsis[i],argument_of_periapsis_ext[i])
+            self.assertAlmostEqual(true_anomaly[i],ta_ext[i])

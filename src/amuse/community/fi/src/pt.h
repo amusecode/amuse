@@ -272,7 +272,7 @@ extern void pt_pipeline_execute(pt_pipeline_t *p);
  * FORTRAN without the trailing underscore(s)
  */
 
-#ifdef __linux__
+#if  defined(__linux__) || defined(__OSX__)
    /* This works on my LinuxThreads + g77-0.5.21 */
 #  define F77PIPELINEINIT pipeline_init__
 #  define F77PIPELINEDONE pipeline_done__

@@ -3,8 +3,12 @@
    function between Mmin and Mmax and with stellar evolution with
    metalicity z.
 """
+import numpy
+from matplotlib import pyplot
 from amuse.lab import *
 from amuse.ext.LagrangianRadii import LagrangianRadii
+from prepare_figure import single_frame
+from distinct_colours import get_distinct
 
 class Gravity:
         def __init__(self, gravity_code, particles):
@@ -38,13 +42,8 @@ class Gravity:
         def stop(self):
             return self.code.stop
 
-def main(N=10, W0=7.0, t_end=10, Rvir=1, Mmin=0.1, Mmax= 100, z=0.02):
-    t_end = t_end | units.Myr
-    Rvir = Rvir | units.parsec
-    Mmin = Mmin | units.MSun
-    Mmax = Mmax | units.MSun
+def generate_initial_conditions(N, W0, Rvir, Mmin, Mmax):
 
-    import numpy
 #    numpy.random.seed(1)
 
     masses = new_salpeter_mass_distribution(N, Mmin, Mmax)
@@ -54,142 +53,164 @@ def main(N=10, W0=7.0, t_end=10, Rvir=1, Mmin=0.1, Mmax= 100, z=0.02):
     bodies.mass = masses.copy()
     bodies.scale_to_standard(convert_nbody=converter)
 
-#    gravity_only = Gravity(ph4, bodies)
+    return bodies
 
-#    stars = bodies.copy()
+def run_only_gravity(bodies, t_end):
 
-#    numpy.random.seed(1)
-#    masses = new_salpeter_mass_distribution(N, Mmin, Mmax)
-    stars = new_king_model(N, W0,convert_nbody=converter)
-    stars.mass = masses.copy()
-    stars.position = bodies.position.copy()
-    stars.velocity = bodies.velocity.copy()
-#    stars.scale_to_standard(convert_nbody=converter)
-    
-    stellar = SSE()
-    stellar.parameters.metallicity = z
-    stellar.particles.add_particle(stars)
-    channel_from_stellar = stellar.particles.new_channel_to(stars)
+    Mtot_init = bodies.mass.sum()
+    time = [] | units.Myr
+    Lr25 = [] |units.parsec
+    Lr50 = [] |units.parsec
+    Lr75 = [] |units.parsec
+    converter = nbody_system.nbody_to_si(bodies.mass.sum(), 1|units.parsec)
+    gravity = ph4(converter)
+    gravity.particles.add_particles(bodies)
+    channel_from_gravity = gravity.particles.new_channel_to(bodies)
 
-#    gravity_stellar = Gravity(ph4, stars)
-
-    converter = nbody_system.nbody_to_si(1|units.MSun, 1|units.parsec)
-    gravity_only = ph4(converter)
-    gravity_only.particles.add_particles(bodies)
-    gravity_stars = ph4(converter)
-    gravity_stars.particles.add_particles(stars)
-    channel_to_gravity = stars.new_channel_to(gravity_stars.particles)
-
-    
-    Etot_init = gravity_only.kinetic_energy + gravity_only.potential_energy
-    dE_gr = 0 | Etot_init.unit
-    dE_se = 0 | Etot_init.unit
-    time = 0.0 | t_end.unit
     dt = 0.1|units.Myr
-    Lr_stars25 = [] |units.parsec
-    Lr_bodies25 = [] |units.parsec
-    Lr_stars50 = [] |units.parsec
-    Lr_bodies50 = [] |units.parsec
-    Lr_stars75 = [] |units.parsec
-    Lr_bodies75 = [] |units.parsec
-    t = [] | units.Myr
-    t.append(time)
-    Lr_stars25.append(LagrangianRadii(gravity_stars.particles)[5])
-    Lr_bodies25.append(LagrangianRadii(gravity_only.particles)[5])
-    Lr_stars50.append(LagrangianRadii(gravity_stars.particles)[6])
-    Lr_bodies50.append(LagrangianRadii(gravity_only.particles)[6])
-    Lr_stars75.append(LagrangianRadii(gravity_stars.particles)[7])
-    Lr_bodies75.append(LagrangianRadii(gravity_only.particles)[7])
-    while time < t_end:
-        time = time+dt
+    while True:
+        time.append(gravity.model_time)
+        Lr25.append(LagrangianRadii(gravity.particles)[5])
+        Lr50.append(LagrangianRadii(gravity.particles)[6])
+        Lr75.append(LagrangianRadii(gravity.particles)[7])
 
-        Etot_gr = gravity_only.kinetic_energy + gravity_only.potential_energy
-        gravity_only.evolve_model(time)
-        dE_gr += (gravity_only.kinetic_energy + gravity_only.potential_energy-Etot_gr)
+        gravity.evolve_model(time[-1]+dt)
+        channel_from_gravity.copy_attributes(["x", "y", "z", "vx", "vy", "vz"])
 
-        gravity_stars.evolve_model(time)
+        print "G: T=", time[-1], "M=", bodies.mass.sum(), "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")"
+        if time[-1] >= t_end:
+            break
+    gravity.stop()
+    return time, Lr25, Lr50, Lr75
 
-        stellar.evolve_model(time)
-        Etot_se = gravity_only.kinetic_energy + gravity_only.potential_energy
+def run_sequential_gravity_and_stellar(bodies, t_end):
+    Mtot_init = bodies.mass.sum()
+    time = [] | units.Myr
+    Lr25 = [] |units.parsec
+    Lr50 = [] |units.parsec
+    Lr75 = [] |units.parsec
+    converter = nbody_system.nbody_to_si(bodies.mass.sum(), 1|units.parsec)
+    gravity = ph4(converter)
+    gravity.particles.add_particles(bodies)
+    channel_from_gravity = gravity.particles.new_channel_to(bodies)
+    channel_to_gravity = bodies.new_channel_to(gravity.particles)
+
+    stellar = SSE()
+    stellar.parameters.metallicity = 0.02
+    stellar.particles.add_particle(bodies)
+    channel_from_stellar = stellar.particles.new_channel_to(bodies)
+    
+    dt = 0.1|units.Myr
+    while  True:
+        time.append(gravity.model_time)
+        Lr25.append(LagrangianRadii(gravity.particles)[5])
+        Lr50.append(LagrangianRadii(gravity.particles)[6])
+        Lr75.append(LagrangianRadii(gravity.particles)[7])
+
+        gravity.evolve_model(time[-1]+dt)
+        channel_from_gravity.copy_attributes(["x", "y", "z", "vx", "vy", "vz"])
+
+        stellar.evolve_model(gravity.model_time)
         channel_from_stellar.copy_attributes(["mass"])
         channel_to_gravity.copy_attributes(["mass"])
-        print stellar.particles.mass.sum(), gravity_only.particles.mass.sum(), gravity_stars.particles.mass.sum()
+        
+        print "GS: T=", time[-1], "M=", bodies.mass.sum(), "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")"
+        if time[-1] >= t_end:
+            break
 
-
-        t.append(time)
-        Lr_stars25.append(LagrangianRadii(gravity_stars.particles)[5])
-        Lr_bodies25.append(LagrangianRadii(gravity_only.particles)[5])
-        Lr_stars50.append(LagrangianRadii(gravity_stars.particles)[6])
-        Lr_bodies50.append(LagrangianRadii(gravity_only.particles)[6])
-        Lr_stars75.append(LagrangianRadii(gravity_stars.particles)[7])
-        Lr_bodies75.append(LagrangianRadii(gravity_only.particles)[7])
-        #print "Time=", time, Lr_stars, Lr_bodies
-
-    Ekin = gravity_only.kinetic_energy 
-    Epot = gravity_only.potential_energy
-    Etot = Ekin + Epot
-    dE = Etot_init-Etot
-    Mtot = bodies.mass.sum()
-    print "T=", time, 
-    print "M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")",
-    print "E= ", Etot, "Q= ", Ekin/Epot,
-    print "dE/E=", (Etot_init-Etot)/Etot,
-    print "(dE[gr]/E=", dE_gr/Etot, ",", 
-    print "dE[se]/E=", (Etot_init-Etot-dE_gr)/Etot, ")"
-    Etot_init -= dE
-
-    gravity_only.stop()
-    gravity_stars.stop()
+    gravity.stop()
     stellar.stop()
-    return t, Lr_stars25, Lr_bodies25, Lr_stars50, Lr_bodies50, Lr_stars75, Lr_bodies75
-    
-def new_option_parser():
-    from amuse.units.optparse import OptionParser
-    result = OptionParser()
-    result.add_option("-N", dest="N", type="int",default = 1000,
-                      help="number of stars [100]")
-    result.add_option("-M", dest="Mmax", type="float",default = 100,
-                      help="maximal stellar mass [100] MSun")
-    result.add_option("-m", dest="Mmin", type="float",default = 1,
-                      help="minimal stellar mass [0.1] MSun")
-    result.add_option("-R", dest="Rvir", type="float",default = 3.0,
-                      help="cluser virial radius [1] in parsec")
-    result.add_option("-t", dest="t_end", type="float", default = 10.0,
-                      help="end time of the simulation [1] Myr")
-    result.add_option("-W", dest="W0", type="float", default = 3.0,
-                      help="Dimension-less depth of the King potential (W0) [7.0]")
-    result.add_option("-z", dest="z", type="float", default = 0.02,
-                      help="metalicity [0.02]")
-    return result
+    return time, Lr25, Lr50, Lr75
 
-if __name__ in ('__main__', '__plot__'):
-    o, arguments  = new_option_parser().parse_args()
-    time, Lr_stars25, Lr_bodies25, Lr_stars50, Lr_bodies50, Lr_stars75, Lr_bodies75 = main(**o.__dict__)
-    from matplotlib import pyplot
-    from prepare_figure import single_frame
-    from distinct_colours import get_distinct
+def run_event_driven_gravity_and_stellar(bodies, t_end):
+
+    Mtot_init = bodies.mass.sum()
+    time = [] | units.Myr
+    Lr25 = [] |units.parsec
+    Lr50 = [] |units.parsec
+    Lr75 = [] |units.parsec
+    converter = nbody_system.nbody_to_si(bodies.mass.sum(), 1|units.parsec)
+    gravity = ph4(converter)
+    gravity.particles.add_particles(bodies)
+    channel_from_gravity = gravity.particles.new_channel_to(bodies)
+    channel_to_gravity = bodies.new_channel_to(gravity.particles)
+
+    stellar = SSE()
+    stellar.parameters.metallicity = 0.02
+    stellar.particles.add_particle(bodies)
+    channel_from_stellar = stellar.particles.new_channel_to(bodies)
+    
+    dt = 0.1|units.Myr
+    while True:
+        time.append(gravity.model_time)
+        Lr25.append(LagrangianRadii(gravity.particles)[5])
+        Lr50.append(LagrangianRadii(gravity.particles)[6])
+        Lr75.append(LagrangianRadii(gravity.particles)[7])
+
+        stellar.evolve_model()
+        channel_from_stellar.copy_attributes(["mass"])
+        channel_to_gravity.copy_attributes(["mass"])
+        
+        gravity.evolve_model(stellar.model_time)
+        channel_from_gravity.copy_attributes(["x", "y", "z", "vx", "vy", "vz"])
+        
+        print "GSE: T=", time[-1], "M=", bodies.mass.sum(), "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")"
+
+        if time[-1] >= t_end:
+            break
+
+    gravity.stop()
+    stellar.stop()
+    return time, Lr25, Lr50, Lr75
+
+def main(N, W0, t_end, Rvir, Mmin, Mmax):
+    bodies = generate_initial_conditions(N, W0, Rvir, Mmin, Mmax)
 
     x_label = "t [Myr]"
     y_label = "R [pc]"
     fig = single_frame(x_label, y_label, logx=False, logy=False, xsize=14, ysize=12)
     color = get_distinct(4)
 
-#    import numpy
-#    Lr_stars = numpy.matrix.transpose(numpy.matrix(Lr_stars))
-#    Lr_bodies = numpy.matrix.transpose(numpy.matrix(Lr_bodies))
-    
-#    print Lr_stars[6], Lr_bodies[6]
-    pyplot.plot(time.value_in(units.Myr), Lr_stars25.value_in(units.parsec), c=color[0], label= 'with mass loss')
-    pyplot.plot(time.value_in(units.Myr), Lr_bodies25.value_in(units.parsec), c=color[1], label= 'without mass loss')
+    time, Lr25, Lr50, Lr75 = run_only_gravity(bodies.copy(), t_end)
+    pyplot.plot(time.value_in(units.Myr), Lr25.value_in(units.parsec), c=color[0], label= 'without mass loss')
+    pyplot.plot(time.value_in(units.Myr), Lr50.value_in(units.parsec), c=color[0])
+    pyplot.plot(time.value_in(units.Myr), Lr75.value_in(units.parsec), c=color[0])
 
-    pyplot.plot(time.value_in(units.Myr), Lr_stars50.value_in(units.parsec), c=color[0])
-    pyplot.plot(time.value_in(units.Myr), Lr_bodies50.value_in(units.parsec), c=color[1])
-
-    pyplot.plot(time.value_in(units.Myr), Lr_stars75.value_in(units.parsec), c=color[0])
-    pyplot.plot(time.value_in(units.Myr), Lr_bodies75.value_in(units.parsec), c=color[1])
+    time, Lr25, Lr50, Lr75 = run_sequential_gravity_and_stellar(bodies.copy(), t_end)
+    pyplot.plot(time.value_in(units.Myr), Lr25.value_in(units.parsec), c=color[1], label= 'with mass loss')
+    pyplot.plot(time.value_in(units.Myr), Lr50.value_in(units.parsec), c=color[1])
+    pyplot.plot(time.value_in(units.Myr), Lr75.value_in(units.parsec), c=color[1])
     
+    time, Lr25, Lr50, Lr75 = run_event_driven_gravity_and_stellar(bodies.copy(), t_end)
+    pyplot.plot(time.value_in(units.Myr), Lr25.value_in(units.parsec), c=color[2], label= 'Event driven')
+    pyplot.plot(time.value_in(units.Myr), Lr50.value_in(units.parsec), c=color[2])
+    pyplot.plot(time.value_in(units.Myr), Lr75.value_in(units.parsec), c=color[2])
+
     pyplot.legend(loc="upper left", ncol=1, shadow=False, fontsize=24)
 
     #pyplot.show()
     pyplot.savefig("gravity_stellar_comparison")
+    
+def new_option_parser():
+    from amuse.units.optparse import OptionParser
+    result = OptionParser()
+    result.add_option("-N", dest="N", type="int",default = 1000,
+                      help="number of stars [1000]")
+    result.add_option("-M", unit=units.MSun, dest="Mmax", type="float",default = 100|units.MSun,
+                      help="maximal stellar mass [100] MSun")
+    result.add_option("-m", unit=units.MSun, dest="Mmin", type="float",default = 1|units.MSun,
+                      help="minimal stellar mass [1] MSun")
+    result.add_option("-R", unit=units.parsec, dest="Rvir", type="float",default = 3.0|units.parsec,
+                      help="cluser virial radius [3] in parsec")
+    result.add_option("-t", unit=units.Myr,
+                      dest="t_end", type="float", default = 10.0|units.Myr,
+                      help="end time of the simulation [10] Myr")
+    result.add_option("-W", dest="W0", type="float", default = 3.0,
+                      help="Dimension-less depth of the King potential (W0) [%default]")
+    return result
+
+if __name__ in ('__main__', '__plot__'):
+    o, arguments  = new_option_parser().parse_args()
+    main(**o.__dict__)
+
 
