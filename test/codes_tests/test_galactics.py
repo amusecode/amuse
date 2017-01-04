@@ -145,14 +145,14 @@ class GalactICsInterfaceTests(TestWithMPI):
         self.assertAlmostEquals(numpy.array([numpy.mean(x_positions), numpy.mean(y_positions), 
             numpy.mean(z_positions)]), numpy.array([0.0]*3), 5)
         self.assertAlmostRelativeEquals(numpy.array([numpy.mean(abs(x_positions)), numpy.mean(abs(y_positions)), 
-            numpy.mean(abs(z_positions))]), expected_mean_pos, 4)
+            numpy.mean(abs(z_positions))]), expected_mean_pos, 3)
         
         x_velocities, y_velocities, z_velocities, errors = instance.get_velocity(range(number_of_particles_halo))
         self.assertEquals(errors, numpy.zeros(number_of_particles_halo))
         self.assertAlmostEquals(numpy.array([numpy.mean(x_velocities), numpy.mean(y_velocities), 
             numpy.mean(z_velocities)]), numpy.array([0.0]*3))
         self.assertAlmostRelativeEquals(numpy.array([numpy.mean(abs(x_velocities)), numpy.mean(abs(y_velocities)), 
-            numpy.mean(abs(z_velocities))]), expected_mean_vel, 4)
+            numpy.mean(abs(z_velocities))]), expected_mean_vel, 2)
         
         self.assertEquals(instance.cleanup_code(), 0)
         instance.stop()

@@ -629,9 +629,11 @@ class MPIMessage(AbstractMessage):
             
         lengths = self.string_lengths(array)
         self.mpi_send(comm, [lengths, MPI.INT])
-        chars = ""
+        chars = "".encode('utf-8')
         for string in array:
-            chars = string.join((chars, chr(0)))
+            if hasattr(string, 'encode'):
+                string = string.encode('utf-8')
+            chars = chars + string + chr(0).encode('utf-8')
         chars = numpy.fromstring(chars, dtype='uint8')
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
@@ -2638,6 +2640,7 @@ class LocalChannel(AbstractMessageChannel):
         
         self.legacy_interface_type = legacy_interface_type
         self._is_inuse = False
+        self.module = None
       
 
 
@@ -2653,15 +2656,18 @@ class LocalChannel(AbstractMessageChannel):
         print module, self.package + "." + self.so_module
         module.set_comm_world(MPI.COMM_SELF)
         self.local_implementation = python_code.CythonImplementation(module, self.legacy_interface_type)
-        
+        self.module = module
             
 
 
     def stop(self):
-        pass
+        import import_module
+        import_module.cleanup_module(self.module)
+        self.module = None
+        
 
     def is_active(self):
-        return True
+        return not self.module is None
     
     def is_inuse(self):
         return self._is_inuse
