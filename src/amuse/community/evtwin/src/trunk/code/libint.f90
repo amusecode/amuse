@@ -425,6 +425,7 @@ contains
       use current_model_properties
       use constants
       use settings
+      use test_variables, only: enc
       implicit none
       integer, intent(in)        :: star_id
       type(twin_star_t), pointer :: star
@@ -466,6 +467,7 @@ contains
       if (verbose) print *, 'setting initial timestep for star',star_id,'to',star%dt/csy,'yr'
       dt = star%dt
       age = star%age
+      enc = 0.0d0
 
       jhold = 2
 
@@ -562,6 +564,7 @@ contains
       ! Allocate memory for this star
       star%number_of_variables = NVSTAR
       star%number_of_meshpoints = new_kh
+
       allocate(star%h(star%number_of_variables, star%number_of_meshpoints))
       allocate(star%dh(star%number_of_variables, star%number_of_meshpoints))
       allocate(star%hpr(star%number_of_variables, star%number_of_meshpoints))
@@ -907,7 +910,7 @@ contains
    subroutine swap_in(star_id)
       use real_kind
       use mesh, only: nm, kh, h, dh, hpr
-      use mesh_enc, only: menc
+      use mesh_enc, only: menc, ip_mesh_size
       use test_variables
       use current_model_properties, only: jmod, jnn, rlf_prev, qcnv_prev, lnuc_prev, lhe_prev, lh_prev
       use nucleosynthesis, only: nucleosynthesis_enabled
@@ -932,6 +935,7 @@ contains
          dh(1:star%number_of_variables, 1:kh) = star%dh(1:star%number_of_variables, 1:kh)
          hpr(1:star%number_of_variables, 1:kh) = star%hpr(1:star%number_of_variables, 1:kh)
          menc(1:2, 1:kh) = star%menc(1:2, 1:kh)
+         ip_mesh_size = kh
       else
          assert(star%pid > -1)
          assert(star%sid > -1)
