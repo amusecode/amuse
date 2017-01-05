@@ -1,7 +1,3 @@
-"""
-   Example AMUSE script for evolving Venus and Earth around the Sun.
-   Syllabus List. 2.1 and 2.2
-"""
 from amuse.lab import Particles, units 
 
 def sun_venus_and_earth():
@@ -43,35 +39,48 @@ def integrate_solar_system(particles, end_time):
     y_venus = [] | units.AU
 
     while gravity.model_time < end_time:
-        gravity.evolve_model(gravity.model_time + (10 | units.day))
+        gravity.evolve_model(gravity.model_time + (1 | units.day))
         x_earth.append(earth.x)
         y_earth.append(earth.y)
         x_venus.append(venus.x)
         y_venus.append(venus.y)
-#        from amuse.lab import *
-#        write_set_to_file(gravity.particles, "gravity.h5", "hdf5")
     gravity.stop()
     return x_earth, y_earth, x_venus, y_venus
     
-def plot_track(xe,ye,xv,yv):
+def plot_track(xe,ye,xv,yv, output_filename):
 
-    from matplotlib import pyplot, rc
-    figure = pyplot.figure(figsize=(10,10))
-    font = {'size' : 20}
-    rc('font', **font)
+    from matplotlib import pyplot
+    figure = pyplot.figure(figsize=(10, 10))
     plot = figure.add_subplot(1,1,1)
+    ax = pyplot.gca()
+    ax.minorticks_on() # switch on the minor ticks
+    ax.locator_params(nbins=3)
 
-    plot.scatter([0.0], [0.0], color='y')
-    plot.plot(xe.value_in(units.AU), ye.value_in(units.AU), color = "b")
-    plot.plot(xv.value_in(units.AU), yv.value_in(units.AU), color = "r")
-    plot.set_xlim(-1.5, 1.5)
-    plot.set_ylim(-1.5, 1.5)
-    plot.set_xlabel('x (AU)')
-    plot.set_ylabel('y (AU)')
+    x_label = 'x [au]'
+    y_label = 'y [au]'
+    pyplot.xlabel(x_label)
+    pyplot.ylabel(y_label)
+
+    plot.scatter([0.0], [0.0], color='y', lw=8)
+    plot.plot(xe.value_in(units.AU), ye.value_in(units.AU), color = 'b')
+    plot.plot(xv.value_in(units.AU), yv.value_in(units.AU), color = 'r')
+    plot.set_xlim(-1.3, 1.3)
+    plot.set_ylim(-1.3, 1.3)
     pyplot.show()
 
+def new_option_parser():
+    from amuse.units.optparse import OptionParser
+    result = OptionParser()
+    result.add_option("-o", 
+                      dest="output_filename", default ="SunVenusEarth",
+                      help="output filename [%default]")
+    return result
+    
+
 if __name__ in ('__main__','__plot__'):
+    o, arguments  = new_option_parser().parse_args()
+
     particles = sun_venus_and_earth()
     xe,ye, xv,yv = integrate_solar_system(particles, 2 | units.yr)
-    plot_track(xe,ye,xv,yv)
+    plot_track(xe,ye,xv,yv,o.output_filename)
     
