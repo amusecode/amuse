@@ -275,13 +275,8 @@ local inline real size_squared(hdyn2 *b)
     return separation_squared(od, yd);
 }
 
-// The perturbation defined here as "light" effectively determines the
-// threshold perturbation for unperturbed multiple motion.  Must make
-// it consistent with the criteria applied in smallN.
-
-const real MAX_PERT_SQ = 1.e-4;
-
-local bool is_lightly_perturbed(hdyn2 *b, hdyn2 *bi, hdyn2 *bj)
+local bool is_lightly_perturbed(hdyn2 *b, hdyn2 *bi, hdyn2 *bj,
+				real pmax2 = MAX_PERT_SQ)
 {
     real mtot = bi->get_mass() + bj->get_mass();
     vec cm = (bi->get_mass()*bi->get_pos() + bj->get_mass()*bj->get_pos())
@@ -301,12 +296,12 @@ local bool is_lightly_perturbed(hdyn2 *b, hdyn2 *bi, hdyn2 *bj)
 	    }
 	}
 
-    return (max_pert_sq < MAX_PERT_SQ*mr3_ij_sq);
+    return (max_pert_sq < pmax2*mr3_ij_sq);
 }
 
 #define PRINT_DETAILS 0
 
-local void decompose(hdyn2 *b)
+local void decompose(hdyn2 *b, real pmax2 = MAX_PERT_SQ)
 {
     // Construct a binary tree by recursively pairing the top-level
     // particles with the greatest binding energy.  Don't pair if
@@ -339,7 +334,8 @@ local void decompose(hdyn2 *b)
 		    cout << " " << bj->format_label() << " ";
 		    PRL(Eij);
 		}
-		if (Eij < min_energy && is_lightly_perturbed(b, bi, bj)) {
+		if (Eij < min_energy
+		     && is_lightly_perturbed(b, bi, bj, pmax2)) {
 		    min_energy = Eij;
 		    bimin = bi;
 		    bjmin = bj;
@@ -378,9 +374,11 @@ local bool is_escaper(hdyn2 *b, hdyn2 *bi)
 {
     // An escaper is a (top-level) particle having positive energy
     // relative to all other top-level nodes as well as their CM, and
-    // moving away from the CM.
+    // moving away from the CM.  Also, all top-level nodes should be
+    // receding (Steve, 1/2017).
   
     bool esc1 = true;
+    bool receding = true;
 
     real mi = bi->get_mass();
     vec xi = bi->get_pos();
@@ -395,6 +393,7 @@ local bool is_escaper(hdyn2 *b, hdyn2 *bi)
     for_all_daughters(hdyn2, b, bj)
 	if (bj != bi) {
 	    real mj = bj->get_mass();
+	    vec xj = bj->get_pos();
 	    vec vj = bj->get_vel();
 	    mcm += mj;
 	    rcm += mj*bj->get_pos();
@@ -408,9 +407,10 @@ local bool is_escaper(hdyn2 *b, hdyn2 *bi)
 		Emin = Eij;
 		bmin = bj;
 	    }
+	    receding &= ((vj-vi)*(xj-xi) > 0);	// new 1/2017
 	}
 
-    bool esc = esc1;
+    bool esc = esc1 && receding;		// new 1/2017
 
     if (esc && mcm > 0) {
 	rcm = rcm/mcm;
@@ -863,7 +863,7 @@ local void create_summary_strings(hdyn2 *b,
 
 
 
-local hdyn2 *get_tree2(hdyn *bin)
+local hdyn2 *get_tree2(hdyn *bin, real pmax2 = MAX_PERT_SQ)
 {
     // Determine the current structure and return the annotated tree.
 
@@ -873,7 +873,7 @@ local hdyn2 *get_tree2(hdyn *bin)
     // properties.
 
     hdyn2 *b = flat_copy_tree(bin);
-    decompose(b);
+    decompose(b, pmax2);
 
     // Determine the binding energy of each node.  Note that the order
     // of for_all_nodes() means that this function and the next could
@@ -956,7 +956,7 @@ local inline bool is_quasi_stable(hdyn2 *b)
 local inline int is_over(hdyn2 *b, bool verbose)
 {
     int over = 1;
-    print_recursive(b, verbose);
+    // print_recursive(b, verbose);
     for_all_daughters(hdyn2, b, bi) {
 	//PRL(bi->format_label());
 	if (!is_escaper(b, bi)) over = 0;
@@ -968,7 +968,7 @@ local inline int is_over(hdyn2 *b, bool verbose)
 	if (!bi->stable) stable = false;			 // STORY
     //PRC(2); PRL(stable);
 
-    if (over) {			// over here means all top level is escaping
+    if (over) {			// over here means all top level are escaping
 	if (stable) {
 	    //if (verbose) 
 		cout << "is_over: normal termination: "
@@ -985,7 +985,7 @@ local inline int is_over(hdyn2 *b, bool verbose)
 	}
     }
 
-    return over;	// return 0, 1, or 2
+    return over;	// return 0-2
 }
 
 
@@ -1058,11 +1058,39 @@ int check_structure(hdyn *bin,			// input root node
 	    }
 	}
 
+    if (over == 3) {
+
+        // Possible that get_tree2() didn't return usable hierarchical
+        // structure (e.g. an outer body escapes during an inner
+        // triple resonance.  Try to impose usable structure by
+        // relaxing the perturbation criterion on the components.
+
+        // print_recursive(b, true);
+
+        int nmul = 0;
+	for_all_daughters(hdyn, bin, bi)
+	  if (bi->get_oldest_daughter()) nmul++;
+
+        if (nmul == 0) {
+
+	    // No substructure.  Retry structure determination with a
+	    // larger critical perturbation.  See also ../interface.cc.
+
+	    b = get_tree2(bin, 0.02);	// 0.02 is ~arbitrary; default = 0.0001
+	}
+    }
+
+    if (1 && over) {
+        cout << "over = " << over << endl;
+        print_recursive(b, true);
+        cout << flush;
+    }
+
     // Clean up and exit.
 
     rmtree(b);			// hdyn function OK (with virtual destructor)?
 
-    return over;
+    return over;	// return 0-3
 }
 
 local hdyn *copy_tree2(hdyn2 *from_b)
@@ -1092,14 +1120,14 @@ local hdyn *copy_tree2(hdyn2 *from_b)
     return b;
 }
 
-hdyn *get_tree(hdyn *bin)
+hdyn *get_tree(hdyn *bin, real pmax2) // default = MAX_PERT_SQ
 {
     // Need to return an hdyn pointer from an hdyn2 object.  A cast
     // would return the correct data, but when rmtree() is called on
     // the cast pointer there may be problems removing the hdyn2 part.
     // Better to make an hdyn copy here and return that.
 
-    hdyn2 *b = get_tree2(bin);
+    hdyn2 *b = get_tree2(bin, pmax2);
     hdyn *bb = copy_tree2(b);
     rmtree(b);
 

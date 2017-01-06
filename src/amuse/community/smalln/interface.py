@@ -235,7 +235,8 @@ class SmallNInterface(CodeInterface,
     def is_over():
         """
         Return 1 if the run is over, according to analyze().
-        Return 2 if the size of the system exceeds rlimit.
+        Return 2 for a quasi-stable system.
+        Return 3 if the size of the system exceeds rlimit.
         Return 0 otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -256,6 +257,8 @@ class SmallNInterface(CodeInterface,
         structure created in evolve
         """
         function = LegacyFunctionSpecification()
+        function.addParameter('over', dtype='int32',
+                              direction=function.IN)
         function.result_type = 'int32'
         return function
 

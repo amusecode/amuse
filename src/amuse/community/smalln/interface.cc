@@ -9,7 +9,7 @@ static hdyn *b;		// root node for all smallN data
 static hdyn *b_copy;
 
 static double begin_time = 0;
-static real smalln_dtlog = 0;
+static real smalln_dtlog = _INFINITY_;
 static int smalln_verbose = 0;
 static string smalln_outfile("");
 
@@ -571,10 +571,27 @@ int get_gravity_at_point(double eps, double x, double y, double z,
 
 
 
-int update_particle_tree()
+int update_particle_tree(int over)
 {
     b_copy = b;			// save the smallN tree until restored
     b = get_tree(b_copy);	// b now is the structured tree
+
+    if (over == 3) {
+
+        // Special treatment in this case. See analyze.cc:is_over().
+
+        int nmul = 0;
+	for_all_daughters(hdyn, b, bi)
+	  if (bi->get_oldest_daughter()) nmul++;
+
+        if (nmul == 0) {
+
+	    // No substructure.  Retry structure determination with a
+	    // larger critical perturbation.
+
+	    b = get_tree(b_copy, 0.02);	// 0.02 is ~arbitrary; default = 0.0001
+	}
+    }
     UpdatedParticles.clear();
 
     // Create indices for the CM nodes and add them to the updated list.
