@@ -271,9 +271,9 @@ class TestSimpleMultiples(TestWithMPI):
         ]|nbody_system.length
         stars.velocity = [
             [0,0,0],
-            [0,0.1, 0],
-            [0,-0.1, 0],
             [0,0.2, 0],
+            [0,-0.2, 0],
+            [0,0.3, 0],
         ]|nbody_system.speed
         stars.radius = 0.5 | nbody_system.length
         
@@ -305,7 +305,7 @@ class TestSimpleMultiples(TestWithMPI):
         
         multiples_code.evolve_model(3|nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
-        self.assertAlmostRelativeEquals(multiples_code.model_time , 1.19126 | nbody_system.time, 4)
+        self.assertAlmostRelativeEquals(multiples_code.model_time , 1.2195 | nbody_system.time, 4)
         self.assertEquals(len(stopping_condition.particles(0)), 1) # 1 new multiple
         self.assertEquals(len(stopping_condition.particles(1)), 1) # 1 dissolved multiple
         
