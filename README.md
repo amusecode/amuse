@@ -56,12 +56,12 @@ packages as part of the system.
         export PREFIX=~/amuse/prerequisites
         export PATH=${PREFIX}/bin:${PATH}
         export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+
+2b. If you have ifort and/or icc, or if you encounter problems with NetCDF 
+(optional dependency) you may need to set also:
+
         export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
         export CPATH=${PREFIX}/include:${CPATH}
-
-2b. If you have ifort and/or icc, you need to also set:
-
-        export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
 
 3. Download and install python
 
