@@ -233,6 +233,11 @@ class Multiples(object):
         # encounters algorithm.
         
         self.number_of_collisions = 0
+    
+        #Repeat encounter management data
+        self.old_star_1 = 0
+        self.old_star_2 = 0
+        self.repeat_count = 0
 
     @property
     def particles(self):
@@ -495,8 +500,8 @@ class Multiples(object):
 
                     # Do the scattering.
 
-                    print 'calling manage_encounter'
-                    sys.stdout.flush()
+                    # print 'calling manage_encounter'
+                    # sys.stdout.flush()
                     veto, dE_top_level_scatter, dphi_top, dE_mul, \
                         dphi_int, dE_int, final_particles \
                         = self.manage_encounter(time, star1, star2, 
@@ -510,13 +515,13 @@ class Multiples(object):
                         # reinitializes all particles.  Later we will
                         # just reinitialize a list if gravity supports
                         # it. TODO
-                    
+                        #print "synchronizing particles"
                         self.gravity_code.particles.synchronize_to(
                             self._inmemory_particles)    # star = gravity_stars
-                    
+                        #print "end sync; copy ids"
                         self.channel_from_code_to_memory.copy_attribute \
                             ("index_in_code", "id")
-                    
+                        #print "done, moving to energy bookkeeping"
                         #for i,k in enumerate(self.gravity_code.particles.key):
                         #    print i, k
 
@@ -566,10 +571,10 @@ class Multiples(object):
                             print 'dphi_top =', dphi_top
                             print 'dphi_int =', dphi_int
                             print 'dE_int =', dE_int
-
-                        print 'net local error =', \
-                            dE_top_level - dE_top_level_scatter - dphi_top
-                        print 'scatter integration error =', dE_int
+                        if 0:
+                            print 'net local error =', \
+                                  dE_top_level - dE_top_level_scatter - dphi_top
+                            print 'scatter integration error =', dE_int
 
                         # We also expect
                         #
@@ -580,16 +585,22 @@ class Multiples(object):
                         # cumulative value of the right-hand side of
                         # this equation.
 
-                        print 'dE_mul =', dE_mul
-                        print 'internal local error =', \
-                            dE_top_level + dE_mul - dphi_top
-                        print 'corrected internal local error =', \
-                            dE_top_level + dE_mul - dphi_top + dphi_int - dE_int
+                        if 0:
+                            print 'dE_mul =', dE_mul
+                            print 'internal local error =', \
+				  dE_top_level + dE_mul - dphi_top
+                            print 'corrected internal local error =', \
+                            	  dE_top_level + dE_mul - dphi_top \
+					+ dphi_int - dE_int
 
                         self.multiples_external_tidal_correction += dphi_top
                         self.multiples_internal_tidal_correction -= dphi_int
                         self.multiples_integration_energy_error += dE_int
-                        Nmul, Nbin, Emul = self.get_total_multiple_energy2()
+                        
+                        #Doing this energy calc every encounter is expensive when dealing with hundreds of binaries or more.
+                        #It is clearly problematic when building a whole system of binaries.
+                        
+                        #Nmul, Nbin, Emul = self.get_total_multiple_energy2()
 
                         # Global bookkeeping:
                         #
@@ -612,7 +623,7 @@ class Multiples(object):
                         # should be constant.  Any non-conservation
                         # represents an error in bookkeeping or
                         # algorithm design.
-
+                        '''
                         print 'total energy (top+mul) =', \
                             final_energy + Emul
                         print 'corrected total energy =', \
@@ -620,7 +631,7 @@ class Multiples(object):
                                 - self.multiples_external_tidal_correction \
                                 - self.multiples_internal_tidal_correction \
                                 - self.multiples_integration_energy_error
-                        
+                        '''
                         # Print info on all multiples associated with
                         # the current interaction.
 
@@ -693,8 +704,8 @@ class Multiples(object):
         # scattering calculation.  Steps below follow those defined in
         # the PDF description.
 
-        print 'in manage_encounter'
-        sys.stdout.flush()
+        # print 'in manage_encounter'
+        # sys.stdout.flush()
 
         # Record the state of the system prior to the encounter, in
         # case we need to abort and return without taking any action.
@@ -727,6 +738,14 @@ class Multiples(object):
         star2 = scattering_stars[1]
         center_of_mass = scattering_stars.center_of_mass()
         other_stars = stars - scattering_stars
+        
+        #Brewer Mod:  Check to see if repeat encounter
+        if (star1.id == self.old_star_1 and star2.id == self.old_star_2) or (star1.id == self.old_star_2 and star2.id == self.old_star_1):
+            self.repeat_count += 1
+        else:
+            self.repeat_count = 0
+            self.old_star_1 = star1.id
+            self.old_star_2 = star2.id
 
         # 1b. Add neighbors if desired.  Use a perturbation criterion.
         # Also impose a simple neighbor veto, if specified.  Start by
@@ -993,7 +1012,8 @@ class Multiples(object):
         print 'final_scatter_scale =', final_scatter_scale
         #print particles_in_encounter.position
         #print particles_in_encounter.velocity
-
+        
+        
         try:
             scatter_energy_error \
                 = self.resolve_collision(particles_in_encounter,
@@ -1055,6 +1075,23 @@ class Multiples(object):
         #----------------------------------------------------------------
         # 5a. Identify multiple structure after the encounter.  First
         #     create an object to handle the new binary information.
+        
+        #Brewer Mod:  Create the appropriate COM particle for the pseudo-binary
+        '''
+        if self.repeat_count > 9:
+            print "Significant repeat encounter detected; forcing binary creation"
+            pseudoCOM = datamodel.Particles(1)
+            pseudoCOM.child1 = star1
+            pseudoCOM.child2 = star2
+            pseudoCOM.mass = star1.mass + star2.mass
+            pseudoCOM.position = cmpos
+            pseudoCOM.velocity = cmvel
+            pseudoCOM.radius = star1.radius + star2.radius
+            print particles_in_encounter
+            print pseudoCOM
+            particles_in_encounter.add_particles_in_store(pseudoCOM)
+        '''
+        #End Mod section.
 
         binaries = trees.BinaryTreesOnAParticleSet(particles_in_encounter,
                                                    "child1", "child2")
@@ -1159,7 +1196,7 @@ class Multiples(object):
                     perturber_distance = distance
 
             #if binary_scale > rad12:
-            if max_perturbation < self.wide_perturbation_limit:
+            if max_perturbation < self.wide_perturbation_limit or self.repeat_count > 9:
                 print 'accepting wide binary', name_pair(comp1,comp2)
                 print '    semi =', semi.number, 'E/mu =', E.number
                 print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
@@ -1308,25 +1345,25 @@ class Multiples(object):
         sys.stdout.flush()
 
         # Update the gravity module with the new data.
-
         self.after.add_particles(stars_not_in_a_multiple)
-        
         # 7b. Add stars not in a binary to the gravity code.
         if len(stars_not_in_a_multiple) > 0:
             #print 'adding stars_not_in_a_multiple:'
             #print stars_not_in_a_multiple
             gravity_stars.add_particles(stars_not_in_a_multiple)
-            
         # 7c. Add the roots to the gravity code
         multiples_particles = Particles()
         multiples_particles.id = None
+
         for tree in binaries.iter_binary_trees():
             tree.particle.id = assign_id_to_root(tree)
+            #tree.particle.components = subset
             #print 'adding particle:'
             #print tree.particle
             gravity_stars.add_particle(tree.particle)
             self.after.add_particle(tree.particle)  # Steve: add_particles broke
             multiples_particles.add_particle(tree.particle)
+        
 
         # DEBUG
         print "multiples: interaction products: singles:", \
@@ -1334,8 +1371,7 @@ class Multiples(object):
                 multiples_particles.id 
             
         # 7d. Store all trees in memory for later reference.
-
-        for tree in binaries.iter_binary_trees():            
+        for tree in binaries.iter_binary_trees():
             self.root_to_tree[tree.particle] = tree.copy()
 
         # Return enough information to monitor all energy errors.
@@ -1427,7 +1463,7 @@ class Multiples(object):
         while loop_count < loop_max:
 
             loop_count += 1
-            print pre, 'loop_count =', loop_count
+            # print pre, 'loop_count =', loop_count
 
             resolve_collision_code \
 		= self.resolve_collision_code_creation_function()
@@ -1466,8 +1502,8 @@ class Multiples(object):
 
                 tt = time
                 time += delta_t
-                print pre, '...to time', time
-                sys.stdout.flush()
+                # print pre, '...to time', time
+                # sys.stdout.flush()
 
                 # Work with internal steps of initial_delta_t to allow
                 # checks for quasi-stable motion.
@@ -1528,7 +1564,7 @@ class Multiples(object):
 
                     over = resolve_collision_code.is_over(final_scatter_scale,
                                                           0)    # verbose = 0
-
+                                                          
                     if over:
                         final_scatter_energy \
                             = self.get_total_energy(resolve_collision_code)
@@ -1917,11 +1953,11 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
 
     if rescale:
 
-        print 'rescaling components', int(comp1.id), \
-              'and', int(comp2.id), 'to separation', scale
-        sys.stdout.flush()
+        #print 'rescaling components', int(comp1.id), \
+        #      'and', int(comp2.id), 'to separation', scale
+        # sys.stdout.flush()
         
-        print pre, 'a, e =', a, e
+        # print pre, 'a, e =', a, e
         if e < 1:
             peri = a*(1-e)
             apo = a*(1+e)
@@ -1937,20 +1973,20 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
             if limit > 1.1*peri: limit = 1.1*peri	# ~arbitrary
             if limit < min_scale: limit = min_scale
             if scale < limit:
-                print pre, 'changed scale from', scale, 'to', limit
+                # print pre, 'changed scale from', scale, 'to', limit
                 scale = limit
 
             if M < 0:
-                print pre, 'advance_to_periastron'
+                # print pre, 'advance_to_periastron'
                 kep.advance_to_periastron()
-                print pre, 'advance_to_radius', scale
+                # print pre, 'advance_to_radius', scale
                 kep.advance_to_radius(scale)
             else:
                 if kep.get_separation() < scale:
-                    print pre, 'advance_to_radius', scale
+                    # print pre, 'advance_to_radius', scale
                     kep.advance_to_radius(scale)
                 else:
-                    print pre, 'return_to_radius', scale
+                    # print pre, 'return_to_radius', scale
                     kep.return_to_radius(scale)
 
             # Note: Always end up on an outgoing orbit.  If periastron
@@ -1958,9 +1994,9 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
 
         else:
             limit = apo - 0.01*(apo-peri)
-            print pre, "limit:", limit, apo, peri, scale , M, e
+            # print pre, "limit:", limit, apo, peri, scale , M, e
             if scale > limit:
-                print pre, 'changed scale from', scale, 'to', limit
+                # print pre, 'changed scale from', scale, 'to', limit
                 scale = limit
             
             #print "INPUT:", kep.get_separation_vector()
@@ -2012,7 +2048,7 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
         if hasattr(comp2, 'child1'):
             offset_particle_tree(comp2, newpos2-pos2, newvel2-vel2)
 
-    print pre, 'done'
+    # print pre, 'done'
     sys.stdout.flush()
 
     return a
@@ -2454,7 +2490,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
         #print lt, 'scaled top-level nodes'
         #print top_level_nodes
 
-    print pre, 'done'
+    # print pre, 'done'
     sys.stdout.flush()
 
     # Don't attempt to correct or even return the tidal energy error.
