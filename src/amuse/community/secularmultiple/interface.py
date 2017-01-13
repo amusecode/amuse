@@ -11,7 +11,7 @@ unit_e = unit_m*unit_l**2/(unit_t**2) ### energy
 
 print_name = 'SecularMultiple'
 
-class SecularMultipleInterface(CodeInterface):
+class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     """
     SecularMultiple -- by Adrian Hamers, based on 2016MNRAS.459.2827H
     
@@ -19,12 +19,16 @@ class SecularMultipleInterface(CodeInterface):
     
     A code to compute the secular (orbit-averaged) gravitational dynamics of hierarchical multiple systems composed of nested binary orbits (simplex-type systems). with any configuration and any number of bodies. A particle can repesent a binary (`is_binary = True') or a body (`is_binary = False'). The structure of the system is determined by linking to other particles with the attributes child1 and child2. Tidal interactions and relativistic corrections are included in an ad hoc fashion (tides: treating the companion as a single body, even if it is not; relativistic terms: only including binary-binary interactions).
     
+        .. [#] Hamers & Portegies Zwart, 2016, MNRAS 459, 2827
+    
     """
     include_headers = ['interface.h','src/types.h','src/evolve.h','src/ODE_system.h']
 
     def __init__(self, **options):
 #         CodeInterface.__init__(self, name_of_the_worker="secularmultiple_worker", **options)
          CodeInterface.__init__(self, **options)
+         LiteratureReferencesMixIn.__init__(self)
+
 
     #######################
     ### basic interface ###
