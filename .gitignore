@@ -420,3 +420,5 @@ core
 core.*
 
 
+src/amuse/community/fdps/worker_code.cc
+src/amuse/community/fdps/worker_code.h
