@@ -202,6 +202,7 @@ int get_total_radius(double * radius){
 int new_particle(int * index_of_the_particle, double mass, double x, 
   double y, double z, double vx, double vy, double vz, double radius, int code_index){
       if(code_index < 0 || code_index >= (signed) codes.size()){
+        *index_of_the_particle=0;
         return -10;
       }
       int new_id = max_id++;
