@@ -164,6 +164,8 @@ src/amuse/community/galactics/src/src/pgenbulge
 src/amuse/community/galactics/src/src/pgendisk
 src/amuse/community/galactics/src/src/pgenhalo
 src/amuse/community/galactics/src/src/toascii
+src/amuse/community/galaxia/GalaxyModel_worker
+src/amuse/community/galaxia/worker_code.f90
 src/amuse/community/hacs64/build_cpu/
 src/amuse/community/hacs64/hacs64_worker
 src/amuse/community/hacs64/interface.h
@@ -279,6 +281,8 @@ src/amuse/community/smalln/smallN_worker
 src/amuse/community/smalln/src/f2c.co
 src/amuse/community/smalln/src/nstab.co
 src/amuse/community/smalln/worker_code.cc
+src/amuse/community/smalln/smalln_cython.c
+src/amuse/community/smalln/smalln_cython.pyx
 src/amuse/community/sphray/sphray_worker
 src/amuse/community/sphray/sphray_worker.f90
 src/amuse/community/sse/src/sse
