@@ -281,6 +281,8 @@ src/amuse/community/smalln/smallN_worker
 src/amuse/community/smalln/src/f2c.co
 src/amuse/community/smalln/src/nstab.co
 src/amuse/community/smalln/worker_code.cc
+src/amuse/community/smalln/smalln_cython.c
+src/amuse/community/smalln/smalln_cython.pyx
 src/amuse/community/sphray/sphray_worker
 src/amuse/community/sphray/sphray_worker.f90
 src/amuse/community/sse/src/sse
