@@ -80,7 +80,7 @@ class MyFancyUrlopener(urllib.FancyURLopener):
 class GetCodeFromHttp(object):
     url_template = "https://github.com/hannorein/rebound/archive/{version}.zip"
     filename_template = "{version}.zip"
-    version = "99855803b586b1e9af6bc8c54bf2328dc0cf325c"
+    version = "7184fb43852a6c3721f87dc8b5f6878a540a8dd0"
     
     def directory(self):
         return os.path.abspath(os.path.dirname(__file__))
@@ -128,7 +128,7 @@ class GetCodeFromHttp(object):
         print "downloading finished"
         self.unpack_downloaded_file(filename)
     
-def main(must_download_from_svn = False, version = '99855803b586b1e9af6bc8c54bf2328dc0cf325c'):
+def main(must_download_from_svn = False, version = '7184fb43852a6c3721f87dc8b5f6878a540a8dd0'):
     instance = GetCodeFromHttp()
     instance.version = version
     instance.start()
@@ -140,7 +140,7 @@ def new_option_parser():
     
     result.add_option(
         "--version", 
-        default = '86026787c72c900ac729d727c2a293d2854e0c77',
+        default = '7184fb43852a6c3721f87dc8b5f6878a540a8dd0',
         dest="version",
         help="git revision to download from github",
         type="string"
