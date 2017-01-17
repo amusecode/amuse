@@ -130,9 +130,10 @@ class ReboundInterfaceTests(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(ReboundInterface)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.commit_parameters())
-        
-        # Set up an equal-mass binary on a circular orbit:
-        self.assertEquals([0, -10], instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01, 1).values())
+  
+  
+        index,err=instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01, 1)
+        self.assertEquals(-10, err)
         
         instance.stop()
 

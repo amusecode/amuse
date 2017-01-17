@@ -5,7 +5,7 @@ AMUSE_DIR?=./././.
 
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g -DCOLLISIONS_DUMMY -DLIBREBOUND 
+CFLAGS   += -Wall -g -DCOLLISIONS_DUMMY -DLIBREBOUND
 CXXFLAGS += $(CFLAGS)  
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -13,7 +13,7 @@ OBJS = interface.o
 
 CODELIB = src/librebound.a
 CODEDIR = src/rebound
-LIB_OBJ = $(CODEDIR)/src/collision.o $(CODEDIR)/src/particle.o $(CODEDIR)/src/tools.o $(CODEDIR)/src/integrator.o $(CODEDIR)/src/integrator_ias15.o $(CODEDIR)/src/integrator_whfast.o $(CODEDIR)/src/integrator_leapfrog.o $(CODEDIR)/src/integrator_sei.o $(CODEDIR)/src/integrator_hybrid.o $(CODEDIR)/src/integrator_wh.o $(CODEDIR)/src/gravity.o $(CODEDIR)/src/rebound.o $(CODEDIR)/src/input.o $(CODEDIR)/src/output.o $(CODEDIR)/src/boundary.o $(CODEDIR)/src/tree.o
+LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle.o $(CODEDIR)/src/gravity.o $(CODEDIR)/src/integrator.o $(CODEDIR)/src/integrator_whfast.o $(CODEDIR)/src/integrator_whfasthelio.o $(CODEDIR)/src/integrator_ias15.o $(CODEDIR)/src/integrator_sei.o $(CODEDIR)/src/integrator_leapfrog.o $(CODEDIR)/src/integrator_hermes.o $(CODEDIR)/src/boundary.o $(CODEDIR)/src/input.o $(CODEDIR)/src/output.o $(CODEDIR)/src/collision.o $(CODEDIR)/src/tools.o $(CODEDIR)/src/communication_mpi.o $(CODEDIR)/src/zpr.o $(CODEDIR)/src/display.o $(CODEDIR)/src/derivatives.o
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_http.py
 PATCH_FILES = $(PYTHON) ./patch_files.py
@@ -34,7 +34,7 @@ $(CODEDIR)/Makefile:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
-	@echo "DOWNLOAD_CODES is not set. Rebound will not be downloaded and build."
+	@echo "DOWNLOAD_CODES is not set. Rebound will not be downloaded and built."
 	@echo "If you do want Rebound, set DOWNLOAD_CODES to 1."
 	@echo "bash> export DOWNLOAD_CODES=1"
 	@echo "csh> setenv DOWNLOAD_CODES 1"
