@@ -1,10 +1,6 @@
-"""
-Convert a 1D Henhey stellar model into a spherical particle distribution
-"""
 from amuse.units import units
 from amuse.community.evtwin.interface import EVtwin
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
-from amuse.plot import sph_particles_plot, native_plot
 from amuse.datamodel import Particle
 
 def convert_star_to_hydro_model(M, t_end):
@@ -19,6 +15,7 @@ def convert_star_to_hydro_model(M, t_end):
     return sph_particles
 
 if __name__ in ("__main__", "__plot__"):
+    from amuse.plot import sph_particles_plot, native_plot
     sph_particles = convert_star_to_hydro_model(2.0|units.MSun, 110|units.Myr)
     native_plot.figure(figsize = (10, 10), dpi = 50)
     sph_particles_plot(sph_particles)
