@@ -58,6 +58,10 @@ def import_unique(modulename):
             lib = ctypes.pydll.LoadLibrary(target.name)
             initfunc = getattr(lib, "init"+modulename)
             initfunc()
+            result = sys.modules[modulename]
+            result.__ctypeslib__ = lib
+            result.__ctypesfilename__ = target.name
+            result.__cleanup__ = cleanup_module
             return sys.modules[modulename]
     finally:
         if prevmodule is None and modulename in sys.modules:
@@ -72,3 +76,50 @@ def cleanup():
                 os.remove(filename)
             except Exception as ex:
                 print "Could not delete file:",filename,", exception:",ex
+
+# this struct will be passed as a ponter,
+# so we don't have to worry about the right layout
+class dl_phdr_info(ctypes.Structure):
+  _fields_ = [
+    ('padding0', ctypes.c_void_p), # ignore it
+    ('dlpi_name', ctypes.c_char_p),
+                            # ignore the reset
+  ]
+
+
+# call back function, I changed c_void_p to c_char_p
+callback_t = ctypes.CFUNCTYPE(ctypes.c_int,
+                       ctypes.POINTER(dl_phdr_info), 
+                       ctypes.POINTER(ctypes.c_size_t), ctypes.c_char_p)
+
+dl_iterate_phdr = ctypes.CDLL('libc.so.6').dl_iterate_phdr
+# I changed c_void_p to c_char_p
+dl_iterate_phdr.argtypes = [callback_t, ctypes.c_char_p]
+dl_iterate_phdr.restype = ctypes.c_int
+
+
+count = [0]
+def callback(info, size, data):
+    # simple search
+    #print "CLEANUP:", info.contents.dlpi_name
+    count[0] += 1
+    return 0
+  
+def cleanup_module(mod):
+    #print "CLEANUP:", mod, len(list(os.listdir('/proc/self/fd')))
+    #count[0] = 0
+    #dl_iterate_phdr(callback_t(callback), "")
+    #print "CLEANUP:", count[0]
+    
+    if hasattr(mod, '__ctypeslib__') and not mod.__ctypeslib__ is None:
+        lib = mod.__ctypeslib__
+        ctypes.cdll.LoadLibrary('libdl.so').dlclose(lib._handle)
+        mod.__ctypeslib__ = None
+        filename = mod.__ctypesfilename__
+        if os.path.exists(filename):
+            try:
+                os.remove(filename)
+            except Exception as ex:
+                print "CLEANUP Could not delete file:",filename,", exception:",ex
+        mod.__ctypesfilename__ = None
+                
