@@ -101,19 +101,25 @@ dl_iterate_phdr.restype = ctypes.c_int
 count = [0]
 def callback(info, size, data):
     # simple search
-    #print "CLEANUP:", info.contents.dlpi_name
+    print "CLEANUP:", info.contents.dlpi_name
     count[0] += 1
     return 0
   
 def cleanup_module(mod):
+    #print "CLEANUP!!"
+    #sys.stdout.flush()
     #print "CLEANUP:", mod, len(list(os.listdir('/proc/self/fd')))
     #count[0] = 0
     #dl_iterate_phdr(callback_t(callback), "")
     #print "CLEANUP:", count[0]
+    sys.stdout.flush()
     
     if hasattr(mod, '__ctypeslib__') and not mod.__ctypeslib__ is None:
         lib = mod.__ctypeslib__
-        ctypes.cdll.LoadLibrary('libdl.so').dlclose(lib._handle)
+        dlclose = ctypes.cdll.LoadLibrary('libdl.so').dlclose
+        dlclose.argtypes = [ctypes.c_void_p]
+        dlclose.restype = ctypes.c_int
+        errorcode =  dlclose(lib._handle)
         mod.__ctypeslib__ = None
         filename = mod.__ctypesfilename__
         if os.path.exists(filename):
