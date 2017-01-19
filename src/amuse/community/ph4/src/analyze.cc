@@ -937,12 +937,14 @@ local inline bool is_quasi_stable(hdyn2 *b)
 	    //PRL(max_period);
 	}
 
-	// The basic requirement for quasistability is that the
+	// The basic requirement for quasistability was that the
 	// configuration remain unchanged for 10 times the maximum
 	// orbital period in the system -- 10 outer orbits, in
-	// practice.
+	// practice.  Better just to look for repeat configurations.
 
-	bool quasi = b->get_system_time()-state_time > 10*max_period;
+	// bool quasi = b->get_system_time()-state_time > 10*max_period;
+	bool quasi = state_count > min_qstable_count;
+
 	if (verbose) {
 	    PRC(b->get_system_time()); PRL(state_time);
 	    PRC(b->get_system_time()-state_time); PRL(max_period);
