@@ -170,7 +170,8 @@ def run_ph4(initial_file = None,
         # Optionally create a restart file.
 
         if save_restart and time >= tsave:
-            save_file = 't='+'{:07.2f}'.format(time.number)
+            #save_file = 't='+'{:07.2f}'.format(time.number) # not in Python 2.6
+            save_file = 't=%07.2f'%time.number
             write_state_to_file(time, stars, gravity, multiples_code,
                                 save_file, delta_t, E0, cpu0)
             sys.stdout.flush()

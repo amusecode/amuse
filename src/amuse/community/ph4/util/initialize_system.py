@@ -205,7 +205,8 @@ def make_nbody(number_of_stars = 100, time = 0.0,
     E0,cpu0 = print_log(pre, time, multiples_code)
     sys.stdout.flush()
 
-    file = 't='+'{:07.2f}'.format(time.number)
+    # file = 't='+'{:07.2f}'.format(time.number)        # fails in Python 2.6
+    file = 't=%07.2f'%time.number
     write_state_to_file(time, stars, gravity, multiples_code,
                         file, delta_t, E0, cpu0)
     tree_copy = multiples_code.root_to_tree.copy()
