@@ -51,6 +51,8 @@ def setup_stellar_evolution_model():
     """
     while stellar_evolution.particles[0].stellar_type <= 12|units.stellar_type:
         stellar_evolution.evolve_model()
+#    while stellar_evolution.particles[0].stellar_type <= 3|units.stellar_type:
+#        stellar_evolution.evolve_model()
     
     pickle_stellar_model(stellar_evolution.particles[0], out_pickle_file)
     stellar_evolution.stop()
@@ -60,8 +62,10 @@ def run_supernova():
     # options:
     use_hydro_code = Gadget2 # Fi -or- Gadget2
     hydro_code_options = dict(number_of_workers=3) # e.g. dict(use_gl = True) or dict(redirection = "none")
-    number_of_sph_particles = 30000
+#    number_of_sph_particles = 30000
     t_end = 1.0e5 | units.s
+    number_of_sph_particles = 3000
+    t_end = 1.0e4 | units.s
     
     pickle_file = setup_stellar_evolution_model()
     
@@ -126,18 +130,25 @@ def run_supernova():
     hydro_code.stop()
     print "All done!\n"
     
+from prepare_figure import single_frame, figure_frame, set_tickmarks
+from distinct_colours import get_distinct
 
 def energy_plot(time, E_kin, E_pot, E_therm, figname):
     if not HAS_MATPLOTLIB:
         return
-    pyplot.figure(figsize = (5, 5))
-    plot(time, E_kin.as_quantity_in(units.erg), label='E_kin')
-    plot(time, E_pot, label='E_pot')
-    plot(time, E_therm, label='E_therm')
-    plot(time, E_kin+E_pot+E_therm, label='E_total')
-    xlabel('Time')
-    ylabel('Energy')
-    pyplot.legend(loc=3)
+    x_label = 'Time [hour]'
+    y_label = 'Energy [foe]'
+    single_frame(x_label, y_label, logx=False, logy=False, xsize=14, ysize=10, ymin=-1, ymax=-1)
+    cols = get_distinct(4)
+
+    FOE = 1.e+51 | units.erg
+    hour = 1|units.hour
+    pyplot.plot(time/hour, E_kin/FOE, label='E_kin', c=cols[0])
+    pyplot.plot(time/hour, E_pot/FOE, label='E_pot', c=cols[1])
+    pyplot.plot(time/hour, E_therm/FOE, label='E_therm', c=cols[2])
+    pyplot.plot(time/hour, (E_kin+E_pot+E_therm)/FOE, label='E_total', c=cols[3])
+
+    pyplot.legend(loc=4)
     pyplot.savefig(figname)
     print "\nPlot of energy evolution was saved to: ", figname
     pyplot.close()

@@ -79,7 +79,7 @@ class ReboundInterface(CodeInterface,
         return function  
     
 
-    INTEGRATORS = {"ias15": 0, "whfast": 1, "sei": 2, "wh": 3, "leapfrog": 4, "hybrid": 5, "none": 6}
+    INTEGRATORS = {"ias15": 0, "whfast": 1, "whfast-helio": 2, "sei": 3, "leapfrog": 4, "hermes": 5, "none": 6}
     def set_integrator(self, name, code_index = 0 ):
         return self._set_integrator(self.INTEGRATORS[name], code_index)
     

@@ -202,6 +202,7 @@ int get_total_radius(double * radius){
 int new_particle(int * index_of_the_particle, double mass, double x, 
   double y, double z, double vx, double vy, double vz, double radius, int code_index){
       if(code_index < 0 || code_index >= (signed) codes.size()){
+        *index_of_the_particle=0;
         return -10;
       }
       int new_id = max_id++;
@@ -221,7 +222,7 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.r = radius; 
       pt.lastcollision = 0;
       pt.c = NULL;
-      pt.id = new_id;
+      pt.hash = new_id;
       if(pt.m == 0.0) {
           codes[code_index].has_unsorted_massless_particles = true;
       }
@@ -807,16 +808,16 @@ int _set_integrator(int value, int code_index){
             code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
             break;
         case 2:
-            code->integrator = reb_simulation::REB_INTEGRATOR_SEI;
+            code->integrator = reb_simulation::REB_INTEGRATOR_WHFASTHELIO;
             break;
         case 3:
-            code->integrator = reb_simulation::REB_INTEGRATOR_WH;
+            code->integrator = reb_simulation::REB_INTEGRATOR_SEI;
             break;
         case 4:
             code->integrator = reb_simulation::REB_INTEGRATOR_LEAPFROG;
             break;
         case 5:
-            code->integrator = reb_simulation::REB_INTEGRATOR_HYBRID;
+            code->integrator = reb_simulation::REB_INTEGRATOR_HERMES;
             break;
         case 6:
             code->integrator = reb_simulation::REB_INTEGRATOR_NONE;

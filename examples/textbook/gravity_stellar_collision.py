@@ -18,7 +18,24 @@ def merge_two_stars(bodies, particles_in_encounter):
     new_particle.radius = 0 | units.RSun
     bodies.add_particles(new_particle)
     bodies.remove_particles(particles_in_encounter)
-    
+
+def resolve_collision(collision_detection, gravity, stellar, bodies):
+    if collision_detection.is_set():
+        E_coll = gravity.kinetic_energy + gravity.potential_energy
+        print "At time=", gravity.model_time.in_(units.Myr), "number of encounters=", len(collision_detection.particles(0))
+        Nenc = 0
+        for ci in range(len(collision_detection.particles(0))): 
+            particles_in_encounter = Particles(particles=[collision_detection.particles(0)[ci], collision_detection.particles(1)[ci]])
+            particles_in_encounter = particles_in_encounter.get_intersecting_subset_in(bodies)
+
+            merge_two_stars(bodies, particles_in_encounter)
+            bodies.synchronize_to(gravity.particles)
+            bodies.synchronize_to(stellar.particles)
+            Nenc+=1
+            print "Resolve encounter Number:", Nenc
+        dE_coll = E_coll - (gravity.kinetic_energy + gravity.potential_energy)
+        print "dE_coll =", dE_coll, "N_enc=", Nenc
+
 def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
 
     masses = new_salpeter_mass_distribution(N, Mmin, Mmax)
@@ -38,7 +55,6 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     stellar = SeBa()
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(bodies)
-
 
     channel_from_se_to_framework = stellar.particles.new_channel_to(bodies)
     channel_from_gd_to_framework = gravity.particles.new_channel_to(bodies)
@@ -62,20 +78,7 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
         gravity.evolve_model(time)
         dE_dyn = E_dyn - (gravity.kinetic_energy  + gravity.potential_energy)
 
-        if stopping_condition.is_set():
-            E_coll = gravity.kinetic_energy + gravity.potential_energy
-            print "At time=", gravity.model_time.in_(units.Myr), "number of encounters=", len(stopping_condition.particles(0))
-            for ci in range(len(stopping_condition.particles(0))): 
-                particles_in_encounter = Particles(particles=[stopping_condition.particles(0)[ci], stopping_condition.particles(1)[ci]])
-                particles_in_encounter = particles_in_encounter.get_intersecting_subset_in(bodies)
-
-                merge_two_stars(bodies, particles_in_encounter)
-                bodies.synchronize_to(gravity.particles)
-                bodies.synchronize_to(stellar.particles)
-                Nenc+=1
-                print "Resolve encounter Number:", Nenc
-                gravity.evolve_model(time)
-            dE_coll = E_coll - (gravity.kinetic_energy + gravity.potential_energy)
+        resolve_collision(stopping_condition, gravity, stellar, bodies)
 
         E_stellar = gravity.kinetic_energy + gravity.potential_energy 
         stellar.evolve_model(time)
