@@ -14,13 +14,13 @@ print_name = 'SecularMultiple'
 class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     """
     SecularMultiple -- by Adrian Hamers, based on 2016MNRAS.459.2827H
-    
+
     June 2016
-    
+
     A code to compute the secular (orbit-averaged) gravitational dynamics of hierarchical multiple systems composed of nested binary orbits (simplex-type systems). with any configuration and any number of bodies. A particle can repesent a binary (`is_binary = True') or a body (`is_binary = False'). The structure of the system is determined by linking to other particles with the attributes child1 and child2. Tidal interactions and relativistic corrections are included in an ad hoc fashion (tides: treating the companion as a single body, even if it is not; relativistic terms: only including binary-binary interactions).
-    
+
         .. [#] Hamers & Portegies Zwart, 2016, MNRAS 459, 2827
-    
+
     """
     include_headers = ['interface.h','src/types.h','src/evolve.h','src/ODE_system.h']
 
@@ -42,10 +42,10 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('is_binary',              dtype='bool',       direction=function.IN,  unit=NO_UNIT)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def delete_particle():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.result_type = 'int32'
         return function
@@ -55,7 +55,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     def set_children():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('child1',                 dtype='int32',      direction=function.IN,  unit=LINK('particles'))
         function.addParameter('child2',                 dtype='int32',      direction=function.IN,  unit=LINK('particles'))
         function.result_type = 'int32'
@@ -65,7 +65,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     def get_children():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('child1',                 dtype='int32',      direction=function.OUT, unit=LINK('particles'))
         function.addParameter('child2',                 dtype='int32',      direction=function.OUT, unit=LINK('particles'))
         function.result_type = 'int32'
@@ -76,16 +76,16 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     def set_mass():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('mass',                   dtype='float64',    direction=function.IN,  unit=unit_m)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_mass():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('mass',                   dtype='float64',    direction=function.OUT, unit=unit_m)
         function.result_type = 'int32'
         return function
@@ -95,16 +95,16 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     def set_radius():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('radius',                 dtype='float64',    direction=function.IN,  unit=unit_l)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_radius():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('radius',                 dtype='float64',    direction=function.OUT, unit=unit_l)
         function.result_type = 'int32'
         return function
@@ -114,7 +114,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     def get_level():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)        
+        function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('level',                  dtype='int32',      direction=function.OUT, unit=NO_UNIT)
         function.result_type = 'int32'
         return function
@@ -134,7 +134,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('spin_vec_z',             dtype='float64',    direction=function.IN,  unit=1.0/unit_t)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_spin_vector():
         function = LegacyFunctionSpecification()
@@ -144,7 +144,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('spin_vec_y',             dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
         function.addParameter('spin_vec_z',             dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
         function.result_type = 'int32'
-        return function   
+        return function
 
 
     ################################
@@ -164,7 +164,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('h_vec_z',                dtype='float64',    direction=function.IN,  unit=unit_h)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_orbital_vectors():
         function = LegacyFunctionSpecification()
@@ -177,9 +177,9 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('h_vec_y',                dtype='float64',    direction=function.OUT, unit=unit_h)
         function.addParameter('h_vec_z',                dtype='float64',    direction=function.OUT, unit=unit_h)
         function.result_type = 'int32'
-        return function    
+        return function
 
-        
+
     @legacy_function
     def set_orbital_elements():
         function = LegacyFunctionSpecification()
@@ -192,7 +192,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('longitude_of_ascending_node',dtype='float64',    direction=function.IN,  unit=NO_UNIT)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_orbital_elements():
         function = LegacyFunctionSpecification()
@@ -204,9 +204,9 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('argument_of_pericenter',     dtype='float64',    direction=function.OUT, unit=NO_UNIT)
         function.addParameter('longitude_of_ascending_node',dtype='float64',    direction=function.OUT, unit=NO_UNIT)
         function.result_type = 'int32'
-        return function 
+        return function
 
-        
+
     @legacy_function
     def get_inclination_relative_to_parent():
         function = LegacyFunctionSpecification()
@@ -214,7 +214,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('index_of_the_particle',          dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('inclination_relative_to_parent', dtype='float64',    direction=function.OUT, unit=NO_UNIT)
         function.result_type = 'int32'
-        return function 
+        return function
 
 
     @legacy_function
@@ -224,13 +224,13 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('index_of_the_particle',  dtype='int32',      direction=function.IN,  unit=INDEX)
         function.addParameter('de_dt',                  dtype='float64',    direction=function.OUT, unit=1.0/unit_t)
         function.result_type = 'int32'
-        return function 
+        return function
 
 
     ################
     ### PN terms ###
     ################
-            
+
     @legacy_function
     def set_include_pairwise_1PN_terms():
         function = LegacyFunctionSpecification()
@@ -290,7 +290,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('tides_method',                   dtype='int32',      direction=function.OUT, unit=NO_UNIT)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def set_include_tidal_friction_terms():
         function = LegacyFunctionSpecification()
@@ -417,7 +417,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     ####################
     ### root finding ###
     ####################
-    
+
     ### secular breakdown ###
     @legacy_function
     def set_check_for_secular_breakdown():
@@ -492,7 +492,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('dynamical_instability_central_particle',  dtype='int32',      direction=function.OUT, unit=LINK('particles'))
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def set_dynamical_instability_K_parameter():
         function = LegacyFunctionSpecification()
@@ -612,7 +612,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     @legacy_function
     def set_root_finding_state():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True        
+        function.can_handle_array = True
         function.addParameter('index_of_the_particle',                              dtype='int32',      direction=function.IN,  unit=NO_UNIT)
         function.addParameter('secular_breakdown_has_occurred',                     dtype='bool',       direction=function.IN,  unit=NO_UNIT)
         function.addParameter('dynamical_instability_has_occurred',                 dtype='bool',       direction=function.IN,  unit=NO_UNIT)
@@ -621,16 +621,16 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('RLOF_at_pericentre_has_occurred',                    dtype='bool',       direction=function.IN,  unit=NO_UNIT)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_root_finding_state():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True        
+        function.can_handle_array = True
         function.addParameter('index_of_the_particle',                              dtype='int32',  direction=function.IN,  unit=NO_UNIT)
         function.addParameter('secular_breakdown_has_occurred',                     dtype='bool',   direction=function.OUT, unit=NO_UNIT)
         function.addParameter('dynamical_instability_has_occurred',                 dtype='bool',   direction=function.OUT, unit=NO_UNIT)
         function.addParameter('physical_collision_or_orbit_crossing_has_occurred',  dtype='bool',   direction=function.OUT, unit=NO_UNIT)
-        function.addParameter('minimum_periapse_distance_has_occurred',             dtype='bool',   direction=function.OUT, unit=NO_UNIT)        
+        function.addParameter('minimum_periapse_distance_has_occurred',             dtype='bool',   direction=function.OUT, unit=NO_UNIT)
         function.addParameter('RLOF_at_pericentre_has_occurred',                    dtype='bool',   direction=function.OUT, unit=NO_UNIT)
         function.result_type = 'int32'
         return function
@@ -639,7 +639,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     ########################
     ### evolve interface ###
     ########################
-   
+
     @legacy_function
     def evolve_interface():
         function = LegacyFunctionSpecification()
@@ -651,7 +651,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('error_code',             dtype='int32',      direction=function.OUT, unit=NO_UNIT)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def determine_binary_parents_levels_and_masses_interface():
         function = LegacyFunctionSpecification()
@@ -662,7 +662,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
     #######################
     ### code parameters ###
     #######################
-    
+
 
     ##################
     ### tolerances ###
@@ -681,7 +681,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('value',                  dtype='float64',    direction=function.IN,  unit=NO_UNIT)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_absolute_tolerance_eccentricity_vectors():
         function = LegacyFunctionSpecification()
@@ -691,6 +691,34 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
 
     @legacy_function
     def set_absolute_tolerance_eccentricity_vectors():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value',                  dtype='float64',    direction=function.IN,  unit=NO_UNIT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_absolute_tolerance_angular_momentum_vectors():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value',                  dtype='float64',    direction=function.OUT, unit=NO_UNIT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_absolute_tolerance_angular_momentum_vectors():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value',                  dtype='float64',    direction=function.IN,  unit=NO_UNIT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_absolute_tolerance_spin_vectors():
+        function = LegacyFunctionSpecification()
+        function.addParameter('value',                  dtype='float64',    direction=function.OUT, unit=NO_UNIT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_absolute_tolerance_spin_vectors():
         function = LegacyFunctionSpecification()
         function.addParameter('value',                  dtype='float64',    direction=function.IN,  unit=NO_UNIT)
         function.result_type = 'int32'
@@ -728,7 +756,7 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
         function.result_type = 'int32'
         return function
-        
+
     @legacy_function
     def get_include_octupole_order_binary_pair_terms():
         function = LegacyFunctionSpecification()
@@ -784,28 +812,28 @@ class SecularMultipleInterface(CodeInterface,    LiteratureReferencesMixIn):
         function.addParameter('value',                  dtype='bool',       direction=function.IN,  unit=NO_UNIT)
         function.result_type = 'int32'
         return function
-        
+
 class SecularMultiple(InCodeComponentImplementation):
 
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self,  SecularMultipleInterface(**options), **options)
         self.model_time = 0.0 | units.Myr
         self.particles_committed = False
-        
+
         self.initial_hamiltonian = 0.0 | unit_e
         self.hamiltonian = 0.0 | unit_e
         self.flag = 0
         self.error_code = 0
-        
+
 #        self.verbose = True
 #        self.debug = True
-       
+
     def define_particle_sets(self,object):
-       
+
         object.define_set('particles', 'index_of_the_particle')
         object.set_new   ('particles', 'new_particle')
         object.set_delete('particles', 'delete_particle')
-        
+
         object.add_setter('particles', 'set_children', names = ('child1','child2') )
         object.add_getter('particles', 'get_children', names = ('child1','child2') )
         object.add_setter('particles', 'set_mass')
@@ -813,7 +841,7 @@ class SecularMultiple(InCodeComponentImplementation):
         object.add_setter('particles', 'set_radius')
         object.add_getter('particles', 'get_radius')
         object.add_getter('particles', 'get_level')
-        
+
 
         object.add_setter('particles', 'set_spin_vector')
         object.add_getter('particles', 'get_spin_vector')
@@ -858,22 +886,22 @@ class SecularMultiple(InCodeComponentImplementation):
 
         object.add_setter('particles', 'set_check_for_physical_collision_or_orbit_crossing')
         object.add_getter('particles', 'get_check_for_physical_collision_or_orbit_crossing')
-        
+
         object.add_setter('particles', 'set_check_for_minimum_periapse_distance')
         object.add_getter('particles', 'get_check_for_minimum_periapse_distance')
         object.add_setter('particles', 'set_check_for_minimum_periapse_distance_value')
         object.add_getter('particles', 'get_check_for_minimum_periapse_distance_value')
-        
+
         object.add_setter('particles', 'set_check_for_RLOF_at_pericentre')
         object.add_getter('particles', 'get_check_for_RLOF_at_pericentre')
         object.add_setter('particles', 'set_check_for_RLOF_at_pericentre_use_sepinsky_fit')
         object.add_getter('particles', 'get_check_for_RLOF_at_pericentre_use_sepinsky_fit')
-        
+
         object.add_setter('particles', 'set_root_finding_state')
         object.add_getter('particles', 'get_root_finding_state')
 
     def define_parameters(self, object):
-        
+
         object.add_method_parameter(
             "get_relative_tolerance",
             "set_relative_tolerance",
@@ -944,7 +972,7 @@ class SecularMultiple(InCodeComponentImplementation):
             "include_dotriacontupole_order_binary_pair_terms",
             default_value = False
         )
- 
+
 
     def commit_particles(self):
         print print_name,' -- committing particles'
@@ -959,11 +987,11 @@ class SecularMultiple(InCodeComponentImplementation):
         particles.add_vector_attribute("h_vec",["h_vec_x","h_vec_y","h_vec_z"])
 
         ### evaluate the initial hamiltonian ###
-        time_step = 0.0 | units.Myr 
+        time_step = 0.0 | units.Myr
         end_time,self.initial_hamiltonian,flag,error_code = self.evolve_interface(self.model_time,time_step)
-    
+
         self.particles_committed = True
-        
+
     def evolve_model(self,end_time):
         if end_time is None:
             print print_name,' -- end time not specified in evolve_model! exiting'
@@ -973,7 +1001,7 @@ class SecularMultiple(InCodeComponentImplementation):
 
         ### integrate system of ODEs ###
         start_time = self.model_time
-        time_step = end_time - start_time        
+        time_step = end_time - start_time
         end_time,self.hamiltonian,flag,error_code = self.evolve_interface(start_time,time_step)
 
         ### compute energy error ###
