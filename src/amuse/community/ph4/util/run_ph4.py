@@ -28,6 +28,15 @@ from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
 from amuse import io
 from utils import *
 
+def handle_callback (time, star1, star2):
+    print ''
+    print '    callback'
+    print '   ', time
+    print '   ', star1
+    print '   ', star2
+    print ''
+    return True
+
 def run_ph4(initial_file = None,
             end_time = 0 | nbody_system.time,
             input_delta_t = 0.0 | nbody_system.time,
@@ -99,6 +108,9 @@ def run_ph4(initial_file = None,
     else:
         print "using stored delta_t =", delta_t
 
+    print input_timestep_parameter
+    print gravity.parameters.timestep_parameter
+
     if input_timestep_parameter > 0:
         if input_timestep_parameter != gravity.parameters.timestep_parameter:
             print 'modifying timestep_parameter from stored', \
@@ -149,7 +161,7 @@ def run_ph4(initial_file = None,
     while time < end_time:
 
         time += delta_t
-        multiples_code.evolve_model(time)
+        multiples_code.evolve_model(time) #, callback=handle_callback)
 
         # Copy values from the module to the set in memory.
 
@@ -261,7 +273,7 @@ if __name__ == '__main__':
     # should be reproducible.
 
     if (not strict_restart):
-        run_ph4(initial_file, t_end, delta_t,
+        run_ph4(initial_file, t_end, delta_t, Delta_t,
                 timestep_parameter, softening_length,
                 n_workers, use_gpu, gpu_worker,
                 use_multiples,

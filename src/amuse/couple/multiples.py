@@ -383,7 +383,7 @@ class Multiples(object):
             print 'number of multiples:', len(self.root_to_tree)
             sys.stdout.flush()
 
-    def evolve_model(self, end_time):
+    def evolve_model(self, end_time, callback=None):
 
         stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
@@ -456,21 +456,6 @@ class Multiples(object):
                 # temporarily duplicated this check in the ph4 module
                 # (jdata.cc).
 
-                # r = (star2.position-star1.position).length()
-                # v = (star2.velocity-star1.velocity).length()
-                # cos_angle = numpy.inner((star2.velocity-star1.velocity)/v,
-                #                         (star2.position-star1.position)/r)
-                # angle = numpy.arccos(cos_angle)
-                # 
-                # #if r < 0.5 * (star1.radius + star2.radius) \	# ???
-                # #        or angle > (numpy.pi * 0.44):
-                # 
-                # # Proceed only if the stars are moving parallel or
-                # # toward each other.  We assume all angles more than
-                # # 80 degrees will need to check binary from.
-                # 
-                # if angle > (numpy.pi * 0.44):
-
                 r = (star2.position-star1.position).length()
                 v = (star2.velocity-star1.velocity).length()
 
@@ -500,6 +485,10 @@ class Multiples(object):
                     star1 = star1.as_particle_in_set(self._inmemory_particles)
                     star2 = star2.as_particle_in_set(self._inmemory_particles)
 
+                    cont = True
+                    if callback != None:
+                        cont = callback(time, star1, star2)
+
                     print 'initial top-level:',         \
                         star1.id, '('+str(star1.radius)+')', \
                         star2.id, '('+str(star2.radius)+')'
@@ -520,7 +509,7 @@ class Multiples(object):
                                                 self.gravity_code.particles,
                                                 self.kepler)
 
-                    if not veto:
+                    if cont and not veto:
 
                         # Recommit is done automatically and
                         # reinitializes all particles.  Later we will
