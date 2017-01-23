@@ -35,7 +35,7 @@ def handle_callback (time, star1, star2):
     print '   ', star1
     print '   ', star2
     print ''
-    return True
+    return True		# NOTE: returning False will skip this encounter
 
 def run_ph4(initial_file = None,
             end_time = 0 | nbody_system.time,
