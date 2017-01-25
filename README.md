@@ -49,7 +49,7 @@ packages as part of the system.
 
 1. Make a prerequisite software directory (can be set to any directory)
 
-        mkdir ~/amuse/prerequsites
+        mkdir ~/amuse/prerequisites
 
 2. Set the PREFIX, PATH and LD_LIBRARY_PATH environement variables
 
