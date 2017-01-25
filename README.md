@@ -3,7 +3,7 @@ scripts to simulate astrophysical problems in different domains.
 
 The documentation and the software can be found at:
 
-    http://www.amusecode.org
+* http://www.amusecode.org
 
 Getting Started
 ===============
@@ -24,11 +24,15 @@ on your system.
 
 In Ubuntu you can setup the environment with (as root):
 
-    apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
+```bash
+apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
+```
 
 In Fedora you can setup the environment with (as root)::
 
-    yum groupinstall "Development Tools" "Development Libraries"
+```bash
+yum groupinstall "Development Tools" "Development Libraries"
+```
 
 In OS X you can install homebrew or macports package managers (both
 need the Apple Developer Tools). If you do not want to use any of
@@ -49,30 +53,39 @@ packages as part of the system.
 
 1. Make a prerequisite software directory (can be set to any directory)
 
-        mkdir ~/amuse/prerequisites
+```bash
+mkdir ~/amuse/prerequisites
+```
 
 2. Set the PREFIX, PATH and LD_LIBRARY_PATH environement variables
 
-        export PREFIX=~/amuse/prerequisites
-        export PATH=${PREFIX}/bin:${PATH}
-        export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+```bash
+export PREFIX=~/amuse/prerequisites
+export PATH=${PREFIX}/bin:${PATH}
+export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+```
 
 2b. If you have ifort and/or icc, or if you encounter problems with NetCDF 
 (optional dependency) you may need to set also:
 
-        export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
-        export CPATH=${PREFIX}/include:${CPATH}
+```bash
+export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
+export CPATH=${PREFIX}/include:${CPATH}
+```
 
 3. Download and install python
 
-        cd doc/install
-        ./install-python.sh
+```bash
+cd doc/install
+./install-python.sh
+```
 
 4. Download and install the other pre-requisites
    (script is also in the `doc/install` directory)
 
-        ./install.py install
-
+```bash
+./install.py install
+```
 
 Set Environment
 ===============
@@ -82,9 +95,11 @@ directory is first in the path.
 
 In bash, you can extend your `.bashrc` file with:
 
-    export PREFIX=~/amuse/prerequisites
-    export PATH=${PREFIX}/bin:${PATH}
-    export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+```bash
+export PREFIX=~/amuse/prerequisites
+export PATH=${PREFIX}/bin:${PATH}
+export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+```
 
 Building AMUSE
 ==============
@@ -96,11 +111,14 @@ prerequisite packages have been installed.
 
 1. Configure the source code
 
-        ./configure
-
+```bash
+./configure
+```
 2. Build the code with make
 
-        make
+```bash
+ make
+```
 
 Running the tests
 =================
@@ -112,4 +130,6 @@ To run these tests do:
 
 1. Run the automatic tests
 
-        nosetests -v
+```bash
+nosetests -v
+```
