@@ -12,8 +12,8 @@ OBJS = interface.o src/evolve.o src/ODE_system.o src/types.o src/cvode/cvode.o s
 
 all: worker_code
 
-cleanall: clean
-	$(RM) worker_code *
+distclean: clean
+	$(RM) worker_code 
 
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc src/*.o*
