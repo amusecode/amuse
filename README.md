@@ -40,7 +40,7 @@ these package managers you will need to install a fortran compiler
 as the Apple Developer Tools do not include a fortran compiler, you
 can find one at:
 
-    http://hpc.sourceforge.net/
+* http://hpc.sourceforge.net/
 
 Installing Prerequisites
 ========================
