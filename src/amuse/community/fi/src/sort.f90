@@ -57,10 +57,13 @@ subroutine mortonsort
   vel(1:nbodies,i)=tempvect(1:nbodies)
  enddo
 
- do i=1,ndim+1
+ do i=1,ndim
   tempvect(1:nbodies)=acc(bodlist(1:nbodies),i)
   acc(1:nbodies,i)=tempvect(1:nbodies)
  enddo
+
+ tempvect(1:nbodies)=aacc(bodlist(1:nbodies))
+ aacc(1:nbodies)=tempvect(1:nbodies)
 
  tempvect(1:nbodies)=phi(bodlist(1:nbodies))
  phi(1:nbodies)=tempvect(1:nbodies)
