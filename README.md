@@ -53,39 +53,39 @@ packages as part of the system.
 
 1. Make a prerequisite software directory (can be set to any directory)
 
-```bash
-mkdir ~/amuse/prerequisites
-```
+    ```bash
+    mkdir ~/amuse/prerequisites
+    ```
 
 2. Set the PREFIX, PATH and LD_LIBRARY_PATH environement variables
 
-```bash
-export PREFIX=~/amuse/prerequisites
-export PATH=${PREFIX}/bin:${PATH}
-export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
-```
+    ```bash
+    export PREFIX=~/amuse/prerequisites
+    export PATH=${PREFIX}/bin:${PATH}
+    export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+    ```
 
-2b. If you have ifort and/or icc, or if you encounter problems with NetCDF 
-(optional dependency) you may need to set also:
+    2b. If you have ifort and/or icc, or if you encounter problems with NetCDF 
+    (optional dependency) you may need to set also:
 
-```bash
-export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
-export CPATH=${PREFIX}/include:${CPATH}
-```
+        ```bash
+        export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
+        export CPATH=${PREFIX}/include:${CPATH}
+        ```
 
 3. Download and install python
 
-```bash
-cd doc/install
-./install-python.sh
-```
+    ```bash
+    cd doc/install
+    ./install-python.sh
+    ```
 
 4. Download and install the other pre-requisites
    (script is also in the `doc/install` directory)
 
-```bash
-./install.py install
-```
+    ```bash
+    ./install.py install
+    ```
 
 Set Environment
 ===============
@@ -111,14 +111,15 @@ prerequisite packages have been installed.
 
 1. Configure the source code
 
-```bash
-./configure
-```
-2. Build the code with make
+    ```bash
+    ./configure
+    ```
 
-```bash
- make
-```
+2. Build the code with make
+    
+    ```bash
+    make
+    ```
 
 Running the tests
 =================
