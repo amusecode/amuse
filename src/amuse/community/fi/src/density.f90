@@ -359,9 +359,15 @@ subroutine densnhsmooth
     write(*,'(" <densnhsmooth> time:", 3f8.2)') maxtime,mintime,tottime
     print*,'<densnhsmooth> max iter, fails:',imax,jtot
   endif
-  if(niter.NE.nsphact) call terror("inconsistent densnhsmooth iter count")
   if(verbosity.GT.0.AND.drhosum/npactive.GT.0.01) &
       print*,' *** drho warning *** ',drhosum/npactive, npactive
+  if(niter.NE.nsphact) then
+    print*, niter,nsphact
+    print*, nchunk,maxthread
+    print*, minval(hsmooth(1:nsph)),maxval(hsmooth(1:nsph)), drhosum
+    print*, minval(hsmooth(pactive(1:nsphact))),maxval(hsmooth(pactive(1:nsphact)))
+    call terror("inconsistent densnhsmooth iter count")
+  endif
 end subroutine
 
 subroutine gatterdens(n,spos,hsearch,dens,ddensdh)
