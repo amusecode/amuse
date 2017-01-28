@@ -17,6 +17,7 @@ subroutine postprocessread
  
   if(sortpart) then
     call mortonsort
+! fix order of tempr
     if(allocated(tempr)) call sort_additional_real(nsph,tempr)
   endif  
  

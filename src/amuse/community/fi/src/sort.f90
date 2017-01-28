@@ -159,6 +159,7 @@ subroutine mortonsort
  
 end subroutine
 
+! to sort additional (callable only after mortonsort) 
 subroutine sort_additional_real(n,array)
   include 'globals.h'
   integer :: n
