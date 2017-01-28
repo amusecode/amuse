@@ -15,6 +15,11 @@ subroutine postprocessread
     tempr(1:nsph)=tempvect(1:nsph)
   endif
  
+  if(sortpart) then
+    call mortonsort
+    if(allocated(tempr)) call sort_additional_real(nsph,tempr)
+  endif  
+ 
   if(input(1).EQ.0) call terror(' input error: need masses')
 
   if(input(42).EQ.0) then
@@ -196,7 +201,7 @@ subroutine postprocessread
     call refresh_itimestp
   endif
    
-  if(sortpart) call mortonsort
+!  if(sortpart) call mortonsort
 
   if(allocated(tempr)) deallocate(tempr)
   
