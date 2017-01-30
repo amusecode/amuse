@@ -76,7 +76,7 @@ def gravity_hydro_bridge(a, ecc, t_end, n_steps, Rgas, Mgas, Ngas):
     print "dmdt=", stars.dmdt
     dt = 0.1|units.day
     mgas =  0.1*abs(stars.dmdt.sum()*dt)
-    print "mgas=", mgas, stars.dmdt/mgas
+    print "mgas=", mgas.value_in(units.MJupiter), stars.dmdt/mgas
 
     vc = constants.G*stars.mass.sum()/a
     Porb = 2*numpy.pi*(a**3/(constants.G*stars.mass.sum())).sqrt()
