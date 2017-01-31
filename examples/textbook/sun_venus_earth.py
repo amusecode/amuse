@@ -4,9 +4,9 @@ def sun_venus_and_earth():
     particles = Particles(3)
     sun = particles[0]
     sun.mass = 1.0 | units.MSun
+    sun.radius = 1.0 | units.RSun
     sun.position = (0.0,0.0,0.0) | units.m
     sun.velocity = (0.0,0.0,0.0) | (units.m/units.s)
-    sun.radius = 1.0 | units.RSun
 
     venus = particles[1]
     venus.mass = 0.0025642 | units.MJupiter
@@ -15,8 +15,8 @@ def sun_venus_and_earth():
     venus.velocity = (-17.0420, 30.5055, 1.4004) | units.kms
 
     earth = particles[2]
-    earth.mass = 5.9736e24 | units.kg
-    earth.radius = 6371.0 | units.km
+    earth.mass = 1.0 | units.MEarth
+    earth.radius = 1.0 | units.REarth
     earth.position = (0.2421, -0.9875, -0.00004) | units.AU
     earth.velocity = (28.4468, 6.98125, 0.0002) | units.kms
 
