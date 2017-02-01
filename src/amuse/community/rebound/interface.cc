@@ -295,58 +295,58 @@ int _evolve_code(double _tmax, code_state * cs){
     double maxR = 0;
     double minD = 0;
     struct timeval tim;
-	gettimeofday(&tim, NULL);
-	double timing_initial = tim.tv_sec+(tim.tv_usec/1000000.0);
-	double tmax = _tmax;
-	code-> dt_last_done = code->dt;
-	int last_step = 0;
-	int ret_value = 0;
+    gettimeofday(&tim, NULL);
+    double timing_initial = tim.tv_sec+(tim.tv_usec/1000000.0);
+    double tmax = _tmax;
+    code-> dt_last_done = code->dt;
+    int last_step = 0;
+    int ret_value = 0;
     double ke = 0.0, ke1 = 0.0;
-	const double dtsign = copysign(1.,code->dt); 				// Used to determine integration direction
+    const double dtsign = copysign(1.,code->dt);                // Used to determine integration direction
     
     time_t starttime, currenttime;
     time(&starttime);
     get_kinetic_energy(cs->subset, &ke);
     //printf("Code time: %d ,  %f -> %f (%f)\n",cs->subset , code->t, tmax, ke);
     while(code->t*dtsign<tmax*dtsign && last_step<2 && ret_value==0){
-		if (code->N<=0){
-			fprintf(stderr,"\n\033[1mError!\033[0m No particles found. Exiting.\n");
-			return(1);
-		}
+        if (code->N<=0){
+            fprintf(stderr,"\n\033[1mError!\033[0m No particles found. Exiting.\n");
+            return(1);
+        }
        
-		reb_step(code); 								// 0 to not do timing within step 
+        reb_step(code);                                 // 0 to not do timing within step 
         
-		if ((code->t+code->dt)*dtsign>=tmax*dtsign && exact_finish_time==1){
-			reb_integrator_synchronize(code);
-			code->dt = tmax-code->t;
-			last_step++;
-		}else{
-			code->dt_last_done = code->dt;
-		}
-		if (maxR){
-			// Check for escaping particles
-			const double maxR2 = maxR*maxR;
-			for (int i=0;i<code->N-code->N_var;i++){
-				struct reb_particle p = code->particles[i];
-				double r2 = p.x*p.x + p.y*p.y + p.z*p.z;
-				if (r2>maxR2){
-					ret_value = 2;
-				}
-			}
-		}
-		if (is_collision_detection_enabled){
-			// Check for close encounters
-			for (int i=0;i<code->N-code->N_var;i++){
-				struct reb_particle pi = code->particles[i];
-				for (int j=0;j<i;j++){
-					struct reb_particle pj = code->particles[j];
-					const double x = pi.x-pj.x;
-					const double y = pi.y-pj.y;
-					const double z = pi.z-pj.z;
-					const double r2 = x*x + y*y + z*z;
+        if ((code->t+code->dt)*dtsign>=tmax*dtsign && exact_finish_time==1){
+            reb_integrator_synchronize(code);
+            code->dt = tmax-code->t;
+            last_step++;
+        }else{
+            code->dt_last_done = code->dt;
+        }
+        if (maxR){
+            // Check for escaping particles
+            const double maxR2 = maxR*maxR;
+            for (int i=0;i<code->N-code->N_var;i++){
+                struct reb_particle p = code->particles[i];
+                double r2 = p.x*p.x + p.y*p.y + p.z*p.z;
+                if (r2>maxR2){
+                    ret_value = 2;
+                }
+            }
+        }
+        if (is_collision_detection_enabled){
+            // Check for close encounters
+            for (int i=0;i<code->N-code->N_var;i++){
+                struct reb_particle pi = code->particles[i];
+                for (int j=0;j<i;j++){
+                    struct reb_particle pj = code->particles[j];
+                    const double x = pi.x-pj.x;
+                    const double y = pi.y-pj.y;
+                    const double z = pi.z-pj.z;
+                    const double r2 = x*x + y*y + z*z;
                     
                     const double rsum = pi.r+pj.r;
-					if (r2<(rsum*rsum)){
+                    if (r2<(rsum*rsum)){
                         int stopping_index  = next_index_for_stopping_condition();
                         if(stopping_index < 0)
                         {
@@ -359,13 +359,13 @@ int _evolve_code(double _tmax, code_state * cs){
                             set_stopping_condition_particle_index(stopping_index, 1, get_identity_from_index(particle_location(code,j, -1)));
                         }
                         is_condition_set = 1;
-					}
-				}
-			}
+                    }
+                }
+            }
             if(is_condition_set) {
                 break;
             }
-		}
+        }
         // AMUSE STOPPING CONDITIONS
         if (is_out_of_box_detection_enabled) {
             int i,k;
@@ -421,15 +421,15 @@ int _evolve_code(double _tmax, code_state * cs){
                 break;
             }
         }
-	}
-	reb_integrator_synchronize(code);
-	code->dt = code->dt_last_done;
+    }
+    reb_integrator_synchronize(code);
+    code->dt = code->dt_last_done;
     get_kinetic_energy(cs->subset, &ke1);
     //printf("Code time: %d ,  %f -> %f (%f,%f)\n",cs->subset , code->t, tmax, ke1, (ke1-ke)/ke);
-	gettimeofday(&tim, NULL);
-	double timing_final = tim.tv_sec+(tim.tv_usec/1000000.0);
-	double timing = timing_final-timing_initial;
-	return ret_value;
+    gettimeofday(&tim, NULL);
+    double timing_final = tim.tv_sec+(tim.tv_usec/1000000.0);
+    double timing = timing_final-timing_initial;
+    return ret_value;
 }
 
 int set_eps2(double epsilon_squared, int code_index){
