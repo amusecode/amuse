@@ -2,7 +2,6 @@ import numpy
 from matplotlib import pyplot 
 from amuse.lab import *
 from amuse.ext.molecular_cloud import molecular_cloud
-from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.plot import sph_particles_plot, native_plot
 
 from prepare_figure import figure_frame
@@ -91,8 +90,7 @@ def plummer_model(N, M, R):
 
 def GMC_model(N, M, R):
     converter = nbody_system.nbody_to_si(M, R)
-    parts=molecular_cloud(targetN=N,convert_nbody=converter,
-            base_grid=body_centered_grid_unit_cube, seed=100).result
+    parts=molecular_cloud(targetN=N, convert_nbody=converter, seed=100).result
     sph=Fi(converter)
     sph.gas_particles.add_particle(parts)
     sph.evolve_model(1|units.day)
@@ -109,9 +107,9 @@ def plot_plummer_model(N, M, R):
     sph_particles_plot(sph_particles, min_size = 500, max_size = 500, alpha=0.01, view=(-50, 50, -50, 50)|units.parsec)
     ax.set_axis_bgcolor('white')
     pyplot.xlabel(x_label)
-    pyplot.ylabel(x_label)
+    pyplot.ylabel(y_label)
     native_plot.savefig("plummer_projected")
-
+    
 def plot_GMC_model(N, M, R):
     sph_particles = GMC_model(N, M, R)
 
@@ -121,7 +119,7 @@ def plot_GMC_model(N, M, R):
     sph_particles_plot(sph_particles, min_size = 500, max_size = 500, alpha=0.01, view=(-50, 50, -50, 50)|units.parsec)
     ax.set_axis_bgcolor('white')
     pyplot.xlabel(x_label)
-    pyplot.ylabel(x_label)
+    pyplot.ylabel(y_label)
     native_plot.savefig("molecular_cloud_projected")
   
 if __name__ in ("__main__","__plot__"):

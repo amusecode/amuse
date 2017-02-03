@@ -38,7 +38,7 @@ def integrate_solar_system(particles, end_time):
 
         kep.initialize_from_particles(SunEarth)
         a, e = kep.get_elements()
-        scatter((a-a0).in_(units.AU), e, c=color[0], lw=0)
+        scatter((a-a0).in_(units.AU), e, c=color[0], lw=0, s=80)
         if gravity.model_time> dt_dia:
             dt_dia += 10000 |units.yr
             if gravity.model_time<=(100|units.yr):
@@ -57,10 +57,11 @@ def integrate_solar_system(particles, end_time):
                 pyplot.text(0.0017, e+0.002, "{0:.0f}".format(0.001*gravity.model_time.value_in(units.yr))+"kyr")
             elif gravity.model_time<=(75000|units.yr):
                 pyplot.text(0.0014, e-0.002, "{0:.0f}".format(0.001*gravity.model_time.value_in(units.yr))+"kyr")
-            elif gravity.model_time<=(85000|units.yr):
-                pyplot.text(0.0014, e, "{0:.0f}".format(0.001*gravity.model_time.value_in(units.yr))+"kyr")
+            #elif gravity.model_time<=(85000|units.yr):
+            #    pyplot.text(0.0014, e, "{0:.0f}".format(0.001*gravity.model_time.value_in(units.yr))+"kyr")
             else:
-                pyplot.text((a-a0).value_in(units.AU), e, "{0:.0f}".format(0.001*gravity.model_time.value_in(units.yr))+"kyr")
+                pass
+            #    pyplot.text((a-a0).value_in(units.AU), e, "{0:.0f}".format(0.001*gravity.model_time.value_in(units.yr))+"kyr")
 
 
         gravity.evolve_model(gravity.model_time + dt)
@@ -69,6 +70,7 @@ def integrate_solar_system(particles, end_time):
 
     pyplot.xlabel(x_label)
     pyplot.ylabel(y_label)
+    pyplot.xlim(-0.001, 0.004)
 #    pyplot.show()
     pyplot.savefig("EarthOrbitVariation")
 
