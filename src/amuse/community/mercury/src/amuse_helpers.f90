@@ -40,7 +40,7 @@ module amuse_mercuryMod
 
   real*8,parameter :: rhocgs = AU * AU * AU * K2 / MSUN
 
-  integer :: opt(8)=(/0,0,3,2,0,0,0,0/)
+  integer :: opt(8)=(/0,0,1,2,0,0,0,0/)
 
 ! note that opflag= -2??? (=synchronizing epoch, 0=main integration)
 ! is not implemented; this may be convenient/necessary at some point
@@ -79,7 +79,7 @@ function mercury_init() result(ret)
   dtout=1.e30
   h0=8
   tol=1.e-12
-  opt=(/0,0,3,2,0,0,0,0/)
+  opt=(/0,0,1,2,0,0,0,0/)
   outfile(1)="/dev/null" !"osc_coor_vel_masses.out"
   outfile(2)="/dev/null" !"close_enc.out"
   outfile(3)="/dev/null" !"info.out"
