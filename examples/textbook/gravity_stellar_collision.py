@@ -17,24 +17,25 @@ def merge_two_stars(bodies, particles_in_encounter):
     new_particle.velocity = com_vel
     new_particle.radius = 0 | units.RSun
     bodies.add_particles(new_particle)
+    print "Two stars (M=",particles_in_encounter.mass,") collided at d=", com_pos.length()
     bodies.remove_particles(particles_in_encounter)
 
 def resolve_collision(collision_detection, gravity, stellar, bodies):
     if collision_detection.is_set():
         E_coll = gravity.kinetic_energy + gravity.potential_energy
-        print "At time=", gravity.model_time.in_(units.Myr), "number of encounters=", len(collision_detection.particles(0))
-        Nenc = 0
+        print "Collision at time=", gravity.model_time.in_(units.Myr)
         for ci in range(len(collision_detection.particles(0))): 
             particles_in_encounter = Particles(particles=[collision_detection.particles(0)[ci], collision_detection.particles(1)[ci]])
             particles_in_encounter = particles_in_encounter.get_intersecting_subset_in(bodies)
-
-            merge_two_stars(bodies, particles_in_encounter)
-            bodies.synchronize_to(gravity.particles)
-            bodies.synchronize_to(stellar.particles)
-            Nenc+=1
-            print "Resolve encounter Number:", Nenc
-        dE_coll = E_coll - (gravity.kinetic_energy + gravity.potential_energy)
-        print "dE_coll =", dE_coll, "N_enc=", Nenc
+            d = (particles_in_encounter[0].position-particles_in_encounter[1].position).length()
+            if particles_in_encounter.collision_radius.sum()>d:
+                merge_two_stars(bodies, particles_in_encounter)
+                bodies.synchronize_to(gravity.particles)
+                bodies.synchronize_to(stellar.particles)
+            else:
+                print "Encounter failed to resolve, because the stars were too small."
+            dE_coll = E_coll - (gravity.kinetic_energy + gravity.potential_energy)
+        print "Energy error in the collision: dE =", dE_coll 
 
 def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
 
@@ -56,36 +57,39 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(bodies)
 
-    channel_from_se_to_framework = stellar.particles.new_channel_to(bodies)
-    channel_from_gd_to_framework = gravity.particles.new_channel_to(bodies)
-    channel_from_framework_to_gd = bodies.new_channel_to(gravity.particles)
-    channel_from_se_to_framework.copy_attributes(["mass","radius", "age"])
+    channel_from_stellar = stellar.particles.new_channel_to(bodies,
+        attributes=["mass", "radius", "age"],
+        target_names=["mass", "radius", "age"])
+    channel_from_gravity = gravity.particles.new_channel_to(bodies,
+        attributes=["x", "y", "z", "vx", "vy", "vz", "mass", "radius"],
+        target_names=["x", "y", "z", "vx", "vy", "vz", "mass", "collision_radius"])
+    channel_to_gravity = bodies.new_channel_to(gravity.particles,
+        attributes=["mass", "collision_radius"], target_names=["mass", "radius"])
+    channel_from_stellar.copy()
     
     write_set_to_file(bodies.savepoint(0|units.Myr), filename, 'hdf5')
     E_init = gravity.kinetic_energy + gravity.potential_energy
 
-    
     Nenc = 0
-    #dE_enc = dE_dyn = dE_stellar = zero
     dE_coll = zero
     time = zero
     while time < t_end:
         time += dt
 
-        bodies.radius *= 1.e+5
-        channel_from_framework_to_gd.copy_attributes(["mass", "radius"])
-        E_dyn = gravity.kinetic_energy  + gravity.potential_energy 
-        gravity.evolve_model(time)
-        dE_dyn = E_dyn - (gravity.kinetic_energy  + gravity.potential_energy)
-
-        resolve_collision(stopping_condition, gravity, stellar, bodies)
-
         E_stellar = gravity.kinetic_energy + gravity.potential_energy 
         stellar.evolve_model(time)
         dE_stellar = E_stellar - (gravity.kinetic_energy + gravity.potential_energy)
 
-        channel_from_gd_to_framework.copy()
-        channel_from_se_to_framework.copy_attributes(["age", "mass", "radius"])
+        channel_from_stellar.copy()
+        bodies.collision_radius = 1.e+5 * bodies.radius
+        channel_to_gravity.copy()
+        
+        E_dyn = gravity.kinetic_energy  + gravity.potential_energy 
+        gravity.evolve_model(time)
+        dE_dyn = E_dyn - (gravity.kinetic_energy  + gravity.potential_energy)
+
+        channel_from_gravity.copy()
+        resolve_collision(stopping_condition, gravity, stellar, bodies)
 
         write_set_to_file(bodies.savepoint(time), filename, 'hdf5')
         print_diagnostics(time, bodies.mass.sum(), E_dyn, dE_dyn, dE_coll, dE_stellar)
@@ -94,9 +98,9 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     stellar.stop()
 
 def print_diagnostics(time, Mtot, Etot, dE_dyn, dE_coll, dE_stellar):
-        print "T=", time, 
-        print "M=", Mtot, 
-        print "E= ", Etot, 
+        print "Time=", time, 
+        print "Mtot=", Mtot, 
+        print "Etot= ", Etot, 
         print "dE(dyn)=", dE_dyn/Etot, 
         print "dE(coll)=", dE_coll/Etot, 
         print "dE(se)=", dE_stellar/Etot
@@ -131,5 +135,9 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
+    set_printing_strategy("custom", 
+                          preferred_units = [units.MSun, units.RSun, units.Myr], 
+                          precision = 4, prefix = "", 
+                          separator = " [", suffix = "]")
     main(**o.__dict__)
 
