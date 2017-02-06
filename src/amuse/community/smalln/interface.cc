@@ -163,8 +163,8 @@ int get_time(double * sys_time)
 int set_outfile(char * file)
 {
     smalln_outfile = string(file);
-    cout << "file = " << file << endl;
-    cout << "smalln_outfile = " << smalln_outfile << endl;
+    // cout << "file = " << file << endl;
+    // cout << "smalln_outfile = " << smalln_outfile << endl;
     return 0;
 }
 
