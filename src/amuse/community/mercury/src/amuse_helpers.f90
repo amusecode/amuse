@@ -952,49 +952,49 @@ end function
 !!!!!!! this can be commented out if the collisions with central
 !!!!!!! body should be completely skiped
 
-! Check for collisions with the central body
-      if (algor.eq.1) then
-        call mco_iden(time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
-      else
-        call bcoord (time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
-      end if
-      itmp = 2
-      if (algor.eq.11.or.algor.eq.12) itmp = 3
-      call mce_cent (time,h0,rcen,jcen,itmp,nbod,nbig,m,xh0,vh0,xh,vh, &
-       nhit,jhit,thit,dhit,algor,ngf,ngflag)
-!
-! If something hit the central body, restore the coords prior to this step
-      if (nhit.gt.0) then
-         write(6,*) "central body HIT"
-        call mco_iden (time,jcen,nbod,nbig,h0,m,xh0,vh0,xh,vh,ngf, &
-         ngflag,opt)
-        time = time - h0
-!
-! Merge the object(s) with the central body
-        do k = 1, nhit
-          i = 1
-          j = jhit(k)
-          call mce_coll (thit(k),tstart,en(3),jcen,i,j,nbod,nbig,m,xh, &
-           vh,s,rphys,stat,id,opt,mem,lmem,outfile(3))
-        end do
-!
-! Remove lost objects, reset flags and recompute Hill and physical radii
-        call mxx_elim (nbod,nbig,m,xh,vh,s,rho,rceh,rcrit,ngf,stat, &
-         id,mem,lmem,outfile(3),itmp)
-        if (opflag.ge.0) opflag = 1
-        dtflag = 1
-        call mce_init (tstart,algor,h0,jcen,rcen,rmax,cefac,nbod,nbig, &
-         m,xh,vh,s,rho,rceh,rphys,rce,rcrit,id,opt,outfile(2),0)
-        if (algor.eq.1) then
-          call mco_iden (time,jcen,nbod,nbig,h0,m,xh,vh,x,v,ngf,ngflag, &
-           opt)
-        else
-          call coord (time,jcen,nbod,nbig,h0,m,xh,vh,x,v,ngf,ngflag,opt)
-        end if
-!
-! Redo that integration time step
-        goto 150
-      end if
+!~ ! Check for collisions with the central body
+!~       if (algor.eq.1) then
+!~         call mco_iden(time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
+!~       else
+!~         call bcoord (time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
+!~       end if
+!~       itmp = 2
+!~       if (algor.eq.11.or.algor.eq.12) itmp = 3
+!~       call mce_cent (time,h0,rcen,jcen,itmp,nbod,nbig,m,xh0,vh0,xh,vh, &
+!~        nhit,jhit,thit,dhit,algor,ngf,ngflag)
+!~ !
+!~ ! If something hit the central body, restore the coords prior to this step
+!~       if (nhit.gt.0) then
+!~          write(6,*) "central body HIT"
+!~         call mco_iden (time,jcen,nbod,nbig,h0,m,xh0,vh0,xh,vh,ngf, &
+!~          ngflag,opt)
+!~         time = time - h0
+!~ !
+!~ ! Merge the object(s) with the central body
+!~         do k = 1, nhit
+!~           i = 1
+!~           j = jhit(k)
+!~           call mce_coll (thit(k),tstart,en(3),jcen,i,j,nbod,nbig,m,xh, &
+!~            vh,s,rphys,stat,id,opt,mem,lmem,outfile(3))
+!~         end do
+!~ !
+!~ ! Remove lost objects, reset flags and recompute Hill and physical radii
+!~         call mxx_elim (nbod,nbig,m,xh,vh,s,rho,rceh,rcrit,ngf,stat, &
+!~          id,mem,lmem,outfile(3),itmp)
+!~         if (opflag.ge.0) opflag = 1
+!~         dtflag = 1
+!~         call mce_init (tstart,algor,h0,jcen,rcen,rmax,cefac,nbod,nbig, &
+!~          m,xh,vh,s,rho,rceh,rphys,rce,rcrit,id,opt,outfile(2),0)
+!~         if (algor.eq.1) then
+!~           call mco_iden (time,jcen,nbod,nbig,h0,m,xh,vh,x,v,ngf,ngflag, &
+!~            opt)
+!~         else
+!~           call coord (time,jcen,nbod,nbig,h0,m,xh,vh,x,v,ngf,ngflag,opt)
+!~         end if
+!~ !
+!~ ! Redo that integration time step
+!~         goto 150
+!~       end if
       
 !!!!!!
 !!!!!!      
