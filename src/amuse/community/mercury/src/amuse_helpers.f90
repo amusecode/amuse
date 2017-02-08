@@ -24,6 +24,7 @@ module amuse_mercuryMod
     amuse_get_potential_at_point, &
     set_algor,get_algor, &
     mercury_set_rmax, mercury_get_rmax, &
+    mercury_set_cefac, mercury_get_cefac, &
     get_outputfiles,set_outputfiles
 
   include 'mercury.inc'
@@ -691,11 +692,23 @@ function mercury_set_rmax(r_max) result(ret)
     rmax = r_max
     ret = 0
 end function
-
 function mercury_get_rmax(r_max) result(ret)
     integer :: ret
     real*8 :: r_max
     r_max = rmax
+    ret = 0
+end function
+
+function mercury_set_cefac(cefac_n1) result(ret)
+    integer :: ret
+    real*8 :: cefac_n1
+    cefac = cefac_n1
+    ret = 0
+end function
+function mercury_get_cefac(cefac_n1) result(ret)
+    integer :: ret
+    real*8 :: cefac_n1
+    cefac_n1 = cefac
     ret = 0
 end function
 
