@@ -1,18 +1,36 @@
 import sys
 import getopt
+import math
 import numpy
-from scipy.interpolate import interpolate
 import time
 import matplotlib.pyplot as plt
 import matplotlib.animation as animate
 
-# TODO:
-#	Automatic determination of plot limits.
-#	Automatic determination of dt.
-#	Command-line selection of projection axis.
-#	Colormap should respond to changes in index array.
+# TODO:	    Colormap should respond to changes in index array.
 
-def read_data(filename):
+def unpack_line(r, np):
+    
+    tt = float(r[0])
+    ii = []
+    xx = []
+    yy = []
+    zz = []
+    for j in range(np):
+        ii.append(int(r[4*j+1]))
+        xx.append(float(r[4*j+2]))
+        yy.append(float(r[4*j+3]))
+        zz.append(float(r[4*j+4]))
+
+    return tt, ii, xx, yy, zz
+
+def interpolate(xp, xx, tfac):
+    
+    xint = []
+    for j in range(len(xx)):
+        xint.append(xp[j] + tfac*(xx[j]-xp[j]))
+    return xint
+
+def read_data(filename, dt, N):
 
     # Read in the data file.  Format is defined in smalln.
 
@@ -23,106 +41,303 @@ def read_data(filename):
     ll = f.readlines()
     f.close()
 
-    print len(ll), 'records read'
+    nt = len(ll)
+    print nt, 'records read'
     sys.stdout.flush()
 
+    # Do some preliminary analysis.
+
+    r = ll[0].split()			# trust the first line
+    np = (len(r)-1)/4
+    print 'np =', np
+    tt, ii, xx, yy, zz = unpack_line(r, np)
+    tnext = tt
+
+    if N > 0:				# N trumps dt
+        r = ll[nt-1].split()		# last line
+        tlast, dum, dum, dum, dum = unpack_line(r, np)
+        pdt = False
+        if dt > 0: pdt = True
+        dt = (tlast-tt)/N
+        if pdt: print 'resetting dt =', dt
+
     t = []
-    id = []
+    i = []
     x = []
     y = []
     z = []
     line = 0
+    short = 0
 
     for l in ll:
+
+        r = l.split()
         line += 1
 
 	# Format is: time  id1 x1 y1 z1  id2 x2 y2 z2  id3 x3 y3 z3 ...
-    
-        r = l.split()
-        n = (len(r)-1)/4
-        if line == 1: print 'n =', n
-        if 4*n + 1 != len(r):
-            print 'record length error'
-            sys.exit(1)
 
-        # Unpack the line.
+        if 4*np + 1 == len(r):
 
-        tt = float(r[0])
-        ii = []
-        xx = []
-        yy = []
-        zz = []
-        for i in range(n):
-            ii.append(int(r[4*i+1]))
-            xx.append(float(r[4*i+2]))
-            yy.append(float(r[4*i+3]))
-            zz.append(float(r[4*i+4]))
+            # Save old data and unpack the line.
 
-        # Add the data to the master arrays.
+            tp = tt
+            xp = list(xx)
+            yp = list(yy)
+            zp = list(zz)
+            tt, ii, xx, yy, zz = unpack_line(r, np)
 
-        t.append(tt)
-        id.append(ii)
-        x.append(xx)
-        y.append(yy)
-        z.append(zz)
+            while tt >= tnext:
+
+                if line == 1 or dt == 0.0:
+
+                    tint = tt
+                    xint = list(xx)
+                    yint = list(yy)
+                    zint = list(zz)
+                    
+                else:
+                    
+                    # Interpolate to time tnext.
+
+                    tint = tnext
+                    tfac = (tnext-tp)/(tt-tp)
+                    xint = interpolate(xp, xx, tfac)
+                    yint = interpolate(yp, yy, tfac)
+                    zint = interpolate(zp, zz, tfac)
+
+                # Append the data to the master arrays.
+
+                t.append(tint)
+                i.append(ii)
+                x.append(xint)
+                y.append(yint)
+                z.append(zint)
+
+                tnext += dt
+                if dt == 0.0: break
+
+        else:				# temporary 2-body treatment
+            
+            #print 'ignoring short record:', len(r), '!=', 4*np+1
+            short += 1
 
     ta = numpy.array(t)
-    ia = numpy.array(id)
-    xa = numpy.array(x)
+    ia = numpy.array(i)
+    xa = numpy.array(x)			# should be nt x np
     ya = numpy.array(y)
     za = numpy.array(z)
 
-    return len(ta), ta, ia, xa, ya, za
+    nt = len(ta)
+    print 'nt =', nt
+    print short, 'short records'
+    #print 'xa.shape =', xa.shape	# should be nt x np
+    return nt, ta, ia, xa, ya, za
 
-def interpolate_data(t, x, y, dt):
-    nt, np = x.shape
-    print 'interpolating to dt =', dt
-    print 'mean time interval  =', (t[nt-1]-t[0])/nt
-    sys.stdout.flush()
+def print_help():
+    print 'keyboard controls:'
+    print '    space    pause/resume'
+    print '    a        expand view to contain all particl;es'
+    print '    h        print this message'
+    print '    q        quit'
+    print '    z        zoom in'
+    print '    Z        zoom out'
+    print '    right    pan right'
+    print '    left     pan left'
+    print '    up       pan up'
+    print '    down     pan down'
+    print '    <        first frame'
+    print '    >        last frame'
+    print 'mouse click reverses direction'
 
-    tout = numpy.arange(t[0], t[nt-1], dt)
-    nout = len(tout)
-    xout = numpy.zeros((nout,np))
-    yout = numpy.zeros((nout,np))
-    for k in range(np):
-        f = interpolate.interp1d(t, x[:,k], kind='cubic', assume_sorted=True)
-        xout[:,k] = f(tout)
-        f = interpolate.interp1d(t, y[:,k], kind='cubic', assume_sorted=True)
-        yout[:,k] = f(tout)
+# We seem to need some of these global for the animate functions to work...
 
-    print 'nout =', nout
-    return nout, tout, xout, yout
+nf = 0
+df = 1
+xmin = 0.0
+xmax = 0.0
+ymin = 0.0
+ymax = 0.0
+anim_running = True
+current_frame = 0
+shift = 0.25
+zoom = 1.5
 
-def animate_data(t, x, y, id, lx, ly, xmax):
+def animate_data(t, x, y, id, lx, ly, scale, delay):
+
+    global xmin, xmax, ymin, ymax
 
     print 'animating data'
     colormap = ['r', 'y', 'b', 'm', 'g', 'c', 'k', 'k', 'k', 'k', 'k', 'k']
 
-    def update(frame):
+    # Determine length scales.
 
-        # What idiot decided that the syntax for set_offsets should be
-        # different from the syntax for scatter??
+    xmin = numpy.min(x[0,:])
+    xmax = numpy.max(x[0,:])
+    dx = xmax - xmin
+    xav = 0.5*(xmin+xmax)
+    ymin = numpy.min(y[0,:])
+    ymax = numpy.max(y[0,:])
+    dy = ymax - ymin
+    yav = 0.5*(ymin+ymax)
 
-        off = []
-        for j in range(np):
-            off.append(x[frame,j])
-            off.append(y[frame,j])
-        scat.set_offsets(off)
-        fig.suptitle('time ='+'%6.2f'%(t[frame]))
+    # Allow modification of overall scale by usver-specified scale factor.
 
-        return scat,
+    dx = 5*max(dx, dy)*scale
+    xmin = xav - 0.5*dx
+    xmax = xav + 0.5*dx
+    ymin = yav - 0.5*dx
+    ymax = yav + 0.5*dx
 
+    # Determine time scales.
+
+    dtscale = t[-1]
+    if t[0] < 0: dtscale = max(tscale, -t[0])
+    nf = int(math.floor(math.log10(dtscale)))
+    #print 'dtscale =', dtscale, 'nf =', nf
+    if nf > 3:
+        tformat = '%'+str(nf+2)+'.0f'
+    elif nf > 0:
+        tformat = '%'+str(nf+4)+'.2f'
+    else:
+        tformat = '%'+str(-nf+7)+'.'+str(-nf+4)+'f'
+    lformat = tformat+'/'+tformat+'    frame %d/%d'
+    
     nt,np = x.shape
     fig = plt.figure()
     scat = plt.scatter(x[0,:], y[0,:], c=colormap[:np], s=30)
     #plt.axis('square')	# fails in ubuntu
     plt.xlabel(lx)
     plt.ylabel(ly)
-    plt.xlim(-xmax, xmax)
-    plt.ylim(-xmax, xmax)
+    plt.xlim(xmin, xmax)
+    plt.ylim(ymin, ymax)
     plt.grid()
 
-    ani = animate.FuncAnimation(fig, update, frames=range(nt), interval=10)
+    def update(frame):
+
+        # What idiot decided that the syntax for set_offsets should
+        # be so different from the syntax for scatter??
+
+        off = []
+        for j in range(np):
+            off.append(x[frame,j])
+            off.append(y[frame,j])
+        scat.set_offsets(off)
+        text = fig.suptitle('')
+        text.set_text('')
+        text.set_text('time '+lformat%(t[frame],t[-1], frame, nt-1))
+
+        return scat,
+
+    def nextframe(nt):			# step nf forward or backward by df
+        global nf, df			# stay fixed at nf = 0 or nt-1
+        global current_frame
+        nf = 0
+        while nf < nt:
+            current_frame = nf
+            yield nf
+            nf += df
+            if nf < 0: nf = 0
+            if nf >= nt: nf = nt-1
+    
+    def new_limits(x, y, fac):
+        xmin = x.min()
+        xmax = x.max()
+        ymin = y.min()
+        ymax = y.max()
+        xm = 0.5*(xmin+xmax)
+        dx = xmax - xm
+        xmax = xm + fac*dx
+        xmin = xm - fac*dx
+        ym = 0.5*(ymin+ymax)
+        dy = ymax - ym
+        ymax = ym + fac*dy
+        ymin = ym - fac*dy
+        return xmin, xmax, ymin, ymax
+
+    def onClick(event):			# reverse direction on mouse click
+        global nf, df
+        df = -df
+
+    def onKey(event):			# manage key presses
+        global anim_running
+        global nf, df
+        global xmin, xmax, ymin, ymax
+        global current_frame
+        global shift, zoom
+        if event.key == 'a':		# a = reset limits to current particles
+            xmin, xmax, ymin, ymax = \
+			new_limits(x[current_frame],
+                                   y[current_frame], 1.25)
+            plt.xlim(xmin, xmax)
+            plt.ylim(ymin, ymax)
+        elif event.key == 'q':		# q = quit
+            sys.exit(0)
+        elif event.key == 'z':		# z = zoom in
+            xm = 0.5*(xmin+xmax)
+            dx = xmax - xm
+            xmax = xm + dx/zoom
+            xmin = xm - dx/zoom
+            ym = 0.5*(ymin+ymax)
+            dy = ymax - ym
+            ymax = ym + dy/zoom
+            ymin = ym - dy/zoom
+            plt.xlim(xmin, xmax)
+            plt.ylim(ymin, ymax)
+        elif event.key == 'Z':		# Z = zoom out
+            xm = 0.5*(xmin+xmax)
+            dx = xmax - xm
+            xmax = xm + dx*zoom
+            xmin = xm - dx*zoom
+            ym = 0.5*(ymin+ymax)
+            dy = ymax - ym
+            ymax = ym + dy*zoom
+            ymin = ym - dy*zoom
+            plt.xlim(xmin, xmax)
+            plt.ylim(ymin, ymax)
+        elif event.key == ' ':		# space = pause/restart
+            if anim_running:
+                anim.event_source.stop()
+                anim_running = False
+            else:
+                anim.event_source.start()
+                anim_running = True
+        elif event.key == 'right':
+            dx = shift*(xmax - xmin)
+            xmax += dx
+            xmin += dx
+            plt.xlim(xmin, xmax)
+        elif event.key == 'left':
+            dx = shift*(xmax - xmin)
+            xmax -= dx
+            xmin -= dx
+            plt.xlim(xmin, xmax)
+        elif event.key == 'up':
+            shift = 0.5
+            dy = shift*(ymax - ymin)
+            ymax += dy
+            ymin += dy
+            plt.ylim(ymin, ymax)
+        elif event.key == 'down':
+            shift = 0.5
+            dy = shift*(ymax - ymin)
+            ymax -= dy
+            ymin -= dy
+            plt.ylim(ymin, ymax)
+        elif event.key == '<':
+            nf = 0
+            df = 1
+        elif event.key == '>':
+            nf = nt - 1
+            df = -1
+        elif event.key == 'h':
+            print_help()
+        else:
+            print 'key =', event.key
+
+    fig.canvas.mpl_connect('key_press_event', onKey)
+    fig.canvas.mpl_connect('button_press_event', onClick)
+    anim = animate.FuncAnimation(fig, update, frames=nextframe(nt),
+                                 interval=delay, repeat=False)
     plt.show()
 
 def plot_data(t, x, lx, ly):
@@ -134,16 +349,29 @@ def plot_data(t, x, lx, ly):
     plt.grid()
     plt.show()
 
+def write_data(t, x, y, i, filenajme):
+    nt,np = x.shape
+    f = open(filename)
+    for i in range(nt):
+        s = str(t[i])+' '
+        for j in range(np):
+            s += str(i(i,j))+' '+str(x(i,j))+' '+str(y(i,j))+' 0.0\n'
+        f.write(s)
+    f.close()
+
 if __name__ == '__main__':
 
     anim = True
-    dt = 0.025
+    dt = 0.0
+    delay = 30
     file = 'abc.dat'
-    interp = False
-    xmax = 2.5
+    N = 0
+    outfile = None
+    proj = 3
+    scale = 1.5
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ad:f:ix:")
+        opts, args = getopt.getopt(sys.argv[1:], "ad:D:f:N:o:p:s:")
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(1)
@@ -153,26 +381,39 @@ if __name__ == '__main__':
             anim = not anim
         elif o == "-d":
             dt = float(a)
+        elif o == "-D":
+            delay = int(a)
         elif o == "-f":
             file = a
-        elif o == "-i":
-            interp = not interp
-        elif o == "-x":
-            xmax = float(a)
+        elif o == '-N':
+            N = int(a)
+        elif o == "-o":
+            outfile = a
+        elif o == '-p':
+            proj = int(a)
+        elif o == "-s":
+            scale = float(a)
         else:
             print "unexpected argument", o
             sys.exit(1)
 
-    nt, t, i, x, y, z = read_data(file)
-
-    # Interpolate to the desired dt.
-
-    if interp:
-        nt, t, x, y = interpolate_data(t, x, y, dt)
+    nt, t, i, x, y, z = read_data(file, dt, N)
 
     # Animate or plot the data.
 
     if anim:
-        animate_data(t, x, y, i[:nt], 'x', 'y', xmax)
+        a1 = x
+        a2 = y
+        l1 = 'x'
+        l2 = 'y'
+        if proj == 1:
+            a1 = y
+            a2 = z
+            l1 = 'y'
+            l2 = 'z'
+        elif proj == 2:
+            a2 = z
+            l2 = 'z'
+        animate_data(t, a1, a2, i[:nt], l1, l2, scale, delay)
     else:
         plot_data(t, x, 't', 'x')
