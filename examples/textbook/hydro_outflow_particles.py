@@ -28,10 +28,10 @@ def new_sph_particles_from_stellar_wind(stars, mgas):
             r = add[ri].position-si.position
             r = r/r.length()
             v_wind = (constants.G*si.mass/(add[ri].position-si.position).length()).sqrt()
-            add.u= 0.5 * (v_wind)**2
-            add.vx=si.vx + r[0]*si.terminal_wind_velocity
-            add.vy=si.vy + r[1]*si.terminal_wind_velocity
-            add.vz=si.vz + r[2]*si.terminal_wind_velocity
+            add[ri].u= 0.5 * (v_wind)**2
+            add[ri].vx=si.vx + r[0]*si.terminal_wind_velocity
+            add[ri].vy=si.vy + r[1]*si.terminal_wind_velocity
+            add[ri].vz=si.vz + r[2]*si.terminal_wind_velocity
         new_sph.add_particles(add)  
     return new_sph
 

@@ -4,22 +4,24 @@ from amuse.units.optparse import OptionParser
 from matplotlib import pyplot
 from amuse.plot import scatter
 
+from prepare_figure import single_frame
+from distinct_colours import get_distinct
+
 from amuse.community.seba.interface import SeBa
     
 def main(t_end, mass, z, Tstar, Lstar):
 
     stellar_evolution_codes = [SeBa(), SSE(), MESA(), EVtwin()]
-#    stellar_evolution_codes = [SeBa(), SSE()]
     label = ["SeBa", "SSE", "MESA", "EVtwin"]
     marker = ["o", "v", "<", ">"]
-    color = ["r","b", "k", "m"]
+#    color = [0, 1, 2, 3, 4]
 
-    from matplotlib import pyplot, rc
-    figure = pyplot.figure(figsize=(10,10))
-    font = {'size' : 20}
-    rc('font', **font)
-    plot = figure.add_subplot(1,1,1)
-    pyplot.scatter([0], [0], marker="o", c="y", label="Sun", s=200)
+    x_label = "$(T-T_\odot)/T_\odot)$"
+    y_label = "$(L-L_\odot)/L_\odot)$"
+    figure = single_frame(x_label, y_label, logy=False, xsize=14, ysize=10)
+    pyplot.xlim(-0.008, 0.004)
+    color = get_distinct(6)
+    pyplot.scatter([0], [0], marker="o", c=color[3], label="Sun", s=400, lw=0)
 
     for si in range(len(stellar_evolution_codes)):
         stellar = stellar_evolution_codes[si]
@@ -32,14 +34,16 @@ def main(t_end, mass, z, Tstar, Lstar):
 
         T = (stellar.particles.temperature-Tstar)/Tstar
         L = (stellar.particles.luminosity-Lstar)/Lstar
-        pyplot.scatter(T, L, marker=marker[si], color=color[si], label=label[si], s=200)
+        if si==3: 
+            pyplot.scatter(T, L, marker=marker[si], color=color[0], label=label[si], s=300, lw=0)
+        else:
+            pyplot.scatter(T, L, marker=marker[si], color=color[si], label=label[si], s=300, lw=0)
         stellar.stop()
 
     pyplot.legend(scatterpoints=1, loc=2)
+#    pyplot.show()
+    pyplot.savefig("fig_SunComparison")
 
-    pyplot.xlabel("$(T-T_\odot)/T_\odot)$")
-    pyplot.ylabel("$(L-L_\odot)/L_\odot)$")
-    pyplot.show()
     
 def new_option_parser():
     result = OptionParser()
