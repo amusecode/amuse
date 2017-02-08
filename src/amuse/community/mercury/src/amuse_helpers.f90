@@ -23,6 +23,7 @@ module amuse_mercuryMod
     mercury_commit_parameters,amuse_get_gravity_at_point, &
     amuse_get_potential_at_point, &
     set_algor,get_algor, &
+    mercury_set_rmax, mercury_get_rmax, &
     get_outputfiles,set_outputfiles
 
   include 'mercury.inc'
@@ -684,6 +685,20 @@ function get_algor(algor_o) result(x)
   x=0
 end function
 
+function mercury_set_rmax(r_max) result(ret)
+    integer :: ret
+    real*8 :: r_max
+    rmax = r_max
+    ret = 0
+end function
+
+function mercury_get_rmax(r_max) result(ret)
+    integer :: ret
+    real*8 :: r_max
+    r_max = rmax
+    ret = 0
+end function
+
 function set_outputfiles(f1,f2,f3,f4,f5,f6,f7) result(ret)
   integer :: ret
   character*4096, optional :: f1,f2,f3,f4,f5,f6,f7
@@ -921,6 +936,9 @@ end function
 !
 !  COLLISIONS  WITH  CENTRAL  BODY
 !
+!!!!!!! this can be commented out if the collisions with central
+!!!!!!! body should be completely skiped
+
 ! Check for collisions with the central body
       if (algor.eq.1) then
         call mco_iden(time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
@@ -964,6 +982,9 @@ end function
 ! Redo that integration time step
         goto 150
       end if
+      
+!!!!!!
+!!!!!!      
 !
 !------------------------------------------------------------------------------
 !
