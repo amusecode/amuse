@@ -1079,6 +1079,8 @@ int check_structure(hdyn *bin,			// input root node
 	    // larger critical perturbation.  See also ../interface.cc.
 
 	    b = get_tree2(bin, 0.02);	// 0.02 is ~arbitrary; default = 0.0001
+
+	    // What to do if nmul is still 0?
 	}
     }
 
@@ -1090,7 +1092,7 @@ int check_structure(hdyn *bin,			// input root node
 
     // Clean up and exit.
 
-    rmtree(b);			// hdyn function OK (with virtual destructor)?
+    rmtree(b);		// hdyn function OK (with virtual destructor)?
 
     return over;	// return 0-3
 }

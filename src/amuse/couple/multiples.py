@@ -20,7 +20,7 @@ from amuse import io
 
 # Turn on/off global debugging.
 
-global_debug = False
+global_debug = True
 
 # Turn on/off experimental code to check tidal perturbation.
 
@@ -563,6 +563,7 @@ class Multiples(object):
                         # error in the internal bookkeeping of
                         # manage_encounter().
 
+                        print 'global_debug =', global_debug
                         if global_debug:
                             #print 'top-level initial energy =', initial_energy
                             #print 'top-level final energy =', final_energy
@@ -1615,9 +1616,14 @@ class Multiples(object):
             option = 2
             inner_loop = 1
 
-            ##############################
+            #############################################################
             # Set this to enable step-by-step debugging storage.
             # resolve_collision_code.parameters.outfile='abc.dat'
+            #
+            # e.g.
+            # if self.gravity_code.model_time.number > 2009.531:
+            #     resolve_collision_code.parameters.outfile = 'debug.dat'
+            #############################################################
 
             while time < end_time:
 

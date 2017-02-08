@@ -163,8 +163,8 @@ int get_time(double * sys_time)
 int set_outfile(char * file)
 {
     smalln_outfile = string(file);
-    // cout << "file = " << file << endl;
-    // cout << "smalln_outfile = " << smalln_outfile << endl;
+    cout << "file = " << file << endl;
+    cout << "smalln_outfile = " << smalln_outfile << endl;
     return 0;
 }
 
@@ -590,8 +590,31 @@ int update_particle_tree(int over)
 	    // larger critical perturbation.
 
 	    b = get_tree(b_copy, 0.02);	// 0.02 is ~arbitrary; default = 0.0001
+
+	    // Check again.
+
+	    for_all_daughters(hdyn, b, bi)
+	      if (bi->get_oldest_daughter()) nmul++;
+
+	    if (nmul == 0) {
+
+	        // Flag and force.
+
+	        cout << "*** SmallN: forcing resolution of structure"
+		     << endl;
+	      
+		b = get_tree(b_copy, 1.e6);
+
+		// Check again.
+
+		for_all_daughters(hdyn, b, bi)
+		    if (bi->get_oldest_daughter()) nmul++;
+
+		cout << "*** New "; PRL(nmul);
+	    }
 	}
     }
+
     UpdatedParticles.clear();
 
     // Create indices for the CM nodes and add them to the updated list.
