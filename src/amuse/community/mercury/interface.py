@@ -716,7 +716,7 @@ class MercuryWayWard(GravitationalDynamics):
             "get_initial_timestep",
             "set_initial_timestep",
             "timestep",
-            "current simulation time", 
+            "initial timestep", 
             default_value = 8.0 | units.day
         )
         
