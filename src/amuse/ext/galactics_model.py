@@ -12,7 +12,8 @@ def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, d
     instance.stop()
     
     result.move_to_center()
-    if do_scale:
+    if do_scale and unit_system_converter is None:
+        print "Warning: do_scale for a large galactics model may be slow"
         result.scale_to_standard(convert_nbody=unit_system_converter)
     
     if not unit_system_converter is None:
