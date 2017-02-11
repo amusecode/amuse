@@ -20,7 +20,7 @@ from amuse import io
 
 # Turn on/off global debugging.
 
-global_debug = True
+global_debug = False
 
 # Turn on/off experimental code to check tidal perturbation.
 
