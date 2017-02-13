@@ -958,7 +958,9 @@ local inline bool is_quasi_stable(hdyn2 *b)
 local inline int is_over(hdyn2 *b, bool verbose)
 {
     int over = 1;
+
     // print_recursive(b, verbose);
+
     for_all_daughters(hdyn2, b, bi) {
 	//PRL(bi->format_label());
 	if (!is_escaper(b, bi)) over = 0;
@@ -1029,7 +1031,7 @@ int check_structure(hdyn *bin,			// input root node
     // Count the latest run of unchanged state strings.
 
     if (curr_state == last_state)
-	state_count += 1;			// number of times state unchanged
+	state_count += 1;			// # times state unchanged
     else {
 	state_count = 0;
 	state_time = bin->get_system_time();	// time state last changed
@@ -1060,31 +1062,14 @@ int check_structure(hdyn *bin,			// input root node
 	    }
 	}
 
-    if (over == 3) {
+    // Note: If over = 3, it is possible that get_tree2() didn't
+    // return usable hierarchical structure (e.g. an outer body
+    // escapes during an inner triple resonance).  We will try to
+    // impose usable structure in the calling function by relaxing the
+    // perturbation criterion on the components, but no need to do
+    // anything here, since only the value of over is returned.
 
-        // Possible that get_tree2() didn't return usable hierarchical
-        // structure (e.g. an outer body escapes during an inner
-        // triple resonance.  Try to impose usable structure by
-        // relaxing the perturbation criterion on the components.
-
-        // print_recursive(b, true);
-
-        int nmul = 0;
-	for_all_daughters(hdyn, bin, bi)
-	  if (bi->get_oldest_daughter()) nmul++;
-
-        if (nmul == 0) {
-
-	    // No substructure.  Retry structure determination with a
-	    // larger critical perturbation.  See also ../interface.cc.
-
-	    b = get_tree2(bin, 0.02);	// 0.02 is ~arbitrary; default = 0.0001
-
-	    // What to do if nmul is still 0?
-	}
-    }
-
-    if (1 && over) {
+    if (verbose && over) {
         cout << "over = " << over << endl;
         print_recursive(b, true);
         cout << flush;

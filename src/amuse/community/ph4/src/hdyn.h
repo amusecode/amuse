@@ -274,9 +274,13 @@ bool extend_or_end_binary(hdyn*& bi, bool verbose = false);
 
 // The perturbation defined here as "light" effectively determines the
 // threshold perturbation for unperturbed multiple motion.  Must make
-// it consistent with the criteria applied in smallN.
+// it consistent with the stability criteria applied in smallN.  The
+// simplest stability criterion (Harrington) in analyze.cc has
+// outer_peri/inner_semi ~ 3 for equal masses, which should corresponds
+// to a dimensionless perturbation of ~1/30 = 0.03, so maybe safer to
+// choose 0.001 here.
 
-const real MAX_PERT_SQ = 1.e-4;
+const real MAX_PERT_SQ = 0.001; // 1.e-4;
 
 hdyn *flat_copy(hdyn *b);
 int  check_structure(hdyn *bin, real rlimit2 = _INFINITY_, int verbose = 1);

@@ -563,7 +563,6 @@ class Multiples(object):
                         # error in the internal bookkeeping of
                         # manage_encounter().
 
-                        print 'global_debug =', global_debug
                         if global_debug:
                             #print 'top-level initial energy =', initial_energy
                             #print 'top-level final energy =', final_energy
@@ -1617,11 +1616,11 @@ class Multiples(object):
             inner_loop = 1
 
             #############################################################
-            # Set this to enable step-by-step debugging storage.
+            # Set this to enable step-by-step debugging output.
             # resolve_collision_code.parameters.outfile='abc.dat'
             #
             # e.g.
-            # if self.gravity_code.model_time.number > 2009.531:
+            # if self.gravity_code.model_time.number > 3414.53:
             #     resolve_collision_code.parameters.outfile = 'debug.dat'
             #############################################################
 
@@ -1764,8 +1763,6 @@ class Multiples(object):
                             multiples = binaries.roots()
                             print pre, len(singles), 'single(s),', \
                                   len(multiples), 'multiple(s)'
-
-                            #print particles
 
                         return scatter_energy_error
 
@@ -2260,6 +2257,8 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
 
 def compress_nodes(node_list, scale):
 
+    local_debug = False
+
     # Compress (or expand) the top-level nodes in node_list to lie
     # within diameter scale.  Rescale velocities to conserve total
     # energy (but currently not angular momentum -- TODO).
@@ -2283,7 +2282,11 @@ def compress_nodes(node_list, scale):
             dv = n.velocity
             offset_children(n, dx, dv)
 
-    #print_top_level(node_list)
+    if local_debug:
+        print 'node_list:'
+        print node_list
+        print 'top_level:'
+        print_top_level(node_list)
 
     # Compute various measures of the size, potential, and kinetic
     # energy of the system in the center of mass frame.
@@ -2336,7 +2339,7 @@ def compress_nodes(node_list, scale):
     kin /= 2
     rphmin = -(node_list[ipmin].mass*node_list[jpmin].mass).number/phimin
 
-    if 0:
+    if local_debug:
         print pre, 'scale =', scale.number
         print pre, 'size =', size
         print pre, 'rijmin =', rijmin, node_list[imin].id, node_list[jmin].id
@@ -2346,7 +2349,8 @@ def compress_nodes(node_list, scale):
     #fac = scale.number/rijmin		# scale to minimum distance
     #fac = scale.number/rphmin		# scale to minimum potential distance
 
-    #print pre, 'fac =', fac
+    if local_debug:
+        print pre, 'fac =', fac
 
     # Compress (or expand) the system and increase (or decrease) the
     # velocities (relative to the center of mass) to preserve the
@@ -2376,9 +2380,8 @@ def compress_nodes(node_list, scale):
         vfac2 = 0.0		# ???
 
     vfac = math.sqrt(vfac2)
-    #print "vfac =", vfac
-
-    if 0:
+    if local_debug:
+        print "vfac =", vfac
         print pre, 'dr:'
         print dr
         print pre, 'dv2:'
@@ -2431,11 +2434,12 @@ def compress_nodes(node_list, scale):
         dr *= fac
         pot /= fac
 
-        #print 'kinetic energies:'
-        #for n in node_list:
-        #    print '  ', n.id, 0.5*n.mass.number\
-	#			*numpy.inner((n.velocity-cmvel).number,
-        #                                     (n.velocity-cmvel).number)
+        if local_debug:
+            print 'kinetic energies:'
+            for n in node_list:
+                print '  ', n.id, 0.5*n.mass.number\
+				*numpy.inner((n.velocity-cmvel).number,
+                                             (n.velocity-cmvel).number)
 
         # First give the bound components enough relative velocity to
         # just unbind them, keeping their center of mass velocity
@@ -2466,16 +2470,19 @@ def compress_nodes(node_list, scale):
             kinCM += 0.5*(mi+mj)*numpy.inner((cmv-cmvel).number,
                                              (cmv-cmvel).number)
 
-        #print 'KECM =', kin2+kinCM
+        if local_debug:
+            print 'KECM =', kin2+kinCM
         for i in unbound_nodes:
             ni = node_list[i]
             mi = ni.mass.number
             kei = 0.5*mi*numpy.inner((ni.velocity-cmvel).number,
                                      (ni.velocity-cmvel).number)
-            #print 'KE', ni.id, kei
+            if local_debug:
+                print 'KE', ni.id, kei
             kinCM += kei
 
-        #print 'energy =', energy, 'pot+kin2+kinCM =', pot+kin2+kinCM
+        if local_debug:
+            print 'energy =', energy, 'pot+kin2+kinCM =', pot+kin2+kinCM
         kin_to_distribute = energy - (pot+kin2+kinCM)
 
         if kin_to_distribute < 0: 

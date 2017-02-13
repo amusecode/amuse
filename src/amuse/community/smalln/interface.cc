@@ -163,8 +163,8 @@ int get_time(double * sys_time)
 int set_outfile(char * file)
 {
     smalln_outfile = string(file);
-    cout << "file = " << file << endl;
-    cout << "smalln_outfile = " << smalln_outfile << endl;
+    // cout << "file = " << file << endl;
+    // cout << "smalln_outfile = " << smalln_outfile << endl;
     return 0;
 }
 
@@ -437,7 +437,7 @@ int evolve_model(double to_time)
 		  smalln_dtlog, smalln_verbose, smalln_outfile);
     //myprint(b);
 
-    // Note: return status is currently independent of the termination reason...
+    // Note: return status is independent of the termination reason...
 
     return 0;
 }
@@ -447,6 +447,7 @@ int is_over(int * over, real rlimit, int verbose)
     real rlimit2 = rlimit*rlimit;
     if (rlimit2 <= 0) rlimit2 = _INFINITY_;
     *over = check_structure(b, rlimit2, verbose);
+
     return 0;
 }
 
@@ -575,10 +576,27 @@ int update_particle_tree(int over)
 {
     b_copy = b;			// save the smallN tree until restored
     b = get_tree(b_copy);	// b now is the structured tree
+				//	 	(why use b? - see below)
 
-    if (over == 3) {
+    if (over > 1) {
 
-        // Special treatment in this case. See analyze.cc:is_over().
+        // Over = 2 means a quasistable system has been detected.
+        // Over = 3 means that the interaction is over (because the
+        // system exceeded the size limit).  In either case,
+        // get_tree2() may not have returned usable hierarchical
+        // structure (e.g. an outer body escapes during an inner
+        // triple resonance.  Impose usable structure by relaxing the
+        // perturbation criterion on the components.  By effectively
+        // ignoring all perturbations we ensure that top-level nodes
+        // are unbound, leaving all bound substructure in a clump
+        // which will be treatewd as a single object.
+
+	rmtree(b);
+	b = get_tree(b_copy, 1.e6);	// 1.e6 means ignore perturbations
+
+	// Goals: (1) substructure, (2) top-level nodes are unbound.
+	// Should check both here, but not clear what to do if they
+	// aren't met...
 
         int nmul = 0;
 	for_all_daughters(hdyn, b, bi)
@@ -586,32 +604,28 @@ int update_particle_tree(int over)
 
         if (nmul == 0) {
 
-	    // No substructure.  Retry structure determination with a
-	    // larger critical perturbation.
+	    // No substructure.  Flag for now.
 
-	    b = get_tree(b_copy, 0.02);	// 0.02 is ~arbitrary; default = 0.0001
+	    cout << "*** SmallN: nmul = 0" << endl;
+	}
 
-	    // Check again.
-
-	    for_all_daughters(hdyn, b, bi)
-	      if (bi->get_oldest_daughter()) nmul++;
-
-	    if (nmul == 0) {
-
-	        // Flag and force.
-
-	        cout << "*** SmallN: forcing resolution of structure"
-		     << endl;
-	      
-		b = get_tree(b_copy, 1.e6);
-
-		// Check again.
-
-		for_all_daughters(hdyn, b, bi)
-		    if (bi->get_oldest_daughter()) nmul++;
-
-		cout << "*** New "; PRL(nmul);
+	int nbound = 0;
+	for_all_daughters(hdyn, b, bi) {
+	    for_all_daughters(hdyn, b, bj) {
+	        if (bj > bi) {
+	            real m = bi->get_mass()+bj->get_mass();
+		    vec dx = bi->get_pos()-bj->get_pos();
+		    vec dv = bi->get_vel()-bj->get_vel();
+		    if (0.5*dv*dv - m/sqrt(dx*dx) < 0) nbound++;
+		}
 	    }
+	}
+
+        if (nbound > 0) {
+
+	    // Top level not unbound.  Flag for now.
+
+	    cout << "*** SmallN: "; PRL(nbound);
 	}
     }
 
@@ -631,6 +645,7 @@ int update_particle_tree(int over)
 	    int newindex = b->get_cm_index();
 	    b->set_cm_index(newindex+1);
 	    bb->set_index(newindex);
+	    // cout << "push_back " << bb->get_index() << endl << flush;
 	    UpdatedParticles.push_back(UpdatedParticle(newindex, 1));
 	}
 
@@ -642,6 +657,7 @@ int update_particle_tree(int over)
     // data.  It looks like restore_particle_tree() below was intended
     // to do just that, but it is not accessible from AMUSE and never
     // invoked.  Maybe it can be called through your state model?
+    // -- Steve
     //
     // rmtree(b);
     // b = b_copy;
