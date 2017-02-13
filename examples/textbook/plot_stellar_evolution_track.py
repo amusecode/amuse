@@ -114,7 +114,7 @@ if __name__ == "__main__":
     Ltext = 0.1
 #    stellar_type = ["", "main sequence", "Hertzsprung gap", "first giant branch", "core helium burning", "first asymptotic giant brach", "second AGB"]
     stellar_type = ["", "main sequence", "giant", "remnant"]
-    dL = 1.5
+    dL = 1.8
     i = 0
     for sti in range(len(stellar_type)):
         if sti<=1:
@@ -123,7 +123,7 @@ if __name__ == "__main__":
             c = get_color_based_on_stellar_type(5|units.stellar_type)
         else:
             c = get_color_based_on_stellar_type(10|units.stellar_type)
-        pyplot.text(Ttext, dL**sti*Ltext, stellar_type[sti], color=c, fontsize=12)
+        pyplot.text(Ttext, dL**sti*Ltext, stellar_type[sti], color=c, fontsize=24)
         
     #pyplot.show()
     pyplot.savefig("fig_stellar_evolution_track")
