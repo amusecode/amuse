@@ -142,7 +142,7 @@ def single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=10,
     pyplot.xlabel(x_label)
     pyplot.ylabel(y_label)
 
-    if ymin>0:
+    if ymax>0:
         pyplot.ylim(ymin, ymax)
 
     set_tickmarks(ax)

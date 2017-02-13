@@ -53,7 +53,7 @@ def plot_track(xe,ye,xv,yv, output_filename):
     figure = pyplot.figure(figsize=(10, 10))
     plot = figure.add_subplot(1,1,1)
     ax = pyplot.gca()
-    ax.minorticks_on() # switch on the minor ticks
+    ax.minorticks_on() 
     ax.locator_params(nbins=3)
 
     x_label = 'x [au]'
