@@ -20,7 +20,7 @@ FFLAGS2= -I./src/
 
 CLASSNAME=MercuryInterface
 
-#FFLAGS += -mcmodel=medium
+FFLAGS += -mcmodel=medium
 
 F77FLAGS +=
 ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
