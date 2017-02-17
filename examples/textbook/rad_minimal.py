@@ -1,22 +1,43 @@
 from amuse.lab import *
-from amuse.ext.molecular_cloud import ism_cube
+from amuse.ic.gasplummer import new_plummer_gas_model
 
-def main(N=1000, Lstar=100|units.LSun, boxsize=10|units.parsec, 
-         rho=1.0 | (units.amu/units.cm**3), t_end=0.1 |units.Myr):
+from prepare_figure import single_frame, figure_frame
+from distinct_colours import get_distinct
 
-    internal_energy = (9. |units.kms)**2
+def plot_ionization_fraction(pos, xion):
+    r = [] | units.parsec
+    x = []
+    for pi, xi in zip(pos, xion):
+        r.append(pi.length())
+        x.append(xi)
+    r, x = zip(*sorted(zip(r.value_in(units.parsec), x)))
+    
+    from matplotlib import pyplot
+    x_label = "r [pc]"
+    y_label = r'$\xi_{\rm ion}$'
+    figure = single_frame(x_label, y_label, logx=False, logy=False, xsize=14, ysize=8)
+    pyplot.scatter(r, x, c=get_distinct(1), lw=0, s=100)
+    pyplot.xlim(0, 10)
+    pyplot.ylim(-0.04, 1.19)
+    #pyplot.savefig("fig_ionization_of_GMC")
+    pyplot.show()
+
+def main(N, Lstar, boxsize, rho, t_end):
 
     source=Particle()
     source.position = (0, 0, 0) |units.parsec
     source.flux = Lstar/(20. | units.eV)
     source.rho = rho
     source.xion = 0.0
-    source.u = internal_energy
+    source.u = (9. |units.kms)**2
 
-    ism = ism_cube(N, boxsize/2., rho, internal_energy).result
+    converter=nbody_system.nbody_to_si(1|units.MSun, 1|units.parsec)
+    ism = new_plummer_gas_model(N, converter)
     ism.rho = rho
+    ism.u = source.u
     ism.flux = 0. | units.s**-1
     ism.xion = source.xion
+    ism = ism.select(lambda r: r.length()<0.5*boxsize,["position"])
 
     radiative = SimpleX()
     radiative.parameters.box_size=1.001*boxsize    
@@ -27,14 +48,16 @@ def main(N=1000, Lstar=100|units.LSun, boxsize=10|units.parsec,
 
     radiative.evolve_model(t_end)
     print "min ionization:", radiative.particles.xion.min()
-    print "average Xion:", radiative.particles.xion.mean()
+    print "average ionization:", radiative.particles.xion.mean()
     print "max ionization:", radiative.particles.xion.max()
+
+    plot_ionization_fraction(radiative.particles.position, radiative.particles.xion)
     radiative.stop()
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int", default = 1000,
+    result.add_option("-N", dest="N", type="int", default = 10000,
                       help="number of stars [%default]")
     result.add_option("-t", unit=units.Myr,
                       dest="t_end", default = 0.1|units.Myr,
