@@ -15,24 +15,6 @@ def plot_projected_density(model, xmin=-1, xmax=1, col=0):
     cols = get_distinct(4)
     pyplot.scatter(model.x.value_in(nbody_system.length), model.z.value_in(nbody_system.length), c=cols[col], s=80, lw=0)
 
-def _main(N=10, W=None): 
-
-    f, ax1, ax2, ax3, ax4 = quad_frame("X [length]", "Y [length]")
-    model = new_plummer_model(N)
-    plot_projected_density(model, ax1)
-
-    model = new_king_model(N, 9.0)
-    plot_projected_density(model, ax2)
-
-    model = new_halogen_model(N, alpha=1., beta=5., gamma=0.5)
-    plot_projected_density(model, ax3)
-
-    model = new_fractal_cluster_model(N=N, fractal_dimension=1.6)
-    plot_projected_density(model, ax4)
-
-#    pyplot.show()
-    pyplot.savefig("density_distributions.eps", bbox_inches="tight")  
-
 def plummer_model(N, x_label = 'x [length]', y_label='y [length]'):
     fig = single_frame(x_label, y_label, xsize=8, ysize=8)
     model = new_plummer_model(N)

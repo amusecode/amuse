@@ -1,21 +1,17 @@
-"""
-   Script for initializing a star and printing its structure
-"""
 from amuse.lab import *
 from matplotlib import pyplot
 from amuse.plot import plot, xlabel, ylabel
 
-def get_density_profile(code=MESA, M=1.0|units.MSun, z=0.02):
+def get_density_profile(code=EVtwin, M=2.0|units.MSun, z=0.02):
     stellar = code()
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(Particle(mass=M))
-    print "Nzones=", stellar.particles.get_number_of_zones()
     radius = stellar.particles[0].get_radius_profile()
     rho    = stellar.particles[0].get_density_profile()
     stellar.stop()
     return radius, rho
 
-def main(M, z):
+def initialize_single_star(M, z):
     r, rho = get_density_profile(EVtwin, M, z)
     plot(r.in_(units.RSun), rho, label="EVtwin")
     r, rho = get_density_profile(MESA, M, z)
@@ -37,4 +33,4 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
-    main(**o.__dict__)
+    initialize_single_star(**o.__dict__)
