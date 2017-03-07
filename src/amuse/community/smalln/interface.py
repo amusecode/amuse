@@ -258,7 +258,8 @@ class SmallNInterface(CodeInterface,
         """
         function = LegacyFunctionSpecification()
         function.addParameter('over', dtype='int32',
-                              direction=function.IN)
+                              direction=function.IN,
+        		      default = 0)
         function.result_type = 'int32'
         return function
 

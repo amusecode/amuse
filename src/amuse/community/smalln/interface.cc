@@ -572,7 +572,7 @@ int get_gravity_at_point(double eps, double x, double y, double z,
 
 
 
-int update_particle_tree(int over)
+int update_particle_tree(int over)	// default = 0
 {
     b_copy = b;			// save the smallN tree until restored
     b = get_tree(b_copy);	// b now is the structured tree
