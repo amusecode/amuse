@@ -13,7 +13,15 @@ OBJS = interface.o
 
 CODELIB = src/librebound.a
 CODEDIR = src/rebound
-LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle.o $(CODEDIR)/src/gravity.o $(CODEDIR)/src/integrator.o $(CODEDIR)/src/integrator_whfast.o $(CODEDIR)/src/integrator_whfasthelio.o $(CODEDIR)/src/integrator_ias15.o $(CODEDIR)/src/integrator_sei.o $(CODEDIR)/src/integrator_leapfrog.o $(CODEDIR)/src/integrator_hermes.o $(CODEDIR)/src/boundary.o $(CODEDIR)/src/input.o $(CODEDIR)/src/output.o $(CODEDIR)/src/collision.o $(CODEDIR)/src/tools.o $(CODEDIR)/src/communication_mpi.o $(CODEDIR)/src/zpr.o $(CODEDIR)/src/display.o $(CODEDIR)/src/derivatives.o
+LIB_OBJ = $(CODEDIR)/src/rebound.o $(CODEDIR)/src/tree.o $(CODEDIR)/src/particle.o $(CODEDIR)/src/gravity.o \
+          $(CODEDIR)/src/integrator.o $(CODEDIR)/src/integrator_whfast.o $(CODEDIR)/src/integrator_whfasthelio.o \
+          $(CODEDIR)/src/integrator_ias15.o $(CODEDIR)/src/integrator_sei.o $(CODEDIR)/src/integrator_leapfrog.o \
+          $(CODEDIR)/src/integrator_hermes.o $(CODEDIR)/src/boundary.o \
+          $(CODEDIR)/src/collision.o $(CODEDIR)/src/tools.o \
+          $(CODEDIR)/src/communication_mpi.o $(CODEDIR)/src/display.o $(CODEDIR)/src/derivatives.o \
+          $(CODEDIR)/src/glad.o $(CODEDIR)/src/transformations.o \
+          $(CODEDIR)/src/simulationarchive.o $(CODEDIR)/src/output.o \
+          $(CODEDIR)/src/input.o \
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_http.py
 PATCH_FILES = $(PYTHON) ./patch_files.py

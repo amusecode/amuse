@@ -128,7 +128,7 @@ class GetCodeFromHttp(object):
         print "downloading finished"
         self.unpack_downloaded_file(filename)
     
-def main(must_download_from_svn = False, version = '7184fb43852a6c3721f87dc8b5f6878a540a8dd0'):
+def main(must_download_from_svn = False, version = 'f786313f7befc4dba7a8601c932a06f55bf4ce4d'):
     instance = GetCodeFromHttp()
     instance.version = version
     instance.start()
@@ -140,7 +140,7 @@ def new_option_parser():
     
     result.add_option(
         "--version", 
-        default = '7184fb43852a6c3721f87dc8b5f6878a540a8dd0',
+        default = 'f786313f7befc4dba7a8601c932a06f55bf4ce4d',
         dest="version",
         help="git revision to download from github",
         type="string"

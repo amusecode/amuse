@@ -8,10 +8,10 @@ extern "C" {
 #include "integrator_whfast.h"
 #include "boundary.h"
 #include "gravity.h"
-#include "output.h"
+//#include "output.h"
 #include "particle.h"
 #include "collision.h"
-
+//#include "simulationarchive.h"
 }
 
 #include <stdlib.h>
