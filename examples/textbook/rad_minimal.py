@@ -17,10 +17,10 @@ def plot_ionization_fraction(pos, xion):
     y_label = r'$\xi_{\rm ion}$'
     figure = single_frame(x_label, y_label, logx=False, logy=False, xsize=14, ysize=8)
     pyplot.scatter(r, x, c=get_distinct(1), lw=0, s=100)
-    pyplot.xlim(0, 10)
+    pyplot.xlim(0, 6)
     pyplot.ylim(-0.04, 1.19)
-    #pyplot.savefig("fig_ionization_of_GMC")
-    pyplot.show()
+    pyplot.savefig("fig_ionization_of_GMC")
+    #pyplot.show()
 
 def main(N, Lstar, boxsize, rho, t_end):
 
@@ -31,17 +31,16 @@ def main(N, Lstar, boxsize, rho, t_end):
     source.xion = 0.0
     source.u = (9. |units.kms)**2
 
-    converter=nbody_system.nbody_to_si(1|units.MSun, 1|units.parsec)
+    converter=nbody_system.nbody_to_si(1|units.MSun, 3|units.parsec)
     ism = new_plummer_gas_model(N, converter)
     ism.rho = rho
-    ism.u = source.u
     ism.flux = 0. | units.s**-1
     ism.xion = source.xion
     ism = ism.select(lambda r: r.length()<0.5*boxsize,["position"])
 
     radiative = SimpleX()
-    radiative.parameters.box_size=1.001*boxsize    
-    radiative.parameters.timestep=0.001 | units.Myr
+    radiative.parameters.box_size = boxsize    
+    radiative.parameters.timestep = 100 | units.yr
 
     radiative.particles.add_particle(source)
     radiative.particles.add_particles(ism)
@@ -57,10 +56,10 @@ def main(N, Lstar, boxsize, rho, t_end):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int", default = 10000,
+    result.add_option("-N", dest="N", type="int", default = 1000,
                       help="number of stars [%default]")
     result.add_option("-t", unit=units.Myr,
-                      dest="t_end", default = 0.1|units.Myr,
+                      dest="t_end", default = 0.01|units.Myr,
                       help="radiation time [%default]")
     result.add_option("-L", unit=units.LSun,
                       dest="Lstar", default = 100|units.LSun,
@@ -69,7 +68,7 @@ def new_option_parser():
                       dest="rho", default = 1|units.amu/units.cm**3,
                       help="interstellar density [%default] amu/cm^3")
     result.add_option("-d", unit=units.parsec,
-                      dest="boxsize", default = 100|units.parsec,
+                      dest="boxsize", default = 10|units.parsec,
                       help="size of the density box [%default]")
     return result
 

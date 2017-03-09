@@ -11,6 +11,8 @@ from amuse.community.gadget2.interface import Gadget2
 from cooling_class import Cooling, SimplifiedThermalModelEvolver
 from amuse.ext.sink import SinkParticles
 
+COOL = False
+
 class Hydro:
         def __init__(self, hydro_code, particles):
                 
@@ -21,7 +23,6 @@ class Hydro:
                 self.namestr = hydro_code.__name__
 
                 system_size = 2|units.parsec
-#                mean_density = len(particles)/system_size**3
                 
                 eps = 0.05 | units.parsec
                 Mcloud = particles.mass.sum()
@@ -101,16 +102,23 @@ class Hydro:
                 self.get_gravity_at_point = self.code.get_gravity_at_point
                 self.get_potential_at_point = self.code.get_potential_at_point
                 self.get_hydro_state_at_point = self.code.get_hydro_state_at_point
-                
+
                 # Create a channel
                 self.channel_to_framework = self.code.gas_particles.new_channel_to(particles)
+                self.channel_to_sinks = self.code.gas_particles.new_channel_to(self.sink_particles)
                 
                 # External Cooling
                 print "Cooling flag:", self.cooling_flag
-                self.cooling = SimplifiedThermalModelEvolver(self.gas_particles)
-                #self.cooling = Cooling(self.gas_particles)
+                self.cooling = SimplifiedThermalModelEvolver(self.code.gas_particles)
+                #self.cooling = Cooling(self.code.gas_particles)
                 self.cooling.model_time=self.code.model_time
-                    
+
+
+        def write_set_to_file(self, index):
+                filename = "hydro_molecular_cloud_collapse_i{0:04}.amuse".format(index)
+                write_set_to_file(self.gas_particles, filename, "amuse", append_to_file=False)
+                write_set_to_file(self.sink_particles, filename, "amuse")
+        
         @property
         def model_time(self):
                 return self.code.model_time
@@ -133,8 +141,10 @@ class Hydro:
             model_time_old=self.code.model_time
             dt=model_time - model_time_old
             print "Evolve Hydrodynamics:", dt.in_(units.yr)
-            print "Cool gas for dt=", (dt/2).in_(units.Myr)
-            self.cooling.evolve_for(dt/2)
+
+            if COOL:
+                print "Cool gas for dt=", (dt/2).in_(units.Myr)
+                self.cooling.evolve_for(dt/2)
                 #print "...done."
             self.code.evolve_model(model_time)
             #print "gas evolved."
@@ -144,6 +154,8 @@ class Hydro:
                 print "N=", len(highdens)
                 candidate_sinks=highdens.copy()
                 self.gas_particles.remove_particles(highdens)
+                #self.gas_particles.synchronize_to(self.code.gas_particles)
+                #self.gas_particles.synchronize_to(self.cooling.gas_particles)
                 if len(self.sink_particles)>0:
                     print "new sinks..."
                     if len(candidate_sinks)>0: # had to make some changes to prevent double adding particles
@@ -153,6 +165,7 @@ class Hydro:
                             if nsi not in self.sink_particles:
                                 newsinks.add_particle(nsi) 
                         self.sink_particles.add_sinks(newsinks)
+                        self.sink_particles.synchronize_to(self.code.dm_particles)
                 else:
                     print "Create new sinks: N=", len(candidate_sinks)
                     #print "Code is very slow after this..."
@@ -161,16 +174,19 @@ class Hydro:
                     #print "creating new sinks..."
                     self.sink_particles=SinkParticles(sink_particles_tmp, 
                                                       looping_over="sources")
+                    self.sink_particles.synchronize_to(self.code.dm_particles)
                     #print "New sink particle:", sink_particles_tmp
                     print "New sinks created: ", len(sink_particles_tmp)
 
                 print "..done"
                 ##if len(self.sink_particles)>1: self.merge_sinks()
                 self.code.evolve_model(model_time)
-            print "Cool gas for another dt=", (dt/2).in_(units.Myr)
-            self.cooling.evolve_for(dt/2)
+            if COOL:
+                print "Cool gas for another dt=", (dt/2).in_(units.Myr)
+                self.cooling.evolve_for(dt/2)
                 #print "...done."
             self.channel_to_framework.copy()
+            self.channel_to_sinks.copy()
             #~ print "Hydro arrived at:", self.code.model_time.in_(units.Myr)
 
         def merge_sinks(self):
@@ -191,6 +207,7 @@ class Hydro:
                        print "warning: large merge(than 3) ", len(cc)
                    cc=cc.copy()
                    self.sink_particles.remove_particles(cc)
+                   self.sink_particles.synchronize_to(self.code.dm_particles)
                    new = self.merge_stars(cc)
                    newsinks.add_particle(new)
                if len(newsinks)>0:
@@ -199,6 +216,8 @@ class Hydro:
                    newsinks_in_code = newsinks
                    self.sink_particles.add_sinks(SinkParticles(newsinks_in_code,
                                                                looping_over="sources"))
+                   self.sink_particles.synchronize_to(self.code.dm_particles)
+                   
                if nmerge>0:
                    print "nmerg found: ",nmerge,
                print "...done"
