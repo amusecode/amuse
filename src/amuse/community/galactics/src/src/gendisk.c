@@ -103,7 +103,9 @@ char **argv;
 	    R = 2.*rtrunc;
 	    while (R > rtrunc) {
 	      u1 = -ran1(&seed);
-	      v1 = 2.0*(ran1(&seed) - 0.5);
+	      do {
+	        v1 = 2.0*(ran1(&seed) - 0.5);
+	      } while(v1<=-1. || v1>=1.);
 	      R = rd*invu(u1);
 	      z = zd*atanh(v1);
 	    }

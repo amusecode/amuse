@@ -21,11 +21,13 @@ from amuse.ext.star_to_sph import *
 
 from amuse.datamodel import Particles
 from amuse.datamodel import Grid
+
 def inject_supernova_energy(gas_particles):
-    inner = gas_particles.select(lambda pos : pos.length_squared() < 100.0 | units.RSun**2, ["position"])
-    print len(inner), "innermost particles selected."
-    print "Adding", (1.0e51 | units.erg) / inner.total_mass(), "of supernova " \
-        "(specific internal) energy to each of them."
+    Rinner = 10|units.RSun
+    inner = gas_particles.select(lambda pos : pos.length_squared() < Rinner**2, ["position"])
+    print , "innermost particles selected."
+    print "Adding", (1.0e51 | units.erg) / inner.total_mass(), "to each of",\
+        len(inner), "inner most particles of the expliding statr."
     inner.u += (1.0e51 | units.erg) / inner.total_mass()
 
 def setup_stellar_evolution_model():

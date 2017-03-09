@@ -557,7 +557,7 @@ class InstallMatplotlib(InstallPrerequisites):
               (
                 'zlib' ,                   #name to refer by
                 [],                         #names of prerequisites (unused)
-                '1.2.7' ,                   #version string
+                '1.2.11' ,                   #version string
                 'zlib-', '.tar.gz',        #pre- and postfix for filename
                 'http://zlib.net/', #download url, filename is appended
                 self.basic_build             #method to use for building - same as for FFTW should work

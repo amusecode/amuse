@@ -45,7 +45,7 @@ def main():
 
     write_set_to_file(ss, filename, 'hdf5')
     
-    gravity = bridge.Bridge(use_threading=False)
+    gravity = bridge.Bridge()
     gravity.add_system(star_gravity, (planet_gravity,moon_gravity) )
     gravity.add_system(planet_gravity, (star_gravity,moon_gravity) )
     gravity.add_system(moon_gravity, (star_gravity,planet_gravity) )

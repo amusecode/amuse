@@ -14,7 +14,43 @@ def merge_two_stars(bodies, particles_in_encounter):
     new_particle.radius = 0 | units.RSun
     bodies.add_particles(new_particle)
     bodies.remove_particles(particles_in_encounter)
-    
+
+def resolve_collision(collision_detection, gravity, stellar, bodies):
+    if collision_detection.is_set():
+        E_coll = gravity.kinetic_energy + gravity.potential_energy
+        print "At time=", gravity.model_time.in_(units.Myr), "number of encounters=", len(collision_detection.particles(0))
+        Nenc = 0
+        for ci in range(len(collision_detection.particles(0))): 
+            particles_in_encounter = Particles(particles=[collision_detection.particles(0)[ci], collision_detection.particles(1)[ci]])
+            particles_in_encounter = particles_in_encounter.get_intersecting_subset_in(bodies)
+
+            merge_two_stars(bodies, particles_in_encounter)
+            bodies.synchronize_to(gravity.particles)
+            bodies.synchronize_to(stellar.particles)
+            Nenc+=1
+            print "Resolve encounter Number:", Nenc
+        dE_coll = E_coll - (gravity.kinetic_energy + gravity.potential_energy)
+        print "dE_coll =", dE_coll, "N_enc=", Nenc
+
+def resolve_supernova(supernova_detection, bodies, time):
+    if supernova_detection.is_set():
+        print "At time=", time.in_(units.Myr), "supernova detected=", len(supernova_detection.particles(0))
+        Nsn = 0
+        for ci in range(len(supernova_detection.particles(0))):
+            print supernova_detection.particles(0)
+            particles_in_supernova = Particles(particles=supernova_detection.particles(0))
+            natal_kick_x = particles_in_supernova.natal_kick_x
+            natal_kick_y = particles_in_supernova.natal_kick_y
+            natal_kick_z = particles_in_supernova.natal_kick_z
+
+            particles_in_supernova = particles_in_supernova.get_intersecting_subset_in(bodies)
+            particles_in_supernova.vx += natal_kick_x
+            particles_in_supernova.vy += natal_kick_y
+            particles_in_supernova.vz += natal_kick_z
+
+            Nsn+=1
+        print "Resolve supernova Number:", Nsn
+        
 def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     numpy.random.seed(1)
     
@@ -49,7 +85,6 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     write_set_to_file(bodies.savepoint(0|units.Myr), filename, 'hdf5')
     E_init = gravity.kinetic_energy + gravity.potential_energy
     
-    Nenc = 0
     Nsn = 0
     dE_coll = zero
     time = zero
@@ -65,19 +100,7 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
         gravity.evolve_model(time)
         dE_dyn = E_dyn - (gravity.kinetic_energy  + gravity.potential_energy)
 
-        if collision_detection.is_set():
-            E_coll = gravity.kinetic_energy + gravity.potential_energy
-            print "At time=", gravity.model_time.in_(units.Myr), "number of encounters=", len(collision_detection.particles(0))
-            for ci in range(len(collision_detection.particles(0))): 
-                particles_in_encounter = Particles(particles=[collision_detection.particles(0)[ci], collision_detection.particles(1)[ci]])
-                particles_in_encounter = particles_in_encounter.get_intersecting_subset_in(bodies)
-
-                merge_two_stars(bodies, particles_in_encounter)
-                bodies.synchronize_to(gravity.particles)
-                bodies.synchronize_to(stellar.particles)
-                Nenc+=1
-                print "Resolve encounter Number:", Nenc
-            dE_coll = E_coll - (gravity.kinetic_energy + gravity.potential_energy)
+        resolve_collision(collision_detection, gravity, stellar, bodies)
         channel_from_gd.copy()
 
         time = gravity.model_time
@@ -86,23 +109,7 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
         stellar.evolve_model(time)
         dE_stellar = E_stellar - (gravity.kinetic_energy + gravity.potential_energy)
 
-        if supernova_detection.is_set():
-            print "At time=", time.in_(units.Myr), "supernova detected=", len(supernova_detection.particles(0))
-            for ci in range(len(supernova_detection.particles(0))):
-                print supernova_detection.particles(0)
-                particles_in_supernova = Particles(particles=supernova_detection.particles(0))
-                natal_kick_x = particles_in_supernova.natal_kick_x
-                natal_kick_y = particles_in_supernova.natal_kick_y
-                natal_kick_z = particles_in_supernova.natal_kick_z
-
-                particles_in_supernova = particles_in_supernova.get_intersecting_subset_in(bodies)
-
-                particles_in_supernova.vx += natal_kick_x
-                particles_in_supernova.vy += natal_kick_y
-                particles_in_supernova.vz += natal_kick_z
-
-                Nsn+=1
-                print "Resolve supernova Number:", Nsn
+        resolve_supernova(supernova_detection, bodies, time)
         channel_from_se.copy_attributes(["mass", "radius", "age", "temperature", "luminosity"])
 
         write_set_to_file(bodies.savepoint(time), filename, 'hdf5')

@@ -102,7 +102,11 @@
    write(*,'(" <accgrav> time:", 3f8.2)') maxtime,mintime, tottime
    print*,'<accgrav> mn,av,mx:',ntmin,ntavg,ntmax
   endif
-  if(niter.NE.npactive) call terror("accgrav inconsistent iter count")
+  if(niter.NE.npactive) then
+    print*, niter,npactive
+    print*, nchunk,maxthread
+    call terror("accgrav inconsistent iter count")
+  endif
  end subroutine
 
  subroutine pmaccgrav(option)

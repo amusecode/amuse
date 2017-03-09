@@ -170,7 +170,7 @@ function check_file(path) result(ret)
         position = 'append'
     end if
 
-    open (24,file=outfile(1),status='unknown',position=position, iostat = err)
+    open (24,file=trim(path),status='unknown',position=position, iostat = err)
     close(24)
     if (err.GT.0)  then
        ret = -1
