@@ -1766,7 +1766,7 @@ class Multiples(object):
 
                         return scatter_energy_error
 
-                    if tt >= 0.99999999*time: break	# avoid roumdoff
+                    if tt >= 0.99999999*time: break	# avoid roundoff
 
                 # -- end of while tt < time: loop --
 
