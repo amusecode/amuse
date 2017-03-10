@@ -45,7 +45,7 @@ class SalpeterIMF(object):
         return (total_mass, set_of_masses)
     
 
-def new_salpeter_mass_distribution(number_of_particles, *list_arguments, **keyword_arguments):
+def new_powerlaw_mass_distribution(number_of_particles, *list_arguments, **keyword_arguments):
     """Returns a salpeter mass distribution in SI units.
     
     :argument alpha: the dimensionless exponent of the Salpeter function (defaults to -2.35)
@@ -55,7 +55,7 @@ def new_salpeter_mass_distribution(number_of_particles, *list_arguments, **keywo
     uc = SalpeterIMF(*list_arguments, **keyword_arguments)
     return uc.next_mass(number_of_particles).as_quantity_in(uc.mass_min.unit)
     
-def new_salpeter_mass_distribution_nbody(number_of_particles, **keyword_arguments):
+def new_powerlaw_mass_distribution_nbody(number_of_particles, **keyword_arguments):
     """Returns a salpeter mass distribution in nbody masses.
     All masses will be scaled so that the total mass is always 1.0.
     
@@ -73,4 +73,6 @@ def new_salpeter_mass_distribution_nbody(number_of_particles, **keyword_argument
     total_mass, result = uc.next_set(number_of_particles)
     result *=  (1.0 | total_mass.unit) / total_mass
     return result
-    
+
+new_salpeter_mass_distribution = new_powerlaw_mass_distribution
+new_salpeter_mass_distribution_nbody = new_powerlaw_mass_distribution_nbody

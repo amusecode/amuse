@@ -23,8 +23,7 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10, filename="gravity_stellar.hdf5", Mma
     dt = t_end/float(nsteps)
 
     bodies = new_king_model(N, W0)
-    masses = new_salpeter_mass_distribution(N, mass_min=0.1|units.MSun, mass_max=10|units.MSun)
-#    masses = masses.value_in(units.MSun)
+    masses = new_powerlaw_mass_distribution(N, mass_min=0.1|units.MSun, mass_max=10|units.MSun, alpha=-2.35)
     masses /= masses.sum()
     bodies.mass = masses | nbody_system.mass
 
