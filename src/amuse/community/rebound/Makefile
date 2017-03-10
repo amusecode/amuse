@@ -9,6 +9,11 @@ CFLAGS   += -Wall -g -DCOLLISIONS_DUMMY -DLIBREBOUND
 CXXFLAGS += $(CFLAGS)  
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
+ifdef OPENMP_ENABLED
+export OPENMP=1
+CFLAGS   += $(OPENMP_CFLAGS)
+endif
+
 OBJS = interface.o
 
 CODELIB = src/librebound.a
