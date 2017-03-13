@@ -474,7 +474,6 @@ int _delete_particle(int index_of_the_particle, int code_index){
     }
     int keepSorted = 1;
     reb_remove_by_hash(codes[code_index].code, index_of_the_particle, keepSorted);
-    }
     return 0;
 }
 
