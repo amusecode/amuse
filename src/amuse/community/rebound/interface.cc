@@ -467,17 +467,13 @@ int get_index_of_next_particle(int index_of_the_particle,
     return 0;
 }
 
-int delete_particle(int index_of_the_particle){
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    
-    indexMap.erase(index_of_the_particle);
-    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
-        code_state cs = *i;
-        if(cs.code == loc.code){
-            cs.has_removal = true;
-        }
-        *i = cs;
+int _delete_particle(int index_of_the_particle, int code_index){
+
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
+    }
+    int keepSorted = 1;
+    reb_remove_by_hash(codes[code_index].code, index_of_the_particle, keepSorted);
     }
     return 0;
 }
