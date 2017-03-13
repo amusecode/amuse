@@ -8,20 +8,25 @@ import matplotlib.animation as animate
 
 # TODO:	    Colormap should respond to changes in index array.
 
-def unpack_line(r, np):
+def unpack_line(r, np, nq):
     
     tt = float(r[0])
     ii = []
+    mm = []
     xx = []
     yy = []
     zz = []
     for j in range(np):
-        ii.append(int(r[4*j+1]))
-        xx.append(float(r[4*j+2]))
-        yy.append(float(r[4*j+3]))
-        zz.append(float(r[4*j+4]))
+        ii.append(int(r[nq*j+1]))
+        if nq == 4:
+            mm.append(2.**(-j))
+        else:
+            mm.append(float(r[nq*j+2]))
+        xx.append(float(r[nq*j+nq-2]))
+        yy.append(float(r[nq*j+nq-1]))
+        zz.append(float(r[nq*j+nq]))
 
-    return tt, ii, xx, yy, zz
+    return tt, ii, mm, xx, yy, zz
 
 def interpolate(xp, xx, tfac):
     
@@ -30,7 +35,7 @@ def interpolate(xp, xx, tfac):
         xint.append(xp[j] + tfac*(xx[j]-xp[j]))
     return xint
 
-def read_data(filename, dt, N):
+def read_data(filename, dt, N, have_mass):
 
     # Read in the data file.  Format is defined in smalln.
 
@@ -48,14 +53,19 @@ def read_data(filename, dt, N):
     # Do some preliminary analysis.
 
     r = ll[0].split()			# trust the first line
-    np = (len(r)-1)/4
-    print 'np =', np
-    tt, ii, xx, yy, zz = unpack_line(r, np)
+    if have_mass:
+        nq = 5
+    else:
+        nq = 4
+    np = (len(r)-1)/nq
+    print 'np =', np, 'nq =', nq
+    
+    tt, ii, mm, xx, yy, zz = unpack_line(r, np, nq)
     tnext = tt
 
     if N > 0:				# N trumps dt
         r = ll[nt-1].split()		# last line
-        tlast, dum, dum, dum, dum = unpack_line(r, np)
+        tlast, dum, dum, dum, dum = unpack_line(r, np, nq)
         pdt = False
         if dt > 0: pdt = True
         dt = (tlast-tt)/N
@@ -63,6 +73,7 @@ def read_data(filename, dt, N):
 
     t = []
     i = []
+    m = []
     x = []
     y = []
     z = []
@@ -74,23 +85,25 @@ def read_data(filename, dt, N):
         r = l.split()
         line += 1
 
-	# Format is: time  id1 x1 y1 z1  id2 x2 y2 z2  id3 x3 y3 z3 ...
+	# Format is: time  id1 m1 x1 y1 z1  id2 m2 x2 y2 z2  id3 m3 x3 y3 z3 ...
 
-        if 4*np + 1 == len(r):
+        if nq*np + 1 == len(r):
 
             # Save old data and unpack the line.
 
             tp = tt
+            mp= mm
             xp = list(xx)
             yp = list(yy)
             zp = list(zz)
-            tt, ii, xx, yy, zz = unpack_line(r, np)
+            tt, ii, mm, xx, yy, zz = unpack_line(r, np, nq)
 
             while tt >= tnext:
 
                 if line == 1 or dt == 0.0:
 
                     tint = tt
+                    mint = mm
                     xint = list(xx)
                     yint = list(yy)
                     zint = list(zz)
@@ -101,6 +114,7 @@ def read_data(filename, dt, N):
 
                     tint = tnext
                     tfac = (tnext-tp)/(tt-tp)
+                    mint = interpolate(mp, mm, tfac)
                     xint = interpolate(xp, xx, tfac)
                     yint = interpolate(yp, yy, tfac)
                     zint = interpolate(zp, zz, tfac)
@@ -109,6 +123,7 @@ def read_data(filename, dt, N):
 
                 t.append(tint)
                 i.append(ii)
+                m.append(mint)
                 x.append(xint)
                 y.append(yint)
                 z.append(zint)
@@ -123,6 +138,7 @@ def read_data(filename, dt, N):
 
     ta = numpy.array(t)
     ia = numpy.array(i)
+    ma = numpy.array(m)
     xa = numpy.array(x)			# should be nt x np
     ya = numpy.array(y)
     za = numpy.array(z)
@@ -131,7 +147,7 @@ def read_data(filename, dt, N):
     print 'nt =', nt
     print short, 'short records'
     #print 'xa.shape =', xa.shape	# should be nt x np
-    return nt, ta, ia, xa, ya, za
+    return nt, ta, ia, ma, xa, ya, za
 
 def print_help():
     print 'keyboard controls:'
@@ -162,7 +178,7 @@ current_frame = 0
 shift = 0.25
 zoom = 1.5
 
-def animate_data(t, x, y, id, lx, ly, scale, delay):
+def animate_data(t, m, x, y, id, lx, ly, scale, delay):
 
     global xmin, xmax, ymin, ymax
 
@@ -201,10 +217,15 @@ def animate_data(t, x, y, id, lx, ly, scale, delay):
     else:
         tformat = '%'+str(-nf+7)+'.'+str(-nf+4)+'f'
     lformat = tformat+'/'+tformat+'    frame %d/%d'
-    
+    s = numpy.log(list(m[0,:]))
+    smin = numpy.min(s)
+    smax = numpy.max(s)
+    s = 5 + 25*(s-smin)/(smax-smin)    # sizes logarithmic in mass, range 5-30
+    print 's =', s
     nt,np = x.shape
     fig = plt.figure()
-    scat = plt.scatter(x[0,:], y[0,:], c=colormap[:np], s=30)
+    
+    scat = plt.scatter(x[0,:], y[0,:], c=colormap[:np], s=s)
     #plt.axis('square')	# fails in ubuntu
     plt.xlabel(lx)
     plt.ylabel(ly)
@@ -365,13 +386,14 @@ if __name__ == '__main__':
     dt = 0.0
     delay = 30
     file = 'abc.dat'
+    have_mass = True
     N = 0
     outfile = None
     proj = 3
     scale = 1.5
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ad:D:f:N:o:p:s:")
+        opts, args = getopt.getopt(sys.argv[1:], "ad:D:f:mN:o:p:s:")
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(1)
@@ -385,6 +407,8 @@ if __name__ == '__main__':
             delay = int(a)
         elif o == "-f":
             file = a
+        elif o == "-m":
+            have_mass = not have_mass
         elif o == '-N':
             N = int(a)
         elif o == "-o":
@@ -397,7 +421,7 @@ if __name__ == '__main__':
             print "unexpected argument", o
             sys.exit(1)
 
-    nt, t, i, x, y, z = read_data(file, dt, N)
+    nt, t, i, m, x, y, z = read_data(file, dt, N, have_mass)
 
     # Animate or plot the data.
 
@@ -414,6 +438,6 @@ if __name__ == '__main__':
         elif proj == 2:
             a2 = z
             l2 = 'z'
-        animate_data(t, a1, a2, i[:nt], l1, l2, scale, delay)
+        animate_data(t, m, a1, a2, i[:nt], l1, l2, scale, delay)
     else:
-        plot_data(t, x, 't', 'x')
+        plot_data(t, m, x, 't', 'x')

@@ -538,7 +538,8 @@ void print_positions(hdyn *b, real t, string outfile)
       f.open(outfile.c_str(), ios::out | ios::trunc); 
     f << t;
     for_all_daughters(hdyn, b, bi)
-      f << " " << bi->get_index() << " " << bi->get_pos();
+      f << " " << bi->get_index() << " " << bi->get_mass()
+	<< " " << bi->get_pos();
     f << endl;
   }
 }
