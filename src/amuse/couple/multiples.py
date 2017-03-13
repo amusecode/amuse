@@ -18,14 +18,6 @@ from amuse.units.quantities import zero
 from amuse.support.exceptions import KeysNotInStorageException
 from amuse import io
 
-# Turn on/off global debugging.
-
-global_debug = False
-
-# Turn on/off experimental code to check tidal perturbation.
-
-check_tidal_perturbation = False
-
 #---------------------------------------------------------------------
 #
 # Steve's ToDo list of features to be added/improved in the multiples
@@ -232,10 +224,19 @@ class Multiples(object):
         
         self.number_of_collisions = 0
     
-        #Repeat encounter management data
+        # Repeat encounter management data
+
         self.old_star_1 = 0
         self.old_star_2 = 0
         self.repeat_count = 0
+
+        # Turn on/off global debugging.
+
+        self.global_debug = False
+
+        # Turn on/off experimental code to check tidal perturbation.
+
+        self.check_tidal_perturbation = False
 
     @property
     def particles(self):
@@ -563,7 +564,7 @@ class Multiples(object):
                         # error in the internal bookkeeping of
                         # manage_encounter().
 
-                        if global_debug:
+                        if self.global_debug:
                             #print 'top-level initial energy =', initial_energy
                             #print 'top-level final energy =', final_energy
                             print 'dE_top_level =', dE_top_level
@@ -575,7 +576,7 @@ class Multiples(object):
                                 'dE_top_level-dE_top_level_scatter-dphi_top =',\
                                 dE_top_level - dE_top_level_scatter - dphi_top
 
-                        if global_debug:
+                        if self.global_debug:
                             print 'net local error =', \
                                   dE_top_level - dE_top_level_scatter - dphi_top
                             print 'scatter integration error =', dE_int
@@ -589,7 +590,7 @@ class Multiples(object):
                         # cumulative value of the right-hand side of
                         # this equation.
 
-                        if global_debug:
+                        if self.global_debug:
                             print 'dE_mul =', dE_mul
                             print 'internal local error =', \
 				  dE_top_level + dE_mul - dphi_top
@@ -789,7 +790,7 @@ class Multiples(object):
         sorted_perturbations = pert[indices]
         fac12 = 0.5*(star1.mass + star2.mass)/sep12**3
 
-        if check_tidal_perturbation:
+        if self.check_tidal_perturbation:
             print "sorted_stars", sorted_stars[:5]
             print "sorted_distances", sorted_distances[:5]
             print "sorted_perturbations", sorted_perturbations[:5]/fac12
@@ -848,7 +849,7 @@ class Multiples(object):
                                             stars - scattering_stars,
                                             G=self.gravity_constant)
 
-        if global_debug:
+        if self.global_debug:
             print 'E0 =', E0
             print 'phi_rem =', phi_rem
 
@@ -909,7 +910,7 @@ class Multiples(object):
 
         dphi_1 = E1 - E0 - Emul_init
 
-        if global_debug:
+        if self.global_debug:
             print 'E1 =', E1
             print 'Emul_init =', Emul_init
             print 'dphi_1 =', dphi_1
@@ -949,7 +950,7 @@ class Multiples(object):
         rvir = self.gravity_constant*M/(4*abs(E1/M))
         tvir = self.gravity_constant*M/(4*abs(E1/M))**1.5
 
-        if global_debug:
+        if self.global_debug:
             print 'Encounter:'
             print '    sep12 =', sep12
             print '    rad12 =', rad12
@@ -1030,7 +1031,7 @@ class Multiples(object):
         orbit_scale = 2*a
         if E.number < 0: orbit_scale = 1.1*a*(1+e) # a*(1+0.9*e)
 
-        if global_debug:
+        if self.global_debug:
             print 'orbit_scale =', orbit_scale
 
         # Final_scatter_scale is the scale at which we will terminate
@@ -1122,7 +1123,7 @@ class Multiples(object):
             #print particles_in_encounter
             print 'E1 =', E1, 'E2 =', E2
 
-        if global_debug:
+        if self.global_debug:
             print 'E2 =', E2
             print 'scatter_energy_error =', scatter_energy_error
             print 'dE_int =', dE_int
@@ -1363,7 +1364,7 @@ class Multiples(object):
 
         dphi_2 = E2 - Emul_final - E3
 
-        if global_debug:
+        if self.global_debug:
             print 'E3 =', E3
             print 'phi_ins =', phi_ins
             print 'Emul_final =', Emul_final
@@ -1484,7 +1485,7 @@ class Multiples(object):
         #	multiple center of mass is cmpos
         #	perturbers are in largest_perturbers
         
-        if check_tidal_perturbation \
+        if self.check_tidal_perturbation \
             and len(particles_in_encounter) == 2 and len(top_level_nodes) == 2:
 
             print 'checking quadrupole perturbations'
@@ -1766,7 +1767,7 @@ class Multiples(object):
 
                         return scatter_energy_error
 
-                    if tt >= 0.99999999*time: break	# avoid roumdoff
+                    if tt >= 0.99999999*time: break	# avoid roundoff
 
                 # -- end of while tt < time: loop --
 
