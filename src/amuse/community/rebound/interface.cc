@@ -468,7 +468,6 @@ int get_index_of_next_particle(int index_of_the_particle,
 }
 
 int _delete_particle(int index_of_the_particle, int code_index){
-
     if(code_index < 0 || code_index >= (signed) codes.size()){
         return -10;
     }
@@ -581,7 +580,13 @@ int get_kinetic_energy(int code_index, double * kinetic_energy){
 }
 
 int get_number_of_particles(int * number_of_particles){
-    *number_of_particles = indexMap.size();
+    int N = 0;
+    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+        code_state cs = *i;
+        N += cs.code->N;
+    }
+
+    *number_of_particles = N;
     return 0;
 }
 
