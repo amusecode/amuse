@@ -102,17 +102,22 @@ def run_sequential_gravity_and_stellar(bodies, t_end):
     
     dt = 0.1|units.Myr
     while  True:
+            
+        stellar.evolve_model(gravity.model_time + dt/2)
+        channel_from_stellar.copy_attributes(["mass"])
+        channel_to_gravity.copy_attributes(["mass"])
+
+        gravity.evolve_model(gravity.model_time+dt)
+        channel_from_gravity.copy_attributes(["x", "y", "z", "vx", "vy", "vz"])
+
+        stellar.evolve_model(gravity.model_time + dt)
+        channel_from_stellar.copy_attributes(["mass"])
+        channel_to_gravity.copy_attributes(["mass"])
+
         time.append(gravity.model_time)
         Lr25.append(LagrangianRadii(gravity.particles)[5])
         Lr50.append(LagrangianRadii(gravity.particles)[6])
         Lr75.append(LagrangianRadii(gravity.particles)[7])
-
-        gravity.evolve_model(time[-1]+dt)
-        channel_from_gravity.copy_attributes(["x", "y", "z", "vx", "vy", "vz"])
-
-        stellar.evolve_model(gravity.model_time)
-        channel_from_stellar.copy_attributes(["mass"])
-        channel_to_gravity.copy_attributes(["mass"])
         
         print "GS: T=", time[-1], "M=", bodies.mass.sum(), "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")"
         if time[-1] >= t_end:
@@ -132,27 +137,34 @@ def run_event_driven_gravity_and_stellar(bodies, t_end):
     converter = nbody_system.nbody_to_si(bodies.mass.sum(), 1|units.parsec)
     gravity = ph4(converter)
     gravity.particles.add_particles(bodies)
-    channel_from_gravity = gravity.particles.new_channel_to(bodies)
-    channel_to_gravity = bodies.new_channel_to(gravity.particles)
 
     stellar = SSE()
     stellar.parameters.metallicity = 0.02
     stellar.particles.add_particle(bodies)
-    channel_from_stellar = stellar.particles.new_channel_to(bodies)
+
+    channel_from_gravity = gravity.particles.new_channel_to(bodies, attributes=["mass", "x", "y", "z", "vx", "vy", "vz"])
+    channel_from_stellar = stellar.particles.new_channel_to(bodies, attributes=["mass"])
+    channel_from_stellar_to_gravity = stellar.particles.new_channel_to(gravity.particles, attributes=["mass"])
     
-    dt = 0.1|units.Myr
     while True:
+
+        dt = 0.5*stellar.particles.time_step.min()
+        stellar.evolve_model(gravity.model_time + dt/2)
+        channel_from_stellar_to_gravity.copy()
+
+        dt = 0.5*stellar.particles.time_step.min()
+        gravity.evolve_model(stellar.model_time + dt)
+        channel_from_gravity.copy()
+
+        stellar.evolve_model(gravity.model_time)
+        channel_from_stellar.copy()
+        
         time.append(gravity.model_time)
         Lr25.append(LagrangianRadii(gravity.particles)[5])
         Lr50.append(LagrangianRadii(gravity.particles)[6])
         Lr75.append(LagrangianRadii(gravity.particles)[7])
 
         stellar.evolve_model()
-        channel_from_stellar.copy_attributes(["mass"])
-        channel_to_gravity.copy_attributes(["mass"])
-        
-        gravity.evolve_model(stellar.model_time)
-        channel_from_gravity.copy_attributes(["x", "y", "z", "vx", "vy", "vz"])
         
         print "GSE: T=", time[-1], "M=", bodies.mass.sum(), "(dM[SE]=", bodies.mass.sum()/Mtot_init, ")"
 

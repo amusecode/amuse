@@ -75,7 +75,8 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0, t_end, nst
     M3 = stars[2].mass
     print "Masses:", M1, M2, M3
     
-    dtse_fraction=5
+#    dtse_fraction=5
+    dtse_fraction=20
 
     #inner binary
     stars=Particles(2)

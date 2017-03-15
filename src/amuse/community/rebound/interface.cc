@@ -14,6 +14,9 @@ extern "C" {
 //#include "simulationarchive.h"
 }
 
+#ifdef OPENMP_ENABLED
+#include <openmp.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -685,6 +688,10 @@ int recommit_parameters(){
 int initialize_code(){
     max_id = 0;
     _time=0;
+#ifdef OPENMP_ENABLED
+    int nt = omp_get_max_threads();
+    omp_set_num_threads(nt);
+#endif
     reb_simulation * code = reb_create_simulation();
     codes.push_back(code_state(code));
     code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
