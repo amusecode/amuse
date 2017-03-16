@@ -182,6 +182,51 @@ int get_time(int code_index, double * time){
 int set_mass(int index_of_the_particle, double mass){
     struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
     if(p == NULL) {return -1;}
+
+    if(p->m==0){
+        if(mass>0){
+            reb_simulation * code;
+            for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+                code_state cs = *i;
+                if (reb_get_particle_by_hash(cs.code, index_of_the_particle) != NULL) {
+                    code = cs.code;
+                break;
+                }
+            }
+            int index_old=reb_get_particle_index(p);
+            if(index_old!=code->N_active){
+                struct reb_particle tmp = code->particles[index_old];
+                for(int j=index_old; j>code->N_active; j--){
+                    code->particles[j] = code->particles[j-1];
+                }
+                code->particles[code->N_active] = tmp;
+            }
+            code->N_active++;
+        }
+    }
+    else {
+        if(mass==0){
+            reb_simulation * code;
+            for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+                code_state cs = *i;
+                if (reb_get_particle_by_hash(cs.code, index_of_the_particle) != NULL) {
+                    code = cs.code;
+                break;
+                }
+            }
+
+            int index_old=reb_get_particle_index(p);
+            code->N_active--;
+
+            if(index_old!=code->N_active){
+                struct reb_particle tmp = code->particles[index_old];
+                for( int j = index_old; j<code->N_active; j++){
+                    code->particles[j] = code->particles[j+1];
+                }
+                code->particles[code->N_active] = tmp;
+            }
+        }
+    }
     p->m = mass;
     return 0;
 }
@@ -218,12 +263,19 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.lastcollision = 0;
       pt.c = NULL;
       pt.hash = new_hash;
-      if(pt.m == 0.0) {
-          codes[code_index].has_unsorted_massless_particles = true;
-      }
       reb_add(codes[code_index].code, pt);
       //std::cout<<"new particle :"<<pt.id<< " << "<<code_index<<" << "<<pt.x<<std::endl;
       *index_of_the_particle = new_hash;
+
+      //make sure massless particles are last and that N_active is equal to massive particles
+      if(pt.m != 0.0) {
+          int N_active = codes[code_index].code->N_active;
+          for(int j=codes[code_index].code->N-1;j>N_active;j--){
+              codes[code_index].code->particles[j] = codes[code_index].code->particles[j-1];
+          }
+          codes[code_index].code->particles[N_active] = pt;
+          codes[code_index].code->N_active++;
+      }
       return 0;
 }
 
@@ -695,6 +747,7 @@ int initialize_code(){
     reb_simulation * code = reb_create_simulation();
     codes.push_back(code_state(code));
     code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
+    code->N_active = 0;
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
     set_support_for_condition(TIMEOUT_DETECTION);
@@ -792,6 +845,7 @@ int new_subset(int * index, double time_offset) {
     code->dt = timestep;
     if(time_offset < 0) {time_offset = _time;}
     code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
+    code->N_active = 0;
     code->t = time_offset;
     codes.push_back(code_state(code, time_offset, codes.size()));
     *index = codes.size() - 1;
