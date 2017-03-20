@@ -57,7 +57,24 @@ class ReboundInterface(CodeInterface,
             particle could not be created"""
         return function
         
-        
+    def delete_particle(self, index_of_the_particle, code_index=0):
+        return self._delete_particle(index_of_the_particle, code_index)
+
+    @legacy_function
+    def _delete_particle():
+        """
+        Delete a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN, description ="Index of the particle")
+        function.addParameter('code_index', dtype='int32', direction=function.IN, description = "Index of the code in rebound", default = 0)
+        function.result_type = 'int32'
+        function.result_doc = """ 0 - OK
+            particle was deleted
+        -1 - ERROR
+            particle not deleted"""
+        return function
 
     @legacy_function
     def _set_integrator():

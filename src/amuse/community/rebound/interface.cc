@@ -14,6 +14,9 @@ extern "C" {
 //#include "simulationarchive.h"
 }
 
+#ifdef OPENMP_ENABLED
+#include <openmp.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -49,13 +52,11 @@ typedef struct _code_state {
     _code_state(reb_simulation * c, double time_offset, int s):code(c),has_removal(false), has_unsorted_massless_particles(false), time_offset(time_offset),subset(s) {}
 } code_state;
 
-typedef std::map<int, particle_location> IndexMap;
-static IndexMap indexMap;
 
 typedef struct _particle_sort {
     int ref_index;
-    reb_particle * p;
-    _particle_sort(int i, reb_particle * p):ref_index(i),p(p){}
+    reb_particle* p;
+    _particle_sort(int i, reb_particle* p):ref_index(i),p(p){}
 } particle_sort;
 typedef std::vector<_particle_sort>  ParticleSortVector;
 
@@ -68,30 +69,24 @@ static particle_location sentinel = particle_location();
 static double _time;
 static double timestep = 0.0001;
 
-static inline particle_location get_index_from_identity(int id)
+static inline reb_particle* get_particle_from_identity(int index_of_the_particle)
 {
-    IndexMap::iterator i = indexMap.find(id);
-    if(i == indexMap.end()) {
-        return sentinel;
+    struct reb_particle* p;
+    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+        code_state cs = *i;
+        p = reb_get_particle_by_hash(cs.code, index_of_the_particle);
+        if (p != NULL) break;
+        //*i = cs;
     }
-    return (*i).second;
+    return p;
 }
 
 
-static inline int get_identity_from_index(particle_location location)
-{
-    for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
-        if((*i).second.index == location.index &&  indexMap [(*i).first].code == location.code) {
-            return (*i).first;
-        }
-    }
-    return -1;
-}
 
 int get_mass(int index_of_the_particle, double * mass){
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {*mass = 0;  return -1;}
-    *mass = loc.code->particles[loc.index].m;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    *mass = p->m;
     return 0;
 }
 
@@ -107,61 +102,61 @@ int commit_particles(){
      */
      
     for( ReboundSimulationVector::iterator j = codes.begin(); j != codes.end(); j++) {
-        code_state cs = *j;
-        bool has_removal = cs.has_removal;
-        if(has_removal) {
-            if(cs.code) {
-                struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
-                memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
-                reb_remove_all(cs.code);
-                for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
-                    if( (*i).second.code == cs.code ) {
-                        struct reb_particle * p = previous + (*i).second.index;
-                        reb_add(cs.code, *p);
-                        indexMap[(*i).first] = particle_location(cs.code, cs.code->N - 1, cs.subset);
-                    }
-                }
-            }
-            cs.has_removal = false;
-            *j = cs;
-        }
-        if(cs.has_unsorted_massless_particles || has_removal) {
-            if(cs.code) {
-                //std::cout<<"HAS MASSLESS, WILL SORT"<<std::endl;
-                ParticleSortVector sortvector;
-                
-                //std::cout<<"NA:"<<(cs.code)->N_active<<std::endl;
-                struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
-                memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
-                reb_remove_all(cs.code);
-                for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
-                    if( (*i).second.code == cs.code ) {
-                        struct reb_particle * p = previous + (*i).second.index;
-                        sortvector.push_back(particle_sort((*i).first, p));
-                        
-                        /*reb_add(cs.code, *p);
-                        indexMap[(*i).first] = particle_location(cs.code, cs.code->N - 1, cs.subset);*/
-                        
-                    }
-                }
-                
-                std::sort (sortvector.begin(), sortvector.end(), sort_particles);
-                cs.code->N_active = 0;
-                for( ParticleSortVector::iterator i = sortvector.begin(); i != sortvector.end(); i++) {
-                    reb_add(cs.code,*(*i).p);
-                    
-                    //std::cout<<"p:"<<(*i).ref_index<<", m:"<<(*i).p->m<<std::endl;
-                    if((*i).p->m > 0) {
-                        cs.code->N_active++;
-                    }
-                    indexMap[(*i).ref_index] = particle_location(cs.code, cs.code->N - 1, cs.subset);
-                }
-                //std::cout<<"NA:"<<(cs.code)->N_active<<std::endl;
-                sortvector.clear();
-            }
-            cs.has_unsorted_massless_particles = false;
-            *j = cs;
-        }
+        //code_state cs = *j;
+        //bool has_removal = cs.has_removal;
+        //if(has_removal) {
+        //    if(cs.code) {
+        //        struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
+        //        memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
+        //        reb_remove_all(cs.code);
+        //        for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
+        //            if( (*i).second.code == cs.code ) {
+        //                struct reb_particle * p = previous + (*i).second.index;
+        //                reb_add(cs.code, *p);
+        //                indexMap[(*i).first] = particle_location(cs.code, cs.code->N - 1, cs.subset);
+        //            }
+        //        }
+        //    }
+        //    cs.has_removal = false;
+        //    *j = cs;
+        //}
+        //if(cs.has_unsorted_massless_particles || has_removal) {
+        //    if(cs.code) {
+        //        //std::cout<<"HAS MASSLESS, WILL SORT"<<std::endl;
+        //        ParticleSortVector sortvector;
+        //        
+        //        //std::cout<<"NA:"<<(cs.code)->N_active<<std::endl;
+        //        struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
+        //        memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
+        //        reb_remove_all(cs.code);
+        //        for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
+        //            if( (*i).second.code == cs.code ) {
+        //                struct reb_particle * p = previous + (*i).second.index;
+        //                sortvector.push_back(particle_sort((*i).first, p));
+        //                
+        //                /*reb_add(cs.code, *p);
+        //                indexMap[(*i).first] = particle_location(cs.code, cs.code->N - 1, cs.subset);*/
+        //                
+        //            }
+        //        }
+        //        
+        //        std::sort (sortvector.begin(), sortvector.end(), sort_particles);
+        //        cs.code->N_active = 0;
+        //        for( ParticleSortVector::iterator i = sortvector.begin(); i != sortvector.end(); i++) {
+        //            reb_add(cs.code,*(*i).p);
+        //            
+        //            //std::cout<<"p:"<<(*i).ref_index<<", m:"<<(*i).p->m<<std::endl;
+        //            if((*i).p->m > 0) {
+        //                cs.code->N_active++;
+        //            }
+        //            indexMap[(*i).ref_index] = particle_location(cs.code, cs.code->N - 1, cs.subset);
+        //        }
+        //        //std::cout<<"NA:"<<(cs.code)->N_active<<std::endl;
+        //        sortvector.clear();
+        //    }
+        //    cs.has_unsorted_massless_particles = false;
+        //    *j = cs;
+        //}
     }
     return 0;
 }
@@ -185,9 +180,54 @@ int get_time(int code_index, double * time){
 }
 
 int set_mass(int index_of_the_particle, double mass){
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    loc.code->particles[loc.index].m = mass;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+
+    if(p->m==0){
+        if(mass>0){
+            reb_simulation * code;
+            for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+                code_state cs = *i;
+                if (reb_get_particle_by_hash(cs.code, index_of_the_particle) != NULL) {
+                    code = cs.code;
+                break;
+                }
+            }
+            int index_old=reb_get_particle_index(p);
+            if(index_old!=code->N_active){
+                struct reb_particle tmp = code->particles[index_old];
+                for(int j=index_old; j>code->N_active; j--){
+                    code->particles[j] = code->particles[j-1];
+                }
+                code->particles[code->N_active] = tmp;
+            }
+            code->N_active++;
+        }
+    }
+    else {
+        if(mass==0){
+            reb_simulation * code;
+            for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+                code_state cs = *i;
+                if (reb_get_particle_by_hash(cs.code, index_of_the_particle) != NULL) {
+                    code = cs.code;
+                break;
+                }
+            }
+
+            int index_old=reb_get_particle_index(p);
+            code->N_active--;
+
+            if(index_old!=code->N_active){
+                struct reb_particle tmp = code->particles[index_old];
+                for( int j = index_old; j<code->N_active; j++){
+                    code->particles[j] = code->particles[j+1];
+                }
+                code->particles[code->N_active] = tmp;
+            }
+        }
+    }
+    p->m = mass;
     return 0;
 }
 
@@ -205,7 +245,7 @@ int new_particle(int * index_of_the_particle, double mass, double x,
         *index_of_the_particle=0;
         return -10;
       }
-      int new_id = max_id++;
+      uint32_t new_hash = max_id++;
       struct reb_particle pt;
       pt.x = x;
       pt.y = y;
@@ -222,14 +262,20 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.r = radius; 
       pt.lastcollision = 0;
       pt.c = NULL;
-      pt.hash = new_id;
-      if(pt.m == 0.0) {
-          codes[code_index].has_unsorted_massless_particles = true;
-      }
+      pt.hash = new_hash;
       reb_add(codes[code_index].code, pt);
       //std::cout<<"new particle :"<<pt.id<< " << "<<code_index<<" << "<<pt.x<<std::endl;
-      indexMap[new_id] = particle_location(codes[code_index].code, codes[code_index].code->N - 1, code_index);
-      *index_of_the_particle = new_id;
+      *index_of_the_particle = new_hash;
+
+      //make sure massless particles are last and that N_active is equal to massive particles
+      if(pt.m != 0.0) {
+          int N_active = codes[code_index].code->N_active;
+          for(int j=codes[code_index].code->N-1;j>N_active;j--){
+              codes[code_index].code->particles[j] = codes[code_index].code->particles[j-1];
+          }
+          codes[code_index].code->particles[N_active] = pt;
+          codes[code_index].code->N_active++;
+      }
       return 0;
 }
 
@@ -355,8 +401,8 @@ int _evolve_code(double _tmax, code_state * cs){
                         else
                         {
                             set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-                            set_stopping_condition_particle_index(stopping_index, 0, get_identity_from_index(particle_location(code,i, -1)));
-                            set_stopping_condition_particle_index(stopping_index, 1, get_identity_from_index(particle_location(code,j, -1)));
+                            set_stopping_condition_particle_index(stopping_index, 0, pi.hash);
+                            set_stopping_condition_particle_index(stopping_index, 1, pj.hash);
                         }
                         is_condition_set = 1;
                     }
@@ -402,7 +448,7 @@ int _evolve_code(double _tmax, code_state * cs){
                     int stopping_index = next_index_for_stopping_condition();
                     if(stopping_index >= 0){
                         set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION);
-                        set_stopping_condition_particle_index(stopping_index, 0, get_identity_from_index(particle_location(code,i, -1)));
+                        set_stopping_condition_particle_index(stopping_index, 0, code->particles[i].hash);
                     } else {
                         printf("Run out of storable out of box events\n");
                     }
@@ -468,17 +514,15 @@ int get_index_of_next_particle(int index_of_the_particle,
 }
 
 int delete_particle(int index_of_the_particle){
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    
-    indexMap.erase(index_of_the_particle);
-    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
-        code_state cs = *i;
-        if(cs.code == loc.code){
-            cs.has_removal = true;
-        }
-        *i = cs;
+    return 0;    
+}
+
+int _delete_particle(int index_of_the_particle, int code_index){
+    int keepSorted = 1;
+    if(code_index < 0 || code_index >= (signed) codes.size()){
+        return -10;
     }
+    reb_remove_by_hash(codes[code_index].code, index_of_the_particle, keepSorted);
     return 0;
 }
 
@@ -492,19 +536,18 @@ int synchronize_model(){
 
 int set_state(int index_of_the_particle, double mass, double x, double y, 
     double z, double vx, double vy, double vz, double radius){
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
     
+    p->x = x;
+    p->y = y;
+    p->z = z;
+    p->vx = vx;
+    p->vy = vy;
+    p->vz = vz;
     
-    loc.code->particles[loc.index].x = x;
-    loc.code->particles[loc.index].y = y;
-    loc.code->particles[loc.index].z = z;
-    loc.code->particles[loc.index].vx = vx;
-    loc.code->particles[loc.index].vy = vy;
-    loc.code->particles[loc.index].vz = vz;
-    
-    loc.code->particles[loc.index].m = mass;
-    loc.code->particles[loc.index].r = radius;
+    p->m = mass;
+    p->r = radius;
     return 0;
 }
 
@@ -512,22 +555,30 @@ int get_state(int index_of_the_particle, double * mass, double * x,
     double * y, double * z, double * vx, double * vy, double * vz, 
     double * radius, int * subset){
     
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
     
-    *x = loc.code->particles[loc.index].x;
-    *y = loc.code->particles[loc.index].y;
-    *z = loc.code->particles[loc.index].z;
-    *vx = loc.code->particles[loc.index].vx;
-    *vy = loc.code->particles[loc.index].vy;
-    *vz = loc.code->particles[loc.index].vz;
-    *mass = loc.code->particles[loc.index].m;
-    *subset = loc.subset;
+    *x    = p->x;
+    *y    = p->y;
+    *z    = p->z;
+    *vx   = p->vx;
+    *vy   = p->vy;
+    *vz   = p->vz;
+    *mass = p->m;
+
 #ifndef COLLISIONS_NONE
-    *radius = loc.code->particles[loc.index].r;
+    *radius = p->r;
 #else
     *radius = 0;
 #endif // COLLISIONS_NONE
+    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+        code_state cs = *i;
+        p = reb_get_particle_by_hash(cs.code, index_of_the_particle);
+        if (p != NULL) {
+            *subset = cs.subset;
+            break;
+        }
+    }
     return 0;
 }
 
@@ -586,17 +637,23 @@ int get_kinetic_energy(int code_index, double * kinetic_energy){
 }
 
 int get_number_of_particles(int * number_of_particles){
-    *number_of_particles = indexMap.size();
+    int N = 0;
+    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+        code_state cs = *i;
+        N += cs.code->N;
+    }
+
+    *number_of_particles = N;
     return 0;
 }
 
 int set_acceleration(int index_of_the_particle, double ax, double ay, 
   double az){
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    loc.code->particles[loc.index].ax = ax;
-    loc.code->particles[loc.index].ay = ay;
-    loc.code->particles[loc.index].az = az;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    p->ax = ax;
+    p->ay = ay;
+    p->az = az;
     return 0;
 }
 
@@ -610,16 +667,26 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
 
 int get_radius(int index_of_the_particle, double * radius){
     
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {*radius = 0; return -1;}
-    *radius = loc.code->particles[loc.index].r;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    //if(loc.index < 0) {*radius = 0; return -1;}
+    *radius = p->r;
     return 0;
 }
+
 int get_subset(int index_of_the_particle, int * subset){
-    
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {*subset = -2; return -1;}
-    *subset = loc.subset;
+    //FIXME
+    struct reb_particle* p;
+    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+        code_state cs = *i;
+        p = reb_get_particle_by_hash(cs.code, index_of_the_particle);
+        if (p != NULL) {
+            *subset = cs.subset;
+            break;
+        }
+    }
+    if(p == NULL) {return -1;}
+    //if(loc.index < 0) {*subset = -2; return -1;}
     return 0;
 }
 
@@ -629,16 +696,25 @@ int set_begin_time(double time){
 
 int set_radius(int index_of_the_particle, double radius){
     
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    loc.code->particles[loc.index].r = radius;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    p->r = radius;
     return 0;
 }
+
 int set_subset(int index_of_the_particle, int subset){
     
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    if(loc.subset != subset) {return -2;}
+    struct reb_particle* p;
+    for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
+        code_state cs = *i;
+        p = reb_get_particle_by_hash(cs.code, index_of_the_particle);
+        if (p != NULL) {
+            if(cs.subset != subset) {return -2;}
+            break;
+        }
+    }
+    if(p == NULL) {return -1;}
+
     return 0;
 }
 
@@ -652,7 +728,6 @@ int cleanup_code() {
             *i = cs;
         }
     }
-    indexMap.clear();
     codes.clear();
     max_id = 0;
     return 0;
@@ -665,9 +740,14 @@ int recommit_parameters(){
 int initialize_code(){
     max_id = 0;
     _time=0;
+#ifdef OPENMP_ENABLED
+    int nt = omp_get_max_threads();
+    omp_set_num_threads(nt);
+#endif
     reb_simulation * code = reb_create_simulation();
     codes.push_back(code_state(code));
     code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
+    code->N_active = 0;
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
     set_support_for_condition(TIMEOUT_DETECTION);
@@ -703,11 +783,11 @@ int get_potential_energy(int code_index, double * potential_energy){
 int get_velocity(int index_of_the_particle, double * vx, double * vy, 
     double * vz){
     
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    *vx = loc.code->particles[loc.index].vx;
-    *vy = loc.code->particles[loc.index].vy;
-    *vz = loc.code->particles[loc.index].vz;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    *vx = p->vx;
+    *vy = p->vy;
+    *vz = p->vz;
     
     return 0;
 }
@@ -715,35 +795,32 @@ int get_velocity(int index_of_the_particle, double * vx, double * vy,
 int get_position(int index_of_the_particle, double * x, double * y, 
       double * z){
     
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    *x = loc.code->particles[loc.index].x;
-    *y = loc.code->particles[loc.index].y;
-    *z = loc.code->particles[loc.index].z;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    *x = p->x;
+    *y = p->y;
+    *z = p->z;
     return 0;
 }
 
 int set_position(int index_of_the_particle, double x, double y, double z){
     
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    loc.code->particles[loc.index].x = x;
-    loc.code->particles[loc.index].y = y;
-    loc.code->particles[loc.index].z = z;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    p->x = x;
+    p->y = y;
+    p->z = z;
     return 0;
 }
 
 int get_acceleration(int index_of_the_particle, double * ax, double * ay, 
       double * az){
     
-    
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    
-    *ax = loc.code->particles[loc.index].ax;
-    *ay = loc.code->particles[loc.index].ay;
-    *az = loc.code->particles[loc.index].az;
-    
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    *ax = p->ax;
+    *ay = p->ay;
+    *az = p->az;
     return 0;
 }
 
@@ -754,11 +831,11 @@ int commit_parameters(){
 int set_velocity(int index_of_the_particle, double vx, double vy, 
     double vz){
     
-    particle_location loc = get_index_from_identity(index_of_the_particle);
-    if(loc.index < 0) {return -1;}
-    loc.code->particles[loc.index].vx = vx;
-    loc.code->particles[loc.index].vy = vy;
-    loc.code->particles[loc.index].vz = vz;
+    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    if(p == NULL) {return -1;}
+    p->vx = vx;
+    p->vy = vy;
+    p->vz = vz;
     return 0;
 }
 
@@ -768,6 +845,7 @@ int new_subset(int * index, double time_offset) {
     code->dt = timestep;
     if(time_offset < 0) {time_offset = _time;}
     code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
+    code->N_active = 0;
     code->t = time_offset;
     codes.push_back(code_state(code, time_offset, codes.size()));
     *index = codes.size() - 1;

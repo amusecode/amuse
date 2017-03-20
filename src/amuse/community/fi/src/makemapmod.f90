@@ -323,9 +323,9 @@ end subroutine
 ! if(opac.gt.0) tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*exp(-opac/2*pimage(n1:n2,m1:m2))
 
   if(mass.gt.0.and.opac.gt.0) then
-   tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*(1.-min(1.,opac/2*pimage(n1:n2,m1:m2)))
+!   tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*(1.-min(1.,opac/2*pimage(n1:n2,m1:m2)))
    img(i+n1:i+n2,j+m1:j+m2)=img(i+n1:i+n2,j+m1:j+m2)+mass*pimage(n1:n2,m1:m2)*tau(i+n1:i+n2,j+m1:j+m2)
-   tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*(1.-min(1.,opac/2*pimage(n1:n2,m1:m2)))
+   tau(i+n1:i+n2,j+m1:j+m2)=tau(i+n1:i+n2,j+m1:j+m2)*(1.-min(1.,opac*pimage(n1:n2,m1:m2)))
    return
   endif
   if(mass.gt.0) img(i+n1:i+n2,j+m1:j+m2)=img(i+n1:i+n2,j+m1:j+m2)+mass*pimage(n1:n2,m1:m2)*tau(i+n1:i+n2,j+m1:j+m2)
