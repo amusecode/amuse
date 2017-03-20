@@ -217,9 +217,9 @@ def new_option_parser():
     result.add_option("-R", unit=units.parsec,
                       dest="R",type="float",default=1|units.parsec)
     result.add_option("-N", 
-                      dest="N",type="float",default=1000)
+                      dest="N",type="float",default=100)
     result.add_option("--Nbin", 
-                      dest="Nbin",type="int",default=100)
+                      dest="Nbin",type="int",default=50)
     result.add_option("--seed", 
                       dest="seed",type="int",default=-1)
     return result

@@ -49,14 +49,12 @@ def merge_two_stars(Mprim, Msec, tcoll, tend):
             nmerge += 1
 
         n_shell = min(stellar_evolution.particles[0].get_number_of_zones(), stellar_evolution.particles[1].get_number_of_zones())
-        print "n_shells=", n_shell
 
         instance = MakeMeAMassiveStar(**default_options)
         instance.parameters.target_n_shells = n_shell
         instance.parameters.dump_mixed_flag = True
         instance.parameters.do_shock_heating_flag = True
         instance.commit_parameters()
-        #instance.particles.add_particles(stars)
 
         handler = CollisionHandler(instance, stellar_evolution_code = stellar_evolution)
         merger_product = handler.handle_collision(stellar_evolution.particles[0], stellar_evolution.particles[1])
@@ -67,7 +65,6 @@ def merge_two_stars(Mprim, Msec, tcoll, tend):
 
         print "star A:", stellar_evolution.particles
         while stellar_evolution.model_time<tend:
-#        while stellar_evolution.particles[0].radius<24|units.RSun:
             stellar_evolution.evolve_model()
             time.append(stellar_evolution.model_time)
             mass.append(stellar_evolution.particles[0].mass)
@@ -80,13 +77,11 @@ def merge_two_stars(Mprim, Msec, tcoll, tend):
                 break
         print "star B:", stellar_evolution.particles
 
-#        mass_profile = merged.get_cumulative_mass_profile()*merged.mass
         rho_profile = merged.get_density_profile()
         radius_profile = merged.get_radius_profile()
 
         instance.stop()
         stellar_evolution.stop()
-
         return time, stellar_type, mass, radius, temperature, luminosity, nmerge
 
 def evolve_single_star(mass, tend):
