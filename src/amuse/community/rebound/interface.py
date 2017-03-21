@@ -15,6 +15,9 @@ class ReboundInterface(CodeInterface,
     
     .. [#] Rein, H., Liu, S.F., *Astronomy and Astrophysics* , **Volume 537**, A128 (2012)
     
+    ... IAS15: Rein, H., Spiegel, D.S., *MNRAS* , **Volume 446**, Issue 2, p.1424-1437 (2015)
+    ... WHFast: Rein, H., Tamayo, D., *MNRAS* , **Volume 452**, Issue 1, p.376-388 (2015)
+        
     """
     include_headers = ['worker_code.h', 'stopcond.h']
     __so_module__ = 'rebound_cython'
