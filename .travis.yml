@@ -45,4 +45,4 @@ before_install:
 - sudo pip install mpi4py
 
 script:
-- nosetests tests/codes_tests/test_rebound.py
+- nosetests test/codes_tests/test_rebound.py
