@@ -15,7 +15,7 @@ compiler:
 install:
 - ./configure
 - make framework
-- make
+- make rebound.code
 
 virtualenv:
   system_site_packages: true
@@ -45,4 +45,4 @@ before_install:
 - sudo pip install mpi4py
 
 script:
-- nosetests
+- nosetests tests/codes_tests/test_rebound.py
