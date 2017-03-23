@@ -13,7 +13,7 @@ compiler:
   - gcc
 
 install:
-- sudo pip install mpi4py
+- pip install --user mpi4py
 - ./configure
 - make framework
 
