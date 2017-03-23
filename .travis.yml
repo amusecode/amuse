@@ -2,17 +2,40 @@ language: python
 python:
 - '2.7'
 
+os:
+  - linux
+
+dist: trusty
+
+sudo: required
+
+compiler:
+  - gcc
+
 install:
 - ./configure
 - make framework
 
 before_install:
 - sudo apt-get update -qq
-- sudo apt-get install -qq build-essential gfortran python-dev \
-  libopenmpi-dev openmpi-bin \
-  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
-  libgmp3-dev libmpfr4 libmpfr-dev \
-  libhdf5-serial-dev hdf5-tools \
-  python-nose python-numpy python-setuptools python-docutils \
-  python-h5py python-setuptools
+- sudo apt-get install -qq build-essential 
+- sudo apt-get install -qq cmake 
+- sudo apt-get install -qq gfortran 
+- sudo apt-get install -qq python-dev
+- sudo apt-get install -qq libopenmpi-dev 
+- sudo apt-get install -qq openmpi-bin
+- sudo apt-get install -qq libgsl0-dev
+- sudo apt-get install -qq libfftw3-3 
+- sudo apt-get install -qq libfftw3-dev
+- sudo apt-get install -qq libgmp3-dev 
+- sudo apt-get install -qq libmpfr4 
+- sudo apt-get install -qq libmpfr-dev
+- sudo apt-get install -qq libhdf5-serial-dev 
+- sudo apt-get install -qq hdf5-tools
+- sudo apt-get install -qq python-nose 
+- sudo apt-get install -qq python-numpy 
+- sudo apt-get install -qq python-setuptools 
+- sudo apt-get install -qq python-docutils
+- sudo apt-get install -qq python-h5py 
+- sudo apt-get install -qq python-setuptools
 - sudo pip install mpi4py
