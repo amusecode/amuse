@@ -15,6 +15,7 @@ compiler:
 install:
 - ./configure
 - make framework
+- make
 
 virtualenv:
   system_site_packages: true
