@@ -15,4 +15,4 @@ before_install:
   libhdf5-serial-dev hdf5-tools \
   python-nose python-numpy python-setuptools python-docutils \
   python-h5py python-setuptools
-- sudo easy_install mpi4py
+- sudo pip install mpi4py
