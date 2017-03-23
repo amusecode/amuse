@@ -5,3 +5,14 @@ python:
 install:
 - ./configure
 - make framework
+
+before_install:
+- sudo apt-get update -qq
+- sudo apt-get install -qq build-essential gfortran python-dev \
+  libopenmpi-dev openmpi-bin \
+  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
+  libgmp3-dev libmpfr4 libmpfr-dev \
+  libhdf5-serial-dev hdf5-tools \
+  python-nose python-numpy python-setuptools python-docutils \
+  python-h5py python-setuptools
+- sudo easy_install mpi4py
