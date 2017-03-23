@@ -13,6 +13,7 @@ compiler:
   - gcc
 
 install:
+- sudo pip install mpi4py
 - ./configure
 - make framework
 
@@ -38,4 +39,3 @@ before_install:
 - sudo apt-get install -qq python-docutils
 - sudo apt-get install -qq python-h5py 
 - sudo apt-get install -qq python-setuptools
-- sudo easy_install mpi4py
