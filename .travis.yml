@@ -43,3 +43,5 @@ before_install:
 - sudo apt-get install -qq python-setuptools
 - sudo pip install mpi4py
 
+script:
+- nosetests
