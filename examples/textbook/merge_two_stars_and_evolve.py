@@ -184,7 +184,7 @@ if __name__ in ('__main__','__plot__'):
 #    pyplot.plot(temperature[:nmerge].value_in(units.K), luminosity[:nmerge].value_in(units.LSun), c=color[2], ls="-")
     pyplot.plot(temperature[nmerge+1:].value_in(units.K), luminosity[nmerge+1:].value_in(units.LSun), c=color[2], ls="--")
     pyplot.scatter(temperature[nmerge-1:nmerge+1].value_in(units.K), luminosity[nmerge-1:nmerge+1].value_in(units.LSun), c=color[2], s=150, marker="o")
-    
+
 #    pyplot.scatter(temperature[-2].value_in(units.K), luminosity[-2].value_in(units.LSun), c=color[2], marker="^", s=80)
     
     tcoll = 2*tcoll
