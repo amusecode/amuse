@@ -47,6 +47,7 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun, Rcloud=1. | units.parse
         print 'energy=', E, 'energy_error=', Eerr, 'e_th=', E_th
         print "maximal_density:",gas.rho.max().in_(units.MSun/units.parsec**3)
 
+        hydro.print_diagnostics()
         hydro.write_set_to_file(i)
 
         i=i+1
