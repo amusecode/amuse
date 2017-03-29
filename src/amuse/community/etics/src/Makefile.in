@@ -1,0 +1,65 @@
+CXX = @CXX@
+METHOD = SCF
+LMAX ?= 6
+NMAX ?= 10
+
+GPU_ARCH = @GPU_ARCH@
+NVCC = @NVCC@
+
+BOOSTINC = @BOOSTINC@
+ifeq ($(BOOSTINC), NOBOOST)
+	BOOST = -DNOBOOST
+else
+	BOOST = -I$(BOOSTINC)
+endif
+
+LDFLAGS    = -L@CUDA_ROOT@/lib64 @LDFLAGS@
+CXXFLAGS   = @CXXFLAGS@
+LIBS       = -lm @LIBS@
+# LIBS should get at least -lcuda -lcudart -lcudadevrt from the configure script
+CPPFLAGS   = -D$(METHOD) -DLMAX=$(LMAX) -DNMAX=$(NMAX) $(BOOST) @CPPFLAGS@
+CUDAFLAGS  = -arch=sm_$(GPU_ARCH)
+STATICLIBS = @STATICLIBS@
+
+CODELIB = libetics.a
+
+# object files needed for the library and the standalone
+CODEOBJS1 = integrate.o mathaux.o scf.o ic.o
+
+# object files only needed for the standalone
+CODEOBJS2 = io.o main.o
+
+AR = ar ruv
+RANLIB = ranlib
+
+all: $(CODELIB) standalone
+
+clean:
+	$(RM) *.o *.a etics
+
+$(CODELIB): $(CODEOBJS1)
+	$(NVCC) $(CUDAFLAGS) -dlink $(CODEOBJS1) -o dlink.o
+	$(AR) $@ $(CODEOBJS1) dlink.o
+	$(RANLIB) $@
+
+library: $(CODELIB)
+
+standalone: $(CODEOBJS1) $(CODEOBJS2)
+	$(NVCC) $(CUDAFLAGS) -dlink $(CODEOBJS1) $(CODEOBJS2) -o dlink.o
+	$(CXX) $(CXXFLAGS) -o etics $(CODEOBJS1) $(CODEOBJS2) dlink.o $(STATICLIBS) $(LDFLAGS) $(LIBS)
+
+scf-optimize-lc: mathaux.o scf.o scf-optimize-lc.o ic.o
+	$(NVCC) $(CUDAFLAGS) -dlink mathaux.o scf.o scf-optimize-lc.o ic.o -o dlink.o
+	$(CXX) $(CXXFLAGS) -o scf-optimize-lc mathaux.o scf.o scf-optimize-lc.o ic.o dlink.o $(STATICLIBS) $(LDFLAGS) $(LIBS)
+
+.SUFFIXES: .cu .cpp .o
+
+# only io.cpp should be compiled with all the weird HDF5 flags
+io.o: io.cpp
+	$(CXX) $(CPPFLAGS) -I@HDF5_ROOT@/include $(CXXFLAGS) -c -o io.o io.cpp
+
+.cu.o: $<
+	$(NVCC) $(CUDAFLAGS) $(CPPFLAGS) -Xcompiler "$(CXXFLAGS)" -dc -o $@ $<
+
+.cpp.o: $<
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
