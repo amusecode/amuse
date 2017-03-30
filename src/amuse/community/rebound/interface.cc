@@ -253,15 +253,8 @@ int new_particle(int * index_of_the_particle, double mass, double x,
       pt.vx = vx;
       pt.vy = vy;
       pt.vz = vz;
-      pt.ax = 0;
-      pt.ay = 0;
-      pt.az = 0;
       pt.m = mass;
-      pt.ax = 0;
-      pt.ay = 0;
       pt.r = radius; 
-      pt.lastcollision = 0;
-      pt.c = NULL;
       pt.hash = new_hash;
       reb_add(codes[code_index].code, pt);
       //std::cout<<"new particle :"<<pt.id<< " << "<<code_index<<" << "<<pt.x<<std::endl;
