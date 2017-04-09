@@ -3,15 +3,16 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
     PYTHON_DEV='yes'
     PYTHONDEV_CFLAGS=''
     PYTHONDEV_LDFLAGS=''
-    CYTHON=''
     
     AC_ARG_VAR([PYTHONCONFIG], [Python config script to determine python module compile flags (python-config)])
-    AS_IF([test "x$PYTHONCONFIG" = "x"], [PYTHONCONFIG=python-config])
-    AC_PATH_PROGS([PYTHONCONFIG], [$PYTHONCONFIG], ['no'])
+    AS_IF([test "x$PYTHONCONFIG" = "x"], [
+	 PYTHONCONFIG=python-config
+   	 AC_PATH_PROGS([PYTHONCONFIG], [$PYTHONCONFIG], ['no'])])
     AS_IF([test "x$PYTHONCONFIG" = "xno"], [PYTHON_DEV='no'])
     AC_ARG_VAR([CYTHON], [cython script to compile code in the Cython language])
-    AS_IF([test "x$CYTHON" = "x"], [CYTHON=cython])
-    AC_PATH_PROG([CYTHON], [$CYTHON], [])
+    AS_IF([test "x$CYTHON" = "x"], [
+	CYTHON=cython
+    	AC_PATH_PROGS([CYTHON], [$CYTHON], [])])
     AS_IF([test "x$PYTHON_DEV" = "xyes"], [
         
         PYTHONDEV_CFLAGS=`$PYTHONCONFIG --cflags`
