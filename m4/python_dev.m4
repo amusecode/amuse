@@ -14,7 +14,7 @@ AC_DEFUN([AC_CHECK_PYTHON_DEV],[
 	CYTHON=cython
     	AC_PATH_PROGS([CYTHON], [$CYTHON], [])])
     AS_IF([test "x$PYTHON_DEV" = "xyes"], [
-       	AS_IF([test "x$PYTHONDEF_CFLAGS" = "x"],[ 
+       	AS_IF([test "x$PYTHONDEV_CFLAGS" = "x"],[ 
         	PYTHONDEV_CFLAGS=`$PYTHONCONFIG --cflags`
         	PYTHONDEV_LDFLAGS=`$PYTHONCONFIG --ldflags`
         	save_CFLAGS="$CFLAGS"

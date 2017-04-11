@@ -4624,7 +4624,7 @@ done
 fi
     if test "x$PYTHON_DEV" = "xyes"; then :
 
-       	if test "x$PYTHONDEF_CFLAGS" = "x"; then :
+       	if test "x$PYTHONDEV_CFLAGS" = "x"; then :
 
         	PYTHONDEV_CFLAGS=`$PYTHONCONFIG --cflags`
         	PYTHONDEV_LDFLAGS=`$PYTHONCONFIG --ldflags`
