@@ -8,27 +8,37 @@ from amuse.lab import *
 from amuse.ext.molecular_cloud import molecular_cloud
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 
-from hydrodynamics_class import Hydro
+from hydrodynamics_class_SE import Hydro
 
 def run_molecular_cloud(N=100, Mcloud=100. | units.MSun, Rcloud=1. | units.parsec):
 
     conv = nbody_system.nbody_to_si(Mcloud,Rcloud)
     gas=molecular_cloud(targetN=N,convert_nbody=conv,
-            base_grid=body_centered_grid_unit_cube, seed=100).result
+            base_grid=body_centered_grid_unit_cube).result
     gas.name = "gas"
+
+    rho_cloud = Mcloud/Rcloud**3
+    tff = 0.5427/numpy.sqrt(constants.G*rho_cloud)
+    print "Freefall timescale=", tff.in_(units.Myr)
+    #omega = 1./tff
+    #print "Omega=", omega.in_(units.yr**-1)
+    #gas.add_spin(omega)
+
+    stars = Particles(0)
     
-    hydro = Hydro(Fi, gas)
+    hydro = Hydro(Fi, gas, stars)
 
     rho_cloud = 3.*Mcloud/(4.*numpy.pi*Rcloud**3)
     print rho_cloud
-    tff = 0.5427/numpy.sqrt(constants.G*rho_cloud)
-    print "Freefall timescale=", tff.in_(units.Myr)
 
-    dt = 0.1*tff
-    tend=4.0*tff
+#    dt = 0.1*tff
+#    tend=40.0*tff
+    dt = 0.02 | units.Myr
+    tend= 10.0 | units.Myr
+    dt_diag = 0.1 | units.Myr
+    t_diag = 0 | units.Myr
 
     i=0
-    L=6
     E0 = 0.0
     time = 0.0 | units.Myr
 
@@ -48,16 +58,19 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun, Rcloud=1. | units.parse
         print "maximal_density:",gas.rho.max().in_(units.MSun/units.parsec**3)
 
         hydro.print_diagnostics()
-        hydro.write_set_to_file(i)
-
-        i=i+1
+        if time>t_diag:
+            t_diag += dt_diag
+            hydro.write_set_to_file(i)
+            i=i+1
 
     hydro.stop()
     return gas
   
 if __name__ in ("__main__","__plot__"):
 
-    parts = run_molecular_cloud(1000, Mcloud=100. | units.MSun, Rcloud=3.0 | units.parsec)
+    numpy.random.seed(3141)
+#    parts = run_molecular_cloud(10000, Mcloud=1000. | units.MSun, Rcloud=1.4 | units.parsec)
+    parts = run_molecular_cloud(10000, Mcloud=1000. | units.MSun, Rcloud=3.0 | units.parsec)
 
 
     

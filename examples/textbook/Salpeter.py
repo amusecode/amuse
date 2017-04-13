@@ -1,14 +1,14 @@
-from amuse.lab import new_salpeter_mass_distribution
+from amuse.lab import new_powerlaw_mass_distribution
 
 def generate_power_law_mass_function(N, Mmin, Mmax, ximf):
-    masses = new_salpeter_mass_distribution(N, Mmin, Mmax, ximf)
+    masses = new_powerlaw_mass_distribution(N, Mmin, Mmax, ximf)
     plot_mass_function(masses, ximf)
 
 import numpy 
 import math
 from amuse.units import units
 from matplotlib import pyplot
-from prepare_figure import figure_frame, single_frame, get_distinct
+from prepare_figure import figure_frame, get_distinct
 
 def plot_mass_function(masses, ximf):
     Mmin = masses.min()
