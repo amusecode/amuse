@@ -98,7 +98,8 @@ def plummer_model(N, M, R):
 
 def GMC_model(N, M, R):
     converter = nbody_system.nbody_to_si(M, R)
-    parts=molecular_cloud(targetN=N, convert_nbody=converter, seed=100).result
+    gmc=molecular_cloud(targetN=N, convert_nbody=converter)
+    parts= gmc.result
     sph=Fi(converter)
     sph.gas_particles.add_particle(parts)
     sph.evolve_model(1|units.day)

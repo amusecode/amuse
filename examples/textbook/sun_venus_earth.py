@@ -5,27 +5,26 @@ def sun_venus_and_earth():
     sun = particles[0]
     sun.mass = 1.0 | units.MSun
     sun.radius = 1.0 | units.RSun
-    sun.position = (0.0,0.0,0.0) | units.m
-    sun.velocity = (0.0,0.0,0.0) | (units.m/units.s)
+    sun.position = (855251, -804836, -3186) |units.km
+    sun.velocity = (7.893, 11.894, 0.20642) | (units.m/units.s)
 
     venus = particles[1]
     venus.mass = 0.0025642 | units.MJupiter
     venus.radius = 3026.0 | units.km
-    venus.position = (0.6335, 0.3499, -0.03179) | units.AU
-    venus.velocity = (-17.0420, 30.5055, 1.4004) | units.kms
+    venus.position = (-0.3767, 0.60159, 0.03930) | units.AU
+    venus.velocity = (-29.7725, -18.849, 0.795) | units.kms
 
     earth = particles[2]
     earth.mass = 1.0 | units.MEarth
     earth.radius = 1.0 | units.REarth
-    earth.position = (0.2421, -0.9875, -0.00004) | units.AU
-    earth.velocity = (28.4468, 6.98125, 0.0002) | units.kms
+    earth.position = (-0.98561, 0.0762, -7.847e-5) | units.AU  
+    earth.velocity = (-2.927, -29.803, -0.0005327) | units.kms
 
     particles.move_to_center()
     return particles
 
 def integrate_solar_system(particles, end_time):
     from amuse.lab import Huayno, nbody_system
-    from amuse.units import quantities
     convert_nbody = nbody_system.nbody_to_si(particles.mass.sum(), particles[1].position.length())
 
     gravity = Huayno(convert_nbody)

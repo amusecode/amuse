@@ -851,6 +851,10 @@ class VectorQuantity(Quantity):
     def transpose(self, axes=None):
         return VectorQuantity(self.number.transpose(axes), self.unit)
 
+    @property
+    def T(self):
+        return VectorQuantity(self.number.T, self.unit)
+
     def mean(self, axis=None, dtype=None, out=None):
         return new_quantity(self.number.mean(axis, dtype, out), self.unit)
 

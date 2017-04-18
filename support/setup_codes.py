@@ -403,6 +403,8 @@ class CodeCommand(Command):
             worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?(.exe)?')
         else:
             worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?')
+            worker_so_re = re.compile(r'([a-zA-Z0-9]+_)?cython(_[a-zA-Z0-9]+)?.so')
+            
         
         lib_binbuilddir = os.path.join(self.build_lib, 'amuse', '_workers')
         if not os.path.exists(lib_binbuilddir):
@@ -423,12 +425,19 @@ class CodeCommand(Command):
                 path = os.path.join(temp_builddir, name)
                 stat = os.stat(path)
                 
+                if os.path.isfile(path):
+                    if worker_so_re.match(name):
+                        topath = os.path.join(lib_builddir, name)
+                        self.copy_file(path, topath)
+                        continue
+
+
                 #self.announce("will copy worker: {0}".format(name), level = log.INFO)
                 if os.path.isfile(path) and os.access(path, os.X_OK):
                     if worker_code_re.match(name):
                         topath = os.path.join(lib_binbuilddir, name)
                         self.copy_file(path, topath)
-                    else:
+                    elif not name.endswith('.py'):
                         self.announce("will not copy executable: {0}, it does not match the worker pattern".format(name), level = log.WARN)
             
             have_downloaded_codes = True
@@ -754,7 +763,6 @@ class BuildCodes(CodeCommand):
         for x in makefile_paths:
             shortname = x[len(self.codes_dir) + 1:].lower()
             starttime = datetime.datetime.now()
-            
             # For binary builds we do not want
             # to distribute mesa, it will make the
             # download size from about 100mb size 

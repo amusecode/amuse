@@ -57,8 +57,9 @@ def main(Ndisk, Mstar, Mdisk, Rin, Rout, t_end, Nray, x, y, z):
                           y.value_in(units.parsec),
                           z.value_in(units.parsec)) |units.parsec
     supernova.position *= efficiency_factor
-    supernova.luminosity = efficiency_factor**2 * supernova_IIp.luminosity_at_time(time)/(20.|units.eV)
-#    supernova.flux = supernova.luminosity
+    supernova_IIp.particles.add_particle(supernova)
+    supernova_IIp.evolve_model(time)
+    supernova.luminosity = efficiency_factor**2 * supernova.luminosity
     supernova.xion = 0.0
     supernova.u = (10**51 | units.erg)/(10|units.MSun)
     

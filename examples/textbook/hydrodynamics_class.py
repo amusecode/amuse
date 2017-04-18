@@ -30,7 +30,8 @@ class Hydro:
                 dt = 0.2*numpy.pi*numpy.power(eps, 1.5)/numpy.sqrt(constants.G*Mcloud/N)
                 print "Hydro timesteps:", dt, "N=", len(particles)
 
-                self.sink_particles = Particles()
+                self.gas_particles = particles
+                self.sink_particles = Particles(0)
                 
                 self.cooling_flag = "thermal_model"
 
@@ -87,13 +88,9 @@ class Hydro:
                 self.code.parameters.stopping_condition_maximum_density = self.density_threshold
                 self.code.commit_parameters()
                         
-                # Add Particles
-                if len(particles)>0:
-                    self.code.gas_particles.add_particles(particles)
+                if len(self.gas_particles)>0:
+                    self.code.gas_particles.add_particles(self.gas_particles)
 
-                
-                self.particles = self.code.particles
-                self.local_particles = particles
                 self.parameters = self.code.parameters
                 
                 print self.code.parameters
@@ -104,8 +101,8 @@ class Hydro:
                 self.get_hydro_state_at_point = self.code.get_hydro_state_at_point
 
                 # Create a channel
-                self.channel_to_framework = self.code.gas_particles.new_channel_to(particles)
-                self.channel_to_sinks = self.code.gas_particles.new_channel_to(self.sink_particles)
+                self.channel_to_gas = self.code.gas_particles.new_channel_to(self.gas_particles)
+                self.channel_to_sinks = self.code.dm_particles.new_channel_to(self.sink_particles)
                 
                 # External Cooling
                 print "Cooling flag:", self.cooling_flag
@@ -114,10 +111,18 @@ class Hydro:
                 self.cooling.model_time=self.code.model_time
 
 
+        def print_diagnostics(self):
+                print "Time=", self.code.model_time.in_(units.Myr)
+                print "N=", len(self.gas_particles), len(self.sink_particles)
+
+                if len(self.sink_particles)>0:
+                    print "Sink masses:", len(self.code.dm_particles.mass)
+                    print "Sink masses:", len(self.sink_particles)
+
         def write_set_to_file(self, index):
                 filename = "hydro_molecular_cloud_collapse_i{0:04}.amuse".format(index)
-                write_set_to_file(self.gas_particles, filename, "amuse", append_to_file=False)
-                write_set_to_file(self.sink_particles, filename, "amuse")
+                write_set_to_file(self.code.gas_particles, filename, "amuse", append_to_file=False)
+                write_set_to_file(self.code.dm_particles, filename, "amuse")
         
         @property
         def model_time(self):
@@ -149,46 +154,92 @@ class Hydro:
             self.code.evolve_model(model_time)
             #print "gas evolved."
             while density_limit_detection.is_set():
-                print "processing high dens particles...",
-                highdens=self.gas_particles.select_array(lambda rho:rho>self.density_threshold,["rho"])
-                print "N=", len(highdens)
-                candidate_sinks=highdens.copy()
-                self.gas_particles.remove_particles(highdens)
-                #self.gas_particles.synchronize_to(self.code.gas_particles)
-                #self.gas_particles.synchronize_to(self.cooling.gas_particles)
-                if len(self.sink_particles)>0:
-                    print "new sinks..."
-                    if len(candidate_sinks)>0: # had to make some changes to prevent double adding particles
-                        newsinks_in_code = self.code.dm_particles.add_particles(candidate_sinks)
-                        newsinks = Particles()
-                        for nsi in newsinks_in_code:
-                            if nsi not in self.sink_particles:
-                                newsinks.add_particle(nsi) 
-                        self.sink_particles.add_sinks(newsinks)
-                        self.sink_particles.synchronize_to(self.code.dm_particles)
-                else:
-                    print "Create new sinks: N=", len(candidate_sinks)
-                    #print "Code is very slow after this..."
-                    newsinks_in_code = self.code.dm_particles.add_particles(candidate_sinks)
-                    sink_particles_tmp = newsinks_in_code.copy()
-                    #print "creating new sinks..."
-                    self.sink_particles=SinkParticles(sink_particles_tmp, 
-                                                      looping_over="sources")
-                    self.sink_particles.synchronize_to(self.code.dm_particles)
-                    #print "New sink particle:", sink_particles_tmp
-                    print "New sinks created: ", len(sink_particles_tmp)
+                self.resolve_sinks()
 
                 print "..done"
                 ##if len(self.sink_particles)>1: self.merge_sinks()
                 self.code.evolve_model(model_time)
+                self.channel_to_sinks.copy()
+                print "end N=", len(self.sink_particles), len(self.code.dm_particles)
+
             if COOL:
                 print "Cool gas for another dt=", (dt/2).in_(units.Myr)
                 self.cooling.evolve_for(dt/2)
                 #print "...done."
-            self.channel_to_framework.copy()
+            #self.code.evolve_model(model_time)
+            print "final N=", len(self.sink_particles),len(self.code.dm_particles)
+            print "final Ngas=", len(self.gas_particles),len(self.code.gas_particles)
+            self.channel_to_gas.copy()
             self.channel_to_sinks.copy()
+            print "final N=", len(self.sink_particles),len(self.code.dm_particles)
             #~ print "Hydro arrived at:", self.code.model_time.in_(units.Myr)
 
+            #print "Accrete from ambied gas"
+            #self.accrete_sinks_from_ambiant_gas()
+
+        def resolve_sinks(self):
+            print "processing high dens particles...",
+            highdens=self.gas_particles.select_array(lambda rho:rho>self.density_threshold,["rho"])
+            print "N=", len(highdens)
+            candidate_sinks=highdens.copy()
+            self.gas_particles.remove_particles(highdens)
+            self.gas_particles.synchronize_to(self.code.gas_particles)
+            #self.gas_particles.synchronize_to(self.cooling.gas_particles)
+            if len(self.sink_particles)>0:
+                print "new sinks..."
+                if len(candidate_sinks)>0: # had to make some changes to prevent double adding particles
+                    print "Adding sinks, N=", len(candidate_sinks)
+                    newsinks_in_code = self.code.dm_particles.add_particles(candidate_sinks)
+                    newsinks = Particles()
+                    for nsi in newsinks_in_code:
+                        if nsi not in self.sink_particles:
+                            newsinks.add_particle(nsi)
+                        else:
+                            print "this sink should not exicst"
+                        newsinks.sink_radius=self.sink_particles.sink_radius.max()
+                    print "pre N=", len(self.sink_particles), len(newsinks), len(self.code.dm_particles)
+                    self.sink_particles.add_sinks(newsinks)
+                    print "post N=", len(self.sink_particles), len(newsinks), len(self.code.dm_particles)
+                    print "Why can I not prim the sinks=", self.sink_particles
+                else:
+                    print "N candidates:", len(candidate_sinks)
+            else:
+                print "Create new sinks: N=", len(candidate_sinks)
+                if len(candidate_sinks)>0:
+                    newsinks_in_code = self.code.dm_particles.add_particles(candidate_sinks)
+                    sink_particles_tmp = newsinks_in_code.copy()
+                    print "creating new sinks..."
+                    self.sink_particles=SinkParticles(sink_particles_tmp, 
+                                                      looping_over="sources")
+#                    self.channel_to_sinks = self.code.dm_particles.new_channel_to(self.sink_particles)
+
+                    
+                    print "New sinks created: ", len(sink_particles_tmp)
+                else:
+                    print "No sinks created."
+                            
+        def accrete_sinks_from_ambiant_gas(self):
+           if len(self.sink_particles)==0:
+               return
+           print "accrete_sinks_from_ambiant_gas"
+           #print sinks.__class__
+           print 'Sinks: Accrete from ambiant gas:', len(self.gas_particles), len(self.code.gas_particles)
+           print 'Sinks:', len(self.sink_particles), len(self.code.dm_particles)
+           print self.sink_particles.sink_radius.in_(units.AU)
+
+#            if SPEED_UP_ACCRETION:
+           highdens = self.gas_particles.select_array(lambda rho:rho>self.density_threshold,["rho"])
+           candidate_sinks = highdens.copy()
+           accreted_particles = self.sink_particles.accrete(candidate_sinks)
+#            else:
+#           accreted_particles = self.sink_particles.accrete(self.gas_particles)
+
+           print 'Ambiant gas accreted:', len(accreted_particles), 'particles, dM=', accreted_particles.mass.sum().in_(units.MSun) 
+           #print 'Ambiant gas accreted:', len(hydro.gas_particles)-len(gas), 'particles, dM=', (hydro.gas_particles.mass.sum()-gas.mass.sum()).in_(units.MSun) 
+           self.gas_particles.synchronize_to(self.code.gas_particles)
+           #self.sink_particles.synchronize_to(self.code.dm_particles)
+            
+            
         def merge_sinks(self):
             print "Let gravity take care of merging sinks" 
             if True:
