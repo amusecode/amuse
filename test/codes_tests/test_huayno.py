@@ -93,10 +93,10 @@ class TestHuaynoInterface(TestWithMPI):
         
     def test3(self):
         huayno = HuaynoInterface()
-        huayno.eps2 = 0.101
-        self.assertEquals(0.101, huayno.eps2)
-        huayno.eps2 = 0.110
-        self.assertEquals(0.110, huayno.eps2)
+        huayno.set_eps2(0.101)
+        self.assertEquals(0.101, huayno.get_eps2()['eps2'])
+        huayno.set_eps2( 0.110)
+        self.assertEquals(0.110, huayno.get_eps2()['eps2'])
         huayno.cleanup_code()
         huayno.stop()
 
