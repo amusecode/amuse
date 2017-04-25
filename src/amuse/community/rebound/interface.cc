@@ -65,13 +65,13 @@ static int max_id = 0;
 
 typedef std::vector<code_state> ReboundSimulationVector;
 static ReboundSimulationVector codes;
-static particle_location sentinel = particle_location();
+//static particle_location sentinel = particle_location();
 static double _time;
 static double timestep = 0.0001;
 
 static inline reb_particle* get_particle_from_identity(int index_of_the_particle)
 {
-    struct reb_particle* p;
+    struct reb_particle* p = NULL;
     for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
         code_state cs = *i;
         p = reb_get_particle_by_hash(cs.code, index_of_the_particle);
@@ -723,6 +723,8 @@ int cleanup_code() {
     }
     codes.clear();
     max_id = 0;
+    timestep = 0.0001;
+    _time=0;
     return 0;
 }
 
@@ -731,7 +733,9 @@ int recommit_parameters(){
 }
 
 int initialize_code(){
+    initialize_stopping_conditions();
     max_id = 0;
+    timestep = 0.0001;
     _time=0;
 #ifdef OPENMP_ENABLED
     int nt = omp_get_max_threads();

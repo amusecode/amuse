@@ -1444,6 +1444,9 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
 
         self.setup()
 
+    def __del__(self):
+        self.stop()
+
     @option(type='boolean', sections=("code", "state",))
     def must_handle_state(self):
         return True
