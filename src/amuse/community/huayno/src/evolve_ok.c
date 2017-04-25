@@ -97,6 +97,7 @@ void evolve_ok_init(struct sys s) {
 void evolve_ok_stop() {
   if (ok_main_forces.forc != NULL) {
     free(ok_main_forces.forc);
+    ok_main_forces.forc = NULL;
   }
 }
 
