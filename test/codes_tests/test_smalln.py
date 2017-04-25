@@ -66,6 +66,7 @@ class TestSmallNInterface(TestWithMPI):
         self.assertEquals(0, instance.get_index_of_next_particle(1)['__result'])
         self.assertEquals(-1, instance.get_index_of_next_particle(3)['__result'])
         self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
+        instance.cleanup_code()
         instance.stop()
         
 
@@ -117,6 +118,7 @@ class TestSmallNInterface(TestWithMPI):
         
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
+        instance.cleanup_code()
         instance.stop()
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 10.0]) / 2.0)
@@ -135,6 +137,7 @@ class TestSmallNInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
+        instance.cleanup_code()
         instance.stop()
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
@@ -168,6 +171,7 @@ class TestSmallNInterface(TestWithMPI):
         #    self.assertAlmostEquals(result, expected, 3)
         
         self.assertEquals(0, instance.cleanup_code())
+        instance.cleanup_code()
         instance.stop()
     
 
@@ -454,7 +458,6 @@ class TestSmallN(TestWithMPI):
 
         self.assertEquals(len(smalln.particles), 5)
         
-        
         self.assertEarthAndMoonWasDetectedAsBinary(smalln.particles, stars)
         
         
@@ -469,6 +472,8 @@ class TestSmallN(TestWithMPI):
         io.write_set_to_file(smalln.particles, output_file, "hdf5")
         fromfile = io.read_set_from_file(output_file, "hdf5")
         self.assertEarthAndMoonWasDetectedAsBinary(fromfile, stars)
+        smalln.stop()
+
         
    
     def test17(self):
@@ -508,6 +513,7 @@ class TestSmallN(TestWithMPI):
         self.assertEquals(abs(collisions.particles(0).x - collisions.particles(1).x) <= 
                 (collisions.particles(0).radius + collisions.particles(1).radius),
                 [True, True, True])
+        instance.stop()
         
     
     def test18(self):
@@ -530,6 +536,7 @@ class TestSmallN(TestWithMPI):
         instance.evolve_model(10.0 | nbody_system.time)
         self.assertTrue(stopping_condition.is_set())
         self.assertTrue(instance.model_time < 11.0 | nbody_system.time)
+        instance.stop() 
         
 
     def test19(self):
@@ -553,6 +560,7 @@ class TestSmallN(TestWithMPI):
         self.assertTrue(stopping_condition.is_set())
         
         self.assertTrue(instance.model_time < 10.0 | nbody_system.time)
+        instance.stop() 
     
     def test20(self):
         p = datamodel.Particles(3)
