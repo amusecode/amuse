@@ -739,7 +739,7 @@ int initialize_code(){
 #endif
     reb_simulation * code = reb_create_simulation();
     codes.push_back(code_state(code));
-    code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
+    code->integrator = reb_simulation::REB_INTEGRATOR_IAS15;
     code->N_active = 0;
     // AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(COLLISION_DETECTION);
@@ -837,7 +837,7 @@ int new_subset(int * index, double time_offset) {
     reb_integrator_reset(code);
     code->dt = timestep;
     if(time_offset < 0) {time_offset = _time;}
-    code->integrator = reb_simulation::REB_INTEGRATOR_WHFAST;
+    code->integrator = reb_simulation::REB_INTEGRATOR_IAS15;
     code->N_active = 0;
     code->t = time_offset;
     codes.push_back(code_state(code, time_offset, codes.size()));
