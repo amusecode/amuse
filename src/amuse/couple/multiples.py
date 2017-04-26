@@ -457,17 +457,16 @@ class Multiples(object):
                 # temporarily duplicated this check in the ph4 module
                 # (jdata.cc).
 
-                r = (star2.position-star1.position).length()
-                v = (star2.velocity-star1.velocity).length()
+                r = (star2.position-star1.position).length().number
+                v = (star2.velocity-star1.velocity).length().number
 
-                # Temporary numpy workaround - Steve.
+                # Temporary numpy workaround - Steve. Use dimensionless units.
                 #
                 # vr = numpy.inner(star2.velocity-star1.velocity,
                 #                  star2.position-star1.position)
-                vr = numpy.inner(
-                (star2.velocity-star1.velocity).value_in(nbody_system.speed),
-                (star2.position-star1.position).value_in(nbody_system.length)) \
-                | nbody_system.speed*nbody_system.length
+
+                vr = numpy.inner((star2.velocity-star1.velocity).number,
+                                 (star2.position-star1.position).number)
     
                 EPS = 0.001
                 if True or vr < EPS*r*v:    # True ==> keep all encounters
@@ -1386,19 +1385,16 @@ class Multiples(object):
                 if i.id > j.id:
                     rij = (i.position-j.position).length()
                     if rij > r:
-                        r = rij
-                        v = (i.velocity-j.velocity).length()
+                        r = rij.number
+                        v = (i.velocity-j.velocity).length().number
 
                         # Temporary numpy workaround - Steve.
                         #
                         # vr = numpy.inner(j.velocity-i.velocity,
                         #                  j.position-i.position)
-                        vr = numpy.inner(
-                            (j.velocity-i.velocity).\
-                                value_in(nbody_system.speed),
-                            (j.position-i.position).\
-                                value_in(nbody_system.length))\
-                                | nbody_system.speed*nbody_system.length
+
+                        vr = numpy.inner((j.velocity-i.velocity).number,
+                                         (j.position-i.position).number)
 
         print ''
         if 1:
@@ -2076,9 +2072,9 @@ def potential_energy_in_field(particles, field_particles,
         sum_of_energies += energy_of_this_particle
         #print potentials
         #print dr
-        imin = numpy.argmin(potentials)
+        imin = numpy.argmin(potentials.number)
         #print ' ', particle.id, field_particles[imin].id, potentials[imin]
-        imin = numpy.argmin(dr)
+        imin = numpy.argmin(dr.number)
         #print ' ', particle.id, field_particles[imin].id, dr[imin]
     #print 'sum_of_energies =', sum_of_energies
 
