@@ -99,7 +99,7 @@ class ReboundInterface(CodeInterface,
         return function  
     
 
-    INTEGRATORS = {"ias15": 0, "whfast": 1, "whfast-helio": 2, "sei": 3, "leapfrog": 4, "hermes": 5, "none": 6}
+    INTEGRATORS = {"ias15": 0, "whfast": 1, "sei": 2, "leapfrog": 4, "hermes": 5, "whfast-helio": 6, "none": 7, "janus": 8}
     def set_integrator(self, name, code_index = 0 ):
         return self._set_integrator(self.INTEGRATORS[name], code_index)
     
@@ -138,8 +138,8 @@ class ReboundInterface(CodeInterface,
         value, error = self._get_solver(code_index)
         for key, index in self.SOLVERS.iteritems():
             if value == index:
-                return key, error
-        return "none", error
+                return key
+        return "none"
 
     @legacy_function
     def get_opening_angle2():
