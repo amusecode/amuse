@@ -529,6 +529,8 @@ int synchronize_model(){
 
 int set_state(int index_of_the_particle, double mass, double x, double y, 
     double z, double vx, double vy, double vz, double radius){
+    //If the JANUS integrator is used, need to set 
+    //code->ri_janus.recalculate_integer_coordinates_this_timestep = 1
     struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
     if(p == NULL) {return -1;}
     
@@ -642,6 +644,8 @@ int get_number_of_particles(int * number_of_particles){
 
 int set_acceleration(int index_of_the_particle, double ax, double ay, 
   double az){
+    //If the JANUS integrator is used, may need to set 
+    //code->ri_janus.recalculate_integer_coordinates_this_timestep = 1
     struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
     if(p == NULL) {return -1;}
     p->ax = ax;
@@ -797,6 +801,8 @@ int get_position(int index_of_the_particle, double * x, double * y,
 }
 
 int set_position(int index_of_the_particle, double x, double y, double z){
+    //If the JANUS integrator is used, need to set 
+    //code->ri_janus.recalculate_integer_coordinates_this_timestep = 1
     
     struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
     if(p == NULL) {return -1;}
@@ -823,6 +829,8 @@ int commit_parameters(){
 
 int set_velocity(int index_of_the_particle, double vx, double vy, 
     double vz){
+    //If the JANUS integrator is used, need to set 
+    //code->ri_janus.recalculate_integer_coordinates_this_timestep = 1
     
     struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
     if(p == NULL) {return -1;}
