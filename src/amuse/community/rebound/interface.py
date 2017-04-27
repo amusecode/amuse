@@ -15,8 +15,12 @@ class ReboundInterface(CodeInterface,
     
     .. [#] Rein, H., Liu, S.F., *Astronomy and Astrophysics* , **Volume 537**, A128 (2012)
     
-    ... IAS15: Rein, H., Spiegel, D.S., *MNRAS* , **Volume 446**, Issue 2, p.1424-1437 (2015)
+    For different integrators, cite:
+    ... IAS15:  Rein, H., Spiegel, D.S., *MNRAS* , **Volume 446**, Issue 2, p.1424-1437 (2015)
     ... WHFast: Rein, H., Tamayo, D., *MNRAS* , **Volume 452**, Issue 1, p.376-388 (2015)
+    ... Hermes: Silburt, A., et al., in prep.
+    ... SEI:    Rein, H., Tremaine, S., *MNRAS* , **Volume 415**, Issue 4, p.3168-3176 (2011)
+    ... JANUS:  Rein, H., Tamayo, D., *arXiv* , 1704.07715 (2017)
         
     """
     include_headers = ['worker_code.h', 'stopcond.h']
