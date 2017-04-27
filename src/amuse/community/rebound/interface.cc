@@ -36,10 +36,7 @@ extern "C" {
 
 typedef struct _particle_location {
     reb_simulation * code;
-    int index;
-    int subset;
-    _particle_location():code(0),index(-1),subset(-1){}
-    _particle_location(reb_simulation * c, int i, int s):code(c),index(i),subset(s) {}
+    reb_particle * p;
 } particle_location;
 
 typedef struct _code_state {
@@ -61,30 +58,30 @@ typedef struct _particle_sort {
 typedef std::vector<_particle_sort>  ParticleSortVector;
 
 static int max_id = 0;
-//m ,m mnstatic reb_simulation * code;
 
 typedef std::vector<code_state> ReboundSimulationVector;
 static ReboundSimulationVector codes;
-static particle_location sentinel = particle_location();
 static double _time;
 static double timestep = 0.0001;
 
-static inline reb_particle* get_particle_from_identity(int index_of_the_particle)
+static inline particle_location get_particle_from_identity(int index_of_the_particle)
 {
-    struct reb_particle* p;
+    particle_location particle;
     for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
         code_state cs = *i;
-        p = reb_get_particle_by_hash(cs.code, index_of_the_particle);
-        if (p != NULL) break;
+        particle.code = cs.code;
+        particle.p = reb_get_particle_by_hash(particle.code, index_of_the_particle);
+        if (particle.p != NULL) break;
         //*i = cs;
     }
-    return p;
+    return particle;
 }
 
-
-
 int get_mass(int index_of_the_particle, double * mass){
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    //reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     *mass = p->m;
     return 0;
@@ -96,68 +93,6 @@ bool sort_particles (particle_sort i,particle_sort j) {
 }
 
 int commit_particles(){
-    /*
-     * after deletion of one or more particles, clear out
-     * the original data and rebuild without these particles.
-     */
-     
-    for( ReboundSimulationVector::iterator j = codes.begin(); j != codes.end(); j++) {
-        //code_state cs = *j;
-        //bool has_removal = cs.has_removal;
-        //if(has_removal) {
-        //    if(cs.code) {
-        //        struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
-        //        memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
-        //        reb_remove_all(cs.code);
-        //        for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
-        //            if( (*i).second.code == cs.code ) {
-        //                struct reb_particle * p = previous + (*i).second.index;
-        //                reb_add(cs.code, *p);
-        //                indexMap[(*i).first] = particle_location(cs.code, cs.code->N - 1, cs.subset);
-        //            }
-        //        }
-        //    }
-        //    cs.has_removal = false;
-        //    *j = cs;
-        //}
-        //if(cs.has_unsorted_massless_particles || has_removal) {
-        //    if(cs.code) {
-        //        //std::cout<<"HAS MASSLESS, WILL SORT"<<std::endl;
-        //        ParticleSortVector sortvector;
-        //        
-        //        //std::cout<<"NA:"<<(cs.code)->N_active<<std::endl;
-        //        struct reb_particle * previous = (struct reb_particle *) malloc(sizeof(struct reb_particle) * cs.code->N);
-        //        memcpy(previous, cs.code->particles, sizeof(struct reb_particle) * cs.code->N);
-        //        reb_remove_all(cs.code);
-        //        for( IndexMap::iterator i = indexMap.begin(); i != indexMap.end(); i++) {
-        //            if( (*i).second.code == cs.code ) {
-        //                struct reb_particle * p = previous + (*i).second.index;
-        //                sortvector.push_back(particle_sort((*i).first, p));
-        //                
-        //                /*reb_add(cs.code, *p);
-        //                indexMap[(*i).first] = particle_location(cs.code, cs.code->N - 1, cs.subset);*/
-        //                
-        //            }
-        //        }
-        //        
-        //        std::sort (sortvector.begin(), sortvector.end(), sort_particles);
-        //        cs.code->N_active = 0;
-        //        for( ParticleSortVector::iterator i = sortvector.begin(); i != sortvector.end(); i++) {
-        //            reb_add(cs.code,*(*i).p);
-        //            
-        //            //std::cout<<"p:"<<(*i).ref_index<<", m:"<<(*i).p->m<<std::endl;
-        //            if((*i).p->m > 0) {
-        //                cs.code->N_active++;
-        //            }
-        //            indexMap[(*i).ref_index] = particle_location(cs.code, cs.code->N - 1, cs.subset);
-        //        }
-        //        //std::cout<<"NA:"<<(cs.code)->N_active<<std::endl;
-        //        sortvector.clear();
-        //    }
-        //    cs.has_unsorted_massless_particles = false;
-        //    *j = cs;
-        //}
-    }
     return 0;
 }
 
@@ -180,19 +115,14 @@ int get_time(int code_index, double * time){
 }
 
 int set_mass(int index_of_the_particle, double mass){
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
 
     if(p->m==0){
         if(mass>0){
-            reb_simulation * code;
-            for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
-                code_state cs = *i;
-                if (reb_get_particle_by_hash(cs.code, index_of_the_particle) != NULL) {
-                    code = cs.code;
-                break;
-                }
-            }
             int index_old=reb_get_particle_index(p);
             if(index_old!=code->N_active){
                 struct reb_particle tmp = code->particles[index_old];
@@ -206,15 +136,6 @@ int set_mass(int index_of_the_particle, double mass){
     }
     else {
         if(mass==0){
-            reb_simulation * code;
-            for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
-                code_state cs = *i;
-                if (reb_get_particle_by_hash(cs.code, index_of_the_particle) != NULL) {
-                    code = cs.code;
-                break;
-                }
-            }
-
             int index_old=reb_get_particle_index(p);
             code->N_active--;
 
@@ -332,10 +253,10 @@ int _evolve_code(double _tmax, code_state * cs){
     // original : rebound_integrate
     int exact_finish_time = 1;
     double maxR = 0;
-    double minD = 0;
-    struct timeval tim;
-    gettimeofday(&tim, NULL);
-    double timing_initial = tim.tv_sec+(tim.tv_usec/1000000.0);
+    //double minD = 0;
+    //struct timeval tim;
+    //gettimeofday(&tim, NULL);
+    //double timing_initial = tim.tv_sec+(tim.tv_usec/1000000.0);
     double tmax = _tmax;
     code-> dt_last_done = code->dt;
     int last_step = 0;
@@ -465,9 +386,9 @@ int _evolve_code(double _tmax, code_state * cs){
     code->dt = code->dt_last_done;
     get_kinetic_energy(cs->subset, &ke1);
     //printf("Code time: %d ,  %f -> %f (%f,%f)\n",cs->subset , code->t, tmax, ke1, (ke1-ke)/ke);
-    gettimeofday(&tim, NULL);
-    double timing_final = tim.tv_sec+(tim.tv_usec/1000000.0);
-    double timing = timing_final-timing_initial;
+    //gettimeofday(&tim, NULL);
+    //double timing_final = tim.tv_sec+(tim.tv_usec/1000000.0);
+    //double timing = timing_final-timing_initial;
     return ret_value;
 }
 
@@ -529,9 +450,9 @@ int synchronize_model(){
 
 int set_state(int index_of_the_particle, double mass, double x, double y, 
     double z, double vx, double vy, double vz, double radius){
-    //If the JANUS integrator is used, need to set 
-    //code->ri_janus.recalculate_integer_coordinates_this_timestep = 1
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     
     p->x = x;
@@ -543,6 +464,9 @@ int set_state(int index_of_the_particle, double mass, double x, double y,
     
     p->m = mass;
     p->r = radius;
+    if (code->integrator == reb_simulation::REB_INTEGRATOR_JANUS){
+        code->ri_janus.recalculate_integer_coordinates_this_timestep = 1;
+    }
     return 0;
 }
 
@@ -550,7 +474,9 @@ int get_state(int index_of_the_particle, double * mass, double * x,
     double * y, double * z, double * vx, double * vy, double * vz, 
     double * radius, int * subset){
     
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    //reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     
     *x    = p->x;
@@ -644,13 +570,16 @@ int get_number_of_particles(int * number_of_particles){
 
 int set_acceleration(int index_of_the_particle, double ax, double ay, 
   double az){
-    //If the JANUS integrator is used, may need to set 
-    //code->ri_janus.recalculate_integer_coordinates_this_timestep = 1
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     p->ax = ax;
     p->ay = ay;
     p->az = az;
+    if (code->integrator == reb_simulation::REB_INTEGRATOR_JANUS){
+        code->ri_janus.recalculate_integer_coordinates_this_timestep = 1;
+    }
     return 0;
 }
 
@@ -664,7 +593,9 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
 
 int get_radius(int index_of_the_particle, double * radius){
     
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    //reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     //if(loc.index < 0) {*radius = 0; return -1;}
     *radius = p->r;
@@ -693,7 +624,9 @@ int set_begin_time(double time){
 
 int set_radius(int index_of_the_particle, double radius){
     
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    //reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     p->r = radius;
     return 0;
@@ -780,7 +713,9 @@ int get_potential_energy(int code_index, double * potential_energy){
 int get_velocity(int index_of_the_particle, double * vx, double * vy, 
     double * vz){
     
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    //reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     *vx = p->vx;
     *vy = p->vy;
@@ -792,7 +727,9 @@ int get_velocity(int index_of_the_particle, double * vx, double * vy,
 int get_position(int index_of_the_particle, double * x, double * y, 
       double * z){
     
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    //reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     *x = p->x;
     *y = p->y;
@@ -800,22 +737,26 @@ int get_position(int index_of_the_particle, double * x, double * y,
     return 0;
 }
 
+
 int set_position(int index_of_the_particle, double x, double y, double z){
-    //If the JANUS integrator is used, need to set 
-    //code->ri_janus.recalculate_integer_coordinates_this_timestep = 1
-    
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     p->x = x;
     p->y = y;
     p->z = z;
+    if (code->integrator == reb_simulation::REB_INTEGRATOR_JANUS){
+        code->ri_janus.recalculate_integer_coordinates_this_timestep = 1;
+    }
     return 0;
 }
 
 int get_acceleration(int index_of_the_particle, double * ax, double * ay, 
       double * az){
-    
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    //reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     *ax = p->ax;
     *ay = p->ay;
@@ -829,14 +770,16 @@ int commit_parameters(){
 
 int set_velocity(int index_of_the_particle, double vx, double vy, 
     double vz){
-    //If the JANUS integrator is used, need to set 
-    //code->ri_janus.recalculate_integer_coordinates_this_timestep = 1
-    
-    struct reb_particle* p = get_particle_from_identity(index_of_the_particle);
+    particle_location particle = get_particle_from_identity(index_of_the_particle);
+    struct reb_particle* p = particle.p;
+    reb_simulation * code = particle.code;
     if(p == NULL) {return -1;}
     p->vx = vx;
     p->vy = vy;
     p->vz = vz;
+    if (code->integrator == reb_simulation::REB_INTEGRATOR_JANUS){
+        code->ri_janus.recalculate_integer_coordinates_this_timestep = 1;
+    }
     return 0;
 }
 
