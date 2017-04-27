@@ -77,6 +77,7 @@ extern double maximum_internal_energy_parameter;
 extern int use_center_of_mass_parameter;
 
 int reset_stopping_conditions();
+int initialize_stopping_conditions();
 int next_index_for_stopping_condition();
 int set_stopping_condition_info(int index, int type);
 int set_stopping_condition_particle_index(int index, int index_in_the_condition, int index_of_particle);

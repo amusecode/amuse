@@ -966,6 +966,8 @@ static int max_identifier = 0;
 
 int cleanup_code()
 {
+    reset_stopping_conditions();
+
     ident.clear();
     vel.clear();
     pos.clear();
@@ -978,8 +980,36 @@ int cleanup_code()
     acc_reduced.clear();
     jerk_reduced.clear();
     potential_reduced.clear();
+
+    begin_time = 0.0;
     max_identifier = 0;
     nsteps = 0;
+    dt_param = DT_PARAM;        // control parameter to determine time step size
+    dt_dia = DT_DIA;                // time interval between diagnostic output
+
+    x_flag = false;                // set true for serious debugging only!
+    is_time_reversed_allowed = false;
+
+    einit = 0;                        // initial total energy of the system
+    max_identifier = 0;
+    init_flag = false;
+    t_dia = 0;
+    eps2 = 0;
+   
+    id_coll_primary = -1;
+    id_coll_secondary = -1;
+
+    flag_collision = true;
+    reeval = false;
+    test_mode = false;
+
+    potential_energy = 0.0;
+    t = 0;
+    t_evolve = t;  
+    t_wanted = 0;
+    begin_time = 0;
+    end_time_accuracy_factor = 0.5;
+
     return 0;
 }
 
@@ -1310,6 +1340,7 @@ int initialize_code()
 {
     begin_time = 0.0;
     is_time_reversed_allowed = false;
+    initialize_stopping_conditions();
     
 #ifndef NOMPI
     get_comm_world(&WORLD);

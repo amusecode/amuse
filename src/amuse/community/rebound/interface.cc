@@ -67,6 +67,7 @@ static double timestep = 0.0001;
 static inline particle_location get_particle_from_identity(int index_of_the_particle)
 {
     particle_location particle;
+
     for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
         code_state cs = *i;
         particle.code = cs.code;
@@ -660,6 +661,8 @@ int cleanup_code() {
     }
     codes.clear();
     max_id = 0;
+    timestep = 0.0001;
+    _time=0;
     return 0;
 }
 
@@ -668,7 +671,9 @@ int recommit_parameters(){
 }
 
 int initialize_code(){
+    initialize_stopping_conditions();
     max_id = 0;
+    timestep = 0.0001;
     _time=0;
 #ifdef OPENMP_ENABLED
     int nt = omp_get_max_threads();

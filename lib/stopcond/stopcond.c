@@ -226,8 +226,27 @@ int reset_stopping_conditions() {
     return 0;
 }
 
+int initialize_stopping_conditions() {
+	enabled_conditions = 0;
+	set_conditions = 0;
+	supported_conditions = 0;
+	number_of_stopping_conditions_set = 0;
+	
+	timeout_parameter = 4.0;
+	out_of_box_parameter = 0.0;
+	number_of_steps_parameter = 1;
+	minimum_density_parameter = -1.0;
+	maximum_density_parameter = DBL_MAX;
+	minimum_internal_energy_parameter = -1.0;
+	maximum_internal_energy_parameter = DBL_MAX;
+	size_limit_parameter = 0.0;
+}
+
 int reset_stopping_conditions_() {
     return reset_stopping_conditions();
+}
+int initialize_stopping_conditions_() {
+    return initialize_stopping_conditions();
 }
 
 int next_index_for_stopping_condition() {
