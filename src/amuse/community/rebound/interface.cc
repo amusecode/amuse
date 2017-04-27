@@ -35,8 +35,8 @@ extern "C" {
 #include <stopcond.h>
 
 typedef struct _particle_location {
-    reb_simulation * code;
-    reb_particle * p;
+    struct reb_simulation * code = NULL;
+    struct reb_particle * p = NULL;
 } particle_location;
 
 typedef struct _code_state {
