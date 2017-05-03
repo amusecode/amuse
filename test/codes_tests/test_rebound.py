@@ -92,12 +92,12 @@ class ReboundInterfaceTests(TestWithMPI):
         error = 0
         integrator = instance.get_integrator()
         self.assertEquals(error, 0)
-        self.assertEquals("whfast", integrator)
-        error = instance.set_integrator("ias15")
+        self.assertEquals("ias15", integrator)
+        error = instance.set_integrator("whfast")
         self.assertEquals(error, 0)
         integrator = instance.get_integrator()
         self.assertEquals(error, 0)
-        self.assertEquals("ias15", integrator)
+        self.assertEquals("whfast", integrator)
         instance.cleanup_code()
         instance.stop()
         
