@@ -1373,22 +1373,23 @@ class Multiples(object):
             
         set_radii(particles_in_encounter, self.kepler)
 
-        # Print diagnostics on added particles.
+        # Print diagnostics on added particles. Strip dimensions
+        # because of numpy problem noted below.
 
         print 'final top-level:',
-        r = 0.0|nbody_system.length
-        v = 0.0|nbody_system.speed
-        vr = 0.0|nbody_system.length*nbody_system.speed
+        r = 0.0
+        v = 0.0
+        vr = v*r
         for i in top_level_nodes:
             print i.id, '('+str(i.radius)+')',
             for j in top_level_nodes:
                 if i.id > j.id:
-                    rij = (i.position-j.position).length()
+                    rij = (i.position-j.position).length().number
                     if rij > r:
                         r = rij.number
                         v = (i.velocity-j.velocity).length().number
 
-                        # Temporary numpy workaround - Steve.
+                        # Temporary numpy workaround - Steve. Want:
                         #
                         # vr = numpy.inner(j.velocity-i.velocity,
                         #                  j.position-i.position)
