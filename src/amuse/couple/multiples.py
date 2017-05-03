@@ -1386,7 +1386,7 @@ class Multiples(object):
                 if i.id > j.id:
                     rij = (i.position-j.position).length().number
                     if rij > r:
-                        r = rij.number
+                        r = rij
                         v = (i.velocity-j.velocity).length().number
 
                         # Temporary numpy workaround - Steve. Want:
