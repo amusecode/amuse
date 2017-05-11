@@ -6,13 +6,13 @@
 # date  : 2009 - 05 -18
 #
 
-APPVER=3.3.3
-APPFILE=Python-${APPVER}.tar.bz2
+APPVER=3.6.1
+APPFILE=Python-${APPVER}.tar.xz
 APP_DIR=Python-${APPVER}
 URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 
-OPENSSLVERSION="1.0.1e"
+OPENSSLVERSION="1.0.2k"
 OPENSSLFILE=openssl-${OPENSSLVERSION}.tar.gz 
 OPENSSLURL=http://mirrors.ibiblio.org/openssl/source/${OPENSSLFILE}
 OPENSSLDIR=openssl-${OPENSSLVERSION}
