@@ -46,7 +46,7 @@ def main(filename = "NbodyAMUSE.test", lim=-1):
     from matplotlib import pyplot, rc
     x_label = "N"
     y_label = "$t_{wall} [s]$"
-    figure = single_frame(x_label, y_label, logx=True, logy=True, xsize=12, ysize=10)
+    figure = single_frame(x_label, y_label, logx=True, logy=True, xsize=14, ysize=10)
 
     npp = [12, 512]
     ntc = [1024, 2000*1024]
