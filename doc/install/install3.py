@@ -9,6 +9,12 @@ import urllib.request, urllib.parse, urllib.error
 import subprocess
 import shutil
 
+import ssl
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except:
+    pass
+
 
 IS_ON_OSX = sys.platform == 'darwin'
 PYTHON = sys.executable
@@ -66,6 +72,13 @@ class InstallPrerequisites(object):
             self.hdf5_build
           ) ,
           (
+            'cython', 
+            [], 
+            '0.25.2', 
+            'Cython-' , '.tar.gz', 
+            'https://pypi.io/packages/source/c/cython/', self.python_build
+          ) ,
+          (
             'h5py', 
             ['hdf'], 
             '2.4.0', 
@@ -90,10 +103,10 @@ class InstallPrerequisites(object):
           ) ,
           (
             'mpi4py', 
-            ['mpich'], 
+            ['mpich2'], 
             '1.3.1', 
             'mpi4py-', '.tar.gz', 
-            'http://mpi4py.googlecode.com/files/', 
+            'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
           ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
@@ -203,7 +216,8 @@ class InstallPrerequisites(object):
         #    os.path.abspath('h5py_imports_python33.patch')
         #], cwd=path)
        
-        self.run_application([PYTHON,'setup.py','build','--hdf5='+self.prefix], cwd=path)
+        self.run_application([PYTHON,'setup.py','configure','--hdf5='+self.prefix], cwd=path)
+        self.run_application([PYTHON,'setup.py','build'],cwd=path)
         self.run_application([PYTHON,'setup.py','install'], cwd=path)
         
     def setuptools_install(self, path):

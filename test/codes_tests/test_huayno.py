@@ -68,7 +68,7 @@ class TestHuaynoInterface(TestWithMPI):
         self.assertEquals(10.0,  retrieved_state2['x'])
     
         instance.cleanup_code()
-        del instance
+        instance.stop()
 
     def test2(self):
         instance = HuaynoInterface()
@@ -88,13 +88,16 @@ class TestHuaynoInterface(TestWithMPI):
         self.assertEquals(0, instance.get_index_of_next_particle(0)['__result'])
         self.assertEquals(-2, instance.get_index_of_next_particle(1)['__result'])
         self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
+        instance.cleanup_code()
+        instance.stop()
         
     def test3(self):
         huayno = HuaynoInterface()
-        huayno.eps2 = 0.101
-        self.assertEquals(0.101, huayno.eps2)
-        huayno.eps2 = 0.110
-        self.assertEquals(0.110, huayno.eps2)
+        huayno.set_eps2(0.101)
+        self.assertEquals(0.101, huayno.get_eps2()['eps2'])
+        huayno.set_eps2( 0.110)
+        self.assertEquals(0.110, huayno.get_eps2()['eps2'])
+        huayno.cleanup_code()
         huayno.stop()
 
     def test5(self):
@@ -111,6 +114,7 @@ class TestHuaynoInterface(TestWithMPI):
         self.assertEquals(20.0,  retrieved_state['mass'][1])
         self.assertEquals(huayno.get_number_of_particles()['number_of_particles'], 2)
         huayno.cleanup_code() 
+        huayno.stop()
        
 
 class TestHuayno(TestWithMPI):

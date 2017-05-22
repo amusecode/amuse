@@ -457,17 +457,16 @@ class Multiples(object):
                 # temporarily duplicated this check in the ph4 module
                 # (jdata.cc).
 
-                r = (star2.position-star1.position).length()
-                v = (star2.velocity-star1.velocity).length()
+                r = (star2.position-star1.position).length().number
+                v = (star2.velocity-star1.velocity).length().number
 
-                # Temporary numpy workaround - Steve.
+                # Temporary numpy workaround - Steve. Use dimensionless units.
                 #
                 # vr = numpy.inner(star2.velocity-star1.velocity,
                 #                  star2.position-star1.position)
-                vr = numpy.inner(
-                (star2.velocity-star1.velocity).value_in(nbody_system.speed),
-                (star2.position-star1.position).value_in(nbody_system.length)) \
-                | nbody_system.speed*nbody_system.length
+
+                vr = numpy.inner((star2.velocity-star1.velocity).number,
+                                 (star2.position-star1.position).number)
     
                 EPS = 0.001
                 if True or vr < EPS*r*v:    # True ==> keep all encounters
@@ -1374,31 +1373,29 @@ class Multiples(object):
             
         set_radii(particles_in_encounter, self.kepler)
 
-        # Print diagnostics on added particles.
+        # Print diagnostics on added particles. Strip dimensions
+        # because of numpy problem noted below.
 
         print 'final top-level:',
-        r = 0.0|nbody_system.length
-        v = 0.0|nbody_system.speed
-        vr = 0.0|nbody_system.length*nbody_system.speed
+        r = 0.0
+        v = 0.0
+        vr = v*r
         for i in top_level_nodes:
             print i.id, '('+str(i.radius)+')',
             for j in top_level_nodes:
                 if i.id > j.id:
-                    rij = (i.position-j.position).length()
+                    rij = (i.position-j.position).length().number
                     if rij > r:
                         r = rij
-                        v = (i.velocity-j.velocity).length()
+                        v = (i.velocity-j.velocity).length().number
 
-                        # Temporary numpy workaround - Steve.
+                        # Temporary numpy workaround - Steve. Want:
                         #
                         # vr = numpy.inner(j.velocity-i.velocity,
                         #                  j.position-i.position)
-                        vr = numpy.inner(
-                            (j.velocity-i.velocity).\
-                                value_in(nbody_system.speed),
-                            (j.position-i.position).\
-                                value_in(nbody_system.length))\
-                                | nbody_system.speed*nbody_system.length
+
+                        vr = numpy.inner((j.velocity-i.velocity).number,
+                                         (j.position-i.position).number)
 
         print ''
         if 1:
@@ -2076,9 +2073,9 @@ def potential_energy_in_field(particles, field_particles,
         sum_of_energies += energy_of_this_particle
         #print potentials
         #print dr
-        imin = numpy.argmin(potentials)
+        imin = numpy.argmin(potentials.number)
         #print ' ', particle.id, field_particles[imin].id, potentials[imin]
-        imin = numpy.argmin(dr)
+        imin = numpy.argmin(dr.number)
         #print ' ', particle.id, field_particles[imin].id, dr[imin]
     #print 'sum_of_energies =', sum_of_energies
 

@@ -5,8 +5,8 @@
 
 #include "src/smallN_interface.h"
 
-static hdyn *b;		// root node for all smallN data
-static hdyn *b_copy;
+static hdyn *b = NULL;		// root node for all smallN data
+static hdyn *b_copy = NULL;
 
 static double begin_time = 0;
 static real smalln_dtlog = _INFINITY_;
@@ -50,12 +50,17 @@ int cleanup_code()
         rmtree(b_copy);		// deletes b_copy
         b_copy = NULL;
     }
+    begin_time = 0.0;
+    real smalln_dtlog = _INFINITY_;
+    smalln_verbose = 0;
+    smalln_outfile = string("");
     UpdatedParticles.clear();
     return 0;
 }
 
 int initialize_code()
 {
+    initialize_stopping_conditions();    
     // Begin the initialization by creating a basic hdyn data structure.
 
     cleanup_code();
