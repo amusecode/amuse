@@ -300,14 +300,8 @@ class JobServer(object):
         return True
 
     def waitall(self):
-      while len(self.pool)==0 and self.job_list:
-        if self.number_available_codes>0:
-          raise Exception("JobServer: this should not happen")    
-        if self.number_starting_codes==0:
-          raise Exception("JobServer: no codes available")
-      while len(self.pool)>0 or self.job_list:
-        self.pool.wait()
-#        self.last_finished_job=self._finished_jobs.popleft()
+      while self.wait():
+        pass
     
     @property
     def finished_jobs(self):
@@ -344,7 +338,7 @@ class JobServer(object):
       if not self.no_hosts():
         self.waitall()
       if self.job_list:
-        warnings.warn("JobServer: Warning: unfinished jobs")
+        warnings.warn("JobServer: Warning: shutting down with unfinished jobs")
       for code in self.idle_codes:
         code.stop()
       if self.number_starting_codes>0:
