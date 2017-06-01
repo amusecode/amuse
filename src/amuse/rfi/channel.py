@@ -2028,7 +2028,7 @@ class SocketChannel(AbstractMessageChannel):
 
         self.interpreter_executable = interpreter_executable
         
-        if self.hostname != None and self.hostname != 'localhost':
+        if self.hostname != None and self.hostname not in ['localhost',socket.gethostname()]:
             raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
             
         self.id = 0
