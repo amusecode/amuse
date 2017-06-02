@@ -194,7 +194,7 @@ class TestCase(unittest.TestCase):
                 ok = True
             except self.failureException:
                 result.addFailure(self, sys.exc_info())
-            except SkipTest, ex:
+            except SkipTest as ex:
                 ok = True
                 pass
             except KeyboardInterrupt:
