@@ -88,7 +88,7 @@ class InstallPrerequisites(object):
           (
             'docutils', 
             [], 
-            '0.7', 
+            '0.12', 
             'docutils-','.tar.gz', 
             'http://pypi.python.org/packages/source/d/docutils/', 
             self.python_build
