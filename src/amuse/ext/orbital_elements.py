@@ -1,11 +1,10 @@
 import numpy
 
-from amuse.units import units,nbody_system,constants
-from amuse.datamodel import Particles,rotation
+from amuse.units import units, nbody_system, constants
+from amuse.units.trigo import cos, sin, arccos, arctan2
+from amuse.datamodel import Particles, rotation
 
 from amuse.units.quantities import to_quantity
-
-# to do: have consistent use of angles (radians + units.deg)
 
 def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
     if fprime is None:
@@ -27,7 +26,7 @@ def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
 
 
 def true_anomaly_from_eccentric_anomaly(E,e):
-  return 2*numpy.arctan2((1+e)**0.5*numpy.sin(E/2),(1-e)**0.5*numpy.cos(E/2))
+    return 2*arctan2((1+e)**0.5*sin(E/2),(1-e)**0.5*cos(E/2))
 
 # E from M,e
 # newton solver for M=E-e sin E
@@ -47,36 +46,43 @@ def new_binary_from_orbital_elements(
 
     Function that returns two-particle Particle set, with the second 
     particle position and velocities computed from the input orbital 
-    elements. angles in degrees, inclination between 0 and 180
+    elements. inclination between 0 and 180
 
     """
-    
-    inclination = numpy.radians(inclination)
-    argument_of_periapsis = numpy.radians(argument_of_periapsis)
-    longitude_of_the_ascending_node = numpy.radians(longitude_of_the_ascending_node)
-    true_anomaly = numpy.radians(true_anomaly)
 
-    cos_true_anomaly = numpy.cos(true_anomaly)
-    sin_true_anomaly = numpy.sin(true_anomaly)    
+    cos_true_anomaly = cos(true_anomaly)
+    sin_true_anomaly = sin(true_anomaly)
 
-    cos_inclination = numpy.cos(inclination)
-    sin_inclination = numpy.sin(inclination)    
+    cos_inclination = cos(inclination)
+    sin_inclination = sin(inclination)    
 
-    cos_arg_per = numpy.cos(argument_of_periapsis)
-    sin_arg_per = numpy.sin(argument_of_periapsis)
+    cos_arg_per = cos(argument_of_periapsis)
+    sin_arg_per = sin(argument_of_periapsis)
 
-    cos_long_asc_nodes = numpy.cos(longitude_of_the_ascending_node)
-    sin_long_asc_nodes = numpy.sin(longitude_of_the_ascending_node)
+    cos_long_asc_nodes = cos(longitude_of_the_ascending_node)
+    sin_long_asc_nodes = sin(longitude_of_the_ascending_node)
 
     ### alpha is a unit vector directed along the line of node ###
-    alphax = cos_long_asc_nodes*cos_arg_per - sin_long_asc_nodes*sin_arg_per*cos_inclination
-    alphay = sin_long_asc_nodes*cos_arg_per + cos_long_asc_nodes*sin_arg_per*cos_inclination
+    alphax = (
+            cos_long_asc_nodes*cos_arg_per
+            - sin_long_asc_nodes*sin_arg_per*cos_inclination
+            )
+    alphay = (
+            sin_long_asc_nodes*cos_arg_per
+            + cos_long_asc_nodes*sin_arg_per*cos_inclination
+            )
     alphaz = sin_arg_per*sin_inclination
     alpha = numpy.array([alphax,alphay,alphaz])
 
     ### beta is a unit vector perpendicular to alpha and the orbital angular momentum vector ###
-    betax = -cos_long_asc_nodes*sin_arg_per - sin_long_asc_nodes*cos_arg_per*cos_inclination
-    betay = -sin_long_asc_nodes*sin_arg_per + cos_long_asc_nodes*cos_arg_per*cos_inclination
+    betax = (
+            - cos_long_asc_nodes*sin_arg_per
+            - sin_long_asc_nodes*cos_arg_per*cos_inclination
+            )
+    betay = (
+            - sin_long_asc_nodes*sin_arg_per
+            + cos_long_asc_nodes*cos_arg_per*cos_inclination
+            )
     betaz = cos_arg_per*sin_inclination
     beta = numpy.array([betax,betay,betaz])
 
@@ -84,10 +90,22 @@ def new_binary_from_orbital_elements(
 #    print 'beta',betax**2+betay**2+betaz**2 # For debugging; should be 1
 
     ### Relative position and velocity ###
-    separation = semimajor_axis*(1.0 - eccentricity**2)/(1.0 + eccentricity*cos_true_anomaly) # Compute the relative separation
-    position_vector = separation*cos_true_anomaly*alpha + separation*sin_true_anomaly*beta
-    velocity_tilde = (G*(mass1 + mass2)/(semimajor_axis*(1.0 - eccentricity**2)))**0.5 # Common factor
-    velocity_vector = -1.0*velocity_tilde*sin_true_anomaly*alpha + velocity_tilde*(eccentricity + cos_true_anomaly)*beta
+    separation = (
+            semimajor_axis*(1.0 - eccentricity**2)
+            / (1.0 + eccentricity*cos_true_anomaly)
+            )  # Compute the relative separation
+    position_vector = (
+            separation*cos_true_anomaly*alpha
+            + separation*sin_true_anomaly*beta
+            )
+    velocity_tilde = (
+            G*(mass1 + mass2)
+            / (semimajor_axis*(1.0 - eccentricity**2))
+            )**0.5  # Common factor
+    velocity_vector = (
+            -1.0*velocity_tilde*sin_true_anomaly*alpha
+            + velocity_tilde*(eccentricity + cos_true_anomaly)*beta
+            )
 
     result = Particles(2)
     result[0].mass = mass1
@@ -98,10 +116,10 @@ def new_binary_from_orbital_elements(
 
     result.move_to_center()
     return result
-    
+
+
 def orbital_elements_from_binary( binary, G=nbody_system.G):
     """ 
-
     Function that computes orbital elements from given two-particle set. 
     Elements are computed for the second particle in this set and the 
     return values are: mass1, mass2, semimajor axis, eccentricity, 
@@ -110,51 +128,74 @@ def orbital_elements_from_binary( binary, G=nbody_system.G):
     pericenter. In case of a perfectly circular orbit the true anomaly 
     and argument of pericenter cannot be determined; in this case the 
     return values are 1.0 for both cosines. 
-
     """
     if len(binary)>2:
-      raise Exception("expects binary or single part")
+        raise Exception("expects binary or single part")
 
     if len(binary)==2:
-      mass1=binary[0].mass
-      mass2=binary[1].mass
-      position = binary[1].position-binary[0].position
-      velocity = binary[1].velocity-binary[0].velocity
-      total_mass = mass1 + mass2
+        mass1=binary[0].mass
+        mass2=binary[1].mass
+        position = binary[1].position-binary[0].position
+        velocity = binary[1].velocity-binary[0].velocity
+        total_mass = mass1 + mass2
     else:
-      mass1=binary.mass
-      mass2=0.*mass1
-      position = binary.position
-      velocity = binary.velocity
-      total_mass = mass1
+        mass1=binary.mass
+        mass2=0.*mass1
+        position = binary.position
+        velocity = binary.velocity
+        total_mass = mass1
       
-    specific_energy = (1.0/2.0)*velocity.lengths_squared() - G*total_mass/position.lengths()
+    specific_energy = (
+            (1.0/2.0)*velocity.lengths_squared() 
+            - G*total_mass/position.lengths()
+            )
     specific_angular_momentum = position.cross(velocity)
-    specific_angular_momentum_norm = specific_angular_momentum.lengths()    
-    specific_angular_momentum_unit=specific_angular_momentum/specific_angular_momentum_norm
+    specific_angular_momentum_norm = specific_angular_momentum.lengths()
+    specific_angular_momentum_unit = (
+            specific_angular_momentum
+            / specific_angular_momentum_norm
+            )
 
     semimajor_axis = -G*total_mass/(2.0*specific_energy)
 
-    eccentricity_argument = 2.0*specific_angular_momentum_norm**2*specific_energy/(G**2*total_mass**2)
-    if (eccentricity_argument <= -1): eccentricity = 0.0
-    else: eccentricity = numpy.sqrt(1.0 + eccentricity_argument)
+    eccentricity_argument = (
+            2.0*specific_angular_momentum_norm**2
+            * specific_energy
+            / (G**2*total_mass**2)
+            )
+    if (eccentricity_argument <= -1):
+        eccentricity = 0.0
+    else:
+        eccentricity = numpy.sqrt(1.0 + eccentricity_argument)
 
     ### Orbital inclination ###
-    inclination = numpy.degrees(numpy.arccos(specific_angular_momentum.z/specific_angular_momentum_norm))
+    inclination = arccos(
+            specific_angular_momentum.z
+            / specific_angular_momentum_norm
+            )
 
     ### Longitude of ascending nodes, with reference direction along x-axis ###
     z_vector = [0.,0.,1.] | units.none
     ascending_node_vector = z_vector.cross(specific_angular_momentum)
     if ascending_node_vector.lengths().number==0:
-      ascending_node_vector_unit= numpy.array([1.,0.,0.]) 
+        ascending_node_vector_unit= numpy.array([1.,0.,0.]) 
     else:
-      ascending_node_vector_unit = ascending_node_vector/ascending_node_vector.lengths()
-    long_asc_node=numpy.degrees(numpy.arctan2(ascending_node_vector_unit[1],ascending_node_vector_unit[0]))
+        ascending_node_vector_unit = (
+                ascending_node_vector
+                / ascending_node_vector.lengths()
+                )
+    long_asc_node = arctan2(
+            ascending_node_vector_unit[1],
+            ascending_node_vector_unit[0]
+            )
 
     ### Argument of periapsis and true anomaly, using eccentricity a.k.a. Laplace-Runge-Lenz vector ###
-    mu = G*total_mass ### Argument of pericenter ###
+    mu = G*total_mass  ### Argument of pericenter ###
     position_unit = position/position.lengths()
-    e_vector = ( (1.0/mu)*velocity.cross(specific_angular_momentum) - position_unit ) | units.none
+    e_vector = (
+            (1.0/mu)*velocity.cross(specific_angular_momentum)
+            - position_unit
+            ) | units.none
     if (e_vector.lengths() == 0.0): ### Argument of pericenter and true anomaly cannot be determined for e = 0, in this case return 1.0 for the cosines ###
         cos_arg_per = 1.0
         arg_per=0.
@@ -163,13 +204,13 @@ def orbital_elements_from_binary( binary, G=nbody_system.G):
     else:
         e_vector_unit = e_vector/e_vector.lengths()
         
-        cos_arg_per = numpy.dot(e_vector_unit,ascending_node_vector_unit)
-        #cos_arg_per = e_vector_unit.dot(ascending_node_vector_unit)
-        e_cross_an=numpy.cross(e_vector_unit,ascending_node_vector_unit)
-        ss=-numpy.sign(numpy.dot(specific_angular_momentum_unit,e_cross_an))
-        #ss=-numpy.sign(specific_angular_momentum_unit.dot(e_cross_an))
+        cos_arg_per = numpy.dot(e_vector_unit, ascending_node_vector_unit)
+        # cos_arg_per = e_vector_unit.dot(ascending_node_vector_unit)
+        e_cross_an = numpy.cross(e_vector_unit, ascending_node_vector_unit)
+        ss = -numpy.sign(numpy.dot(specific_angular_momentum_unit, e_cross_an))
+        # ss=-numpy.sign(specific_angular_momentum_unit.dot(e_cross_an))
         sin_arg_per = ss*(e_cross_an**2).sum()**0.5
-        arg_per=numpy.degrees(numpy.arctan2(sin_arg_per,cos_arg_per))
+        arg_per = arctan2(sin_arg_per, cos_arg_per)
 
 
         cos_true_anomaly = numpy.dot(e_vector_unit,position_unit)
@@ -178,12 +219,17 @@ def orbital_elements_from_binary( binary, G=nbody_system.G):
         ss=numpy.sign(numpy.dot(specific_angular_momentum_unit,e_cross_pos))
         #ss=numpy.sign(specific_angular_momentum_unit.dot(e_cross_pos))
         sin_true_anomaly = ss*(e_cross_pos**2).sum()**0.5
-        true_anomaly=numpy.degrees(numpy.arctan2(sin_true_anomaly,cos_true_anomaly))
+        true_anomaly=arctan2(sin_true_anomaly,cos_true_anomaly)
 
         
-    return mass1, mass2, semimajor_axis, eccentricity, true_anomaly, inclination, long_asc_node, arg_per
+    return (
+            mass1, mass2, semimajor_axis, eccentricity, true_anomaly,
+            inclination, long_asc_node, arg_per)
 
-def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, total_masses, G=nbody_system.G):
+
+def orbital_elements_for_rel_posvel_arrays(
+        rel_position_raw, rel_velocity_raw, 
+        total_masses, G=nbody_system.G):
     """
     Orbital elements from array of relative positions and velocities vectors,
     based on orbital_elements_from_binary and adapted to work for arrays (each line
@@ -226,10 +272,17 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     
     speed_squared = (rel_velocity**2).sum(axis=1)
     
-    semimajor_axis = (G * total_masses * separation / \
-        (2. * G * total_masses - separation * speed_squared))
+    semimajor_axis = (
+            G * total_masses * separation
+            / (2. * G * total_masses - separation * speed_squared)
+            )
     
-    neg_ecc_arg = (to_quantity(rel_position).cross(rel_velocity)**2).sum(axis=-1)/(G * total_masses * semimajor_axis)   
+    neg_ecc_arg = (
+            (
+                to_quantity(rel_position).cross(rel_velocity)**2
+                ).sum(axis=-1)
+            / (G * total_masses * semimajor_axis)
+            )
     filter_ecc0 = (1. <= neg_ecc_arg)
     eccentricity = numpy.zeros(separation.shape)
     eccentricity[~filter_ecc0] = numpy.sqrt( 1.0 - neg_ecc_arg[~filter_ecc0])
@@ -239,7 +292,7 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     mom = to_quantity(rel_position).cross(rel_velocity)        
     
     # inclination
-    inc = numpy.arccos(mom[:,2]/to_quantity(mom).lengths())
+    inc = arccos(mom[:,2]/to_quantity(mom).lengths())
     
     # Longitude of ascending nodes, with reference direction along x-axis
     asc_node_matrix_unit = numpy.zeros(rel_position.shape)
@@ -247,18 +300,26 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     z_vectors[:,2] = 1.
     z_vectors = z_vectors | units.none
     ascending_node_vectors = z_vectors.cross(mom)
-    filter_non0_incl = (to_quantity(ascending_node_vectors).lengths().number>0.)
+    filter_non0_incl = (
+            to_quantity(ascending_node_vectors).lengths().number > 0.)
     asc_node_matrix_unit[~filter_non0_incl] = numpy.array([1.,0.,0.])
-    an_vectors_len = to_quantity(ascending_node_vectors[filter_non0_incl]).lengths()
-    asc_node_matrix_unit[filter_non0_incl] = normalize_vector(ascending_node_vectors[filter_non0_incl], an_vectors_len)
-    long_asc_node = numpy.arctan2(asc_node_matrix_unit[:,1],asc_node_matrix_unit[:,0])
+    an_vectors_len = to_quantity(
+            ascending_node_vectors[filter_non0_incl]).lengths()
+    asc_node_matrix_unit[filter_non0_incl] = normalize_vector(
+            ascending_node_vectors[filter_non0_incl],
+            an_vectors_len)
+    long_asc_node = arctan2(asc_node_matrix_unit[:,1], asc_node_matrix_unit[:,0])
     
     # Argument of periapsis using eccentricity a.k.a. Laplace-Runge-Lenz vector
     mu = G*total_masses
     pos_unit_vecs = normalize_vector(rel_position, separation)
     mom_len = to_quantity(mom).lengths()
     mom_unit_vecs = normalize_vector(mom, mom_len)
-    e_vecs = (normalize_vector(to_quantity(rel_velocity).cross(mom), mu) - pos_unit_vecs)
+    e_vecs = (
+            normalize_vector(
+                to_quantity(rel_velocity).cross(mom), mu) 
+            - pos_unit_vecs
+            )
     
     # Argument of pericenter cannot be determined for e = 0,
     # in this case return 0.0 and 1.0 for the cosines
@@ -270,35 +331,62 @@ def orbital_elements_for_rel_posvel_arrays(rel_position_raw, rel_velocity_raw, t
     cos_arg_per[~filter_non0_ecc] = 1.
     
     e_vecs_unit = numpy.zeros(rel_position.shape)
-    e_vecs_unit[filter_non0_ecc] = normalize_vector(e_vecs[filter_non0_ecc],
-                                                    e_vecs_norm[filter_non0_ecc])
+    e_vecs_unit[filter_non0_ecc] = normalize_vector(
+            e_vecs[filter_non0_ecc],
+            e_vecs_norm[filter_non0_ecc]
+            )
     #~ cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc], asc_node_matrix_unit[filter_non0_ecc].T)
-    cos_arg_per = (e_vecs_unit[filter_non0_ecc]*asc_node_matrix_unit[filter_non0_ecc]).sum(axis=-1)
+    cos_arg_per = (
+            e_vecs_unit[filter_non0_ecc]
+            * asc_node_matrix_unit[filter_non0_ecc]
+            ).sum(axis=-1)
     e_cross_an = numpy.zeros(e_vecs_unit.shape)
-    e_cross_an[filter_non0_ecc] = numpy.cross(e_vecs_unit[filter_non0_ecc],asc_node_matrix_unit[filter_non0_ecc])
-    e_cross_an_norm=(e_cross_an**2).sum(axis=1)**0.5
+    e_cross_an[filter_non0_ecc] = numpy.cross(
+            e_vecs_unit[filter_non0_ecc],
+            asc_node_matrix_unit[filter_non0_ecc]
+            )
+    e_cross_an_norm = (e_cross_an**2).sum(axis=1)**0.5
     filter_non0_e_cross_an = (e_cross_an_norm != 0.)
     #~ ss = -numpy.sign(numpy.einsum('ij,ji->i',mom_unit_vecs[filter_non0_e_cross_an], e_cross_an[filter_non0_e_cross_an].T))
-    ss = -numpy.sign((mom_unit_vecs[filter_non0_e_cross_an]*e_cross_an[filter_non0_e_cross_an]).sum(axis=-1))
+    ss = -numpy.sign(
+            (
+                mom_unit_vecs[filter_non0_e_cross_an]
+                * e_cross_an[filter_non0_e_cross_an]
+                ).sum(axis=-1)
+            )
     sin_arg_per = ss*e_cross_an_norm[filter_non0_e_cross_an]
-    arg_per_mat[filter_non0_e_cross_an] = numpy.arctan2(sin_arg_per,cos_arg_per)
+    arg_per_mat[filter_non0_e_cross_an] = arctan2(sin_arg_per,cos_arg_per)
     
     # in case longitude of ascending node is 0, omega=arctan2(e_y,e_x)
-    arg_per_mat[~filter_non0_e_cross_an & filter_non0_ecc] = \
-        numpy.arctan2(e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,1], \
-                      e_vecs[~filter_non0_e_cross_an & filter_non0_ecc,0])
-    filter_negative_zmom = (~filter_non0_e_cross_an & filter_non0_ecc & (mom[:,2]<0.*mom[0,0]))
-    arg_per_mat[filter_negative_zmom] = 2.*numpy.pi - arg_per_mat[filter_negative_zmom]
+    arg_per_mat[~filter_non0_e_cross_an & filter_non0_ecc] = (
+            arctan2(
+                e_vecs[~filter_non0_e_cross_an & filter_non0_ecc, 1],
+                e_vecs[~filter_non0_e_cross_an & filter_non0_ecc, 0]
+                )
+            )
+    filter_negative_zmom = (
+            ~filter_non0_e_cross_an
+            & filter_non0_ecc
+            & (mom[:,2] < 0.*mom[0,0])
+            )
+    arg_per_mat[filter_negative_zmom] = (
+            2. * numpy.pi
+            - arg_per_mat[filter_negative_zmom]
+            )
     
     # true anomaly
     cos_true_anomaly = (e_vecs_unit*pos_unit_vecs).sum(axis=-1)
     e_cross_pos = numpy.cross(e_vecs_unit,pos_unit_vecs)
     ss2 = numpy.sign((mom_unit_vecs*e_cross_pos).sum(axis=-1))
     sin_true_anomaly = ss2*(e_cross_pos**2).sum(axis=1)**0.5
-    true_anomaly = numpy.arctan2(sin_true_anomaly,cos_true_anomaly)
+    true_anomaly = arctan2(sin_true_anomaly,cos_true_anomaly)
     
-    return semimajor_axis, eccentricity, true_anomaly,inc, long_asc_node, arg_per_mat 
-    
+    return (
+            semimajor_axis, eccentricity, true_anomaly,
+            inc, long_asc_node, arg_per_mat
+            )
+
+
 def normalize_vector(vecs, norm, one_dim = False):
     """
     normalize array of vector quantities
@@ -314,7 +402,3 @@ def normalize_vector(vecs, norm, one_dim = False):
         vecs_norm[:,1] = vecs[:,1]/norm
         vecs_norm[:,2] = vecs[:,2]/norm
     return vecs_norm
-    
-    
-    
-
