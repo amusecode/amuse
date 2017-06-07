@@ -31,6 +31,15 @@ def true_anomaly_from_eccentric_anomaly(E,e):
 # E from M,e
 # newton solver for M=E-e sin E
 
+
+def angle_with_unit(angle, default_unit=units.deg):
+    try:
+        unit = angle.unit
+    except:
+        angle = angle | default_unit
+    return angle
+
+
 def new_binary_from_orbital_elements(
         mass1,
         mass2,
@@ -49,6 +58,18 @@ def new_binary_from_orbital_elements(
     elements. inclination between 0 and 180
 
     """
+    
+    # If no unit is given for angles, assume they are in degrees
+    true_anomaly = angle_with_unit(inclination, default_unit=units.deg)
+    inclination = angle_with_unit(inclination, default_unit=units.deg)
+    argument_of_periapsis = angle_with_unit(
+            argument_of_periapsis, 
+            default_unit=units.deg
+            )
+    longitude_of_the_ascending_node = angle_with_unit(
+            longitude_of_the_ascending_node, 
+            default_unit=units.deg
+            )
 
     cos_true_anomaly = cos(true_anomaly)
     sin_true_anomaly = sin(true_anomaly)
