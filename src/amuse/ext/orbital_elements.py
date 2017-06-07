@@ -44,11 +44,11 @@ def new_binary_from_orbital_elements(
         mass1,
         mass2,
         semimajor_axis, 
-        eccentricity = 0,
-        true_anomaly = 0, 
-        inclination = 0,
-        longitude_of_the_ascending_node = 0,
-        argument_of_periapsis = 0,
+        eccentricity,
+        true_anomaly=0 | units.deg, 
+        inclination=0 | units.deg,
+        longitude_of_the_ascending_node=0 | units.deg,
+        argument_of_periapsis=0 | units.deg,
         G=nbody_system.G
     ):
     """ 
