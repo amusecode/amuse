@@ -1,5 +1,7 @@
 import numpy
 
+import warnings
+
 from amuse.units import units, nbody_system, constants
 from amuse.units.trigo import cos, sin, arccos, arctan2
 from amuse.datamodel import Particles, rotation
@@ -40,42 +42,101 @@ def angle_with_unit(angle, default_unit=units.deg):
     return angle
 
 
-def new_binary_from_orbital_elements(
-        mass1,
-        mass2,
-        semimajor_axis, 
-        eccentricity,
-        true_anomaly=0 | units.deg, 
-        inclination=0 | units.deg,
-        longitude_of_the_ascending_node=0 | units.deg,
-        argument_of_periapsis=0 | units.deg,
-        G=nbody_system.G
-    ):
-    """ 
-
-    Function that returns two-particle Particle set, with the second 
-    particle position and velocities computed from the input orbital 
-    elements. inclination between 0 and 180
-
+def equal_length_array_or_scalar(
+        array, length=1, mode="continue"
+        ):
     """
-    
-    # If no unit is given for angles, assume they are in degrees
-    true_anomaly = angle_with_unit(inclination, default_unit=units.deg)
-    inclination = angle_with_unit(inclination, default_unit=units.deg)
-    argument_of_periapsis = angle_with_unit(
-            argument_of_periapsis, 
-            default_unit=units.deg
+    Returns 'array' if its length is equal to 'length'.
+    If this is not the case, returns 'array' anyway if it is a scalar,
+    or the first value of the array if its length is different from 'length'.
+    If mode is "warn", issues a warning if this happens; if mode is "exception"
+    raises an exception in this case.
+    """
+    try:
+        array_length = len(array)
+        if array_length == length:
+            return array
+        else:
+            if mode == "warn":
+                warnings.warn("Length of array is not equal to %i. Using only\
+                        the first value." % length)
+            elif mode == "exception":
+                raise Exception("Length of array is not equal to %i. This is\
+                not supported." % length)
+            return array[0]
+    except:
+        if mode == "warn":
+            warnings.warn("Not an array, continuing with scalar.")
+        elif mode == "exception":
+            raise Exception("Not an array, this is not supported.")
+        return array
+
+
+def center_of_mass_array(
+        vectors,
+        primary_mass,
+        secondary_mass,
+        ):
+    """
+    Returns array of center_of_mass vectors, where primaries are considered to
+    be at (0,0,0) and secondaries at 'vectors'.
+    """
+    total_mass = (primary_mass + secondary_mass).reshape(
+            (len(primary_mass), 1)
             )
-    longitude_of_the_ascending_node = angle_with_unit(
-            longitude_of_the_ascending_node, 
-            default_unit=units.deg
+    center_of_mass_array = (
+            (
+                vectors
+                * secondary_mass.reshape(
+                    (len(secondary_mass), 1)
+                    )
+                )
+            / total_mass
             )
+    return center_of_mass_array
+
+
+def generate_binaries_from_orbital_elements(
+        primary_mass,
+        secondary_mass,
+        semi_major_axis,
+        eccentricity=0 | units.rad,
+        true_anomaly=0 | units.rad,
+        inclination=0 | units.rad,
+        longitude_of_the_ascending_node=0 | units.rad,
+        argument_of_periapsis=0 | units.rad,
+        G=nbody_system.G
+        ):
+    """
+    returns two particlesets, which contain the primaries and the secondaries
+    in binary pairs.
+    """
+    number_of_primaries = len(primary_mass)
+    number_of_secondaries = len(secondary_mass)
+
+    # mass arrays need to be the same length
+    if number_of_secondaries != number_of_primaries:
+        raise Exception("The number of primaries is not the same as the number\
+                of secondaries, this is not supported.")
+    # other arrays need to be the same length as well, or have just one value
+    semi_major_axis = equal_length_array_or_scalar(
+            semi_major_axis, length=number_of_primaries)
+    eccentricity = equal_length_array_or_scalar(
+            eccentricity, length=number_of_primaries)
+    true_anomaly = equal_length_array_or_scalar(
+            true_anomaly, length=number_of_primaries)
+    inclination = equal_length_array_or_scalar(
+            inclination, length=number_of_primaries)
+    longitude_of_the_ascending_node = equal_length_array_or_scalar(
+            longitude_of_the_ascending_node, length=number_of_primaries)
+    argument_of_periapsis = equal_length_array_or_scalar(
+            argument_of_periapsis, length=number_of_primaries)
 
     cos_true_anomaly = cos(true_anomaly)
     sin_true_anomaly = sin(true_anomaly)
 
     cos_inclination = cos(inclination)
-    sin_inclination = sin(inclination)    
+    sin_inclination = sin(inclination)
 
     cos_arg_per = cos(argument_of_periapsis)
     sin_arg_per = sin(argument_of_periapsis)
@@ -83,7 +144,7 @@ def new_binary_from_orbital_elements(
     cos_long_asc_nodes = cos(longitude_of_the_ascending_node)
     sin_long_asc_nodes = sin(longitude_of_the_ascending_node)
 
-    ### alpha is a unit vector directed along the line of node ###
+    # alpha is a unit vector directed along the line of node
     alphax = (
             cos_long_asc_nodes*cos_arg_per
             - sin_long_asc_nodes*sin_arg_per*cos_inclination
@@ -93,9 +154,10 @@ def new_binary_from_orbital_elements(
             + cos_long_asc_nodes*sin_arg_per*cos_inclination
             )
     alphaz = sin_arg_per*sin_inclination
-    alpha = numpy.array([alphax,alphay,alphaz])
+    alpha = numpy.array([alphax, alphay, alphaz])
 
-    ### beta is a unit vector perpendicular to alpha and the orbital angular momentum vector ###
+    # beta is a unit vector perpendicular to alpha and the orbital angular
+    # momentum vector
     betax = (
             - cos_long_asc_nodes*sin_arg_per
             - sin_long_asc_nodes*cos_arg_per*cos_inclination
@@ -105,14 +167,11 @@ def new_binary_from_orbital_elements(
             + cos_long_asc_nodes*cos_arg_per*cos_inclination
             )
     betaz = cos_arg_per*sin_inclination
-    beta = numpy.array([betax,betay,betaz])
+    beta = numpy.array([betax, betay, betaz])
 
-#    print 'alpha',alphax**2+alphay**2+alphaz**2 # For debugging; should be 1
-#    print 'beta',betax**2+betay**2+betaz**2 # For debugging; should be 1
-
-    ### Relative position and velocity ###
+    # Relative position and velocity
     separation = (
-            semimajor_axis*(1.0 - eccentricity**2)
+            semi_major_axis*(1.0 - eccentricity**2)
             / (1.0 + eccentricity*cos_true_anomaly)
             )  # Compute the relative separation
     position_vector = (
@@ -120,26 +179,76 @@ def new_binary_from_orbital_elements(
             + separation*sin_true_anomaly*beta
             )
     velocity_tilde = (
-            G*(mass1 + mass2)
-            / (semimajor_axis*(1.0 - eccentricity**2))
+            G*(primary_mass + secondary_mass)
+            / (semi_major_axis*(1.0 - eccentricity**2))
             )**0.5  # Common factor
     velocity_vector = (
             -1.0*velocity_tilde*sin_true_anomaly*alpha
             + velocity_tilde*(eccentricity + cos_true_anomaly)*beta
             )
 
-    result = Particles(2)
-    result[0].mass = mass1
-    result[1].mass = mass2
-    
-    result[1].position = position_vector
-    result[1].velocity = velocity_vector
+    primaries = Particles(number_of_primaries)
+    secondaries = Particles(number_of_secondaries)
+    primaries.mass = primary_mass
+    secondaries.mass = secondary_mass
 
-    result.move_to_center()
+    centers_of_mass = center_of_mass_array(
+            position_vector, primary_mass, secondary_mass)
+    centers_of_mass_velocity = center_of_mass_array(
+            velocity_vector, primary_mass, secondary_mass)
+    primaries.position = -centers_of_mass
+    secondaries.position = centers_of_mass
+    primaries.velocity = -centers_of_mass_velocity
+    secondaries.velocity = centers_of_mass_velocity
+    return primaries, secondaries
+
+
+def new_binary_from_orbital_elements(
+        mass1,
+        mass2,
+        semimajor_axis,
+        eccentricity=0 | units.deg,
+        true_anomaly=0 | units.deg,
+        inclination=0 | units.deg,
+        longitude_of_the_ascending_node=0 | units.deg,
+        argument_of_periapsis=0 | units.deg,
+        G=nbody_system.G
+        ):
+    """
+    returns a two-particle Particle set, with the second particle's position
+    and velocities computed from the input orbital elements.
+    inclination is given between 0 and 180 deg.
+    angles are assumed to be in deg if no unit is given.
+    """
+
+    # If no unit is given for angles, assume they are in degrees
+    true_anomaly = angle_with_unit(inclination, default_unit=units.deg)
+    inclination = angle_with_unit(inclination, default_unit=units.deg)
+    argument_of_periapsis = angle_with_unit(
+            argument_of_periapsis,
+            default_unit=units.deg
+            )
+    longitude_of_the_ascending_node = angle_with_unit(
+            longitude_of_the_ascending_node,
+            default_unit=units.deg
+            )
+    primary, secondary = generate_binaries_from_orbital_elements(
+            [mass1], [mass2], semimajor_axis,
+            eccentricity=eccentricity,
+            true_anomaly=true_anomaly,
+            inclination=inclination,
+            longitude_of_the_ascending_node=longitude_of_the_ascending_node,
+            argument_of_periapsis=argument_of_periapsis,
+            G=G
+            )
+
+    result = Particles(2)
+    result.add_particle(primary[0])
+    result.add_particle(secondary[0])
     return result
 
 
-def orbital_elements_from_binary( binary, G=nbody_system.G):
+def orbital_elements_from_binary(binary, G=nbody_system.G):
     """ 
     Function that computes orbital elements from given two-particle set. 
     Elements are computed for the second particle in this set and the 
