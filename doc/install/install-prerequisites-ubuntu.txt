@@ -27,14 +27,83 @@ For openmpi do::
 For mpich2 do::
 	
 	> sudo apt-get install build-essential gfortran python-dev \
-	  mpich2 libmpich2-dev \
-	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
-	  libgmp3-dev libmpfr4 libmpfr-dev \
-	  libhdf5-serial-dev hdf5-tools \
-	  python-nose python-numpy python-setuptools python-docutils \
-	  python-h5py python-setuptools
+  	  libmpich-dev \
+  	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
+  	  libgmp3-dev libmpfr4 libmpfr-dev \
+  	  libhdf5-serial-dev hdf5-tools \
+  	  python-nose python-numpy python-setuptools python-docutils \
+  	  python-h5py python-setuptools
+	  
+Download the mpich2-1.2.tar.gz file from the below link: 
+http://www.mpich.org/static/downloads/1.2/mpich2-1.2.tar.gz
+
+	1. Unpack the tar file.
+	> tar xfz mpich2-1.2.tar.gz
+
+	2. Choose an installation directory (the default is /usr/local/bin):
+	> mkdir /home/you/mpich2-install
+
+	(*you* is your username)
+
+It will be most convenient if this directory is shared by all of the 
+machines where you intend to run processes. If not, you will have to 
+duplicate it on the other machines after installation. 
+Now get inside the mpich2 folder.
 	
+	> cd mpich2-1.2
+
+3. Configure MPICH2 specifying the installation directory:
+	
+	for csh and tcsh:
+	> ./configure --prefix=/home/you/mpich2-install |& tee c.txt
+	for bash and sh:
+	> ./configure --prefix=/home/you/mpich2-install 2>&1 | tee c.txt
+	
+	4. Build MPICH2:
+	for csh and tcsh:
+	> make |& tee m.txt
+	for bash and sh:
+	> make 2>&1 | tee m.txt
+	
+	5. Install the MPICH2 commands:
+	for csh and tcsh:
+	> make install |& tee mi.txt
+	for bash and sh:
+	> make install 2>&1 | tee mi.txt
+	
+If the installation fails with errors like *“permission denied”*. 
+Try executing the make command again with root privileges:
+	
+	for csh and tcsh:
+	> sudo make install |& tee mi.txt
+	for bash and sh:
+	> sudo make install 2>&1 | tee mi.txt
+
+	6. Add the bin subdirectory of the installation 
+	directory to your path:
+	
+	for csh and tcsh:
+	> setenv PATH /home/you/mpich2-install/bin:$PATH
+	for bash and sh:
+	> PATH=/home/you/mpich2-install/bin:$PATH ; export PATH
+	
+Remember to add the bin to the subdirectory everytime you want to 
+run mpich in a new terminal. You can also permanently add it to your 
+**PATH** to avoid typing this command everytime you want to run mpd.
+Check that everything is in order at this point by doing 
+	
+	> which mpd
+	> which mpiexec
+	> which mpirun
+	
+All should refer to the commands in the bin subdirectory of your 
+install directory. Now Install mpi4py:
+
 	> sudo easy_install mpi4py
+		   OR
+	> sudo pip install mpi4py
+
+(whichever works for you)
 
 .. note::
 	
