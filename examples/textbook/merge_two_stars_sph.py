@@ -46,9 +46,10 @@ def relax_sph_realization(sph_star):
     to_hydro = sph_star.new_channel_to(hydro.gas_particles)
     to_framework = hydro.gas_particles.new_channel_to(sph_star)
 
-    t_end = 2.5 * sph_star.dynamical_timescale(mass_fraction=0.9)
-    n_steps = 250
-    velocity_damp_factor = 1.0 - (2.0*numpy.pi*2.5)/n_steps
+    ts_factor = 2.5
+    t_end = ts_factor * sph_star.dynamical_timescale(mass_fraction=0.9)
+    n_steps = ts_factor * 100
+    velocity_damp_factor = 1.0 - (ts_factor*2*numpy.pi)/n_steps
     dt = t_end/float(n_steps)
     time = 0|units.day
     while time < t_end:

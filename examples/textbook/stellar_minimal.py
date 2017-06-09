@@ -10,7 +10,7 @@ def main(M, z, model_time):
 
     initial_luminosity = stellar.particles.luminosity
     dt = 1 | units.Myr
-    while stellar.model_time<model_time:
+    while stellar.model_time < model_time:
         stellar.evolve_model(stellar.model_time+dt)
 
     print "at T=", stellar.model_time.in_(units.Myr), \

@@ -2,6 +2,7 @@ from cooling_class import SimplifiedThermalModel, SimplifiedThermalModelEvolver
 
 import numpy
 from matplotlib import pyplot 
+import matplotlib.cm as cm
 from amuse.lab import *
 from amuse.ext.molecular_cloud import molecular_cloud
 from prepare_figure import single_frame, figure_frame, set_tickmarks
@@ -44,7 +45,7 @@ def plot_molecular_cloud(filename):
 #    print sinks
     print "N=", len(gas), len(sinks)
     #sinks =  bodies.history.next()
-    L = 20.0
+    L = 4.4
 #    if len(sinks):
 #        sinks = sinks.select(lambda r: r.length()<0.5*L|units.parsec,["position"])
     #print sinks
@@ -88,10 +89,12 @@ def plot_hydro_and_stars(time, sph, L=10):
 
     stars = get_stars_from_molecular_clous(sph.gas_particles)
     if len(stars):
-        m =  100.0*stars.mass/max(stars.mass)
+        #m =  100.0*stars.mass/max(stars.mass)
+        m =  100.0*stars.mass/stars.mass.mean()
+        c =  stars.mass/stars.mass.mean()
         x = -stars.x.value_in(units.parsec)
         y = stars.y.value_in(units.parsec)
-        pyplot.scatter(x, y, s=m)
+        pyplot.scatter(x, y, s=m, c=c, lw=0)
     pyplot.xlim(-L/2., L/2.)
     pyplot.ylim(-L/2., L/2.)
     pyplot.title("Molecular cloud at time="+time.as_string_in(units.Myr))
@@ -110,15 +113,21 @@ def plot_hydro(time, sph, L=10):
     dmp = sph.code.dm_particles
     rho=make_map(sph,N=200,L=L)
     pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5, origin="lower")
+
+    cm = pyplot.cm.get_cmap('RdBu')
+#    cm = pyplot.cm.jet #gist_ncar
     if len(dmp):
-        m = 10.0*dmp.mass/dmp.mass.max()
-        pyplot.scatter(-dmp.x.value_in(units.parsec), -dmp.y.value_in(units.parsec), c='k', s=m) 
+        #m = 10.0*dmp.mass/dmp.mass.max()
+        m = 30*numpy.log10(dmp.mass/dmp.mass.min())
+        c = numpy.sqrt(dmp.mass/dmp.mass.max())
+        pyplot.scatter(-dmp.x.value_in(units.parsec), -dmp.y.value_in(units.parsec), c=c, s=m, lw=0, cmap=cm)
+
     pyplot.show()
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-f", dest="filename", default = "hydro_molecular_cloud_collapse_i0028.amuse",
+    result.add_option("-f", dest="filename", default = "GMC_R2pcN20k_SE_T45Myr.amuse",
                       help="input filename [%default]")
     return result
 
@@ -127,4 +136,6 @@ if __name__ in ('__main__', '__plot__'):
     plot_molecular_cloud(o.filename)
 
 
+
     
+

@@ -3,6 +3,7 @@ AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 
 AC_CONFIG_FILES([src/amuse/config.py:support/configpy.in])
 AC_CONFIG_FILES([support/config.py:support/configpy.in])
+AC_CONFIG_FILES([support3/config.py:support3/configpy.in])
 AC_CONFIG_FILES([config.mk])
 AC_CONFIG_FILES([build.py],[chmod +x build.py])
 

@@ -7,13 +7,13 @@
 #
 
 #APPVER=2.5.4
-APPVER=2.7.9
+APPVER=2.7.13
 #APPVER=2.6.5
 #APPVER=2.7.1
 APPFILE=Python-${APPVER}.tar.bz2
 APPFILE=Python-${APPVER}.tgz
 APP_DIR=Python-${APPVER}
-URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
+URL=https://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 
 OPENSSLVERSION="1.0.1r"

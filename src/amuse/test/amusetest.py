@@ -136,14 +136,14 @@ class TestCase(unittest.TestCase):
     def assertIsOfOrder(self, first, second, msg=None):
         ratio = first*1.0/second
         if isinstance(ratio, Quantity):
-            raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
+            raise self.failureException(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
         failures = numpy.array(numpy.round(numpy.log10(ratio)) != 0).flatten()
         self._raise_exceptions_if_any(failures, first, second, '{0} is not of order {1}', msg)
 
     def assertIsWithinFraction(self, first, second, fraction=0.05, msg=None):
         ratio = first*1.0/second
         if isinstance(ratio, Quantity):
-            raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
+            raise self.failureException(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
         failures = numpy.array(abs(ratio) < 0).flatten()
         self._raise_exceptions_if_any(failures, first, second, '{0} is not of order {1}', msg)
 
@@ -194,7 +194,7 @@ class TestCase(unittest.TestCase):
                 ok = True
             except self.failureException:
                 result.addFailure(self, sys.exc_info())
-            except SkipTest, ex:
+            except SkipTest as ex:
                 ok = True
                 pass
             except KeyboardInterrupt:
@@ -245,7 +245,7 @@ class TestWithMPI(TestCase):
     def tearDown(self):
         from amuse.rfi.core import stop_interfaces
         #leave the distributed code alone, stop the rest
-        stop_interfaces(exceptions= ['DistributedAmuseInterface'])
+        #stop_interfaces(exceptions= ['DistributedAmuseInterface'])
 
     def new_instance(self, factory, *arguments, **kwarguments):
         try:
