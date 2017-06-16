@@ -88,7 +88,16 @@ def center_of_mass_array(
     return center_of_mass_array
 
 
-def generate_binaries_from_orbital_elements(
+def orbital_period_to_semimajor_axis(
+        T, M1, M2, G=nbody_system.G
+        ):
+    mu = G * (M1 + M2)
+    semi_major_axis = ((T / (2*numpy.pi))**2 * mu)**(1./3.)
+
+    return semi_major_axis
+
+
+def rel_posvel_arrays_from_orbital_elements(
         primary_mass,
         secondary_mass,
         semi_major_axis,
@@ -100,42 +109,33 @@ def generate_binaries_from_orbital_elements(
         G=nbody_system.G
         ):
     """
-    returns two particlesets, which contain the primaries and the secondaries
-    in binary pairs.
+    Returns relative positions/velocities for secondaries orbiting primaries.
+    If primary_mass is a scalar, assumes the same primary for all secondaries.
     """
-    mass_unit = primary_mass.unit
-    try:
-        number_of_primaries = len(primary_mass)
-    except:
-        number_of_primaries = 1
-        primary_mass = numpy.array(
-                [primary_mass.value_in(mass_unit)]
-                ) | mass_unit
+    # mass_unit = primary_mass.unit
     try:
         number_of_secondaries = len(secondary_mass)
     except:
         number_of_secondaries = 1
-        secondary_mass = numpy.array(
-                [secondary_mass.value_in(mass_unit)]
-                ) | mass_unit
+        # secondary_mass = numpy.array(
+        #         [secondary_mass.value_in(mass_unit)]
+        #         ) | mass_unit
 
-    # mass arrays need to be the same length
-    if number_of_secondaries != number_of_primaries:
-        raise Exception("The number of primaries is not the same as the number\
-                of secondaries, this is not supported.")
-    # other arrays need to be the same length as well, or have just one value
+    # arrays need to be equal to number of secondaries, or have just one value
+    primary_mass = equal_length_array_or_scalar(
+            primary_mass, length=number_of_secondaries)
     semi_major_axis = equal_length_array_or_scalar(
-            semi_major_axis, length=number_of_primaries)
+            semi_major_axis, length=number_of_secondaries)
     eccentricity = equal_length_array_or_scalar(
-            eccentricity, length=number_of_primaries)
+            eccentricity, length=number_of_secondaries)
     true_anomaly = equal_length_array_or_scalar(
-            true_anomaly, length=number_of_primaries)
+            true_anomaly, length=number_of_secondaries)
     inclination = equal_length_array_or_scalar(
-            inclination, length=number_of_primaries)
+            inclination, length=number_of_secondaries)
     longitude_of_the_ascending_node = equal_length_array_or_scalar(
-            longitude_of_the_ascending_node, length=number_of_primaries)
+            longitude_of_the_ascending_node, length=number_of_secondaries)
     argument_of_periapsis = equal_length_array_or_scalar(
-            argument_of_periapsis, length=number_of_primaries)
+            argument_of_periapsis, length=number_of_secondaries)
 
     cos_true_anomaly = cos(true_anomaly)
     sin_true_anomaly = sin(true_anomaly)
@@ -193,6 +193,58 @@ def generate_binaries_from_orbital_elements(
             -1.0 * velocity_tilde * sin_true_anomaly * alpha
             + velocity_tilde*(eccentricity + cos_true_anomaly)*beta
             ).T
+
+    return position_vector, velocity_vector
+
+
+def generate_binaries_from_orbital_elements(
+        primary_mass,
+        secondary_mass,
+        semi_major_axis,
+        eccentricity=0 | units.rad,
+        true_anomaly=0 | units.rad,
+        inclination=0 | units.rad,
+        longitude_of_the_ascending_node=0 | units.rad,
+        argument_of_periapsis=0 | units.rad,
+        G=nbody_system.G
+        ):
+    """
+    returns two particlesets, which contain the primaries and the secondaries
+    in binary pairs.
+    """
+    mass_unit = primary_mass.unit
+    try:
+        number_of_primaries = len(primary_mass)
+    except:
+        number_of_primaries = 1
+        primary_mass = numpy.array(
+                [primary_mass.value_in(mass_unit)]
+                ) | mass_unit
+    try:
+        number_of_secondaries = len(secondary_mass)
+    except:
+        number_of_secondaries = 1
+        secondary_mass = numpy.array(
+                [secondary_mass.value_in(mass_unit)]
+                ) | mass_unit
+
+    # mass arrays need to be the same length
+    if number_of_secondaries != number_of_primaries:
+        raise Exception("The number of primaries is not the same as the number\
+                of secondaries, this is not supported.")
+
+    position_vector, velocity_vector = rel_posvel_arrays_from_orbital_elements(
+        primary_mass,
+        secondary_mass,
+        semi_major_axis,
+        eccentricity=eccentricity,
+        true_anomaly=true_anomaly,
+        inclination=inclination,
+        longitude_of_the_ascending_node=longitude_of_the_ascending_node,
+        argument_of_periapsis=argument_of_periapsis,
+        G=G
+        )
+    number_of_primaries
 
     primaries = Particles(number_of_primaries)
     secondaries = Particles(number_of_secondaries)
