@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import numpy
 
 import warnings
@@ -11,7 +13,7 @@ from amuse.units.quantities import to_quantity, VectorQuantity
 
 def newton(f, x0, fprime=None, args=(), tol=1.48e-8, maxiter=50):
     if fprime is None:
-        print "provide fprime"
+        print("provide fprime")
         return x0
     i = 0
     x = x0
@@ -50,10 +52,10 @@ def equal_length_array_or_scalar(
             if mode == "warn":
                 warnings.warn("Length of array is not equal to %i. Using only\
                         the first value." % length)
+                return array[0:1]
             elif mode == "exception":
                 raise Exception("Length of array is not equal to %i. This is\
                 not supported." % length)
-            return array[0]
     except:
         if mode == "warn":
             warnings.warn("Not an array, continuing with scalar.")
@@ -173,24 +175,24 @@ def generate_binaries_from_orbital_elements(
     beta = numpy.array([betax, betay, betaz])
 
     # Relative position and velocity
-    separation = (
+    separation = (  # Compute the relative separation
             semi_major_axis*(1.0 - eccentricity**2)
             / (1.0 + eccentricity*cos_true_anomaly)
-            )  # Compute the relative separation
+            )
     position_vector = (
             separation*cos_true_anomaly*alpha
             + separation*sin_true_anomaly*beta
-            )
+            ).T
     velocity_tilde = (
             (
                 G*(primary_mass + secondary_mass)
                 / (semi_major_axis*(1.0 - eccentricity**2))
                 )**0.5
-            ).reshape((number_of_primaries, 1))  # Common factor
+            )  # Common factor
     velocity_vector = (
             -1.0 * velocity_tilde * sin_true_anomaly * alpha
             + velocity_tilde*(eccentricity + cos_true_anomaly)*beta
-            )
+            ).T
 
     primaries = Particles(number_of_primaries)
     secondaries = Particles(number_of_secondaries)
@@ -378,20 +380,25 @@ def orbital_elements_from_binaries(primaries, secondaries, G=nbody_system.G):
         true_anomaly = 0.
     else:
         e_vector_unit = e_vector/e_vector.lengths()
+        print(e_vector_unit, ascending_node_vector_unit)
 
-        cos_arg_per = numpy.dot(e_vector_unit, ascending_node_vector_unit)
+        cos_arg_per = numpy.dot(e_vector_unit, ascending_node_vector_unit.T)
         # cos_arg_per = e_vector_unit.dot(ascending_node_vector_unit)
         e_cross_an = numpy.cross(e_vector_unit, ascending_node_vector_unit)
-        print specific_angular_momentum_unit, e_cross_an
-        ss = -numpy.sign(numpy.dot(specific_angular_momentum_unit, e_cross_an))
+        # print(specific_angular_momentum_unit, e_cross_an)
+        ss = -numpy.sign(
+                numpy.dot(specific_angular_momentum_unit, e_cross_an.T)
+                )
         # ss=-numpy.sign(specific_angular_momentum_unit.dot(e_cross_an))
         sin_arg_per = ss*(e_cross_an**2).sum()**0.5
         arg_per = arctan2(sin_arg_per, cos_arg_per)
 
-        cos_true_anomaly = numpy.dot(e_vector_unit, position_unit)
+        cos_true_anomaly = numpy.dot(e_vector_unit, position_unit.T)
         # cos_true_anomaly = e_vector_unit.dot(position_unit)
         e_cross_pos = numpy.cross(e_vector_unit, position_unit)
-        ss = numpy.sign(numpy.dot(specific_angular_momentum_unit, e_cross_pos))
+        ss = numpy.sign(
+                numpy.dot(specific_angular_momentum_unit, e_cross_pos.T)
+                )
         # ss=numpy.sign(specific_angular_momentum_unit.dot(e_cross_pos))
         sin_true_anomaly = ss * (e_cross_pos**2).sum()**0.5
         true_anomaly = arctan2(sin_true_anomaly, cos_true_anomaly)
