@@ -1,7 +1,7 @@
 AMUSE, a python framework for astrophysical simulations
 
 AMUSE consists of a framework ("the framework") and contributed codes 
-("the codes"). The codes are found under src/amuse/community and may be 
+("the codes"). The codes are found under src/amuse/community and may 
 have their own license. The framework consists of everything else.
 
 For the framework:
@@ -22,3 +22,5 @@ limitations under the License.
 
 For the codes:
 
+The license for the codes can be found under their respective directories
+in /src/amuse/community. 
