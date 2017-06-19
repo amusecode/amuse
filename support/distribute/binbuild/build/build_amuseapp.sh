@@ -2,12 +2,21 @@
 
 BUILD=amuse
 FIXREFS=yes
-while getopts OR option
+for i in "$@"
 do
-case "${option}"
-in
-O) BUILD=omuse;;
-R) FIXREFS=no;;
+case $i in
+    -O|--omuse)
+    BUILD=omuse
+    ;;
+    -R|--nofixrefs)
+    FIXREFS=no
+    ;;
+    -v=*|--version=*)
+    VERSION="${i#*=}"
+    ;;
+    *)
+            # unknown option
+    ;;
 esac
 done
 
