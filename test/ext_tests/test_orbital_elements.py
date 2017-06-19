@@ -134,41 +134,51 @@ class KeplerTests(amusetest.TestCase):
     
     def test4(self):
         numpy.random.seed(3456789)
-        N=100
-        
-        mass1=random.random(N) | nbody_system.mass 
-        mass2=random.random(N) | nbody_system.mass
-        semi_major_axis=(-numpy.log(random.random(N))) | nbody_system.length 
-        eccentricity = random.random(N)
-        true_anomaly = 360.*random.random(N)-180.
-        inclination = 180*random.random(N)
-        longitude_of_the_ascending_node = 360*random.random(N)-180
-        argument_of_periapsis = 360*random.random(N)-180       
+        N = 100
 
-        for arg in zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
-                                  longitude_of_the_ascending_node,argument_of_periapsis):
-          arg_=orbital_elements_from_binary(new_binary_from_orbital_elements(*arg))
-          for i,(copy,org) in enumerate(zip(arg_,arg)):
-            self.assertAlmostEquals(copy,org)
+        mass1 = random.random(N) | nbody_system.mass
+        mass2 = random.random(N) | nbody_system.mass
+        semi_major_axis = (-numpy.log(random.random(N))) | nbody_system.length
+        eccentricity = random.random(N)
+        true_anomaly = (360.*random.random(N)-180.) | units.deg
+        inclination = (180*random.random(N)) | units.deg
+        longitude_of_the_ascending_node = (
+                360*random.random(N)-180) | units.deg
+        argument_of_periapsis = (360*random.random(N)-180) | units.deg
+
+        for arg in zip(
+                mass1, mass2, semi_major_axis, eccentricity, true_anomaly,
+                inclination, longitude_of_the_ascending_node,
+                argument_of_periapsis):
+            arg_ = orbital_elements_from_binary(
+                    new_binary_from_orbital_elements(*arg))
+            for i, (copy, org) in enumerate(zip(arg_, arg)):
+                self.assertAlmostEquals(copy, org)
 
     def test5(self):
         numpy.random.seed(4567893)
-        N=100
-        
-        mass1=random.random(N) | units.MSun 
-        mass2=random.random(N) | units.MSun
-        semi_major_axis=(-numpy.log(random.random(N))) | units.AU 
-        eccentricity = random.random(N)
-        true_anomaly = 360.*random.random(N)-180.
-        inclination = 180*random.random(N)
-        longitude_of_the_ascending_node = 360*random.random(N)-180
-        argument_of_periapsis = 360*random.random(N)-180       
+        N = 100
 
-        for arg in zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
-                                  longitude_of_the_ascending_node,argument_of_periapsis):
-          arg_=orbital_elements_from_binary(new_binary_from_orbital_elements(*arg,G=constants.G),G=constants.G)
-          for i,(copy,org) in enumerate(zip(arg_,arg)):
-            self.assertAlmostEquals(copy,org)
+        mass1 = random.random(N) | units.MSun
+        mass2 = random.random(N) | units.MSun
+        semi_major_axis = (-numpy.log(random.random(N))) | units.AU
+        eccentricity = random.random(N)
+        true_anomaly = (360.*random.random(N)-180.) | units.deg
+        inclination = (180*random.random(N)) | units.deg
+        longitude_of_the_ascending_node = (
+                360*random.random(N)-180
+                ) | units.deg
+        argument_of_periapsis = (360*random.random(N)-180) | units.deg
+
+        for arg in zip(
+                mass1, mass2, semi_major_axis, eccentricity, true_anomaly,
+                inclination, longitude_of_the_ascending_node,
+                argument_of_periapsis):
+            arg_ = orbital_elements_from_binary(
+                new_binary_from_orbital_elements(*arg, G=constants.G),
+                G=constants.G)
+            for i, (copy, org) in enumerate(zip(arg_, arg)):
+                self.assertAlmostEquals(copy, org)
     
     def test6(self):
         """
