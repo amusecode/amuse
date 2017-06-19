@@ -10,6 +10,7 @@ from amuse.ext.orbital_elements import (
         orbital_elements_from_binary,
         orbital_elements_for_rel_posvel_arrays,
         rel_posvel_arrays_from_orbital_elements,
+        orbital_elements_from_binaries
         )
 
 from amuse.units import units
@@ -585,3 +586,46 @@ class KeplerTests(amusetest.TestCase):
         self.assertAlmostEqual(lon, lon_ext)
         self.assertAlmostEqual(arg, arg_ext)
         self.assertAlmostEqual(ta, ta_ext)
+
+    def test15(self):
+        """
+        testing orbital_elements_for_rel_posvel_arrays for N particles 
+        with random orbital elements
+        """
+        numpy.random.seed(666)
+        N = 100
+        
+        mass_sun = 1. | units.MSun
+        mass1 = numpy.ones(N) * mass_sun
+        mass2 = numpy.zeros(N) | units.MSun
+        semi_major_axis=(-numpy.log(random.random(N))) | units.AU 
+        eccentricity = random.random(N)
+        true_anomaly = 360.*random.random(N)-180.
+        inclination = 180*random.random(N)
+        longitude_of_the_ascending_node = 360*random.random(N)-180
+        argument_of_periapsis = 360*random.random(N)-180       
+        
+        comets = datamodel.Particles(N)
+        suns = datamodel.Particles(N)
+        for i,arg in enumerate(zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
+                                   longitude_of_the_ascending_node,argument_of_periapsis)):
+            sun_and_comet = new_binary_from_orbital_elements(*arg,G=constants.G)
+            comets[i].mass = sun_and_comet[1].mass
+            comets[i].position = sun_and_comet[1].position
+            comets[i].velocity = sun_and_comet[1].velocity
+        
+        suns.mass=mass1
+        suns.position=comets.position
+        suns.velocity=0*comets.velocity
+        
+        semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
+        longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
+        orbital_elements_from_binaries(suns, comets,G=constants.G)
+        rad_to_deg = 180./numpy.pi
+        for i in range(N):
+            self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
+            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
+            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
+            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
+            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
+            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
