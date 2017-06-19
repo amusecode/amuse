@@ -219,14 +219,13 @@ class KeplerTests(amusetest.TestCase):
                                                comets.velocity,
                                                comets.mass + mass_sun,
                                                G=constants.G)        
-        rad_to_deg = 180./numpy.pi
-        for i in range(N):
-            self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
-            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
-            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
-            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
-            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
-            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+
+        self.assertAlmostEqual(semi_major_axis,semi_major_axis_ext)
+        self.assertAlmostEqual(eccentricity,eccentricity_ext)
+        self.assertAlmostEqual(inclination | units.deg,inclination_ext)
+        self.assertAlmostEqual(longitude_of_the_ascending_node | units.deg,longitude_of_the_ascending_node_ext)
+        self.assertAlmostEqual(argument_of_periapsis | units.deg,argument_of_periapsis_ext)
+        self.assertAlmostEqual(true_anomaly | units.deg,ta_ext)
 
     def test7(self):
         """
