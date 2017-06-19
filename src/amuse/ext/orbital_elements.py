@@ -38,11 +38,11 @@ def equal_length_array_or_scalar(
         array, length=1, mode="continue"
         ):
     """
-    Returns 'array' if its length is equal to 'length'.  If this is not the
-    case, returns 'array' anyway if it is a scalar, or the first value of the
-    array if its length is different from 'length'.  If mode is "warn", issues
-    a warning if this happens; if mode is "exception" raises an exception in
-    this case.
+    Returns 'array' if its length is equal to 'length'. If this is not the
+    case, returns an array of length 'length' with values equal to the first
+    value of the array (or if 'array' is a scalar, that value. If mode is
+    "warn", issues a warning if this happens; if mode is "exception" raises an
+    exception in this case.
     """
     try:
         array_length = len(array)
@@ -52,15 +52,33 @@ def equal_length_array_or_scalar(
             if mode == "warn":
                 warnings.warn("Length of array is not equal to %i. Using only\
                         the first value." % length)
-                return array[0:1]
+                try:
+                    unit = array.unit
+                    value = array[0].value_in(unit)
+                except:
+                    unit = units.none
+                    value = array[0]
+                array = VectorQuantity(
+                        array=numpy.ones(length) * value,
+                        unit=unit,
+                        )
+                return array
             elif mode == "exception":
                 raise Exception("Length of array is not equal to %i. This is\
                 not supported." % length)
     except:
+        try:
+            unit = array.unit
+            value = array.value_in(unit)
+        except:
+            unit = units.none
+            value = array
+        array = VectorQuantity(
+                array=numpy.ones(length) * value,
+                unit=unit,
+                )
         if mode == "warn":
-            warnings.warn("Not an array, continuing with scalar.")
-        elif mode == "exception":
-            raise Exception("Not an array, this is not supported.")
+            warnings.warn("Using single value for all cases.")
         return array
 
 

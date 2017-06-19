@@ -506,3 +506,82 @@ class KeplerTests(amusetest.TestCase):
         self.assertAlmostEqual(lon, lon_ext)
         self.assertAlmostEqual(arg, arg_ext)
         self.assertAlmostEqual(ta, ta_ext)
+
+    def test13(self):
+        """
+        tests generating cartesian coordinates from orbital elements
+        """
+        numpy.random.seed(17014)
+        N = 5
+
+        mass1 = 1.0 | units.MSun
+        mass2 = numpy.ones(N) * 0.01 | units.MEarth
+        sem = 2. | units.AU
+        ecc = 0.15
+        inc = 11. | units.deg
+        lon = 30. | units.deg
+        arg = 0.3 | units.deg
+        ta = (360.*random.random()-180.) | units.deg
+
+        rel_pos, rel_vel = rel_posvel_arrays_from_orbital_elements(
+                mass1,
+                mass2,
+                sem,
+                ecc,
+                ta,
+                inc,
+                lon,
+                arg,
+                G=constants.G)
+
+        mass_12 = mass1 + mass2
+        sem_ext, ecc_ext, ta_ext, inc_ext, lon_ext, arg_ext = \
+            orbital_elements_for_rel_posvel_arrays(
+                    rel_pos, rel_vel, mass_12, G=constants.G)
+
+        self.assertAlmostEqual(
+                sem.value_in(units.AU), sem_ext.value_in(units.AU))
+        self.assertAlmostEqual(ecc, ecc_ext)
+        self.assertAlmostEqual(inc, inc_ext)
+        self.assertAlmostEqual(lon, lon_ext)
+        self.assertAlmostEqual(arg, arg_ext)
+        self.assertAlmostEqual(ta, ta_ext)
+
+    def test14(self):
+        """
+        tests generating cartesian coordinates from orbital elements
+        """
+        numpy.random.seed(17018)
+        N = 5
+
+        mass1 = numpy.ones(N) * 1.0 | units.MSun
+        mass2 = random.random(N) | units.MEarth
+        sem = numpy.array([2., 1.0, 1.1, 1.2, 4.0]) | units.AU
+        ecc = numpy.array([0.15, 0.01, 0.5, 0.9, 0.99])
+        inc = numpy.array([11., 0.1, 20, 90, 180.]) | units.deg
+        lon = numpy.array([31., 32., 33., 45., 30.]) | units.deg
+        arg = numpy.array([0.3, 11., 15., 30., 95.]) | units.deg
+        ta = (360.*random.random(N)-180.) | units.deg
+
+        rel_pos, rel_vel = rel_posvel_arrays_from_orbital_elements(
+                mass1,
+                mass2,
+                sem,
+                ecc,
+                ta,
+                inc,
+                lon,
+                arg,
+                G=constants.G)
+
+        mass_12 = mass1 + mass2
+        sem_ext, ecc_ext, ta_ext, inc_ext, lon_ext, arg_ext = \
+            orbital_elements_for_rel_posvel_arrays(
+                    rel_pos, rel_vel, mass_12, G=constants.G)
+        self.assertAlmostEqual(
+                sem.value_in(units.AU), sem_ext.value_in(units.AU))
+        self.assertAlmostEqual(ecc, ecc_ext)
+        self.assertAlmostEqual(inc, inc_ext)
+        self.assertAlmostEqual(lon, lon_ext)
+        self.assertAlmostEqual(arg, arg_ext)
+        self.assertAlmostEqual(ta, ta_ext)
