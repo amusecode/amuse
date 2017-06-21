@@ -5,6 +5,7 @@ config.mk
 config.status
 src/amuse/config.py
 support/config.py
+support3/config.py
 
 # general build / compile files
 *.a
@@ -285,6 +286,7 @@ src/amuse/community/smalln/src/nstab.co
 src/amuse/community/smalln/worker_code.cc
 src/amuse/community/smalln/smalln_cython.c
 src/amuse/community/smalln/smalln_cython.pyx
+src/amuse/community/smalln/smalln_worker_cython
 src/amuse/community/sphray/sphray_worker
 src/amuse/community/sphray/sphray_worker.f90
 src/amuse/community/sse/src/sse
