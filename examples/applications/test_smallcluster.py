@@ -98,15 +98,12 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr,
     particles = new_plummer_model(number_of_stars, convert_nbody);
    
     gravity = BHTree(convert_nbody)
-    gravity.initialize_code()
-    #gravity.parameters.set_defaults()
     #print gravity.parameters.timestep.as_quantity_in(units.Myr)
     gravity.parameters.timestep = 0.0001 | units.Myr	# tiny!
     gravity.parameters.epsilon_squared \
         = (float(number_of_stars)**(-0.333333) | units.parsec) ** 2
         
     stellar_evolution = SSE()
-    stellar_evolution.initialize_module_with_default_parameters() 
     
     print "setting masses of the stars"
     particles.radius = 0.0 | units.RSun
@@ -127,7 +124,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr,
     from_model_to_gravity = particles.new_channel_to(gravity.particles)
     from_gravity_to_model = gravity.particles.new_channel_to(particles)
     
-    gravity.commit_particles()
         
     time = 0.0 | units.Myr    
     particles.savepoint(time)
