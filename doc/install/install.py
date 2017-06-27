@@ -245,7 +245,8 @@ class InstallPrerequisites(object):
           '--enable-shared', 
           '--enable-production',
           '--with-pthread=/usr', 
-          '--enable-threadsafe'
+          '--enable-threadsafe',
+          '--enable-unsupported'
         ])
         import platform
         if platform.processor() == 'ppc64le':
