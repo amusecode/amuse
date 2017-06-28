@@ -419,6 +419,7 @@ fi
 
 mkdir ${RELEASEDIR}/tutorial
 cp  ${TUTORIALDIR}/*.ipynb ${RELEASEDIR}/tutorial/
+cp  ${TUTORIALDIR}/amuserc ${RELEASEDIR}/tutorial/
 
 tar -czf ${DISTFILE} ${RELEASEDIR}
 
