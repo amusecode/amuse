@@ -417,7 +417,9 @@ if [ "${BUILD}" == "omuse" ]; then
   mv ${RELEASEDIR}/amuse-tutorial ${RELEASEDIR}/omuse-tutorial
 fi
 
-cp -R ${TUTORIALDIR} ${RELEASEDIR}/tutorial
+mkdir ${RELEASEDIR}/tutorial
+cp  ${TUTORIALDIR}/*.ipynb ${RELEASEDIR}/tutorial/
+cp  ${TUTORIALDIR}/amuserc ${RELEASEDIR}/tutorial/
 
 tar -czf ${DISTFILE} ${RELEASEDIR}
 

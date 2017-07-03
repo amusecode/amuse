@@ -6,4 +6,4 @@ export PYTHONPATH=${PYTHONHOME}/customize
 export PYTHON=${PYTHONHOME}/python
 export AMUSERC=${DIR}/amuserc
 
-gethostip `hostname` || ( echo warning hostname may not resolve: check your /etc/hosts && sleep 2 )
+gethostip `hostname` > /dev/null || ( echo warning hostname may not resolve: check your /etc/hosts && sleep 2 )
