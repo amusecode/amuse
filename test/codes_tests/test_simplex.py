@@ -543,14 +543,10 @@ def splitset_from_input_file(input_file):
    
     a=numpy.where(numpy.array(flux) > 0.)[0]
     src_particles=Particles(len(a))
-    if len(a) == 1:
-        a = a[0] 
-        # recent numpy versions made indexing using a one element list an error!
-        # and now we need this...
-    src_particles.x = x[a] | units.parsec
-    src_particles.y = y[a] | units.parsec
-    src_particles.z = z[a] | units.parsec
-    src_particles.luminosity = flux[a] | 1.e48*units.s**-1    
+    src_particles.x = numpy.array(x)[a] | units.parsec
+    src_particles.y = numpy.array(y)[a] | units.parsec
+    src_particles.z = numpy.array(z)[a] | units.parsec
+    src_particles.luminosity = numpy.array(flux)[a] | 1.e48*units.s**-1    
     
     return particles,src_particles
 
