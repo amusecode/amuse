@@ -2308,8 +2308,8 @@ class TestParticlesWithChildren(amusetest.TestCase):
 
         particles = datamodel.Particles(3)
         particles.mass = [4.0, 3.0, 1.0] | units.kg
-        for x in particles:
-            x.grid = numpy.arange(12).reshape(4,3)
+        #for x in particles:
+        #    x.grid = numpy.arange(12).reshape(4,3)
         parent = particles[0]
         child1 = particles[1]
         child2 = particles[2]

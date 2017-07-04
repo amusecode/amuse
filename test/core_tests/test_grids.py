@@ -199,9 +199,9 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(grid[1,2,...].x, grid.x[1,2,...])
         self.assertEquals(grid[...,1].x, grid.x[...,1])
         self.assertEquals(grid[2,...].x, grid.x[2,...])
-        self.assertEquals(grid[...,3,...].x, grid.x[...,3,...])
-        self.assertEquals(grid[...,3,...].y, grid.y[...,3,...])
-        self.assertEquals(grid[...,3,...].z, grid.z[...,3,...])
+        self.assertEquals(grid[:,3,:].x, grid.x[:,3,:])
+        self.assertEquals(grid[:,3,:].y, grid.y[:,3,:])
+        self.assertEquals(grid[:,3,:].z, grid.z[:,3,:])
     
     def test15(self):
         
