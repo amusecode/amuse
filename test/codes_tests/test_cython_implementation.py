@@ -8,6 +8,8 @@ from amuse.support import options
 import subprocess
 import os
 import time
+import sys
+
 
 from amuse.units import nbody_system
 from amuse.units import units
@@ -137,6 +139,9 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
                      
     def skip_if_no_cython(self):
         
+        if sys.hexversion > 0x03000000:
+            self.skip("no cython for python 3.0")
+
         if not hasattr(config.compilers, 'cython') or len(config.compilers.cython) == 0:
             self.skip("cython not configured")
             
@@ -401,6 +406,9 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         self.skip("this test uses mpi internals, skip here")
                      
     def skip_if_no_cython(self):
+
+        if sys.hexversion > 0x03000000:
+            self.skip("no cython for python 3.0")
         
         if not hasattr(config.compilers, 'cython') or len(config.compilers.cython) == 0:
             self.skip("cython not configured")
