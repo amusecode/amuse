@@ -270,8 +270,8 @@ class TestMpiAmrVac(TestWithMPI):
             position = grids[0].position
             print position.shape
             for i in range(3):
-                max_x = position[...,...,...,i].amax()
-                min_x = position[...,...,...,i].amin()
+                max_x = position[...,i].amax()
+                min_x = position[...,i].amin()
                 print max_x, min_x
                 
                 self.assertTrue(min_x >= 0.5 | generic_unit_system.length)
