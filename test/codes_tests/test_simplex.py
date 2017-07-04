@@ -540,9 +540,13 @@ def splitset_from_input_file(input_file):
     particles.rho = n_H | units.amu / units.cm**3
     particles.xion = X_ion | units.none
     particles.u = u | (units.cm**2/units.s**2)
-    
+   
     a=numpy.where(numpy.array(flux) > 0.)[0]
     src_particles=Particles(len(a))
+    if len(a) == 1:
+        a = a[0] 
+        # recent numpy versions made indexing using a one element list an error!
+        # and now we need this...
     src_particles.x = x[a] | units.parsec
     src_particles.y = y[a] | units.parsec
     src_particles.z = z[a] | units.parsec
