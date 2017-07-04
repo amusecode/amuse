@@ -41,7 +41,8 @@ class TestCSocketsImplementationInterface(test_c_implementation.TestCImplementat
         For the hydra process manager the tests will fail.
         So skip the tests if we detect hydra
         """
-                 
+        if 'HYDI_CONTROL_FD' in os.environ:
+            return # for now assume HYDI_CONTROL_FD is newer, and sockets will work!
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
             self.skip('cannot run the socket tests under mpi process manager')
          
