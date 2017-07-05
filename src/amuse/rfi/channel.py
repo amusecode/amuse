@@ -864,7 +864,6 @@ class AbstractMessageChannel(OptionalAttributes):
             arguments.append(interpreter_executable)
             
         arguments.append(full_name_of_the_worker)
-        arguments.append(full_name_of_the_worker)
         
         command = channel.gdbserver_exe
         return command, arguments
