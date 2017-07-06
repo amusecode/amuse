@@ -87,7 +87,6 @@ class TestsForTicket208(amusetest.TestCase):
         self._run_addition_removal_test(instance)
         
     def test5(self):
-        self.skip("Fi does not support removal of particles")
         instance = Fi()
         self._run_addition_removal_test(instance)
         
