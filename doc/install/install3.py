@@ -51,7 +51,8 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.8.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'https://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
+            # don't know whether there is a difference between pypi.io and this one.. 
+            'https://files.pythonhosted.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -59,7 +60,7 @@ class InstallPrerequisites(object):
             [], 
             '1.3.0', 
             'nose-' , '.tar.gz', 
-            'https://pypi.python.org/packages/source/n/nose/', 
+            'https://files.pythonhosted.org/packages/source/n/nose/', 
             self.python_build
           ),
           (
@@ -82,14 +83,14 @@ class InstallPrerequisites(object):
             ['hdf'], 
             '2.4.0', 
             'h5py-' , '.tar.gz', 
-            'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
+            'https://files.pythonhosted.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
             'docutils', 
             [], 
             '0.12', 
             'docutils-','.tar.gz', 
-            'https://sourceforge.net/projects/docutils/files/docutils/0.12/', 
+            'https://files.pythonhosted.org/packages/source/d/docutils/', 
             self.python_build
           ) ,
           (
