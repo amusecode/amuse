@@ -1,4 +1,4 @@
-#http://mirrors.ibiblio.org/openssl/source/old!/bin/sh
+#!/bin/sh
 #
 # script to install amuse build system from scratch
 #
