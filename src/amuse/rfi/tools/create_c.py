@@ -853,6 +853,8 @@ void run_sockets(int port, char *host) {
     header_out[HEADER_DOUBLE_COUNT] = 0;
     header_out[HEADER_BOOLEAN_COUNT] = 0;
     header_out[HEADER_STRING_COUNT] = 0;
+    header_out[HEADER_UNITS_COUNT] = 0;
+
 
     //fprintf(stderr, "c worker sockets: handling call\\n");
     
