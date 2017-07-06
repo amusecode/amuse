@@ -148,14 +148,10 @@ def rel_posvel_arrays_from_orbital_elements(
     Returns relative positions/velocities for secondaries orbiting primaries.
     If primary_mass is a scalar, assumes the same primary for all secondaries.
     """
-    # mass_unit = primary_mass.unit
     try:
         number_of_secondaries = len(secondary_mass)
     except:
         number_of_secondaries = 1
-        # secondary_mass = numpy.array(
-        #         [secondary_mass.value_in(mass_unit)]
-        #         ) | mass_unit
 
     # arrays need to be equal to number of secondaries, or have just one value
     primary_mass = equal_length_array_or_scalar(
@@ -542,8 +538,6 @@ def orbital_elements_from_arrays(
             e_vecs[filter_non0_ecc],
             e_vecs_norm[filter_non0_ecc]
             )
-    # cos_arg_per = numpy.einsum('ij,ji->i', e_vecs_unit[filter_non0_ecc],
-    #         asc_node_matrix_unit[filter_non0_ecc].T)
     cos_arg_per = (
             e_vecs_unit[filter_non0_ecc]
             * asc_node_matrix_unit[filter_non0_ecc]
@@ -555,13 +549,6 @@ def orbital_elements_from_arrays(
             )
     e_cross_an_norm = (e_cross_an**2).sum(axis=1)**0.5
     filter_non0_e_cross_an = (e_cross_an_norm != 0.)
-    # ss = -numpy.sign(
-    #         numpy.einsum(
-    #             'ij,ji->i',
-    #             mom_unit_vecs[filter_non0_e_cross_an],
-    #             e_cross_an[filter_non0_e_cross_an].T
-    #             )
-    #         )
     ss = -numpy.sign(
             (
                 mom_unit_vecs[filter_non0_e_cross_an]
