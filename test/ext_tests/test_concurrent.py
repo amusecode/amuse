@@ -132,7 +132,7 @@ class Test4Implementation(Test1Implementation):
 class TestMPIConcurrentProcesses(TestWithMPI):
 
     def setUp(self):
-        self.skip("this test broken for sockets")
+        pass
 
     def test1(self):
         x = ConcurrentTestingInterface(implementation_factory = Test1Implementation)
