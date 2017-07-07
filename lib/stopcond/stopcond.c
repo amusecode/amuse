@@ -465,6 +465,7 @@ static int is_world_set = 0;
 int mpi_set_communicator(void * comm) {
     world = *(MPI_Comm *)comm;
     is_world_set = 1;
+    return 0;
 }
 
 int mpi_setup_stopping_conditions() {
@@ -505,6 +506,7 @@ static int * local_index_of_particle_in_stopping_condition = 0;
 int mpi_collect_stopping_conditions() {
     if(!enabled_conditions) {return 0;}
     int i;
+    int error = 0;
     int local_number_of_stopping_conditions_set;
     int counts[sc_mpi_size];
     int displs[sc_mpi_size];
@@ -587,6 +589,7 @@ int mpi_collect_stopping_conditions() {
         local_type_of_stopping_condition_set = 0;
         local_index_of_particle_in_stopping_condition = 0;
     }
+    return error;
 }
 
 #else
