@@ -3445,6 +3445,17 @@ class Particle(object):
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)
 
+    def __getstate__(self):
+        return (self.key, self.as_set().copy())
+
+    def __setstate__(self, key_and_set):
+        key, particles_set = key_and_set
+        object.__setattr__(self, "key", key)
+        object.__setattr__(self, "particles_set", particles_set)
+        object.__setattr__(self, "_set_index", None)
+        object.__setattr__(self, "_set_version", None)
+
+
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
         if self._set_index is None or self._set_version != self.particles_set._get_version():
             object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
