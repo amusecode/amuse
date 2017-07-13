@@ -1,35 +1,42 @@
-import warnings
-warnings.warn("Adatpb is superseded by Brutus") 
-
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
-class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
+"""
+currently setting the particle (and possibly model time) as strings (ie to conserve 
+precision) is not yet supported fully (no high level, low level untested)
+"""
+
+class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
         StoppingConditionInterface, CodeWithDataDirectories):
     """
-    Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
+    Brutus (Brute force N-body code)
+        .. [#] Boekholt, Tjarda and Portegies Zwart, Simon,On the reliability of N-body simulations, Computational Astrophysics and Cosmology, Volume 2, article id.2, 21 pp.
+    
     """
     include_headers = ['worker_code.h', 'stopcond.h']
 
+    ####
     def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker="adaptb_worker", **options)
+        CodeInterface.__init__(self, name_of_the_worker="brutus_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
     
+    ####
     @legacy_function
-    def get_adaptb_output_directory():
+    def get_brutus_output_directory():
         function = LegacyFunctionSpecification()
-        function.addParameter('adaptb_output_directory', dtype='string', direction=function.OUT)
+        function.addParameter('brutus_output_directory', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
     
     @legacy_function
-    def set_adaptb_output_directory():
+    def set_brutus_output_directory():
         function = LegacyFunctionSpecification()
-        function.addParameter('adaptb_output_directory', dtype='string', direction=function.IN)
+        function.addParameter('brutus_output_directory', dtype='string', direction=function.IN)
         function.result_type = 'int32'
         return function
 
+    ####
     @legacy_function
     def new_particle_float64():
         function = LegacyFunctionSpecification()
@@ -68,78 +75,105 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         else:
             return self.new_particle_float64(mass, x,y,z, vx,vy,vz, radius = radius)
 
+    ####
     @legacy_function
     def get_bs_tolerance_string():
         function = LegacyFunctionSpecification()
-        function.addParameter('bs_tolerance', dtype='string', direction=function.OUT)
+        function.addParameter('epsilon', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         return function
     @legacy_function
     def set_bs_tolerance_string():
         function = LegacyFunctionSpecification()
-        function.addParameter('bs_tolerance', dtype='string', direction=function.IN)
+        function.addParameter('epsilon', dtype='string', direction=function.IN)
         function.result_type = 'int32'
         return function
     @legacy_function
-    def get_bs_tolerance_float64():
+    def get_bs_tolerance():
         function = LegacyFunctionSpecification()
-        function.addParameter('bs_tolerance', dtype='float64', direction=function.OUT)
+        function.addParameter('epsilon', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
     @legacy_function
-    def set_bs_tolerance_float64():
+    def set_bs_tolerance():
         function = LegacyFunctionSpecification()
-        function.addParameter('bs_tolerance', dtype='float64', direction=function.IN)
+        function.addParameter('epsilon', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
+    ####
     @legacy_function
     def get_word_length():
         function = LegacyFunctionSpecification()
-        function.addParameter('word_length', dtype='int32', direction=function.OUT)
+        function.addParameter('numBits', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
     @legacy_function
     def set_word_length():
         function = LegacyFunctionSpecification()
-        function.addParameter('word_length', dtype='int32', direction=function.IN)
+        function.addParameter('numBits', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    ####
+    @legacy_function
+    def get_eta_string():
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_param', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_eta_string():
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_param', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def get_eta():
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_param', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_eta():
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_param', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    ####
+    @legacy_function
+    def get_t_string():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_t_string():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='string', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_dt_print():
+    def get_t():
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_print', dtype='float64', direction=function.OUT)
+        function.addParameter('time', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
     @legacy_function
-    def set_dt_print():
+    def set_t():
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_print', dtype='float64', direction=function.IN)
+        function.addParameter('time', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def get_max_cpu_time():
-        function = LegacyFunctionSpecification()
-        function.addParameter('max_cpu_time', dtype='float64', direction=function.OUT)
-        function.result_type = 'int32'
-        return function
-    @legacy_function
-    def set_max_cpu_time():
-        function = LegacyFunctionSpecification()
-        function.addParameter('max_cpu_time', dtype='float64', direction=function.IN)
-        function.result_type = 'int32'
-        return function
-    
-
-
-class Adaptb(GravitationalDynamics):
+class Brutus(GravitationalDynamics):
 
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
 
-        legacy_interface = AdaptbInterface(**options)
+        legacy_interface = BrutusInterface(**options)
         self.legacy_doc = legacy_interface.__doc__
 
         GravitationalDynamics.__init__(
@@ -151,7 +185,7 @@ class Adaptb(GravitationalDynamics):
     
     def initialize_code(self):
         result = self.overridden().initialize_code()
-        self.parameters.adaptb_output_directory = self.output_directory
+        self.parameters.brutus_output_directory = self.output_directory
         return result
     
     def define_parameters(self, object):
@@ -159,81 +193,55 @@ class Adaptb(GravitationalDynamics):
         self.stopping_conditions.define_parameters(object)
         
         object.add_method_parameter(
-            "get_bs_tolerance_float64", 
-            "set_bs_tolerance_float64",
+            "get_bs_tolerance", 
+            "set_bs_tolerance",
             "bs_tolerance", 
             "Error tolerance of the Bulirsch-Stoer integrator", 
-            default_value = 1.0e-6
+            default_value = 1.0e-8
         )
-        
-        object.add_method_parameter(
-            "get_eps2", 
-            "set_eps2",
-            "epsilon_squared", 
-            "smoothing parameter for gravity calculations, usage is not recommended for Adaptb", 
-            default_value = 0.0 | nbody_system.length**2
-        )
-        
-        object.add_method_parameter(
-            "get_dt_print", 
-            "set_dt_print",
-            "dt_print", 
-            "dt_print, regular print interval to show status (% complete) of evolve_model", 
-            default_value = 0.1 | nbody_system.time
-        )
-    
+
         object.add_method_parameter(
             "get_word_length", 
             "set_word_length",
             "word_length", 
-            "The word length, or number of bits, used for the arbitrary precision calculations", 
-            default_value = 64
+            "The word length, or number of bits for the mantissa, used for the arbitrary precision calculations (#digits = log10(2**# bits) ", 
+            default_value = 72
         )
-        
+                
         object.add_method_parameter(
-            "get_adaptb_output_directory", 
-            "set_adaptb_output_directory",
-            "adaptb_output_directory", 
-            "Path to the directory where Adaptb stores its output", 
+            "get_eta", 
+            "set_eta",
+            "dt_param", 
+            "dt_param, the time-step parameter for the adaptive time-step criterion", 
+            default_value = 0.24
+        )
+            
+        object.add_method_parameter(
+            "get_brutus_output_directory", 
+            "set_brutus_output_directory",
+            "brutus_output_directory", 
+            "Path to the directory where Brutus stores its output", 
             default_value = "./"
-        )
-        
-        object.add_method_parameter(
-            "get_max_cpu_time", 
-            "set_max_cpu_time",
-            "time_limit_cpu", 
-            "The cpu-time limit, the maximum amount of time Adaptb is allowed to run for.", 
-            default_value = 3600.0 | units.s
         )
         
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
         self.stopping_conditions.define_methods(object)
         
-        object.add_method("get_bs_tolerance_float64", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_bs_tolerance_float64", (object.NO_UNIT, ), (object.ERROR_CODE,))
-        
-        object.add_method("get_eps2", (), (nbody_system.length**2, object.ERROR_CODE,))
-        object.add_method("set_eps2", (nbody_system.length**2, ), (object.ERROR_CODE,))
-    
-        object.add_method("get_dt_print", (), (nbody_system.time, object.ERROR_CODE,))
-        object.add_method("set_dt_print", (nbody_system.time, ), (object.ERROR_CODE,))
-    
+        object.add_method("get_bs_tolerance", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_bs_tolerance", (object.NO_UNIT, ), (object.ERROR_CODE,))
+ 
         object.add_method("get_word_length", (), (object.NO_UNIT, object.ERROR_CODE,))
         object.add_method("set_word_length", (object.NO_UNIT, ), (object.ERROR_CODE,))
+
+        object.add_method("get_eta", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_eta", (object.NO_UNIT, ), (object.ERROR_CODE,))
         
-        object.add_method("get_adaptb_output_directory", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_adaptb_output_directory", (object.NO_UNIT, ), (object.ERROR_CODE,))
-        
-        object.add_method("get_max_cpu_time", (), (units.s, object.ERROR_CODE,))
-        object.add_method("set_max_cpu_time", (units.s, ), (object.ERROR_CODE,))
-    
+        object.add_method("get_brutus_output_directory", (), (object.NO_UNIT, object.ERROR_CODE,))
+        object.add_method("set_brutus_output_directory", (object.NO_UNIT, ), (object.ERROR_CODE,))
+            
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
         self.stopping_conditions.define_particle_set(object)
 
-
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        self.stopping_conditions.define_state(object)
 
