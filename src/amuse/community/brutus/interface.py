@@ -1,6 +1,11 @@
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
+"""
+currently setting the particle (and possibly model time) as strings (ie to conserve 
+precision) is not yet supported fully (no high level, low level untested)
+"""
+
 class BrutusInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
         StoppingConditionInterface, CodeWithDataDirectories):
     """
@@ -188,7 +193,7 @@ class Brutus(GravitationalDynamics):
         object.add_method_parameter(
             "get_bs_tolerance", 
             "set_bs_tolerance",
-            "epsilon", 
+            "bs_tolerance", 
             "Error tolerance of the Bulirsch-Stoer integrator", 
             default_value = 1.0e-8
         )
@@ -196,8 +201,8 @@ class Brutus(GravitationalDynamics):
         object.add_method_parameter(
             "get_word_length", 
             "set_word_length",
-            "numBits", 
-            "The word length, or number of bits for the mantissa, used for the arbitrary precision calculations", 
+            "word_length", 
+            "The word length, or number of bits for the mantissa, used for the arbitrary precision calculations (#digits = log10(2**# bits) ", 
             default_value = 72
         )
                 

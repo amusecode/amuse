@@ -178,6 +178,7 @@ int get_time(double* time){
 }
 
 // Bulirsch-Stoer tolerance, epsilon
+// internally epsilon is mpreal, for the interface (and in practice) a double bs_tolerance is enough
 int set_bs_tolerance_string(char *bs_tolerance) {
     epsilon = bs_tolerance;
     brutus->set_tolerance(epsilon);

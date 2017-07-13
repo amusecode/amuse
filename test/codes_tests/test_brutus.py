@@ -208,13 +208,13 @@ class TestBrutus(TestWithMPI):
         instance.initialize_code()
         
 #        print instance.parameters
-        self.assertEquals(instance.parameters.epsilon, 1.0e-6)
-        instance.parameters.epsilon = 1.0e-9
-        self.assertEquals(instance.parameters.epsilon, 1.0e-9)
+        self.assertEquals(instance.parameters.bs_tolerance, 1.0e-6)
+        instance.parameters.bs_tolerance = 1.0e-9
+        self.assertEquals(instance.parameters.bs_tolerance, 1.0e-9)
         
-        self.assertEquals(instance.parameters.numBits, 64)
-        instance.parameters.numBits = 128
-        self.assertEquals(instance.parameters.numBits, 128)
+        self.assertEquals(instance.parameters.word_length, 64)
+        instance.parameters.word_length = 128
+        self.assertEquals(instance.parameters.word_length, 128)
         
         self.assertEquals(instance.parameters.dt_param, 0.24)
         instance.parameters.dt_param = 0.10
