@@ -1,10 +1,12 @@
+import warnings
+warnings.warn("Adatpb is superseded by Brutus") 
+
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
 class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
         StoppingConditionInterface, CodeWithDataDirectories):
     """
-    Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
     Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
     """
     include_headers = ['worker_code.h', 'stopcond.h']
