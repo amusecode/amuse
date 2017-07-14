@@ -262,7 +262,7 @@ class AbstractParticleSet(AbstractSet):
 
         format_float = '{0: >11.3e}'.format
         format_str20 = '{0: >20}'.format
-        format_str11 = '{0: >11}'.format
+        format_str11 = lambda x : 'none' if x is None else '{0: >11}'.format(x)
 
         columns = map(lambda x : [format_str11(x)], attributes)
         columns.insert(0,[format_str20('key')])
