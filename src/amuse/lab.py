@@ -53,6 +53,7 @@ from amuse.community.mi6.interface import MI6, MI6Interface
 from amuse.community.mikkola.interface import Mikkola, MikkolaInterface
 from amuse.community.smalln.interface import SmallN, SmallNInterface
 from amuse.community.rebound.interface import Rebound, ReboundInterface
+from amuse.community.brutus.interface import Brutus, BrutusInterface
 
 
 from amuse.community.fi.interface import Fi, FiInterface

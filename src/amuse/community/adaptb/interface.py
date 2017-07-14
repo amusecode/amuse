@@ -1,5 +1,4 @@
 import warnings
-warnings.warn("Adatpb is superseded by Brutus") 
 
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
@@ -15,6 +14,7 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         CodeInterface.__init__(self, name_of_the_worker="adaptb_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
+        warnings.warn("Adatpb is superseded by Brutus") 
     
     @legacy_function
     def get_adaptb_output_directory():
