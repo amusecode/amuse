@@ -397,7 +397,8 @@ def orbital_elements_from_binary(binary, G=nbody_system.G):
             arg_per[0].value_in(units.deg))
 
 
-def get_orbital_elements_from_binaries(primaries, secondaries, G=nbody_system.G):
+def get_orbital_elements_from_binaries(
+        primaries, secondaries, G=nbody_system.G):
     """
     Function that computes orbital elements from given primaries and
     secondaries.
@@ -587,23 +588,25 @@ def get_orbital_elements_from_arrays(
             inc, long_asc_node, arg_per_mat
             )
 
-def orbital_elements(*args, **kwargs):#G=nbody_system.G):
+
+def orbital_elements(*args, **kwargs):
     try:
-        if len(args)==1:
-          return get_orbital_elements_from_binary(*args,**kwargs)
-        elif len(args)==2:
-          return get_orbital_elements_from_binaries(*args,**kwargs)
-        elif len(args)==3:
-          return get_orbital_elements_from_arrays(*args,**kwargs)
+        if len(args) == 1:
+            return get_orbital_elements_from_binary(*args, **kwargs)
+        elif len(args) == 2:
+            return get_orbital_elements_from_binaries(*args, **kwargs)
+        elif len(args) == 3:
+            return get_orbital_elements_from_arrays(*args, **kwargs)
         else:
-          raise Exception
+            raise Exception
     except:
-      raise Exception("""
-  orbital elements takes as input either: 
+        raise Exception("""
+  orbital elements takes as input either:
   - single two particle set,
-  - two sets of primaries and secondaries                    
-  - arrays of rel. position, rel. velocity and masses 
+  - two sets of primaries and secondaries
+  - arrays of rel. position, rel. velocity and masses
   """)
+
 
 def orbital_elements_for_rel_posvel_arrays(
         rel_position_raw, rel_velocity_raw,
