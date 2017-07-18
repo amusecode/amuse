@@ -600,15 +600,15 @@ def orbital_elements(*args, **kwargs):
         else:
             raise Exception
     except Exception as ex:
-        raise Exception("""
-  error raised: {0}
-  
+        if not ex.args: 
+            ex.args=()
+        ex.args = ex.args + ("""
   note: orbital elements takes as input either:
   - single two particle set,
   - two sets of primaries and secondaries
   - arrays of rel. position, rel. velocity and masses
-  """.format(ex))
-
+  """,)
+        raise
 
 def orbital_elements_for_rel_posvel_arrays(
         rel_position_raw, rel_velocity_raw,
