@@ -496,6 +496,8 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
     // TODO
 
     //if (limitm > 0) {
+	sched->print_blist();
+	sched->print();
 	PRL(limitm);
 	PRL(sched->median_t_next());
     //}
