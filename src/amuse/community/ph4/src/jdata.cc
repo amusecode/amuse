@@ -493,13 +493,15 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
 	}
 
     // Optionally limit the outliers relative to the median step.
-    // TODO
 
     if (limitm > 0) {
 	vector<real> temp;
 	for (int j = 0; j < nj; j++) temp.push_back(timestep[j]);
 	sort(temp.begin(), temp.end());
-	PRL(temp[nj/2]);
+	real dtmax = limitm*temp[nj/2];
+	for (int j = 0; j < nj; j++) {
+	    while (timestep[j] > dtmax) timestep[j] /= 2;
+	}
     }
 }
 
