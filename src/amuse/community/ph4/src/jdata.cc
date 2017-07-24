@@ -487,7 +487,7 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
 
 	    // Place an absolute limit on the step.
 	    
-	    if (firststep > limit) firststep = limit;
+	    while (firststep > limit) firststep /= 2;
 
 	    timestep[j] = firststep;
 	}
