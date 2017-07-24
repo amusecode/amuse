@@ -289,7 +289,9 @@ real scheduler::median_t_next()
 
     int kb = 0, nb = 0;
     while (nb < jdat->nj/2 && kb < (int)bp.size()-1) {
+	PRL(kb);
 	for (li ib = bp[kb]; ib != bp[kb+1]; ib++) nb++;
+	PRL(nb);
 	kb++;
     }
     return bp[kb]->t_next;
