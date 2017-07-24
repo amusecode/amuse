@@ -309,8 +309,8 @@ int commit_particles()
 
     // Set timesteps (needs acc and jerk)
 
-    PRC(initial_timestep_fac); PRC(initial_timestep_limit);
-    PRL(initial_timestep_median);
+    // PRC(initial_timestep_fac); PRC(initial_timestep_limit);
+    // PRL(initial_timestep_median);
     
     jd->force_initial_timestep(initial_timestep_fac,
 			       initial_timestep_limit,
