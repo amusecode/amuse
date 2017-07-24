@@ -74,8 +74,6 @@ public:
     void add_particle(int j);
     bool remove_particle(int j);
 
-    real median_t_next();
-	
     void print_blist();
     void print_bp(bool verbose = false);
     void print(bool verbose = false);
