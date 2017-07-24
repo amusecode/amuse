@@ -584,10 +584,10 @@ class ph4(GravitationalDynamics,GravityFieldCode):
 
         object.add_method_parameter(
             "get_initial_timestep_median", # getter name in interface.cc
-            "set_initial_timestep_median",  # setter name in interface.cc
+            "set_initial_timestep_median", # setter name in interface.cc
             "initial_timestep_median",     # python parameter name
             "initial timestep median factor", # description
-            default_value = 0.0
+            default_value = 16.0
         )
 
         self.stopping_conditions.define_parameters(object)
