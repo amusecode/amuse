@@ -456,8 +456,6 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
     // Assume acc and jerk have already been set.  Only set the time
     // step if it hasn't already been set.
 
-    PRL(eta);
-    
     for (int j = 0; j < nj; j++)
 	if (timestep[j] <= 0) {
 	    real a2 = 0, j2 = 0;
@@ -489,14 +487,14 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
 
 	    // Place an absolute limit on the step.
 	    
-	    // while (firststep > limit) firststep /= 2;
+	    while (firststep > limit) firststep /= 2;
 
 	    timestep[j] = firststep;
 	}
 
     // Optionally limit the outliers relative to the median step.
 
-    if (0 && limitm > 0) {
+    if (limitm > 0) {
 	vector<real> temp;
 	for (int j = 0; j < nj; j++) temp.push_back(timestep[j]);
 	sort(temp.begin(), temp.end());
