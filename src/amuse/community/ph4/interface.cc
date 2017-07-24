@@ -22,7 +22,7 @@ static int total_steps = 0;
 
 static real initial_timestep_fac = 0.0625;
 static real initial_timestep_limit = 0.03125;
-static real initial_timestep_median = 16.0;
+static real initial_timestep_median = 8.0;
 
 static double begin_time = -1;
 
