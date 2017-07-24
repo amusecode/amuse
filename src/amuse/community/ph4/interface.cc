@@ -316,6 +316,7 @@ int commit_particles()
 			       initial_timestep_limit,
 			       initial_timestep_median);
     s = new scheduler(jd);
+    s->print();
 #if 0
     cout << "commit_particles:";
     for (int j = 0; j < jd->nj; j++) cout << " " << jd->id[j];
