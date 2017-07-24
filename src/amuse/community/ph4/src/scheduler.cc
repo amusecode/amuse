@@ -282,6 +282,19 @@ bool scheduler::remove_particle(int j)
     return false;
 }
 
+real scheduler::median_t_next()
+{
+    const char *in_function = "scheduler::median_timestep";
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
+
+    int kb = 0, nb = 0;
+    while (nb < jdat->nj/2 && kb < (int)bp.size()-1) {
+	for (li ib = bp[kb]; ib != bp[kb+1]; ib++) nb++;
+	kb++;
+    }
+    return bp[kb]->t_next;
+}
+
 void scheduler::print_blist()
 {
     const char *in_function = "scheduler::print_blist";
