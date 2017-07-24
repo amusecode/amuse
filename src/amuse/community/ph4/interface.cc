@@ -306,7 +306,15 @@ int commit_particles()
 
     jd->initialize_arrays();
     id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
-    jd->force_initial_timestep();	// set timesteps (needs acc and jerk)
+
+    // Set timesteps (needs acc and jerk)
+
+    PRC(initial_timestep_fac); PRC(initial_timestep_limit);
+    PRL(initial_timestep_median);
+    
+    jd->force_initial_timestep(initial_timestep_fac,
+			       initial_timestep_limit,
+			       initial_timestep_median);
     s = new scheduler(jd);
 #if 0
     cout << "commit_particles:";
@@ -332,7 +340,11 @@ int recommit_particles()
     else
 	jd->initialize_gpu(true);		// reload the GPU
     id->setup();				// compute acc and jerk
-    jd->force_initial_timestep();		// set timesteps
+
+    jd->force_initial_timestep(initial_timestep_fac,  // set timesteps
+			       initial_timestep_limit,
+			       initial_timestep_median);
+
     s->initialize();				// reconstruct the scheduler
     //s->print(true);
     return 0;
@@ -352,7 +364,9 @@ int recompute_timesteps()
 	jd->initialize_gpu(true);		// reload the GPU
 
     id->setup();				// compute acc and jerk
-    jd->force_initial_timestep();
+    jd->force_initial_timestep(initial_timestep_fac,  // set timesteps
+			       initial_timestep_limit,
+			       initial_timestep_median);
     s->initialize();				// reconstruct the scheduler
     return 0;
 }
