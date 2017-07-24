@@ -494,12 +494,12 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
 
     // Optionally limit the outliers relative to the median step.
 
-    if (limitm > 0) {
-
-        PRL(sched->median_t_next());
+    #if (limitm > 0) {
+	PRL(limitm);
+	PRL(sched->median_t_next());
 	// TODO
 	
-    }
+    #}
 }
 
 void jdata::force_initial_timestep(real fac, real limit, real limitm)
