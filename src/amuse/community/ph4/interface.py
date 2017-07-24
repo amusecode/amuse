@@ -221,12 +221,12 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
-    def get_force_sync():
+    def get_manage_encounters():
         """
-        Get the value of force_sync.
+        Get the value of manage_encounters.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('force_sync', dtype='int32',
+        function.addParameter('manage_encounters', dtype='int32',
                               direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -243,13 +243,13 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
-    def get_sync_time():
+    def get_force_sync():
         """
-        Get the value of sync_time.
+        Get the value of force_sync.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('sync_time', dtype='float64',
-                              direction=function.OUT, unit = nbody_system.time)
+        function.addParameter('force_sync', dtype='int32',
+                              direction=function.OUT)
         function.result_type = 'int32'
         return function
 
@@ -265,13 +265,13 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
-    def get_block_steps():
+    def get_sync_time():
         """
-        Get the value of block_steps.
+        Get the value of sync_time.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('get_block_steps', dtype='int32',
-                              direction=function.OUT)
+        function.addParameter('sync_time', dtype='float64',
+                              direction=function.OUT, unit = nbody_system.time)
         function.result_type = 'int32'
         return function
 
@@ -287,12 +287,12 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
-    def get_total_steps():
+    def get_block_steps():
         """
-        Get the value of total_steps.
+        Get the value of block_steps.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('get_total_steps', dtype='int32',
+        function.addParameter('get_block_steps', dtype='int32',
                               direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -309,12 +309,12 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
-    def get_manage_encounters():
+    def get_total_steps():
         """
-        Get the value of manage_encounters.
+        Get the value of total_steps.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('manage_encounters', dtype='int32',
+        function.addParameter('get_total_steps', dtype='int32',
                               direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -363,6 +363,72 @@ class ph4Interface(CodeInterface,
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def set_initial_timestep_fac():
+        """
+        Set the current accuracy parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('initial_timestep_fac', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_initial_timestep_fac():
+        """
+        Get the current accuracy parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('initial_timestep_fac', dtype='float64',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_initial_timestep_limit():
+        """
+        Set the current accuracy parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('initial_timestep_limit', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_initial_timestep_limit():
+        """
+        Get the current accuracy parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('initial_timestep_limit', dtype='float64',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_initial_timestep_median():
+        """
+        Set the current accuracy parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('initial_timestep_median', dtype='float64',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_initial_timestep_median():
+        """
+        Get the current accuracy parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('initial_timestep_median', dtype='float64',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
     @legacy_function
     def recompute_timesteps():
         """
@@ -498,6 +564,30 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             "total_steps",
             "total number of steps",
             default_value = 0
+        )
+
+        object.add_method_parameter(
+            "get_initial_timestep_fac",  # getter name in interface.cc
+            "set_initial_timestep_fac",  # setter name in interface.cc
+            "initial_timestep_fac",      # python parameter name
+            "initial timestep factor",   # description
+            default_value = 0.0625
+        )
+
+        object.add_method_parameter(
+            "get_initial_timestep_limit", # getter name in interface.cc
+            "set_initial_timestep_limit", # setter name in interface.cc
+            "initial_timestep_limit",     # python parameter name
+            "initial timestep limit",     # description
+            default_value = 0.03125
+        )
+
+        object.add_method_parameter(
+            "get_initial_timestep_median", # getter name in interface.cc
+            "set_initial_timestep_median"  # setter name in interface.cc
+            "initial_timestep_median",     # python parameter name
+            "initial timestep median factor", # description
+            default_value = 0.0
         )
 
         self.stopping_conditions.define_parameters(object)
