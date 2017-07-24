@@ -499,6 +499,7 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
 	for (int j = 0; j < nj; j++) temp.push_back(timestep[j]);
 	sort(temp.begin(), temp.end());
 	real dtmax = limitm*temp[nj/2];
+	PRC(limitm); PRL(dtmax);
 	for (int j = 0; j < nj; j++) {
 	    while (timestep[j] > dtmax) timestep[j] /= 2;
 	}
