@@ -456,6 +456,8 @@ void jdata::set_initial_timestep(real fac, real limit, real limitm)
     // Assume acc and jerk have already been set.  Only set the time
     // step if it hasn't already been set.
 
+    PRL(eta);
+    
     for (int j = 0; j < nj; j++)
 	if (timestep[j] <= 0) {
 	    real a2 = 0, j2 = 0;
