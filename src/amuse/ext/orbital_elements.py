@@ -390,11 +390,11 @@ def orbital_elements_from_binary(binary, G=nbody_system.G):
             inclination, long_asc_node, arg_per
             ) = get_orbital_elements_from_binary(binary, G=G)
     return (
-            mass1[0], mass2[0], semimajor_axis[0], eccentricity[0],
-            true_anomaly[0].value_in(units.deg),
-            inclination[0].value_in(units.deg),
-            long_asc_node[0].value_in(units.deg),
-            arg_per[0].value_in(units.deg))
+            mass1, mass2, semimajor_axis, eccentricity,
+            true_anomaly.value_in(units.deg),
+            inclination.value_in(units.deg),
+            long_asc_node.value_in(units.deg),
+            arg_per.value_in(units.deg))
 
 
 def get_orbital_elements_from_binaries(
@@ -599,14 +599,16 @@ def orbital_elements(*args, **kwargs):
             return get_orbital_elements_from_arrays(*args, **kwargs)
         else:
             raise Exception
-    except:
-        raise Exception("""
-  orbital elements takes as input either:
+    except Exception as ex:
+        if not ex.args: 
+            ex.args=()
+        ex.args = ex.args + ("""
+  note: orbital elements takes as input either:
   - single two particle set,
   - two sets of primaries and secondaries
   - arrays of rel. position, rel. velocity and masses
-  """)
-
+  """,)
+        raise
 
 def orbital_elements_for_rel_posvel_arrays(
         rel_position_raw, rel_velocity_raw,
