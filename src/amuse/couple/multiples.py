@@ -789,7 +789,9 @@ class Multiples(object):
         sorted_perturbations = pert[indices]
         fac12 = 0.5*(star1.mass + star2.mass)/sep12**3
 
-        if self.check_tidal_perturbation:
+        largest_perturbers = []
+        if self.check_tidal_perturbation and len(sorted_stars) > 0:
+            
             print "sorted_stars", sorted_stars[:5]
             print "sorted_distances", sorted_distances[:5]
             print "sorted_perturbations", sorted_perturbations[:5]/fac12
@@ -803,7 +805,8 @@ class Multiples(object):
         # Perturbation limit for identification as a neighbor.
         
         pert_min = self.neighbor_perturbation_limit*fac12
-        for i in range(0,len(sorted_stars)):
+        for i in range(len(sorted_stars)):    # NB no loop if len() = 0
+            
             star = sorted_stars[i]
 
             # Include anything lying "inside" the binary, even if it
@@ -1212,9 +1215,11 @@ class Multiples(object):
             # Estimate the maximum perturbation on this binary due to
             # its current strongest external perturber.
 
-            max_perturbation = 2*sorted_perturbations[0]*binary_scale**3/mass
-            perturber = sorted_stars[0]
-            perturber_distance = sorted_distances[0]
+            max_perturbation = 0.0
+            if len(sorted_perturbations) > 0:
+                max_perturbation = 2*sorted_perturbations[0]*binary_scale**3/mass
+                perturber = sorted_stars[0]
+                perturber_distance = sorted_distances[0]
             
             # Check that other stars involved in the encounter but not
             # in this multiple are not the dominant perturbation.
@@ -1264,11 +1269,14 @@ class Multiples(object):
                     	name_pair(comp1,comp2)
                 print '    semi =', semi.number, 'E/mu =', E.number
                 print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
-                print '    strongest perturber is', perturber.id, \
-                      'with apo perturbation', max_perturbation
-                print '    nearest neighbor is', perturber.id, \
-                      'at distance', perturber_distance.number
-                print '    repeat_count =', self.repeat_count
+                if max_perturbation > 0:
+                    print '    strongest perturber is', perturber.id, \
+                          'with apo perturbation', max_perturbation
+                    print '    nearest neighbor is', perturber.id, \
+                          'at distance', perturber_distance.number
+                    print '    repeat_count =', self.repeat_count
+                else:
+                    print '    perturbation = 0'
                 self.repeat_count = 0		# probably unnecessary
                 sys.stdout.flush()
 
