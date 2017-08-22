@@ -156,9 +156,9 @@ class InstallPrerequisites(object):
           (
             'png' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '1.6.29' ,                   #version string
+            '1.6.31' ,                   #version string
             'libpng-', '.tar.gz',        #pre- and postfix for filename
-            'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.29/', #download url, filename is appended
+            'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.31/', #download url, filename is appended
             self.png_build             #method to use for building - same as for FFTW should work
           ) ,
           (
