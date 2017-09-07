@@ -196,7 +196,7 @@ def animate_data(t, m, x, y, id, lx, ly, scale, delay):
     dy = ymax - ymin
     yav = 0.5*(ymin+ymax)
 
-    # Allow modification of overall scale by usver-specified scale factor.
+    # Allow modification of overall scale by user-specified scale factor.
 
     dx = 5*max(dx, dy)*scale
     xmin = xav - 0.5*dx
