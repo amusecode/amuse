@@ -50,6 +50,7 @@ def plot_track(xe,ye,xv,yv, output_filename):
 
     from matplotlib import pyplot
     figure = pyplot.figure(figsize=(10, 10))
+    pyplot.rcParams.update({'font.size': 30})
     plot = figure.add_subplot(1,1,1)
     ax = pyplot.gca()
     ax.minorticks_on() 
