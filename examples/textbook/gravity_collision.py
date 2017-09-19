@@ -13,17 +13,20 @@ def merge_two_stars(bodies, particles_in_encounter, tcoll):
     new_particle.collision_time = tcoll
     new_particle.position = com_pos
     new_particle.velocity = com_vel
-    new_particle.radius = particles_in_encounter.radius.sum()/len(particles_in_encounter.radius)
+    new_particle.radius = \
+        particles_in_encounter.radius.sum()/len(particles_in_encounter.radius)
     bodies.add_particles(new_particle)
     bodies.remove_particles(particles_in_encounter)
     return new_particle
     
-def main(N=10, W0=7.0, t_end=10, nsteps=10, filename="gravity_stellar.hdf5", Mmax= 100, Qvir=0.5):
+def main(N=10, W0=7.0, t_end=10, nsteps=10, filename="gravity_stellar.hdf5",
+         Mmax= 100, Qvir=0.5):
     t_end = t_end | nbody_system.time
     dt = t_end/float(nsteps)
 
     bodies = new_king_model(N, W0)
-    masses = new_powerlaw_mass_distribution(N, mass_min=0.1|units.MSun, mass_max=10|units.MSun, alpha=-2.35)
+    masses = new_powerlaw_mass_distribution(N, mass_min=0.1|units.MSun,
+                                            mass_max=10|units.MSun, alpha=-2.35)
     masses /= masses.sum()
     bodies.mass = masses | nbody_system.mass
 
@@ -38,7 +41,7 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10, filename="gravity_stellar.hdf5", Mma
     Mtot_init = 1 | nbody_system.mass
 
     gravity = ph4(number_of_workers=4)
-#    gravity.parameters.timestep_parameter = 0.01
+    # gravity.parameters.timestep_parameter = 0.01
     gravity.particles.add_particles(bodies)
     bodies.scale_to_standard(virial_ratio=Qvir)
 
@@ -57,7 +60,8 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10, filename="gravity_stellar.hdf5", Mma
     while time < t_end:
 
         RL = LagrangianRadii(gravity.particles)
-        pos,coreradius,coredens=gravity.particles.densitycentre_coreradius_coredens()
+        pos,coreradius,coredens = \
+            gravity.particles.densitycentre_coreradius_coredens()
         print "Cluster at time=", time, "core_radius=", coreradius, "L_radius=",
         for rl in RL:
             print rl.number, " ",
@@ -69,19 +73,28 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10, filename="gravity_stellar.hdf5", Mma
         if stopping_condition.is_set():
             Ek_enc = gravity.kinetic_energy 
             Ep_enc = gravity.potential_energy
-            print "At time=", time, "number of encounters=", len(stopping_condition.particles(0))
+            print "At time=", time, "number of encounters=", \
+                len(stopping_condition.particles(0))
             for ci in range(len(stopping_condition.particles(0))): 
-                particles_in_encounter = Particles(particles=[stopping_condition.particles(0)[ci], stopping_condition.particles(1)[ci]])
-                particles_in_encounter = particles_in_encounter.get_intersecting_subset_in(bodies)
+                particles_in_encounter = Particles(
+                    particles=[stopping_condition.particles(0)[ci],
+                               stopping_condition.particles(1)[ci]])
+                particles_in_encounter = \
+                    particles_in_encounter.get_intersecting_subset_in(bodies)
 
-                new_particle = merge_two_stars(bodies, particles_in_encounter, gravity.model_time)
+                new_particle = merge_two_stars(bodies,
+                                               particles_in_encounter,
+                                               gravity.model_time)
                 bodies.synchronize_to(gravity.particles)
                 Nenc+=1
                 RL = LagrangianRadii(gravity.particles)
 
                 print "Resolve encounter Number:", Nenc
-                pos,coreradius,coredens=gravity.particles.densitycentre_coreradius_coredens()
-                print "Collision at time=", time, new_particle.mass.sum(), new_particle.position.length(), "Nstars= ", len(bodies), "Ncoll=", Nenc, "core_radius=", coreradius, "L_radius=", 
+                pos,coreradius,coredens = \
+                    gravity.particles.densitycentre_coreradius_coredens()
+                print "Collision at time=", time, new_particle.mass.sum(), \
+                    new_particle.position.length(), "Nstars= ", len(bodies), \
+                    "Ncoll=", Nenc, "core_radius=", coreradius, "L_radius=", 
                 for rl in RL:
                     print rl.number, " ",
                 print "length"
@@ -106,7 +119,6 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10, filename="gravity_stellar.hdf5", Mma
         Etot_init -= dE
         Etot_prev = Etot
 
-
     gravity.stop()
     
 def new_option_parser():
@@ -124,7 +136,7 @@ def new_option_parser():
     result.add_option("-Q", dest="Qvir", type="float", default = 0.5,
                       help="initial virial radio [%default]")
     result.add_option("-W", dest="W0", type="float", default = 7.0,
-                      help="Dimension-less depth of the King potential (W0) [7.0]")
+                      help="Dimensionless depth of the King potential (W0) [7.0]")
     return result
 
 if __name__ in ('__main__', '__plot__'):
