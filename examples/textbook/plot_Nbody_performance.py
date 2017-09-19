@@ -77,7 +77,10 @@ def main(filename = "NbodyAMUSE.test", lim=-1):
 #    pyplot.ylabel("t$_{wall}$ [s]")
 #    pyplot.loglog()
 #    pyplot.show()
-    pyplot.savefig("Nbody_performance")
+
+    save_file = "Nbody_performance"
+    pyplot.savefig(save_file)
+    print "Figure saved in file", save_file
 
 def new_option_parser():
     result = OptionParser()
