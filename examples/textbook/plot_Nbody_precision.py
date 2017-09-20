@@ -9,8 +9,6 @@ from distinct_colours import get_distinct
 def energy_error_of_integrated_Nbody_system(code, particles,
                                             end_time, precision):
 
-    #gravity = Huayno()
-    #gravity = ph4()
     gravity = code()
     gravity.parameters.timestep_parameter = precision
     gravity.particles.add_particles(particles)
@@ -40,9 +38,7 @@ if __name__ in ('__main__','__plot__'):
     numpy.random.seed(31415)
 
     particles = new_plummer_model(100)
-    # precision = numpy.exp(numpy.arange(2, -10, -1))
-    precision = numpy.exp(numpy.arange(2, -8, -1))
-    print precision
+    precision = numpy.exp(numpy.arange(2, -10, -1))
 
     from matplotlib import pyplot, rc
     x_label = "time step"
@@ -80,10 +76,10 @@ if __name__ in ('__main__','__plot__'):
 
     pyplot.plot([4, 0.01], [0.1, (0.01)**5], c=cols[0], lw=4)
     pyplot.plot([4, 0.01], [0.02, (0.01)**2], c=cols[1], lw=4)
+
     # pyplot.show()
 
     save_file = "precision_N100t1"
     pyplot.savefig(save_file)
     print "\nOutput saved in", save_file
-
     
