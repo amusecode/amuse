@@ -8,8 +8,6 @@ from distinct_colours import get_distinct
 
 def energy_error_of_integrated_Nbody_system(code, particles, end_time, precision):
 
-    #gravity = Huayno()
-    #gravity = ph4()
     gravity = code()
     gravity.parameters.timestep_parameter = precision
     gravity.particles.add_particles(particles)
@@ -37,7 +35,6 @@ if __name__ in ('__main__','__plot__'):
     numpy.random.seed(31415)
 
     particles = new_plummer_model(100)
-#    precision = numpy.exp(numpy.arange(2, -10, -1))
     precision = numpy.exp(numpy.arange(2, -8, -1))
     print precision
 
@@ -45,18 +42,6 @@ if __name__ in ('__main__','__plot__'):
     x_label = "time step"
     y_label = "$|E(t)-E(0)|/E(0)$"
     figure = single_frame(x_label, y_label, logx=True, logy=True, xsize=12, ysize=10)
-#    ax = pyplot.gca()
-#    ax.set_xlim(0.0001, 10)
-#    ax.set_ylim(1.e-16, 10)
-
-    """
-    from matplotlib import pyplot, rc
-    figure = pyplot.figure(figsize=(10,10))
-    font = {'size' : 20}
-    rc('font', **font)
-    plot = figure.add_subplot(1,1,1)
-    pyplot.loglog()
-    """
 
     cols = get_distinct(2)
 
@@ -75,8 +60,9 @@ if __name__ in ('__main__','__plot__'):
 
     pyplot.plot([4, 0.01], [0.1, (0.01)**5], c=cols[0], lw=4)
     pyplot.plot([4, 0.01], [0.02, (0.01)**2], c=cols[1], lw=4)
-#    pyplot.show()
+    pyplot.show()
 
-    pyplot.savefig("precision_N100t1")
+#    print "Save fig (precision_N100t1.pdf) in local directory."
+#    pyplot.savefig("precision_N100t1")
 
     
