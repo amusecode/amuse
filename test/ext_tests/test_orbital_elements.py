@@ -1,13 +1,10 @@
-import sys
-import os
 import numpy
 
 from amuse.test import amusetest
 
-
 from amuse.ext.orbital_elements import (
         new_binary_from_orbital_elements,
-        get_orbital_elements_from_binary,
+        # get_orbital_elements_from_binary,
         orbital_elements_for_rel_posvel_arrays,
         orbital_elements,
         rel_posvel_arrays_from_orbital_elements,
@@ -24,66 +21,85 @@ from numpy import random
 class KeplerTests(amusetest.TestCase):
 
     def test1(self):
-        mass1 = 1 | nbody_system.mass 
+        mass1 = 1 | nbody_system.mass
         mass2 = 1 | nbody_system.mass
-        
+
         binary = new_binary_from_orbital_elements(
             mass1,
             mass2,
             1 | nbody_system.length
         )
-        
+
         self.assertEquals(len(binary), 2)
-        
-        binary.position-=binary[0].position
-        binary.velocity-=binary[0].velocity
-        
-        self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[1].position, [1,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
-        self.assertAlmostRelativeEquals(binary[1].velocity, [0,numpy.sqrt(2),0] | nbody_system.speed)
-    
-    
+
+        binary.position -= binary[0].position
+        binary.velocity -= binary[0].velocity
+
+        self.assertAlmostRelativeEquals(
+                binary[0].position,
+                [0, 0, 0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[1].position,
+                [1, 0, 0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[0].velocity,
+                [0, 0, 0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(
+                binary[1].velocity,
+                [0, numpy.sqrt(2), 0] | nbody_system.speed)
+
     def test2(self):
-        #test going around in a circular orbit
-        mass1 = 1 | nbody_system.mass 
+        # test going around in a circular orbit
+        mass1 = 1 | nbody_system.mass
         mass2 = 1 | nbody_system.mass
-        
+
         binary = new_binary_from_orbital_elements(
             mass1,
             mass2,
             1 | nbody_system.length,
-            eccentricity = 0,
-            true_anomaly = 90,
+            eccentricity=0,
+            true_anomaly=90,
         )
-        
+
         self.assertEquals(len(binary), 2)
 
-        binary.position-=binary[0].position
-        binary.velocity-=binary[0].velocity
+        binary.position -= binary[0].position
+        binary.velocity -= binary[0].velocity
 
-        self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[1].position, [0,1,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
-        self.assertAlmostRelativeEquals(binary[1].velocity, [-numpy.sqrt(2),0,0] | nbody_system.speed)
-        
+        self.assertAlmostRelativeEquals(
+                binary[0].position,
+                [0, 0, 0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[1].position,
+                [0, 1, 0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[0].velocity,
+                [0, 0, 0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(
+                binary[1].velocity,
+                [-numpy.sqrt(2), 0, 0] | nbody_system.speed)
+
         binary = new_binary_from_orbital_elements(
             mass1,
             mass2,
             1 | nbody_system.length,
-            eccentricity = 0,
-            true_anomaly = 180,
+            eccentricity=0,
+            true_anomaly=180,
         )
-        
+
         self.assertEquals(len(binary), 2)
 
-        binary.position-=binary[0].position
-        binary.velocity-=binary[0].velocity
+        binary.position -= binary[0].position
+        binary.velocity -= binary[0].velocity
 
-        self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[1].position, [-1,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
-        self.assertAlmostRelativeEquals(binary[1].velocity, [0,-numpy.sqrt(2),0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(
+                binary[0].position, [0,0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[1].position, [-1,0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[0].velocity, [0,0,0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(
+                binary[1].velocity, [0,-numpy.sqrt(2),0] | nbody_system.speed)
         
         binary = new_binary_from_orbital_elements(
             mass1,
