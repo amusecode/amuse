@@ -1,3 +1,4 @@
+###BOOKLISTSTART1###
 from amuse.lab import Particles, units 
 
 def sun_venus_and_earth():
@@ -22,10 +23,13 @@ def sun_venus_and_earth():
 
     particles.move_to_center()
     return particles
+###BOOKLISTSTOP1###
 
+###BOOKLISTSTART2###
 def integrate_solar_system(particles, end_time):
     from amuse.lab import Huayno, nbody_system
-    convert_nbody = nbody_system.nbody_to_si(particles.mass.sum(), particles[1].position.length())
+    convert_nbody = nbody_system.nbody_to_si(particles.mass.sum(),
+                                             particles[1].position.length())
 
     gravity = Huayno(convert_nbody)
     gravity.particles.add_particles(particles)
@@ -45,7 +49,9 @@ def integrate_solar_system(particles, end_time):
         y_venus.append(venus.y)
     gravity.stop()
     return x_earth, y_earth, x_venus, y_venus
-    
+###BOOKLISTSTOP2###
+
+###BOOKLISTSTART3###
 def plot_track(xe,ye,xv,yv, output_filename):
 
     from matplotlib import pyplot
@@ -66,7 +72,12 @@ def plot_track(xe,ye,xv,yv, output_filename):
     plot.plot(xv.value_in(units.AU), yv.value_in(units.AU), color = 'r')
     plot.set_xlim(-1.3, 1.3)
     plot.set_ylim(-1.3, 1.3)
+
+    file = 'sun_venus_earth.png'
+    pyplot.savefig(file)
+    print '\nSaved figure in file', file,'\n'
     pyplot.show()
+###BOOKLISTSTOP3###
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser
@@ -82,5 +93,5 @@ if __name__ in ('__main__','__plot__'):
 
     particles = sun_venus_and_earth()
     xe,ye, xv,yv = integrate_solar_system(particles, 2 | units.yr)
-    plot_track(xe,ye,xv,yv,o.output_filename)
+    plot_track(xe, ye, xv, yv, o.output_filename)
     
