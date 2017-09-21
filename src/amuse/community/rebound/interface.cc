@@ -35,8 +35,8 @@ extern "C" {
 #include <stopcond.h>
 
 typedef struct _particle_location {
-    struct reb_simulation * code = NULL;
-    struct reb_particle * p = NULL;
+    struct reb_simulation * code; //= NULL;
+    struct reb_particle * p;// = NULL;
 } particle_location;
 
 typedef struct _code_state {
@@ -66,7 +66,7 @@ static double timestep = 0.0001;
 
 static inline particle_location get_particle_from_identity(int index_of_the_particle)
 {
-    particle_location particle;
+    particle_location particle = {NULL,NULL};
 
     for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
         code_state cs = *i;
@@ -605,7 +605,7 @@ int get_radius(int index_of_the_particle, double * radius){
 
 int get_subset(int index_of_the_particle, int * subset){
     //FIXME
-    struct reb_particle* p;
+    struct reb_particle* p=NULL;
     for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
         code_state cs = *i;
         p = reb_get_particle_by_hash(cs.code, index_of_the_particle);
@@ -635,7 +635,7 @@ int set_radius(int index_of_the_particle, double radius){
 
 int set_subset(int index_of_the_particle, int subset){
     
-    struct reb_particle* p;
+    struct reb_particle* p=NULL;
     for( ReboundSimulationVector::iterator i = codes.begin(); i != codes.end(); i++) {
         code_state cs = *i;
         p = reb_get_particle_by_hash(cs.code, index_of_the_particle);
