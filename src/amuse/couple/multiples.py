@@ -179,7 +179,7 @@ class Multiples(object):
         
         #self.neighbor_distance_factor = 1.0
         #self.neighbor_distance_factor = 2.0
-        self.neighbor_perturbation_limit = 0.1
+        self.neighbor_perturbation_limit = 0.02
 
         # Neighbor veto policy.  True means we allow neighbors to veto
         # a two-body encounter (meaning that don't want to deal with

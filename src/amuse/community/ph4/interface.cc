@@ -1,9 +1,5 @@
 #include "interface.h"
 
-// A stub of this file is machine generated, but the content is
-// hand-coded.  SAVE A COPY (here interface.cc.1) to avoid accidental
-// overwriting!
-
 #include "src/stdinc.h"
 #include "src/jdata.h"
 #include "src/idata.h"
@@ -21,6 +17,12 @@ static bool force_sync = false;		// off by default; set by setter only;
 					// that makes it to to_time.
 static int block_steps = 0;
 static int total_steps = 0;
+
+// Allow fine control over the initial time step.
+
+static real initial_timestep_fac = 0.0625;
+static real initial_timestep_limit = 0.03125;
+static real initial_timestep_median = 0.0;
 
 static double begin_time = -1;
 
@@ -108,6 +110,8 @@ int initialize_code()
 
     return 0;
 }
+
+// Setters and getters.
 
 int set_eps2(double epsilon_squared)
 {
@@ -234,6 +238,38 @@ int get_total_steps(int *s) {
     *s = total_steps;
     return 0;
 }
+
+int set_initial_timestep_fac(double s) {
+    initial_timestep_fac = s;
+    return 0;
+}
+
+int get_initial_timestep_fac(double * s) {
+    *s = initial_timestep_fac;
+    return 0;
+}
+
+int set_initial_timestep_limit(double s) {
+    initial_timestep_limit = s;
+    return 0;
+}
+
+int get_initial_timestep_limit(double * s) {
+    *s = initial_timestep_limit;
+    return 0;
+}
+
+int set_initial_timestep_median(double s) {
+    initial_timestep_median = s;
+    return 0;
+}
+
+int get_initial_timestep_median(double * s) {
+    *s = initial_timestep_median;
+    return 0;
+}
+
+//----------------------------------------------------------------------
 
 int commit_parameters()
 {
