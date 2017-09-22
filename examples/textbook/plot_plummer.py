@@ -1,5 +1,5 @@
 """ 
-   Example AMUSE sciprt for generating a Plummer shere and plot the results.
+   Example AMUSE script to generate a Plummer sphere and plot the results.
 """
 from matplotlib.pyplot import show, xlim, ylim, figure
 from amuse.plot import scatter, xlabel, ylabel
@@ -18,7 +18,8 @@ def main(N=10):
 def new_option_parser():
     from optparse import OptionParser
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int",default = 1000, help="number of stars [1000]")
+    result.add_option("-N", dest="N", type="int", default=1000,
+                      help="number of stars [1000]")
     return result
 
 if __name__ in ('__main__', '__plot__'):
