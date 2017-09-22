@@ -64,7 +64,7 @@ def plot_ZAMS_stellar_model(N, M):
     lim = 2
     sph_particles_plot(sph_particles, min_size = 500, max_size = 500, alpha=0.01,
                        view=(-lim, lim, -lim, lim)|units.RSun)
-    ax.set_axis_bgcolor('white')
+    ax.set_facecolor('white')
     pyplot.xlabel("x [R$_\odot$]")
     pyplot.ylabel("y [R$_\odot$]")
     #native_plot.savefig("stellar_2MSunZAMS_projected")
@@ -77,7 +77,7 @@ def plot_stellar_model(N, M, t):
     figure, ax = figure_frame(x_label, y_label, xsize=12, ysize=12)
     sph_particles_plot(sph_particles, min_size = 500, max_size = 500, alpha=0.01, view=(-5, 5, -5, 5)|units.RSun)
 #    sph_particles_plot(sph_particles, min_size = 500, max_size = 500, alpha=0.01, view=(-2, 2, -2, 2)|units.RSun)
-    ax.set_axis_bgcolor('white')
+    ax.set_facecolor('white')
     pyplot.xlabel(x_label)
     pyplot.ylabel(y_label)
     native_plot.savefig("stellar_2MSun_projected")
@@ -112,7 +112,7 @@ def plot_plummer_model(N, M, R):
     y_label = "y [pc]"
     figure, ax = figure_frame(x_label, y_label, xsize=12, ysize=12)
     sph_particles_plot(sph_particles, min_size = 500, max_size = 500, alpha=0.01, view=(-50, 50, -50, 50)|units.parsec)
-    ax.set_axis_bgcolor('white')
+    ax.set_facecolor('white')
     pyplot.xlabel(x_label)
     pyplot.ylabel(y_label)
     native_plot.savefig("plummer_projected")
@@ -126,7 +126,7 @@ def plot_GMC_model(N, M, R):
     lim = 20
     sph_particles_plot(sph_particles, min_size = 500, max_size = 500, alpha=0.01,
                        view=(-lim, lim, -lim, lim)|units.parsec)
-    ax.set_axis_bgcolor('white')
+    ax.set_facecolor('white')
     #native_plot.savefig("molecular_cloud_projected")
     pyplot.savefig("molecular_cloud_projected")
 
