@@ -20,8 +20,9 @@ def gravity_minimal(N, W0, t_end):
 
     Etot = Ekin + Epot
     dE = (Etot_init-Etot)/Etot
-    print "T=", gravity.get_time(), "CPU time:", dtime, "[s]", 
-    print "M=", bodies.mass.sum(), "E= ", Etot, "Q= ", Ekin/Epot, "dE=", dE
+    print "T =", gravity.get_time(), " CPU time:", dtime, "[s]"
+    print "M =", bodies.mass.sum(), " E = ", Etot, " Q = ", -Ekin/Epot
+    print "dE =", dE
     
     gravity.stop()
     

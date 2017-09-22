@@ -5,23 +5,10 @@ except ImportError:
     class FakePlotLibrary(object):
         def stub(self, *args, **kwargs):
             raise Exception("No plot library available")
-        figure = stub
-        plot = stub
-        scatter = stub
-        hist = stub
-        semilogx = stub
-        semilogy = stub
-        loglog = stub
-        errorbar = stub
-        text = stub
-        imshow = stub
-        pcolor = stub
-        pcolormesh = stub
-        xlabel = stub
-        ylabel = stub
-        xlim = stub
-        ylim = stub
-
+        
+        def __getattr__(self, name):
+            raise Exception("matplotlib not present")
+        
     native_plot = FakePlotLibrary()
 
 import numpy

@@ -1,9 +1,5 @@
 #include "interface.h"
 
-// A stub of this file is machine generated, but the content is
-// hand-coded.  SAVE A COPY (here interface.cc.1) to avoid accidental
-// overwriting!
-
 #include "src/stdinc.h"
 #include "src/jdata.h"
 #include "src/idata.h"
@@ -21,6 +17,12 @@ static bool force_sync = false;		// off by default; set by setter only;
 					// that makes it to to_time.
 static int block_steps = 0;
 static int total_steps = 0;
+
+// Allow fine control over the initial time step.
+
+static real initial_timestep_fac = 0.0625;
+static real initial_timestep_limit = 0.03125;
+static real initial_timestep_median = 8.0;
 
 static double begin_time = -1;
 
@@ -108,6 +110,8 @@ int initialize_code()
 
     return 0;
 }
+
+// Setters and getters.
 
 int set_eps2(double epsilon_squared)
 {
@@ -235,6 +239,38 @@ int get_total_steps(int *s) {
     return 0;
 }
 
+int set_initial_timestep_fac(double s) {
+    initial_timestep_fac = s;
+    return 0;
+}
+
+int get_initial_timestep_fac(double * s) {
+    *s = initial_timestep_fac;
+    return 0;
+}
+
+int set_initial_timestep_limit(double s) {
+    initial_timestep_limit = s;
+    return 0;
+}
+
+int get_initial_timestep_limit(double * s) {
+    *s = initial_timestep_limit;
+    return 0;
+}
+
+int set_initial_timestep_median(double s) {
+    initial_timestep_median = s;
+    return 0;
+}
+
+int get_initial_timestep_median(double * s) {
+    *s = initial_timestep_median;
+    return 0;
+}
+
+//----------------------------------------------------------------------
+
 int commit_parameters()
 {
     // Perform any needed setup after initial code parameters have been set.
@@ -270,13 +306,24 @@ int commit_particles()
 
     jd->initialize_arrays();
     id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
-    jd->force_initial_timestep();	// set timesteps (needs acc and jerk)
+
+    // Set timesteps (needs acc and jerk)
+
+    // PRC(initial_timestep_fac); PRC(initial_timestep_limit);
+    // PRL(initial_timestep_median);
+    
+    jd->force_initial_timestep(initial_timestep_fac,
+			       initial_timestep_limit,
+			       initial_timestep_median);
     s = new scheduler(jd);
+    // s->print();
+
 #if 0
     cout << "commit_particles:";
     for (int j = 0; j < jd->nj; j++) cout << " " << jd->id[j];
     cout << endl << flush;
 #endif
+
     return 0;
 }
 
@@ -296,9 +343,13 @@ int recommit_particles()
     else
 	jd->initialize_gpu(true);		// reload the GPU
     id->setup();				// compute acc and jerk
-    jd->force_initial_timestep();		// set timesteps
+
+    jd->force_initial_timestep(initial_timestep_fac,  // set timesteps
+			       initial_timestep_limit,
+			       initial_timestep_median);
+
     s->initialize();				// reconstruct the scheduler
-    //s->print(true);
+    // s->print();
     return 0;
 }
 
@@ -316,8 +367,11 @@ int recompute_timesteps()
 	jd->initialize_gpu(true);		// reload the GPU
 
     id->setup();				// compute acc and jerk
-    jd->force_initial_timestep();
+    jd->force_initial_timestep(initial_timestep_fac,  // set timesteps
+			       initial_timestep_limit,
+			       initial_timestep_median);
     s->initialize();				// reconstruct the scheduler
+    // s->print();
     return 0;
 }
 

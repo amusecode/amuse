@@ -447,7 +447,8 @@ void jdata::check_inverse_id(const char *s)
     }
 }
 
-void jdata::set_initial_timestep(real fac)		// default = 0.0625
+void jdata::set_initial_timestep(real fac, real limit, real limitm)
+			      // defaults = 0.0625, 0.03125, 0.0
 {
     const char *in_function = "jdata::set_initial_timestep";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -465,7 +466,7 @@ void jdata::set_initial_timestep(real fac)		// default = 0.0625
 
 	    real firststep;
 	    if (eta == 0.0)
-		firststep = fac;
+		firststep = limit;
 	    else if (a2 == 0.0 || j2 == 0.0)
 		firststep = fac * eta;
 	    else
@@ -484,11 +485,29 @@ void jdata::set_initial_timestep(real fac)		// default = 0.0625
 	        firststep /= 2;
 	    }
 
+	    // Place an absolute limit on the step.
+	    
+	    while (firststep > limit) firststep /= 2;
+
 	    timestep[j] = firststep;
 	}
+
+    // Optionally limit the outliers relative to the median step.
+
+    if (limitm > 0) {
+	vector<real> temp;
+	for (int j = 0; j < nj; j++) temp.push_back(timestep[j]);
+	sort(temp.begin(), temp.end());
+	real dtmax = limitm*temp[nj/2];
+	// PRC(limitm); PRL(dtmax);
+	for (int j = 0; j < nj; j++) {
+	    while (timestep[j] > dtmax) timestep[j] /= 2;
+	}
+    }
 }
 
-void jdata::force_initial_timestep(real fac)		// default = 0.0625
+void jdata::force_initial_timestep(real fac, real limit, real limitm)
+				// defaults = 0.0625, 0.03125, 0.0
 {
     // Same as set_initial_timestep, but always set the step, even if
     // it is already set.  Do this by setting all steps to zero here.
@@ -499,7 +518,7 @@ void jdata::force_initial_timestep(real fac)		// default = 0.0625
     // Assume acc and jerk have already been set.
 
     for (int j = 0; j < nj; j++) timestep[j] = 0;
-    set_initial_timestep(fac);
+    set_initial_timestep(fac, limit, limitm);
 }
 
 real jdata::get_pot(bool reeval)		// default = false
