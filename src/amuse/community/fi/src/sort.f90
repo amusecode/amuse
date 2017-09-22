@@ -158,3 +158,13 @@ subroutine mortonsort
  dethdt(1:nsph)=tempvect(1:nsph)
  
 end subroutine
+
+! to sort additional (callable only after mortonsort) 
+subroutine sort_additional_real(n,array)
+  include 'globals.h'
+  integer :: n
+  real :: array(n)
+  tempvect(1:n)=array(bodlist(1:n))
+  array(1:n)=tempvect(1:n)
+end subroutine
+
