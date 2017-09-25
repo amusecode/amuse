@@ -12,7 +12,7 @@ def main(filename=None):
         amusedir = '.'
     filename = amusedir+'/examples/textbook/'+filename
 
-    pyplot.figure(figsize=(12,12))
+    pyplot.figure(figsize=(8,8))
     particles = read_set_from_file(filename, "amuse")
     for si in particles.history:
         scatter(si.x, si.y, s=100)
