@@ -42,10 +42,12 @@ def main(filename=None, lim=-1):
 
     try:
         amusedir = os.environ['AMUSE_DIR']
+        dir = amusedir+'/examples/textbook/'
     except:
         print 'Environment variable AMUSE_DIR not set'
-        amusedir = '.'
-    filename = amusedir+'/examples/textbook/'+filename
+        dir = './'
+
+    filename = dir+filename
 
     from matplotlib import pyplot, rc
     x_label = "N"

@@ -18,9 +18,9 @@ def plot(x, y):
     xlabel("x")
     ylabel("y")
 
-    save_file = "plot_gravity.png"
+    save_file = 'plot_gravity.png'
     pyplot.savefig(save_file)
-    print "\nSaved figure in file", save_file,'\n'
+    print '\nSaved figure in file', save_file,'\n'
     pyplot.show()
 ###BOOKLISTSTOP1###
 
@@ -28,10 +28,12 @@ if __name__ in ('__main__'):
     
     try:
         amusedir = os.environ['AMUSE_DIR']
+        dir = amusedir+'/examples/textbook/'
     except:
         print 'Environment variable AMUSE_DIR not set'
-        amusedir = '.'
-    filename = amusedir+'/examples/textbook/'+'gravity.h5'
+        dir = './'
+        
+    filename = dir+'gravity.h5'
     particles = read_set_from_file(filename, "hdf5")
 
     x = []
