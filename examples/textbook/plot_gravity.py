@@ -1,9 +1,11 @@
 import os
+###BOOKLISTSTART1###
 from matplotlib import pyplot
 from amuse.plot import scatter, xlabel, ylabel
 from amuse.io import read_set_from_file
 
 def main(filename=None):
+###BOOKLISTSTOP1###
     if filename is None: return
     try:
         amusedir = os.environ['AMUSE_DIR']
@@ -12,6 +14,7 @@ def main(filename=None):
         amusedir = '.'
     filename = amusedir+'/examples/textbook/'+filename
 
+###BOOKLISTSTART2###
     pyplot.figure(figsize=(8,8))
     particles = read_set_from_file(filename, "amuse")
     for si in particles.history:
@@ -23,8 +26,7 @@ def main(filename=None):
     pyplot.savefig(save_file)
     print "\nSaved figure in file", save_file,'\n'
     pyplot.show()
-
-    pyplot.show()
+###BOOKLISTSTOP2###
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser

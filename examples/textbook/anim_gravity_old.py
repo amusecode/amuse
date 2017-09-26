@@ -1,13 +1,20 @@
+import os
 from matplotlib import pyplot
 import matplotlib.animation as animation
 from amuse.lab import *
 
-fig = pyplot.figure()
+fig = pyplot.figure(figsize=(8,8))
 ax = fig.add_subplot(1,1,1)
 
 def animate(i):
-    filename = "gravity.h5"
+    try:
+        amusedir = os.environ['AMUSE_DIR']
+    except:
+        print 'Environment variable AMUSE_DIR not set'
+        amusedir = '.'
+    filename = amusedir+'/examples/textbook/'+'gravity.h5'
     particles = read_set_from_file(filename, "hdf5")
+    
     x = []
     y = []
     for si in particles.history:
@@ -18,4 +25,3 @@ def animate(i):
 
 anim = animation.FuncAnimation(fig, animate, interval=100)
 pyplot.show()
-
