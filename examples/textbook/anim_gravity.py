@@ -2,7 +2,8 @@ import os
 ###BOOKLISTSTART1###
 from matplotlib import pyplot
 import matplotlib.animation as animation
-from amuse.lab import *
+from amuse.io import read_set_from_file
+from amuse.units import units
 
 def animate(x, y):
 
@@ -20,17 +21,15 @@ def animate(x, y):
     ax = fig.add_subplot(1,1,1)
     ax.set_xlim(-1.2, 1.2)
     ax.set_ylim(-1.2, 1.2)
-###BOOKLISTSTOP1###
 
-    colormap = ['yellow', 'green', 'blue']	# specific to a 3-body plot
+    colormap = ['yellow', 'green', 'blue']
     size = [40, 20, 20]
     edgecolor = ['orange', 'green', 'blue']
-                   
-###BOOKLISTSTART2###
+    
     scat = ax.scatter(x[0], y[0], c=colormap, s=size, edgecolor=edgecolor)
     anim = animation.FuncAnimation(fig, update, interval=100)
     pyplot.show()
-###BOOKLISTSTOP2###
+###BOOKLISTSTOP1###
 
 if __name__ in ('__main__'):
     

@@ -3,22 +3,18 @@ import os
 from matplotlib import pyplot
 from amuse.plot import scatter, xlabel, ylabel
 from amuse.io import read_set_from_file
+from amuse.units import units
 
-def main(filename=None):
-###BOOKLISTSTOP1###
-    if filename is None: return
-    try:
-        amusedir = os.environ['AMUSE_DIR']
-    except:
-        print 'Environment variable AMUSE_DIR not set'
-        amusedir = '.'
-    filename = amusedir+'/examples/textbook/'+filename
-
-###BOOKLISTSTART2###
+def plot(x, y):
+    
     pyplot.figure(figsize=(8,8))
-    particles = read_set_from_file(filename, "amuse")
+
+    colormap = ['yellow', 'green', 'blue']	# specific to a 3-body plot
+    size = [40, 20, 20]
+    edgecolor = ['orange', 'green', 'blue']
+    
     for si in particles.history:
-        scatter(si.x, si.y, s=100)
+        scatter(si.x, si.y, c=colormap, s=size, edgecolor=edgecolor)
     xlabel("x")
     ylabel("y")
 
@@ -26,17 +22,22 @@ def main(filename=None):
     pyplot.savefig(save_file)
     print "\nSaved figure in file", save_file,'\n'
     pyplot.show()
-###BOOKLISTSTOP2###
-
-def new_option_parser():
-    from amuse.units.optparse import OptionParser
-    result = OptionParser()
-    result.add_option("-f", dest="filename", default = "gravity.h5",
-                      help="input filename [%default]")
-    return result
+###BOOKLISTSTOP1###
 
 if __name__ in ('__main__'):
-    o, arguments  = new_option_parser().parse_args()
-    main(**o.__dict__)
+    
+    try:
+        amusedir = os.environ['AMUSE_DIR']
+    except:
+        print 'Environment variable AMUSE_DIR not set'
+        amusedir = '.'
+    filename = amusedir+'/examples/textbook/'+'gravity.h5'
+    particles = read_set_from_file(filename, "hdf5")
 
-
+    x = []
+    y = []
+    for si in particles.history:
+        x.append(si.x.value_in(units.AU))
+        y.append(si.y.value_in(units.AU))
+    
+    plot(x, y)
