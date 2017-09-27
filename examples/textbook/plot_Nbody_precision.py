@@ -67,7 +67,7 @@ if __name__ in ('__main__','__plot__'):
     pyplot.ylim(1.e-15, 10.)
     pyplot.yscale('log')
 
-    save_file = "precision_N100t1.png"
+    save_file = 'precision_N100t1.png'
     pyplot.savefig(save_file)
     print "\nOutput saved in", save_file
     pyplot.show()
