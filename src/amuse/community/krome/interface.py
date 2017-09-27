@@ -23,9 +23,6 @@ class KromeInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMix
     """
 
     def __init__(self, **options):
-        if not os.path.exists("reactions_verbatim.dat"):
-            print "krome currently needs reactions_verbatim.dat in run directory"
-            raise Exception("krome currently needs reactions_verbatim.dat")
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(), **options)
         LiteratureReferencesMixIn.__init__(self)
 
