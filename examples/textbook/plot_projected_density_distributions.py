@@ -42,7 +42,7 @@ def plot_ZAMS_stellar_model(N, M):
 
     file = 'stellar_2MSunZAMS_projected.png'
     pyplot.savefig(file)
-    print 'Saved figure in file', file
+    print 'Saved figure in file', file, '\n'
 
 def GMC_model(N, M, R):
     converter = nbody_system.nbody_to_si(M, R)
@@ -67,10 +67,9 @@ def plot_GMC_model(N, M, R):
                        view=(-lim, lim, -lim, lim)|units.parsec)
     ax.set_facecolor('white')
 
-    file = 'molecular_cloud_projected.png'
-    pyplot.savefig(file)
-    print 'Saved figure in file', file
-
+    save_file = 'molecular_cloud_projected.png'
+    pyplot.savefig(save_file)
+    print 'Saved figure in file', save_file
 
 if __name__ in ("__main__","__plot__"):
     N = 10000

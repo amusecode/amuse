@@ -22,9 +22,9 @@ def initialize_single_star(M, z):
     pyplot.ylabel("density [$g/cm^3$]")
     pyplot.semilogy()
     
-    output_filename = 'initialize_single_star.png'
-    pyplot.savefig(output_filename)
-    print '\nSaved figure in file', output_filename,'\n'
+    save_file = 'initialize_single_star.png'
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file,'\n'
     pyplot.show()
 
 def new_option_parser():

@@ -32,9 +32,9 @@ def plot_mass_function(masses, ximf):
     pyplot.plot(x, len(masses)/c * (x**ximf), c=colors[1])
     pyplot.loglog()
     
-    file = "salpeter.png"
-    pyplot.savefig(file)
-    print '\nSaved figure in file', file,'\n'
+    save_file = "salpeter.png"
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file,'\n'
     pyplot.show()
 ###BOOKLISTSTOP1###
 

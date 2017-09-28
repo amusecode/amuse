@@ -31,9 +31,10 @@ def plot_ZAMS_stellar_model(N, M):
                        view=(-2, 2, -2, 2)|units.RSun)
     ax.set_facecolor('white')
     
-    file = 'stellar_2MSunZAMS_projected.png'
-    pyplot.savefig(file)
-    print 'Saved figure in file', file
+    save_file = 'stellar_2MSunZAMS_projected.png'
+    pyplot.savefig(save_file)
+    print 'Saved figure in file', save_file, '\n'
+    pyplot.show()
 ###BOOKLISTSTOP2###
 
 ###BOOKLISTSTART3###
