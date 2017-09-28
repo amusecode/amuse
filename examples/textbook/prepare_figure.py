@@ -85,10 +85,6 @@ def get_distinct(nr):
         i_col+=1
     return col
 
-# gets 4 colours, which also look distinct in black&white
-# returns: list of 4 colours in 
-#def get_distinct_grey():
-    
 # displays usage information and produces example plot.
 if __name__ == '__main__':
     import numpy as np
@@ -128,13 +124,18 @@ def figure_frame(x_label, y_label, xsize=12, ysize=10):
     pyplot.ylabel(y_label)
     return figure, ax
 
+from cycler import cycler
 def single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=10,
                  ymin=-1, ymax=-1):
 
     pyplot.rcParams.update({'font.size': 25})
-    pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
-                                           pink, crimson, violet, brown,
-                                           steal, rose, yellow, cyan ]
+    #pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
+    #                                       pink, crimson, violet, brown,
+    #                                       steal, rose, yellow, cyan ]
+    pyplot.rcParams['axes.prop_cycle'] \
+        = (cycler('color', [blue, green, red, sand, light_blue,
+                            pink, crimson, violet, brown,
+                            steal, rose, yellow, cyan ]))
     figure = pyplot.figure(figsize=(xsize, ysize))
 
     ax = pyplot.gca()
@@ -186,9 +187,13 @@ def quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
 def _quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
 
     pyplot.rcParams.update({'font.size': 25})
-    pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
-                                           pink, crimson, violet, brown,
-                                           steal, rose, yellow, cyan ]
+    #pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
+    #                                       pink, crimson, violet, brown,
+    #                                       steal, rose, yellow, cyan ]
+    pyplot.rcParams['axes.prop_cycle'] \
+        = (cycler('color', [blue, green, red, sand, light_blue,
+                            pink, crimson, violet, brown,
+                            steal, rose, yellow, cyan ]))
     f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col',
                                                   sharey='row', figsize=(12,12))
     set_tickmarks(ax1)
