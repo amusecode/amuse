@@ -116,7 +116,6 @@ if __name__ == '__main__':
     plt.ylabel('voltage (mV)')
     plt.title('Distinct colours example')
     plt.grid(True)
-#    plt.show()
     plt.savefig("distinct_colours_example.pdf")
 
 def figure_frame(x_label, y_label, xsize=12, ysize=10):
@@ -131,9 +130,11 @@ def figure_frame(x_label, y_label, xsize=12, ysize=10):
 
 def single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=10,
                  ymin=-1, ymax=-1):
-#    pyplot.rc('text', usetex=True)
-    pyplot.rcParams.update({'font.size': 30})
-    pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue, pink, crimson, violet, brown, steal, rose, yellow, cyan ]
+
+    pyplot.rcParams.update({'font.size': 25})
+    pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
+                                           pink, crimson, violet, brown,
+                                           steal, rose, yellow, cyan ]
     figure = pyplot.figure(figsize=(xsize, ysize))
 
     ax = pyplot.gca()
@@ -160,7 +161,8 @@ def single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=10,
 
 def quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
 
-    f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col', sharey='row', figsize=(8,8))
+    f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col',
+                                                  sharey='row', figsize=(8,8))
     set_tickmarks(ax1)
     ax1.locator_params(nbins=3)
     set_tickmarks(ax2)
@@ -182,9 +184,13 @@ def quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
     return f, ax1, ax2, ax3, ax4
 
 def _quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
-    pyplot.rcParams.update({'font.size': 30})
-    pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue, pink, crimson, violet, brown, steal, rose, yellow, cyan ]
-    f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col', sharey='row', figsize=(12,12))
+
+    pyplot.rcParams.update({'font.size': 25})
+    pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
+                                           pink, crimson, violet, brown,
+                                           steal, rose, yellow, cyan ]
+    f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col',
+                                                  sharey='row', figsize=(12,12))
     set_tickmarks(ax1)
     set_tickmarks(ax2)
     set_tickmarks(ax3)
@@ -203,17 +209,11 @@ def _quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
     return f, ax1, ax2, ax3, ax4
 
 def set_tickmarks(ax):
-    ax.minorticks_on() # switch on the minor ticks
+    ax.minorticks_on()
     return
     ax.tick_params('both', length=15, width=2, which='major')
     ax.tick_params('both', length=6, width=1, which='minor')
     ax.locator_params(nbins=3)
     ax.tick_params(axis='x', which='major', pad=20)
     ax.tick_params(axis='y', which='major', pad=20)
-    ax.margins(0.1, tight=True) 
-
-#seaborn.palplot(seaborn.cubehelix_palette(8))
-#current_palette = seaborn.color_palette()
-#seaborn.palplot(current_palette)
-#print current_palette
-
+    ax.margins(0.25, tight=True) 
