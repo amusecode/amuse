@@ -37,6 +37,8 @@ def get_stellar_track(mass):
             #    print 'luminosity =', stars[0].luminosity
             #    print 'temperature =', stars[0].temperature
             #    print 'stellar type =', stars[0].stellar_type
+            print stp[-1], stars[0].stellar_type
+            print stp
 
     return t, T, L, stp
 

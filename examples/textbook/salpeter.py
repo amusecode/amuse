@@ -4,7 +4,7 @@ def generate_power_law_mass_function(N, Mmin, Mmax, ximf):
     masses = new_powerlaw_mass_distribution(N, Mmin, Mmax, ximf)
     plot_mass_function(masses, ximf)
 
-###BOOKLISTSTART1###
+###BOOKLISTSTART###
 import numpy
 import math
 from amuse.units import units
@@ -36,7 +36,7 @@ def plot_mass_function(masses, ximf):
     pyplot.savefig(save_file)
     print '\nSaved figure in file', save_file,'\n'
     pyplot.show()
-###BOOKLISTSTOP1###
+###BOOKLISTSTOP###
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser

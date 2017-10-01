@@ -1,5 +1,5 @@
 import os
-###BOOKLISTSTART1###
+###BOOKLISTSTART###
 from matplotlib import pyplot
 from amuse.plot import scatter, xlabel, ylabel
 from amuse.io import read_set_from_file
@@ -22,7 +22,7 @@ def plot(x, y):
     pyplot.savefig(save_file)
     print '\nSaved figure in file', save_file,'\n'
     pyplot.show()
-###BOOKLISTSTOP1###
+###BOOKLISTSTOP###
 
 if __name__ in ('__main__'):
     
