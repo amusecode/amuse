@@ -8,7 +8,7 @@ def energy_error_of_integrated_Nbody_system(code, particles,
 
     gravity = code(number_of_workers=4)
     gravity.parameters.timestep_parameter = precision
-    gravity.parameters.timestep = precision | nbody_system.time
+    #gravity.parameters.timestep = precision | nbody_system.time
 
     gravity.particles.add_particles(particles)
     channel_from_to_framework = gravity.particles.new_channel_to(particles)
