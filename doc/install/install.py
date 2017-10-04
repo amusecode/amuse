@@ -108,9 +108,9 @@ class InstallPrerequisites(object):
           (
             'mpich2', 
             [], 
-            '3.1.4', 
+            '3.2', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/3.1.4/', 
+            'http://www.mpich.org/static/tarballs/3.2/', 
             self.mpich2_build
           ) ,
           (
@@ -585,11 +585,11 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
           '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
-            command.append('--with-pm=hydra:mpd:gforker')
+            command.append('--with-pm=hydra:gforker')
         elif self.use_gforker_process_manager:
-            command.append('--with-pm=gforker:hydra:mpd')
+            command.append('--with-pm=gforker:hydra')
         else:
-            command.append('--with-pm=mpd:hydra:gforker')
+            command.append('--with-pm=hydra:gforker')
             
         commands.append(command)
         commands.append(['make'])
