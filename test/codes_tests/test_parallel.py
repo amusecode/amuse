@@ -1,5 +1,5 @@
-
 from amuse.test.amusetest import TestWithMPI
+
 import os
 import sys
 
@@ -39,7 +39,14 @@ class TestAmuseInterface(TestWithMPI):
             instance.evolve_model(x | units.day)
             instance.particles.copy_values_of_all_attributes_to(particles)
             particles.savepoint()
-            
+
+    def test1(self):
+        from amuse.rfi import channel
+        channel.MpiChannel.ensure_mpi_initialized()
+        is_threaded = channel.MpiChannel.is_threaded()
+        is_multithreading_supported = channel.MpiChannel.is_multithreading_supported()
+        self.assertEquals(is_threaded, is_multithreading_supported)
+
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 

@@ -1264,6 +1264,9 @@ class MpiChannel(AbstractMessageChannel):
     @classmethod
     def is_threaded(cls):
         #We want this for backwards compatibility with mpi4py versions < 2.0.0
+        #currently unused after Init/Init_threaded was removed from
+        #this module.
+        from mpi4py import rc
         try:
             return rc.threaded
         except AttributeError:
@@ -1383,7 +1386,7 @@ class MpiChannel(AbstractMessageChannel):
                     arguments = [self.full_name_of_the_worker]
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command=self.python_exe_for_redirection, interpreter_executable=self.interpreter_executable)
-                
+        print command, arguments
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info=self.info)
             
         
