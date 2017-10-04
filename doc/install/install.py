@@ -373,7 +373,7 @@ class InstallPrerequisites(object):
         commands.append(['make', 'install'])
         
         for x in commands:
-            self.run_application(x, path)
+            self.run_application(x, path, env=env)
     
     def cmake_build(self, path):
         commands = []
