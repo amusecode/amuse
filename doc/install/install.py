@@ -79,7 +79,7 @@ class InstallPrerequisites(object):
             '4.4.1',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-c/archive/',
-            self.basic_build
+            self.netcdf_build
           ) ,
           (
             'netcdf-fortran' ,
@@ -87,7 +87,7 @@ class InstallPrerequisites(object):
             '4.4.4',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-fortran/archive/',
-            self.basic_build
+            self.netcdf_build
           ) ,
           (
             'netcdf4-python' ,
@@ -339,6 +339,23 @@ class InstallPrerequisites(object):
             self.run_application(x, path)
 
     def basic_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
+
+    def netcdf_build(self, path):
+        env = os.environ.copy()
+        env['LDFLAGS'] = '-L{0}/lib'.format(self.prefix) + ' ' + env['LDFLAGS']
+        env['CPPFLAGS'] = '-I{0}/include'.format(self.prefix) + ' ' + env['LDFLAGS']
         commands = []
         command = [
           './configure',
