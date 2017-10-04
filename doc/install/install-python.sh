@@ -93,12 +93,26 @@ cd ${OPENSSLDIR}
 
 
 MACHINE=`(uname -m) 2>/dev/null`
+PLATFORM=`uname`
 
+if [ ${PLATFORM} != 'Darwin' ]; then
+	if [ ${MACHINE} == 'x86_64' ]; then
+        	./Configure darwin64-x86_64-cc \
+    			--prefix=${PREFIX}  \
+    			--openssldir=${PREFIX}/openssl \
+    			--shared
+	else
+        	./Configure darwin64-i386-cc \
+    			--prefix=${PREFIX}  \
+    			--openssldir=${PREFIX}/openssl \
+    			--shared
+	fi
+else
 ./config \
     --prefix=${PREFIX}  \
     --openssldir=${PREFIX}/openssl \
     --shared
-
+fi
 make
 
 make install
