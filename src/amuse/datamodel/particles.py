@@ -262,7 +262,7 @@ class AbstractParticleSet(AbstractSet):
 
         format_float = '{0: >11.3e}'.format
         format_str20 = '{0: >20}'.format
-        format_str11 = '{0: >11}'.format
+        format_str11 = '{0!s: >11}'.format
 
         columns = map(lambda x : [format_str11(x)], attributes)
         columns.insert(0,[format_str20('key')])
@@ -3444,6 +3444,17 @@ class Particle(object):
         for attribute_name in keyword_arguments:
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)
+
+    def __getstate__(self):
+        return (self.key, self.as_set().copy())
+
+    def __setstate__(self, key_and_set):
+        key, particles_set = key_and_set
+        object.__setattr__(self, "key", key)
+        object.__setattr__(self, "particles_set", particles_set)
+        object.__setattr__(self, "_set_index", None)
+        object.__setattr__(self, "_set_version", None)
+
 
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
         if self._set_index is None or self._set_version != self.particles_set._get_version():

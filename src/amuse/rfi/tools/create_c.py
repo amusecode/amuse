@@ -39,6 +39,7 @@ HEADER_CODE_STRING = """
 	#include <netdb.h>
 	#include <unistd.h>
 	#include <netinet/tcp.h>
+  #include <arpa/inet.h>
 #endif
 """
 
@@ -288,7 +289,7 @@ void send_array_sockets(void *buffer, int length, int file_descriptor, int rank)
     if (rank != 0) {
         return;
     }
-
+    //fprintf(stderr, "number of bytes to write: %d\\n", length);
     while (total_written < length) {
     
 #ifdef WIN32
@@ -585,6 +586,9 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     serv_addr.sin_port = htons(port);
   
     if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
+      fprintf(stderr, "cannot connect socket to host %s, port %d\\n", host, port);
+      fprintf(stderr, "resolved IP address: %s\\n",  inet_ntoa( * (struct in_addr *) server->h_addr));
+
       perror("ERROR connecting socket");
       //fprintf(stderr, "cannot connect socket\\n");
       exit(1);
@@ -666,6 +670,7 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     header_out[HEADER_DOUBLE_COUNT] = 0;
     header_out[HEADER_BOOLEAN_COUNT] = 0;
     header_out[HEADER_STRING_COUNT] = 0;
+    header_out[HEADER_UNITS_COUNT] = 0;
 
     //fprintf(stderr, "c worker sockets_mpi: handling call\\n");
     
@@ -781,6 +786,7 @@ void run_sockets(int port, char *host) {
   
   if (connect(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
     fprintf(stderr, "cannot connect socket to host %s, port %d\\n", host, port);
+    fprintf(stderr, "resolved IP address: %s\\n",  inet_ntoa( * (struct in_addr *) server->h_addr));
 
     perror("ERROR connecting socket");
     //fprintf(stderr, "cannot connect socket\\n");
@@ -852,6 +858,8 @@ void run_sockets(int port, char *host) {
     header_out[HEADER_DOUBLE_COUNT] = 0;
     header_out[HEADER_BOOLEAN_COUNT] = 0;
     header_out[HEADER_STRING_COUNT] = 0;
+    header_out[HEADER_UNITS_COUNT] = 0;
+
 
     //fprintf(stderr, "c worker sockets: handling call\\n");
     

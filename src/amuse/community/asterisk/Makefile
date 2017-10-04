@@ -37,13 +37,14 @@ ifeq ($(JAVA_ENABLED),no)
 	$(error "Java support not configured in AMUSE")
 endif
 ifeq (1.5,$(findstring $(JAVA_VERSION), 1.5))
-        $(error "Java 1.7 or higher required for Distributed Amuse, but AMUSE configured with Java $(JAVA_VERSION)")
+        $(error "Java 1.7 or higher required for asterisk, but AMUSE configured with Java $(JAVA_VERSION)")
 endif
 ifeq (1.6,$(findstring $(JAVA_VERSION), 1.6))
-        $(error "Java 1.7 or higher required for Distributed Amuse, but AMUSE configured with Java $(JAVA_VERSION)")
+        $(error "Java 1.7 or higher required for asterisk, but AMUSE configured with Java $(JAVA_VERSION)")
 endif
 
 update:
+	@echo "update no longer recommended for asterisk, check https://github.com/NLeSC/asterisk"
 	$(RM) -rf code.zip $(UPDATE_ARCHIVE_DIR)
 	$(MV) -T src src.old
 	wget $(UPDATE_URL) -O code.zip

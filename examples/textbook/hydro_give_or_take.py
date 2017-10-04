@@ -73,9 +73,9 @@ def main(filename):
     stars.mass = (1.924785833858, 1.0) | units.MSun # age=1494.4Myr
 #    stars.mass = (2.0, 1.0) | units.MSun # age=1494.4Myr
     separation = 10|units.AU
-    vc = numpy.sqrt(constants.G*stars.mass.sum()/separation**2)
+    vc = numpy.sqrt(constants.G*stars.mass.sum()/separation)
     stars[0].position = (1, 0, 0) * separation
-    stars[0].velocity = (0, 1, 0) | vc
+    stars[0].velocity = (0, 1, 0) * vc
     stars[1].position = (0, 0, 0) | units.AU
     stars[1].velocity = (0, 0, 0) | units.kms
     stars.move_to_center()

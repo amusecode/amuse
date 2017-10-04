@@ -39,9 +39,11 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
     Q = -T/U
     com = pa.center_of_mass(gravity.particles)
     comv = pa.center_of_mass_velocity(gravity.particles)
-    dcen,rcore,rhocore = pa.densitycentre_coreradius_coredens(gravity.particles)
-    cmx,cmy,cmz = dcen
-    lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
+    if N >= 100:
+        dcen,rcore,rhocore \
+            = pa.densitycentre_coreradius_coredens(gravity.particles)
+        cmx,cmy,cmz = dcen
+        lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
 
     print ''
     print pre+"time=", time.number
@@ -57,15 +59,17 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
     print pre+"cmpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
     cmx,cmy,cmz = comv
     print pre+"cmvel[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
-    cmx,cmy,cmz = dcen
-    print pre+"dcpos[3]= %.8f %.8f %.8f" % (cmx.number, cmy.number, cmz.number)
-    print pre+"Rcore=", rcore.number
-    print pre+"Mlagr[9]=",
-    for m in mf: print "%.4f" % (m),
-    print ''
-    print pre+"Rlagr[9]=",
-    for r in lagr.number: print "%.8f" % (r),
-    print ''
+    if N >= 100:
+        cmx,cmy,cmz = dcen
+        print pre+"dcpos[3]= %.8f %.8f %.8f" \
+            		% (cmx.number, cmy.number, cmz.number)
+        print pre+"Rcore=", rcore.number
+        print pre+"Mlagr[9]=",
+        for m in mf: print "%.4f" % (m),
+        print ''
+        print pre+"Rlagr[9]=",
+        for r in lagr.number: print "%.8f" % (r),
+        print ''
 
     sys.stdout.flush()
     return E,cpu,wall
@@ -170,8 +174,6 @@ def run_ph4(infile = None, number_of_stars = 40,
 
     print ''
     print "number_of_stars =", number_of_stars
-    print "evolving to time =", end_time.number, \
-          "in steps of", delta_t.number
     sys.stdout.flush()
 
     E0,cpu0,wall0 = print_log('', time, gravity)
@@ -190,12 +192,16 @@ def run_ph4(infile = None, number_of_stars = 40,
     times = [1., 2., pi, 4*pi/3, 5., 2*pi, 2*pi + pi/100,
              2*pi + pi/5, 7., 8., 3*pi, 10.]
 
+    gravity.parameters.force_sync = 1	# stays set until explicitly unset
+
     for t in times:
         time = t|nbody_system.time
 
+        print "\nEvolving to time", time
+        sys.stdout.flush()
+
         gravity.parameters.block_steps = 0
         gravity.parameters.total_steps = 0
-        gravity.parameters.force_sync = 1
         gravity.evolve_model(time)
 
         dt = t - t0
@@ -253,6 +259,7 @@ def run_ph4(infile = None, number_of_stars = 40,
 
         print '@@@'
         print '@@@ t =', time.number, ' dt =', dt
+        print '@@@ sync_time =', gravity.parameters.sync_time.number
         print '@@@ dcpu/dt =', dcpu/dt
         nb = gravity.parameters.block_steps
         ns = gravity.parameters.total_steps

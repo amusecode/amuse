@@ -59,104 +59,15 @@ def setup_sph_code(sph_code, N, L, rho, u):
     sph_code.commit_particles()
     return sph_code
     
-def _main(stellar_mass, stellar_radius, core_mass, core_radius, t_end):
-
-        converter = nbody_system.nbody_to_si(1|units.MSun, 1|units.RSun)
-        instance = Athena(converter, number_of_workers=4)
-#        instance = Capreole(converter)
-        instance.initialize_code()
-
-        instance.parameters.gamma = 5/3.0
-        instance.parameters.courant_number=0.3
-
-        n = 256
-        instance.parameters.nx = n
-        instance.parameters.ny = n
-        instance.parameters.nz = n
-        
-        instance.parameters.length_x = 10 | units.RSun
-        instance.parameters.length_y = 10 | units.RSun
-        instance.parameters.length_z = 10 | units.RSun
-        
-#        instance.x_boundary_conditions = ("periodic","periodic")
-#        instance.y_boundary_conditions = ("periodic","periodic")
-#        instance.z_boundary_conditions = ("periodic","periodic")
-        instance.x_boundary_conditions = ("outflow", "outflow")
-        instance.y_boundary_conditions = ("outflow", "outflow")
-        instance.z_boundary_conditions = ("outflow", "outflow")
-        
-        result = instance.commit_parameters()
-        
-        grid = datamodel.new_regular_grid((n,n,n), [10.0, 10.0, 10.0] | units.RSun)
-
-        momentum =  units.kg / (units.s * units.m**2)
-        grid_size = units.RSun
-        energy_density = units.erg / grid_size**3
-        density =  units.MSun / units.RSun**3
-
-        supernova_energy = 1.e+51 | units.erg
-        stellar_energy_density = 0.01*supernova_energy/stellar_radius**3
-        supernova_energy_density = supernova_energy/core_radius**3
-        stellar_density = stellar_mass/stellar_radius**3
-        
-        grid.rho = 1.e-10 * stellar_density
-        grid.rhovx = 0.0 | momentum
-        grid.rhovy = 0.0 | momentum
-        grid.rhovz = 0.0 | momentum
-        grid.energy = 1 | energy_density
-        
-        datamodel.Grid.add_global_vector_attribute("position", ["x","y","z"])
-
-        cloud.fill_grid_with_spherical_cloud(
-            grid, 
-            center = [5.0, 5.0, 5.0] | units.RSun,
-            radius = stellar_radius,
-            rho = stellar_density,
-            rhovx = 0.0 | momentum,
-            rhovy = 0.0 | momentum,
-            rhovz = 0.0 | momentum, 
-            energy = stellar_energy_density
-        )
-
-        cloud.fill_grid_with_spherical_cloud(
-            grid, 
-            center = [5.0, 5.0, 5.0] | units.RSun,
-            radius = core_radius,
-            rho = core_mass/core_radius**3,
-            rhovx = 0.0 | momentum,
-            rhovy = 0.0 | momentum,
-            rhovz = 0.0 | momentum, 
-            energy = supernova_energy_density
-            #subgridsize = 16,
-        )
-        
-        channel = grid.new_channel_to(instance.grid)
-        channel.copy()
-         
-        density = units.MSun / (units.RSun**3)
-        momentum =  units.kms * density
-        energy =  units.MSun / ((units.yr**2) * units.RSun)
-    
-        halfway = n/2 - 1
-        plot_grid(instance.grid)
-        
-        instance.initialize_grid()
-        
-        channel = instance.grid.new_channel_to(grid)
-        
-        dt = 0.2*t_end
-        while instance.model_time<t_end:
-            print "Time=", instance.model_time.in_(units.Myr)
-            instance.evolve_model(instance.model_time + dt)
-            channel.copy()
-            plot_grid(instance.grid, instance.model_time)
-        instance.stop()
-
-def main(stellar_mass, stellar_radius, core_mass, core_radius, t_end, dt_diag, resolution):
+def main(stellar_mass, stellar_radius, core_mass, core_radius, t_end, dt, resolution):
     grid_size = 10 * stellar_radius
     hydro = initialize_grid_code(resolution, grid_size)
     grid = initialize_grid(stellar_mass, stellar_radius, core_mass, core_radius, resolution, grid_size)
-    run_grid_code(hydro, grid, t_end, dt_diag)
+    cth = grid.new_channel_to(hydro.grid)
+    cth.copy()
+    hydro.initialize_grid()
+
+    run_grid_code(hydro, grid, t_end, dt)
     
 def initialize_grid_code(resolution, grid_size):
 
@@ -184,7 +95,7 @@ def initialize_grid_code(resolution, grid_size):
     
 def initialize_grid(stellar_mass, stellar_radius, core_mass, core_radius, resolution, grid_size):
     n = resolution
-    r = grid_size.value_in_(units.RSun)
+    r = grid_size.value_in(units.RSun)
     grid = datamodel.new_regular_grid((n,n,n), [r, r, r] | units.RSun)
 
     momentum =  units.kg / (units.s * units.m**2)
@@ -228,20 +139,17 @@ def initialize_grid(stellar_mass, stellar_radius, core_mass, core_radius, resolu
     )
 
     return grid
-    channel = grid.new_channel_to(instance.grid)
-    channel.copy()
          
-def run_grid_code(hydro, grid, t_end, dt_diag):
-    hydro.initialize_grid()
-    plot_grid(hydro.grid)
+def run_grid_code(hydro, grid, t_end, dt):
+    ctg = hydro.grid.new_channel_to(grid)
+    ctg.copy()
+    plot_grid(grid)
         
-    channel = instance.grid.new_channel_to(grid)
-    dt = 0.2*t_end
     while hydro.model_time<t_end:
         print "Time=", hydro.model_time.in_(units.Myr)
         hydro.evolve_model(hydro.model_time + dt)
-        channel.copy()
-        plot_grid(hydro.grid, hydro.model_time)
+        ctg.copy()
+        plot_grid(grid, hydro.model_time)
     hydro.stop()
         
 def new_option_parser():
@@ -251,7 +159,7 @@ def new_option_parser():
                       dest="t_end", type="float", default = 500.0|units.s,
                       help="end time of the simulation [%default]")
     result.add_option("-d", unit=units.s,
-                      dest="dt_diag", type="float", default = 50.0|units.s,
+                      dest="dt", type="float", default = 50.0|units.s,
                       help="diagnostic time step [%default]")
     result.add_option("-M", unit=units.MSun,
                       dest="stellar_mass", type="float", default = 3|units.MSun,

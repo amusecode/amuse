@@ -336,7 +336,7 @@ class TestHop(TestCase):
         print "Test with different masses"
         # Particles on a cubic grid with masses according to a gaussian density profile
         grid = numpy.mgrid[-1:1:21j, -1:1:21j, -1:1:21j] | units.m
-        particles = Particles(9261, x=grid[0], y=grid[1], z=grid[2])
+        particles = Particles(9261, x=grid[0].flatten(), y=grid[1].flatten(), z=grid[2].flatten())
         peak_positions = [[0.2, -0.4, 0.3], [-0.6, 0.2, 0.7]] | units.m
         particles.mass = 2*numpy.exp(-(particles.position-peak_positions[0]).lengths_squared() / (0.1|units.m**2)) | units.kg
         particles.mass += numpy.exp(-(particles.position-peak_positions[1]).lengths_squared() / (0.1|units.m**2)) | units.kg

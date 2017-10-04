@@ -33,7 +33,7 @@ def resolve_collision(collision_detection, gravity, stellar, bodies):
                 bodies.synchronize_to(gravity.particles)
                 bodies.synchronize_to(stellar.particles)
             else:
-                print "Encounter failed to resolve, because the stars were too small."
+                print "Encounter failed to resolve: the stars were too small."
             dE_coll = E_coll - (gravity.kinetic_energy + gravity.potential_energy)
         print "Energy error in the collision: dE =", dE_coll 
 

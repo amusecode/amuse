@@ -35,6 +35,7 @@ import inspect
 from collections import deque
 import threading
 from time import sleep
+import warnings
 
 def dump_and_encode(x):
   return pickle.dumps(x,0) # -1 does not work with sockets channel
@@ -196,7 +197,11 @@ class JobServer(object):
           print "AMUSE JobServer launching"
 
       self.add_hosts(hosts=hosts,channel_type=channel_type)
-      
+
+    def no_hosts(self):
+      if self.number_available_codes==0 and self.number_starting_codes==0:
+        return True
+      return False
    
     def add_hosts(self,hosts=[],channel_type="mpi"):
       self.hosts.append(hosts)
@@ -295,8 +300,8 @@ class JobServer(object):
         return True
 
     def waitall(self):
-      while len(self.pool)>0 or self.job_list:
-        self.pool.wait()
+      while self.wait():
+        pass
     
     @property
     def finished_jobs(self):
@@ -330,10 +335,11 @@ class JobServer(object):
       self.pool.add_request(job.request,self._finalize_job, [job,code])
     
     def __del__(self):
-      self.waitall()
+      if not self.no_hosts():
+        self.waitall()
       if self.job_list:
-        print "JobServer: Warning: unfinished jobs"
+        warnings.warn("JobServer: Warning: shutting down with unfinished jobs")
       for code in self.idle_codes:
         code.stop()
       if self.number_starting_codes>0:
-        print "JobServer: Warning: some hosts startup threads possibly blocking"
+        warnings.warn("JobServer: Warning: some hosts startup threads possibly blocking")

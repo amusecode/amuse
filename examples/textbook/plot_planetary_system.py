@@ -123,7 +123,7 @@ def calculate_orbital_elements(star, planet):
     p = Particles()
     p.add_particle(star)
     p.add_particle(planet)
-    M, m, a, e, ta_out, outc_out, lan_out, aop_out = orbital_elements_from_binary(p, G=constants.G)
+    M, m, a, e, ta_out, inc_out, lan_out, aop_out = orbital_elements_from_binary(p, G=constants.G)
     return a, e
 
 def main(filename, lim=-1|units.AU, image_id=-1):

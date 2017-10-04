@@ -3,14 +3,14 @@
 """
 from amuse.lab import *
     
-def main(M, z, model_time):
+def main(m, z, model_time):
     stellar = MESA()
     stellar.parameters.metallicity = z
-    stellar.particles.add_particle(Particle(mass=M))
+    stellar.particles.add_particle(Particle(mass=m))
 
     initial_luminosity = stellar.particles.luminosity
     dt = 1 | units.Myr
-    while stellar.model_time<model_time:
+    while stellar.model_time < model_time:
         stellar.evolve_model(stellar.model_time+dt)
 
     print "at T=", stellar.model_time.in_(units.Myr), \
@@ -25,8 +25,8 @@ def main(M, z, model_time):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-M", unit= units.MSun,
-                      dest="M", type="float",default = 1.0 | units.MSun,
+    result.add_option("-m", unit= units.MSun,
+                      dest="m", type="float", default = 1.0 | units.MSun,
                       help="stellar mass [%default]")
     result.add_option("-t", unit = units.Myr,
                       dest="model_time", type="float", 

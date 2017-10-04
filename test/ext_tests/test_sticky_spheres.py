@@ -48,7 +48,11 @@ class TestStickySpheres(TestCase):
         particles = Particles(6)
         particles.mass = range(1, 7) | units.kg
         particles.position = [[i, 1.0, 2.0] for i in range(1, 7)] | units.m
-        particles.velocity = [[1.0, 0.0, 1.0], [0.0, -1.0, -1.0]] | units.m / units.s
+        particles.velocity = [
+                [1.0, 0.0, 1.0], [0.0, -1.0, -1.0],
+                [1.0, 0.0, 1.0], [0.0, -1.0, -1.0],
+                [1.0, 0.0, 1.0], [0.0, -1.0, -1.0],
+                ] | units.m / units.s
         
         for fraction in [0.01, 0.1, 0.5]:
             sticky_spheres = StickySpheres(mass_loss=fraction)

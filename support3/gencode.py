@@ -4,7 +4,13 @@ import os
 
 from optparse import OptionParser
 
-
+def get_amuse_directory_root():
+    filename_of_this_script = __file__
+    directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
+    if os.path.isabs(directory_of_this_script):
+        return directory_of_this_script
+    else:
+        return os.path.abspath(directory_of_this_script)
 
 if sys.hexversion > 0x03000000:
     def get_amuse_directory():
@@ -15,8 +21,16 @@ if sys.hexversion > 0x03000000:
             return directory_of_this_script
         else:
             return os.path.abspath(directory_of_this_script)
+
+    def execfile(filename, global_vars = None, local_vars = None):
+        if global_vars is None:
+            global_vars = {}
+        if local_vars is None:
+            local_vars = locals()
+        with open(filename) as f:
+            code = compile(f.read(), filename, 'exec')
+            exec(code, global_vars)
 else:
-    
     def get_amuse_directory():
         filename_of_this_script = __file__
         directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
@@ -29,6 +43,7 @@ else:
 def setup_sys_path():
     amuse_directory = get_amuse_directory()
     
+    sys.path.insert(0, get_amuse_directory_root())
     sys.path.insert(0, amuse_directory)
     sys.path.insert(0, os.path.join(amuse_directory,"src"))
     
@@ -85,10 +100,10 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-t",
             "--type",
-            choices=["c","h", "H", "f90", "py", "java"],
+            choices=["c","h", "H", "f90", "py", "java", "cython"],
             default="c",
             dest="type",
-            help="TYPE of the code to generate. Can be one of c, h, H, f90, py or java. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper <java> will generate java interface or class, depending on mode. (Defaults to c)")
+            help="TYPE of the code to generate. Can be one of c, h, H, f90, py, java or cython. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. <py> will generate a python worker wrapper <java> will generate java interface or class, depending on mode. (Defaults to c)")
         
         self.parser.add_option(
             "-m",
@@ -134,6 +149,18 @@ class ParseCommandLine(object):
             dest="make_executable",
             help="Set the executable bit when generating the output file")
         
+        self.parser.add_option(
+            "--cython-import",
+            default="",
+            dest="cython_import",
+            help="Name of the module to import for the cython worker (name of the .so file)")
+        
+        self.parser.add_option(
+            "--prefix",
+            default="",
+            dest="function_name_prefix",
+            help="Prefix for generated function names, relevant for cython")
+        
         self.options = None
         self.arguments = None
         
@@ -166,12 +193,14 @@ class ParseCommandLine(object):
                 self.show_error_and_exit("incorrect number of arguments")
             try:
                 self.options.name_of_module_or_python_file = self.arguments[0]
-                self.options.name_of_class = self.arguments[1]
+                if len(self.arguments) > 1:
+                    self.options.name_of_class = self.arguments[1]
                 if len(self.arguments) > 2:
                     self.options.name_of_implementation_class = self.arguments[2]
             except Exception as exception:
                 self.show_error_and_exit(exception)
     
+
     def parse_ignore_classes(self):
         names = self.options.ignore.split(',')
         for name in names:
@@ -242,10 +271,7 @@ def make_file(settings):
     try:
         if settings.name_of_module_or_python_file.endswith('.py'):
             module = {}
-            print(os.getcwd(), settings.name_of_module_or_python_file)
-            with open(settings.name_of_module_or_python_file) as stream:
-                exec(compile(stream.read(), settings.name_of_module_or_python_file, 'exec'), module)
-
+            execfile(settings.name_of_module_or_python_file, module)
             specification_class = module[settings.name_of_class]
             if not settings.name_of_implementation_class is None:
                 implementation_class = module[settings.name_of_implementation_class]
@@ -270,6 +296,9 @@ def make_file(settings):
         ('java','script'): create_java.GenerateAJavaWorkerScript,
         ('py','sockets'): make_a_socket_python_worker,
         ('py','mpi'): make_a_mpi_python_worker,    
+        ('cython','script'): create_cython.GenerateACythonStartScriptStringFromASpecificationClass,
+        ('cython','mpi'): create_cython.GenerateACythonSourcecodeStringFromASpecificationClass,
+        ('cython', 'interface'): create_cython.GenerateAFortranInterfaceSourcecodeStringFromASpecificationClass
     }
     
     try:
@@ -282,11 +311,15 @@ def make_file(settings):
         builder.ignore_functions_from_specification_classes = settings.ignore_classes
         builder.underscore_functions_from_specification_classes = settings.underscore_classes
         builder.needs_mpi = settings.needs_mpi.lower() == 'true'
+        builder.is_mpi_enabled = config.mpi.is_enabled
+        builder.name_of_outputfile = settings.output
+        builder.cython_import = settings.cython_import
+        builder.function_name_prefix = settings.function_name_prefix
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     
     if settings.output == '-':
-        print(builder.result)
+        print (builder.result)
     else:
         try:
             
@@ -300,6 +333,9 @@ def make_file(settings):
             uc.show_error_and_exit(exception)
             
             
+
+
+
 
 def make_directory(settings):
 
@@ -322,11 +358,14 @@ if __name__ == '__main__':
     
     setup_sys_path()
     
+    from support3 import config
+
     from amuse.rfi.tools import create_c
     from amuse.rfi.tools import create_fortran
     from amuse.rfi.tools import create_java
     from amuse.rfi.tools import create_dir
     from amuse.rfi.tools import create_python_worker
+    from amuse.rfi.tools import create_cython
     
     uc = ParseCommandLine()
     uc.start()

@@ -33,7 +33,7 @@ def multidimensional_meshgrid(*arrays):
         
     result = []    
     for i, quantity in enumerate(reversed_quantities):
-        shape = numpy.ones(dim)
+        shape = numpy.ones(dim, dtype=numpy.int)
         shape[i] = lengths[i]
         if quantities.is_quantity(quantity):
             array = quantity.value_in(quantity.unit)

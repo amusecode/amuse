@@ -9,6 +9,7 @@ CXX ?= g++
 CC ?= gcc
 
 CXXFLAGS ?= -Wall -g -O2
+CXXFLAGS += -std=c++11
 CFLAGS ?= -Wall -g -O2
 
 GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
@@ -18,7 +19,7 @@ LIBS = $(MPFR_LIBS) $(GMP_LIBS)
 
 ###################################################################
 
-OBJS = integrator_MS.o Bs_integrator.o Cluster.o Clock.o Dynamics.o Force.o Star.o mpreal.o dlmalloc.o
+OBJS = integrator_MS.o Bs_integrator.o Cluster.o Clock.o Dynamics.o Force.o Star.o  dlmalloc.o
 EXEC = integrator_MS.exe
 CODELIB = libadaptb.a
 all: $(OBJS) $(EXEC) $(CODELIB)
@@ -44,7 +45,7 @@ Bs_integrator.o: Bs_integrator.cpp Bs_integrator.h Cluster.o
 Cluster.o: Cluster.cpp Cluster.h Star.o Force.o Dynamics.o
 	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Cluster.cpp
 
-Clock.o: Clock.cpp Clock.h mpreal.o dlmalloc.o
+Clock.o: Clock.cpp Clock.h dlmalloc.o
 	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Clock.cpp
 
 Dynamics.o: Dynamics.cpp Dynamics.h Star.o
@@ -53,11 +54,8 @@ Dynamics.o: Dynamics.cpp Dynamics.h Star.o
 Force.o: Force.cpp Force.h Star.o
 	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Force.cpp
 
-Star.o: Star.cpp Star.h mpreal.o dlmalloc.o
+Star.o: Star.cpp Star.h dlmalloc.o
 	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c Star.cpp
-
-mpreal.o: mpreal.cpp mpreal.h
-	$(CXX) $(CXXFLAGS) $(MPFR_FLAGS) -c mpreal.cpp
 
 dlmalloc.o: dlmalloc.c dlmalloc.h
 	$(CC) $(CFLAGS) -c dlmalloc.c

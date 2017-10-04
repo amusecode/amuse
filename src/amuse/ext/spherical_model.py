@@ -146,6 +146,7 @@ class UniformSphericalDistribution(object):
             number_of_particles = self.number_of_particles
         if try_number_of_particles is None:
             try_number_of_particles = number_of_particles
+        try_number_of_particles = int(try_number_of_particles)
         x, y, z = self._random_cube(2*try_number_of_particles)
         r_squared = x*x + y*y + z*z
         select_sphere = numpy.where( r_squared < self.mass_cutoff**(2.0/3.0))

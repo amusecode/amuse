@@ -89,7 +89,7 @@ def evolve_single_star(mass, tend):
 
         return time, stellar_type, mass, radius, temperature, luminosity
 
-def merge_two_stars_spz_and_evolve(Mprim, Msec, tcoll, tend):
+def merge_two_stars_sph_and_evolve(Mprim, Msec, tcoll, tend):
 
     stellar = EVtwin()
     stars = Particles(2)
@@ -248,7 +248,7 @@ if __name__ == "__main__":
     print "Main sequence lifetime of star=", tms.in_(units.Myr)
 
     #tcoll = 0.5*tms
-    time, mass, radius, temperature, luminosity, n = merge_two_stars_spz_and_evolve(o.Mprim, o.Msec, tcoll, o.tend)
+    time, mass, radius, temperature, luminosity, n = merge_two_stars_sph_and_evolve(o.Mprim, o.Msec, tcoll, o.tend)
     
     pyplot.scatter(temperature[0].value_in(units.K), luminosity[0].value_in(units.LSun), c=color[2], s=150, marker="^")
     pyplot.plot(temperature[:n].value_in(units.K), luminosity[:n].value_in(units.LSun), c=color[2])

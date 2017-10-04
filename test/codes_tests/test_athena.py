@@ -1669,12 +1669,12 @@ class TestAthena(TestWithMPI):
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
             self.assertAlmostRelativeEquals(x, 0.1)
-        #print instance.potential_grid[...,...,0].potential
+        #print instance.potential_grid[...,0].potential
         instance.evolve_model(1.0 | generic_unit_system.time)
         #print "--------------------------"
-        #print instance.grid.rho[...,...,0]
-        z = instance.grid.rho[...,...,0]
-        #z = instance.potential_grid.potential[...,...,0]
+        #print instance.grid.rho[...,0]
+        z = instance.grid.rho[...,0]
+        #z = instance.potential_grid.potential[...,0]
         #z = z.value_in(generic_unit_system.potential)
         z = z.value_in(density)
         #from matplotlib import pyplot
@@ -1968,11 +1968,11 @@ class TestAthena(TestWithMPI):
             numpy.reshape(numpy.arange(-0.0625, -1.5, -0.1875), (2,2,2)) | generic_unit_system.momentum_density)
         
         instance.grid[...,0,...].momentum =  [12.0, 13.0, 14.0] | generic_unit_system.momentum_density
-        self.assertAlmostEquals(instance.grid[0,...,...].rhovx, 
+        self.assertAlmostEquals(instance.grid[0,...].rhovx, 
             [[12.0, 12.0], [-0.75, -1.125]] | generic_unit_system.momentum_density)
-        self.assertAlmostEquals(instance.grid[0,...,...].rhovy, 
+        self.assertAlmostEquals(instance.grid[0,...].rhovy, 
             [[13.0, 13.0], [2.0, 2.75]] | generic_unit_system.momentum_density)
-        self.assertAlmostEquals(instance.grid[...,...,0].rhovz, 
+        self.assertAlmostEquals(instance.grid[...,0].rhovz, 
             [[14.0, -0.4375], [14.0, -1.1875]] | generic_unit_system.momentum_density)
         
         instance.grid.energy = numpy.reshape(numpy.arange(0.0, 1.0, 0.125), (2,2,2)) | generic_unit_system.energy_density
