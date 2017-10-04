@@ -88,5 +88,6 @@ if __name__ == '__main__':
     plt.ylabel('voltage (mV)')
     plt.title('Distinct colours example')
     plt.grid(True)
-#    plt.show()
+    
     plt.savefig("distinct_colours_example.pdf")
+    plt.show()

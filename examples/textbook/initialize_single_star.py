@@ -2,6 +2,7 @@ from amuse.lab import *
 from matplotlib import pyplot
 from amuse.plot import plot, xlabel, ylabel
 
+###BOOKLISTSTART###
 def get_density_profile(code=EVtwin, M=2.0|units.MSun, z=0.02):
     stellar = code()
     stellar.parameters.metallicity = z
@@ -10,6 +11,7 @@ def get_density_profile(code=EVtwin, M=2.0|units.MSun, z=0.02):
     rho    = stellar.particles[0].get_density_profile()
     stellar.stop()
     return radius, rho
+###BOOKLISTSTOP###
 
 def initialize_single_star(M, z):
     r, rho = get_density_profile(EVtwin, M, z)
@@ -19,8 +21,12 @@ def initialize_single_star(M, z):
     pyplot.xlabel("$R$ [$R_\odot$]")
     pyplot.ylabel("density [$g/cm^3$]")
     pyplot.semilogy()
-    pyplot.show()
     
+    save_file = 'initialize_single_star.png'
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file,'\n'
+    pyplot.show()
+
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
