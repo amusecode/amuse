@@ -354,8 +354,14 @@ class InstallPrerequisites(object):
 
     def netcdf_build(self, path):
         env = os.environ.copy()
-        env['LDFLAGS'] = '-L{0}/lib'.format(self.prefix) + ' ' + env['LDFLAGS']
-        env['CPPFLAGS'] = '-I{0}/include'.format(self.prefix) + ' ' + env['LDFLAGS']
+        prev = ''
+        if 'LDFLAGS' in env:
+            prev = ' ' +env['LDFLAGS']
+        prev = ''
+        if 'CPPFLAGS' in env:
+            prev = ' ' +env['CPPFLAGS']
+        env['LDFLAGS'] = '-L{0}/lib'.format(self.prefix) + prev
+        env['CPPFLAGS'] = '-I{0}/include'.format(self.prefix) + prev
         commands = []
         command = [
           './configure',
