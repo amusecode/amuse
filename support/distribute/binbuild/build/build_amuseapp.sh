@@ -32,6 +32,8 @@ NOWSHORT=$(date +"%Y%m%d")
 WORKDIR=amuse_$NOW
 #REVISION=`svn --password=svn2amuse --username=svn info -r HEAD $SVNURL | grep Revision | awk -- '{print $2}'`
 
+echo "OS X bit:" ${OSX_BIT:=64bit}
+
 echo "Version to build:" ${VERSION:=${NOWSHORT}}
 
 PYTHONMAJOR="2"
@@ -69,6 +71,10 @@ if [ "${BUILD}" == "omuse" ]; then
   TUTORIALDIR="${BASEDIR}/../../../../doc/omuse_tutorial"
 fi
 
+if [ ${OSX_BIT} == '32bit' ]; then
+	ARCHITECTURE=i386
+fi
+
 RELEASEDIR=${BUILD}-${VERSION}-${PLATFORM}_${ARCHITECTURE}
 DISTFILE=${RELEASEDIR}.tar.gz
 
@@ -98,11 +104,11 @@ if [ ! -e "installed" ]; then
         cd openssl-${OPENSSLVERSION}
         
         #./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
-        ./Configure darwin64-x86_64-cc --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
-        if [ ${ARCHITECTURE} == 'x86_64' ]; then
-            ./Configure darwin64-x86_64-cc --prefix=${INSTALLDIR} --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
-            make depend || exit $?
-        fi
+	if [ ${OSX_BIT} == '64bit' ]; then
+        	./Configure darwin64-x86_64-cc --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
+	else
+        	./Configure darwin-i386-cc --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
+	fi
         
         make || exit $?
         
@@ -111,7 +117,13 @@ if [ ! -e "installed" ]; then
         cd ${BASEDIR}
         
         tar -xvf certs.tar.gz -C ${INSTALLDIR}/openssl/certs  || exit $?
-        
+         
+	if [ ${OSX_BIT} == '32bit' ]; then
+		export CFLAGS="-arch i386"
+		export FCFLAGS="-arch i386"
+		export CXXFLAGS="-arch i386"
+		export LDFLAGS="-arch i386"
+    	fi
         # delete previous source
         rm -rf Python-${PYTHONVERSION} || exit $?
         if [ ! -e "Python-${PYTHONVERSION}.tgz" ]; then
@@ -131,7 +143,7 @@ if [ ! -e "installed" ]; then
         # configure
         
         # Build Python
-        ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --disable-framework --disable-universalsdk CC=/usr/bin/gcc
+        ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --disable-framework --disable-universalsdk CC=/usr/bin/gcc CXX=/usr/bin/g++
 
         # patch 
         patch setup.py < ${BASEDIR}/setup_linux.patch || exit $?
@@ -234,6 +246,15 @@ export F77=gfortran
 if [ ${PLATFORM} == 'Darwin' ]; then
     export CC=cc
     export CXX=c++
+	if [ ${OSX_BIT} == '32bit' ]; then
+		export CFLAGS="-arch i386"
+		export CXXFLAGS="-arch i386"
+		export LDFLAGS="-arch i386"
+		export CC="/usr/bin/gcc -arch i386"
+		export CXX="/usr/bin/g++ -arch i386"
+		export FC="gfortran -arch i386"
+		export F77="gfortran -arch i386"
+    	fi
 fi
 
 if [ ! -e "libsinstalled" ]; then
