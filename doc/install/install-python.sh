@@ -95,7 +95,7 @@ cd ${OPENSSLDIR}
 MACHINE=`(uname -m) 2>/dev/null`
 PLATFORM=`uname`
 
-if [ ${PLATFORM} != 'Darwin' ]; then
+if [ ${PLATFORM} == 'Darwin' ]; then
 	if [ ${MACHINE} == 'x86_64' ]; then
         	./Configure darwin64-x86_64-cc \
     			--prefix=${PREFIX}  \
