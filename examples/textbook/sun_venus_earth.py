@@ -73,9 +73,9 @@ def plot_track(xe,ye,xv,yv, output_filename):
     plot.set_xlim(-1.3, 1.3)
     plot.set_ylim(-1.3, 1.3)
 
-    save_file = 'sun_venus_earth.png'
-    pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    file = 'sun_venus_earth.png'
+    pyplot.savefig(file)
+    print '\nSaved figure in file', file,'\n'
     pyplot.show()
 ###BOOKLISTSTOP3###
 
@@ -87,6 +87,7 @@ def new_option_parser():
                       help="output filename [%default]")
     return result
     
+
 if __name__ in ('__main__','__plot__'):
     o, arguments  = new_option_parser().parse_args()
 

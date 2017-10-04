@@ -4,7 +4,7 @@ def generate_power_law_mass_function(N, Mmin, Mmax, ximf):
     masses = new_powerlaw_mass_distribution(N, Mmin, Mmax, ximf)
     plot_mass_function(masses, ximf)
 
-###BOOKLISTSTART###
+###BOOKLISTSTART1###
 import numpy
 import math
 from amuse.units import units
@@ -32,11 +32,11 @@ def plot_mass_function(masses, ximf):
     pyplot.plot(x, len(masses)/c * (x**ximf), c=colors[1])
     pyplot.loglog()
     
-    save_file = "salpeter.png"
-    pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    file = "salpeter.png"
+    pyplot.savefig(file)
+    print '\nSaved figure in file', file,'\n'
     pyplot.show()
-###BOOKLISTSTOP###
+###BOOKLISTSTOP1###
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser

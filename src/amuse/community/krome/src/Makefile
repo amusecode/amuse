@@ -6,7 +6,7 @@ LIBFILES= $(OBJECTS) hash.o amuse_helpers.o
 
 # krome makefile has changed to be ifort, with targets for gfortran
 #~ KROME_OPTIONS=-unsafe -iRHS -n networks/react_COthin -compiler $(FC) -useN -clean
-KROME_OPTIONS=-unsafe -iRHS -n networks/react_COthin -useN -clean -noVerbatimFile
+KROME_OPTIONS=-unsafe -iRHS -n networks/react_COthin -useN -clean
 #  -compact
 
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
