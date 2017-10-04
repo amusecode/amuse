@@ -748,8 +748,7 @@ class BuildCodes(CodeCommand):
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
-            if sys.hexversion > 0x03000000:
-                self.run_2to3_on_build_dirs()
+            self.run_2to3_on_build_dirs()
                 
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"

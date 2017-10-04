@@ -181,7 +181,7 @@ class TestRotations(amusetest.TestCase):
         cross2=p[0].position.cross(p[0].velocity)
                 
         self.assertAlmostEquals(dot1.value_in(units.km**2/units.s),dot2.value_in(units.km**2/units.s),14)
-        self.assertAlmostEquals(cross2.value_in(units.km**2/units.s),cross1.dot(numpy.linalg.inv(rm)).value_in(units.km**2/units.s),14)
+        self.assertAlmostEquals(cross2.value_in(units.km**2/units.s),cross1.dot(numpy.linalg.inv(rm)).value_in(units.km**2/units.s),13)
         
         
         

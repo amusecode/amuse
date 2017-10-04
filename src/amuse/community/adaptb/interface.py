@@ -1,10 +1,11 @@
+import warnings
+
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 
 class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureReferencesMixIn, 
         StoppingConditionInterface, CodeWithDataDirectories):
     """
-    Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
     Adaptb (Accurate Dynamics with Arbitrary Precision by Tjarda Boekholt)
     """
     include_headers = ['worker_code.h', 'stopcond.h']
@@ -13,6 +14,7 @@ class AdaptbInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureR
         CodeInterface.__init__(self, name_of_the_worker="adaptb_worker", **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
+        warnings.warn("Adaptb is superseded by Brutus") 
     
     @legacy_function
     def get_adaptb_output_directory():

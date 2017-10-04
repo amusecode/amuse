@@ -1258,7 +1258,11 @@ namespace my_dev {
           jitOptVals[jitOptionCount] = (void *)jitRegCount;        
           jitOptionCount++;        
         }
-        
+       
+
+#if 0 
+        CUDA8 fix, do not check for Fermi anymore, it is no longer supported
+
         //Fermi requires at least compute mode 2, so if device is compute mode 2
         //but the given option is not compute mode 2 (eg constant <= 3) we change 
         //it to compute mode 2.0
@@ -1278,8 +1282,8 @@ namespace my_dev {
 //           int arch = architecture;
           jitOptVals[jitOptionCount] = (void *)arch;        
           jitOptionCount++;  
-        }     
-        
+        }    
+#endif   
         
         // set up size of compilation log buffer                                     
         jitOptions[jitOptionCount] = CU_JIT_INFO_LOG_BUFFER_SIZE_BYTES;                                                                                          
@@ -1298,13 +1302,7 @@ namespace my_dev {
         string ptxSource;
         load_source(hKernelFilename, ptxSource);
         
-  //       hier gebleven bij jit moeten we source code inladen
-  //       sterker nog dat willen we altijd, dus altijd code inladen! Woo!
-        
-  //         CU_SAFE_CALL(cuModuleLoad(&cuModule, hKernelFilename));
-    
-  //         jitOptionCount = 0;
-          CU_SAFE_CALL(cuModuleLoadDataEx(&cuModule, ptxSource.c_str(), jitOptionCount, jitOptions, (void **)jitOptVals));
+        CU_SAFE_CALL(cuModuleLoadDataEx(&cuModule, ptxSource.c_str(), jitOptionCount, jitOptions, (void **)jitOptVals));
           
           // printf("> PTX JIT log:\n%s\n", jitLogBuffer);        
           

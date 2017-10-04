@@ -117,16 +117,16 @@ def init_kepler(star1, star2):
     kep.initialize_code()
 
     return kep
-        
+
 def run_ph4(infile = None, outfile = None,
-             number_of_stars = 100, number_of_binaries = 0,
-             end_time = 10 | nbody_system.time,
-             delta_t = 1 | nbody_system.time,
-             n_workers = 1, use_gpu = 1, gpu_worker = 1,
-             salpeter = 0,
-             accuracy_parameter = 0.1,
-             softening_length = 0.0 | nbody_system.length,
-             manage_encounters = 1, random_seed = 1234):
+            number_of_stars = 100, number_of_binaries = 0,
+            end_time = 10 | nbody_system.time,
+            delta_t = 1 | nbody_system.time,
+            n_workers = 1, use_gpu = 1, gpu_worker = 1,
+            salpeter = 0,
+            accuracy_parameter = 0.1,
+            softening_length = 0.0 | nbody_system.length,
+            manage_encounters = 1, random_seed = 1234):
 
     if random_seed <= 0:
         numpy.random.seed()

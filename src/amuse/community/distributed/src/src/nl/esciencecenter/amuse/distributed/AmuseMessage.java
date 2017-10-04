@@ -59,7 +59,7 @@ public class AmuseMessage {
     public static final int HEADER_DOUBLE_COUNT_INDEX = 7;
     public static final int HEADER_BOOLEAN_COUNT_INDEX = 8;
     public static final int HEADER_STRING_COUNT_INDEX = 9;
-    public static final int HEADER_UNITS_COUNT_INDEX = 9;
+    public static final int HEADER_UNITS_COUNT_INDEX = 10;
 
     public static final int SIZEOF_INT = 4;
     public static final int SIZEOF_LONG = 8;
@@ -287,6 +287,7 @@ public class AmuseMessage {
         header.put(HEADER_DOUBLE_COUNT_INDEX, 0);
         header.put(HEADER_BOOLEAN_COUNT_INDEX, 0);
         header.put(HEADER_STRING_COUNT_INDEX, 1);
+        header.put(HEADER_UNITS_COUNT_INDEX, 0);
 
         // set error state
         headerBytes.put(HEADER_ERROR_FLAG, TRUE_BYTE);

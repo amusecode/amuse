@@ -438,7 +438,8 @@ class TestInterface(TestWithMPI):
         For the hydra process manager the tests will fail.
         So skip the tests if we detect hydra
         """
-                 
+        if 'HYDI_CONTROL_FD' in os.environ:
+            return # can run in modern mpiexec.hydra                 
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
             self.skip('cannot run the socket tests under mpi process manager')
          
@@ -452,12 +453,16 @@ class TestInterface(TestWithMPI):
         So skip the tests if we detect hydra
         """
                  
-        if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
-            self.skip('cannot run the socket tests under mpi process manager')
-         
+        if not config.java.is_enabled:
+            self.skip("java not enabled")
+
+        javac = config.java.javac
+        if not os.path.exists(javac):
+            self.skip("java compiler not available")         
     
     def setUp(self):
         self.check_not_in_mpiexec()
+        self.check_has_java()
         super(TestInterface, self).setUp()
         print "building...",
         self.check_can_compile_modules()

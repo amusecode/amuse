@@ -20,19 +20,19 @@ For openmpi do::
 	  libgmp3-dev libmpfr4 libmpfr-dev \
 	  libhdf5-serial-dev hdf5-tools \
 	  python-nose python-numpy python-setuptools python-docutils \
-	  python-h5py python-setuptools
+	  python-h5py python-setuptools git
 	
 	> sudo easy_install mpi4py
 
-For mpich2 do::
+For mpich do::
 	
 	> sudo apt-get install build-essential gfortran python-dev \
-	  mpich2 libmpich2-dev \
+	  mpich libmpich-dev \
 	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
 	  libgmp3-dev libmpfr4 libmpfr-dev \
 	  libhdf5-serial-dev hdf5-tools \
 	  python-nose python-numpy python-setuptools python-docutils \
-	  python-h5py python-setuptools
+	  python-h5py python-setuptools git
 	
 	> sudo easy_install mpi4py
 
@@ -41,7 +41,8 @@ For mpich2 do::
 	Please make sure not to install mpich2 and openmpi together. 
 	When both openmpi and mpich2 are installed strange errors
 	will occur and AMUSE will not work. If you see both installed
-	please remove both and install one.
+	please remove both and install one. On older Ubuntu versions 
+	the above package names for mpich should be mpich2 and libmpich2.
 
 Installing on Ubuntu 9.04
 ~~~~~~~~~~~~~~~~~~~~~~~~~

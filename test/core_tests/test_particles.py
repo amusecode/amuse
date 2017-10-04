@@ -2308,6 +2308,8 @@ class TestParticlesWithChildren(amusetest.TestCase):
 
         particles = datamodel.Particles(3)
         particles.mass = [4.0, 3.0, 1.0] | units.kg
+        #for x in particles:
+        #    x.grid = numpy.arange(12).reshape(4,3)
         parent = particles[0]
         child1 = particles[1]
         child2 = particles[2]
@@ -2330,13 +2332,13 @@ class TestParticlesWithChildren(amusetest.TestCase):
         self.assertEquals(parent.mass, 4.0 | units.kg)
         self.assertEquals(child1.mass, 3.0 | units.kg)
 
-        code1.particles.copy_values_of_all_attributes_to(particles)
+        code1.particles.new_channel_to(particles).copy_attribute("mass")
 
         self.assertEquals(parent.mass, 10.0 | units.kg)
         self.assertEquals(child1.mass, 3.0 | units.kg)
 
 
-        code2.particles.copy_values_of_all_attributes_to(particles)
+        code2.particles.new_channel_to(particles).copy_attribute("mass")
 
         self.assertEquals(parent.mass, 10.0 | units.kg)
         self.assertEquals(child1.mass, 9.0 | units.kg)
@@ -4758,6 +4760,4 @@ class TestParticlesWithSpecificDtypes(amusetest.TestCase):
         self.assertTrue((set.x.number == [1.3, 2.7, numpy.pi, 1.3, 2.7, numpy.pi]).all())
         self.assertAlmostEqual(set.y.number, [1.3, 2.7, numpy.pi, 1.3, 2.7, numpy.pi], 6)
         self.assertEqual(set.z.number, [1, 2, 3, 1, 2, 3])
-
-
 

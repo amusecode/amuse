@@ -4,7 +4,6 @@ from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
 from amuse.datamodel import Particle
 
 def convert_star_to_hydro_model(M, t_end):
-
     stellar_evolution = EVtwin()
     star = stellar_evolution.particles.add_particle(Particle(mass=M))
     stellar_evolution.evolve_model(t_end)

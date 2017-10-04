@@ -7,7 +7,6 @@ from amuse.datamodel import Particles
 import numpy
 import time as timing
 
-
 class MinimalWorkingExample(object):
     def __init__(self,     
                  total_N=16000, #total number of disc particles

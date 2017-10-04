@@ -257,7 +257,6 @@ if __name__ == '__main__':
         else:
             print "unexpected argument", o
 
-
     assert is_mpd_running()
     run_ph4(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,

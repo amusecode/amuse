@@ -226,8 +226,27 @@ int reset_stopping_conditions() {
     return 0;
 }
 
+int initialize_stopping_conditions() {
+	enabled_conditions = 0;
+	set_conditions = 0;
+	supported_conditions = 0;
+	number_of_stopping_conditions_set = 0;
+	
+	timeout_parameter = 4.0;
+	out_of_box_parameter = 0.0;
+	number_of_steps_parameter = 1;
+	minimum_density_parameter = -1.0;
+	maximum_density_parameter = DBL_MAX;
+	minimum_internal_energy_parameter = -1.0;
+	maximum_internal_energy_parameter = DBL_MAX;
+	size_limit_parameter = 0.0;
+}
+
 int reset_stopping_conditions_() {
     return reset_stopping_conditions();
+}
+int initialize_stopping_conditions_() {
+    return initialize_stopping_conditions();
 }
 
 int next_index_for_stopping_condition() {
@@ -446,6 +465,7 @@ static int is_world_set = 0;
 int mpi_set_communicator(void * comm) {
     world = *(MPI_Comm *)comm;
     is_world_set = 1;
+    return 0;
 }
 
 int mpi_setup_stopping_conditions() {
@@ -486,6 +506,7 @@ static int * local_index_of_particle_in_stopping_condition = 0;
 int mpi_collect_stopping_conditions() {
     if(!enabled_conditions) {return 0;}
     int i;
+    int error = 0;
     int local_number_of_stopping_conditions_set;
     int counts[sc_mpi_size];
     int displs[sc_mpi_size];
@@ -568,6 +589,7 @@ int mpi_collect_stopping_conditions() {
         local_type_of_stopping_condition_set = 0;
         local_index_of_particle_in_stopping_condition = 0;
     }
+    return error;
 }
 
 #else

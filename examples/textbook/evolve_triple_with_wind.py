@@ -75,7 +75,8 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0, t_end, nst
     M3 = stars[2].mass
     print "Masses:", M1, M2, M3
     
-    dtse_fraction=5
+#    dtse_fraction=5
+    dtse_fraction=20
 
     #inner binary
     stars=Particles(2)
@@ -108,7 +109,8 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0, t_end, nst
 
     stellar = SeBa()
     stellar.particles.add_particles(stars)
-    stellar.evolve_model(4|units.Myr)
+    stellar_age_offset = 4|units.Myr
+    stellar.evolve_model(stellar_age_offset)
     channel_from_stellar = stellar.particles.new_channel_to(stars)
     channel_from_stellar.copy_attributes(["mass"])
 
@@ -138,26 +140,32 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0, t_end, nst
     ecci = [ein]
     smao = [aout/aout_0] 
     ecco = [eout]
+    dt_diag = t_end/nsteps
     while time<t_end:
 
         #print "Triple elements t=",  time,  "inner:", M1, M2, ain, ein, "outer:", M3, aout, eout
         Pin = orbital_period(ain, stars[0].mass)
         dt = min(t_diag-time, dtse_fraction*Pin)
-        time += dt
-        dt_diag = t_end/nsteps
+
         
         #    old_time_step = stellar.particles[i].time_step
         #    stellar.particles[i].time_step = 0.1*old_time_step
         #    stellar.particles[i].evolve_for(dt)
         
-        stellar.evolve_model((4|units.Myr) + time)
+        time += dt/2
+        stellar.evolve_model(stellar_age_offset + time)
         channel_from_stellar.copy_attributes(["mass"])
         channel_from_framework_to_gd.copy_attributes(["mass"])
 
+        time += dt/2
         gravity.evolve_model(time)
         Etot_prev_se = gravity.kinetic_energy + gravity.potential_energy
         channel_from_gd_to_framework.copy()
 
+        stellar.evolve_model(stellar_age_offset + time)
+        channel_from_stellar.copy_attributes(["mass"])
+        channel_from_framework_to_gd.copy_attributes(["mass"])
+        
         if time>=t_diag:
             t_diag = time + dt_diag
 

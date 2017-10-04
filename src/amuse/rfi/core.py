@@ -661,6 +661,8 @@ def stop_interfaces(exceptions = []):
                 x._stop()
             except:
                 pass
+    for x in CodeInterface.classes:
+        x.stop_reusable_channels()
 
 class CodeInterface(OptionalAttributes):
     """
@@ -672,6 +674,7 @@ class CodeInterface(OptionalAttributes):
     of the instantiated object.
     """
     instances = []
+    classes = set([])
     is_stop_interfaces_registered = False
     
     def __init__(self, name_of_the_worker = 'worker_code', **options):
@@ -715,6 +718,12 @@ class CodeInterface(OptionalAttributes):
         
     
     def _start(self, name_of_the_worker = 'worker_code', interpreter_executable = None, **options):
+        if self.reuse_worker:
+            channel = self.retrieve_reusable_channel()
+            if channel is not None:
+                self.channel = channel
+                return
+
         if interpreter_executable is None and self.use_interpreter:
             interpreter_executable = self.interpreter
 
@@ -748,13 +757,50 @@ class CodeInterface(OptionalAttributes):
         if not cls.is_stop_interfaces_registered:
             atexit.register(stop_interfaces)
             cls.is_stop_interfaces_registered = True
+
+    @classmethod
+    def retrieve_reusable_channel(cls):
+        if not 'REUSE_INSTANCE' in cls.__dict__:
+            cls.REUSE_INSTANCE = set([])
+        s = cls.REUSE_INSTANCE
+        if len(s) > 0:
+            return s.pop()
+        else:
+            return None
+
+    @classmethod
+    def store_reusable_channel(cls, instance):
+        if not 'REUSE_INSTANCE' in cls.__dict__:
+            cls.REUSE_INSTANCE = set([])
+        s = cls.REUSE_INSTANCE
+        s.add(instance)
+        cls.classes.add(cls)
+       
         
+    @classmethod
+    def stop_reusable_channels(cls):
+        if not 'REUSE_INSTANCE' in cls.__dict__:
+            cls.REUSE_INSTANCE = set([])
+        s = cls.REUSE_INSTANCE
+        while len(s) > 0:
+            x = s.pop()
+            call_id = random.randint(0, 1000)
+            # do the _stop_worker call with low level send
+            # (id == 0, no arguments)
+            x.send_message(call_id, 0 , dtype_to_arguments = {})
+            dtype_to_result = x.recv_message(call_id, 0, False)
+            x.stop()
+
     def _stop(self):
         if hasattr(self, 'channel'):
             if not self.channel is None and self.channel.is_active():
-                self._stop_worker()
-                self.channel.stop()
-                self.channel = None
+                if self.reuse_worker:
+                    self.store_reusable_channel(self.channel)
+                    self.channel = None
+                else:
+                    self._stop_worker()
+                    self.channel.stop()
+                    self.channel = None
             del self.channel
         
     
@@ -877,6 +923,11 @@ class CodeInterface(OptionalAttributes):
             return LocalChannel
         else:
             raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
+
+    @option(type="boolean", sections=("channel",))
+    def reuse_worker(self):
+        """Do not stop a worker, re-use an existing one"""
+        return False
     
 
     def before_get_parameter(self):
@@ -1019,6 +1070,9 @@ class PythonCodeInterface(CodeInterface):
         CodeInterface.__init__(self, name_of_the_worker, **options)
     
     def _start(self, name_of_the_worker = 'worker_code', **options):
+
+
+
         if name_of_the_worker is None:
             if self.implementation_factory is None:
                 raise exceptions.CodeException("Must provide the name of a worker script or the implementation_factory class")

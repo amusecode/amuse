@@ -250,7 +250,7 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
                 spec = self.dtype_to_spec[parameter.datatype]
             
                 if parameter.datatype == 'string':
-                    self.out.lf() + 'py_' + '_byte_' +  parameter.name  + ' = ' + parameter.name + '.value' + ".encode('UTF-8')"
+                    self.out.lf() + 'py_' + '_byte_' +  parameter.name  + ' = ' + parameter.name + '.value' #+ ".encode('UTF-8')"
                 self.out.lf() + 'cdef '
                 
                 if parameter.datatype == 'string':
@@ -374,8 +374,8 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
                 elif parameter.direction == LegacyFunctionSpecification.INOUT:
                     self.out + '&inout_'
                 self.out + name
-                if parameter.datatype == 'string' and parameter.direction == LegacyFunctionSpecification.IN:
-                    self.out + ".encode('UTF-8')"
+                #if parameter.datatype == 'string' and parameter.direction == LegacyFunctionSpecification.IN:
+                #    self.out + ".encode('UTF-8')"
                     
 
 
@@ -391,13 +391,13 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
         for parameter in self.specification.parameters:
             if parameter.direction == LegacyFunctionSpecification.OUT:
                 self.out.lf() +  parameter.name + '.value = ' +  'output_' + parameter.name
-                if parameter.datatype == 'string':
-                    self.out + ".decode('UTF-8')"
+                #if parameter.datatype == 'string':
+                #    self.out + ".decode('UTF-8')"
             elif parameter.direction == LegacyFunctionSpecification.INOUT:
                 self.out.lf() +  parameter.name + '.value = ' +  'inout_' + parameter.name
 
-                if parameter.datatype == 'string':
-                    self.out + ".decode('UTF-8')"
+                #if parameter.datatype == 'string':
+                #    self.out + ".decode('UTF-8')"
                 
                 
         
@@ -1331,7 +1331,7 @@ class GenerateACFFIStringOfAFunctionSpecification(MakeCythonCodeString):
                 spec = self.dtype_to_spec[parameter.datatype]
             
                 if parameter.datatype == 'string':
-                    self.out.lf() + 'py_' + '_byte_' +  parameter.name  + ' = ' + parameter.name + '.value' + ".encode('UTF-8')"
+                    self.out.lf() + 'py_' + '_byte_' +  parameter.name  + ' = ' + parameter.name + '.value' #+ ".encode('UTF-8')"
                 self.out.lf() + 'cdef '
                 
                 if parameter.datatype == 'string':
@@ -1456,8 +1456,8 @@ class GenerateACFFIStringOfAFunctionSpecification(MakeCythonCodeString):
                 elif parameter.direction == LegacyFunctionSpecification.INOUT:
                     self.out + '&inout_'
                 self.out + name
-                if parameter.datatype == 'string' and parameter.direction == LegacyFunctionSpecification.IN:
-                    self.out + ".encode('UTF-8')"
+                #if parameter.datatype == 'string' and parameter.direction == LegacyFunctionSpecification.IN:
+                #    self.out + ".encode('UTF-8')"
                     
 
 

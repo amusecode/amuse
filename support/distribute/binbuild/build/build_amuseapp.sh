@@ -2,12 +2,21 @@
 
 BUILD=amuse
 FIXREFS=yes
-while getopts OR option
+for i in "$@"
 do
-case "${option}"
-in
-O) BUILD=omuse;;
-R) FIXREFS=no;;
+case $i in
+    -O|--omuse)
+    BUILD=omuse
+    ;;
+    -R|--nofixrefs)
+    FIXREFS=no
+    ;;
+    -v=*|--version=*)
+    VERSION="${i#*=}"
+    ;;
+    *)
+            # unknown option
+    ;;
 esac
 done
 
@@ -27,18 +36,19 @@ echo "Version to build:" ${VERSION:=${NOWSHORT}}
 
 PYTHONMAJOR="2"
 PYTHONMINOR="7"
-PYTHONRELEASE="9"
+PYTHONRELEASE="13"
 PYTHONPRERELEASE=0
 PYTHONMAJORMINOR="${PYTHONMAJOR}.${PYTHONMINOR}"
 PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 
-OPENSSLVERSION="1.0.1s"
+OPENSSLVERSION="1.0.2l"
 
 PIPVERSION=8.1.2
 READLINEVERSION=6.2.4.1
 PYZMQVERSION=15.4.0
 TORNADOVERSION=4.4.1
 JUPYTERVERSION=1.0.0
+IPYTHONVERSION=4.0.0
 CYTHONVERSION=0.24.1
 FLASKVERSION=0.11.1
 PILLOWVERSION=3.3.1
@@ -87,7 +97,8 @@ if [ ! -e "installed" ]; then
         
         cd openssl-${OPENSSLVERSION}
         
-        ./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
+        #./config --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
+        ./Configure darwin64-x86_64-cc --prefix=${INSTALLDIR}  --openssldir=${INSTALLDIR}/openssl --shared || exit $?
         if [ ${ARCHITECTURE} == 'x86_64' ]; then
             ./Configure darwin64-x86_64-cc --prefix=${INSTALLDIR} --openssldir=${INSTALLDIR}/openssl --shared  || exit $?
             make depend || exit $?
@@ -114,13 +125,13 @@ if [ ! -e "installed" ]; then
         if [ ${ARCHITECTURE} == 'i386' ]; then
             export MACOSX_DEPLOYMENT_TARGET=10.5
         else
-            export MACOSX_DEPLOYMENT_TARGET=10.6
+            export MACOSX_DEPLOYMENT_TARGET=10.8
         fi
 
         # configure
         
         # Build Python
-        ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --disable-framework --disable-universalsdk
+        ./configure --enable-unicode=${UNICODETYPE} --prefix=${INSTALLDIR} --disable-framework --disable-universalsdk CC=/usr/bin/gcc
 
         # patch 
         patch setup.py < ${BASEDIR}/setup_linux.patch || exit $?
@@ -276,13 +287,15 @@ if [ ! -e "pipsinstalled"  ]; then
         
     #~ ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
     # is this equivalent to..(?)
+    ${PYTHONHOME}/bin/pip install ipython==${IPYTHONVERSION}  || exit $?
+
     ${PYTHONHOME}/bin/pip install jupyter==${JUPYTERVERSION}  || exit $?
     
     ${PYTHONHOME}/bin/pip install Cython==${CYTHONVERSION} || exit $?
     
     ${PYTHONHOME}/bin/pip install Flask==${FLASKVERSION} || exit $?
     
-    ${PYTHONHOME}/bin/pip install pillow==${PILLOWVERSION} || exit $?
+    ${PYTHONHOME}/bin/pip install --global-option="build_ext" --global-option="--disable-jpeg" pillow==${PILLOWVERSION} || exit $?
     
     rm -Rf mpl || exit $?
         
@@ -404,7 +417,9 @@ if [ "${BUILD}" == "omuse" ]; then
   mv ${RELEASEDIR}/amuse-tutorial ${RELEASEDIR}/omuse-tutorial
 fi
 
-cp -R ${TUTORIALDIR} ${RELEASEDIR}/tutorial
+mkdir ${RELEASEDIR}/tutorial
+cp  ${TUTORIALDIR}/*.ipynb ${RELEASEDIR}/tutorial/
+cp  ${TUTORIALDIR}/amuserc ${RELEASEDIR}/tutorial/
 
 tar -czf ${DISTFILE} ${RELEASEDIR}
 

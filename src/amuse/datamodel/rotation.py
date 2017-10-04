@@ -1,12 +1,11 @@
 import numpy
+from amuse.units.trigo import cos, sin
 
 def new_rotation_matrix(phi, theta, psi):
     """
     Return the rotation matrix, to rotate positions, around the x-axis (phi), y-axis (theta) and z-axis (psi).
     See wikipedia for reference
     """
-    cos = numpy.cos
-    sin = numpy.sin
     
     return numpy.array( (
         (cos(theta)*cos(psi), -cos(phi)*sin(psi) + sin(phi)*sin(theta)*cos(psi),  sin(phi)*sin(psi) + cos(phi)*sin(theta)*cos(psi)) ,

@@ -148,7 +148,8 @@ def energy_plot(time, E_kin, E_pot, E_therm, figname):
     pyplot.plot(time/hour, E_kin/FOE, label='E_kin', c=cols[0])
     pyplot.plot(time/hour, E_pot/FOE, label='E_pot', c=cols[1])
     pyplot.plot(time/hour, E_therm/FOE, label='E_therm', c=cols[2])
-    pyplot.plot(time/hour, (E_kin+E_pot+E_therm)/FOE, label='E_total', c=cols[3])
+    pyplot.plot(time/hour, (E_kin+E_pot+E_therm)/FOE, label='E_total',
+                c=cols[3])
 
     pyplot.legend(loc=4)
     pyplot.savefig(figname)

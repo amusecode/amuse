@@ -56,6 +56,8 @@ class TestCDistributedImplementationInterface(test_c_implementation.TestCImpleme
         For the hydra process manager the tests will fail.
         So skip the tests if we detect hydra
         """
+        if 'HYDI_CONTROL_FD' in os.environ:
+            return
         if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
             self.skip('cannot run the socket tests under hydra process manager')
     def test22(self):

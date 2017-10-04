@@ -5,6 +5,7 @@ config.mk
 config.status
 src/amuse/config.py
 support/config.py
+support3/config.py
 
 # general build / compile files
 *.a
@@ -66,6 +67,8 @@ src/amuse/community/distributed/Worker.java
 src/amuse/community/distributed/distributed_worker_java
 src/amuse/community/distributed/src/dist/
 src/amuse/community/distributed/worker.jar
+src/amuse/community/etics/worker_code.cc
+src/amuse/community/etics/worker_code.h
 src/amuse/community/evtwin/build/
 src/amuse/community/evtwin/src/trunk/code/installation_path.f90
 src/amuse/community/evtwin/worker_code.f90src/amuse/community/evtwin/evtwin_worker
@@ -283,6 +286,7 @@ src/amuse/community/smalln/src/nstab.co
 src/amuse/community/smalln/worker_code.cc
 src/amuse/community/smalln/smalln_cython.c
 src/amuse/community/smalln/smalln_cython.pyx
+src/amuse/community/smalln/smalln_worker_cython
 src/amuse/community/sphray/sphray_worker
 src/amuse/community/sphray/sphray_worker.f90
 src/amuse/community/sse/src/sse
@@ -377,6 +381,8 @@ src/amuse/community/sse/sse_c.f90
 src/amuse/community/sse/sse_cython.c
 src/amuse/community/sse/sse_cython.pyx
 src/amuse/community/sse/sse_worker_cython
+src/amuse/community/secularmultiple/worker_code
+src/amuse/community/secularmultiple/worker_code.cc
 
 
 
@@ -422,5 +428,4 @@ data/halogen/output/test*.ascii
 data/gadget2/output/ewald_spc_table_64_dbl.dat
 core
 core.*
-
 

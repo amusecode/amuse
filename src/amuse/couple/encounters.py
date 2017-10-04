@@ -330,20 +330,24 @@ class AbstractHandleEncounter(object):
         self.determine_initial_energies()
         
         self.determine_initial_sphere_of_particles_in_encounter()
-        
+        print  "scale_up system"
         self.scale_up_system_if_two_body_scattering()
+        print "determine initial"
         
         self.determine_initial_multiple_energy()
+        print "determin singles and energies"
         
         self.determine_singles_and_energies_from_particles_and_neighbours_in_encounter()
+        print "determine initial singles"
         
         self.determine_initial_singles_energies()
+        print "move all singles"
         self.move_all_singles_to_initial_sphere_frame_of_reference()
-        
+        print "evolve singles" 
         self.evolve_singles_in_encounter_until_end_state()
         
         #self.particles_before_scaling = self.singles_and_multiples_after_evolve .copy()
-        
+        print "determine structure" 
         self.determine_structure_of_the_evolved_state()
         
         self.scale_evolved_state_to_initial_sphere()
@@ -428,6 +432,7 @@ class AbstractHandleEncounter(object):
         
     def determine_initial_multiple_energy(self):
         self.initial_multiple_energy = zero
+        print self.particles_in_encounter
         for x in self.particles_in_encounter:
             energy = self.get_energy_of_a_multiple(x)
             self.initial_multiple_energy += energy
@@ -920,28 +925,36 @@ class HandleEncounterWithCollisionCode(AbstractHandleEncounter):
             self.interaction_over_code.reset()
     
     def evolve_singles_in_encounter_until_end_state(self):
+        for x in self.all_singles_in_evolve:
+            print  x
         code = self.resolve_collision_code
         code.reset()
         code.particles.add_particles(self.all_singles_in_evolve)
         
         initial_scatter_energy = code.get_total_energy()
         
-        interaction_over = code.stopping_conditions.interaction_over_detection
-        interaction_over.enable()
-        
         end_time = 10000 | nbody_system.time
         if len(self.all_singles_in_evolve) == 2:
             end_time = 100 | nbody_system.time
+
+        code.evolve_model(0.0001 * end_time)
+        interaction_over = code.stopping_conditions.interaction_over_detection
+        interaction_over.enable()
+        
         LOG_ENCOUNTER.info("evolving singles in encounter")
+        print self.all_singles_in_evolve
         code.evolve_model(end_time)
         LOG_ENCOUNTER.info("evolving singles in encounter finished model_time = {0}".format(code.model_time))
         
+        print "i over:", interaction_over.is_set()
         if interaction_over.is_set():
             # Create a tree in the module representing the binary structure.
             code.update_particle_tree()
 
             # Return the tree structure.
             code.update_particle_set()
+
+            print code.particles
         
             final_scatter_energy = code.get_total_energy()
         
@@ -1588,9 +1601,14 @@ class ScaleSystem(object):
         center_of_mass_position = particles.center_of_mass()
         center_of_mass_velocity = particles.center_of_mass_velocity()
 
+        print center_of_mass_position
+        print center_of_mass_velocity
+
         particles.position -= center_of_mass_position
         particles.velocity -= center_of_mass_velocity
-        
+       
+        print particles.position
+        print particles.velocity
         # special case, 1 body
         if len(particles) == 1:
             "The position and velocity of this particle must be zero"

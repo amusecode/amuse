@@ -129,10 +129,12 @@ def connectivity(grid):
         for j in range(dim):
             if i & 2**j:
                 slicing2.append(slice(1,None)) 
-                slicing1.append(Ellipsis)
+                if len(slicing1) == 0 or slicing1[-1] is not Ellipsis:
+                    slicing1.append(Ellipsis)
             else:
                 slicing2.append(slice(None,-1))
-                slicing1.append(Ellipsis)
+                if len(slicing1) == 0 or slicing1[-1] is not Ellipsis:
+                    slicing1.append(Ellipsis)
 
         slicing1.append(i)
 

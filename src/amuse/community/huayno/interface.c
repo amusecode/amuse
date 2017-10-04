@@ -26,6 +26,7 @@ struct LOOKUPSYMBOL(simple_,) lookup;
 int initialize_code()
 {
   int err;
+  initialize_stopping_conditions();
   pcounter=0;
   nmax=NMAX;
   err=LOOKUPSYMBOL(init_,)(&lookup, nmax*sizeof(struct particle)/sizeof(int));
@@ -51,7 +52,10 @@ int cleanup_code()
     pcounter=0;
     LOOKUPSYMBOL(end_,)(&lookup);
     mainsys.n=0;
-    free(mainsys.part);
+    if(mainsys.part != NULL){
+    	free(mainsys.part);
+    	mainsys.part=NULL;
+    }
     mainsys.last=NULL;
     dt_param=.03; 
     t_now=0.;

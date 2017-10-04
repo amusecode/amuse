@@ -1,0 +1,576 @@
+////////////////////////////////////////////////////////
+// Includes
+////////////////////////////////////////////////////////
+#include <iostream>
+using namespace std;
+
+#include <fstream>
+#include <cstdlib>
+#include <map>
+#include <vector>
+
+#include "Brutus.h"
+
+////////////////////////////////////////////////////////
+// Declare global variables
+////////////////////////////////////////////////////////
+ofstream odata;
+
+int particle_id_counter = 0;
+
+int numBits = 64;  
+int numDigits = numBits/4;
+
+string out_directory;
+std::map<int, int> local_index_map;
+
+Brutus *brutus = NULL;
+
+mpreal t_begin = "0";
+mpreal eta = "0.24";
+mpreal t = "0";
+
+mpreal epsilon = "1e-6"; // Bulirsch-Stoer tolerance
+
+vector<mpreal> data, data_radius;
+
+////////////////////////////////////////////////////////
+// Amuse interface functions
+////////////////////////////////////////////////////////
+int initialize_code() {
+    odata.open("temp.log");
+
+    mpreal::set_default_prec(numBits);  
+
+    brutus = new Brutus();
+
+    particle_id_counter = 0;
+    data.clear();
+    data_radius.clear();
+
+    t_begin = "0";
+    t = t_begin;
+
+    return 0;
+}
+
+// functions with "_string" assign strings to mpreals, and without "_string" assign doubles to mpreals
+
+int new_particle_string(int *particle_identifier, char* mass, 
+        char* x, char* y, char* z, char* vx, char* vy, char* vz, char* radius) {
+
+    data.push_back(mass);
+    data.push_back(x);
+    data.push_back(y);
+    data.push_back(z);
+    data.push_back(vx);
+    data.push_back(vy);
+    data.push_back(vz);
+
+    data_radius.push_back(radius);
+
+    *particle_identifier = particle_id_counter;
+    particle_id_counter++;
+
+    return 0;
+}
+int new_particle_float64(int *particle_identifier, double mass, 
+        double x, double y, double z, double vx, double vy, double vz, double radius) {
+
+    data.push_back( (mpreal)mass );
+    data.push_back( (mpreal)x );
+    data.push_back( (mpreal)y );
+    data.push_back( (mpreal)z );
+    data.push_back( (mpreal)vx );
+    data.push_back( (mpreal)vy );
+    data.push_back( (mpreal)vz );
+
+    data_radius.push_back( (mpreal)radius );
+
+    *particle_identifier = particle_id_counter;
+    particle_id_counter++;
+
+    return 0;
+}
+
+int commit_particles() {
+    brutus->set_data(data);
+
+    int numStar = data.size()/7;
+    brutus->setup();
+
+    return 0;
+}
+
+// Begin time
+int set_t_begin_string(char* tb) {
+    t_begin = tb;
+    return 0;
+}
+int get_t_begin_string(char **tb) {
+    *tb = (char*) t_begin.toString().c_str();
+    return 0;
+}
+int set_t_begin(double tb) {
+    t_begin = (mpreal)tb;
+    return 0;
+}
+int get_t_begin(double *tb) {
+    *tb = t_begin.toDouble();
+    return 0;
+}
+
+int set_begin_time(double input) {
+    t_begin = (mpreal)input;
+    return 0;
+}
+int get_begin_time(double * output) {
+    *output = t_begin.toDouble();
+    return 0;
+}
+
+// Timestep parameter, eta
+int set_eta_string(char* myeta) {
+    eta = myeta;
+    brutus->set_eta(eta); 
+    return 0;
+}
+int get_eta_string(char **myeta) {
+    *myeta = (char*) eta.toString().c_str();
+    return 0;
+}
+int set_eta(double myeta) {
+    eta = (mpreal)myeta;
+    brutus->set_eta(eta);
+    return 0;
+}
+int get_eta(double *myeta) {
+    *myeta = eta.toDouble();
+    return 0;
+}
+
+int get_time_step(double* dtt){
+    *dtt = eta.toDouble();
+    return 0;
+}
+
+// Time
+int set_t_string(char* tt) {
+    t = tt;
+    return 0;
+}
+int get_t_string(char **tt) {
+    *tt = (char*) t.toString().c_str();
+    return 0;
+}
+int set_t(double tt) {
+    t = (mpreal)tt;
+    return 0;
+}
+int get_t(double *tt) {
+    *tt = t.toDouble();
+    return 0;
+}
+
+int get_time(double* time){
+    *time = t.toDouble();
+    return 0;
+}
+
+// Bulirsch-Stoer tolerance, epsilon
+// internally epsilon is mpreal, for the interface (and in practice) a double bs_tolerance is enough
+int set_bs_tolerance_string(char *bs_tolerance) {
+    epsilon = bs_tolerance;
+    brutus->set_tolerance(epsilon);
+    return 0;
+}
+int get_bs_tolerance_string(char **bs_tolerance) {
+    *bs_tolerance = (char*) epsilon.toString().c_str();
+    return 0;
+}
+int set_bs_tolerance(double bs_tolerance) {
+
+odata << t << ": changing e from " << epsilon << ", to " << bs_tolerance << endl;
+
+    epsilon = (mpreal) bs_tolerance;
+    brutus->set_tolerance(epsilon);
+
+odata << epsilon << " " << brutus->get_tolerance() << endl;
+
+    return 0;
+}
+int get_bs_tolerance(double *bs_tolerance) {
+    *bs_tolerance = epsilon.toDouble();
+    return 0;
+}
+// Word-length, numBits in mantissa
+int set_word_length(int mynumBits) {
+odata << t << ": changing L from " << numBits << ", to " << mynumBits << endl;
+
+    numBits = mynumBits;
+    mpreal::set_default_prec(numBits);
+    numDigits = (int)abs(log10( pow("2.0", -numBits) )).toLong();
+    brutus->set_numBits(numBits);
+
+odata << numBits << " " << brutus->get_numBits() << endl;
+
+    return 0;
+}
+int get_word_length(int *mynumBits) {
+    *mynumBits = numBits;
+    return 0;
+}
+
+int set_eps2(double eps2) {
+    return 0;
+}
+int get_eps2(double *eps2) {
+    return 0;
+}
+
+int commit_parameters() {
+    //brutus = new Brutus(t_begin, data, epsilon, numBits);
+
+    //Brutus br(t_begin, data, epsilon, numBits);
+    //brutus = &br;
+    //brutus = new Brutus(t_begin, data, epsilon, numBits);
+
+    //brutus->set_t_begin(t_begin);
+    //brutus->set_tolerance(epsilon);
+    //brutus->set_numBits(numBits);
+    return 0;
+}
+int recommit_parameters() {
+    return commit_parameters();
+}
+
+// Get/set particle properties
+int get_mass_string(int id, char **mass) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *mass = (char*) data[id*7+0].toString().c_str();
+  return 0;
+} 
+int set_mass_string(int id, char *mass) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data[id*7+0] = mass;
+  return 0;
+}
+int get_mass(int id, double* mass) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *mass = data[id*7+0].toDouble();
+  return 0;
+} 
+int set_mass(int id, double mass) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data[id*7+0] = (mpreal)mass;
+  return 0;
+}
+
+int get_position_string(int id, char **x, char **y, char **z) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *x = (char*) data[id*7+1].toString().c_str();
+  *y = (char*) data[id*7+2].toString().c_str();
+  *z = (char*) data[id*7+3].toString().c_str();
+  return 0;
+}
+int set_position_string(int id, char *x, char *y, char *z) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data[id*7+1] = x;
+  data[id*7+2] = y;
+  data[id*7+3] = z;
+  return 0;
+}
+int get_position(int id, double* x, double* y, double* z) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *x = data[id*7+1].toDouble();
+  *y = data[id*7+2].toDouble();
+  *z = data[id*7+3].toDouble();
+  return 0;
+}
+int set_position(int id, double x, double y, double z) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data[id*7+1] = (mpreal)x;
+  data[id*7+2] = (mpreal)y;
+  data[id*7+3] = (mpreal)z;
+  return 0;
+}
+
+int get_velocity_string(int id, char **vx, char **vy, char **vz) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *vx = (char*) data[id*7+4].toString().c_str();
+  *vy = (char*) data[id*7+5].toString().c_str();
+  *vz = (char*) data[id*7+6].toString().c_str();
+  return 0;
+}
+int set_velocity_string(int id, char* vx, char* vy, char* vz) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data[id*7+4] = vx;
+  data[id*7+5] = vy;
+  data[id*7+6] = vz;
+  return 0;
+}
+int get_velocity(int id, double* vx, double* vy, double* vz) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *vx = data[id*7+4].toDouble();
+  *vy = data[id*7+5].toDouble();
+  *vz = data[id*7+6].toDouble();
+  return 0;
+}
+int set_velocity(int id, double vx, double vy, double vz) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data[id*7+4] = (mpreal)vx;
+  data[id*7+5] = (mpreal)vy;
+  data[id*7+6] = (mpreal)vz;
+  return 0;
+}
+
+int get_state_string(int id, char** m, char** x, char** y, char** z, char** vx, char** vy, char** vz, char** radius) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *radius = (char*) data_radius[id].toString().c_str();
+  *m = (char*) data[id*7+0].toString().c_str();
+  *x = (char*) data[id*7+1].toString().c_str();
+  *y = (char*) data[id*7+2].toString().c_str();
+  *z = (char*) data[id*7+3].toString().c_str();
+  *vx = (char*) data[id*7+4].toString().c_str();
+  *vy = (char*) data[id*7+5].toString().c_str();
+  *vz = (char*) data[id*7+6].toString().c_str();
+  return 0;
+}
+int set_state_string(int id, char* m, char* x, char* y, char* z, char* vx, char* vy, char* vz, char* radius) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data_radius[id] = radius;
+  data[id*7+0] = m;
+  data[id*7+1] = x;
+  data[id*7+2] = y;
+  data[id*7+3] = z;
+  data[id*7+4] = vx;
+  data[id*7+5] = vy;
+  data[id*7+6] = vz;
+  return 0;
+}
+int get_state(int id, double* m, double* x, double* y, double* z, double* vx, double* vy, double* vz, double* radius) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *radius = data_radius[id].toDouble();
+  *m = data[id*7+0].toDouble();
+  *x = data[id*7+1].toDouble();
+  *y = data[id*7+2].toDouble();
+  *z = data[id*7+3].toDouble();
+  *vx = data[id*7+4].toDouble();
+  *vy = data[id*7+5].toDouble();
+  *vz = data[id*7+6].toDouble();
+  return 0;
+}
+int set_state(int id, double m, double x, double y, double z, double vx, double vy, double vz, double radius) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data_radius[id] = (mpreal)radius;
+  data[id*7+0] = (mpreal)m;
+  data[id*7+1] = (mpreal)x;
+  data[id*7+2] = (mpreal)y;
+  data[id*7+3] = (mpreal)z;
+  data[id*7+4] = (mpreal)vx;
+  data[id*7+5] = (mpreal)vy;
+  data[id*7+6] = (mpreal)vz;
+  return 0;
+}
+
+int get_radius_string(int id, char** radius){ 
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *radius = (char*) data_radius[id].toString().c_str();
+  return 0;
+}
+int set_radius_string(int id, char* radius) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data_radius[id] = radius;
+  return 0;
+}
+int get_radius(int id, double* radius){ 
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  *radius = data_radius[id].toDouble();
+  return 0;
+}
+int set_radius(int id, double radius) {
+  if (id < 0 || id >= particle_id_counter){
+    return -1;
+  }
+  data_radius[id] = (mpreal)radius;
+  return 0;
+}
+
+// Evolve
+int evolve_model(double t_end) {
+    brutus->evolve((mpreal)t_end);
+    t = (mpreal)t_end;
+    data = brutus->get_data();
+    return 0;
+}
+
+int synchronize_model() {
+    return 0;
+}
+int cleanup_code() {
+    odata.close();
+    delete brutus;
+    particle_id_counter = 0;
+    return 0;
+}
+
+int delete_particle(int id) {
+  return -2;
+}
+int recommit_particles() {
+  return -2;
+}
+
+int set_brutus_output_directory(char *output_directory){
+    out_directory = std::string(output_directory);
+    if(out_directory.length() > 0){
+        if(*out_directory.rbegin() != '/'){
+            out_directory.append("/");
+        }
+    }
+    return 0;
+}
+int get_brutus_output_directory(char **output_directory){
+    *output_directory = (char*) out_directory.c_str();
+    return 0;
+}
+
+int get_potential(int id, double* pot){return -2;}
+int get_gravity_at_point(double m, double x, double y, double z, double* rx, double* ry, double* rz){return -2;}
+int get_number_of_particles(int* N){return -2;}
+int get_potential_at_point(double m, double x, double y, double z, double* p){return -2;}
+int get_total_radius(double* R){return -2;}
+int get_index_of_first_particle(int* id){return -2;}
+int get_index_of_next_particle(int id, int* idnext){return -2;}
+
+int get_total_mass(double* M){ 
+  int N = data.size()/7;
+  mpreal Mtot = "0";
+  for(int i=0; i<N; i++) {
+    Mtot += data[i*7];
+  }
+  *M = Mtot.toDouble();
+  return 0;
+}
+int get_kinetic_energy(double* ek) {
+  int N = data.size()/7;
+  mpreal ektot = "0";
+  for(int i=0; i<N; i++) {
+    mpreal m  = data[i*7];
+    mpreal vx = data[i*7+4];
+    mpreal vy = data[i*7+5];
+    mpreal vz = data[i*7+6];
+    mpreal v2 = vx*vx + vy*vy + vz*vz;
+    ektot += "0.5"*m*v2;
+  }
+  *ek = ektot.toDouble();
+  return 0;
+}
+int get_potential_energy(double* ep) {
+  int N = data.size()/7;
+  mpreal eptot = "0";
+  for(int i=0; i<N-1; i++) {
+    mpreal mi = data[i*7];
+    mpreal xi = data[i*7+1];
+    mpreal yi = data[i*7+2];
+    mpreal zi = data[i*7+3];
+    for(int j=i+1; j<N; j++) {
+      mpreal mj = data[j*7];
+      mpreal xj = data[j*7+1];
+      mpreal yj = data[j*7+2];
+      mpreal zj = data[j*7+3];
+
+      mpreal dx = xj - xi;
+      mpreal dy = yj - yi;
+      mpreal dz = zj - zi;
+      mpreal dr2 = dx*dx + dy*dy + dz*dz;
+
+      eptot -= mi*mj/sqrt(dr2);
+    }
+  }  
+
+  *ep = eptot.toDouble();
+  return 0;
+}
+int get_center_of_mass_position(double* x , double* y, double* z){ 
+  int N = data.size()/7;
+  mpreal Mtot = "0";
+  for(int i=0; i<N; i++) {
+    Mtot += data[i*7];
+  }
+
+  vector<mpreal> rcm(3,"0");
+  for(int i=0; i<N; i++) {
+    for(int j=0; j<3; j++) {
+      rcm[j] += data[i*7]*data[i*7+(j+1)];
+    }
+  }
+  for(int i=0; i<3; i++) rcm[i] /= Mtot;  
+
+  *x = rcm[0].toDouble();
+  *y = rcm[1].toDouble();
+  *z = rcm[2].toDouble();
+  return 0;
+}
+int get_center_of_mass_velocity(double* vx, double* vy, double* vz){ 
+  int N = data.size()/7;
+  mpreal Mtot = "0";
+  for(int i=0; i<N; i++) {
+    Mtot += data[i*7];
+  }
+
+  vector<mpreal> vcm(3,"0");
+  for(int i=0; i<N; i++) {
+    for(int j=0; j<3; j++) {
+      vcm[j] += data[i*7]*data[i*7+(j+4)];
+    }
+  }
+  for(int i=0; i<3; i++) vcm[i] /= Mtot;  
+
+  *vx = vcm[0].toDouble();
+  *vy = vcm[1].toDouble();
+  *vz = vcm[2].toDouble();
+  return 0;
+}
+
+int get_acceleration(int id, double* ax, double* ay, double* az){return -2;}
+int set_acceleration(int id, double ax, double ay, double az){return -2;}
+

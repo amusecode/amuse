@@ -864,7 +864,6 @@ class AbstractMessageChannel(OptionalAttributes):
             arguments.append(interpreter_executable)
             
         arguments.append(full_name_of_the_worker)
-        arguments.append(full_name_of_the_worker)
         
         command = channel.gdbserver_exe
         return command, arguments
@@ -2028,7 +2027,7 @@ class SocketChannel(AbstractMessageChannel):
 
         self.interpreter_executable = interpreter_executable
         
-        if self.hostname != None and self.hostname != 'localhost':
+        if self.hostname != None and self.hostname not in ['localhost',socket.gethostname()]:
             raise exceptions.CodeException("can only run codes on local machine using SocketChannel, not on %s", self.hostname)
             
         self.id = 0
@@ -2052,6 +2051,13 @@ class SocketChannel(AbstractMessageChannel):
         if len(config.mpi.mpiexec):
             return config.mpi.mpiexec
         return ''
+
+    @option(sections=("channel",))
+    def mpiexec_number_of_workers_flag(self):
+        """flag to use, so that the number of workers are defined"""
+        return '-n'
+    
+
     
 
 
@@ -2119,7 +2125,7 @@ class SocketChannel(AbstractMessageChannel):
             mpiexec = shlex.split(self.mpiexec)
             # prepend with mpiexec and arguments back to front
             arguments.insert(0, str(self.number_of_workers))
-            arguments.insert(0, "-np")
+            arguments.insert(0, self.mpiexec_number_of_workers_flag)
             arguments[:0] = mpiexec
             command = mpiexec[0]
 

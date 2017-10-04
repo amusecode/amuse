@@ -34,7 +34,7 @@ def main(Mstar, z, dmdt):
     stellar.particles.add_particles(bodies)
     channel_to_framework = stellar.particles.new_channel_to(bodies)
     copy_argument = ["age", "mass", "radius", "stellar_type"]
-    while stellar.particles[0].stellar_type<Second_Asymptotic_Giant_Branch:
+    while stellar.particles[0].stellar_type < Second_Asymptotic_Giant_Branch:
         stellar.particles.evolve_one_step()
         channel_to_framework.copy_attributes(copy_argument)
         star = stellar.particles.copy() 

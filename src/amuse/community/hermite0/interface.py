@@ -70,7 +70,7 @@ class HermiteInterface(CodeInterface,
         Get the timestep scaling factor.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_dia', dtype='float64',
+        function.addParameter('dt_param', dtype='float64',
                               direction=function.OUT,
             description = "the timestep scaling factor")
         function.result_type = 'int32'
@@ -88,7 +88,7 @@ class HermiteInterface(CodeInterface,
         Set the timestep scaling factor.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_dia', dtype='float64',
+        function.addParameter('dt_param', dtype='float64',
                               direction=function.IN,
             description = "the timestep scaling factor")
         function.result_type = 'int32'

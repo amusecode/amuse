@@ -61,9 +61,9 @@ class InstallPrerequisites(object):
           (
             'hdf' ,
             [],  
-            '1.8.14',
+            '1.8.17',
             'hdf5-' , '.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src/',
+            'http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.17/src/',
             self.hdf5_build
           ) ,
           (
@@ -143,15 +143,15 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '2.8.8' ,                   #version string
+            '3.8.2' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
-            'http://www.cmake.org/files/v2.8/', #download url, filename is appended
+            'http://www.cmake.org/files/v3.8/', #download url, filename is appended
             self.cmake_build             #method to use for building
           ) ,
           (
             'gmp',                      #name to refer by
             [],                         #names of prerequisites (unused)
-            '5.0.3' ,                   #version string
+            '6.1.2' ,                   #version string
             'gmp-', '.tar.bz2',        #pre- and postfix for filename
             'https://gmplib.org/download/gmp/', #download url, filename is appended
             self.gmp_build             #method to use for building
@@ -159,7 +159,7 @@ class InstallPrerequisites(object):
           ( # NOTE: When library version is changed, url to 'allpatches' in self.mpfr_build must be changed too!
             'mpfr' ,                    #name to refer by
             ['gmp'],                    #names of prerequisites
-            '3.1.1' ,                   #version string
+            '3.1.5' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
             'http://ftp.gnu.org/gnu/mpfr/', #download url, filename is appended
             self.mpfr_build             #method to use for building
@@ -245,8 +245,15 @@ class InstallPrerequisites(object):
           '--enable-shared', 
           '--enable-production',
           '--with-pthread=/usr', 
-          '--enable-threadsafe'
+          '--enable-threadsafe',
+          '--enable-unsupported'
         ])
+        import platform
+        if platform.processor() == 'ppc64le':
+            commands[0].extend([
+                "--build=ppc64le-unknown-linux-gnu",
+                "--enable-unsupported"
+            ])
         commands.append(['make'])
         commands.append(['make', 'install'])
         for x in commands:
@@ -320,6 +327,11 @@ class InstallPrerequisites(object):
           '--enable-threads'
         ]
         commands.append(command)
+        import platform
+        if platform.processor() == 'ppc64le':
+            commands[0].extend([
+                "--build=ppc64le-unknown-linux-gnu",
+            ])
         commands.append(['make'])
         commands.append(['make', 'install'])
         
@@ -361,6 +373,11 @@ class InstallPrerequisites(object):
           '--enable-shared'
         ]
         commands.append(command)
+        import platform
+        if False and platform.processor() == 'ppc64le':
+            commands[0].extend([
+                "--build=ppc64le-unknown-linux-gnu",
+            ])
         commands.append(['make'])
         commands.append(['make', 'check'])
         commands.append(['make', 'install'])
@@ -385,6 +402,11 @@ class InstallPrerequisites(object):
           '--enable-thread-safe'
         ]
         commands.append(command)
+        import platform
+        if False and platform.processor() == 'ppc64le':
+            commands[0].extend([
+                "--build=ppc64le-unknown-linux-gnu",
+            ])
         commands.append(['make'])
         commands.append(['make', 'check'])
         commands.append(['make', 'install'])

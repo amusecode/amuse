@@ -838,8 +838,7 @@ class TestGadget2(TestWithMPI):
         self.assertRaises(AmuseException, instance.evolve_model, 1.0 | generic_unit_system.time, expected_message = 
             "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -5, error is 'CPU-time limit reached.'")
         instance.parameters.time_limit_cpu = 10.0 | units.s
-        instance.evolve_model(0.0001 | generic_unit_system.time)
-        self.assertRaises(AmuseException, instance.evolve_model, 0.00005 | generic_unit_system.time, expected_message = 
+        self.assertRaises(AmuseException, instance.evolve_model, 0.5 * instance.model_time, expected_message = 
             "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -6, error is 'Can't evolve backwards in time.'")
         instance.stop()
     

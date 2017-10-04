@@ -768,12 +768,12 @@ JAR
 JAVAC
 JAVA
 JAVA_HOME
-PYTHONDEV_LDFLAGS
-PYTHONDEV_CFLAGS
 PYTHON_DEV
 EGREP
 GREP
 CPP
+PYTHONDEV_LDFLAGS
+PYTHONDEV_CFLAGS
 CYTHON
 PYTHONCONFIG
 NVCC_FLAGS
@@ -869,6 +869,8 @@ NVCC
 NVCC_FLAGS
 PYTHONCONFIG
 CYTHON
+PYTHONDEV_CFLAGS
+PYTHONDEV_LDFLAGS
 CPP
 JAVA_HOME
 MPIEXEC
@@ -1542,6 +1544,10 @@ Some influential environment variables:
               Python config script to determine python module compile flags
               (python-config)
   CYTHON      cython script to compile code in the Cython language
+  PYTHONDEV_CFLAGS
+              CFLAGS for python compilation
+  PYTHONDEV_LDFLAGS
+              LDFLAGS for python language
   CPP         C preprocessor
   JAVA_HOME   Java sdk directory
   MPIEXEC     mpiexec or mpirun location
@@ -2708,6 +2714,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_files="$ac_config_files src/amuse/config.py:support/configpy.in"
 
 ac_config_files="$ac_config_files support/config.py:support/configpy.in"
+
+ac_config_files="$ac_config_files support3/config.py:support3/configpy.in"
 
 ac_config_files="$ac_config_files config.mk"
 
@@ -4509,15 +4517,12 @@ done
 
 
     PYTHON_DEV='yes'
-    PYTHONDEV_CFLAGS=''
-    PYTHONDEV_LDFLAGS=''
-    CYTHON=''
 
 
     if test "x$PYTHONCONFIG" = "x"; then :
-  PYTHONCONFIG=python-config
-fi
-    for ac_prog in $PYTHONCONFIG
+
+	 PYTHONCONFIG=python-config
+   	 for ac_prog in $PYTHONCONFIG
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -4563,15 +4568,20 @@ fi
 done
 test -n "$PYTHONCONFIG" || PYTHONCONFIG="'no'"
 
+fi
     if test "x$PYTHONCONFIG" = "xno"; then :
   PYTHON_DEV='no'
 fi
 
+
+
     if test "x$CYTHON" = "x"; then :
-  CYTHON=cython
-fi
-    # Extract the first word of "$CYTHON", so it can be a program name with args.
-set dummy $CYTHON; ac_word=$2
+
+	CYTHON=cython
+    	for ac_prog in $CYTHON
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
 if ${ac_cv_path_CYTHON+:} false; then :
@@ -4610,40 +4620,45 @@ $as_echo "no" >&6; }
 fi
 
 
+  test -n "$CYTHON" && break
+done
+
+fi
     if test "x$PYTHON_DEV" = "xyes"; then :
 
+       	if test "x$PYTHONDEV_CFLAGS" = "x"; then :
 
-        PYTHONDEV_CFLAGS=`$PYTHONCONFIG --cflags`
-        PYTHONDEV_LDFLAGS=`$PYTHONCONFIG --ldflags`
-        save_CFLAGS="$CFLAGS"
-        save_CPPFLAGS="$CPPFLAGS"
-        CFLAGS="$PYTHONDEV_CFLAGS $save_CFLAGS"
-        CPPFLAGS="$PYTHONDEV_CFLAGS $save_CPPFLAGS"
-        ac_fn_c_check_header_mongrel "$LINENO" "Python.h" "ac_cv_header_Python_h" "$ac_includes_default"
+        	PYTHONDEV_CFLAGS=`$PYTHONCONFIG --cflags`
+        	PYTHONDEV_LDFLAGS=`$PYTHONCONFIG --ldflags`
+        	save_CFLAGS="$CFLAGS"
+        	save_CPPFLAGS="$CPPFLAGS"
+        	CFLAGS="$PYTHONDEV_CFLAGS $save_CFLAGS"
+        	CPPFLAGS="$PYTHONDEV_CFLAGS $save_CPPFLAGS"
+        	ac_fn_c_check_header_mongrel "$LINENO" "Python.h" "ac_cv_header_Python_h" "$ac_includes_default"
 if test "x$ac_cv_header_Python_h" = xyes; then :
 
 else
 
-            PYTHON_DEV="no"
-            PYTHONDEV_CFLAGS=''
-            PYTHONDEV_LDFLAGS=''
+            	PYTHON_DEV="no"
+            	PYTHONDEV_CFLAGS=''
+            	PYTHONDEV_LDFLAGS=''
 
-            { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (Python.h)" >&5
+            	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Cannot find headers (Python.h)" >&5
 $as_echo "$as_me: WARNING: Cannot find headers (Python.h)" >&2;}
 
 fi
 
 
-        if test "x$PYTHON_DEV" = "xyes"; then :
+        	if test "x$PYTHON_DEV" = "xyes"; then :
 
 
-            save_LDFLAGS="$LDFLAGS"
-            save_LIBS="$LIBS"
-            LIBS=`$PYTHONCONFIG --libs`
-            LDFLAGS="$PYTHONDEV_LDFLAGS $save_LDFLAGS"
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking if possible to embed python" >&5
+            	save_LDFLAGS="$LDFLAGS"
+            	save_LIBS="$LIBS"
+            	LIBS=`$PYTHONCONFIG --libs`
+            	LDFLAGS="$PYTHONDEV_LDFLAGS $save_LDFLAGS"
+            	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking if possible to embed python" >&5
 $as_echo_n "checking if possible to embed python... " >&6; }
-            if test "$cross_compiling" = yes; then :
+            	if test "$cross_compiling" = yes; then :
   { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "cannot run test program while cross compiling
@@ -4656,9 +4671,9 @@ int
 main ()
 {
 
-                       Py_Initialize();
-                       PyRun_SimpleString("print 'embedded python',");
-                       Py_Finalize();
+                       	Py_Initialize();
+                       	PyRun_SimpleString("print 'embedded python',");
+                       	Py_Finalize();
 
   ;
   return 0;
@@ -4669,10 +4684,10 @@ if ac_fn_c_try_run "$LINENO"; then :
 $as_echo "yes" >&6; }
 else
   PYTHON_DEV="no"
-                PYTHONDEV_CFLAGS=''
-                PYTHONDEV_LDFLAGS=''
+                	PYTHONDEV_CFLAGS=''
+                	PYTHONDEV_LDFLAGS=''
 
-                { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+                	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 
 fi
@@ -4680,17 +4695,14 @@ rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
   conftest.$ac_objext conftest.beam conftest.$ac_ext
 fi
 
-            LDFLAGS="$save_LDFLAGS"
-            LIBS="$save_LIBS"
+            	LDFLAGS="$save_LDFLAGS"
+            	LIBS="$save_LIBS"
 
 fi
-        CFLAGS="$save_CFLAGS"
-        CPPFLAGS="$save_CPPFLAGS"
+        	CFLAGS="$save_CFLAGS"
+        	CPPFLAGS="$save_CPPFLAGS"
 
-else
-
-        PYTHONDEV_CFLAGS=''
-        PYTHONDEV_LDFLAGS=''
+fi
 
 fi
 
@@ -10133,6 +10145,7 @@ do
   case $ac_config_target in
     "src/amuse/config.py") CONFIG_FILES="$CONFIG_FILES src/amuse/config.py:support/configpy.in" ;;
     "support/config.py") CONFIG_FILES="$CONFIG_FILES support/config.py:support/configpy.in" ;;
+    "support3/config.py") CONFIG_FILES="$CONFIG_FILES support3/config.py:support3/configpy.in" ;;
     "config.mk") CONFIG_FILES="$CONFIG_FILES config.mk" ;;
     "build.py") CONFIG_FILES="$CONFIG_FILES build.py" ;;
 
