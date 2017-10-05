@@ -323,7 +323,7 @@ class TestPikachu(TestWithMPI):
                 instance.particles[1].velocity[0])
         print tan_final_direction
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
-        self.assertAlmostEquals(tan_final_direction[0], math.tan(math.pi / 4.0), 2)
+        self.assertAlmostRelativeEquals(tan_final_direction[0], math.tan(math.pi / 4.0), 1)
         # Large values of epsilon_squared should result in ~ no interaction
         self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
@@ -357,7 +357,7 @@ class TestPikachu(TestWithMPI):
         instance.stop()
         print tan_final_direction
         # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
-        self.assertAlmostEquals(tan_final_direction[0], math.tan(math.pi / 4.0), 2)
+        self.assertAlmostRelativeEquals(tan_final_direction[0], math.tan(math.pi / 4.0), 1)
         # Large values of epsilon_squared should result in ~ no interaction
         self.assertAlmostEquals(tan_final_direction[-1], tan_initial_direction, 2)
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2

@@ -394,7 +394,7 @@ class TestSimpleX(TestWithMPI):
         radiative.particles.add_particles(ism)
 
         radiative.evolve_model(t_end)
-        self.assertAlmostRelativeEquals( 0.0750819123073, radiative.particles.xion.mean(), 3)
+        self.assertAlmostRelativeEquals( 0.0750819123073, radiative.particles.xion.mean(), 1)
         radiative.stop()
         
 class TestSimpleXSplitSet(TestWithMPI):
