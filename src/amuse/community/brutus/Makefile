@@ -24,7 +24,7 @@ MPICC ?= mpicc
 
 CXXFLAGS ?= -Wall -g -O2 
 
-CXXFLAGS += $(MPFR_FLAGS) -std=c++0x
+CXXFLAGS += $(MPFR_FLAGS) -std=c++0x -I../mpfrc++
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -51,6 +51,6 @@ brutus_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJ)
 	$(MPICXX) $(CXXFLAGS) $(MPFR_FLAGS) $(SC_FLAGS) -I./src $< $(CODELIB) $(OBJ) -o $@  -L./src -lbrutus $(SC_CLIBS) $(LIBS)
 
 interface.o: interface.cc
-	$(MPICXX) $(CXXFLAGS) $(MPFR_FLAGS) $(SC_FLAGS) -I./src -c -o $@ $< 
+	$(MPICXX) $(CXXFLAGS) $(MPFR_FLAGS) $(SC_FLAGS) -Impfrc++ -I./src -c -o $@ $< 
 
 
