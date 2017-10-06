@@ -1,6 +1,8 @@
 """
-   Minimalistic routine for running a stellar evolution code
+   Minimal routine for running a stellar evolution code
 """
+
+#BOOKLISTSTART
 from amuse.lab import *
     
 def main(m, z, model_time):
@@ -21,7 +23,8 @@ def main(m, z, model_time):
         ", R=", stellar.particles.radius.in_(units.RSun)
         
     stellar.stop()
-    
+#BOOKLISTSTOP
+
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
