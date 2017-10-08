@@ -3,7 +3,7 @@ import threading
 import multiprocessing
 from amuse.lab import *
 
-#BOOKLISTSTART2
+###BOOKLISTSTART1###
 code_queue = Queue.Queue()
 
 def remote_worker_code():
@@ -19,10 +19,10 @@ def evolve_with_different_stellar_model(codes):
         th = threading.Thread(target=remote_worker_code)
         th.daemon = True
         th.start()
-    code_queue.join() #block until all tasks are done
-#BOOKLISTSTOP2
+    code_queue.join() 	    # block until all tasks are done
+###BOOKLISTSTOP1###
 
-#BOOKLISTSTART1
+###BOOKLISTSTART2###
 def evolve_single_star(code):
     stars = Particles(mass=10|units.MSun)
     stellar = code()
@@ -34,7 +34,7 @@ def evolve_single_star(code):
     print "Star evolved to time=", stellar.model_time, \
           " M=", stars.mass, "R=", stars.radius
     stellar.stop()
-#BOOKLISTSTOP1
+###BOOKLISTSTOP2###
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser

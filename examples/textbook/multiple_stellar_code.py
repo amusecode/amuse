@@ -1,6 +1,6 @@
 from amuse.lab import *
 
-#BOOKLISTSTART
+###BOOKLISTSTART###
 def evolve_with_different_stellar_model():
     times = [10, 100, 1000] | units.Myr
     stars = Particles(mass=[1, 2, 4]|units.MSun)
@@ -17,7 +17,7 @@ def evolve_with_different_stellar_model():
     for time, star in zip(times, stars):
         print "Time=", time, "M=", star.mass
         stellar.stop()
-#BOOKLISTSTOP
+###BOOKLISTSTOP###
 
 def evolve_with_same_stellar_model():
     time = [10, 100, 1000] | units.Myr
