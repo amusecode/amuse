@@ -57,6 +57,18 @@ def make_king_model_cluster(nbodycode, N, W0, Mcluster,
     code.particles.add_particles(bodies)
     return code
 
+def plot_cluster(x, y):
+
+    from prepare_figure import single_frame, get_distinct
+    colors = get_distinct(1)     
+    f = single_frame('X [pc]', 'Y [pc]')
+    pyplot.xlim(-60, 60)
+    pyplot.ylim(-60, 60)
+        
+    pyplot.scatter(x,y, c=colors[0], s=50, lw=0)
+    pyplot.savefig("Arches")
+#    pyplot.show()
+
 def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
 
     Rgal=1. | units.kpc
@@ -83,17 +95,7 @@ def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
     x=system.particles.x.value_in(units.parsec)
     y=system.particles.y.value_in(units.parsec)
     cluster_code.stop()
-
-    from prepare_figure import single_frame, get_distinct
-    colors = get_distinct(1)     
-    f = single_frame('X [pc]', 'Y [pc]')
-    pyplot.xlim(-60, 60)
-    pyplot.ylim(-60, 60)
-        
-    pyplot.scatter(x,y, c=colors[0], s=50, lw=0)
-    pyplot.savefig("Arches")
-#    pyplot.show()
-    
+    return x, y
 
 if __name__ == "__main__":
     N=1024
@@ -103,5 +105,5 @@ if __name__ == "__main__":
     endtime = 2.5 | units.Myr
     Mcluster = 5.e4 | units.MSun
     Rcluster = 0.8 | units.parsec
-    evolve_cluster_in_galaxy(N, W0, Rinit, endtime, timestep, Mcluster, Rcluster)
-        
+    x, y = evolve_cluster_in_galaxy(N, W0, Rinit, endtime, timestep, Mcluster, Rcluster)
+    plot_cluster(x, y)

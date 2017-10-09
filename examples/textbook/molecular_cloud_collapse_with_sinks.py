@@ -46,7 +46,20 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun, Rcloud=1. | units.parse
         time += dt
         print "Evolve to time=", time.in_(units.Myr)
 #        print "N=", len(sph.gas_particles), len(sph.dm_particles)
-#        print "Masses of dm particles:", sph.dm_particles.mass.in_(units.MSun)
+
+        Mtot = 0|units.MSun
+        if len(hydro.star_particles)>0:
+            print "Mass conservation: Slocal:", time.in_(units.Myr), hydro.gas_particles.mass.sum().in_(units.MSun), hydro.star_particles.mass.sum().in_(units.MSun), "sum=", (hydro.gas_particles.mass.sum()+hydro.star_particles.mass.sum()).in_(units.MSun)
+            print "Mass conservation: Shydro:", time.in_(units.Myr), hydro.code.gas_particles.mass.sum().in_(units.MSun), hydro.code.dm_particles.mass.sum().in_(units.MSun), "sum=", (hydro.code.gas_particles.mass.sum()+hydro.code.dm_particles.mass.sum()).in_(units.MSun), "S=", hydro.stellar.particles.mass.sum().in_(units.MSun)
+            Mtot = hydro.gas_particles.mass.sum()+hydro.star_particles.mass.sum()
+        else:
+            print "Mass conservation: local:", time.in_(units.Myr), hydro.gas_particles.mass.sum().in_(units.MSun) 
+            print "Mass conservation: hydro:", time.in_(units.Myr), hydro.code.gas_particles.mass.sum().in_(units.MSun)
+            Mtot = hydro.gas_particles.mass.sum()
+
+        if Mtot<Mcloud-(1.e-5|units.MSun):
+            print "Mass is not conserved:", Mtot.in_(units.MSun), Mcloud.in_(units.MSun)
+            exit(-1)
 
         hydro.evolve_model(time)
         E = hydro.gas_particles.kinetic_energy()+hydro.gas_particles.potential_energy() + hydro.gas_particles.thermal_energy()

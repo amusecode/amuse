@@ -14,7 +14,6 @@ def main(t_end, mass, z, Tstar, Lstar):
     stellar_evolution_codes = [SeBa(), SSE(), MESA(), EVtwin()]
     label = ["SeBa", "SSE", "MESA", "EVtwin"]
     marker = ["o", "v", "<", ">"]
-#    color = [0, 1, 2, 3, 4]
 
     x_label = "$(T-T_\odot)/T_\odot)$"
     y_label = "$(L-L_\odot)/L_\odot)$"
@@ -35,15 +34,19 @@ def main(t_end, mass, z, Tstar, Lstar):
         T = (stellar.particles.temperature-Tstar)/Tstar
         L = (stellar.particles.luminosity-Lstar)/Lstar
         if si==3: 
-            pyplot.scatter(T, L, marker=marker[si], color=color[0], label=label[si], s=300, lw=0)
+            pyplot.scatter(T, L, marker=marker[si],
+                           color=color[0], label=label[si], s=300, lw=0)
         else:
-            pyplot.scatter(T, L, marker=marker[si], color=color[si], label=label[si], s=300, lw=0)
+            pyplot.scatter(T, L, marker=marker[si],
+                           color=color[si], label=label[si], s=300, lw=0)
         stellar.stop()
 
     pyplot.legend(scatterpoints=1, loc=2)
-#    pyplot.show()
-    pyplot.savefig("fig_SunComparison")
 
+    save_file = 'fig_SunComparison.png'
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file,'\n'
+    pyplot.show()
     
 def new_option_parser():
     result = OptionParser()
