@@ -43,26 +43,22 @@ def setup_abundancies(code):
     table['Ne'] = 5.e-5
     table['S'] = 9.e-6
 
-def plot_temperature_line(radii, electron_temperatures):
-    
+def plot_temperature_line(radii, electron_temperatures, ci):
+  
     colors = get_distinct(4)
-    pyplot.rcParams.update({'font.size': 30})
-    figure = pyplot.figure(figsize=(16, 12))
-    #plot = figure.add_subplot(1,1,1)
-    ax = pyplot.gca()
-    ax.minorticks_on() # switch on the minor ticks
-    ax.locator_params(nbins=3)
+    s = 100
+    if ci==1:
+        s = 50
     
     pyplot.scatter(radii.value_in(units.parsec),
                    electron_temperatures.value_in(units.K),
-                   c=colors[0], lw=0, s=100
-    )
+                   c=colors[ci], lw=0, s=s)
     pyplot.xlabel('R [pc]')
     pyplot.ylabel('T [K]')
-    pyplot.xlim(1, 3.2)
-    pyplot.ylim(6000,9000)
-    pyplot.show()
-    #pyplot.savefig("electrontemperature_profile_of_H2cloud")
+    pyplot.xlim(0.8, 3.2)
+#    pyplot.ylim(6000,9000)
+#    pyplot.show()
+#    pyplot.savefig("electrontemperature_profile_of_H2cloud")
     
 def evolve_star(mass, age, position):
     star=Particles(1)
@@ -126,6 +122,18 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
     max_number_of_photons = radiative_transfer.parameters.total_number_of_photons * 100
     percentage_converged = previous_percentage_converged = 0.0
 
+
+    grid.electron_temperature = radiative_transfer.grid.electron_temperature
+    radius = grid.radius.flatten()
+    electron_temperature = grid.electron_temperature.flatten()
+    selection = electron_temperature > 0 | units.K
+    pyplot.rcParams.update({'font.size': 30})
+    figure = pyplot.figure(figsize=(16, 12))
+    ax = pyplot.gca()
+    ax.minorticks_on() # switch on the minor ticks
+    ax.locator_params(nbins=3)
+    plot_temperature_line(radius[selection], electron_temperature[selection], 0)
+
     step = 0
     while percentage_converged < min_convergence:
 
@@ -133,7 +141,7 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
         percentage_converged = radiative_transfer.get_percentage_converged()
         print("percentage converged :", percentage_converged, ", step :", step, ", photons:", radiative_transfer.parameters.total_number_of_photons)
         
-         if previous_percentage_converged > 5 and percentage_converged < 95:
+        if previous_percentage_converged > 5 and percentage_converged < 95:
             convergence_increase = (percentage_converged-previous_percentage_converged)/previous_percentage_converged
             if convergence_increase < 0.2 and radiative_transfer.parameters.total_number_of_photons < max_number_of_photons:
                 radiative_transfer.parameters.total_number_of_photons *= 2
@@ -144,7 +152,9 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
     radius = grid.radius.flatten()
     electron_temperature = grid.electron_temperature.flatten()
     selection = electron_temperature > 0 | units.K
-    plot_temperature_line(radius[selection], electron_temperature[selection])
+    plot_temperature_line(radius[selection], electron_temperature[selection], 1)
+    pyplot.savefig("electrontemperature_profile_of_H2cloud")
+    #pyplot.show()
     write_set_to_file(grid, 'h2region.h5', 'amuse')
     
 
