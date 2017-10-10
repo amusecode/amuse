@@ -25,16 +25,15 @@ import java.util.Map;
 
 import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.xenon.Xenon;
 import nl.esciencecenter.xenon.XenonException;
-import nl.esciencecenter.xenon.adaptors.ssh.SshAdaptor;
+import nl.esciencecenter.xenon.adaptors.schedulers.ssh.SshSchedulerAdaptor;
 import nl.esciencecenter.xenon.credentials.Credential;
-import nl.esciencecenter.xenon.files.FileSystem;
-import nl.esciencecenter.xenon.files.Path;
-import nl.esciencecenter.xenon.files.RelativePath;
-import nl.esciencecenter.xenon.jobs.Scheduler;
-import nl.esciencecenter.xenon.util.Utils;
-import nl.esciencecenter.xenon.adaptors.slurm.SlurmAdaptor;
+import nl.esciencecenter.xenon.credentials.DefaultCredential;
+import nl.esciencecenter.xenon.filesystems.FileSystem;
+import nl.esciencecenter.xenon.utils.LocalFileSystemUtils;
+import nl.esciencecenter.xenon.filesystems.Path;
+import nl.esciencecenter.xenon.schedulers.Scheduler;
+import nl.esciencecenter.xenon.adaptors.schedulers.slurm.SlurmSchedulerAdaptor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +72,6 @@ public class ResourceManager {
 
     private final boolean startHub;
 
-    private final Xenon xenon;
     private final Scheduler scheduler;
     private final Path home;
     private final FileSystem filesystem;
@@ -101,7 +99,7 @@ public class ResourceManager {
     }
 
     public ResourceManager(String name, String location, String gateway, String amuseDir, String tmpDir, String schedulerType, String hubQueueName, int hubTimeMinutes, boolean startHub,
-            Xenon xenon, Server iplServer) throws DistributedAmuseException {
+            Server iplServer) throws DistributedAmuseException {
         this.id = getNextID();
         this.name = name;
         this.location = location;
@@ -111,15 +109,14 @@ public class ResourceManager {
         this.schedulerType = schedulerType;
         this.hubQueueName = hubQueueName;
         this.hubTimeMinutes = hubTimeMinutes;
-        this.xenon = xenon;
         
         //local resources _never_ have a hub
         this.startHub = (schedulerType.equals("local")) ? false : startHub;
         
-        home = getHome(xenon);
-        filesystem = home.getFileSystem();
+        filesystem = _getFileSystem();
+        home = _getHome();
 
-        this.configuration = downloadConfiguration(filesystem, xenon);
+        this.configuration = downloadConfiguration(filesystem);
 
         if (!configuration.isJavaEnabled()) {
             throw new DistributedAmuseException("Resource " + name
@@ -129,7 +126,7 @@ public class ResourceManager {
         scheduler = createScheduler();
 
         if (this.startHub) {
-            this.hub = new Hub(this, this.configuration, iplServer.getHubs(), xenon);
+            this.hub = new Hub(this, this.configuration, iplServer.getHubs());
             iplServer.addHubs(this.hub.getAddress());
 
             String hubAddress = this.hub.getAddress();
@@ -146,68 +143,70 @@ public class ResourceManager {
     private Scheduler createScheduler() throws DistributedAmuseException {
         try {
             if (isLocal()) {
-                return Utils.getLocalScheduler(xenon.jobs());
+                return Scheduler.create("local");
             }
 
-            Credential credential = xenon.credentials().getDefaultCredential(getSchedulerType());
+            Credential credential = new DefaultCredential();
 
             Map<String, String> properties = new HashMap<String, String>();
 
             //add gateway if provided
             String gateway = getGateway();
             if (gateway != null && !gateway.isEmpty()) {
-                properties.put(SshAdaptor.GATEWAY, gateway);
+                properties.put(SshSchedulerAdaptor.GATEWAY, gateway);
             }
-            if(getSchedulerType().equals("slurm")) {
-                properties.put(SlurmAdaptor.IGNORE_VERSION_PROPERTY, "true");
-            }
-            return xenon.jobs().newScheduler(getSchedulerType(), getLocation(), credential, properties);
+            //~ if(getSchedulerType().equals("slurm")) {
+                //~ properties.put(SlurmSchedulerAdaptor.IGNORE_VERSION_PROPERTY, "true");
+            //~ }
+            return Scheduler.create(getSchedulerType(), getLocation(), credential, properties);
         } catch (XenonException e) {
             throw new DistributedAmuseException("cannot create scheduler connection for resource " + this.name, e);
         }
     }
 
-    private Path getHome(Xenon xenon) throws DistributedAmuseException {
+    private Path _getHome() throws DistributedAmuseException {
+        return filesystem.getWorkingDirectory();
+    }
+
+    private FileSystem _getFileSystem() throws DistributedAmuseException {
         try {
             if (isLocal()) {
-                return Utils.getLocalHome(xenon.files());
+                return LocalFileSystemUtils.getLocalFileSystems()[0];
             }
 
-            Credential credential = xenon.credentials().getDefaultCredential(getSchedulerType());
+            Credential credential = new DefaultCredential();
 
             Map<String, String> properties = new HashMap<String, String>();
 
             //add gateway if provided
             String gateway = getGateway();
             if (gateway != null && !gateway.isEmpty()) {
-                properties.put(SshAdaptor.GATEWAY, gateway);
+                properties.put(SshSchedulerAdaptor.GATEWAY, gateway);
             }
 
-            return xenon.files().newFileSystem("ssh", getLocation(), credential, properties).getEntryPath();
+            return FileSystem.create("sftp", getLocation(), credential, properties);
         } catch (XenonException e) {
             throw new DistributedAmuseException("cannot open filesystem for resource " + this.name, e);
         }
     }
 
-    private AmuseConfiguration downloadConfiguration(FileSystem filesystem, Xenon xenon) throws DistributedAmuseException {
+    private AmuseConfiguration downloadConfiguration(FileSystem filesystem) throws DistributedAmuseException {
         try {
-            RelativePath amuseHome;
+            Path amuseHome;
             if (this.amuseDir.startsWith("/")) {
-                amuseHome = new RelativePath(this.amuseDir);
+                amuseHome = new Path( true, this.amuseDir);
             } else {
-                RelativePath userHome = filesystem.getEntryPath().getRelativePath();
+                Path userHome = filesystem.getWorkingDirectory();
 
                 amuseHome = userHome.resolve(this.amuseDir);
             }
-            RelativePath amuseConfig = amuseHome.resolve("config.mk");
+            Path amuseConfig = amuseHome.resolve("config.mk");
 
             logger.debug("Downloading amuse config for " + getName() + " from " + amuseConfig);
 
-            Path path = xenon.files().newPath(filesystem, amuseConfig);
+            InputStream in = filesystem.readFromFile(amuseConfig);
 
-            InputStream in = xenon.files().newInputStream(path);
-
-            return new AmuseConfiguration(amuseHome.getAbsolutePath(), in);
+            return new AmuseConfiguration(amuseHome.toAbsolutePath().toString(), in);
         } catch (Exception e) {
             throw new DistributedAmuseException("cannot download configuration file for resource " + this.name, e);
         }
@@ -270,12 +269,12 @@ public class ResourceManager {
             hub.stopHub();
         }
         try {
-            xenon.jobs().close(scheduler);
+            scheduler.close();
         } catch (XenonException e) {
             logger.warn("Error while closing scheduler for " + this, e);
         }
         try {
-            xenon.files().close(filesystem);
+            filesystem.close();
         } catch (XenonException e) {
             logger.warn("Error while closing filesystem for " + this, e);
         }
@@ -332,4 +331,10 @@ public class ResourceManager {
     public String getHubQueueName() {
         return this.hubQueueName;
     }
+
+    public FileSystem getFileSystem() {
+        return filesystem;
+    }
+
+
 }

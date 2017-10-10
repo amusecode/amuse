@@ -27,9 +27,7 @@ import nl.esciencecenter.amuse.distributed.pilots.PilotSet;
 import nl.esciencecenter.amuse.distributed.resources.ResourceSet;
 import nl.esciencecenter.amuse.distributed.web.WebInterface;
 import nl.esciencecenter.amuse.distributed.workers.WorkerConnectionServer;
-import nl.esciencecenter.xenon.Xenon;
 import nl.esciencecenter.xenon.XenonException;
-import nl.esciencecenter.xenon.XenonFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,9 +69,6 @@ public class DistributedAmuse {
     //monitoring web interface
     private final WebInterface webInterface;
 
-    //used to copy files, start jobs, etc.
-    private final Xenon xenon;
-
     private final boolean debug;
 
     private boolean ended = false;
@@ -96,15 +91,10 @@ public class DistributedAmuse {
 
         logger.info("Initializing Distributed Amuse {} with web interface on port {}, debug {}, and starting hubs {}",
                 id.toString(), webInterfacePort, debug ? "enabled" : "disabled", startHubs ? "enabled" : "disabled");
-        try {
-            xenon = XenonFactory.newXenon(null);
-        } catch (XenonException e) {
-            throw new DistributedAmuseException("could not create Xenon library object", e);
-        }
 
-        resources = new ResourceSet(xenon, amuseRootDir, startHubs);
+        resources = new ResourceSet(amuseRootDir, startHubs);
 
-        pilots = new PilotSet(xenon, resources,  id, debug);
+        pilots = new PilotSet( resources,  id, debug);
 
         jobs = new JobSet(resources.getIplServerAddress(), pilots);
 
@@ -190,7 +180,7 @@ public class DistributedAmuse {
         resources.end();
 
         logger.debug("Ending Xenon");
-        XenonFactory.endAll();
+
         logger.info("Distributed Amuse ended.");
     }
 
