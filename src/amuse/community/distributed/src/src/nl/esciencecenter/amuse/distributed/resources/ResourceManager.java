@@ -115,6 +115,7 @@ public class ResourceManager {
         
         filesystem = _getFileSystem();
         home = _getHome();
+        logger.info("found home to be {}", home);        
 
         this.configuration = downloadConfiguration(filesystem);
 
@@ -165,7 +166,7 @@ public class ResourceManager {
     }
 
     private Path _getHome() throws DistributedAmuseException {
-        return filesystem.getWorkingDirectory();
+        return new Path(System.getProperty("user.home"));
     }
 
     private FileSystem _getFileSystem() throws DistributedAmuseException {
@@ -194,7 +195,7 @@ public class ResourceManager {
         try {
             Path amuseHome;
             if (this.amuseDir.startsWith("/")) {
-                amuseHome = new Path( true, this.amuseDir);
+                amuseHome = new Path(this.amuseDir);
             } else {
                 Path userHome = filesystem.getWorkingDirectory();
 
