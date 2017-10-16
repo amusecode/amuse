@@ -115,7 +115,7 @@ public class ResourceManager {
         
         filesystem = _getFileSystem();
         home = _getHome();
-        logger.info("found home to be {}", home);        
+        logger.info("found home of resource {} to be {}", name, home);        
 
         this.configuration = downloadConfiguration(filesystem);
 
@@ -184,6 +184,8 @@ public class ResourceManager {
             if (gateway != null && !gateway.isEmpty()) {
                 properties.put(SshSchedulerAdaptor.GATEWAY, gateway);
             }
+
+            logger.info("trying with {} {}", getLocation(), properties);
 
             return FileSystem.create("sftp", getLocation(), credential, properties);
         } catch (XenonException e) {
