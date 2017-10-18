@@ -63,7 +63,14 @@ public class ResourceSet {
             gatewayLocation = getResource(gateway).getLocation();
         }
 
-        ResourceManager result = new ResourceManager(name, location, gatewayLocation, amuseDir, tmpDir, 
+        String username = null;
+        String hostname = location;
+        if(location != null && location.indexOf("@") != -1 ) {
+            username = location.substring(0, location.indexOf("@"));
+            hostname = location.substring(location.indexOf("@")+1); 
+          }
+
+        ResourceManager result = new ResourceManager(name, username, hostname, gatewayLocation, amuseDir, tmpDir, 
                                       schedulerType, queueName, timeMinutes, this.startHubs, iplServer);
 
         resources.add(result);

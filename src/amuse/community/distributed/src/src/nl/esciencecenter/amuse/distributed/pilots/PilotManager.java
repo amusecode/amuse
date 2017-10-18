@@ -501,7 +501,9 @@ public class PilotManager {
         if (isRunning()) {
             return "RUNNING";
         }
-
+        if (!this.left && this.ibisIdentifier == null) {
+            return "WAITING";
+        }
         return xenonJobStatus.getState();
     }
 

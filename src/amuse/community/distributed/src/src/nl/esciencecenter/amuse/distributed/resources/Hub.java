@@ -10,8 +10,6 @@ import nl.esciencecenter.amuse.distributed.AmuseConfiguration;
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.xenon.XenonException;
 import nl.esciencecenter.xenon.adaptors.schedulers.ssh.SshSchedulerAdaptor;
-import nl.esciencecenter.xenon.credentials.Credential;
-import nl.esciencecenter.xenon.credentials.DefaultCredential;
 import nl.esciencecenter.xenon.utils.StreamForwarder;
 import nl.esciencecenter.xenon.schedulers.JobDescription;
 import nl.esciencecenter.xenon.schedulers.JobStatus;
@@ -104,16 +102,7 @@ public class Hub extends Thread {
 
             } else {
 
-                Credential credential = new DefaultCredential();
-
-
-                Map<String, String> properties = new HashMap<String, String>();
-                String gateway = resource.getGateway();
-                if (gateway != null && !gateway.isEmpty()) {
-                    properties.put(SshSchedulerAdaptor.GATEWAY, gateway);
-                }
-
-                scheduler = Scheduler.create("ssh", resource.getLocation(), credential, properties);
+                scheduler = Scheduler.create("ssh", resource.getLocation(), resource.getCredential(), resource.getProperties());
 
                 jobDescription.setQueueName("unlimited");
                 jobDescription.setMaxRuntime(0);
