@@ -1,7 +1,6 @@
 import numpy
 from amuse.lab import *
 from amuse.couple import bridge
-from matplotlib import pyplot
 
 class MilkyWay_galaxy(object):
     def get_gravity_at_point(self, eps, x,y,z):
@@ -44,11 +43,7 @@ def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
     M67 = bodies[1]
     M67.mass = 50000 | units.MSun
     M67.position = Sun.position + ((0.766, 0.0, 0.49) |units.kpc) 
-#    M67.position = Sun.position + ((0.815, 0.0, 0.49) |units.kpc) 
     M67.velocity = Sun.velocity + ((31.92, -21.66, -8.71) |units.kms)
-#    M67.position = Sun.position - ((0.815, 0.0, 0.49) |units.kpc) 
-#    M67.velocity = Sun.velocity - ((31.92, -21.66, -0.0) |units.kms)
-
 
     Sun.velocity *= -1
     M67.velocity *= -1
@@ -70,8 +65,6 @@ def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
 
-    pyplot.ion()
-
     t_end = 4.56|units.Gyr
     time = 0 | units.yr
     while time < t_end:
@@ -88,7 +81,6 @@ def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
         print "E= ", Etot, "Q= ", Ekin/Epot,
         print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
         Etot_prev = Etot
-#        movie(time, bodies)
     gravity.stop()
     
     

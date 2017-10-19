@@ -53,7 +53,7 @@ class Hydro:
 
                 self.converter = nbody_system.nbody_to_si(1|units.MSun, system_size)
                 self.star_attributes = ['name', 'birth_age', 'angular_momentum', 'mass', 'radius', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'Lx', 'Ly', 'Lz']
-
+p
                 if hydro_code is Fi:
                         self.code = hydro_code(self.converter, mode="openmp", redirection="file")
 
@@ -119,6 +119,7 @@ class Hydro:
                 # Create a channel
                 self.channel_to_gas = self.code.gas_particles.new_channel_to(self.gas_particles)
                 self.channel_to_stars = self.code.dm_particles.new_channel_to(self.star_particles)
+                self.channel_from_stars = self.star_particles.new_channel_to(self.code.dm_particles)
                 
                 # External Cooling
                 print "Cooling flag:", self.cooling_flag
@@ -193,9 +194,10 @@ class Hydro:
                     self.star_particles[si].Lx += sinks[si].angular_momentum[0]
                     self.star_particles[si].Ly += sinks[si].angular_momentum[1]
                     self.star_particles[si].Lz += sinks[si].angular_momentum[2]
-        
 
 	        self.gas_particles.synchronize_to(self.code.gas_particles)
+                # make sure that the accreted mass is copied to the Hydro code..+++
+                self.channel_from_stars.copy()
                 
             #self.code.evolve_model(model_time)
             print "final N=", len(self.star_particles),len(self.code.dm_particles)

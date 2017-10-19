@@ -143,7 +143,7 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-n", dest="n_steps", type="float", default = 1000,
+    result.add_option("-n", dest="n_steps", type="float", default = 100,
                       help="number of diagnostics time steps [10]")
     result.add_option("--Ndisk", dest="Ndisk", type="int",default = 100000,
                       help="number of disk particles [100]")

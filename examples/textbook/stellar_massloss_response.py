@@ -9,6 +9,7 @@ set_printing_strategy("custom",
                       precision = 6, prefix = "", 
                       separator = " [", suffix = "]")
 
+###BOOKLISTSTART1###
 def calculate_zeta(star, z, dmdt):
     stellar = MESA()
     stellar.parameters.metallicity = z
@@ -23,10 +24,11 @@ def calculate_zeta(star, z, dmdt):
     dlnr = (rnew-rold)/rold
     dlnm = (stellar.particles[0].mass-star.mass)/star.mass
     zeta = dlnr/dlnm
-
     stellar.stop()
     return zeta
+###BOOKLISTSTOP1###
 
+###BOOKLISTSTART2###
 def main(Mstar, z, dmdt):
     stellar = MESA()
     stellar.parameters.metallicity = z
@@ -39,16 +41,21 @@ def main(Mstar, z, dmdt):
         channel_to_framework.copy_attributes(copy_argument)
         star = stellar.particles.copy() 
         zeta = calculate_zeta(star, z, dmdt)
-        print "Zeta=", zeta[0], bodies[0].age, bodies[0].mass, bodies[0].radius, dmdt, bodies[0].stellar_type
-
+        print "Zeta=", zeta[0], bodies[0].age, bodies[0].mass, \
+              bodies[0].radius, dmdt, bodies[0].stellar_type
     stellar.stop()
+###BOOKLISTSTOP2###
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-M", unit=units.MSun, dest="Mstar", type="float",default = 1.|units.MSun, help="stellar mass [%default]")
-    result.add_option("--dmdt", unit=units.MSun/units.yr, dest="dmdt", type="float", default = -0.01|(units.MSun/units.yr), help="dmdt [%default]")
-    result.add_option("-z", dest="z", type="float", default = 0.02, help="metalicity [%default]")
+    result.add_option("-M", unit=units.MSun, dest="Mstar", type="float",
+                      default = 1.|units.MSun, help="stellar mass [%default]")
+    result.add_option("--dmdt", unit=units.MSun/units.yr, dest="dmdt",
+                      type="float", default = -0.01|(units.MSun/units.yr),
+                      help="dmdt [%default]")
+    result.add_option("-z", dest="z", type="float", default = 0.02,
+                      help="metalicity [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):

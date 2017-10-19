@@ -463,6 +463,10 @@ class InterfaceParameterDefinition(ParameterDefinition):
         except:
           self.value=quantity
 
+    def must_set_to_default_if_not_set(self):
+        return False
+
+
 class ParameterException(AttributeError):
     template = ("Could not {0} value for parameter '{1}' of a '{2}' object, got errorcode <{3}>")
 

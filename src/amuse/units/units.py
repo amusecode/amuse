@@ -88,4 +88,6 @@ object_key = core.key_unit('object_key','key')
 #rad=named('radian','rad',m/m) (defined in derivedsi.py)
 pi=numpy.pi | rad
 rev=named('revolutions','rev',(2*numpy.pi) * rad)
-deg=named('degree','deg',(numpy.pi/180) *  rad)  
+deg=named('degree','deg',(numpy.pi/180) *  rad)
+arcmin=named('arcminutes', 'arcmin', (1./60) * deg)
+arcsec=named('arcseconds', 'arcsec', (1./3600) * deg)
