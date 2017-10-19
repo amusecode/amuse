@@ -102,7 +102,7 @@ public class Code implements CodeInterface {
 
     @Override
     public int recommit_parameters() {
-        //IGNORED
+        logger.error("Recommit of parameters not (yet) supported");
         return -1;
     }
 
@@ -121,8 +121,8 @@ public class Code implements CodeInterface {
     @Override
     public int get_worker_port(int[] result) {
         logger.debug("Returning worker port.");
-
-        result[0] = distributedAmuse.getWorkerPort();
+        result[0] = -1;
+        if(distributedAmuse != null)  result[0] = distributedAmuse.getWorkerPort();
 
         return 0;
     }
@@ -634,6 +634,19 @@ public class Code implements CodeInterface {
             distributedAmuse.end();
         }
         return 0;
+    }
+
+    @Override
+    public int startup_viz() {
+        try {
+          if (distributedAmuse != null) {
+              distributedAmuse.startup_viz();
+          }
+          return 0;
+        } catch (DistributedAmuseException e) {
+          reportError("Error on starting up viz", e);
+          return -1;
+        }
     }
 
     @Override

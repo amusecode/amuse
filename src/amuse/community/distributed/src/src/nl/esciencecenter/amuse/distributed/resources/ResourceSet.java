@@ -27,10 +27,13 @@ public class ResourceSet {
     private final ArrayList<ResourceManager> resources;
 
     private final boolean startHubs;
+    
+    private final String amuseRootDir;
 
     public ResourceSet(String amuseRootDir, boolean startHubs) throws DistributedAmuseException {
         resources = new ArrayList<ResourceManager>();
         this.startHubs = startHubs;
+        this.amuseRootDir = amuseRootDir;
 
         try {
             Properties properties = new Properties();

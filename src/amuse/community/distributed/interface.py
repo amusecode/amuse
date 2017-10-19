@@ -512,6 +512,15 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         return function
+
+    @legacy_function
+    def startup_viz():
+        """
+        start up simple visualisation of used smartsockets
+        """
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function
     
     def cleanup_code(self):
         self.end_all()
@@ -570,6 +579,9 @@ class DistributedAmuse(CommonCode):
         resource.amuse_dir = options.GlobalOptions.instance().amuse_rootdirectory
         resource.scheduler_type = "local"
         self.resources.add_resource(resource)
+                
+        if self.parameters.startup_viz:
+            self.startup_viz()
 
     def use_for_distributed_workers(self, enable=True):
         if enable:
@@ -602,10 +614,11 @@ class DistributedAmuse(CommonCode):
         object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
         object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
         object.add_method('RUN', 'before_get_parameter')
+        object.add_method('INITIALIZED', 'before_set_parameter')
+        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
 
+        object.add_method('RUN', 'startup_viz')
         object.add_method('RUN', 'new_resource')
         object.add_method('RUN', 'new_pilot')
         object.add_method('RUN', 'submit_script_job')
@@ -621,7 +634,6 @@ class DistributedAmuse(CommonCode):
         object.add_method('RUN', 'get_worker_status')
         object.add_method('RUN', 'use_for_distributed_workers')
         object.add_method('RUN', 'use_for_all_workers')
-        object.add_method('RUN', 'get_worker_port')
 
     
     def define_parameters(self, object):
@@ -674,6 +686,11 @@ class DistributedAmuse(CommonCode):
             default_value = 60 | units.s
         )
 
+        object.add_interface_parameter(
+            "startup_viz",
+            "whether to startup simple smartsockets vizualization",
+            False
+        )
 
     
     def define_particle_sets(self, object):
