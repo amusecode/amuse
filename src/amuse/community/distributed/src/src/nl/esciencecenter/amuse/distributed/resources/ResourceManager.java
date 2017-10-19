@@ -85,7 +85,7 @@ public class ResourceManager {
     private final Hub hub;
 
     private static void waitUntilHubStarted(Server iplServer, String hubAddress, String name) throws DistributedAmuseException {
-        logger.info("waiting for new remote hub on {} to connect to the local hub", name);
+        logger.info("waiting for new remote hub on {} at {} to connect to the local hub", name, hubAddress);
         for (int i = 0; i < 40; i++) {
             String[] knownHubAddresses = iplServer.getHubs();
             logger.debug("ipl hub addresses now " + Arrays.toString(iplServer.getHubs()));
