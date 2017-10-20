@@ -145,8 +145,7 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0, t_end, nst
 
         #print "Triple elements t=",  time,  "inner:", M1, M2, ain, ein, "outer:", M3, aout, eout
         Pin = orbital_period(ain, stars[0].mass)
-        dt = min(t_diag-time, dtse_fraction*Pin)
-
+        dt = dtse_fraction*Pin
         
         #    old_time_step = stellar.particles[i].time_step
         #    stellar.particles[i].time_step = 0.1*old_time_step
