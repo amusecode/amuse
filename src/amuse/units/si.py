@@ -27,8 +27,8 @@ def mega(unit):
     return named('mega'+unit.name,'M'+unit.symbol,1.e6*unit)    
 def giga(unit):
     return named('giga'+unit.name,'G'+unit.symbol,1.e9*unit)    
-def terra(unit):
-    return named('terra'+unit.name,'T'+unit.symbol,1.e12*unit)    
+def tera(unit):
+    return named('tera'+unit.name,'T'+unit.symbol,1.e12*unit)    
 def peta(unit):
     return named('peta'+unit.name,'P'+unit.symbol,1.e15*unit)    
 def exa(unit):
