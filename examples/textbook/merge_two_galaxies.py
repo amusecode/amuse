@@ -47,6 +47,7 @@ def simulate_merger(galaxy1, galaxy2, converter, n_halo):
     set1 = dynamics.particles.add_particles(galaxy1)
     set2 = dynamics.particles.add_particles(galaxy2)
     dynamics.particles.move_to_center()
+    n_disk = 0
     disk1 = set1[:n_disk+n_halo]
     disk2 = set2[:n_disk+n_halo]
 
