@@ -236,7 +236,7 @@ class GaslactICsImplementation(object):
            os.path.exists(os.path.join( data_directory, 'dbh.dat')) and \
            os.path.exists(os.path.join( data_directory, 'dbh.finished')) and \
            os.path.exists(os.path.join( data_directory, 'getfreqs.finished')) and \
-           (os.path.exists(os.path.join( data_directory, 'diskdf.finished')) or not self._generate_disk_flag):
+           (os.path.exists(os.path.join( data_directory, 'diskdf.finished')) or self._disk_type_parameter==0):
              return True
         else:
              return False
@@ -437,6 +437,8 @@ class GaslactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRe
         .. [#] Kuijken K., Dubinski J., 1995, MNRAS, 277, 1341 (original version)
         .. [#] Widrow L.M., Dubinski J., 2005, ApJ, 631, 838 (2nd version)
         .. [#] Widrow L.M., Pym B., Dubinski J., 2008, ApJ, 679, 1239 (current version)
+        .. [#] Pelupessy, F. I. et al., 2013, The Astrophysical Multipurpose Software Environment, 
+               Astronomy and Astrophysics 557, 84 [2013A&A...557A..84P] (gas version)
     """
     
     def __init__(self, **options):
@@ -761,8 +763,8 @@ class GaslactICs(CommonCode):
         number_of_updated_particles,number_of_updated_gas_particles = self.get_number_of_particles_updated()
         if number_of_updated_particles:
             self.particles._private.attribute_storage._add_indices(
-                range(number_of_updated_particles)
-            )
+                range(number_of_updated_gas_particles,number_of_updated_particles)
+            ) # this should generate disjoint sets (gas_particles not in particles) 
         if number_of_updated_gas_particles:
             self.gas_particles._private.attribute_storage._add_indices(
                 range(number_of_updated_gas_particles)
