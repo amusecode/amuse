@@ -110,7 +110,7 @@ class NewGalactICsModelTests(TestWithMPI):
         
         particles1 = new_galactics_gas_model(halo_number_of_particles, bulge_type_parameter=0, 
             disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
-            do_scale = False)
+            do_scale = False, reuse_cached_model=False)
         particles2 = new_galactics_gas_model(halo_number_of_particles, conv, bulge_type_parameter=0, 
             disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
             do_scale = False)        
