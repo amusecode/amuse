@@ -22,7 +22,7 @@ def make_galaxies(M_galaxy, R_galaxy, n_halo, n_bulge, n_disk):
     converter=nbody_system.nbody_to_si(M_galaxy, R_galaxy)
     galaxy1 = new_galactics_model(n_halo,
                                   converter,
-                                  do_scale = True,
+                                  #do_scale = True,
                                   bulge_number_of_particles=n_bulge,
                                   disk_number_of_particles=n_disk)
     galaxy2 = Particles(len(galaxy1))
@@ -32,7 +32,8 @@ def make_galaxies(M_galaxy, R_galaxy, n_halo, n_bulge, n_disk):
     
     galaxy1.rotate(0., numpy.pi/2, numpy.pi/4)
     galaxy1.position += [100.0, 100, 0] | units.kpc
-    galaxy1.velocity += [-3000.0, 0.0, -3000.0] | units.km/units.s
+#    galaxy1.velocity += [-3000.0, 0.0, -3000.0] | units.km/units.s
+    galaxy1.velocity += [-10.0, 0.0, -10.0] | units.km/units.s
 
     galaxy2.rotate(numpy.pi/4, numpy.pi/4, 0.0)
     galaxy2.position -= [100.0, 0, 0] | units.kpc
@@ -40,20 +41,19 @@ def make_galaxies(M_galaxy, R_galaxy, n_halo, n_bulge, n_disk):
 
     return galaxy1, galaxy2, converter
 
-def simulate_merger(galaxy1, galaxy2, converter, n_halo):
+def simulate_merger(galaxy1, galaxy2, converter, n_halo, t_end):
     converter = nbody_system.nbody_to_si(1.0e12|units.MSun, 100|units.kpc)
     dynamics = Gadget2(converter, number_of_workers=4)
     dynamics.parameters.epsilon_squared = (100 | units.parsec)**2
     set1 = dynamics.particles.add_particles(galaxy1)
     set2 = dynamics.particles.add_particles(galaxy2)
     dynamics.particles.move_to_center()
-    n_disk = 0
-    disk1 = set1[:n_disk+n_halo]
-    disk2 = set2[:n_disk+n_halo]
+    disk1 = set1[:n_halo]
+    disk2 = set2[:n_halo]
 
     make_plot(disk1, disk2, "Galaxy_merger_t0Myr")
-    dynamics.evolve_model(150|units.Myr)
-    make_plot(disk1, disk2, "Galaxy_merger_t150Myr")
+    dynamics.evolve_model(t_end)
+    make_plot(disk1, disk2, "Galaxy_merger_t"+str(t_end.value_in(units.Myr))+"Myr")
 
     dynamics.stop()
 
@@ -64,7 +64,7 @@ def new_option_parser():
                       dest="M_galaxy", default = 1.0e12 | units.MSun,
                       help="Galaxy mass [%default]")
     result.add_option("-R", unit=units.kpc,
-                      dest="R_galaxy", default = 5 | units.kpc,
+                      dest="R_galaxy", default = 10 | units.kpc,
                       help="Galaxy size [%default]")
     result.add_option("--n_bulge", dest="n_bulge", default = 10000,
                       help="number of stars in the bulge [%default]")
@@ -72,10 +72,12 @@ def new_option_parser():
                       help="number of stars in the disk [%default]")
     result.add_option("--n_halo", dest="n_halo", default = 20000,
                       help="number of stars in the halo [%default]")
-
+    result.add_option("--t_end", unit=units.Myr,
+                      dest="t_end", default = 200|units.Myr,
+                      help="End of the simulation [%default]")
     return result
 
 if __name__ == '__main__':
     o, arguments  = new_option_parser().parse_args()
-    galaxy1, galaxy2, converter = make_galaxies(**o.__dict__)
-    simulate_merger(galaxy1, galaxy2, converter, o.n_halo)
+    galaxy1, galaxy2, converter = make_galaxies(o.M_galaxy, o.R_galaxy, o.n_halo, o.n_bulge, o.n_disk)
+    simulate_merger(galaxy1, galaxy2, converter, o.n_halo, o.t_end)
