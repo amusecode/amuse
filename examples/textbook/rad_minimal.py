@@ -39,11 +39,11 @@ def plot_ionization_fraction(pos, xion):
     pyplot.plot(R, X, c=get_distinct(2)[1], lw=2)
     pyplot.xlim(0, 6)
     pyplot.ylim(-0.04, 1.19)
-    pyplot.savefig("fig_ionization_of_GMC")
-    #pyplot.show()
+    #pyplot.savefig("fig_ionization_of_GMC")
+    pyplot.show()
 
+###BOOKLISTSTART###
 def main(N, Lstar, boxsize, t_end):
-
     converter=nbody_system.nbody_to_si(1|units.MSun, 1|units.parsec)
     ism = new_plummer_gas_model(N, converter)
     ism.flux = 0. | units.s**-1
@@ -54,7 +54,6 @@ def main(N, Lstar, boxsize, t_end):
     hydro.evolve_model(1|units.hour)
     hydro.gas_particles.new_channel_to(ism).copy()
     hydro.stop()
-
     ism = ism.select(lambda r: r.length()<0.5*boxsize,["position"])
 
     source=Particle()
@@ -66,7 +65,6 @@ def main(N, Lstar, boxsize, t_end):
     
     radiative = SimpleX()
     radiative.parameters.box_size = boxsize    
-
     radiative.particles.add_particle(source)
     radiative.particles.add_particles(ism)
 
@@ -74,9 +72,9 @@ def main(N, Lstar, boxsize, t_end):
     print "min ionization:", radiative.particles.xion.min()
     print "average ionization:", radiative.particles.xion.mean()
     print "max ionization:", radiative.particles.xion.max()
-
     plot_ionization_fraction(radiative.particles.position, radiative.particles.xion)
     radiative.stop()
+###BOOKLISTSTOP###
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser
