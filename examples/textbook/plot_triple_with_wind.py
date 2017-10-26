@@ -1,3 +1,4 @@
+import os
 import numpy
 from amuse.lab import *
 
@@ -17,12 +18,12 @@ def read_triple_data(filename):
         if "Triple" in  line:
             l = line.split()
             ti = float(l[3])
-            if ti<=0:
+            if ti <= 0:
                 a0in = float(l[10])
                 a0out = float(l[16])
                 e0in = float(l[12])
                 e0out = float(l[18])
-            if ti>=4:
+            if ti >= 4:
                 t.append(float(l[3]))
                 ain.append(float(l[10])/a0in)
                 ein.append(float(l[12])/e0in)
@@ -30,20 +31,26 @@ def read_triple_data(filename):
                 eout.append(float(l[18])/e0out)
     return t, ain, ein, aout, eout
 
-filename = "evolve_triple_with_wind.data"
-#filename = "a"
+try:
+    amusedir = os.environ['AMUSE_DIR']
+    dir = amusedir+'/examples/textbook/'
+except:
+    print 'Environment variable AMUSE_DIR not set'
+    dir = './'
+filename = dir+'evolve_triple_with_wind.data'
+
 t, ain, ein, aout, eout = read_triple_data(filename)
-print len(ain), len(aout)
 
 x_label = "$a/a_{0}$"
 y_label = "$e/e_{0}$"
-fig = single_frame(x_label, y_label, logx=False, logy=False, xsize=14, ysize=12)
+fig = single_frame(x_label, y_label, logx=False, logy=False, xsize=10, ysize=8)
 color = get_distinct(2)
 
 pyplot.plot(ain, ein, c=color[0], label= 'inner')
 pyplot.plot(aout, eout, c=color[1], label= 'outer')
 pyplot.legend(loc="upper left", ncol=1, shadow=False, fontsize=24)
 
-
-#pyplot.show()
-pyplot.savefig("evolve_triple_with_wind")
+save_file = 'evolve_triple_with_wind'
+pyplot.savefig(save_file)
+print '\nSaved figure in file', save_file,'\n'
+pyplot.show()
