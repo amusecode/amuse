@@ -43,14 +43,15 @@ t, ain, ein, aout, eout = read_triple_data(filename)
 
 x_label = "$a/a_{0}$"
 y_label = "$e/e_{0}$"
-fig = single_frame(x_label, y_label, logx=False, logy=False, xsize=10, ysize=8)
+fig = single_frame(x_label, y_label, logx=False, logy=False,
+                   xsize=10, ysize=8)
 color = get_distinct(2)
 
 pyplot.plot(ain, ein, c=color[0], label= 'inner')
 pyplot.plot(aout, eout, c=color[1], label= 'outer')
-pyplot.legend(loc="upper left", ncol=1, shadow=False, fontsize=24)
+pyplot.legend(loc='best', ncol=1, shadow=False, fontsize=20)
 
-save_file = 'evolve_triple_with_wind'
+save_file = 'evolve_triple_with_wind.png'
 pyplot.savefig(save_file)
 print '\nSaved figure in file', save_file,'\n'
 pyplot.show()
