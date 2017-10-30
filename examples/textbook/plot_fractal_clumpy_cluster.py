@@ -8,18 +8,18 @@ def plot_single_image(groups_of_particles, lim=10):
     left, width = 0.1, 0.4
     bottom, height = 0.1, 0.4
     bottom_h = left_h = left+width+0.05
-    rect_scatter = [left, bottom, width, height]
-    rect_histx = [left, bottom_h, width, 0.4]
-    rect_histy = [left_h, bottom, 0.4, height]
+    rect_xy = [left, bottom, width, height]
+    rect_xz = [left, bottom_h, width, 0.4]
+    rect_yz = [left_h, bottom, 0.4, height]
 
     from distinct_colours import get_distinct
     colors = get_distinct(12)
 
-    fig = pyplot.figure(figsize=(10,8))
+    fig = pyplot.figure(figsize=(10,10))
 
-    xy = pyplot.axes(rect_scatter)
-    xz = pyplot.axes(rect_histx)
-    yz = pyplot.axes(rect_histy)
+    xy = pyplot.axes(rect_xy)
+    xz = pyplot.axes(rect_xz)
+    yz = pyplot.axes(rect_yz)
     xy.set_xlabel("X [pc]")
     xy.set_ylabel("Y [pc]")
     xz.set_ylabel("Z [pc]")
