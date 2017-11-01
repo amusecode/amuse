@@ -179,7 +179,7 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
             ts, dE = advance_stellar(ts, dt/2)
             dE_se += dE
 
-        if True: #time >= t_diag:
+        if time >= t_diag:
             
             t_diag = time + dt_diag
 
