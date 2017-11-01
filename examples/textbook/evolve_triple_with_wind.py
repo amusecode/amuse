@@ -22,8 +22,11 @@ from amuse.ext.orbital_elements import orbital_elements_from_binary
 from amuse.community.huayno.interface import Huayno
 from amuse.community.seba.interface import SeBa
 
-def orbital_period(a, Mtot) :
+def orbital_period(a, Mtot):
     return 2*numpy.pi*(a**3/(constants.G*Mtot)).sqrt()
+
+def semimajor_axis(P, Mtot):
+    return (constants.G*Mtot*P**2/(4*numpy.pi**2))**(1./3)
     
 def get_orbital_elements_of_triple(stars):
     inner_binary = stars[0]+stars[1]
@@ -38,74 +41,83 @@ def get_orbital_elements_of_triple(stars):
         = orbital_elements_from_binary(outer_binary, G=constants.G)
     return ain, ein, aout, eout
     
-def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0,
-                            t_end, nsteps, scheme):
+def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
+                            ein_0, eout_0, t_end, nsteps, scheme, dtse_fac):
 
+    import random
     from amuse.ext.solarsystem import get_position
-    
-    stars = Particles(3)
-    stars[0].mass = M1
-    stars[1].mass = M2
-    stars[2].mass = M3
-    stellar = SeBa()
-    stellar.particles.add_particles(stars)
-    channel_from_stellar = stellar.particles.new_channel_to(stars)
-    stellar.evolve_model(4.6|units.Myr)
-    channel_from_stellar.copy_attributes(["mass"])
 
-    M1 = stars[0].mass
-    M2 = stars[1].mass
-    M3 = stars[2].mass
-    # print "Masses:", M1, M2, M3
+    print "Initial masses:", M1, M2, M3
+    t_stellar = 4.0|units.Myr
+    triple = Particles(3)
+    triple[0].mass = M1
+    triple[1].mass = M2
+    triple[2].mass = M3
+    stellar = SeBa()
+    stellar.particles.add_particles(triple)
+    channel_from_stellar = stellar.particles.new_channel_to(triple)
+    stellar.evolve_model(t_stellar)
+    channel_from_stellar.copy_attributes(["mass"])
+    M1 = triple[0].mass
+    M2 = triple[1].mass
+    M3 = triple[2].mass
+    print "T=", stellar.model_time.in_(units.Myr)
+    print "M=", stellar.particles.mass.in_(units.MSun)
+    print "Masses at time T:", M1, M2, M3
     
     # Inner binary
     
-    stars = Particles(2)
-    stars[0].mass = M1
-    stars[1].mass = M2
+    tmp_stars = Particles(2)
+    tmp_stars[0].mass = M1
+    tmp_stars[1].mass = M2
 
-    Pin = orbital_period(ain_0, M1+M2)
+    if Pora == 1:
+        ain_0 = semimajor_axis(Pin_0, M1+M2)
+    else:
+        Pin_0 = orbital_period(ain_0, M1+M2)
+        
     print 'ain_0 =', ain_0
     print 'M1+M2 =', M1+M2
-    print 'Pin =', Pin
-    print 'Pin =', Pin.value_in(units.day), '[day]'
-
-    dt = 0.1*Pin
+    print 'Pin_0 =', Pin_0.value_in(units.day), '[day]'
+    #print 'semi:', semimajor_axis(Pin_0, M1+M2).value_in(units.AU), 'AU'
+    #print 'period:', orbital_period(ain_0, M1+M2).value_in(units.day), '[day]'
+    
+    dt = 0.1*Pin_0
     ma = 180
     inc = 30
     aop = 180
     lon = 0
-    r, v = get_position(M1, M2, ein_0, ain_0, ma,inc,aop,lon,dt)
-    stars[1].position = r
-    stars[1].velocity = v
-    stars.move_to_center()
+    r, v = get_position(M1, M2, ein_0, ain_0, ma, inc, aop, lon, dt)
+    tmp_stars[1].position = r
+    tmp_stars[1].velocity = v
+    tmp_stars.move_to_center()
 
     # Outer binary
     
-    r, v = get_position(M1+M2, M3, eout_0, aout_0, 0,0,0,0,dt)
+    r, v = get_position(M1+M2, M3, eout_0, aout_0, 0, 0, 0, 0, dt)
     tertiary = Particle()
     tertiary.mass = M3
     tertiary.position = r
     tertiary.velocity = v
-    stars.add_particle(tertiary)
-    stars.move_to_center()
+    tmp_stars.add_particle(tertiary)
+    tmp_stars.move_to_center()
 
-    Mstars = stars.mass.sum()
-    Pout = orbital_period(aout_0, Mstars)
+    triple.position = tmp_stars.position
+    triple.velocity = tmp_stars.velocity
 
-    stellar = SeBa()
-    stellar.particles.add_particles(stars)
-    stellar.evolve_model(4|units.Myr)
-    channel_from_stellar = stellar.particles.new_channel_to(stars)
-    channel_from_stellar.copy_attributes(["mass"])
+    Mtriple = triple.mass.sum()
+    Pout = orbital_period(aout_0, Mtriple)
 
-    converter = nbody_system.nbody_to_si(stars.mass.sum(), aout_0)
+    print "T=", stellar.model_time.in_(units.Myr)
+    print "M=", stellar.particles.mass.in_(units.MSun)
+    print "Pout=", Pout.in_(units.Myr)
+
+    converter = nbody_system.nbody_to_si(triple.mass.sum(), aout_0)
     gravity = Huayno(converter)
-    gravity.parameters.timestep_parameter = 0.01
-    gravity.particles.add_particles(stars)
+    gravity.particles.add_particles(triple)
 
-    channel_from_framework_to_gd = stars.new_channel_to(gravity.particles)
-    channel_from_gd_to_framework = gravity.particles.new_channel_to(stars)
+    channel_from_framework_to_gd = triple.new_channel_to(gravity.particles)
+    channel_from_gd_to_framework = gravity.particles.new_channel_to(triple)
     
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
@@ -113,22 +125,22 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0,
     gravity.particles.move_to_center()
 
     time = 0.0 | t_end.unit
-    ts = (4.0|units.Myr) + time
+    ts = t_stellar + time
 
-    ain, ein, aout, eout = get_orbital_elements_of_triple(stars)
+    ain, ein, aout, eout = get_orbital_elements_of_triple(triple)
     print "Triple elements t=",  time,  \
-        "inner:", stars[0].mass, stars[1].mass, ain, ein, \
-        "outer:", stars[2].mass, aout, eout
+        "inner:", triple[0].mass, triple[1].mass, ain, ein, \
+        "outer:", triple[2].mass, aout, eout
 
     dt_diag = t_end/float(nsteps)
     t_diag = dt_diag
-    dtse_fac = 50
 
     t = [time.value_in(units.Myr)] 
     smai = [ain/ain_0] 
     ecci = [ein/ein_0]
     smao = [aout/aout_0] 
     ecco = [eout/eout_0]
+    ain = ain_0
 
     def advance_stellar(ts, dt):
         E0 = gravity.kinetic_energy + gravity.potential_energy
@@ -146,8 +158,9 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0,
 
     while time < t_end:
 
-        Pin = orbital_period(ain, stars[0].mass)
+        Pin = orbital_period(ain, triple[0].mass+triple[1].mass)
         dt = dtse_fac*Pin
+        dt *= random.random()
 
         if scheme == 1:
             
@@ -166,7 +179,7 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0,
             ts, dE = advance_stellar(ts, dt/2)
             dE_se += dE
 
-        if time >= t_diag:
+        if True: #time >= t_diag:
             
             t_diag = time + dt_diag
 
@@ -174,27 +187,24 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0,
             Epot = gravity.potential_energy
             Etot = Ekin + Epot
             dE = Etot_prev - Etot
-            Mtot = stars.mass.sum()
+            Mtot = triple.mass.sum()
             print "T=", time, 
-            print "M=", Mtot, "(dM[SE]=", Mtot/Mstars, ")",
+            print "M=", Mtot, "(dM[SE]=", Mtot/Mtriple, ")",
             print "E= ", Etot, "Q= ", Ekin/Epot,
             print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, 
             print "(dE[SE]=", dE_se/Etot, ")"
             Etot_init -= dE
             Etot_prev = Etot
-            ain, ein, aout, eout = get_orbital_elements_of_triple(stars)
+            ain, ein, aout, eout = get_orbital_elements_of_triple(triple)
             print "Triple elements t=",  (4|units.Myr) + time,  \
-                "inner:", stars[0].mass, stars[1].mass, ain, ein, \
-                "outer:", stars[2].mass, aout, eout
+                "inner:", triple[0].mass, triple[1].mass, ain, ein, \
+                "outer:", triple[2].mass, aout, eout
 
             t.append(time.value_in(units.Myr))
             smai.append(ain/ain_0)
             ecci.append(ein/ein_0)
             smao.append(aout/aout_0)
             ecco.append(eout/eout_0)
-
-            if stellar.particles[0].mass <= 0.1|units.MSun:
-                break
 
             if eout > 1.0 or aout <= zero:
                 print "Binary ionized or merged"
@@ -205,7 +215,8 @@ def evolve_triple_with_wind(M1, M2, M3, ain_0, aout_0, ein_0, eout_0,
 
     return t, smai, ecci, smao, ecco
 
-def main(M1, M2, M3, ain, aout, ein, eout, t_end, nsteps, scheme):
+def main(M1, M2, M3, Pora, Pin, ain, aout, ein, eout,
+         t_end, nsteps, scheme, dtse_fac):
 
     from matplotlib import pyplot
     
@@ -223,9 +234,11 @@ def main(M1, M2, M3, ain, aout, ein, eout, t_end, nsteps, scheme):
     i = 0
     for s in srange:
         time, ai, ei, ao, eo = evolve_triple_with_wind(M1, M2, M3,
+                                                       Pora, Pin,
                                                        ain, aout,
                                                        ein, eout,
-                                                       t_end, nsteps, s)
+                                                       t_end, nsteps,
+                                                       s, dtse_fac)
         if i == 0:
             pyplot.plot(ai, ei, c=color[0], label='inner')
             pyplot.plot(ao, eo, c=color[1], label='outer')
@@ -236,10 +249,13 @@ def main(M1, M2, M3, ain, aout, ein, eout, t_end, nsteps, scheme):
 
     pyplot.legend(loc='best', ncol=1, shadow=False, fontsize=20)
     
-    save_file = 'evolve_triple_with_wind.png'
+    #save_file = 'evolve_triple_with_wind.png'
+    save_file = 'evolve_triple_with_wind' \
+                    +'_s={:d}_dtse={:.3f}'.format(scheme, dtse_fac) \
+                    +'.png'
     pyplot.savefig(save_file)
     print '\nSaved figure in file', save_file,'\n'
-    pyplot.show()
+    #pyplot.show()
     
 def new_option_parser():
     
@@ -248,35 +264,42 @@ def new_option_parser():
     result.add_option("-n",
                       dest="nsteps", type="int", default = 1000,
                       help="diagnostic time steps [%default]")
-
-    # scheme: 1 = SE first, 2 = gravity first, 3 = interlaced, 0 = all
-
+    result.add_option("--M1", unit=units.MSun,
+                      dest="M1", type="float", default = 60 | units.MSun,
+                      help="Primary mass [%default]")
+    result.add_option("--M2", unit=units.MSun,
+                      dest="M2", type="float", default = 30 | units.MSun,
+                      help="secondary mass [%default]")
+    result.add_option("--M3", unit=units.MSun,
+                      dest="M3", type="float", default = 20 | units.MSun,
+                      help="secondary mass [%default]")
+    result.add_option("--Pora",
+                      dest="Pora", type="int", default = 1,
+                      help="period or semimajor axis [%default]")
+    result.add_option("--Pin", unit=units.day,
+                      dest="Pin", type="float", default = 19|units.day,
+                      help="orbital period [%default]")
+    result.add_option("--ain", unit=units.AU,
+                      dest="ain", type="float", default = 0.63|units.AU,
+                      help="orbital separation [%default]")
+    result.add_option("--aout", unit=units.AU,
+                      dest="aout", type="float", default = 100|units.AU,
+                      help="orbital separation [%default]")
+    result.add_option("--ein",
+                      dest="ein", type="float", default = 0.2,
+                      help="orbital eccentricity [%default]")
+    result.add_option("--eout",
+                      dest="eout", type="float", default = 0.6,
+                      help="orbital eccentricity [%default]")
+    result.add_option("-t", unit=units.Myr,
+                      dest="t_end", type="float", default = 0.55 | units.Myr,
+                      help="end time of the simulation [%default]")
     result.add_option("-s",
                       dest="scheme", type="int", default = 3,
                       help="integration scheme [%default]")
-    result.add_option("--M1", unit=units.MSun,
-                      dest="M1", type="float",default = 60 | units.MSun,
-                      help="Primary mass [%default]")
-    result.add_option("--M2", unit=units.MSun,
-                      dest="M2", type="float",default = 30 | units.MSun,
-                      help="secondary mass [%default]")
-    result.add_option("--M3", unit=units.MSun,
-                      dest="M3", type="float",default = 20 | units.MSun,
-                      help="secondary mass [%default]")
-    result.add_option("--ain", unit=units.AU,
-                      dest="ain", type="float",default = 0.63|units.AU,
-                      help="orbital separation [%default]")
-    result.add_option("--aout", unit=units.AU,
-                      dest="aout", type="float",default = 100|units.AU,
-                      help="orbital separation [%default]")
-    result.add_option("--ein", dest="ein", type="float", default = 0.2,
-                      help="orbital eccentricity [%default]")
-    result.add_option("--eout", dest="eout", type="float", default = 0.6,
-                      help="orbital eccentricity [%default]")
-    result.add_option("-t", unit=units.Myr,
-                      dest="t_end", 
-                      type="float", default = 0.55 | units.Myr,
-                      help="end time of the simulation [%default]")
+    result.add_option("--dtse",
+                      dest="dtse_fac", type="float", default = 50,
+                      help="stellar mass-loss time step fraction [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):
