@@ -418,9 +418,8 @@ class VectorQuantity(Quantity):
             @property
             def coords(self):
                 return self.flat.coords
-            @property
-
 # some work needed to make it a quantity:
+            @property
             def unit(self):
                 return self.quantity.unit
             def is_quantity(self):
