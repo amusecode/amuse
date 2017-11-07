@@ -1631,6 +1631,41 @@ class TestGridWithBinding6(amusetest.TestCase):
 
 #        self.assertEquals(original.storage[1],'5')
         self.assertEquals(grid[1].mass, original.storage[1])
+
+class TestGridWithBinding7(amusetest.TestCase):
+    class TestInterface(object):
+        
+        shape = ()
+        
+        def __init__(self):
+            self.storage = 123.
+            
+        def get_range(self):
+            return ()
+                
+        def get_a(self):
+            return self.storage
+            
+        def set_a(self, value):
+            self.storage = value
+        
+    def test1(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_a',(handler.INDEX, handler.INDEX,), (units.kg,))
+        handler.add_method('set_a',(handler.INDEX, handler.INDEX, units.kg,), ())
+                      
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid',)
+        handler.add_setter('grid', 'set_a', names = ('mass',))
+        handler.add_getter('grid', 'get_a', names = ('mass',))
+        
+        grid = instance.grid
+        self.assertEquals(grid.mass, 123 | units.kg)
+
         
 
 class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):

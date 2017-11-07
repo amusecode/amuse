@@ -1091,7 +1091,9 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         for attribute in attributes:
             returned_value = mapping_from_attribute_to_result[attribute]
             
-            if len(array_of_indices[0].shape) == 0:
+            if len(array_of_indices)==0:
+                value=returned_value
+            elif len(array_of_indices[0].shape) == 0:
                 value = returned_value[0]
             else:
                 if len(returned_value)!=numpy.product(array_of_indices[0].shape):
