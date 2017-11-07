@@ -418,6 +418,18 @@ class VectorQuantity(Quantity):
             @property
             def coords(self):
                 return self.flat.coords
+            @property
+
+# some work needed to make it a quantity:
+            def unit(self):
+                return self.quantity.unit
+            def is_quantity(self):
+                return True
+            def value_in(self, unit):
+                return self.copy().value_in(unit)
+            def as_quantity_in(self, unit):
+                return self.copy().as_quantity_in(unit)
+                
         return flatiter_wrapper(self)
         
     def is_vector(self):
