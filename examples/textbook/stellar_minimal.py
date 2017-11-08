@@ -25,6 +25,7 @@ def main(m, z, model_time):
     stellar.stop()
 ###BOOKLISTSTOP###
 
+###BOOKLISTSTART2###
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
@@ -42,3 +43,4 @@ def new_option_parser():
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
     main(**o.__dict__)
+###BOOKLISTSTOP2###

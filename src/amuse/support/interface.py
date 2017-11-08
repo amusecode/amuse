@@ -1518,6 +1518,8 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
     def __setstate__(self, state):
         self.__dict__ = state
 
+    def data_store_names(self):
+        return self.get_handler('PARTICLES').mapping_from_name_to_set_definition.keys()
     
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
     formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
