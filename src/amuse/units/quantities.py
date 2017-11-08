@@ -1,4 +1,5 @@
 import numpy
+import operator
 
 from math import sqrt
 
@@ -10,6 +11,7 @@ from amuse.support.core import compare_version_strings
 from amuse.units import core
 from amuse.units.si import none
 from amuse.units.core import zero_unit
+
 
 
 """
@@ -131,16 +133,24 @@ class Quantity(object):
 
     def __truediv__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(self.number / other.number, (self.unit / other.unit).to_simple_form())
+        return new_quantity_nonone(operator.__truediv__(self.number,other.number), (self.unit / other.unit).to_simple_form())
 
     def __rtruediv__(self, other):
-        return new_quantity_nonone(other / self.number, (1.0 / self.unit).to_simple_form())
+        return new_quantity_nonone(operator.__truediv__(other,self.number), (1.0 / self.unit).to_simple_form())
+
+    def __floordiv__(self, other):
+        other = to_quantity(other)
+        return new_quantity_nonone(operator.__floordiv__(self.number,other.number), (self.unit / other.unit).to_simple_form())
+
+    def __rfloordiv__(self, other):
+        return new_quantity_nonone(operator.__floordiv__(other,self.number), (1.0 / self.unit).to_simple_form())
 
     def __div__(self, other):
-        return self.__truediv__(other)
+        other = to_quantity(other)
+        return new_quantity_nonone(self.number/other.number, (self.unit / other.unit).to_simple_form())
 
     def __rdiv__(self, other):
-        return self.__rtruediv__(other)
+        return new_quantity_nonone(other/self.number, (1.0 / self.unit).to_simple_form())
 
     def __mod__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
