@@ -722,7 +722,7 @@ def find_closest_particle_to(particles,x,y,z):
     d2=(particles.x-x)**2+(particles.y-y)**2+(particles.z-z)**2
     return particles[d2.number.argmin()]
 
-def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G):
+def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G, just_potential = False):
     """
     Returns the total potential energy of the particles associated with an external 
     gravitational field, which is represented by the field_particles.
@@ -754,8 +754,12 @@ def potential_energy_in_field(particles, field_particles, smoothing_length_squar
     dxdydz = transposed_positions - field_particles.position
     dr_squared = (dxdydz**2).sum(-1)
     dr = (dr_squared+smoothing_length_squared).sqrt()
-    m_m = particles.mass.reshape([n,1]) * field_particles.mass
-    return -G * (m_m / dr).sum()
+    if just_potential:
+        m_m = field_particles.mass
+        return -G * (m_m / dr).sum(1)
+    else:
+        m_m = particles.mass.reshape([n,1]) * field_particles.mass
+        return -G * (m_m / dr).sum()
     
 def distances_squared(particles, other_particles):
     """
