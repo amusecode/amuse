@@ -313,6 +313,7 @@ class ScalarQuantity(Quantity):
     def round(self, decimals = 0):
         return new_quantity(numpy.round(self.number, decimals), self.unit)
 
+
     def new_zeros_array(self, length):
         array = numpy.zeros(length, dtype=self.unit.dtype)
         return new_quantity(array, self.unit)
@@ -446,6 +447,14 @@ class VectorQuantity(Quantity):
 
     def __len__(self):
         return len(self._number)
+
+    def split(self, indices_or_sections, axis = 0):
+        parts = numpy.split(self.number, indices_or_sections, axis)
+        return map(lambda x : VectorQuantity(x, self.unit), parts)
+
+    def array_split(self, indices_or_sections, axis = 0):
+        parts = numpy.array_split(self.number, indices_or_sections, axis)
+        return map(lambda x : VectorQuantity(x, self.unit), parts)
 
     def sum(self, axis=None, dtype=None, out=None):
         """Calculate the sum of the vector components
