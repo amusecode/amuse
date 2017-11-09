@@ -1162,6 +1162,7 @@ class UnitWithSpecificDtype(named_unit):
     def dtype(self):
         return self.specific_dtype
 
+@memoize
 def unit_with_specific_dtype(unit, dtype):
     if unit is None or dtype is None:
         return unit
