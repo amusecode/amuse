@@ -15,7 +15,7 @@ def read_triple_data(filename):
     a0in = 0
     a0out = 0
     for line in open(filename).xreadlines():
-        if "Triple" in  line:
+        if "Triple" in line:
             l = line.split()
             ti = float(l[3])
             if ti <= 0:

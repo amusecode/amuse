@@ -20,7 +20,10 @@ from amuse.ext.orbital_elements import new_binary_from_orbital_elements
 from amuse.ext.orbital_elements import orbital_elements_from_binary
 
 from amuse.community.huayno.interface import Huayno
+from amuse.community.smalln.interface import SmallN
+from amuse.community.hermite0.interface import Hermite
 from amuse.community.seba.interface import SeBa
+from amuse.community.sse.interface import SSE
 
 def orbital_period(a, Mtot):
     return 2*numpy.pi*(a**3/(constants.G*Mtot)).sqrt()
@@ -113,7 +116,7 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
     print "Pout=", Pout.in_(units.Myr)
 
     converter = nbody_system.nbody_to_si(triple.mass.sum(), aout_0)
-    gravity = Huayno(converter)
+    gravity = Hermite(converter)
     gravity.particles.add_particles(triple)
 
     channel_from_framework_to_gd = triple.new_channel_to(gravity.particles)
@@ -174,10 +177,11 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
             
         else:
 
-            ts, dE_se = advance_stellar(ts, dt/2)
+            dE_se = zero
+            #ts, dE_se = advance_stellar(ts, dt/2)
             time = advance_gravity(time, dt)
-            ts, dE = advance_stellar(ts, dt/2)
-            dE_se += dE
+            #ts, dE = advance_stellar(ts, dt/2)
+            #dE_se += dE
 
         if time >= t_diag:
             
@@ -262,7 +266,7 @@ def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-n",
-                      dest="nsteps", type="int", default = 1000,
+                      dest="nsteps", type="int", default = 10000,
                       help="diagnostic time steps [%default]")
     result.add_option("--M1", unit=units.MSun,
                       dest="M1", type="float", default = 60 | units.MSun,
@@ -275,7 +279,7 @@ def new_option_parser():
                       help="secondary mass [%default]")
     result.add_option("--Pora",
                       dest="Pora", type="int", default = 1,
-                      help="period or semimajor axis [%default]")
+                      help="period (1) or semimajor axis (2) [%default]")
     result.add_option("--Pin", unit=units.day,
                       dest="Pin", type="float", default = 19|units.day,
                       help="orbital period [%default]")
@@ -298,7 +302,7 @@ def new_option_parser():
                       dest="scheme", type="int", default = 3,
                       help="integration scheme [%default]")
     result.add_option("--dtse",
-                      dest="dtse_fac", type="float", default = 50,
+                      dest="dtse_fac", type="float", default = 0.1,
                       help="stellar mass-loss time step fraction [%default]")
     return result
 
