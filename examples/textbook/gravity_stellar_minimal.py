@@ -37,18 +37,20 @@ def main(N, t_end, W0, Rvir, Mmin, Mmax, z):
     dt = stellar.particles.time_step.amin()
     while time < t_end:
 
+        dt = min(dt, t_end-time)
+        
         stellar.evolve_model(time + dt/2)
         channel_from_stellar_to_gravity.copy()
 
         Etot_gr = gravity.kinetic_energy + gravity.potential_energy
         gravity.evolve_model(time + dt)
-        dE_gr += (gravity.kinetic_energy + gravity.potential_energy-Etot_gr)
+        dE_gr += (gravity.kinetic_energy + gravity.potential_energy - Etot_gr)
 
         stellar.evolve_model(time + dt)
         channel_from_stellar_to_gravity.copy()
         channel_from_gravity_to_framework.copy()
 
-        time = min(time+dt, t_end)
+        time += dt
         write_set_to_file(bodies, filename)
 ###BOOKLISTSTOP2###
 
