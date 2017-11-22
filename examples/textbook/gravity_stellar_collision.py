@@ -1,13 +1,13 @@
 """
    N-body integration of N particles with a Salpeter initial mass
    function between Mmin and Mmax and with stellar evolution with
-   metalicity z.
+   metallicity z.
 """
 from amuse.lab import *
 from amuse.io import store
 from amuse.community.seba.interface import SeBa
 
-####BOOKLISTSTART1###
+###BOOKLISTSTART1###
 def merge_two_stars(bodies, particles_in_encounter):
     com_pos = particles_in_encounter.center_of_mass()
     com_vel = particles_in_encounter.center_of_mass_velocity()
@@ -22,9 +22,9 @@ def merge_two_stars(bodies, particles_in_encounter):
     print "Two stars (M=",particles_in_encounter.mass, \
           ") collided with d=", com_pos.length()
     bodies.remove_particles(particles_in_encounter)
-####BOOKLISTSTOP1###
+###BOOKLISTSTOP1###
 
-####BOOKLISTSTART2###
+###BOOKLISTSTART2###
 def resolve_collision(collision_detection, gravity, stellar, bodies):
     if collision_detection.is_set():
         E_coll = gravity.kinetic_energy + gravity.potential_energy
@@ -46,7 +46,7 @@ def resolve_collision(collision_detection, gravity, stellar, bodies):
             dE_coll = E_coll - (gravity.kinetic_energy \
                                   + gravity.potential_energy)
         print "Energy error in the collision: dE =", dE_coll 
-####BOOKLISTSTOP2###
+###BOOKLISTSTOP2###
 
 def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
 
@@ -87,7 +87,7 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     dE_coll = zero
     time = zero
 
-####BOOKLISTSTART3###
+###BOOKLISTSTART3###
     while time < t_end:
         time += dt
 
@@ -110,7 +110,7 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
         write_set_to_file(bodies.savepoint(time), filename, 'hdf5')
         print_diagnostics(time, bodies.mass.sum(),
                           E_dyn, dE_dyn, dE_coll, dE_stellar)
-####BOOKLISTSTOP3###
+###BOOKLISTSTOP3###
 
     gravity.stop()
     stellar.stop()
