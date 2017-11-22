@@ -1108,9 +1108,13 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         
     def set_values_in_store(self,  indices, attributes, quantities):
         array_of_indices = self._to_arrays_of_indices(indices)
-    
-        one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
         one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
+        if len(one_dimensional_array_of_indices)==0:
+            one_dimensional_values = [x for x in quantities]
+        else:
+            one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
+
+        
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(self, attributes, one_dimensional_values, *one_dimensional_array_of_indices)
      
@@ -1118,8 +1122,11 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     def set_values_in_store_async(self,  indices, attributes, quantities):
         array_of_indices = self._to_arrays_of_indices(indices)
     
-        one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
         one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
+        if len(one_dimensional_array_of_indices)==0:
+            one_dimensional_values = [x for x in quantities]
+        else:
+            one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
         selected_setters = list([setter for setter in self.select_setters_for(attributes)])
         
         def next_request(index, setters):
