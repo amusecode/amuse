@@ -124,7 +124,7 @@ def resolve_changed_binaries(stopping_condition, stellar, converter):
         a, e = calculate_orbital_elementss(bi, converter)
         bs.semi_major_axis = a
         bs.eccentricity = e
-        print "Modivide binarya arameters", a, e
+        print "Modified binary parameters", a, e
         print bs
 
 def update_dynamical_binaries_from_stellar(stellar, multiples_code, converter):

@@ -49,6 +49,7 @@ def plot_single_image(groups_of_particles, lim=10):
 
 def find_clumps_with_hop(particles, unit_converter):
 
+###BOOKLISTSTART###
     hop = Hop(unit_converter)
     hop.particles.add_particles(particles)
     hop.calculate_densities()
@@ -61,7 +62,8 @@ def find_clumps_with_hop(particles, unit_converter):
     hop.do_hop()
     result = [x.get_intersecting_subset_in(particles) for x in hop.groups()]
     hop.stop()
-    
+###BOOKLISTSTOP###
+
     return result
 
 def main(N, Rvir, Qvir, Fd, seed):

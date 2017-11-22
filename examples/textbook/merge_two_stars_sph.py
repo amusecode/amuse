@@ -5,6 +5,7 @@ from amuse.lab import *
 from amuse.plot import plot
 from amuse.ext.sph_to_star import convert_SPH_to_stellar_model
 
+###BOOKLISTSTART1###
 def return_evolved_star_hydro(mass, time, Nsph):
     star =  Particle(mass=mass)
     stellar = EVtwin()
@@ -14,7 +15,9 @@ def return_evolved_star_hydro(mass, time, Nsph):
     star_in_sph = convert_stellar_model_to_SPH(star, Nsph).gas_particles
     stellar.stop()
     return star_in_sph
+###BOOKLISTSTOP1###
 
+###BOOKLISTSTART2###
 def merge_two_stars_sph(Mprim, Msec, t_coll, Nsph):
     primary_in_sph = return_evolved_star_hydro(Mprim, t_coll, Nsph)
     primary_in_sph = relax_sph_realization(primary_in_sph)
@@ -35,7 +38,9 @@ def merge_two_stars_sph(Mprim, Msec, t_coll, Nsph):
     hydro.gas_particles.new_channel_to(secondary_in_sph).copy()
     hydro.stop()
     return primary_in_sph, secondary_in_sph
+###BOOKLISTSTOP2###
 
+###BOOKLISTSTART3###
 def relax_sph_realization(sph_star):
 
     dynamical_timescale = sph_star.dynamical_timescale()
@@ -59,6 +64,7 @@ def relax_sph_realization(sph_star):
     to_framework.copy()
     hydro.stop()
     return sph_star
+###BOOKLISTSTOP3###
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser

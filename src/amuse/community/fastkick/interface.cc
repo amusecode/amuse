@@ -151,6 +151,26 @@ int new_particle(int *id, double *mass_in, double *x_in, double *y_in, double *z
 int delete_particle(int *id, int length) {
     return -1;
 }
+int get_mass(int *id, double * out, int length) {
+    int i;
+    for (i=0; i<length; i++) {
+	    if (id[i] < 0 || id[i] > m_all.size()) {
+		    return -1;
+	    }
+    	    out[i] = m_all[id[i]];
+    }
+    return 0;
+}
+int set_mass(int *id, double * in, int length) {
+    int i;
+    for (i=0; i<length; i++) {
+	    if (id[i] < 0 || id[i] > m_all.size()) {
+		    return -1;
+	    }
+            m_all[id[i]] = in[i];
+    }
+    return 0;
+}
 
 int local_get_potential_at_point(double *eps_in, double *x_in, double *y_in, double *z_in, 
         double *phi, int length){
@@ -168,7 +188,7 @@ int local_get_potential_at_point(double *eps_in, double *x_in, double *y_in, dou
             dy = y[i] - y_in[j];
             dz = z[i] - z_in[j];
             dr2 = dx*dx + dy*dy + dz*dz;
-            if (dr2 > 0) {
+            if (dr2 > 0 && m[i] > 0) {
                 r = sqrt(dr2 + eps2_total);
                 phi[j] -= m[i]/r;
             }

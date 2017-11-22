@@ -2,6 +2,7 @@ import numpy
 from amuse.lab import *
 from amuse.couple import bridge
 
+###BOOKLISTSTART1###
 class MilkyWay_galaxy(object):
     def get_gravity_at_point(self, eps, x,y,z):
         phi_0 = self.get_potential_at_point(eps, x,y,z)
@@ -30,6 +31,7 @@ class MilkyWay_galaxy(object):
         pot_halo = self.halo_potential(x,y,z, 
             Mc=5.0E+10|units.MSun, Rc=6.0|units.kpc)
         return pot_disk + pot_bulge + pot_halo
+###BOOKLISTSTOP1###
 
 def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
 

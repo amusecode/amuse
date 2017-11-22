@@ -1,4 +1,5 @@
 import numpy
+import operator
 
 from math import sqrt
 
@@ -10,6 +11,7 @@ from amuse.support.core import compare_version_strings
 from amuse.units import core
 from amuse.units.si import none
 from amuse.units.core import zero_unit
+
 
 
 """
@@ -131,16 +133,24 @@ class Quantity(object):
 
     def __truediv__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(self.number / other.number, (self.unit / other.unit).to_simple_form())
+        return new_quantity_nonone(operator.__truediv__(self.number,other.number), (self.unit / other.unit).to_simple_form())
 
     def __rtruediv__(self, other):
-        return new_quantity_nonone(other / self.number, (1.0 / self.unit).to_simple_form())
+        return new_quantity_nonone(operator.__truediv__(other,self.number), (1.0 / self.unit).to_simple_form())
+
+    def __floordiv__(self, other):
+        other = to_quantity(other)
+        return new_quantity_nonone(operator.__floordiv__(self.number,other.number), (self.unit / other.unit).to_simple_form())
+
+    def __rfloordiv__(self, other):
+        return new_quantity_nonone(operator.__floordiv__(other,self.number), (1.0 / self.unit).to_simple_form())
 
     def __div__(self, other):
-        return self.__truediv__(other)
+        other = to_quantity(other)
+        return new_quantity_nonone(self.number/other.number, (self.unit / other.unit).to_simple_form())
 
     def __rdiv__(self, other):
-        return self.__rtruediv__(other)
+        return new_quantity_nonone(other/self.number, (1.0 / self.unit).to_simple_form())
 
     def __mod__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
@@ -303,6 +313,7 @@ class ScalarQuantity(Quantity):
     def round(self, decimals = 0):
         return new_quantity(numpy.round(self.number, decimals), self.unit)
 
+
     def new_zeros_array(self, length):
         array = numpy.zeros(length, dtype=self.unit.dtype)
         return new_quantity(array, self.unit)
@@ -436,6 +447,14 @@ class VectorQuantity(Quantity):
 
     def __len__(self):
         return len(self._number)
+
+    def split(self, indices_or_sections, axis = 0):
+        parts = numpy.split(self.number, indices_or_sections, axis)
+        return map(lambda x : VectorQuantity(x, self.unit), parts)
+
+    def array_split(self, indices_or_sections, axis = 0):
+        parts = numpy.array_split(self.number, indices_or_sections, axis)
+        return map(lambda x : VectorQuantity(x, self.unit), parts)
 
     def sum(self, axis=None, dtype=None, out=None):
         """Calculate the sum of the vector components
