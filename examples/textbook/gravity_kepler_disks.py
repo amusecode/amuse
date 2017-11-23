@@ -4,12 +4,16 @@ from amuse.lab import *
 from amuse.ext.orbital_elements import orbital_elements_from_binary
 from amuse.community.fractalcluster.interface import new_fractal_cluster_model
 
+###BOOKLISTSTART3###
 def resolve_close_encounter(time, bodies):
     orbital_elements = orbital_elements_from_binary(bodies, G=constants.G)
     a = orbital_elements[2]
     e = orbital_elements[3]
     p = a*(1-e)
-    print "Close encounter at t=",  time.in_(units.Myr), "a=", a.in_(units.AU), "e=", e, "p=", p.in_(units.AU), "M=", bodies.mass.max().in_(units.MSun), bodies.mass.min().in_(units.MSun) 
+    print "Close encounter at t=",  time.in_(units.Myr), \
+          "a=", a.in_(units.AU), "e=", e, "p=", p.in_(units.AU), \
+          "M=", bodies.mass.max().in_(units.MSun), \
+          bodies.mass.min().in_(units.MSun) 
     truncate_disks_due_to_encounter(bodies, p)
 
 def truncate_disks_due_to_encounter(bodies, p):
@@ -26,8 +30,11 @@ def truncate_disks_due_to_encounter(bodies, p):
     bodies[0].radius = min(bodies[0].radius, 0.5*p)
     bodies[1].radius = min(bodies[1].radius, 0.5*p)
 
-    bodies[0].mass = bodies[0].stellar_mass + bodies[0].disk_mass + bodies[0].accreted_mass
-    bodies[1].mass = bodies[1].stellar_mass + bodies[1].disk_mass + bodies[1].accreted_mass
+    bodies[0].mass = bodies[0].stellar_mass + bodies[0].disk_mass \
+                       + bodies[0].accreted_mass
+    bodies[1].mass = bodies[1].stellar_mass + bodies[1].disk_mass \
+                       + bodies[1].accreted_mass
+###BOOKLISTSTOP3###
 
 def stripped_disk_mass(body, dr):
     rold = body.disk_radius
@@ -42,6 +49,7 @@ def truncate_disk_due_to_encounter(body, r_tr):
     body.disk_mass -= dm
     return dm
 
+###BOOKLISTSTART2###
 def evolve_system_to(time, gravity, bodies, stopping_condition,
                      channel_from_gravity, channel_to_gravity,
                      energy_tolerance = 1.e-10 | units.erg):
@@ -54,19 +62,23 @@ def evolve_system_to(time, gravity, bodies, stopping_condition,
         Ek_enc = gravity.kinetic_energy 
         Ep_enc = gravity.potential_energy
         for ci in range(len(stopping_condition.particles(0))): 
-            bodies_in_enc = Particles(particles=[stopping_condition.particles(0)[ci],
-                                                 stopping_condition.particles(1)[ci]])
-            local_bodies_in_enc = bodies_in_enc.get_intersecting_subset_in(bodies)
+            bodies_in_enc \
+                = Particles(particles=[stopping_condition.particles(0)[ci],
+                                       stopping_condition.particles(1)[ci]])
+            local_bodies_in_enc \
+                = bodies_in_enc.get_intersecting_subset_in(bodies)
 
             resolve_close_encounter(gravity.model_time, local_bodies_in_enc)
-            print "At time=", gravity.model_time.value_in(units.Myr), "Rdisk=", local_bodies_in_enc.disk_radius.in_(units.AU)
+            print "At time=", gravity.model_time.value_in(units.Myr), \
+                "Rdisk=", local_bodies_in_enc.disk_radius.in_(units.AU)
             channel_to_gravity.copy_attributes(["radius"])
-            assert abs(Ek_enc - gravity.kinetic_energy)<energy_tolerance
-            assert abs(Ep_enc - gravity.potential_energy)<energy_tolerance
-        print "dE in encounter:", 
+            assert abs(Ek_enc - gravity.kinetic_energy) < energy_tolerance
+            assert abs(Ep_enc - gravity.potential_energy) < energy_tolerance
         gravity.evolve_model(time)
     channel_to_gravity.copy_attributes(["mass"])
+###BOOKLISTSTOP2###
 
+###BOOKLISTSTART1###
 def main(N, Rvir, Qvir, Fd, t_end, filename):
     masses = new_kroupa_mass_distribution(N, 100|units.MSun)
     converter=nbody_system.nbody_to_si(masses.sum(),Rvir)
@@ -89,7 +101,8 @@ def main(N, Rvir, Qvir, Fd, t_end, filename):
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
 
-    write_set_to_file(bodies.savepoint(0|units.Myr), filename, 'hdf5', append_to_file=False)
+    write_set_to_file(bodies.savepoint(0|units.Myr), filename, 'hdf5',
+                      append_to_file=False)
     
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
@@ -98,21 +111,22 @@ def main(N, Rvir, Qvir, Fd, t_end, filename):
     time = 0 | units.yr
     while gravity.model_time < t_end:
         time += dt
-
         evolve_system_to(time, gravity, bodies, stopping_condition,
                          channel_from_gravity, channel_to_gravity)
-        write_set_to_file(bodies.savepoint(gravity.model_time), filename, 'hdf5')
-
+        write_set_to_file(bodies.savepoint(gravity.model_time),
+                          filename, 'hdf5')
         Etot = gravity.kinetic_energy + gravity.potential_energy
         print "T=", gravity.model_time, 
-        print "E= ", Etot, "Q= ", gravity.kinetic_energy/gravity.potential_energy
+        print "E= ", Etot, "Q= ", \
+              gravity.kinetic_energy/gravity.potential_energy
         print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, 
         print "(dE[SE]=", (Etot_prev_se-Etot)/Etot, ")"
         Etot_init -= (Etot_prev-Etot)
         Etot_prev = Etot
 
     gravity.stop()
-    
+###BOOKLISTSTOP1###
+
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()

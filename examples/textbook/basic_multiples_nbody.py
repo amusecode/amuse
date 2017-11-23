@@ -64,7 +64,7 @@ def integrate_system(N, t_end, seed=None):
                              = gravity.parameters.epsilon_squared)
 
     id = numpy.arange(N)
-    stars.id = id+1                       # used in multiples bookkeeping
+    stars.id = id+1
 
     # Set dynamical radii for encounters.
 
@@ -74,8 +74,6 @@ def integrate_system(N, t_end, seed=None):
 
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
-
-    # Combine modules into the multiples code.    
 
     init_smalln()
     kep = Kepler(unit_converter=None)
