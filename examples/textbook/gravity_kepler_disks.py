@@ -56,7 +56,6 @@ def evolve_system_to(time, gravity, bodies, stopping_condition,
                      
     gravity.evolve_model(time)
 
-    Etot_prev_se = gravity.kinetic_energy + gravity.potential_energy
     while stopping_condition.is_set():
         channel_from_gravity.copy()
         Ek_enc = gravity.kinetic_energy 
@@ -83,7 +82,7 @@ def main(N, Rvir, Qvir, Fd, t_end, filename):
     masses = new_kroupa_mass_distribution(N, 100|units.MSun)
     converter=nbody_system.nbody_to_si(masses.sum(),Rvir)
     bodies = new_fractal_cluster_model(N=N, fractal_dimension=Fd, 
-                                           convert_nbody=converter)
+                                       convert_nbody=converter)
     bodies.scale_to_standard(converter, virial_ratio=Qvir)
     bodies.stellar_mass = masses
     bodies.disk_mass = 0.01*bodies.stellar_mass
@@ -92,7 +91,7 @@ def main(N, Rvir, Qvir, Fd, t_end, filename):
     bodies.disk_radius = 400 | units.AU
     bodies.radius = 10 * bodies.disk_radius
 
-    gravity = ph4(converter)
+    gravity = ph4(converter, number_of_workers=2)
     gravity.parameters.epsilon_squared = (100|units.AU)**2
     gravity.particles.add_particles(bodies)
     channel_from_gravity = gravity.particles.new_channel_to(bodies)
@@ -119,8 +118,7 @@ def main(N, Rvir, Qvir, Fd, t_end, filename):
         print "T=", gravity.model_time, 
         print "E= ", Etot, "Q= ", \
               gravity.kinetic_energy/gravity.potential_energy
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, 
-        print "(dE[SE]=", (Etot_prev_se-Etot)/Etot, ")"
+        print "dE=", (Etot-Etot_init)/Etot, "ddE=", (Etot-Etot_prev)/Etot
         Etot_init -= (Etot_prev-Etot)
         Etot_prev = Etot
 
@@ -145,6 +143,7 @@ if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
 
     t_end = 1|units.Myr
-    filename= 'Cl_N%g_R%gpc_Q%g_F%g.h5'%(o.N, o.Rvir.value_in(units.parsec), o.Qvir, o.Fd)
+    filename= 'Cl_N%g_R%gpc_Q%g_F%g.h5' \
+               % (o.N, o.Rvir.value_in(units.parsec), o.Qvir, o.Fd)
     main(o.N, o.Rvir, o.Qvir, o.Fd, t_end, filename)
 

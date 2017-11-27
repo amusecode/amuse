@@ -46,7 +46,7 @@ class Gravity:
 
 def generate_initial_conditions(N, W0, Rvir, Mmin, Mmax):
 
-    numpy.random.seed(1)
+    numpy.random.seed(123)
 
     masses = new_salpeter_mass_distribution(N, Mmin, Mmax)
     Mtot_init = masses.sum()
@@ -185,6 +185,7 @@ def run_event_driven_gravity_and_stellar(bodies, t_end):
 
 def main(N, W0, t_end, Rvir, Mmin, Mmax):
     bodies = generate_initial_conditions(N, W0, Rvir, Mmin, Mmax)
+    print numpy.sort(bodies.mass.value_in(units.MSun))
 
     x_label = "t [Myr]"
     y_label = "R [pc]"
@@ -212,7 +213,7 @@ def main(N, W0, t_end, Rvir, Mmin, Mmax):
     time, Lr25, Lr50, Lr75 \
             = run_event_driven_gravity_and_stellar(bodies.copy(), t_end)
     pyplot.plot(time.value_in(units.Myr), Lr25.value_in(units.parsec),
-                c=color[2], label= 'Event driven')
+                c=color[2], label= 'event driven')
     pyplot.plot(time.value_in(units.Myr), Lr50.value_in(units.parsec),
                 c=color[2])
     pyplot.plot(time.value_in(units.Myr), Lr75.value_in(units.parsec),
