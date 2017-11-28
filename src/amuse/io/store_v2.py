@@ -86,7 +86,8 @@ class HDF5Attribute(object):
                 dataset.attrs["units"] = "UNICODE"
                 return HDF5UnicodeAttribute(name, dataset)
             else:
-                dtype = numpy.asanyarray(input).dtype
+                if not hasattr(shape, '__iter__'): 
+                    shape = shape,
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
                 dataset.attrs["units"] = "none"
                 return HDF5UnitlessAttribute(name, dataset)
@@ -103,7 +104,26 @@ class HDF5Attribute(object):
         elif units_string == "UNICODE":
             return HDF5UnicodeAttribute(name, dataset)
         else:
-            unit = eval(units_string, core.__dict__)
+            try:
+                unit = eval(units_string, core.__dict__)
+            except:
+                # These are some strange things found in the
+                # unit string field of a couple of data files
+                # I'm unsure if this is a data corruption
+                # or some problem in printing units...
+                # same error was found in multiple files
+                # pointing to a real error
+                # this code is for existing files
+                if '*0(' in units_string:
+                    updated = units_string.replace('*0(','* (')
+                    unit = eval(updated, core.__dict__)
+                elif 'vystem.' in units_string:
+                    updated = units_string.replace('vystem.','system.')
+                    unit = eval(updated, core.__dict__)
+                else:
+                    print units_string
+                    raise
+
             return HDF5VectorQuantityAttribute(name, dataset, unit) 
 
 
@@ -933,7 +953,7 @@ class StoreHDF(object):
             setattr(container.collection_attributes, name, quantity)
                 
     def load(self):
-        if not self.data_group()is None and len(self.data_group()) > 0:
+        if not self.data_group(False) is None and len(self.data_group(False)) > 0:
             return self.load_container(self.data_group())
         else:
             result = {}
@@ -1017,6 +1037,7 @@ class StoreHDF(object):
         
     def load_container(self, container_group):
         number_of_saved_containers= len(container_group)
+        print number_of_saved_containers, container_group
         all_containers = [None] * number_of_saved_containers
         for group_index in container_group.keys():
             group = container_group[group_index]
@@ -1057,14 +1078,14 @@ class StoreHDF(object):
         name = format(index + 1,"010d")
         return master_group.create_group(name)
         
-    def info_group(self):
-        return self.named_group(self.INFO_GROUP_NAME)
+    def info_group(self, ensure = True):
+        return self.named_group(self.INFO_GROUP_NAME, ensure)
         
-    def data_group(self):
-        return self.named_group(self.DATA_GROUP_NAME)
+    def data_group(self, ensure = True):
+        return self.named_group(self.DATA_GROUP_NAME, ensure)
         
-    def named_group(self, name):
-        if self.hdf5file.mode == 'r':
+    def named_group(self, name, ensure = True):
+        if self.hdf5file.mode == 'r' or not ensure:
             if not name in self.hdf5file:
                 return None
             else:
