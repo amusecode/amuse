@@ -53,11 +53,18 @@ class ASyncRequest(object):
         self._result = None
         self.result_handlers = []
 
+    def waitone(self):
+        return self.wait()
+
     def wait(self):
         if self.is_finished:
             return
     
         self.request.Wait()
+
+        if not self.is_set:
+            self._set_result()
+
         self.is_finished = True
     
     def is_result_available(self):
@@ -106,6 +113,9 @@ class ASyncRequest(object):
         
     def is_mpi_request(self):
         return True
+
+    def is_other(self):
+        return False
         
     def is_pool(self):
         return False
@@ -139,6 +149,9 @@ class ASyncSocketRequest(object):
                 break
         
         self.is_finished = True
+
+    def waitone(self):
+        return self.wait()
     
     def is_result_available(self):
         if self.is_finished:
@@ -185,9 +198,83 @@ class ASyncSocketRequest(object):
     def is_mpi_request(self):
         return False
         
+    def is_other(self):
+        return False
         
     def is_pool(self):
         return False
+
+class FakeASyncRequest(object):
+        
+    def __init__(self, result):
+        self.is_finished = False
+        self.is_set = False
+        self.__result = result
+        self.result_handlers = []
+
+    def wait(self):
+        if self.is_finished:
+            return
+    
+        if not self.is_set:
+            self._set_result()
+
+        self.is_finished = True
+
+    def waitone(self):
+        return self.wait()
+    
+    def is_result_available(self):
+        return True
+        
+    def add_result_handler(self, function, args = ()):
+        self.result_handlers.append([function,args])
+    
+    def _set_result(self):
+        class CallingChain(object):
+            def __init__(self, outer, args,  inner):
+                self.outer = outer
+                self.inner = inner
+                self.args = args
+                
+            def __call__(self):
+                return self.outer(self.inner, *self.args)
+                
+        
+        current = lambda : self.__result
+
+        for x, args in self.result_handlers:
+            current = CallingChain(x, args, current)
+        
+        self._result = current()
+        
+        self.is_set = True
+        
+    def result(self):
+        self.wait()
+        
+        if not self.is_set:
+            self._set_result()
+        
+        return self._result
+        
+    def _new_handler(self, result_handler, args=(), kwargs={}):
+        return
+        
+    def is_mpi_request(self):
+        return False
+
+    def is_other(self):
+        return True
+        
+    def is_pool(self):
+        return False
+        
+    def join(self, other):
+        pool = AsyncRequestsPool()
+        pool.add_request(self, lambda x: x.result())
+        pool.add_request(other, lambda x: x.result())
+        return pool
 
         
 
@@ -209,6 +296,18 @@ class ASyncRequestSequence(object):
         if self.is_finished:
             return
             
+        while not self.is_finished:
+            self.current_async_request.wait()
+        
+            self.is_result_available()
+
+        if not self.is_set:
+            self._set_result()
+
+    def waitone(self):
+        if self.is_finished:
+            return
+
         self.current_async_request.wait()
         
         self.is_result_available()
@@ -265,6 +364,9 @@ class ASyncRequestSequence(object):
         
     def is_mpi_request(self):
         return self.current_async_request.is_mpi_request()
+
+    def is_other(self):
+        return self.current_async_request.is_other()
         
     def is_pool(self):
         return False
@@ -300,6 +402,8 @@ class AsyncRequestsPool(object):
         self.result_handlers = []
         
     def add_request(self, async_request, result_handler = None, args=(), kwargs={}):
+        if async_request is None:
+            return
         if async_request in self.registered_requests:
             raise Exception("Request is already registered, cannot register a request more than once")
             
@@ -319,12 +423,29 @@ class AsyncRequestsPool(object):
     def waitall(self):
         while len(self) > 0:
             self.wait()
+
+    def waitone(self):
+        return self.wait()
         
     def wait(self):
         
         # TODO need to cleanup this code
         #
         while len(self.requests_and_handlers) > 0:
+            requests = [x.async_request for x in self.requests_and_handlers if x.async_request.is_other()]
+            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_other()]
+            if len(requests) > 0:
+                for index, x in zip(indices, requests):
+                    x.waitone()
+
+                    request_and_handler = self.requests_and_handlers[index]
+                    if request_and_handler.async_request.is_result_available():
+                        self.registered_requests.remove(request_and_handler.async_request)
+                    
+                        del self.requests_and_handlers[index]
+                    
+                        request_and_handler.run()
+
             requests = [x.async_request.request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
             indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
             
@@ -335,7 +456,7 @@ class AsyncRequestsPool(object):
                 
                 request_and_handler = self.requests_and_handlers[index]
                 
-                request_and_handler.async_request.wait()  # will set the finished flag
+                request_and_handler.async_request.waitone()  # will set the finished flag
                 
                 if request_and_handler.async_request.is_result_available():
                     self.registered_requests.remove(request_and_handler.async_request)
@@ -363,7 +484,7 @@ class AsyncRequestsPool(object):
                     
                     indices_to_delete.append(index)
                     
-                    request_and_handler.async_request.wait()  # will set the finished flag
+                    request_and_handler.async_request.waitone()  # will set the finished flag
                     
                     request_and_handler.run()
                     
@@ -1233,7 +1354,6 @@ class MpiChannel(AbstractMessageChannel):
         
         if self._mpi_is_broken_after_possible_code_crash:
             raise exceptions.CodeException("Another code has crashed, cannot spawn a new code, please stop the script and retry")
-        
         if not self.hostname is None:
             self.info = MPI.Info.Create()
             self.info['host'] = self.hostname
@@ -1248,9 +1368,6 @@ class MpiChannel(AbstractMessageChannel):
         self._is_inuse = False
         self._communicated_splitted_message = False
     
-    
-
-
 
     @classmethod
     def ensure_mpi_initialized(cls):
@@ -1373,6 +1490,7 @@ class MpiChannel(AbstractMessageChannel):
         return MPI.COMM_WORLD.rank == 0
         
     def start(self):
+        
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
         else:
@@ -1386,6 +1504,7 @@ class MpiChannel(AbstractMessageChannel):
                     arguments = [self.full_name_of_the_worker]
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command=self.python_exe_for_redirection, interpreter_executable=self.interpreter_executable)
+
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info=self.info)
             
         

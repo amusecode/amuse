@@ -108,9 +108,13 @@ class InMemoryAttributeStorage(AttributeStorage):
             results.append(selected_values)
         
         return results
+    
+    def get_values_in_store_async(self, indices, attributes):
+        from amuse.rfi.channel import FakeASyncRequest
+        result = self.get_values_in_store(indices, attributes)
+        return FakeASyncRequest(result)
         
     def set_values_in_store(self, indices, attributes, list_of_values_to_set):
-        
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
     
             if attribute in self.mapping_from_attribute_to_quantities:
@@ -138,6 +142,11 @@ class InMemoryAttributeStorage(AttributeStorage):
                         raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
                 else:
                     raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
+
+    def set_values_in_store_async(self, indices, attributes, list_of_values_to_set):
+        from amuse.rfi.channel import FakeASyncRequest
+        result = self.set_values_in_store(indices, attributes, list_of_values_to_set)
+        return FakeASyncRequest(result)
                 
     def has_key_in_store(self, key):
         return key in self.keys_set
@@ -653,7 +662,6 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
     
     def __init__(self, name, shape):
         InMemoryAttribute.__init__(self, name)
-           
         self.values = LinkedArray(numpy.empty(
             shape,
             dtype = numpy.object
@@ -680,11 +688,13 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
     def increase_to_length(self, newlength):
         delta = newlength - len(self.values)
         if delta == 0: 
-           return
+            return
         deltashape = list(self.values.shape)
         deltashape[0] = delta
         zeros_for_concatenation =  numpy.empty(deltashape, dtype = self.values.dtype)
         self.values = LinkedArray(numpy.concatenate([self.values, zeros_for_concatenation]))
+
+
 
     def get_shape(self):
         return self.values.shape
@@ -703,3 +713,4 @@ class InMemoryLinkedAttribute(InMemoryAttribute):
 
     def has_units(self):
         return False
+

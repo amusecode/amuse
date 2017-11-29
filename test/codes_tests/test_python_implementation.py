@@ -630,8 +630,6 @@ class TestInterface(TestWithMPI):
         request1 = x.sleep.async(0.4)
         self.assertRaises(Exception, lambda : x.sleep(0.01))
         request1.wait()
-        self.assertRaises(Exception, lambda : x.sleep(0.01))
-        request1.result()
         x.sleep(0.01)
         self.assertTrue(request1.is_result_available())
         x.stop()
@@ -943,10 +941,6 @@ class TestInterface(TestWithMPI):
                 return None
                 
         sequence = ASyncRequestSequence(next_request)
-        self.assertFalse(sequence.is_finished)
-        sequence.wait()
-        self.assertFalse(sequence.is_finished)
-        sequence.wait()
         self.assertFalse(sequence.is_finished)
         sequence.wait()
         self.assertTrue(sequence.is_finished)
