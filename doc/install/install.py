@@ -664,7 +664,7 @@ class InstallMatplotlib(InstallPrerequisites):
                 '1.2.11' ,                   #version string
                 'zlib-', '.tar.gz',        #pre- and postfix for filename
                 'http://zlib.net/', #download url, filename is appended
-                self.basic_build             #method to use for building - same as for FFTW should work
+                self.zlib_build             #method to use for building - same as for FFTW should work
               ) ,
               (
                 'png' ,                   #name to refer by
@@ -679,11 +679,25 @@ class InstallMatplotlib(InstallPrerequisites):
                 [],                         #names of prerequisites (unused)
                 '1.1.0' ,                   #version string
                 'matplotlib-', '.tar.gz',        #pre- and postfix for filename
-                ' http://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
+                'https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
                 self.matplotlib_build             #method to use for building - same as for FFTW should work
               ),
         )
         
+    def zlib_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
+
     def basic_build(self, path):
         commands = []
         command = [
@@ -691,6 +705,11 @@ class InstallMatplotlib(InstallPrerequisites):
           '--prefix='+self.prefix,
           '--enable-shared'
         ]
+        import platform
+        if platform.processor() == 'ppc64le':
+            command.extend([
+                "--build=ppc64le-unknown-linux-gnu",
+            ])
         commands.append(command)
         commands.append(['make'])
         commands.append(['make', 'install'])
