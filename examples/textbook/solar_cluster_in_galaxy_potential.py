@@ -166,7 +166,7 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
     pyplot.xlabel("X [kpc]")
     pyplot.ylabel("Y [kpc]")
     colors = get_distinct(6)
-    pyplot.scatter(sun.x.value_in(units.kpc), sun.y.value_in(units.kpc), s=300, c=colors[0])
+
     MWG = MilkyWay_galaxy()    
     vc = MWG.vel_circ(sun.position.length())
     sun.velocity= [11.352, (12.24+vc.value_in(units.kms)), 7.41] | units.kms
@@ -191,8 +191,10 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
     
     pyplot.scatter(cluster.x.value_in(units.kpc), cluster.y.value_in(units.kpc), s=10, c=colors[3])
     x, y = integrate_single_particle_in_potential(cluster, t_end, dt, converter)
-    pyplot.scatter(cluster.x.value_in(units.kpc),cluster.y.value_in(units.kpc), c=colors[5], alpha=0.1, lw=0)
+    size = cluster.mass/(0.1 |units.MSun)
+    pyplot.scatter(cluster.x.value_in(units.kpc),cluster.y.value_in(units.kpc), c=colors[0], alpha=1.0, lw=0, s=size)
     pyplot.scatter([0], [0], marker="+", s=300, c='r')
+    pyplot.scatter([-8.4], [0], s=100, marker="+", c='r')
     pyplot.savefig("SolarClusterInPotential.pdf")
 #    pyplot.show()
 

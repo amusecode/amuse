@@ -269,6 +269,7 @@ def make_giant_molecular_clouds(Ngmc):
                               q_out=10.0, discfraction=MGMCs/MGalaxy).result
     thin_disk_GMCs.masses = masses
     GMCs.add_particles(thin_disk_GMCs)
+    GMCs.velocity = -1*GMC.velocity
     GMCs.mass = new_powerlaw_mass_distribution(len(GMCs), alpha=-1.6,
                                                  mass_min=1.e+3|units.MSun,
                                                  mass_max=1.0e+8|units.MSun)
