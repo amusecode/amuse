@@ -13,7 +13,10 @@ def plot_grid(grid, time= 0.0|units.day):
     pyplot.rcParams.update({'font.size': 30})
     figure = pyplot.figure(figsize=(12, 12))
 
-    halfway = len(grid.rho[...,0,0])/2 - 1
+    halfway = len(grid.rho[...,0,0])/2 
+    print len(grid.rho[...,0,0])
+    print grid.rho[...,...,halfway]
+    xxx
     rho = grid.rho[...,...,halfway].value_in(units.g/units.cm**3)
 
     plot = figure.add_subplot(1,1,1)
