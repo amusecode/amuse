@@ -155,6 +155,7 @@ def run_smallN(infile = None, number_of_stars = 10,
 
     while time < end_time:
         time += delta_t
+        #gravity.parameters.outfile = 'abc'
         gravity.evolve_model(time)
 
         # Ensure that the stars list is consistent with the internal

@@ -282,7 +282,7 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
         if not self.set is None:
             return self.set.connectivity().flatten()
         else:
-            pass
+            return None
             
     @base.format_option
     def cell_types(self):

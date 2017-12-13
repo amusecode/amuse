@@ -7,13 +7,13 @@
 #
 
 #APPVER=2.5.4
-APPVER=2.7.9
+APPVER=2.7.13
 #APPVER=2.6.5
 #APPVER=2.7.1
 APPFILE=Python-${APPVER}.tar.bz2
 APPFILE=Python-${APPVER}.tgz
 APP_DIR=Python-${APPVER}
-URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
+URL=https://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 
 OPENSSLVERSION="1.0.1r"
@@ -93,12 +93,26 @@ cd ${OPENSSLDIR}
 
 
 MACHINE=`(uname -m) 2>/dev/null`
+PLATFORM=`uname`
 
+if [ ${PLATFORM} == 'Darwin' ]; then
+	if [ ${MACHINE} == 'x86_64' ]; then
+        	./Configure darwin64-x86_64-cc \
+    			--prefix=${PREFIX}  \
+    			--openssldir=${PREFIX}/openssl \
+    			--shared
+	else
+        	./Configure darwin64-i386-cc \
+    			--prefix=${PREFIX}  \
+    			--openssldir=${PREFIX}/openssl \
+    			--shared
+	fi
+else
 ./config \
     --prefix=${PREFIX}  \
     --openssldir=${PREFIX}/openssl \
     --shared
-
+fi
 make
 
 make install

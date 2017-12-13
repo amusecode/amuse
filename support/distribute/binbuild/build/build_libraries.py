@@ -71,7 +71,7 @@ class InstallPrerequisites(object):
             [],  
             '1.8.14',
             'hdf5-' , '.tar.gz' , 
-            'https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src/',
+            'https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.14/src/',
             #'http://www.hdfgroup.org/ftp/HDF5/current/src/',
             self.hdf5_build
           ) ,
@@ -156,9 +156,9 @@ class InstallPrerequisites(object):
           (
             'png' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '1.6.28' ,                   #version string
+            '1.6.29' ,                   #version string
             'libpng-', '.tar.gz',        #pre- and postfix for filename
-            'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.28/', #download url, filename is appended
+            'https://downloads.sourceforge.net/project/libpng/libpng16/older-releases/1.6.29/', #download url, filename is appended
             self.png_build             #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -346,6 +346,7 @@ class InstallPrerequisites(object):
         env['BLAS'] = 'None'
         env['LAPACK'] = 'None'
         env['ATLAS'] = 'None'
+	self.run_application(['patch', 'gnu.py', os.path.abspath(os.path.join(os.path.dirname(__file__), 'gnu.py.patch'))], cwd=os.path.join(path,'numpy','distutils','fcompiler'), env=env)
         self.run_application([sys.executable,'setup.py','build'], cwd=path, env=env)
         self.run_application([sys.executable,'setup.py','install'], cwd=path, env=env)
         

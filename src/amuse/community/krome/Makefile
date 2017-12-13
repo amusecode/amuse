@@ -9,7 +9,8 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 CLASSNAME=KromeInterface
 
-FFLAGS += -I./src/ -I./src/krome/build/
+FFLAGS += $(FCFLAGS) -O2
+INCL = -I./src/ -I./src/krome/build/
 
 all: src/krome src/libchem.a test krome_worker
 
@@ -66,11 +67,11 @@ worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 
 krome_worker: src/libchem.a worker_code.f90 interface.o
-	$(MPIFC) $(FFLAGS) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 interface.o -o $@ src/libchem.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
+	$(MPIFC) $(FFLAGS) $(INCL) $(SC_FLAGS) $(FS_FLAGS) $(LDFLAGS) worker_code.f90 interface.o -o $@ src/libchem.a  $(LIBS) $(SC_FCLIBS) $(FS_LIBS)  $(LIBS)
 
 
 %.o: %.f90
-	$(FC) $(FFLAGS) -c -o $@ $<
+	$(FC) $(FFLAGS) $(INCL) -c -o $@ $<
 
 clean:
 	make -C src/ clean

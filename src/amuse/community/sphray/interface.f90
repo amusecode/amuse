@@ -172,6 +172,15 @@ function set_state_src(id,L,x,y,z,spctype) result(ret)
   ret=sphray_set_src_particle_state(id,t_L,t_x,t_y,t_z,t_spctype)
 end function
 
+function set_luminosity_src(id,L) result(ret)
+  use amuse_sphrayMod
+  integer(i4b) :: id,ret
+  real(r8b) :: L
+  real(r4b) :: t_L
+  t_L=L
+  ret=sphray_set_src_particle_luminosity(id,t_L)
+end function
+
 function evolve_model(tend) result(ret)
   use amuse_sphrayMod
   integer :: ret

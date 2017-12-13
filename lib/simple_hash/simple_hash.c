@@ -294,7 +294,7 @@ int hash_lookups(struct simple_hash *hash,size_t n, size_t *key, size_t *value, 
 }
 int hash_inserts(struct simple_hash *hash,size_t n, size_t *key, size_t *value)
 {
-  int err;
+  int err = 0;
   for(size_t i=0;i<n;i++) {
     err=hash_insert(hash, *(key+i), *(value+i)); 
     if(err!=0) break;

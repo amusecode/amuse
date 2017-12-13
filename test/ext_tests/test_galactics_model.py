@@ -2,9 +2,11 @@ import os.path
 
 from amuse.test.amusetest import TestWithMPI, get_path_to_results
 from amuse.support.exceptions import AmuseException
-from amuse.ext.galactics_model import new_galactics_model
+from amuse.ext.galactics_model import new_galactics_model, new_galactics_gas_model
 from amuse.units import nbody_system, generic_unit_converter, constants, units
 from amuse.io import write_set_to_file
+
+# testing the gas models is *very* slow
 
 class NewGalactICsModelTests(TestWithMPI):
     
@@ -61,4 +63,86 @@ class NewGalactICsModelTests(TestWithMPI):
         
         write_set_to_file(particles, os.path.join(get_path_to_results(), 'disk_galactICs.amuse'), 'amuse')
     
+    def test5(self):
+        halo_number_of_particles = 1000
+        
+        conv=nbody_system.nbody_to_si(1.e12 | units.MSun, 100. | units.kpc)
+        
+        particles1 = new_galactics_model(halo_number_of_particles, generate_bulge_flag = False, 
+            generate_disk_flag = False, order_of_multipole_expansion = 0, halo_random_seed = -1, 
+            do_scale = False)
+        particles2 = new_galactics_model(halo_number_of_particles, conv, generate_bulge_flag = False, 
+            generate_disk_flag = False, order_of_multipole_expansion = 0, halo_random_seed = -1, 
+            do_scale = False)        
+        particles3 = new_galactics_model(halo_number_of_particles, generate_bulge_flag = False, 
+            generate_disk_flag = False, order_of_multipole_expansion = 0, halo_random_seed = -1, 
+            do_scale = True)
+        particles4 = new_galactics_model(halo_number_of_particles, conv,generate_bulge_flag = False, 
+            generate_disk_flag = False, order_of_multipole_expansion = 0, halo_random_seed = -1, 
+            do_scale = True)
+            
+                        
+        self.assertEquals(len(particles1), halo_number_of_particles)
+        self.assertEquals(len(particles2), halo_number_of_particles)
+        self.assertEquals(len(particles3), halo_number_of_particles)
+        self.assertEquals(len(particles4), halo_number_of_particles)
+        
+        self.assertAlmostEquals(conv.to_nbody(particles2.total_mass()), particles1.total_mass())
+        self.assertAlmostEquals(conv.to_nbody(particles4.total_mass()), particles3.total_mass())
+        self.assertAlmostEquals(particles3.total_mass(), 1. | nbody_system.mass)
+        self.assertAlmostRelativeEquals(particles4.total_mass(), conv.to_si(1. | nbody_system.mass),12)
 
+        r1=particles1.position.lengths().std()
+        r2=particles2.position.lengths().std()
+        r3=particles3.position.lengths().std()
+        r4=particles4.position.lengths().std()
+        self.assertAlmostEquals(conv.to_nbody(r2), r1)
+        self.assertAlmostEquals(conv.to_nbody(r4), r3)
+        self.assertTrue(r1/r3>100) # for the default parameters the scaling is quite drastic
+        self.assertTrue(r2/r4>100)
+        print r1,r3
+        print r2,r4
+
+    def test6(self):
+        halo_number_of_particles = 1000
+        
+        conv=nbody_system.nbody_to_si(1.e12 | units.MSun, 100. | units.kpc)
+        
+        particles1 = new_galactics_gas_model(halo_number_of_particles, bulge_type_parameter=0, 
+            disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
+            do_scale = False, reuse_cached_model=False)
+        particles2 = new_galactics_gas_model(halo_number_of_particles, conv, bulge_type_parameter=0, 
+            disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
+            do_scale = False)        
+        particles3 = new_galactics_gas_model(halo_number_of_particles, bulge_type_parameter=0, 
+            disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
+            do_scale = True)
+        particles4 = new_galactics_gas_model(halo_number_of_particles, conv, bulge_type_parameter=0, 
+            disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
+            do_scale = True)
+            
+                        
+        self.assertEquals(len(particles1), halo_number_of_particles)
+        self.assertEquals(len(particles2), halo_number_of_particles)
+        self.assertEquals(len(particles3), halo_number_of_particles)
+        self.assertEquals(len(particles4), halo_number_of_particles)
+        
+        self.assertAlmostEquals(conv.to_nbody(particles2.total_mass()), particles1.total_mass())
+        self.assertAlmostEquals(conv.to_nbody(particles4.total_mass()), particles3.total_mass())
+        self.assertAlmostEquals(particles3.total_mass(), 1. | nbody_system.mass)
+        self.assertAlmostRelativeEquals(particles4.total_mass(), conv.to_si(1. | nbody_system.mass),12)
+
+        r1=particles1.position.lengths().std()
+        r2=particles2.position.lengths().std()
+        r3=particles3.position.lengths().std()
+        r4=particles4.position.lengths().std()
+        self.assertAlmostEquals(conv.to_nbody(r2), r1)
+        self.assertAlmostEquals(conv.to_nbody(r4), r3)
+        self.assertTrue(r1/r3>30) # for the default parameters the scaling is quite drastic
+        self.assertTrue(r2/r4>30)
+        print r1,r3
+        print r2,r4
+
+
+        #~ self.assertAlmostEquals(particles.kinetic_energy(), 
+            #~ 0.25 | nbody_system.energy)

@@ -1,10 +1,11 @@
 #include "regf4.h"
+#include <limits>
 
 namespace regf4
 {
 	int ni_max;
 	float h2max;
-  float dt_tick;
+  	float dt_tick;
 	double t_predictor, t_interaction;
 	unsigned long long n_interaction;
 	
@@ -19,9 +20,12 @@ namespace regf4
 		Predictor(const Particle &p, const double ti)
 		{
 //			const float dt  = ti - p.time;
-      const unsigned int tsys = (unsigned int)(ti/(double)dt_tick);
-      const unsigned int time = (unsigned int)(p.time/(double)dt_tick);
-      const float dt  = dt_tick*(tsys - time);
+//    AVE, rewritten as the previous statements (first converting to unsigned int)
+//    would overflow, causing SIGFPE on powerpc architectures. 
+      const double tsys = ti/(double)dt_tick;
+      const double time = p.time/(double)dt_tick;
+      const unsigned int dt_ = (unsigned int) (tsys - time);
+      const float dt  = dt_tick*dt_;
 			const float dt2 = dt*(1.0/2.0);
 			const float dt3 = dt*(1.0/3.0);
 			pos  = p.pos + dt*(p.vel + dt2*(p.acc + dt3*p.jrk));
@@ -46,7 +50,7 @@ namespace regf4
 	{
 		ni_max = _ni_max;
 		h2max  = _h2max;
-    dt_tick = _dt_tick;
+    		dt_tick = _dt_tick;
 		ptcl.resize(ni_max);
 		pred.resize(ni_max);
 		list.resize(ni_max);
@@ -139,8 +143,9 @@ namespace regf4
 		assert(jend <= nmax);
 		const double t0 = get_wtime();
 #pragma omp parallel for
-		for (int j = jbeg; j < jend; j++)
+		for (int j = jbeg; j < jend; j++){
 			pred[j] = Predictor(ptcl[j], t_global);
+		}
 		const double t1 = get_wtime();
 		t_predictor += t1 - t0;
 

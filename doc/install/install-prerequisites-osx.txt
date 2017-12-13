@@ -57,7 +57,8 @@ After installing you will need to configure the code with the following line::
                   MPICXX=mpicxx-openmpi-gcc49 MPICC=mpicc-openmpi-gcc49 \
                   MPIFC=mpif90-openmpi-gcc49 \
                   FC=gfortran-mp-4.9 PYTHON=python2.7 \
-                  PREFIX=/opt/local
+                  PREFIX=/opt/local CC=gcc-mp-4.9\
+		  CXX=g++-mp-4.9
                   
 .. note::
 

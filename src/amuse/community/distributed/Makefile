@@ -42,6 +42,8 @@ ifeq (1.6,$(findstring $(JAVA_VERSION), 1.6))
 endif
 
 update:
+	@echo "updating AMUSE-distributed from the NLeSc repository is no longer recommended"
+	exit 1
 	$(RM) -rf code.zip $(UPDATE_ARCHIVE_DIR)
 	$(MV) -T src src.old
 	wget $(UPDATE_URL) -O code.zip

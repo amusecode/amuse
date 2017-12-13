@@ -1,11 +1,14 @@
-import sys
-import os
 import numpy
 
 from amuse.test import amusetest
 
-
-from amuse.ext.orbital_elements import new_binary_from_orbital_elements,orbital_elements_from_binary, orbital_elements_for_rel_posvel_arrays
+from amuse.ext.orbital_elements import (
+        new_binary_from_orbital_elements,
+        # get_orbital_elements_from_binary,
+        orbital_elements_for_rel_posvel_arrays,
+        orbital_elements,
+        rel_posvel_arrays_from_orbital_elements,
+        )
 
 from amuse.units import units
 from amuse.units import constants
@@ -14,69 +17,89 @@ from amuse import datamodel
 
 from numpy import random
 
+
 class KeplerTests(amusetest.TestCase):
 
     def test1(self):
-        mass1 = 1 | nbody_system.mass 
+        mass1 = 1 | nbody_system.mass
         mass2 = 1 | nbody_system.mass
-        
+
         binary = new_binary_from_orbital_elements(
             mass1,
             mass2,
             1 | nbody_system.length
         )
-        
+
         self.assertEquals(len(binary), 2)
-        
-        binary.position-=binary[0].position
-        binary.velocity-=binary[0].velocity
-        
-        self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[1].position, [1,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
-        self.assertAlmostRelativeEquals(binary[1].velocity, [0,numpy.sqrt(2),0] | nbody_system.speed)
-    
-    
+
+        binary.position -= binary[0].position
+        binary.velocity -= binary[0].velocity
+
+        self.assertAlmostRelativeEquals(
+                binary[0].position,
+                [0, 0, 0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[1].position,
+                [1, 0, 0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[0].velocity,
+                [0, 0, 0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(
+                binary[1].velocity,
+                [0, numpy.sqrt(2), 0] | nbody_system.speed)
+
     def test2(self):
-        #test going around in a circular orbit
-        mass1 = 1 | nbody_system.mass 
+        # test going around in a circular orbit
+        mass1 = 1 | nbody_system.mass
         mass2 = 1 | nbody_system.mass
-        
+
         binary = new_binary_from_orbital_elements(
             mass1,
             mass2,
             1 | nbody_system.length,
-            eccentricity = 0,
-            true_anomaly = 90,
+            eccentricity=0,
+            true_anomaly=90,
         )
-        
+
         self.assertEquals(len(binary), 2)
 
-        binary.position-=binary[0].position
-        binary.velocity-=binary[0].velocity
+        binary.position -= binary[0].position
+        binary.velocity -= binary[0].velocity
 
-        self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[1].position, [0,1,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
-        self.assertAlmostRelativeEquals(binary[1].velocity, [-numpy.sqrt(2),0,0] | nbody_system.speed)
-        
+        self.assertAlmostRelativeEquals(
+                binary[0].position,
+                [0, 0, 0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[1].position,
+                [0, 1, 0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[0].velocity,
+                [0, 0, 0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(
+                binary[1].velocity,
+                [-numpy.sqrt(2), 0, 0] | nbody_system.speed)
+
         binary = new_binary_from_orbital_elements(
             mass1,
             mass2,
             1 | nbody_system.length,
-            eccentricity = 0,
-            true_anomaly = 180,
+            eccentricity=0,
+            true_anomaly=180,
         )
-        
+
         self.assertEquals(len(binary), 2)
 
-        binary.position-=binary[0].position
-        binary.velocity-=binary[0].velocity
+        binary.position -= binary[0].position
+        binary.velocity -= binary[0].velocity
 
-        self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[1].position, [-1,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
-        self.assertAlmostRelativeEquals(binary[1].velocity, [0,-numpy.sqrt(2),0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(
+                binary[0].position, [0,0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[1].position, [-1,0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(
+                binary[0].velocity, [0,0,0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(
+                binary[1].velocity, [0,-numpy.sqrt(2),0] | nbody_system.speed)
         
         binary = new_binary_from_orbital_elements(
             mass1,
@@ -115,60 +138,70 @@ class KeplerTests(amusetest.TestCase):
         self.assertAlmostRelativeEquals(binary[1].velocity, [-1,1,0] | nbody_system.speed)
 
 
-    def xtest3(self):
-        mass1 = 1 | nbody_system.mass 
-        mass2 = 1 | nbody_system.mass
+    def test3(self):
+        mass1 = 1. | nbody_system.mass 
+        mass2 = 1. | nbody_system.mass
         
         binary = new_binary_from_orbital_elements(
             mass1,
             mass2,
-            1 | nbody_system.length,
-            eccentricity = 0.5
+            1. | nbody_system.length,
+            eccentricity = 0.
         )
         
         self.assertEquals(len(binary), 2)
-        self.assertAlmostRelativeEquals(binary[0].position, [0,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[1].position, [0,0,0] | nbody_system.length)
-        self.assertAlmostRelativeEquals(binary[0].velocity, [0,0,0] | nbody_system.speed)
-        self.assertAlmostRelativeEquals(binary[1].velocity, [0,numpy.sqrt(2),0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(binary[0].position, [-0.5,0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(binary[1].position, [0.5,0,0] | nbody_system.length)
+        self.assertAlmostRelativeEquals(binary[0].velocity, [0,-1/numpy.sqrt(2),0] | nbody_system.speed)
+        self.assertAlmostRelativeEquals(binary[1].velocity, [0,1/numpy.sqrt(2),0] | nbody_system.speed)
     
     def test4(self):
         numpy.random.seed(3456789)
-        N=100
-        
-        mass1=random.random(N) | nbody_system.mass 
-        mass2=random.random(N) | nbody_system.mass
-        semi_major_axis=(-numpy.log(random.random(N))) | nbody_system.length 
-        eccentricity = random.random(N)
-        true_anomaly = 360.*random.random(N)-180.
-        inclination = 180*random.random(N)
-        longitude_of_the_ascending_node = 360*random.random(N)-180
-        argument_of_periapsis = 360*random.random(N)-180       
+        N = 100
 
-        for arg in zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
-                                  longitude_of_the_ascending_node,argument_of_periapsis):
-          arg_=orbital_elements_from_binary(new_binary_from_orbital_elements(*arg))
-          for i,(copy,org) in enumerate(zip(arg_,arg)):
-            self.assertAlmostEquals(copy,org)
+        mass1 = random.random(N) | nbody_system.mass
+        mass2 = random.random(N) | nbody_system.mass
+        semi_major_axis = (-numpy.log(random.random(N))) | nbody_system.length
+        eccentricity = random.random(N)
+        true_anomaly = (360.*random.random(N)-180.) | units.deg
+        inclination = (180*random.random(N)) | units.deg
+        longitude_of_the_ascending_node = (
+                360*random.random(N)-180) | units.deg
+        argument_of_periapsis = (360*random.random(N)-180) | units.deg
+
+        for arg in zip(
+                mass1, mass2, semi_major_axis, eccentricity, true_anomaly,
+                inclination, longitude_of_the_ascending_node,
+                argument_of_periapsis):
+            arg_ = orbital_elements(
+                    new_binary_from_orbital_elements(*arg))
+            for i, (copy, org) in enumerate(zip(arg_, arg)):
+                self.assertAlmostEquals(copy, org)
 
     def test5(self):
         numpy.random.seed(4567893)
-        N=100
-        
-        mass1=random.random(N) | units.MSun 
-        mass2=random.random(N) | units.MSun
-        semi_major_axis=(-numpy.log(random.random(N))) | units.AU 
-        eccentricity = random.random(N)
-        true_anomaly = 360.*random.random(N)-180.
-        inclination = 180*random.random(N)
-        longitude_of_the_ascending_node = 360*random.random(N)-180
-        argument_of_periapsis = 360*random.random(N)-180       
+        N = 100
 
-        for arg in zip(mass1,mass2,semi_major_axis,eccentricity,true_anomaly,inclination, 
-                                  longitude_of_the_ascending_node,argument_of_periapsis):
-          arg_=orbital_elements_from_binary(new_binary_from_orbital_elements(*arg,G=constants.G),G=constants.G)
-          for i,(copy,org) in enumerate(zip(arg_,arg)):
-            self.assertAlmostEquals(copy,org)
+        mass1 = random.random(N) | units.MSun
+        mass2 = random.random(N) | units.MSun
+        semi_major_axis = (-numpy.log(random.random(N))) | units.AU
+        eccentricity = random.random(N)
+        true_anomaly = (360.*random.random(N)-180.) | units.deg
+        inclination = (180*random.random(N)) | units.deg
+        longitude_of_the_ascending_node = (
+                360*random.random(N)-180
+                ) | units.deg
+        argument_of_periapsis = (360*random.random(N)-180) | units.deg
+
+        for arg in zip(
+                mass1, mass2, semi_major_axis, eccentricity, true_anomaly,
+                inclination, longitude_of_the_ascending_node,
+                argument_of_periapsis):
+            arg_ = orbital_elements(
+                new_binary_from_orbital_elements(*arg, G=constants.G),
+                G=constants.G)
+            for i, (copy, org) in enumerate(zip(arg_, arg)):
+                self.assertAlmostEquals(copy, org)
     
     def test6(self):
         """
@@ -202,14 +235,13 @@ class KeplerTests(amusetest.TestCase):
                                                comets.velocity,
                                                comets.mass + mass_sun,
                                                G=constants.G)        
-        rad_to_deg = 180./numpy.pi
-        for i in range(N):
-            self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
-            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
-            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
-            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
-            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
-            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+
+        self.assertAlmostEqual(semi_major_axis,semi_major_axis_ext)
+        self.assertAlmostEqual(eccentricity,eccentricity_ext)
+        self.assertAlmostEqual(inclination ,inclination_ext)
+        self.assertAlmostEqual(longitude_of_the_ascending_node ,longitude_of_the_ascending_node_ext)
+        self.assertAlmostEqual(argument_of_periapsis ,argument_of_periapsis_ext)
+        self.assertAlmostEqual(true_anomaly,ta_ext)
 
     def test7(self):
         """
@@ -242,13 +274,12 @@ class KeplerTests(amusetest.TestCase):
         sem_ext, ecc_ext, ta_ext, inc_ext, lon_ext, arg_ext = \
         orbital_elements_for_rel_posvel_arrays(rel_pos, rel_vel, mass_12, G=constants.G)
         
-        rad_to_deg = 180./numpy.pi
-        self.assertAlmostEqual(sem.value_in(units.AU), sem_ext.value_in(units.AU))
+        self.assertAlmostEqual(sem, sem_ext)
         self.assertAlmostEqual(ecc, ecc_ext)
-        self.assertAlmostEqual(inc, rad_to_deg*inc_ext)
-        self.assertAlmostEqual(lon, rad_to_deg*lon_ext)
-        self.assertAlmostEqual(arg, rad_to_deg*arg_ext)
-        self.assertAlmostEqual(ta,rad_to_deg*ta_ext)
+        self.assertAlmostEqual(inc, inc_ext)
+        self.assertAlmostEqual(lon, lon_ext)
+        self.assertAlmostEqual(arg, arg_ext)
+        self.assertAlmostEqual(ta,ta_ext)
     
     def test8(self):
         """
@@ -284,14 +315,13 @@ class KeplerTests(amusetest.TestCase):
                                                rel_vel,
                                                mass_12,
                                                G=constants.G)        
-        rad_to_deg = 180./numpy.pi
-        for i in range(N):
-            self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
-            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
-            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
-            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
-            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
-            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+
+        self.assertAlmostEqual(semi_major_axis,semi_major_axis_ext)
+        self.assertAlmostEqual(eccentricity,eccentricity_ext)
+        self.assertAlmostEqual(inclination,inclination_ext)
+        self.assertAlmostEqual(longitude_of_the_ascending_node,longitude_of_the_ascending_node_ext)
+        self.assertAlmostEqual(argument_of_periapsis,argument_of_periapsis_ext)
+        self.assertAlmostEqual(true_anomaly,ta_ext)
 
     def test9(self):
         """
@@ -324,17 +354,15 @@ class KeplerTests(amusetest.TestCase):
         orbital_elements_for_rel_posvel_arrays(comets.position,
                                                comets.velocity,
                                                comets.mass + mass_sun,
-                                               G=nbody_system.G)        
-        rad_to_deg = 180./numpy.pi
-        for i in range(N):
-            self.assertAlmostEqual(semi_major_axis[i],semi_major_axis_ext[i])
-            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
-            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
-            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
-            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
-            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+                                               G=nbody_system.G)
+        self.assertAlmostEqual(semi_major_axis,semi_major_axis_ext)
+        self.assertAlmostEqual(eccentricity,eccentricity_ext)
+        self.assertAlmostEqual(inclination,inclination_ext)
+        self.assertAlmostEqual(longitude_of_the_ascending_node,longitude_of_the_ascending_node_ext)
+        self.assertAlmostEqual(argument_of_periapsis,argument_of_periapsis_ext)
+        self.assertAlmostEqual(true_anomaly,ta_ext)
 
-    def test10(self):
+    def xtest10(self):
         """
         testing orbital_elements_for_rel_posvel_arrays for N particles 
         with random orbital elements, unitless
@@ -365,15 +393,14 @@ class KeplerTests(amusetest.TestCase):
         orbital_elements_for_rel_posvel_arrays(comets.position,
                                                comets.velocity,
                                                comets.mass + mass_sun,
-                                               G=1)        
-        rad_to_deg = 180./numpy.pi
-        for i in range(N):
-            self.assertAlmostEqual(semi_major_axis[i],semi_major_axis_ext[i])
-            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
-            self.assertAlmostEqual(inclination[i],rad_to_deg*inclination_ext[i])
-            self.assertAlmostEqual(longitude_of_the_ascending_node[i],rad_to_deg*longitude_of_the_ascending_node_ext[i])
-            self.assertAlmostEqual(argument_of_periapsis[i],rad_to_deg*argument_of_periapsis_ext[i])
-            self.assertAlmostEqual(true_anomaly[i],rad_to_deg*ta_ext[i])
+                                               G=1)
+
+        self.assertAlmostEqual(semi_major_axis,semi_major_axis_ext)
+        self.assertAlmostEqual(eccentricity,eccentricity_ext)
+        self.assertAlmostEqual(inclination,inclination_ext)
+        self.assertAlmostEqual(longitude_of_the_ascending_node,longitude_of_the_ascending_node_ext)
+        self.assertAlmostEqual(argument_of_periapsis,argument_of_periapsis_ext)
+        self.assertAlmostEqual(true_anomaly,ta_ext)
             
             
     def test11(self):
@@ -439,15 +466,185 @@ class KeplerTests(amusetest.TestCase):
         
         semi_major_axis_ext, eccentricity_ext, ta_ext, inclination_ext, \
         longitude_of_the_ascending_node_ext, argument_of_periapsis_ext = \
-        orbital_elements_for_rel_posvel_arrays(comets.position,
+        orbital_elements(comets.position,
                                                comets.velocity,
                                                comets.mass + mass_sun,
                                                G=constants.G)
         
+        self.assertAlmostEqual(semi_major_axis,semi_major_axis_ext.in_(units.AU))
+        self.assertAlmostEqual(eccentricity,eccentricity_ext)
+        self.assertAlmostEqual(inclination,inclination_ext)
+        self.assertAlmostEqual(longitude_of_the_ascending_node,longitude_of_the_ascending_node_ext)
+        self.assertAlmostEqual(argument_of_periapsis,argument_of_periapsis_ext)
+        self.assertAlmostEqual(true_anomaly,ta_ext)
+
+    def test12(self):
+        """
+        tests generating cartesian coordinates from orbital elements
+        """
+        numpy.random.seed(1701)
+
+        mass1 = 1.0 | units.MSun
+        mass2 = 0.1 | units.MEarth
+        sem = 2. | units.AU
+        ecc = 0.15
+        inc = 11. | units.deg
+        lon = 30. | units.deg
+        arg = 0.3 | units.deg
+        ta = (360.*random.random()-180.) | units.deg
+
+        rel_pos, rel_vel = rel_posvel_arrays_from_orbital_elements(
+                mass1,
+                mass2,
+                sem,
+                ecc,
+                ta,
+                inc,
+                lon,
+                arg,
+                G=constants.G)
+
+        mass_12 = mass1 + mass2
+        sem_ext, ecc_ext, ta_ext, inc_ext, lon_ext, arg_ext = \
+            orbital_elements(
+                    rel_pos, rel_vel, mass_12, G=constants.G)
+
+        self.assertAlmostEqual(sem, sem_ext)
+        self.assertAlmostEqual(ecc, ecc_ext)
+        self.assertAlmostEqual(inc, inc_ext)
+        self.assertAlmostEqual(lon, lon_ext)
+        self.assertAlmostEqual(arg, arg_ext)
+        self.assertAlmostEqual(ta, ta_ext)
+
+    def test13(self):
+        """
+        tests generating cartesian coordinates from orbital elements
+        """
+        numpy.random.seed(17014)
+        N = 5
+
+        mass1 = 1.0 | units.MSun
+        mass2 = numpy.ones(N) * 0.01 | units.MEarth
+        sem = 2. | units.AU
+        ecc = 0.15
+        inc = 11. | units.deg
+        lon = 30. | units.deg
+        arg = 0.3 | units.deg
+        ta = (360.*random.random()-180.) | units.deg
+
+        rel_pos, rel_vel = rel_posvel_arrays_from_orbital_elements(
+                mass1,
+                mass2,
+                sem,
+                ecc,
+                ta,
+                inc,
+                lon,
+                arg,
+                G=constants.G)
+
+        mass_12 = mass1 + mass2
+        sem_ext, ecc_ext, ta_ext, inc_ext, lon_ext, arg_ext = \
+            orbital_elements(
+                    rel_pos, rel_vel, mass_12, G=constants.G)
+
+        self.assertAlmostEqual(
+                sem, sem_ext)
+        self.assertAlmostEqual(ecc, ecc_ext)
+        self.assertAlmostEqual(inc, inc_ext)
+        self.assertAlmostEqual(lon, lon_ext)
+        self.assertAlmostEqual(arg, arg_ext)
+        self.assertAlmostEqual(ta, ta_ext)
+
+    def test14(self):
+        """
+        tests generating cartesian coordinates from orbital elements
+        """
+        numpy.random.seed(17018)
+        N = 5
+
+        mass1 = numpy.ones(N) * 1.0 | units.MSun
+        mass2 = random.random(N) | units.MEarth
+        sem = numpy.array([2., 1.0, 1.1, 1.2, 4.0]) | units.AU
+        ecc = numpy.array([0.15, 0.01, 0.5, 0.9, 0.99])
+        inc = numpy.array([11., 0.1, 20, 90, 180.]) | units.deg
+        lon = numpy.array([31., 32., 33., 45., 30.]) | units.deg
+        arg = numpy.array([0.3, 11., 15., 30., 95.]) | units.deg
+        ta = (360.*random.random(N)-180.) | units.deg
+
+        rel_pos, rel_vel = rel_posvel_arrays_from_orbital_elements(
+                mass1,
+                mass2,
+                sem,
+                ecc,
+                ta,
+                inc,
+                lon,
+                arg,
+                G=constants.G)
+
+        mass_12 = mass1 + mass2
+        sem_ext, ecc_ext, ta_ext, inc_ext, lon_ext, arg_ext = \
+            orbital_elements(
+                    rel_pos, rel_vel, mass_12, G=constants.G)
+        self.assertAlmostEqual(
+                sem.value_in(units.AU), sem_ext.value_in(units.AU))
+        self.assertAlmostEqual(ecc, ecc_ext)
+        self.assertAlmostEqual(inc, inc_ext)
+        self.assertAlmostEqual(lon, lon_ext)
+        self.assertAlmostEqual(arg, arg_ext)
+        self.assertAlmostEqual(ta, ta_ext)
+
+    def test15(self):
+        """
+        testing orbital_elements_for_rel_posvel_arrays for N particles
+        with random orbital elements
+        """
+        numpy.random.seed(666)
+        N = 100
+
+        mass_sun = 1. | units.MSun
+        mass1 = numpy.ones(N) * mass_sun
+        mass2 = numpy.zeros(N) | units.MSun
+        semi_major_axis = (-numpy.log(random.random(N))) | units.AU
+        eccentricity = random.random(N)
+        true_anomaly = 360.*random.random(N)-180.
+        inclination = 180*random.random(N)
+        longitude_of_the_ascending_node = 360*random.random(N)-180
+        argument_of_periapsis = 360*random.random(N)-180
+
+        comets = datamodel.Particles(N)
+        suns = datamodel.Particles(N)
+        for i, arg in enumerate(
+                zip(mass1, mass2, semi_major_axis, eccentricity, true_anomaly,
+                    inclination, longitude_of_the_ascending_node,
+                    argument_of_periapsis)):
+            sun_and_comet = new_binary_from_orbital_elements(
+                    *arg, G=constants.G)
+            comets[i].mass = sun_and_comet[1].mass
+            comets[i].position = sun_and_comet[1].position
+            comets[i].velocity = sun_and_comet[1].velocity
+
+        suns.mass = mass1
+        suns.position = 0*comets.position
+        suns.velocity = 0*comets.velocity
+
+        mass1_ext, mass2_ext, semi_major_axis_ext, eccentricity_ext, ta_ext,\
+            inclination_ext, longitude_of_the_ascending_node_ext,\
+            argument_of_periapsis_ext = orbital_elements(
+                    suns, comets, G=constants.G)
+        rad_to_deg = 180./numpy.pi
         for i in range(N):
-            self.assertAlmostEqual(semi_major_axis[i].value_in(units.AU),semi_major_axis_ext[i].value_in(units.AU))
-            self.assertAlmostEqual(eccentricity[i],eccentricity_ext[i])
-            self.assertAlmostEqual(inclination[i],inclination_ext[i])
-            self.assertAlmostEqual(longitude_of_the_ascending_node[i],longitude_of_the_ascending_node_ext[i])
-            self.assertAlmostEqual(argument_of_periapsis[i],argument_of_periapsis_ext[i])
-            self.assertAlmostEqual(true_anomaly[i],ta_ext[i])
+            self.assertAlmostEqual(
+                    semi_major_axis[i].value_in(units.AU),
+                    semi_major_axis_ext[i].value_in(units.AU))
+            self.assertAlmostEqual(eccentricity[i], eccentricity_ext[i])
+            self.assertAlmostEqual(
+                    inclination[i], rad_to_deg*inclination_ext[i])
+            self.assertAlmostEqual(
+                    longitude_of_the_ascending_node[i],
+                    rad_to_deg*longitude_of_the_ascending_node_ext[i])
+            self.assertAlmostEqual(
+                    argument_of_periapsis[i],
+                    rad_to_deg*argument_of_periapsis_ext[i])
+            self.assertAlmostEqual(true_anomaly[i], rad_to_deg*ta_ext[i])

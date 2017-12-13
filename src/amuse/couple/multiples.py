@@ -4,7 +4,6 @@ import collections
 import math
 import copy
 
-from amuse import datamodel
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
 from amuse.datamodel import Particles 
@@ -18,10 +17,11 @@ from amuse.units import constants
 from amuse.units.quantities import zero
 from amuse.support.exceptions import KeysNotInStorageException
 from amuse import io
+
 #---------------------------------------------------------------------
 #
 # Steve's ToDo list of features to be added/improved in the multiples
-# module (last modified 12 Mar 2013):
+# module.
 #
 # 1. Should use only perturbers (within ~100 x interaction scale) in
 # computing the tidal energy change, not the entire system.
@@ -37,26 +37,16 @@ from amuse import io
 # neighbors, we should also implement item 4 below, to allow long
 # interactions to be broken into pieces.  Including neighbors in the
 # interaction may also lead to problematic final configurations and
-# large internal/external tidal errors.  As an alternative, we can let
+# large internal/external tidal errors.  Alternatively, we can let
 # near neighbors simply veto the encounter, moving the work back into
 # the gravity module, until a "clean" 2-body scattering can be
-# identified.
+# identified.  Vetoing is now the default.
 #
-# 4. If a scattering consists of several long excursions, it should be
-# broken up into pieces, and returned to the gravity code during each
-# excursion.  In that case, the "smallN" code will terminate with a
-# configuration that isn't "over," in the sense used in the current
-# code.  It is unclear if the structure returned from
-# update_particle_tree() is correct in that case.  Function is_over()
-# returns a stopping condition -- an integer representing the reason
-# for its return -- but there is no code to accommodate a return in an
-# intermediate state.
-#
-# 5. We should seek a better prescription for compressing 3-body and
+# 4. We should seek a better prescription for compressing 3-body and
 # higher-order configurations.  Currently we conserve energy, but not
 # angular momentum.
 #
-# 6. There is no provision for physical collisions in the smallN code,
+# 5. There is no provision for physical collisions in the smallN code,
 # and no logic in the Multiples module to manage stars having both
 # dynamical and physical radii.
 #
@@ -96,9 +86,9 @@ def name_pair(comp1, comp2):
 known_roots = {}
 def assign_id_to_root(tree):
 
-    # Determine the object's description, then search to see
-    # if we know about it.  If we do, return that ID, otherwise
-    # create a new ID.
+    # Determine the object's description, then search to see if we
+    # know about it.  If we do, return that ID, otherwise create a new
+    # ID.
 
     global known_roots
     my_name = name_object(tree)
@@ -155,21 +145,20 @@ class Multiples(object):
         self._inmemory_particles.child2 = None
         self.channel_from_code_to_memory = \
             self.gravity_code.particles.new_channel_to(self._inmemory_particles)
-        
+
         self.resolve_collision_code_creation_function \
             = resolve_collision_code_creation_function
         self.kepler = kepler_code
-        self.multiples_external_tidal_correction \
-            = zero * self.gravity_code.kinetic_energy
-        self.multiples_internal_tidal_correction \
-            = self.multiples_external_tidal_correction
-        self.multiples_integration_energy_error \
-            = self.multiples_external_tidal_correction
+        zero_energy = zero * self.gravity_code.kinetic_energy
+        self.multiples_external_tidal_correction = zero_energy
+        self.multiples_internal_tidal_correction = zero_energy
+        self.multiples_integration_energy_error = zero_energy
         self.root_to_tree = {}
-        if gravity_constant is None:
+
+        if gravity_constant is None:		# default is N-body units
             gravity_constant = nbody_system.G
         
-        self.multiples = datamodel.Particles()
+        self.multiples = Particles()
         self.gravity_constant = gravity_constant
         self.debug_encounters = False
 
@@ -189,7 +178,7 @@ class Multiples(object):
         
         #self.neighbor_distance_factor = 1.0
         #self.neighbor_distance_factor = 2.0
-        self.neighbor_perturbation_limit = 0.1
+        self.neighbor_perturbation_limit = 0.02
 
         # Neighbor veto policy.  True means we allow neighbors to veto
         # a two-body encounter (meaning that don't want to deal with
@@ -211,7 +200,7 @@ class Multiples(object):
         self.initial_scatter_factor = 10.0
 
         # Final separation for the scattering experiment, relative to
-        # the initial scattering scale (meaning2 x 10 times the
+        # the initial scattering scale (meaning 2 x 10 times the
         # initial encounter scale, by default).  May be limited by
         # binary properties in case of a bound top-level interaction.
 
@@ -234,10 +223,20 @@ class Multiples(object):
         
         self.number_of_collisions = 0
     
-        #Repeat encounter management data
+        # Repeat encounter management data
+
         self.old_star_1 = 0
         self.old_star_2 = 0
         self.repeat_count = 0
+
+        # Turn on/off global debugging output level (0 = no output, 1
+        # = minimal, 2 = normal debug, 3 = verbose debug).
+
+        self.global_debug = 1
+
+        # Turn on/off experimental code to check tidal perturbation.
+
+        self.check_tidal_perturbation = False
 
     @property
     def particles(self):
@@ -288,7 +287,20 @@ class Multiples(object):
             leaves_in_result.vy += dvy
             leaves_in_result.vz += dvz
         return result
-        
+
+    def check_trees(self):
+
+        # Print out some debugging information on multiples in the system.
+
+        print ''
+        print 'check_trees:', len(self.root_to_tree), 'tree(s)'
+        for root, tree in self.root_to_tree.iteritems():
+            print root.position			# current
+            print tree.particle.position	# original
+            leaves = tree.get_leafs_subset()	# components (original)
+            print leaves.center_of_mass()
+        print ''
+
     def get_gravity_at_point(self, radius, x, y, z):
         return self.gravity_code.get_gravity_at_point(radius, x, y, z)
     
@@ -302,10 +314,9 @@ class Multiples(object):
         return self.gravity_code.get_time()
     
     def get_total_energy(self, code):
-        # ??? from Steve: what is get_binary_energy()?
         try:
-            binaries_energy = code.get_binary_energy()	# include binaries
-        except:						# if code understands
+            binaries_energy = code.get_binary_energy()	# include binaries if
+        except:						# the code understands
             binaries_energy = zero
         total_energy = code.potential_energy + code.kinetic_energy \
                 + binaries_energy
@@ -317,10 +328,10 @@ class Multiples(object):
     # Emul returned below, since the tidal potential of components on
     # one another is not taken into account.
 
-    def get_total_multiple_energy(self):
+    def get_total_multiple_energy(self):	# uses kepler
         Nbin = 0
         Nmul = 0
-        Emul = 0.0 | nbody_system.energy
+        Emul = zero
         for x in self.root_to_tree.values():	# loop over top-level trees
             Nmul += 1
             nb,E = get_multiple_energy(x, self.kepler)
@@ -330,10 +341,10 @@ class Multiples(object):
 
     # This version returns the true total energy of all multiples.
 
-    def get_total_multiple_energy2(self):
+    def get_total_multiple_energy2(self):	# uses self.gravity_constant
         Nbin = 0
         Nmul = 0
-        Emul = 0.0 | nbody_system.energy
+        Emul = zero
         for x in self.root_to_tree.values():	# loop over top-level trees
             Nmul += 1
             nb,E = get_multiple_energy2(x, self.gravity_constant)
@@ -341,16 +352,17 @@ class Multiples(object):
             Emul += E
         return Nmul, Nbin, Emul
 
-    def print_multiples(self):
+    def print_multiples(self):			# uses kepler
 
         # Print basic information on all multiples in the system,
         # using the root_to_tree database.  This version uses
         # print_multiple_simple() to format the output.
 
-        for x in self.root_to_tree.values():
-            print_multiple_simple(x, self.kepler)
+        if self.global_debug > 0:
+            for x in self.root_to_tree.values():
+                print_multiple_simple(x, self.kepler)
 
-    def print_multiples2(self, pre, kT, dcen):
+    def print_multiples2(self, pre, kT, dcen):	# uses kepler
 
         # Print information on all multiples in the system, using the
         # root_to_tree database.  This version uses
@@ -359,7 +371,7 @@ class Multiples(object):
 
         Nbin = 0
         Nmul = 0
-        Emul = 0.0 | nbody_system.energy
+        Emul = zero
         for x in self.root_to_tree.values():
             Nmul += 1
             nb,E = print_multiple_detailed(x, self.kepler, pre, kT, dcen)
@@ -372,14 +384,14 @@ class Multiples(object):
             print 'number of multiples:', len(self.root_to_tree)
             sys.stdout.flush()
 
-    def evolve_model(self, end_time):
+    def evolve_model(self, end_time, callback=None):
 
         stopping_condition = \
             self.gravity_code.stopping_conditions.collision_detection
         #stopping_condition.enable()  # allow user to set this; don't override
         
         time = self.gravity_code.model_time
-        print "Evolve model to", end_time, " starting at", time
+        print "\nEvolve model to", end_time, "starting at", time
         sys.stdout.flush()
 
         count_resolve_encounter = 0
@@ -387,27 +399,11 @@ class Multiples(object):
         
         while time < end_time:
 
-            print '\ncalling evolve_model from', \
-	    	  self.gravity_code.model_time, 'to', end_time
-            sys.stdout.flush()
-
-#             if time > 100 | nbody_system.time:
-
-#                 # No neighbors, allow vetos, but none will occur.
-#                 self.neighbor_distance_factor = 0.
-#                 self.neighbor_veto = True
-
-#                 # Veto all multiples treatments.
-#                 self.neighbor_distance_factor = 100.
-#                 self.neighbor_veto = True
-
-#                 self.neighbor_distance_factor = 0.0
-#                 self.neighbor_veto = True
-
-#                 print 'neighbor_distance_factor =', \
-#                     self.neighbor_distance_factor
-#                 print 'neighbor_veto =', \
-#                     self.neighbor_veto
+            if self.global_debug > 1:
+                print ''
+                print 'calling evolve_model from', \
+	    	    self.gravity_code.model_time, 'to', end_time
+                sys.stdout.flush()
 
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
@@ -442,42 +438,30 @@ class Multiples(object):
 
                 # Note from Steve, 8/12: We can pick up a lot of
                 # encounters that are then ignored here.  I have
-                # temporarily duplicated this check in the ph4 module
-                # (jdata.cc).
+                # (temporarily) duplicated this check in the ph4
+                # module (jdata.cc).
 
-                # r = (star2.position-star1.position).length()
-                # v = (star2.velocity-star1.velocity).length()
-                # cos_angle = numpy.inner((star2.velocity-star1.velocity)/v,
-                #                         (star2.position-star1.position)/r)
-                # angle = numpy.arccos(cos_angle)
-                # 
-                # #if r < 0.5 * (star1.radius + star2.radius) \	# ???
-                # #        or angle > (numpy.pi * 0.44):
-                # 
-                # # Proceed only if the stars are moving parallel or
-                # # toward each other.  We assume all angles more than
-                # # 80 degrees will need to check binary from.
-                # 
-                # if angle > (numpy.pi * 0.44):
+                r = (star2.position-star1.position).length().number
+                v = (star2.velocity-star1.velocity).length().number
 
-                r = (star2.position-star1.position).length()
-                v = (star2.velocity-star1.velocity).length()
-
-                # Temporary numpy workaround - Steve.
+                # Temporary numpy workaround - Steve. Use dimensionless units.
                 #
                 # vr = numpy.inner(star2.velocity-star1.velocity,
                 #                  star2.position-star1.position)
-                vr = numpy.inner(
-                (star2.velocity-star1.velocity).value_in(nbody_system.speed),
-                (star2.position-star1.position).value_in(nbody_system.length)) \
-                | nbody_system.speed*nbody_system.length
+
+                vr = numpy.inner((star2.velocity-star1.velocity).number,
+                                 (star2.position-star1.position).number)
     
                 EPS = 0.001
                 if True or vr < EPS*r*v:    # True ==> keep all encounters
-                    # returned by gravity_code
+		    			    # returned by gravity_code
 
-                    print '\n'+'~'*60
-                    print 'interaction at time', time
+                    if self.global_debug > 1:
+                        print '\n'+'~'*60
+                    elif self.global_debug > 0:
+                        print ''                        
+                    if self.global_debug > 0:
+                        print 'interaction at time', time
                 
                     # Like synchronize.  We only should copy data from
                     # the particles and their neighbors.  TODO
@@ -489,10 +473,15 @@ class Multiples(object):
                     star1 = star1.as_particle_in_set(self._inmemory_particles)
                     star2 = star2.as_particle_in_set(self._inmemory_particles)
 
-                    print 'initial top-level:',         \
-                        star1.id, '('+str(star1.radius)+')', \
-                        star2.id, '('+str(star2.radius)+')'
-                    if 1:
+                    cont = True
+                    if callback != None:
+                        cont = callback(time, star1, star2)
+
+                    if self.global_debug > 0:
+                        print 'initial top-level:',         \
+                            star1.id, '('+str(star1.radius)+')', \
+                            star2.id, '('+str(star2.radius)+')'
+                    if self.global_debug > 1:
                         print '                   r =', r
                         print '                   v =', v
                         print '                   v.r =', vr
@@ -509,7 +498,7 @@ class Multiples(object):
                                                 self.gravity_code.particles,
                                                 self.kepler)
 
-                    if not veto:
+                    if cont and not veto:
 
                         # Recommit is done automatically and
                         # reinitializes all particles.  Later we will
@@ -549,8 +538,8 @@ class Multiples(object):
                         #	encounter
                         #
                         #	dphi_int is the internal tidal energy
-                        #	error due to internal configuration
-                        #	changes in the scattering system
+                        #	error due to configuration changes in
+                        #	the scattering system
                         #
                         #	dE_int is the integration error in the
                         #	scattering calculation
@@ -559,11 +548,11 @@ class Multiples(object):
                         #
                         #   dE_top_level - dE_top_level_scatter - dphi_top = 0.
                         #
-                        # If this is not the case, there is an error
-                        # in the internal bookkeeping of
+                        # If this is not the case, then there is an
+                        # error in the internal bookkeeping of
                         # manage_encounter().
 
-                        if 0:
+                        if self.global_debug > 2:
                             #print 'top-level initial energy =', initial_energy
                             #print 'top-level final energy =', final_energy
                             print 'dE_top_level =', dE_top_level
@@ -571,7 +560,11 @@ class Multiples(object):
                             print 'dphi_top =', dphi_top
                             print 'dphi_int =', dphi_int
                             print 'dE_int =', dE_int
-                        if 0:
+                            print \
+                                'dE_top_level-dE_top_level_scatter-dphi_top =',\
+                                dE_top_level - dE_top_level_scatter - dphi_top
+
+                        if self.global_debug > 2:
                             print 'net local error =', \
                                   dE_top_level - dE_top_level_scatter - dphi_top
                             print 'scatter integration error =', dE_int
@@ -585,7 +578,7 @@ class Multiples(object):
                         # cumulative value of the right-hand side of
                         # this equation.
 
-                        if 0:
+                        if self.global_debug > 2:
                             print 'dE_mul =', dE_mul
                             print 'internal local error =', \
 				  dE_top_level + dE_mul - dphi_top
@@ -597,8 +590,11 @@ class Multiples(object):
                         self.multiples_internal_tidal_correction -= dphi_int
                         self.multiples_integration_energy_error += dE_int
                         
-                        #Doing this energy calc every encounter is expensive when dealing with hundreds of binaries or more.
-                        #It is clearly problematic when building a whole system of binaries.
+                        # Doing this energy calculation at every
+                        # encounter is expensive when dealing with
+                        # hundreds of binaries or more.  It is clearly
+                        # problematic when building a whole system of
+                        # binaries.
                         
                         #Nmul, Nbin, Emul = self.get_total_multiple_energy2()
 
@@ -635,23 +631,25 @@ class Multiples(object):
                         # Print info on all multiples associated with
                         # the current interaction.
 
-                        for x in final_particles:
-                            if hasattr(x, "child1") \
-                               and not (getattr(x, "child1") is None):
-                                print_multiple_simple(
-                                    trees.BinaryTreeOnParticle(x), self.kepler)
+                        if self.global_debug > 1:
+                            for x in final_particles:
+                                if hasattr(x, "child1") \
+                                   and not (getattr(x, "child1") is None):
+                                    print_multiple_simple(
+                                        trees.BinaryTreeOnParticle(x),
+                                        self.kepler)
 
                         count_resolve_encounter += 1
 
                     else:
                         ignore = 1
 
-                    print '~'*60
+                    if self.global_debug > 1:
+                        print '~'*60
                     sys.stdout.flush()
 
                 else:
                     ignore = 1
-                
         
                 self.number_of_collisions += 1
                 #io.write_set_to_file((self.before, self.after,self.after_smalln), "multiples-{0}.h5".format(self.number_of_collisions), "amuse", names=('before', 'after', 'after_smalln'), version="2.0", append_to_file=False)
@@ -677,10 +675,10 @@ class Multiples(object):
 
         # Create an encounter particle set from the top-level stars.
         # Add stars to the encounter set, add in components when we
-        # encounter a binary.
+        # encounter a binary/multiple.
 
-        particles_in_encounter = datamodel.Particles(0)
-        Emul = 0.0 | nbody_system.energy
+        particles_in_encounter = Particles(0)
+        Emul = zero
 
         for star in scattering_stars:
             if star in self.root_to_tree:
@@ -720,27 +718,30 @@ class Multiples(object):
             'stars': stars.copy(),
             #'gravity_stars': gravity_stars.copy(),
             'self.root_to_tree': self.root_to_tree.copy(),
-            'particles_in_encounter': datamodel.Particles(0)
+            'particles_in_encounter': Particles(0)
         }
         snapshot['particles_in_encounter'].add_particle(snapshot['star1'])
         snapshot['particles_in_encounter'].add_particle(snapshot['star2'])
 
-        # find_binaries(stars, self.gravity_constant) 
+        # find_binaries(stars, self.gravity_constant)
+
+        # self.check_trees()
 
         #----------------------------------------------------------------
         # 1a. Build a list of stars involved in the scattering.  Start
         # with star1 and star2.
 
-        scattering_stars = datamodel.Particles(particles = (star1, star2))
-        #print scattering_stars
+        scattering_stars = Particles(particles = (star1, star2))
 
         star1 = scattering_stars[0]
         star2 = scattering_stars[1]
         center_of_mass = scattering_stars.center_of_mass()
-        other_stars = stars - scattering_stars
+        other_stars = stars - scattering_stars	# probably only need perturbers?
         
-        #Brewer Mod:  Check to see if repeat encounter
-        if (star1.id == self.old_star_1 and star2.id == self.old_star_2) or (star1.id == self.old_star_2 and star2.id == self.old_star_1):
+        # Brewer Mod:  Check for a repeat encounter.
+
+        if (star1.id == self.old_star_1 and star2.id == self.old_star_2) \
+           or (star1.id == self.old_star_2 and star2.id == self.old_star_1):
             self.repeat_count += 1
         else:
             self.repeat_count = 0
@@ -760,15 +761,17 @@ class Multiples(object):
         # but it may be less in unexpected circumstances or if vetoing
         # is in effect.  Initial_scale sets the "size" of the
         # interaction and the distance to which the final products
-        # will be rescaled.  Rad12 is also the 90 degree scattering
-        # distance for the two stars, and hence the natural limit on
+        # will be rescaled.  Rad12 also ~ the 90 degree scattering
+        # distance for two stars, and hence the natural limit on
         # binary scale.
 
         if not self.neighbor_veto:
             initial_scale = self.initial_scale_factor * rad12
         else:
             initial_scale = self.initial_scale_factor * sep12
-        print 'initial_scale =', initial_scale
+
+        if self.global_debug > 1:
+            print 'initial_scale =', initial_scale
 
         # The basic sort on other_stars is by perturbation, not
         # distance.  Maintain sorted lists of stars, distances (d),
@@ -781,14 +784,26 @@ class Multiples(object):
         sorted_distances = distances[indices]
         sorted_perturbations = pert[indices]
         fac12 = 0.5*(star1.mass + star2.mass)/sep12**3
-        # print "sorted_stars", sorted_stars[:5]
-        # print "sorted_distances", sorted_distances[:5]
-        # print "sorted_perturbations", sorted_perturbations[:5]/fac12
+
+        largest_perturbers = []
+        if self.check_tidal_perturbation and len(sorted_stars) > 0:
+            
+            if self.global_debug > 1:
+                print "sorted_stars", sorted_stars[:5]
+                print "sorted_distances", sorted_distances[:5]
+                print "sorted_perturbations", sorted_perturbations[:5]/fac12
+
+            max_pert = sorted_perturbations[0]/fac12
+            largest_perturbers = [sorted_stars[0]]
+            for i in range(1, len(sorted_stars)):
+                if sorted_perturbations[i] > 0.025*sorted_perturbations[0]:
+                    largest_perturbers.append(sorted_stars[i])
 
         # Perturbation limit for identification as a neighbor.
         
         pert_min = self.neighbor_perturbation_limit*fac12
-        for i in range(0,len(sorted_stars)):
+        for i in range(len(sorted_stars)):    # NB no loop if len() = 0
+            
             star = sorted_stars[i]
 
             # Include anything lying "inside" the binary, even if it
@@ -798,18 +813,22 @@ class Multiples(object):
                     or sorted_distances[i] < sep12:
                 if not self.neighbor_veto:
                     scattering_stars.add_particle(star)
-                    print 'added',
-                    if hasattr(star, 'id'):
-                        print 'star', star.id,
-                    else:
-                        print 'unknown star',
-                    print 'to scattering list'
-                    sys.stdout.flush()
+                    if self.global_debug > 1:
+                        print 'added',
+                        if hasattr(star, 'id'):
+                            print 'star', star.id,
+                        else:
+                            print 'unknown star',
+                        print 'to scattering list'
+                        sys.stdout.flush()
                     #initial_scale = sorted_distances[i]    # don't expand!
                 else:
-                    print 'encounter vetoed by', \
-                        star.id, 'at distance', sorted_distances[i].number, \
-                        'pert =', sorted_perturbations[i]/fac12
+                    if self.global_debug > 0:
+                        print 'encounter vetoed by', \
+                            star.id, 'at distance', \
+                            sorted_distances[i], \
+                            'pert =', sorted_perturbations[i]/fac12
+                    if self.repeat_count > 0: self.repeat_count -= 1
                     return True, 0., 0., 0., 0., 0., None
 
         self.before.add_particles(scattering_stars)
@@ -832,9 +851,7 @@ class Multiples(object):
                                             stars - scattering_stars,
                                             G=self.gravity_constant)
 
-        print_internal = False
-
-        if print_internal:
+        if self.global_debug > 2:
             print 'E0 =', E0
             print 'phi_rem =', phi_rem
 
@@ -891,11 +908,11 @@ class Multiples(object):
         # Terminology from the PDF description:
 
         E1 = particles_in_encounter.kinetic_energy() + \
-        particles_in_encounter.potential_energy(G=self.gravity_constant)
+             particles_in_encounter.potential_energy(G=self.gravity_constant)
 
         dphi_1 = E1 - E0 - Emul_init
 
-        if print_internal:
+        if self.global_debug > 2:
             print 'E1 =', E1
             print 'Emul_init =', Emul_init
             print 'dphi_1 =', dphi_1
@@ -918,7 +935,7 @@ class Multiples(object):
         #
         # Encounter:
         #	sep12 =	 actual separation
-        #	rad12 =	 sum of radii (should be b90)
+        #	rad12 =	 sum of radii (should be ~b90)
         #
         # Top-level orbit:
         #	a =	 orbital semimajor axis
@@ -935,7 +952,7 @@ class Multiples(object):
         rvir = self.gravity_constant*M/(4*abs(E1/M))
         tvir = self.gravity_constant*M/(4*abs(E1/M))**1.5
 
-        if 0:
+        if self.global_debug > 2:
             print 'Encounter:'
             print '    sep12 =', sep12
             print '    rad12 =', rad12
@@ -954,10 +971,30 @@ class Multiples(object):
             print '    rvir =', rvir
             print '    tvir =', tvir
         else:
-            print 'M =', M, ' E/mu =', E
-            print 'a =', a, ' e =', e, ' P =', period
+            if self.global_debug > 0:
+                print 'M =', M, ' Etop =', Etop
+            if self.global_debug > 1:
+                print 'a =', a, ' e =', e, ' P =', period
 
         sys.stdout.flush()
+
+        # The original concept of this module was to follow the
+        # encounter as an isolated scattering experiment until it is
+        # cleanly resolved.  In this case, the bookkeeping and
+        # post-encounter logic are straightforward.  We expect that a
+        # clean resolution always eventually occur, but for a complex
+        # interaction this may take a long time.  In addition, the
+        # long time scales and large excursions of the intermediate
+        # orbit may render the physicality of the scattering approach
+        # questionable.
+
+        # The alternative approach pursued below is to try to define
+        # limiting length and time scales for the encounter, based on
+        # the initial configuration.  Encounters exceeding these limits
+        # will be returned to the large-N simulation, possibly to be
+        # picked up again later.  This approach leads to significant
+        # bookkeeping issues, and the "clean" original concept should
+        # always be retained as a fallback option.
 
         # We need a reliable time scale to set end_time and delta_t
         # for the scattering interaction.  It is possible that we pick
@@ -978,42 +1015,70 @@ class Multiples(object):
         # unless the size of the orbit is less than a few times the 90
         # degree turnaround distance.  If the encounter is a
         # resonance, then the relative scales are the virial radius
-        # (*10) and virial time scale (*100).
+        # (*10) and virial time scale (*100).  If it is bound but wide
+        # (and likely a flyby), then the relevant scales are the the
+        # orbital semimajor axis and period (*10, say).
+
+        # Also set a limit on the minimum scale, in case of retries.
 
         end_time = max(2*abs(tperi), 10*ttrans, 100*tvir)
+        if E.number < 0: end_time = max(end_time, 10*period)
+
         delta_t = max(1.5*abs(tperi), tvir)
 
-        print 'end_time =', end_time
-        print 'delta_t =', delta_t
+        if self.global_debug > 1:
+            print 'end_time =', end_time
+            print 'delta_t =', delta_t
 
         # Note: radii used here should really be based on
         # perturbation, not simply distance.  TODO
 
         orbit_scale = 2*a
-        if E.number < 0: orbit_scale = a*(1+0.9*e)
-        # print 'orbit_scale =', orbit_scale
+        if E.number < 0: orbit_scale = 1.1*a*(1+e) # a*(1+0.9*e)
+
+        if self.global_debug > 2:
+            print 'orbit_scale =', orbit_scale
+
+        # Final_scatter_scale is the scale at which we will terminate
+        # the smallN integration. This is a guess of the scale where,
+        # if the system exceeds it, the interacting particles can be
+        # decomposed into well separated pieces that can be returned
+        # to the N=body code, even if the encounter isn't over.
 
         final_scatter_scale \
             = max(self.final_scatter_factor * initial_scatter_scale,
                   orbit_scale, 10*rvir)
-        if orbit_scale > 4*sep12 and final_scatter_scale > orbit_scale:
+
+        # Limit the scatter scale in case of a very wide orbit.
+
+        if orbit_scale > 2*initial_scatter_scale \
+           	and final_scatter_scale > orbit_scale:
             final_scatter_scale = orbit_scale
-        min_scatter_scale = sep12
-        if min_scatter_scale >= final_scatter_scale:
-            min_scatter_scale = final_scatter_scale/2
+
+        min_scatter_scale = 2*initial_scale	# never go below this value
+        if min_scatter_scale >= 0.5*final_scatter_scale:
+            final_scatter_scale = 2*min_scatter_scale
 
         # The integration ends when any particle is more than
         # final_scatter_scale from the CM of the system (hence the
-        # factor of 2).
+        # factor of 2).  RECONSIDER - needs a mass scale factor, and
+        # still OK for a wide orbit?  TODO
 
         final_scatter_scale /= 2
         min_scatter_scale /= 2
 
-        print 'final_scatter_scale =', final_scatter_scale
-        #print particles_in_encounter.position
-        #print particles_in_encounter.velocity
-        
-        
+        if self.global_debug > 1:
+            print 'final_scatter_scale =', final_scatter_scale
+            print 'min_scatter_scale =', min_scatter_scale
+
+        # NOTE: to revert to the original concept, simply set
+        # final_scatter_scale and end_time to very large values.
+
+        if 0:
+            print 'particles in encounter:'
+            print 'position:', particles_in_encounter.position
+            print 'velocity:', particles_in_encounter.velocity
+
         try:
             scatter_energy_error \
                 = self.resolve_collision(particles_in_encounter,
@@ -1042,15 +1107,15 @@ class Multiples(object):
             return False, zero_en, zero_en, zero_en, zero_en, zero_en, \
                 snapshot['particles_in_encounter']
 
-        #print particles_in_encounter.position
-        #print particles_in_encounter.velocity
-
         # Note that on return, particles_in_encounter contains CM
         # nodes in the list.
 
         E2CM = get_energy_of_leaves(particles_in_encounter,
                                     G=self.gravity_constant)
-        print 'E2 (CM) =', E2CM
+        Etop = particles_in_encounter.kinetic_energy() \
+               + particles_in_encounter.potential_energy(G=self.gravity_constant)
+        if self.global_debug > 1:
+            print 'E2 (CM) =', E2CM
 
         particles_in_encounter.position += cmpos
         particles_in_encounter.velocity += cmvel
@@ -1060,14 +1125,17 @@ class Multiples(object):
         E2 = get_energy_of_leaves(particles_in_encounter,
                                   G=self.gravity_constant)
         dE_int = E2 - E1	# should equal scatter_energy_error
-        if abs(dE_int - scatter_energy_error).number > 1.e-12:
-            print '*** warning: dE_int mismatch ***'
-            print 'scatter_energy_error =', scatter_energy_error
-            print 'dE_int =', dE_int
-            #print particles_in_encounter
-            print 'E1 =', E1, 'E2 =', E2
+        err = (dE_int-scatter_energy_error)/max(E1,E2)
+        if abs(err) > 1.e-12:
+            if self.global_debug > 0:
+                print '*** warning: dE_int mismatch ***'
+                if self.global_debug > 1:
+                    print 'scatter_energy_error =', scatter_energy_error
+                    print 'dE_int =', dE_int
+                    #print particles_in_encounter
+                    print 'E1 =', E1, 'E2 =', E2
 
-        if print_internal:
+        if self.global_debug > 2:
             print 'E2 =', E2
             print 'scatter_energy_error =', scatter_energy_error
             print 'dE_int =', dE_int
@@ -1079,8 +1147,8 @@ class Multiples(object):
         #Brewer Mod:  Create the appropriate COM particle for the pseudo-binary
         '''
         if self.repeat_count > 9:
-            print "Significant repeat encounter detected; forcing binary creation"
-            pseudoCOM = datamodel.Particles(1)
+            print "repeat encounter detected; forcing binary creation"
+            pseudoCOM = Particles(1)
             pseudoCOM.child1 = star1
             pseudoCOM.child2 = star2
             pseudoCOM.mass = star1.mass + star2.mass
@@ -1106,6 +1174,9 @@ class Multiples(object):
         # Single stars.
         stars_not_in_a_multiple = binaries.particles_not_in_a_multiple()
 
+        #print 'stars_not_in_a_multiple:'
+        #print stars_not_in_a_multiple
+
         # Multiple centers of mass.
         roots_of_trees = binaries.roots()
 
@@ -1118,11 +1189,16 @@ class Multiples(object):
 
         final_scale = self.final_scale_factor * initial_scale
         
+        # Note that stars_not_in_a_multiple and roots_of_trees are
+        # simply convenient partitions of particles_in_encounter.
+        # They are pointers into the underlying particle set.
+
         scale_top_level_list(stars_not_in_a_multiple,
                              roots_of_trees,
                              self.kepler,
                              final_scale,
-                             self.gravity_constant)
+                             self.gravity_constant,
+                             self.global_debug)
 
         # 6b. Break up wide top-level binaries.  Do this after
         #     rescaling because we want to preserve binary binding
@@ -1150,9 +1226,12 @@ class Multiples(object):
             # Estimate the maximum perturbation on this binary due to
             # its current strongest external perturber.
 
-            max_perturbation = 2*sorted_perturbations[0]*binary_scale**3/mass
-            perturber = sorted_stars[0]
-            perturber_distance = sorted_distances[0]
+            max_perturbation = 0.0
+            if len(sorted_perturbations) > 0:
+                max_perturbation = \
+                    	2*sorted_perturbations[0]*binary_scale**3/mass
+                perturber = sorted_stars[0]
+                perturber_distance = sorted_distances[0]
             
             # Check that other stars involved in the encounter but not
             # in this multiple are not the dominant perturbation.
@@ -1181,13 +1260,15 @@ class Multiples(object):
                 #print 'failed to remove star2'
                 pass
 
-                # Check perturbation due to stars_to_check on root.
+            # Check perturbation due to stars_to_check on root.
 
             for s in stars_to_check:
                 distance = (s.position - root.position).length()
                 pert = s.mass / distance**3
                 s_perturbation = 2*pert*binary_scale**3/mass
-                print "star %s, distance %s, pert %s, s_pert %s, max_pert %s" \
+                if self.global_debug > 1:
+                    print \
+                        "star %s, distance %s, pert %s, s_pert %s, max_pert %s" \
                         % (s.id, distance, pert, s_perturbation,
                            max_perturbation)
                 if s_perturbation > max_perturbation:
@@ -1196,27 +1277,40 @@ class Multiples(object):
                     perturber_distance = distance
 
             #if binary_scale > rad12:
-            if max_perturbation < self.wide_perturbation_limit or self.repeat_count > 9:
-                print 'accepting wide binary', name_pair(comp1,comp2)
-                print '    semi =', semi.number, 'E/mu =', E.number
-                print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
-                print '    strongest perturber is', perturber.id, \
-                    'with apo perturbation', max_perturbation
-                print '    nearest neighbor is', perturber.id, \
-                    'at distance', perturber_distance.number
+            if max_perturbation < self.wide_perturbation_limit \
+               or self.repeat_count > 9:
+                if self.global_debug > 0:
+                    print 'accepting lightly perturbed or repeat binary', \
+                    	name_pair(comp1,comp2)
+                    if self.global_debug > 1:
+                        print '    semi =', semi.number, 'E/mu =', E.number
+                        print '    apo =', apo.number, 'peri =', \
+                            semi.number*(1-ecc)
+                if max_perturbation > 0:
+                    if self.global_debug > 1:
+                        print '    strongest perturber is', perturber.id, \
+                            'with apo perturbation', max_perturbation
+                        print '    nearest neighbor is', perturber.id, \
+                            'at distance', perturber_distance.number
+                        print '    repeat_count =', self.repeat_count
+                else:
+                    if max_perturbation > 0:
+                        print '    perturbation = 0'
+                self.repeat_count = 0		# probably unnecessary
                 sys.stdout.flush()
 
             else:
-                print 'initial top-level:', \
-                    comp1.id, '('+str(comp1.radius)+')', \
-                    comp2.id, '('+str(comp2.radius)+')'
-                print 'splitting wide binary', name_pair(comp1,comp2)
-                print '    semi =', semi.number, 'E/mu =', E.number
-                print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
-                print '    strongest perturber is', perturber.id, \
-                    'with apocenter perturbation', max_perturbation
-                print '    nearest neighbor is', perturber.id, \
-                    'at distance', perturber_distance.number
+                if self.global_debug > 0:
+                    if max_perturbation > 0:
+                        print 'splitting perturbed binary', \
+                            name_pair(comp1,comp2)
+                if self.global_debug > 1:
+                    print '    semi =', semi.number, 'E/mu =', E.number
+                    print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
+                    print '    strongest perturber is', perturber.id, \
+                          'with apocenter perturbation', max_perturbation
+                    print '    nearest neighbor is', perturber.id, \
+                          'at distance', perturber_distance.number
                 sys.stdout.flush()
 
                 # See the "special case" logic in
@@ -1235,9 +1329,11 @@ class Multiples(object):
                     sys.stdout.flush()
                     cmpos = root.position
                     cmvel = root.velocity
-                    print 'moving binary to periastron'
+                    if self.global_debug > 1:
+                        print 'moving binary to periastron'
                     self.kepler.advance_to_periastron()
-                    print 'advancing binary to', final_scale
+                    if self.global_debug > 1:
+                        print 'advancing binary to', final_scale
                     self.kepler.advance_to_radius(final_scale)
 
                     ### Question to Arjen: what is the right syntax to
@@ -1293,14 +1389,14 @@ class Multiples(object):
                                             stars - scattering_stars,
                                             G=self.gravity_constant)
 
-        Emul_final = 0.0 | nbody_system.energy
+        Emul_final = zero
         for tree in binaries.iter_binary_trees():            
             isbin, dEmul = get_multiple_energy2(tree, self.gravity_constant)
             Emul_final += dEmul
 
         dphi_2 = E2 - Emul_final - E3
 
-        if print_internal:
+        if self.global_debug > 2:
             print 'E3 =', E3
             print 'phi_ins =', phi_ins
             print 'Emul_final =', Emul_final
@@ -1308,65 +1404,70 @@ class Multiples(object):
 
         # 7a. Set radii to reflect multiple structure.
             
-        set_radii(particles_in_encounter, self.kepler)
+        set_radii(particles_in_encounter, self.kepler, self.global_debug)
 
-        # Print diagnostics on added particles.
+        # Print diagnostics on added particles. Strip dimensions
+        # because of numpy problem noted below.
 
-        print 'final top-level:',
-        r = 0.0|nbody_system.length
-        v = 0.0|nbody_system.speed
-        vr = 0.0|nbody_system.length*nbody_system.speed
+        if self.global_debug > 0:
+            print 'final top-level:',
+        r = 0.0
+        v = 0.0
+        vr = v*r
         for i in top_level_nodes:
-            print i.id, '('+str(i.radius)+')',
+            if self.global_debug > 0:
+                print i.id, '('+str(i.radius)+')',
             for j in top_level_nodes:
                 if i.id > j.id:
-                    rij = (i.position-j.position).length()
+                    rij = (i.position-j.position).length().number
                     if rij > r:
                         r = rij
-                        v = (i.velocity-j.velocity).length()
+                        v = (i.velocity-j.velocity).length().number
 
-
-                        # Temporary numpy workaround - Steve.
+                        # Temporary numpy workaround - Steve. Want:
                         #
                         # vr = numpy.inner(j.velocity-i.velocity,
                         #                  j.position-i.position)
-                        vr = numpy.inner(
-                            (j.velocity-i.velocity).\
-                                value_in(nbody_system.speed),
-                            (j.position-i.position).\
-                                value_in(nbody_system.length))\
-                                | nbody_system.speed*nbody_system.length
 
-        print ''
-        if 1:
+                        vr = numpy.inner((j.velocity-i.velocity).number,
+                                         (j.position-i.position).number)
+
+        if self.global_debug > 0:
+            print ''
+            print 'M =', top_level_nodes.mass.sum(),
+            print 'Etop =', Etop
+        if self.global_debug > 1:
             print '                 r =', r
             print '                 v =', v
             print '                 v.r =', vr
+            #print 'top_level_nodes:'
+            #print top_level_nodes
         sys.stdout.flush()
 
         # Update the gravity module with the new data.
         self.after.add_particles(stars_not_in_a_multiple)
+
         # 7b. Add stars not in a binary to the gravity code.
         if len(stars_not_in_a_multiple) > 0:
             #print 'adding stars_not_in_a_multiple:'
             #print stars_not_in_a_multiple
             gravity_stars.add_particles(stars_not_in_a_multiple)
+
         # 7c. Add the roots to the gravity code
         multiples_particles = Particles()
         multiples_particles.id = None
 
         for tree in binaries.iter_binary_trees():
-            tree.particle.id = assign_id_to_root(tree)
+            tree.particle.id = assign_id_to_root(tree)	# assign CM ID (was 0)
             #tree.particle.components = subset
             #print 'adding particle:'
             #print tree.particle
-            gravity_stars.add_particle(tree.particle)
-            self.after.add_particle(tree.particle)  # Steve: add_particles broke
+            gravity_stars.add_particle(tree.particle)	# Steve: add_particles
+            self.after.add_particle(tree.particle)	#        is broken?
             multiples_particles.add_particle(tree.particle)
-        
 
-        # DEBUG
-        print "multiples: interaction products: singles:", \
+        if self.global_debug > 1:            
+            print "multiples: interaction products: singles:", \
                 stars_not_in_a_multiple.id, "multiples: ", \
                 multiples_particles.id 
             
@@ -1386,7 +1487,8 @@ class Multiples(object):
 
         dph = dphi_top/KE3
         if abs(dph) > 1.e-2:		# 1.e-2 is arbitrary
-            print '*** tidal correction =', dph, 'KE ***'
+            if self.global_debug > 0:
+                print '*** tidal correction =', dph, 'KE ***'
             #print 'initial configuration: phi =', \
             #    potential_energy_in_field(scattering_stars, 
             #                              stars - scattering_stars,
@@ -1395,9 +1497,10 @@ class Multiples(object):
                 = find_nn3(scattering_stars, stars-scattering_stars,
                            self.gravity_constant)
             if pminmin != None:
-                print 'closest field/list pair is', \
-                    str(fminmin.id)+'/'+str(pminmin.id), \
-                    ' distance/scale =', dxminmin/initial_scale
+                if self.global_debug > 1:
+                    print 'closest field/list pair is', \
+                        str(fminmin.id)+'/'+str(pminmin.id), \
+                        ' distance/scale =', dxminmin/initial_scale
             #print 'final configuration: phi =', \
             #    potential_energy_in_field(top_level_nodes, 
             #                              stars - scattering_stars,
@@ -1406,10 +1509,44 @@ class Multiples(object):
                 = find_nn3(top_level_nodes, stars-scattering_stars,
                            self.gravity_constant)
             if pminmin != None:
-                print 'closest field/list pair is', \
-                    str(fminmin.id)+'/'+str(pminmin.id), \
-                    ' distance/scale =', dxminmin/initial_scale
+                if self.global_debug > 1:
+                    print 'closest field/list pair is', \
+                        str(fminmin.id)+'/'+str(pminmin.id), \
+                        ' distance/scale =', dxminmin/initial_scale
         #-------------------------------------------------------
+
+        # Experimental code to try to correct external tidal errors.
+        # Compare dphi_top with range of possible quadrupole
+        # corrections due to closest perturber.  Start with the
+        # simplest case.
+        #
+        #	tidal potential change is dphi_top
+        #	multiple center of mass is cmpos
+        #	perturbers are in largest_perturbers
+        
+        if self.check_tidal_perturbation \
+            and len(particles_in_encounter) == 2 and len(top_level_nodes) == 2:
+
+            print 'checking quadrupole perturbations'
+
+            m1 = top_level_nodes[0].mass.number
+            m2 = top_level_nodes[1].mass.number
+            dx = (top_level_nodes[1].position \
+                  - top_level_nodes[0].position).number
+            x2 = (dx**2).sum()
+            x = numpy.sqrt(x2)
+            print 'x =', x, 'M =', m1+m2
+
+            for p in largest_perturbers:
+                m3 = p.mass.number
+                id = p.id
+                dr = (p.position - cmpos).number
+                r2 = (dr**2).sum()
+                r = numpy.sqrt(r2)
+                phi = -M*m3/r
+                dphiQ = -((m1*m2/M)*m3/r)*(x/r)**2
+                print ' ', str(id)+':', 'r =', r, 'm =', p.mass.number, \
+                      'dphi_top/dphiQ =', dphi_top.number/dphiQ
 
         return False, dE_top, dphi_top, dEmul, dphi_int, dE_int, \
                particles_in_encounter
@@ -1418,8 +1555,8 @@ class Multiples(object):
                           particles,
                           final_scatter_scale,
                           min_scatter_scale,
-                          end_time = 1000 | nbody_system.time,
-                          delta_t = 10 | nbody_system.time):
+                          end_time,
+                          delta_t):
 
         pre = 'encounter:'		# identifier for all output
 
@@ -1432,8 +1569,9 @@ class Multiples(object):
             delta_t *= 0.1
 
         initial_delta_t = delta_t
-        print pre, 'evolving to time', end_time
-        print pre, 'initial step =', initial_delta_t
+        if self.global_debug > 1:
+            print pre, 'evolving to time', end_time
+            print pre, 'initial step =', initial_delta_t
 
         # Allow delta_t to increase, with an upper limit.  (The factor
         # of 25 below should permit quasi-stable systems to be
@@ -1442,28 +1580,31 @@ class Multiples(object):
         delta_t_max = 64*delta_t
         while delta_t_max < end_time/25: delta_t_max *= 2
 
-        # Allow the possibility of repeating the encounter if it fails
-        # to terminate.
-
-        loop_count = 0
-        loop_max = 20
-        pert = 0.001					  # retry option 1
-        pert_fac = 10.**(1./loop_max)
-        scale_fac = (min_scatter_scale
-                     / final_scatter_scale)**(1./loop_max)	# option 2
-        over = 0
-
         # Save some useful initial quantities.
 
         initial_position = particles.position
         initial_velocity = particles.velocity
         initial_cmvel = particles.center_of_mass_velocity()   # should be 0
         initial_ke = particles.kinetic_energy()
+        initial_end_time = end_time
+
+        # Allow the possibility of repeating the encounter if it fails
+        # to terminate.
+
+        loop_count = 0
+        loop_max = 10
+        pert = 0.001					  # retry option 1
+        pert_fac = 10.**(1./loop_max)
+        scale_fac = (min_scatter_scale
+                     / final_scatter_scale)**(2./loop_max)	# option 2
+        end_time_fac = 1.5					# option 2
+        over = 0
 
         while loop_count < loop_max:
 
             loop_count += 1
-            # print pre, 'loop_count =', loop_count
+            #print pre, 'loop_count =', loop_count
+            #sys.stdout.flush()
 
             resolve_collision_code \
 		= self.resolve_collision_code_creation_function()
@@ -1473,7 +1614,7 @@ class Multiples(object):
             channel = resolve_collision_code.particles.new_channel_to(particles)
 
             time = 0 * end_time
-            sys.stdout.flush()
+
             resolve_collision_code.set_time(time);
             resolve_collision_code.particles.add_particles(particles)
             resolve_collision_code.commit_particles()
@@ -1484,8 +1625,10 @@ class Multiples(object):
             initial_scatter_energy \
 			= self.get_total_energy(resolve_collision_code)
 
-            print pre, 'number_of_stars =', len(particles), ' ', particles.id
-            print pre, 'initial energy =', initial_scatter_energy
+            if self.global_debug > 1:
+                print pre, 'number_of_stars =', len(particles), ' ', \
+                    particles.id
+                print pre, 'initial energy =', initial_scatter_energy
             #print particles
 
             if self.debug_encounters:
@@ -1498,6 +1641,33 @@ class Multiples(object):
                          p.vx.number, p.vy.number, p.vz.number)
                 sys.stdout.flush()
 
+            #------------------------------------------------------------
+            #
+            # If the encounter fails to terminate within the specified
+            # time we have some options:
+            #
+            # 1. Try perturbing the encounter in various energy
+            # conservative ways, starting from the original
+            # velocities.
+            #
+            # 2. Modify the termination conditions.  This is
+            # potentially less expensive, but may not lead to a clean
+            # outcome.  Increasing end_time simply involves extending
+            # the while loop; changing final_scatter_scale requires a
+            # new calculation.
+
+            option = 2
+            inner_loop = 1
+
+            #############################################################
+            # Set this to enable step-by-step debugging output.
+            # resolve_collision_code.parameters.outfile='abc.dat'
+            #
+            # e.g.
+            # if self.gravity_code.model_time.number > 3414.53:
+            #     resolve_collision_code.parameters.outfile = 'debug.dat'
+            #############################################################
+
             while time < end_time:
 
                 tt = time
@@ -1505,8 +1675,8 @@ class Multiples(object):
                 # print pre, '...to time', time
                 # sys.stdout.flush()
 
-                # Work with internal steps of initial_delta_t to allow
-                # checks for quasi-stable motion.
+                # Work with internal substeps of initial_delta_t to
+                # allow checks for quasi-stable motion.
 
                 while tt < time:
 
@@ -1515,21 +1685,24 @@ class Multiples(object):
 
                     if 0:
                         print pre, '    ...', time, tt, \
-                            'model_time =', resolve_collision_code.model_time
+                            'model_time =', \
+                            resolve_collision_code.model_time
                         sys.stdout.flush()
 
                     resolve_collision_code.evolve_model(tt)
 
                     if 0:
                         print pre, '    ...back:', \
-                            ': model_time =', resolve_collision_code.model_time
+                            ': model_time =', \
+                            resolve_collision_code.model_time
                         sys.stdout.flush()
 
                     tt = resolve_collision_code.model_time
 
                     # DEBUGGING:
                     if self.debug_encounters:
-                        print pre, '### snapshot at time %f' % time.number
+                        print pre, '### snapshot at time %f' \
+                            		% time.number
                         #resolve_collision_code.update_particle_tree()
                         #resolve_collision_code.update_particle_set()
                         resolve_collision_code.particles \
@@ -1538,7 +1711,7 @@ class Multiples(object):
                         for p in particles:
                             print pre, '### id=%d, x=%f, y=%f, z=%f,'\
                               'vx=%f, vy=%f, vz=%f' % \
-                                (p.id, p.x.number, p.y.number, p.z.number,
+                              (p.id, p.x.number, p.y.number, p.z.number,
                                  p.vx.number, p.vy.number, p.vz.number)
                         sys.stdout.flush()
 
@@ -1547,8 +1720,8 @@ class Multiples(object):
                     # supplied again because the code that determines
                     # if the scattering is over isn't necessarily the
                     # same as resolve_collision_code.  However,
-                    # currently, only smallN has an "is_over()"
-                    # function.  TODO
+                    # currently only smallN has an "is_over()"
+                    # function.
                     #
                     # Return values:	0 - not over
                     #			1 - over
@@ -1557,26 +1730,37 @@ class Multiples(object):
                     #
                     # Note that this is really a stopping condition,
                     # and should eventually be handled that way.  TODO
+                    #
+                    # If over = 3, if the parameters were properly
+                    # chosen, the resulting system should stil be
+                    # usable.  The interface function will take steps
+                    # to return proper hierarchical structure even if
+                    # the inner subsystem is not well resolved.
+                    #
+                    # Note that we are currently ignoring any
+                    # possibility of a physical collision during the
+                    # multiples encounter.  TODO
 
-                    # We are currently ignoring any possibility of
-                    # a physical collision during the multiples
-                    # encounter.  TODO
-
-                    over = resolve_collision_code.is_over(final_scatter_scale,
-                                                          0)    # verbose = 0
+                    over = resolve_collision_code.is_over\
+                           		(final_scatter_scale,
+                                         0)    # verbose = 0
                                                           
                     if over:
                         final_scatter_energy \
-                            = self.get_total_energy(resolve_collision_code)
+                          = self.get_total_energy(resolve_collision_code)
                         scatter_energy_error \
-                            = final_scatter_energy - initial_scatter_energy
+                          = final_scatter_energy - initial_scatter_energy
 
-                        print pre, 'over =', over, 'at time', tt
-                        #print pre, 'initial energy =', initial_scatter_energy
-                        #print pre, 'final energy =', final_scatter_energy
-                        #print pre, 'energy error =', scatter_energy_error
-                        print pre, 'fractional energy error =', \
-                            scatter_energy_error/initial_scatter_energy
+                        if self.global_debug > 1:
+                            print pre, 'over =', over, 'at time', tt
+                            #print pre, 'initial energy =', \
+                            #      initial_scatter_energy
+                            #print pre, 'final energy =', \
+                            #      final_scatter_energy
+                            #print pre, 'energy error =', \
+                            #      scatter_energy_error
+                            print pre, 'fractional energy error =', \
+                                scatter_energy_error/initial_scatter_energy
                         if self.debug_encounters:
                             print pre, '### END ENCOUNTER ###'
                             sys.stdout.flush()
@@ -1584,64 +1768,103 @@ class Multiples(object):
                         # Create a tree in the module representing the
                         # binary structure.
 
-                        resolve_collision_code.update_particle_tree()
+                        resolve_collision_code.update_particle_tree(over)
 
                         # Note: A quasi-stable system (over = 2)
                         # should be handled properly, as it will
                         # appear to be a bound top-level binary.  If
-                        # over = 3 the top level should be a receding
+                        # over = 3, the top level should be a receding
                         # bound or unbound system, and the tree
-                        # structure should still be usable.  TODO:
-                        # CHECK THIS!
+                        # structure should still be usable.
 
-                        # Note that center of mass particles are now part
-                        # of the particle set.
+                        # Note that center of mass particles are now
+                        # part of the particle set.
 
-                        # Return the tree structure to AMUSE.  Children
-                        # are identified by get_children_of_particle in
-                        # interface.??, and the information is returned in
-                        # the copy operation.
+                        # Return the tree structure to AMUSE.
+                        # Children are identified by
+                        # get_children_of_particle in interface.??,
+                        # and the information is returned in the copy
+                        # operation.
 
                         resolve_collision_code.update_particle_set()
                         resolve_collision_code.particles \
                                             .synchronize_to(particles)
-                        #print "resolve_collision_code.particles.radius", \
-                        #       resolve_collision_code.particles.radius
+                        #print "resolve_collision_code.particles.radius"\
+                        #      , resolve_collision_code.particles.radius
                         channel.copy()
                         #resolve_collision_code.stop()
 
+                        if 1:
+
+                            # Count number of top-level multiples.  Must
+                            # be >0 for the post-encounter bookkeeping to
+                            # work.
+
+                            binaries = trees.BinaryTreesOnAParticleSet(
+                            			particles, "child1", "child2")
+                            singles = binaries.particles_not_in_a_multiple()
+                            multiples = binaries.roots()
+                            if self.global_debug > 0:
+                                print 'after', pre, len(singles), \
+                                      'single(s),', \
+                                      len(multiples), 'multiple(s)'
+
                         return scatter_energy_error
 
-                    if tt >= 0.9999999*time: break
+                    if tt >= 0.99999999*time: break	# avoid roundoff
+
+                # -- end of while tt < time: loop --
 
                 time = resolve_collision_code.model_time
                 if not self.debug_encounters:
-                    if delta_t < delta_t_max and time > 0.999999*4*delta_t:
+                    if delta_t < delta_t_max \
+				and time > 0.999999*4*delta_t:
                         delta_t *= 2
-                        print pre, 'setting delta_t =', delta_t
+                        if self.global_debug > 1:
+                            print pre, 'setting delta_t =', delta_t
                         sys.stdout.flush()
 
-            #------------------------------------------------------------
-            #
-            # The encounter failed to terminate within the specified
-            # time.  Options:
-            #
-            # 1. Try perturbing the encounter in an energy
-            # conservative way, starting from the original velocities.
-            #
-            # 2. Make the termination condition more stringent.
-            #
-            # As currently coded, if we get here we have never
-            # overwritten the original particle set, particles.
-            # Nevertheless, we save and restore particle positions
-            # too.
+                if time > 0.99999999*end_time:		# avoid roumdoff
 
-            option = 2
+                    # Encounter has failed to terminate and we are
+                    # about to break out of the loop.  If option = 2
+                    # and this is an odd-numbered loop, just increase
+                    # end_time (once only).  Otherwise, break and
+                    # allow other options to take effect.
+
+                    if option == 2 and 2*(loop_count/2) != loop_count\
+			and inner_loop == 1: 
+
+                        # Adjust the bulk scattering parameters.
+                        # Simply increase end_time.
+
+                        end_time *= end_time_fac
+
+                        # Same print output as below.
+
+                        if self.global_debug > 1:
+                            print pre, 'loop', loop_count, ' over =', over
+                            print 'increasing end_time to', end_time
+                            print '-----'
+
+                        inner_loop = 2
+                        loop_count += 1
+
+                    else:
+                        break
+                        
+            # -- end of while time < end_time: loop --
+ 
+            # As currently coded, if we get here we have not
+            # overwritten the original particle set, particles.
+            # Nevertheless, we restore particle data here prior
+            # to a retry.
 
             particles.position = initial_position
             particles.velocity = initial_velocity
 
-            print pre, 'loop', loop_count, ' over =', over
+            if self.global_debug > 1:
+                print pre, 'loop', loop_count, ' over =', over
 
             if option == 1:
 
@@ -1680,18 +1903,27 @@ class Multiples(object):
                 particles.velocity *= math.sqrt(initial_ke/final_ke)
 
                 pert *= pert_fac
-                print 'Retrying with pert =', pert, '...'
+                print 'retrying with pert =', pert
 
             elif option == 2:
 
+                # Adjust the bulk scattering parameters.  First
+                # increase end_time, then reduce and increase
+                # final_scatter_scale, etc.  Should only be able to
+                # get here if loop_count is even.  End_time has
+                # already been increased.  Use the larger version, but
+                # decrease final_scatter_scale.
+
                 final_scatter_scale *= scale_fac
-                print 'Retrying with final_scatter_scale =', \
-                      final_scatter_scale, '...'
+
+                print 'retrying with final_scatter_scale =', final_scatter_scale
+                print '              end_time =', end_time
 
             print '-----'
 
         raise DidNotFinishException(
-            pre + " Small-N simulation did not finish before end time {0}".
+            pre + \
+            " Small-N simulation did not finish before end time {0}".
             format(end_time)
         )
 
@@ -1700,6 +1932,8 @@ def openup_tree(star, tree, particles_in_encounter):
     # List the leaves.
 
     leaves = tree.get_leafs_subset()
+    #print 'leaves:'
+    #print leaves
       
     original_star = tree.particle
 
@@ -1776,13 +2010,12 @@ def find_nn(plist, field, G):
     # measured by potential) to any particle in plist.
 
     pminmin = None
-    dminmin = 1.e30
     fminmin = None
-    phiminmin = 0.0 | nbody_system.energy
+    phiminmin = zero
     for f in field:
         dx = (plist.position - f.position).lengths()
         phi = -G*f.mass*plist.mass/dx
-        phimin = 0.0 | nbody_system.energy
+        phimin = zero
         dxmin = 1.e30
         pmin = None
         for i in range(len(phi)):
@@ -1805,16 +2038,15 @@ def find_nn3(plist, field, G):
     # revised, faster version of find_nn
     
     pminmin = None
-    dminmin = 1.e30
     fminmin = None
-    phiminmin = 0.0 | nbody_system.energy
+    phiminmin = zero
     
     for p in plist:
         
         dx = (p.position - field.position).lengths()
         phi = -G*field.mass*p.mass/dx
         #phi = numpy.divide(numpy.prod([-1,G,field.mass,p.mass]),dx)
-        phimin = 0.0 | nbody_system.energy
+        phimin = zero
         dxmin = 1.e30
         pmin = None
         j = numpy.argmin(phi.number)
@@ -1851,9 +2083,9 @@ def potential_energy_in_field(particles, field_particles,
     """
     Returns the total potential energy of the particles in the particles set.
 
-    :argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
-    :argument smoothing_length_squared: the smoothing length is added to every distance.
-    :argument G: gravitational constant, need to be changed for particles in different units systems
+    argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
+    argument smoothing_length_squared: the smoothing length is added to every distance.
+    argument G: gravitational constant, need to be changed for particles in different units systems
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -1866,7 +2098,15 @@ def potential_energy_in_field(particles, field_particles,
     """
 
     if len(field_particles) == 0:
-        return zero * G		# ERROR: this is dimensionally incorrect - Steve
+        return zero
+
+    # print 'PE_in_field:'
+    # print len(field_particles), 'field particles'
+    # if len(field_particles) <= 10:
+    #     for f in field_particles:
+    #         print f.id,
+    #     print ''
+    # print particles
 
     sum_of_energies = zero
     for particle in particles:
@@ -1876,8 +2116,18 @@ def potential_energy_in_field(particles, field_particles,
         dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
         dr = (dr_squared+smoothing_length_squared).sqrt()
         m_m = particle.mass * field_particles.mass
-        energy_of_this_particle = (m_m / dr).sum()
-        sum_of_energies -= energy_of_this_particle
+        potentials = -m_m/dr
+        energy_of_this_particle = potentials.sum()
+        sum_of_energies += energy_of_this_particle
+        #print potentials
+        #print dr
+        imin = numpy.argmin(potentials.number)
+        #print ' ', particle.id, field_particles[imin].id, potentials[imin]
+        imin = numpy.argmin(dr.number)
+        #print ' ', particle.id, field_particles[imin].id, dr[imin]
+
+    #print 'sum_of_energies =', sum_of_energies
+    #sys.stdout.flush()
 
     return G * sum_of_energies
 
@@ -2055,9 +2305,13 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
 
 def compress_nodes(node_list, scale):
 
-    # Compress the top-level nodes in node_list to lie within diameter
-    # scale.  Rescale velocities to conserve total energy (but
-    # currently not angular momentum -- TODO).
+    local_debug = False
+
+    # Compress (or expand) the top-level nodes in node_list to lie
+    # within diameter scale.  Rescale velocities to conserve total
+    # energy (but currently not angular momentum -- TODO).
+
+    pre = 'compress_nodes:'
 
     # Compute the center of mass position and velocity of the
     # top-level system.
@@ -2065,46 +2319,86 @@ def compress_nodes(node_list, scale):
     cmpos = node_list.center_of_mass()
     cmvel = node_list.center_of_mass_velocity()
 
-    # Compute the size, potential, and kinetic energy of the system in
-    # the center of mass frame.
+    # Child positions and velocities will not be explicitly changed by
+    # the scaling.  Temporarily store child data as offsets relative
+    # to the root.  We will undo this at the end, immediately before
+    # returning.
 
-    size = 0.0
-    sepmin = 1.e10
-    rijmin = 1.e10
-    radsum = 0.0
+    for n in node_list:
+        if n.child1 != None:
+            dx = n.position
+            dv = n.velocity
+            offset_children(n, dx, dv)
+
+    if local_debug:
+        print 'node_list:'
+        print node_list
+        print 'top_level:'
+        print_top_level(node_list)
+
+    # Compute various measures of the size, potential, and kinetic
+    # energy of the system in the center of mass frame.
+
+    size = 0.0		# max distance from center of mass
+
+    rijmin = 1.e10	# minimum separation
     imin = -1
     jmin = -1
+    phimin = 0.0	# minimum potential
+    ipmin = -1
+    jpmin = -1
+
+    n = len(node_list)
     pot = 0.0
     kin = 0.0
-    for i in range(len(node_list)):
+    dr = numpy.zeros((n,n))
+    dv2 = numpy.zeros((n,n))
+    for i in range(n):
         m = node_list[i].mass.number
-        rad = node_list[i].radius.number
         posi = node_list[i].position
         pos = (posi-cmpos).number
-        vel = (node_list[i].velocity-cmvel).number
+        veli = node_list[i].velocity
+        vel = (veli-cmvel).number
         r2 = numpy.inner(pos,pos)
-        if r2 > size: size = r2
+        if r2 > size:
+            size = r2
         kin += m*numpy.inner(vel,vel)
         dpot = 0.0
-        for j in range(i+1,len(node_list)):
+        for j in range(i+1,n):
             mj = node_list[j].mass.number
-            radj = node_list[j].radius.number
             dposj = (node_list[j].position-posi).number
             rij = math.sqrt(numpy.inner(dposj,dposj))
-            if sepmin > rij-rad-radj:
-                radsum = rad + radj
+            dphij = -mj/math.sqrt(numpy.inner(dposj,dposj))
+            dpot += dphij
+            phij = m*dphij
+            if rij < rijmin:
+                rijmin = rij
                 imin = i
                 jmin = j
-                sepmin = rij - radsum
-                rijmin = rij
-            dpot -= mj/math.sqrt(numpy.inner(dposj,dposj))
+            if phij < phimin:
+                phimin = phij
+                ipmin = i
+                jpmin = j
+            dvelj = (node_list[j].velocity-veli).number
+            dr[i,j] = rij
+            dv2[i,j] = numpy.inner(dvelj,dvelj)
         pot += m*dpot
     size = math.sqrt(size)
     kin /= 2
+    rphmin = -(node_list[ipmin].mass*node_list[jpmin].mass).number/phimin
 
-    #fac = 0.5*scale.number/size	# scale to radius
-    #fac = scale.number/rijmin		# scale to distance
-    fac = radsum/rijmin			# scale to zero separation
+    if local_debug:
+        print pre, 'scale =', scale.number
+        print pre, 'size =', size
+        print pre, 'rijmin =', rijmin, node_list[imin].id, node_list[jmin].id
+        print pre, 'rphmin =', rphmin, node_list[ipmin].id, node_list[jpmin].id
+
+    fac = 0.5*scale.number/size		# scale to radius
+    #fac = scale.number/rijmin		# scale to minimum distance
+    #fac = scale.number/rphmin		# scale to minimum potential distance
+
+    if local_debug:
+        print pre, 'fac =', fac
 
     # Compress (or expand) the system and increase (or decrease) the
     # velocities (relative to the center of mass) to preserve the
@@ -2113,21 +2407,189 @@ def compress_nodes(node_list, scale):
     # if we have a system with small negative energy, stopped because
     # it is too big.
 
+    # An additional consideration (Steve, 1/2017) is that all
+    # top-level nodes are mutually unbound at the end of the
+    # scattering, by construction, but this may not be preserved by
+    # a simple uniform rescaling of the system.  In that case, an
+    # unphysical extra interaction may follow the scattering we
+    # thought was "over."  Currently we check for this possibility,
+    # then modify the way in which velocities are scaled to
+    # compensate.  NOT guaranteed to work in all cases, and the code
+    # is ugly...
+
     vfac2 = 1-(1/fac-1)*pot/kin
-    #print "vfac2", vfac2
+    #print "vfac2 =", vfac2
+
     if vfac2 < 0:
-        print "Can't expand top level system to rjmin > ri+rj"
+        print pre, "Can't expand top level system to rjmin > ri+rj"
         print "fac =", fac, " pot =", pot, " kin =", kin
         sys.stdout.flush()
         f = pot/(kin+pot)
-        vfac2 = 0.0
+        vfac2 = 0.0		# ???
+
     vfac = math.sqrt(vfac2)
-    if fac > 0.0:
+    if local_debug:
+        print "vfac =", vfac
+        print pre, 'dr:'
+        print dr
+        print pre, 'dv2:'
+        print dv2
+    
+    bound_pairs = []
+    unbound = numpy.ones(n)
+    for i in range(n):
+        mi = node_list[i].mass.number
+        bound = False
+        for j in range(i+1,n):
+            mj = node_list[j].mass.number
+            mu = mi*mj/(mi+mj)
+            Eijold = 0.5*mu*dv2[i,j] - mi*mj/dr[i,j]
+            Eijnew = 0.5*mu*vfac2*dv2[i,j] - mi*mj/(fac*dr[i,j])
+            if Eijnew <= 0.0:
+                #print 'bound', i, j, Eijold, Eijnew
+                bound = True
+                bound_pairs.append((i,j))
+                unbound[i] = 0
+                unbound[j] = 0
+
+    print pre, 'bound pairs:', bound_pairs
+    unbound_nodes = []
+    for i in range(n):
+        if unbound[i] == 1:
+            unbound_nodes.append(i)
+    print pre, 'unbound_nodes:', unbound_nodes
+
+    if len(unbound_nodes) == 0:
+
+        # Live with unphysical bound pairs for now.  TODO
+
+        print '*** warning: no unbound nodes ***'
+        bound_pairs = []
+
+    if len(bound_pairs) > 0:
+
+        # Strategy #1: Scale positions uniformly as planned, but
+        # adjust the velocity scaling for pairs whose binding energy
+        # would become negative.  Strategy #2 (unimplemented) would be
+        # to modify the spatial scaling by scaling bound pairs only to
+        # scale, then adjust velocities as in #1.  Strategy #3 (also
+        # unimplemented) would be to not scale bound pairs at all.
+
+        energy = pot + kin		# initial energy - conserved
+
+        for n in node_list:
+            n.position = cmpos + fac*(n.position-cmpos)
+        dr *= fac
+        pot /= fac
+
+        if local_debug:
+            print 'kinetic energies:'
+            for n in node_list:
+                print '  ', n.id, 0.5*n.mass.number\
+				*numpy.inner((n.velocity-cmvel).number,
+                                             (n.velocity-cmvel).number)
+
+        # First give the bound components enough relative velocity to
+        # just unbind them, keeping their center of mass velocity
+        # fixed.  Note that, since Eij was > 0 and this prescription
+        # leaves Eij close to 0, this transformation should liberate
+        # energy for distribution to the rest of the system.
+
+        kin2 = 0.0
+        kinCM = 0.0
+        for p in bound_pairs:
+            i = p[0]
+            j = p[1]
+            ni = node_list[i]
+            nj = node_list[j]
+            mi = ni.mass.number
+            mj = nj.mass.number
+            #print 'i, j, v20, dv2:', i, j, 2*(mi+mj)/dr[i,j], dv2[i,j]
+            newvfac2 = 2.000001*((mi+mj)/dr[i,j])/dv2[i,j]
+            newvfac = math.sqrt(newvfac2)
+            #print 'newvfac =', newvfac
+            massinv = 1./(mi+mj)
+            cmv = (mi*ni.velocity + mj*nj.velocity)*massinv
+            ni.velocity = cmv + newvfac*(ni.velocity-cmv)
+            nj.velocity = cmv + newvfac*(nj.velocity-cmv)
+            kin2 += 0.5*mi*mj*massinv*numpy.inner(
+		                (ni.velocity-nj.velocity).number,
+		                (ni.velocity-nj.velocity).number)
+            kinCM += 0.5*(mi+mj)*numpy.inner((cmv-cmvel).number,
+                                             (cmv-cmvel).number)
+
+        if local_debug:
+            print 'KECM =', kin2+kinCM
+        for i in unbound_nodes:
+            ni = node_list[i]
+            mi = ni.mass.number
+            kei = 0.5*mi*numpy.inner((ni.velocity-cmvel).number,
+                                     (ni.velocity-cmvel).number)
+            if local_debug:
+                print 'KE', ni.id, kei
+            kinCM += kei
+
+        if local_debug:
+            print 'energy =', energy, 'pot+kin2+kinCM =', pot+kin2+kinCM
+        kin_to_distribute = energy - (pot+kin2+kinCM)
+
+        if kin_to_distribute < 0: 
+            print '*** warning: not enough kinetic energy ***'
+
+        vfac2 = 1+kin_to_distribute/kinCM
+        vfac = math.sqrt(vfac2)
+        #print 'vfac =', vfac
+
+        # Then apply an overall scaling to unbound nodes and bound CMs
+        # to conserve total energy.
+
+        for i in unbound_nodes:
+            ni = node_list[i]
+            ni.velocity = cmvel + vfac*(ni.velocity-cmvel)
+        for p in bound_pairs:
+            i = p[0]
+            j = p[1]
+            ni = node_list[i]
+            nj = node_list[j]
+            mi = ni.mass.number
+            mj = nj.mass.number
+            massinv = 1./(mi+mj)
+            cmv = (mi*ni.velocity + mj*nj.velocity)*massinv
+            newcmv = cmvel + vfac*(cmv-cmvel)
+            ni.velocity += newcmv - cmv
+            nj.velocity += newcmv - cmv
+
+    if len(bound_pairs) == 0:
+
+        # Perform global scaling of position and velocity.
+
         for n in node_list:
             n.position = cmpos + fac*(n.position-cmpos)
             n.velocity = cmvel + vfac*(n.velocity-cmvel)
 
+    # Child data have not yet been modified.  Do so here.  Note that
+    # child positions and velocities were temporarily offset to the
+    # top-level center of mass.
+
+    for n in node_list:
+        if n.child1 != None:
+            dx = -n.position
+            dv = -n.velocity
+            offset_children(n, dx, dv)
+
+    #print_top_level(node_list)
+
 #------------------------------------------------------------------
+
+def offset_children(n, dx, dv):
+    if n.child1 != None:
+        n.child1.position -= dx
+        n.child1.velocity -= dv
+        offset_children(n.child1, dx, dv)
+    if n.child2 != None:
+        n.child2.position -= dx
+        n.child2.velocity -= dv
+        offset_children(n.child2, dx, dv)
 
 def print_elements(s, a, e, r, Emu, E):
 
@@ -2185,7 +2647,7 @@ def print_multiple_simple(node, kep):
 
 def print_multiple_detailed(node, kep, pre, kT, dcen):
     is_bin = 1
-    Etot = 0.0 | nbody_system.energy
+    Etot = zero
     for level, x in node.iter_levels():
         particle = x
         init = pre
@@ -2219,6 +2681,70 @@ def print_multiple_detailed(node, kep, pre, kT, dcen):
 
     return is_bin, Etot
 
+def print_top_level(nodes):
+
+    # Print various top-level quantities of interest during rescaling.
+
+    print ''
+    print 'distances:'
+    for i in nodes:
+        print i.id, '    ',
+        for j in nodes:
+            if j.id != i.id:
+                rij = (numpy.inner((j.position-i.position).number,
+                                   (j.position-i.position).number))**0.5
+                print j.id, rij, '    ',
+        print ''
+
+    print 'radial velocities:'
+    for i in nodes:
+        print i.id, '    ',
+        for j in nodes:
+            if j.id != i.id:
+                rij = (numpy.inner((j.position-i.position).number,
+                                   (j.position-i.position).number))**0.5
+                vdotr = numpy.inner((j.velocity-i.velocity).number,
+                                    (j.position-i.position).number)
+                print j.id, vdotr/rij, '    ',
+        print ''
+
+    print 'potentials:'
+    for i in nodes:
+        print i.id, '    ',
+        mi = i.mass.number
+        for j in nodes:
+            if j.id != i.id:
+                mj = j.mass.number
+                rij = (numpy.inner((j.position-i.position).number,
+                                   (j.position-i.position).number))**0.5
+                print j.id, -mi*mj/rij, '    ',
+                
+        print ''
+
+    print 'energies:'
+    pot = 0.0
+    kin = 0.0
+    for i in nodes:
+        print i.id, '    ',
+        mi = i.mass.number
+        vi = i.velocity.number
+        kin += 0.5*mi*numpy.inner(vi, vi)
+        for j in nodes:
+            if j.id != i.id:
+                mj = j.mass.number
+                muij = mi*mj/(mi+mj)
+                rij = (numpy.inner((j.position-i.position).number,
+                                   (j.position-i.position).number))**0.5
+                vij2 = numpy.inner((j.velocity-i.velocity).number,
+                                   (j.velocity-i.velocity).number)
+                print j.id, 0.5*muij*vij2 - mi*mj/rij, '    ',
+                if j.id > i.id:
+                    pot -= mi*mj/rij
+                
+        print ''
+    print 'totals:', pot, kin, -kin/pot, pot+kin
+    print ''
+
 #------------------------------------------------------------------
 
 def get_multiple_energy(node, kep):
@@ -2230,11 +2756,13 @@ def get_multiple_energy(node, kep):
     # in a hierarchical triple Etot will be the sum of two binary
     # energies only).
 
+    # Note that kep should have been initialized with the correct
+    # converter to return the proper energy units.
+
     is_bin = 1
-    Etot = 0.0 | nbody_system.energy
+    Etot = zero
     for level, x in node.iter_levels():
         particle = x
-        M = particle.mass.number
         if not particle.child1 is None:
             if level > 0: is_bin = 0
             child1 = particle.child1
@@ -2247,29 +2775,60 @@ def get_multiple_energy(node, kep):
 
 def get_multiple_energy2(node, G):
 
-    # Return the binary status and the total energy Etot2 of the
-    # specified tree node.  The returned value is the total energy
-    # of all leaves in the hierarchy, properly including tidal
-    # potentials, but excluding the center of mass energy.
+    # Return the binary status and the total energy of the specified
+    # tree node.  Uses a value of G supplied by the caller.  The
+    # returned value is the total energy of all leaves in the
+    # hierarchy, properly including tidal potentials, but excluding
+    # the center of mass energy.
 
     is_bin = 1
-    Ecm = 0.0 | nbody_system.energy
+    Ecm = zero
 
-    # List the leaves, and do some additional work.  Note that
+    for level, x in node.iter_levels():
+        if level == 0:
+            particle = x
+            M_comp = 0*particle.mass
+            vcm_comp = M_comp*particle.velocity
+
+            if particle.id == 1000074:
+                pp = True
+
+            break
+
+    # List the leaves and do some additional work.  Note that
     # node.get_leafs_subset() seems to do the same thing...
 
-    leaves_in_node = datamodel.Particles(0)
+    leaves_in_node = Particles(0)
+
     for level, x in node.iter_levels():
         particle = x
-        if level == 0:		# top-level kinetic energy
-            Ecm = 0.5*particle.mass*(particle.velocity**2).sum()
+        if level == 0:
+
+            # Want to compute the top-level kinetic energy.  Might
+            # expect
+
+            vcm = particle.velocity
+            Ecm = 0.5*particle.mass*(vcm**2).sum()
+
+            # but in some circumstances (e.g. a binary created in a
+            # many-body process), the position and velocity of the
+            # parent may not correctly reflect the center of mass of
+            # its children.
+            
         if not particle.child1 is None:
-            if level > 0: is_bin = 0
-        else:			# list leaves
-            leaves_in_node.add_particle(particle)
+            if level > 0:
+                is_bin = 0				# not a multiple
+        else:
+            leaves_in_node.add_particle(particle)	# list leaves
+            M_comp += particle.mass
+            vcm_comp += particle.mass*particle.velocity
+
+    vcm_comp /= M_comp
+    Ecm_comp = 0.5*M_comp*(vcm_comp**2).sum()
+
     return is_bin, leaves_in_node.kinetic_energy() \
-            + leaves_in_node.potential_energy(G=G) \
-            - Ecm
+ 		           + leaves_in_node.potential_energy(G=G) \
+		           - Ecm_comp
 
 def add_leaves(node, leaf_list):
     if node.child1 == None:
@@ -2278,27 +2837,8 @@ def add_leaves(node, leaf_list):
         add_leaves(node.child1, leaf_list)
         add_leaves(node.child2, leaf_list)
 
-def get_multiple_energy3(root, G):
-
-    # Return the binary status and the total energy Etot2 of the
-    # particles under the specified root, assuming that child pointers
-    # exist and are correctly set.  The returned value is the total
-    # energy of all leaves in the hierarchy, properly including tidal
-    # potentials, but excluding the center of mass energy.
-
-    # Not currently used...
-
-    is_bin = 1
-    Ecm = 0.0 | nbody_system.energy
-    leaves_in_root = datamodel.Particles(0)
-    add_leaves(root, leaves_in_root)
-    Ecm = 0.5*root.mass*(root.velocity**2).sum()
-    return leaves_in_root.kinetic_energy() \
-            + leaves_in_root.potential_energy(G=G) \
-            - Ecm
-
 def get_energy_of_leaves(particles, G):
-    leaves = datamodel.Particles(0)
+    leaves = Particles(0)
     for p in particles:
         if not hasattr(p, 'child1') or p.child1 == None:
             leaves.add_particle(p)
@@ -2347,51 +2887,8 @@ def print_energies(stars):
     print 'energy =', kinetic+potential
     sys.stdout.flush()
 
-# def set_radius_recursive(node, kep):
-#
-#     if node.is_leaf(): return		# nothing to be done
-#
-#     # Propagate child radii upward.
-#
-#     rmax = zero
-#     for child in node.iter_children():
-#         set_radius_recursive(child, kep)
-#         rmax = max(rmax, child.particle.radius)
-#
-#     # Include binary information.
-#
-#     node.particle.radius = rmax
-#     try:
-#         if not node.particle.child1 == None:
-#             mass,a,e,r,E,t = get_cm_binary_elements(node.particle, kep)
-#             if e < 1:
-#                 node.particle.radius = max(2*a, node.particle.radius)
-#     		#			   2 here is ~arbitrary
-#     except:
-#         pass
-
-def set_radius_recursive(node, kep):
-
-    if node.is_leaf(): return		# nothing to be done
-
-    # Propagate child radii upward.  Since dynamical radius scales
-    # with mass, the radius of a parent is the sum of the radii of the
-    # children.  If we are handling 2-body encounters, that's all we
-    # need.  The semi-major axis of a hard binary is irrelevant (less
-    # than the dynamical radius, by definition)...
-
-    rsum = zero
-    for child in node.iter_children():
-        set_radius_recursive(child, kep)
-        rsum += child.particle.radius
-    node.particle.radius = rsum
-
-def set_radii(top_level_nodes, kep):
-    for n in top_level_nodes.as_binary_tree().iter_children():
-        set_radius_recursive(n, kep)
-
 def scale_top_level_list(singles, multiples, kep, scale,
-                         gravity_constant):
+                         gravity_constant, global_debug):
 
     pre = 'scale_top_level_list:'
 
@@ -2423,8 +2920,9 @@ def scale_top_level_list(singles, multiples, kep, scale,
     lm = len(multiples)
     lt = ls + lm
 
-    print pre, 'ls =', ls, ' lm =', lm, ' lt =', lt
-    sys.stdout.flush()
+    if global_debug > 1:
+        print pre, 'ls =', ls, ' lm =', lm, ' lt =', lt
+        sys.stdout.flush()
 
     if lt == 1:
         if lm == 1:
@@ -2441,12 +2939,14 @@ def scale_top_level_list(singles, multiples, kep, scale,
 
             root = multiples[0]
 
-            print pre, 'bound binary node', scale
+            if global_debug > 1:
+                print pre, 'bound binary node', scale
             #print '\nunscaled binary node:'
             #print_multiple_recursive(root)
             comp1 = root.child1
             comp2 = root.child2
-            print pre, 'scale:', scale
+            if global_debug > 1:
+                print pre, 'scale:', scale
             semi = rescale_binary_components(comp1, comp2, kep, scale)
             #true, mean = kep.get_angles()
             #print 'true =', true, 'mean =', mean
@@ -2467,23 +2967,24 @@ def scale_top_level_list(singles, multiples, kep, scale,
         comp1 = top_level_nodes[0]
         comp2 = top_level_nodes[1]
 
-        print pre, 'top-level unbound pair'
-        #print pre, '\nunscaled top-level pair:'
-        #print_pair_of_stars('pair', comp1, comp2, kep)
-        sys.stdout.flush()
+        if global_debug > 1:
+            print pre, 'top-level unbound pair'
+            #print pre, '\nunscaled top-level pair:'
+            #print_pair_of_stars('pair', comp1, comp2, kep)
+            sys.stdout.flush()
         semi = rescale_binary_components(comp1, comp2, kep, scale)
         #print pre, '\nscaled top-level pair:'
         #print_pair_of_stars('pair', comp1, comp2, kep)
-        sys.stdout.flush()
+        #sys.stdout.flush()
 
     else:
 
-        # Now we have three or more top-level nodes.  We don't know
-        # how to compress them in a conservative way.  For now, we
-        # will conserve energy and think later about how to preserve
-        # angular momentum.  TODO
+        # We have three or more unbound top-level nodes.  We don't
+        # know how to compress them in a conservative way.  For now,
+        # we will conserve energy and think later about how to
+        # preserve angular momentum.  TODO
 
-        print pre, lt, 'top-level nodes', scale
+        print pre, lt, 'top-level nodes, scale =', scale
         #print lt, 'unscaled top-level nodes'
         #print top_level_nodes
         compress_nodes(top_level_nodes, scale)
@@ -2497,3 +2998,74 @@ def scale_top_level_list(singles, multiples, kep, scale,
     # Manage all of this in the calling function, as desired.
 
     return
+
+# def set_radius_recursive(node, kep):
+#
+#     if node.is_leaf(): return		# nothing to be done
+#
+#     # Propagate child radii upward.
+#
+#     rmax = zero
+#     for child in node.iter_children():
+#         set_radius_recursive(child, kep)
+#         rmax = max(rmax, child.particle.radius)
+#
+#     # Include binary information.
+#
+#     node.particle.radius = rmax
+#     try:
+#         if not node.particle.child1 == None:
+#             mass,a,e,r,E,t = get_cm_binary_elements(node.particle, kep)
+#             if e < 1:
+#                 node.particle.radius = max(2*a, node.particle.radius)
+#     		#			   2 here is ~arbitrary
+#     except:
+#         pass
+
+def set_radius_recursive(node, kep, global_debug):
+
+    if node.is_leaf(): return		# nothing to be done
+
+    # Propagate child radii upward.  Since dynamical radius scales
+    # with mass, the radius of a parent is just the sum of the radii
+    # of the children.  If we are simply handling 2-body encounters,
+    # that's all we need.  The semi-major axis of a hard binary is
+    # less than the dynamical radius, by definition.  However, we must
+    # include the size of a soft binary or multiple, which may be
+    # significantly larger than the dynamical radius of the center of
+    # mass.
+    
+    # Note that kep should have been initialized with the correct
+    # converter to return the proper energy units.
+
+    rsum = zero
+    for child in node.iter_children():
+        set_radius_recursive(child, kep, global_debug)
+        rsum += child.particle.radius
+
+    # Currently rsum is the dynamical radius of the node. Check how it
+    # compares to the node's semimajor axis.
+
+    M,semi,e,x,x,x = get_component_binary_elements(node.particle.child1,
+                                                   node.particle.child2, kep)
+
+    if rsum < 2*semi:
+
+        # *** Factor of 2 here is ~arbitrary; should probably be set
+        # *** in the class definition.
+
+        if global_debug > 0:
+            print 'increasing radius for', node.particle.id, 'from', \
+                rsum, 'to', 2*semi
+        rsum = 2*semi
+
+    node.particle.radius = rsum
+
+# Note: iter_children() lists the leaves lying under a given node of
+# type BinaryTreeOnParticle.  The child leaves are objects of type
+# ChildTreeOnParticle.  The particle associated with child x is
+# x.particle.
+
+def set_radii(top_level_nodes, kep, global_debug):
+    for n in top_level_nodes.as_binary_tree().iter_children():
+        set_radius_recursive(n, kep, global_debug)

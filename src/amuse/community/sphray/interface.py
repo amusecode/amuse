@@ -179,6 +179,16 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.result_type = 'i'
         return function
 
+    @legacy_function    
+    def set_luminosity_src():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        for x in ['luminosity']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
 
     @legacy_function    
     def remove_src_particle():
@@ -754,6 +764,16 @@ class SPHRay(CommonCode):
             )
         )
         object.add_method(
+            "set_luminosity_src",
+            (
+                object.NO_UNIT,
+                1.e50 * units.s**-1,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
             "get_state_src",
             (
                 object.INDEX,
@@ -931,6 +951,7 @@ class SPHRay(CommonCode):
         object.set_new('src_particles', 'new_src_particle')
         object.set_delete('src_particles', 'remove_src_particle')
         object.add_setter('src_particles', 'set_state_src')
+        object.add_setter('src_particles', 'set_luminosity_src')
         object.add_getter('src_particles', 'get_state_src')
         
     def define_state(self, object):
@@ -973,6 +994,7 @@ class SPHRay(CommonCode):
         object.add_transition('RUN', 'UPDATE', 'set_dudt_gas', False)
         object.add_transition('RUN', 'UPDATE', 'set_state_gas', False)
         object.add_transition('RUN', 'UPDATE', 'set_state_src', False)
+        object.add_transition('RUN', 'UPDATE', 'set_luminosity_src', False)
         
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
         object.add_method('RUN', 'evolve_model')

@@ -270,8 +270,8 @@ class TestMpiAmrVac(TestWithMPI):
             position = grids[0].position
             print position.shape
             for i in range(3):
-                max_x = position[...,...,...,i].amax()
-                min_x = position[...,...,...,i].amin()
+                max_x = position[...,i].amax()
+                min_x = position[...,i].amin()
                 print max_x, min_x
                 
                 self.assertTrue(min_x >= 0.5 | generic_unit_system.length)
@@ -318,8 +318,8 @@ class TestMpiAmrVac(TestWithMPI):
                 level = instance.get_level_of_grid(index + 1)
                 self.assertEquals(level, 1)
                 for i in range(3):
-                    max_x = position[...,...,...,i].amax()
-                    min_x = position[...,...,...,i].amin()
+                    max_x = position[...,i].amax()
+                    min_x = position[...,i].amin()
                     
                     self.assertTrue(min_x >= 0.5 | generic_unit_system.length)
                     self.assertTrue(min_x <= 10.5 | generic_unit_system.length)

@@ -77,6 +77,53 @@ class FastKickInterface(CodeInterface, CommonCodeInterface, GravityFieldInterfac
         function.result_type = 'int32'
         return function
 
+
+    @legacy_function
+    def get_mass():
+        """
+        Retrieve the mass of a particle. Mass is a scalar property of a particle,
+        this function has one OUT argument.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        function.result_doc = """
+        0 - OK
+            particle was removed from the model
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+    @legacy_function
+    def set_mass():
+        """
+        Update the mass of a particle. Mass is a scalar property of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            code does not support updating of a particle
+        """
+        return function
+    
+
+
+
 class FastKickDoc(object):
 
     def __get__(self, instance, owner):
@@ -109,6 +156,26 @@ class FastKick(CommonCode, GravityFieldCode):
             (object.ERROR_CODE,)
         )
     
+        object.add_method(
+            "set_mass",
+            (
+                object.NO_UNIT,
+                nbody_system.mass,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_mass",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                nbody_system.mass,
+                object.ERROR_CODE
+            )
+        )
     def define_state(self, object): 
         CommonCode.define_state(self, object)   
         object.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
@@ -175,6 +242,8 @@ class FastKick(CommonCode, GravityFieldCode):
         object.define_set('particles', 'index_of_the_particle')
         object.set_new('particles', 'new_particle')
         object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_mass')
+        object.add_getter('particles', 'get_mass', names = ('mass',))
     
     def define_properties(self, object):
         object.add_property("get_potential_energy")

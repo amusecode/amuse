@@ -1,14 +1,15 @@
-from amuse.lab import new_salpeter_mass_distribution
+from amuse.lab import new_powerlaw_mass_distribution
 
 def generate_power_law_mass_function(N, Mmin, Mmax, ximf):
-    masses = new_salpeter_mass_distribution(N, Mmin, Mmax, ximf)
+    masses = new_powerlaw_mass_distribution(N, Mmin, Mmax, ximf)
     plot_mass_function(masses, ximf)
 
-import numpy 
+###BOOKLISTSTART###
+import numpy
 import math
 from amuse.units import units
 from matplotlib import pyplot
-from prepare_figure import figure_frame, single_frame, get_distinct
+from prepare_figure import figure_frame, get_distinct
 
 def plot_mass_function(masses, ximf):
     Mmin = masses.min()
@@ -26,10 +27,16 @@ def plot_mass_function(masses, ximf):
     colors = get_distinct(2)
     pyplot.scatter(x, y, s=100, c=colors[0], lw=0)
 
-    c = ((Mmax.value_in(units.MSun)**(ximf+1)) - (Mmin.value_in(units.MSun)**(ximf+1))) / (ximf+1)
+    c = ((Mmax.value_in(units.MSun)**(ximf+1)) \
+         	- (Mmin.value_in(units.MSun)**(ximf+1))) / (ximf+1)
     pyplot.plot(x, len(masses)/c * (x**ximf), c=colors[1])
     pyplot.loglog()
-    pyplot.savefig("salpeter")
+    
+    save_file = "salpeter.png"
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file,'\n'
+    pyplot.show()
+###BOOKLISTSTOP###
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser

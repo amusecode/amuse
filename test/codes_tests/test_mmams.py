@@ -1084,7 +1084,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertTrue(merged.number_of_zones > 100)
         self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
         self.assertEqual(len(stellar_evolution.particles), 1)
-        self.assertAlmostEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
+        self.assertAlmostRelativeEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
         self.assertEqual(handler.collision_code.__class__, MakeMeAMassiveStar)
         self.assertEqual(handler.collision_code.get_name_of_current_state(), 'INITIALIZED')
         collision.stop()
@@ -1112,7 +1112,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertTrue(merged.number_of_zones > 100)
         self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
         self.assertEqual(len(stellar_evolution.particles), 1)
-        self.assertAlmostEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
+        self.assertAlmostRelativeEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
         self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
     
     def slowtest5(self):

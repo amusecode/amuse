@@ -9,6 +9,12 @@ import urllib.request, urllib.parse, urllib.error
 import subprocess
 import shutil
 
+import ssl
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except:
+    pass
+
 
 IS_ON_OSX = sys.platform == 'darwin'
 PYTHON = sys.executable
@@ -43,10 +49,10 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.8.0' ,                  #version string
+            '1.8.2' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            #'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
-            'http://downloads.sourceforge.net/project/numpy/NumPy/1.8.0/',
+            # don't know whether there is a difference between pypi.io and this one.. 
+            'https://files.pythonhosted.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -54,7 +60,7 @@ class InstallPrerequisites(object):
             [], 
             '1.3.0', 
             'nose-' , '.tar.gz', 
-            'http://pypi.python.org/packages/source/n/nose/', 
+            'https://files.pythonhosted.org/packages/source/n/nose/', 
             self.python_build
           ),
           (
@@ -62,22 +68,29 @@ class InstallPrerequisites(object):
             [],  
             '1.8.14',
             'hdf5-' , '.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.14/src/',
+            'https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.14/src/',
             self.hdf5_build
+          ) ,
+          (
+            'cython', 
+            [], 
+            '0.25.2', 
+            'Cython-' , '.tar.gz', 
+            'https://pypi.io/packages/source/c/cython/', self.python_build
           ) ,
           (
             'h5py', 
             ['hdf'], 
             '2.4.0', 
             'h5py-' , '.tar.gz', 
-            'https://pypi.python.org/packages/source/h/h5py/', self.h5py_build
+            'https://files.pythonhosted.org/packages/source/h/h5py/', self.h5py_build
           ) ,
           (
             'docutils', 
             [], 
-            '0.7', 
+            '0.12', 
             'docutils-','.tar.gz', 
-            'http://pypi.python.org/packages/source/d/docutils/', 
+            'https://files.pythonhosted.org/packages/source/d/docutils/', 
             self.python_build
           ) ,
           (
@@ -85,15 +98,15 @@ class InstallPrerequisites(object):
             [], 
             '3.1.4', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/3.1.4/', 
+            'https://www.mpich.org/static/tarballs/3.1.4/', 
             self.mpich2_build
           ) ,
           (
             'mpi4py', 
-            ['mpich'], 
+            ['mpich2'], 
             '1.3.1', 
             'mpi4py-', '.tar.gz', 
-            'http://mpi4py.googlecode.com/files/', 
+            'https://bitbucket.org/mpi4py/mpi4py/downloads/', 
             self.python_build
           ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
@@ -112,7 +125,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.16' ,                   #version string
             'gsl-', '.tar.gz',         #pre- and postfix for filename
-            'http://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
+            'https://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
             self.fftw_build            #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -120,7 +133,7 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '2.8.12' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
-            'http://www.cmake.org/files/v2.8/', #download url, filename is appended
+            'https://www.cmake.org/files/v2.8/', #download url, filename is appended
             self.cmake_build             #method to use for building
           ) ,
           (
@@ -128,15 +141,15 @@ class InstallPrerequisites(object):
             [],                         #names of prerequisites (unused)
             '5.1.3' ,                   #version string
             'gmp-', '.tar.bz2',        #pre- and postfix for filename
-            'ftp://ftp.gmplib.org/pub/gmp-5.1.3/', #download url, filename is appended
+            'https://gmplib.org/download/gmp-5.1.3/', #download url, filename is appended
             self.gmp_build             #method to use for building
           ) ,
           ( # NOTE: When library version is changed, url to 'allpatches' in self.mpfr_build must be changed too!
             'mpfr' ,                    #name to refer by
             ['gmp'],                    #names of prerequisites
-            '3.1.2' ,                   #version string
+            '3.1.5' ,                   #version string
             'mpfr-', '.tar.gz',         #pre- and postfix for filename
-            'http://mpfr.loria.fr/mpfr-3.1.2/', #download url, filename is appended
+            'http://mpfr.loria.fr/mpfr-3.1.5/', #download url, filename is appended
             self.mpfr_build             #method to use for building
           ) ,
         ]
@@ -203,7 +216,8 @@ class InstallPrerequisites(object):
         #    os.path.abspath('h5py_imports_python33.patch')
         #], cwd=path)
        
-        self.run_application([PYTHON,'setup.py','build','--hdf5='+self.prefix], cwd=path)
+        self.run_application([PYTHON,'setup.py','configure','--hdf5='+self.prefix], cwd=path)
+        self.run_application([PYTHON,'setup.py','build'],cwd=path)
         self.run_application([PYTHON,'setup.py','install'], cwd=path)
         
     def setuptools_install(self, path):

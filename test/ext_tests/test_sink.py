@@ -307,7 +307,7 @@ class TestNonSphericalSinkParticles(TestCase):
         particles = self.create_particle_grid()
 
         spheroid = sink.Spheroid([5., 4., 1.]|units.RSun)
-        sink_particles = Particles(1, mass=10.|units.MSun, radius=0.|units.RSun, position=[1., 1., 1.]|units.RSun)
+        sink_particles = Particles(1, mass=10.|units.MSun, radius=0.|units.RSun, position=[[1., 1., 1.]]|units.RSun)
         sinks = new_sink_particles(sink_particles, shapes=spheroid)
 
         accreted = sinks.accrete(particles)
@@ -331,7 +331,7 @@ class TestNonSphericalSinkParticles(TestCase):
         particles = self.create_particle_grid()
 
         shape = sink.Sphere(3.|units.RSun) | sink.Disc(*[5., 1.]|units.RSun)
-        sink_particles = Particles(1, mass=10.|units.MSun, radius=0.|units.RSun, position=[1., 1., 1.]|units.RSun)
+        sink_particles = Particles(1, mass=10.|units.MSun, radius=0.|units.RSun, position=[[1., 1., 1.]]|units.RSun)
         sinks = new_sink_particles(sink_particles, shapes=shape)
 
         accreted = sinks.accrete(particles)

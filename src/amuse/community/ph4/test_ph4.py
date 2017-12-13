@@ -127,7 +127,7 @@ def run_ph4(infile = None, number_of_stars = 40,
         stars.id = id+1
 
         print "setting particle masses and radii"
-	stars.mass = (1.0 / number_of_stars) | nbody_system.mass
+        stars.mass = (1.0 / number_of_stars) | nbody_system.mass
         if 0:
             scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
             stars.mass = scaled_mass
@@ -188,7 +188,7 @@ def run_ph4(infile = None, number_of_stars = 40,
     #print "5"; sys.stdout.flush()
     if softening_length == -1 | nbody_system.length:
         eps2 = 0.25*(float(number_of_stars))**(-0.666667) \
-			| nbody_system.length**2
+            | nbody_system.length**2
     else:
         eps2 = softening_length*softening_length
 
@@ -227,7 +227,7 @@ def run_ph4(infile = None, number_of_stars = 40,
 
         ls = len(stars)
 
-	# Update the bookkeeping: synchronize stars with the module data.
+    # Update the bookkeeping: synchronize stars with the module data.
 
         try:
             gravity.update_particle_set()
@@ -262,7 +262,7 @@ def run_ph4(infile = None, number_of_stars = 40,
                 print "stars:"
                 for s in stars:
                     print " ", s.id.number, s.mass.number, \
-			       s.x.number, s.y.number, s.z.number
+                    s.x.number, s.y.number, s.z.number
             else:
                 print "number of stars =", len(stars)
             sys.stdout.flush()

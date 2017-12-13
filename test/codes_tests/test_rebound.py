@@ -45,6 +45,7 @@ class ReboundInterfaceTests(TestWithMPI):
         self.assertEquals(vx, 4)
         self.assertEquals(vy, 5)
         self.assertEquals(vz, 6)
+        instance.cleanup_code()
         instance.stop()
     
     def test2(self):
@@ -91,12 +92,12 @@ class ReboundInterfaceTests(TestWithMPI):
         error = 0
         integrator = instance.get_integrator()
         self.assertEquals(error, 0)
-        self.assertEquals("whfast", integrator)
-        error = instance.set_integrator("ias15")
+        self.assertEquals("ias15", integrator)
+        error = instance.set_integrator("whfast")
         self.assertEquals(error, 0)
         integrator = instance.get_integrator()
         self.assertEquals(error, 0)
-        self.assertEquals("ias15", integrator)
+        self.assertEquals("whfast", integrator)
         instance.cleanup_code()
         instance.stop()
         
@@ -135,6 +136,7 @@ class ReboundInterfaceTests(TestWithMPI):
         index,err=instance.new_particle(0.5,  0.5, 0, 0,  0, 0.5, 0, 0.01, 1)
         self.assertEquals(-10, err)
         
+        instance.cleanup_code()
         instance.stop()
 
 
@@ -374,7 +376,7 @@ class TestRebound(TestWithMPI):
         instance.particles.add_particles(particles)
         self.assertAlmostRelativeEquals(instance.kinetic_energy, particles.kinetic_energy())
         self.assertAlmostRelativeEquals(instance.potential_energy, particles.potential_energy(G = nbody_system.G))
-        
+        instance.stop()
 
 
     def test7(self):
@@ -405,6 +407,7 @@ class TestRebound(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.potential_energy, particles.potential_energy(G = nbody_system.G))
         self.assertAlmostRelativeEquals(instance.get_kinetic_energy(subset1), particles2.kinetic_energy())
         self.assertAlmostRelativeEquals(instance.get_potential_energy(subset1), particles2.potential_energy(G = nbody_system.G))
+        #instance.stop()
         
 
 
@@ -437,6 +440,7 @@ class TestRebound(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.get_kinetic_energy(subset1), particles2.kinetic_energy(), 2)
         self.assertAlmostRelativeEquals(instance.get_potential_energy(subset1), particles2.potential_energy(G = nbody_system.G), 2)
         particles_evolved = instance.particles.copy()
+        instance.stop()
         
         instance1 = self.new_instance_of_an_optional_code(Rebound)
         instance1.parameters.epsilon_squared = 0.0 | nbody_system.length**2
@@ -449,6 +453,7 @@ class TestRebound(TestWithMPI):
         print instance1.particles
         self.assertAlmostRelativeEquals(instance1.particles.position, particles1evolved.position, 10)
         self.assertAlmostRelativeEquals(instance1.particles.velocity, particles1evolved.velocity, 10)
+        instance1.stop()
         
         instance2 = self.new_instance_of_an_optional_code(Rebound)
         instance2.parameters.epsilon_squared = 0.0 | nbody_system.length**2
@@ -462,7 +467,7 @@ class TestRebound(TestWithMPI):
         print instance2.particles
         self.assertAlmostRelativeEquals(instance2.particles.position, particles2evolved.position, 10)
         self.assertAlmostRelativeEquals(instance2.particles.velocity, particles2evolved.velocity, 10)
-        
+        instance2.stop() 
     
     def test9(self):
         instance = self.new_instance_of_an_optional_code(Rebound)
@@ -491,6 +496,7 @@ class TestRebound(TestWithMPI):
         self.assertEquals(instance.particles[5].mass, 0 | nbody_system.mass)
         instance.evolve_model(1 | nbody_system.time)
         self.assertEquals(instance.particles[4].x, 5 | nbody_system.length)
+        instance.stop()
 
     def test10(self):
         instance = self.new_instance_of_an_optional_code(Rebound)
@@ -508,5 +514,6 @@ class TestRebound(TestWithMPI):
         instance.evolve_model(4 | nbody_system.time)
         self.assertAlmostRelativeEquals(instance.particles[0].velocity, [0, 2,0] | nbody_system.speed)
         self.assertAlmostRelativeEquals(instance.particles[0].position, [0, 2 * 4, 0] | nbody_system.length, 8)
+        instance.stop()
 
 

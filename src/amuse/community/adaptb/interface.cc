@@ -357,7 +357,21 @@ int synchronize_model() {
     return 0;
 }
 int cleanup_code() {
+    numBits = 64;  
+    Lw = numBits/4;
+    begin_time = 0;
+    mpreal_globals::epsilon = "1.0e-6"; // Bulirsch-Stoer tolerance
+    mpreal_globals::dt_print = "0.1";   // Regular print intervals
+    mpreal_globals::dt_max = "0.01";    // Maximum time steps
+    mpreal_globals::dt_factor = "0.1";  // time step multiplication factor
+    mpreal_globals::t_lim = "3600";     // Maximum CPU time in seconds
+    mpreal_globals::E = "0";
+    mpreal_globals::E0 = "0";
+    mpreal_globals::dE = "0";
+
+
     mpreal t_cpu;
+
     if (odata.is_open()){
         odata.close();
         myclock->stop_timer();
@@ -385,6 +399,7 @@ int cleanup_code() {
         odata << "t_cpu     = " << t_cpu << endl;
         odata << "dE        = " << mpreal_globals::dE << endl;
     }
+    odata.close();
     delete cluster;
     cluster = 0;
     particle_id_counter = 0;

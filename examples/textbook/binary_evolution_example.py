@@ -12,6 +12,7 @@ from matplotlib import pyplot
 import numpy
 import time
 
+###BOOKLISTSTART1###
 def create_double_star(Mprim, Msec, a, e):
     primary_stars   = datamodel.Particles(mass=Mprim)
     secondary_stars = datamodel.Particles(mass=Msec)
@@ -20,13 +21,14 @@ def create_double_star(Mprim, Msec, a, e):
     primary_stars   = stars.add_particles(primary_stars)
     secondary_stars = stars.add_particles(secondary_stars)
         
-    double_star = datamodel.Particles(semi_major_axis = a, eccentricity = e)
+    double_star = datamodel.Particles(semi_major_axis=a, eccentricity=e)
     double_star.child1 = list(primary_stars)
     double_star.child2 = list(secondary_stars)
     return double_star, stars
+###BOOKLISTSTOP1###
 
+###BOOKLISTSTART2###
 def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
-    q = Msec/Mprim
     double_star, stars = create_double_star(Mprim, Msec, a, e)
     time = 0|units.Myr
     time_step = end_time/n_steps
@@ -35,8 +37,8 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     code.particles.add_particles(stars)
     code.binaries.add_particles(double_star)
     
-    channel_from_code_to_model_for_binaries = code.binaries.new_channel_to(double_star)
-    channel_from_code_to_model_for_stars = code.particles.new_channel_to(stars)
+    channel_from_code_to_model_for_binaries \
+        = code.binaries.new_channel_to(double_star)
     
     t = [] | units.Myr
     a = [] | units.RSun
@@ -44,14 +46,14 @@ def evolve_double_star(Mprim, Msec, a, e, end_time, n_steps):
     while time < end_time:
         time += time_step
         code.evolve_model(time)
-        channel_from_code_to_model_for_stars.copy()
         channel_from_code_to_model_for_binaries.copy()
         t.append(time)
         a.append(double_star[0].semi_major_axis)
         e.append(double_star[0].eccentricity)
     code.stop()
+###BOOKLISTSTOP2###
 
-    fig = pyplot.figure(figsize = (14,10))
+    fig = pyplot.figure(figsize=(8,6))
     fta = fig.add_subplot(2,1,1)
     fta.plot(t.value_in(units.Myr), a.value_in(units.AU))
     pyplot.ylabel('semi major axis (AU)')

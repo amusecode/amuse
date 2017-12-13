@@ -88,7 +88,7 @@ def read_set_from_file(
     determine the supported options for a processor call 
     :func:`get_options_for_format`
     """
-    if not os.path.exists(filename):
+    if not 'stream' in format_specific_keyword_arguments and not os.path.exists(filename):
         raise IoException("Error: file '{0}' does not exist.".format(filename))
         
     

@@ -523,7 +523,8 @@ class TestSecularMultiple(TestWithMPI):
         particles[1].include_rotation_precession_terms = False
         particles[1].minimum_eccentricity_for_tidal_precession = 1.0e-5
         particles[1].tides_apsidal_motion_constant = k_AM
-
+        particles[1].tides_gyration_radius = 0.25
+        
         code = SecularMultiple(redirection='none')
         code.particles.add_particles(particles)
 

@@ -23,6 +23,7 @@ class TestHermiteInterface(TestWithMPI):
     def test0(self):
         instance = HermiteInterface()
         self.assertTrue("Hut" in instance.all_literature_references_string())
+        instance.cleanup_code()
         instance.stop()
     
     def test1(self):
@@ -66,6 +67,7 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEquals(0, instance.get_index_of_next_particle(0)['__result'])
         self.assertEquals(-1, instance.get_index_of_next_particle(1)['__result'])
         self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
+        instance.cleanup_code()
         instance.stop()
         
     def test3(self):
@@ -74,6 +76,7 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEquals([0.101, 0], hermite.get_eps2().values())
         self.assertEquals(0, hermite.set_eps2(0.2))
         self.assertEquals([0.2, 0], hermite.get_eps2().values())
+        hermite.cleanup_code()
         hermite.stop()
 
     def test4(self):
@@ -81,6 +84,7 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEquals([0, 0], hermite.get_is_time_reversed_allowed().values())
         self.assertEquals(0, hermite.set_is_time_reversed_allowed(1))
         self.assertEquals([1, 0], hermite.get_is_time_reversed_allowed().values())
+        hermite.cleanup_code()
         hermite.stop()
 
     def test5(self):
@@ -130,6 +134,7 @@ class TestHermiteInterface(TestWithMPI):
         
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
+        instance.cleanup_code()
         instance.stop()
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 10.0]) / 2.0)
@@ -149,6 +154,7 @@ class TestHermiteInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
         total_potential, errorcode = instance.get_potential_energy()
         potentials, errorcode = instance.get_potential([id1, id2])
+        instance.cleanup_code()
         instance.stop()
         
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
@@ -180,6 +186,7 @@ class TestHermiteInterface(TestWithMPI):
             self.assertAlmostEquals(result, expected, 3)
         
         self.assertEquals(0, instance.cleanup_code())
+        instance.cleanup_code()
         instance.stop()
 
 
@@ -235,7 +242,6 @@ class TestHermite(TestWithMPI):
         self.assertAlmostRelativeEqual(-position_at_start, position_after_half_a_rotation, 3)
         
         hermite.cleanup_code()
-        
         hermite.stop()
         
 
@@ -310,6 +316,8 @@ class TestHermite(TestWithMPI):
             instance.particles.copy_values_of_all_attributes_to(stars)
             stars.savepoint()
         
+        
+        instance.cleanup_code()
         instance.stop()
     
     def test4(self):
@@ -335,6 +343,7 @@ class TestHermite(TestWithMPI):
         
         self.assertEquals(instance.get_mass(0), 17.0| units.kg) 
         self.assertEquals(instance.get_mass(1), 33.0| units.kg)  
+        
         instance.stop()
 
     def test5(self):
@@ -697,6 +706,7 @@ class TestHermite(TestWithMPI):
         self.assertEquals(len(instance.particles), 0)
         instance.particles.add_particles(particles)
         self.assertEquals(len(instance.particles), 50)
+        instance.stop()
     
         
     def test18(self):
@@ -843,5 +853,74 @@ class TestHermite(TestWithMPI):
         self.assertAlmostRelativeEquals(hermite.particles[0].x, 1.5 | nbody_system.length)
         hermite.stop()
         
+
+    def test24(self):
+        hermite = Hermite(reuse_worker = True)
+        channel1 = hermite.legacy_interface.channel
+        hermite.stop()
+        hermite = Hermite(reuse_worker = True)
+        channel2 = hermite.legacy_interface.channel
+        hermite.stop()
+        self.assertEquals(id(channel1), id(channel2))
+
+    def test25(self):
+        hermite = Hermite()
+        hermite.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        particles = datamodel.Particles(10)
+        particles.position = ([0,0,0] )| nbody_system.length
+        particles.velocity = ([1,0,0] )| nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles.mass = 0.1| nbody_system.mass
+        particles.x = numpy.linspace(1, 10, 10) | nbody_system.length 
+        particles.vx = numpy.linspace(1, 5, 10) | nbody_system.speed 
+                
+        hermite.particles.add_particles(particles)
+
+        request = hermite.particles.get_values_in_store_async(None, ["x"])
+        request.wait()
+        print request.result()
+        self.assertEquals(request.result()[0], particles.x)
+        request = hermite.particles.get_values_in_store_async(None, ["x", "vx"])
+        request.wait()
+        print request.result()
+        self.assertEquals(request.result()[0], particles.x)
+        self.assertEquals(request.result()[1], particles.vx)
+        p = particles.copy()
+        channel = hermite.particles.new_channel_to(p)
+        p.x = 0 | nbody_system.length
+        p.vx = 0 | nbody_system.speed
+        request = channel.copy_attributes_async(("x","vx",), async_get = True)
+        request.wait()
+        self.assertEquals(p.x, particles.x)
+        self.assertEquals(p.vx, particles.vx)
+        p.x = 0 | nbody_system.length
+        p.vx = 0 | nbody_system.speed
+        channel = p.new_channel_to(hermite.particles)
+        request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = False, async_set = True)
+        request.wait()
+        self.assertEquals(p.x, hermite.particles.x)
+        self.assertEquals(p.vx, hermite.particles.vx)
+        channel = p.new_channel_to(particles)
+        request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = False, async_set = True)
+        request.wait()
+        self.assertEquals(p.x, particles.x)
+        self.assertEquals(p.vx, particles.vx)
+        request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = True, async_set = False)
+        request.wait()
+        self.assertEquals(p.x, particles.x)
+        self.assertEquals(p.vx, particles.vx)
+
+        
+
+
+
+
+
+
+        
+
+
+
 
 

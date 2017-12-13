@@ -1,11 +1,8 @@
 import numpy
 from amuse.lab import *
 from amuse.couple import bridge
-from matplotlib import pyplot
 
-#from prepare_figure import *
-#from distinct_colours import get_distinct
-
+###BOOKLISTSTART1###
 class MilkyWay_galaxy(object):
     def get_gravity_at_point(self, eps, x,y,z):
         phi_0 = self.get_potential_at_point(eps, x,y,z)
@@ -16,24 +13,25 @@ class MilkyWay_galaxy(object):
         phi_dz = self.get_potential_at_point(0,x,y, z+dpos) - phi_0
         return phi_dx/dpos, phi_dy/dpos, phi_dz/dpos
 
-    def disk_and_bulge_potentials(self, x,y,z, a, b, mass):
-        r = (x**2+y**2).sqrt()
-        return constants.G * mass /\
-            (r**2 + (a + (z**2 + b**2).sqrt())**2).sqrt()
+    def disk_or_bulge_potentials(self, x, y, z, a, b, mass):
+        r2 = x**2 + y**2
+        b2 = (a + (z**2 + b**2).sqrt())**2
+        return constants.G * mass / (r2 + b2).sqrt()
 
     def halo_potential(self, x,y,z, Mc=5.0E+10|units.MSun, Rc=1.0|units.kpc**2):
-        r=(x**2+y**2+z**2).sqrt()
+        r=(x**2 + y**2 + z**2).sqrt()
         rr = (r/Rc)
         return -constants.G * (Mc/Rc)*(0.5*numpy.log(1 +rr**2) + numpy.arctan(rr)/rr)
 
     def get_potential_at_point(self, eps, x, y, z):
-        pot_disk = self.disk_and_bulge_potentials(x,y,z, 
+        pot_disk = self.disk_or_bulge_potentials(x,y,z, 
             0.0|units.kpc, 0.277|units.kpc, 1.12E+10|units.MSun) 
-        pot_bulge = self.disk_and_bulge_potentials(x,y,z, 
+        pot_bulge = self.disk_or_bulge_potentials(x,y,z, 
             3.7|units.kpc, 0.20|units.kpc, 8.07E+10|units.MSun) 
         pot_halo = self.halo_potential(x,y,z, 
             Mc=5.0E+10|units.MSun, Rc=6.0|units.kpc)
         return pot_disk + pot_bulge + pot_halo
+###BOOKLISTSTOP1###
 
 def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
 
@@ -47,11 +45,7 @@ def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
     M67 = bodies[1]
     M67.mass = 50000 | units.MSun
     M67.position = Sun.position + ((0.766, 0.0, 0.49) |units.kpc) 
-#    M67.position = Sun.position + ((0.815, 0.0, 0.49) |units.kpc) 
     M67.velocity = Sun.velocity + ((31.92, -21.66, -8.71) |units.kms)
-#    M67.position = Sun.position - ((0.815, 0.0, 0.49) |units.kpc) 
-#    M67.velocity = Sun.velocity - ((31.92, -21.66, -0.0) |units.kms)
-
 
     Sun.velocity *= -1
     M67.velocity *= -1
@@ -73,8 +67,6 @@ def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
 
-    pyplot.ion()
-
     t_end = 4.56|units.Gyr
     time = 0 | units.yr
     while time < t_end:
@@ -91,7 +83,6 @@ def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
         print "E= ", Etot, "Q= ", Ekin/Epot,
         print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
         Etot_prev = Etot
-#        movie(time, bodies)
     gravity.stop()
     
     

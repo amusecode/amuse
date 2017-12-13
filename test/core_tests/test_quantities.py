@@ -478,6 +478,13 @@ class TestAdaptingVectorQuantities(amusetest.TestCase):
         self.assertEquals(x.number, numpy.array([1,2,3,4,5,6,7,8,9,10]))
         self.assertEquals(x, [1,2,3,4,5,6,7,8,9,10]|units.kg)
 
+    def test6(self):
+        x =  6 | units.kg
+        y =  5 | units.kg
+        self.assertEquals(x/y, 1) 
+        self.assertEquals(x//y, 1) 
+        self.assertEquals(operator.__truediv__(x,y), 1.2)
+
 class TestNumpyFunctionWithUnits(amusetest.TestCase):
 
     def test1(self):

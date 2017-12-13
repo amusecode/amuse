@@ -331,7 +331,7 @@ def particle_potential(set, particle, smoothing_length_squared = zero, G = const
     dr = (dr_squared+smoothing_length_squared).sqrt()
     return - G * (particles.mass / dr).sum()
 
-def particleset_potential(particles, smoothing_length_squared = zero, G = constants.G):
+def particleset_potential(particles, smoothing_length_squared = zero, G = constants.G, gravity_code = None, block_size = 0):
     """
     Returns the potential at the position of each particle in the set.
 
@@ -347,6 +347,12 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
     >>> particles.potential()
     quantity<[-6.67428e-11, -6.67428e-11] m**2 * s**-2>
     """
+    n = len(particles)
+    if block_size == 0:
+        max = 100000 * 100 #100m floats
+        block_size = max // n
+        if block_size == 0:
+            block_size = 1 #if more than 100m particles, then do 1 by one
 
     mass = particles.mass
     x_vector = particles.x
@@ -354,21 +360,31 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
     z_vector = particles.z
 
     potentials = VectorQuantity.zeros(len(mass),mass.unit/x_vector.unit) 
-
-    for i in range(len(particles) - 1):
-        x = x_vector[i]
-        y = y_vector[i]
-        z = z_vector[i]
-        dx = x - x_vector[i+1:]
-        dy = y - y_vector[i+1:]
-        dz = z - z_vector[i+1:]
+    inf_len = numpy.inf | x_vector.unit
+    offset = 0
+    newshape =(n, 1)
+    x_vector_r = x_vector.reshape(newshape)
+    y_vector_r = y_vector.reshape(newshape)
+    z_vector_r = z_vector.reshape(newshape)
+    while offset < n:
+        if offset + block_size > n:
+            block_size = n - offset
+        x = x_vector[offset:offset+block_size] 
+        y = y_vector[offset:offset+block_size] 
+        z = z_vector[offset:offset+block_size] 
+        indices = numpy.arange(block_size)
+        dx = x_vector_r - x 
+        dy = y_vector_r - y
+        dz = z_vector_r - z
         dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
         dr = (dr_squared+smoothing_length_squared).sqrt()
+        index = (indices + offset, indices)
+        dr[index] = inf_len
+        div = mass / dr
+        potentials[offset:offset+block_size] = (mass/dr).sum(1)
+        offset += block_size
 
-        potentials[i]-= (mass[i+1:]/dr).sum()
-        potentials[i+1:]-= mass[i]/dr
-
-    return G * potentials
+    return -G * potentials
 
 
 def virial_radius(particles):
@@ -582,7 +598,7 @@ def new_particle_from_cluster_core(particles, unit_converter=None, density_weigh
 
 def bound_subset(particles, tidal_radius=None, unit_converter=None, density_weighting_power=2,
         smoothing_length_squared=zero, G=constants.G, core=None,
-        reuse_hop=False, hop=HopContainer()):
+        reuse_hop=False, hop=HopContainer(), gravity_code=None):
     """
     find the particles bound to the cluster. Returns a subset of bound particles.
 
@@ -610,7 +626,7 @@ def bound_subset(particles, tidal_radius=None, unit_converter=None, density_weig
     
     v2=velocity.lengths_squared()
     r2=position.lengths_squared()
-    pot=particles.potential(smoothing_length_squared, G)
+    pot=particles.potential(smoothing_length_squared, G, gravity_code = gravity_code)
     
     if tidal_radius is None:
       boundary_radius2=r2.max()
@@ -706,7 +722,7 @@ def find_closest_particle_to(particles,x,y,z):
     d2=(particles.x-x)**2+(particles.y-y)**2+(particles.z-z)**2
     return particles[d2.number.argmin()]
 
-def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G):
+def potential_energy_in_field(particles, field_particles, smoothing_length_squared = zero, G = constants.G, just_potential = False):
     """
     Returns the total potential energy of the particles associated with an external 
     gravitational field, which is represented by the field_particles.
@@ -738,8 +754,12 @@ def potential_energy_in_field(particles, field_particles, smoothing_length_squar
     dxdydz = transposed_positions - field_particles.position
     dr_squared = (dxdydz**2).sum(-1)
     dr = (dr_squared+smoothing_length_squared).sqrt()
-    m_m = particles.mass.reshape([n,1]) * field_particles.mass
-    return -G * (m_m / dr).sum()
+    if just_potential:
+        m_m = field_particles.mass
+        return -G * (m_m / dr).sum(1)
+    else:
+        m_m = particles.mass.reshape([n,1]) * field_particles.mass
+        return -G * (m_m / dr).sum()
     
 def distances_squared(particles, other_particles):
     """

@@ -149,6 +149,8 @@ class TableFormattedText(base.FileFormatProcessor):
             return self.convert_string_to_number
         elif kind == 'S' or kind == 'U':
             return lambda string_value: string_value
+        elif kind == 'b':
+            return lambda string_value: string_value == 'True' or string_value == 'true'
         else:
             return self.convert_string_to_long
     
@@ -193,7 +195,9 @@ class TableFormattedText(base.FileFormatProcessor):
         
     def read_header(self):
         while not self.cursor.is_at_end() and self.cursor.line().startswith(self.header_prefix_string):
-            self.read_header_line(self.cursor.line()[len(self.header_prefix_string):])
+            header_line = self.cursor.line()[len(self.header_prefix_string):]
+            if not header_line.startswith(self.header_prefix_string):
+                self.read_header_line(header_line)
             self.cursor.forward()
     
 
@@ -387,8 +391,6 @@ class TableFormattedText(base.FileFormatProcessor):
             result.append('AMUSE CSV: 1.0')
             result.append('KEY IN COLUMN: '+str(self.key_in_column))
             result.append('HEADERS:')
-            print self.attribute_names
-            print self.attribute_types
             for i, (x, unit) in enumerate(zip(self.attribute_names, self.attribute_types)):
                 column = i
                 if self.key_in_column >= 0:
@@ -446,7 +448,10 @@ class TableFormattedText(base.FileFormatProcessor):
         if self.set is None:
             return []
         else:
-            return map(lambda x:getattr(self.set, x),self.attribute_names)
+            if len(self.set) == 0:
+                return map(lambda x:[],self.attribute_names)
+            else:
+                return map(lambda x:getattr(self.set, x),self.attribute_names)
 
 
     @late
@@ -510,6 +515,12 @@ class TableFormattedText(base.FileFormatProcessor):
         return False
 
 
+    @base.format_option
+    def comments(self):
+        """
+        Comments to add to the header
+        """
+        return []
 
 
 
@@ -576,7 +587,12 @@ class CsvFileText(TableFormattedText):
         if unit_string == '-':
             return None
         else:
-            return eval(unit_string, core.__dict__)
+            try:
+                return eval(unit_string, core.__dict__)
+            except:
+                if hasattr(units, unit_string):
+                    return getattr(units, unit_string)
+                return eval(unit_string, units.__dict__)
 
     def convert_csv_string_to_unit(self, csv_string):
         return [self.convert_string_to_unit(sub) for sub in csv_string.split(self.column_separator)]
@@ -594,6 +610,8 @@ class CsvFileText(TableFormattedText):
         if self.attribute_types is None:
             self.attribute_types = self._get_attribute_types()
         result = []
+        if len(self.comments) > 0:
+            result.extend(map(lambda x : self.header_prefix_string + x, self.comments))
         result.append(self.column_separator.join(self.attribute_names))
         if self.must_store_units_in_header:
             result.append(self.column_separator.join(['-' if one_unit is None else one_unit.to_simple_form().reference_string() for one_unit in self.attribute_types]))

@@ -1,65 +1,70 @@
-"""
-   Initialize two stars to a ertain age and merge them using MMAMS
-"""
 import sys
 import numpy
-from amuse.lab import *
-from amuse.plot import plot, xlabel, ylabel
 from matplotlib import pyplot 
-
-from orbital_elements_to_Cartesian import Orbital_elements_to_pos_vel
+from amuse.lab import *
+from amuse.plot import plot
 from amuse.ext.sph_to_star import convert_SPH_to_stellar_model
 
-def convert_star_to_hydro_model(M, t_end):
+###BOOKLISTSTART1###
+def return_evolved_star_hydro(mass, time, Nsph):
+    star =  Particle(mass=mass)
+    stellar = EVtwin()
+    star = stellar.particles.add_particle(star)
+    stellar.evolve_model(time)
+    Nsph = Nsph * int(mass.value_in(units.MSun))
+    star_in_sph = convert_stellar_model_to_SPH(star, Nsph).gas_particles
+    stellar.stop()
+    return star_in_sph
+###BOOKLISTSTOP1###
 
-    return sph_particles
-
-def plot_density_profile(radius, rho):
-    plot(radius.in_(units.RSun), rho)
-    pyplot.xlabel("$R$ [$R_\odot$]")
-    pyplot.ylabel("density [$g/cm^3$]")
-#    pyplot.semilogy()
-#    pyplot.show()
-    
-def merge_two_stars_sph(Mprim, Msec, t_coll):
-
-    star =  Particle(mass=Mprim)
-    stellar_evolution = EVtwin()
-    EVTwin_star = stellar_evolution.particles.add_particle(star)
-    stellar_evolution.evolve_model(t_coll)
-    EVTwin_radius = EVTwin_star.get_radius_profile()
-    EVTwin_rho    = EVTwin_star.get_density_profile()
-    
-    N_sph = 100*Mprim.value_in(units.MSun)
-    primary_star = convert_stellar_model_to_SPH(EVTwin_star, N_sph).gas_particles
-    stellar_evolution.stop()
-
+###BOOKLISTSTART2###
+def merge_two_stars_sph(Mprim, Msec, t_coll, Nsph):
+    primary_in_sph = return_evolved_star_hydro(Mprim, t_coll, Nsph)
+    primary_in_sph = relax_sph_realization(primary_in_sph)
+    secondary_in_sph = return_evolved_star_hydro(Msec, t_coll, Nsph)
+    secondary_in_sph = relax_sph_realization(secondary_in_sph)
+    R = primary_in_sph.x.max() + secondary_in_sph.x.max()
+    M = primary_in_sph.mass.sum() + secondary_in_sph.mass.sum()
+    secondary_in_sph.x += 0.8*R
+    secondary_in_sph.y += 0.6*R
+    secondary_in_sph.vx -= (constants.G*M/R).sqrt()
+        
     converter=nbody_system.nbody_to_si(Mprim, 1.0|units.AU)
     hydro = Gadget2(converter)
-    hydro.gas_particles.add_particles(primary_star)
-    channel =  hydro.gas_particles.new_channel_to(primary_star)
-    hydro.evolve_model(1.0|units.s)
-
-    channel.copy()
+    hydro.gas_particles.add_particles(primary_in_sph)
+    hydro.gas_particles.add_particles(secondary_in_sph)
+    hydro.evolve_model(2.0|units.hour)
+    hydro.gas_particles.new_channel_to(primary_in_sph).copy()
+    hydro.gas_particles.new_channel_to(secondary_in_sph).copy()
     hydro.stop()
+    return primary_in_sph, secondary_in_sph
+###BOOKLISTSTOP2###
 
-    pyplot.scatter(primary_star.x.value_in(units.AU), primary_star.y.value_in(units.AU))
-    pyplot.show()
+###BOOKLISTSTART3###
+def relax_sph_realization(sph_star):
 
-    new_stellar_model = convert_SPH_to_stellar_model(primary_star)
-    stellar_evolution = MESA(redirection="none")
-    stellar_evolution.commit_parameters()
-    
-    stellar_evolution.new_particle_from_model(new_stellar_model, t_coll)
-    MESA_star = stellar_evolution.particles[0]
-    print "star=", MESA_star
-    MESA_radius = MESA_star.get_radius_profile()
-    MESA_rho    = MESA_star.get_density_profile()
-    stellar_evolution.stop()
-    plot_density_profile(MESA_radius, MESA_rho)
-    plot_density_profile(EVTwin_radius, EVTwin_rho)
-    pyplot.semilogy()
-    pyplot.show()
+    dynamical_timescale = sph_star.dynamical_timescale()
+    converter = nbody_system.nbody_to_si(dynamical_timescale, 1|units.RSun)
+    hydro = Gadget2(converter, number_of_workers=2)
+    hydro.gas_particles.add_particles(sph_star)
+
+    to_hydro = sph_star.new_channel_to(hydro.gas_particles)
+    to_framework = hydro.gas_particles.new_channel_to(sph_star)
+
+    ts_factor = 2.5
+    t_end = ts_factor * sph_star.dynamical_timescale(mass_fraction=0.9)
+    n_steps = ts_factor * 100
+    velocity_damp_factor = 1.0 - (ts_factor*2*numpy.pi)/n_steps
+    dt = t_end/float(n_steps)
+    time = 0|units.day
+    while time < t_end:
+        time += dt
+        hydro.evolve_model(time)
+        hydro.gas_particles.velocity = velocity_damp_factor * hydro.gas_particles.velocity
+    to_framework.copy()
+    hydro.stop()
+    return sph_star
+###BOOKLISTSTOP3###
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser
@@ -70,6 +75,9 @@ def new_option_parser():
     result.add_option("-m", unit=units.MSun,
                       dest="Msec", type="float",default = 1|units.MSun,
                       help="Mass of the secondary star [%default] MSun")
+    result.add_option("-N", 
+                      dest="Nsph", type="int",default = 100,
+                      help="Number of sph particles per MSun [%default]")
     result.add_option("-t", unit=units.Myr, 
                       dest="t_coll", type="float", default = 0.01|units.Myr,
                       help="end time of the simulation [%default] Myr")
@@ -77,4 +85,7 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
-    merge_two_stars_sph(**o.__dict__)
+    p, s = merge_two_stars_sph(**o.__dict__)
+    pyplot.scatter(p.x.value_in(units.RSun), p.y.value_in(units.RSun), c='b')
+    pyplot.scatter(s.x.value_in(units.RSun), s.y.value_in(units.RSun), c='r')
+    pyplot.show()

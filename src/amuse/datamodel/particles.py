@@ -262,7 +262,7 @@ class AbstractParticleSet(AbstractSet):
 
         format_float = '{0: >11.3e}'.format
         format_str20 = '{0: >20}'.format
-        format_str11 = '{0: >11}'.format
+        format_str11 = '{0!s: >11}'.format
 
         columns = map(lambda x : [format_str11(x)], attributes)
         columns.insert(0,[format_str20('key')])
@@ -1351,12 +1351,18 @@ class Particles(AbstractParticleSet):
         tmp = [defined_values[attribute] if attribute in defined_values else subset._get_derived_attribute_value(attribute) for attribute in attributes]
         return tmp
 
+    def get_values_in_store_async(self, indices, attributes):
+        return self._private.attribute_storage.get_values_in_store_async(indices, attributes)
+
 
     def get_indices_of_keys(self, keys):
         return self._private.attribute_storage.get_indices_of(keys)
 
     def set_values_in_store(self, indices, attributes, values):
         self._private.attribute_storage.set_values_in_store(indices, attributes, values)
+
+    def set_values_in_store_async(self, indices, attributes, values):
+        return self._private.attribute_storage.set_values_in_store_async(indices, attributes, values)
 
     def get_attribute_names_defined_in_store(self):
         return self._private.attribute_storage.get_defined_attribute_names()
@@ -1980,11 +1986,23 @@ class ParticlesSubset(AbstractParticleSet):
 
         return self._private.particles.get_values_in_store(indices, attributes)
 
+    def get_values_in_store_async(self, indices, attributes):
+        if indices is None or indices is Ellipsis:
+            indices = self.get_all_indices_in_store()
+
+        return self._private.particles.get_values_in_store_async(indices, attributes)
+
     def set_values_in_store(self, indices, attributes, values):
         if indices is None or indices is Ellipsis:
             indices = self.get_all_indices_in_store()
 
         self._private.particles.set_values_in_store(indices, attributes, values)
+
+    def set_values_in_store_async(self, indices, attributes, values):
+        if indices is None or indices is Ellipsis:
+            indices = self.get_all_indices_in_store()
+
+        return self._private.particles.set_values_in_store_async(indices, attributes, values)
 
     def get_attribute_names_defined_in_store(self):
         return self._private.particles.get_attribute_names_defined_in_store()
@@ -3115,6 +3133,12 @@ class ParticleInformationChannel(object):
             target_names = attributes
 
         self._reindex()
+
+        if len(self.to_indices) == 0:
+            return
+
+        if len(self.from_indices) == 0:
+            return
         
         if len(self.keys) == 0:
             return
@@ -3127,8 +3151,51 @@ class ParticleInformationChannel(object):
                 converted.append(x.copy_with_link_transfer(self.from_particles, self.to_particles))
             else:
                 converted.append(x)
-        if len(self.to_indices) > 0:
-            self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
+        self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
+
+    def copy_attributes_async(self, attributes, target_names = None, async_get = True, async_set = False):
+
+        if target_names is None:
+            target_names = attributes
+
+        self._reindex()
+
+        if len(self.to_indices) == 0:
+            return
+
+        if len(self.from_indices) == 0:
+            return
+        
+        if len(self.keys) == 0:
+            return
+       
+        if async_get:
+            request = self.from_particles.get_values_in_store_async(self.from_indices, attributes)
+            def result_handler(inner):
+                values = inner()
+                converted = []
+                for x in values:
+                    if isinstance(x, LinkedArray):
+                        converted.append(x.copy_with_link_transfer(self.from_particles, self.to_particles))
+                    else:
+                        converted.append(x)
+                self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
+                return converted
+            request.add_result_handler(result_handler)
+            return request
+        elif async_set:
+            values = self.from_particles.get_values_in_store(self.from_indices, attributes)
+            
+            converted = []
+            for x in values:
+                if isinstance(x, LinkedArray):
+                    converted.append(x.copy_with_link_transfer(self.from_particles, self.to_particles))
+                else:
+                    converted.append(x)
+            request = self.to_particles.set_values_in_store_async(self.to_indices, target_names, converted)
+            return request
+
+
 
 
 
@@ -3444,6 +3511,17 @@ class Particle(object):
         for attribute_name in keyword_arguments:
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)
+
+    def __getstate__(self):
+        return (self.key, self.as_set().copy())
+
+    def __setstate__(self, key_and_set):
+        key, particles_set = key_and_set
+        object.__setattr__(self, "key", key)
+        object.__setattr__(self, "particles_set", particles_set)
+        object.__setattr__(self, "_set_index", None)
+        object.__setattr__(self, "_set_version", None)
+
 
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
         if self._set_index is None or self._set_version != self.particles_set._get_version():

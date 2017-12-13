@@ -562,13 +562,13 @@ module BarAndSpiralsInterface
       !LEPINE MODEL
       
       integer function set_spiral_model(value)
-        double precision :: value
+        integer :: value
         spiral_model = value
         set_spiral_model = 0
       end function set_spiral_model
       
       integer function get_spiral_model(value)
-        double precision :: value
+        integer :: value
         value = spiral_model
         get_spiral_model = 0
       end function get_spiral_model

@@ -62,7 +62,8 @@
 //			  real dt_check = _INFINITY_,
 //			  real break_r2 = _INFINITY_,
 //			  real dt_log = _INFINITY_,
-//			  int  verbose = 0);
+//			  int  verbose = 0,
+//			  string outfile = "");
 
 #include "hdyn.h"
 
@@ -529,17 +530,33 @@ void hdyn::correct_pos_and_vel(const real new_dt)
 
 
 
+void print_positions(hdyn *b, real t, string outfile)
+{
+  if (!outfile.empty()) {
+    static ofstream f;
+    if (!f.is_open())
+      f.open(outfile.c_str(), ios::out | ios::trunc); 
+    f << t;
+    for_all_daughters(hdyn, b, bi)
+      f << " " << bi->get_index() << " " << bi->get_mass()
+	<< " " << bi->get_pos();
+    f << endl;
+  }
+}
+
 // Take the next step.  Return the actual system time at the end of
 // the step, after symmetrization if specified.  Starting time step is
 // dt.
 
 static real take_a_step(hdyn *b,	// root node
-			real &dt)	// natural step at start/end
+			real &dt,	// natural step at start/end
+			string outfile = "")
 {
     real t = b->get_system_time();
     
     int is_collision_detection_enabled = 0;
-    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
+    is_stopping_condition_enabled(COLLISION_DETECTION,
+				  &is_collision_detection_enabled);
 
     // Impose an absolute limit on the step if unperturbed motion is
     // underway.
@@ -622,8 +639,6 @@ static real take_a_step(hdyn *b,	// root node
 		n_iter = 0;
 	    }
 	}
-	
-	
     
 	// Extrapolate acc and jerk to the end of the new step, and
 	// apply the corrector for this iteration.
@@ -633,14 +648,15 @@ static real take_a_step(hdyn *b,	// root node
 		bi->correct_acc_and_jerk(new_dt, prev_new_dt);
 	    bi->correct_pos_and_vel(new_dt);	// sets pred_xxx
 	    if (bi->is_parent()) {
-            if(is_collision_detection_enabled) {
+	      if (is_collision_detection_enabled) {
                 check_collision_between_components_before_time(bi, t+dt);
-            }
-            advance_components_to_time(bi, t+new_dt);
-        }
+	      }
+	      advance_components_to_time(bi, t+new_dt);
+	    }
 	}
 	
-	if(is_collision_detection_enabled && (set_conditions & enabled_conditions)) {
+	if (is_collision_detection_enabled
+	    && (set_conditions & enabled_conditions)) {
           break;
         }
      }
@@ -653,6 +669,8 @@ static real take_a_step(hdyn *b,	// root node
 	if (bi->is_parent()) update_components_from_pred(bi);
     }
 
+    if (!outfile.empty()) print_positions(b, t+new_dt, outfile);
+    
     dt = end_point_dt;
     return t + new_dt;
 }
@@ -886,7 +904,8 @@ int smallN_evolve(hdyn *b,
 		  real break_r2,	// default = _INFINITY_
 		  real dt_check,	// default = _INFINITY_
 		  real dt_log,		// default = _INFINITY_
-		  int verbose)		// default = 0
+		  int verbose,		// default = 0
+		  string outfile)	// default = ""
 {
     int is_interaction_over_detection_enabled = 0;
     is_stopping_condition_enabled(INTERACTION_OVER_DETECTION,
@@ -978,7 +997,7 @@ int smallN_evolve(hdyn *b,
 	// the end of the step.  The return value of the function is
 	// the new system time.
 
-	b->set_system_time(take_a_step(b, dt));
+        b->set_system_time(take_a_step(b, dt, outfile));
 	n_steps++;
 
 	// The time step dt was set by bi_min and bj_min during the
@@ -1268,7 +1287,8 @@ int main(int argc, char *argv[])
     b->set_eta(eta);
     b->set_gamma(gamma);
     b->set_allow_full_unperturbed(allow_full);
-    int ret = smallN_evolve(b, t_end, break_r2, dt_check, dt_log, verbose);
+    int ret = smallN_evolve(b, t_end, break_r2, dt_check, dt_log,
+			    verbose, string(""));
     cout << "end at time " << b->get_system_time()
 	 << "; return status = " << ret << endl;
 

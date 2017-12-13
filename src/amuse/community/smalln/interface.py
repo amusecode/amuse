@@ -199,6 +199,28 @@ class SmallNInterface(CodeInterface,
         return function
 
     @legacy_function
+    def set_outfile():
+        """
+        Set debug output file name.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('outfile', dtype='string',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_outfile():
+        """
+        Get debug output file name.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('outfile', dtype='string',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def set_structure_check_interval():
         """
         Set the time scale at which smallN should check structure.
@@ -213,7 +235,8 @@ class SmallNInterface(CodeInterface,
     def is_over():
         """
         Return 1 if the run is over, according to analyze().
-        Return 2 if the size of the system exceeds rlimit.
+        Return 2 for a quasi-stable system.
+        Return 3 if the size of the system exceeds rlimit.
         Return 0 otherwise.
         """
         function = LegacyFunctionSpecification()
@@ -234,6 +257,9 @@ class SmallNInterface(CodeInterface,
         structure created in evolve
         """
         function = LegacyFunctionSpecification()
+        function.addParameter('over', dtype='int32',
+                              direction=function.IN,
+        		      default = 0)
         function.result_type = 'int32'
         return function
 
@@ -328,6 +354,14 @@ class SmallN(GravitationalDynamics):
             "allow_full_unperturbed",      # python parameter name
             "full unperturbed motion",     # description
             default_value = 1
+        )
+        
+        object.add_method_parameter(
+            "get_outfile", 		   # getter name in interface.cc
+            "set_outfile", 		   # setter name in interface.cc
+            "outfile",      		   # python parameter name
+            "debug output file",           # description
+            default_value = ""
         )
         
         object.add_method_parameter(

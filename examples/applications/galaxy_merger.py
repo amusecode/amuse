@@ -8,12 +8,15 @@ import os
 import os.path
 import numpy
 
-from amuse.units import nbody_system, units, generic_unit_converter, constants
+from amuse.units import nbody_system, units, constants
 from amuse.datamodel import Particles
 from amuse.io import read_set_from_file, write_set_to_file
 from amuse.plot import plot, native_plot, pynbody_column_density_plot, HAS_PYNBODY
 from amuse.community.gadget2.interface import Gadget2
 from amuse.ext.galactics_model import new_galactics_model
+
+NHALO=10000
+NDISK=5000
 
 def make_plots(all_particles, disk_only, i=0):
     for j, particles in enumerate([all_particles, disk_only]):
@@ -35,14 +38,13 @@ def make_plots(all_particles, disk_only, i=0):
         native_plot.close()
 
 def make_galaxies():
-    # File 'disk_galactICs.amuse' contains 30k particles, (10k disk, no bulge, 20k halo)
     if os.path.exists('disk_galactICs.amuse'):
         galaxy1 = read_set_from_file('disk_galactICs.amuse', 'amuse')
     else:
-        halo_number_of_particles = 20000
-        converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(constants.G, 1.0e12 | units.MSun, 50.0 | units.kpc)
-        galaxy1 = new_galactics_model(halo_number_of_particles, disk_number_of_particles=10000, 
-            generate_bulge_flag=False, do_scale=True, unit_system_converter=converter)
+        halo_number_of_particles = NHALO
+        converter = nbody_system.nbody_to_si(1.0e9|units.MSun, 1.|units.kpc)
+        galaxy1 = new_galactics_model(halo_number_of_particles, disk_number_of_particles=NDISK, 
+            generate_bulge_flag=False, unit_system_converter=converter, disk_random_seed=12345)
         write_set_to_file(galaxy1, 'disk_galactICs.amuse', 'amuse')
     
     galaxy2 = Particles(len(galaxy1))
@@ -58,19 +60,27 @@ def make_galaxies():
     galaxy2.velocity -= [0.0, 50.0, 0] | units.km/units.s
     return galaxy1, galaxy2
 
-def simulate_merger(galaxy1, galaxy2):
-    converter = nbody_system.nbody_to_si(1.0e12|units.MSun, 100|units.kpc)
+def simulate_merger(galaxy1, galaxy2, dt= 25. | units.Myr, tend=3. | units.Gyr):
+    converter = nbody_system.nbody_to_si(1.0e9|units.MSun, 1.|units.kpc)
     dynamics = Gadget2(converter, number_of_workers=2)
-    dynamics.parameters.epsilon_squared = 0.0000001 | nbody_system.length**2
+    dynamics.parameters.epsilon_squared = (1. | units.kpc)**2
+
+    dynamics.parameters.max_size_timestep=dt # max internal timestep for Gadget
+    dynamics.parameters.time_max= 2**9*dt # max possible evolve time for Gadget, 2**k *dt should be > tend
+
     set1 = dynamics.particles.add_particles(galaxy1)
     set2 = dynamics.particles.add_particles(galaxy2)
-    
-    galaxies_without_halo = set1[:10000] + set2[:10000]
+        
+    galaxies_without_halo = set1[:NDISK] + set2[:NDISK]
     make_plots(dynamics.particles, galaxies_without_halo)
     
-    for i in range(1, 101):
-        dynamics.evolve_model(i * (25 | units.Myr))
-        print dynamics.model_time.as_quantity_in(units.Myr)
+    print "starting simulation.."
+        
+    i=0
+    while dynamics.model_time < tend:
+        i=i+1
+        dynamics.evolve_model(i * dt)
+        print "evolved to:", dynamics.model_time.as_quantity_in(units.Myr), "/", tend
         make_plots(dynamics.particles, galaxies_without_halo, i)
     
     dynamics.stop()

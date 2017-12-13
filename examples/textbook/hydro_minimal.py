@@ -1,3 +1,4 @@
+###BOOKLISTSTART1###
 from amuse.lab import *
 
 def main(N, Mtot, Rvir, t_end):
@@ -22,6 +23,7 @@ def main(N, Mtot, Rvir, t_end):
     print "E= ", Etot, "Q= ", Q, "dE=", dE, "CoM=", com.in_(units.RSun)
 
     hydro.stop()
+###BOOKLISTSTOP1###
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser

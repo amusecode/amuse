@@ -99,14 +99,14 @@ def new_option_parser():
                       dest="mass", type="float", 
                       default = 0.6 | units.MSun,
                       help="stellar mass [%default]")
+    result.add_option("-o", unit=units.day**-1,
+                      dest="omega", type="float", 
+                      default = 24 | units.day**-1,
+                      help="stellar rotation [%default]")
     result.add_option("-t", unit=units.Myr,
                       dest="age", type="float", 
                       default = 10 | units.Myr,
                       help="stellar age [%default]")
-    result.add_option("-o", unit=units.day**-1,
-                      dest="omega", type="float", 
-                      default = (24.47 | units.day)**-1,
-                      help="stellar rotation [%default]")
     return result
 
 if __name__ == "__main__":
@@ -120,4 +120,3 @@ if __name__ == "__main__":
     print filename
 
     write_set_to_file(star, filename, format='hdf5', append_to_file=False)
-#    write_set_to_file(core, filename, format='hdf5', append_to_file=True)

@@ -197,11 +197,11 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(grid[...,2,1].x, grid.x[...,2,1])
         self.assertEquals(grid[1,...,1].x, grid.x[1,...,1])
         self.assertEquals(grid[1,2,...].x, grid.x[1,2,...])
-        self.assertEquals(grid[...,...,1].x, grid.x[...,...,1])
-        self.assertEquals(grid[2,...,...].x, grid.x[2,...,...])
-        self.assertEquals(grid[...,3,...].x, grid.x[...,3,...])
-        self.assertEquals(grid[...,3,...].y, grid.y[...,3,...])
-        self.assertEquals(grid[...,3,...].z, grid.z[...,3,...])
+        self.assertEquals(grid[...,1].x, grid.x[...,1])
+        self.assertEquals(grid[2,...].x, grid.x[2,...])
+        self.assertEquals(grid[:,3,:].x, grid.x[:,3,:])
+        self.assertEquals(grid[:,3,:].y, grid.y[:,3,:])
+        self.assertEquals(grid[:,3,:].z, grid.z[:,3,:])
     
     def test15(self):
         
@@ -240,20 +240,20 @@ class TestGrids(amusetest.TestCase):
     def test18(self):
         grid = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
         self.assertEquals(grid.shape, (5,4,2) )
-        self.assertEquals(grid[1:2,...,...].x.shape, (1,4,2) )
-        self.assertEquals(grid[1:2,...,...].shape, (1,4,2) )
-        self.assertEquals(grid[1:2,...,...].x, grid.x[1:2,...,...])
-        self.assertEquals(grid[1:3,...,...].x.shape, (2,4,2) )
-        self.assertEquals(grid[1:3,...,...].shape, (2,4,2) )
-        self.assertEquals(grid[1:3,...,...].x, grid.x[1:3,...,...])
+        self.assertEquals(grid[1:2,...].x.shape, (1,4,2 ))
+        self.assertEquals(grid[1:2,...].shape, (1,4,2) )
+        self.assertEquals(grid[1:2,...].x, grid.x[1:2,...])
+        self.assertEquals(grid[1:3,...].x.shape, (2,4,2) )
+        self.assertEquals(grid[1:3,...].shape, (2,4,2) )
+        self.assertEquals(grid[1:3,...].x, grid.x[1:3,...])
 
     def test19(self):
         grid = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
-        self.assertEquals(grid[1:3,...,...].x, grid.x[1:3,...,...])
+        self.assertEquals(grid[1:3,...].x, grid.x[1:3,...])
         self.assertEquals(grid[1:3,2:3,...].x, grid.x[1:3,2:3,...])
         self.assertEquals(grid[1:3,2:3,0:1].x, grid.x[1:3,2:3,0:1])
         self.assertEquals(grid[1:3,...,0:1].x, grid.x[1:3,...,0:1])
-        self.assertEquals(grid[...,...,0:1].x, grid.x[...,...,0:1])
+        self.assertEquals(grid[...,0:1].x, grid.x[...,0:1])
         self.assertEquals(grid[...,2:3,0:1].x, grid.x[...,2:3,0:1])
         
     def test20(self):
@@ -298,8 +298,8 @@ class TestGrids(amusetest.TestCase):
         grid1 = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
         grid2 = datamodel.new_regular_grid((5,4,2), [1.0, 1.0, 1.0] | units.m)
         self.assertEqual(grid1[1:3,...].shape,(2,4,2))
-        slice1 = grid1[1:3,...,...].copy()
-        slice2 = grid2[1:3,...,...]
+        slice1 = grid1[1:3,...].copy()
+        slice2 = grid2[1:3,...]
         slice1.x = -10 | units.m
         channel = slice1.new_channel_to(slice2)
         channel.copy()

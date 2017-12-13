@@ -53,7 +53,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
             processor = store_v1.StoreHDF(
                 self.filename, 
                 open_for_writing = self.allow_writing, 
-                append_to_file = self.allow_writing,
+                append_to_file = self.append_to_file,
                 copy_history = self.copy_history
             )
             if not processor.is_correct_version():
@@ -62,7 +62,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                 processor = store_v2.StoreHDF(
                     self.filename, 
                     open_for_writing = self.allow_writing, 
-                    append_to_file = self.allow_writing, 
+                    append_to_file = self.append_to_file, 
                     copy_history = self.copy_history,
                     return_working_copy = self.return_working_copy
                 )
@@ -70,7 +70,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
                 processor = store_v2.StoreHDF(
                     self.filename, 
                     open_for_writing = self.allow_writing, 
-                    append_to_file = self.allow_writing,
+                    append_to_file = self.append_to_file,
                     copy_history = self.copy_history,
                     return_working_copy = self.return_working_copy
                 )

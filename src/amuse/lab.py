@@ -52,6 +52,8 @@ from amuse.community.mercury.interface import Mercury, MercuryInterface
 from amuse.community.mi6.interface import MI6, MI6Interface
 from amuse.community.mikkola.interface import Mikkola, MikkolaInterface
 from amuse.community.smalln.interface import SmallN, SmallNInterface
+from amuse.community.rebound.interface import Rebound, ReboundInterface
+from amuse.community.brutus.interface import Brutus, BrutusInterface
 
 
 from amuse.community.fi.interface import Fi, FiInterface
@@ -84,6 +86,8 @@ from amuse.datamodel import Grid
 from amuse.ic.plummer import new_plummer_model, new_plummer_sphere
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
+from amuse.ic.salpeter import new_powerlaw_mass_distribution
+from amuse.ic.salpeter import new_powerlaw_mass_distribution_nbody
 from amuse.ic.brokenimf import new_broken_power_law_mass_distribution, new_scalo_mass_distribution
 from amuse.ic.brokenimf import new_miller_scalo_mass_distribution, new_kroupa_mass_distribution
 from amuse.ic.flatimf import new_flat_mass_distribution, new_flat_mass_distribution_nbody

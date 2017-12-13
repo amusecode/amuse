@@ -2,12 +2,11 @@ from matplotlib import pyplot
 #import seaborn 
 
 # These are the "Tableau 20" colors as RGB.    
-tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),    
-             (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),    
-             (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),    
-             (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),    
-             (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)]   
-
+tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
+             (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150), 
+             (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),
+             (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),
+             (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)]
 
 # colors
 almost_black = '#262626'
@@ -57,26 +56,21 @@ xarr = [[12],
 # get specified nr of distinct colours in HTML hex format.
 # in: nr - number of colours [1..12]
 # returns: list of distinct colours in HTML hex
+
 def get_distinct(nr):
 
-    #
     # check if nr is in correct range
-    #
     
     if nr < 1 or nr > 12:
         print "wrong nr of distinct colours!"
         return
 
-    #
     # get list of indices
-    #
     
     lst = xarr[nr-1]
     
-    #
-    # generate colour list by stepping through indices and looking them up
-    # in the colour table
-    #
+    # generate colour list by stepping through indices and looking them
+    # up in the colour table
 
     i_col = 0
     col = [0] * nr
@@ -85,11 +79,8 @@ def get_distinct(nr):
         i_col+=1
     return col
 
-# gets 4 colours, which also look distinct in black&white
-# returns: list of 4 colours in 
-#def get_distinct_grey():
-    
-# displays usage information and produces example plot.
+# display usage information and produce example plot.
+
 if __name__ == '__main__':
     import numpy as np
     import matplotlib.mlab as mlab
@@ -116,7 +107,6 @@ if __name__ == '__main__':
     plt.ylabel('voltage (mV)')
     plt.title('Distinct colours example')
     plt.grid(True)
-#    plt.show()
     plt.savefig("distinct_colours_example.pdf")
 
 def figure_frame(x_label, y_label, xsize=12, ysize=10):
@@ -129,11 +119,18 @@ def figure_frame(x_label, y_label, xsize=12, ysize=10):
     pyplot.ylabel(y_label)
     return figure, ax
 
+from cycler import cycler
 def single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=10,
                  ymin=-1, ymax=-1):
-#    pyplot.rc('text', usetex=True)
-    pyplot.rcParams.update({'font.size': 30})
-    pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue, pink, crimson, violet, brown, steal, rose, yellow, cyan ]
+
+    pyplot.rcParams.update({'font.size': 20})
+    #pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
+    #                                       pink, crimson, violet, brown,
+    #                                       steal, rose, yellow, cyan ]
+    pyplot.rcParams['axes.prop_cycle'] \
+        = (cycler('color', [blue, green, red, sand, light_blue,
+                            pink, crimson, violet, brown,
+                            steal, rose, yellow, cyan ]))
     figure = pyplot.figure(figsize=(xsize, ysize))
 
     ax = pyplot.gca()
@@ -160,7 +157,8 @@ def single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=10,
 
 def quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
 
-    f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col', sharey='row', figsize=(8,8))
+    f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col',
+                                                  sharey='row', figsize=(8,8))
     set_tickmarks(ax1)
     ax1.locator_params(nbins=3)
     set_tickmarks(ax2)
@@ -182,9 +180,17 @@ def quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
     return f, ax1, ax2, ax3, ax4
 
 def _quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
-    pyplot.rcParams.update({'font.size': 30})
-    pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue, pink, crimson, violet, brown, steal, rose, yellow, cyan ]
-    f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col', sharey='row', figsize=(12,12))
+
+    pyplot.rcParams.update({'font.size': 25})
+    #pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
+    #                                       pink, crimson, violet, brown,
+    #                                       steal, rose, yellow, cyan ]
+    pyplot.rcParams['axes.prop_cycle'] \
+        = (cycler('color', [blue, green, red, sand, light_blue,
+                            pink, crimson, violet, brown,
+                            steal, rose, yellow, cyan ]))
+    f, ((ax1, ax2), (ax3, ax4)) = pyplot.subplots(2, 2, sharex='col',
+                                                  sharey='row', figsize=(12,12))
     set_tickmarks(ax1)
     set_tickmarks(ax2)
     set_tickmarks(ax3)
@@ -203,17 +209,11 @@ def _quad_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=12):
     return f, ax1, ax2, ax3, ax4
 
 def set_tickmarks(ax):
-    ax.minorticks_on() # switch on the minor ticks
+    ax.minorticks_on()
     return
     ax.tick_params('both', length=15, width=2, which='major')
     ax.tick_params('both', length=6, width=1, which='minor')
     ax.locator_params(nbins=3)
     ax.tick_params(axis='x', which='major', pad=20)
     ax.tick_params(axis='y', which='major', pad=20)
-    ax.margins(0.1, tight=True) 
-
-#seaborn.palplot(seaborn.cubehelix_palette(8))
-#current_palette = seaborn.color_palette()
-#seaborn.palplot(current_palette)
-#print current_palette
-
+    ax.margins(0.25, tight=True) 

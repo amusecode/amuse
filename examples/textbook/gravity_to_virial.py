@@ -9,7 +9,7 @@ from distinct_colours import get_distinct
 def virial_ratio_evolution(code, bodies, Q_init, t_end):
     dt = 0.06125 | t_end.unit
     bodies.scale_to_standard(virial_ratio=Q_init)
-    bodies.radius = 0 |  nbody_system.length
+    bodies.radius = 0 | nbody_system.length
     gravity = code()
     gravity.particles.add_particles(bodies)
 
@@ -41,19 +41,22 @@ def main(N, t_end):
     cols = get_distinct(3)
     ci = 0
     x_label = "time [N-body units]"
-#    y_label = "$Q [\equiv -E_{\rm kin}/E_{\rm pot}]$"
     y_label = "virial ratio $Q$"
     figure = single_frame(x_label, y_label, xsize=14, ysize=10)
     ax1 = pyplot.gca()
     ax1.set_xlim(0, t_end.value_in(t_end.unit))
     ax1.set_ylim(0, 0.65)
-    pyplot.plot([0, t_end.value_in(t_end.unit)], [0.5, 0.5], lw=1, ls='--', c='k')
+    pyplot.plot([0, t_end.value_in(t_end.unit)], [0.5, 0.5],
+                lw=1, ls='--', c='k')
     for code in codes:
         time, Q = virial_ratio_evolution(code, particles, Q_init, t_end)
         pyplot.plot(time.value_in(t_end.unit), Q, c=cols[ci])
         ci+=1
-#    pyplot.show()
-    pyplot.savefig("gravity_to_virial")
+
+    save_file = 'gravity_to_virial.png'
+    pyplot.savefig(save_file)
+    print "\nOutput saved in", save_file, '\n'
+    pyplot.show()
     
 def new_option_parser():
     from optparse import OptionParser

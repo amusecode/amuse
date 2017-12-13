@@ -231,7 +231,7 @@ int jdata::add_particle(real pmass, real pradius,
     nj++;
 
     if (0 && system_time > 0 && mpi_rank == 0) {
-      cout << "add_particle: "; PRC(system_time); PRC(true_system_time());
+        cout << "add_particle: "; PRC(system_time); PRC(true_system_time());
  	PRC(pmass); PRC(pid); PRL(nj);
 	cout << "    pos:";
 	for (int k = 0; k < 3; k++) cout << " " << pos[nj-1][k];
@@ -292,7 +292,7 @@ void jdata::remove_particle(int j)
     nj--;
 
     if (0 && system_time > 0 && mpi_rank == 0) {
-      cout << "remove_particle: "; PRC(system_time); PRC(true_system_time());
+        cout << "remove_particle: "; PRC(system_time); PRC(true_system_time());
 	cout << "id = " << id[j] << ",  mass = " << mass[j] << ",  ";
  	PRL(nj);
 	cout << "    pos:";
@@ -447,12 +447,14 @@ void jdata::check_inverse_id(const char *s)
     }
 }
 
-void jdata::set_initial_timestep()
+void jdata::set_initial_timestep(real fac, real limit, real limitm)
+			      // defaults = 0.0625, 0.03125, 0.0
 {
     const char *in_function = "jdata::set_initial_timestep";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    // Assume acc and jerk have already been set.
+    // Assume acc and jerk have already been set.  Only set the time
+    // step if it hasn't already been set.
 
     for (int j = 0; j < nj; j++)
 	if (timestep[j] <= 0) {
@@ -464,17 +466,17 @@ void jdata::set_initial_timestep()
 
 	    real firststep;
 	    if (eta == 0.0)
-		firststep = 0.0625;
+		firststep = limit;
 	    else if (a2 == 0.0 || j2 == 0.0)
-		firststep = 0.0625 * eta;
+		firststep = fac * eta;
 	    else
-		firststep = 0.0625 * eta * sqrt(a2/j2);	// conservative
-    
+		firststep = fac * eta * sqrt(a2/j2);	// conservative
+
 	    // Force the time step to a power of 2 commensurate with
 	    // system_time.
         
-	    if (isnan(firststep)) {  
-	        firststep = 0.0625 * eta;
+	    if (isnan(firststep)) {
+	        firststep = fac * eta;
 	    }
 
 	    int exponent;
@@ -483,48 +485,40 @@ void jdata::set_initial_timestep()
 	        firststep /= 2;
 	    }
 
+	    // Place an absolute limit on the step.
+	    
+	    while (firststep > limit) firststep /= 2;
+
 	    timestep[j] = firststep;
 	}
+
+    // Optionally limit the outliers relative to the median step.
+
+    if (limitm > 0) {
+	vector<real> temp;
+	for (int j = 0; j < nj; j++) temp.push_back(timestep[j]);
+	sort(temp.begin(), temp.end());
+	real dtmax = limitm*temp[nj/2];
+	// PRC(limitm); PRL(dtmax);
+	for (int j = 0; j < nj; j++) {
+	    while (timestep[j] > dtmax) timestep[j] /= 2;
+	}
+    }
 }
 
-void jdata::force_initial_timestep()
+void jdata::force_initial_timestep(real fac, real limit, real limitm)
+				// defaults = 0.0625, 0.03125, 0.0
 {
-    // Same as set_initial_timestep, but always set the step,
-    // even if it is already set.
+    // Same as set_initial_timestep, but always set the step, even if
+    // it is already set.  Do this by setting all steps to zero here.
 
     const char *in_function = "jdata::set_initial_timestep";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Assume acc and jerk have already been set.
 
-    for (int j = 0; j < nj; j++) {
-	real a2 = 0, j2 = 0;
-	for (int k = 0; k < 3; k++) {
-	    a2 += pow(acc[j][k], 2);
-	    j2 += pow(jerk[j][k], 2);
-	}
-
-	real firststep;
-	if (eta == 0.0)
-	    firststep = 0.0625;
-	else if (a2 == 0.0 || j2 == 0.0)
-	    firststep = 0.0625 * eta;
-	else
-	    firststep = 0.0625 * eta * sqrt(a2/j2);	// conservative
-    
-	// Force the time step to a power of 2 commensurate with
-	// system_time.
-
-    if(isnan(firststep)) {  
-        firststep = 0.0625 * eta;
-    }
-    
-	int exponent;
-	firststep /= 2*frexp(firststep, &exponent);
-	while (fmod(system_time, firststep) != 0) firststep /= 2;
-
-	timestep[j] = firststep;
-    }
+    for (int j = 0; j < nj; j++) timestep[j] = 0;
+    set_initial_timestep(fac, limit, limitm);
 }
 
 real jdata::get_pot(bool reeval)		// default = false

@@ -8,6 +8,7 @@ set_printing_strategy("custom", #nbody_converter = converter,
                       precision = 5, prefix = "", separator = " [", suffix = "]"
 )
 
+###BOOKLISTSTART1###
 def new_sph_particles_from_stellar_wind(stars, mgas):
     new_sph=datamodel.Particles(0)
     for si in stars:
@@ -34,10 +35,13 @@ def new_sph_particles_from_stellar_wind(stars, mgas):
             add[ri].vz=si.vz + r[2]*si.terminal_wind_velocity
         new_sph.add_particles(add)  
     return new_sph
+###BOOKLISTSTOP1###
 
+###BOOKLISTSTART2###
 def v_terminal_teff(star):
   t4=(numpy.log10(star.temperature.value_in(units.K))-4.).clip(0.,1.)
   return (30 | units.km/units.s) + ((4000 | units.km/units.s)*t4)
+###BOOKLISTSTOP2###
 
 def main():
     stars = Particles(2)
