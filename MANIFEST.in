@@ -6,6 +6,7 @@ include build.py.in
 include amuserc.example
 include ez_setup.py
 include support/configpy.in
+include support3/configpy.in
 
 recursive-include src *
 recursive-include test *
