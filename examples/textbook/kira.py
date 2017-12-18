@@ -222,7 +222,7 @@ def kira(tend, N, R, Nbin):
               multiples_code.particles.LagrangianRadii(converter)
         print "t, Energy=", ti, multiples_code.get_total_energy()
 
-    multiples_code.stop()
+    #multiples_code.stop()
     stellar.stop()
         
 def new_option_parser():
