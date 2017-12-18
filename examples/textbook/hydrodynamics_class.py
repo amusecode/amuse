@@ -53,7 +53,7 @@ class Hydro:
 
                 self.converter = nbody_system.nbody_to_si(1|units.MSun, system_size)
                 self.star_attributes = ['name', 'birth_age', 'angular_momentum', 'mass', 'radius', 'x', 'y', 'z', 'vx', 'vy', 'vz', 'Lx', 'Ly', 'Lz']
-p
+
                 if hydro_code is Fi:
                         self.code = hydro_code(self.converter, mode="openmp", redirection="file")
 
