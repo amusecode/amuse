@@ -17,7 +17,7 @@ def merge_two_stars(bodies, particles_in_encounter):
                          * max(particles_in_encounter.mass)/new_particle.mass
     new_particle.position = com_pos
     new_particle.velocity = com_vel
-    new_particle.radius = 0 | units.RSun
+    new_particle.radius = particles_in_encounter.radius.sum()
     bodies.add_particles(new_particle)
     print "Two stars (M=",particles_in_encounter.mass, \
           ") collided with d=", com_pos.length()
