@@ -141,7 +141,7 @@ if __name__ in ('__main__','__plot__'):
     figure = single_frame(x_label, y_label, logx=True, logy=True,
                           xsize=14, ysize=10)
     color = get_distinct(4)
-    pyplot.xlim(5.e+4, 1.e+3)
+    pyplot.xlim(2.e+4, 4.e3)
     pyplot.ylim(10., 1.e+3)
 
     Mprim = 3.0|units.MSun
