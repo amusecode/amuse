@@ -30,6 +30,10 @@ filepointer.close()
 print len(R_obs), len(yc_obs)
 print len(R_sim), len(yc_sim)
 
+from scipy import stats
+ks = stats.ks_2samp(R_obs, R_sim)
+print "Perform KS test on both sambles:", ks
+
 color = get_distinct(2)
 
 x_label = 'R [$R_\odot$]'
