@@ -3428,20 +3428,93 @@ CONTAINS
     
     end function
 
-    FUNCTION get_grid_dust_temperature(i,j,k,index_of_grid,dust_temperature, n)
+    FUNCTION get_grid_dust_number_density(i,j,k,index_of_grid,dust_number_density, n)
         IMPLICIT NONE
         INTEGER, INTENT(IN) :: n
         INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
         
-        double precision, INTENT(OUT), DIMENSION(N) :: dust_temperature
+        double precision, INTENT(OUT), DIMENSION(N) :: dust_number_density
+        
+        INTEGER get_grid_dust_number_density
+        INTEGER :: index, active_cell_index
+
+        if (.not.is_grid_committed) then
+            DO index = 1,n
+                dust_number_density(index) = NdustTemp(i(index), j(index), k(index))
+            END DO
+        else
+        
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    get_grid_dust_number_density = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .eq. 0) then
+                    
+                        dust_number_density(index) = 0
+                    
+                else
+                    
+                        dust_number_density(index) = grid3D(index_of_grid(index))%Ndust(active_cell_index)
+                    
+                end if
+            END DO
+        end if
+        get_grid_dust_number_density = 0
+    END FUNCTION
+
+    FUNCTION set_grid_dust_number_density(i,j,k,dust_number_density,index_of_grid, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
+        
+        double precision, INTENT(IN), DIMENSION(N) :: dust_number_density
+        
+        INTEGER set_grid_dust_number_density
+        INTEGER :: index, active_cell_index
+
+
+        if (.not.is_grid_committed) then
+            DO index = 1,n
+                NdustTemp(i(index), j(index), k(index)) = dust_number_density(index)
+            END DO
+        else
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    set_grid_dust_number_density = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .ne. 0) then
+                    
+                    grid3D(index_of_grid(index))%Ndust(active_cell_index) = dust_number_density(index)
+                    
+                end if
+            END DO
+        end if
+        
+        set_grid_dust_number_density = 0
+    END FUNCTION
+
+    FUNCTION get_grid_dust_temperature(i,j,k,species,gsize, index_of_grid, temperature, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k,species,gsize, index_of_grid
+        
+        double precision, INTENT(OUT), DIMENSION(N) :: temperature
         
         INTEGER get_grid_dust_temperature
         INTEGER :: index, active_cell_index
 
         if (.not.is_grid_committed) then
             DO index = 1,n
-                dust_temperature(index) = NdustTemp(i(index), j(index), k(index))
+                temperature(index) = 0.0
             END DO
+            get_grid_dust_temperature = -1
+            return
         else
         
             DO index = 1,n
@@ -3452,51 +3525,14 @@ CONTAINS
                 END IF
                 active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
                 if (active_cell_index .eq. 0) then
-                    
-                        dust_temperature(index) = 0
-                    
+                        temperature(index) = 0.0
                 else
-                    
-                        dust_temperature(index) = grid3D(index_of_grid(index))%Ndust(active_cell_index)
+                        temperature(index) = grid3D(index_of_grid(index))%Tdust(species(index), gsize(index), active_cell_index)
                     
                 end if
             END DO
         end if
         get_grid_dust_temperature = 0
-    END FUNCTION
-
-    FUNCTION set_grid_dust_temperature(i,j,k,dust_temperature,index_of_grid, n)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: n
-        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
-        
-        double precision, INTENT(IN), DIMENSION(N) :: dust_temperature
-        
-        INTEGER set_grid_dust_temperature
-        INTEGER :: index, active_cell_index
-
-
-        if (.not.is_grid_committed) then
-            DO index = 1,n
-                NdustTemp(i(index), j(index), k(index)) = dust_temperature(index)
-            END DO
-        else
-            DO index = 1,n
-                
-                IF (index_of_grid(index).GT.nGrids) THEN
-                    set_grid_dust_temperature = -1
-                    return
-                END IF
-                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
-                if (active_cell_index .ne. 0) then
-                    
-                    grid3D(index_of_grid(index))%Ndust(active_cell_index) = dust_temperature(index)
-                    
-                end if
-            END DO
-        end if
-        
-        set_grid_dust_temperature = 0
     END FUNCTION
     
 END MODULE
