@@ -609,13 +609,13 @@ class MocassinInterface(CodeInterface, CommonCodeInterface,
         return function
 
     @legacy_function
-    def get_grid_dust_temperature():
+    def get_grid_dust_number_density():
         function = LegacyFunctionSpecification()  
         for parametername in ['i','j','k']:
             function.addParameter(parametername, dtype='int32', direction=function.IN)
         function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
         
-        function.addParameter('dust_temperature', dtype='float64', direction=function.OUT)
+        function.addParameter('dust_number_density', dtype='float64', direction=function.OUT)
             
         function.addParameter('n', dtype='int32', direction=function.LENGTH)
         function.must_handle_array = True
@@ -623,18 +623,33 @@ class MocassinInterface(CodeInterface, CommonCodeInterface,
         return function
 
     @legacy_function
-    def set_grid_dust_temperature():
+    def set_grid_dust_number_density():
         function = LegacyFunctionSpecification()  
         for parametername in ['i','j','k']:
             function.addParameter(parametername, dtype='int32', direction=function.IN)
         
-        function.addParameter('dust_temperature', dtype='float64', direction=function.IN)
+        function.addParameter('dust_number_density', dtype='float64', direction=function.IN)
         function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
             
         function.addParameter('n', dtype='int32', direction=function.LENGTH)
         function.must_handle_array = True
         function.result_type = 'int32'
         return function
+
+    @legacy_function
+    def get_grid_dust_temperature():
+        function = LegacyFunctionSpecification()  
+        for parametername in ['i','j','k','species', 'grain_size']:
+            function.addParameter(parametername, dtype='int32', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
+        
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+            
+        function.addParameter('n', dtype='int32', direction=function.LENGTH)
+        function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
+
 
         
     
@@ -661,6 +676,12 @@ class Mocassin(InCodeComponentImplementation):
         nstages = self.get_number_of_ionisation_stages()
         nbins = self.get_total_number_of_points_in_frequency_mesh()
         return (1, ni, 1, nj, 1, nk, 1, nstages, 1, nbins)
+
+    def get_index_range_inclusive_dust_temperature_grid(self, index_of_grid = 1):
+        ni, nj, nk = self.get_max_indices(index_of_grid)
+        nspecies = 1
+        nsizes = 1
+        return (1, ni, 1, nj, 1, nk, 1, nspecies, 1, nsizes)
         
     def define_methods(self, object):
         
@@ -720,14 +741,14 @@ class Mocassin(InCodeComponentImplementation):
             (object.ERROR_CODE,)
         )
         object.add_method(
-            'get_grid_dust_temperature',
+            'get_grid_dust_number_density',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.K, object.ERROR_CODE,)
+            (units.cm**-3, object.ERROR_CODE,)
         )
         
         object.add_method(
-            'set_grid_dust_temperature',
-            (object.INDEX, object.INDEX, object.INDEX, units.K , object.INDEX),
+            'set_grid_dust_number_density',
+            (object.INDEX, object.INDEX, object.INDEX, units.cm**-3, object.INDEX),
             (object.ERROR_CODE,)
         )
         
@@ -744,6 +765,13 @@ class Mocassin(InCodeComponentImplementation):
             (object.INDEX, object.INDEX, object.INDEX, units.cm**-3 , object.INDEX),
             (object.ERROR_CODE,)
         )
+
+        object.add_method(
+            'get_grid_dust_temperature',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (units.K, object.ERROR_CODE,)
+        )
+        
 
         object.add_method(
             'get_grid_ion_density',
@@ -1255,8 +1283,8 @@ class Mocassin(InCodeComponentImplementation):
         object.add_setter('grid', 'set_grid_electron_density', names=('electron_density',))
         object.add_getter('grid', 'get_grid_hydrogen_density', names=('hydrogen_density',))
         object.add_setter('grid', 'set_grid_hydrogen_density', names=('hydrogen_density',))
-        object.add_getter('grid', 'get_grid_dust_temperature', names=('dust_temperature',))
-        object.add_setter('grid', 'set_grid_dust_temperature', names=('dust_temperature',))
+        object.add_getter('grid', 'get_grid_dust_number_density', names=('dust_number_density',))
+        object.add_setter('grid', 'set_grid_dust_number_density', names=('dust_number_density',))
         
         object.define_extra_keywords('grid', {'index_of_grid':1})
         
@@ -1266,6 +1294,11 @@ class Mocassin(InCodeComponentImplementation):
         object.add_getter('ion_density_grid', 'get_grid_ion_density', names=('density',))
         object.add_setter('ion_density_grid', 'set_grid_ion_density', names=('density',))
         object.define_extra_keywords('ion_density_grid', {'index_of_grid':1})
+
+        object.define_grid('dust_temperature_grid')
+        object.set_grid_range('dust_temperature_grid', 'get_index_range_inclusive_dust_temperature_grid')
+        object.add_getter('dust_temperature_grid', 'get_grid_dust_temperature', names=('temperature',))
+        object.define_extra_keywords('dust_temperature_grid', {'index_of_grid':1})
         
         object.define_inmemory_set('particles')
         
