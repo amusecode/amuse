@@ -1,9 +1,8 @@
 """
-Runs the Kelvin-Helmholtz Instability problem in two dimensions with Athena.
+Run the Kelvin-Helmholtz Instability problem in two dimensions using Athena.
 """
 import numpy
 from matplotlib import pyplot
-#from amuse.lab import *
 from amuse.community.athena.interface import Athena
 from amuse.units.generic_unit_system import *
 from amuse.datamodel import Grid
@@ -29,7 +28,6 @@ def set_parameters(instance):
     instance.parameters.y_boundary_conditions = ("periodic","periodic")
     instance.parameters.z_boundary_conditions = ("periodic","periodic")
     
-    
 def new_grid():
     grid = Grid.create(DIMENSIONS_OF_MESH, [1,1,1] | length)
     clear_grid(grid)
@@ -54,8 +52,10 @@ def initialize_grid(grid):
     
     halfway = DIMENSIONS_OF_MESH[0]/2 - 1
     
-    outerregion = numpy.logical_or(grid.y <= 0.25 | length, grid.y >= 0.75 | length)
-    innerregion = numpy.logical_and(grid.y > 0.25 | length, grid.y < 0.75 | length)
+    outerregion = numpy.logical_or(grid.y <= 0.25 | length,
+                                   grid.y >= 0.75 | length)
+    innerregion = numpy.logical_and(grid.y > 0.25 | length,
+                                    grid.y < 0.75 | length)
     
     grid[outerregion].rho = 1  | density
     grid[outerregion].rhovx =  vx * grid[outerregion].rho
@@ -66,10 +66,13 @@ def initialize_grid(grid):
     grid.energy = p / (GAMMA - 1)
         
 def pertubate_grid(grid):
-    grid.rhovx += grid.rho * PERTUBATION_AMPLITUDE * (numpy.random.rand(*grid.shape) - 0.5)
-    grid.rhovy += grid.rho * PERTUBATION_AMPLITUDE * (numpy.random.rand(*grid.shape) - 0.5)
+    grid.rhovx += grid.rho * PERTUBATION_AMPLITUDE \
+                               * (numpy.random.rand(*grid.shape) - 0.5)
+    grid.rhovy += grid.rho * PERTUBATION_AMPLITUDE \
+                               * (numpy.random.rand(*grid.shape) - 0.5)
     
-    grid.energy += 0.5 * (grid.rhovx ** 2  + grid.rhovy ** 2 + grid.rhovz ** 2) / grid.rho
+    grid.energy += 0.5 * (grid.rhovx**2 + grid.rhovy**2 + grid.rhovz**2) \
+                           / grid.rho
         
 def simulate_kelvin_helmholtz_instability(end_time):
     instance=new_instance_of_hydro_code()
@@ -91,8 +94,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     t = dt
     while t < end_time:
         instance.evolve_model(t)
-        
-        print("time : ", t)
+        print "time=", t
         t += dt
     
     print("copying results")
@@ -106,7 +108,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     return result
     
 def plot_grid(grid):
-    rho = grid.rho[...,...,0].value_in(density)
+    rho = grid.rho[...,0].value_in(density)
     figure = pyplot.figure(figsize=(6,6))
     plot = figure.add_subplot(1,1,1)
     plot.imshow(rho, origin = 'lower')
@@ -116,3 +118,4 @@ def plot_grid(grid):
 if __name__ == "__main__":
     grids = simulate_kelvin_helmholtz_instability(1.0 | time)
     plot_grid(grids[0])
+    plot_grid(grids[1])
