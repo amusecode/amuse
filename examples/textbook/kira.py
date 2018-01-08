@@ -47,8 +47,7 @@ def new_binary_orbit(mass1, mass2, semi_major_axis,
 
     return binary
 
-# See Eggleton 1999 Equation 1.6.3 (in private copy of his book).
-
+# see Eggleton 2006 Equation 1.6.3 (2006epbm.book.....E)
 def random_semimajor_axis_PPE(Mprim, Msec, P_min=10.|units.day,
                               P_max=100.|units.yr):
 
@@ -199,6 +198,18 @@ def kira(tend, N, R, Nbin):
         = multiples_code.stopping_conditions.binaries_change_detection
     stopping_condition.enable()
 
+    from matplotlib import pyplot
+    from distinct_colours import get_distinct
+    pyplot.rcParams.update({'font.size': 30})
+    figure = pyplot.figure(figsize=(16, 12))
+    ax = pyplot.gca()
+    ax.get_yaxis().get_major_formatter().set_useOffset(False)
+    ax.xaxis._autolabelpos = True
+    ax.yaxis._autolabelpos = True
+    
+    color = get_distinct(2)
+    pyplot.scatter(numpy.log10(stellar.binaries.semi_major_axis.value_in(units.AU)), stellar.binaries.eccentricity, c=color[0], s=200, lw=0)
+    
     t = quantities.linspace(0*tend, tend, 11)
     for ti in t:
         print "t, Energy=", ti, multiples_code.particles.mass.sum(), \
@@ -222,7 +233,12 @@ def kira(tend, N, R, Nbin):
               multiples_code.particles.LagrangianRadii(converter)
         print "t, Energy=", ti, multiples_code.get_total_energy()
 
-    #multiples_code.stop()
+    pyplot.scatter(numpy.log10(stellar.binaries.semi_major_axis.value_in(units.AU)), stellar.binaries.eccentricity, c=color[1], lw=0, s=50)
+    pyplot.xlabel("$\log_{10}(a/R_\odot)$")
+    pyplot.ylabel("eccentricity")
+    pyplot.savefig("kira_a_vs_e.pdf")
+    pyplot.show()
+        
     stellar.stop()
         
 def new_option_parser():
@@ -237,7 +253,7 @@ def new_option_parser():
     result.add_option("--Nbin", 
                       dest="Nbin",type="int", default=50)
     result.add_option("--seed", 
-                      dest="seed",type="int", default=-1)
+                      dest="seed",type="int", default=2)
     return result
 
 if __name__ == "__main__":
