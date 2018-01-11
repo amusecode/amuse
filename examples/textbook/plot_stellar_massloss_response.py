@@ -41,10 +41,10 @@ def main():
     figure = single_frame(x_label, y_label, logx=False, logy=False, xsize=14, ysize=10)
     color = get_distinct(12)
 
-    pyplot.text(-2.5, 0.8, "main sequence")
-    pyplot.text(-0.4, 0.8, "giant branch")
+    pyplot.text(-2.2, 0.8, "giant branch")
+    pyplot.text(-0.1, 0.8, "main sequence")
     pyplot.xlim(0.5, -4.)
-    pyplot.ylim(-0.6, 1.0)
+    pyplot.ylim(-0.6, 1.2)
     fii = 0
     ti=0
     for dmi in dmdt:

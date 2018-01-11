@@ -259,7 +259,7 @@ def main(M1, M2, M3, Pora, Pin, ain, aout, ein, eout,
                     +'.png'
     pyplot.savefig(save_file)
     print '\nSaved figure in file', save_file,'\n'
-    #pyplot.show()
+    pyplot.show()
     
 def new_option_parser():
     

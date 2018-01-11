@@ -47,7 +47,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.8.0' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
+            'https://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -55,7 +55,7 @@ class InstallPrerequisites(object):
             [], 
             '1.0.0', 
             'nose-' , '.tar.gz', 
-            'http://pypi.python.org/packages/source/n/nose/', 
+            'https://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
           (
@@ -102,7 +102,7 @@ class InstallPrerequisites(object):
             [], 
             '0.7', 
             'docutils-','.tar.gz', 
-            'http://pypi.python.org/packages/source/d/docutils/', 
+            'https://pypi.python.org/packages/source/d/docutils/', 
             self.python_build
           ) ,
           (

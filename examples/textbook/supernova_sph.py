@@ -83,7 +83,7 @@ def make_e_map(sph,N=100,L=1):
     return rho
 
 def plot_sph(time, sph, gas, i=1, L=10):
-    max_dens = sho.rho.max()
+    max_dens = sph.rho.max()
 
     x_label = "X [R$_\odot$]"
     y_label = "Y [R$_\odot$]"
@@ -203,7 +203,7 @@ def main(stellar_mass, stellar_radius, core_mass, core_radius, t_end, dt_diag, r
         converter = nbody_system.nbody_to_si(1|units.MSun, 1|units.RSun)
         hydro = Gadget2(converter, number_of_workers=4)
         from amuse.ext.grid_to_sph import convert_grid_to_SPH
-        particles = convert_grid_to_SPH(grid, number_of_sph_particles=10000)
+        particles = convert_grid_to_SPH(grid, number_of_sph_particles=100000)
         #hydro.particles.add_particles(particles)
         #channel = hydro.gas_particles.new_channel_to(particles)
         #hydro.evolve_model(20|units.s)
@@ -304,7 +304,7 @@ def run_sph_code(hydro, particles, t_end, dt):
     write_set_to_file(particles.savepoint(0|units.yr), "supernova_sph.amuse", "amuse", append_to_file=False)
 
     index = 1
-    plot_sph(0|units.yr, hydro, particles, index)
+#    plot_sph(0|units.yr, hydro, particles, index)
     channel = hydro.gas_particles.new_channel_to(particles)
     while hydro.model_time<t_end:
         index += 1

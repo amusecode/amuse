@@ -70,8 +70,7 @@ def remove_gas(gas, rremove):
 
 def main(filename):
     stars = Particles(2)
-    stars.mass = (1.924785833858, 1.0) | units.MSun # age=1494.4Myr
-#    stars.mass = (2.0, 1.0) | units.MSun # age=1494.4Myr
+    stars.mass = (1.924785833858, 1.0) | units.MSun  # age=1494.4Myr
     separation = 10|units.AU
     vc = numpy.sqrt(constants.G*stars.mass.sum()/separation)
     stars[0].position = (1, 0, 0) * separation
@@ -105,10 +104,9 @@ def main(filename):
     hydro.gas_particles.add_particles(gas)
     hydro.dm_particles.add_particles(stars)
     hydro_to_framework = hydro.gas_particles.new_channel_to(gas, 
-        attributes=["x", "y", "z", "vx", "vy", "vz", "mass", "u", "rho", "h_smooth"]) 
+        attributes=["x", "y", "z", "vx", "vy", "vz",
+                    "mass", "u", "rho", "h_smooth"]) 
 
-
-#    moving_bodies = ParticlesSuperset([stars, gas])
     generated_gas = Particles()
     accreted_gas = Particles()
     escaped_gas = Particles()
@@ -120,7 +118,8 @@ def main(filename):
 
         accreted = hydro_sink_particles(stars, gas)
         if len(accreted)>0:
-            print "N accreted:", time.in_(units.yr), len(accreted), "m=", accreted.mass.sum().in_(units.MSun)
+            print "N accreted:", time.in_(units.yr), len(accreted), \
+                  "m=", accreted.mass.sum().in_(units.MSun)
             accreted_gas.add_particles(accreted.copy())
             gas.remove_particles(accreted)
             hydro.gas_particles.remove_particles(accreted)
@@ -146,9 +145,11 @@ def main(filename):
             if time>t_snap:
                 t_snap += dt_snap
                 write_set_to_file(gas, filename, 'hdf5')
-                print "time=", hydro.model_time, "Ngas=", len(gas), mgas*len(gas)
+                print "time=", hydro.model_time, "Ngas=", len(gas), \
+                      mgas*len(gas)
                 print "T=", time, "M=", stars[0].mass, stars[1].mass
-                print "Gas = ", len(generated_gas), len(accreted_gas), len(escaped_gas)
+                print "Gas = ", len(generated_gas), len(accreted_gas), \
+                      len(escaped_gas)
         
     hydro.stop()
 

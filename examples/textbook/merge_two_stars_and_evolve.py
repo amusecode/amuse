@@ -51,7 +51,7 @@ def print_stars(stellar_evolution):
         stellar_evolution.particles[1].luminosity.in_(units.LSun)
 
 ###BOOKLISTSTART1###
-def merge_two_stars(Mprim, Msec, tcoll, tend):
+def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
     stars = Particles(2)
     stars.mass = [Mprim.value_in(units.MSun),
                   Msec.value_in(units.MSun)] | units.MSun
@@ -116,47 +116,58 @@ def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("--tcoll", unit=units.Myr,
-                      dest="tcoll", type="float",default = 1|units.Myr,
+                      dest="tcoll", type="float",
+                      default = 150|units.Myr,
                       help="moment of collision [%default]")
     result.add_option("--tend", unit=units.Myr,
-                      dest="tend", type="float",default = 1|units.Myr,
+                      dest="tend", type="float",
+                      default = 2|units.Gyr,
                       help="evolution after the collision [%default]")
     result.add_option("-M", unit=units.MSun,
-                      dest="Mprim", type="float",default = 1|units.MSun,
+                      dest="Mprim", type="float",
+                      default = 3|units.MSun,
                       help="Primary ZAMS mass [%default]")
     result.add_option("-m", unit=units.MSun,
-                      dest="Msec", type="float",default = 1|units.MSun,
+                      dest="Msec", type="float",
+                      default = 1|units.MSun,
                       help="Secondary ZAMS mass [%default]")
 
     return result
 
 if __name__ in ('__main__','__plot__'):
+
+    # High-level structure of merge_two_stars_and_evolve.py and
+    # merge_two_stars_sph_evolve.py are designed to be identical.
+    
     set_printing_strategy("custom", #nbody_converter = converter, 
-                          precision = 15, prefix = "", 
+                          precision = 11, prefix = "", 
                           separator = " [", suffix = "]")
+
     o, arguments  = new_option_parser().parse_args()
+    Mprim = o.Mprim
+    Msec = o.Msec
+    tend = o.tend
+    tcoll = o.tcoll
+
+    color = get_distinct(4)  # 0 = cyan, 1 = red, 2 = mustard, 3 = green
 
     x_label = "T [K]"
     y_label = "L [$L_\odot$]"
     figure = single_frame(x_label, y_label, logx=True, logy=True,
                           xsize=14, ysize=10)
-    color = get_distinct(4)
-    pyplot.xlim(5.e+4, 1.e+3)
-    pyplot.ylim(10., 1.e+3)
+    pyplot.xlim(2.e+4, 3.e3)
+    pyplot.ylim(20., 2.e+3)
 
-    Mprim = 3.0|units.MSun
-    Msec  = 1.0|units.MSun
-    tend  = 2.0|units.Gyr
-
-    print "Evolve single star of mass", Mprim
+    print "Evolve single star of mass", Mprim.in_(units.MSun)
     time, stp, mass, radius, temperature, luminosity \
         = evolve_single_star(Mprim, tend)
     pyplot.plot(temperature.value_in(units.K),
                 luminosity.value_in(units.LSun),
-                c=color[3], zorder=1)
+                c=color[1], lw=2, zorder=1)
     pyplot.scatter(temperature[0].value_in(units.K),
                    luminosity[0].value_in(units.LSun),
-                   c=color[3], s=150, marker='^', edgecolor='k', zorder=2)
+                   c=color[1], s=150, marker='^',
+                   edgecolor='k', zorder=2)
 
     tms = 0 |units.Myr
     for i in range(len(stp)):
@@ -164,7 +175,7 @@ if __name__ in ('__main__','__plot__'):
             tms = time[i]
     if tms <= 1|units.Myr:
         tms = 10|units.Myr
-    print "Main-sequence lifetime:", tms.in_(units.Myr)
+    print "Main-sequence lifetime =", tms.in_(units.Myr)
     
     tcoll = 0.5*tms
     icoll = 0
@@ -173,28 +184,43 @@ if __name__ in ('__main__','__plot__'):
             icoll = i
     pyplot.scatter(temperature[icoll].value_in(units.K),
                    luminosity[icoll].value_in(units.LSun),
-                   c=color[2], s=150, marker='o', edgecolor='k', zorder=2)
+                   c=color[2], s=150, marker='o',
+                   edgecolor='k', zorder=2)
 
-    print "Evolve single star of mass", Mprim+Msec
+    print "Evolve single star of mass", (Mprim+Msec).in_(units.MSun)
     time, stp, mass, radius, temperature, luminosity \
         = evolve_single_star(Mprim+Msec, tend)
     pyplot.plot(temperature.value_in(units.K),
                 luminosity.value_in(units.LSun),
-                c=color[1], zorder=1)
+                c=color[0], lw=2, zorder=1)
     pyplot.scatter(temperature[0].value_in(units.K),
                    luminosity[0].value_in(units.LSun),
-                   c=color[1], s=150, marker='^', edgecolor='k', zorder=2)
+                   c=color[0], s=150, marker='^',
+                   edgecolor='k', zorder=2)
 
-    print "Evolve two single stars and collide at:", tcoll.in_(units.Myr)
+    print "Evolve two single stars and collide at", tcoll.in_(units.Myr)
     time, stp, mass, radius, temperature, luminosity \
-        = merge_two_stars(Mprim, Msec, tcoll, tend)
+        = merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend)
     pyplot.plot(temperature.value_in(units.K),
                 luminosity.value_in(units.LSun),
-                c=color[2], ls="--", zorder=1)
+                c=color[2], ls="--", lw=3, zorder=1)
     pyplot.scatter(temperature[0].value_in(units.K),
                    luminosity[0].value_in(units.LSun),
-                   c=color[2], s=150, marker='o', edgecolor='k', zorder=2)
+                   c=color[2], s=150, marker='o',
+                   edgecolor='k', zorder=3)
 
+    Mmerger = mass[0]
+    print "Evolve single star of mass", Mmerger
+    time, stp, mass, radius, temperature, luminosity \
+        = evolve_single_star(Mmerger, tend)
+    pyplot.plot(temperature.value_in(units.K),
+                luminosity.value_in(units.LSun),
+                c=color[3], lw=2, zorder=1)
+    pyplot.scatter(temperature[0].value_in(units.K),
+                   luminosity[0].value_in(units.LSun),
+                   c=color[3], s=150, marker='^',
+                   edgecolor='k', zorder=2)
+    
     save_file = 'merge_two_stars_and_evolve.png'
     pyplot.savefig(save_file)
     print '\nSaved figure in file', save_file,'\n'

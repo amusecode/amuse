@@ -13,6 +13,7 @@ MODULE mocassin_interface
     logical :: areStarsDefined = .false.
     logical :: is_grid_committed = .false.
     real, pointer :: hydrogen_density_input(:,:,:)
+    real, pointer :: NdustTemp(:,:,:) ! temporary dust number density arra
     integer :: totPercentOld
     integer :: total_number_of_photons = 1000000
     
@@ -129,7 +130,12 @@ CONTAINS
         do iGrid=1, nGrids
             call freeGrid(grid3D(iGrid))
         end do
+        deallocate(dustSpeciesFile)
+        deallocate(nspeciesPart)
     
+        if(associated(hydrogen_density_input)) deallocate(hydrogen_density_input)
+        if(associated(NdustTemp)) deallocate(NdustTemp)
+
         cleanup_code=0
     END FUNCTION
 
@@ -292,6 +298,10 @@ CONTAINS
         
         allocate(abundanceFile(0:100))
         abundanceFile = ''
+
+        allocate(dustSpeciesFile(1:1))
+        allocate(nspeciesPart(1:1))
+        nDustComponents = 1
         
         initialize_code=0
     END FUNCTION
@@ -376,9 +386,19 @@ CONTAINS
         end if
         
         hydrogen_density_input = 0.0
+
+        allocate(NdustTemp(1:nxIn(1), 1:nyIn(1), 1:nzIn(1)), stat = err)
+        if (err /= 0) then
+           print*, "! can't allocate NdustTemp memory"
+           return
+        end if
+
+        NdustTemp = 0.              
+
         
         is_grid_committed = .false. 
            
+        dustSpeciesFile(1) = dustFile(1)
         commit_parameters=0
 
     END FUNCTION
@@ -500,7 +520,7 @@ CONTAINS
     FUNCTION commit_particles()
         IMPLICIT NONE
         INTEGER commit_particles
-        INTEGER i
+        INTEGER i, iGrid
         Integer :: nxA,nyA,nzA
         
         nPhotonsTot = total_number_of_photons
@@ -512,7 +532,7 @@ CONTAINS
         
         ! initialize opacities x sections array
         call initXSecArray()
-        
+
         ! set the ionzing continuum according to the contShape variable
         call setContinuum()
         
@@ -528,6 +548,16 @@ CONTAINS
         
         
         call setStarPosition(grid3D(1)%xAxis,grid3D(1)%yAxis,grid3D(1)%zAxis, grid3D(1:nGrids))
+
+        ! if grains are included, calculate the dust opacity     
+        if (lgDust) then
+           if (taskid==0) print*, '! mocassin: calling dustDriver'
+           do iGrid = 1, nGrids
+              call dustDriver(grid3D(iGrid))
+           end do
+           if (taskid==0) print*, '! mocassin: dustDriver done'
+        end if
+        
         
         commit_particles=0
         
@@ -545,6 +575,7 @@ CONTAINS
            nPhotons(i) = nPhotonsTot/nStars
            deltaE(i) = Lstar(i)/nPhotons(i)
         end do
+        dustSpeciesFile(1) = dustFile(1)
 
         recommit_particles=0
         
@@ -644,8 +675,10 @@ CONTAINS
                 return
             end if
         end if
+
         
         !if(associated(hydrogen_density_input)) deallocate(hydrogen_density_input)
+        !if(associated(NdustTemp)) deallocate(NdustTemp)
         
         is_grid_committed = .true.
         
@@ -659,15 +692,6 @@ CONTAINS
         ! prepare atomica data stuff
         if (lgGas) call makeElements()
         print*, 'active elements: ', nElementsUsed
-        
-        ! if grains are included, calculate the dust opacity     
-        if (lgDust) then
-           if (taskid==0) print*, '! mocassin: calling dustDriver'
-           do iGrid = 1, nGrids
-              call dustDriver(grid3D(iGrid))
-           end do
-           if (taskid==0) print*, '! mocassin: dustDriver done'
-        end if
         
         if (Ldiffuse>0.) then
            if (taskid==0) print*, '! mocassin: calling setLdiffuse'
@@ -990,7 +1014,63 @@ CONTAINS
         value = lgSymmetricXYZ
         get_symmetricXYZ = 0
     END FUNCTION
+
+    FUNCTION set_dust(value)
+        IMPLICIT NONE
+        logical, INTENT(IN) :: value
+        INTEGER set_dust
+        lgDust = value
+        set_dust = 0
+    END FUNCTION
+
+    FUNCTION get_dust(value)
+        IMPLICIT NONE
+        logical, INTENT(OUT) :: value
+        INTEGER get_dust
+        value = lgDust
+        get_dust = 0
+    END FUNCTION
+
+    FUNCTION set_dust_species_filename(filename)
+        IMPLICIT NONE
+        CHARACTER(LEN=*) filename
+        INTEGER set_dust_species_filename
+        
+         dustFile(1) = TRIM(filename)
+        
+        set_dust_species_filename = 0
+    END FUNCTION
+
+    FUNCTION get_dust_species_filename(filename)
+        IMPLICIT NONE
+        CHARACTER(LEN=*) filename
+        INTEGER get_dust_species_filename
+        
+        filename = dustFile(1)
+
+        get_dust_species_filename = 0
+    END FUNCTION
     
+    FUNCTION set_dust_sizes_filename(filename)
+        IMPLICIT NONE
+        CHARACTER(LEN=*) filename
+        INTEGER set_dust_sizes_filename
+        
+         dustFile(2) = TRIM(filename)
+        
+        set_dust_sizes_filename = 0
+    END FUNCTION
+
+    FUNCTION get_dust_sizes_filename(filename)
+        IMPLICIT NONE
+        CHARACTER(LEN=*) filename
+        INTEGER get_dust_sizes_filename
+        
+        filename = dustFile(2)
+
+        get_dust_sizes_filename = 0
+    END FUNCTION
+
     FUNCTION set_maximum_number_of_monte_carlo_iterations(value)
         IMPLICIT NONE
         integer, INTENT(IN) :: value
@@ -1458,7 +1538,6 @@ CONTAINS
         real, dimension(nElements) :: aWeight
         real, parameter :: amu = 1.66053e-24 ! [g]
 
-        real, pointer                  :: NdustTemp(:,:,:) ! temporary dust number density arra
         real, pointer                  :: dustAbunIndexTemp(:,:,:) ! temporary dust abundance index array
         real, pointer                  :: twoDscaleJTemp(:)
         
@@ -1476,6 +1555,9 @@ CONTAINS
         integer                        :: setup_mother_grid
                                                        ! with one of the axes
         character(len=40)              :: keyword      ! character string readers
+        character(len=1024)            :: readChar, extFile      ! character string readers
+        integer                        :: icomp
+        real                           :: readReal
         
 
         print*, 'in setup_mother_grid'
@@ -1495,14 +1577,6 @@ CONTAINS
         
           ! set up dust data
           if (lgDust) then
-              allocate(NdustTemp(1:grid%nx,1:grid%ny,1:grid%nz), stat = err)
-              if (err /= 0) then
-                 print*, "! setMotherGrid: can't allocate NdustTemp memory"
-                 return
-              end if
-
-              NdustTemp = 0.              
-
               if (lgMultiDustChemistry) then
                  allocate(dustAbunIndexTemp(1:grid%nx,1:grid%ny,1:grid%nz), stat = err)
                  if (err /= 0) then
@@ -1513,77 +1587,77 @@ CONTAINS
               end if
 
               ! set grains mass density [g/cm^3]
-!              allocate(dustComPoint(nDustComponents))
-!              dustComPoint = 0
-!              dustComPoint(1) = 1
+              allocate(dustComPoint(nDustComponents))
+              dustComPoint = 0
+              dustComPoint(1) = 1
 
-!              nSpecies = 0
-!              nSpeciesMax = 0
+              nSpecies = 0
+              nSpeciesMax = 0
 !print*, 'heer', ndustcomponents
-!              do icomp = 1, nDustComponents
+              do icomp = 1, nDustComponents
 !print*, icomp
-!                 close(13)
-!                 open(file =   dustSpeciesFile(icomp), action="read",unit=13, &
-!                      &position="rewind",status="old", iostat = ios)
-!                 if (ios /= 0 ) then
-!                    print*, "! setMotherGrid: can't open file ", dustSpeciesFile(icomp)
-!                    stop
-!                 end if
-!                 read(13, *) nSpeciesPart(icomp)
+                 close(13)
+                 open(file =   dustSpeciesFile(icomp), action="read",unit=13, &
+                      &position="rewind",status="old", iostat = ios)
+                 if (ios /= 0 ) then
+                    print*, "! setMotherGrid: can't open file ", dustSpeciesFile(icomp)
+                    stop
+                 end if
+                 read(13, *) nSpeciesPart(icomp)
 !print*, nspeciespart(icomp)
-!                 close(13)
-!                 nSpecies = nSpecies+nSpeciesPart(icomp)
+                 close(13)
+                 nSpecies = nSpecies+nSpeciesPart(icomp)
 !print*, nspecies
-!                 if (nSpeciesMax < nSpeciesPart(icomp)) nSpeciesMax = nSpeciesPart(icomp)
+                 if (nSpeciesMax < nSpeciesPart(icomp)) nSpeciesMax = nSpeciesPart(icomp)
 !print*, nspeciesmax
-!              end do
+              end do
 !
-!              allocate(rho(1:nSpecies), stat = err)
-!              if (err /= 0) then
-!                 print*, "! setMotherGrid: can't allocate rho memory"
-!                 stop
-!              end if
-!              rho=0.
-!              allocate(grainVn(1:nSpecies), stat = err)
-!              if (err /= 0) then
-!                 print*, "! setMotherGrid: can't allocate grainVn memory"
-!                 stop
-!              end if
-!              grainVn=0.
-!              allocate(MsurfAtom(1:nSpecies), stat = err)
-!              if (err /= 0) then
-!                 print*, "! setMotherGrid: can't allocate surfAtom memory"
-!                 stop
-!              end if
-!              MsurfAtom=0
-!              
-!              do icomp = 1, nDustComponents
-!                 if (icomp > 1) dustComPoint(icomp) = dustComPoint(icomp-1)+nSpeciesPart(icomp)
-!                 close(13)
-!                 open(file =   dustSpeciesFile(icomp), action="read",unit=13, &
-!                      & position="rewind",status="old", iostat = ios)
-!                 if (ios /= 0 ) then
-!                    print*, "! setMotherGrid: can't open file ", dustSpeciesFile(icomp)
-!                    stop
-!                 end if
-!                 read(13, *) nSpeciesPart(icomp)              
-!
-!                 do i = 1, nSpeciesPart(icomp)
-!                    read(13,*) extFile
-!                    close(14)
-!                    open(file=extFile,unit=14,  action="read", position="rewind",status="old", iostat = ios)
-!                    if (ios /= 0 ) then
-!                       print*, "! setMotherGrid: can't open file ", extFile
-!                       stop
-!                    end if
-!                    read(14,*) readChar
-!                    read(14,*) readChar, readReal, rho(dustComPoint(icomp)+i-1), grainVn(dustComPoint(icomp)+i-1), &
-!                         &MsurfAtom(dustComPoint(icomp)+i-1)
-!                    close(14)
-!                 end do
-!                 close(13)
-!              end do
-!
+              allocate(rho(1:nSpecies), stat = err)
+              if (err /= 0) then
+                 print*, "! setMotherGrid: can't allocate rho memory"
+                 stop
+              end if
+              rho=0.
+              allocate(grainVn(1:nSpecies), stat = err)
+              if (err /= 0) then
+                 print*, "! setMotherGrid: can't allocate grainVn memory"
+                 stop
+              end if
+             grainVn=0.
+              allocate(MsurfAtom(1:nSpecies), stat = err)
+              if (err /= 0) then
+                 print*, "! setMotherGrid: can't allocate surfAtom memory"
+                 stop
+              end if
+              MsurfAtom=0
+              
+              do icomp = 1, nDustComponents
+                 if (icomp > 1) dustComPoint(icomp) = dustComPoint(icomp-1)+nSpeciesPart(icomp)
+                 close(13)
+                 open(file =   dustSpeciesFile(icomp), action="read",unit=13, &
+                      & position="rewind",status="old", iostat = ios)
+                 if (ios /= 0 ) then
+                    print*, "! setMotherGrid: can't open file ", dustSpeciesFile(icomp)
+                    stop
+                 end if
+                 read(13, *) nSpeciesPart(icomp)              
+
+                 do i = 1, nSpeciesPart(icomp)
+                    read(13,*) extFile
+                    close(14)
+                    open(file=trim(home)//extFile,unit=14,  action="read", position="rewind",status="old", iostat = ios)
+                    if (ios /= 0 ) then
+                       print*, "! setMotherGrid: can't open file ", extFile
+                       stop
+                    end if
+                    read(14,*) readChar
+                    read(14,*) readChar, readReal, rho(dustComPoint(icomp)+i-1), grainVn(dustComPoint(icomp)+i-1), &
+                         &MsurfAtom(dustComPoint(icomp)+i-1)
+                    close(14)
+                 end do
+                 close(13)
+              end do
+
               if (lgMdMg .or. lgMdMh) then
 
                  allocate(MdMg(1:grid%nx,1:grid%ny,1:grid%nz), stat = err)
@@ -1631,36 +1705,38 @@ CONTAINS
                  if (lgDustConstant) then
                     NdustTemp = NdustValue
                  else
-                    close(20)
-                    open(unit=20, file=NdustFile,  action="read", position="rewind",status="old", iostat = ios)
-                    if (ios /= 0 ) then
-                       print*, "! setMotherGrid: can't open NdustFile file ", NdustFile
-                       return
-                    end if
-                    read(20,*)keyword
-                    if (keyword .ne. "#") backspace 20
+                    if (.FALSE.) then
+                            close(20)
+                            open(unit=20, file=NdustFile,  action="read", position="rewind",status="old", iostat = ios)
+                            if (ios /= 0 ) then
+                               print*, "! setMotherGrid: can't open NdustFile file ", NdustFile
+                               return
+                            end if
+                            read(20,*)keyword
+                            if (keyword .ne. "#") backspace 20
 
-                    if (lgMultiDustChemistry) then
-                       do i = 1, grid%nx
-                          do j = 1, yTop
-                             do k = 1, grid%nz
-                                read(20, *) grid%xAxis(i), grid%yAxis(j), &
-                                     & grid%zAxis(k), NdustTemp(i,j,k), dustAbunIndexTemp(i,j,k)
-                             end do
-                          end do
-                       end do
-                    else
-                       print*,grid%nx,yTop,grid%nz
-                       do i = 1, grid%nx
-                          do j = 1, yTop
-                             do k = 1, grid%nz
-                                read(20, *) grid%xAxis(i), grid%yAxis(j), grid%zAxis(k), NdustTemp(i,j,k)
-!                                write(6,'(3i4,4es11.3)')i,j,k,grid%xAxis(i), grid%yAxis(j), grid%zAxis(k), NdustTemp(i,j,k)
-                             end do
-                          end do
-                       end do
+                            if (lgMultiDustChemistry) then
+                               do i = 1, grid%nx
+                                  do j = 1, yTop
+                                     do k = 1, grid%nz
+                                        read(20, *) grid%xAxis(i), grid%yAxis(j), &
+                                             & grid%zAxis(k), NdustTemp(i,j,k), dustAbunIndexTemp(i,j,k)
+                                     end do
+                                  end do
+                               end do
+                            else
+                               print*,grid%nx,yTop,grid%nz
+                               do i = 1, grid%nx
+                                  do j = 1, yTop
+                                     do k = 1, grid%nz
+                                        read(20, *) grid%xAxis(i), grid%yAxis(j), grid%zAxis(k), NdustTemp(i,j,k)
+        !                                write(6,'(3i4,4es11.3)')i,j,k,grid%xAxis(i), grid%yAxis(j), grid%zAxis(k), NdustTemp(i,j,k)
+                                     end do
+                                  end do
+                               end do
+                            end if
+                            close(20)
                     end if
-                    close(20)
                  end if
 
               end if              
@@ -2075,7 +2151,6 @@ CONTAINS
           end if ! lgGas
 
            if (lgDust) then
-              if(associated(NdustTemp)) deallocate(NdustTemp)
               if(lgMultiDustChemistry .and. associated(dustAbunIndexTemp)) deallocate(dustAbunIndexTemp)
            end if
 
@@ -3352,6 +3427,113 @@ CONTAINS
 !           end if
     
     end function
+
+    FUNCTION get_grid_dust_number_density(i,j,k,index_of_grid,dust_number_density, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
+        
+        double precision, INTENT(OUT), DIMENSION(N) :: dust_number_density
+        
+        INTEGER get_grid_dust_number_density
+        INTEGER :: index, active_cell_index
+
+        if (.not.is_grid_committed) then
+            DO index = 1,n
+                dust_number_density(index) = NdustTemp(i(index), j(index), k(index))
+            END DO
+        else
+        
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    get_grid_dust_number_density = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .eq. 0) then
+                    
+                        dust_number_density(index) = 0
+                    
+                else
+                    
+                        dust_number_density(index) = grid3D(index_of_grid(index))%Ndust(active_cell_index)
+                    
+                end if
+            END DO
+        end if
+        get_grid_dust_number_density = 0
+    END FUNCTION
+
+    FUNCTION set_grid_dust_number_density(i,j,k,dust_number_density,index_of_grid, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
+        
+        double precision, INTENT(IN), DIMENSION(N) :: dust_number_density
+        
+        INTEGER set_grid_dust_number_density
+        INTEGER :: index, active_cell_index
+
+
+        if (.not.is_grid_committed) then
+            DO index = 1,n
+                NdustTemp(i(index), j(index), k(index)) = dust_number_density(index)
+            END DO
+        else
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    set_grid_dust_number_density = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .ne. 0) then
+                    
+                    grid3D(index_of_grid(index))%Ndust(active_cell_index) = dust_number_density(index)
+                    
+                end if
+            END DO
+        end if
+        
+        set_grid_dust_number_density = 0
+    END FUNCTION
+
+    FUNCTION get_grid_dust_temperature(i,j,k,species,gsize, index_of_grid, temperature, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k,species,gsize, index_of_grid
+        
+        double precision, INTENT(OUT), DIMENSION(N) :: temperature
+        
+        INTEGER get_grid_dust_temperature
+        INTEGER :: index, active_cell_index
+
+        if (.not.is_grid_committed) then
+            DO index = 1,n
+                temperature(index) = 0.0
+            END DO
+            get_grid_dust_temperature = -1
+            return
+        else
+        
+            DO index = 1,n
+                
+                IF (index_of_grid(index).GT.nGrids) THEN
+                    get_grid_dust_temperature = -1
+                    return
+                END IF
+                active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+                if (active_cell_index .eq. 0) then
+                        temperature(index) = 0.0
+                else
+                        temperature(index) = grid3D(index_of_grid(index))%Tdust(species(index), gsize(index), active_cell_index)
+                    
+                end if
+            END DO
+        end if
+        get_grid_dust_temperature = 0
+    END FUNCTION
     
 END MODULE
 
