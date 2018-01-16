@@ -155,7 +155,7 @@ def new_option_parser():
                       dest="tplot", type="float", default = 100|units.s,
                       help="plotting time [%default]")
     result.add_option("-f", 
-                      dest="filename", default = "supernova_sph_gasget.amuse",
+                      dest="filename", default = "supernova_sph_gadget.amuse",
                       help="input filename [%default]")
     return result
     

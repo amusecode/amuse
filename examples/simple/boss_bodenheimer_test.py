@@ -1,12 +1,13 @@
 """
 Fragmentation in a rotating protostar -- Boss & Bodenheimer (1979, BB79,
   http://adsabs.harvard.edu/abs/1979ApJ...234..289B)
-  
-  Calculates collapse of an isothermal cloud with SPH code fi. Cloud is initially 
-  spherical, with an uniform density with a nonaxisymmetric perturbation of mode = 2 
-  and with 50% amplitude. It rotates as a rigid body with a constant angular velocity 
-  around the z-axis. The collapse leads to formation of a binary system.
-  
+
+  Calculate the collapse of an isothermal cloud with SPH code fi. The
+  cloud is initially spherical, with an uniform density with a
+  nonaxisymmetric perturbation of mode = 2 and with 50% amplitude. It
+  rotates as a rigid body with a constant angular velocity around the
+  z-axis. The collapse leads to formation of a binary system.
+
   arguments:
     N -- number of particles
     Mcloud -- mass of the cloud
@@ -14,7 +15,8 @@ Fragmentation in a rotating protostar -- Boss & Bodenheimer (1979, BB79,
     omega -- angular velocity of the cloud
     density_perturb -- amplitude of the density perturbation
   
-  Plots 10 snapshots of the simulations (bb79_rho_*.png) -- log10(rho [amu/cm**3]).
+  Plot 10 snapshots of the simulations (bb79_rho_*.png)
+       -- log10(rho [amu/cm**3]).
 """
 from __future__ import print_function
 
@@ -125,7 +127,7 @@ def bb79_cloud_evolve(N=50000,
   sph.parameters.verbosity = 0
   sph.parameters.timestep=0.1*t_ff
   
-  print(" ** evolving to time: (end time = ~ {0:.3f} t_ff)".format(t_total/t_ff))
+  print("**evolving to time: (end time = ~ {0:.3f} t_ff)".format(t_total/t_ff))
   
   # setting snapshots to be plotted
   nplot = 10
@@ -158,4 +160,4 @@ if __name__ == "__main__":
                     Rcloud=3.2e16 | units.cm, 
                     omega=1.56e-12 | units.rad/units.s,
                     density_perturb=0.5,
-                    t_total=8.3e11 | units.s) # ~1.5*t_ff
+                    t_total=8.3e11 | units.s)  # ~1.5*t_ff

@@ -13,12 +13,13 @@ def make_plot(disk1, disk2, filename):
     pyplot.xlim(-300, 300)
     pyplot.ylim(-300, 300)
 
-    pyplot.scatter(disk1.x.value_in(units.kpc), disk1.y.value_in(units.kpc), c=c[0], alpha=1, s=1, lw=0)
-    pyplot.scatter(disk2.x.value_in(units.kpc), disk2.y.value_in(units.kpc), c=c[1], alpha=1, s=1, lw=0)
+    pyplot.scatter(disk1.x.value_in(units.kpc), disk1.y.value_in(units.kpc),
+                   c=c[0], alpha=1, s=1, lw=0)
+    pyplot.scatter(disk2.x.value_in(units.kpc), disk2.y.value_in(units.kpc),
+                   c=c[1], alpha=1, s=1, lw=0)
     pyplot.savefig(filename)
 
 def make_galaxies(M_galaxy, R_galaxy, n_halo, n_bulge, n_disk):
-
     converter=nbody_system.nbody_to_si(M_galaxy, R_galaxy)
     galaxy1 = new_galactics_model(n_halo,
                                   converter,
@@ -53,7 +54,8 @@ def simulate_merger(galaxy1, galaxy2, converter, n_halo, t_end):
 
     make_plot(disk1, disk2, "Galaxy_merger_t0Myr")
     dynamics.evolve_model(t_end)
-    make_plot(disk1, disk2, "Galaxy_merger_t"+str(t_end.value_in(units.Myr))+"Myr")
+    make_plot(disk1, disk2,
+              "Galaxy_merger_t"+str(t_end.value_in(units.Myr))+"Myr")
 
     dynamics.stop()
 
@@ -79,5 +81,6 @@ def new_option_parser():
 
 if __name__ == '__main__':
     o, arguments  = new_option_parser().parse_args()
-    galaxy1, galaxy2, converter = make_galaxies(o.M_galaxy, o.R_galaxy, o.n_halo, o.n_bulge, o.n_disk)
+    galaxy1, galaxy2, converter = make_galaxies(o.M_galaxy, o.R_galaxy,
+                                                o.n_halo, o.n_bulge, o.n_disk)
     simulate_merger(galaxy1, galaxy2, converter, o.n_halo, o.t_end)
