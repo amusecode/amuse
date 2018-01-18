@@ -25,9 +25,9 @@ def make_map(sph, N=100, L=1):
     x = L*(x.flatten()-N/2.)/N
     y = L*(y.flatten()-N/2.)/N
     z = x*0.
-    vx = zero
-    vy = zero
-    vz = zero
+    vx = 0*x
+    vy = 0*x
+    vz = 0*x
 
     x = units.parsec(x)
     y = units.parsec(y)
@@ -59,8 +59,30 @@ def plot_hydro(time, sph, i, L=10):
     fig = single_frame(x_label, y_label, logx=False, logy=False,
                        xsize=12, ysize=12)
     rho = make_map(sph,N=200,L=L)
-    pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)),
-                  extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5)
+    cax = pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)),
+                        cmap="jet",
+                        extent=[-L/2,L/2,-L/2,L/2],vmin=2,vmax=5)
+    if i==5:
+        cbar = fig.colorbar(cax, ticks=[2, 3, 4, 5], orientation='vertical', fraction=0.05)
+        cbar.ax.set_yticklabels([2, " ", " ", 5])  # horizontal colorbar
+        cbar.set_label('log projected density [$amu/cm^3$]', rotation=270)
+
+    """
+    rhomin = numpy.log10(rho.value_in(units.amu/units.cm**3)).min()
+    rhomax = numpy.log10(rho.value_in(units.amu/units.cm**3)).max()
+    cax = pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)),
+                        extent=[-L/2,L/2,-L/2,L/2],vmin=rhomin,vmax=rhomax)
+    rhomid = 0.5*(rhomin + rhomax)
+    print rhomin, rhomid, rhomax
+    cbar = fig.colorbar(cax, ticks=[rhomin, rhomid, rhomax], orientation='vertical', fraction=0.045)
+#    cbar.ax.set_yticklabels(['Low', ' ', 'High'])  # horizontal colorbar
+    low = "%.2f" % rhomin
+    mid = "%.1f" % rhomid
+    mx = "%.2f" % rhomax
+    cbar.ax.set_yticklabels([low, mid, mx])  # horizontal colorbar
+    cbar.set_label('projected density [$amu/cm^3$]', rotation=270)
+    """
+    
     pyplot.savefig("GMC_"+str(i)+".png")
 
 def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
@@ -107,7 +129,7 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
 
     channel_from_sph_to_parts= sph.gas_particles.new_channel_to(parts)
     channel_from_parts_to_sph= parts.new_channel_to(sph.gas_particles)
-
+    
     i = 0
     L = 6
     E0 = 0.0
