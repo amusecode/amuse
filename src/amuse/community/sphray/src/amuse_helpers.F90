@@ -1158,6 +1158,8 @@ subroutine set_default_parameters
   GV%H_mf=1.                !< [Config File] hydrogen mass fraction
   GV%He_mf=0.               !< [Config File] helium mass fraction
 
+  GV%dust_to_gas_ratio=0.   !< [Config File] dust to gas ratio
+
   GV%OutputDir='./'           !< [Config File] path to output directory
   GV%OutputFileBase='none'      !< [Config File] output file base
 

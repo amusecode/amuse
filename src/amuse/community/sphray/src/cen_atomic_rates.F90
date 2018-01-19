@@ -350,4 +350,32 @@ contains
     end function Osterbrok_HeII_photo_cs
 
 
+
+!------------------------------------------
+!> dust photo cross section per H [cm^2]
+  function dust_photo_cs( Ry, dust_to_gas_ratio ) result( sigma)
+    real(r8b), intent(in) :: Ry  !< energy [Rydbergs]
+    real(r8b), intent(in) :: dust_to_gas_ratio  !< energy [Rydbergs]
+    real(r8b) :: sigma           !< cross section [cm^2]
+
+    real(r8b) :: eV
+    real(r8b) :: x
+    real(r8b) :: y
+
+    real(r8b), parameter :: E0 = 4.298d-1
+    real(r8b), parameter :: sig0 = 4.8d-22
+    real(r8b), parameter :: xi = 3
+    real(r8b), parameter :: dust_to_gas_reference = 0.01
+
+    eV = Ry * 13.6d0
+    x = eV / E0
+    y = x
+  
+    sigma = (dust_to_gas_ratio/dust_to_gas_reference) * xi * sig0   
+
+  end function dust_photo_cs
+
+
+
 end module cen_atomic_rates_mod
+

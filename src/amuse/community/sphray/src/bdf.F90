@@ -96,6 +96,7 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
      ip%gammaHI = zero
      ip%gammaHeI = zero
      ip%gammaHeII = zero
+     ip%gammaDust = zero
   end if
 
 
@@ -179,6 +180,7 @@ subroutine bdfint(ip,scalls,photo,caseA,He,isoT,fixT)
            ip%pdeps = ip%pdeps + ip%gammaHeI  * ip%HeIcnt  * dt_i
            ip%pdeps = ip%pdeps + ip%gammaHeII * ip%HeIIcnt * dt_i
         end if
+        ip%pdeps = ip%pdeps + ip%gammaHeII * (ip%HIcnt + ip%HIIcnt) * dt_i
      end if
 
 
