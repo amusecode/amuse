@@ -1039,6 +1039,16 @@ subroutine sphray_get_boxsize(x)
   x=maxval(GV%BoxUprs-GV%BoxLwrs)
 end subroutine
 
+subroutine sphray_set_dust_to_gas_ratio(x)
+  real(r8b) :: x
+  GV%dust_to_gas_ratio = x
+end subroutine
+
+subroutine sphray_get_dust_to_gas_ratio(x)
+  real(r8b) :: x
+  x=GV%dust_to_gas_ratio
+end subroutine
+
 subroutine sphray_set_defaultspectype(x)
   real(r8b) :: x
   default_spectral_type=x
@@ -1147,6 +1157,8 @@ subroutine set_default_parameters
 
   GV%H_mf=1.                !< [Config File] hydrogen mass fraction
   GV%He_mf=0.               !< [Config File] helium mass fraction
+
+  GV%dust_to_gas_ratio=0.   !< [Config File] dust to gas ratio
 
   GV%OutputDir='./'           !< [Config File] path to output directory
   GV%OutputFileBase='none'      !< [Config File] output file base

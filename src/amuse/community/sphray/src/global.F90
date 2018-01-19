@@ -127,6 +127,9 @@ type global_variables_type
    real(r8b)       :: H_mf                !< [Config File] hydrogen mass fraction
    real(r8b)       :: He_mf               !< [Config File] helium mass fraction
 
+                                          !< Added to AMUSE interface
+   real(r8b)       :: dust_to_gas_ratio   !< [Config File] dust to gas ratio 
+
    character(clen) :: OutputDir           !< [Config File] path to output directory
    character(clen) :: OutputFileBase      !< [Config File] output file base
 

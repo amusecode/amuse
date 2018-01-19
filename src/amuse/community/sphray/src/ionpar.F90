@@ -13,6 +13,7 @@ use ray_mod
 use raylist_mod
 use b2cd_mod, only: b2cdfac
 use cen_atomic_rates_mod, only: Verner_HI_photo_cs
+use cen_atomic_rates_mod, only: dust_photo_cs
 use cen_atomic_rates_mod, only: Osterbrok_HeI_photo_cs
 use cen_atomic_rates_mod, only: Osterbrok_HeII_photo_cs
 use cen_atomic_rates_mod, only: Haiman_Bremss_cool_H, Haiman_Bremss_cool_He
@@ -97,6 +98,7 @@ type ionpart_type
    real(r8b) :: DH(2,2)      !< dxH/dt array
    real(r8b) :: DHe(3,3)     !< dxHe/dt array
 
+   real(r8b) :: sigmaDust    !< dust photo cross-section
    real(r8b) :: sigmaHI      !< HI photo cross-section
    real(r8b) :: sigmaHeI     !< HeI photo cross-section
    real(r8b) :: sigmaHeII    !< HeII photo cross-section
@@ -120,20 +122,24 @@ type ionpart_type
    real(r8b) :: HeIIIcnt     !< number of HeIII atoms
    real(r8b) :: Allcnt       !< number of all photo absorbing species (HI,HeI,HeII)
 
+   real(r8b) :: tauDust      !< dust optical depth
    real(r8b) :: tauHI        !< HI optical depth
    real(r8b) :: tauHeI       !< HeI optical depth
    real(r8b) :: tauHeII      !< HeII optical depth
    real(r8b) :: tausum       !< sum of all optical depths
 
+   real(r8b) :: Dusttaufac   !< 1-exp(-tauDust)
    real(r8b) :: HItaufac     !< 1-exp(-tauHI)
    real(r8b) :: HeItaufac    !< 1-exp(-tauHeI)
    real(r8b) :: HeIItaufac   !< 1-exp(-tauHeII)
    real(r8b) :: taufacsum    !< sum of all tau factors
 
+   real(r8b) :: Dustfrac     !< fraction of photons absorbed by dust
    real(r8b) :: HIfrac       !< fraction of photons absorbed by HI
    real(r8b) :: HeIfrac      !< fraction of photons absorbed by HeI
    real(r8b) :: HeIIfrac     !< fraction of photons absorbed by HeII
-
+    
+   real(r8b) :: gammaDust    !< Dust photoabsorption rate
    real(r8b) :: gammaHI      !< HI   photoionization rate
    real(r8b) :: gammaHeI     !< HeI  photoionization rate
    real(r8b) :: gammaHeII    !< HeII photoionization rate
@@ -547,6 +553,7 @@ subroutine initialize_ionpar(ipar,par,index,srcray,He,raylist,impact)
         ipar%sigmaHeI = 0.0d0
         ipar%sigmaHeII = 0.0d0
      end if
+     ipar%sigmaDust=dust_photo_cs(raylist%ray%freq, GV%dust_to_gas_ratio)
      
      if (srcray) then        
         ipar%pflux = raylist%ray%pcnt / ipar%dt_s 
@@ -709,7 +716,10 @@ subroutine set_taus(ip,He)
      ip%tauHeII = zero
   end if
   
-  ip%tausum = ip%tauHI + ip%tauHeI + ip%tauHeII
+  ! calculate dust optical depth,scales with total H (alternative: scale with HI only)
+  ip%tauDust = ip%cdfac * (ip%HIcnt + ip%HIIcnt) * ip%sigmaDust
+  
+  ip%tausum = ip%tauHI + ip%tauHeI + ip%tauHeII + ip%tauDust
 
 
   ! calculate absorption ratios
@@ -764,22 +774,26 @@ subroutine set_taus(ip,He)
 
   end if
 
-  ip%taufacsum = ip%HItaufac + ip%HeItaufac + ip%HeIItaufac
+  if (ip%tauDust < TAU_LOW) then
+      ip%Dusttaufac = ip%tauDust
+  else if (ip%tauHeII > TAU_HIGH) then
+      ip%Dusttaufac = one
+  else
+      ip%Dusttaufac = one - exp(-ip%tauHeII)
+  end if
+  
+  ip%taufacsum = ip%HItaufac + ip%HeItaufac + ip%HeIItaufac + ip%Dusttaufac
 
   if (ip%taufacsum > zero) then
   
-     if (.not. He) then
-        ip%HIfrac   = one
-        ip%HeIfrac  = zero
-        ip%HeIIfrac = zero
-     else
-        ip%HIfrac   = ip%HItaufac   / ip%taufacsum
-        ip%HeIfrac  = ip%HeItaufac  / ip%taufacsum
-        ip%HeIIfrac = ip%HeIItaufac / ip%taufacsum
-     end if
+    ip%Dustfrac = ip%Dusttaufac / ip%taufacsum
+    ip%HIfrac   = ip%HItaufac   / ip%taufacsum
+    ip%HeIfrac  = ip%HeItaufac  / ip%taufacsum
+    ip%HeIIfrac = ip%HeIItaufac / ip%taufacsum
 
   else
 
+     ip%Dustfrac = zero
      ip%HIfrac   = zero
      ip%HeIfrac  = zero
      ip%HeIIfrac = zero
@@ -823,6 +837,7 @@ subroutine set_gammas(ip,He)
         ip%gammaHeI  = ip%gammasum * ip%HeIfrac 
         ip%gammaHeII = ip%gammasum * ip%HeIIfrac 
      end if
+     ip%gammaDust = ip%gammasum * ip%Dustfrac
 
   else
 
@@ -832,6 +847,7 @@ subroutine set_gammas(ip,He)
         ip%gammaHeI = zero
         ip%gammaHeII = zero
      end if
+     ip%gammaDust = zero
      return
 
   end if
