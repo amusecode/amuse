@@ -420,6 +420,22 @@ function set_boxsize(x) result(ret)
   ret=0
 end function
 
+function get_dust_to_gas_ratio(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(r8b) :: x
+  call sphray_get_dust_to_gas_ratio(x)
+  ret=0
+end function
+
+function set_dust_to_gas_ratio(x) result(ret)
+  use amuse_sphrayMod
+  integer :: ret
+  real(r8b) :: x
+  call sphray_set_dust_to_gas_ratio(x)
+  ret=0
+end function
+
 function set_globalHefraction(x) result(ret)
   use amuse_sphrayMod
   integer :: ret

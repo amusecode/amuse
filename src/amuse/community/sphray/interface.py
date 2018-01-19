@@ -326,6 +326,21 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function;
 
     @legacy_function   
+    def set_dust_to_gas_ratio():
+        """ set dust_to_gas_ratio  """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('dust_to_gas_ratio', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @legacy_function   
+    def get_dust_to_gas_ratio():
+        """ get dust_to_gas_ratio   """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('dust_to_gas_ratio', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+    
+    @legacy_function   
     def set_globalHefraction():
         """ set He mass fraction (f_H+f_He=1 )  """
         function = LegacyFunctionSpecification()  
@@ -552,6 +567,14 @@ class SPHRay(CommonCode):
             default_value = 13.2 | units.kpc
         )
 
+        object.add_method_parameter(
+            "get_dust_to_gas_ratio",
+            "set_dust_to_gas_ratio", 
+            "dust_to_gas_ratio", 
+            "dust to gas mass-ratio expressed as dust particles per HI", 
+            default_value = 0.0 
+        )
+        
         object.add_method_parameter(
             "get_defaultspectype",
             "set_defaultspectype", 

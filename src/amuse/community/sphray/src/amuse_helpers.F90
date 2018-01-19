@@ -1039,6 +1039,16 @@ subroutine sphray_get_boxsize(x)
   x=maxval(GV%BoxUprs-GV%BoxLwrs)
 end subroutine
 
+subroutine sphray_set_dust_to_gas_ratio(x)
+  real(r8b) :: x
+  GV%dust_to_gas_ratio = x
+end subroutine
+
+subroutine sphray_get_dust_to_gas_ratio(x)
+  real(r8b) :: x
+  x=GV%dust_to_gas_ratio
+end subroutine
+
 subroutine sphray_set_defaultspectype(x)
   real(r8b) :: x
   default_spectral_type=x
