@@ -257,7 +257,7 @@ class TestSPHRayInterface(TestWithMPI):
             result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,0))
 
-        for x,l in [('raynumber',1000000.),('boxsize',13.2),("defaultspectype",-1.)]:
+        for x,l in [('raynumber',1000000.),('boxsize',13.2),("defaultspectype",-1.),('dust_to_gas_ratio',0.)]:
             result,err=getattr(instance, 'get_'+x)()
             self.assertAlmostEqual( result,l ,6)
             err=getattr(instance, 'set_'+x)(1.)
@@ -544,7 +544,8 @@ class TestSPHRay(TestWithMPI):
 
         for par,val,tval in [ ("number_of_rays", 1022.69032205 | (units.Myr**-1) , 10000| units.Myr**-1),
                               ("box_size",13.2 | units.kpc,  10. | units.kpc),
-                              ("default_spectral_type", -1.,1.)]:
+                              ("default_spectral_type", -1.,1.),
+                              ("dust_to_gas_ratio",0.,0.01)]:
             val1=getattr(instance.parameters,par)
             self.assertAlmostRelativeEqual(val,val1,6)            
             setattr(instance.parameters, par, tval)
