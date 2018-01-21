@@ -23,9 +23,10 @@ from amuse.io import write_set_to_file
 from distinct_colours import get_distinct
 
 ###BOOKLISTSTART1###
-def make_grid(number_of_grid_cells, length, constant_hydrogen_density, inner_radius, outer_radius):
-    grid = Grid.create([number_of_grid_cells] * 3, length.as_vector_with_length(3))
-    
+def make_grid(number_of_grid_cells, length, constant_hydrogen_density,
+              inner_radius, outer_radius):
+    grid = Grid.create([number_of_grid_cells] * 3,
+                       length.as_vector_with_length(3))
     grid.radius = grid.position.lengths()
     grid.hydrogen_density = constant_hydrogen_density
     grid.hydrogen_density[grid.radius <= inner_radius] = 0 | units.cm ** -3
