@@ -83,10 +83,12 @@ def setup_grid(radiative_transfer, outer_radius, Ngrid):
 
 ###BOOKLISTSTART2###
 def initiate_radiative_transfer_code(outer_radius, Ngrid):
-    radiative_transfer = Mocassin(number_of_workers = 4) #, debugger = "xterm")
+    radiative_transfer = Mocassin(number_of_workers = 4)
     
-    radiative_transfer.set_input_directory(radiative_transfer.get_default_input_directory())
-    radiative_transfer.set_mocassin_output_directory(radiative_transfer.output_directory  + os.sep)
+    radiative_transfer.set_input_directory(
+        radiative_transfer.get_default_input_directory())
+    radiative_transfer.set_mocassin_output_directory(
+        radiative_transfer.output_directory + os.sep)
     radiative_transfer.initialize_code()
     radiative_transfer.set_symmetricXYZ(True)
 
@@ -94,8 +96,10 @@ def initiate_radiative_transfer_code(outer_radius, Ngrid):
     setup_abundancies(radiative_transfer)
     
     radiative_transfer.parameters.initial_nebular_temperature = 6000.0 | units.K
-    radiative_transfer.parameters.high_limit_of_the_frequency_mesh = 15 | mocassin_rydberg_unit
-    radiative_transfer.parameters.low_limit_of_the_frequency_mesh = 1.001e-5 | mocassin_rydberg_unit
+    radiative_transfer.parameters.high_limit_of_the_frequency_mesh \
+        = 15 | mocassin_rydberg_unit
+    radiative_transfer.parameters.low_limit_of_the_frequency_mesh \
+        = 1.001e-5 | mocassin_rydberg_unit
     
     radiative_transfer.parameters.total_number_of_photons = 10000000
     radiative_transfer.parameters.total_number_of_points_in_frequency_mesh = 600
@@ -117,14 +121,16 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
                    constant_hydrogen_density = 100 | units.cm**-3,
                    inner_radius = 1.0 | units.parsec,
                    outer_radius = outer_radius)
-    radiative_transfer = initiate_radiative_transfer_code(outer_radius, number_of_grid_cells)
+    radiative_transfer \
+        = initiate_radiative_transfer_code(outer_radius, number_of_grid_cells)
     
     radiative_transfer.grid.hydrogen_density = grid.hydrogen_density
     radiative_transfer.commit_grid()
     radiative_transfer.particles.add_particle(star)
     radiative_transfer.commit_particles()
     
-    max_number_of_photons = radiative_transfer.parameters.total_number_of_photons * 100
+    max_number_of_photons \
+        = radiative_transfer.parameters.total_number_of_photons * 100
     percentage_converged = previous_percentage_converged = 0.0
 
 
@@ -145,11 +151,17 @@ def main(number_of_grid_cells = 15, min_convergence = 20):
 
         radiative_transfer.step()
         percentage_converged = radiative_transfer.get_percentage_converged()
-        print("percentage converged :", percentage_converged, ", step :", step, ", photons:", radiative_transfer.parameters.total_number_of_photons)
+        print("percentage converged :", percentage_converged, ", step :", step,
+              ", photons:",
+              radiative_transfer.parameters.total_number_of_photons)
         
         if previous_percentage_converged > 5 and percentage_converged < 95:
-            convergence_increase = (percentage_converged-previous_percentage_converged)/previous_percentage_converged
-            if convergence_increase < 0.2 and radiative_transfer.parameters.total_number_of_photons < max_number_of_photons:
+            convergence_increase \
+                = (percentage_converged - previous_percentage_converged) \
+                    / previous_percentage_converged
+            if convergence_increase < 0.2 \
+                and radiative_transfer.parameters.total_number_of_photons\
+                    < max_number_of_photons:
                 radiative_transfer.parameters.total_number_of_photons *= 2
         step += 1
         previous_percentage_converged = percentage_converged    
