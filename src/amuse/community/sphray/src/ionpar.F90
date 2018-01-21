@@ -826,6 +826,8 @@ subroutine set_gammas(ip,He)
 
   else
 
+     ip%fracabsorb = zero
+     ip%pdepr = zero
      ip%gammasum = zero
      ip%gammaHI = zero
      if (He) then
