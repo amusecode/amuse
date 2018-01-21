@@ -20,7 +20,7 @@ def evolve_star(mass, age):
     stellar.evolve_model(age)
     return stellar
 
-def star_to_sph(stellar, omega, Nsph):
+def evolve_star_and_convert_to_sph(stellar, omega, Nsph):
     new_age = stellar.model_time
     star = stellar.particles[0]
     if star.core_mass>zero:
@@ -112,7 +112,7 @@ def new_option_parser():
 if __name__ == "__main__":
     o, arguments = new_option_parser().parse_args()
     stellar = evolve_star(o.mass, o.age)
-    star, core, age = star_to_sph(stellar, o.omega, o.Nsph)
+    star, core, age = evolve_star_and_convert_to_sph(stellar, o.omega, o.Nsph)
     print "age=", age.in_(units.Myr)
     print star
     print star.mass.sum().in_(units.MSun), core.mass

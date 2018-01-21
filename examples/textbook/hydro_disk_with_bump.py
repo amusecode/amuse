@@ -148,7 +148,7 @@ def new_disk_with_bump(Mstar = 10|units.MSun,
 
     # initialize bump
     
-    Nbump = Ndisk*Mbump/Mdisk
+    Nbump = int(Ndisk*Mbump/Mdisk)
     bump = new_plummer_gas_model(Nbump,
                                  convert_nbody=nbody_system.nbody_to_si(Mbump,
                                                                         Rbump))
