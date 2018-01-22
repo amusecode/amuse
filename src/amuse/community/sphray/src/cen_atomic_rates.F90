@@ -295,8 +295,8 @@ contains
     real(r8b) :: x
     real(r8b) :: y
 
-    if (freq < 1.d0) then
-      sigma = 0.de0
+    if (Ry < 1.d0) then
+      sigma = 0.d0
       return
     end if
     
