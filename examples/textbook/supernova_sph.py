@@ -335,7 +335,7 @@ def new_option_parser():
                       dest="core_mass", type="float", default = 1.4|units.MSun,
                       help="Mass of the stellar core [%default]")
     result.add_option("-n", 
-                      dest="resolution", type="int", default = 100,
+                      dest="resolution", type="int", default = 300,
                       help="Resolution of the grid [%default]")
     result.add_option("-r", unit=units.RSun,
                       dest="core_radius", type="float", default = 0.1|units.RSun,

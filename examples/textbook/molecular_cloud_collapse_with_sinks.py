@@ -51,7 +51,7 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
                   "sum=", \
                   (hydro.code.gas_particles.mass.sum() \
                     + hydro.code.dm_particles.mass.sum()).in_(units.MSun), \
-                    "S=", hydro.stellar.particles.mass.sum().in_(units.MSun)
+                    "S=", hydro.star_particles.mass.sum().in_(units.MSun)
             Mtot = hydro.gas_particles.mass.sum() \
                     + hydro.star_particles.mass.sum()
         else:
