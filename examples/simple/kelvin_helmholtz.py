@@ -106,7 +106,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     return result
     
 def plot_grid(grid):
-    rho = grid.rho[...,...,0].value_in(density)
+    rho = grid.rho[...,0].value_in(density)
     figure = pyplot.figure(figsize=(6,6))
     plot = figure.add_subplot(1,1,1)
     plot.imshow(rho, origin = 'lower')
