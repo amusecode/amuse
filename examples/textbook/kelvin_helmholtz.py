@@ -32,18 +32,19 @@ def new_instance_of_capreole_code(number_of_workers=1):
 
 def new_instance_of_mpiamrvac_code(number_of_workers=1):
     from amuse.community.mpiamrvac.interface import MpiAmrVac
-    result=MpiAmrVac(number_of_workers=number_of_workers) #, redirection="none")
+    #result=MpiAmrVac(number_of_workers=number_of_workers) #, redirection="none")
+    result=MpiAmrVac(mode="2d", number_of_workers=self.number_of_workers)
     result.set_parameters_filename(result.default_parameters_filename)
     result.initialize_code()
-    result.parameters.maximum_number_of_grid_levels = 6
+    result.parameters.maximum_number_of_grid_levels = 3
 #    result.parameters.spatial_discretization_method = 'tvdmu'
 #    result.parameters.predictor_step_discretization_method = 'tvdmu'
 #    result.parameters.entropy_type = 'powell'
-    result.parameters.courant_number = 0.8
+#    result.parameters.courant_number = 0.8
         
-    result.parameters.x_boundary_conditions = ("cont","cont")
-    result.parameters.y_boundary_conditions = ("cont","cont")
-    result.parameters.z_boundary_conditions = ("cont","cont")
+#    result.parameters.x_boundary_conditions = ("cont","cont")
+#    result.parameters.y_boundary_conditions = ("cont","cont")
+#    result.parameters.z_boundary_conditions = ("cont","cont")
 
     result.parameters.length_x = 1 | length
     result.parameters.length_y = 1 | length
@@ -110,8 +111,8 @@ def pertubate_grid(grid):
         
 def simulate_kelvin_helmholtz_instability(end_time):
 #    instance=new_instance_of_athena_code()
-    instance=new_instance_of_capreole_code()    
-#    instance=new_instance_of_mpiamrvac_code()    
+#    instance=new_instance_of_capreole_code()    
+    instance=new_instance_of_mpiamrvac_code()    
 #    set_parameters(instance)
     
     print("setup grid")
