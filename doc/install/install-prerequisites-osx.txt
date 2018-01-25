@@ -4,7 +4,7 @@ Installing on macOS
 Installing on macOS with MacPorts 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a clean MacPorts installation. The MacPorts build
+In this section we assume a clean MacPorts installation. The MacPorts build
 system will build most packages from source so installation may take a while.
 The packages in MacPorts support different *variants*, each *variant* is built
 differently. Below, with all installation commands we will specify the variant
@@ -50,7 +50,7 @@ You can install all the packages described below in one go with::
     > sudo port install py27-mpi4py +openmpi
     > sudo port install py27-matplotlib
 
-To make sure the right macports compilers and python are set as default, do the
+To make sure the right MacPorts compilers and python are set as default, do the
 following::
 
     > sudo port select --set mpi openmpi-gcc49-fortran
@@ -191,7 +191,7 @@ you can install it with::
 .. note::
 
     Macports will install the compilers under non standard names.
-    To make sure the right macports compilers and python are set as default, do
+    To make sure the right MacPorts compilers and python are set as default, do
     the following::
 
     > sudo port select --set mpi openmpi-gcc49-fortran
