@@ -34,7 +34,8 @@ def plot_ionization_fraction(pos, xion):
     from matplotlib import pyplot
     x_label = "r [pc]"
     y_label = r'$\xi_{\rm ion}$'
-    figure = single_frame(x_label, y_label, logx=False, logy=False, xsize=14, ysize=8)
+    figure = single_frame(x_label, y_label, logx=False, logy=False,
+                          xsize=14, ysize=8)
     pyplot.scatter(r, x, c=get_distinct(1), lw=0, s=100)
     pyplot.plot(R, X, c=get_distinct(2)[1], lw=2)
     pyplot.xlim(0, 6)
@@ -54,14 +55,14 @@ def main(N, Lstar, boxsize, t_end):
     hydro.evolve_model(1|units.hour)
     hydro.gas_particles.new_channel_to(ism).copy()
     hydro.stop()
-    ism = ism.select(lambda r: r.length()<0.5*boxsize,["position"])
+    ism = ism.select(lambda r: r.length() < 0.5*boxsize,["position"])
 
-    source=Particle()
+    source = Particle()
     source.position = (0, 0, 0) |units.parsec
     source.flux = Lstar/(20. | units.eV)
     source.rho = ism.rho.max()
     source.xion = ism.xion.max()
-    source.u = (9. |units.kms)**2
+    source.u = (9.|units.kms)**2
     
     radiative = SimpleX()
     radiative.parameters.box_size = boxsize    
@@ -72,7 +73,8 @@ def main(N, Lstar, boxsize, t_end):
     print "min ionization:", radiative.particles.xion.min()
     print "average ionization:", radiative.particles.xion.mean()
     print "max ionization:", radiative.particles.xion.max()
-    plot_ionization_fraction(radiative.particles.position, radiative.particles.xion)
+    plot_ionization_fraction(radiative.particles.position,
+                             radiative.particles.xion)
     radiative.stop()
 ###BOOKLISTSTOP###
     
