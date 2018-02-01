@@ -1,4 +1,5 @@
-## multi component fits for various supernovae from https://arxiv.org/pdf/1404.2004.pdf
+## multi-component fits for various supernovae from
+## https://arxiv.org/pdf/1404.2004.pdf
 import numpy
 from amuse.lab import *
 #SN 2012au
@@ -15,7 +16,7 @@ class Supernova_Ibc:
         self.trise = 5.61 | units.day
         
     def luminosity_at_time(self, time):
-        if time>self.t0:
+        if time > self.t0:
             F = self.A * numpy.exp(-(time-self.t0)/self.tfall)\
                          /  (1 + numpy.exp(-(time-self.t0)/self.trise))
         else:
@@ -36,7 +37,8 @@ class Supernova_IIp:
         print "Name=", self.name
         print "Etot = ", self.Etot.in_(units.erg)
         print "Lpeak= ", self.Lpeak.in_(units.LSun)
-        print "Mass parameters:", self.Mp, self.A, self.B1, self.B2, self.BdN, self.BdC
+        print "Mass parameters:", self.Mp, self.A, self.B1, self.B2, \
+              self.BdN, self.BdC
         print "time-scales parameters:", self.t1, self.tp, self.t2, self.td
 
     def set_supernova_parameters(self, name):
@@ -103,23 +105,26 @@ class Supernova_IIp:
             self.t2=106.
             self.td=10.
 
-        #    def supernova_IIp_lightcurve(self, time):
+    # def supernova_IIp_lightcurve(self, time):
+
     def luminosity_at_time(self, time):
         t = time.value_in(units.day) - self.tstart.value_in(units.day)
         L0 = 6.4e-5
         L = 0
-        if t<=self.t0:
+        if t <= self.t0:
             L = L0
-        elif t<self.t0+self.t1:
+        elif t < self.t0+self.t1:
             L = L0 + self.M1() * (t/self.t1)**self.A
-        elif t<self.t0+self.t1+self.tp:
+        elif t < self.t0+self.t1+self.tp:
             L = L0 + self.M1() * numpy.exp(self.B1*(t-self.t1))
-        elif t<self.t0+self.t1+self.tp+self.t2:
+        elif t < self.t0+self.t1+self.tp+self.t2:
             L = L0 + self.Mp * numpy.exp(-self.B2*(t-(self.t1+self.tp)))
-        elif t<self.t0+self.t1+self.tp+self.t2+self.td:
-            L = L0 + self.M2() * numpy.exp(-self.BdN*(t-(self.t1+self.t2+self.tp)))
+        elif t < self.t0+self.t1+self.tp+self.t2+self.td:
+            L = L0 + self.M2() \
+                      * numpy.exp(-self.BdN*(t-(self.t1+self.t2+self.tp)))
         elif t>=self.t0+self.t1+self.tp+self.t2+self.td:
-            L = self.Md() * numpy.exp(-self.BdC*(t-(self.t1+self.t2+self.tp+self.td)))
+            L = self.Md() \
+                 * numpy.exp(-self.BdC*(t-(self.t1+self.t2+self.tp+self.td)))
         return self.Lpeak * L 
 
     def M1(self):
