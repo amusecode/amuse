@@ -80,11 +80,13 @@ def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-N", dest="N", type="int", default = 1000,
-                      help="number of stars [%default]")
+                      help="number of gas particles [%default]")
     result.add_option("-t", unit=units.Myr,
+                      type="float",
                       dest="t_end", default = 0.4|units.Myr,
                       help="radiation time [%default]")
     result.add_option("-L", unit=units.LSun,
+                      type="float",
                       dest="Lstar", default = 100|units.LSun,
                       help="luminosity of ionizing source [%default]")
     result.add_option("-d", unit=units.parsec,
