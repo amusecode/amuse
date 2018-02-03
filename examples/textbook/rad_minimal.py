@@ -40,12 +40,12 @@ def plot_ionization_fraction(pos, xion):
     pyplot.plot(R, X, c=get_distinct(2)[1], lw=2)
     pyplot.xlim(0, 6)
     pyplot.ylim(-0.04, 1.19)
-    #pyplot.savefig("fig_ionization_of_GMC")
+    pyplot.savefig("fig_ionization_of_GMC")
     pyplot.show()
 
-###BOOKLISTSTART###
-def main(N, Lstar, boxsize, t_end):
-    converter=nbody_system.nbody_to_si(1|units.MSun, 1|units.parsec)
+###BOOKLISTSTART1###
+def generate_ism_initial_conditions(N, boxsize):
+    converter=nbody_system.nbody_to_si(10|units.MSun, 3|units.parsec)
     ism = new_plummer_gas_model(N, converter)
     ism.flux = 0. | units.s**-1
     ism.xion = 0.0
@@ -56,6 +56,13 @@ def main(N, Lstar, boxsize, t_end):
     hydro.gas_particles.new_channel_to(ism).copy()
     hydro.stop()
     ism = ism.select(lambda r: r.length() < 0.5*boxsize,["position"])
+    print "Max density:", ism.rho.max().in_(units.MSun/units.parsec**3), ism.rho.max().in_(units.amu/units.cm**3)
+    return ism
+###BOOKLISTSTOP1###
+
+###BOOKLISTSTART###
+def main(N, Lstar, boxsize, t_end):
+    ism = generate_ism_initial_conditions(N, boxsize)
 
     source = Particle()
     source.position = (0, 0, 0) |units.parsec
@@ -63,7 +70,7 @@ def main(N, Lstar, boxsize, t_end):
     source.rho = ism.rho.max()
     source.xion = ism.xion.max()
     source.u = (9.|units.kms)**2
-    
+
     radiative = SimpleX()
     radiative.parameters.box_size = boxsize    
     radiative.particles.add_particle(source)
@@ -77,7 +84,7 @@ def main(N, Lstar, boxsize, t_end):
                              radiative.particles.xion)
     radiative.stop()
 ###BOOKLISTSTOP###
-    
+
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
@@ -98,5 +105,6 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
+    numpy.random.seed(12345)
     main(**o.__dict__)
 
