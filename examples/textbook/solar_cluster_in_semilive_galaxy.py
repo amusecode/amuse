@@ -10,7 +10,6 @@ from amuse.ext.composition_methods import *
 from matplotlib import pyplot
 from prepare_figure import figure_frame, get_distinct
 
-
 class drift_without_gravity(object):
 
     def __init__(self, particles, time= 0 |units.Myr):
@@ -68,7 +67,8 @@ class drift_without_gravity(object):
 
 class MilkyWay_galaxy(object):
 
-    def __init__(self, Mb=1.40592e10| units.MSun, Md=8.5608e10| units.MSun, Mh=1.07068e11 | units.MSun  ):
+    def __init__(self, Mb=1.40592e10| units.MSun,
+                 Md=8.5608e10| units.MSun, Mh=1.07068e11 | units.MSun  ):
         self.Mb= Mb
         self.Md= Md
         self.Mh= Mh
@@ -88,8 +88,13 @@ class MilkyWay_galaxy(object):
         cut_off=100 |units.kpc
         d1= r/a3
         c=1+ (cut_off/a3)**1.02
-        pot_halo= -constants.G*(self.Mh/a3)*d1**1.02/(1+ d1**1.02) -(constants.G*self.Mh/(1.02*a3))*(-1.02/c +numpy.log(c) + 1.02/(1+d1**1.02)- numpy.log(1.0 +d1**1.02) )
-        return 2*(pot_bulge+pot_disk+ pot_halo) #I have to multiply by 2 because is a rigid potential
+        pot_halo = -constants.G*(self.Mh/a3)*d1**1.02/(1 + d1**1.02) \
+                     - (constants.G*self.Mh/(1.02*a3))\
+                         *(-1.02/c + numpy.log(c) \
+                           + 1.02/(1+d1**1.02) \
+                           - numpy.log(1.0 +d1**1.02))
+        return 2*(pot_bulge + pot_disk + pot_halo) # multiply by 2 for
+    						   # rigid potential
 
        
     def get_gravity_at_point(self, eps, x,y,z): 
@@ -141,9 +146,11 @@ def plot(stars, GMCs):
     print numpy.mean(stars.mass.value_in(units.MSun))
     print numpy.mean(GMCs.mass.value_in(units.MSun))
     size = stars.mass/(0.1 |units.MSun)
-    pyplot.scatter(stars.x.value_in(units.kpc), stars.y.value_in(units.kpc), s=size, c=colors[0])
+    pyplot.scatter(stars.x.value_in(units.kpc), stars.y.value_in(units.kpc),
+                   s=size, c=colors[0])
     size = numpy.sqrt(GMCs.mass/(100 |units.MSun))
-    pyplot.scatter(GMCs.x.value_in(units.kpc), GMCs.y.value_in(units.kpc), s=size, alpha =  0.5, lw=0, c=colors[1])
+    pyplot.scatter(GMCs.x.value_in(units.kpc), GMCs.y.value_in(units.kpc),
+                   s=size, alpha =  0.5, lw=0, c=colors[1])
 
     pyplot.scatter([0], [0], marker="+", s=300, c='r')
     pyplot.scatter([-8.4], [0], marker="+", s=100, c='r')    
@@ -152,14 +159,17 @@ def plot(stars, GMCs):
     pyplot.ylim(-10, 10)
     pyplot.show()
 
-def evolve_cluster_in_potential(gravity, t_end, dt, channels_to_framework, sun=None, GMCs=None, filename=False):
+def evolve_cluster_in_potential(gravity, t_end, dt,
+                                channels_to_framework, sun=None, GMCs=None,
+                                filename=False):
     
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
 
     time = 0.0 | t_end.unit
     if filename:
-        write_set_to_file(sun, filename, "hdf5", timestamp = time, append_to_file=False)
+        write_set_to_file(sun, filename, "hdf5", timestamp = time,
+                          append_to_file=False)
         write_set_to_file(GMCs, filename, "hdf5", timestamp = time)
 
     x = []
@@ -192,14 +202,16 @@ def evolve_cluster_in_potential(gravity, t_end, dt, channels_to_framework, sun=N
 def integrate_single_particle_in_potential(sun, t_end, dt):
     MWG = MilkyWay_galaxy()    
     cluster_gravity = drift_without_gravity(sun)
-    channel_from_gravity_to_framework = cluster_gravity.particles.new_channel_to(sun)
+    channel_from_gravity_to_framework \
+        = cluster_gravity.particles.new_channel_to(sun)
     
     gravity = bridge.Bridge(use_threading=False)
     gravity.add_system(cluster_gravity, (MWG,) )
     t_orb = 2*numpy.pi*sun.position.length()/sun.velocity.length()
     gravity.timestep = min(dt, 10|units.Myr)
 
-    x, y = evolve_cluster_in_potential(gravity, t_end, dt, [channel_from_gravity_to_framework])
+    x, y = evolve_cluster_in_potential(gravity, t_end, dt,
+                                       [channel_from_gravity_to_framework])
     gravity.stop()
     return x, y
 
@@ -222,7 +234,8 @@ def integrate_cluster_and_GMCs_in_potential(sun, GMCs, t_end, dt, filename):
     t_orb = 2*numpy.pi*sun.position.length()/sun.velocity.length()
     gravity.timestep = min(dt, 10|units.Myr)
     
-    x, y = evolve_cluster_in_potential(gravity, t_end, dt, channels, sun, GMCs, filename)
+    x, y = evolve_cluster_in_potential(gravity, t_end, dt,
+                                       channels, sun, GMCs, filename)
     gravity.stop()
     return x, y
 
@@ -247,7 +260,8 @@ def make_giant_molecular_clouds(Ngmc):
     Rin = 3.5 | units.kpc
     Rout = 7.5 | units.kpc
     masses = new_powerlaw_mass_distribution(N_thick_disk, alpha=-1.6,
-                                            mass_min=1.0e+3|units.MSun, mass_max=1.0e+8|units.MSun)
+                                            mass_min=1.0e+3|units.MSun,
+                                            mass_max=1.0e+8|units.MSun)
     MGMCs = masses.sum()
     MWG = MilkyWay_galaxy()    
     v_inner = MWG.vel_circ(Rout)
@@ -284,11 +298,12 @@ def make_giant_molecular_clouds(Ngmc):
 
 def make_new_cluster(Ncl, Rvir, W0, sun):
     masses = new_salpeter_mass_distribution(Ncl, 0.1|units.MSun, 10.0|units.MSun)
-    converter=nbody_system.nbody_to_si(masses.sum(), Rvir)
+    converter = nbody_system.nbody_to_si(masses.sum(), Rvir)
     cluster = new_king_model(len(masses), W0=3, convert_nbody=converter)
     cluster.mass = masses
     eps2 = 0.25*len(masses)**(-2./3.) * Rvir**2
-    cluster.scale_to_standard(convert_nbody=converter, smoothing_length_squared = eps2)
+    cluster.scale_to_standard(convert_nbody=converter,
+                              smoothing_length_squared = eps2)
     cluster.position += sun.position
     cluster.velocity += sun.velocity
     cluster.radius = 0 |  units.AU
@@ -316,7 +331,8 @@ def new_option_parser():
     result = OptionParser()
     result.add_option("-n", dest="n_steps", type="float", default = 200,
                       help="number of diagnostics time steps [%default]")
-    result.add_option("-f", dest="filename", default = "proto_solar_cluster.hdf5",
+    result.add_option("-f", dest="filename",
+                      default = "proto_solar_cluster.hdf5",
                       help="output filename [%default]")
     result.add_option("--Ncl", dest="Ncl", type="int",default = 1000,
                       help="number of stars [%default]")
@@ -330,7 +346,7 @@ def new_option_parser():
                       help="end time of the simulation [%default]")
     result.add_option("-W", 
                       dest="W0", type="float", default = 7.0,
-                      help="Dimension-less depth of the King potential (W0) [%default]")
+                      help="Dimensionless King potential depth (W0) [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):

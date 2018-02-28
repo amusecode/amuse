@@ -1,4 +1,4 @@
-from __future__ import print_function
+#from __future__ import print_function
 import numpy
 from amuse.units import units
 from amuse.units import constants
@@ -13,11 +13,12 @@ from matplotlib import pyplot
 from amuse.ic.kingmodel import new_king_model
 
 """
-Implements a code simulating the galactic center. As the center itself does
-not evolve we only need to define the 'get_gravity_at_point'
-and 'get_potential_at_point'. Note that both functions get arrays
-of points.
+Implements a code simulating the galactic center. As the center itself
+does not evolve we only need to define the 'get_gravity_at_point' and
+'get_potential_at_point'. Note that both functions get arrays of
+points.
 """
+
 class GalacticCenterGravityCode(object):
     def __init__(self,R, M, alpha):
         self.radius=R
@@ -64,10 +65,12 @@ def plot_cluster(x, y):
     f = single_frame('X [pc]', 'Y [pc]')
     pyplot.xlim(-60, 60)
     pyplot.ylim(-60, 60)
-        
     pyplot.scatter(x,y, c=colors[0], s=50, lw=0)
-    pyplot.savefig("Arches")
-#    pyplot.show()
+
+    save_file = 'Arches Fig. 7.1.png'
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file, '\n'
+    pyplot.show()
 
 def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
 
@@ -105,5 +108,6 @@ if __name__ == "__main__":
     endtime = 2.5 | units.Myr
     Mcluster = 5.e4 | units.MSun
     Rcluster = 0.8 | units.parsec
-    x, y = evolve_cluster_in_galaxy(N, W0, Rinit, endtime, timestep, Mcluster, Rcluster)
+    x, y = evolve_cluster_in_galaxy(N, W0, Rinit, endtime, timestep,
+                                    Mcluster, Rcluster)
     plot_cluster(x, y)
