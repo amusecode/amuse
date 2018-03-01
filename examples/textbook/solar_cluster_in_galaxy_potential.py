@@ -96,13 +96,13 @@ class MilkyWay_galaxy(object):
         b2= 0.25 |units.kpc
         a3= 12.0 |units.kpc
 
-        rdphi_b= constants.G*self.Mb*r**2/(r**2+b1**2)**1.5
-        rdphi_d= constants.G*self.Md*r**2/(r**2+(a2+(z**2+b2**2)**0.5)**2 )**1.5
-        rdphi_h= constants.G*self.Mh*(r/a3)**0.02*r/(a3**2*(1+(r/a3)**1.02))
+        rdphi_b = constants.G*self.Mb*r**2/(r**2+b1**2)**1.5
+        rdphi_d =constants.G*self.Md*r**2/(r**2+(a2+(z**2+b2**2)**0.5)**2 )**1.5
+        rdphi_h = constants.G*self.Mh*(r/a3)**0.02*r/(a3**2*(1+(r/a3)**1.02))
 
-        vel_circb=  rdphi_b
-        vel_circd= rdphi_d
-        vel_circh= rdphi_h
+        vel_circb =  rdphi_b
+        vel_circd = rdphi_d
+        vel_circh = rdphi_h
 
         return (vel_circb+ vel_circd+ vel_circh)**0.5 
 
@@ -140,14 +140,14 @@ def evolve_cluster_in_potential(gravity, t_end, dt, channel_to_framework):
     return x, y
 
 def integrate_single_particle_in_potential(sun, t_end, dt, converter):
-    MWG = MilkyWay_galaxy()    
-#    cluster_gravity = drift_without_gravity(sun)
-    
+
+    # cluster_gravity = drift_without_gravity(sun)
     cluster_gravity = BHTree(converter)
     cluster_gravity.particles.add_particles(sun)
     channel_from_gravity_to_framework \
         = cluster_gravity.particles.new_channel_to(sun)
     
+    MWG = MilkyWay_galaxy()
     gravity = bridge.Bridge(use_threading=False)
     gravity.add_system(cluster_gravity, (MWG,) )
     t_orb = 2*numpy.pi*sun.position.length()/sun.velocity.length()
@@ -169,7 +169,7 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
     sun.position= [-8400.0, 0.0, 17.0] | units.parsec
     x_label = "X [kpc]"
     y_label = "Y [kpc]"
-    fig = pyplot.figure(figsize=(12,12))	
+    fig = pyplot.figure(figsize=(8,8))	
     pyplot.xlim(-10, 10)
     pyplot.ylim(-10, 10)
     pyplot.axis('equal')
@@ -179,18 +179,18 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
 
     MWG = MilkyWay_galaxy()    
     vc = MWG.vel_circ(sun.position.length())
-    sun.velocity= [11.352, (12.24+vc.value_in(units.kms)), 7.41] | units.kms
+    sun.velocity = [11.352, (12.24+vc.value_in(units.kms)), 7.41] | units.kms
     sun.velocity *= -1
-    print "current:", sun
 
-    print "Find birth location of the Sun."
+    print "Current Sun:"
+    print sun
+
+    print "\nFinding birth location of the Sun..."
     x, y = integrate_single_particle_in_potential(sun, t_end, dt, converter)
-    pyplot.plot(x,y, lw=4, alpha=0.2, c=colors[1])
-    pyplot.scatter(sun.x.value_in(units.kpc),
-                   sun.y.value_in(units.kpc),
-                   s=300, c=colors[2])
+    pyplot.plot(x, y, lw=4, alpha=0.2, c=colors[1])
 
-    print "Birth location of the Sun:", sun
+    print "Initial Sun:"
+    print sun
     sun.velocity *= -1
 
     cluster = new_king_model(N, W0=3, convert_nbody=converter)
@@ -207,16 +207,21 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
     pyplot.scatter(cluster.x.value_in(units.kpc),
                    cluster.y.value_in(units.kpc),
                    s=10, c=colors[3])
+    print '\nTracking', N, 'siblings'
     x, y = integrate_single_particle_in_potential(cluster, t_end, dt,
                                                   converter)
     size = cluster.mass/(0.1 |units.MSun)
     pyplot.scatter(cluster.x.value_in(units.kpc),
                    cluster.y.value_in(units.kpc),
                    c=colors[0], alpha=1.0, lw=0, s=size)
-    pyplot.scatter([0], [0], marker="+", s=300, c='r')
-    pyplot.scatter([-8.4], [0], s=100, marker="+", c='r')
+    pyplot.scatter(sun.x.value_in(units.kpc),
+                   sun.y.value_in(units.kpc),
+                   marker='+', s=100, c=colors[2])
 
-    save_file = 'SolarClusterInPotential.pdf'
+    pyplot.scatter([0], [0], marker="+", s=300, c='r')
+    pyplot.scatter([-8.4], [0], marker="o", s=100, c='g')
+
+    save_file = 'SolarClusterInPotential.png'
     pyplot.savefig(save_file)
     print '\nSaved figure in file', save_file,'\n'
     pyplot.show()

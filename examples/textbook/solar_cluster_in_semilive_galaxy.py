@@ -82,7 +82,7 @@ class MilkyWay_galaxy(object):
         # disk
         a2= 5.31 |units.kpc
         b2= 0.25 |units.kpc
-        pot_disk= -constants.G*self.Md/(R**2+ (a2+ (z**2+ b2**2)**0.5 )**2 )**0.5
+        pot_disk = -constants.G*self.Md/(R**2+(a2+(z**2+b2**2)**0.5)**2)**0.5
         #halo
         a3= 12.0 |units.kpc
         cut_off=100 |units.kpc
@@ -113,9 +113,9 @@ class MilkyWay_galaxy(object):
         d1= r/a3
         force_halo= -constants.G*self.Mh*d1**0.02/(a3**2*(1+d1**1.02))
        
-        ax= force_bulge*x + force_disk*x  + force_halo*x/r
-        ay= force_bulge*y + force_disk*y  + force_halo*y/r
-        az= force_bulge*z + force_disk*d*z/(z**2 + b2**2)**0.5  + force_halo*z/r 
+        ax= force_bulge*x + force_disk*x + force_halo*x/r
+        ay= force_bulge*y + force_disk*y + force_halo*y/r
+        az= force_bulge*z + force_disk*d*z/(z**2 + b2**2)**0.5 + force_halo*z/r 
 
         return ax,ay,az
 
@@ -126,13 +126,16 @@ class MilkyWay_galaxy(object):
         b2= 0.25 |units.kpc
         a3= 12.0 |units.kpc
 
-        rdphi_b= constants.G*self.Mb*r**2/(r**2+b1**2)**1.5
-        rdphi_d= constants.G*self.Md*r**2/(r**2+ (a2+(z**2+b2**2)**0.5)**2 )**1.5
-        rdphi_h= constants.G*self.Mh*(r/a3)**0.02*r/(a3**2*(1+(r/a3)**1.02))
+        rdphi_b= constants.G*self.Mb*r**2 \
+                   / (r**2+b1**2)**1.5
+        rdphi_d= constants.G*self.Md*r**2 \
+                   / (r**2+ (a2+(z**2+b2**2)**0.5)**2 )**1.5
+        rdphi_h= constants.G*self.Mh*(r/a3)**0.02*r \
+                   / (a3**2*(1+(r/a3)**1.02))
 
-        vel_circb= rdphi_b
-        vel_circd= rdphi_d
-        vel_circh= rdphi_h
+        vel_circb = rdphi_b
+        vel_circd = rdphi_d
+        vel_circh = rdphi_h
 
         return (vel_circb+ vel_circd+ vel_circh)**0.5 
 
@@ -140,7 +143,7 @@ class MilkyWay_galaxy(object):
         return
 
 def plot(stars, GMCs):
-    figure = figure_frame("X [kpc]", "Y [kpc]", xsize=12, ysize=12)
+    figure = figure_frame("X [kpc]", "Y [kpc]", xsize=8, ysize=8)
     colors = get_distinct(2)
 
     print numpy.mean(stars.mass.value_in(units.MSun))
@@ -153,7 +156,7 @@ def plot(stars, GMCs):
                    s=size, alpha =  0.5, lw=0, c=colors[1])
 
     pyplot.scatter([0], [0], marker="+", s=300, c='r')
-    pyplot.scatter([-8.4], [0], marker="+", s=100, c='r')    
+    pyplot.scatter([-8.4], [0], marker="o", s=100, c='g')    
     pyplot.axis("equal")
     pyplot.xlim(-10, 10)
     pyplot.ylim(-10, 10)
@@ -221,7 +224,8 @@ def integrate_cluster_and_GMCs_in_potential(sun, GMCs, t_end, dt, filename):
     channels = []
     channels.append(GMC_gravity.particles.new_channel_to(GMCs))
     
-    converter=nbody_system.nbody_to_si(sun.mass.sum(), sun[0].position.length())
+    converter = nbody_system.nbody_to_si(sun.mass.sum(),
+                                         sun[0].position.length())
     cluster_gravity = BHTree(converter)
     cluster_gravity.particles.add_particles(sun)
     channels.append(cluster_gravity.particles.new_channel_to(sun))
@@ -266,7 +270,8 @@ def make_giant_molecular_clouds(Ngmc):
     MWG = MilkyWay_galaxy()    
     v_inner = MWG.vel_circ(Rout)
     MGalaxy = v_inner**2*Rout/constants.G
-    print "Masses:", MGMCs.in_(units.MSun), MGalaxy.in_(units.MSun), MGMCs/MGalaxy
+    print "Masses:", MGMCs.in_(units.MSun), MGalaxy.in_(units.MSun), \
+          MGMCs/MGalaxy
     GMCs = ProtoPlanetaryDisk(len(masses), convert_nbody=converter,
                               Rmin=Rin.value_in(units.kpc), 
                               Rmax=Rout.value_in(units.kpc),
@@ -274,7 +279,8 @@ def make_giant_molecular_clouds(Ngmc):
 
     #second population of GMCs
     masses = new_powerlaw_mass_distribution(len(GMCs), alpha=-1.6,
-                                                  mass_min=1.e+3|units.MSun, mass_max=1.0e+8|units.MSun)    
+                                            mass_min=1.e+3|units.MSun,
+                                            mass_max=1.0e+8|units.MSun)    
     GMCs.mass = masses
     MGMCs = masses.sum()
     thin_disk_GMCs = ProtoPlanetaryDisk(N_thin_disk, convert_nbody=converter,
@@ -283,7 +289,7 @@ def make_giant_molecular_clouds(Ngmc):
                               q_out=10.0, discfraction=MGMCs/MGalaxy).result
     thin_disk_GMCs.masses = masses
     GMCs.add_particles(thin_disk_GMCs)
-    GMCs.velocity = -1*GMC.velocity
+    GMCs.velocity *= -1
     GMCs.mass = new_powerlaw_mass_distribution(len(GMCs), alpha=-1.6,
                                                  mass_min=1.e+3|units.MSun,
                                                  mass_max=1.0e+8|units.MSun)
@@ -297,7 +303,8 @@ def make_giant_molecular_clouds(Ngmc):
     return GMCs
 
 def make_new_cluster(Ncl, Rvir, W0, sun):
-    masses = new_salpeter_mass_distribution(Ncl, 0.1|units.MSun, 10.0|units.MSun)
+    masses = new_salpeter_mass_distribution(Ncl, 0.1|units.MSun,
+                                            10.0|units.MSun)
     converter = nbody_system.nbody_to_si(masses.sum(), Rvir)
     cluster = new_king_model(len(masses), W0=3, convert_nbody=converter)
     cluster.mass = masses
@@ -323,7 +330,8 @@ def main(Ngmc, Ncl, W0, t_end, n_steps, filename, Rvir):
     GMCs = make_giant_molecular_clouds(Ngmc)
     cluster = make_new_cluster(Ncl, Rvir, W0, sun)
 
-    integrate_cluster_and_GMCs_in_potential(cluster, GMCs, t_end, dt, filename)
+    integrate_cluster_and_GMCs_in_potential(cluster, GMCs, t_end, dt,
+                                            filename)
     
     plot(cluster, GMCs)
 
