@@ -9,6 +9,7 @@ def main():
     star = ss[0]
     planet = ss[3]
     converter=nbody_system.nbody_to_si(star.mass,planet.position.length())
+###BOOKLISTSTART###
     star_gravity = ph4(converter)
     star_gravity.particles.add_particle(star)
 
@@ -18,7 +19,6 @@ def main():
     channel_from_star_to_framework = star_gravity.particles.new_channel_to(ss)
     channel_from_planet_to_framework = planet_gravity.particles.new_channel_to(ss)
 
-###BOOKLISTSTART###
     gravity = bridge.Bridge(use_threading=False)
     gravity.add_system(star_gravity, (planet_gravity,) )
     gravity.add_system(planet_gravity, (star_gravity,) )
