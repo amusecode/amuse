@@ -89,7 +89,7 @@ def gravity_hydro_bridge(Mprim, Msec, a, ecc, t_end, n_steps,
     eps = 1 | units.RSun
     gravity = Gravity(ph4, stars, eps)
 
-    converter=nbody_system.nbody_to_si(1.0|units.MSun, Rgas)
+    converter = nbody_system.nbody_to_si(1.0|units.MSun, Rgas)
     ism = new_plummer_gas_model(Ngas, convert_nbody=converter)
     ism.move_to_center()
     ism = ism.select(lambda r: r.length()<2*a,["position"])
@@ -100,8 +100,8 @@ def gravity_hydro_bridge(Mprim, Msec, a, ecc, t_end, n_steps,
     write_set_to_file(ism, filename, 'amuse')
 
     gravhydro = bridge.Bridge(use_threading=False)
-    gravhydro.add_system(gravity, (hydro,) )
-    gravhydro.add_system(hydro, (gravity,) )
+    gravhydro.add_system(gravity, (hydro,))
+    gravhydro.add_system(hydro, (gravity,))
     gravhydro.timestep = 2*hydro.get_timestep()
 
     while model_time < t_end:

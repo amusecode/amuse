@@ -16,19 +16,20 @@ from amuse.ic.kingmodel import new_king_model
 ###BOOKLISTSTART1###
 class drift_without_gravity(object):
     def __init__(self, convert_nbody, time= 0 |units.Myr):
-        self.model_time= time
+        self.model_time = time
         self.convert_nbody = convert_nbody
-        self.particles=Particles()
+        self.particles = Particles()
     def evolve_model(self, t_end):
-        dt= t_end- self.model_time
+        dt = t_end - self.model_time
         self.particles.position += self.particles.velocity*dt
-        self.model_time= t_end
+        self.model_time = t_end
     @property
     def potential_energy(self):
         return quantities.zero
     @property 
     def kinetic_energy(self):
-        return (0.5*self.particles.mass*self.particles.velocity.lengths()**2).sum()
+        return (0.5*self.particles.mass \
+                   *self.particles.velocity.lengths()**2).sum()
     def stop(self):
         pass
 ###BOOKLISTSTOP1###
@@ -38,9 +39,9 @@ class MilkyWay_galaxy(object):
     def __init__(self, Mb=1.40592e10| units.MSun,
                  Md=8.5608e10| units.MSun,
                  Mh=1.07068e11 | units.MSun):
-        self.Mb= Mb
-        self.Md= Md
-        self.Mh= Mh
+        self.Mb = Mb
+        self.Md = Md
+        self.Mh = Mh
 
     def get_potential_at_point(self,eps,x,y,z):
         r = (x**2+y**2+z**2)**0.5

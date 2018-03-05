@@ -19,6 +19,7 @@ does not evolve we only need to define the 'get_gravity_at_point' and
 points.
 """
 
+###BOOKLISTSTART1###
 class GalacticCenterGravityCode(object):
     def __init__(self,R, M, alpha):
         self.radius=R
@@ -39,6 +40,7 @@ class GalacticCenterGravityCode(object):
         m=self.mass*(r/self.radius)**self.alpha  
         vc=(constants.G*m/r)**0.5
         return vc
+###BOOKLISTSTOP1###
 
     def get_potential_at_point(self,eps,x,y,z):
         r=(x**2+y**2+z**2)**0.5
@@ -46,6 +48,7 @@ class GalacticCenterGravityCode(object):
         phi=c/(alpha-1)*(r**(self.alpha-1)-R**(self.alpha-1))
         return phi    
         
+###BOOKLISTSTART3###
 def make_king_model_cluster(nbodycode, N, W0, Mcluster,
                             Rcluster, parameters = []):
 
@@ -57,6 +60,7 @@ def make_king_model_cluster(nbodycode, N, W0, Mcluster,
         setattr(code.parameters, name, value)
     code.particles.add_particles(bodies)
     return code
+###BOOKLISTSTOP3###
 
 def plot_cluster(x, y):
 
@@ -74,30 +78,34 @@ def plot_cluster(x, y):
 
 def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
 
-    Rgal=1. | units.kpc
-    Mgal=1.6e10 | units.MSun
-    alpha=1.2
-    galaxy_code=GalacticCenterGravityCode(Rgal, Mgal, alpha)
+###BOOKLISTSTART2###
+    Rgal = 1. | units.kpc
+    Mgal = 1.6e10 | units.MSun
+    alpha = 1.2
+    galaxy_code = GalacticCenterGravityCode(Rgal, Mgal, alpha)
 
-    cluster_code=make_king_model_cluster(BHTree,N,W0, M,R,
-        parameters=[("epsilon_squared", (0.01 | units.parsec)**2)])
+    cluster_code = make_king_model_cluster(BHTree, N, W0, M, R,
+                                           parameters=[("epsilon_squared",
+                                                        (0.01 | units.parsec)**2)])
     
-    stars=cluster_code.particles.copy()    
+    stars = cluster_code.particles.copy()    
     stars.x += Rinit
     stars.vy = 0.8*galaxy_code.circular_velocity(Rinit)
-    channel=stars.new_channel_to(cluster_code.particles)
+    channel = stars.new_channel_to(cluster_code.particles)
     channel.copy_attributes(["x","y","z","vx","vy","vz"])
 
-    system=bridge(verbose=False)
+    system = bridge(verbose=False)
     system.add_system(cluster_code, (galaxy_code,))
 
-    times=numpy.arange(0|units.Myr, tend, timestep)
+    times = numpy.arange(0|units.Myr, tend, timestep)
     for i,t in enumerate(times):
         system.evolve_model(t,timestep=timestep)
           
-    x=system.particles.x.value_in(units.parsec)
-    y=system.particles.y.value_in(units.parsec)
+    x = system.particles.x.value_in(units.parsec)
+    y = system.particles.y.value_in(units.parsec)
     cluster_code.stop()
+###BOOKLISTSTOP2###
+
     return x, y
 
 if __name__ == "__main__":
