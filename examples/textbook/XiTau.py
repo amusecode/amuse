@@ -35,7 +35,7 @@ def new_working_directory():
         i += 1
     new_directory = os.path.join(current_directory, "run_{0:=03}".format(i))
     os.mkdir(new_directory)
-    print "Created new directory for output:", new_directory
+    print("Created new directory for output:", new_directory)
     os.mkdir(os.path.join(new_directory, "plots"))
     os.mkdir(os.path.join(new_directory, "snapshots"))
     shutil.copy(__file__, new_directory)
@@ -60,8 +60,8 @@ def set_up_inner_binary():
     orbital_period = (4 * numpy.pi**2 * semimajor_axis**3 / 
         (constants.G * masses.sum())).sqrt().as_quantity_in(units.day)
     
-    print "   Initializing inner binary"
-    print "   Orbital period inner binary:", orbital_period
+    print("   Initializing inner binary")
+    print("   Orbital period inner binary:", orbital_period)
     stars =  Particles(2)
     stars.mass = masses
     stars.position = [0.0, 0.0, 0.0] | units.AU
@@ -76,7 +76,7 @@ def set_up_outer_star(inner_binary_mass):
     eccentricity = 0.15
     inclination = math.radians(9.0)
     
-    print "   Initializing outer star"
+    print("   Initializing outer star")
     giant = Particle()
     giant.mass = 5.5 | units.MSun
     giant.position = semimajor_axis * ([math.cos(inclination), 0, math.sin(inclination)] | units.none)
@@ -136,11 +136,11 @@ def relax_in_isolation(giant_in_sph, sph_code, output_base_name):
     kinetic_energies = hydrodynamics.kinetic_energy.as_vector_with_length(1).as_quantity_in(units.erg)
     thermal_energies = hydrodynamics.thermal_energy.as_vector_with_length(1).as_quantity_in(units.erg)
     
-    print "   Relaxing for", t_end, "(10 * dynamical timescale)"
-    times = (t_end * range(1, n_steps+1) / n_steps).as_quantity_in(units.day)
+    print("   Relaxing for", t_end, "(10 * dynamical timescale)")
+    times = (t_end * list(range(1, n_steps+1)) / n_steps).as_quantity_in(units.day)
     for i_step, time in enumerate(times):
         hydrodynamics.evolve_model(time)
-        print "   Relaxed for:", time
+        print("   Relaxed for:", time)
         potential_energies.append(hydrodynamics.potential_energy)
         kinetic_energies.append(hydrodynamics.kinetic_energy)
         thermal_energies.append(hydrodynamics.thermal_energy)
@@ -211,7 +211,7 @@ def prepare_giant_system(sph_code, giant_model, view_on_giant, time_unit, n_step
     return system
 
 def calculate_orbital_elements(m1, m2, pos1, pos2, vel1, vel2, m3, pos3, vel3):
-    print "   Calculating semimajor axis and eccentricity evolution of the giant's orbit"
+    print("   Calculating semimajor axis and eccentricity evolution of the giant's orbit")
 
     m12 = m1+m2
     rel_position = (m1 * pos1 + m2 * pos2)/m12 - pos3
@@ -235,7 +235,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     coupled_system.add_system(binary_system, (directsum,), False)
     coupled_system.add_system(giant_system, (binary_system,), False)
     
-    times = (t_end * range(1, n_steps+1) / n_steps).as_quantity_in(units.day)
+    times = (t_end * list(range(1, n_steps+1)) / n_steps).as_quantity_in(units.day)
     
     if previous_data:
         with open(previous_data, 'rb') as file:
@@ -264,10 +264,10 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     ms1_mass = binary_system.particles[0].mass
     ms2_mass = binary_system.particles[1].mass
     
-    print "   Evolving for", t_end
+    print("   Evolving for", t_end)
     for i_step, time in enumerate(times):
         coupled_system.evolve_model(time)
-        print "   Evolved to:", time,
+        print("   Evolved to:", time, end=' ')
         
         if do_energy_evolution_plot:
             potential_energies.append(coupled_system.particles.potential_energy())
@@ -287,7 +287,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
                                                       giant_total_mass,
                                                       giant_center_of_mass,
                                                       giant_center_of_mass_velocity)
-        print "Outer Orbit:", time.in_(units.day),  a_giant[-1].in_(units.AU), e_giant[-1], ms1_mass.in_(units.MSun), ms2_mass.in_(units.MSun), giant_total_mass.in_(units.MSun)
+        print("Outer Orbit:", time.in_(units.day),  a_giant[-1].in_(units.AU), e_giant[-1], ms1_mass.in_(units.MSun), ms2_mass.in_(units.MSun), giant_total_mass.in_(units.MSun))
         
         if i_step % 10 == 9:
             snapshotfile = os.path.join("snapshots", "hydro_triple_{0:=04}_gas.amuse".format(i_step + i_offset))
@@ -306,7 +306,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
        
         figname1 = os.path.join("plots", "hydro_triple_small{0:=04}.png".format(i_step + i_offset))
         figname2 = os.path.join("plots", "hydro_triple_large{0:=04}.png".format(i_step + i_offset))
-        print "  -   Hydroplots are saved to: ", figname1, "and", figname2
+        print("  -   Hydroplots are saved to: ", figname1, "and", figname2)
         for plot_range, plot_name in [(8|units.AU, figname1), (40|units.AU, figname2)]:
             if HAS_PYNBODY:
                 pynbody_column_density_plot(coupled_system.gas_particles, width=plot_range, vmin=26, vmax=32)
@@ -327,7 +327,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
         energy_evolution_plot(all_times[:len(kinetic_energies)-1], kinetic_energies, 
             potential_energies, thermal_energies)
     
-    print "   Calculating semimajor axis and eccentricity evolution for inner binary"
+    print("   Calculating semimajor axis and eccentricity evolution for inner binary")
     # Some temporary variables to calculate semimajor_axis and eccentricity evolution
     total_mass = ms1_mass + ms2_mass
     rel_position = ms1_position - ms2_position
@@ -341,7 +341,7 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
     eccentricity_binary = numpy.sqrt(1.0 - (rel_position.cross(rel_velocity)**2).sum(axis=1) / 
         (constants.G * total_mass * semimajor_axis_binary))
 
-    print "   Calculating semimajor axis and eccentricity evolution of the giant's orbit"
+    print("   Calculating semimajor axis and eccentricity evolution of the giant's orbit")
     # Some temporary variables to calculate semimajor_axis and eccentricity evolution
     rel_position = ((ms1_mass * ms1_position + ms2_mass * ms2_position)/total_mass - 
         giant_center_of_mass)
@@ -370,22 +370,22 @@ def evolve_coupled_system(binary_system, giant_system, t_end, n_steps,
         par_symbol="v^2", par_name="speed_squared")
 
 def make_movie():
-    print "   Creating movie from snapshots"
+    print("   Creating movie from snapshots")
     try:
         subprocess.call(['mencoder', "mf://hydro_triple_small*.png", '-ovc', 'lavc', 
             '-o', '../hydro_triple_small.avi', '-msglevel', 'all=1'], cwd="./plots")
         subprocess.call(['mencoder', "mf://hydro_triple_large*.png", '-ovc', 'lavc', 
             '-o', '../hydro_triple_large.avi', '-msglevel', 'all=1'], cwd="./plots")
     except Exception as exc:
-        print "   Failed to create movie, error was:", str(exc)
+        print("   Failed to create movie, error was:", str(exc))
 
 def continue_evolution(sph_code, dynamics_code, t_end, n_steps, 
         relaxed_giant_output_base_name, do_energy_evolution_plot):
-    print "Loading snapshots...",
+    print("Loading snapshots...", end=' ')
     files = os.listdir("snapshots")
     files.sort()
     files = files[-4:]
-    print files
+    print(files)
     binary = read_set_from_file(os.path.join("snapshots", files[0]), format='amuse')
     gd_particles = read_set_from_file(os.path.join("snapshots", files[1]), format='amuse')
     sph_particles = read_set_from_file(os.path.join("snapshots", files[2]), format='amuse')
@@ -402,16 +402,16 @@ def continue_evolution(sph_code, dynamics_code, t_end, n_steps,
     view_on_giant.position = [0]*3 | units.m
     view_on_giant.velocity = [0]*3 | units.m / units.s
     
-    print "\nSetting up {0} to simulate inner binary system".format(dynamics_code.__name__)
+    print("\nSetting up {0} to simulate inner binary system".format(dynamics_code.__name__))
     binary_system = prepare_binary_system(dynamics_code, binary)
     
-    print "\nSetting up {0} to simulate giant in SPH".format(sph_code.__name__)
+    print("\nSetting up {0} to simulate giant in SPH".format(sph_code.__name__))
     giant_system = prepare_giant_system(sph_code, giant_model, view_on_giant, t_end, n_steps)
     
-    print "\nEvolving with bridge between", sph_code.__name__, "and", dynamics_code.__name__
+    print("\nEvolving with bridge between", sph_code.__name__, "and", dynamics_code.__name__)
     evolve_coupled_system(binary_system, giant_system, t_end, n_steps, do_energy_evolution_plot, 
         previous_data = os.path.join("snapshots", files[3]))
-    print "Done"
+    print("Done")
 
 def energy_evolution_plot(time, kinetic, potential, thermal, figname = "energy_evolution.png"):
     time.prepend(0.0 | units.day)
@@ -474,41 +474,41 @@ if __name__ == "__main__":
     do_energy_evolution_plot = False
     
     if os.path.exists("snapshots"):
-        print "Found snapshots folder, continuing evolution of previous run"
+        print("Found snapshots folder, continuing evolution of previous run")
         continue_evolution(sph_code, dynamics_code, t_end, n_steps, 
             relaxed_giant_output_base_name, do_energy_evolution_plot)
         exit(0)
     
     new_working_directory()
     
-    print "Initializing triple"
+    print("Initializing triple")
     triple, view_on_giant = set_up_initial_conditions()
-    print "\nInitialization done:\n", triple
+    print("\nInitialization done:\n", triple)
     
-    print "\nEvolving with", stellar_evolution_code.__name__
+    print("\nEvolving with", stellar_evolution_code.__name__)
     se_stars, se_code_instance = evolve_stars(triple, view_on_giant, stellar_evolution_code, radius_factor)
     triple.radius = se_stars.radius
-    print "\nStellar evolution done:\n", se_stars
+    print("\nStellar evolution done:\n", se_stars)
     
     if os.path.exists(os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse")):
-        print "\nLoading SPH model for giant from:", 
-        print os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse")
+        print("\nLoading SPH model for giant from:", end=' ') 
+        print(os.path.join("..", "giant_models", relaxed_giant_output_base_name + "_gas.amuse"))
         giant_model = load_giant_model(relaxed_giant_output_base_name)
         se_code_instance.stop()
     else:
-        print "\nConverting giant to", number_of_sph_particles, "SPH particles"
+        print("\nConverting giant to", number_of_sph_particles, "SPH particles")
         view_on_se_giant = view_on_giant.as_set().get_intersecting_subset_in(se_stars)[0]
         giant_model = convert_giant_to_sph(view_on_se_giant, number_of_sph_particles)
         se_code_instance.stop()
-        print "Relaxing giant with", sph_code.__name__
+        print("Relaxing giant with", sph_code.__name__)
         relax_in_isolation(giant_model, sph_code, relaxed_giant_output_base_name)
     
-    print "\nSetting up {0} to simulate inner binary system".format(dynamics_code.__name__)
+    print("\nSetting up {0} to simulate inner binary system".format(dynamics_code.__name__))
     binary_system = prepare_binary_system(dynamics_code, triple - view_on_giant)
     
-    print "\nSetting up {0} to simulate giant in SPH".format(sph_code.__name__)
+    print("\nSetting up {0} to simulate giant in SPH".format(sph_code.__name__))
     giant_system = prepare_giant_system(sph_code, giant_model, view_on_giant, t_end, n_steps)
     
-    print "\nEvolving with bridge between", sph_code.__name__, "and", dynamics_code.__name__
+    print("\nEvolving with bridge between", sph_code.__name__, "and", dynamics_code.__name__)
     evolve_coupled_system(binary_system, giant_system, t_end, n_steps, do_energy_evolution_plot)
-    print "Done"
+    print("Done")

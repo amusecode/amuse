@@ -96,11 +96,11 @@ class SimplifiedThermalModelEvolver(SimplifiedThermalModel):
                     ndu=numpy.isnan(du_dt.number).sum()
                     nnu=numpy.isnan(new_u.number).sum()
                     if nrho+nu+ndu+nnu>0:
-                        print "nan detected in thermal evolution"
-                        print nrho,nu,ndu,nnu
-                        import cPickle
+                        print("nan detected in thermal evolution")
+                        print(nrho,nu,ndu,nnu)
+                        import pickle
                         with open("cooling_dump","w") as f:
-                            cPickle.dump((dt,rho,u,du_dt,new_u),f)
+                            pickle.dump((dt,rho,u,du_dt,new_u),f)
                         raise Exception("NaNs in thermal evolution")
 
         def evolve_model(self,tend):

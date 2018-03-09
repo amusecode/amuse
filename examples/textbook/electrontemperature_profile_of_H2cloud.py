@@ -1,7 +1,7 @@
 """
 Evolves the steady state solution of a star irridiating a H2 region.
 """
-from __future__ import print_function
+
 
 import numpy
 import os
@@ -36,7 +36,7 @@ def make_grid(number_of_grid_cells, length, constant_hydrogen_density,
 
 def setup_abundancies(code):
     table = code.abundancies_table()
-    for atom in table.keys():
+    for atom in list(table.keys()):
         table[atom] = 0.0
     table['H'] = 1.0
     table['He'] = 0.1

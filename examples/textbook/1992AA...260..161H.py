@@ -24,7 +24,7 @@ def main(Mstar=1, Ndisk=100, Mdisk= 0.001, Rmin=1, Rmax=100, t_end=10, n_steps=1
     disk.move_to_center()
 
     center_of_mass = disk.center_of_mass()
-    print center_of_mass
+    print(center_of_mass)
     a_bump = 50 
     Rbump = 10 | units.AU
     bump_location = center_of_mass + ([0, a_bump, 0] | units.AU)
@@ -32,8 +32,8 @@ def main(Mstar=1, Ndisk=100, Mdisk= 0.001, Rmin=1, Rmax=100, t_end=10, n_steps=1
     Mbump =bump_particles.mass.sum()
 
     Nbump = len(bump_particles)
-    print "Nbump=", len(bump_particles), Mbump, Rbump, Nbump
-    print "Mass =", Mstar, Mdisk, disk.mass.sum().in_(units.MSun), disk.mass.sum()/Mstar
+    print("Nbump=", len(bump_particles), Mbump, Rbump, Nbump)
+    print("Mass =", Mstar, Mdisk, disk.mass.sum().in_(units.MSun), disk.mass.sum()/Mstar)
     bump = new_plummer_gas_model(Nbump, convert_nbody=nbody_system.nbody_to_si(0.1*Mbump, Rbump))
 
     a_bump = a_bump | units.AU
@@ -44,7 +44,7 @@ def main(Mstar=1, Ndisk=100, Mdisk= 0.001, Rmin=1, Rmax=100, t_end=10, n_steps=1
 
     v_circ = (constants.G*M_inner*(2./r_bump - 1./a_bump)).sqrt().value_in(units.kms)
     bump.velocity += [0, v_circ, 0] | units.kms
-    print "MM=", M_inner, v_circ
+    print("MM=", M_inner, v_circ)
 
     disk.add_particles(bump)
 
@@ -114,10 +114,10 @@ def main(Mstar=1, Ndisk=100, Mdisk= 0.001, Rmin=1, Rmax=100, t_end=10, n_steps=1
         Ekin = gravity_hydro.kinetic_energy 
         Epot = gravity_hydro.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, 
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
-        print "star=", star
+        print("T=", time, end=' ') 
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot) 
+        print("star=", star)
         Etot_prev = Etot
 
     gravity_hydro.stop()

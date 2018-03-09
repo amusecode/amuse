@@ -44,7 +44,7 @@ def main(filename=None, lim=-1):
         amusedir = os.environ['AMUSE_DIR']
         dir = amusedir+'/examples/textbook/'
     except:
-        print 'Environment variable AMUSE_DIR not set'
+        print('Environment variable AMUSE_DIR not set')
         dir = './'
 
     filename = dir+filename
@@ -57,8 +57,8 @@ def main(filename=None, lim=-1):
 
     npp = [12, 512]
     ntc = [1024, 2000*1024]
-    tpp = map(lambda x: 0.01*x*x, npp) 
-    ttc = map(lambda x: 1.e-6*(x*math.log(x)), ntc) 
+    tpp = [0.01*x*x for x in npp] 
+    ttc = [1.e-6*(x*math.log(x)) for x in ntc] 
     pyplot.plot(npp, tpp, c='k', ls='-', lw=4)
     pyplot.plot(ntc, ttc, c='k', ls='-', lw=4)
     pyplot.text(12, 8, '$N^2$')
@@ -86,7 +86,7 @@ def main(filename=None, lim=-1):
 
     save_file = "Nbody_performance.png"
     pyplot.savefig(save_file)
-    print "\nSaved figure in file", save_file,'\n'
+    print("\nSaved figure in file", save_file,'\n')
     pyplot.show()
 
 def new_option_parser():

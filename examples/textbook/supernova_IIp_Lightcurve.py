@@ -33,18 +33,18 @@ class Supernova_IIp:
         self.print_parameters()
 
     def print_parameters(self):
-        print "Supernova parameters: "
-        print "Name=", self.name
-        print "Etot = ", self.Etot.in_(units.erg)
-        print "Lpeak= ", self.Lpeak.in_(units.LSun)
-        print "Mass parameters:", self.Mp, self.A, self.B1, self.B2, \
-              self.BdN, self.BdC
-        print "time-scales parameters:", self.t1, self.tp, self.t2, self.td
+        print("Supernova parameters: ")
+        print("Name=", self.name)
+        print("Etot = ", self.Etot.in_(units.erg))
+        print("Lpeak= ", self.Lpeak.in_(units.LSun))
+        print("Mass parameters:", self.Mp, self.A, self.B1, self.B2, \
+              self.BdN, self.BdC)
+        print("time-scales parameters:", self.t1, self.tp, self.t2, self.td)
 
     def set_supernova_parameters(self, name):
         self.name = name
         if "12bku" in name:
-            print "Supernova template: PS1-12bku" 
+            print("Supernova template: PS1-12bku") 
             self.mass = 20.0 | units.MSun
             self.Etot = 6.84e+51 | units.erg
             self.Mp = 2.46
@@ -59,7 +59,7 @@ class Supernova_IIp:
             self.t2=105.0
             self.td=10.0
         elif "11aof" in name:
-            print "Supernova template: PS1-11aof"
+            print("Supernova template: PS1-11aof")
             self.mass = 23.5 | units.MSun
             self.Etot = 6.84e+51 | units.erg
             self.Mp = 2.05
@@ -75,7 +75,7 @@ class Supernova_IIp:
             self.td=10.
         elif "10a" in name:
             #for SN PS1-10a
-            print "Supernova template: PS1-10a (default)"
+            print("Supernova template: PS1-10a (default)")
             self.mass = 6 | units.MSun
             self.Etot = 6.84e+51 | units.erg
             self.Mp = 2.1
@@ -90,7 +90,7 @@ class Supernova_IIp:
             self.t2=106.
             self.td=10.
         else:
-            print "Supernova template: PS1-10a (default)"
+            print("Supernova template: PS1-10a (default)")
             self.mass = 20 | units.MSun
             self.Etot = 6.84e+51 | units.erg
             self.Mp = 2.1

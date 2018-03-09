@@ -30,20 +30,20 @@ def make_map(sph,N=100,L=1):
     return rho
 
 def plot_molecular_cloud(filename):
-    print "read file:", filename
+    print("read file:", filename)
     bodies = read_set_from_file(filename, "amuse")
     i = 0
     sinks = Particles(0)
     for bi in bodies.history:
         if i==0:
             gas =  bi.as_set()
-            print "N=", len(gas)
+            print("N=", len(gas))
             i+=1
         else:
             sinks =  bi.as_set()
-            print "N=", len(sinks)
+            print("N=", len(sinks))
 #    print sinks
-    print "N=", len(gas), len(sinks)
+    print("N=", len(gas), len(sinks))
     #sinks =  bodies.history.next()
     L = 4.4
 #    if len(sinks):
@@ -60,7 +60,7 @@ def make_stars(cluster_particle):
     mmean = 1.0|units.MSun
     N = int(sfe*cluster_particle.mass/mmean)
     stars = Particles(0)
-    print "N_cluster=", N
+    print("N_cluster=", N)
     if N>0:
         masses = new_salpeter_mass_distribution(N, 0.3|units.MSun, min(100|units.MSun, cluster_particle.mass))
 

@@ -37,8 +37,8 @@ def get_stellar_track(mass):
             #    print 'luminosity =', stars[0].luminosity
             #    print 'temperature =', stars[0].temperature
             #    print 'stellar type =', stars[0].stellar_type
-            print stp[-1], stars[0].stellar_type
-            print stp
+            print(stp[-1], stars[0].stellar_type)
+            print(stp)
 
     return t, T, L, stp
 
@@ -123,6 +123,6 @@ if __name__ == "__main__":
         
     save_file = 'fig_stellar_evolution_track.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
 

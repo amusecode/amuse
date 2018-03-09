@@ -19,8 +19,8 @@ def merge_two_stars(bodies, particles_in_encounter):
     new_particle.velocity = com_vel
     new_particle.radius = particles_in_encounter.radius.sum()
     bodies.add_particles(new_particle)
-    print "Two stars (M=",particles_in_encounter.mass, \
-          ") collided with d=", com_pos.length()
+    print("Two stars (M=",particles_in_encounter.mass, \
+          ") collided with d=", com_pos.length())
     bodies.remove_particles(particles_in_encounter)
 ###BOOKLISTSTOP1###
 
@@ -28,7 +28,7 @@ def merge_two_stars(bodies, particles_in_encounter):
 def resolve_collision(collision_detection, gravity, stellar, bodies):
     if collision_detection.is_set():
         E_coll = gravity.kinetic_energy + gravity.potential_energy
-        print "Collision at time=", gravity.model_time.in_(units.Myr)
+        print("Collision at time=", gravity.model_time.in_(units.Myr))
         for ci in range(len(collision_detection.particles(0))): 
             particles_in_encounter \
                 = Particles(particles=[collision_detection.particles(0)[ci],
@@ -42,10 +42,10 @@ def resolve_collision(collision_detection, gravity, stellar, bodies):
                 bodies.synchronize_to(gravity.particles)
                 bodies.synchronize_to(stellar.particles)
             else:
-                print "Failed to resolve encounter: stars too small."
+                print("Failed to resolve encounter: stars too small.")
             dE_coll = E_coll - (gravity.kinetic_energy \
                                   + gravity.potential_energy)
-        print "Energy error in the collision: dE =", dE_coll 
+        print("Energy error in the collision: dE =", dE_coll) 
 ###BOOKLISTSTOP2###
 
 def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
@@ -116,12 +116,12 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     stellar.stop()
 
 def print_diagnostics(time, Mtot, Etot, dE_dyn, dE_coll, dE_stellar):
-        print "Time=", time, 
-        print "Mtot=", Mtot, 
-        print "Etot= ", Etot, 
-        print "dE(dyn)=", dE_dyn/Etot, 
-        print "dE(coll)=", dE_coll/Etot, 
-        print "dE(se)=", dE_stellar/Etot
+        print("Time=", time, end=' ') 
+        print("Mtot=", Mtot, end=' ') 
+        print("Etot= ", Etot, end=' ') 
+        print("dE(dyn)=", dE_dyn/Etot, end=' ') 
+        print("dE(coll)=", dE_coll/Etot, end=' ') 
+        print("dE(se)=", dE_stellar/Etot)
     
 def new_option_parser():
     from amuse.units.optparse import OptionParser

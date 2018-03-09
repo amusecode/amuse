@@ -15,12 +15,12 @@ def main(m, z, model_time):
     while stellar.model_time < model_time:
         stellar.evolve_model(stellar.model_time+dt)
 
-    print "at T=", stellar.model_time.in_(units.Myr), \
+    print("at T=", stellar.model_time.in_(units.Myr), \
         "L(t=0)=", initial_luminosity, \
         ", L (t=", stellar.particles.age.in_(units.Myr), \
         ")=", stellar.particles.luminosity.in_(units.LSun), \
         ", m=", stellar.particles.mass.in_(units.MSun), \
-        ", R=", stellar.particles.radius.in_(units.RSun)
+        ", R=", stellar.particles.radius.in_(units.RSun))
         
     stellar.stop()
 ###BOOKLISTSTOP###

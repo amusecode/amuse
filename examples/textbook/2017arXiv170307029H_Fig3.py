@@ -109,7 +109,7 @@ def main(filename=None):
         elif "Star" in bi.name:
             stars.add_particles(bi.copy())
 
-    print "Stellar masses:", stars.mass.min().in_(units.MSun), stars.mass.mean().in_(units.MSun), stars.mass.max().in_(units.MSun), stars.mass.median().in_(units.MSun)
+    print("Stellar masses:", stars.mass.min().in_(units.MSun), stars.mass.mean().in_(units.MSun), stars.mass.max().in_(units.MSun), stars.mass.median().in_(units.MSun))
             
     #plot_age_gasdensity(disk, stars)
     plot_radial_density_distribution(disk, stars)

@@ -41,7 +41,7 @@ class Hydro:
                 Mcloud = particles.mass.sum()
                 N = len(particles)
                 dt = 0.004*numpy.pi*numpy.power(eps, 1.5)/numpy.sqrt(constants.G*Mcloud/N)
-                print "Hydro timesteps:", dt, "N=", len(particles)
+                print("Hydro timesteps:", dt, "N=", len(particles))
 
                 self.gas_particles = particles
                 self.star_particles = stars
@@ -77,16 +77,16 @@ class Hydro:
                         self.gamma = self.code.parameters.gamma
 
                 if hydro_code is Gadget2:
-                        print "WARNING: Gadget support is WIP"
-                        print "check the Gadget2 makefile_options"
+                        print("WARNING: Gadget support is WIP")
+                        print("check the Gadget2 makefile_options")
                         # todo: variable number_of_workers
                         self.code = hydro_code(self.converter, number_of_workers=4)
                         self.code.parameters.begin_time= 0.0|units.Myr
                         self.code.parameters.time_max=dt*2**int(numpy.log2(4*(10|units.Myr)/dt))
                         self.code.parameters.max_size_timestep=0.5*dt
                         #~ self.code.parameters.min_size_timestep=
-                        print "Isofag;", self.code.parameters.isothermal_flag
-                        print "gamma=",  self.code.parameters.polytropic_index_gamma
+                        print("Isofag;", self.code.parameters.isothermal_flag)
+                        print("gamma=",  self.code.parameters.polytropic_index_gamma)
                         #assert self.code.parameters.isothermal_flag == True
                         assert self.code.parameters.no_gravity_flag == False
                         # constant gas smoothing
@@ -109,7 +109,7 @@ class Hydro:
 
                 self.parameters = self.code.parameters
                 
-                print self.code.parameters
+                print(self.code.parameters)
                 
                 # In order to be using the bridge
                 self.get_gravity_at_point = self.code.get_gravity_at_point
@@ -122,18 +122,18 @@ class Hydro:
                 self.channel_from_stars = self.star_particles.new_channel_to(self.code.dm_particles)
                 
                 # External Cooling
-                print "Cooling flag:", self.cooling_flag
+                print("Cooling flag:", self.cooling_flag)
                 self.cooling = SimplifiedThermalModelEvolver(self.code.gas_particles)
                 #self.cooling = Cooling(self.code.gas_particles)
                 self.cooling.model_time=self.code.model_time
 
         def print_diagnostics(self):
-                print "Time=", self.code.model_time.in_(units.Myr)
-                print "N=", len(self.gas_particles), len(self.star_particles)
+                print("Time=", self.code.model_time.in_(units.Myr))
+                print("N=", len(self.gas_particles), len(self.star_particles))
 
                 if len(self.star_particles)>0:
-                    print "Sink masses:", len(self.code.dm_particles.mass)
-                    print "Sink masses:", len(self.star_particles.mass)
+                    print("Sink masses:", len(self.code.dm_particles.mass))
+                    print("Sink masses:", len(self.star_particles.mass))
 
         def write_set_to_file(self, index):
                 filename = "hydro_molecular_cloud_collapse_i{0:04}.amuse".format(index)
@@ -162,10 +162,10 @@ class Hydro:
 
             model_time_old=self.code.model_time
             dt=model_time - model_time_old
-            print "Evolve Hydrodynamics:", dt.in_(units.yr)
+            print("Evolve Hydrodynamics:", dt.in_(units.yr))
 
             if COOL:
-                print "Cool gas for dt=", (dt/2).in_(units.Myr)
+                print("Cool gas for dt=", (dt/2).in_(units.Myr))
                 self.cooling.evolve_for(dt/2)
                 #print "...done."
             self.code.evolve_model(model_time)
@@ -174,13 +174,13 @@ class Hydro:
             while density_limit_detection.is_set():
                 self.resolve_sinks()
 
-                print "..done"
+                print("..done")
                 self.code.evolve_model(model_time)
                 self.channel_to_stars.copy()
-                print "end N=", len(self.star_particles), len(self.code.dm_particles)
+                print("end N=", len(self.star_particles), len(self.code.dm_particles))
 
             if COOL:
-                print "Cool gas for another dt=", (dt/2).in_(units.Myr)
+                print("Cool gas for another dt=", (dt/2).in_(units.Myr))
                 self.cooling.evolve_for(dt/2)
                 #print "...done."
 
@@ -200,68 +200,68 @@ class Hydro:
                 self.channel_from_stars.copy()
                 
             #self.code.evolve_model(model_time)
-            print "final N=", len(self.star_particles),len(self.code.dm_particles)
-            print "final Ngas=", len(self.gas_particles),len(self.code.gas_particles)
+            print("final N=", len(self.star_particles),len(self.code.dm_particles))
+            print("final Ngas=", len(self.gas_particles),len(self.code.gas_particles))
             self.channel_to_gas.copy()
             self.channel_to_stars.copy()
-            print "final N=", len(self.star_particles),len(self.code.dm_particles)
+            print("final N=", len(self.star_particles),len(self.code.dm_particles))
             if len(self.star_particles)>0:
-                    print "mean star mass:", self.star_particles.mass.min().in_(units.MSun), self.star_particles.mass.mean().in_(units.MSun), self.star_particles.mass.max().in_(units.MSun)
+                    print("mean star mass:", self.star_particles.mass.min().in_(units.MSun), self.star_particles.mass.mean().in_(units.MSun), self.star_particles.mass.max().in_(units.MSun))
             #~ print "Hydro arrived at:", self.code.model_time.in_(units.Myr)
 
             #print "Accrete from ambied gas"
             #self.accrete_sinks_from_ambiant_gas()
 
         def resolve_sinks(self):
-            print "processing high dens particles...",
+            print("processing high dens particles...", end=' ')
             highdens=self.gas_particles.select_array(lambda rho:rho>self.density_threshold,["rho"])
-            print "N=", len(highdens)
+            print("N=", len(highdens))
             candidate_stars=highdens.copy()
             self.gas_particles.remove_particles(highdens)
             self.gas_particles.synchronize_to(self.code.gas_particles)
 
-            print "new sinks..."
+            print("new sinks...")
             if len(candidate_stars)>0: # had to make some changes to prevent double adding particles
-                print "Adding stars, N=", len(candidate_stars)
+                print("Adding stars, N=", len(candidate_stars))
                 newstars_in_code = self.code.dm_particles.add_particles(candidate_stars)
                 newstars = Particles()
                 for nsi in newstars_in_code:
                     if nsi not in self.star_particles:
                         newstars.add_particle(nsi)
                     else:
-                        print "this star should not exicst"
+                        print("this star should not exicst")
                 newstars.name = "Star" 
                 newstars.birth_age = self.code.model_time
                 newstars.Lx = 0 | (units.g * units.m**2)/units.s
                 newstars.Ly = 0 | (units.g * units.m**2)/units.s
                 newstars.Lz = 0 | (units.g * units.m**2)/units.s
                         
-                print "pre N=", len(self.star_particles), len(newstars), len(self.code.dm_particles)
+                print("pre N=", len(self.star_particles), len(newstars), len(self.code.dm_particles))
                 #self.star_particles.add_sinks(newstars)
                 self.star_particles.add_particles(newstars)
-                print "post N=", len(self.star_particles), len(newstars), len(self.code.dm_particles)
+                print("post N=", len(self.star_particles), len(newstars), len(self.code.dm_particles))
             else:
-                print "N candidates:", len(candidate_stars)
+                print("N candidates:", len(candidate_stars))
 
         def merge_stars(self):
             if len(self.star_particles)<=0:
                 return
-            print "Let gravity take care of merging sinks" 
+            print("Let gravity take care of merging sinks") 
             if self.star_particles.radius.max()<=(0|units.AU):
                 return
-            print "identify groups.."
+            print("identify groups..")
             ccs=self.star_particles.copy().connected_components(threshold=self.merge_radius)
             if len(ccs):
-                print "merging sink sets... "
+                print("merging sink sets... ")
             nmerge=0
             newstars=Particles()
             for cc in ccs:
                 if len(cc) >1:
                     nmerge+=1
-                print "Merge stars: N= ", len(cc)
+                print("Merge stars: N= ", len(cc))
                 merge_two_stars(self.star_particles, cc.copy())
                 self.star_particles.synchronize_to(self.code.dm_particles)
-                print "stars merged"
+                print("stars merged")
 
 def merge_two_stars(bodies, particles_in_encounter):
     com_pos = particles_in_encounter.center_of_mass()
@@ -274,8 +274,8 @@ def merge_two_stars(bodies, particles_in_encounter):
     new_particle.velocity = com_vel
     new_particle.name = "Star"
     new_particle.radius = particles_in_encounter.radius.max()
-    print "old radius:", particles_in_encounter.radius.value_in(units.AU)
-    print "new radius:", new_particle.radius.value_in(units.AU)
+    print("old radius:", particles_in_encounter.radius.value_in(units.AU))
+    print("new radius:", new_particle.radius.value_in(units.AU))
     bodies.add_particles(new_particle)
-    print "Two stars (M=",particles_in_encounter.mass,") collided at d=", com_pos.length()
+    print("Two stars (M=",particles_in_encounter.mass,") collided at d=", com_pos.length())
     bodies.remove_particles(particles_in_encounter)

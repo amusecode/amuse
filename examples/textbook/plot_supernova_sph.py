@@ -54,7 +54,7 @@ def make_hydromap_and_show_picture(sph_particles, N=100, L=10):
     rho=rhoe.reshape((N+1,N+1))
     rho_e=make_map(hydro,N=50,L=L)
     hydro.stop()
-    print "extrema:", rho_e.value_in(units.erg/units.RSun**3).min(), rho_e.value_in(units.erg/units.RSun**3).max()
+    print("extrema:", rho_e.value_in(units.erg/units.RSun**3).min(), rho_e.value_in(units.erg/units.RSun**3).max())
     cax = pyplot.imshow(numpy.log10(rho_e.value_in(units.erg/units.RSun**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=4,vmax=11)
     cbar = fig.colorbar(cax, ticks=[4, 7.5, 11], orientation='vertical', fraction=0.045)
     cbar.ax.set_yticklabels(['Low', ' ', 'High'])  # horizontal colorbar
@@ -94,7 +94,7 @@ def plot_e_sph(sph, time):
 
     L = 10
     max_dens = sph.gas_particles.rho.value_in(units.g/units.cm**3).max()
-    print "Density extrema:", max_dens
+    print("Density extrema:", max_dens)
 
     x_label = "X [R$_\odot$]"
     y_label = "Y [R$_\odot$]"
@@ -121,7 +121,7 @@ def plot_sph(sph, time):
     L = 10
     unit = units.g/units.cm**3
     max_dens = sph.gas_particles.rho.value_in(unit).max()
-    print "Density extrema:", max_dens
+    print("Density extrema:", max_dens)
 
     x_label = "X [R$_\odot$]"
     y_label = "Y [R$_\odot$]"
@@ -129,7 +129,7 @@ def plot_sph(sph, time):
 
     rho_e=make_map(sph,N=50,L=L)
     max_dens = rho_e.value_in(unit).max()
-    print "extrema:", rho_e.value_in(unit).min(), max_dens
+    print("extrema:", rho_e.value_in(unit).min(), max_dens)
     cax = pyplot.imshow(rho_e.value_in(unit), extent=[-L/2,L/2,-L/2,L/2], interpolation='bicubic', origin='lower', cmap="hot", vmin=0.0, vmax=max_dens)    
 #    cbar = figure.colorbar(cax, ticks=[-0.4*max_dens, 0.0*max_dens, 0.5*max_dens], orientation='vertical', fraction=0.045)
     cbar = figure.colorbar(cax, ticks=[0.0, 0.5*max_dens, 0.99*max_dens], orientation='vertical', fraction=0.045)
@@ -137,7 +137,7 @@ def plot_sph(sph, time):
     rmin = "0.0"
     rmid = "%.1f" % (0.5*max_dens)
     rmax = "%.1f" % (max_dens)
-    print "min/max=", rmin, rmid, rmax
+    print("min/max=", rmin, rmid, rmax)
     cbar.ax.set_yticklabels([rmin, ' ', rmax])  # horizontal colorbar
 #    cbar.ax.set_yticklabels(['a', 'b', 'c'])  # horizontal colorbar
     cbar.set_label('mid-plane density [$g/cm^3$]', rotation=270)
@@ -168,7 +168,7 @@ if __name__ in ('__main__', '__plot__'):
     t_end = o.tplot
     for gas in bodies.history:
         time = gas.get_timestamp()
-        print "time=", time.in_(units.s), "N=", len(gas)
+        print("time=", time.in_(units.s), "N=", len(gas))
         if int(0.5+time.value_in(units.s)) >= t_end.value_in(units.s):
             gas.move_to_center()
             hydro = Gadget2(converter)

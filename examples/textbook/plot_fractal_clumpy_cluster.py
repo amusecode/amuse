@@ -44,7 +44,7 @@ def plot_single_image(groups_of_particles, lim=10):
 
     save_file = 'FractalClusterHop.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
 
 def find_clumps_with_hop(particles, unit_converter):

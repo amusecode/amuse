@@ -50,7 +50,7 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
     import random
     from amuse.ext.solarsystem import get_position
 
-    print "Initial masses:", M1, M2, M3
+    print("Initial masses:", M1, M2, M3)
     t_stellar = 4.0|units.Myr
     triple = Particles(3)
     triple[0].mass = M1
@@ -64,9 +64,9 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
     M1 = triple[0].mass
     M2 = triple[1].mass
     M3 = triple[2].mass
-    print "T=", stellar.model_time.in_(units.Myr)
-    print "M=", stellar.particles.mass.in_(units.MSun)
-    print "Masses at time T:", M1, M2, M3
+    print("T=", stellar.model_time.in_(units.Myr))
+    print("M=", stellar.particles.mass.in_(units.MSun))
+    print("Masses at time T:", M1, M2, M3)
     
     # Inner binary
     
@@ -79,9 +79,9 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
     else:
         Pin_0 = orbital_period(ain_0, M1+M2)
         
-    print 'ain_0 =', ain_0
-    print 'M1+M2 =', M1+M2
-    print 'Pin_0 =', Pin_0.value_in(units.day), '[day]'
+    print('ain_0 =', ain_0)
+    print('M1+M2 =', M1+M2)
+    print('Pin_0 =', Pin_0.value_in(units.day), '[day]')
     #print 'semi:', semimajor_axis(Pin_0, M1+M2).value_in(units.AU), 'AU'
     #print 'period:', orbital_period(ain_0, M1+M2).value_in(units.day), '[day]'
     
@@ -111,9 +111,9 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
     Mtriple = triple.mass.sum()
     Pout = orbital_period(aout_0, Mtriple)
 
-    print "T=", stellar.model_time.in_(units.Myr)
-    print "M=", stellar.particles.mass.in_(units.MSun)
-    print "Pout=", Pout.in_(units.Myr)
+    print("T=", stellar.model_time.in_(units.Myr))
+    print("M=", stellar.particles.mass.in_(units.MSun))
+    print("Pout=", Pout.in_(units.Myr))
 
     converter = nbody_system.nbody_to_si(triple.mass.sum(), aout_0)
     gravity = Hermite(converter)
@@ -131,9 +131,9 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
     ts = t_stellar + time
 
     ain, ein, aout, eout = get_orbital_elements_of_triple(triple)
-    print "Triple elements t=",  time,  \
+    print("Triple elements t=",  time,  \
         "inner:", triple[0].mass, triple[1].mass, ain, ein, \
-        "outer:", triple[2].mass, aout, eout
+        "outer:", triple[2].mass, aout, eout)
 
     dt_diag = t_end/float(nsteps)
     t_diag = dt_diag
@@ -192,17 +192,17 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
             Etot = Ekin + Epot
             dE = Etot_prev - Etot
             Mtot = triple.mass.sum()
-            print "T=", time, 
-            print "M=", Mtot, "(dM[SE]=", Mtot/Mtriple, ")",
-            print "E= ", Etot, "Q= ", Ekin/Epot,
-            print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, 
-            print "(dE[SE]=", dE_se/Etot, ")"
+            print("T=", time, end=' ') 
+            print("M=", Mtot, "(dM[SE]=", Mtot/Mtriple, ")", end=' ')
+            print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+            print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, end=' ') 
+            print("(dE[SE]=", dE_se/Etot, ")")
             Etot_init -= dE
             Etot_prev = Etot
             ain, ein, aout, eout = get_orbital_elements_of_triple(triple)
-            print "Triple elements t=",  (4|units.Myr) + time,  \
+            print("Triple elements t=",  (4|units.Myr) + time,  \
                 "inner:", triple[0].mass, triple[1].mass, ain, ein, \
-                "outer:", triple[2].mass, aout, eout
+                "outer:", triple[2].mass, aout, eout)
 
             t.append(time.value_in(units.Myr))
             smai.append(ain/ain_0)
@@ -211,7 +211,7 @@ def evolve_triple_with_wind(M1, M2, M3, Pora, Pin_0, ain_0, aout_0,
             ecco.append(eout/eout_0)
 
             if eout > 1.0 or aout <= zero:
-                print "Binary ionized or merged"
+                print("Binary ionized or merged")
                 break
 
     gravity.stop()
@@ -258,7 +258,7 @@ def main(M1, M2, M3, Pora, Pin, ain, aout, ein, eout,
                     +'_s={:d}_dtse={:.3f}'.format(scheme, dtse_fac) \
                     +'.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
     
 def new_option_parser():

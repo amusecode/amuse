@@ -75,7 +75,7 @@ def plot_track(xe,ye,xv,yv, output_filename):
 
     save_file = 'sun_venus_earth.png'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print('\nSaved figure in file', save_file,'\n')
     pyplot.show()
 ###BOOKLISTSTOP3###
 

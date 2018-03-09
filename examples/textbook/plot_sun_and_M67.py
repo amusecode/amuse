@@ -12,7 +12,7 @@ from distinct_colours import get_distinct
 def movie_all(time, sun_and_planets):
     colors = ['r', 'b', 'g']
 
-    print time.in_(units.Gyr)
+    print(time.in_(units.Gyr))
     R = [] | units.kpc
     for sp in sun_and_planets:
         R.append(sp.position.length())
@@ -98,7 +98,7 @@ if __name__ in ('__main__', '__plot__'):
             zMmin = Z[-1][0]
             rEmin = saps[0].position.length()
             rMmin = saps[1].position.length()
-    print "minimal distance:", tmin.value_in(units.Myr), dmin.in_(units.parsec), rEmin.in_(units.parsec), rMmin.in_(units.parsec), zEmin.in_(units.parsec), zMmin.in_(units.parsec)
+    print("minimal distance:", tmin.value_in(units.Myr), dmin.in_(units.parsec), rEmin.in_(units.parsec), rMmin.in_(units.parsec), zEmin.in_(units.parsec), zMmin.in_(units.parsec))
 
     plot_td = True
     plot_RZ = False

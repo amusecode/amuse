@@ -59,12 +59,12 @@ def main(N, t_end, W0, Rvir, Mmin, Mmax, z):
     Etot = Ekin + Epot
     dE = Etot_init-Etot
     Mtot = bodies.mass.sum()
-    print "T=", time, 
-    print "M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")",
-    print "E= ", Etot, "Q= ", Ekin/Epot,
-    print "dE/E=", (Etot_init-Etot)/Etot,
-    print "(dE[gr]/E=", dE_gr/Etot, ",", 
-    print "dE[se]/E=", (Etot_init-Etot-dE_gr)/Etot, ")"
+    print("T=", time, end=' ') 
+    print("M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")", end=' ')
+    print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+    print("dE/E=", (Etot_init-Etot)/Etot, end=' ')
+    print("(dE[gr]/E=", dE_gr/Etot, ",", end=' ') 
+    print("dE[se]/E=", (Etot_init-Etot-dE_gr)/Etot, ")")
     Etot_init -= dE
 
     gravity.stop()

@@ -59,7 +59,7 @@ def initialize_star_and_planetary_system(Mstar, Ndisk, Mdisk, Rmin, Rmax):
     planets = make_planets_oligarch.new_system(Mstar, star.radius,
                                                Rmin, Rmax, Mdisk)
     star.add_particles(planets[0].planets)
-    print star
+    print(star)
     
     return star, disk
 
@@ -140,9 +140,9 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
         Ekin = gravity_hydro.kinetic_energy 
         Epot = gravity_hydro.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, 
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
+        print("T=", time, end=' ') 
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot) 
         Etot_prev = Etot
 
     gravity_hydro.stop()

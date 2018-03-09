@@ -39,7 +39,7 @@ class RadHydro:
         disk.r2 = disk.x**2 + disk.y**2
         disk = disk.sorted_by_attributes("r2")
         Rmax = disk.r2.max().sqrt()
-        print "MaxR=", Rmax.in_(units.AU)
+        print("MaxR=", Rmax.in_(units.AU))
 
         self.hydro = hydro(nbody_system.nbody_to_si(self.disk.mass.sum(), Rmax),
                            number_of_workers=4)
@@ -102,7 +102,7 @@ class RadHydro:
         self.hydro_to_disk.copy()
         self.hydro_to_star.copy()
 
-        print "RT done at time:", self.time.in_(units.day)
+        print("RT done at time:", self.time.in_(units.day))
 
     def print_diagnostics(self):
         umin = self.disk.u.min()
@@ -112,15 +112,15 @@ class RadHydro:
         Tmean =  mu() / constants.kB * umean
         Tmax =  mu() / constants.kB * umin
 
-        print "Time=", self.time.in_(units.day)
-        print "Ionization:", self.disk.xion.min(), self.disk.xion.mean(), \
-              self.disk.xion.max()
-        print "Intenal energy:", umin, umean, umax
-        print "Temperature:", Tmin, Tmean, Tmax
-        print "Density:", self.disk.density.min().in_(units.amu/units.cm**3), \
+        print("Time=", self.time.in_(units.day))
+        print("Ionization:", self.disk.xion.min(), self.disk.xion.mean(), \
+              self.disk.xion.max())
+        print("Intenal energy:", umin, umean, umax)
+        print("Temperature:", Tmin, Tmean, Tmax)
+        print("Density:", self.disk.density.min().in_(units.amu/units.cm**3), \
               self.disk.density.mean().in_(units.amu/units.cm**3), \
-              self.disk.density.max().in_(units.amu/units.cm**3)
-        print "scaleheight:", abs(self.disk.z.value_in(units.AU)).mean()
+              self.disk.density.max().in_(units.amu/units.cm**3))
+        print("scaleheight:", abs(self.disk.z.value_in(units.AU)).mean())
         
     def stop(self):
         self.hydro.stop()
@@ -177,7 +177,7 @@ def evolve_star(Mstar, tstar):
     stars.rho = 1.0|(units.g/units.cm**3)
     stars.xion = 0.0 #ionization_fraction
     stars.u = (9. |units.kms)**2 #internal_energy
-    print stars
+    print(stars)
 
     if len(stars)>1:
         stars[1].x = 50|units.AU
@@ -207,7 +207,7 @@ def hydro_disk_with_bump(Mstar = 10|units.MSun,
     radhydro.write_file()
 
     dt = t_end/float(n_steps)
-    print "dt=", dt.in_(units.day)
+    print("dt=", dt.in_(units.day))
     time = 0 | units.day
     while time<t_end:
         time += dt

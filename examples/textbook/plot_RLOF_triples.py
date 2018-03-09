@@ -21,8 +21,8 @@ def maximum_stellar_radius():
         while stellar.particles[0].stellar_type<9|units.stellar_type:
             stellar.evolve_model()
             rmax = max(rmax, stellar.particles[0].radius)
-        print "Time=", mi, stellar.particles[0].mass, \
-              stellar.model_time, stellar.particles[0].radius
+        print("Time=", mi, stellar.particles[0].mass, \
+              stellar.model_time, stellar.particles[0].radius)
         R.append(rmax)
     return M, R
     
@@ -57,5 +57,5 @@ for i in range(len(names)):
 
 save_file = 'fig_RLOF_triples_R.png'
 pyplot.savefig(save_file)
-print '\nSaved figure in file', save_file,'\n'
+print('\nSaved figure in file', save_file,'\n')
 pyplot.show()

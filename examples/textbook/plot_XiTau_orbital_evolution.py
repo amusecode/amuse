@@ -10,7 +10,7 @@ def read_orbital_elements(filename="orbital_elements_data.pkl"):
     with open(filename, 'rb') as infile:
         results = pickle.load(infile)
         a_in = results["semimajor_axis_binary"]
-        print results.keys()
+        print(list(results.keys()))
     return results["times"], results["semimajor_axis_giant"], results["eccentricity_giant"], results["giant_mass"], results["ms1_mass"], results["ms2_mass"]
 
 def limit_range(t, t_start=0|units.day, t_end=100|units.Myr):
@@ -51,7 +51,7 @@ def retrieve_semi_major_axis_evolution(filename, nj,
             en_out.append(e_out[i])
             if t[i]>t_end:
                 break
-    print i, len(t), len(an_out), len(a_new)
+    print(i, len(t), len(an_out), len(a_new))
     return t_new, an_out, a_new, en_out
 
 
@@ -112,7 +112,7 @@ def plot_HD971331(filename):
     #pyplot.scatter(t[-1].value_in(units.yr), a_new[-1].value_in(units.AU), s=50, c=colors[1])
 
     t, a_out, a_new = retrieve_semi_major_axis_evolution(filename, nj=2, t_start=5000|units.day, t_end=8000|units.day)
-    print t.value_in(units.yr), a_new.value_in(units.AU)
+    print(t.value_in(units.yr), a_new.value_in(units.AU))
     #pyplot.plot(t.value_in(units.yr), a_new.value_in(units.AU), c=colors[1])
     #pyplot.scatter(t[0].value_in(units.yr), a_new[0].value_in(units.AU), s=50, c=colors[1])
     #pyplot.scatter(t[-1].value_in(units.yr), a_new[-1].value_in(units.AU), s=50, c=colors[1])
