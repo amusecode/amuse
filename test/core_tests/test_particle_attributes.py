@@ -318,7 +318,22 @@ class TestParticlesAttributes(amusetest.TestCase):
             self.assertAlmostEquals(sigma, 0.3, 1)
         else:
             self.assertAlmostEquals(sigma, 0.4, 1)
-    
+
+    def test15(self):
+        scale_R = 1.0 | units.parsec
+        scale_M = 1000.0 | units.MSun
+        converter = nbody_system.nbody_to_si(scale_M,scale_R)
+
+        for n in range(3162, 3165, 1):
+            stars = new_plummer_sphere(
+                    n, 
+                    convert_nbody=converter,
+                    )
+            stars.mass=(numpy.arange(1,n+1)/(1.*n)) | units.MSun
+            potential = stars.potential()
+
+            for i,x in enumerate(stars):
+              self.assertEqual( (potential[i]-x.potential()).number,0 )
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
     
