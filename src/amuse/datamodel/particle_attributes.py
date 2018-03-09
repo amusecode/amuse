@@ -381,7 +381,7 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
         dr = (dr_squared+smoothing_length_squared).sqrt()
         index = (indices + offset, indices)
         dr[index] = inf_len
-        potentials[offset:offset+block_size] = (mass_r/dr).sum(axis=0)
+        potentials += (mass[offset:offset+block_size]/dr).sum(axis=1)
         offset += block_size
 
     return -G * potentials
