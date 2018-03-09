@@ -2,6 +2,7 @@
    Simulate the radiative and hydrodynamial evolution of a disk with 
    a single bump around a single star
 """
+from __future__ import print_function
 from time import time, localtime
 from amuse.lab import *
 from amuse.ext.molecular_cloud import ism_cube
@@ -46,12 +47,12 @@ def new_disk_with_bump(Mstar = 1|units.MSun,
     bodies = bodies.select(lambda r: (com-r).length()>Rmin,["position"])
     bodies = bodies.select(lambda r: (com-r).length()<Rmax,["position"])
 
-    print "Nbump=", Ndisk, Mbump, Rbump, Nbump
-    print "Mass =", Mstar, Mdisk, bodies.mass.sum().in_(units.MSun), bodies.mass.sum()/Mstar
+    print("Nbump=", Ndisk, Mbump, Rbump, Nbump)
+    print("Mass =", Mstar, Mdisk, bodies.mass.sum().in_(units.MSun), bodies.mass.sum()/Mstar)
 
-    print "X-min/max:", min(bodies.x), max(bodies.x)
+    print("X-min/max:", min(bodies.x), max(bodies.x))
     bodies = bodies.select(lambda r: r.length()<1.0*Rmax,["position"])
-    print "X-min/max:", min(bodies.x), max(bodies.x)
+    print("X-min/max:", min(bodies.x), max(bodies.x))
 
     return bodies
 
@@ -62,7 +63,7 @@ def read_disk_with_bump(image_id=1, filename="hydro.hdf5"):
     snapshot_id = 0
     for si in ism.history:
         snapshot_id += 1
-        print "reading snapshot_id=", snapshot_id
+        print("reading snapshot_id=", snapshot_id)
         if image_id<0 or image_id == snapshot_id:
             com = si.center_of_mass()
             return si
@@ -113,7 +114,7 @@ def irradiate_disk_with_bump(Mstar = 10|units.MSun, tstar = 20|units.Myr, Ndisk=
         rad.evolve_model(rad.model_time + dt)
         rad_to_framework.copy_attributes(["x","y", "z", "xion"])
         write_set_to_file(particles, "rad.hdf5", 'hdf5')
-        print "Time=", rad.model_time, "Ionization (min, mean, max):", ism.xion.min(), ism.xion.mean(), ism.xion.max()
+        print("Time=", rad.model_time, "Ionization (min, mean, max):", ism.xion.min(), ism.xion.mean(), ism.xion.max())
     rad.stop()
 
 def _irradiate_disk_with_pump(Mstar = 10|units.MSun,
@@ -132,7 +133,7 @@ def _irradiate_disk_with_pump(Mstar = 10|units.MSun,
     stellar.particles.add_particle(Particle(mass=Mstar))
     stellar.evolve_model(tstar)
 
-    print "L=", stellar.particles[0].luminosity.in_(units.LSun), stellar.particles[0].temperature
+    print("L=", stellar.particles[0].luminosity.in_(units.LSun), stellar.particles[0].temperature)
 
     source=Particles(1)
     source.mass = stellar.particles[0].mass
@@ -198,11 +199,11 @@ def _irradiate_disk_with_pump(Mstar = 10|units.MSun,
         channel_from_rad_to_framework.copy_attributes(["x","y", "z", "xion"])
         write_set_to_file(particles, "rad.hdf5", 'hdf5')
 
-        print "Date:"+str(localtime()[2])+"."+str(localtime()[1])+"."+str(localtime()[1]), "at", str(localtime()[3])+"h", str(localtime()[4])+"m"
-        print "Time=", model_time, "dt_CPU=", time()-tCPU
-        print "min ionization:", ism.xion.min()
-        print "average Xion:", ism.xion.mean()
-        print "max ionization:", ism.xion.max()
+        print("Date:"+str(localtime()[2])+"."+str(localtime()[1])+"."+str(localtime()[1]), "at", str(localtime()[3])+"h", str(localtime()[4])+"m")
+        print("Time=", model_time, "dt_CPU=", time()-tCPU)
+        print("min ionization:", ism.xion.min())
+        print("average Xion:", ism.xion.mean())
+        print("max ionization:", ism.xion.max())
         tCPU = time()
 
     rad.stop()

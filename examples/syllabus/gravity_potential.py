@@ -1,4 +1,4 @@
-from __future__ import print_function
+
 import numpy
 from amuse.units import units
 from amuse.units import constants

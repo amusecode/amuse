@@ -6,6 +6,7 @@
   as in Bonnell et al. (2003)  
   
 """  
+from __future__ import print_function
 
 import numpy
   
@@ -127,9 +128,9 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun, Rcloud=1. | units.parse
     conv = nbody_system.nbody_to_si(Mcloud,Rcloud)
 
     rho_cloud = 3.*Mcloud/(4.*numpy.pi*Rcloud**3)
-    print rho_cloud
+    print(rho_cloud)
     tff = 0.5427/numpy.sqrt(constants.G*rho_cloud)
-    print "t_ff=", tff.value_in(units.Myr), 'Myr'
+    print("t_ff=", tff.value_in(units.Myr), 'Myr')
 
     dt = 5.e-2 | units.Myr
     tend=1.0 | units.Myr
@@ -152,13 +153,13 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun, Rcloud=1. | units.parse
     sph.parameters.sph_h_const = eps
     parts.h_smooth= eps
 
-    print 'eps-h flag', sph.get_eps_is_h(), sph.get_consthsm()
+    print('eps-h flag', sph.get_eps_is_h(), sph.get_consthsm())
 
     expected_dt = 0.2*numpy.pi*numpy.power(eps, 1.5)/numpy.sqrt(constants.G*Mcloud/N)
 
-    print "dt_exp=", expected_dt.value_in(units.Myr)
-    print "dt=", dt
-    print "eps=", sph.parameters.gas_epsilon.in_(units.parsec)
+    print("dt_exp=", expected_dt.value_in(units.Myr))
+    print("dt=", dt)
+    print("eps=", sph.parameters.gas_epsilon.in_(units.parsec))
 
     sph.gas_particles.add_particles(parts)
 
@@ -177,14 +178,14 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun, Rcloud=1. | units.parse
 
     while ttarget < tend:
         ttarget=float(i)*dt
-        print ttarget
+        print(ttarget)
         sph.evolve_model(ttarget, timestep=dt)
         E = sph.gas_particles.kinetic_energy()+sph.gas_particles.potential_energy() + sph.gas_particles.thermal_energy()
         E_th = sph.gas_particles.thermal_energy()
         if i==0:
             E0 = E
         Eerr = (E-E0)/E0
-        print 'energy=', E, 'energy_error=', Eerr, 'e_th=', E_th
+        print('energy=', E, 'energy_error=', Eerr, 'e_th=', E_th)
         channel_from_sph_to_parts.copy()
         """
         filename = 'm400k_r10pc_e01_'+ str(i).zfill(2) + '.dat'
@@ -205,7 +206,7 @@ def make_stars(cluster_particle):
     mmean = 1.0|units.MSun
     N = int(sfe*cluster_particle.mass/mmean)
     stars = Particles(0)
-    print "N_cluster=", N
+    print("N_cluster=", N)
     if N>0:
         masses = new_salpeter_mass_distribution(N, 0.3|units.MSun, min(100|units.MSun, cluster_particle.mass))
 
@@ -277,11 +278,11 @@ def run_dynamics(bodies, t_end, nsteps):
         dE = Etot_prev-Etot
         dE_se = Etot_prev_se-Etot
         Mtot = bodies.mass.sum()
-        print "T=", time, 
-        print "M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")",
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, 
-        print "(dE[SE]=", dE_se/Etot, ")"
+        print("T=", time, end=' ') 
+        print("M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")", end=' ')
+        print("E= ", Etot, "Q= ", Ekin/Epot, end=' ')
+        print("dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot, end=' ') 
+        print("(dE[SE]=", dE_se/Etot, ")")
         Etot_init -= dE
         Etot_prev = Etot
 

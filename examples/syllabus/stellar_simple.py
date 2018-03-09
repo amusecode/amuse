@@ -3,6 +3,7 @@
    initial mass function between Mmin and Mmax and with stellar evolution with
    metalicity z.
 """
+from __future__ import print_function
 import sys
 import numpy
 from amuse.lab import *
@@ -16,17 +17,17 @@ def main(N=10, t_end=10|units.Myr, dt=1|units.Myr, filename="stellar.hdf5",
          Mmin=1.0|units.MSun, Mmax= 100|units.MSun, z=0.02, C="SeBa"):
 
     if C.find("SeBa")>=0:
-        print "SeBa"
+        print("SeBa")
         stellar = SeBa()
     elif C.find("SSE")>=0:
-        print "SSE"
+        print("SSE")
         stellar = SSE()
     elif C.find("MESA")>=0:
         stellar = MESA()
     elif C.find("EVtwin")>=0:
         stellar = EVtwin()
     else:
-        print "No stellar model specified."
+        print("No stellar model specified.")
         return
     stellar.parameters.metallicity = z
 
@@ -48,8 +49,8 @@ def main(N=10, t_end=10|units.Myr, dt=1|units.Myr, filename="stellar.hdf5",
 
         Mtot = stellar.particles.mass.sum()
 
-        print "T=", time, 
-        print "M=", Mtot, "dM[SE]=", Mtot/Mtot_init #, stellar.particles[0].stellar_type
+        print("T=", time, end=' ') 
+        print("M=", Mtot, "dM[SE]=", Mtot/Mtot_init) #, stellar.particles[0].stellar_type
 
     T = [] 
     L = [] 
