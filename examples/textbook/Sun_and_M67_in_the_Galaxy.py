@@ -21,7 +21,8 @@ class MilkyWay_galaxy(object):
     def halo_potential(self, x,y,z, Mc=5.0E+10|units.MSun, Rc=1.0|units.kpc**2):
         r=(x**2 + y**2 + z**2).sqrt()
         rr = (r/Rc)
-        return -constants.G * (Mc/Rc)*(0.5*numpy.log(1 +rr**2) + numpy.arctan(rr)/rr)
+        return -constants.G * (Mc/Rc)*(0.5*numpy.log(1 +rr**2) \
+                                         + numpy.arctan(rr)/rr)
 
     def get_potential_at_point(self, eps, x, y, z):
         pot_disk = self.disk_or_bulge_potentials(x,y,z, 
@@ -62,7 +63,8 @@ def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
     gravity.timestep = dt 
     
     filename="sunandM67.hdf5"
-    write_set_to_file(bodies.savepoint(0.0 | t_end.unit), filename, "hdf5", append_to_file=False)
+    write_set_to_file(bodies.savepoint(0.0 | t_end.unit),
+                      filename, "hdf5", append_to_file=False)
 
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
@@ -110,7 +112,7 @@ def new_option_parser():
                       dest="vgal", type="float", default = 100|units.kms,
                       help="orbital velocity of the CDG [%default]")
     result.add_option("-W", dest="W0", type="float", default = 7.0,
-                      help="Dimension-less depth of the King potential (W0) [%default]")
+               help="Dimensionless depth of the King potential (W0) [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):

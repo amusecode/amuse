@@ -47,17 +47,22 @@ class Gravity(BaseCode):
     def __init__(self, code, particles, eps=0|units.RSun):
         BaseCode.__init__(self, code, particles, eps)
         self.code.particles.add_particles(self.particles)
-        self.channel_to_framework = self.code.particles.new_channel_to(self.particles)
-        self.channel_from_framework = self.particles.new_channel_to(self.code.particles)
+        self.channel_to_framework \
+            = self.code.particles.new_channel_to(self.particles)
+        self.channel_from_framework \
+            = self.particles.new_channel_to(self.code.particles)
         self.initial_total_energy = self.total_energy
 ###BOOKLISTSTOP2###
 
 ###BOOKLISTSTART3###
 class Hydro(BaseCode):
-    def __init__(self, code, particles, eps=0|units.RSun, dt=None, Rbound=None):
+    def __init__(self, code, particles, eps=0|units.RSun,
+                 dt=None, Rbound=None):
         BaseCode.__init__(self, code, particles, eps)
-        self.channel_to_framework = self.code.gas_particles.new_channel_to(self.particles)
-        self.channel_from_framework = self.particles.new_channel_to(self.code.gas_particles)
+        self.channel_to_framework \
+            = self.code.gas_particles.new_channel_to(self.particles)
+        self.channel_from_framework \
+            = self.particles.new_channel_to(self.code.gas_particles)
         self.code.gas_particles.add_particles(particles)
         m = self.particles.mass.sum()
         l = self.code.gas_particles.position.length()
@@ -70,17 +75,21 @@ class Hydro(BaseCode):
         self.initial_total_energy = self.total_energy
     @property
     def total_energy(self):
-        return self.code.kinetic_energy + self.code.potential_energy + self.code.thermal_energy
+        return self.code.kinetic_energy \
+            + self.code.potential_energy \
+            + self.code.thermal_energy
 ###BOOKLISTSTOP3###
         
 ###BOOKLISTSTART4###
-def gravity_hydro_bridge(Mprim, Msec, a, ecc, t_end, n_steps, Rgas, Mgas, Ngas):
+def gravity_hydro_bridge(Mprim, Msec, a, ecc, t_end, n_steps,
+                         Rgas, Mgas, Ngas):
 
-    stars = new_binary_from_orbital_elements(Mprim, Msec, a, ecc, G=constants.G)
+    stars = new_binary_from_orbital_elements(Mprim, Msec, a, ecc,
+                                             G=constants.G)
     eps = 1 | units.RSun
     gravity = Gravity(ph4, stars, eps)
 
-    converter=nbody_system.nbody_to_si(1.0|units.MSun, Rgas)
+    converter = nbody_system.nbody_to_si(1.0|units.MSun, Rgas)
     ism = new_plummer_gas_model(Ngas, convert_nbody=converter)
     ism.move_to_center()
     ism = ism.select(lambda r: r.length()<2*a,["position"])
@@ -91,15 +100,17 @@ def gravity_hydro_bridge(Mprim, Msec, a, ecc, t_end, n_steps, Rgas, Mgas, Ngas):
     write_set_to_file(ism, filename, 'amuse')
 
     gravhydro = bridge.Bridge(use_threading=False)
-    gravhydro.add_system(gravity, (hydro,) )
-    gravhydro.add_system(hydro, (gravity,) )
+    gravhydro.add_system(gravity, (hydro,))
+    gravhydro.add_system(hydro, (gravity,))
     gravhydro.timestep = 2*hydro.get_timestep()
 
     while model_time < t_end:
         orbit = orbital_elements_from_binary(stars, G=constants.G)
         dE_gravity = gravity.initial_total_energy/gravity.total_energy
         dE_hydro = hydro.initial_total_energy/hydro.total_energy
-        print "Time:", model_time.in_(units.yr), "ae=", orbit[2].in_(units.AU), orbit[3], "dE=", dE_gravity, dE_hydro
+        print "Time:", model_time.in_(units.yr), \
+              "ae=", orbit[2].in_(units.AU), orbit[3], \
+              "dE=", dE_gravity, dE_hydro
         
         model_time += 10*gravhydro.timestep
         gravhydro.evolve_model(model_time)

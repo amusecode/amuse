@@ -18,7 +18,6 @@ from amuse.units.optparse import OptionParser
 from time import sleep
 from amuse.ext.orbital_elements import orbital_elements_from_binary
 
-
 def plot_single_image(planets, disk, lim, index):
 
     #centered on the Sun
@@ -35,9 +34,10 @@ def plot_single_image(planets, disk, lim, index):
 
     fig = pyplot.figure(figsize=(12,12))	
     time = disk.get_timestamp()
-#    pyplot.title("Cluster at t="+str(time.in_(units.Gyr)))
+    # pyplot.title("Cluster at t="+str(time.in_(units.Gyr)))
     xy = pyplot.axes(rect_scatter)
-    xy.text(110,110, "protoplanetary disk (img#"+str(index)+")",  ha='left', va='bottom')
+    xy.text(110,110, "protoplanetary disk (img#"+str(index)+")",
+            ha='left', va='bottom')
     xz = pyplot.axes(rect_histx)
     yz = pyplot.axes(rect_histy)
     xy.set_xlabel("X [AU]")
@@ -46,28 +46,25 @@ def plot_single_image(planets, disk, lim, index):
     yz.set_xlabel("Z [AU]")
 
     positions = disk.position
-    x, y, z = positions.x.value_in(units.AU), positions.y.value_in(units.AU), positions.z.value_in(units.AU)
+    x, y, z = positions.x.value_in(units.AU), positions.y.value_in(units.AU), \
+              positions.z.value_in(units.AU)
 
-#    sizes = 1000
-#    sizes = 1000*disk.rho/disk.rho.max()
     alpha = 0.01
     us        = disk.u
     u_min, u_max = min(us), max(us)
     print "u=", u_min, u_max
     log_u = numpy.log((us / u_min)) / numpy.log((u_max / u_min))
-    clipped_log_u = numpy.minimum(numpy.ones_like(log_u), numpy.maximum(numpy.zeros_like(log_u), log_u))
+    clipped_log_u = numpy.minimum(numpy.ones_like(log_u),
+                                  numpy.maximum(numpy.zeros_like(log_u), log_u))
 
     ps = disk.rho
     p_min, p_max = min(ps), max(ps)
     log_p = numpy.log((ps / p_min)) / numpy.log((p_max / p_min))
-    clipped_log_p = numpy.minimum(numpy.ones_like(log_p), numpy.maximum(numpy.zeros_like(log_p), log_p))
+    clipped_log_p = numpy.minimum(numpy.ones_like(log_p),
+                                  numpy.maximum(numpy.zeros_like(log_p), log_p))
 
-    #    red   = 1 - clipped_log_u**(1./2.)
-#    blue  = clipped_log_u**(1./2.)
-#    green = numpy.minimum(red, blue)
-    red   = 1.0 - clipped_log_u
-    blue  = clipped_log_u
-    #green = numpy.minimum(red, blue)
+    red = 1.0 - clipped_log_u
+    blue = clipped_log_u
     green = clipped_log_p
     colors = numpy.transpose(numpy.array([red, green, blue]))
 
@@ -87,15 +84,18 @@ def plot_single_image(planets, disk, lim, index):
     c = get_distinct(len(planets))
     m = 1000 * planets.mass/planets.mass.max()
     m[0] = min(10*m[1:].max(), 30)
-    xy.scatter(planets.x.value_in(units.AU), planets.y.value_in(units.AU), s=m, c=c, lw=0) 
-    xz.scatter(planets.x.value_in(units.AU), planets.z.value_in(units.AU), s=m, c=c, lw=0) 
-    yz.scatter(planets.z.value_in(units.AU), planets.y.value_in(units.AU), s=m, c=c, lw=0) 
+    xy.scatter(planets.x.value_in(units.AU), planets.y.value_in(units.AU),
+               s=m, c=c, lw=0) 
+    xz.scatter(planets.x.value_in(units.AU), planets.z.value_in(units.AU),
+               s=m, c=c, lw=0) 
+    yz.scatter(planets.z.value_in(units.AU), planets.y.value_in(units.AU),
+               s=m, c=c, lw=0) 
 
     filename = "planetary_system_i{0:04}.png".format(index)
     fig.savefig(filename)
 
 def XX_main(filename, lim=-1|units.AU, image_id=-1):
-    if image_id<0:
+    if image_id < 0:
         pyplot.ion()
     star = read_set_from_file("earlysolarsystem.amuse", "amuse")
     planet = read_set_from_file("earlysolarsystem.amuse", "amuse")
@@ -108,7 +108,7 @@ def XX_main(filename, lim=-1|units.AU, image_id=-1):
         snapshot_id += 1
         time = si.get_timestamp()
         print "Snapshot=", snapshot_id, time
-        if image_id<0 or image_id == snapshot_id:
+        if image_id < 0 or image_id == snapshot_id:
             m = 1
             plot_single_image(si, ssi, lim.value_in(units.AU), snapshot_id)
         if image_id == snapshot_id:
@@ -119,16 +119,15 @@ def XX_main(filename, lim=-1|units.AU, image_id=-1):
             pyplot.cla()
 
 def calculate_orbital_elements(star, planet):
-
     p = Particles()
     p.add_particle(star)
     p.add_particle(planet)
-    M, m, a, e, ta_out, inc_out, lan_out, aop_out = orbital_elements_from_binary(p, G=constants.G)
+    M, m, a, e, ta_out, inc_out, lan_out, aop_out \
+        = orbital_elements_from_binary(p, G=constants.G)
     return a, e
 
 def main(filename, lim=-1|units.AU, image_id=-1):
-
-    if image_id<0:
+    if image_id < 0:
         output_multiple_images(lim)
     else:
         output_single_image(lim, image_id)
@@ -140,12 +139,14 @@ def output_single_image(lim, snapshot_id):
         if len(bi)<=20:
             planets = bi.copy()
             time = bi.get_timestamp()
-            print "Orbits at t=", time, planets.semimajor_axis.in_(units.AU), planets.eccentricity
+            print "Orbits at t=", time, planets.semimajor_axis.in_(units.AU), \
+                  planets.eccentricity
         else:
             disk = bi.copy()
             time = bi.get_timestamp()
             print "Snapshot=", snapshot_id, time
-            plot_single_image(planets, disk, lim.value_in(units.AU), snapshot_id)
+            plot_single_image(planets, disk, lim.value_in(units.AU),
+                              snapshot_id)
 
 def output_multiple_images(lim):
     snapshot_id = 0
@@ -153,17 +154,19 @@ def output_multiple_images(lim):
     while os.path.exists(filename):
         bodies = read_set_from_file(filename, "amuse")
         for bi in bodies.history:
-            if len(bi)<=20:
+            if len(bi) <= 20:
                 planets = bi.copy()
                 time = bi.get_timestamp()
-                print "Orbits at t=", time, planets.semimajor_axis.in_(units.AU), planets.eccentricity
+                print "Orbits at t=", time, \
+                    planets.semimajor_axis.in_(units.AU), planets.eccentricity
             else:
                 disk = bi.copy()
 
                 time = bi.get_timestamp()
                 print "Snapshot=", snapshot_id, time
-                if image_id<0 or image_id == snapshot_id:
-                    plot_single_image(planets, disk, lim.value_in(units.AU), snapshot_id)
+                if image_id < 0 or image_id == snapshot_id:
+                    plot_single_image(planets, disk, lim.value_in(units.AU),
+                                      snapshot_id)
                 if image_id == snapshot_id:
                     print "Stop plotting"
                     break
