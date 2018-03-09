@@ -335,6 +335,23 @@ class TestParticlesAttributes(amusetest.TestCase):
             for i,x in enumerate(stars):
               self.assertEqual( (potential[i]-x.potential()).number,0 )
 
+    def test16(self):
+        scale_R = 1.0 | units.parsec
+        scale_M = 1000.0 | units.MSun
+        converter = nbody_system.nbody_to_si(scale_M,scale_R)
+
+        for n in range(0, 50):
+            stars = new_plummer_sphere(
+                    50, 
+                    convert_nbody=converter,
+                    )
+            stars.mass=numpy.arange(1,51) | units.MSun
+            potential = stars.potential(block_size=n)
+
+            for i,x in enumerate(stars):
+              self.assertEqual( (potential[i]-x.potential()).number,0 )
+
+
 class TestParticlesDomainAttributes(amusetest.TestCase):
     
     def test1(self):
