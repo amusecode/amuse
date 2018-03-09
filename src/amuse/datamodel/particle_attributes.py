@@ -366,6 +366,7 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
     x_vector_r = x_vector.reshape(newshape)
     y_vector_r = y_vector.reshape(newshape)
     z_vector_r = z_vector.reshape(newshape)
+    mass_r=mass.reshape(newshape)
     while offset < n:
         if offset + block_size > n:
             block_size = n - offset
@@ -380,8 +381,7 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
         dr = (dr_squared+smoothing_length_squared).sqrt()
         index = (indices + offset, indices)
         dr[index] = inf_len
-        div = mass / dr
-        potentials[offset:offset+block_size] = (mass/dr).sum(1)
+        potentials[offset:offset+block_size] = (mass_r/dr).sum(axis=0)
         offset += block_size
 
     return -G * potentials
