@@ -333,7 +333,7 @@ class TestParticlesAttributes(amusetest.TestCase):
             potential = stars.potential()
 
             for i,x in enumerate(stars):
-              self.assertEqual( (potential[i]-x.potential()).number,0 )
+              self.assertAlmostRelativeEqual(potential[i],x.potential())
 
     def test16(self):
         scale_R = 1.0 | units.parsec
@@ -349,7 +349,7 @@ class TestParticlesAttributes(amusetest.TestCase):
             potential = stars.potential(block_size=n)
 
             for i,x in enumerate(stars):
-              self.assertEqual( (potential[i]-x.potential()).number,0 )
+              self.assertAlmostRelativeEqual(potential[i],x.potential())
 
 
 class TestParticlesDomainAttributes(amusetest.TestCase):
