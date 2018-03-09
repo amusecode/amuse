@@ -103,7 +103,7 @@ def energyplot():
         time=time+8*10000.
         err=instance.evolve_model(time)
         if(err!=0):
-            print "err:", err
+            print("err:", err)
         e,err=instance.get_total_energy()
         t,err=instance.get_time()
         energy.append((e0-e)/e0)
@@ -117,6 +117,6 @@ def energyplot():
     pyplot.savefig('solarsytem_energy.png')
   
 if __name__  == "__main__":
-    print "this may take a while.."
+    print("this may take a while..")
     planetplot()
     #energyplot()

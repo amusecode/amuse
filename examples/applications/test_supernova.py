@@ -22,9 +22,9 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Grid
 def inject_supernova_energy(gas_particles):
     inner = gas_particles.select(lambda pos : pos.length_squared() < 100.0 | units.RSun**2, ["position"])
-    print len(inner), "innermost particles selected."
-    print "Adding", (1.0e51 | units.erg) / inner.total_mass(), "of supernova " \
-        "(specific internal) energy to each of them."
+    print(len(inner), "innermost particles selected.")
+    print("Adding", (1.0e51 | units.erg) / inner.total_mass(), "of supernova " \
+        "(specific internal) energy to each of them.")
     inner.u += (1.0e51 | units.erg) / inner.total_mass()
 
 def setup_stellar_evolution_model():
@@ -39,13 +39,13 @@ def setup_stellar_evolution_model():
     stellar_evolution.particles.add_particles(stars)
     stellar_evolution.commit_particles()
 
-    print "Evolving a MESA star with mass:", stellar_evolution.particles[0].mass
+    print("Evolving a MESA star with mass:", stellar_evolution.particles[0].mass)
     try:
         while True:
             stellar_evolution.evolve_model()
     except AmuseException as ex:
-        print "Evolved star to", stellar_evolution.particles[0].age
-        print "Radius:", stellar_evolution.particles[0].radius
+        print("Evolved star to", stellar_evolution.particles[0].age)
+        print("Radius:", stellar_evolution.particles[0].radius)
     
     pickle_stellar_model(stellar_evolution.particles[0], out_pickle_file)
     stellar_evolution.stop()
@@ -60,7 +60,7 @@ def run_supernova():
     
     pickle_file = setup_stellar_evolution_model()
     
-    print "Creating initial conditions from a MESA stellar evolution model..."
+    print("Creating initial conditions from a MESA stellar evolution model...")
     model = convert_stellar_model_to_SPH(
         None, 
         number_of_sph_particles, 
@@ -71,14 +71,14 @@ def run_supernova():
     )
     core, gas_without_core, core_radius = model.core_particle, model.gas_particles, model.core_radius
     if len(core):
-        print "Created", len(gas_without_core), "SPH particles and one 'core-particle':\n", core
-        print "Setting gravitational smoothing to:", core_radius
+        print("Created", len(gas_without_core), "SPH particles and one 'core-particle':\n", core)
+        print("Setting gravitational smoothing to:", core_radius)
     else:
-        print "Warning: Only SPH particles created."
+        print("Warning: Only SPH particles created.")
     
     inject_supernova_energy(gas_without_core)
     
-    print "\nEvolving (SPH) to:", t_end
+    print("\nEvolving (SPH) to:", t_end)
     n_steps = 100
     
     unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, constants.G, t_end)
@@ -115,7 +115,7 @@ def run_supernova():
         os.path.join(get_path_to_results(), "supernova_energy_evolution.png"))
 
     hydro_code.stop()
-    print "All done!\n"
+    print("All done!\n")
     
 
 def energy_plot(time, E_kin, E_pot, E_therm, figname):
@@ -130,7 +130,7 @@ def energy_plot(time, E_kin, E_pot, E_therm, figname):
     ylabel('Energy')
     pyplot.legend(loc=3)
     pyplot.savefig(figname)
-    print "\nPlot of energy evolution was saved to: ", figname
+    print("\nPlot of energy evolution was saved to: ", figname)
     pyplot.close()
 
 def hydro_plot(view, hydro_code, image_size, figname):
@@ -178,18 +178,18 @@ def hydro_plot(view, hydro_code, image_size, figname):
     im = pyplot.figimage(rgba, origin='lower')
     
     pyplot.savefig(figname, transparent=True, dpi = 100, facecolor='k', edgecolor='k')
-    print "\nHydroplot was saved to: ", figname
+    print("\nHydroplot was saved to: ", figname)
     pyplot.close()
 
 
 if __name__ == "__main__":
-    print "Test run to mimic a supernova in SPH"
-    print
-    print "Details:"
-    print "First a high-mass star is evolved up to the super giant phase using MESA. " \
+    print("Test run to mimic a supernova in SPH")
+    print()
+    print("Details:")
+    print("First a high-mass star is evolved up to the super giant phase using MESA. " \
         "Then it is converted to SPH particles with the convert_stellar_model_to_SPH " \
         "procedure (with a non-SPH 'core' particle). Finally the internal energies of " \
         "the inner particles are increased, such that the star gains the 10^51 ergs " \
-        "released in supernova explosions."
-    print
+        "released in supernova explosions.")
+    print()
     run_supernova()

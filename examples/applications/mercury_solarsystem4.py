@@ -23,7 +23,7 @@ class SSEWithMassEvolve(SSE):
 
         rc = 60.0 | (units.Gyr / units.MSun)
         
-        print "find"
+        print("find")
 
         while current_mass > mass:
             timestep = rc * (current_mass - mass)
@@ -33,7 +33,7 @@ class SSEWithMassEvolve(SSE):
             self.evolve_model(current_time)
             current_mass = self.particles[0].mass
             
-        print "done"
+        print("done")
         return current_time, current_mass
 
 def setup_codes(sun, planets):
@@ -90,16 +90,16 @@ def polyevolve():
     for i, mass in enumerate(massrange):
         time, dummymass = se.evolve_mass(mass)
         if i==0: initialtime = time
-        print time,mass,"evolving gd"
+        print(time,mass,"evolving gd")
         gdtime = time-initialtime
-        print gdtime
+        print(gdtime)
         err = gd.evolve_model(gdtime)
         channelp.copy()
         planets.savepoint(time)
         channels.copy()
         gd.central_particle.mass = sun[0].mass
-        print sun[0].mass
-        print sun[0].mass.value_in(units.MSun), time.value_in(units.Myr), planets[4].x.value_in(units.AU),  planets[4].y.value_in(units.AU),planets[4].z.value_in(units.AU)
+        print(sun[0].mass)
+        print(sun[0].mass.value_in(units.MSun), time.value_in(units.Myr), planets[4].x.value_in(units.AU),  planets[4].y.value_in(units.AU),planets[4].z.value_in(units.AU))
 
     gd.stop()
     se.stop()

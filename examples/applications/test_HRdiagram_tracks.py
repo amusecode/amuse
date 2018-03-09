@@ -47,13 +47,13 @@ def simulate_evolution_tracks(
     all_tracks_stellar_type = []
     stellar_evolution.commit_parameters() 
     
-    print "The evolution across the Hertzsprung-Russell diagram of ", str(number_of_stars), \
-        " stars with\nvarying masses will be simulated..."
+    print("The evolution across the Hertzsprung-Russell diagram of ", str(number_of_stars), \
+        " stars with\nvarying masses will be simulated...")
     
     for j in range(number_of_stars):
         star = datamodel.Particle()
         star.mass = masses[j]
-        print "Created new star with mass: ", star.mass
+        print("Created new star with mass: ", star.mass)
 
         star = stellar_evolution.particles.add_particle(star)
         stellar_evolution.commit_particles()
@@ -73,19 +73,19 @@ def simulate_evolution_tracks(
                 stellar_evolution.evolve_model()
                 stopped_evolving = (star.age == previous_age) # Check whether the age has stopped increasing
             except Exception as ex:
-                print str(ex)
+                print(str(ex))
                 stopped_evolving = True
         if stopped_evolving:
-            print "Age did not increase during timestep. Aborted evolving..."
+            print("Age did not increase during timestep. Aborted evolving...")
         else:
             stellar_type_at_time.append(star.stellar_type)
             # Fudged: final stellar type annotation at previous (Teff, L);
             # BHs and neutron stars would otherwise fall off the chart.
             luminosity_at_time.append(luminosity_at_time[-1])
             temperature_at_time.append(temperature_at_time[-1])
-        print " ... evolved model to t = " + str(star.age.as_quantity_in(units.Myr))
-        print "Star has now become a: ", star.stellar_type, "(stellar_type: "+str(star.stellar_type.value_in(units.stellar_type))+")"
-        print
+        print(" ... evolved model to t = " + str(star.age.as_quantity_in(units.Myr)))
+        print("Star has now become a: ", star.stellar_type, "(stellar_type: "+str(star.stellar_type.value_in(units.stellar_type))+")")
+        print()
         all_tracks_luminosity.append(luminosity_at_time)
         all_tracks_temperature.append(temperature_at_time)
         all_tracks_stellar_type.append(stellar_type_at_time)
@@ -98,7 +98,7 @@ def simulate_evolution_tracks(
     plot_HR_diagram(masses, all_tracks_luminosity, all_tracks_temperature, 
         all_tracks_stellar_type, name_of_the_figure)
     
-    print "All done!"         
+    print("All done!")         
 
 def plot_HR_diagram(masses, luminosity_tracks, temperature_tracks, stellar_type_tracks, plotfile):
     try:
@@ -107,7 +107,7 @@ def plot_HR_diagram(masses, luminosity_tracks, temperature_tracks, stellar_type_
         matplotlib.use("Agg", warn=False) 
         
         from matplotlib import pyplot
-        print "Plotting the data..."
+        print("Plotting the data...")
         pyplot.figure(figsize = (7, 8))
         pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
         pyplot.xlabel('Effective Temperature (K)')
@@ -154,11 +154,11 @@ def plot_HR_diagram(masses, luminosity_tracks, temperature_tracks, stellar_type_
 #        Or use these axes to also view neutron stars and black holes:
 #         pyplot.axis([1.e7, 2500., 1.e-11, 1.e6])
         pyplot.savefig(plotfile)
-        print "Meaning of the stellar evolution phase markers (black numbers):"
+        print("Meaning of the stellar evolution phase markers (black numbers):")
         for i in range(16):
-            print str(i)+": ", (i | units.stellar_type)           
+            print(str(i)+": ", (i | units.stellar_type))           
     except ImportError:
-        print "Unable to produce plot: couldn't find matplotlib."
+        print("Unable to produce plot: couldn't find matplotlib.")
 
 class InstantiateCode(object):
     
@@ -242,7 +242,7 @@ def new_commandline_option_parser():
 
 if __name__ == '__main__':
     if not is_mpd_running():
-        print "There is no mpd server running. Please do 'mpd &' first."
+        print("There is no mpd server running. Please do 'mpd &' first.")
         sys.exit()
     parser = new_commandline_option_parser()
     (options, arguments) = parser.parse_args()
@@ -252,7 +252,7 @@ if __name__ == '__main__':
     
     code = new_code(options.code, len(mass_list))
     if not (options.cacheDir is None):
-        print "Using cache directory: %s" % (options.cacheDir)
+        print("Using cache directory: %s" % (options.cacheDir))
 # As a special case, we use caching of the underlying models instead of the model output for EVtwin2SSE
         if (options.code == "evtwin2sse"):
             code.cache_underlying_models(options.cacheDir)

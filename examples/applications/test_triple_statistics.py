@@ -147,7 +147,7 @@ def calculate_escape_time(index, number_of_systems):
     numpy.random.seed()
     
     #from amuse.community.smallN.muse_dynamics_mpi import SmallN
-    print "start of subprocess", index
+    print("start of subprocess", index)
     x0 = AdaptingVectorQuantity()
     y0 = AdaptingVectorQuantity()
     x1 = AdaptingVectorQuantity()
@@ -165,7 +165,7 @@ def calculate_escape_time(index, number_of_systems):
             particles = new_initial_system()
             code = SimulateTripleSystemUntilDecay(gravity, particles, index, x)
             tend = code.evolve_model_until_escape()
-            print index, x, tend
+            print(index, x, tend)
             code.stop()
             x0.append(particles[0].x)
             y0.append(particles[0].y)
@@ -180,7 +180,7 @@ def calculate_escape_time(index, number_of_systems):
     except KeyboardInterrupt:
         pass
     
-    print "end of subprocess", index
+    print("end of subprocess", index)
     
     return x0,y0,x1,y1,x2,y2,m0,m1,m2,tends
     
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     counts = AdaptingVectorQuantity()
     
     
-    print "doing statistics"
+    print("doing statistics")
     sorted_times = data[-1].sorted()
     t = 0 | nbody_system.time
     tend = 1000 | nbody_system.time
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     output.attribute_names = ("t","n(t)")
     output.store()
     
-    print "done"
+    print("done")
 """
 
 set logscale xy

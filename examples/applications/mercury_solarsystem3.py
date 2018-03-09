@@ -43,7 +43,7 @@ def planetplot():
         err = se.evolve_model(time)
         channels.copy()
         gd.central_particle.mass = sun.mass
-        print sun[0].mass.value_in(units.MSun), time.value_in(units.Myr), planets[4].x.value_in(units.AU),  planets[4].y.value_in(units.AU),planets[4].z.value_in(units.AU)
+        print(sun[0].mass.value_in(units.MSun), time.value_in(units.Myr), planets[4].x.value_in(units.AU),  planets[4].y.value_in(units.AU),planets[4].z.value_in(units.AU))
 
     gd.stop()
     se.stop()

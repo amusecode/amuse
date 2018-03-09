@@ -65,8 +65,8 @@ class CalculateKelvinHelmholtzInstability(object):
         result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.8
-        print result.define_subgrid(1, 800, 200, 1, 0, 500, 0)
-        print result.define_subgrid(1, 800, 200, 1, 0, 100, 0)
+        print(result.define_subgrid(1, 800, 200, 1, 0, 500, 0))
+        print(result.define_subgrid(1, 800, 200, 1, 0, 100, 0))
         return result
         
 
@@ -164,26 +164,26 @@ class CalculateKelvinHelmholtzInstability(object):
         
         self.store_grids(instance.itergrids(), 0)
         
-        print "start evolve"
+        print("start evolve")
         dt = time / 10.0
         t = dt
         step = 1
         while t < time:
             instance.evolve_model(t)
             
-            print "time : ", t
+            print("time : ", t)
             
             self.store_grids(instance.itergrids(), step)
                 
             t += dt
             step += 1
         
-        print "copying results"
+        print("copying results")
         result = []
         for x in instance.itergrids():
             result.append(x.copy())
 
-        print "terminating code"
+        print("terminating code")
         instance.stop()
 
         return result
@@ -235,7 +235,7 @@ if __name__ == "__main__":
         time=time+365.25*1e3
         err=instance.evolve_model(time)
         mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=instance.get_orbiter_state(pid)
-        print x, y	
+        print(x, y)	
         xx.append(x)
         yy.append(y)
     

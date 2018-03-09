@@ -19,7 +19,7 @@ from amuse import datamodel
 import webbrowser
 
 def start_distributed_amuse():
-    print "Creating distributed amuse"
+    print("Creating distributed amuse")
     distributed_amuse = DistributedAmuse(redirection='none')
     distributed_amuse.parameters.debug = True
     distributed_amuse.parameters.webinterface_port = 4556
@@ -37,8 +37,8 @@ def start_distributed_amuse():
     #resource.amuse_dir="/home/user/amuse"
     #distributed_amuse.resources.add_resource(resource)
 
-    print "Resources:"
-    print distributed_amuse.resources
+    print("Resources:")
+    print(distributed_amuse.resources)
 
     #Claim nodes on the resources. In this example simply the "local" machine
     pilot = Pilot()
@@ -49,13 +49,13 @@ def start_distributed_amuse():
     pilot.label='local'
     distributed_amuse.pilots.add_pilot(pilot)
 
-    print "Pilots:"
-    print distributed_amuse.pilots
+    print("Pilots:")
+    print(distributed_amuse.pilots)
 
-    print "Waiting for pilots"
+    print("Waiting for pilots")
     distributed_amuse.wait_for_pilots()
 
-    print "setting distributed as default channel"
+    print("setting distributed as default channel")
     distributed_amuse.use_for_all_workers()
     
     return distributed_amuse
