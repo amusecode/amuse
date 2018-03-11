@@ -149,7 +149,7 @@ def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
     times = numpy.arange(0|units.Myr, tend, 100*timestep)
     for i,t in enumerate(times):
         print "Time=", t.in_(units.Myr)
-        system.evolve_model(t,timestep=timestep)
+        system.evolve_model(t, timestep=timestep)
           
     x = system.particles.x.value_in(units.kpc)
     y = system.particles.y.value_in(units.kpc)
