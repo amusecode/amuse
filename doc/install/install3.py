@@ -451,7 +451,7 @@ class InstallPrerequisites(object):
                 print("Download location may have changed")
                 print("Please download the source file yourself, ")
                 print("or contact the AMUSE development team.")
-                print("http://castle.strw.leidenuniv/trac/amuse")
+                print("https://github.com/amusecode/amuse/issues")
                 print()
                 print("To download the file you can update the URL in")
                 print("one of the following lines and run the command.")
