@@ -115,7 +115,7 @@ if __name__ in ('__main__', '__plot__'):
         pyplot.plot(-t.value_in(units.Gyr), d.value_in(units.kpc), lw=3, c=colors[0])
         pyplot.xlabel("t [Gyr]")
         pyplot.ylabel("d [kpc]")
-        pyplot.ylim(0, 8)
+        pyplot.ylim(0, 6)
         pyplot.xlim(-5, 0)
     pyplot.savefig("sun_and_M67")
     pyplot.show()
