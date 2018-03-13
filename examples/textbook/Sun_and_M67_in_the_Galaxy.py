@@ -1,11 +1,14 @@
+import numpy
+import math
 from amuse.lab import *
 from amuse import datamodel
 from amuse.units import quantities
 from amuse.ext.rotating_bridge import Rotating_Bridge
 from amuse.community.galaxia.interface import BarAndSpirals3D
 from amuse.ext.composition_methods import *
-import numpy
-import math
+
+from prepare_figure import *
+from distinct_colours import get_distinct
 
 class drift_without_gravity(object):
     """
@@ -234,11 +237,29 @@ def Sun_and_M67_in_the_Galaxy():
     print "---"
     print 'time after backward integration:', time
 
+    colors = get_distinct(4)
+    figure = pyplot.figure(figsize=(16, 12))
+    ax = pyplot.gca()
+    ax.minorticks_on() # switch on the minor ticks
+    ax.locator_params(nbins=3)
+
+    x_label = "t [Gyr]"
+    y_label = "d [kpc]"
+    pyplot.xlabel(x_label)
+    pyplot.ylabel(y_label)
+    pyplot.plot(-t1.value_in(units.Gyr), d1.value_in(units.kpc), lw=3, c=colors[0])
+    pyplot.ylim(0, 6)
+    pyplot.xlim(-5, 0)
+    pyplot.savefig("sun_and_M67")
+    pyplot.show()
+    
+    """
     from matplotlib import pyplot
     from amuse.plot import scatter, plot
     plot(-1*t1, d1, c = "k")
     pyplot.semilogy()
     pyplot.show()
+    """
 
 if __name__ in ('__main__', '__plot__'):
     set_printing_strategy("custom", #nbody_converter = converter, 
