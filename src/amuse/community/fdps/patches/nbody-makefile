@@ -1,7 +1,7 @@
-Index: fdps/src/FDPS/sample/nbody/Makefile
+Index: fdps/src/FDPS/sample/c++/nbody/Makefile
 ===================================================================
---- fdps.orig/src/FDPS/sample/nbody/Makefile
-+++ fdps/src/FDPS/sample/nbody/Makefile
+--- fdps.orig/src/FDPS/sample/c++/nbody/Makefile
++++ fdps/src/FDPS/sample/c++/nbody/Makefile
 @@ -35,6 +35,9 @@ force_gpu_cuda.o:force_gpu_cuda.cu
  OBJS = force_gpu_cuda.o
  endif
