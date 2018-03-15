@@ -1,4 +1,4 @@
-from __future__ import print_function
+#from __future__ import print_function
 import numpy
 from amuse.units import units
 from amuse.units import constants
@@ -13,11 +13,13 @@ from matplotlib import pyplot
 from amuse.ic.kingmodel import new_king_model
 
 """
-Implements a code simulating the galactic center. As the center itself does
-not evolve we only need to define the 'get_gravity_at_point'
-and 'get_potential_at_point'. Note that both functions get arrays
-of points.
+Implements a code simulating the galactic center. As the center itself
+does not evolve we only need to define the 'get_gravity_at_point' and
+'get_potential_at_point'. Note that both functions get arrays of
+points.
 """
+
+###BOOKLISTSTART1###
 class GalacticCenterGravityCode(object):
     def __init__(self,R, M, alpha):
         self.radius=R
@@ -38,6 +40,7 @@ class GalacticCenterGravityCode(object):
         m=self.mass*(r/self.radius)**self.alpha  
         vc=(constants.G*m/r)**0.5
         return vc
+###BOOKLISTSTOP1###
 
     def get_potential_at_point(self,eps,x,y,z):
         r=(x**2+y**2+z**2)**0.5
@@ -45,6 +48,7 @@ class GalacticCenterGravityCode(object):
         phi=c/(alpha-1)*(r**(self.alpha-1)-R**(self.alpha-1))
         return phi    
         
+###BOOKLISTSTART3###
 def make_king_model_cluster(nbodycode, N, W0, Mcluster,
                             Rcluster, parameters = []):
 
@@ -56,6 +60,7 @@ def make_king_model_cluster(nbodycode, N, W0, Mcluster,
         setattr(code.parameters, name, value)
     code.particles.add_particles(bodies)
     return code
+###BOOKLISTSTOP3###
 
 def plot_cluster(x, y):
 
@@ -64,37 +69,43 @@ def plot_cluster(x, y):
     f = single_frame('X [pc]', 'Y [pc]')
     pyplot.xlim(-60, 60)
     pyplot.ylim(-60, 60)
-        
     pyplot.scatter(x,y, c=colors[0], s=50, lw=0)
-    pyplot.savefig("Arches")
-#    pyplot.show()
+
+    save_file = 'Arches Fig. 7.1.png'
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file, '\n'
+    pyplot.show()
 
 def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
 
-    Rgal=1. | units.kpc
-    Mgal=1.6e10 | units.MSun
-    alpha=1.2
-    galaxy_code=GalacticCenterGravityCode(Rgal, Mgal, alpha)
+###BOOKLISTSTART2###
+    Rgal = 1. | units.kpc
+    Mgal = 1.6e10 | units.MSun
+    alpha = 1.2
+    galaxy_code = GalacticCenterGravityCode(Rgal, Mgal, alpha)
 
-    cluster_code=make_king_model_cluster(BHTree,N,W0, M,R,
-        parameters=[("epsilon_squared", (0.01 | units.parsec)**2)])
+    cluster_code = make_king_model_cluster(BHTree, N, W0, M, R,
+                                           parameters=[("epsilon_squared",
+                                                        (0.01 | units.parsec)**2)])
     
-    stars=cluster_code.particles.copy()    
+    stars = cluster_code.particles.copy()    
     stars.x += Rinit
     stars.vy = 0.8*galaxy_code.circular_velocity(Rinit)
-    channel=stars.new_channel_to(cluster_code.particles)
+    channel = stars.new_channel_to(cluster_code.particles)
     channel.copy_attributes(["x","y","z","vx","vy","vz"])
 
-    system=bridge(verbose=False)
+    system = bridge(verbose=False)
     system.add_system(cluster_code, (galaxy_code,))
 
-    times=numpy.arange(0|units.Myr, tend, timestep)
+    times = numpy.arange(0|units.Myr, tend, timestep)
     for i,t in enumerate(times):
         system.evolve_model(t,timestep=timestep)
           
-    x=system.particles.x.value_in(units.parsec)
-    y=system.particles.y.value_in(units.parsec)
+    x = system.particles.x.value_in(units.parsec)
+    y = system.particles.y.value_in(units.parsec)
     cluster_code.stop()
+###BOOKLISTSTOP2###
+
     return x, y
 
 if __name__ == "__main__":
@@ -105,5 +116,6 @@ if __name__ == "__main__":
     endtime = 2.5 | units.Myr
     Mcluster = 5.e4 | units.MSun
     Rcluster = 0.8 | units.parsec
-    x, y = evolve_cluster_in_galaxy(N, W0, Rinit, endtime, timestep, Mcluster, Rcluster)
+    x, y = evolve_cluster_in_galaxy(N, W0, Rinit, endtime, timestep,
+                                    Mcluster, Rcluster)
     plot_cluster(x, y)

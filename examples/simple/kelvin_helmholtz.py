@@ -9,7 +9,7 @@ from amuse.units.generic_unit_system import *
 from amuse.datamodel import Grid
 
 GAMMA = 1.4
-DIMENSIONS_OF_MESH = (50,50,1)
+DIMENSIONS_OF_MESH = (200,200,1)
 PERTUBATION_AMPLITUDE = 0.1 | speed
 
 def new_instance_of_hydro_code(number_of_workers=1):
@@ -106,7 +106,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     return result
     
 def plot_grid(grid):
-    rho = grid.rho[...,...,0].value_in(density)
+    rho = grid.rho[...,0].value_in(density)
     figure = pyplot.figure(figsize=(6,6))
     plot = figure.add_subplot(1,1,1)
     plot.imshow(rho, origin = 'lower')

@@ -29,13 +29,16 @@ class drift_without_gravity(object):
         return quantities.zero
     @property 
     def kinetic_energy(self):
-        return (0.5*self.particles.mass*self.particles.velocity.lengths()**2).sum()
+        return \
+            (0.5*self.particles.mass*self.particles.velocity.lengths()**2).sum()
     def stop(self):
         return
 
 class MilkyWay_galaxy(object):
 
-    def __init__(self, Mb=1.40592e10| units.MSun, Md=8.5608e10| units.MSun, Mh=1.07068e11 | units.MSun  ):
+    def __init__(self, Mb=1.40592e10| units.MSun,
+                 Md=8.5608e10| units.MSun,
+                 Mh=1.07068e11 | units.MSun  ):
         self.Mb= Mb
         self.Md= Md
         self.Mh= Mh
@@ -49,14 +52,19 @@ class MilkyWay_galaxy(object):
         # disk
         a2= 5.31 |units.kpc
         b2= 0.25 |units.kpc
-        pot_disk= -constants.G*self.Md/(R**2+ (a2+ (z**2+ b2**2)**0.5 )**2 )**0.5
+        pot_disk = \
+            -constants.G*self.Md/(R**2 + (a2+ (z**2+ b2**2)**0.5 )**2 )**0.5
         #halo
         a3= 12.0 |units.kpc
         cut_off=100 |units.kpc
         d1= r/a3
         c=1+ (cut_off/a3)**1.02
-        pot_halo= -constants.G*(self.Mh/a3)*d1**1.02/(1+ d1**1.02) -(constants.G*self.Mh/(1.02*a3))*(-1.02/c +numpy.log(c) + 1.02/(1+d1**1.02)- numpy.log(1.0 +d1**1.02) )
-        return 2*(pot_bulge+pot_disk+ pot_halo) #I have to multiply by 2 because is a rigid potential
+        pot_halo= -constants.G*(self.Mh/a3)*d1**1.02/(1+ d1**1.02) \
+                  - (constants.G*self.Mh/(1.02*a3))\
+                      * (-1.02/c +numpy.log(c) + 1.02/(1+d1**1.02) \
+                           - numpy.log(1.0 +d1**1.02) )
+        return 2*(pot_bulge+pot_disk+ pot_halo) # multiply by 2 because it
+    						# is a rigid potential
 
        
     def get_gravity_at_point(self, eps, x,y,z): 
@@ -77,7 +85,7 @@ class MilkyWay_galaxy(object):
        
         ax= force_bulge*x + force_disk*x  + force_halo*x/r
         ay= force_bulge*y + force_disk*y  + force_halo*y/r
-        az= force_bulge*z + force_disk*d*z/(z**2 + b2**2)**0.5  + force_halo*z/r 
+        az= force_bulge*z + force_disk*d*z/(z**2 + b2**2)**0.5 + force_halo*z/r 
 
         return ax,ay,az
 
@@ -88,13 +96,13 @@ class MilkyWay_galaxy(object):
         b2= 0.25 |units.kpc
         a3= 12.0 |units.kpc
 
-        rdphi_b= constants.G*self.Mb*r**2/(r**2+b1**2)**1.5
-        rdphi_d= constants.G*self.Md*r**2/(r**2+ (a2+(z**2+b2**2)**0.5)**2 )**1.5
-        rdphi_h= constants.G*self.Mh*(r/a3)**0.02*r/(a3**2*(1+(r/a3)**1.02))
+        rdphi_b = constants.G*self.Mb*r**2/(r**2+b1**2)**1.5
+        rdphi_d =constants.G*self.Md*r**2/(r**2+(a2+(z**2+b2**2)**0.5)**2 )**1.5
+        rdphi_h = constants.G*self.Mh*(r/a3)**0.02*r/(a3**2*(1+(r/a3)**1.02))
 
-        vel_circb=  rdphi_b
-        vel_circd= rdphi_d
-        vel_circh= rdphi_h
+        vel_circb =  rdphi_b
+        vel_circd = rdphi_d
+        vel_circh = rdphi_h
 
         return (vel_circb+ vel_circd+ vel_circh)**0.5 
 
@@ -132,19 +140,21 @@ def evolve_cluster_in_potential(gravity, t_end, dt, channel_to_framework):
     return x, y
 
 def integrate_single_particle_in_potential(sun, t_end, dt, converter):
-    MWG = MilkyWay_galaxy()    
-#    cluster_gravity = drift_without_gravity(sun)
-    
+
+    # cluster_gravity = drift_without_gravity(sun)
     cluster_gravity = BHTree(converter)
     cluster_gravity.particles.add_particles(sun)
-    channel_from_gravity_to_framework = cluster_gravity.particles.new_channel_to(sun)
+    channel_from_gravity_to_framework \
+        = cluster_gravity.particles.new_channel_to(sun)
     
+    MWG = MilkyWay_galaxy()
     gravity = bridge.Bridge(use_threading=False)
     gravity.add_system(cluster_gravity, (MWG,) )
     t_orb = 2*numpy.pi*sun.position.length()/sun.velocity.length()
     gravity.timestep = min(dt, 10|units.Myr)
 
-    x, y = evolve_cluster_in_potential(gravity, t_end, dt, channel_from_gravity_to_framework)
+    x, y = evolve_cluster_in_potential(gravity, t_end, dt,
+                                       channel_from_gravity_to_framework)
     gravity.stop()
     return x, y
 
@@ -159,7 +169,7 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
     sun.position= [-8400.0, 0.0, 17.0] | units.parsec
     x_label = "X [kpc]"
     y_label = "Y [kpc]"
-    fig = pyplot.figure(figsize=(12,12))	
+    fig = pyplot.figure(figsize=(8,8))	
     pyplot.xlim(-10, 10)
     pyplot.ylim(-10, 10)
     pyplot.axis('equal')
@@ -169,40 +179,59 @@ def main(N, W0, t_end, n_steps, filename, Mtot, Rvir, rgc, vgc):
 
     MWG = MilkyWay_galaxy()    
     vc = MWG.vel_circ(sun.position.length())
-    sun.velocity= [11.352, (12.24+vc.value_in(units.kms)), 7.41] | units.kms
+    sun.velocity = [11.352, (12.24+vc.value_in(units.kms)), 7.41] | units.kms
     sun.velocity *= -1
-    print "current:", sun
 
-    print "Find birth location of the Sun."
+    print "Current Sun:"
+    print sun
+
+    print "\nFinding birth location of the Sun..."
     x, y = integrate_single_particle_in_potential(sun, t_end, dt, converter)
-    pyplot.plot(x,y, lw=4, alpha=0.2, c=colors[1])
-    pyplot.scatter(sun.x.value_in(units.kpc), sun.y.value_in(units.kpc), s=300, c=colors[2])
+    pyplot.plot(x, y, lw=4, alpha=0.2, c=colors[1])
 
-    print "Birth location of the Sun:", sun
+    print "Initial Sun:"
+    print sun
     sun.velocity *= -1
 
     cluster = new_king_model(N, W0=3, convert_nbody=converter)
-    cluster.mass = new_salpeter_mass_distribution(len(cluster), 0.1|units.MSun, 10.0|units.MSun)
+    cluster.mass = new_salpeter_mass_distribution(len(cluster),
+                                                  0.1|units.MSun,
+                                                  10.0|units.MSun)
     eps2 = 0.25*(float(N))**(-0.666667) * Rvir**2
-    cluster.scale_to_standard(convert_nbody=converter, smoothing_length_squared = eps2)
+    cluster.scale_to_standard(convert_nbody=converter,
+                              smoothing_length_squared = eps2)
     cluster.position += sun.position
     cluster.velocity += sun.velocity
     cluster.radius = 0 |  units.parsec
     
-    pyplot.scatter(cluster.x.value_in(units.kpc), cluster.y.value_in(units.kpc), s=10, c=colors[3])
-    x, y = integrate_single_particle_in_potential(cluster, t_end, dt, converter)
+    pyplot.scatter(cluster.x.value_in(units.kpc),
+                   cluster.y.value_in(units.kpc),
+                   s=10, c=colors[3])
+    print '\nTracking', N, 'siblings'
+    x, y = integrate_single_particle_in_potential(cluster, t_end, dt,
+                                                  converter)
     size = cluster.mass/(0.1 |units.MSun)
-    pyplot.scatter(cluster.x.value_in(units.kpc),cluster.y.value_in(units.kpc), c=colors[0], alpha=1.0, lw=0, s=size)
+    pyplot.scatter(cluster.x.value_in(units.kpc),
+                   cluster.y.value_in(units.kpc),
+                   c=colors[0], alpha=1.0, lw=0, s=size)
+    pyplot.scatter(sun.x.value_in(units.kpc),
+                   sun.y.value_in(units.kpc),
+                   marker='+', s=100, c=colors[2])
+
     pyplot.scatter([0], [0], marker="+", s=300, c='r')
-    pyplot.scatter([-8.4], [0], s=100, marker="+", c='r')
-    pyplot.savefig("SolarClusterInPotential.pdf")
-#    pyplot.show()
+    pyplot.scatter([-8.4], [0], marker="o", s=100, c='g')
+
+    save_file = 'SolarClusterInPotential.png'
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file,'\n'
+    pyplot.show()
 
 def new_option_parser():
     result = OptionParser()
     result.add_option("-n", dest="n_steps", type="float", default = 2000,
                       help="number of diagnostics time steps [%default]")
-    result.add_option("-f", dest="filename", default = "proto_solar_cluster.hdf5",
+    result.add_option("-f", dest="filename",
+                      default = "proto_solar_cluster.hdf5",
                       help="output filename [%default]")
     result.add_option("-N", dest="N", type="int",default = 1000,
                       help="number of stars [%default]")
@@ -217,13 +246,13 @@ def new_option_parser():
                       help="distance to the galactic center [%default]")
     result.add_option("-v", unit= units.kms,
                       dest="vgc", type="float",default = 220.0 | units.kms,
-                      help="orbital velotiy around the galactic center [%default]")
+            help="orbital velotiy around the galactic center [%default]")
     result.add_option("-t", unit= units.Gyr,
                       dest="t_end", type="float", default = 4.8 | units.Gyr,
                       help="end time of the simulation [%default]")
     result.add_option("-W", 
                       dest="W0", type="float", default = 7.0,
-                      help="Dimension-less depth of the King potential (W0) [%default]")
+            help="Dimension-less depth of the King potential (W0) [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):

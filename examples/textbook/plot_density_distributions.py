@@ -34,6 +34,18 @@ def king_model(N, W=9, x_label = 'x [length]', y_label='y [length]'):
     pyplot.savefig(file)
     print 'Saved figure in file', file
 
+def hierarchical_king_model(N, W=9, x_label = 'x [length]', y_label='y [length]'):
+    fig = single_frame(x_label, y_label, xsize=8, ysize=8)
+    ax = pyplot.gca()
+    model_com = new_king_model(6, W/3.)
+    for i in range(6):
+        model = new_king_model(int(N/4.), W)
+        model.position += model_com[i].position
+        plot_projected_density(model, col=1)
+    file = "hierarchical_king_model.png"
+    pyplot.savefig(file)
+    print 'Saved figure in file', file
+    
 def fractal_model(N, F=1.6, x_label = 'x [length]', y_label='y [length]'):
     fig = single_frame(x_label, y_label, xsize=8, ysize=8)
     ax = pyplot.gca()
@@ -60,6 +72,7 @@ def main(N=10):
     king_model(N)
     fractal_model(N)
     galaxy_model(N)
+    hierarchical_king_model(N)
     print ''
 
 def new_option_parser():

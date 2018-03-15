@@ -53,6 +53,7 @@ def make_hydromap_and_show_picture(sph_particles, N=100, L=10):
     rho,rhovx,rhovy,rhovz,rhoe=hydro.get_hydro_state_at_point(x,y,z,vx,vy,vz)
     rho=rhoe.reshape((N+1,N+1))
     rho_e=make_map(hydro,N=50,L=L)
+    hydro.stop()
     print "extrema:", rho_e.value_in(units.erg/units.RSun**3).min(), rho_e.value_in(units.erg/units.RSun**3).max()
     cax = pyplot.imshow(numpy.log10(rho_e.value_in(units.erg/units.RSun**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=4,vmax=11)
     cbar = fig.colorbar(cax, ticks=[4, 7.5, 11], orientation='vertical', fraction=0.045)
@@ -152,10 +153,10 @@ def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-t", unit=units.s,
-                      dest="tplot", type="float", default = 100|units.s,
+                      dest="tplot", type="float", default = 300|units.s,
                       help="plotting time [%default]")
     result.add_option("-f", 
-                      dest="filename", default = "supernova_sph_gasget.amuse",
+                      dest="filename", default = "supernova_sph_gadget.amuse",
                       help="input filename [%default]")
     return result
     

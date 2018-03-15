@@ -221,7 +221,7 @@ if __name__ in ('__main__','__plot__'):
                    c=color[3], s=150, marker='^',
                    edgecolor='k', zorder=2)
     
-    save_file = 'merge_two_stars_and_evolve.png'
+    save_file = 'merge_two_stars_and_evolve.pdf'
     pyplot.savefig(save_file)
     print '\nSaved figure in file', save_file,'\n'
     pyplot.show()

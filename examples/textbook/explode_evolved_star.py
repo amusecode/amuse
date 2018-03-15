@@ -195,7 +195,7 @@ def run_supernova():
         )
     
     energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-                "supernova_energy_evolution.png")
+                "supernova_energy_evolution.pdf")
 
     hydro_code.stop()
     

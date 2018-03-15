@@ -6,7 +6,6 @@ from prepare_figure import single_frame, figure_frame
 from distinct_colours import get_distinct
 
 def binned_mean_data(r, x):
-    R = [] 
     R = numpy.arange(0, r[-1], 0.1)
     X = numpy.zeros(len(R))
     N = numpy.zeros(len(R))
@@ -34,17 +33,18 @@ def plot_ionization_fraction(pos, xion):
     from matplotlib import pyplot
     x_label = "r [pc]"
     y_label = r'$\xi_{\rm ion}$'
-    figure = single_frame(x_label, y_label, logx=False, logy=False, xsize=14, ysize=8)
+    figure = single_frame(x_label, y_label, logx=False, logy=False,
+                          xsize=14, ysize=8)
     pyplot.scatter(r, x, c=get_distinct(1), lw=0, s=100)
     pyplot.plot(R, X, c=get_distinct(2)[1], lw=2)
     pyplot.xlim(0, 6)
     pyplot.ylim(-0.04, 1.19)
-    #pyplot.savefig("fig_ionization_of_GMC")
+    pyplot.savefig("fig_ionization_of_GMC")
     pyplot.show()
 
-###BOOKLISTSTART###
-def main(N, Lstar, boxsize, t_end):
-    converter=nbody_system.nbody_to_si(1|units.MSun, 1|units.parsec)
+###BOOKLISTSTART1###
+def generate_ism_initial_conditions(N, boxsize):
+    converter=nbody_system.nbody_to_si(10|units.MSun, 3|units.parsec)
     ism = new_plummer_gas_model(N, converter)
     ism.flux = 0. | units.s**-1
     ism.xion = 0.0
@@ -54,15 +54,22 @@ def main(N, Lstar, boxsize, t_end):
     hydro.evolve_model(1|units.hour)
     hydro.gas_particles.new_channel_to(ism).copy()
     hydro.stop()
-    ism = ism.select(lambda r: r.length()<0.5*boxsize,["position"])
+    ism = ism.select(lambda r: r.length() < 0.5*boxsize,["position"])
+    print "Max density:", ism.rho.max().in_(units.MSun/units.parsec**3), ism.rho.max().in_(units.amu/units.cm**3)
+    return ism
+###BOOKLISTSTOP1###
 
-    source=Particle()
+###BOOKLISTSTART###
+def main(N, Lstar, boxsize, t_end):
+    ism = generate_ism_initial_conditions(N, boxsize)
+
+    source = Particle()
     source.position = (0, 0, 0) |units.parsec
     source.flux = Lstar/(20. | units.eV)
     source.rho = ism.rho.max()
     source.xion = ism.xion.max()
-    source.u = (9. |units.kms)**2
-    
+    source.u = (9.|units.kms)**2
+
     radiative = SimpleX()
     radiative.parameters.box_size = boxsize    
     radiative.particles.add_particle(source)
@@ -72,19 +79,22 @@ def main(N, Lstar, boxsize, t_end):
     print "min ionization:", radiative.particles.xion.min()
     print "average ionization:", radiative.particles.xion.mean()
     print "max ionization:", radiative.particles.xion.max()
-    plot_ionization_fraction(radiative.particles.position, radiative.particles.xion)
+    plot_ionization_fraction(radiative.particles.position,
+                             radiative.particles.xion)
     radiative.stop()
 ###BOOKLISTSTOP###
-    
+
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int", default = 1000,
-                      help="number of stars [%default]")
+    result.add_option("-N", dest="N", type="int", default = 10000,
+                      help="number of gas particles [%default]")
     result.add_option("-t", unit=units.Myr,
-                      dest="t_end", default = 0.4|units.Myr,
+                      type="float",
+                      dest="t_end", default = 1.0|units.Myr,
                       help="radiation time [%default]")
     result.add_option("-L", unit=units.LSun,
+                      type="float",
                       dest="Lstar", default = 100|units.LSun,
                       help="luminosity of ionizing source [%default]")
     result.add_option("-d", unit=units.parsec,
@@ -94,5 +104,6 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
+    numpy.random.seed(12345)
     main(**o.__dict__)
 

@@ -1,17 +1,21 @@
 """
-Radiative transfer comparison test 5 (Iliev et al 2009) 
 
-This example demonstrates the coupling of a radiative transfer code to a hydrodynamics code to do
-radiative hydrodynamic problems. Specifically it calculates the Iliev radiative trasnfer 
+Radiative transfer comparison test 5 (Iliev et al 2009).
+
+This example demonstrates the coupling of a radiative transfer code to
+a hydrodynamics code to do radiative hydrodynamic
+problems. Specifically it calculates the Iliev radiative trasnfer
 comparison project test 5 (expanding HII region in homogeneous medium)
 
-It is simplified somewhat in the sense that it uses the SimpleX without any multifrequency 
-radiative transfer or thermal evolution. This is not a fundamental limitation (the method would 
-work with full thermal evolution available).
+It is simplified somewhat in the sense that it uses the SimpleX
+without any multifrequency radiative transfer or thermal
+evolution. This is not a fundamental limitation (the method would work
+with full thermal evolution available).
 
 The coupling interface is with simple functions.
 
-currently fi and simplex are hardcoded as base classes for SPH and radiative transfer
+Currently fi and simplex are hardcoded as base classes for SPH and
+radiative transfer.
 
 """
 
@@ -34,15 +38,12 @@ try:
 except ImportError:
     IS_PLOT_AVAILABLE = False
 
-
-
-
 """
- these define the properties of the medium in front and behind the ionisation front
- (necessary because no thermal evolution)
+These define the properties of the medium in front and behind the
+ionisation front (necessary because no thermal evolution).
 """
-mu=1.| units.amu
-muion =0.5 | units.amu
+mu =1.| units.amu
+muion=0.5 | units.amu
 xtrans=0.06
 mutrans=mu/(1+xtrans)
 Tinit=100. | units.K
@@ -78,7 +79,6 @@ def glass(N, target_rms=0.05):
   x,y,z=uniform_random_unit_cube(N).make_xyz()
   vx,vy,vz=uniform_unit_sphere(N).make_xyz()
    
-
   p=datamodel.Particles(N)
   p.x=L*x
   p.y=L*y
@@ -108,7 +108,7 @@ def glass(N, target_rms=0.05):
   sph.gas_particles.add_particles(p)
   sph.commit_particles()
 
-#  sph.start_viewer()
+  # sph.start_viewer()
 
   t=0. | nbody_system.time
   rms=1.
@@ -119,7 +119,7 @@ def glass(N, target_rms=0.05):
     h=sph.particles.h_smooth.value_in(nbody_system.length)
     rho=h**(-3.)
     rms=rho.std()/rho.mean()
-    print rms
+    print rms, target_rms
 
   x=sph.particles.x.value_in(nbody_system.length)
   y=sph.particles.y.value_in(nbody_system.length)
@@ -129,9 +129,9 @@ def glass(N, target_rms=0.05):
   return x,y,z
 
 
-def iliev_test_5_ic( N=10000,
-                  Ns=10,
-                  L=15. | units.kpc ):
+def iliev_test_5_ic(N=10000,
+                    Ns=10,
+                    L=15. | units.kpc ):
   """
   iliev test 5 particle distributions
    N= number of gas part
@@ -141,7 +141,7 @@ def iliev_test_5_ic( N=10000,
 
   mp=rhoinit*(2*L)**3/N
  
-#  x,y,z=uniform_random_unit_cube(N).make_xyz()
+  # x,y,z=uniform_random_unit_cube(N).make_xyz()
   x,y,z=glass(N,target_rms=0.05)
   
   p=datamodel.Particles(N)

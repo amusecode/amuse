@@ -27,6 +27,7 @@ def main():
     star_gravity = ph4(converter)
     star_gravity.particles.add_particle(star)
 
+###BOOKLISTSTART###
     planet_gravity = ph4(converter)
     planet_gravity.particles.add_particle(planet)
 
@@ -34,8 +35,9 @@ def main():
     channel_from_planet_to_framework = planet_gravity.particles.new_channel_to(ss)
 
     gravity = bridge.Bridge(use_threading=False)
-    gravity.add_system(star_gravity, (planet_gravity,) )
-    gravity.add_system(planet_gravity, (star_gravity,) )
+    gravity.add_system(star_gravity, (planet_gravity,))
+    gravity.add_system(planet_gravity, (star_gravity,))
+###BOOKLISTSTOP###
 
     write_set_to_file(ss, filename, 'hdf5')
 
