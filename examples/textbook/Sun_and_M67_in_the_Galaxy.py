@@ -85,6 +85,7 @@ class IntegrateOrbit(object):
         self.omega= galaxy.parameters.omega_system
         self.initial_phase= galaxy.parameters.initial_phase
         print("INITIAL_PHASE:", self.initial_phase)
+
         galaxy.kinetic_energy=quantities.zero
         galaxy.potential_energy=quantities.zero
         return galaxy 

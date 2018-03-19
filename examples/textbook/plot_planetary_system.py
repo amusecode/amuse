@@ -82,8 +82,9 @@ def plot_single_image(planets, disk, lim, index):
 
     from distinct_colours import get_distinct
     c = get_distinct(len(planets))
-    m = 1000 * planets.mass/planets.mass.max()
-    m[0] = min(10*m[1:].max(), 30)
+#    m = 1000 * planets.mass/planets.mass.max()
+    m = 100 * numpy.log10(1+planets.mass/planets.mass.min())
+    #m[0] = min(10*m[1:].max(), 30)
     xy.scatter(planets.x.value_in(units.AU), planets.y.value_in(units.AU),
                s=m, c=c, lw=0) 
     xz.scatter(planets.x.value_in(units.AU), planets.z.value_in(units.AU),
@@ -181,7 +182,7 @@ def new_option_parser():
                       dest="lim", type="float", default = 100|units.AU,
                       help="axis length [%default]")
     result.add_option("-i", 
-                      dest="image_id", type="int", default = -1,
+                      dest="image_id", type="int", default = 281,
                       help="image id [%default]")
     return result
 

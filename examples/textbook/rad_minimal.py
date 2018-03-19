@@ -6,7 +6,6 @@ from prepare_figure import single_frame, figure_frame
 from distinct_colours import get_distinct
 
 def binned_mean_data(r, x):
-    R = [] 
     R = numpy.arange(0, r[-1], 0.1)
     X = numpy.zeros(len(R))
     N = numpy.zeros(len(R))
@@ -88,11 +87,11 @@ def main(N, Lstar, boxsize, t_end):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int", default = 1000,
+    result.add_option("-N", dest="N", type="int", default = 10000,
                       help="number of gas particles [%default]")
     result.add_option("-t", unit=units.Myr,
                       type="float",
-                      dest="t_end", default = 0.4|units.Myr,
+                      dest="t_end", default = 1.0|units.Myr,
                       help="radiation time [%default]")
     result.add_option("-L", unit=units.LSun,
                       type="float",
