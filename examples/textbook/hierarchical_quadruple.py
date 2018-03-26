@@ -36,7 +36,8 @@ def initialize_multiple_system(N_bodies, masses, semimajor_axis, eccentricity, i
         particle.argument_of_pericenter = argument_of_pericenter[index]
         particle.longitude_of_ascending_node = longitude_of_ascending_node[index]
         
-        ### specify the `2+2' hierarchy; this is easy to change to the `3+1' hierarchy
+        # Specify the `2+2' hierarchy:
+        
         if index==0:
             particle.child1 = particles[0]
             particle.child2 = particles[1]
