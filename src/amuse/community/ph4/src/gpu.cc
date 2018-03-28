@@ -103,7 +103,7 @@ void jdata::update_gpu(int jlist[], int njlist)
     // Load data for the listed j-particles into the GPU.
 
     static int my_nj = -1;
-    static int n, j_start;
+    static int n, j_start, j_end;
     static real a2[3] = {0,0,0}, j6[3] = {0,0,0}, k18[3] = {0,0,0};
 
     if (my_nj != nj) {
@@ -183,7 +183,7 @@ void idata::update_gpu()
 
 	// Define my j-range.
 
-	define_domain(j_start, j_end);
+	jdat->define_domain(j_start, j_end);
 	my_nj = jdat->nj;
     }
 
@@ -355,7 +355,7 @@ void idata::get_partial_acc_and_jerk_on_gpu(bool pot)	// default = false
 
     if (my_nj != jdat->nj) {
 	// cout << "resetting domains" << endl << flush;
-	define_domain(j_start, j_end);
+	jdat->define_domain(j_start, j_end);
 	localnj = j_end - j_start;
 	my_nj = jdat->nj;
     }
