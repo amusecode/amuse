@@ -184,11 +184,7 @@ void idata::get_partial_acc_and_jerk()
     static int j_start, j_end;
 
     if (jdat->nj != curr_nj) {
-	int n = jdat->nj/jdat->mpi_size;
-	if (n*jdat->mpi_size < jdat->nj) n++;
-	j_start = jdat->mpi_rank*n;
-	j_end = j_start + n;
-	if (jdat->mpi_rank == jdat->mpi_size-1) j_end = jdat->nj;
+	jdat->define_domain(j_start, j_end);
 	curr_nj = jdat->nj;
     }
 
@@ -215,6 +211,7 @@ void idata::get_partial_acc_and_jerk()
 	    mri = jdat->mass[j]*ri;
 	    mr3i = mri*r2i;
 	    a3 = -3*xv*r2i;
+	    // PRC(jdat->mpi_rank); PRC(ri); PRL(mri);
 	    if (r2 > _TINY_) {
 		lpot[i] -= mri;
 		if (r2 < ldnn[i]) {
@@ -357,11 +354,8 @@ void idata::predict(real t)
 	// Define the j-domains.  Logic would be easier if ilist was
 	// sorted.
 
-	int n = jdat->nj/jdat->mpi_size;
-	if (n*jdat->mpi_size < jdat->nj) n++;
-	int j_start = jdat->mpi_rank*n;
-	int j_end = j_start + n;
-	if (jdat->mpi_rank == jdat->mpi_size-1) j_end = jdat->nj;
+	int j_start, j_end;
+	jdat->define_domain(j_start, j_end);
 
 	for (int i = 0; i < ni; i++) {
 	    int j = ilist[i];

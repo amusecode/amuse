@@ -181,7 +181,7 @@ class jdata {
 #ifndef NOMPI
     void setup_mpi(MPI::Intracomm comm);
 #endif
-
+    void define_domain(int& j_start, int& j_end);
     void setup_gpu();
     int get_particle_id(int offset = 0);
     int add_particle(real pmass, real pradius, vec ppos, vec pvel,
