@@ -110,7 +110,7 @@ void jdata::update_gpu(int jlist[], int njlist)
 
 	// (Re)define my j-range.  Only necessary if nj changes.
 
-	define_domain(j_start, j_end);
+	n = define_domain(j_start, j_end);
 	my_nj = nj;
     }
 

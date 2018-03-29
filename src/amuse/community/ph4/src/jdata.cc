@@ -51,7 +51,7 @@ void jdata::setup_mpi(MPI::Intracomm comm)
 }
 #endif
 
-void jdata::define_domain(int& j_start, int& j_end)
+int jdata::define_domain(int& j_start, int& j_end)
 {
     // Define the j-domains for this process.
 
@@ -64,6 +64,7 @@ void jdata::define_domain(int& j_start, int& j_end)
     if (mpi_rank == mpi_size-1) j_end = nj;
     if (j_start >= nj) j_end = j_start;
     PRC(j_start); PRL(j_end);
+    return n;
 }
 
 void jdata::setup_gpu()
