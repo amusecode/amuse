@@ -18,9 +18,11 @@ def return_evolved_star_hydro(mass, time, Nsph):
     return star_in_sph
 
 def merge_two_stars_sph(Mprim, Msec, t_coll, Nsph, opening_angle):
-    primary_in_sph = return_evolved_star_hydro(Mprim, t_coll, int(Nsph*Mprim/(1.|units.MSun)))
+    primary_in_sph = return_evolved_star_hydro(Mprim, t_coll,
+                                               int(Nsph*Mprim/(1.|units.MSun)))
 #    primary_in_sph = relax_sph_realization(primary_in_sph)
-    secondary_in_sph = return_evolved_star_hydro(Msec, t_coll, int(Nsph*Msec/(1.|units.MSun)))
+    secondary_in_sph = return_evolved_star_hydro(Msec, t_coll,
+                                                 int(Nsph*Msec/(1.|units.MSun)))
 #    secondary_in_sph = relax_sph_realization(secondary_in_sph)
     R = primary_in_sph.x.max() + secondary_in_sph.x.max()
     M = primary_in_sph.mass.sum() + secondary_in_sph.mass.sum()
