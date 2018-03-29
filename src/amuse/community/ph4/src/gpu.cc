@@ -123,7 +123,7 @@ void jdata::update_gpu(int jlist[], int njlist)
     for (int jj = 0; jj < njlist; jj++) {
 	int j = jlist[jj];
 	if (j < nj) {
-	    RL(n);
+	    PRL(n);
 	    int curr_rank = j/n;
 	    if (curr_rank == mpi_rank) {
 		for (int k = 0; k < 3; k++) {
