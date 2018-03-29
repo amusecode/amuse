@@ -55,16 +55,13 @@ int jdata::define_domain(int& j_start, int& j_end)
 {
     // Define the j-domains for this process.
 
-    cout << "define_domain:" << endl;
-    PRC(nj); PRL(mpi_size);
     int n = nj/mpi_size;
     if (n*mpi_size < nj) n++;
     j_start = mpi_rank*n;
     j_end = j_start + n;
     if (mpi_rank == mpi_size-1) j_end = nj;
     if (j_start >= nj) j_end = j_start;
-    PRC(j_start); PRL(j_end);
-    return n;
+    return n;		// only some callers need this
 }
 
 void jdata::setup_gpu()

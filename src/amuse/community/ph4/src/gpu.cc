@@ -106,7 +106,6 @@ void jdata::update_gpu(int jlist[], int njlist)
     static int n, j_start, j_end;
     static real a2[3] = {0,0,0}, j6[3] = {0,0,0}, k18[3] = {0,0,0};
 
-    PRC(nj); PRL(my_nj);
     if (my_nj != nj) {
 
 	// (Re)define my j-range.  Only necessary if nj changes.
@@ -121,7 +120,6 @@ void jdata::update_gpu(int jlist[], int njlist)
 
     if (debug) {PRC(in_function); PRC(j_start); PRL(njlist);}
 
-    PRL(n);
     for (int jj = 0; jj < njlist; jj++) {
 	int j = jlist[jj];
 	if (j < nj) {
@@ -181,7 +179,6 @@ void idata::update_gpu()
     static int n, j_start, j_end;
     static real a2[3], j6[3], k18[3] = {0,0,0};
 
-    PRC(jdat->nj); PRL(my_nj);
     if (my_nj != jdat->nj) {
 
 	// Define my j-range.
@@ -192,7 +189,6 @@ void idata::update_gpu()
 
     bool debug = twiddles(jdat->system_time, TDEBUG);
 
-    PRL(n);
     for (int i = 0; i < ni; i++) {
 	int j = ilist[i];
 	int curr_rank = j/n;
