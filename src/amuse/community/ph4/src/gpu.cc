@@ -181,16 +181,18 @@ void idata::update_gpu()
     static int n, j_start, j_end;
     static real a2[3], j6[3], k18[3] = {0,0,0};
 
+    PRC(nj); PRL(my_nj);
     if (my_nj != jdat->nj) {
 
 	// Define my j-range.
 
-	jdat->define_domain(j_start, j_end);
+	n = jdat->define_domain(j_start, j_end);
 	my_nj = jdat->nj;
     }
 
     bool debug = twiddles(jdat->system_time, TDEBUG);
 
+    PRL(n);
     for (int i = 0; i < ni; i++) {
 	int j = ilist[i];
 	int curr_rank = j/n;
