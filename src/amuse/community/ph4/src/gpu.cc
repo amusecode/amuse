@@ -120,10 +120,10 @@ void jdata::update_gpu(int jlist[], int njlist)
 
     if (debug) {PRC(in_function); PRC(j_start); PRL(njlist);}
 
+    PRL(n);
     for (int jj = 0; jj < njlist; jj++) {
 	int j = jlist[jj];
 	if (j < nj) {
-	    PRL(n);
 	    int curr_rank = j/n;
 	    if (curr_rank == mpi_rank) {
 		for (int k = 0; k < 3; k++) {
