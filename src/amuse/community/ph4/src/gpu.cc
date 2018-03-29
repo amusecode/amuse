@@ -181,7 +181,7 @@ void idata::update_gpu()
     static int n, j_start, j_end;
     static real a2[3], j6[3], k18[3] = {0,0,0};
 
-    PRC(nj); PRL(my_nj);
+    PRC(jdat->nj); PRL(my_nj);
     if (my_nj != jdat->nj) {
 
 	// Define my j-range.
