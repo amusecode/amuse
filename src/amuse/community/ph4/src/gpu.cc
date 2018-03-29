@@ -106,6 +106,7 @@ void jdata::update_gpu(int jlist[], int njlist)
     static int n, j_start, j_end;
     static real a2[3] = {0,0,0}, j6[3] = {0,0,0}, k18[3] = {0,0,0};
 
+    PRC(nj); PRL(my_nj);
     if (my_nj != nj) {
 
 	// (Re)define my j-range.  Only necessary if nj changes.
