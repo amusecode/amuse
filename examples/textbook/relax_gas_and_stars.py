@@ -12,8 +12,8 @@ def check_energy_conservation(system, i_step, time, n_steps):
     U = system.potential_energy.value_in(unit)
     Q = system.thermal_energy.value_in(unit)
     K = system.kinetic_energy.value_in(unit)
-    print "Step {0} of {1}, t={2}: U={3:.2e}, Q={4:.2e}, K={5:.2e} {5}".format(
-        i_step, n_steps, time.as_quantity_in(units.yr), U, Q, K, unit)
+    print "Step {0} of {1}, t={2}: U={3:.2e}, Q={4:.2e}, K={5:.2e} {5}" \
+          .format(i_step, n_steps, time.as_quantity_in(units.yr), U, Q, K, unit)
 ###BOOKLISTSTOP1###
 
 from amuse.couple.bridge import Bridge
@@ -68,9 +68,8 @@ def relax_gas_and_stars(stars, gas):
     gravity_field_code = FastKick(converter, mode="cpu", number_of_workers=2)
     gravity_field_code.parameters.epsilon_squared = (0.01 | units.parsec)**2
     gravity_field_code.particles.add_particles(stars)
-    monitoring_function = check_energy_conservation
     relaxed_gas = relax(gas, hydro, gravity_field=gravity_field_code, 
-                        monitor_func=monitoring_function,
+                        monitor_func=check_energy_conservation,
                         bridge_options=dict(verbose=True, use_threading=False))
     gravity_field_code.stop()
     return hydro
