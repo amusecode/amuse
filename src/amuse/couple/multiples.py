@@ -319,7 +319,7 @@ class Multiples(object):
         except:						# the code understands
             binaries_energy = zero
         total_energy = code.potential_energy + code.kinetic_energy \
-                + binaries_energy
+	                + binaries_energy
 
         return total_energy
 
@@ -848,7 +848,7 @@ class Multiples(object):
         E0 = scattering_stars.kinetic_energy() \
             + scattering_stars.potential_energy(G=self.gravity_constant)
         phi_rem = potential_energy_in_field(scattering_stars,         
-                                            stars - scattering_stars,
+                                            stars-scattering_stars,
                                             G=self.gravity_constant)
 
         if self.global_debug > 2:
@@ -1113,7 +1113,7 @@ class Multiples(object):
         E2CM = get_energy_of_leaves(particles_in_encounter,
                                     G=self.gravity_constant)
         Etop = particles_in_encounter.kinetic_energy() \
-               + particles_in_encounter.potential_energy(G=self.gravity_constant)
+             + particles_in_encounter.potential_energy(G=self.gravity_constant)
         if self.global_debug > 1:
             print 'E2 (CM) =', E2CM
 
@@ -1543,10 +1543,10 @@ class Multiples(object):
                 dr = (p.position - cmpos).number
                 r2 = (dr**2).sum()
                 r = numpy.sqrt(r2)
-                phi = -M*m3/r
-                dphiQ = -((m1*m2/M)*m3/r)*(x/r)**2
+                phi = -self.gravity_constant*M*m3/r
+                dphiQ = -(self.gravity_constant*(m1*m2/M)*m3/r)*(x/r)**2
                 print ' ', str(id)+':', 'r =', r, 'm =', p.mass.number, \
-                      'dphi_top/dphiQ =', dphi_top.number/dphiQ
+                      'dphi_top/dphiQ =', dphi_top/dphiQ
 
         return False, dE_top, dphi_top, dEmul, dphi_int, dE_int, \
                particles_in_encounter
@@ -1664,7 +1664,7 @@ class Multiples(object):
             # resolve_collision_code.parameters.outfile='abc.dat'
             #
             # e.g.
-            # if self.gravity_code.model_time.number > 3414.53:
+            # if self.gravity_code.model_time.number > 31.4159:
             #     resolve_collision_code.parameters.outfile = 'debug.dat'
             #############################################################
 
@@ -1824,7 +1824,7 @@ class Multiples(object):
                             print pre, 'setting delta_t =', delta_t
                         sys.stdout.flush()
 
-                if time > 0.99999999*end_time:		# avoid roumdoff
+                if time > 0.99999999*end_time:		# avoid roundoff
 
                     # Encounter has failed to terminate and we are
                     # about to break out of the loop.  If option = 2
@@ -1967,22 +1967,22 @@ def sep2(star1, star2):         # squared separation of star1 and star2
 def sep(star1, star2):          # separation of star1 and star2
     return math.sqrt(sep2(star1, star2))
 
-def phi_tidal(star1, star2, star3): # compute tidal potential of
-                                    # (star1,star2) relative to star3
-    phi13 = -star1.mass*star3.mass/sep(star1,star3)
-    phi23 = -star2.mass*star3.mass/sep(star2,star3)
+def phi_tidal(star1, star2, star3, G): # compute tidal potential of
+                                       # (star1,star2) relative to star3
+    phi13 = -G*star1.mass*star3.mass/sep(star1,star3)
+    phi23 = -G*star2.mass*star3.mass/sep(star2,star3)
     m12 = star1.mass + star2.mass
     f1 = star1.mass/m12
     cmx = (f1*star1.x+(1-f1)*star2.x).number
     cmy = (f1*star1.y+(1-f1)*star2.y).number
     cmz = (f1*star1.z+(1-f1)*star2.z).number
-    phicm = -m12*star3.mass/math.sqrt((star3.x.number-cmx)**2
+    phicm = -G*m12*star3.mass/math.sqrt((star3.x.number-cmx)**2
                                        + (star3.y.number-cmy)**2
                                        + (star3.z.number-cmz)**2)
-    return (phi13+phi23-phicm).number
+    return phi13+phi23-phicm
 
-def find_nnn(star1, star2, stars):  # print next nearest neighbor
-                                    # of (star1, star2)
+def find_nnn(star1, star2, stars, G):  # print next nearest neighbor
+                                       # of (star1, star2)
     top_level = stars
 
     min_dr = 1.e10
@@ -1998,7 +1998,7 @@ def find_nnn(star1, star2, stars):  # print next nearest neighbor
     min_dr = math.sqrt(min_dr)
     #print 'star =', int(id1), ' min_dr =', min_dr, \
     #      ' nnn =', int(nnn.id), '(', nnn.mass.number, ')'
-    #print '    phi_tidal =', phi_tidal(star1, star2, nnn)
+    #print '    phi_tidal =', phi_tidal(star1, star2, nnn, G)
     #print '    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number
     #sys.stdout.flush()
 
@@ -2081,11 +2081,12 @@ def potential_energy_in_field(particles, field_particles,
                               smoothing_length_squared = zero,
                               G=constants.G):
     """
-    Returns the total potential energy of the particles in the particles set.
-
-    argument field_particles: the external field consists of these (i.e. potential energy is calculated relative to the field particles) 
-    argument smoothing_length_squared: the smoothing length is added to every distance.
-    argument G: gravitational constant, need to be changed for particles in different units systems
+    Returns the total potential energy of the particles in the particles
+    set. argument field_particles: the external field consists of these
+    (i.e. potential energy is calculated relative to the field
+    particles) argument smoothing_length_squared: the smoothing length
+    is added to every distance.  argument G: gravitational constant,
+    need to be changed for particles in different units systems
 
     >>> from amuse.datamodel import Particles
     >>> particles = Particles(2)
@@ -2095,6 +2096,7 @@ def potential_energy_in_field(particles, field_particles,
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles.potential_energy()
     quantity<-6.67428e-11 m**2 * kg * s**-2>
+
     """
 
     if len(field_particles) == 0:
@@ -2303,7 +2305,7 @@ def rescale_binary_components(comp1, comp2, kep, scale, compress=True):
 
     return a
 
-def compress_nodes(node_list, scale):
+def compress_nodes(node_list, scale, G):
 
     local_debug = False
 
@@ -2334,7 +2336,7 @@ def compress_nodes(node_list, scale):
         print 'node_list:'
         print node_list
         print 'top_level:'
-        print_top_level(node_list)
+        print_top_level(node_list, G)
 
     # Compute various measures of the size, potential, and kinetic
     # energy of the system in the center of mass frame.
@@ -2368,7 +2370,7 @@ def compress_nodes(node_list, scale):
             mj = node_list[j].mass.number
             dposj = (node_list[j].position-posi).number
             rij = math.sqrt(numpy.inner(dposj,dposj))
-            dphij = -mj/math.sqrt(numpy.inner(dposj,dposj))
+            dphij = -G*mj/math.sqrt(numpy.inner(dposj,dposj))
             dpot += dphij
             phij = m*dphij
             if rij < rijmin:
@@ -2443,8 +2445,8 @@ def compress_nodes(node_list, scale):
         for j in range(i+1,n):
             mj = node_list[j].mass.number
             mu = mi*mj/(mi+mj)
-            Eijold = 0.5*mu*dv2[i,j] - mi*mj/dr[i,j]
-            Eijnew = 0.5*mu*vfac2*dv2[i,j] - mi*mj/(fac*dr[i,j])
+            Eijold = 0.5*mu*dv2[i,j] - G*mi*mj/dr[i,j]
+            Eijnew = 0.5*mu*vfac2*dv2[i,j] - G*mi*mj/(fac*dr[i,j])
             if Eijnew <= 0.0:
                 #print 'bound', i, j, Eijold, Eijnew
                 bound = True
@@ -2577,7 +2579,7 @@ def compress_nodes(node_list, scale):
             dv = -n.velocity
             offset_children(n, dx, dv)
 
-    #print_top_level(node_list)
+    #print_top_level(node_list, G)
 
 #------------------------------------------------------------------
 
@@ -2681,7 +2683,7 @@ def print_multiple_detailed(node, kep, pre, kT, dcen):
 
     return is_bin, Etot
 
-def print_top_level(nodes):
+def print_top_level(nodes, G):
 
     # Print various top-level quantities of interest during rescaling.
 
@@ -2717,7 +2719,7 @@ def print_top_level(nodes):
                 mj = j.mass.number
                 rij = (numpy.inner((j.position-i.position).number,
                                    (j.position-i.position).number))**0.5
-                print j.id, -mi*mj/rij, '    ',
+                print j.id, -G*mi*mj/rij, '    ',
                 
         print ''
 
@@ -2739,7 +2741,7 @@ def print_top_level(nodes):
                                    (j.velocity-i.velocity).number)
                 print j.id, 0.5*muij*vij2 - mi*mj/rij, '    ',
                 if j.id > i.id:
-                    pot -= mi*mj/rij
+                    pot -= G*mi*mj/rij
                 
         print ''
     print 'totals:', pot, kin, -kin/pot, pot+kin
@@ -2850,7 +2852,7 @@ def get_energy_of_leaves(particles, G):
     #print ke, pe, e
     return e
 
-def print_energies(stars):
+def print_energies(stars, G):
 
     # Brute force N^2 over top level, pure python...
 
@@ -2876,7 +2878,7 @@ def print_energies(stars):
                 xx = tt.x.number-x
                 yy = tt.y.number-y
                 zz = tt.z.number-z
-                dpot -= mm/math.sqrt(xx**2+yy**2+zz**2)
+                dpot -= G*mm/math.sqrt(xx**2+yy**2+zz**2)
         potential += 0.5*m*dpot
             
     print 'len(stars) =', len(stars)
@@ -2987,7 +2989,7 @@ def scale_top_level_list(singles, multiples, kep, scale,
         print pre, lt, 'top-level nodes, scale =', scale
         #print lt, 'unscaled top-level nodes'
         #print top_level_nodes
-        compress_nodes(top_level_nodes, scale)
+        compress_nodes(top_level_nodes, scale, gravity_constant)
         #print lt, 'scaled top-level nodes'
         #print top_level_nodes
 
