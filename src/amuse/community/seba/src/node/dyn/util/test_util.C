@@ -31,7 +31,7 @@
 #include <vector>
 #include <algorithm>
 
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     // Read and sort the list of masses.
 
