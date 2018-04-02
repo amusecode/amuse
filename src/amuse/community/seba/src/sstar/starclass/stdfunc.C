@@ -404,14 +404,14 @@ real random_maxwellian_velocity(const real v_disp) {
 
 //   Hobbs, Lorimer, Lyne & Kramer, 2005, 360, 974 - maxwellian
 real random_hobbs_velocity() {
-   cerr<<"random_hobbs_velocity()"<<endl;
+//   cerr<<"random_hobbs_velocity()"<<endl;
    return random_maxwellian_velocity(265*sqrt(3.));  
 }
 
 
 //    Arzoumanian ea 2002, 568, 289 - combination of two maxwellians
 real random_arzoumanian_velocity() {
-   cerr<<"random_arzoumanian_velocity()"<<endl;
+//   cerr<<"random_arzoumanian_velocity()"<<endl;
    real prob = randinter(0., 1.);
    if (prob < 0.4){
        return random_maxwellian_velocity(90*sqrt(3.));
@@ -423,7 +423,7 @@ real random_arzoumanian_velocity() {
 
 //    Verbunt, Igoshev & Cator, 2017, 608, 57 - combination of two maxwellians
 real random_verbunt_velocity() {
-   cerr<<"random_verbunt_velocity()"<<endl;
+//   cerr<<"random_verbunt_velocity()"<<endl;
    real prob = randinter(0., 1.);
    if (prob < 0.42){
        return random_maxwellian_velocity(75*sqrt(3.));
