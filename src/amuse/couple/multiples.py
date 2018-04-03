@@ -1519,23 +1519,20 @@ class Multiples(object):
 
             # *** Retain unitless code for now (Steve, 4/18). ***
             
-            m1 = top_level_nodes[0].mass.number
-            m2 = top_level_nodes[1].mass.number
-            dx = (top_level_nodes[1].position \
-                  - top_level_nodes[0].position).number
-            x2 = (dx**2).sum()
-            x = numpy.sqrt(x2)
+            m1 = top_level_nodes[0].mass
+            m2 = top_level_nodes[1].mass
+            dx = top_level_nodes[1].position - top_level_nodes[0].position
+            x = (dx**2).sum().sqrt()
             print 'x =', x, 'M =', m1+m2
 
             for p in largest_perturbers:
-                m3 = p.mass.number
+                m3 = p.mass
                 id = p.id
-                dr = (p.position - cmpos).number
-                r2 = (dr**2).sum()
-                r = numpy.sqrt(r2)
+                dr = p.position - cmpos
+                r = (dr**2).sum().sqrt()
                 phi = -self.gravity_constant*M*m3/r
                 dphiQ = -(self.gravity_constant*(m1*m2/M)*m3/r)*(x/r)**2
-                print ' ', str(id)+':', 'r =', r, 'm =', p.mass.number, \
+                print ' ', str(id)+':', 'r =', r, 'm =', p.mass, \
                       'dphi_top/dphiQ =', dphi_top/dphiQ
 
         return False, dE_top, dphi_top, dEmul, dphi_int, dE_int, \
@@ -2699,7 +2696,7 @@ def print_top_level(nodes, G):
     print 'potentials:'
     for i in nodes:
         print i.id, '    ',
-        mi = i.mass.number
+        mi = i.mass
         for j in nodes:
             if j.id != i.id:
                 mj = j.mass
@@ -2713,12 +2710,12 @@ def print_top_level(nodes, G):
     kin = 0.0
     for i in nodes:
         print i.id, '    ',
-        mi = i.mass.number
-        vi = i.velocity.number
-        kin += 0.5*mi*numpy.inner(vi, vi)
+        mi = i.mass
+        vi = i.velocity
+        kin += 0.5*mi*(vi**2).sum()
         for j in nodes:
             if j.id != i.id:
-                mj = j.mass.number
+                mj = j.mass
                 muij = mi*mj/(mi+mj)
                 rij = ((j.position-i.position)**2).sum().sqrt()
                 vij2 = ((j.velocity-i.velocity)**2).sum()
