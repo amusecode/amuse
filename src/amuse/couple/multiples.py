@@ -2682,8 +2682,7 @@ def print_top_level(nodes, G):
         print i.id, '    ',
         for j in nodes:
             if j.id != i.id:
-                rij = (numpy.inner((j.position-i.position).number,
-                                   (j.position-i.position).number))**0.5
+                rij = ((j.position-i.position)**2).sum().sqrt()
                 print j.id, rij, '    ',
         print ''
 
@@ -2692,10 +2691,8 @@ def print_top_level(nodes, G):
         print i.id, '    ',
         for j in nodes:
             if j.id != i.id:
-                rij = (numpy.inner((j.position-i.position).number,
-                                   (j.position-i.position).number))**0.5
-                vdotr = numpy.inner((j.velocity-i.velocity).number,
-                                    (j.position-i.position).number)
+                rij = ((j.position-i.position)**2).sum().sqrt()
+                vdotr = ((j.velocity-i.velocity)*(j.position-i.position)).sum()
                 print j.id, vdotr/rij, '    ',
         print ''
 
@@ -2705,9 +2702,8 @@ def print_top_level(nodes, G):
         mi = i.mass.number
         for j in nodes:
             if j.id != i.id:
-                mj = j.mass.number
-                rij = (numpy.inner((j.position-i.position).number,
-                                   (j.position-i.position).number))**0.5
+                mj = j.mass
+                rij = ((j.position-i.position)**2).sum().sqrt()
                 print j.id, -G*mi*mj/rij, '    ',
                 
         print ''
@@ -2724,10 +2720,8 @@ def print_top_level(nodes, G):
             if j.id != i.id:
                 mj = j.mass.number
                 muij = mi*mj/(mi+mj)
-                rij = (numpy.inner((j.position-i.position).number,
-                                   (j.position-i.position).number))**0.5
-                vij2 = numpy.inner((j.velocity-i.velocity).number,
-                                   (j.velocity-i.velocity).number)
+                rij = ((j.position-i.position)**2).sum().sqrt()
+                vij2 = ((j.velocity-i.velocity)**2).sum()
                 print j.id, 0.5*muij*vij2 - mi*mj/rij, '    ',
                 if j.id > i.id:
                     pot -= G*mi*mj/rij
@@ -2847,27 +2841,27 @@ def print_energies(stars, G):
 
     top_level = stars.select(is_not_a_child, ["is_a_child"])
 
-    mass = 0
-    kinetic = 0
-    potential = 0
+    mass = zero
+    kinetic = zero
+    potential = zero
     for t in top_level:
-        m = t.mass.number
-        x = t.x.number
-        y = t.y.number
-        z = t.z.number
-        vx = t.vx.number
-        vy = t.vy.number
-        vz = t.vz.number
+        m = t.mass
+        x = t.x
+        y = t.y
+        z = t.z
+        vx = t.vx
+        vy = t.vy
+        vz = t.vz
         mass += m
         kinetic += 0.5*m*(vx**2+vy**2+vz**2)
-        dpot = 0
+        dpot = zero
         for tt in top_level:
             if tt != t:
-                mm = tt.mass.number
-                xx = tt.x.number-x
-                yy = tt.y.number-y
-                zz = tt.z.number-z
-                dpot -= G*mm/math.sqrt(xx**2+yy**2+zz**2)
+                mm = tt.mass
+                xx = tt.x-x
+                yy = tt.y-y
+                zz = tt.z-z
+                dpot -= G*mm/(xx**2+yy**2+zz**2).sqrt()
         potential += 0.5*m*dpot
             
     print 'len(stars) =', len(stars)
