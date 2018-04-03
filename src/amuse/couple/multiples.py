@@ -438,20 +438,14 @@ class Multiples(object):
 
                 # Note from Steve, 8/12: We can pick up a lot of
                 # encounters that are then ignored here.  I have
-                # (temporarily) duplicated this check in the ph4
+                # (temporarily?) duplicated this check in the ph4
                 # module (jdata.cc).
 
-                r = (star2.position-star1.position).length().number
-                v = (star2.velocity-star1.velocity).length().number
+                r = ((star2.position-star1.position)**2).sqrt().sum()
+                v = ((star2.velocity-star1.velocity)**2).sqrt().sum()
+                vr = ((star2.velocity-star1.velocity) \
+                        * (star2.position-star1.position)).sum()
 
-                # Temporary numpy workaround - Steve. Use dimensionless units.
-                #
-                # vr = numpy.inner(star2.velocity-star1.velocity,
-                #                  star2.position-star1.position)
-
-                vr = numpy.inner((star2.velocity-star1.velocity).number,
-                                 (star2.position-star1.position).number)
-    
                 EPS = 0.001
                 if True or vr < EPS*r*v:    # True ==> keep all encounters
 		    			    # returned by gravity_code
@@ -1283,15 +1277,14 @@ class Multiples(object):
                     print 'accepting lightly perturbed or repeat binary', \
                     	name_pair(comp1,comp2)
                     if self.global_debug > 1:
-                        print '    semi =', semi.number, 'E/mu =', E.number
-                        print '    apo =', apo.number, 'peri =', \
-                            semi.number*(1-ecc)
+                        print '    semi =', semi, 'E/mu =', E
+                        print '    apo =', apo, 'peri =', semi*(1-ecc)
                 if max_perturbation > 0:
                     if self.global_debug > 1:
                         print '    strongest perturber is', perturber.id, \
                             'with apo perturbation', max_perturbation
                         print '    nearest neighbor is', perturber.id, \
-                            'at distance', perturber_distance.number
+                            'at distance', perturber_distance
                         print '    repeat_count =', self.repeat_count
                 else:
                     if max_perturbation > 0:
@@ -1305,12 +1298,12 @@ class Multiples(object):
                         print 'splitting perturbed binary', \
                             name_pair(comp1,comp2)
                 if self.global_debug > 1:
-                    print '    semi =', semi.number, 'E/mu =', E.number
-                    print '    apo =', apo.number, 'peri =', semi.number*(1-ecc)
+                    print '    semi =', semi, 'E/mu =', E
+                    print '    apo =', apo, 'peri =', semi*(1-ecc)
                     print '    strongest perturber is', perturber.id, \
                           'with apocenter perturbation', max_perturbation
                     print '    nearest neighbor is', perturber.id, \
-                          'at distance', perturber_distance.number
+                          'at distance', perturber_distance
                 sys.stdout.flush()
 
                 # See the "special case" logic in
@@ -1411,26 +1404,21 @@ class Multiples(object):
 
         if self.global_debug > 0:
             print 'final top-level:',
-        r = 0.0
-        v = 0.0
-        vr = v*r
+        r = zero
+        v = zero
+        vr = zero
         for i in top_level_nodes:
             if self.global_debug > 0:
                 print i.id, '('+str(i.radius)+')',
             for j in top_level_nodes:
                 if i.id > j.id:
-                    rij = (i.position-j.position).length().number
+                    rij = ((i.position-j.position)**2).sum().sqrt()
                     if rij > r:
                         r = rij
-                        v = (i.velocity-j.velocity).length().number
+                        v = ((i.velocity-j.velocity)**2).sum().sqrt()
 
-                        # Temporary numpy workaround - Steve. Want:
-                        #
-                        # vr = numpy.inner(j.velocity-i.velocity,
-                        #                  j.position-i.position)
-
-                        vr = numpy.inner((j.velocity-i.velocity).number,
-                                         (j.position-i.position).number)
+                        vr = ((j.velocity-i.velocity) \
+                               * (j.position-i.position)).sum()
 
         if self.global_debug > 0:
             print ''
@@ -1529,6 +1517,8 @@ class Multiples(object):
 
             print 'checking quadrupole perturbations'
 
+            # *** Retain unitless code for now (Steve, 4/18). ***
+            
             m1 = top_level_nodes[0].mass.number
             m2 = top_level_nodes[1].mass.number
             dx = (top_level_nodes[1].position \
@@ -1962,10 +1952,10 @@ def openup_tree(star, tree, particles_in_encounter):
     particles_in_encounter.add_particles(leaves)
 
 def sep2(star1, star2):         # squared separation of star1 and star2
-    return ((star1.position-star2.position).number**2).sum()
+    return ((star1.position-star2.position)).sum()
 
 def sep(star1, star2):          # separation of star1 and star2
-    return math.sqrt(sep2(star1, star2))
+    return sep2(star1, star2).sqrt()
 
 def phi_tidal(star1, star2, star3, G): # compute tidal potential of
                                        # (star1,star2) relative to star3
@@ -1973,12 +1963,12 @@ def phi_tidal(star1, star2, star3, G): # compute tidal potential of
     phi23 = -G*star2.mass*star3.mass/sep(star2,star3)
     m12 = star1.mass + star2.mass
     f1 = star1.mass/m12
-    cmx = (f1*star1.x+(1-f1)*star2.x).number
-    cmy = (f1*star1.y+(1-f1)*star2.y).number
-    cmz = (f1*star1.z+(1-f1)*star2.z).number
-    phicm = -G*m12*star3.mass/math.sqrt((star3.x.number-cmx)**2
-                                       + (star3.y.number-cmy)**2
-                                       + (star3.z.number-cmz)**2)
+    cmx = f1*star1.x+(1-f1)*star2.x
+    cmy = f1*star1.y+(1-f1)*star2.y
+    cmz = f1*star1.z+(1-f1)*star2.z
+    phicm = -G*m12*star3.mass/((star3.x-cmx)**2
+                                + (star3.y-cmy)**2
+                                + (star3.z-cmz)**2).sqrt()
     return phi13+phi23-phicm
 
 def find_nnn(star1, star2, stars, G):  # print next nearest neighbor
@@ -1997,9 +1987,9 @@ def find_nnn(star1, star2, stars, G):  # print next nearest neighbor
                 nnn = t
     min_dr = math.sqrt(min_dr)
     #print 'star =', int(id1), ' min_dr =', min_dr, \
-    #      ' nnn =', int(nnn.id), '(', nnn.mass.number, ')'
+    #      ' nnn =', int(nnn.id), '(', nnn.mass, ')'
     #print '    phi_tidal =', phi_tidal(star1, star2, nnn, G)
-    #print '    nnn pos:', nnn.x.number, nnn.y.number, nnn.z.number
+    #print '    nnn pos:', nnn.x, nnn.y, nnn.z
     #sys.stdout.flush()
 
     return nnn
@@ -2338,39 +2328,45 @@ def compress_nodes(node_list, scale, G):
         print 'top_level:'
         print_top_level(node_list, G)
 
+    x0 = (node_list[0].position**2).sum().sqrt()
+    lunit = x0/x0.number
+    v0 = (node_list[0].velocity**2).sum().sqrt()
+    vunit = v0/v0.number
+    vunit2 = vunit**2
+    
     # Compute various measures of the size, potential, and kinetic
     # energy of the system in the center of mass frame.
 
-    size = 0.0		# max distance from center of mass
+    size = zero			# max distance(**2) from center of mass
 
-    rijmin = 1.e10	# minimum separation
+    rijmin = 1.e100*lunit	# minimum separation
     imin = -1
     jmin = -1
-    phimin = 0.0	# minimum potential
+    phimin = zero		# minimum potential
     ipmin = -1
     jpmin = -1
 
     n = len(node_list)
-    pot = 0.0
-    kin = 0.0
-    dr = numpy.zeros((n,n))
-    dv2 = numpy.zeros((n,n))
+    pot = zero
+    kin = zero
+    dr = numpy.zeros((n,n))	# unit = lunit
+    dv2 = numpy.zeros((n,n))	# unit = vunit2
     for i in range(n):
-        m = node_list[i].mass.number
+        m = node_list[i].mass
         posi = node_list[i].position
-        pos = (posi-cmpos).number
+        pos = posi - cmpos
         veli = node_list[i].velocity
-        vel = (veli-cmvel).number
-        r2 = numpy.inner(pos,pos)
+        vel = veli - cmvel
+        r2 = (pos**2).sum()
         if r2 > size:
             size = r2
-        kin += m*numpy.inner(vel,vel)
-        dpot = 0.0
+        kin += m*(vel**2).sum()
+        dpot = zero
         for j in range(i+1,n):
-            mj = node_list[j].mass.number
-            dposj = (node_list[j].position-posi).number
-            rij = math.sqrt(numpy.inner(dposj,dposj))
-            dphij = -G*mj/math.sqrt(numpy.inner(dposj,dposj))
+            mj = node_list[j].mass
+            dposj = node_list[j].position - posi
+            rij = (dposj**2).sum().sqrt()
+            dphij = -G*mj/rij
             dpot += dphij
             phij = m*dphij
             if rij < rijmin:
@@ -2381,23 +2377,24 @@ def compress_nodes(node_list, scale, G):
                 phimin = phij
                 ipmin = i
                 jpmin = j
-            dvelj = (node_list[j].velocity-veli).number
-            dr[i,j] = rij
-            dv2[i,j] = numpy.inner(dvelj,dvelj)
-        pot += m*dpot
-    size = math.sqrt(size)
+            dvelj = node_list[j].velocity - veli
+            dr[i,j] = rij/lunit
+            dv2[i,j] = (dvelj**2).sum()/vunit2
+        if dpot != zero:
+            pot += m*dpot
+    size = size.sqrt()
     kin /= 2
-    rphmin = -(node_list[ipmin].mass*node_list[jpmin].mass).number/phimin
+    rphmin = -(node_list[ipmin].mass*node_list[jpmin].mass)/phimin
 
     if local_debug:
-        print pre, 'scale =', scale.number
+        print pre, 'scale =', scale
         print pre, 'size =', size
         print pre, 'rijmin =', rijmin, node_list[imin].id, node_list[jmin].id
         print pre, 'rphmin =', rphmin, node_list[ipmin].id, node_list[jpmin].id
 
-    fac = 0.5*scale.number/size		# scale to radius
-    #fac = scale.number/rijmin		# scale to minimum distance
-    #fac = scale.number/rphmin		# scale to minimum potential distance
+    fac = 0.5*scale/size		# scale to radius
+    #fac = scale/rijmin			# scale to minimum distance
+    #fac = scale/rphmin			# scale to minimum potential distance
 
     if local_debug:
         print pre, 'fac =', fac
@@ -2440,14 +2437,14 @@ def compress_nodes(node_list, scale, G):
     bound_pairs = []
     unbound = numpy.ones(n)
     for i in range(n):
-        mi = node_list[i].mass.number
+        mi = node_list[i].mass
         bound = False
         for j in range(i+1,n):
-            mj = node_list[j].mass.number
+            mj = node_list[j].mass
             mu = mi*mj/(mi+mj)
-            Eijold = 0.5*mu*dv2[i,j] - G*mi*mj/dr[i,j]
-            Eijnew = 0.5*mu*vfac2*dv2[i,j] - G*mi*mj/(fac*dr[i,j])
-            if Eijnew <= 0.0:
+            Eijold = 0.5*mu*dv2[i,j]*vunit2 - G*mi*mj/(dr[i,j]*lunit)
+            Eijnew = 0.5*mu*vfac2*dv2[i,j]*vunit2 - G*mi*mj/(fac*dr[i,j]*lunit)
+            if Eijnew.number <= 0.0:
                 #print 'bound', i, j, Eijold, Eijnew
                 bound = True
                 bound_pairs.append((i,j))
@@ -2487,9 +2484,7 @@ def compress_nodes(node_list, scale, G):
         if local_debug:
             print 'kinetic energies:'
             for n in node_list:
-                print '  ', n.id, 0.5*n.mass.number\
-				*numpy.inner((n.velocity-cmvel).number,
-                                             (n.velocity-cmvel).number)
+                print '  ', n.id, 0.5*n.mass*((n.velocity-cmvel)**2).sum()
 
         # First give the bound components enough relative velocity to
         # just unbind them, keeping their center of mass velocity
@@ -2497,36 +2492,30 @@ def compress_nodes(node_list, scale, G):
         # leaves Eij close to 0, this transformation should liberate
         # energy for distribution to the rest of the system.
 
-        kin2 = 0.0
-        kinCM = 0.0
+        kin2 = zero
+        kinCM = zero
         for p in bound_pairs:
             i = p[0]
             j = p[1]
             ni = node_list[i]
             nj = node_list[j]
-            mi = ni.mass.number
-            mj = nj.mass.number
-            #print 'i, j, v20, dv2:', i, j, 2*(mi+mj)/dr[i,j], dv2[i,j]
-            newvfac2 = 2.000001*((mi+mj)/dr[i,j])/dv2[i,j]
+            mi = ni.mass
+            mj = nj.mass
+            newvfac2 = 2.000001*(G*(mi+mj)/(dr[i,j]*lunit))/(dv2[i,j]*vunit2)
             newvfac = math.sqrt(newvfac2)
-            #print 'newvfac =', newvfac
             massinv = 1./(mi+mj)
             cmv = (mi*ni.velocity + mj*nj.velocity)*massinv
             ni.velocity = cmv + newvfac*(ni.velocity-cmv)
             nj.velocity = cmv + newvfac*(nj.velocity-cmv)
-            kin2 += 0.5*mi*mj*massinv*numpy.inner(
-		                (ni.velocity-nj.velocity).number,
-		                (ni.velocity-nj.velocity).number)
-            kinCM += 0.5*(mi+mj)*numpy.inner((cmv-cmvel).number,
-                                             (cmv-cmvel).number)
+            kin2 += 0.5*mi*mj*massinv*((ni.velocity-nj.velocity)**2).sum()
+            kinCM += 0.5*(mi+mj)*((cmv-cmvel)**2).sum()
 
         if local_debug:
             print 'KECM =', kin2+kinCM
         for i in unbound_nodes:
             ni = node_list[i]
-            mi = ni.mass.number
-            kei = 0.5*mi*numpy.inner((ni.velocity-cmvel).number,
-                                     (ni.velocity-cmvel).number)
+            mi = ni.mass
+            kei = 0.5*mi*((ni.velocity-cmvel)**2).sum()
             if local_debug:
                 print 'KE', ni.id, kei
             kinCM += kei
@@ -2535,8 +2524,8 @@ def compress_nodes(node_list, scale, G):
             print 'energy =', energy, 'pot+kin2+kinCM =', pot+kin2+kinCM
         kin_to_distribute = energy - (pot+kin2+kinCM)
 
-        if kin_to_distribute < 0: 
-            print '*** warning: not enough kinetic energy ***'
+        if kin_to_distribute.number < 0: 
+            print '*** warning: not enough kinetic energy ***'	# TODO
 
         vfac2 = 1+kin_to_distribute/kinCM
         vfac = math.sqrt(vfac2)
@@ -2553,8 +2542,8 @@ def compress_nodes(node_list, scale, G):
             j = p[1]
             ni = node_list[i]
             nj = node_list[j]
-            mi = ni.mass.number
-            mj = nj.mass.number
+            mi = ni.mass
+            mj = nj.mass
             massinv = 1./(mi+mj)
             cmv = (mi*ni.velocity + mj*nj.velocity)*massinv
             newcmv = cmvel + vfac*(cmv-cmvel)
@@ -2614,9 +2603,9 @@ def print_multiple_recursive(m, kep, level=0):	  ##### not working? #####
     # Recursively print the structure of (multiple) node m.
 
     print '    '*level, 'key =', m.key, ' id =', int(m.id)
-    print '    '*level, '  mass =', m.mass.number
-    print '    '*level, '  pos =', m.position.number
-    print '    '*level, '  vel =', m.velocity.number
+    print '    '*level, '  mass =', m.mass
+    print '    '*level, '  pos =', m.position
+    print '    '*level, '  vel =', m.velocity
     sys.stdout.flush()
     if not m.child1 is None and not m.child2 is None:
         M,a,e,r,E,t = get_component_binary_elements(m.child1, m.child2, kep)
