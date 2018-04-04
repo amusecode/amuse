@@ -25,7 +25,7 @@ Help on package amuse.ic in amuse:
 or (directly from the terminal):
 > pydoc amuse.ic
 """
-
+import numpy
 
 def numpy_fix():
     try:
