@@ -85,8 +85,14 @@ real stellar_evolution_constants::super_nova_kick() {
   //    They prever a Maxwellian with a velocity dispersion of
   //    270 km/s.
   
+  //    Hobbs, Lorimer, Lyne & Kramer, 2005, 360, 974 - maxwellian with mean of 265
+  //    Arzoumanian et al. 2002, 568, 289 - combination of two maxwellians (mean 90 & 500)
+  // 	Verbunt, Igoshev & Cator, 2017, 608, 57 - combination of two maxwellians (mean 75 & 316)
+  
+  
   // selected kick distribution imparted to a newly formed neutron star
   // in a supernova. 
+PRC(pk);
   PRL(v_disp);
     switch(pk) {
     case no_velocity_kick:              return 0;
@@ -96,6 +102,12 @@ real stellar_evolution_constants::super_nova_kick() {
     case internally_decided_velocity_kick:
 	case Paczynski_velocity_kick:       return random_paczynski_velocity(v_disp);
              break;
+    case Hobbs_velocity_kick:      return random_hobbs_velocity();
+            break;
+	case Arzoumanian_velocity_kick:      return random_arzoumanian_velocity();
+            break;
+	case Verbunt_velocity_kick:      return random_verbunt_velocity();
+            break;
 	case delta_function_velocity_kick:  return v_disp;
              break;
     default:
