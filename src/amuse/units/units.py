@@ -25,6 +25,7 @@ Ry = named('rydberg unit', 'Ry', (constants.Rydberg_constant * constants.h * con
 # astronomical units
 angstrom = named('angstrom', 'angstrom', 1e-10*m)
 AU =  named('astronomical unit', 'AU', 149597870691.0  * m)
+au =  named('astronomical unit', 'au', 149597870691.0  * m)
 AUd = named('AU per day','AUd', 149597870691.0  * m / day)
 parsec=named('parsec','parsec', AU / numpy.tan(numpy.pi/(180*60*60)))
 kpc=named('kilo parsec','kpc',10**3 * parsec)
