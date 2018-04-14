@@ -226,7 +226,7 @@ class TableFormattedText(base.FileFormatProcessor):
                     current = []
                 else:
                     current = self.attribute_names[:]
-                print(index)
+                print index
                 while len(current)<=index:
                     current.append("")
                 current[index] = name
@@ -529,7 +529,7 @@ class TableFormattedText(base.FileFormatProcessor):
         from amuse.units import core
         from amuse.units import units
         
-        print(floats, int(floats[1]) == -1, numpy.all(numpy.asarray(floats[2:]) == 0.0), numpy.asarray(floats[2:]) == 0.0)
+        print floats, int(floats[1]) == -1, numpy.all(numpy.asarray(floats[2:]) == 0.0), numpy.asarray(floats[2:]) == 0.0
         if int(floats[1]) == -1 and numpy.all(numpy.asarray(floats[2:]) == 0.0):
             return None
         factor = floats[0]
