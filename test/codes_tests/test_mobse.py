@@ -47,19 +47,21 @@ class TestMOBSEInterface(TestWithMPI):
         bwind =  0.0
         hewind =  0.5
         alpha1 = 1.0
-        CElambda = 0.5
+        CElambda = 0.1
         ceflag = 0
         tflag = 1
         ifflag = 0
         wdflag =  1
-        bhflag =  0 
-        nsflag =  1
+        bhflag =  1 
+        nsflag =  3
+        piflag =  1
         mxns =  3.0
         idum = 29769
         pts1 = 0.05
         pts2 = 0.01
         pts3 = 0.02
-        sigma =  190.0
+        sigma1 =  265.0
+        sigma2 =  7.0
         beta = 1.0/8.0
         xi = 1.0
         acc2 = 3.0/2.0
@@ -70,16 +72,16 @@ class TestMOBSEInterface(TestWithMPI):
         status = instance.initialize(metallicity,
             neta, bwind, hewind, alpha1, CElambda,
             ceflag, tflag, ifflag, wdflag, bhflag,
-            nsflag, mxns, idum, pts1, pts2, pts3,
-            sigma,beta,xi,acc2,epsnov,eddfac,gamma)
+            nsflag, piflag, mxns, idum, pts1, pts2, pts3,
+            sigma1,sigma2,beta,xi,acc2,epsnov,eddfac,gamma)
         self.assertEqual(status,0)
         instance.stop()
         
     def test2(self):
         print "Test basic operations (legacy functions evolve & get_time_step)..."
         instance = MOBSEInterface()
-        status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0, 
-            29769, 0.05, 0.01, 0.02, 190.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
+        status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.1, 0, 1, 0, 1, 1, 3, 1, 3.0,
+            29769, 0.05, 0.01, 0.02, 265.0, 7.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
         
         new_state = self.state()
         new_state.mass1 = 3.0
@@ -127,11 +129,11 @@ class TestMOBSEInterface(TestWithMPI):
             'core_radius2' : '0x0.0p+0',
             'epoch2' : '0x0.0p+0',
             't_ms2' : '0x1.57d90abe54643p+13',
-            'spin2' : '0x1.07413b0522aebp+10',
+            'spin2' : '0x1.07413b0522dabp+10',
         };    
 
         for x in expected:
-            #print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
+            print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
             self.assertAlmostRelativeEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
         self.assertEquals(updated_state.end_time, 1e-06)
@@ -145,22 +147,22 @@ class TestMOBSEInterface(TestWithMPI):
     def test3(self):
         print "Test whether the interface can handle arrays..."
         instance = MOBSEInterface()
-        status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0, 
-            29769, 0.05, 0.01, 0.02, 190.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
-        masses1 = [10.0,5.0,4.0]
-        masses2 = [1.0,1.0,1.0]
-        types1 = types2 = [1,1,1]
-        orbital_periods = [100.0,200.0,300.0]
-        eccentricities = [0.5,0.6,0.7]
+        status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.1, 0, 1, 0, 1, 1, 3, 1, 3.0,
+            29769, 0.05, 0.01, 0.02, 265.0, 7.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
+        masses1 = [10.0,5.0,4.0,40.0,130.0]
+        masses2 = [1.0,1.0,1.0,10.0,60.0]
+        types1 = types2 = [1,1,1,1,1]
+        orbital_periods = [100.0,200.0,300.0,500.0,600.0]
+        eccentricities = [0.5,0.6,0.7,0.3,0.2]
 
         radii1 = luminosity1 = core_mass1 = core_radius1 =  envelope_mass1 =\
-        envelope_radius1 = spin1 = epoch1 = t_ms1 = [0.0,0.0,0.0]
+        envelope_radius1 = spin1 = epoch1 = t_ms1 = [0.0,0.0,0.0,0.0,0.0]
         radii2 = luminosity2 = core_mass2 = core_radius2 =  envelope_mass2 =\
-        envelope_radius2 = spin2 = epoch2 = t_ms2 = [0.0,0.0,0.0]
+        envelope_radius2 = spin2 = epoch2 = t_ms2 = [0.0,0.0,0.0,0.0,0.0]
         init_mass1 = masses1
         init_mass2 = masses2
-        bse_age = [0.0,0.0,0.0]
-        end_time = [10.0, 10.0, 10.0]
+        bse_age = [0.0,0.0,0.0,0.0,0.0]
+        end_time = [10.0, 10.0, 10.0, 10.0, 10.0]
         result = instance.evolve_binary(
             types1, types2, init_mass1, init_mass2,
             masses1, masses2, radii1, radii2,
@@ -170,17 +172,19 @@ class TestMOBSEInterface(TestWithMPI):
             epoch1, epoch2, t_ms1, t_ms2, 
             bse_age, orbital_periods, eccentricities, end_time
         )
-        self.assertAlmostEqual(result['mass1'][0], 9.977, 2)
-        self.assertAlmostEqual(result['mass1'][1], 5.0, 2)
-        self.assertAlmostEqual(result['mass1'][2], 4.0, 2)
+        self.assertAlmostEqual(result['mass1'][0], 9.99356, 2)
+        self.assertAlmostEqual(result['mass1'][1], 4.99956, 2)
+        self.assertAlmostEqual(result['mass1'][2], 3.99992, 2)
+        self.assertAlmostEqual(result['mass1'][3], 3.07374, 2)
+        self.assertAlmostEqual(result['mass1'][4], 13.61644, 2)
         instance.stop()
         
     def test4(self):
         print "Test large number of particles..."
         number_of_particles = 2000
         instance = MOBSEInterface()
-        status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.5, 0, 1, 0, 1, 0, 1, 3.0, 
-            29769, 0.05, 0.01, 0.02, 190.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
+        status = instance.initialize(0.02, 0.5, 0.0, 0.5, 1.0, 0.1, 0, 1, 0, 1, 1, 3, 1, 3.0,
+            29769, 0.05, 0.01, 0.02, 265.0, 7.0, 1.0/8.0, 1.0, 3.0/2.0, 0.001, 1.0, -1.0)
         masses1 = [1.0 + ((x / 1.0*number_of_particles) * 10.0) for x in range(1,number_of_particles+1)]
         masses2 = [2.0 + ((x / 1.0*number_of_particles) * 5.0) for x in range(1,number_of_particles+1)]
         orbital_periods = [100.0 + ((x / 1.0*number_of_particles) * 900.0) for x in range(1,number_of_particles+1)]
@@ -238,11 +242,11 @@ class TestMOBSE(TestWithMPI):
         
         instance.binaries.add_particles(binaries)
         
-        from_bse_to_model = instance.particles.new_channel_to(stars)
-        from_bse_to_model.copy()
+        from_mobse_to_model = instance.particles.new_channel_to(stars)
+        from_mobse_to_model.copy()
 
-        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
-        from_bse_to_model_binaries.copy()
+        from_mobse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_mobse_to_model_binaries.copy()
         
         previous_type = binary.child1.stellar_type
         results = []
@@ -253,8 +257,8 @@ class TestMOBSE(TestWithMPI):
             # The next line appears a bit weird, but saves time for this simple test.
             current_time = current_time + max(5.0*instance.binaries[0].time_step, 0.3 | units.Myr)
             instance.evolve_model(current_time)
-            from_bse_to_model.copy()
-            from_bse_to_model_binaries.copy()
+            from_mobse_to_model.copy()
+            from_mobse_to_model_binaries.copy()
             if not binary.child1.stellar_type == previous_type:
                 results.append((binary.age, binary.child1.mass, binary.child1.stellar_type))
                 previous_type = binary.child1.stellar_type
@@ -274,12 +278,12 @@ class TestMOBSE(TestWithMPI):
             self.assertEquals(str(result[2]), expected)
         
         times = ( 
-            284.8516 | units.Myr, 
-            287.0595 | units.Myr, 
-            287.7848 | units.Myr, 
-            331.1454 | units.Myr, 
-            331.3983 | units.Myr, 
-            332.2786 | units.Myr,
+            284.8632 | units.Myr, 
+            287.0713 | units.Myr, 
+            287.7967 | units.Myr, 
+            331.1631 | units.Myr, 
+            331.4164 | units.Myr, 
+            332.2864 | units.Myr,
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 0)
@@ -290,7 +294,7 @@ class TestMOBSE(TestWithMPI):
             2.999 | units.MSun, 
             2.956 | units.MSun,
             0.888 | units.MSun,
-            0.707 | units.MSun,
+            0.701 | units.MSun,
         )
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 2)
@@ -306,7 +310,7 @@ class TestMOBSE(TestWithMPI):
         instance.commit_parameters()
         
         stars =  Particles(2)
-        stars[0].mass = 3.0 | units.MSun
+        stars[0].mass = 4.0 | units.MSun
         stars[1].mass = 0.3 | units.MSun
         orbital_period =  2.0e5 | units.day
         semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  stars[0].mass , stars[1].mass)
@@ -323,23 +327,23 @@ class TestMOBSE(TestWithMPI):
         
         instance.binaries.add_particles(binaries)
         
-        from_bse_to_model = instance.particles.new_channel_to(stars)
-        from_bse_to_model.copy()
+        from_mobse_to_model = instance.particles.new_channel_to(stars)
+        from_mobse_to_model.copy()
 
-        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
-        from_bse_to_model_binaries.copy()
+        from_mobse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_mobse_to_model_binaries.copy()
         
         previous_type = binary.child1.stellar_type
         results = []
         current_time = 0 | units.Myr
         
-        while current_time < (335 | units.Myr):
+        while current_time < (170 | units.Myr):
             instance.update_time_steps()
             # The next line appears a bit weird, but saves time for this simple test.
             current_time = current_time + max(2.0*instance.binaries[0].time_step, 0.04 | units.Myr)
             instance.evolve_model(current_time)
-            from_bse_to_model.copy()
-            from_bse_to_model_binaries.copy()
+            from_mobse_to_model.copy()
+            from_mobse_to_model_binaries.copy()
             if not binary.child1.stellar_type == previous_type:
                 results.append((binary.age, binary.child1.mass, binary.child1.stellar_type))
                 previous_type = binary.child1.stellar_type
@@ -347,23 +351,23 @@ class TestMOBSE(TestWithMPI):
         self.assertEqual(len(results), 6)
         
         times = ( 
-            284.8516 | units.Myr, 
-            287.0595 | units.Myr, 
-            287.7848 | units.Myr, 
-            331.1454 | units.Myr,
-            332.7407 | units.Myr,
-            333.4146 | units.Myr
+            147.1282 | units.Myr, 
+            148.0345 | units.Myr, 
+            148.2282 | units.Myr, 
+            167.2811 | units.Myr,
+            168.0344 | units.Myr,
+            168.7475 | units.Myr
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 0)
             
         masses = ( 
-            3.000 | units.MSun, 
-            3.000 | units.MSun, 
-            2.999 | units.MSun, 
-            2.956 | units.MSun,
-            2.919 | units.MSun,
-            0.928 | units.MSun
+            4.000 | units.MSun, 
+            3.999 | units.MSun, 
+            3.999 | units.MSun, 
+            3.942 | units.MSun,
+            3.906 | units.MSun,
+            1.016 | units.MSun
         )
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 2)
@@ -386,6 +390,7 @@ class TestMOBSE(TestWithMPI):
         print "Testing standard MOBSE example 2..."
         instance = MOBSE()
         instance.parameters.common_envelope_efficiency = 3.0
+        instance.parameters.common_envelope_binding_energy_factor= 0.5
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
         
@@ -407,11 +412,11 @@ class TestMOBSE(TestWithMPI):
         
         instance.binaries.add_particles(binaries)
         
-        from_bse_to_model = instance.particles.new_channel_to(stars)
-        from_bse_to_model.copy()
+        from_mobse_to_model = instance.particles.new_channel_to(stars)
+        from_mobse_to_model.copy()
 
-        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
-        from_bse_to_model_binaries.copy()
+        from_mobse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_mobse_to_model_binaries.copy()
         
         previous_type1 = binary.child1.stellar_type
         previous_type2 = binary.child2.stellar_type
@@ -423,8 +428,8 @@ class TestMOBSE(TestWithMPI):
             # The next line appears a bit weird, but saves time for this simple test.
             current_time = current_time + max(2.0*instance.binaries[0].time_step, 0.04 | units.Myr)
             instance.evolve_model(current_time)
-            from_bse_to_model.copy()
-            from_bse_to_model_binaries.copy()        
+            from_mobse_to_model.copy()
+            from_mobse_to_model_binaries.copy()        
             if not (binary.child1.stellar_type  == previous_type1 and binary.child2.stellar_type == previous_type2):
                 results.append((binary.age, str(binary.child1.stellar_type)+" and "+str(binary.child2.stellar_type)))
                 previous_type1 = binary.child1.stellar_type
@@ -432,21 +437,20 @@ class TestMOBSE(TestWithMPI):
         
             
         print '\n'.join(map(str, results))
-        self.assertEqual(len(results), 13)
+        self.assertEqual(len(results), 12)
         times = ( 
-            38.9708 | units.Myr, 
-            39.0897 | units.Myr, 
-            39.1213 | units.Myr, 
-            43.8025 | units.Myr,
-            43.9923 | units.Myr,
-            44.0686 | units.Myr,
-            141.7077 | units.Myr, 
-            142.3448 | units.Myr, 
-            142.7827 | units.Myr,
-            166.1043 | units.Myr,
-            166.5795 | units.Myr,
-            166.9627 | units.Myr,
-            166.9863 | units.Myr
+            39.1037 | units.Myr, 
+            39.2242 | units.Myr, 
+            39.2565 | units.Myr, 
+            43.9911 | units.Myr,
+            44.1842 | units.Myr,
+            44.2644 | units.Myr,
+            141.8444 | units.Myr, 
+            142.4835 | units.Myr, 
+            142.9234 | units.Myr,
+            166.3238 | units.Myr,
+            166.8385 | units.Myr,
+            167.1731 | units.Myr
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 0)
@@ -463,15 +467,14 @@ class TestMOBSE(TestWithMPI):
             "Oxygen/Neon White Dwarf and Core Helium Burning",
             "Oxygen/Neon White Dwarf and First Asymptotic Giant Branch",
             "Oxygen/Neon White Dwarf and Hertzsprung Gap Naked Helium star",
-            "Neutron Star and Hertzsprung Gap Naked Helium star",
             "Neutron Star and Carbon/Oxygen White Dwarf",
         )
         
         for result, expected in zip(results, types):
             self.assertEquals(result[1], expected)
         
-        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.304, 3)
-        self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.800, 3)
+        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.26079, 3)
+        self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.76080, 3)
         
         instance.stop()
         
@@ -479,6 +482,7 @@ class TestMOBSE(TestWithMPI):
         print "Quick testing standard MOBSE example 2..."
         instance = MOBSE()
         instance.parameters.common_envelope_efficiency = 3.0
+        instance.parameters.common_envelope_binding_energy_factor= 0.5
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0
         instance.commit_parameters()
         
@@ -500,18 +504,18 @@ class TestMOBSE(TestWithMPI):
         
         instance.binaries.add_particles(binaries)
         
-        from_bse_to_model = instance.particles.new_channel_to(stars)
-        from_bse_to_model.copy()
+        from_mobse_to_model = instance.particles.new_channel_to(stars)
+        from_mobse_to_model.copy()
 
-        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
-        from_bse_to_model_binaries.copy()
+        from_mobse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_mobse_to_model_binaries.copy()
         
         instance.evolve_model(170 | units.Myr)
-        from_bse_to_model.copy()
-        from_bse_to_model_binaries.copy()
+        from_mobse_to_model.copy()
+        from_mobse_to_model_binaries.copy()
 
-        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.304, 3)
-        self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.800, 3)
+        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 1.26079, 3)
+        self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.76080, 3)
         self.assertEquals(str(binary.child1.stellar_type), "Neutron Star")
         self.assertEquals(str(binary.child2.stellar_type), "Carbon/Oxygen White Dwarf")
 
@@ -525,15 +529,15 @@ class TestMOBSE(TestWithMPI):
         instance.commit_parameters()
 
         stars =  Particles(2)
-        stars[0].mass = 3.0  | units.MSun
-        stars[1].mass = 0.3 | units.MSun
+        stars[0].mass = 130.0  | units.MSun
+        stars[1].mass = 50 | units.MSun
         
         instance.particles.add_particles(stars)
         
         binaries =  Particles(1)
         
         binary = binaries[0]
-        orbital_period =   200.0 | units.day
+        orbital_period =   300.0 | units.day
         semi_major_axis = instance.orbital_period_to_semi_major_axis(orbital_period,  stars[0].mass , stars[1].mass)
         binary.semi_major_axis = semi_major_axis
         binary.eccentricity = 0.99
@@ -542,25 +546,24 @@ class TestMOBSE(TestWithMPI):
         
         instance.binaries.add_particles(binaries)
         
-        from_bse_to_model = instance.particles.new_channel_to(stars)
-        from_bse_to_model.copy()
+        from_mobse_to_model = instance.particles.new_channel_to(stars)
+        from_mobse_to_model.copy()
 
-        from_bse_to_model_binaries = instance.binaries.new_channel_to(binaries)
-        from_bse_to_model_binaries.copy()
+        from_mobse_to_model_binaries = instance.binaries.new_channel_to(binaries)
+        from_mobse_to_model_binaries.copy()
         
         instance.evolve_model(170 | units.Myr)
         
-        from_bse_to_model.copy()
-        from_bse_to_model_binaries.copy()
+        from_mobse_to_model.copy()
+        from_mobse_to_model_binaries.copy()
         print binaries
-        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 3.300, 3)
+        self.assertAlmostEqual(binary.child1.mass.value_in(units.MSun), 180.00, 3)
         self.assertAlmostEqual(binary.child2.mass.value_in(units.MSun), 0.000, 3)
         self.assertEquals(str(binary.child1.stellar_type), "Main Sequence star")
         self.assertEquals(str(binary.child2.stellar_type), "Massless Supernova")
 
         instance.stop()
-        
-    
+
     def test6(self):
         print "Testing additional parameters for initialization..."
         instance = MOBSE()
@@ -603,9 +606,6 @@ class TestMOBSE(TestWithMPI):
             binaries.child2.as_set().mass
         )
         binaries.semi_major_axis = semi_major_axis
-
-               
-        
         
         instance.particles.add_particles(stars)
         instance.binaries.add_particles(binaries)
@@ -622,13 +622,13 @@ class TestMOBSE(TestWithMPI):
         print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
         instance.evolve_model(100 | units.Myr)
         self.assertAlmostEqual(instance.binaries.age, [100.0, 100.0, 100.0] | units.Myr, 3)
-        self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8785] | units.Myr, 3)
         self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 3)
         
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
-        self.assertAlmostEqual(instance.binaries.age, (100 | units.Myr) + ([550.1565, 58.2081, 18.8768] | units.Myr), 3)
-        self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.binaries.age, (100 | units.Myr) + ([550.1565, 58.2081, 18.8785] | units.Myr), 3)
+        self.assertAlmostEqual(instance.binaries.time_step, [550.1565, 58.2081, 18.8785] | units.Myr, 3)
         self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 3) # Unchanged!
         instance.stop()
         
