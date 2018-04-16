@@ -57,58 +57,57 @@ def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
                   Msec.value_in(units.MSun)] | units.MSun
     stellar_evolution = MESA()
     stellar_evolution.particles.add_particles(stars)
-        
     while stellar_evolution.model_time < tcoll:
         stellar_evolution.evolve_model()
         print_stars(stellar_evolution)
-
     n_shell = min(stellar_evolution.particles[0].get_number_of_zones(),
                   stellar_evolution.particles[1].get_number_of_zones())
-
     merger_code = MakeMeAMassiveStar(**default_options)
     merger_code.parameters.target_n_shells = n_shell
     merger_code.parameters.dump_mixed_flag = True
     merger_code.parameters.do_shock_heating_flag = True
     merger_code.commit_parameters()
+###BOOKLISTSTOP1###
 
+###BOOKLISTSTART2###
     handler = CollisionHandler(merger_code,
                                stellar_evolution_code = stellar_evolution)
     merger_product = handler.handle_collision(stellar_evolution.particles[0],
                                               stellar_evolution.particles[1])
     merged = stellar_evolution.particles[0]
+###BOOKLISTSTOP2###
+
     print "Stars merged:", merged
-
-    stellar_evolution.evolve_model(keep_synchronous=True)
-
-###BOOKLISTSTOP1###
     time = [] | units.Myr
     stellar_type = []
     mass = [] | units.MSun
     radius = [] | units.RSun
     temperature = [] | units.K
     luminosity = [] | units.LSun
-###BOOKLISTSTART2###
-
+    
+###BOOKLISTSTART3###
+    stellar_evolution.evolve_model(keep_synchronous=True)
     p = stellar_evolution.particles[0]
     while stellar_evolution.model_time < tend:
         stellar_evolution.evolve_model()
-###BOOKLISTSTOP2###
+###BOOKLISTSTOP3###
+
         time.append(stellar_evolution.model_time)
         stellar_type.append(p.stellar_type)
         mass.append(p.mass)
         radius.append(p.radius)
         temperature.append(p.temperature)
         luminosity.append(p.luminosity)
-###BOOKLISTSTART3###
+        
+###BOOKLISTSTART4###
         print "Time=", stellar_evolution.model_time, p.stellar_type, \
             p.mass, p.radius, p.temperature.in_(units.K), \
             p.luminosity.in_(units.LSun)
         if p.stellar_type >= 4 | units.stellar_type:
             break
-
     merger_code.stop()
     stellar_evolution.stop()
-###BOOKLISTSTOP3###
+###BOOKLISTSTOP4###
 
     return time, stellar_type, mass, radius, temperature, luminosity
 

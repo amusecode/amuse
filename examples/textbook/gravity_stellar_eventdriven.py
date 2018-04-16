@@ -77,7 +77,6 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     gravity = ph4(converter)
     gravity.parameters.timestep_parameter = 0.01
     gravity.particles.add_particles(bodies)
-
     collision_detection = gravity.stopping_conditions.collision_detection
     collision_detection.enable()
 
@@ -92,7 +91,6 @@ def main(N, W0, t_end, dt, filename, Rvir, Mmin, Mmax, z):
     channel_from_se = stellar.particles.new_channel_to(bodies)
     channel_from_gd = gravity.particles.new_channel_to(bodies)
     channel_to_gd = bodies.new_channel_to(gravity.particles)
-
     channel_from_se.copy_attributes(["mass","radius", "age",
                                      "temperature", "luminosity"])
 ###BOOKLISTSTOP1###
