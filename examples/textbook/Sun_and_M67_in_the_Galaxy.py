@@ -1,125 +1,270 @@
 import numpy
+import math
 from amuse.lab import *
-from amuse.couple import bridge
+from amuse import datamodel
+from amuse.units import quantities
+from amuse.ext.rotating_bridge import Rotating_Bridge
+from amuse.community.galaxia.interface import BarAndSpirals3D
+from amuse.ext.composition_methods import *
 
-###BOOKLISTSTART1###
-class MilkyWay_galaxy(object):
-    def get_gravity_at_point(self, eps, x,y,z):
-        phi_0 = self.get_potential_at_point(eps, x,y,z)
-        grav = AdaptingVectorQuantity()
-        dpos = 0.001*(x**2+y**2+z**2).sqrt()
-        phi_dx = self.get_potential_at_point(0,x+dpos,y,z) - phi_0
-        phi_dy = self.get_potential_at_point(0,x,y+dpos,z) - phi_0
-        phi_dz = self.get_potential_at_point(0,x,y, z+dpos) - phi_0
-        return phi_dx/dpos, phi_dy/dpos, phi_dz/dpos
+from prepare_figure import *
+from distinct_colours import get_distinct
 
-    def disk_or_bulge_potentials(self, x, y, z, a, b, mass):
-        r2 = x**2 + y**2
-        b2 = (a + (z**2 + b**2).sqrt())**2
-        return constants.G * mass / (r2 + b2).sqrt()
+class drift_without_gravity(object):
+    """
+    This class is to make the ev of non interactig particles by using bridge.
+    """
 
-    def halo_potential(self, x,y,z, Mc=5.0E+10|units.MSun, Rc=1.0|units.kpc**2):
-        r=(x**2 + y**2 + z**2).sqrt()
-        rr = (r/Rc)
-        return -constants.G * (Mc/Rc)*(0.5*numpy.log(1 +rr**2) \
-                                         + numpy.arctan(rr)/rr)
+    def __init__(self, particles, time= 0 |units.Myr):
+        self.particles=particles
+        self.model_time= time
+    def evolve_model(self, t_end):
+        dt= t_end- self.model_time
+        self.particles.position += self.particles.velocity*dt
+        self.model_time= t_end
+    @property
+    def potential_energy(self):
+        return quantities.zero
+    @property 
+    def kinetic_energy(self):
+        return (0.5*self.particles.mass*self.particles.velocity.lengths()**2).sum()
 
-    def get_potential_at_point(self, eps, x, y, z):
-        pot_disk = self.disk_or_bulge_potentials(x,y,z, 
-            0.0|units.kpc, 0.277|units.kpc, 1.12E+10|units.MSun) 
-        pot_bulge = self.disk_or_bulge_potentials(x,y,z, 
-            3.7|units.kpc, 0.20|units.kpc, 8.07E+10|units.MSun) 
-        pot_halo = self.halo_potential(x,y,z, 
-            Mc=5.0E+10|units.MSun, Rc=6.0|units.kpc)
-        return pot_disk + pot_bulge + pot_halo
-###BOOKLISTSTOP1###
+I = 0
+class IntegrateOrbit(object):
+    """
+    This class makes the integration of the Sun in the Milky Way
+    by using BarAndSpirals3D. 
+    galaxy(): Function that sets the desired Galactic model. Any question on the parameters, contact me
+    creation_particles_noinertial(): creates a parti le set in a rotating frame
+    noinertial_to_inertial(): converts data from rotating to inertial frame
+    get_pos_vel_and_orbit(): Makes the evolution of the particle set
+    """
+    
+    def __init__(self, t_end= 10 |units.Myr, dt_bridge=0.5 |units.Myr, method= SPLIT_6TH_SS_M13, phase_bar= 0, phase_spiral= 0, omega_spiral= -20 |(units.kms/units.kpc), amplitude= 650|(units.kms**2/units.kpc), m=4, omega_bar= -50 |(units.kms/units.kpc), mass_bar= 1.1e10 |units.MSun ):
+        # Simulation parameters
+        self.t_end= t_end
+        self.dt_bridge= dt_bridge
+        self.method= method
+        self.time= 0 |units.Myr
+        #galaxy parameters
+        self.omega= 0 | (units.kms/units.kpc)
+        self.initial_phase= 0
+        self.bar_phase= phase_bar
+        self.spiral_phase= phase_spiral
+        self.omega_spiral= omega_spiral
+        self.amplitude= amplitude
+        self.rsp= 3.12 |units.kpc
+        self.m= m
+        self.tan_pitch_angle= 0.227194425
+        self.omega_bar= omega_bar
+        self.mass_bar= mass_bar
+        self.aaxis_bar= 3.12 |units.kpc
+        self.axis_ratio_bar= 0.37
+        return
+    
+    def galaxy(self):
+        global I
+        galaxy= BarAndSpirals3D(redirection='file', redirect_stdout_file="GAL{0}.log".format(I))
+        I = I + 1
+        galaxy.kinetic_energy=quantities.zero
+        galaxy.potential_energy=quantities.zero
+        galaxy.parameters.bar_contribution= True
+        galaxy.parameters.bar_phase= self.bar_phase
+        galaxy.parameters.omega_bar= self.omega_bar
+        galaxy.parameters.mass_bar= self.mass_bar
+        galaxy.parameters.aaxis_bar= self.aaxis_bar
+        galaxy.parameters.axis_ratio_bar= self.axis_ratio_bar 
+        galaxy.parameters.spiral_contribution= False
+        galaxy.parameters.spiral_phase= self.spiral_phase
+        galaxy.parameters.omega_spiral= self.omega_spiral
+        galaxy.parameters.amplitude= self.amplitude
+        galaxy.parameters.rsp= self.rsp
+        galaxy.parameters.m= self.m
+        galaxy.parameters.tan_pitch_angle= self.tan_pitch_angle
+        galaxy.commit_parameters()
+        self.omega= galaxy.parameters.omega_system
+        self.initial_phase= galaxy.parameters.initial_phase
+        print "INITIAL_PHASE:", self.initial_phase
+        galaxy.kinetic_energy=quantities.zero
+        galaxy.potential_energy=quantities.zero
+        return galaxy 
+        
+    def creation_particles_noinertial(self, particles):
+        """
+        makes trans in a counterclockwise frame.
+        If the Galaxy only has bar or only spiral arms, the frame corotates with
+        the bar or with the spiral arms. If the Galaxy has bar and spiral arms, the frame corotates with the bar
+        """
+        no_inertial_system= particles.copy()
+        angle= self.initial_phase + self.omega*self.time
+        C1= particles.vx + self.omega*particles.y
+        C2= particles.vy - self.omega*particles.x
+        no_inertial_system.x = particles.x*numpy.cos(angle) + particles.y*numpy.sin(angle)
+        no_inertial_system.y = -particles.x*numpy.sin(angle) + particles.y*numpy.cos(angle) 
+        no_inertial_system.z = particles.z
+        no_inertial_system.vx = C1*numpy.cos(angle) + C2*numpy.sin(angle) 
+        no_inertial_system.vy = C2*numpy.cos(angle) - C1*numpy.sin(angle)
+        no_inertial_system.vz = particles.vz
+        return no_inertial_system    
 
-def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
+    def noinertial_to_inertial(self, part_noin, part_in):
+        #makes trans in a counterclockwise frame
+        angle= self.initial_phase + self.omega*self.time
+        C1= part_noin.vx - part_noin.y*self.omega
+        C2= part_noin.vy + part_noin.x*self.omega
+        part_in.x= part_noin.x*numpy.cos(angle)-part_noin.y*numpy.sin(angle)
+        part_in.y= part_noin.x*numpy.sin(angle)+part_noin.y*numpy.cos(angle)
+        part_in.z= part_noin.z
+        part_in.vx= C1*numpy.cos(angle) - C2*numpy.sin(angle)
+        part_in.vy= C1*numpy.sin(angle) + C2*numpy.cos(angle)
+        part_in.vz= part_noin.vz
+        return
+
+    
+    def testing_potential_and_force(self, galaxy, x, y, z):
+        dx, dy, dz = 0.001 |units.kpc, 0.001 |units.kpc, 0.001 |units.kpc
+        phi1x= galaxy.get_potential_at_point(0 |units.kpc, (x+dx), y, z)
+        phi2x= galaxy.get_potential_at_point(0 |units.kpc, (x-dx), y, z)
+        f1x= -(phi1x-phi2x)/(2*dx)
+        phi1y= galaxy.get_potential_at_point(0 |units.kpc, x, (y+dy), z)
+        phi2y= galaxy.get_potential_at_point(0 |units.kpc, x, (y-dy), z)
+        f1y= -(phi1y-phi2y)/(2*dy)
+        phi1z= galaxy.get_potential_at_point(0 |units.kpc, x, y, (z+dz))
+        phi2z= galaxy.get_potential_at_point(0 |units.kpc, x, y, (z-dz))
+        f1z= -(phi1z-phi2z)/(2*dz)
+        fx,fy,fz= galaxy.get_gravity_at_point(0 |units.kpc, x, y, z)
+        print "analytic", "numerical" 
+        print fx.value_in(100*units.kms**2/units.kpc) , f1x.value_in(100*units.kms**2/units.kpc)
+        print fy.value_in(100*units.kms**2/units.kpc) , f1y.value_in(100*units.kms**2/units.kpc)
+        print fz.value_in(100*units.kms**2/units.kpc) , f1z.value_in(100*units.kms**2/units.kpc)
+        return
+
+    def get_pos_vel_and_orbit(self, particle_set):
+        #particle_set.velocity= (-1)*particle_set.velocity
+
+        filename="sunandM67.hdf5"
+        write_set_to_file(particle_set.savepoint(self.time),
+                          filename, "hdf5", append_to_file=False)
+        
+        MW= self.galaxy()
+        print "OMEGA:", self.omega.as_quantity_in(1/units.Gyr) 
+        particle_rot= self.creation_particles_noinertial(particle_set)
+        gravless= drift_without_gravity(particle_rot)
+        
+        system= Rotating_Bridge(self.omega, timestep= self.dt_bridge, verbose= False, method= self.method)
+        system.add_system(gravless, (MW,), False)
+        system.add_system(MW, (), False) # This is to update time inside the interface
+
+        Ei= system.potential_energy+ system.kinetic_energy+ system.jacobi_potential_energy
+        energy=[]
+
+        dmin = (particle_set[0].position-particle_set[1].position).length()
+        tmin = 0|units.Myr
+        d = [] | units.kpc
+        t = [] | units.Myr
+        d.append(dmin)
+        t.append(self.time)
+        while (self.time < self.t_end-self.dt_bridge/2):
+            self.time += self.dt_bridge
+            system.evolve_model(self.time)
+            self.noinertial_to_inertial(particle_rot, particle_set)
+
+            Ef= system.potential_energy+ system.kinetic_energy+ system.jacobi_potential_energy
+            dje= (Ef-Ei)/Ei
+            energy.append(dje)
+
+            d.append((particle_set[0].position-particle_set[1].position).length())
+            t.append(self.time)
+            if d[-1]<dmin:
+                dmin = d[-1]
+                tmin = self.time
+            
+            x = particle_set.x
+            y = particle_set.y
+            write_set_to_file(particle_set.savepoint(self.time), filename, "hdf5")
+
+            
+        print "minimum", tmin.in_(units.Myr), dmin.in_(units.parsec)
+        bar_angle= self.bar_phase + (self.omega_bar*self.time)
+        spiral_angle= self.spiral_phase +  (self.omega_spiral*self.time)
+        
+           
+        return self.time, particle_set[0].x.value_in(units.kpc),  particle_set[0].y.value_in(units.kpc),\
+           particle_set[0].z.value_in(units.kpc), particle_set[0].vx.value_in(units.kms), \
+           particle_set[0].vy.value_in(units.kms), particle_set[0].vz.value_in(units.kms), \
+           bar_angle , spiral_angle, t, d
+
+def Sun_and_M67_in_the_Galaxy():
 
     bodies = Particles(2)
     Sun = bodies[0]
     v_LSR = (-10, 5.2, 7.2) | units.kms
     Sun.mass = 1|units.MSun
-    Sun.position = (8.4, 0.0, 0.0) | units.kpc
-    Sun.velocity = (-10.1, 235.5, 7.5) | units.kms # SPZ2009
+    Sun.radius = 1|units.RSun
+    Sun.position = (8.4, 0.0, 0.017) | units.kpc
+    Sun.velocity = (-11.4, 232, 7.41) | units.kms # SPZ2009
 
     M67 = bodies[1]
     M67.mass = 50000 | units.MSun
+    M67.radius = 3 | units.parsec
     M67.position = Sun.position + ((0.766, 0.0, 0.49) |units.kpc) 
-    M67.velocity = Sun.velocity + ((31.92, -21.66, -8.71) |units.kms)
+    M67.velocity = Sun.velocity + ((31.92, -21.66, -8.87) |units.kms)
 
-    Sun.velocity *= -1
-    M67.velocity *= -1
-
-    converter = nbody_system.nbody_to_si(bodies.mass.sum(), Sun.x)
-
-    sunandm67 = ph4(converter)
-    sunandm67.particles.add_particle(bodies)
-    channel_from_sunandm67 = sunandm67.particles.new_channel_to(bodies)
-
-    gravity = bridge.Bridge()
-    gravity.add_system(sunandm67, (MilkyWay_galaxy(),) )
-    dt = 0.1|units.Myr
-    gravity.timestep = dt 
+    bodies.velocity *= -1
     
-    filename="sunandM67.hdf5"
-    write_set_to_file(bodies.savepoint(0.0 | t_end.unit),
-                      filename, "hdf5", append_to_file=False)
+    simulation_time= 4600. |units.Myr
+    dt_bridge= 5 | units.Myr
+    OS= 20 |(units.kms/units.kpc)
+    OB= 40 |(units.kms/units.kpc)
+    A= 1300 |(units.kms**2/units.kpc)
+    M= 1.4e10 |units.MSun
+    m=2
+    phi_bar, phi_sp= -0.34906, -0.34906
+    inte= IntegrateOrbit(
+            t_end= simulation_time, 
+            dt_bridge= dt_bridge, 
+            phase_bar= phi_bar, phase_spiral= phi_sp, 
+            omega_spiral= OS, omega_bar= OB, 
+            amplitude= A, m=m, mass_bar= M )
 
-    Etot_init = gravity.kinetic_energy + gravity.potential_energy
-    Etot_prev = Etot_init
+    MW= inte.galaxy()
+    print MW.parameters
+    print MW.get_phi21()
 
-    t_end = 4.56|units.Gyr
-    time = 0 | units.yr
-    while time < t_end:
-        time += 10*dt
+    print "Backwards integration"
+    time, xf, yf, zf, vxf, vyf, vzf, bar_angle, spiral_angle, t1, d1= inte.get_pos_vel_and_orbit(bodies)
+    print "Birth position of the Sun:", xf, yf, zf, vxf, vyf, vzf
+    print "---"
+    print 'time after backward integration:', time
 
-        gravity.evolve_model(time)
-        channel_from_sunandm67.copy()
-        write_set_to_file(bodies.savepoint(time), filename, "hdf5")
+    colors = get_distinct(4)
+    figure = pyplot.figure(figsize=(16, 12))
+    ax = pyplot.gca()
+    ax.minorticks_on() # switch on the minor ticks
+    ax.locator_params(nbins=3)
 
-        Ekin = gravity.kinetic_energy 
-        Epot = gravity.potential_energy
-        Etot = Ekin + Epot
-        print "T=", time, "M=", bodies.mass.sum(), 
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot 
-        Etot_prev = Etot
-    gravity.stop()
+    x_label = "t [Gyr]"
+    y_label = "d [kpc]"
+    pyplot.xlabel(x_label)
+    pyplot.ylabel(y_label)
+    pyplot.plot(-t1.value_in(units.Gyr), d1.value_in(units.kpc), lw=3, c=colors[0])
+    pyplot.ylim(0, 6)
+    pyplot.xlim(-5, 0)
+    pyplot.savefig("sun_and_M67")
+    pyplot.show()
     
-    
-def new_option_parser():
-   
-    from amuse.units.optparse import OptionParser
-    result = OptionParser()
-    result.add_option("-N", dest="Ncl", type="int",default = 100,
-                      help="number of stars [%default]")
-    result.add_option("-t", unit=units.Gyr,
-                      dest="t_end", type="float", default = 4.5|units.Gyr,
-                      help="end time of the simulation [%default]")
-    result.add_option("-n", dest="n_steps", type="float", default = 300,
-                      help="number of diagnostics output steps [%default]")
-    result.add_option("-m", unit=units.parsec,
-                      dest="mcl", type="float", default = 10**7|units.MSun,
-                      help="cluster mass [%default]")
-    result.add_option("-r", unit=units.parsec,
-                      dest="rcl", type="float", default = 100|units.parsec,
-                      help="cluster half-mass radius [%default]")
-    result.add_option("-R", unit=units.kpc,
-                      dest="Rgal", type="float", default = 8.5|units.kpc,
-                      help="distance to the GC [%default]")
-    result.add_option("-v", unit=units.parsec,
-                      dest="vgal", type="float", default = 100|units.kms,
-                      help="orbital velocity of the CDG [%default]")
-    result.add_option("-W", dest="W0", type="float", default = 7.0,
-               help="Dimensionless depth of the King potential (W0) [%default]")
-    return result
+    """
+    from matplotlib import pyplot
+    from amuse.plot import scatter, plot
+    plot(-1*t1, d1, c = "k")
+    pyplot.semilogy()
+    pyplot.show()
+    """
 
 if __name__ in ('__main__', '__plot__'):
     set_printing_strategy("custom", #nbody_converter = converter, 
-                          preferred_units = [units.MSun, units.RSun, units.yr], 
+                          preferred_units = [units.MSun, units.kpc, units.Myr], 
                           precision = 4, prefix = "", 
                           separator = " [", suffix = "]")
-    o, arguments  = new_option_parser().parse_args()
-    main(**o.__dict__)
+    Sun_and_M67_in_the_Galaxy()
 

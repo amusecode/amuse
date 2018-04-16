@@ -6,7 +6,6 @@ from prepare_figure import single_frame, figure_frame
 from distinct_colours import get_distinct
 
 def binned_mean_data(r, x):
-    R = [] 
     R = numpy.arange(0, r[-1], 0.1)
     X = numpy.zeros(len(R))
     N = numpy.zeros(len(R))
@@ -45,7 +44,7 @@ def plot_ionization_fraction(pos, xion):
 
 ###BOOKLISTSTART1###
 def generate_ism_initial_conditions(N, boxsize):
-    converter=nbody_system.nbody_to_si(10|units.MSun, 3|units.parsec)
+    converter = nbody_system.nbody_to_si(10|units.MSun, 3|units.parsec)
     ism = new_plummer_gas_model(N, converter)
     ism.flux = 0. | units.s**-1
     ism.xion = 0.0
@@ -56,7 +55,8 @@ def generate_ism_initial_conditions(N, boxsize):
     hydro.gas_particles.new_channel_to(ism).copy()
     hydro.stop()
     ism = ism.select(lambda r: r.length() < 0.5*boxsize,["position"])
-    print "Max density:", ism.rho.max().in_(units.MSun/units.parsec**3), ism.rho.max().in_(units.amu/units.cm**3)
+    print "Max density:", ism.rho.max().in_(units.MSun/units.parsec**3), \
+          ism.rho.max().in_(units.amu/units.cm**3)
     return ism
 ###BOOKLISTSTOP1###
 
@@ -88,11 +88,11 @@ def main(N, Lstar, boxsize, t_end):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int", default = 1000,
+    result.add_option("-N", dest="N", type="int", default = 10000,
                       help="number of gas particles [%default]")
     result.add_option("-t", unit=units.Myr,
                       type="float",
-                      dest="t_end", default = 0.4|units.Myr,
+                      dest="t_end", default = 1.0|units.Myr,
                       help="radiation time [%default]")
     result.add_option("-L", unit=units.LSun,
                       type="float",

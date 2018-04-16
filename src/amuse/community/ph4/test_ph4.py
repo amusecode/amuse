@@ -13,6 +13,7 @@ from time import time as wallclocktime
 from amuse.community.ph4.interface import ph4 as grav
 from amuse.units import nbody_system
 from amuse.units import units
+from amuse.units.quantities import zero
 
 from amuse import datamodel
 from amuse.datamodel import particle_attributes as pa
@@ -35,7 +36,13 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy,
     Q = -T/U
     com = pa.center_of_mass(gravity.particles)
     comv = pa.center_of_mass_velocity(gravity.particles)
-    dcen,rcore,rhocore = pa.densitycentre_coreradius_coredens(gravity.particles)
+    if N > 15:
+        dcen,rcore,rhocore \
+            = pa.densitycentre_coreradius_coredens(gravity.particles)
+    else:
+        dcen = com
+        rcore = zero
+        rhocore = zero
     cmx,cmy,cmz = dcen
     lagr,mf = pa.LagrangianRadii(gravity.particles, cm=dcen)  # no units!
 

@@ -51,6 +51,19 @@ void jdata::setup_mpi(MPI::Intracomm comm)
 }
 #endif
 
+int jdata::define_domain(int& j_start, int& j_end)
+{
+    // Define the j-domains for this process.
+
+    int n = nj/mpi_size;
+    if (n*mpi_size < nj) n++;
+    j_start = mpi_rank*n;
+    j_end = j_start + n;
+    if (mpi_rank == mpi_size-1) j_end = nj;
+    if (j_start >= nj) j_end = j_start;
+    return n;		// only some callers need this
+}
+
 void jdata::setup_gpu()
 {
     const char *in_function = "jdata::setup_gpu";
@@ -330,7 +343,27 @@ void jdata::remove_particle(int j)
             sched->cleanup();
             sched->initialize();
         }
-    } 
+    }
+
+    // Clean up -- leave mostly zeros behind in location nj.
+
+    id[nj] = -1;
+    name[nj] = ToString(-1);
+    time[nj] = 0;
+    timestep[nj] = 0;
+    mass[nj] = 0;
+    radius[nj] = 0;
+    pot[nj] = 0;
+    nn[nj] = 0;
+    dnn[nj] = 0;
+    for (int k = 0; k < 3; k++) {
+	pos[nj][k] = 0;
+	vel[nj][k] = 0;
+	acc[nj][k] = 0;
+	jerk[nj][k] = 0;
+	pred_pos[nj][k] = 0;
+	pred_vel[nj][k] = 0;
+    }
 
     if (1)  {
 
@@ -543,13 +576,8 @@ real jdata::get_pot(bool reeval)		// default = false
 	// Compute the partial potentials by j-domain, then combine to
 	// get the total and distribute to all processes.
 
-	// Define the j-domains.
-
-	int n = nj/mpi_size;
-	if (n*mpi_size < nj) n++;
-	int j_start = mpi_rank*n;
-	int j_end = j_start + n;
-	if (mpi_rank == mpi_size-1) j_end = nj;
+	int j_start, j_end;
+	define_domain(j_start, j_end);
 
 	real mypot = 0;
 
@@ -661,14 +689,8 @@ void jdata::predict_all(real t,
     // process unless full_range = true (only on initialization).
 
     int j_start = 0, j_end = nj;
-
-    if (!full_range) {
-	int n = nj/mpi_size;
-	if (n*mpi_size < nj) n++;
-	j_start = mpi_rank*n;
-	j_end = j_start + n;
-	if (mpi_rank == mpi_size-1) j_end = nj;
-    }
+    if (!full_range)
+	define_domain(j_start, j_end);
 
     for (int j = j_start; j < j_end; j++) {
 	real dt = t - time[j];
