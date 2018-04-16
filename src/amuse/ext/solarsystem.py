@@ -226,7 +226,7 @@ def get_sun_and_planets(delta_JD=0.|units.day):
                   'Earth',
                   'Mars',
                   'Jupiter',
-                  'Satrun',
+                  'Saturn',
                   'Uranus',
                   'Neptune']
   
