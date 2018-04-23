@@ -44,7 +44,7 @@ def plot_ionization_fraction(pos, xion):
 
 ###BOOKLISTSTART1###
 def generate_ism_initial_conditions(N, boxsize):
-    converter=nbody_system.nbody_to_si(10|units.MSun, 3|units.parsec)
+    converter = nbody_system.nbody_to_si(10|units.MSun, 3|units.parsec)
     ism = new_plummer_gas_model(N, converter)
     ism.flux = 0. | units.s**-1
     ism.xion = 0.0
@@ -55,7 +55,8 @@ def generate_ism_initial_conditions(N, boxsize):
     hydro.gas_particles.new_channel_to(ism).copy()
     hydro.stop()
     ism = ism.select(lambda r: r.length() < 0.5*boxsize,["position"])
-    print("Max density:", ism.rho.max().in_(units.MSun/units.parsec**3), ism.rho.max().in_(units.amu/units.cm**3))
+    print("Max density:", ism.rho.max().in_(units.MSun/units.parsec**3), \
+          ism.rho.max().in_(units.amu/units.cm**3))
     return ism
 ###BOOKLISTSTOP1###
 

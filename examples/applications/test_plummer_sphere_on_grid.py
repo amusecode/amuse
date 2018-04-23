@@ -313,7 +313,7 @@ class CalculateSolutionIn3D(object):
         result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.3
-        result.set_grav_mean_rho(self.rho_mean.value_in(density))
+        result.set_grav_mean_rho(self.rho_mean)
         return result
         
     def new_instance_of_athena_code(self):

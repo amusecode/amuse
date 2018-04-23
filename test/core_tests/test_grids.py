@@ -581,6 +581,13 @@ class TestGrids(amusetest.TestCase):
         subgrid=grid[6:0:-2]
         self.assertEquals(subgrid[-2].a, subgrid.a[ -2 ])
 
+    def test47(self):
+        grid = datamodel.Grid()
+        grid.mass=12.
+        self.assertEquals(grid[...].mass,12.)
+        self.assertEquals(grid.mass,12.)
+
+
 
 class TestGridFactories(amusetest.TestCase):
     def test1(self):

@@ -1631,6 +1631,126 @@ class TestGridWithBinding6(amusetest.TestCase):
 
 #        self.assertEquals(original.storage[1],'5')
         self.assertEquals(grid[1].mass, original.storage[1])
+
+class TestGridWithBinding7(amusetest.TestCase):
+    class TestInterface(object):
+        
+        shape = ()
+        
+        def __init__(self):
+            self.storage = 123.
+            
+        def get_range(self):
+            return ()
+                
+        def get_a(self):
+            return self.storage
+            
+        def set_a(self, value):
+            self.storage = value
+        
+    def test1(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_a',(), (units.kg,))
+        handler.add_method('set_a',(units.kg,), ())
+                      
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid',)
+        handler.add_setter('grid', 'set_a', names = ('mass',))
+        handler.add_getter('grid', 'get_a', names = ('mass',))
+        
+        grid = instance.grid
+        self.assertEquals(grid.mass, 123 | units.kg)
+
+    def test2(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_a',(), (units.kg,))
+        handler.add_method('set_a',(units.kg,), ())
+                      
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid',)
+        handler.add_setter('grid', 'set_a', names = ('mass',))
+        handler.add_getter('grid', 'get_a', names = ('mass',))
+        
+        grid = instance.grid
+
+        grid.mass=321| units.kg
+        self.assertEquals(original.storage,321)
+        self.assertEquals(grid.mass, 321 | units.kg)
+
+class TestGridWithBinding8(amusetest.TestCase):
+    class TestInterface(object):
+        
+        shape = ()
+        
+        def __init__(self):
+            self.storage1 = 12.
+            self.storage2 = 123.
+            
+        def get_range(self):
+            return ()
+                
+        def get_a(self):
+            return self.storage1, self.storage2
+            
+        def set_a(self, value1, value2):
+            self.storage1 = value1
+            self.storage2 = value2
+        
+    def test1(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_a',(), (units.kg,units.m))
+        handler.add_method('set_a',(units.kg,units.m), ())
+                      
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid',)
+        handler.add_setter('grid', 'set_a', names = ('mass','l'))
+        handler.add_getter('grid', 'get_a', names = ('mass','l'))
+        
+        grid = instance.grid
+        self.assertEquals(grid.mass, 12 | units.kg)
+        self.assertEquals(grid.l, 123 | units.m)
+
+    def test2(self):
+        original = self.TestInterface()
+        
+        instance = interface.InCodeComponentImplementation(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_a',(), (units.kg,units.m))
+        handler.add_method('set_a',(units.kg,units.m), ())
+                      
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid',)
+        handler.add_setter('grid', 'set_a', names = ('mass','l'))
+        handler.add_getter('grid', 'get_a', names = ('mass','l'))
+        
+        grid = instance.grid
+
+        grid1=grid.copy()
+
+        grid1.mass=321| units.kg
+        grid1.l=32| units.m
+        
+        grid1.new_channel_to(grid).copy_all_attributes()
+        
+        self.assertEquals(original.storage1,321)
+        self.assertEquals(original.storage2,32)
+        self.assertEquals(grid.mass, 321 | units.kg)
+        self.assertEquals(grid.l, 32 | units.m)
+        
         
 
 class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):

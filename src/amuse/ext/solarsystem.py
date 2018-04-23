@@ -156,6 +156,15 @@ def get_sun_and_planets(delta_JD=0.|units.day):
                   5.68319e26,
                   86.8103e24,
                   102.41e24] | units.kg
+  #radius
+  planets.radius = [2439.7,
+                    6051.8,
+                    6378.1,
+                    3396.2,
+                    71492,
+                    60268,
+                    25559,
+                    24764] | units.km
   
   # eccentricity
   planets_ecc = [2.056263501026885E-01,
@@ -226,7 +235,7 @@ def get_sun_and_planets(delta_JD=0.|units.day):
                   'Earth',
                   'Mars',
                   'Jupiter',
-                  'Satrun',
+                  'Saturn',
                   'Uranus',
                   'Neptune']
   

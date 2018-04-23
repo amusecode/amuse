@@ -65,7 +65,9 @@ class TestPlot(amusetest.TestCase):
 
         self.assertEquals("[Myr]", self.xaxis().get_label_text())
         self.assertEquals("[AU]", self.yaxis().get_label_text())
-        self.assertEquals((0., 0.0001), pyplot.xlim())
+        self.assertAlmostRelativeEquals(    0., pyplot.xlim()[0], 2)
+        self.assertAlmostRelativeEquals(0.0001, pyplot.xlim()[1], 1)
+       
 
     def test4(self):
         """ Test text in a plot """
@@ -95,8 +97,7 @@ class TestPlot(amusetest.TestCase):
         y = numpy.linspace(0, 200, 100) | units.RSun
         yerr = [2e5]*len(y) | units.km
 
-        line = aplot.errorbar(x, y, yerr=yerr)
-
+        line = aplot.errorbar(x, y, yerr=yerr, capsize = 10)
         points, caps, bars = line
         bottoms, tops = caps
         error_height = tops.get_ydata()[0] - bottoms.get_ydata()[0]

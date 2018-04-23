@@ -293,7 +293,10 @@ if __name__ == "__main__":
                    c=color[3], s=150, marker='^',
                    edgecolor='k', zorder=2)
 
-    save_file = 'merge_two_stars_sph_evolve.png'
+    ax = pyplot.gca()
+    ax.tick_params(axis='both', which='both', direction='in')
+
+    save_file = 'merge_two_stars_sph_evolve.pdf'
     pyplot.savefig(save_file)
     print('\nSaved figure in file', save_file,'\n')
     pyplot.show()

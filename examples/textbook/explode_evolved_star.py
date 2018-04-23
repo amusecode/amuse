@@ -27,7 +27,6 @@ def setup_stellar_evolution_model():
                                    "super_giant_stellar_structure.pkl")
     if os.path.exists(out_pickle_file):
         return out_pickle_file
-    
     print("Creating initial conditions from a MESA stellar evolution model...")
 
     stellar_evolution = MESA(redirection = "none")

@@ -194,9 +194,9 @@ class CalculateCloudShock(object):
 def main():
     number_of_grid_points = 40
     notc_string = ['athena', 'capreole', 'mpiamrvac']
+    notc_string = [notc_string[0]]
 
     for name_of_the_code in notc_string:
-    #name_of_the_code = notc_string[0]
         model = CalculateCloudShock(
             number_of_grid_points = number_of_grid_points,
             number_of_workers = 4,
@@ -220,7 +220,7 @@ def main():
         cax = plot.imshow(rho, origin = 'lower', cmap='jet', vmin=0.0, vmax=0.5)
         if 'athena' in name_of_the_code:
             cbar = pyplot.colorbar(cax, orientation='horizontal')
-        cbar.set_label('Relative normalized density')
+        cbar.set_label('Density')
         figure.savefig('cloudshock_{0}_{1}.png'.format(name_of_the_code, number_of_grid_points))
    
         #pyplot.show()

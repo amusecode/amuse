@@ -28,7 +28,7 @@
  *  main  --
  *-----------------------------------------------------------------------------
  */
-main(int argc, char ** argv)
+int main(int argc, char ** argv)
 {
     real  t = 0;   // default: first snapshot at time = 0
     bool  c_flag = FALSE;

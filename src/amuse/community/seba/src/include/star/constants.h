@@ -131,11 +131,14 @@ enum boolean_parameter {hyper_critical,
 		     };
 
 enum super_nova_kick_distribution {internally_decided_velocity_kick,
-                                   no_velocity_kick,
+                   no_velocity_kick,
 				   Maxwellian_velocity_kick,
 				   Paczynski_velocity_kick,
+                   Hobbs_velocity_kick,
+                   Arzoumanian_velocity_kick,
+                   Verbunt_velocity_kick,
 				   delta_function_velocity_kick
-                                  };
+                   };
 
 enum accretion_parameter {black_hole_accretion_limit,
 			  neutron_star_accretion_limit,
@@ -197,7 +200,7 @@ class stellar_evolution_constants {  // Easy to have a name for compiling.
   public:
   stellar_evolution_constants() {
     pk = internally_decided_velocity_kick;
-    v_disp = 600;
+    v_disp = 600;    
   }
 
   super_nova_kick_distribution pk;
