@@ -7,7 +7,7 @@
 #
 
 #APPVER=2.5.4
-APPVER=2.7.13
+APPVER=2.7.14
 #APPVER=2.6.5
 #APPVER=2.7.1
 APPFILE=Python-${APPVER}.tar.bz2
@@ -18,7 +18,7 @@ URL=https://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
 OPENSSLVERSION="1.0.2m"
 OPENSSLFILE=openssl-${OPENSSLVERSION}.tar.gz 
-OPENSSLURL=http://mirrors.ibiblio.org/openssl/source/old/1.0.2/${OPENSSLFILE}
+OPENSSLURL=https://www.openssl.org/source/old/1.0.2/${OPENSSLFILE}
 OPENSSLDIR=openssl-${OPENSSLVERSION}
 
 if [ -z ${PREFIX} ]; then
@@ -134,6 +134,7 @@ if [ $UNAME == 'Darwin' ] ; then
 else
 	${SOURCE_DIR}/${APP_DIR}/configure \
 		--prefix=${PREFIX} \
+		--libdir=${PREFIX}/lib \
 		--enable-shared \
 	    --enable-unicode=ucs4\
 		--program-suffix=.exe ;
