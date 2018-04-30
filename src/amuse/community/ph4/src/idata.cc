@@ -810,7 +810,8 @@ void idata::set_list(int jlist[], int njlist)
 	if (jlist[jj] < jdat->nj) ilist[ni++] = jlist[jj];
 }
 
-void idata::advance(real tnext)
+void idata::advance(real tnext,
+		    bool zero_step_mode)	// default = false
 {
     const char *in_function = "idata::advance";
     if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
@@ -831,7 +832,8 @@ void idata::advance(real tnext)
 
     predict(tnext);
     get_acc_and_jerk();			// compute iacc, ijerk
-    correct(tnext);			// --> new ipos, ivel
+    if (!zero_step_mode)
+	correct(tnext);			// --> new ipos, ivel
     scatter();				// j pos, vel <-- ipos, ivel
  					// j acc, jerk <-- iacc, ijerk
 

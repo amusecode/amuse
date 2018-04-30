@@ -397,7 +397,7 @@ class Multiples(object):
         count_resolve_encounter = 0
         count_ignore_encounter = 0
         
-        while time < end_time:
+        while time <= end_time:		# the <= here allows zero-length steps
 
             if self.global_debug > 1:
                 print ''
@@ -408,18 +408,19 @@ class Multiples(object):
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
            
-            # JB, modified this, in Bonsai we can take a 0 time-step
-            # to detect multiples. That would cause the newtime ==
-            # time to evaluate to true when there are multiples
-            # detected and break out of the evaluate loop before the
-            # time reached end_time
+            # JB modified this: in Bonsai we can take a zero-length
+            # time step to detect multiples. That would cause the
+            # newtime == time to evaluate to true when there are
+            # multiples detected and break out of the evaluate loop
+            # before the time reached end_time.  Same is now possible
+            # with ph4 (SLWM).
 
             if newtime == time and (stopping_condition.is_set() == False):
                 break
             
             #self.gravity_code.evolve_model(end_time)
             time = newtime
-            
+
             if stopping_condition.is_set():
 
                 # Synchronize everything for now.  Later we can
