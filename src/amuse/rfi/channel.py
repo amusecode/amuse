@@ -1066,7 +1066,7 @@ class AbstractMessageChannel(OptionalAttributes):
         return True
 
     @option(type='boolean', sections=("channel",))
-    def try_to_locate_worker(self):
+    def check_worker_location(self):
         return True
     
     @option(type="int", sections=("channel",))
@@ -1110,22 +1110,33 @@ Please do a 'make clean; make' in the root directory.
     def get_full_name_of_the_worker(self, type):
 
         if os.path.isabs(self.name_of_the_worker):
-            if os.path.exists(self.name_of_the_worker):
-                if not os.access(self.name_of_the_worker, os.X_OK):
+            full_name_of_the_worker=self.name_of_the_worker
+ 
+            if not self.check_worker_location:
+                return full_name_of_the_worker
+            
+            if os.path.exists(full_name_of_the_worker):
+                if not os.access(self.full_name_of_the_worker, os.X_OK):
                     raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(self.name_of_the_worker))
        
                 return self.name_of_the_worker
         
         exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
-        
+
+        if not self.check_worker_location:
+            if len(self.worker_code_directory) > 0:
+                full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
+                full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+                return full_name_of_the_worker
+            else:
+                raise Exception("Must provide a worker_code_directory")
+
         tried_workers = []
         found = False
                 
         if len(self.worker_code_directory) > 0:
             full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            if not self.try_to_locate_worker:
-                return full_name_of_the_worker
             found = os.path.exists(full_name_of_the_worker)
             if not found:
                 tried_workers.append(full_name_of_the_worker)
@@ -1135,8 +1146,6 @@ Please do a 'make clean; make' in the root directory.
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
             full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            if not self.try_to_locate_worker:
-                return full_name_of_the_worker
             found = os.path.exists(full_name_of_the_worker)
             if not found:
                 tried_workers.append(full_name_of_the_worker)
@@ -1151,8 +1160,6 @@ Please do a 'make clean; make' in the root directory.
             full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
             
-            if not self.try_to_locate_worker:
-                return full_name_of_the_worker
             found = os.path.exists(full_name_of_the_worker)
             if not found:
                 raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
