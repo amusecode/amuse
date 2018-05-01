@@ -1,8 +1,8 @@
 Installing on Ubuntu
 ====================
 
-Installing on Ubuntu version 18.04
--------------------------------------
+Installing on Ubuntu (up to date for version 18.04)
+---------------------------------------------------
 
 In this section we assume a default Ubuntu desktop installation.
 
