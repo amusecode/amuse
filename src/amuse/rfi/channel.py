@@ -1061,10 +1061,12 @@ class AbstractMessageChannel(OptionalAttributes):
     def custom_args(self):
         return '--hold -e gdb --args'
     
-    
-        
     @option(type='boolean', sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
+        return True
+
+    @option(type='boolean', sections=("channel",))
+    def try_to_locate_worker(self):
         return True
     
     @option(type="int", sections=("channel",))
@@ -1122,6 +1124,8 @@ Please do a 'make clean; make' in the root directory.
         if len(self.worker_code_directory) > 0 and os.path.exists(self.worker_code_directory):
             full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+            if not self.try_to_locate_worker:
+                return full_name_of_the_worker
             found = os.path.exists(full_name_of_the_worker)
             if not found:
                 tried_workers.append(full_name_of_the_worker)
@@ -1131,6 +1135,8 @@ Please do a 'make clean; make' in the root directory.
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
             full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+            if not self.try_to_locate_worker:
+                return full_name_of_the_worker
             found = os.path.exists(full_name_of_the_worker)
             if not found:
                 tried_workers.append(full_name_of_the_worker)
@@ -1145,6 +1151,8 @@ Please do a 'make clean; make' in the root directory.
             full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
             
+            if not self.try_to_locate_worker:
+                return full_name_of_the_worker
             found = os.path.exists(full_name_of_the_worker)
             if not found:
                 raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
