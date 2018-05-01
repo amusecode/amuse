@@ -1108,7 +1108,7 @@ Please do a 'make clean; make' in the root directory.
 """.format(type(object).__name__))
 
     def get_full_name_of_the_worker(self, type):
-        
+
         if os.path.isabs(self.name_of_the_worker):
             if os.path.exists(self.name_of_the_worker):
                 if not os.access(self.name_of_the_worker, os.X_OK):
@@ -1120,8 +1120,8 @@ Please do a 'make clean; make' in the root directory.
         
         tried_workers = []
         found = False
-        
-        if len(self.worker_code_directory) > 0 and os.path.exists(self.worker_code_directory):
+                
+        if len(self.worker_code_directory) > 0:
             full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
             if not self.try_to_locate_worker:
