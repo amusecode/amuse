@@ -1115,11 +1115,13 @@ Please do a 'make clean; make' in the root directory.
             if not self.check_worker_location:
                 return full_name_of_the_worker
             
-            if os.path.exists(full_name_of_the_worker):
-                if not os.access(self.full_name_of_the_worker, os.X_OK):
-                    raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(self.name_of_the_worker))
+            if not os.path.exists(full_name_of_the_worker):
+                raise exceptions.CodeException("The worker path has been specified, but it is not found: \n{0}".format(full_name_of_the_worker))
+
+            if not os.access(full_name_of_the_worker, os.X_OK):
+                raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(full_name_of_the_worker))
        
-                return self.name_of_the_worker
+            return full_name_of_the_worker
         
         exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
 
