@@ -9,7 +9,7 @@ system will build most packages from source so installation may take a while.
 The packages in MacPorts support different *variants*, each *variant* is built
 differently. Below, with all installation commands we will specify the variant
 where needed. AMUSE is tested with gcc versions 4.3 up to 7. Below, we will use
-gcc 4.9.
+gcc 5.
 
 .. note::
     
@@ -40,11 +40,11 @@ All in one
 
 You can install all the packages described below in one go with::
 
-    > sudo port install gcc49
+    > sudo port install gcc5
     
     > sudo port install python27
-    > sudo port install openmpi-gcc49
-    > sudo port install fftw-3 +gcc49
+    > sudo port install openmpi-gcc5
+    > sudo port install fftw-3 +gcc5
     > sudo port install hdf5 gsl cmake gmp mpfr
     > sudo port install py27-numpy py27-h5py py27-nose py27-docutils 
     > sudo port install py27-mpi4py +openmpi
@@ -53,8 +53,8 @@ You can install all the packages described below in one go with::
 To make sure the right MacPorts compilers and python are set as default, do the
 following::
 
-    > sudo port select --set mpi openmpi-gcc49-fortran
-    > sudo port select --set gcc mp-gcc49
+    > sudo port select --set mpi openmpi-gcc5-fortran
+    > sudo port select --set gcc mp-gcc5
     > sudo port select --set python python27
     > sudo port select --set nosetests nosetests27
     
@@ -95,17 +95,17 @@ GCC
 ---
 By default MacPorts uses the XCode compilers, these compilers have no support
 for fortran, a MacPorts gcc compiler set needs to be installed. We suggest
-installing gcc 4.9 as the most reliable option:
+installing gcc 5 as the most reliable option:
 
 .. code-block:: sh
     
-    > sudo port install gcc49
+    > sudo port install gcc5
     
 .. note::
     
     If you have installed a different version of gcc, you need to select
     a different variant of the packages below. To select a different variant
-    replace **+gcc49** with **+gcc7**, **+gcc6** or any other version
+    replace **+gcc5** with **+gcc7**, **+gcc6** or any other version
     matching your gcc installation. Note, apple-gcc versions will not work,
     these do not support fortran.
 
@@ -126,7 +126,7 @@ openmpi.
 
 To install openmpi, do::
 
-     > sudo port install openmpi +gcc49
+     > sudo port install openmpi +gcc5
 
 HDF5
 ----
@@ -140,7 +140,7 @@ FFTW-3
 MacPorts comes with a FFTW and FFTW-3 package, for AMUSE we need FFTW-3.
 FFTW-3 can be installed with::
 
-    > sudo port install fftw-3 +gcc49
+    > sudo port install fftw-3 +gcc5
 
 GSL
 ---
@@ -194,8 +194,8 @@ you can install it with::
     To make sure the right MacPorts compilers and python are set as default, do
     the following::
 
-    > sudo port select --set mpi openmpi-gcc49-fortran
-    > sudo port select --set gcc mp-gcc49
+    > sudo port select --set mpi openmpi-gcc5-fortran
+    > sudo port select --set gcc mp-gcc5
     > sudo port select --set python python27
     > sudo port select --set nosetests nosetests27
 
