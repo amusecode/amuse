@@ -68,10 +68,10 @@ packages as part of the system.
     2b. If you have ifort and/or icc, or if you encounter problems with NetCDF 
     (optional dependency) you may need to set also:
 
-        ```bash
-        export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
-        export CPATH=${PREFIX}/include:${CPATH}
-        ```
+    ```bash
+    export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
+    export CPATH=${PREFIX}/include:${CPATH}
+    ```
 
 3. Download and install python
 
