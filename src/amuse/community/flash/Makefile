@@ -41,6 +41,7 @@ $(CODEDIR)/makefile:
 	@echo "*** Unfortunately due to flash download restrictions;"
 	@echo "*** FLASH CANNOT be download automatically by this makefile"
 	@echo "*** Please register and download flash yourself"
+	@echo "*** You can do so at http://flash.uchicago.edu/site/flashcode/coderequest/"
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -52,6 +53,7 @@ download:
 	@echo "*** Unfortunately due to flash download restrictions;"
 	@echo "*** FLASH CANNOT be download automatically by this makefile"
 	@echo "*** Please register and download flash yourself"
+	@echo "*** You can do so at http://flash.uchicago.edu/site/flashcode/coderequest/"
 	@echo ""
 	@make -s --no-print-directory -C . raise_error
 

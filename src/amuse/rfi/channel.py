@@ -1061,10 +1061,12 @@ class AbstractMessageChannel(OptionalAttributes):
     def custom_args(self):
         return '--hold -e gdb --args'
     
-    
-        
     @option(type='boolean', sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
+        return True
+
+    @option(type='boolean', sections=("channel",))
+    def check_worker_location(self):
         return True
     
     @option(type="int", sections=("channel",))
@@ -1106,20 +1108,35 @@ Please do a 'make clean; make' in the root directory.
 """.format(type(object).__name__))
 
     def get_full_name_of_the_worker(self, type):
-        
+
         if os.path.isabs(self.name_of_the_worker):
-            if os.path.exists(self.name_of_the_worker):
-                if not os.access(self.name_of_the_worker, os.X_OK):
-                    raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(self.name_of_the_worker))
+            full_name_of_the_worker=self.name_of_the_worker
+ 
+            if not self.check_worker_location:
+                return full_name_of_the_worker
+            
+            if not os.path.exists(full_name_of_the_worker):
+                raise exceptions.CodeException("The worker path has been specified, but it is not found: \n{0}".format(full_name_of_the_worker))
+
+            if not os.access(full_name_of_the_worker, os.X_OK):
+                raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(full_name_of_the_worker))
        
-                return self.name_of_the_worker
+            return full_name_of_the_worker
         
         exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
-        
+
+        if not self.check_worker_location:
+            if len(self.worker_code_directory) > 0:
+                full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
+                full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+                return full_name_of_the_worker
+            else:
+                raise Exception("Must provide a worker_code_directory")
+
         tried_workers = []
         found = False
-        
-        if len(self.worker_code_directory) > 0 and os.path.exists(self.worker_code_directory):
+                
+        if len(self.worker_code_directory) > 0:
             full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
             found = os.path.exists(full_name_of_the_worker)

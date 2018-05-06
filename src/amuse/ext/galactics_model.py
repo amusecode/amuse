@@ -6,7 +6,7 @@ from amuse.datamodel.particles import ParticlesSuperset
 def _new_galactics_model(halo_number_of_particles, unit_system_converter=None, do_scale=False, verbose=False, **keyword_arguments):
 
     code=keyword_arguments.pop("code")
-    instance = code(unit_converter=unit_system_converter)
+    instance = code(unit_converter=unit_system_converter, redirection="none" if verbose else "null")
     instance.parameters.halo_number_of_particles = halo_number_of_particles
     for (key, value) in keyword_arguments.iteritems():
         setattr(instance.parameters, key, value)
