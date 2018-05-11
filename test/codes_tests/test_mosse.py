@@ -32,84 +32,93 @@ class TestMPIInterface(TestWithMPI):
             self.t_ms = 0.0
             self.sse_age = 0.0
         
-    def initialize_module_with_default_parameters(self, sse):
+    def initialize_module_with_default_parameters(self, mosse):
         metallicity = 0.02
         
         neta = 0.5
         bwind =  0.0
-        hewind =  0.5
-        sigma =  190.0
+        hewind =  1.0
+        sigma1 =  265.0
+        sigma2 =  7.0
         
-        ifflag = 0
+        ifflag =  0
         wdflag =  1
-        bhflag =  0 
-        nsflag =  1
+        bhflag =  1 
+        nsflag =  3
+        piflag =  1
         mxns =  3.0
-        
+        idum = 29769
+
         pts1 = 0.05
         pts2 = 0.01
         pts3 = 0.02
     
     
-        status = sse.initialize(metallicity,
-            neta, bwind, hewind, sigma,
-            ifflag, wdflag, bhflag, nsflag, mxns,
+        status = mosse.initialize(metallicity,
+            neta, bwind, hewind, sigma1, sigma2,
+            ifflag, wdflag, bhflag, nsflag, piflag, mxns, idum,
             pts1, pts2, pts3)
         
     def test1(self):
-        sse = MOSSEInterface()
+        mosse = MOSSEInterface()
         
         metallicity = 0.02
         
         neta = 0.5
         bwind =  0.0
-        hewind =  0.5
-        sigma =  190.0
+        hewind =  1.0
+        sigma1 =  265.0
+        sigma2 =  7.0
         
         ifflag = 0
         wdflag =  1
-        bhflag =  0 
-        nsflag =  1
+        bhflag =  1 
+        nsflag =  3
+        piflag =  1
         mxns =  3.0
+        idum = 29769
         
         pts1 = 0.05
         pts2 = 0.01
         pts3 = 0.02
     
     
-        status = sse.initialize(metallicity,
-            neta, bwind, hewind, sigma,
-            ifflag, wdflag, bhflag, nsflag, mxns,
+        status = mosse.initialize(metallicity,
+            neta, bwind, hewind, sigma1, sigma2,
+            ifflag, wdflag, bhflag, nsflag, piflag, mxns, idum,
             pts1, pts2, pts3)
             
         self.assertEqual(status,0)
         
-        sse.stop()
+        mosse.stop()
         
     def test2(self):
-        sse = MOSSEInterface()
+        mosse = MOSSEInterface()
         
         metallicity = 0.02
         
         neta = 0.5
         bwind =  0.0
-        hewind =  0.5
-        sigma =  190.0
+        hewind =  1.0
+        sigma1 =  265.0
+        sigma2 =  7.0
         
         ifflag = 0
         wdflag =  1
-        bhflag =  0 
-        nsflag =  1
+        bhflag =  1 
+        nsflag =  3
+        piflag =  1
         mxns =  3.0
-        
+        idum = 29769
+
         pts1 = 0.05
         pts2 = 0.01
         pts3 = 0.02
+
     
-    
-        status = sse.initialize(metallicity,
-            neta, bwind, hewind, sigma,
-            ifflag, wdflag, bhflag, nsflag, mxns,
+        status = mosse.initialize(metallicity,
+            neta, bwind, hewind, sigma1, sigma2,
+            ifflag, wdflag, bhflag, nsflag, piflag, mxns, idum,
             pts1, pts2, pts3)
         self.assertEqual(status,0)
         new_state = self.state()
@@ -117,7 +126,7 @@ class TestMPIInterface(TestWithMPI):
         new_state.zams_mass = 1.0
         new_state.stellar_type = 1.0
         new_state.age = 1e-06
-        result = sse.evolve_star(
+        result = mosse.evolve_star(
             new_state.stellar_type, 
             new_state.zams_mass, new_state.mass, new_state.radius, 
             new_state.luminosity, new_state.core_mass, new_state.core_radius,
@@ -154,25 +163,25 @@ class TestMPIInterface(TestWithMPI):
             self.assertAlmostRelativeEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
         self.assertEquals(updated_state.age, 1e-06)
-        dt = sse.get_time_step(updated_state.stellar_type,
+        dt = mosse.get_time_step(updated_state.stellar_type,
             updated_state.zams_mass, 
             updated_state.age, 
             updated_state.mass, 
             updated_state.t_ms, 
             updated_state.epoch)
         self.assertAlmostEqual(dt, 550.1565, 2)
-        sse.stop()
+        mosse.stop()
      
     def test3(self):
-        sse = MOSSEInterface()
-        self.initialize_module_with_default_parameters(sse)  
+        mosse = MOSSEInterface()
+        self.initialize_module_with_default_parameters(mosse)  
         types = [1,1,1]
         masses = [10,5,4]
         radii = [5.0, 2.0, 1.0]
         luminosity = core_mass = core_radius =  envelope_mass =\
         envelope_radius =  spin = epoch = t_ms = [0.0,0.0,0.0]
         sse_age = age = [1e-6, 1e-06, 1e-6]
-        result = sse.evolve_star(
+        result = mosse.evolve_star(
             types, 
             masses, 
             masses, 
@@ -191,11 +200,11 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(result['mass'][0], 10)
         self.assertEquals(result['mass'][1], 5)
         self.assertAlmostEqual(result['mass'][2], 4.0, 2)
-        sse.stop()
+        mosse.stop()
         
     def test4(self):
-        sse = MOSSEInterface()
-        self.initialize_module_with_default_parameters(sse) 
+        mosse = MOSSEInterface()
+        self.initialize_module_with_default_parameters(mosse) 
         types = [1 for x in range(1,4000)]
         masses = [1.0 + ((x / 4000.0) * 10.0) for x in range(1,4000)]
         radii = [1.0 for x in range(1,4000)]
@@ -204,7 +213,7 @@ class TestMPIInterface(TestWithMPI):
         t_ms = [0.0 for x in range(1,4000)]
         
         sse_age = age = [1e-06 for x in range(1,4000)]
-        result = sse.evolve_star(
+        result = mosse.evolve_star(
             types, 
             masses, 
             masses, 
@@ -221,21 +230,21 @@ class TestMPIInterface(TestWithMPI):
             age
         )
         self.assertEquals(len(result['mass']), 3999)
-        sse.stop()
+        mosse.stop()
 
         
-class TestMOSSE(TestWithMPI):
+class TestSSE(TestWithMPI):
     
     def test1(self):
-        sse = MOSSE()
-        sse.commit_parameters() 
+        mosse = MOSSE()
+        mosse.commit_parameters() 
         stars = Particles(1)
         star = stars[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        sse.particles.add_particles(stars)
-        from_sse_to_model = sse.particles.new_channel_to(stars)
+        mosse.particles.add_particles(stars)
+        from_sse_to_model = mosse.particles.new_channel_to(stars)
         from_sse_to_model.copy()
         
         previous_type = star.stellar_type
@@ -244,11 +253,11 @@ class TestMOSSE(TestWithMPI):
         current_time = t0
         
         while current_time < (125 | units.Myr):
-            sse.update_time_steps()
+            mosse.update_time_steps()
             
-            current_time = current_time + sse.particles[0].time_step
+            current_time = current_time + mosse.particles[0].time_step
             
-            sse.evolve_model(current_time)
+            mosse.evolve_model(current_time)
 
             from_sse_to_model.copy()
             
@@ -259,23 +268,23 @@ class TestMOSSE(TestWithMPI):
         self.assertEqual(len(results), 6)
         
         times = ( 
-            104.0 | units.Myr, 
-            104.4 | units.Myr, 
-            104.7 | units.Myr, 
-            120.1 | units.Myr,
-            120.9 | units.Myr,
-            121.5 | units.Myr
+            104.19 | units.Myr, 
+            104.62 | units.Myr, 
+            104.87 | units.Myr, 
+            120.39 | units.Myr,
+            121.17 | units.Myr,
+            121.88 | units.Myr
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 1)
             
         masses = ( 
-            5.000 | units.MSun, 
-            5.000 | units.MSun, 
-            4.998 | units.MSun, 
-            4.932 | units.MSun,
-            4.895 | units.MSun,
-            0.997 | units.MSun
+            4.991 | units.MSun, 
+            4.991 | units.MSun, 
+            4.989 | units.MSun, 
+            4.923 | units.MSun,
+            4.886 | units.MSun,
+            1.003 | units.MSun
         )
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 3)
@@ -292,65 +301,65 @@ class TestMOSSE(TestWithMPI):
         for result, expected in zip(results, types):
             self.assertEquals(str(result[2]), expected)
         
-        sse.stop()
+        mosse.stop()
             
     def test2(self):
-        sse = MOSSE()
-        sse.commit_parameters() 
+        mosse = MOSSE()
+        mosse.commit_parameters() 
         stars = Particles(1)
         
         star = stars[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        sse.particles.add_particles(stars)
-        sse.evolve_model(120.1 | units.Myr)
+        mosse.particles.add_particles(stars)
+        mosse.evolve_model(120.1 | units.Myr)
                 
-        self.assertAlmostEqual(sse.particles[0].mass.value_in(units.MSun), 4.932, 3)
-        self.assertAlmostEqual(sse.particles[0].temperature.value_in(units.K), 4221., 0)
+        self.assertAlmostEqual(mosse.particles[0].mass.value_in(units.MSun), 4.925, 3)
+        self.assertAlmostEqual(mosse.particles[0].temperature.value_in(units.K), 4271., 0)
          
-        sse.stop()
+        mosse.stop()
         
     
     def test3(self):
-        sse = MOSSE()
-        sse.commit_parameters() 
+        mosse = MOSSE()
+        mosse.commit_parameters() 
         stars = Particles(1)
         
         star = stars[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        stars.synchronize_to(sse.particles)
+        stars.synchronize_to(mosse.particles)
         
-        channel = sse.particles.new_channel_to(stars)
-        channel.copy_attributes(sse.particles.get_attribute_names_defined_in_store())   
+        channel = mosse.particles.new_channel_to(stars)
+        channel.copy_attributes(mosse.particles.get_attribute_names_defined_in_store())   
         
-        previous_type = sse.particles.stellar_type
+        previous_type = mosse.particles.stellar_type
         results = []
         
-        sse.evolve_model(121.5 | units.Myr)
+        mosse.evolve_model(121.9 | units.Myr)
         
-        channel.copy_attributes(sse.particles.get_attribute_names_defined_in_store())   
+        channel.copy_attributes(mosse.particles.get_attribute_names_defined_in_store())   
         
-        self.assertAlmostEqual(star.mass.value_in(units.MSun), 0.997, 3)
+        self.assertAlmostEqual(star.mass.value_in(units.MSun), 1.002, 3)
          
-        sse.stop()
+        mosse.stop()
         
     
     def test5(self):
-        sse = MOSSE()
-        sse.commit_parameters() 
+        mosse = MOSSE()
+        mosse.commit_parameters() 
         stars = Particles(1)
         
         star = stars[0]
         star.mass = 35 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        stars.synchronize_to(sse.particles)
+        stars.synchronize_to(mosse.particles)
         
-        channel = sse.particles.new_channel_to(stars)
-        channel.copy_attributes(sse.particles.get_attribute_names_defined_in_store())   
+        channel = mosse.particles.new_channel_to(stars)
+        channel.copy_attributes(mosse.particles.get_attribute_names_defined_in_store())   
         
         previous_type = star.stellar_type
         results = []
@@ -359,11 +368,11 @@ class TestMOSSE(TestWithMPI):
         t = 0 | units.Myr
         while t < 30 | units.Myr:
             t += dt
-            sse.evolve_model(t)
+            mosse.evolve_model(t)
                 
-        self.assertTrue(sse.particles[0].mass.value_in(units.MSun) < 10.6)
+        self.assertTrue(mosse.particles[0].mass.value_in(units.MSun) < 6.0)
          
-        sse.stop()
+        mosse.stop()
 
 
     def test6(self):
@@ -480,26 +489,26 @@ class TestMOSSE(TestWithMPI):
         instance.particles.add_particles(stars)
         
         self.assertEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
-        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.877] | units.Myr, 2)
         self.assertAlmostEqual(instance.particles.radius, [0.8882494502, 1.610210385, 1.979134445] | units.RSun)
         
         print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
         instance.evolve_model()
-        self.assertAlmostEqual(instance.particles.age, [18.8768, 18.8768, 18.8768] | units.Myr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
-        self.assertAlmostEqual(instance.model_time, 18.8768 | units.Myr, 3)
+        self.assertAlmostEqual(instance.particles.age, [18.877, 18.877, 18.877] | units.Myr, 2)
+        self.assertAlmostEqual(instance.particles.time_step, [550.157, 58.208, 18.877] | units.Myr, 2)
+        self.assertAlmostEqual(instance.model_time, 18.877 | units.Myr, 2)
         
         print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
         instance.evolve_model(100 | units.Myr)
-        self.assertAlmostEqual(instance.particles.age, [100.0, 100.0, 100.0] | units.Myr, 3)
-        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
-        self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 3)
+        self.assertAlmostEqual(instance.particles.age, [100.0, 100.0, 100.0] | units.Myr, 2)
+        self.assertAlmostEqual(instance.particles.time_step, [550.157, 58.208, 18.877] | units.Myr, 2)
+        self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 2)
         
         print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
-        self.assertAlmostEqual(instance.particles.age, (100 | units.Myr) + ([550.1565, 58.2081, 18.8768] | units.Myr), 3)
-        self.assertAlmostEqual(instance.particles.time_step, [550.1565, 58.2081, 18.8768] | units.Myr, 3)
-        self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 3) # Unchanged!
+        self.assertAlmostEqual(instance.particles.age, (100 | units.Myr) + ([550.157, 58.208, 18.877] | units.Myr), 2)
+        self.assertAlmostEqual(instance.particles.time_step, [550.157, 58.208, 18.877] | units.Myr, 2)
+        self.assertAlmostEqual(instance.model_time, 100.0 | units.Myr, 2) # Unchanged!
         instance.stop()
         
     def test12(self):
@@ -536,7 +545,7 @@ class TestMOSSE(TestWithMPI):
         instance.stop()
     
     def test13(self):
-        print "Testing MOSSE states"
+        print "Testing SSE states"
         stars = Particles(1)
         stars.mass = 1.0 | units.MSun
         
@@ -702,8 +711,8 @@ class TestMOSSE(TestWithMPI):
     
     def test18(self):
         print "MOSSE validation"
-        sse_src_path = os.path.join(os.path.dirname(sys.modules[MOSSE.__module__].__file__), 'src')
-        if not os.path.exists(os.path.join(sse_src_path, "evolve.in")):
+        mosse_src_path = os.path.join(os.path.dirname(sys.modules[MOSSE.__module__].__file__), 'src')
+        if not os.path.exists(os.path.join(mosse_src_path, "evolve.in")):
             self.skip("Not in a source release")
         instance = MOSSE()
         instance.particles.add_particle(Particle(mass = 1.416 | units.MSun))
@@ -715,7 +724,7 @@ class TestMOSSE(TestWithMPI):
         testpath = get_path_to_results()
         shutil.copy(os.path.join(sse_src_path, "evolve.in"), os.path.join(testpath, "evolve.in"))
         
-        call([os.path.join(sse_src_path, "sse")], cwd=testpath)
+        call([os.path.join(sse_src_path, "mosse")], cwd=testpath)
         
         with open(os.path.join(testpath, "evolve.dat"), "r") as sse_output:
             lines = sse_output.readlines()
@@ -745,22 +754,28 @@ class TestMOSSE(TestWithMPI):
         self.assertEqual(star.CO_core_mass, 0 | units.MSun)
         instance.evolve_model(6.0 | units.Myr)
         print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
-        self.assertEqual(str(star.stellar_type), "Core Helium Burning")
+        self.assertEqual(str(star.stellar_type), "Hertzsprung Gap")
         self.assertIsOfOrder(star.mass, 30 | units.MSun)
         self.assertIsOfOrder(star.core_mass, 10 | units.MSun)
         self.assertEqual(star.CO_core_mass, 0 | units.MSun)
         instance.evolve_model(6.5 | units.Myr)
         print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
+        self.assertEqual(str(star.stellar_type), "Core Helium Burning")
+        self.assertIsOfOrder(star.mass, 10 | units.MSun) 
+        self.assertIsOfOrder(star.core_mass, 10 | units.MSun)
+        self.assertEqual(star.CO_core_mass, 0 | units.MSun)
+        instance.evolve_model(6.65 | units.Myr)
+        print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
         self.assertEqual(str(star.stellar_type), "Main Sequence Naked Helium star")
         self.assertIsOfOrder(star.mass, 10 | units.MSun)
         self.assertEqual(star.core_mass, star.mass)
         self.assertEqual(star.CO_core_mass, 0 | units.MSun)
-        instance.evolve_model(6.65 | units.Myr)
+        instance.evolve_model(6.70 | units.Myr)
         print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
         self.assertEqual(str(star.stellar_type), "Hertzsprung Gap Naked Helium star")
         self.assertIsOfOrder(star.mass, 10 | units.MSun)
         self.assertEqual(star.core_mass, star.mass)
-        self.assertAlmostEqual(star.CO_core_mass, 7.12 | units.MSun, 2)
+        self.assertAlmostEqual(star.CO_core_mass, 6.70 | units.MSun, 2)
         instance.evolve_model(7.0 | units.Myr)
         print star.mass, star.core_mass, star.CO_core_mass, star.stellar_type
         self.assertEqual(str(star.stellar_type), "Black Hole")
@@ -789,11 +804,11 @@ class TestMOSSE(TestWithMPI):
         instance = MOSSE()
         stars = instance.particles.add_particles(Particles(mass = 30 | units.MSun))
         mass_loss_wind = stars[0].mass_loss_wind
-        self.assertAlmostRelativeEquals(mass_loss_wind, 1.703e-07 | units.MSun / units.yr, 3)
+        self.assertAlmostRelativeEquals(mass_loss_wind, 2.209e-07 | units.MSun / units.yr, 3)
         instance.evolve_model(1 | units.Myr)
         dm = (1 | units.Myr)* mass_loss_wind
         self.assertAlmostRelativeEquals(stars[0].mass, (30 | units.MSun) - dm  ,  3)
-        self.assertAlmostRelativeEquals(stars[0].mass_loss_wind, 2.053e-07 | units.MSun / units.yr, 3)
+        self.assertAlmostRelativeEquals(stars[0].mass_loss_wind, 2.7056e-07 | units.MSun / units.yr, 3)
     
         instance.stop()
     
@@ -817,5 +832,5 @@ class TestMOSSE(TestWithMPI):
         channel=stars.new_channel_to(p)
         channel.copy_attributes(["mass","temperature"])
         self.assertEqual(stars.temperature, p.temperature)
-        instance.stop()
+        instance.stop() 
     
