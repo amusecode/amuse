@@ -110,16 +110,16 @@ class NewGalactICsModelTests(TestWithMPI):
         
         particles1 = new_galactics_gas_model(halo_number_of_particles, bulge_type_parameter=0, 
             disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
-            do_scale = False, reuse_cached_model=False)
+            do_scale = False, reuse_cached_model=False, verbose=True)
         particles2 = new_galactics_gas_model(halo_number_of_particles, conv, bulge_type_parameter=0, 
             disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
-            do_scale = False)        
+            do_scale = False, verbose=True)        
         particles3 = new_galactics_gas_model(halo_number_of_particles, bulge_type_parameter=0, 
             disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
-            do_scale = True)
+            do_scale = True, verbose=True)
         particles4 = new_galactics_gas_model(halo_number_of_particles, conv, bulge_type_parameter=0, 
             disk_type_parameter=0, order_of_multipole_expansion = 0, halo_random_seed = -1, 
-            do_scale = True)
+            do_scale = True, verbose=True)
             
                         
         self.assertEquals(len(particles1), halo_number_of_particles)

@@ -69,7 +69,6 @@ def integrate_system(N, t_end, seed=None):
     stars.scale_to_standard(convert_nbody=converter,
                             smoothing_length_squared
                              = gravity.parameters.epsilon_squared)
-
     id = numpy.arange(N)
     stars.id = id+1
     stars.radius = 0.5/N | units.parsec
