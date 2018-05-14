@@ -201,14 +201,16 @@ def kira(tend, N, R, Nbin):
     from matplotlib import pyplot
     from distinct_colours import get_distinct
     pyplot.rcParams.update({'font.size': 30})
-    figure = pyplot.figure(figsize=(16, 12))
+    figure = pyplot.figure(figsize=(12, 9))
     ax = pyplot.gca()
     ax.get_yaxis().get_major_formatter().set_useOffset(False)
     ax.xaxis._autolabelpos = True
     ax.yaxis._autolabelpos = True
     
     color = get_distinct(2)
-    pyplot.scatter(numpy.log10(stellar.binaries.semi_major_axis.value_in(units.AU)), stellar.binaries.eccentricity, c=color[0], s=200, lw=0)
+    pyplot.scatter(numpy.log10(stellar.binaries.semi_major_axis.
+                               value_in(units.AU)),
+                   stellar.binaries.eccentricity, c=color[0], s=200, lw=0)
     
     t = quantities.linspace(0*tend, tend, 11)
     for ti in t:
@@ -233,10 +235,15 @@ def kira(tend, N, R, Nbin):
               multiples_code.particles.LagrangianRadii(converter)
         print "t, Energy=", ti, multiples_code.get_total_energy()
 
-    pyplot.scatter(numpy.log10(stellar.binaries.semi_major_axis.value_in(units.AU)), stellar.binaries.eccentricity, c=color[1], lw=0, s=50)
+    pyplot.scatter(numpy.log10(stellar.binaries.semi_major_axis
+                               .value_in(units.AU)),
+                   stellar.binaries.eccentricity, c=color[1], lw=0, s=50)
     pyplot.xlabel("$\log_{10}(a/R_\odot)$")
     pyplot.ylabel("eccentricity")
-    pyplot.savefig("kira_a_vs_e.pdf")
+
+    save_file = 'kira_a_vs_e.pdf'
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file,'\n'
     pyplot.show()
         
     stellar.stop()
@@ -245,7 +252,7 @@ def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-t", unit=units.Myr,
-                      dest="tend",type="float", default=1.|units.Myr)
+                      dest="tend",type="float", default=10.|units.Myr)
     result.add_option("-R", unit=units.parsec,
                       dest="R",type="float", default=1|units.parsec)
     result.add_option("-N", 

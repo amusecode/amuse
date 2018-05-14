@@ -83,8 +83,8 @@ def print_log(pre, time, gravity, E0 = 0.0 | nbody_system.energy, cpu0 = 0.0):
     print pre+"Nbin=", Nbin
     print pre+"Emul= %.5f" % (Emul.number)
     print pre+"Emul2= %.5f" % (Emul2.number)
-    print pre+"Emul/kT= %.5f" % (Emul/kT)
-    print pre+"Emul/E= %.5f" % (Emul/Etot)
+    print pre+"Emul/kT= %.5f" % (Emul.number/kT.number)
+    print pre+"Emul/E= %.5f" % (Emul.number/Etot.number)
     print ''
 
     sys.stdout.flush()

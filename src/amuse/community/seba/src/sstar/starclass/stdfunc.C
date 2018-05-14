@@ -398,6 +398,41 @@ real random_maxwellian_velocity(const real v_disp) {
 
      return sqrt(final_vel);
   }
+  
+  
+
+
+//   Hobbs, Lorimer, Lyne & Kramer, 2005, 360, 974 - maxwellian
+real random_hobbs_velocity() {
+//   cerr<<"random_hobbs_velocity()"<<endl;
+   return random_maxwellian_velocity(265*sqrt(3.));  
+}
+
+
+//    Arzoumanian ea 2002, 568, 289 - combination of two maxwellians
+real random_arzoumanian_velocity() {
+//   cerr<<"random_arzoumanian_velocity()"<<endl;
+   real prob = randinter(0., 1.);
+   if (prob < 0.4){
+       return random_maxwellian_velocity(90*sqrt(3.));
+   }else {
+       return random_maxwellian_velocity(500*sqrt(3.));
+   }
+}
+
+
+//    Verbunt, Igoshev & Cator, 2017, 608, 57 - combination of two maxwellians
+real random_verbunt_velocity() {
+//   cerr<<"random_verbunt_velocity()"<<endl;
+   real prob = randinter(0., 1.);
+   if (prob < 0.42){
+       return random_maxwellian_velocity(75*sqrt(3.));
+   }else {
+       return random_maxwellian_velocity(316*sqrt(3.));
+   }
+}
+
+  
 
 real paczynski_distribution(const real velocity, const real v_disp) {
 
@@ -418,6 +453,8 @@ real random_paczynski_velocity(const real v_disp) {
 //	P(u)du = \frac{4}{\pi} \cdot \frac{du}{(1+u^2)^2},
 //	u=v/v_d,
 // 	v_d is the dispersion velocity = 270 or 600 km/s respectively.
+
+   cerr<<"random_paczynski_velocity()"<<endl;
 
 //	The safe and clumsy method
 	

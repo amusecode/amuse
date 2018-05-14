@@ -221,6 +221,9 @@ if __name__ in ('__main__','__plot__'):
                    c=color[3], s=150, marker='^',
                    edgecolor='k', zorder=2)
     
+    ax = pyplot.gca()
+    ax.tick_params(axis='both', which='both', direction='in')
+
     save_file = 'merge_two_stars_and_evolve.pdf'
     pyplot.savefig(save_file)
     print '\nSaved figure in file', save_file,'\n'

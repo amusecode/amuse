@@ -57,7 +57,7 @@ int sync_times()
   // Update sync_time and reset all times prior to recomputing the
   // time steps and resetting the scheduler.
 
-    if (1) {
+    if (0) {
         cout << "interface::sync_times: updating sync_time to "
 	     << jd->sync_time + jd->system_time << endl;
     }
