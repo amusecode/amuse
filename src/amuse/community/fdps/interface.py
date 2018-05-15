@@ -14,7 +14,8 @@ class FDPSInterface(
     """
     FDPS - a general-purpose, high-performance library for particle simulations
 
-    .. [#] Iwasawa, M., Tanikawa, A., Hosono, N., Nitadori, K., Muranushi, T., Makino, J., *arXiv*, 1601.03138
+    .. [#] Iwasawa, M., Tanikawa, A., Hosono, N., Nitadori, K., Muranushi, T., Makino, J.,
+           PASJ 68, Issue 4, id.54
 
     """
     include_headers = ['worker_code.h']

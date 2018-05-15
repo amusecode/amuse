@@ -4,27 +4,41 @@ import subprocess
 import os
 import sys
 import time
-import urllib
+if sys.version_info <= (3,0):
+    from urllib import (
+            FancyURLopener, splittype, splithost, splitquery, splitattr,
+            unwrap, splittype, url2pathname, ContentTooShortError,
+            toBytes
+            )
+else:
+    from urllib.request import (
+            FancyURLopener, splittype, splithost, splitquery, splitattr,
+            unwrap, splittype, url2pathname, ContentTooShortError,
+            urlretrieve
+            )
 from optparse import OptionParser
 
         
         
 
-class MyFancyUrlopener(urllib.FancyURLopener):
+class MyFancyUrlopener(FancyURLopener):
     def retrieve(self, url, filename=None, reporthook=None, data=None):
         """retrieve(url) returns (filename, headers) for a local object
         or (tempfilename, headers) for a remote object."""
-        url = urllib.unwrap(urllib.toBytes(url))
+        url = (
+                unwrap(toBytes(url)) if sys.version_info <= (3,0)
+                else unwrap(url)
+                )
         if self.tempcache and url in self.tempcache:
             return self.tempcache[url]
-        type, url1 = urllib.splittype(url)
+        type, url1 = splittype(url)
         if filename is None and (not type or type == 'file'):
             try:
                 fp = self.open_local_file(url1)
                 hdrs = fp.info()
                 del fp
-                return urllib.url2pathname(urllib.splithost(url1)[1]), hdrs
-            except IOError, msg:
+                return url2pathname(splithost(url1)[1]), hdrs
+            except IOError as msg:
                 pass
         fp = self.open(url, data)
         try:
@@ -34,10 +48,10 @@ class MyFancyUrlopener(urllib.FancyURLopener):
                 tfp = open(filename, 'wb')
             else:
                 import tempfile
-                garbage, path = urllib.splittype(url)
-                garbage, path = urllib.splithost(path or "")
-                path, garbage = urllib.splitquery(path or "")
-                path, garbage = urllib.splitattr(path or "")
+                garbage, path = splittype(url)
+                garbage, path = splithost(path or "")
+                path, garbage = splitquery(path or "")
+                path, garbage = splitattr(path or "")
                 suffix = os.path.splitext(path)[1]
                 (fd, filename) = tempfile.mkstemp(suffix)
                 self.__tempfiles.append(filename)
@@ -72,15 +86,16 @@ class MyFancyUrlopener(urllib.FancyURLopener):
 
         # raise exception if actual size does not match content-length header
         if size >= 0 and read < size:
-            raise urllib.ContentTooShortError("retrieval incomplete: got only %i out "
+            raise ContentTooShortError("retrieval incomplete: got only %i out "
                                        "of %i bytes" % (read, size), result)
 
         return result
-    
+
+
 class GetCodeFromHttp(object):
-    url_template = "https://github.com/FDPS/FDPS/archive/v{version}.zip"
+    url_template = "https://github.com/FDPS/FDPS/archive/{version}.zip"
     filename_template = "v{version}.zip"
-    version = "2.0e"
+    version = "4.0b"
     
     def directory(self):
         return os.path.abspath(os.path.dirname(__file__))
@@ -89,7 +104,7 @@ class GetCodeFromHttp(object):
         return os.path.join(self.directory(), 'src')
         
     def unpack_downloaded_file(self, filename):
-        print "unpacking", filename
+        print("unpacking", filename)
         arguments = ['unzip', '-x']
         arguments.append(filename)
         subprocess.call(
@@ -100,7 +115,7 @@ class GetCodeFromHttp(object):
             ['mv', 'FDPS-{version}'.format(version = self.version), 'FDPS'],
             cwd = os.path.join(self.src_directory())
         )
-        print "done"
+        print("done")
         
         
     def start(self):
@@ -109,7 +124,7 @@ class GetCodeFromHttp(object):
             while os.path.exists('src.{0}'.format(counter)):
                 counter += 1
                 if counter > 100:
-                    print "too many backup directories"
+                    print("too many backup directories")
                     break;
             os.rename('src', 'src.{0}'.format(counter))
         
@@ -117,15 +132,18 @@ class GetCodeFromHttp(object):
         
         url = self.url_template.format(version = self.version)
         filename = self.filename_template.format(version = self.version)
-        print "downloading version",self.version,"from", url, "to", filename
-        opener = MyFancyUrlopener()
-        filename, httpmessage, code = opener.retrieve(url, filename = os.path.join(self.src_directory(),filename))
-        if code == 404:
-            os.remove(filename)
-            url = self.backup_url_template.format(version = self.version)
+        print("downloading version",self.version,"from", url, "to", filename)
+        if sys.version_info <= (3,0):
+            opener = MyFancyUrlopener()
             filename, httpmessage, code = opener.retrieve(url, filename = os.path.join(self.src_directory(),filename))
-            
-        print "downloading finished"
+            if code == 404:
+                os.remove(filename)
+                url = self.backup_url_template.format(version = self.version)
+                filename, httpmessage, code = opener.retrieve(url, filename = os.path.join(self.src_directory(),filename))
+        else:
+            filename, headers = urlretrieve(url, os.path.join(self.src_directory(), filename))
+                
+        print("downloading finished")
         self.unpack_downloaded_file(filename)
     
 def main(must_download_from_svn = False, version = '2.0e'):
@@ -140,7 +158,7 @@ def new_option_parser():
     
     result.add_option(
         "--version", 
-        default = '2.0e',
+        default = '4.0b',
         dest="version",
         help="release to download from github",
         type="string"

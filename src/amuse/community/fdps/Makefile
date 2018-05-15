@@ -13,7 +13,10 @@ OBJS = interface.o
 
 CODELIB = src/libfdps.a
 CODEDIR = src/FDPS
-LIB_OBJ = $(CODEDIR)/sample/nbody/nbody.o
+LIB_OBJ = $(CODEDIR)/sample/c++/nbody/nbody.o
+
+INC = -I$(CODEDIR)/src
+INC += -I$(CODEDIR)/sample/c++/nbody
 
 DOWNLOAD_FROM_WEB = $(PYTHON) ./download_http.py
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
@@ -22,10 +25,10 @@ PATCH_FILES = $(PYTHON) ./patch_files.py
 all: fdps_worker 
 
 ifdef DOWNLOAD_CODES
-$(CODEDIR)/sample/nbody/Makefile:
+$(CODEDIR)/sample/c++/nbody/Makefile:
 	make -C . download
 else
-$(CODEDIR)/sample/nbody/Makefile:
+$(CODEDIR)/sample/c++/nbody/Makefile:
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -41,19 +44,19 @@ endif
 
 download:
 	$(DOWNLOAD_FROM_WEB)
-	tr -d '\r' < src/FDPS/sample/nbody/Makefile > src/FDPS/sample/nbody/Makefile.tmp
-	mv src/FDPS/sample/nbody/Makefile.tmp src/FDPS/sample/nbody/Makefile
+	tr -d '\r' < src/FDPS/sample/c++/nbody/Makefile > src/FDPS/sample/c++/nbody/Makefile.tmp
+	mv src/FDPS/sample/c++/nbody/Makefile.tmp src/FDPS/sample/c++/nbody/Makefile
 	$(PATCH_FILES)
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ fdps_worker worker_code.cc
-	$(RM) -Rf $(CODEDIR)/sample/nbody/*.o
+	$(RM) -Rf $(CODEDIR)/sample/c++/nbody/*.o
 	$(RM) -Rf src/libfdps.a
 	#make -C $(CODEDIR) clean
 
-$(CODELIB): $(CODEDIR)/sample/nbody/Makefile
-	make -C $(CODEDIR)/sample/nbody nbody.o CC=$(MPICXX) 
+$(CODELIB): $(CODEDIR)/sample/c++/nbody/Makefile
+	make -C $(CODEDIR)/sample/c++/nbody $(INC) nbody.o CC=$(MPICXX) 
 	ar rv $(CODELIB) $(LIB_OBJ)
 	ranlib $(CODELIB)
 
@@ -64,7 +67,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py FDPSInterface -o $@
 
 fdps_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) -I$(CODEDIR)/src -I$(CODEDIR)/sample/nbody $< $(OBJS) $(CODELIB) -o $@
+	$(MPICXX) $(CXXFLAGS) $(INC) $< $(OBJS) $(CODELIB) -o $@
 
 .cc.o: $<
-	$(CXX) $(CXXFLAGS) -I$(CODEDIR)/src -I$(CODEDIR)/sample/nbody -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(INC) -c -o $@ $< 
