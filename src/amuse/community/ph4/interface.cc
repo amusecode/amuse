@@ -692,7 +692,8 @@ int evolve_model(double to_time)
 	// int dtotal = jd->total_steps - ns;
 	block_steps += jd->block_steps - nb;
 	total_steps += jd->total_steps - ns;
-	// PRC(jd->system_time); PRC(dblock); PRL(dtotal);
+	PRL(jd->system_time); //PRC(dblock); PRL(dtotal);
+	s->print(true);
     }
 
     return 0;
