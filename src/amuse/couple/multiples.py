@@ -861,15 +861,16 @@ class Multiples(object):
                                                         self.kepler, 1)
 
         Etop = E*star1.mass*star2.mass/M
-        peri = a*(1-e)
         ttrans = self.gravity_constant*M/(4*abs(E))**1.5
 
         # Note: transit time = 0.056 * period for a bound orbit.
 
         if e < 1:
+            peri = a*(1-e)
             apo = a*(1+e)
             period = self.kepler.get_period()
         else:
+            peri = a*(e-1)
             apo = 1.e9*a	# 1.e9 is large but otherwise arbitrary
             period = 1.e9*ttrans
 
