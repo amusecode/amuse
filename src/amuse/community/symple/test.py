@@ -5,10 +5,11 @@ import sys, math
 
 n = 2
 
+# Select a gravity code.
+
 g = symple(redirection='none')
 g.initialize_code()
 g.parameters.set_defaults()
-print g.parameters
 
 # Make a binary.
 
@@ -30,13 +31,9 @@ GM = (nbody_system.G)*M
 a = -0.5*nbody_system.G*p[0].mass*p[1].mass/E0
 P = 2*math.pi*(a**3/GM).sqrt()
 L = 2*p[0].mass*(p[0].x*p[0].vy)
-print 'L =', L
 mu = p[0].mass*p[1].mass/M
-print 'mu =', mu
 ee = E0/mu
-print 'ee =', ee
 h = L/mu
-print 'h =', h
 e = math.sqrt(1+2*ee*h**2/GM**2)
 print 'E =', E0
 print 'a =', a
@@ -49,9 +46,10 @@ mdotfac = 0.
 for i in range(n):
     g.set_dmdt(i, -mdotfac*p[i].mass/(1.e3|nbody_system.time))
 
-g.parameters.integrator = 10
-g.parameters.timestep = P/128
-g.parameters.eta = 0.25			# timestep and eta are mutually exclusive
+g.parameters.integrator = 10		# 10th order symplectic
+g.parameters.timestep = P/128		# power of 2 seems to work best
+#g.parameters.eta = 0.2  		# timestep and eta are mutually exclusive
+					# no longer symplectic if eta > 0
 print g.parameters
 
 time = 0.|nbody_system.time
@@ -73,7 +71,6 @@ while time < t_end:
     e.append(dE)
     
 print 'dE/E =', dE
-print ''
 
 if 0:
     plt.figure(figsize=(6,6))
@@ -85,5 +82,4 @@ else:
     plt.plot(t, e)
     
 plt.show()
-
 g.stop()
