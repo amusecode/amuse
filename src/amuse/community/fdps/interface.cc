@@ -16,26 +16,6 @@
 
 #include <map>
 
-PS::ParticleSystem<FPGrav> system_grav;
-PS::F64 Epot0, Ekin0, Etot0, Epot1, Ekin1, Etot1;
-PS::S32 n_loc = 0;
-PS::S64 n_tot = 0;
-PS::F32 time_sys = 0.0;
-PS::F64 FPGrav::eps = sqrt(1.0/8.0);
-
-PS::F32 theta = 0.75;
-PS::S32 n_leaf_limit = 8;
-PS::S32 n_group_limit = 64;
-
-PS::F32 time_end = 10.0;
-PS::F32 dt = 1.0 / 64.0;
-PS::S32 c;
-PS::F32 coef_ema = 0.3;
-PS::DomainInfo dinfo;
-
-PS::TreeForForceLong<FPGrav, FPGrav, FPGrav>::Monopole tree_grav;
-
-PS::S64 n_loop = 0;
 
 std::map <int,int> inverse_id;
 
@@ -136,26 +116,61 @@ void calcKineticEnergy(const Tpsys & system,
 #endif
 }
 
+// Globals
+PS::DomainInfo dinfo;
+PS::ParticleSystem<FPGrav> system_grav;
+PS::TreeForForceLong<FPGrav, FPGrav, FPGrav>::Monopole tree_grav;
 
-int get_mass(int index_of_the_particle, double * mass){
-    int j = get_inverse_id(index_of_the_particle);
+PS::F64 Epot0, Ekin0, Etot0, Epot1, Ekin1, Etot1;
+PS::S32 n_loc = 0;
+PS::S64 n_tot = 1024;
+PS::F32 time_sys = 0.0;
+PS::F64 FPGrav::eps = sqrt(1.0/400.0);
+
+PS::F32 theta = 0.75;
+PS::S32 n_leaf_limit = 8;
+PS::S32 n_group_limit = 64;
+
+PS::F32 time_end = 10.0;
+PS::F32 dt = 1.0 / 64.0;
+PS::S32 c;
+PS::F32 coef_ema = 0.3;
+
+PS::S64 n_loop = 0;
+
+// Added by SR for AMUSE
+// Counter for every particle that has at some point been added.
+// This should never be decreased.
+PS::U64 unique_particles = 0;
+// Bool for checking if initialization has taken place - make sure some values
+// that cannot be changed after initialization are fixed
+bool initialized = false;
+
+
+int initialize_code(){
+    printf("Initializing FDPS\n");
     
-    if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
-    {
-        *mass = system_grav[j].mass;
-        return 0;
-    }
-    return -1;
+    // Should run this here, but all it does is initialize MPI (if used) and
+    // print some logos. Requires argc and argv, we don't have those now...
+    //PS::Initialize(fake_argc, fake_argv);
+    //FDPSGravity fdpsgrav;
+    system_grav.initialize();
+    dinfo.initialize(coef_ema);
+    
+    // n_tot is for a rough estimate of how many particles there will be
+    tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
+    
+    initialized = 1;
+
+    return 0;
 }
 
 int commit_particles(){
-    dinfo.initialize(coef_ema);
+    printf("Committing particles\n");
     dinfo.collectSampleParticle(system_grav);
     dinfo.decomposeDomain();
     system_grav.exchangeParticle(dinfo);
     n_loc = system_grav.getNumberOfParticleLocal();
-    
-    tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
     
     tree_grav.calcForceAllAndWriteBack(CalcGravity<FPGrav>,
                                        CalcGravity<PS::SPJMonopole>,
@@ -167,76 +182,8 @@ int commit_particles(){
     return 0;
 }
 
-int get_time(double * time){
-    *time = time_sys;
-    return 0;
-}
-
-int set_mass(int index_of_the_particle, double mass){
-    int j = get_inverse_id(index_of_the_particle);
-    
-    if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
-    {
-        system_grav[j].mass = mass;
-        return 0;
-    }
-    return -1;
-}
-
-int get_index_of_first_particle(int * index_of_the_particle){
-    *index_of_the_particle = system_grav[0].id;
-    return 0;
-}
-
-int get_total_radius(double * radius){
-    return 0;
-}
-
-int new_sph_particle(int * index_of_the_particle, double mass, double x, 
-                     double y, double z, double vx, double vy, double vz, double radius){
-    return 0;
-}
-
-int new_particle(int * index_of_the_particle, double mass, double x, 
-                 double y, double z, double vx, double vy, double vz, double radius){
-    n_loc = system_grav.getNumberOfParticleLocal();
-    
-    int pid = n_loc;//FIXME: this should be a unique id, not to be reused!
-    int new_id = n_loc;
-    
-    n_loc++;
-    n_tot++;
-    system_grav.setNumberOfParticleLocal(n_loc);
-    
-    system_grav[new_id].mass = mass; 
-    system_grav[new_id].id = pid;
-    system_grav[new_id].pos.x = x;
-    system_grav[new_id].pos.y = y;
-    system_grav[new_id].pos.z = z;
-    system_grav[new_id].vel.x = vx;
-    system_grav[new_id].vel.y = vy;
-    system_grav[new_id].vel.z = vz;
-    system_grav[new_id].radius = radius;
-    
-    inverse_id[pid] = new_id;
-    *index_of_the_particle = pid;
-    
-    return 0;
-}
-
-int get_total_mass(double * mass){
-    
-    *mass = 0;
-    
-    for(int j = 0; j < system_grav.getNumberOfParticleLocal(); j++)
-    {
-        *mass += system_grav[j].mass;
-    }
-    
-    return 0;
-}
-
 int evolve_model(double time){
+    printf("Evolving model\n");
     while(time_sys < time){
         calcEnergy(system_grav, Etot1, Ekin1, Epot1);
         kick(system_grav, dt * 0.5);
@@ -253,6 +200,111 @@ int evolve_model(double time){
         kick(system_grav, dt * 0.5);
         
         n_loop++;
+    }
+    
+    return 0;
+}
+
+int cleanup_code(){
+    printf("Cleaning up\n");
+
+    return 0;
+}
+
+
+int get_time(double * time){
+    *time = time_sys;
+    return 0;
+}
+
+int get_index_of_first_particle(int * index_of_the_particle){
+    *index_of_the_particle = system_grav[0].id;
+    return 0;
+}
+
+int get_total_radius(double * radius){
+    return -2;
+}
+
+int new_sph_particle(int * index_of_the_particle, double mass, double x, 
+                     double y, double z, double vx, double vy, double vz,
+                     double radius){
+    return -2;
+}
+
+int new_particle(int * index_of_the_particle, double mass, double x, 
+                 double y, double z, double vx, double vy, double vz,
+                 double radius){
+
+    // Make sure every new particle is unique; never re-use a particle ID
+    int pid = unique_particles;
+    unique_particles += 1;
+
+    FPGrav ptcl;
+    ptcl.mass = mass;
+    ptcl.id = pid;
+    ptcl.pos.x = x;
+    ptcl.pos.y = y;
+    ptcl.pos.z = z;
+    ptcl.vel.x = vx;
+    ptcl.vel.y = vy;
+    ptcl.vel.z = vz;
+    ptcl.radius = radius;
+
+    system_grav.addOneParticle(ptcl);
+    //PS::addOneParticle
+    
+    //int new_id = n_loc;
+    //
+    //n_loc++;
+    //n_tot++;
+    //system_grav.setNumberOfParticleLocal(n_loc);
+    //
+    //system_grav[new_id].mass = mass; 
+    //system_grav[new_id].id = pid;
+    //system_grav[new_id].pos.x = x;
+    //system_grav[new_id].pos.y = y;
+    //system_grav[new_id].pos.z = z;
+    //system_grav[new_id].vel.x = vx;
+    //system_grav[new_id].vel.y = vy;
+    //system_grav[new_id].vel.z = vz;
+    //system_grav[new_id].radius = radius;
+    
+    inverse_id[pid] = pid;
+    *index_of_the_particle = pid;
+    
+    return 0;
+}
+
+int get_mass(int index_of_the_particle, double * mass){
+    int j = get_inverse_id(index_of_the_particle);
+    
+    if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+    {
+        *mass = system_grav[j].mass;
+        return 0;
+    }
+    return -1;
+}
+
+int set_mass(int index_of_the_particle, double mass){
+    int j = get_inverse_id(index_of_the_particle);
+    
+    if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
+    {
+        system_grav[j].mass = mass;
+        return 0;
+    }
+    return -1;
+}
+
+int get_total_mass(double * mass){
+    
+    *mass = 0;
+    
+    for(int j = 0; j < system_grav.getNumberOfParticleLocal(); j++)
+    {
+        *mass += system_grav[j].mass;
     }
     
     return 0;
@@ -293,18 +345,32 @@ int get_group_limit_for_tree(int *group_limit){
     *group_limit = n_group_limit;
     return 0;
 }
+
 int set_group_limit_for_tree(int group_limit){
-    n_group_limit = group_limit;
-    return 0;
+    if (initialized) {
+        // Cannot change this value after initialization
+        return 0;
+    }
+    else {
+        n_group_limit = group_limit;
+        return 0;
+    }
 }
 
 int get_leaf_limit_for_tree(int *leaf_limit){
     *leaf_limit = n_leaf_limit;
     return 0;
 }
+
 int set_leaf_limit_for_tree(int leaf_limit){
-    n_leaf_limit = leaf_limit;
-    return 0;
+    if (initialized) {
+        // Cannot change this value after initialization
+        return 0;
+    }
+    else {
+        n_leaf_limit = leaf_limit;
+        return 0;
+    }
 }
 
 int get_index_of_next_particle(int index_of_the_particle, 
@@ -321,6 +387,7 @@ int get_index_of_next_particle(int index_of_the_particle,
 int delete_particle(int index_of_the_particle){
     int j = get_inverse_id(index_of_the_particle);
     
+    //system_grav.removeParticle(j, 1);
     n_loc = system_grav.getNumberOfParticleLocal();
     for(PS::S32 i = j; i < n_loc-1; i++){
         system_grav[i].mass   = system_grav[i+1].mass;
@@ -516,18 +583,7 @@ int set_radius(int index_of_the_particle, double radius){
     return -1;
 }
 
-int cleanup_code(){
-    return 0;
-}
-
 int recommit_parameters(){
-    return 0;
-}
-
-int initialize_code(){
-    
-    system_grav.initialize();
-    
     return 0;
 }
 
@@ -568,7 +624,6 @@ int get_position(int index_of_the_particle, double * x, double * y,
 
 int set_position(int index_of_the_particle, double x, double y, double z){
     int j = get_inverse_id(index_of_the_particle);
-    
     if (j >= 0 && j < system_grav.getNumberOfParticleLocal())
     {
         system_grav[j].pos.x = x;
@@ -611,3 +666,10 @@ int set_velocity(int index_of_the_particle, double vx, double vy,
     return -1;
 }
 
+//int get_gravity_at_point(double eps, double x, double y, double z,
+//                         double *forcex, double *forcey, double *forcez){
+//}
+//
+//int get_potential_at_point(double eps, double x, double y, double z,
+//                           double * phi){
+//}

@@ -1,8 +1,8 @@
 from amuse.community import *
-from amuse.community.interface.gd import GravitationalDynamicsInterface
-from amuse.community.interface.gd import GravitationalDynamics
-from amuse.community.interface.gd import SinglePointGravityFieldInterface
-from amuse.community.interface.gd import GravityFieldCode
+from amuse.community.interface.gd import (GravitationalDynamicsInterface,
+        GravitationalDynamics, SinglePointGravityFieldInterface,
+        GravityFieldCode,
+        )
 
 class FDPSInterface(
         CodeInterface,
@@ -190,7 +190,7 @@ class FDPSInterface(
         return function
     
     
-class FDPS(GravitationalDynamics, GravityFieldCode):
+class FDPS(GravitationalDynamics):
 
     __interface__ = FDPSInterface
 
@@ -291,3 +291,8 @@ class FDPS(GravitationalDynamics, GravityFieldCode):
         GravitationalDynamics.define_particle_sets(self, object)
         
         #self.stopping_conditions.define_particle_set(object)
+
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+
+        #self.stopping_conditions.define_state(object)
