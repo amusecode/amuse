@@ -140,12 +140,12 @@ class sympleInterface(CodeInterface,
         return function
         
     @legacy_function
-    def get_eta():
+    def get_timestep_parameter():
         """
         Get the time step scaling factor.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('eta', dtype='float64',
+        function.addParameter('timestep_parameter', dtype='float64',
                               direction=function.OUT,
             description = "the timestep scaling factor")
         function.result_type = 'int32'
@@ -158,12 +158,12 @@ class sympleInterface(CodeInterface,
         return function
         
     @legacy_function
-    def set_eta():
+    def set_timestep_parameter():
         """
         Set the time step scaling factor.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('eta', dtype='float64',
+        function.addParameter('timestep_parameter', dtype='float64',
                               direction=function.IN,
             description = "the timestep scaling factor")
         function.result_type = 'int32'
@@ -246,10 +246,10 @@ class symple(GravitationalDynamics, GravityFieldCode):
             default_value = 0.01 | nbody_system.time
         )
         object.add_method_parameter(
-            "get_eta",
-            "set_eta",
-            "eta",
-            "timestep scaling factor", 
+            "get_timestep_parameter",
+            "set_timestep_parameter",
+            "timestep_parameter",
+            "timestep scaling parameter", 
             default_value = 0.05
         )
         object.add_method_parameter(
@@ -278,7 +278,7 @@ class symple(GravitationalDynamics, GravityFieldCode):
         )
         
         object.add_method(
-            "set_eta",
+            "set_timestep_parameter",
             (object.NO_UNIT,),
             (object.ERROR_CODE,)
         )
@@ -317,7 +317,7 @@ class symple(GravitationalDynamics, GravityFieldCode):
         )
         
         object.add_method(
-            "get_eta",
+            "get_timestep_parameter",
             (),
             (object.NO_UNIT,
              object.ERROR_CODE,)

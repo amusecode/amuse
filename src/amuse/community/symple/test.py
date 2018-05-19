@@ -48,8 +48,9 @@ for i in range(n):
 
 g.parameters.integrator = 10		# 10th order symplectic
 g.parameters.timestep = P/128		# power of 2 seems to work best
-#g.parameters.eta = 0.2  		# timestep and eta are mutually exclusive
-					# no longer symplectic if eta > 0
+#g.parameters.timestep_parameter = 0.2	# timestep and timestep_parameter are
+					# mutually exclusive -- no longer
+                                        # symplectic if timestep_parameter > 0
 print g.parameters
 
 time = 0.|nbody_system.time

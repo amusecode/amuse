@@ -657,13 +657,13 @@ int set_eps2(double _epsilon_squared)
     return 0;
 }
 
-int get_eta(double *_eta)
+int get_timestep_parameter(double *_eta)
 {
   *_eta = eta;
   return 0;
 }
 
-int set_eta(double _eta)
+int set_timestep_parameter(double _eta)
 {
   eta = _eta;
   timestep = 0;

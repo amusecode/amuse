@@ -31,8 +31,9 @@ for i in range(n):
 g.parameters.epsilon_squared = (0.01|units.parsec)**2
 g.parameters.integrator = 5   			# 5th order symplectic
 g.parameters.timestep = 0.005|units.Myr
-g.parameters.eta = 0.025  			# timestep and eta are
-						# mutually exclusive
+g.parameters.timestep_parameter = 0.02	# timestep and timestep_parameter are
+					# mutually exclusive -- no longer
+                                        # symplectic if timestep_parameter > 0
 print g.parameters
 
 g.evolve_model(100.|units.Myr)
