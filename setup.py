@@ -181,7 +181,7 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
-        'License :: GNU General Public License (GPL)',
+        'License :: Apache Software License 2.0',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Programming Language :: Python :: 2.6',
