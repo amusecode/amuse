@@ -329,6 +329,43 @@ class ScalarQuantity(Quantity):
     def as_unit(self):
         return self.number * self.unit
 
+class flatiter_wrapper(object):
+    def __init__(self, quantity):
+        self.flat=quantity.number.flat
+        self.quantity=quantity
+    def __iter__(self):
+        return self
+    def next(self):
+        return new_quantity(self.flat.next(),self.quantity.unit)
+    def __getitem__(self,x): 
+        return new_quantity(self.flat[x], self.quantity.unit)
+    def __setitem__(self,index,x):
+        return self.flat.__setitem__(index,x.value_in(self.quantity.unit))
+    @property
+    def base(self):
+        return self.quantity
+    @property
+    def index(self):
+        return self.flat.index
+    @property
+    def coords(self):
+        return self.flat.coords
+    @property
+    def unit(self):
+        return self.quantity.unit
+    @property
+    def number(self):
+        return self.flat
+    def copy(self):
+        return new_quantity(self.flat.copy(), self.quantity.unit)
+    def is_quantity(self):
+        return True
+    def value_in(self, unit):
+        return self.copy().value_in(unit)
+    def as_quantity_in(self, unit):
+        return self.copy().as_quantity_in(unit)
+    # todo: add as required
+
 class VectorQuantity(Quantity):
     """
     A VectorQuantity object represents a physical vector
@@ -395,40 +432,7 @@ class VectorQuantity(Quantity):
         return new_quantity(self.number.flatten(), self.unit)
     
     @property
-    def flat(self):
-        flat=self.number.flat
-        class flatiter_wrapper(object):
-            def __init__(self, quantity):
-                self.flat=quantity.number.flat
-                self.quantity=quantity
-            def __iter__(self):
-                return self
-            def next(self):
-                return new_quantity(self.flat.next(),self.quantity.unit)
-            def __getitem__(self,x): 
-                return new_quantity(self.flat[x], self.quantity.unit)
-            @property
-            def base(self):
-                return self.quantity
-            def copy(self):
-                return new_quantity(self.flat.copy(), self.quantity.unit)
-            @property
-            def index(self):
-                return self.flat.index
-            @property
-            def coords(self):
-                return self.flat.coords
-# some work needed to make it a quantity:
-            @property
-            def unit(self):
-                return self.quantity.unit
-            def is_quantity(self):
-                return True
-            def value_in(self, unit):
-                return self.copy().value_in(unit)
-            def as_quantity_in(self, unit):
-                return self.copy().as_quantity_in(unit)
-                
+    def flat(self):                
         return flatiter_wrapper(self)
         
     def is_vector(self):
