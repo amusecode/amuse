@@ -397,7 +397,7 @@ class Multiples(object):
         count_resolve_encounter = 0
         count_ignore_encounter = 0
         
-        while time < end_time:
+        while time <= end_time:		# the <= here allows zero-length steps
 
             if self.global_debug > 1:
                 print ''
@@ -408,18 +408,19 @@ class Multiples(object):
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
            
-            # JB, modified this, in Bonsai we can take a 0 time-step
-            # to detect multiples. That would cause the newtime ==
-            # time to evaluate to true when there are multiples
-            # detected and break out of the evaluate loop before the
-            # time reached end_time
+            # JB modified this: in Bonsai we can take a zero-length
+            # time step to detect multiples. That would cause the
+            # newtime == time to evaluate to true when there are
+            # multiples detected and break out of the evaluate loop
+            # before the time reached end_time.  Same is now possible
+            # with ph4 (SLWM).
 
             if newtime == time and (stopping_condition.is_set() == False):
                 break
             
             #self.gravity_code.evolve_model(end_time)
             time = newtime
-            
+
             if stopping_condition.is_set():
 
                 # Synchronize everything for now.  Later we can
@@ -860,15 +861,16 @@ class Multiples(object):
                                                         self.kepler, 1)
 
         Etop = E*star1.mass*star2.mass/M
-        peri = a*(1-e)
         ttrans = self.gravity_constant*M/(4*abs(E))**1.5
 
         # Note: transit time = 0.056 * period for a bound orbit.
 
         if e < 1:
+            peri = a*(1-e)
             apo = a*(1+e)
             period = self.kepler.get_period()
         else:
+            peri = a*(e-1)
             apo = 1.e9*a	# 1.e9 is large but otherwise arbitrary
             period = 1.e9*ttrans
 

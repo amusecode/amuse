@@ -200,8 +200,8 @@ class jdata {
     real get_total_mass();
     void predict(int j, real t);
     void predict_all(real t, bool full_range = false);
-    void advance();
-    bool advance_and_check_encounter();
+    void advance(bool zero_step_mode = false);
+    bool advance_and_check_encounter(bool zero_step_mode = false);
     void synchronize_all(bool reinit_sched = true);
     void synchronize_list(int jlist[], int njlist);
     void update_merger_energy(real dEmerge);

@@ -11,10 +11,16 @@
 static jdata *jd = NULL;
 static idata *id = NULL;
 static scheduler *s = NULL;
+
+static bool zero_step_mode = false;	// preliminary mode to take zero-length
+					// steps and identify bound subsystems
+					// off by default; set by setter only
+
 static bool force_sync = false;		// off by default; set by setter only;
 					// stays on until explicitly turned off;
 					// only affects an evolve_model() step
 					// that makes it to to_time.
+
 static int block_steps = 0;
 static int total_steps = 0;
 
@@ -206,6 +212,16 @@ int set_sync_time(double input)		// should probably never do this...
 int get_sync_time(double * output)
 {
     *output = jd->sync_time + begin_time;
+    return 0;
+}
+
+int set_zero_step_mode(int z) {
+    zero_step_mode = z;
+    return 0;
+}
+
+int get_zero_step_mode(int *z) {
+    *z = zero_step_mode;
     return 0;
 }
 
@@ -601,7 +617,12 @@ int evolve_model(double to_time)
     // to_time.  The function breaks out of the jd->advance() loop
     // (without synchronization) if an encounter is detected.
 
-    bool debug_print = false && jd->mpi_rank == 0;
+    bool debug_print = false;
+    debug_print &= (jd->mpi_rank == 0);
+
+    reset_stopping_conditions();    
+    jd->UpdatedParticles.clear();
+    jd->coll1 = jd->coll2 = -1;
 
     if (debug_print) {
 	cout << "in evolve_model: "; PRC(to_time); PRL(jd->nj);
@@ -610,53 +631,70 @@ int evolve_model(double to_time)
 	s->print();
     }
 
-    reset_stopping_conditions();    
-    jd->UpdatedParticles.clear();
-
-    real tt = to_time - jd->sync_time - begin_time;	// actual delta_t for
+    real tt = to_time - jd->sync_time - begin_time;	// actual end time for
 							// internal calculation
     if (debug_print) {
-        PRC(to_time); PRC(jd->sync_time); PRC(begin_time); PRL(jd->system_time);
+	PRC(to_time); PRC(jd->sync_time);
+	PRC(begin_time); PRL(jd->system_time);
 	PRL(tt);
     }
 
     int nb = jd->block_steps;
     int ns = jd->total_steps;
 
-    if (!force_sync) {
+    // Zero_step_mode means that we are taking a dummy step of length
+    // zero to set the collision stopping condition if any particles
+    // qualify.  Do this repeatedly at the start of the calculation to
+    // manage initial binaries and/or planetary systems.  In this
+    // mode, we calculate forces with ilist equal to the entire
+    // system, but we don't correct, advance the time, or set time
+    // steps.  We always take a step in this case, even though
+    // system_time = tt.
 
-        while (jd->system_time < tt)
-            if (jd->advance_and_check_encounter()) break;
+    if (zero_step_mode) {
 
+	jd->advance_and_check_encounter(zero_step_mode);
+    
     } else {
 
-        bool b = false;
-	while (jd->get_tnext() <= tt) {
-	    b = jd->advance_and_check_encounter();
-            if (b) break;
+	if (!force_sync) {
+
+	    while (jd->system_time < tt)
+		if (jd->advance_and_check_encounter()) break;
+
+	} else {
+
+	    bool b = false;
+	    while (jd->get_tnext() <= tt) {
+		b = jd->advance_and_check_encounter();
+		if (b) break;
+	    }
+
+	    if (!b) {
+
+		jd->system_time = tt;
+		jd->synchronize_all(false);
+
+		// Time steps have been recomputed by
+		// synchronize_all(), and may be undesirably short
+		// depending on tt (steps must be commensurate with
+		// current time).  Recompute the time steps here (with
+		// updated acc and jerk) after resetting system_time,
+		// and reinitialize the scheduler.
+
+		sync_times();
+		recompute_timesteps();
+		if (debug_print) s->print();
+	    }
 	}
 
-	if (!b) {
-	    jd->system_time = tt;
-	    jd->synchronize_all(false);
-
-	    // Time steps have been recomputed by synchronize_all(),
-	    // and may be undesirably short depending on tt (steps
-	    // must be commensurate with current time).  Recompute the
-	    // time steps here (with updated acc and jerk) after
-	    // resetting system_time, and reinitialize the scheduler.
-
-	    sync_times();
-	    recompute_timesteps();
-	    if (debug_print) s->print();
-	}
+	// int dblock = jd->block_steps - nb;
+	// int dtotal = jd->total_steps - ns;
+	block_steps += jd->block_steps - nb;
+	total_steps += jd->total_steps - ns;
+	PRL(jd->system_time); //PRC(dblock); PRL(dtotal);
+	s->print(true);
     }
-
-    // int dblock = jd->block_steps - nb;
-    // int dtotal = jd->total_steps - ns;
-    block_steps += jd->block_steps - nb;
-    total_steps += jd->total_steps - ns;
-    // PRC(jd->system_time); PRC(dblock); PRL(dtotal);
 
     return 0;
 }

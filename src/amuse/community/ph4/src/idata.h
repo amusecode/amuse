@@ -61,7 +61,7 @@ class idata {
     real get_kin();
     void predict(real t);
     void correct(real tnext);
-    void advance(real tnext);
+    void advance(real tnext, bool zero_step_mode = false);
     void check_encounters();
 
     // In gpu.cc:

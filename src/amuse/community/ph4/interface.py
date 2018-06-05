@@ -232,6 +232,28 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
+    def set_zero_step_mode():
+        """
+        Set the value of zero_step_mode.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('zero_step_mode', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_zero_step_mode():
+        """
+        Get the value of zero_step_mode.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('zero_step_mode', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def set_force_sync():
         """
         Set the value of force_sync.
@@ -540,6 +562,14 @@ class ph4(GravitationalDynamics,GravityFieldCode):
             "sync_time",
             "last model synchronization time",
             default_value = 0.0 | nbody_system.time
+        )
+
+        object.add_method_parameter(
+            "get_zero_step_mode",
+            "set_zero_step_mode",
+            "zero_step_mode",
+            "force evolve_model to take zero-length steps",
+            default_value = 0
         )
 
         object.add_method_parameter(

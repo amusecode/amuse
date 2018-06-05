@@ -1356,10 +1356,10 @@ real  kepler::pred_return_to_apastron()
 
 real kepler::pred_transform_to_radius(real r, int direction)
 {
-    // Transform forward or backwards in time, depending on direction.
+    // Transform forward or backward in time, depending on direction.
 
     if (energy < 0)
-        true_anomaly = sym_angle(true_anomaly); // unnecessary?
+        true_anomaly = sym_angle(true_anomaly); 	// unnecessary?
     else if (separation > r && direction*true_anomaly > 0) {
 	err_or_warn(
 	"kepler: pred_transform_to_radius: unbound orbit inside target radius");
