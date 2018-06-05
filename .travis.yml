@@ -7,20 +7,33 @@ os:
 
 dist: trusty
 
-sudo: false
+sudo: enabled
 
 compiler:
   - gcc
 
 install:
+- pip install numpy scipy matplotlib nose docutils mpi4py h5py
 - ./configure
-  python setup.py install
+- python setup.py install
 
 virtualenv:
   system_site_packages: false
 
 before_install:
-- pip install numpy scipy matplotlib nose docutils mpi4py h5py
+- sudo apt-get install build-essential
+- sudo apt-get install gfortran 
+- sudo apt-get install python-dev
+- sudo apt-get install libgsl0-dev
+- sudo apt-get install cmake
+- sudo apt-get install libfftw3-3
+- sudo apt-get install libfftw3-dev
+- sudo apt-get install libmpfr4
+- sudo apt-get install libmpfr-dev
+- sudo apt-get install libhdf5-serial-dev
+- sudo apt-get install hdf5-tools
+- sudo apt-get install libopenmpi-dev
+- sudo apt-get install openmpi-bin
 
 script:
 - nosetests
