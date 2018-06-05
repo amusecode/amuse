@@ -1,5 +1,4 @@
 from amuse.support.interface import InCodeComponentImplementation
-from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.support import exceptions
