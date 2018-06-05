@@ -7,42 +7,20 @@ os:
 
 dist: trusty
 
-sudo: required
+sudo: false
 
 compiler:
   - gcc
 
 install:
 - ./configure
-- make framework
-- DOWNLOAD_CODES=1 make rebound.code
+  python setup.py install
 
 virtualenv:
-  system_site_packages: true
+  system_site_packages: false
 
 before_install:
-- sudo apt-get update -qq
-- sudo apt-get install -qq build-essential 
-- sudo apt-get install -qq cmake 
-- sudo apt-get install -qq gfortran 
-- sudo apt-get install -qq python-dev
-- sudo apt-get install -qq libopenmpi-dev 
-- sudo apt-get install -qq openmpi-bin
-- sudo apt-get install -qq libgsl0-dev
-- sudo apt-get install -qq libfftw3-3 
-- sudo apt-get install -qq libfftw3-dev
-- sudo apt-get install -qq libgmp3-dev 
-- sudo apt-get install -qq libmpfr4 
-- sudo apt-get install -qq libmpfr-dev
-- sudo apt-get install -qq libhdf5-serial-dev 
-- sudo apt-get install -qq hdf5-tools
-- sudo apt-get install -qq python-nose 
-- sudo apt-get install -qq python-numpy 
-- sudo apt-get install -qq python-setuptools 
-- sudo apt-get install -qq python-docutils
-- sudo apt-get install -qq python-h5py 
-- sudo apt-get install -qq python-setuptools
-- sudo pip install mpi4py
+- pip install numpy scipy matplotlib nose docutils mpi4py h5py
 
 script:
-- nosetests test/codes_tests/test_rebound.py
+- nosetests
