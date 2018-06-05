@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rieder/amuse.svg?branch=cover)](https://travis-ci.org/rieder/amuse)
+
 This directory contains the AMUSE software. With AMUSE you can write
 scripts to simulate astrophysical problems in different domains.
 
