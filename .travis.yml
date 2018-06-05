@@ -37,4 +37,4 @@ before_install:
 
 script:
 - export PYTHONPATH=${PWD}/src
-- for i in test/core_tests/test_*.py; do echo "running test $i" && nosetests $i; done
+- for i in test/core_tests/test_*.py; do if [ ${i: -27} != "test_grid_implementation.py" ]; then echo $i && nosetests $i; else echo "skipping $i"; fi; done
