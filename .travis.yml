@@ -15,7 +15,7 @@ compiler:
 install:
 - pip install numpy scipy matplotlib nose docutils mpi4py h5py
 - ./configure
-- python setup.py install
+- python setup.py install --user
 
 virtualenv:
   system_site_packages: false
@@ -36,16 +36,16 @@ before_install:
 - sudo apt-get install openmpi-bin
 
 script:
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/core_tests
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_bhtree.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_bridge.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_bse.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_encounters.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_fi.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_gravity_codes.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_hermite.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_hop.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_lab.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_seba.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_sse.py
-- nosetests ../lib/python2.7/site-packages/amuse/test/suite/ticket_tests/
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/core_tests
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_bhtree.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_bridge.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_bse.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_encounters.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_fi.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_gravity_codes.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_hermite.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_hop.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_lab.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_seba.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/codes_tests/test_sse.py
+- nosetests ~/.local/lib/python2.7/site-packages/amuse/test/suite/ticket_tests/
