@@ -1,4 +1,4 @@
-Installing on Ubuntu version 18.04 with Python 2.7
+Installing on Ubuntu version 18.04 with Python 3.6
 ==================================================
 
 In this section we assume a default Ubuntu desktop installation.
@@ -11,7 +11,7 @@ You can choose between openmpi and mpich as desired, both work with AMUSE.
 
 For openmpi do::
 
-  > sudo apt-get install build-essential gfortran python-dev \
+  > sudo apt-get install build-essential gfortran python3-dev \
 	  libopenmpi-dev openmpi-bin \
 	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
 	  libgmp3-dev libmpfr4 libmpfr-dev \
@@ -20,7 +20,7 @@ For openmpi do::
 
 For mpich do::
 	
-  > sudo apt-get install build-essential gfortran python-dev \
+  > sudo apt-get install build-essential gfortran python3-dev \
 	  mpich libmpich-dev \
 	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
 	  libgmp3-dev libmpfr4 libmpfr-dev \
@@ -41,7 +41,7 @@ This ensures that you don't need root privileges and that your AMUSE environment
 
 To create the virtual environment, do (from a desired directory)::
 
-  > virtualenv Amuse-env
+  > python3 -m venv Amuse-env
   
 When the environment is created, you can activate it with::
 
@@ -75,7 +75,10 @@ Finally, build and install AMUSE, with optionally downloaded codes if desired::
 
   > [export DOWNLOAD_CODES=1]
   > python setup.py install
-  
+
+.. note:
+  The part below does not currently work in a Python 3 environment. Please skip it for now.
+
 Optionally, to test if your setup was successful, run (this will take a long time)::
 
   > python setup.py test

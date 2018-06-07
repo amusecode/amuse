@@ -1,37 +1,37 @@
-Installing on Ubuntu version 18.04 with Python 2.7
-==================================================
+Installing on macOS High Sierra with Python 3.6
+===============================================
 
-In this section we assume a default Ubuntu desktop installation.
+In this section we assume a default macOS installation with macports installed.
 
 Installing prerequisites
 ------------------------
 These prerequisites are essential for building AMUSE and the community codes.
 They can be installed system-wide with the commands below.
 You can choose between openmpi and mpich as desired, both work with AMUSE.
+Please make sure to set the compilers installed here as default, as it will greatly simplify things later on.
 
 For openmpi do::
 
-  > sudo apt-get install build-essential gfortran python-dev \
-	  libopenmpi-dev openmpi-bin \
-	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
-	  libgmp3-dev libmpfr4 libmpfr-dev \
-	  libhdf5-serial-dev hdf5-tools \
-	  git
-
+  > sudo port install gcc7 openmpi-gcc7 hdf5 gsl cmake gmp mpfr fftw-3 +gcc7
+  > sudo port install python36 py36-virtualenv
+  > sudo port select --set mpi openmpi-gcc7-fortran
+  > sudo port select --set gcc mp-gcc7
+  > sudo port select --set python3 python36
+  > sudo port select --set virtualenv virtualenv36
+  
 For mpich do::
 	
-  > sudo apt-get install build-essential gfortran python-dev \
-	  mpich libmpich-dev \
-	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
-	  libgmp3-dev libmpfr4 libmpfr-dev \
-	  libhdf5-serial-dev hdf5-tools \
-	  git
+  > sudo port install gcc7 mpich-gcc7 hdf5 gsl cmake gmp mpfr fftw-3 +gcc7
+  > sudo port install python36 py36-virtualenv
+  > sudo port select --set mpi mpich-gcc7
+  > sudo port select --set gcc mp-gcc7
+  > sudo port select --set python2 python27
+  > sudo port select --set virtualenv virtualenv36
 
 .. note:
   Please make sure not to install mpich and openmpi together. 
   When both are installed strange errors will occur and AMUSE will not work.
   If you have both installed please first remove both and then install one.
-
   
 Installing AMUSE
 ----------------
@@ -41,7 +41,7 @@ This ensures that you don't need root privileges and that your AMUSE environment
 
 To create the virtual environment, do (from a desired directory)::
 
-  > virtualenv Amuse-env
+  > python3 -m venv Amuse-env
   
 When the environment is created, you can activate it with::
 
@@ -75,7 +75,10 @@ Finally, build and install AMUSE, with optionally downloaded codes if desired::
 
   > [export DOWNLOAD_CODES=1]
   > python setup.py install
-  
+ 
+.. note:
+  The part below does not currently work in a Python 3 environment. Please skip it for now.
+
 Optionally, to test if your setup was successful, run (this will take a long time)::
 
   > python setup.py test

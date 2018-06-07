@@ -1,5 +1,5 @@
 Installing on macOS High Sierra with Python 2.7
-==================================================
+===============================================
 
 In this section we assume a default macOS installation with macports installed.
 
@@ -28,11 +28,10 @@ For mpich do::
   > sudo port select --set python2 python27
   > sudo port select --set virtualenv virtualenv27
 
-.. note::
+.. note:
   Please make sure not to install mpich and openmpi together. 
-  When both are installed strange errors will occur and AMUSE 
-  will not work. If you see both installed please remove both 
-  and install one.
+  When both are installed strange errors will occur and AMUSE will not work.
+  If you have both installed please first remove both and then install one.
   
 Installing AMUSE
 ----------------
