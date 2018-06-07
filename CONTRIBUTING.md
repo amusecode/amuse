@@ -1,6 +1,8 @@
 Contributing to AMUSE
 =====================
 
+So you're interested in contributing code to AMUSE? Excellent! 
+
 Reporting Issues
 ----------------
 
@@ -10,8 +12,6 @@ operating system, compiler, and the Python, Numpy, and AMUSE versions you are us
 
 Contributing code
 -----------------
-
-So you're interested in contributing code to AMUSE? Excellent!
 
 Most contributions to AMUSE are done via pull requests from GitHub users'
 forks of the [amuse repository](https://github.com/amusecode/amuse).
@@ -28,15 +28,6 @@ include the following:
   returns consistent results on all platforms (since we run these tests on many
   platforms/configurations). 
 
-Other Tips
-----------
-
-- When contributing trivial documentation fixes (i.e. fixes to typos,
-  spelling, grammar) that do not contain any special markup and are
-  not associated with code changes, please include the string ``[docs
-  only]`` in your commit message.
-
-      $ git commit -m "Fixed typo [docs only]"
 
 Checklist for Contributed Code
 ------------------------------
@@ -56,8 +47,11 @@ in the package.
 **Code Quality**
   * Is the code compatible with Python >=2.7?
   * Are there dependencies other than AMUSE, MPI, the Python Standard
-    Library, and NumPy 1.10.0 or later?
-    * Are additional dependencies handled appropriately?
+    Library, and NumPy?
+  * For compatibility reasons we prefer code that also works on older 
+    versions of Numpy, matplotlib etc.
+  * Are additional dependencies handled appropiately? If possible, factor out 
+    additional dependencies or make them optional.
 
 **Testing**
   * Are the inputs to the functions sufficiently tested?
