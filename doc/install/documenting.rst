@@ -39,10 +39,10 @@ Organization of the AMUSE documentation
 
 The actual ReStructured Text files are kept in :file:`doc/install`,
 :file:`doc/design`, :file:`doc/tutorial`. The main entry point is
-:file:`doc/index.txt`. The documentation suite is
+:file:`doc/index.rst`. The documentation suite is
 built as a single document in order to make the most effective use of cross
 referencing, we want to make navigating the AMUSE documentation as easy as
 possible.
 
 Additional files can be added to the various sections by including their base
-file name (the .txt extension is not necessary) in the table of contents.
+file name (the .rst extension is not necessary) in the table of contents.
