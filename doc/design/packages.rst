@@ -9,7 +9,7 @@ explanation can be found in
 `Modules <http://docs.python.org/tutorial/modules.html>`). In this
 chapter the most important packages are named. 
 
-The sourcecode of the **AMUSE Code** and **Legacy Codes** layer is 
+The source code of the **AMUSE Code** and **Community Codes** layer is 
 combined in one package. The package name is **amuse**.
 
 amuse
@@ -24,8 +24,8 @@ amuse.support
     data io and model and all base classes can be found in 
     this package.
     
-amuse.legacy
-    Contains the code the **Legacy Codes** layer. The legacy codes
+amuse.community
+    Contains the code the **Community Codes** layer. The community codes
     can be found in this package as well as support code for generating
     the script to legacy code messaging framework.
     

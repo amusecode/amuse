@@ -4,7 +4,7 @@ Architecture Overview
 
 Layers
 ------
-The AMUSE architecture is based on a layered design with 3 layers. 
+The AMUSE architecture is based on a layered design with three layers. 
 The highest layer is a python script, written for a single problem
 or set of problems. The next layer contains the AMUSE code, this layer
 provides a library of objects and function to use in the python script. 
@@ -328,7 +328,7 @@ Wrappers
 ++++++++
 
 Wrappers decorate a method. Wrappers can do pre- and post-processing of
-the arguments or decide if a method can savely be called.
+the arguments or decide if a method can safely be called.
 
 units and error code
     Defines a unit for each argument of the wrapped method. When called
@@ -339,7 +339,7 @@ state
     The state of a code determines which functions are valid to call
     and how the code can transfer from one state into another. For example, 
     a code might give incorrect answers if the potential energy is requested before
-    the particles are entered into the code, the state model will rais an error to
+    the particles are entered into the code, the state model will raise an error to
     inform the script writer of this problem.
     
 Implementation

@@ -5,9 +5,9 @@ Introduction
 
 In this document we will describe the high level design of AMUSE. During
 the development period of AMUSE this document will be a 
-"Work in Progress". It will be updated to state latests idead about
+"Work in Progress". It will be updated to state latests ideas about
 the design and reflect the current implementation. More detailed 
-documentation can be found in the reference documentation
+documentation can be found in the reference documentation.
 
 AMUSE
 -----
@@ -29,13 +29,12 @@ experiments.  The toolbox provides:
 * A standard way for adding new modules to AMUSE.
 * Examples to show the use of each module and possible couplings 
   between the modules.
-* Documentation containing introduction, howto's and reference documents.
+* Documentation containing introduction, howtos and reference documents.
 
 
 Development
 ~~~~~~~~~~~
-AMUSE development is planned to take place in a 2.5 year period. AMUSE 
-is developed at the Leiden Observatory. The Leiden Observatory is
+AMUSE is originally developed at the Leiden Observatory. The Leiden Observatory is
 a faculty of the Leiden University in the Netherlands. Funding is provided
 by a NOVA grant.
 

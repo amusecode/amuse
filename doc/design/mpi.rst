@@ -19,7 +19,7 @@ There are also be some disadvantages:
 
 * Need to define a protocol over MPI
 * More "hand-work" needed to couple code. Other frameworks, like SWIG and f2py,
-  generate an interface based on the appliction code.
+  generate an interface based on the application code.
 * More overhead for every call, slower calls
 
 These disadvantages are mitigated by creating a library that handles
