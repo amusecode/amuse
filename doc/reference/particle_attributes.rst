@@ -4,7 +4,7 @@ Particle Attributes
 
 Particle attributes are defined in the 
 :py:mod:`amuse.datamodel.particle_attributes`. These attributes
-can be accesed in two ways, on the particle(s) or as a function
+can be accessed in two ways, on the particle(s) or as a function
 imported from the module. When accessed on the particles, the
 first parameter (usually called ```particles```) must not
 be given.

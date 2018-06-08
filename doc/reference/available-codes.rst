@@ -7,7 +7,10 @@ Currently supported Community Codes
 Introduction
 ~~~~~~~~~~~~
 
-Here we provide an overview of all currently supported community codes in AMUSE,
+.. note::
+  This document is not up-to-date!
+
+Here we provide an overview of some currently supported community codes in AMUSE,
 along with a concise explanation of how each code works.
 This document serves as an initial guide in finding the code with the highest
 applicability to a specific astrophysical problem. The supported codes
@@ -25,14 +28,14 @@ Stellar Dynamics
 
 * BHtree_
 * hermite0_
-* phiGRAPE_
-* twobody_
-* smallN_
-* octgrav_
-* mercury_
-* huayno_
-* mmc_
 * HiGPUs_
+* huayno_
+* mercury_
+* mmc_
+* octgrav_
+* phiGRAPE_
+* smallN_
+* twobody_
 
 General
 -------
@@ -53,40 +56,42 @@ Note: holds for AMUSE implementation.
 |bhtree   |tree                 |shared/fixed     |Y       |N        |N     |C/C++    |CST           |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|phigrape |direct               |block/variable   |Y g6    |Y        |Y     |FORTAN   |CSPT          |N            | 
-|         |                     |                 |        |sapporo  |      |         |              |             |
+|bonsai   |tree                 |                 |        |         |      |         |              |             |
+|         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|octgrav  |tree                 |shared           |N       |Y        |N     |C/C++    |S             |N            | 
+|fi       |tree                 |block/variable   |Y       |N        |N     |FORTRAN  |S             |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |hermite  |direct               |shared/variable  |Y       |N        |N     |C/C++    |CSOPT         |Y            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|twobody  |universal variables, |none, exact      |Y       |N        |N     |Python   |              |N            |
-|         |Kepler eq.           |                 |        |         |      |         |              |             |
-|         |                     |                 |        |         |      |         |              |             |
-+---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|smallN   |direct Hermite 4th   |individual       |Y       |N        |N     |C/C++    |              |N            |
-|         |order                |                 |        |         |      |         |              |             |
-+---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|fi       |tree                 |block/variable   |Y       |N        |N     |FORTRAN  |S             |N            |
-|         |                     |                 |        |         |      |         |              |             |
-|         |                     |                 |        |         |      |         |              |             |
-+---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|mercury  |MVS symplectic       |                 |Y       |N        |N     |FORTRAN  |              |N            |
-|         |                     |                 |        |         |      |         |              |             |
+|HiGPUs   |direct               |block time steps |N       |Y        |N     |C/C++    |              |Y (on gpus   |
+|         |                     |                 |        |         |      |         |              |cluster)     |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |huayno   |Approx symplectic    |                 |Y       |Y(opencl)|N     |C        |              |N            |
 |         |                     |                 |        |         |      |         |              |             |
-|         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 |gadget   |tree                 |individual       |Y       |N        |N     |C/C++    |S             |Y            |
 |         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|mercury  |MVS symplectic       |                 |Y       |N        |N     |FORTRAN  |              |N            |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
-|HiGPUs   |direct               |block time steps |N       |Y        |N     |C/C++    |              |Y (on gpus   |
-|         |                     |                 |        |         |      |         |              |cluster)     |
+|octgrav  |tree                 |shared           |N       |Y        |N     |C/C++    |S             |N            | 
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|rebound  |                     |                 |        |         |      |         |              |N            |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|phigrape |direct               |block/variable   |Y g6    |Y        |Y     |FORTAN   |CSPT          |N            | 
+|         |                     |                 |        |sapporo  |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|smallN   |direct Hermite 4th   |individual       |Y       |N        |N     |C/C++    |              |N            |
+|         |order                |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|twobody  |universal variables, |none, exact      |Y       |N        |N     |Python   |              |N            |
+|         |Kepler eq.           |                 |        |         |      |         |              |             |
 |         |                     |                 |        |         |      |         |              |             |
 +---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 
@@ -983,11 +988,11 @@ To use the code with AMP GPUs you can download the OpenCL version from the websi
 Stellar Evolution
 ~~~~~~~~~~~~~~~~~
 
-* sse_
 * bse_
-* seba_
 * evtwin_
 * mesa_
+* seba_
+* sse_
 
 
 .. _sse:

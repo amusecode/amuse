@@ -9,8 +9,8 @@ Introduction
 
 Here we provide help for setting up general-purpose computing on graphics processing units (GPGPU)
 using CUDA. Performing (part of) the calculations on a graphics card can result 
-in a significant speed-up. Currently two codes in AMUSE support or require GPGPU: 
-phi-GRAPE (using Sapporo) and Octgrav.
+in a significant speed-up. Several codes in AMUSE support or require GPGPU: 
+phi-GRAPE (using Sapporo), ph4 (using Sapporo), Octgrav, Bonsai, HiGPUs.
 
 
 Self-help script

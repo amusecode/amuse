@@ -3,7 +3,7 @@ AMUSE Style Guide
 ==================
 
 
-This Style Guide covers the sourcecode written in the AMUSE project. The
+This Style Guide covers the source code written in the AMUSE project. The
 source of the existing codes, integrated into AMUSE, do not have to
 follow this guide. Existing codes are not rewritten.
 
@@ -46,7 +46,7 @@ Naming Conventions
     not used a lot, at least the class or method is described better
     in the longer name.
     
-    Do not use abbreviations in names. Especcially, do not use the 
+    Do not use abbreviations in names. Especially, do not use the 
     first three or four letters of a word (for example, *dir* for directory
     or *ref* for reference). Also, do not remove the vowels to shorten a
     name (for example *tmp* for temp).

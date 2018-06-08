@@ -236,13 +236,13 @@ Defined stopping conditions table
 
     type
         The type of the stopping condition, integer between
-        0 and N. defined by the framework
+        0 and N. Defined by the framework
     supported
         1 if the stopping condition is supported, 0 otherwise.
-        Needs to be set by the implementor
+        Needs to be set by the implementer
     enabled
         1 if enabled by the user, 0 otherwise.
-        Implementor must provide a mechanism to set and unset
+        Implementer must provide a mechanism to set and unset
         this field.
 
 Set stopping conditions table
@@ -266,7 +266,7 @@ Set stopping conditions table
 
     type
         The type of the stopping condition, integer between
-        0 and N. defined by the framework. Set by the code
+        0 and N. Defined by the framework. Set by the code
     particle(0...n)
         Index of the particle involved in the stopping condition.
         The index of the last particle must be -1
@@ -332,7 +332,7 @@ Access in FORTRAN through:
 
 .. c:var:: long set_conditions
 
-Individual bits are set when the a condition is detected by the
+Individual bits are set when a condition is detected by the
 code. (the :c:func:`set_stopping_condition_info` will fill
 this bitmap). Access in FORTRAN:
 
@@ -430,7 +430,7 @@ the stopping conditions.
 .. c:function:: int set_stopping_condition_particle_index(int index, int column_index, int index_of_particle)
 
     Sets the id of a particles involved in the stopping
-    conditionion (only needed for stopping conditions with particles)
+    condition (only needed for stopping conditions with particles)
 
     .. code-block:: c
 

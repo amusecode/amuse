@@ -10,7 +10,7 @@ Containers
 ~~~~~~~~~~
 The AMUSE datamodel is based on objects stored in containers. The 
 containers store all the relevant data of the objects. One can work 
-with the data in a container as a whole or with an indiviual object 
+with the data in a container as a whole or with an individual object 
 in a container. When working with an individual object all data will 
 be retrieved from and stored in the container of that object. *This 
 is different from normal python objects and lists where the lists 
@@ -128,7 +128,7 @@ containers defined in community codes and in example scripts all
 follow the same conventions. We describe these conventions in a 
 later section in this chapter.
 
-Diffent attributes and names for different kinds::
+Different attributes and names for different kinds::
 
     >>> from amuse.datamodel import Particles
     >>> from amuse.units import units
@@ -212,7 +212,7 @@ Duplicate keys::
     19207725.6894
     
 If you use large sets or want to load a lot of simulations with 
-different particles into a script the probablity of encountering a 
+different particles into a script the probability of encountering a 
 duplicate may be too high. You can check for duplicates in a set of 
 particles by calling ``has_duplicates`` on a set. You can also change
 the key generator to better match your problem.

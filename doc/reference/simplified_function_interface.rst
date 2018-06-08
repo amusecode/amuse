@@ -23,7 +23,7 @@ Let's start with a simple example specification:
             function.can_handle_array = True
             return function
 
-this can be converted to:
+This can be converted to:
 
 .. code-block:: python
              

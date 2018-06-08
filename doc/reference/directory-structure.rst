@@ -32,7 +32,7 @@ The directories under the ``src`` directory are further split into:
 
 
 * ``community`` - contains the source code of existing astrophysical
-  applications and *glue* code to the AMUSE interface classes. in other
+  applications and *glue* code to the AMUSE interface classes. In other
   words this directory contains the implementation of the interfaces.
 * ``support`` - contains the AMUSE generic code, defines the data
   representation and input/output routines and also provides the generic
@@ -45,7 +45,7 @@ The ``test`` directories
 
 The directories under the ``test`` directory are further split into:
 
-* ``unit_tests`` - All unit testing code. These tests are coded using.
+* ``unit_tests`` - All unit testing code. These tests are coded using
   the standard unit testing framework that is included in the Python
   distribution (``unittest``). See python module documentation for further
   information: http://docs.python.org/library/unittest.html.

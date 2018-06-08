@@ -2,12 +2,6 @@
 Hydrodynamics Interface Definition
 ==================================
 
-=========== ============ ========= =========
-Date        Author(s)    Version   State
-=========== ============ ========= =========
-02-11-2009  AvE          0.0       TBD
-11-10-2010  AvE          0.1       Initial
-=========== ============ ========= =========
 
 Introduction
 ~~~~~~~~~~~~
@@ -23,7 +17,7 @@ the template of the ``get_timestep`` and ``set_timestep`` functions.
 A parameter access function may only retrieve or 
 update the value of a single parameter. After all parameters have been set, the 
 ``commit_parameters`` function should be called,
-this gives the code the opertunity prepare the model.
+this gives the code the opportunity prepare the model.
 
 .. autoclass:: amuse.community.interface.hydro.HydrodynamicsInterface
    :members: set_timestep, get_timestep, commit_parameters
@@ -49,7 +43,7 @@ be retrieved and updated with the following functions.
 
 Grid State, Extension Mechanism
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Not all information of a grid point can be transfered with the fill_grid_state and get_grid_state functions. To
+Not all information of a grid point can be transferred with the fill_grid_state and get_grid_state functions. To
 support other properties (like pressure or MHD properties), the code can define ``get_`` and ``set_`` functions. These
 functions must get or set one scalar property (1 argument) or a vector property (3 arguments)
 

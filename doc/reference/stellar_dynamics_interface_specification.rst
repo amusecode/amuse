@@ -2,14 +2,6 @@
 Stellar Dynamics Interface Definition
 =====================================
 
-=========== ============ ========= =========
-Date        Author(s)    Version   State
-=========== ============ ========= =========
-13-10-2009  AvE          0.1       Initial
-20-10-2009  AvE          0.2       Initial, after first review with IP
-02-11-2009  AvE          0.3       Initial, after second review with MR
-=========== ============ ========= =========
-
 Introduction
 ~~~~~~~~~~~~
 
@@ -21,7 +13,7 @@ Gravity dynamics codes have at least one specified parameter. Other parameters n
 to be specified on a per code basis. All parameters have to be accessed with functions following
 the template of the ``get_eps`` and ``set_eps`` functions. A parameter access function may only
 retrieve or update the value of a single parameter. After all parameters have been set, the 
-``initialize_code`` function should be called, this gives the code the opertunity prepare the
+``initialize_code`` function should be called, this gives the code the opportunity prepare the
 model.
 
 .. autoclass:: amuse.community.interface.gd.GravitationalDynamicsInterface
@@ -50,7 +42,7 @@ the following functions.
 
 Object State, Extension Mechanism
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Not all information of a particle can be transfered with the get_state and set_state functions. To
+Not all information of a particle can be transferred with the get_state and set_state functions. To
 support other properties (like acceleration), the code can define ``get_`` and ``set_`` functions. These
 functions must get or set one scalar property (1 argument) or a vector property (3 arguments)
 

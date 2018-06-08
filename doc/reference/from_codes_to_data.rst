@@ -5,7 +5,7 @@ From Codes to Data
 Introduction
 ------------
 
-The framework containts two distinct levels on wich interaction with the codes takes place.
+The framework contains two distinct levels on which interaction with the codes takes place.
 The first level interacts directly with the code and is implemented as a set of functions
 on a class. The second level is built on top of the first level and abstracts the function calls
 to handling objects and datasets. Often multiple function-calls on the first level can be 
@@ -14,7 +14,7 @@ abstracted to a single statement (assignment or query) on the second level.
 The first level
 ---------------
 The first level is a direct interface to the code, in this chapter the kind of functions
-supported by the first level interface code will be breifly described. All functions that can
+supported by the first level interface code will be briefly described. All functions that can
 be defined on the first level fall in two categories, those that handle scalars (a single
 value for each parameter) or those that handle 1-D vectors (a list of values for each
 parameters). For functions that handle 1-D vectors each vector must be of the same length. 
@@ -27,7 +27,7 @@ parameters). For functions that handle 1-D vectors each vector must be of the sa
     communication layer simpler and allows for some optimizations in the 
     communication between python and C/Fortran codes.
 
-An exampe of using the first level with scalars and vectors::
+An example of using the first level with scalars and vectors::
 
     from amuse.community.codes.athena.interface import AthenaInterface
     

@@ -2,19 +2,11 @@
 Stellar Evolution Interface Definition
 =======================================
 
-=========== ============ ========= =========
-Date        Author(s)    Version   State
-=========== ============ ========= =========
-13-10-2009  AvE          0.1       Initial
-20-10-2009  AvE          0.2       Initial, after first review with IP
-02-11-2009  AvE          0.3       Initial, after second review with MR
-=========== ============ ========= =========
-
 Introduction
 ~~~~~~~~~~~~
 In this chapter we describe the common interface for stellar evolution codes.
 Currently the interface for stellar evolutions codes that store state of
-a star is specificied. The Stellar Evolution codes that get all the needed
+a star is specified. The Stellar Evolution codes that get all the needed
 state from the function interface (are stateless), are not yet described.     
 
 Parameters
