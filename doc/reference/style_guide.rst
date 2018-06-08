@@ -9,8 +9,8 @@ follow this guide. Existing codes are not rewritten.
 
 Python Code
 -----------
-All python code should be consitent with the 
-`Python Style Guide <http://www.python.org/dev/peps/pep-0008/>`_.
+All python code should be consistent with the 
+`Python Style Guide <https://www.python.org/dev/peps/pep-0008/>`_.
 We have defined some deviations from the python style guide. 
 These are listed in this document.
 
@@ -77,7 +77,7 @@ C / C++ code
 ------------
 
 All C and C++ code should be consistent with the 
-`Google C++ style guid <http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml>`_
+`Google C++ style guid <https://google.github.io/styleguide/cppguide.html>`_
 
 File Names
     All C++ files should have a ``.cc`` suffix.
@@ -91,7 +91,7 @@ Fortran code
 ------------
 All Fortran code written in AMUSE should be Fortran 90.  We will follow
 the coding standard given in 
-`Fortran Coding Standard for the Community Atmospheric Model <http://www.ccsm.ucar.edu/working_groups/Software/dev_guide/dev_guide/node7.html>`_
+`Fortran Coding Standard for the Community Atmospheric Model <http://www.cesm.ucar.edu/working_groups/Software/dev_guide/dev_guide/node7.html>`_
 
 File Names
     All fortran 90 files should have a ``.f90`` suffix.

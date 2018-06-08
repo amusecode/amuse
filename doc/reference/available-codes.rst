@@ -122,7 +122,7 @@ BHtree
 ------
 
 N-body integration module. An implementation of the Barnes & Hut tree code [#bh]_
-by Jun Makino  `BHTree-code <http://www.artcompsci.org/~makino/softwares/C++tree/index.html>`_.
+by Jun Makino  `BHTree-code <http://jun.artcompsci.org//softwares/C++tree/index.html>`_.
 
 Specifics
 #########
@@ -393,7 +393,7 @@ smallN
 ------
 
 Interface to the Kira Small-N Integrator and Kepler modules from
-Starlab.  http://www.ids.ias.edu/~starlab/
+Starlab. https://www.sns.ias.edu/~starlab/ 
 
 You will need to download Starlab from the above site, make it, install
 it, and then set the STARLAB_INSTALL_PATH variable to be equal to the

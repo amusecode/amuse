@@ -2,20 +2,20 @@
 Running AMUSE on The Cartesius supercomputer
 =============================================
 
-The Cartesius is the Dutch national supercomputer. For more information on e.g. obtaining an account, see the SURFSara website: https://www.surfsara.nl/systems/cartesius.
+The Cartesius is the Dutch national supercomputer. For more information on e.g. obtaining an account, see the SURFSara website: https://userinfo.surfsara.nl/systems/cartesius.
 
 Using AMUSE on the Cartesius is relatively straightforward. Below is a tested method for installing and using AMUSE using the prerequisites, though other options (e.g. using only software pre-installed on the machine) should also be possible. For a generic description of the installation of prerequisites, see the :ref:`prerequisite-label` section.
 
 Obtaining AMUSE
 ---------------
 
-We assume a copy of AMUSE has been downloaded to an `amuse` folder in the users home. For instance using svn:
+We assume a copy of AMUSE has been downloaded to an `amuse` folder in the users home. For instance using git:
 
 .. code-block:: sh
 
 	> cd /home/USERNAME
 	
-	> svn co http://www.amusecode.org/svn/trunk amuse
+	> git clone https://github.com/amusecode/amuse.git
 
 Environment settings
 --------------------
@@ -114,7 +114,7 @@ Running on a Cartesius node
 
 Running on the Cartesius is typically done by submitting a slurm script. See the surfsare site for more info:
 
-https://www.surfsara.nl/systems/cartesius/usage/batch-usage
+https://userinfo.surfsara.nl/systems/cartesius/usage/batch-usage
  
 Below is a simple example script for running amuse on Cartesius.
 

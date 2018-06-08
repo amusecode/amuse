@@ -5,7 +5,7 @@ Obtaining AMUSE
 Download
 --------
 
-Go to the `downloads <http://www.amusecode.org/trac/wiki/releases>`_ page.
+Go to the `Amusecode github <https://github.com/amusecode/amuse>`_ page.
 
 Getting started
 ---------------
@@ -26,7 +26,7 @@ Need an account?
 ~~~~~~~~~~~~~~~~
 
 You can find us on google groups, http://groups.google.com/group/amusecode 
-or on IRC at the #amuse channel on irc.freenode.net. 
+or on IRC at the #amuse channel on irc.freenode.net.
 
 Tarball
 ~~~~~~~
@@ -68,11 +68,11 @@ From here proceed by reading the  :ref:`prerequisite-label` section.
 Bleeding edge
 -------------
 
-The current development version is available via subversion repository access 
+The current development version is available via git repository access 
 by issuing the following command:
 
 .. code-block:: sh
 
-    > svn co http://www.amusecode.org/svn/trunk amuse-svn
+    > git clone https://github.com/amusecode/amuse.git
 
-This will make an AMUSE root directory with the name "amuse-svn".  
+This will make an AMUSE root directory with the name "amuse".  

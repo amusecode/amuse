@@ -2,7 +2,7 @@ Installing on Ubuntu
 ====================
 
 Installing on Ubuntu version > 10.10
--------------------------------------
+------------------------------------
 
 In this section we asume a default Ubuntu desktop installation.
 
@@ -78,12 +78,12 @@ To install these, do::
 
 MPI2
 ----
-Ubuntu does not provide installation packages for MPICH2. You can 
-build MPICH2 by hand (a good HOWTO can be found at 
+Ubuntu does not provide installation packages for MPICH. You can 
+build MPICH by hand (a good HOWTO can be found at 
 https://wiki.ubuntu.com/MpichCluster). Or, you can download and install
-pre-build packages from the MPICH2 site (http://www.mcs.anl.gov/research/projects/mpich2/index.php).
+pre-build packages from the MPICH site (http://www.mpich.org).
 
-If you prefer OpenMpi over MPICH2, you can install openmpi
+If you prefer OpenMpi over MPICH, you can install openmpi
 from the Ubuntu packages. To install
 the openmpi packages, do::
 

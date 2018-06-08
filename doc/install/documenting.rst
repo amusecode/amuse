@@ -19,7 +19,7 @@ because it is a rapidly evolving project:
   > cd sphinx
   > python setup.py install
 
-.. _Sphinx: http://sphinx.pocoo.org/
+.. _Sphinx: http://www.sphinx-doc.org/en/master/
 
 The documentation sources are found in the :file:`doc/` directory in the trunk.
 To build the AMUSE documentation in html format, cd into :file:`doc/` and

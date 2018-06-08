@@ -57,7 +57,7 @@ On Mac:
    4. Select “Graphics/Displays” under Contents list
 
 Check whether your GPU model is listed among 
-`Nvidia's CUDA-enabled GPUs <http://www.nvidia.com/object/cuda_gpus.html>`_.
+`Nvidia's CUDA-enabled GPUs <https://www.nvidia.com/object/cuda_gpus>`_.
 
 
 .. _CUDA_SDK:
@@ -65,7 +65,7 @@ Check whether your GPU model is listed among
 Check that you have installed the CUDA Toolkit (TK) and software development kit (SDK)
 --------------------------------------------------------------------------------------
 
-If not, download and install it from `CUDA Development Tools <http://developer.nvidia.com/object/cuda_downloads.html>`_.
+If not, download and install it from `CUDA Development Tools <https://developer.nvidia.com/cuda-downloads>`_.
 
 
 .. _env-vars:

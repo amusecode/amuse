@@ -28,7 +28,7 @@ These are the packages AMUSE needs:
 * Numpy (version >= 1.3.0)
 * HDF (version 1.6.5 - 1.8.x)
 * h5py (version >= 1.2.0)
-* MPI (OpenMPI or MPICH2)
+* MPI (OpenMPI or MPICH)
 * mpi4py (version >= 1.0)
 * nose (version >= 0.11)
 * docutils (version >= 0.6)
@@ -118,13 +118,11 @@ To start the installation do:
 
 You should now be able to install AMUSE.
 
-Using the installation scripts on OS X
---------------------------------------
+Using the installation scripts on macOS
+---------------------------------------
 
-For OS.X you need to install XCode and a gfortran compiler first.
-The XCode development package is available on the 
-`Apple developers site <http://developer.apple.com/devcenter/mac>`_
-or for Lion on the Apple Store application.
+For macOS you need to install XCode and a gfortran compiler first.
+The XCode development package is available at https://developer.apple.com/xcode/ or in the App Store. 
 
 The standard XCode release does not come with a gfortran compiler. 
 Go to the `HPC Mac OS X site <http://hpc.sourceforge.net/index.php>`_ 
@@ -147,7 +145,7 @@ Python is probably already installed on your system. To check the version of pyt
 	> python --version
 	Python 2.6.2
 
-You can download python from http://www.python.org. 
+You can download python from https://www.python.org. 
 
 Numpy
 -----
@@ -159,7 +157,7 @@ To check if numpy is installed on your system do:
 	1.3.0
 
 If this fails with an error or a version before 1.3 you need to install numpy.
-You can download numpy from http://www.scipy.org/NumPy. 
+You can download numpy from http://www.numpy.org. 
 
 HDF5 library
 ------------
@@ -175,7 +173,7 @@ To check if the HDF library is installed on your system do:
 
 If this fails with an error or a version before 1.6.5 you 
 need to install the HDF library. 
-You can download HDF from http://www.hdfgroup.org/. 
+You can download HDF from https://www.hdfgroup.org/. 
 
 h5py
 ----
@@ -189,7 +187,7 @@ To check if the h5py library is installed on your system do:
 	1.2.0
 
 If this fails with an error or a version before 1.2.0 you need to install h5py.
-You can download h5py from http://code.google.com/p/h5py/. 
+You can download h5py from https://www.h5py.org. 
 
 docutils
 --------
@@ -206,13 +204,13 @@ You can download docutils from http://docutils.sourceforge.net/
 MPI
 ---
 The installed MPI framework must be MPI 2 compatible. AMUSE will work with 
-MPICH2 or OpenMPI
+MPICH or OpenMPI
 
-MPICH2
-^^^^^^
-MPICH2 is a portable implementation of the MPI 2 standard.
+MPICH
+^^^^^
+MPICH is a portable implementation of the MPI 2 standard.
 
-To check if MPICH2 is installed on your system do:
+To check if MPICH is installed on your system do:
 
 .. code-block:: sh
     
@@ -222,14 +220,14 @@ To check if MPICH2 is installed on your system do:
     invoke it with the single argument --help .
 
     mpd           start an mpd daemon
-    mpdtrace      show all mpd's in ring
+    mpdtrace      show all mpds in ring
     mpdboot       start a ring of daemons all at once
     mpdringtest   test how long it takes 
     ...
     
-If this fails with an error you need to install MPICH2 or check for OpenMPI
+If this fails with an error you need to install MPICH or check for OpenMPI
 support.
-You can download MPICH2 from http://www.mcs.anl.gov/research/projects/mpich2/.
+You can download MPICH from http://www.mpich.org.
 
 OpenMPI
 ^^^^^^^
@@ -242,9 +240,9 @@ To check if OpenMPI is installed on your system do:
     > mpicxx -v 
     
 
-If this fails with an error you need to install MPICH2 or OpenMPI
+If this fails with an error you need to install MPICH or OpenMPI
 support. Most examples in the dopcumentation assume OpenMPI.
-You can download OpenMPI from http://www.open-mpi.org/.
+You can download OpenMPI from https://www.open-mpi.org/.
 
 MPI4PY
 ------
@@ -257,7 +255,7 @@ To check if the mpi4py library is installed on your system do:
 	1.0.0
 
 If this fails with an error or a version before 1.0 you need to install mpi4py.
-You can download mpi4py from http://code.google.com/p/mpi4py/. 
+You can find mpi4py at https://mpi4py.readthedocs.io/. 
 
 Nose
 ----
@@ -318,7 +316,7 @@ To check whether you have CMake installed on your system:
    cmake version 2.8.2
 
 
-You can download CMake from http://www.cmake.org/cmake/resources/software.html. 
+You can download CMake from https://cmake.org/download/. 
 
 GMP
 -------
@@ -346,7 +344,7 @@ that the library numbers do not match the release version):
    #define __GNU_MP_VERSION_PATCHLEVEL 3
 
 
-You can download GMP from http://gmplib.org. 
+You can download GMP from https://gmplib.org. 
 
 MPFR
 -------
@@ -373,7 +371,7 @@ that the library numbers do not match the release version):
    #define MPFR_VERSION_MINOR 1
    #define MPFR_VERSION_PATCHLEVEL 0
 
-You can download MPFR from http://www.mpfr.org. 
+You can download MPFR from https://www.mpfr.org. 
 
 
 

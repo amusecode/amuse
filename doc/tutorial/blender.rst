@@ -12,7 +12,7 @@ Blender
 Blender is a free open source 3D content creation suite, *GPL-ed*. As it is specialised in visualisation of 3D content *and* 
 scriptable in python it provides handy a tool for visualisation of Amuse data.
 
-More information on Blender can be found on http://www.blender.org/
+More information on Blender can be found on https://www.blender.org/
 
 Starting Blender
 ================

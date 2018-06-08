@@ -256,7 +256,7 @@ Commonly Encountered Problems
 
 Most initial setup problems with the Distributed AMUSE code can be solved by checking:
 
-- Can you login to each machine you plan to use using ssh without using a password? See for instance here on how to set this up: http://www.thegeekstuff.com/2008/11/3-steps-to-perform-ssh-login-without-password-using-ssh-keygen-ssh-copy-id/
+- Can you login to each machine you plan to use using ssh without using a password? See for instance here on how to set this up: https://www.thegeekstuff.com/2008/11/3-steps-to-perform-ssh-login-without-password-using-ssh-keygen-ssh-copy-id/
 - Did you configure a Java JDK version 1.7 or higher using ./configure? check the contect of config.mk to see which java is used, and what version was detected. Make sure to do a "make clean" and "make" in case you make any changes. This should also be done on all machines.
 - Is AMUSE configured properly on each and every machine? running the code implementation tests is a good way of spotting issues:
 

@@ -5,7 +5,7 @@ Plotting with amuse
 matplotlib
 ==========
 
-`Matplotlib <http://matplotlib.sourceforge.net/index.html>`_ is a
+`Matplotlib <https://matplotlib.org/index.html>`_ is a
 python plotting library capable of working with many  graphical user
 interface toolkits. It is not required by AMUSE, but  if installed
 then AMUSE provides extended plot functionality.  If a plot is made,
@@ -26,7 +26,7 @@ native_plot namespace, e.g.:
 
     >>> native_plot.subplot(2,2,1)
 
-`matplotlib documentation <http://matplotlib.sourceforge.net/contents.html>`_
+`matplotlib documentation <https://matplotlib.org/contents.html>`_
 
 install matplotlib
 ------------------
@@ -36,10 +36,10 @@ install from  source and you have installed the prerequisites in a
 user directory make sure the ``PATH`` settings are correct. 
 
 The source can be found `here
-<http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/>`_
+<https://github.com/matplotlib/matplotlib>`_
 
 Installation instructions can be found `here
-<http://matplotlib.sourceforge.net/users/installing.html>`_
+<https://matplotlib.org/users/installing.html>`_
 
 Latex support
 -------------
@@ -64,7 +64,7 @@ requires latex, dvipng and Ghostscript to be installed. You can use
 matplotlib's builtin TeX expression parser, mathtext instead. This is
 a subset TeX markup usable in any matplotlib text string by placing it
 inside a pair of dollar signs ($).  See `mathtext
-<http://matplotlib.sourceforge.net/users/usetex.html>`_ for details.
+<https://matplotlib.org/users/usetex.html>`_ for details.
 
 Supported functions
 -------------------

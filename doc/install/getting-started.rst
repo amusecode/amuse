@@ -111,7 +111,7 @@ is used for. First we import the necessary AMUSE modules.
    >>> from amuse.units import units
 
 Gravitational dynamics legacy codes usually work with `N-body units 
-<http://en.wikipedia.org/wiki/N-body_units>`_ internally. We have to 
+<https://en.wikipedia.org/wiki/N-body_units>`_ internally. We have to 
 tell the code how to convert these to the natural units of the 
 specific system, when creating an instance of the legacy code class.
 
@@ -183,7 +183,7 @@ It's always a good idea to clean up after you're finished:
 Example scripts
 ~~~~~~~~~~~~~~~
 
-In the `test/examples <http://www.amusecode.org/trac/amuse/browser/trunk/examples>`_ subdirectory several example scripts are included. They show how the different legacy codes can be used. One such example is `test_HRdiagram_cluster.py <http://www.amusecode.org/trac/amuse/browser/trunk/examples/applications/test_HRdiagram_cluster.py>`_. It has several optional arguments. The example script can be executed from the AMUSE command line as well as from the terminal prompt (in the latter case use -h to get a list of the available command line options):
+In the `test/examples <https://github.com/amusecode/amuse/tree/master/examples>`_ subdirectory several example scripts are included. They show how the different legacy codes can be used. One such example is `test_HRdiagram_cluster.py <https://github.com/amusecode/amuse/blob/master/examples/applications/test_HRdiagram_cluster.py>`_. It has several optional arguments. The example script can be executed from the AMUSE command line as well as from the terminal prompt (in the latter case use -h to get a list of the available command line options):
 
 .. code-block:: python
    
@@ -231,7 +231,7 @@ Matplotlib
 Matplotlib is a python plotting library which produces publication 
 quality figures. Many of the AMUSE example scripts use this library 
 to produce graphical output. If you would like to take advantage of 
-this library, get it from http://matplotlib.sourceforge.net/ and 
+this library, get it from https://matplotlib.org/ and 
 install it in the Python site-packages directory. For your own work, 
 it is of course also possible to print the required output to the 
 terminal and use your favourite plotting tool to make the figures, 

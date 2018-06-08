@@ -1,8 +1,8 @@
 Installing on macOS
-******************
+*******************
 
 Installing on macOS with MacPorts 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this section we assume a clean MacPorts installation. The MacPorts build
 system will build most packages from source so installation may take a while.
@@ -33,7 +33,7 @@ gcc 5.
     
     To make a clean install of MacPorts, please remove the MacPorts directory
     and read the guide at:
-    http://guide.macports.org/
+    https://guide.macports.org/
     
 All in one
 ----------
