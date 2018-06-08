@@ -4,13 +4,13 @@ Installing on Ubuntu
 Installing on Ubuntu version > 10.10
 ------------------------------------
 
-In this section we asume a default Ubuntu desktop installation.
+In this section we assume a default Ubuntu desktop installation.
 
 All
 ---
 The prerequisites can be installed with a couple of commands
-on Ubuntu. The only choice to make is between openmpi and mpich2. Most
-of our testing is done with MPICH2 but openmpi should also work.
+on Ubuntu. The only choice to make is between openmpi and mpich. Most
+of our testing is done with MPICH but openmpi should also work.
 
 For openmpi do::
 
@@ -47,7 +47,7 @@ For mpich do::
 Installing on Ubuntu 9.04
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a default Ubuntu desktop installation.
+In this section we assume a default Ubuntu desktop installation.
 
 Python
 ------
@@ -59,7 +59,7 @@ python is installed by doing:
 	> python --version
 	Python 2.6.2
 
-If this failes with an error or a version before 2.6, please install 
+If this fails with an error or a version before 2.6, please install 
 python first(the package is called ``python2.6``). You also need 
 the ``python2.6-dev`` development package.
 To install it, do::
@@ -145,7 +145,7 @@ command::
 Installing on Ubuntu 9.10
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a default Ubuntu desktop installation. This 
+In this section we assume a default Ubuntu desktop installation. This 
 installation is for the most part the same as for Ubuntu 9.04, see 
 previous section. 
 

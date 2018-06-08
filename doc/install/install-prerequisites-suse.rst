@@ -4,10 +4,10 @@ Installing on Suse Linux
 Installing on OpenSuse 11
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a normal desktop install of OpenSuse 11. Not
+In this section we assume a normal desktop install of OpenSuse 11. Not
 all packages are available in the default OpenSuse package repository.
 We recommend to add the **Packman Repository** to the list of 
-configured sofware reporistories (To do so, open Yast and go to 
+configured software repositories (To do so, open Yast and go to 
 *Software Repositories*).
 
 Python
@@ -87,7 +87,7 @@ this problem do::
     DAT: library load failure: libdaplscm.so.2: cannot open shared object file: No such file or directory
     ...
 
-If you get a long list of warings about DAT providers not found, you
+If you get a long list of warnings about DAT providers not found, you
 need to edit the configuration file and turn off ldap. To do so, 
 open an editor (as root) on the file 
 **/etc/openmpi-mca-params.conf** 

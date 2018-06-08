@@ -120,7 +120,7 @@ the python27 versions
    
 MPI2
 ----
-MacPorts provides packages for mpich2 and openmpi. Although you can
+MacPorts provides packages for mpich and openmpi. Although you can
 probably install both, this is not recommended. We suggest you install
 openmpi.
 

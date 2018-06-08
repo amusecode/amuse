@@ -4,7 +4,7 @@ Installing on RedHat (CentOS)
 Installing on CentOS 6
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a minimal CentOS 6 installation.
+In this section we assume a minimal CentOS 6 installation.
 
 All
 ---

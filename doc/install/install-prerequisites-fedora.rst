@@ -3,7 +3,7 @@
 Installing on Fedora 18
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a basic install of Fedora 18 installation.
+In this section we assume a basic install of Fedora 18 installation.
 
 
 All in One
@@ -80,7 +80,7 @@ command::
 Installing on Fedora 11
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a live-cd install of Fedora 11 installation.
+In this section we assume a live-cd install of Fedora 11 installation.
 
 Python
 ------
@@ -92,7 +92,7 @@ python is installed by doing:
 	> python --version
 	Python 2.6.2
 
-If this failes with an error or a version before 2.6, please install 
+If this fails with an error or a version before 2.6, please install 
 python first(the package is called ``python``). You also need 
 the ``python-devel`` development package.
 To install it, do::

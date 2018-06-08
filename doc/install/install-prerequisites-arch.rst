@@ -1,7 +1,7 @@
 Installing on Arch Linux
 ========================
 
-In this section we asume a default Arch Linux installation.
+In this section we assume a default Arch Linux installation.
 
 All
 ---
