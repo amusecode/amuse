@@ -52,6 +52,7 @@ in the package.
     versions of Numpy, matplotlib etc.
   * Are additional dependencies handled appropiately? If possible, factor out 
     additional dependencies or make them optional.
+  * Does the code follow the AMUSE Style Guide (http://www.amusecode.org/doc/reference/style_guide.html)?
 
 **Testing**
   * Are the inputs to the functions sufficiently tested?
