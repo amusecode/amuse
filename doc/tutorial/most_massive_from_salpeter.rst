@@ -24,7 +24,7 @@ way to import almost everything from the AMUSE toolbox is to do:
 
     >>> from amuse.lab import *
 
-but here we will import the required module and function manually for clarity:
+But here we will import the required module and function manually for clarity:
 
 .. code-block:: python
 

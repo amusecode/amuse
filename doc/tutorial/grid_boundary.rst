@@ -41,7 +41,7 @@ dimensional grid with 4 boundary cells:
 
 .. image:: boundaries1.png
 
-Boundary conditions are defined by setting the a boundary parameter for
+Boundary conditions are defined by setting a boundary parameter for
 each boundary of the grid of a code. These boundaries are defined:
 
 xbound1
@@ -93,7 +93,7 @@ Custom boundary conditions
 
 You can specify a custom boundary condition by setting the boundary 
 condition parameters to ``interface``. After these parameters have 
-been set and commited you can change the boundary values by filling 
+been set and committed you can change the boundary values by filling 
 in the correct boundary grid. These boundary grids do not overlap 
 but patch together to form a larger cuboid around the grid cuboid. 
 The x-boundary conditions have N boundary cells in the x direction 

@@ -5,7 +5,7 @@ Working with Units
 ==================
 
 The AMUSE framework provides a unit handling library. This library
-is used troughout the AMUSE framework. When interacting with a code
+is used throughout the AMUSE framework. When interacting with a code
 all data has a unit, even scaled systems have units.
 
 ==========
@@ -31,11 +31,11 @@ functions also work on quantities.
     Total weight:  800 kg
     
     >>> day = named_unit("day", "d", s * 60 * 60 * 24 )
-    >>> weigth_loss = (0.1 | kg) / (1 | day)
-    >>> print "Weigth loss: ", weigth_loss
-    Weigth loss:  0.1 1.15740740741e-05 * kg * s**-1
-    >>> print "Weigth loss: ", weigth_loss.as_quantity_in(kg/day)
-    Weigth loss:  0.1 kg / d
+    >>> weight_loss = (0.1 | kg) / (1 | day)
+    >>> print "Weight loss: ", weight_loss
+    Weight loss:  0.1 1.15740740741e-05 * kg * s**-1
+    >>> print "Weight loss: ", weight_loss.as_quantity_in(kg/day)
+    Weight loss:  0.1 kg / d
     
 ===================
 Working with arrays

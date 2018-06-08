@@ -69,12 +69,12 @@ The suggested procedure for creating a new interface is as follows:
    need to be defined for the parameters in this step
 5. **Define sets or grids.** A code usually handles objects or gridpoints with
    attributes. In this step a generic interface is defined for these
-   objects so that the interopability between codes increases.
+   objects so that the interoperability between codes increases.
 
 Before we start
 ---------------
 
-This tutorial asumes you have a working amuse environment. Please 
+This tutorial assumes you have a working amuse environment. Please 
 ensure that amuse is setup correctly by running 'nosetests' in the 
 amuse directory.
 
@@ -355,7 +355,7 @@ Defining the Object Oriented Interface
 
 The object oriented interface sits on top of the legacy interface.
 It decorates this interface with sets, unit handling, state engine
-and more. We start creating the object oriented interfacy by inheriting
+and more. We start creating the object oriented interface by inheriting
 from InCodeComponentImplementation and writing the __init__ function. The build script
 has added this class to the interface.py file for us. Open an editor
 on interface.py and make sure this code is in the file (at the end
@@ -372,7 +372,7 @@ of the file):
 Configuring the handlers
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-We configure the object oriented interfacy by implementing several 
+We configure the object oriented interface by implementing several 
 methods. The object oriented interface is implement by several 
 "handlers". Each handler provides support for a specific aspect of 
 the interface. AMUSE defines a handler for the unit conversion, a 
@@ -503,8 +503,8 @@ Now build and test the code:
 Defining the particle set
 +++++++++++++++++++++++++
 
-Partcle sets in AMUSE can be handled by python (we call these 
-"inmemory") and by the legacy code (we call these "incode"). In our 
+Particle sets in AMUSE can be handled by python (we call these 
+"inmemory") and by the community code (we call these "incode"). In our 
 case the code does not handle the particles and we need to 
 configure the particles handler to manage an inmemory particle set. 
 Open an editor on *interface.py* and add this method to the 
@@ -742,7 +742,7 @@ we run the test, it still fails.
     Ran 1 test in 0.319s
 
 When you look closely at the output of the test you see that the result from the
-method is 0 and not the excpeted 1. We need to edit the fortan code to make this 
+method is 0 and not the excepted 1. We need to edit the fortran code to make this 
 test work. Open an editor on interface.f90 and go to the *new_particle* function.
 
 .. code-block:: fortran
@@ -1063,7 +1063,7 @@ the method we defined in the previous step. Finally you can set
 the name of the attribute in the particles set with the **names**
 argument. This is optional for legacy functions, if not given the names 
 of the attributes will be derived from the names of the arguments in
-the orginal calls. For example, the **get_position** call we specified
+the original calls. For example, the **get_position** call we specified
 earlier has parameter name **x**, **y** and **z**, these names are 
 also used in the particles set.
 

@@ -75,7 +75,7 @@ directory is by using the build.py script.
     an uppercase letter and have an uppercase letter for each word 
     in the name (camelcase).
     
-This script will create a direcory called ```codename```. The script 
+This script will create a directory called ```codename```. The script 
 will populate the directory with a make file (```Makefile```), a python interface 
 definition file (```interface.py```) and a C or fortran stub file 
 (containing methods implementing the definitions in interface.py, 
@@ -106,7 +106,7 @@ all necessary object files).
     
 If you already have a make file, you might need to add the
 ```libcodename.a``` target. You can define this target by
-adding the following code to your make file at the appropraite
+adding the following code to your make file at the appropriate
 locations in the makefile.
 
 ... code-block:: Makefile

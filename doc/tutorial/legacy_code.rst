@@ -320,7 +320,7 @@ For example:
     
     
 The MPI message passing overhead is incurred for every call on 
-the method. We can change this by specifing the function to be able
+the method. We can change this by specifying the function to be able
 to handle arrays.
 
 .. code-block:: python

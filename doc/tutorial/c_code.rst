@@ -527,7 +527,7 @@ Now build and test the code:
 Defining the particle set
 +++++++++++++++++++++++++
 
-Partcle sets in AMUSE can be handled by python (we call these 
+Particle sets in AMUSE can be handled by python (we call these 
 "inmemory") and by the legacy code (we call these "incode"). In our 
 case the code does not handle the particles and we need to 
 configure the particles handler to manage an inmemory particle set. 

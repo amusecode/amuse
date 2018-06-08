@@ -114,7 +114,7 @@ and the selection of the sets:
     
     
 
-We can achieve the same result in another way by using the fact that the outersphere is the difference of the innersphere set 
+We can achieve the same result in another way by using the fact that outersphere is the difference of the innersphere set 
 and the stars set:
 
 .. code-block:: python
@@ -165,7 +165,7 @@ The union of the innersphere and outersphere set should give the stars set, we c
     >>> like_stars = innersphere.union(outersphere)
     >>> stars.difference(like_stars).is_empty()
     True
-    >>> (innersphere + outersphere_alt2 -stars).is_empty()
+    >>> (innersphere + outersphere_alt2 - stars).is_empty()
     True
 
 Iteration
@@ -232,7 +232,7 @@ We instantiate the code and use it to evolve (expand) our plummer model. We add 
     >>> r_inner_fini = innersphere.position
     >>> r_outer_fini = outersphere.position
 
-Checking the changes by looking at the positions (all changed after the evolve), we will see that only the innersphere paricles are updated:
+Checking the changes by looking at the positions (all changed after the evolve), we will see that only the innersphere particles are updated:
 
 .. code-block:: python
 
@@ -274,7 +274,7 @@ Let us suppose that the zero-th star, stars[0] has a child and a grandchild star
     >>> grandchild_star.position = [0,0.1,0]|units.AU
     >>> grandchild_star.velocity = [0,0,0]|units.AUd
 
-We can add them as child and grandchild etc.. to the set of plummer stars. But first we have to add them to the set as regular stars:
+We can add them as child and grandchild etc. to the set of plummer stars. But first we have to add them to the set as regular stars:
 
 .. code-block:: python
 
@@ -288,7 +288,7 @@ Now we can define the hierarchy:
     >>> stars[0].add_child(child_star_in_set)
     >>> child_star_in_set.add_child(grandchild_star_in_set)
 
-The descendents of star 0 form a subset:
+The descendants of star 0 form a subset:
 
 .. code-block:: python
 
