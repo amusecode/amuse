@@ -34,7 +34,7 @@ in the AMUSE root directory.
     > make clean
     > make
     ...
-    legacy codes build
+    community codes build
     ==================
     * sse
     * hermite0
@@ -42,24 +42,22 @@ in the AMUSE root directory.
     * phiGRAPE
     running generate_main
 
-If everything goes well all legacy codes will be build (sse, hermite0, 
-bhtree and phiGRAPE).
+If everything goes well all community codes will be build (e.g. sse, hermite0, 
+bhtree, phiGRAPE and many others).
 
-In order to use either MESA, SEBA or ATHENA the codes must be
-downloaded additionally. This is done automatically after setting the
-environment variable DOWNLOAD_CODES to 1. Alternatively, instead of a
-plain 'make' like in the example above you could do:
+In order to use codes not stored in the AMUSE repository (e.g. MESA, ATHENA, Rebound and some others), the codes must be downloaded additionally.
+This is done automatically after setting the environment variable DOWNLOAD_CODES to 1.
+Alternatively, instead of a plain 'make' like in the example above you could do:
 
 .. code-block:: sh
 
     > make DOWNLOAD_CODES=1
 
-or
+or:
 
 .. code-block:: sh
 
     > make mesa.code DOWNLOAD_CODES=1
-    > make seba.code DOWNLOAD_CODES=1
     > make athena.code DOWNLOAD_CODES=1
 
 

@@ -23,7 +23,7 @@ can be run as::
 
     > ./configure
     
-To get a list of options and important environment variablse run 
+To get a list of options and important environment variables run 
 ```configure``` with the help flag::
 
     > ./configure --help
@@ -38,7 +38,7 @@ environment variable::
 The configuration script will look for dependent libraries in 
 default locations of the system and, if defined, also in directories 
 under the ```PREFIX``` environment variable. If you installed the 
-prerequisites with the AMUSE installion scripts (see 
+prerequisites with the AMUSE installation scripts (see 
 :doc:`howto-install-prerequisites`), the configuration script should 
 find all the packages installed. For most libraries the 
 ```PREFIX/lib``` or ```PREFIX/lib64``` is searched before the system 
@@ -102,7 +102,7 @@ library implements the GRAPE6 API on GPU hardware. AMUSE is shipped
 with two versions of the Sapporo library:
 
  * An older version ```sapporo_light``` that runs on most CUDA devices but is not maintained any longer
- * The latests version ```sapporo``` that runs on modern GPU harware. This version should also run on 
+ * The latests version ```sapporo``` that runs on modern GPU hardware. This version should also run on 
    OpenCL devices but this is still a work in progress.
 
 By default AMUSE will use the older ```sapporo_light``` version, to enable

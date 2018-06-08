@@ -27,7 +27,7 @@ do::
 
   make html
 
-you can also pass a ``pdflatex`` flag to make to build a pdf, or pass no
+You can also pass a ``pdflatex`` flag to make to build a pdf, or pass no
 arguments to show help information.
 
 The output produced by Sphinx can be configured by editing the :file:`conf.py`

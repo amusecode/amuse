@@ -19,49 +19,20 @@ directory ``/amuse``.
 Releases
 --------
 
-For the official releases we provide tarballs and subversion 
-repository access (you need an account for the latter).
-
-Need an account?
-~~~~~~~~~~~~~~~~
-
-You can find us on google groups, http://groups.google.com/group/amusecode 
-or on IRC at the #amuse channel on irc.freenode.net.
+For the official releases we provide tarballs via https://github.com/amusecode/amuse/releases.
 
 Tarball
 ~~~~~~~
 
-Obtain the tarball (e.g. amuse-11.0.tar.gz) from the download-site and unpack it 
+Obtain the tarball (e.g. release-11.2.tar.gz) from the download site and unpack it 
 in the amuse directory using:
 
 .. code-block:: sh
 
-    > tar -xf amuse-11.0.tar.gz
+    > tar -xf release-11.2.tar.gz
 
-this will make an amuse sub-directory ``amuse-11.0``, which we will be referring to as
-the AMUSE root directory, e.g.:
-
-.. code-block:: sh
-    
-    ./amuse
-    +-- amuse-11.0
-        |-- bin
-     	|-- build.py
-    	|-- configure
-    	|-- cuda_self_help
-   	+-- data
-    	|-- doc
-    	|-- lib
-    	|-- Makefile
-    	|-- MANIFEST.in
-    	|-- README.txt
-    	|-- sandbox
-    	|-- setup.py
-    	|-- slowtests
-    	|-- src
-    	|-- support
-    	|-- test
-    	|-- test_results
+this will make an amuse sub-directory ``amuse-release-11.2``, which we will be referring to as
+the AMUSE root directory.
 
 From here proceed by reading the  :ref:`prerequisite-label` section.
 
