@@ -329,7 +329,7 @@ class ScalarQuantity(Quantity):
     def as_unit(self):
         return self.number * self.unit
 
-class flatiter_wrapper(object):
+class _flatiter_wrapper(object):
     def __init__(self, quantity):
         self.flat=quantity.number.flat
         self.quantity=quantity
@@ -433,7 +433,7 @@ class VectorQuantity(Quantity):
     
     @property
     def flat(self):                
-        return flatiter_wrapper(self)
+        return _flatiter_wrapper(self)
         
     def is_vector(self):
         return True
