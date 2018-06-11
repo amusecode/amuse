@@ -96,7 +96,15 @@ class InstallPrerequisites(object):
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf4-python/archive/',
             self.python_build
-          ) ,          
+          ) ,
+          (
+            'f90nml',
+            [],  
+            '0.21',
+            'v' , '.tar.gz', 
+            'https://github.com/marshallward/f90nml/archive/',
+            self.python_build
+          ),
           (
             'docutils', 
             [], 
