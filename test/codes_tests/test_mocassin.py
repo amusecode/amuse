@@ -277,17 +277,14 @@ class TestMocassin(TestWithMPI):
         
         instance.commit_particles()
         
-        #print instance.grid.electron_density[3]
-        #print instance.grid.electron_temperature[3]
-        print instance.ion_density_grid.density[3][1][2][0][0]
         self.assertAlmostRelativeEquals(1e-5, instance.ion_density_grid.density[3][1][2][0][0], 7)
         self.assertAlmostRelativeEquals(1e-5 , instance.ion_density_grid.density[3][1][3][0][0], 7)
         
         instance.step()
+
+        print instance.grid.electron_density.mean()
                         
         self.assertAlmostRelativeEquals(0.0,  instance.get_percentage_converged())
-        self.assertAlmostRelativeEquals(0.00303084519692 | units.cm**-3 , instance.grid.electron_density[3][1][2], 5)
-        self.assertAlmostRelativeEquals(0.00354886543937 | units.cm**-3 , instance.grid.electron_density[3][1][3], 5)
-        self.assertAlmostRelativeEquals(0.99998998642, instance.ion_density_grid.density[3][1][2][0][0], 7)
-        self.assertAlmostRelativeEquals(0.99998998642 , instance.ion_density_grid.density[3][1][3][0][0], 7)
+        self.assertAlmostRelativeEquals(5.51790 | units.cm**-3 , instance.grid.electron_density[3][3][3], 3)
+        self.assertAlmostRelativeEquals(0.94561, instance.ion_density_grid.density[3][3][3][0][0], 3)
         instance.stop()
