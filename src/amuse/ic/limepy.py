@@ -34,8 +34,6 @@ class Limepy(LiteratureReferencesMixIn):
         self.model = limepy(*args, **kwargs)
         self.kwargs = kwargs
 
-
-
     @property
     def result(self):
         stars = sample(self.model, **self.kwargs)
@@ -54,8 +52,8 @@ class Limepy(LiteratureReferencesMixIn):
 def new_limepy_model(*args, **kwargs):
     conv = kwargs.pop("converter", None)
 
-    l = Limepy(*args, **kwargs)
-    p = l.result
+    lp = Limepy(*args, **kwargs)
+    p = lp.result
 
     if conv is not None:
         p = ParticlesWithUnitsConverted(
