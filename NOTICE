@@ -1,0 +1,26 @@
+AMUSE, a python framework for astrophysical simulations
+
+AMUSE consists of a framework ("the framework") and contributed codes 
+("the codes"). The codes are found under src/amuse/community and may 
+have their own license. The framework consists of everything else.
+
+For the framework:
+
+Copyright 2018 Leiden University
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use the framework except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+For the codes:
+
+The licenses for the codes can be found under their respective directories
+in /src/amuse/community. 

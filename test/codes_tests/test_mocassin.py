@@ -3,7 +3,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.units import units
 from amuse import datamodel
 from amuse.community.mocassin.interface import MocassinInterface, Mocassin, mocassin_rydberg_unit
-
+import numpy
 
 class TestMocassinInterface(TestWithMPI):
     
@@ -65,6 +65,7 @@ class TestMocassinInterface(TestWithMPI):
         indices_x = list(range(1,12,1))
         is_active,error = instance.get_grid_active(indices_x,[1]*len(indices_x), [1]*len(indices_x), 1)
         self.assertEquals(0, error)
+        is_active=numpy.array(is_active,dtype=bool)
         self.assertEquals([True,True,True,True,True,True,True,True,True,True,True] , is_active)
         
         
@@ -145,6 +146,10 @@ class TestMocassinInterface(TestWithMPI):
         instance.set_number_of_ionisation_stages(6)
         instance.setup_auto_convergence(0.2, 2.0, 1000000000)
         instance.commit_parameters()
+
+        error=instance.define_stars(0.0, 0.0, 0.0, 20000, 6003.6396)
+        self.assertEquals(error, 0)
+        
         instance.set_grid_hydrogen_density(1,1,1, 100)
     
         value,error = instance.get_grid_hydrogen_density(1,1,1)
@@ -255,7 +260,8 @@ class TestMocassin(TestWithMPI):
         instance.set_low_limit_of_the_frequency_mesh(1.001e-5| mocassin_rydberg_unit)
         instance.set_maximum_number_of_monte_carlo_iterations(1)
         instance.set_total_number_of_photons(100)
-        #instance.set_constant_hydrogen_density(100 | units.cm**-3)
+        #~ instance.set_constant_hydrogen_density(100 | units.cm**-3)
+        
         instance.commit_parameters()
         instance.grid.hydrogen_density = 100 | units.cm**-3
         instance.commit_grid()
@@ -265,25 +271,21 @@ class TestMocassin(TestWithMPI):
         p.y = 0 | units.cm
         p.z = 0 | units.cm
         p.temperature = 20000 | units.K
-        p.luminosity = 1.0  | units.LSun
+        p.luminosity = 1.  | units.LSun
         
         instance.particles.add_particle(p)
         
         instance.commit_particles()
         
-        #print instance.grid.electron_density[3]
-        #print instance.grid.electron_temperature[3]
-        print instance.ion_density_grid.density[3][1][2][0][0]
         self.assertAlmostRelativeEquals(1e-5, instance.ion_density_grid.density[3][1][2][0][0], 7)
         self.assertAlmostRelativeEquals(1e-5 , instance.ion_density_grid.density[3][1][3][0][0], 7)
         
         instance.step()
-        
-        print instance.ion_density_grid.density[3][1][2][0][0]
-        
+
+        print instance.grid.electron_density.mean()
+                        
         self.assertAlmostRelativeEquals(0.0,  instance.get_percentage_converged())
-        self.assertAlmostRelativeEquals(0.00303084519692 | units.cm**-3 , instance.grid.electron_density[3][1][2], 5)
-        self.assertAlmostRelativeEquals(0.00354886543937 | units.cm**-3 , instance.grid.electron_density[3][1][3], 5)
-        self.assertAlmostRelativeEquals(0.99998998642, instance.ion_density_grid.density[3][1][2][0][0], 7)
-        self.assertAlmostRelativeEquals(0.99998998642 , instance.ion_density_grid.density[3][1][3][0][0], 7)
+        self.assertGreater(instance.grid.electron_density.mean(), 65. | units.cm**-3)
+        self.assertLess(instance.grid.electron_density.mean(), 95. | units.cm**-3)
+
         instance.stop()
