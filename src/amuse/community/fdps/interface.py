@@ -1,47 +1,47 @@
-from amuse.community import *
-from amuse.community.interface.gd import (GravitationalDynamicsInterface,
-        GravitationalDynamics, SinglePointGravityFieldInterface,
+from amuse.units import nbody_system
+from amuse.community import (
+        CodeInterface, LiteratureReferencesMixIn,
+        legacy_function, LegacyFunctionSpecification,
+        )
+from amuse.community.interface.gd import (
+        GravitationalDynamicsInterface, GravitationalDynamics,
+        # SinglePointGravityFieldInterface,
         GravityFieldCode,
         )
+
 
 class FDPSInterface(
         CodeInterface,
         LiteratureReferencesMixIn,
         GravitationalDynamicsInterface,
-        #StoppingConditionInterface,
-        #SinglePointGravityFieldInterface,
+        # StoppingConditionInterface,
+        # SinglePointGravityFieldInterface,
         ):
     """
     FDPS - a general-purpose, high-performance library for particle simulations
 
-    .. [#] Iwasawa, M., Tanikawa, A., Hosono, N., Nitadori, K., Muranushi, T., Makino, J.,
-           PASJ 68, Issue 4, id.54
+    .. [#] Iwasawa, M., Tanikawa, A., Hosono, N., Nitadori, K., Muranushi, T.,
+    Makino, J., PASJ 68, Issue 4, id.54
 
     """
     include_headers = ['worker_code.h']
-    
+
     def __init__(self, **options):
         CodeInterface.__init__(
                 self,
-                name_of_the_worker="fdps_worker", 
+                name_of_the_worker="fdps_worker",
                 **options)
         LiteratureReferencesMixIn.__init__(self)
-    
-#    @legacy_function
-#    def get_number_of_particles():
-#        function = LegacyFunctionSpecification()  
-#        function.can_handle_array = True 
-#        function.addParameter('value', dtype='int32', direction=function.OUT)
-#        function.result_type = 'int32'
-#        return function    
+
     @legacy_function
     def set_time_step():
         """
         Update timestep.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('timestep', dtype='float64', direction=function.IN,
-            description = "timestep")
+        function.addParameter(
+                'timestep', dtype='float64', direction=function.IN,
+                description="timestep")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -54,12 +54,15 @@ class FDPSInterface(
     @legacy_function
     def get_epsilon_squared():
         """
-        Get epsilon^2, a softening parameter for gravitational potentials with point particles.
+        Get epsilon^2, a softening parameter for gravitational potentials with
+        point particles.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('epsilon_squared', dtype='float64', direction=function.OUT,
-            description = "epsilon^2, a softening parameter for gravitational potentials with point particles",
-            unit = nbody_system.length * nbody_system.length)
+        function.addParameter(
+                'epsilon_squared', dtype='float64', direction=function.OUT,
+                description="""epsilon^2, a softening parameter for gravitational
+                potentials with point particles""",
+                unit=nbody_system.length * nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -68,16 +71,19 @@ class FDPSInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_epsilon_squared():
         """
-        Set epsilon^2, a softening parameter for gravitational potentials with point particles.
+        Set epsilon^2, a softening parameter for gravitational potentials with
+        point particles.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('epsilon_squared', dtype='float64', direction=function.IN,
-            description = "epsilon^2, a softening parameter for gravitational potentials with point particles",
-            unit = nbody_system.length * nbody_system.length)
+        function.addParameter(
+                'epsilon_squared', dtype='float64', direction=function.IN,
+                description="""epsilon^2, a softening parameter for
+                gravitational potentials with point particles""",
+                unit=nbody_system.length * nbody_system.length)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -93,8 +99,10 @@ class FDPSInterface(
         Get theta, the opening angle for building the tree: between 0 and 1.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('theta_for_tree', dtype='float64', direction=function.OUT,
-            description = "theta, the opening angle for building the tree: between 0 and 1")
+        function.addParameter(
+                'theta_for_tree', dtype='float64', direction=function.OUT,
+                description="""theta, the opening angle for building the tree:
+                between 0 and 1""")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -103,15 +111,17 @@ class FDPSInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_theta_for_tree():
         """
         Set theta, the opening angle for building the tree: between 0 and 1.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('theta_for_tree', dtype='float64', direction=function.IN,
-            description = "theta, the opening angle for building the tree: between 0 and 1")
+        function.addParameter(
+                'theta_for_tree', dtype='float64', direction=function.IN,
+                description="""theta, the opening angle for building the tree:
+                between 0 and 1""")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -127,8 +137,9 @@ class FDPSInterface(
         Get group limit.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('group_limit', dtype='int32', direction=function.OUT,
-            description = "group limit")
+        function.addParameter(
+                'group_limit', dtype='int32', direction=function.OUT,
+                description="group limit")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -137,15 +148,16 @@ class FDPSInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_group_limit_for_tree():
         """
         Set group limit.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('group_limit', dtype='int32', direction=function.IN,
-            description = "group limit")
+        function.addParameter(
+                'group_limit', dtype='int32', direction=function.IN,
+                description="group limit")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -154,15 +166,16 @@ class FDPSInterface(
             could not set parameter
         """
         return function
-    
+
     @legacy_function
     def get_leaf_limit_for_tree():
         """
         Get leaf limit.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('leaf_limit', dtype='int32', direction=function.OUT,
-            description = "leaf limit")
+        function.addParameter(
+                'leaf_limit', dtype='int32', direction=function.OUT,
+                description="leaf limit")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -171,15 +184,16 @@ class FDPSInterface(
             could not retrieve parameter
         """
         return function
-        
+
     @legacy_function
     def set_leaf_limit_for_tree():
         """
         Set leaf limit.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('leaf_limit', dtype='int32', direction=function.IN,
-            description = "leaf limit")
+        function.addParameter(
+                'leaf_limit', dtype='int32', direction=function.IN,
+                description="leaf limit")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -188,13 +202,13 @@ class FDPSInterface(
             could not set parameter
         """
         return function
-    
-    
+
+
 class FDPS(GravitationalDynamics):
 
     __interface__ = FDPSInterface
 
-    def __init__(self, convert_nbody = None, **options):
+    def __init__(self, convert_nbody=None, **options):
 
         legacy_interface = self.__interface__(**options)
 
@@ -208,7 +222,7 @@ class FDPS(GravitationalDynamics):
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
         GravityFieldCode.define_state(self, object)
-        #self.stopping_conditions.define_state(object)
+        # self.stopping_conditions.define_state(object)
 
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -216,48 +230,48 @@ class FDPS(GravitationalDynamics):
                 "set_begin_time",
                 "begin_time",
                 "model time to start the simulation at",
-                default_value = 0.0 | nbody_system.time
+                default_value=0.0 | nbody_system.time
                 )
 
         object.add_method_parameter(
             "get_epsilon_squared",
             "set_epsilon_squared",
             "epsilon_squared",
-            "smoothing parameter for gravity calculations", 
-            default_value = 0.125 | nbody_system.length * nbody_system.length
+            "smoothing parameter for gravity calculations",
+            default_value=0.125 | nbody_system.length * nbody_system.length
         )
-        
+
         object.add_method_parameter(
             "get_theta_for_tree",
             "set_theta_for_tree",
-            "opening_angle", 
-            "opening angle, theta, for building the tree: between 0 and 1", 
-            default_value = 0.75
+            "opening_angle",
+            "opening angle, theta, for building the tree: between 0 and 1",
+            default_value=0.75
         )
 
         object.add_method_parameter(
             "get_group_limit_for_tree",
             "set_group_limit_for_tree",
-            "group_limit", 
+            "group_limit",
             "group limit",
-            default_value = 64
+            default_value=64
         )
 
         object.add_method_parameter(
             "get_leaf_limit_for_tree",
             "set_leaf_limit_for_tree",
-            "leaf_limit", 
+            "leaf_limit",
             "leaf limit",
-            default_value = 8
+            default_value=8
         )
-        
+
         object.add_method_parameter(
             "get_time_step",
             "set_time_step",
             "timestep",
-            "constant timestep for iteration", 
-            default_value = (1.0/64.0)| nbody_system.time
-        )        
+            "constant timestep for iteration",
+            default_value=(1.0/64.0) | nbody_system.time
+        )
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
@@ -267,7 +281,7 @@ class FDPS(GravitationalDynamics):
             (),
             (nbody_system.time, object.ERROR_CODE,)
         )
-        
+
         object.add_method(
             "set_time",
             (nbody_system.time, ),
@@ -286,13 +300,7 @@ class FDPS(GravitationalDynamics):
             (object.ERROR_CODE,)
         )
 
-        
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
-        
-        #self.stopping_conditions.define_particle_set(object)
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-
-        #self.stopping_conditions.define_state(object)
+        # self.stopping_conditions.define_particle_set(object)
