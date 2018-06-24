@@ -4,6 +4,7 @@ import optparse
 import textwrap
 from amuse.units import quantities
 
+
 def check_builtin_unit(option, opt, value):
     (cvt, what) = optparse._builtin_cvt[option.type]
     try:
@@ -20,13 +21,13 @@ def check_builtin_unit(option, opt, value):
 
 class Option(optparse.Option):
     TYPE_CHECKER = {
-        "int"    : check_builtin_unit,
-        "long"   : check_builtin_unit,
-        "float"  : check_builtin_unit,
+        "int": check_builtin_unit,
+        "long": check_builtin_unit,
+        "float": check_builtin_unit,
         "complex": check_builtin_unit,
-        "choice" : optparse.check_choice,
+        "choice": optparse.check_choice,
     }
-    ATTRS = optparse.Option.ATTRS + ['unit',]
+    ATTRS = optparse.Option.ATTRS + ['unit', ]
 
     def convert_value(self, opt, value):
         if value is not None:
@@ -35,13 +36,15 @@ class Option(optparse.Option):
             else:
                 return tuple([self.check_value(opt, v) for v in value])
 
+
 class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
 
-    def __init__(self,
-             indent_increment=2,
-             max_help_position=24,
-             width=None,
-             short_first=1):
+    def __init__(
+            self,
+            indent_increment=2,
+            max_help_position=24,
+            width=None,
+            short_first=1):
         optparse.IndentedHelpFormatter.__init__(
             self, indent_increment, max_help_position, width, short_first)
 
@@ -96,21 +99,20 @@ class IndentedHelpFormatter(optparse.IndentedHelpFormatter):
         return help_text.replace(self.unit_tag, str(unit))
 
 
-
 class OptionParser(optparse.OptionParser):
 
-    def __init__(self,
-             usage=None,
-             option_list=None,
-             option_class=Option,
-             version=None,
-             conflict_handler="error",
-             description=None,
-             formatter=None,
-             add_help_option=True,
-             prog=None,
-             epilog=None):
-
+    def __init__(
+            self,
+            usage=None,
+            option_list=None,
+            option_class=Option,
+            version=None,
+            conflict_handler="error",
+            description=None,
+            formatter=None,
+            add_help_option=True,
+            prog=None,
+            epilog=None):
 
         if formatter is None:
             formatter = IndentedHelpFormatter()
@@ -134,7 +136,11 @@ class OptionParser(optparse.OptionParser):
             if isinstance(default, basestring):
                 opt_str = option.get_opt_string()
                 defaults[option.dest] = option.check_value(opt_str, default)
-            elif not option.unit is None and not quantities.is_quantity(default):
-                defaults[option.dest] = quantities.new_quantity(default, option.unit)
+            elif (
+                    option.unit is not None
+                    and not quantities.is_quantity(default)
+                    ):
+                defaults[option.dest] = quantities.new_quantity(
+                        default, option.unit)
 
         return optparse.Values(defaults)

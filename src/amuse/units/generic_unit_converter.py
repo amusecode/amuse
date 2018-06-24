@@ -7,15 +7,24 @@ from amuse.units.generic_unit_system import *
 from amuse.support import exceptions
 from amuse.support.core import late
 
+
 class UnitsNotOrtogonalException(exceptions.AmuseException):
-    formatstring = 'The number of orthoganal units is incorrect, expected {0} but found {1}. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)'
+    formatstring = """The number of orthoganal units is incorrect, expected {0}
+    but found {1}. To convert between S.I. units and another system of units a
+    set of quantities with orthogonal units is needed. These can be quantities
+    with a single unit (such as length or time) or quantities with a derived
+    units (such as velocity or force)"""
+
 
 class NotAQuantityException(exceptions.AmuseException):
-    formatstring = 'Converters need to be initialized with a quantity argument[{0}] {1!r} is not a quantity'
+    formatstring = """Converters need to be initialized with a quantity
+    argument[{0}] {1!r} is not a quantity"""
+
 
 class NotAScalarException(exceptions.AmuseException):
     formatstring = 'Converters need to be initialized with scalar quantities, argument[{0}] {1!r} is not a scalar'
-    
+
+
 class GenericToSiConverter(object):
     def __init__(self, generic_to_si):
         self.generic_to_si = generic_to_si
@@ -31,7 +40,8 @@ class GenericToSiConverter(object):
             return self.generic_to_si.to_generic(quantity)
         else:
             return quantity
-            
+
+
 class SiToGenericConverter(object):
     def __init__(self, generic_to_si):
         self.generic_to_si = generic_to_si
@@ -47,7 +57,7 @@ class SiToGenericConverter(object):
             return self.generic_to_si.to_si(quantity)
         else:
             return quantity
-                
+
 
 class ConvertBetweenGenericAndSiUnits(object):
     """
@@ -57,12 +67,14 @@ class ConvertBetweenGenericAndSiUnits(object):
     The ``generic_unit_converter'' **ConvertBetweenGenericAndSiUnits**
     is the actual class through which you define
     the unit system. Upon instantiation you choose the base units. In the
-    example below we chose the speed of light as a unit: *c* = 1 unit length/second,
+    example below we chose the speed of light as a unit:
+    *c* = 1 unit length/second,
     and the second as the unit of time.
 
-    Note that the system has two base dimensions, length and time. By the second argument we have
-    assigned the unit second to time and by the requirement that unit lenght / second equals one,
-    the new unit length will be {*c*} meters in S.I. units.
+    Note that the system has two base dimensions, length and time. By the
+    second argument we have assigned the unit second to time and by the
+    requirement that unit lenght / second equals one, the new unit length will
+    be {*c*} meters in S.I. units.
 
     Example::
 
@@ -73,33 +85,39 @@ class ConvertBetweenGenericAndSiUnits(object):
     """
 
     def __init__(self, *arguments_list):
-        
+
         self.check_arguments(arguments_list)
-        
+
         self.values = arguments_list
-        
+
         self.units_of_values = [x.unit for x in self.values]
         self.system_rank = len(self.values)
-        
-        self.new_base = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
-        self.new_base_inv = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
-    
+
+        self.new_base = numpy.mat(
+                numpy.zeros((self.system_rank, self.system_rank))
+                )
+        self.new_base_inv = numpy.mat(
+                numpy.zeros((self.system_rank, self.system_rank))
+                )
+
         available_units = set()
         for unit in self.units_of_values:
             for factor, base_unit in unit.base:
                 available_units.add(base_unit)
         if not len(available_units) is self.system_rank:
-            raise UnitsNotOrtogonalException(self.system_rank, len(available_units))
+            raise UnitsNotOrtogonalException(
+                    self.system_rank, len(available_units))
         self.list_of_available_units = list(available_units)
-    
+
         self.new_base = self.determine_new_base()
         rank_of_new_base = self.matrixrank(self.new_base)
         if rank_of_new_base < self.system_rank:
-            raise UnitsNotOrtogonalException(self.system_rank, rank_of_new_base)
+            raise UnitsNotOrtogonalException(
+                    self.system_rank, rank_of_new_base)
         self.new_base_inv = self.new_base ** -1
 
     def check_arguments(self, arguments):
-        
+
         for index, x in enumerate(arguments):
             if is_unit(x):
                 continue
@@ -107,25 +125,33 @@ class ConvertBetweenGenericAndSiUnits(object):
                 raise NotAQuantityException(index, x)
             if not x.is_scalar():
                 raise NotAScalarException(index, x)
-        
+
     def matrixrank(self, A, tol=1e-8):
-        s = numpy.linalg.svd(A,compute_uv=0)
-        return numpy.sum(numpy.where( s>tol, 1, 0 ) )
+        s = numpy.linalg.svd(A, compute_uv=0)
+        return numpy.sum(numpy.where(s > tol, 1, 0))
 
     def determine_new_base(self):
-        matrix = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
+        matrix = numpy.mat(numpy.zeros((self.system_rank, self.system_rank)))
         for row, value in enumerate(self.values):
             for n, unit in value.unit.base:
-                matrix[row, [i for i, j in enumerate(self.list_of_available_units) if j == unit]] = n
+                matrix[
+                        row, [
+                            i for i, j in enumerate(
+                                self.list_of_available_units
+                                ) if j == unit
+                            ]
+                        ] = n
         return matrix
 
     @late
     def conversion_factors(self):
-        factors_of_the_bases =  numpy.mat(numpy.zeros((self.system_rank,1)))
+        factors_of_the_bases = numpy.mat(numpy.zeros((self.system_rank, 1)))
         for row, value in enumerate(self.values):
             factors_of_the_bases[row] = value.number * value.unit.factor
         log_factors_of_the_bases = numpy.log(numpy.abs(factors_of_the_bases))
-        result = numpy.array(numpy.exp(self.new_base_inv*log_factors_of_the_bases))[:,0]
+        result = numpy.array(
+                numpy.exp(self.new_base_inv*log_factors_of_the_bases)
+                )[:, 0]
         return result
 
     @late

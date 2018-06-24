@@ -1,12 +1,13 @@
 
-#This is an auto generated file, do not change manually. Instead if you want to add constants
-#or change them, change the nist.txt file and run nist.py
+# This is an auto generated file, do not change manually. Instead if you want
+# to add constants or change them, change the nist.txt file and run nist.py
 
 import numpy
-from amuse.units.si import *
-from amuse.units.derivedsi import *
+from amuse.units.si import (m, kg, s, A, K, mol, none)
+from amuse.units.derivedsi import (
+        Hz, MHz, sr, N, Pa, J, W, F, C, V, T, ohm, S, Wb)
 
-#BASE UNITS***********************************************
+# BASE UNITS********************************************
 X220X_lattice_spacing_of_silicon = 1.920155762e-10 | m
 alpha_particle_mass = 6.6446562e-27 | kg
 alpha_particle_mass_energy_equivalent = 5.97191917e-10 | J
@@ -104,7 +105,7 @@ triton_mass = 5.00735588e-27 | kg
 triton_mass_energy_equivalent = 4.50038703e-10 | J
 unified_atomic_mass_unit = 1.660538782e-27 | kg
 von_Klitzing_constant = 25812.807557 | ohm
-#DERIVED UNITS***********************************************
+# DERIVED UNITS*****************************************
 alpha_particle_molar_mass = 0.00400150617913 | kg*mol**-1
 atomic_mass_unit_hyphen_inverse_meter_relationship = 7.513006671e+14 | m**-1
 atomic_unit_of_1st_hyperpolarizablity = 3.206361533e-53 | C**3*m**3*J**-2
@@ -200,7 +201,7 @@ triton_mag_mom = 1.504609361e-26 | J*T**-1
 triton_molar_mass = 0.0030155007134 | kg*mol**-1
 Wien_frequency_displacement_law_constant = 58789330000.0 | Hz*K**-1
 Wien_wavelength_displacement_law_constant = 0.0028977685 | m*K
-#RATIOS ***********************************************
+# RATIOS ***********************************************
 alpha_particle_hyphen_electron_mass_ratio = 7294.2995365 | none
 alpha_particle_hyphen_proton_mass_ratio = 3.97259968951 | none
 deuteron_hyphen_electron_mag_mom_ratio = -0.0004664345537 | none
@@ -280,17 +281,17 @@ triton_hyphen_neutron_mag_mom_ratio = -1.55718553 | none
 triton_hyphen_proton_mag_mom_ratio = 1.066639908 | none
 triton_hyphen_proton_mass_ratio = 2.9937170309 | none
 weak_mixing_angle = 0.22255 | none
-#DERIVED CONSTANTS***********************************************
+# DERIVED CONSTANTS*************************************
 pi = numpy.pi
 hbar = h / (2.0 * numpy.pi)
 four_pi_stefan_boltzmann = 4.0 * numpy.pi * Stefan_hyphen_Boltzmann_constant
 mu0 = 4 * numpy.pi * 1.e-7 | N/A**2
 eps0 = mu0**-1 * c**-2
 sidereal_day = 86164.100352 | s
-#machine constants
+# MACHINE CONSTANTS*************************************
 eps = numpy.finfo(numpy.double).eps
 precision = int(numpy.log10(2/eps))
-#DROPPED UNITS***********************************************
+# DROPPED UNITS*****************************************
 """alpha_particle_mass_energy_equivalent_in_MeV = 3727.379109 | MeV
 alpha_particle_mass_in_u = 4.00150617913 | u
 atomic_mass_constant_energy_equivalent_in_MeV = 931.494028 | MeV

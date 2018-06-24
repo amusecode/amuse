@@ -23,19 +23,24 @@ International System of Quantities, I.S.Q.
 from amuse.units import units
 from amuse.units import core
 
+
 class generic_unit(core.base_unit):
     def __init__(self, unit_in_si, system):
-        core.base_unit.__init__(self, unit_in_si.quantity, unit_in_si.name, unit_in_si.symbol, system)
+        core.base_unit.__init__(
+                self,
+                unit_in_si.quantity,
+                unit_in_si.name,
+                unit_in_si.symbol,
+                system)
         self.unit_in_si = unit_in_si
 
     def __str__(self):
         return self.unit_in_si.quantity
 
-
     def is_generic(self):
         return True
-    
-    
+
+
 generic_system = core.system('generic')
 
 length = generic_unit(units.m, generic_system)
@@ -57,6 +62,7 @@ momentum_density = density * speed
 energy_density = density * specific_energy
 charge = current * time
 pressure = mass / length / (time ** 2)
+
 
 def is_generic_unit(unit):
     for factor, x in unit.base:

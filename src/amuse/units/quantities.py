@@ -1,21 +1,15 @@
 import numpy
 import operator
 
-from math import sqrt
-
 from amuse.support import exceptions
 from amuse.support import console
 
-from amuse.support.core import late
 from amuse.support.core import compare_version_strings
 from amuse.units import core
 from amuse.units.si import none
 from amuse.units.core import zero_unit
 
 
-
-"""
-"""
 class Quantity(object):
     """
     A Quantity objects represents a scalar or vector with a
@@ -64,7 +58,8 @@ class Quantity(object):
     >>> x.value_in(units.g) # but only if the units are compatible!
     Traceback (most recent call last):
         File "<stdin>", line 1, in ?
-    IncompatibleUnitsException: Cannot express m in g, the units do not have the same bases
+    IncompatibleUnitsException: Cannot express m in g, the units do not have
+    the same bases
 
 
     """
@@ -101,7 +96,7 @@ class Quantity(object):
 
     def __add__(self, other):
         if self.unit.is_zero():
-            other=to_quantity(other)
+            other = to_quantity(other)
             return new_quantity(other.number, other.unit)
         else:
             other = to_quantity(other)
@@ -114,7 +109,8 @@ class Quantity(object):
             return -other
         else:
             other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-            return new_quantity(self.number - other_in_my_units.number, self.unit)
+            return new_quantity(
+                    self.number - other_in_my_units.number, self.unit)
 
     def __rsub__(self, other):
         if self.unit.is_zero():
@@ -124,7 +120,10 @@ class Quantity(object):
 
     def __mul__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(self.number * other.number, (self.unit * other.unit).to_simple_form())
+        return new_quantity_nonone(
+                self.number * other.number,
+                (self.unit * other.unit).to_simple_form(),
+                )
 
     __rmul__ = __mul__
 
@@ -133,35 +132,56 @@ class Quantity(object):
 
     def __truediv__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(operator.__truediv__(self.number,other.number), (self.unit / other.unit).to_simple_form())
+        return new_quantity_nonone(
+                operator.__truediv__(self.number, other.number),
+                (self.unit / other.unit).to_simple_form(),
+                )
 
     def __rtruediv__(self, other):
-        return new_quantity_nonone(operator.__truediv__(other,self.number), (1.0 / self.unit).to_simple_form())
+        return new_quantity_nonone(
+                operator.__truediv__(other, self.number),
+                (1.0 / self.unit).to_simple_form(),
+                )
 
     def __floordiv__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(operator.__floordiv__(self.number,other.number), (self.unit / other.unit).to_simple_form())
+        return new_quantity_nonone(
+                operator.__floordiv__(
+                    self.number, other.number
+                    ),
+                (self.unit / other.unit).to_simple_form()
+                )
 
     def __rfloordiv__(self, other):
-        return new_quantity_nonone(operator.__floordiv__(other,self.number), (1.0 / self.unit).to_simple_form())
+        return new_quantity_nonone(
+                operator.__floordiv__(other, self.number),
+                (1.0 / self.unit).to_simple_form())
 
     def __div__(self, other):
         other = to_quantity(other)
-        return new_quantity_nonone(self.number/other.number, (self.unit / other.unit).to_simple_form())
+        return new_quantity_nonone(
+                self.number / other.number,
+                (self.unit / other.unit).to_simple_form())
 
     def __rdiv__(self, other):
-        return new_quantity_nonone(other/self.number, (1.0 / self.unit).to_simple_form())
+        return new_quantity_nonone(
+                other / self.number,
+                (1.0 / self.unit).to_simple_form())
 
     def __mod__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-        return new_quantity_nonone(numpy.mod(self.number , other_in_my_units.number), self.unit)
+        return new_quantity_nonone(
+                numpy.mod(self.number, other_in_my_units.number),
+                self.unit)
 
     def __rmod__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-        return new_quantity_nonone(numpy.mod(other_in_my_units.number , self.number), self.unit)
+        return new_quantity_nonone(
+                numpy.mod(other_in_my_units.number, self.number),
+                self.unit)
 
     def in_base(self):
-        unit=self.unit.base_unit()
+        unit = self.unit.base_unit()
         return self.as_quantity_in(unit)
 
     def sqrt(self):
@@ -175,10 +195,10 @@ class Quantity(object):
         >>> v1.sqrt()
         quantity<[4.0, 5.0, 6.0] kg**0.5>
         """
-        return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
-
-
-
+        return new_quantity(
+                numpy.sqrt(self.number),
+                (self.unit ** 0.5).to_simple_form()
+                )
 
     def as_quantity_in(self, another_unit):
         """
@@ -189,11 +209,12 @@ class Quantity(object):
         :returns: quantity converted to new unit
         """
         if isinstance(another_unit, Quantity):
-            raise exceptions.AmuseException("Cannot expres a unit in a quantity")
+            raise exceptions.AmuseException(
+                    "Cannot expres a unit in a quantity")
         factor = self.unit.conversion_factor_from(another_unit)
         return new_quantity(self.number * factor, another_unit)
 
-    in_=as_quantity_in
+    in_ = as_quantity_in
 
     def as_string_in(self, another_unit):
         """
@@ -203,7 +224,8 @@ class Quantity(object):
         :argument another_unit: unit to convert quantity to
         :returns: string representing quantity converted to new unit
         """
-        return console.DefaultPrintingStrategy().quantity_to_string(self.as_quantity_in(another_unit))
+        return console.DefaultPrintingStrategy().quantity_to_string(
+                self.as_quantity_in(another_unit))
 
     def value_in(self, unit):
         """
@@ -249,22 +271,40 @@ class Quantity(object):
         return new_quantity(-self.number, self.unit)
 
     def __lt__(self, other):
-        return self.value_in(self.unit) < to_quantity(other).value_in(self.unit)
+        return (
+                self.value_in(self.unit)
+                < to_quantity(other).value_in(self.unit)
+                )
 
     def __gt__(self, other):
-        return self.value_in(self.unit) > to_quantity(other).value_in(self.unit)
+        return (
+                self.value_in(self.unit)
+                > to_quantity(other).value_in(self.unit)
+                )
 
     def __eq__(self, other):
-        return self.value_in(self.unit) == to_quantity(other).value_in(self.unit)
+        return (
+                self.value_in(self.unit)
+                == to_quantity(other).value_in(self.unit)
+                )
 
     def __ne__(self, other):
-        return self.value_in(self.unit) != to_quantity(other).value_in(self.unit)
+        return (
+                self.value_in(self.unit)
+                != to_quantity(other).value_in(self.unit)
+                )
 
     def __le__(self, other):
-        return self.value_in(self.unit) <= to_quantity(other).value_in(self.unit)
+        return (
+                self.value_in(self.unit)
+                <= to_quantity(other).value_in(self.unit)
+                )
 
     def __ge__(self, other):
-        return self.value_in(self.unit) >= to_quantity(other).value_in(self.unit)
+        return (
+                self.value_in(self.unit)
+                >= to_quantity(other).value_in(self.unit)
+                )
 
 
 class ScalarQuantity(Quantity):
@@ -284,35 +324,39 @@ class ScalarQuantity(Quantity):
         return True
 
     def as_vector_with_length(self, length):
-        return VectorQuantity(numpy.ones(length, dtype=self.unit.dtype) * self.number, self.unit)
-
+        return VectorQuantity(
+                numpy.ones(length, dtype=self.unit.dtype) * self.number,
+                self.unit
+                )
 
     def reshape(self, shape):
         if shape == -1 or (len(shape) == 1 and shape[0] == 1):
             return VectorQuantity([self.number], self.unit)
         else:
-            raise exceptions.AmuseException("Cannot reshape a scalar to vector of shape '{0}'".format(shape))
+            raise exceptions.AmuseException(
+                    "Cannot reshape a scalar to vector of shape '{0}'".format(
+                        shape)
+                    )
 
     def __getitem__(self, index):
         if index == 0:
             return self
         else:
-            raise exceptions.AmuseException("ScalarQuantity does not support indexing")
+            raise exceptions.AmuseException(
+                    "ScalarQuantity does not support indexing")
 
     def copy(self):
         return new_quantity(self.number, self.unit)
 
     def to_unit(self):
-        in_base=self.in_base()
+        in_base = self.in_base()
         return in_base.number * in_base.unit
-
 
     def __getstate__(self):
         return (self.unit, self.number)
 
-    def round(self, decimals = 0):
+    def round(self, decimals=0):
         return new_quantity(numpy.round(self.number, decimals), self.unit)
-
 
     def new_zeros_array(self, length):
         array = numpy.zeros(length, dtype=self.unit.dtype)
@@ -324,58 +368,80 @@ class ScalarQuantity(Quantity):
 
     def sum(self, axis=None, dtype=None, out=None):
         return self
+
     def cumsum(self, axis=None, dtype=None, out=None):
         return self
+
     def prod(self, axis=None, dtype=None):
         return self
-    def min(self, axis = None):
+
+    def min(self, axis=None):
         return self
-    def max(self, axis = None):
+
+    def max(self, axis=None):
         return self
-    amin=min
-    amax=max
+
+    amin = min
+    amax = max
+
     def sorted(self):
         return self
 
     def as_unit(self):
         return self.number * self.unit
 
+
 class _flatiter_wrapper(object):
     def __init__(self, quantity):
-        self.flat=quantity.number.flat
-        self.quantity=quantity
+        self.flat = quantity.number.flat
+        self.quantity = quantity
+
     def __iter__(self):
         return self
+
     def next(self):
-        return new_quantity(self.flat.next(),self.quantity.unit)
-    def __getitem__(self,x): 
+        return new_quantity(self.flat.next(), self.quantity.unit)
+
+    def __getitem__(self, x):
         return new_quantity(self.flat[x], self.quantity.unit)
-    def __setitem__(self,index,x):
-        return self.flat.__setitem__(index,x.value_in(self.quantity.unit))
+
+    def __setitem__(self, index, x):
+        return self.flat.__setitem__(
+                index, x.value_in(self.quantity.unit))
+
     @property
     def base(self):
         return self.quantity
+
     @property
     def index(self):
         return self.flat.index
+
     @property
     def coords(self):
         return self.flat.coords
+
     @property
     def unit(self):
         return self.quantity.unit
+
     @property
     def number(self):
         return self.flat
+
     def copy(self):
         return new_quantity(self.flat.copy(), self.quantity.unit)
+
     def is_quantity(self):
         return True
+
     def value_in(self, unit):
         return self.copy().value_in(unit)
+
     def as_quantity_in(self, unit):
         return self.copy().as_quantity_in(unit)
     # todo: add as required
+
 
 class VectorQuantity(Quantity):
     """
@@ -401,22 +467,23 @@ class VectorQuantity(Quantity):
 
     @classmethod
     def new_from_scalar_quantities(cls, *values):
-        unit=to_quantity(values[0]).unit
+        unit = to_quantity(values[0]).unit
         try:
-            array=map(lambda x: value_in(x,unit),values)
+            array = map(lambda x: value_in(x, unit), values)
         except core.IncompatibleUnitsException:
-            raise exceptions.AmuseException("not all values have conforming units")
+            raise exceptions.AmuseException(
+                    "not all values have conforming units")
         return cls(array, unit)
 
     @classmethod
     def new_from_array(cls, array):
-        shape=array.shape
-        vector=cls.new_from_scalar_quantities(*array.flat)
+        shape = array.shape
+        vector = cls.new_from_scalar_quantities(*array.flat)
         return vector.reshape(shape)
 
     def aszeros(self):
-        return new_quantity(numpy.zeros(self.shape, dtype=self.number.dtype), self.unit)
-
+        return new_quantity(
+                numpy.zeros(self.shape, dtype=self.number.dtype), self.unit)
 
     def new_zeros_array(self, length):
         array = numpy.zeros(length, dtype=self.unit.dtype)
@@ -441,20 +508,17 @@ class VectorQuantity(Quantity):
 
     def flatten(self):
         return new_quantity(self.number.flatten(), self.unit)
-    
+
     @property
-    def flat(self):                
+    def flat(self):
         return _flatiter_wrapper(self)
-        
+
     def is_vector(self):
         return True
 
-
     def as_vector_with_length(self, length):
-        #if length != len(self):
-        #    raise exceptions.AmuseException("Can only return a vector with the same length")
         shape = list(self.shape)
-        shape.insert(0,1)
+        shape.insert(0, 1)
         return self.reshape(shape)
 
     def as_vector_quantity(self):
@@ -463,13 +527,13 @@ class VectorQuantity(Quantity):
     def __len__(self):
         return len(self._number)
 
-    def split(self, indices_or_sections, axis = 0):
+    def split(self, indices_or_sections, axis=0):
         parts = numpy.split(self.number, indices_or_sections, axis)
-        return map(lambda x : VectorQuantity(x, self.unit), parts)
+        return map(lambda x: VectorQuantity(x, self.unit), parts)
 
-    def array_split(self, indices_or_sections, axis = 0):
+    def array_split(self, indices_or_sections, axis=0):
         parts = numpy.array_split(self.number, indices_or_sections, axis)
-        return map(lambda x : VectorQuantity(x, self.unit), parts)
+        return map(lambda x: VectorQuantity(x, self.unit), parts)
 
     def sum(self, axis=None, dtype=None, out=None):
         """Calculate the sum of the vector components
@@ -482,9 +546,10 @@ class VectorQuantity(Quantity):
         return new_quantity(self.number.sum(axis, dtype, out), self.unit)
 
     def cumsum(self, axis=None, dtype=None, out=None):
-        """ Calculate  the cumulative sum of the elements along a given axis. """
+        """Calculate  the cumulative sum of the elements along a given axis."""
 
-        return new_quantity(numpy.cumsum(self.number, axis, dtype, out), self.unit)
+        return new_quantity(
+                numpy.cumsum(self.number, axis, dtype, out), self.unit)
 
     def prod(self, axis=None, dtype=None):
         """Calculate the product of the vector components
@@ -511,12 +576,14 @@ class VectorQuantity(Quantity):
         >>> v1.prod(2)
         quantity<[[6.0, 8.0], [10.0, 12.0]] m**2>
         """
-        if axis == None:
-            return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))
+        if axis is None:
+            return new_quantity_nonone(
+                    self.number.prod(axis, dtype),
+                    self.unit ** numpy.prod(self.number.shape))
         else:
-            return new_quantity_nonone(self.number.prod(axis, dtype), self.unit ** self.number.shape[axis])
-
-
+            return new_quantity_nonone(
+                    self.number.prod(axis, dtype),
+                    self.unit ** self.number.shape[axis])
 
     def inner(self, other):
         """Calculate the inner product of self with other.
@@ -527,8 +594,9 @@ class VectorQuantity(Quantity):
         quantity<14.0 m**2>
         """
         other = to_quantity(other)
-        return new_quantity_nonone(numpy.inner(self._number, other._number), (self.unit * other.unit).to_simple_form())
-
+        return new_quantity_nonone(
+                numpy.inner(self._number, other._number),
+                (self.unit * other.unit).to_simple_form())
 
     def length_squared(self):
         """Calculate the squared length of the vector.
@@ -568,7 +636,9 @@ class VectorQuantity(Quantity):
         >>> v1.lengths_squared()
         quantity<[25.0, 21.0] m**2>
         """
-        return (self.unit**2).new_quantity((self.number * self.number).sum(self.number.ndim - 1))
+        return (self.unit**2).new_quantity(
+                (self.number * self.number).sum(self.number.ndim - 1)
+                )
 
     def __getitem__(self, index):
         """Return the "index" component as a quantity.
@@ -586,14 +656,14 @@ class VectorQuantity(Quantity):
         >>> print vector[[0,2,]]
         [0.0, 2.0] kg
         """
-        number =  self._number[index]
+        number = self._number[index]
         if number.shape:
-            return VectorQuantity(number, self.unit )
+            return VectorQuantity(number, self.unit)
         else:
             if self.unit.is_non_numeric():
-                return NonNumericQuantity(number, self.unit )
+                return NonNumericQuantity(number, self.unit)
             else:
-                return ScalarQuantity(number, self.unit )
+                return ScalarQuantity(number, self.unit)
 
     def take(self, indices):
         return VectorQuantity(self._number.take(indices), self.unit)
@@ -606,7 +676,8 @@ class VectorQuantity(Quantity):
             self._number.put(indices, vector.value_in(self.unit))
         except AttributeError:
             if not is_quantity(vector):
-                raise ValueError("Tried to put a non quantity value in a quantity")
+                raise ValueError(
+                        "Tried to put a non quantity value in a quantity")
             else:
                 raise
 
@@ -688,7 +759,6 @@ class VectorQuantity(Quantity):
     def norm(self):
         return self.length()
 
-
     def append(self, scalar_quantity):
         """
         Append a scalar quantity to this vector.
@@ -699,15 +769,27 @@ class VectorQuantity(Quantity):
         >>> print vector
         [1.0, 2.0, 3.0, 4.0] kg
         """
-        append_number = numpy.array(scalar_quantity.value_in(self.unit)) # fix for deg, unitless
-        # The following lines make sure that appending vectors works as expected,
+        append_number = numpy.array(
+                scalar_quantity.value_in(self.unit))  # fix for deg, unitless
+        # The following lines make sure that appending vectors works as
+        # expected,
         # e.g. ([]|units.m).append([1,2,3]|units.m) -> [[1,2,3]] | units.m
-        # e.g. ([[1,2,3]]|units.m).append([4,5,6]|units.m) -> [[1,2,3],[4,5,6]] | units.m
-        if (append_number.shape and (len(self._number) == 0 or self._number.shape[1:] == append_number.shape)):
+        # e.g. ([[1,2,3]]|units.m).append([4,5,6]|units.m) ->
+        # [[1,2,3],[4,5,6]] | units.m
+        if (
+                append_number.shape
+                and (
+                    len(self._number) == 0
+                    or self._number.shape[1:] == append_number.shape
+                    )
+                ):
             new_shape = [1 + self._number.shape[0]] + list(append_number.shape)
         else:
             new_shape = -1
-        self._number = numpy.append(self._number, append_number).reshape(new_shape)
+        self._number = numpy.append(
+                self._number,
+                append_number,
+                ).reshape(new_shape)
 
     def extend(self, vector_quantity):
         """
@@ -722,7 +804,9 @@ class VectorQuantity(Quantity):
         >>> print vector1
         [1.0, 2.0, 3.0, 1.5, 2.5, 6.0] kg
         """
-        self._number = numpy.concatenate((self._number, vector_quantity.value_in(self.unit)))
+        self._number = numpy.concatenate(
+                (self._number, vector_quantity.value_in(self.unit))
+                )
 
     def prepend(self, scalar_quantity):
         """
@@ -736,7 +820,9 @@ class VectorQuantity(Quantity):
         >>> print vector1
         [0.0, 1.0, 2.0, 3.0] kg
         """
-        self._number = numpy.concatenate(([scalar_quantity.value_in(self.unit)], self._number))
+        self._number = numpy.concatenate(
+                ([scalar_quantity.value_in(self.unit)], self._number)
+                )
 
     def minimum(self, other):
         """
@@ -751,7 +837,10 @@ class VectorQuantity(Quantity):
         """
         other_in_my_units = other.as_quantity_in(self.unit)
         is_smaller_than = self.number < other_in_my_units.number
-        values = numpy.where(is_smaller_than, self.number, other_in_my_units.number)
+        values = numpy.where(
+                is_smaller_than,
+                self.number,
+                other_in_my_units.number)
         return VectorQuantity(values, self.unit)
 
     def maximum(self, other):
@@ -766,10 +855,14 @@ class VectorQuantity(Quantity):
         """
         other_in_my_units = other.as_quantity_in(self.unit)
         is_larger_than = self.number > other_in_my_units.number
-        values = numpy.where(is_larger_than, self.number, other_in_my_units.number)
+        values = numpy.where(
+                is_larger_than,
+                self.number,
+                other_in_my_units.number,
+                )
         return VectorQuantity(values, self.unit)
 
-    def max(self, axis = None):
+    def max(self, axis=None):
         """
         Return the maximum along an axis.
 
@@ -779,9 +872,9 @@ class VectorQuantity(Quantity):
         quantity<3.0 kg>
         """
 
-        return self.unit.new_quantity(numpy.amax(self.number, axis = axis))
+        return self.unit.new_quantity(numpy.amax(self.number, axis=axis))
 
-    def min(self, axis = None):
+    def min(self, axis=None):
         """
         Return the minimum value along an axis.
 
@@ -791,11 +884,11 @@ class VectorQuantity(Quantity):
         quantity<1.0 kg>
         """
 
-        return self.unit.new_quantity(numpy.amin(self.number, axis = axis))
-    amin=min
-    amax=max
+        return self.unit.new_quantity(numpy.amin(self.number, axis=axis))
+    amin = min
+    amax = max
 
-    def argmax(self, axis = None):
+    def argmax(self, axis=None, **options):
         """
         Return the indices of the maximum values along an axis.
 
@@ -804,9 +897,9 @@ class VectorQuantity(Quantity):
         >>> v1.argmax(axis=0)
         array([1, 1, 0])
         """
-        return numpy.argmax(self.number, axis = axis)
+        return numpy.argmax(self.number, axis=axis, **options)
 
-    def argmin(self, axis = None):
+    def argmin(self, axis=None):
         """
         Return the indices of the minimum values along an axis.
 
@@ -816,7 +909,7 @@ class VectorQuantity(Quantity):
         array([0, 0, 1])
         """
 
-        return numpy.argmin(self.number, axis = axis)
+        return numpy.argmin(self.number, axis=axis)
 
     def sorted(self):
         """
@@ -841,17 +934,6 @@ class VectorQuantity(Quantity):
         """
         return numpy.argsort(self.number, **options)
 
-    def argmax(self, **options):
-        """
-        Returns the index of the maximum item
-
-        >>> from amuse.units import si
-        >>> v1 = [1.0, 3.0, 2.0] | si.kg
-        >>> v1.argmax()
-        1
-        """
-        return numpy.argmax(self.number, **options)
-
     def sorted_with(self, *others):
         """
         Return a new vector with all items sorted. Perform
@@ -865,7 +947,8 @@ class VectorQuantity(Quantity):
         >>> v2 = [2.0, 3.0, 2.0] | si.m
         >>> v3 = [1.0, 4.0, 5.0] | si.s
         >>> list(v1.sorted_with(v2, v3))
-        [quantity<[1.0, 2.0, 3.0] kg>, quantity<[3.0, 2.0, 2.0] m>, quantity<[4.0, 5.0, 1.0] s>]
+        [quantity<[1.0, 2.0, 3.0] kg>, quantity<[3.0, 2.0, 2.0] m>,
+                quantity<[4.0, 5.0, 1.0] s>]
         """
         indices = numpy.lexsort([self.number])
         vectors = []
@@ -900,17 +983,23 @@ class VectorQuantity(Quantity):
 
     def cross(self, other, axisa=-1, axisb=-1, axisc=-1, axis=None):
         """
-        Return the cross product of this vector quantity with the supplied vector (quantity).
+        Return the cross product of this vector quantity with the supplied
+        vector (quantity).
         """
         other = to_quantity(other)
         return new_quantity_nonone(
-            numpy.cross(self.number, other.number, axisa=axisa, axisb=axisb, axisc=axisc, axis=axis),
+            numpy.cross(
+                self.number,
+                other.number,
+                axisa=axisa, axisb=axisb, axisc=axisc, axis=axis
+                ),
             (self.unit * other.unit).to_simple_form()
         )
 
     def dot(self, other, **kwargs):
         """
-        Return the dot product of this vector quantity with the supplied vector (quantity).
+        Return the dot product of this vector quantity with the supplied vector
+        (quantity).
 
         >>> from amuse.units import units
         >>> v1 = [1.0, 2.0, 3.0] | units.m
@@ -943,7 +1032,6 @@ class ZeroQuantity(Quantity):
     quantity<2.0 kg>
 
     """
-
 
     def __init__(self):
         Quantity.__init__(self, zero_unit())
@@ -979,17 +1067,14 @@ class ZeroQuantity(Quantity):
     def __sub__(self, other):
         return -other
 
-
     def __mul__(self, other):
         return self
-
 
     def __pow__(self, other):
         return self
 
     def __rmul__(self, other):
         return self
-
 
     def __truediv__(self, other):
         return self
@@ -1005,7 +1090,6 @@ class ZeroQuantity(Quantity):
 
     def in_base(self):
         return self
-
 
     def new_zeros_array(self, length):
         array = numpy.zeros(length, dtype=self.dtype)
@@ -1033,32 +1117,32 @@ class ZeroQuantity(Quantity):
         return "zero"
 
     def __lt__(self, other):
-        other_as_q=to_quantity(other)
+        other_as_q = to_quantity(other)
         return 0 < other_as_q.value_in(other_as_q.unit)
 
     def __gt__(self, other):
-        other_as_q=to_quantity(other)
+        other_as_q = to_quantity(other)
         return 0 > other_as_q.value_in(other_as_q.unit)
 
     def __eq__(self, other):
-        other_as_q=to_quantity(other)
+        other_as_q = to_quantity(other)
         return 0 == other_as_q.value_in(other_as_q.unit)
 
     def __ne__(self, other):
-        other_as_q=to_quantity(other)
+        other_as_q = to_quantity(other)
         return 0 != other_as_q.value_in(other_as_q.unit)
 
     def __le__(self, other):
-        other_as_q=to_quantity(other)
+        other_as_q = to_quantity(other)
         return 0 <= other_as_q.value_in(other_as_q.unit)
 
     def __ge__(self, other):
-        other_as_q=to_quantity(other)
+        other_as_q = to_quantity(other)
         return 0 >= other_as_q.value_in(other_as_q.unit)
 
 
-
 zero = ZeroQuantity()
+
 
 class NonNumericQuantity(Quantity):
     """
@@ -1089,17 +1173,20 @@ class NonNumericQuantity(Quantity):
         Quantity.__init__(self, unit)
         self.value = value
         if not unit.is_valid_value(value):
-            raise exceptions.AmuseException("<{0}> is not a valid value for {1!r}".format(value, unit))
+            raise exceptions.AmuseException(
+                    "<{0}> is not a valid value for {1!r}".format(value, unit))
 
     def as_quantity_in(self, another_unit):
         if not another_unit == self.unit:
-            raise exceptions.AmuseException("Cannot convert non-numeric quantities in to another unit")
+            raise exceptions.AmuseException(
+                    "Cannot convert non-numeric quantities in to another unit")
 
         return new_quantity(self.value, another_unit)
 
     def value_in(self, unit):
         if not unit == self.unit:
-            raise exceptions.AmuseException("Cannot convert non-numeric quantities in to another unit")
+            raise exceptions.AmuseException(
+                    "Cannot convert non-numeric quantities in to another unit")
 
         return self.value
 
@@ -1107,8 +1194,7 @@ class NonNumericQuantity(Quantity):
         return self.unit.value_to_string(self.value)
 
     def __repr__(self):
-        return 'quantity<'+str(self.value)+ ' - ' +str(self)+'>'
-
+        return 'quantity<'+str(self.value) + ' - ' + str(self)+'>'
 
     def as_vector_with_length(self, length):
         return VectorQuantity(numpy.array([self.value] * length), self.unit)
@@ -1120,7 +1206,6 @@ class NonNumericQuantity(Quantity):
         array = numpy.zeros(length, dtype=self.unit.dtype)
         return new_quantity(array, self.unit)
 
-
     def __getstate__(self):
         return (self.unit, self.value)
 
@@ -1128,13 +1213,14 @@ class NonNumericQuantity(Quantity):
         self.unit = tuple[0]
         self.value = tuple[1]
 
+
 class AdaptingVectorQuantity(VectorQuantity):
     """
     Adapting vector quanity objects will adapt their units to the
     first object added to the vector
     """
 
-    def __init__(self, value = [], unit = None):
+    def __init__(self, value=[], unit=None):
         VectorQuantity.__init__(self, value, unit)
         del self._number
         self._number_list = list(value)
@@ -1186,7 +1272,10 @@ class AdaptingVectorQuantity(VectorQuantity):
         else:
             return console.current_printing_strategy.quantity_to_string(self)
 
-__array_like =  (list, tuple, numpy.ndarray)
+
+__array_like = (list, tuple, numpy.ndarray)
+
+
 def new_quantity(value, unit):
     """Create a new Quantity object.
 
@@ -1201,10 +1290,13 @@ def new_quantity(value, unit):
         return NonNumericQuantity(value, unit)
     return ScalarQuantity(value, unit)
 
+
 def new_quantity_from_unit(unit, value):
     return new_quantity(value, unit)
 
+
 core.unit.new_quantity = new_quantity_from_unit
+
 
 def new_quantity_nonone(value, unit):
     """Create a new Quantity object.
@@ -1229,14 +1321,17 @@ def new_quantity_nonone(value, unit):
         return NonNumericQuantity(value, unit)
     return ScalarQuantity(value, unit)
 
+
 def is_quantity(input):
     return hasattr(input, "is_quantity") and input.is_quantity()
+
 
 def is_unit(input):
     if hasattr(input, "base"):
         return True
     else:
         return False
+
 
 def as_vector_quantity(value):
     if not is_quantity(value):
@@ -1246,8 +1341,11 @@ def as_vector_quantity(value):
                 result.append(as_vector_quantity(subvalue))
             return result
         else:
-            raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
+            raise Exception(
+                    "Cannot convert '{0!r}' to a vector quantity".format(value)
+                    )
     return value
+
 
 def to_quantity(input):
     if is_quantity(input):
@@ -1255,10 +1353,14 @@ def to_quantity(input):
     else:
         return new_quantity(input, none)
 
-def as_quantity_in(input,unit):
+
+def as_quantity_in(input, unit):
     return to_quantity(input).as_quantity_in(unit)
-def value_in(input,unit):
+
+
+def value_in(input, unit):
     return to_quantity(input).value_in(unit)
+
 
 def concatenate(quantities):
     first = quantities[0]
@@ -1282,7 +1384,7 @@ def arange(start, stop, step):
     return new_quantity(array, unit)
 
 
-def linspace(start, stop, num = 50,  endpoint=True, retstep=False):
+def linspace(start, stop, num=50,  endpoint=True, retstep=False):
     if not is_quantity(start):
         return numpy.linspace(start, stop, num,  endpoint, retstep)
 
@@ -1295,6 +1397,7 @@ def linspace(start, stop, num = 50,  endpoint=True, retstep=False):
         return new_quantity(array[0], unit), new_quantity(array[1], unit)
     else:
         return new_quantity(array, unit)
+
 
 def separate_numbers_and_units(values):
     from amuse.units.si import none
@@ -1310,12 +1413,14 @@ def separate_numbers_and_units(values):
 
     return number, unit
 
+
 def meshgrid(*xi, **kwargs):
     unitless_xi, units = separate_numbers_and_units(xi)
 
     result = numpy.meshgrid(*unitless_xi, **kwargs)
 
     return [matrix | unit for matrix, unit in zip(result, units)]
+
 
 def polyfit(x, y, deg):
     (x_number, y_number), (x_unit, y_unit) = separate_numbers_and_units([x, y])
@@ -1324,6 +1429,7 @@ def polyfit(x, y, deg):
     fit = [f | y_unit/(x_unit**(deg-i)) for i, f in enumerate(fit)]
 
     return fit
+
 
 def polyval(p, x):
     if len(p) == 1:
@@ -1341,35 +1447,42 @@ def polyval(p, x):
 
     return value | y_unit
 
+
 def searchsorted(a, v, **kwargs):
     if is_quantity(a):
-        return numpy.searchsorted(a.value_in(a.unit), v.value_in(a.unit), **kwargs)
+        return numpy.searchsorted(
+                a.value_in(a.unit), v.value_in(a.unit), **kwargs)
     else:
         return numpy.searchsorted(a, v, **kwargs)
 
-def numpy_or_operator(array, other, out = None):
+
+def numpy_or_operator(array, other, out=None):
     if isinstance(other, unit):
         return other.new_quantity(array)
     else:
         return numpy.bitwise_or(array, other, out)
 
-def numpy_div_operator(array, other, out = None):
+
+def numpy_div_operator(array, other, out=None):
     if is_quantity(other):
         return other.__rdiv__(array)
     else:
         return numpy.divide(array, other, out)
 
-def numpy_true_div_operator(array, other, out = None):
+
+def numpy_true_div_operator(array, other, out=None):
     if is_quantity(other):
         return other.__rtruediv__(array)
     else:
         return numpy.true_divide(array, other, out)
 
-def numpy_multiply_operator(array, other, out = None):
+
+def numpy_multiply_operator(array, other, out=None):
     if is_quantity(other):
         return other.__rmul__(array)
     else:
         return numpy.multiply(array, other, out)
+
 
 numpy_multiply_operator.reduce = numpy.multiply.reduce
 numpy_true_div_operator.reduce = numpy.true_divide.reduce
@@ -1383,21 +1496,24 @@ numpy_div_operator.reduceat = numpy.divide.reduceat
 
 _previous_operators = None
 
+
 def set_numpy_operators():
     import atexit
 
     global _previous_operators
 
     _previous_operators = numpy.set_numeric_ops(
-        multiply = numpy_multiply_operator,
-        divide = numpy_div_operator,
-        true_divide = numpy_true_div_operator
+        multiply=numpy_multiply_operator,
+        divide=numpy_div_operator,
+        true_divide=numpy_true_div_operator
     )
     atexit.register(unset_numpy_operators)
+
 
 def unset_numpy_operators():
     global _previous_operators
     numpy.set_numeric_ops(**_previous_operators)
+
 
 if compare_version_strings(numpy.__version__, '1.5.0') >= 0:
     set_numpy_operators()
