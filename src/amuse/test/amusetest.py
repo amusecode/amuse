@@ -32,11 +32,15 @@ class TestCase(unittest.TestCase):
         literature.TrackLiteratureReferences.suppress_output()
 
     def _check_comparable(self, first, second):
-        if is_quantity(first) is not is_quantity(second):
-            # One exception: quantity with none_unit CAN be compared with non-quantity:
-            if not to_quantity(first).unit == to_quantity(second).unit:
-                raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
-                    if isinstance(first, Quantity) else (second,first)))
+        if is_quantity(first):
+          # if the second is not a quantity and the first does not have the none unit then
+          # we are comparing a quantity with a non-quanity
+          if not is_quantity(second) and not first.unit.is_none():
+              raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(first, second))
+        elif is_quantity(second):
+          # by definition the first is not a quantity, so only check if second unit is not none
+          if not second.unit.is_none():
+              raise TypeError("Cannot compare non-quantity: {0} with quantity: {1}.".format(first, second))
 
     def _convert_to_numeric(self, first, second, in_units):
         if in_units:
@@ -105,7 +109,7 @@ class TestCase(unittest.TestCase):
     def failUnlessAlmostRelativeEqual(self, first, second, places=None, msg=None):
         self._check_comparable(first, second)
         first_num, second_num = self._convert_to_numeric(first, second, None)
-
+        
         if places is None:
             places = self.PRECISION
 
