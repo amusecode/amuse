@@ -55,11 +55,5 @@ virtualenv:
 
 script:
 - export PYTHONPATH=${PWD}/src
-- |
-  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-    nosetests -e "test_grid_implementation" -e "test_plot" test/core_tests
-  elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-    # tests 10 and 11 in test_rotation currently fail on macOS
-    nosetests -e "test_rotation" -e "test_grid_implementation" -e "test_plot" test/core_tests
-  fi
+- nosetests -e "test_grid_implementation" -e "test_plot" test/core_tests
   
