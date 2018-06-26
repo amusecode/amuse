@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import subprocess
 import xml.dom
 import xml.dom.minidom
@@ -9,7 +11,10 @@ from collections import namedtuple
 from . import monitor
 from . import  webserver
 import json
-import urlparse
+try:
+    import urlparse
+except ModuleNotFoundError:
+    from urllib import parse as urlparse
 import threading
 
 ReportMessageLine = namedtuple('ReportMessageLine', 'filename lineno state message_id method_id message_string')
@@ -89,9 +94,9 @@ class InterfaceToPyLint(object):
                 messages.append(ReportMessageLine(*match.groups()))
             match = number_of_statements_re.match(line)
             if not match is None:
-                print match.groups()
+                print(match.groups())
 
-                print match.group(1)
+                print(match.group(1))
                 number_of_statements = int(match.group(1))
             
         return PylintReport(messages)
@@ -283,12 +288,12 @@ class LintWebServer(webserver.WebServer):
         thread.start()
         
     def run_lint(self):
-        print "running lint"
+        print("running lint")
         self.set_last_report(InterfaceToPyLint().run_onfile(
             'src/amuse', 
             [os.path.join(os.getcwd(), 'src/amuse/support')]))
-        print "done..."
-        
+        print("done...")
+
     def get_last_report_as_dict(self):
         return self.last_report.to_dict()
     
@@ -304,8 +309,8 @@ def Run():
     #monitor_directories.walk(lambda x : a.append(x))
     pylint = InterfaceToPyLint()
     if not pylint.is_available():
-        print "Error, pylint is not available."
-        print "please install pylint first, this can be done with 'easy_install pylint'"
+        print("Error, pylint is not available.")
+        print("please install pylint first, this can be done with 'easy_install pylint'")
         sys.exit(1)
         
     parser = OptionParser() 
@@ -326,8 +331,8 @@ def Run():
       type="string")
       
     (options, args) = parser.parse_args()
-    
-    print "starting server on port: ", options.serverport
+
+    print("starting server on port: ", options.serverport)
     webserver.EDITOR = options.editor
     
     server = LintWebServer(options.serverport)
@@ -338,4 +343,4 @@ def Run():
         
 if __name__ == '__main__':
     Run()
-    #print InterfaceToPyLint().run_onfile('src/amuse/support/data', [os.path.join(os.getcwd(), 'src')]).to_dict()
+    #print(InterfaceToPyLint().run_onfile('src/amuse/support/data', [os.path.join(os.getcwd(), 'src')]).to_dict())
