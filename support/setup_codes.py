@@ -1,10 +1,16 @@
+from __future__ import print_function
+
 __revision__ = "$Id:$"
 
 import sys, os, re, subprocess
 
-import ConfigParser
-import StringIO
-    
+try:
+    import ConfigParser as configparser
+    from StringIO import StringIO
+except ModuleNotFoundError:
+    import configparser
+    from io import StringIO
+
 import os.path
 import datetime
 import stat
@@ -545,7 +551,7 @@ class CodeCommand(Command):
 
     def update_environment_from_cfgfile(self):
         if os.path.exists('amuse.cfg'):
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.read(['amuse.cfg'])
             for name, value in config.items('environment'):
                 if isinstance(value, str) and value:
@@ -556,12 +562,12 @@ class CodeCommand(Command):
                         
     def save_cfgfile_if_not_exists(self):
         if not os.path.exists('amuse.cfg'):
-            config = ConfigParser.RawConfigParser()
+            config = configparser.RawConfigParser()
             config.add_section('environment')
-            for name, value in self.environment.iteritems():
+            for name, value in self.environment.items():
                 config.set('environment', name, value)
                 
-            for name, value in self.environment_notset.iteritems():
+            for name, value in self.environment_notset.items():
                 config.set('environment', name, '')
             
             with open('amuse.cfg', 'wb') as f:
@@ -601,7 +607,7 @@ class CodeCommand(Command):
         return result
     
     def call(self, arguments, buildlogfile = None, **keyword_arguments):
-        stringio = StringIO.StringIO()
+        stringio = StringIO()
          
         self.announce(' '.join(arguments), log.DEBUG)
         
@@ -830,7 +836,7 @@ class BuildCodes(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            print build_to_special_targets
+            print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:
@@ -1024,7 +1030,7 @@ class BuildLibraries(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            print build_to_special_targets
+            print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:

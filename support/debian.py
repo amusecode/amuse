@@ -1,7 +1,12 @@
+from __future__ import print_function
+
 import os
 import shutil
 import subprocess
-import urllib
+try:  # Python 3
+    from urllib.request import urlretrieve
+except ImportError:  # Python 2
+    from urllib import urlretrieve
 import platform
 import sys
 from optparse import OptionParser
@@ -91,7 +96,7 @@ class generate_debian_package(object):
         self.package()
         self.cleanup()
         
-        print "generated debian package: {0}.deb".format(self.package_name)
+        print("generated debian package: {0}.deb".format(self.package_name))
 
     def makescripts(self):
         #os.system('python setup.py generate_main --amuse-dir=/usr/share/{0}'.format(amuse_version))
@@ -120,7 +125,7 @@ class generate_debian_package(object):
             os.makedirs('build')
             
         mpi4pyfile = 'mpi4py-1.2.2.tar.gz'
-        urllib.urlretrieve(
+        urlretrieve(
             'http://mpi4py.googlecode.com/files/{0}'.format(mpi4pyfile),
             mpi4pyfile
         )
@@ -174,7 +179,7 @@ class generate_debian_package(object):
 
     def package(self):
         if os.path.exists(self.package_path):
-            print "creating debian package.."
+            print("creating debian package..")
             subprocess.call(
                 [
                 'fakeroot',
