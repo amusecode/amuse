@@ -26,7 +26,7 @@ matrix:
     - export PATH="$CONDA_PREFIX/bin:$PATH"
     - hash -r
     - conda update -yq conda
-      #- conda install -y -c anaconda gfortran_osx-64  # necessary for a full build including community codes
+    - conda install -y -c anaconda gfortran_osx-64
     - conda install -y -c conda-forge mpi4py nose numpy docutils h5py
       #- conda install -y -c conda-forge fftw openmpi cython mpfr gsl gmp pkg-config  # these are necessary for a full build including community codes
     install:
