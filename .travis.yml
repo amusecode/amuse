@@ -1,10 +1,36 @@
-language: python
-python:
-- '2.7'
+env:
+  global:
+    - MINICONDA_VERSION="latest"
+    - MINICONDA_PYTHON_MAJOR=2
+    - MINICONDA_LINUX="Linux-x86_64"
+    - MINICONDA_OSX="MacOSX-x86_64"
 
-os:
-  - linux
-#  - osx
+matrix:
+  include:
+  - language: python
+    python:
+    - '2.7'
+    compiler: gcc
+    before_install:
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py
+    install:
+    - ./configure
+    - make framework
+  - language: generic
+    os: osx
+    before_install:
+    - wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export CONDA_PREFIX=$HOME/miniconda
+    - export PATH="$CONDA_PREFIX/bin:$PATH"
+    - hash -r
+    - conda update -yq conda
+    - conda install -y -c anaconda gfortran_osx-64  # necessary for a full build including community codes
+    - conda install -y -c conda-forge mpi4py nose numpy docutils h5py
+    - conda install -y -c conda-forge fftw openmpi cython mpfr gsl gmp pkg-config  # these are necessary for a full build including community codes
+    install:
+    - env CXX=clang++ CC=clang LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib" ./configure --with-hdf5=$CONDA_PREFIX --with-gmp=$CONDA_PREFIX --with-mpfr=$CONDA_PREFIX --with-fftw=$CONDA_PREFIX --with-gsl-prefix=$CONDA_PREFIX
+    - make framework
 
 addons:
   apt:
@@ -22,14 +48,6 @@ addons:
     - hdf5-tools
     - libopenmpi-dev
     - openmpi-bin
-
-compiler:
-  - gcc
-
-install:
-- pip install numpy scipy matplotlib nose docutils mpi4py h5py
-- ./configure
-- make framework
 
 virtualenv:
   system_site_packages: false
