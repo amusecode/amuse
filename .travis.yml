@@ -19,6 +19,7 @@ matrix:
   - language: generic
     os: osx
     before_install:
+    - export MINICONDA_OS=$MINICONDA_OSX
     - wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
     - bash miniconda.sh -b -p $HOME/miniconda
     - export CONDA_PREFIX=$HOME/miniconda
