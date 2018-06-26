@@ -5,16 +5,12 @@ import os
 import sys
 import logging
 import pydoc
-import traceback
 import random
-import sys
 
 import inspect
 import functools
 
-#from collections import OrderedDict
-
-from subprocess import Popen, PIPE
+from subprocess import Popen
 
 from amuse.support import exceptions
 from amuse.support.core import late
@@ -27,6 +23,10 @@ from amuse.rfi.channel import MultiprocessingMPIChannel
 from amuse.rfi.channel import DistributedChannel
 from amuse.rfi.channel import SocketChannel
 from amuse.rfi.channel import is_mpd_running
+
+import numpy
+
+from amuse.rfi.channel import LocalChannel
 
 try:
     from amuse import config
@@ -44,45 +44,42 @@ code and C++ or Fortran codes. It provides the abstract base
 class for all community codes.
 """
 
-import numpy
-
-from amuse.rfi.channel import LocalChannel
 
 def ensure_mpd_is_running():
     from mpi4py import MPI
     if not is_mpd_running():
         name_of_the_vendor, version = MPI.get_vendor()
         if name_of_the_vendor == 'MPICH2':
-            process = Popen(['nohup','mpd'])
+            process = Popen(['nohup', 'mpd'])
+
 
 def _typecode_to_datatype(typecode):
     if typecode is None:
         return None
-    
+
     mapping = {
-        'd':'float64',
-        'i':'int32',
-        'f':'float32',
-        's':'string',
-        'b':'bool',
-        'l':'int64',
+        'd': 'float64',
+        'i': 'int32',
+        'f': 'float32',
+        's': 'string',
+        'b': 'bool',
+        'l': 'int64',
     }
     if typecode in mapping:
         return mapping[typecode]
-    
+
     values = mapping.values()
     if typecode in values:
         return typecode
-    
-    raise exceptions.AmuseException("{0} is not a valid typecode".format(typecode))
-    
+
+    raise exceptions.AmuseException(
+            "{0} is not a valid typecode".format(typecode))
 
 
-    
 class CodeFunction(object):
-    
+
     __doc__ = CodeDocStringProperty()
-   
+
     def __init__(self, interface, owner, specification):
         """
         Implementation of the runtime call to the remote process.
@@ -95,57 +92,90 @@ class CodeFunction(object):
         self.interface = interface
         self.owner = owner
         self.specification = specification
-    
-    def __call__(self, *arguments_list, **keyword_arguments):
-        dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
-        
-        handle_as_array = self.must_handle_as_array(dtype_to_values)
-        
-        if not self.owner is None:
-            CODE_LOG.info("start call '%s.%s'",self.owner.__name__, self.specification.name)
-        
-        call_id = random.randint(0, 1000)
-        
-        try:
-            self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
-            
-            dtype_to_result = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array)
-        except Exception, ex:
-            CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
-            raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
-        
-        result = self.converted_results(dtype_to_result, handle_as_array)
-        
-        if not self.owner is None:
-            CODE_LOG.info("end call '%s.%s'",self.owner.__name__, self.specification.name)
-        
-        return result
-    
 
+    def __call__(self, *arguments_list, **keyword_arguments):
+        dtype_to_values = self.converted_keyword_and_list_arguments(
+                arguments_list, keyword_arguments)
+
+        handle_as_array = self.must_handle_as_array(dtype_to_values)
+
+        if self.owner is not None:
+            CODE_LOG.info(
+                    "start call '%s.%s'",
+                    self.owner.__name__, self.specification.name)
+
+        call_id = random.randint(0, 1000)
+
+        try:
+            self.interface.channel.send_message(
+                    call_id,
+                    self.specification.id,
+                    dtype_to_arguments=dtype_to_values
+                    )
+
+            dtype_to_result = self.interface.channel.recv_message(
+                    call_id,
+                    self.specification.id,
+                    handle_as_array)
+        except Exception as ex:
+            CODE_LOG.info(
+                    """Exception when calling function '{0}', of code '{1}',
+                    exception was '{2}'""".format(
+                        self.specification.name,
+                        type(self.interface).__name__,
+                        ex)
+                    )
+            raise exceptions.CodeException(
+                    """Exception when calling function '{0}', of code '{1}',
+                    exception was '{2}'""".format(
+                        self.specification.name,
+                        type(self.interface).__name__,
+                        ex))
+
+        result = self.converted_results(dtype_to_result, handle_as_array)
+
+        if self.owner is not None:
+            CODE_LOG.info(
+                    "end call '%s.%s'",
+                    self.owner.__name__,
+                    self.specification.name)
+
+        return result
 
     def async(self, *arguments_list, **keyword_arguments):
-        dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
-        
+        dtype_to_values = self.converted_keyword_and_list_arguments(
+                arguments_list, keyword_arguments)
+
         handle_as_array = self.must_handle_as_array(dtype_to_values)
-        
+
         call_id = random.randint(0, 1000)
-              
-        self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values)
-        
-        request = self.interface.channel.nonblocking_recv_message(call_id, self.specification.id, handle_as_array)
-        
+
+        self.interface.channel.send_message(
+                call_id,
+                self.specification.id,
+                dtype_to_arguments=dtype_to_values)
+
+        request = self.interface.channel.nonblocking_recv_message(
+                call_id,
+                self.specification.id,
+                handle_as_array)
+
         def handle_result(function):
             try:
                 dtype_to_result = function()
-            except Exception, ex:
-                raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
+            except Exception as ex:
+                raise exceptions.CodeException(
+                        """Exception when calling legacy code '{0}', exception
+                        was '{1}'""".format(
+                            self.specification.name,
+                            ex,
+                            )
+                        )
             return self.converted_results(dtype_to_result, handle_as_array)
-            
+
         request.add_result_handler(handle_result)
         return request
-        
-        
-    
+
     def must_handle_as_array(self, keyword_arguments):
         for argument_type, argument_values in keyword_arguments.items():
             if argument_values:
@@ -159,98 +189,111 @@ class CodeFunction(object):
                 if count > 0:
                     return True
         return False
-        
+
     """
     Convert results from an MPI message to a return value.
     """
     def converted_results(self, dtype_to_result, must_handle_as_array):
-        
+
         number_of_outputs = len(self.specification.output_parameters)
         result_type = self.specification.result_type
         if number_of_outputs == 0:
             if result_type is None:
                 return None
             return dtype_to_result[result_type][0]
-            
-        if number_of_outputs == 1 \
-            and result_type is None:
-            
+
+        if (
+                number_of_outputs == 1
+                and result_type is None
+                ):
+
             for value in dtype_to_result.values():
                 if len(value) == 1:
                     if must_handle_as_array:
                         return value
                     else:
                         return value[0]
-            
+
         result = OrderedDictionary()
         dtype_to_array = {}
-        
+
         for key, value in dtype_to_result.iteritems():
             dtype_to_array[key] = list(reversed(value))
-        
-        if not result_type is None:
-            return_value =  dtype_to_array[result_type].pop()
-        
+
+        if result_type is not None:
+            return_value = dtype_to_array[result_type].pop()
+
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
-        
-        if not result_type is None:
-            result["__result"] =  return_value
-        
+
+        if result_type is not None:
+            result["__result"] = return_value
+
         return result
-       
+
     """
     Convert keyword arguments and list arguments to an MPI message
     """
-    def converted_keyword_and_list_arguments(self, arguments_list, keyword_arguments):
+    def converted_keyword_and_list_arguments(
+            self, arguments_list, keyword_arguments):
         dtype_to_values = self.specification.new_dtype_to_values()
-        
-        input_parameters_seen = set(map(lambda x : x.name, self.specification.input_parameters))
+
+        input_parameters_seen = set(
+                map(lambda x: x.name, self.specification.input_parameters)
+                )
         names_in_argument_list = set([])
         for index, argument in enumerate(arguments_list):
             parameter = self.specification.input_parameters[index]
             names_in_argument_list.add(parameter.name)
-            
+
             values = dtype_to_values[parameter.datatype]
             values[parameter.input_index] = argument
             input_parameters_seen.remove(parameter.name)
-        
+
         for index, parameter in enumerate(self.specification.input_parameters):
             if parameter.name in keyword_arguments:
                 values = dtype_to_values[parameter.datatype]
-                values[parameter.input_index] = keyword_arguments[parameter.name]
+                values[parameter.input_index] = (
+                        keyword_arguments[parameter.name]
+                        )
                 input_parameters_seen.remove(parameter.name)
-        
+
         for parameter in self.specification.input_parameters:
-            if (parameter.name in input_parameters_seen) and parameter.has_default_value():
+            if (
+                    parameter.name in input_parameters_seen
+                    and parameter.has_default_value()
+                    ):
                 values = dtype_to_values[parameter.datatype]
                 values[parameter.input_index] = parameter.default
                 input_parameters_seen.remove(parameter.name)
-                
+
         if input_parameters_seen:
-            raise exceptions.CodeException("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
-         
+            raise exceptions.CodeException(
+                    "Not enough parameters in call, missing "
+                    + str(sorted(input_parameters_seen))
+                    )
+
         return dtype_to_values
-        
+
     def __str__(self):
         return str(self.specification)
-        
-        
+
+
 class legacy_function(object):
-    
+
     __doc__ = CodeDocStringProperty()
-    
+
     def __init__(self, specification_function):
         """Decorator for legacy functions.
-    
+
         The decorated function cannot have any arguments. This
         means the decorated function must not have a ``self``
         argument.
-        
-        The decorated function must return 
+
+        The decorated function must return
         a LegacyFunctionSpecification.
-        
-            
+
+
         >>> class LegacyExample(object):
         ...     @legacy_function
         ...     def evolve():
@@ -312,7 +355,7 @@ class legacy_function(object):
                 if crc32('amuse')&0xffffffff == 0xc0cc9367:
                     return crc32
             except Exception:
-                #python 3, crc32 needs bytes...
+                # python 3, crc32 needs bytes...
                 def python3_crc32(x):
                     x = crc32(bytes(x, 'ascii'))
                     return x - ((x & 0x80000000) <<1)
@@ -339,118 +382,151 @@ class legacy_function(object):
 
 def derive_dtype_unit_and_default(value):
     if value is None:
-        return None,None,None
+        return None, None, None
     try: 
-        unit=value.unit
-        number=value.number
+        unit = value.unit
+        number = value.number
     except:
-        unit=None
-        number=value
+        unit = None
+        number = value
     try:
-        dtype=number.dtype.__str__()
-        default=number
+        dtype = number.dtype.__str__()
+        default = number
     except:
-        if number in [ 'd','float64','i','int32','f','float32',
-            's','string','b','bool','l','int64']:
-            dtype=number
-            default=None
+        if number in [
+                'd', 'float64', 'i', 'int32', 'f', 'float32',
+                's', 'string', 'b', 'bool', 'l', 'int64'
+                ]:
+            dtype = number
+            default = None
         else:
-          if isinstance(number,type):
-              number=number()
-              default=None
-          else:
-              default=number
-          if isinstance(number, bool):
-              dtype="b"
-          elif isinstance(number,(int,long)):
-              dtype="i"
-          elif isinstance(number,(float,)):
-              dtype="d"
-          elif isinstance(number,(str,unicode)):
-              dtype="s"
-          else:
-              raise Exception("undetectable type")
+            if isinstance(number, type):
+                number = number()
+                default = None
+            else:
+                default = number
+            if isinstance(number, bool):
+                dtype = "b"
+            elif isinstance(number, (int, long)):
+                dtype = "i"
+            elif isinstance(number, (float,)):
+                dtype = "d"
+            elif isinstance(number, (str, unicode)):
+                dtype = "s"
+            else:
+                raise Exception("undetectable type")
     return dtype,unit,default
 
 
-def get_function_specification(name,in_arg,out_arg,must_handle_array=False,
-                                   can_handle_array=False,length_arguments=None):
-    function=LegacyFunctionSpecification()
-    function.name=name
-    function.must_handle_array=must_handle_array
-    function.can_handle_array=can_handle_array
+def get_function_specification(
+        name, in_arg, out_arg, must_handle_array=False,
+        can_handle_array=False, length_arguments=None):
+    function = LegacyFunctionSpecification()
+    function.name = name
+    function.must_handle_array = must_handle_array
+    function.can_handle_array = can_handle_array
     if "__result" in out_arg:
-        result=out_arg.pop("__result")
-        dtype,unit,dummy=derive_dtype_unit_and_default(result)
-        function.result_type=dtype
-        function.result_unit=unit
+        result = out_arg.pop("__result")
+        dtype, unit, dummy = derive_dtype_unit_and_default(result)
+        function.result_type = dtype
+        function.result_unit = unit
     else:
-        function.result_type='i'
-        function.result_unit=None            
-    inout_arg=dict()
+        function.result_type = 'i'
+        function.result_unit = None
+    inout_arg = dict()
     for arg in in_arg.keys():
         if arg in out_arg:
-            inout_arg[arg]=in_arg.pop(arg)
-            out_arg.pop(arg)     
-    for arg,value in in_arg.items():
-        dtype,unit,default=derive_dtype_unit_and_default(value)
-        function.addParameter(arg, dtype=dtype, direction=function.IN ,unit=unit,default=default)
-    for arg,value in inout_arg.items():
-        dtype,unit,default=derive_dtype_unit_and_default(value)
-        function.addParameter(arg, dtype=dtype, direction=function.INOUT ,unit=unit,default=default)
-    for arg,value in out_arg.items():
-        dtype,unit,default=derive_dtype_unit_and_default(value)
-        function.addParameter(arg, dtype=dtype, direction=function.OUT ,unit=unit,default=default)
+            inout_arg[arg] = in_arg.pop(arg)
+            out_arg.pop(arg)
+    for arg, value in in_arg.items():
+        dtype, unit, default = derive_dtype_unit_and_default(value)
+        function.addParameter(
+                arg, dtype=dtype, direction=function.IN, unit=unit,
+                default=default)
+    for arg, value in inout_arg.items():
+        dtype, unit, default = derive_dtype_unit_and_default(value)
+        function.addParameter(
+                arg, dtype=dtype, direction=function.INOUT, unit=unit,
+                default=default)
+    for arg, value in out_arg.items():
+        dtype, unit, default = derive_dtype_unit_and_default(value)
+        function.addParameter(
+                arg, dtype=dtype, direction=function.OUT, unit=unit,
+                default=default)
     if function.must_handle_array:
         if length_arguments:
-            name=length_arguments[0]
+            name = length_arguments[0]
         else:
-            name="N"
+            name = "N"
         function.addParameter(name, dtype='i', direction=function.LENGTH)
     return function
-  
-def simplified_function_specification(must_handle_array=False,can_handle_array=False):
+
+
+def simplified_function_specification(
+        must_handle_array=False,
+        can_handle_array=False):
     def wrapper(f):
-        argspec=inspect.getargspec(f)
-        nkw=len(argspec.defaults) if argspec.defaults else 0
-        defaults=argspec.defaults if argspec.defaults else []
-        length_arguments=argspec.args[0:-nkw]
-        kwargs=argspec.args[-nkw:]
-        in_arg=OrderedDictionary()
-        for x,y in zip(kwargs,defaults):
-          in_arg[x]=y
-        
-        out_arg=[]
-        flatsrc=inspect.getsource(f).replace("\n","").replace(" ","")
+        argspec = inspect.getargspec(f)
+        nkw = len(argspec.defaults) if argspec.defaults else 0
+        defaults = argspec.defaults if argspec.defaults else []
+        length_arguments = argspec.args[0:-nkw]
+        kwargs = argspec.args[-nkw:]
+        in_arg = OrderedDictionary()
+        for x, y in zip(kwargs, defaults):
+            in_arg[x] = y
+
+        out_arg = []
+        flatsrc = inspect.getsource(f).replace("\n", "").replace(" ", "")
+
         def returns(**kwargs):
-            start=flatsrc.find("returns(")
-            order=lambda k: flatsrc.find(k[0]+"=",start)
-            out_arg.extend(sorted(kwargs.items(),key=order))
+            start = flatsrc.find("returns(")
+            order = lambda k: flatsrc.find(k[0]+"=", start)
+            out_arg.extend(sorted(kwargs.items(), key=order))
         f.func_globals['returns']=returns
         f(*argspec.args)
-        out_arg_mapping=OrderedDictionary()
+        out_arg_mapping = OrderedDictionary()
         for x in out_arg:
             out_arg_mapping[x[0]] = x[1]
-            
-        function=get_function_specification(f.func_name,in_arg,out_arg_mapping,
-            must_handle_array,can_handle_array,length_arguments)
+
+        function = get_function_specification(
+                f.func_name,
+                in_arg,
+                out_arg_mapping,
+                must_handle_array,
+                can_handle_array,
+                length_arguments)
+
         def g():
             return function
         return g
     return wrapper
 
-def remote_function(f=None,must_handle_array=False,can_handle_array=False):
+
+def remote_function(
+        f=None,
+        must_handle_array=False,
+        can_handle_array=False):
     # If called without method, we've been called with optional arguments.
     # We return a decorator with the optional arguments filled in.
     # Next time round we'll be decorating method.
     if f is None:
-        return functools.partial(remote_function,must_handle_array=must_handle_array,can_handle_array=can_handle_array)
-    return legacy_function(simplified_function_specification(must_handle_array=must_handle_array,can_handle_array=can_handle_array)(f))
+        return functools.partial(
+                remote_function,
+                must_handle_array=must_handle_array,
+                can_handle_array=can_handle_array)
+    return legacy_function(
+            simplified_function_specification(
+                must_handle_array=must_handle_array,
+                can_handle_array=can_handle_array
+                )(f)
+            )
 
-     
+
 class ParameterSpecification(object):
-    def __init__(self, name, dtype, direction, description, default = None, unit = None):
-        """Specification of a parameter of a legacy function 
+    def __init__(
+            self, name, dtype, direction, description, default=None,
+            unit=None):
+        """Specification of a parameter of a legacy function
         """
         self.name = name
         self.direction = direction
@@ -462,20 +538,19 @@ class ParameterSpecification(object):
         self.unit = unit
         
     def is_input(self):
-        return ( self.direction == LegacyFunctionSpecification.IN 
-            or self.direction == LegacyFunctionSpecification.INOUT)
-            
-    
+        return (
+                self.direction == LegacyFunctionSpecification.IN 
+                or self.direction == LegacyFunctionSpecification.INOUT)
+
     def is_output(self):
-        return ( self.direction == LegacyFunctionSpecification.OUT 
-            or self.direction == LegacyFunctionSpecification.INOUT)
-                    
+        return (
+                self.direction == LegacyFunctionSpecification.OUT 
+                or self.direction == LegacyFunctionSpecification.INOUT)
 
     def has_default_value(self):
-        return not self.default is None
-    
-    
-    
+        return self.default is not None
+
+
 class LegacyFunctionSpecification(object):
     """
     Specification of a legacy function.
@@ -1064,7 +1139,7 @@ class PythonCodeInterface(CodeInterface):
     
     def __init__(self, implementation_factory = None, name_of_the_worker = None, **options):
         if self.channel_type == 'distributed':
-            print "Warning! Distributed channel not fully supported by PythonCodeInterface yet"
+            print("Warning! Distributed channel not fully supported by PythonCodeInterface yet")
         self.implementation_factory = implementation_factory
         
         CodeInterface.__init__(self, name_of_the_worker, **options)
@@ -1146,7 +1221,7 @@ class CodeFunctionWithUnits(CodeFunction):
             self.interface.channel.send_message(call_id, self.specification.id, dtype_to_arguments = dtype_to_values, encoded_units = encoded_units)
             
             dtype_to_result , output_encoded_units = self.interface.channel.recv_message(call_id, self.specification.id, handle_as_array, has_units = True)
-        except Exception, ex:
+        except Exception as ex:
             CODE_LOG.info("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
             raise exceptions.CodeException("Exception when calling function '{0}', of code '{1}', exception was '{2}'".format(self.specification.name, type(self.interface).__name__, ex))
         
@@ -1173,7 +1248,7 @@ class CodeFunctionWithUnits(CodeFunction):
         def handle_result(function):
             try:
                 dtype_to_result, output_encoded_units = function()
-            except Exception, ex:
+            except Exception as ex:
                 raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
             output_units = self.convert_floats_to_units(output_encoded_units)
             return self.converted_results(dtype_to_result, handle_as_array, output_units)
