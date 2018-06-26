@@ -15,25 +15,19 @@ import fnmatch
 import re
 import glob
 
+from support.generate_main import generate_main
+from support.build_latex import build_latex
+from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries
+from support.setup_codes import ConfigureCodes
+from support.setup_codes import GenerateInstallIni
+from support.run_tests import run_tests
 if sys.hexversion > 0x03000000:
-    from support3.generate_main import generate_main
-    from support3.build_latex import build_latex
-    from support3.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries
-    from support3.setup_codes import ConfigureCodes
-    from support3.setup_codes import GenerateInstallIni
-    from support3.run_tests import run_tests
     from distutils.command.build_py import build_py_2to3
     from os import walk as py_walk
     def walk(top, callback, args):
         for root, dirs, files in py_walk(top):
             callback(args, root, files)
 else:
-    from support.generate_main import generate_main
-    from support.build_latex import build_latex
-    from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries
-    from support.setup_codes import ConfigureCodes
-    from support.setup_codes import GenerateInstallIni
-    from support.run_tests import run_tests
     from os.path import walk
     
 
@@ -140,7 +134,7 @@ def find_data_files(srcdir, destdir, *wildcards, **kw):
 
 all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive = True)
 all_data_files.extend(find_data_files('support', 'share/amuse/support', '*', recursive = False))
-all_data_files.extend(find_data_files('support3', 'share/amuse/support3', '*', recursive = False))
+#all_data_files.extend(find_data_files('support3', 'share/amuse/support3', '*', recursive = False))
 all_data_files.extend(find_data_files('lib', 'share/amuse/lib', '*.h', '*.a', '*.mod', '*.inc', '*.so', '*.dylib', recursive = True))
 all_data_files.append(('share/amuse',['./config.mk','./build.py']))
 
