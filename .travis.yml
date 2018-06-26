@@ -4,10 +4,24 @@ python:
 
 os:
   - linux
+#  - osx
 
-dist: trusty
-
-sudo: enabled
+addons:
+  apt:
+    packages:
+    - build-essential
+    - python-dev
+    - gfortran
+    - libgsl0-dev
+    - cmake
+    - libfftw3-3
+    - libfftw3-dev
+    - libmpfr4
+    - libmpfr-dev
+    - libhdf5-serial-dev
+    - hdf5-tools
+    - libopenmpi-dev
+    - openmpi-bin
 
 compiler:
   - gcc
@@ -19,21 +33,6 @@ install:
 
 virtualenv:
   system_site_packages: false
-
-before_install:
-- sudo apt-get install build-essential
-- sudo apt-get install gfortran 
-- sudo apt-get install python-dev
-- sudo apt-get install libgsl0-dev
-- sudo apt-get install cmake
-- sudo apt-get install libfftw3-3
-- sudo apt-get install libfftw3-dev
-- sudo apt-get install libmpfr4
-- sudo apt-get install libmpfr-dev
-- sudo apt-get install libhdf5-serial-dev
-- sudo apt-get install hdf5-tools
-- sudo apt-get install libopenmpi-dev
-- sudo apt-get install openmpi-bin
 
 script:
 - export PYTHONPATH=${PWD}/src
