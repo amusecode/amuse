@@ -2,6 +2,7 @@ from amuse.support.interface import InCodeComponentImplementation
 
 
 from amuse.test.amusetest import TestWithMPI
+import amuse.test.compile_tools as compile_tools
 import subprocess
 import os
 import time
@@ -306,32 +307,7 @@ class ForTesting(InCodeComponentImplementation):
     """
 class TestInterface(TestWithMPI):
     
-    def get_mpif90_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.mpi.mpif95
-        else:
-            return os.environ['MPIFC'] if 'MPIFC' in os.environ else 'mpif90'
-
-    def has_fortran_iso_c_binding(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.compilers.fc_iso_c_bindings
-        else:
-            return False
-    
-    
-    def skip_if_fotran_does_not_support_mpi(self):
+    def skip_if_fortran_does_not_support_mpi(self):
         try:
             from amuse import config
             is_configured = hasattr(config, 'compilers') and hasattr(config.compilers, 'fc_iso_c_bindings')
@@ -343,82 +319,6 @@ class TestInterface(TestWithMPI):
         else:
             self.skip("cannot run test as fortran does not support iso c bindings")
 
-    
-    def get_mpif90_arguments(self):
-        name = self.get_mpif90_name()
-        return list(shlex.split(name))
-        
-    def wait_for_file(self, filename):
-        for dt in [0.01, 0.01, 0.02, 0.05]:
-            if os.path.exists(filename):
-                return
-            time.sleep(dt)
-            
-    def fortran_compile(self, objectname, string):
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.f90'
-        
-        with open(sourcename, "w") as f:
-            f.write(string)
-        
-        arguments = self.get_mpif90_arguments()
-        arguments.extend(["-g", "-I{0}/lib/forsockets".format(self.get_amuse_root_dir()), "-c",  "-o", objectname, sourcename])
-        arguments.append("-Wall")
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        process.wait()
-        
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-            
-        if process.returncode != 0 or not os.path.exists(objectname):
-            print "Could not compile {0}, error = {1}".format(objectname, stderr)
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-
-        print stdout
-        print stderr
-    
-    def fortran_build(self, exename, objectnames):
-        if os.path.exists(exename):
-            os.remove(exename)
-            
-        arguments = self.get_mpif90_arguments()
-        arguments.extend(objectnames)
-        
-        arguments.append("-L{0}/lib/forsockets".format(self.get_amuse_root_dir()))
-        arguments.append("-Wall")
-        arguments.append("-lforsockets")
-        
-        arguments.append("-o")
-        arguments.append(exename)
-        
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(exename)
-            
-        
-        if process.returncode != 0 or not os.path.exists(exename):
-            print "Could not build {0}, error = {1}".format(exename, stderr)
-            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
-
-        print stdout
-        print stderr
-    
     def build_worker(self):
         
         path = os.path.abspath(self.get_path_to_results())  
@@ -426,14 +326,14 @@ class TestInterface(TestWithMPI):
         interfacefile = os.path.join(path,"interface.o")
         self.exefile = os.path.join(path,"fortran_worker")
         
-        self.fortran_compile(codefile, codestring)
+        compile_tools.fortran_compile(codefile, codestring)
         
         uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
         uc.needs_mpi = True
         string =  uc.result
-        self.fortran_compile(interfacefile, string)
-        self.fortran_build(self.exefile, [interfacefile, codefile] )
+        compile_tools.fortran_compile(interfacefile, string)
+        compile_tools.fortran_build(self.exefile, [interfacefile, codefile] )
     
     def setUp(self):
         super(TestInterface, self).setUp()
@@ -661,7 +561,7 @@ class TestInterface(TestWithMPI):
 
     def test18(self):
         self.check_for_mpi()
-        self.skip_if_fotran_does_not_support_mpi()
+        self.skip_if_fortran_does_not_support_mpi()
         
         instance = ForTestingInterface(self.exefile)
         t0 = time.time()

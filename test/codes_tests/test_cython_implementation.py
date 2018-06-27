@@ -2,6 +2,7 @@ from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.test.amusetest import TestCase
+import amuse.test.compile_tools as compile_tools
 from amuse.support import exceptions
 from amuse.support import options
 
@@ -173,8 +174,8 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         self.sofile = os.path.join(path,"interface.so")
         self.exefile = os.path.join(path,"c_worker")
         
-        self.c_compile(codefile, test_c_implementation.codestring)
-        
+        compile_tools.c_compile(codefile, test_c_implementation.codestring,
+                                extra_args=["-fPIC"])
         
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = test_c_implementation.ForTestingInterface
@@ -233,80 +234,9 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         with open(cname, "r") as f:
             string = f.read()
             
-        self.c_pythondev_compile(interfacefile, string)
+        compile_tools.c_pythondev_compile(interfacefile, string)
         # self.c_pythondev_build(self.exefile, [interfacefile, codefile] )
-        self.c_pythondev_buildso(self.sofile,  [interfacefile, codefile] )
-
-
-
-    def c_pythondev_compile(self, objectname, string):
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.c'
-        amuse_root = get_amuse_root_dir()
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        
-        with open(sourcename, "w") as f:
-            f.write(string)
-            
-        mpicc = self.get_mpicc_name()
-        arguments = [mpicc]
-        arguments.extend(self.get_mpicc_flags().split())
-        
-        arguments.extend(["-I", amuse_root + "/lib/stopcond","-I", amuse_root + "/lib/amuse_mpi",  "-fPIC", "-c",  "-o", objectname, sourcename])
-        arguments.extend(shlex.split(config.compilers.pythondev_cflags))
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-        
-        if process.returncode != 0 or not os.path.exists(objectname):
-            print "Could not compile {0}, error = {1}".format(objectname, stderr)
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-
-
-
-    def c_pythondev_build(self, exename, objectnames):
-        
-        if os.path.exists(exename):
-            os.remove(exename)
-            
-        mpicxx = self.get_mpicxx_name()
-        arguments = [mpicxx]
-        arguments.extend(objectnames)
-        arguments.extend(shlex.split(config.compilers.pythondev_ldflags))
-        arguments.append("-o")
-        arguments.append(exename)
-        
-        if 'LIBS' in os.environ:
-            libs = os.environ['LIBS'].split()
-            arguments.extend(libs)
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(exename)
-            
-        if process.returncode != 0 or not (os.path.exists(exename) or os.path.exists(exename+'.exe')):
-            print "Could not compile {0}, error = {1}".format(exename, stderr)
-            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
-
-        print stdout
-        print stderr
-
+        compile_tools.c_pythondev_buildso(self.sofile,  [interfacefile, codefile] )
 
     def test1(self):
         instance = ForTestingInterface(self.exefile)
@@ -317,78 +247,6 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         
     def test14(self):
         self.skip("needs python support")
-                     
-    def c_pythondev_buildso(self, soname, objectnames):
-        
-        if os.path.exists(soname):
-            os.remove(soname)
-        amuse_root = get_amuse_root_dir()
-            
-        mpicxx = self.get_mpicxx_name()
-        arguments = [mpicxx]
-        arguments.extend(objectnames)
-        arguments.extend(shlex.split(config.compilers.pythondev_ldflags))
-        arguments.append("-shared")
-        arguments.append("-o")
-        arguments.append(soname)
-        arguments.append("-L"+amuse_root+"/lib/amuse_mpi")
-        arguments.append("-lamuse_mpi")
-        
-        if 'LIBS' in os.environ:
-            libs = os.environ['LIBS'].split()
-            arguments.extend(libs)
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(soname)
-            
-        if process.returncode != 0 or not (os.path.exists(soname)):
-            print "Could not compile {0}, error = {1}".format(soname, stderr)
-            raise Exception("Could not build {0}, error = {1}".format(soname, stderr))
-
-        print stdout
-        print stderr
-
-
-
-
-
-    def c_compile(self, objectname, string):
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.c'
-        
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        
-        with open(sourcename, "w") as f:
-            f.write(string)
-            
-        mpicc = self.get_mpicc_name()
-        arguments = [mpicc]
-        arguments.extend(self.get_mpicc_flags().split())
-        arguments.extend(["-I", "lib/stopcond", "-fPIC", "-c",  "-o", objectname, sourcename])
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-        
-        if process.returncode != 0 or not os.path.exists(objectname):
-            print "Could not compile {0}, error = {1}".format(objectname, stderr)
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
 
 
 class TestCythonFortranImplementationInterface(test_fortran_implementation.TestInterface):
@@ -396,8 +254,6 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
     def setUp(self):
         self.skip_if_no_cython()
         super(TestCythonFortranImplementationInterface, self).setUp()
-
-
 
     def tearDown(self):
         pass
@@ -426,11 +282,6 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         error = error.strip()[0:7].decode('utf-8')
         if not error.startswith('Cython'):
             self.skip("cython not available")
-        
-            
-        
-        
-            
 
     def build_worker(self):
         
@@ -442,7 +293,8 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         self.interfacec_o_file = os.path.join(path,"interfacec.o")
         self.exefile = os.path.join(path,"c_worker")
         
-        self.fortran_compile(codefile, test_fortran_implementation.codestring)
+        compile_tools.fortran_compile(codefile, test_fortran_implementation.codestring,
+                                      extra_args=["-fPIC"])
         
         
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
@@ -508,84 +360,11 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         uc.needs_mpi = False
         code =  uc.result
 
+        compile_tools.fortran_compile(self.interfacec_o_file, code,
+                                      extra_args=["-fPIC"])
 
-        self.fortran_compile(self.interfacec_o_file, code)
-        
-            
-        self.c_pythondev_compile(interfacefile, string)
-        self.fortran_pythondev_buildso(self.sofile,  [interfacefile, codefile, self.interfacec_o_file] )
-
-
-
-
-    def c_pythondev_compile(self, objectname, string):
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.c'
-        amuse_root = get_amuse_root_dir()
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        
-        with open(sourcename, "w") as f:
-            f.write(string)
-            
-        mpicc = self.get_mpicc_name()
-        arguments = [mpicc]
-        arguments.extend(self.get_mpicc_flags().split())
-        
-        arguments.extend(["-I", amuse_root + "/lib/stopcond","-I", amuse_root + "/lib/amuse_mpi",  "-fPIC", "-c",  "-o", objectname, sourcename])
-        arguments.extend(shlex.split(config.compilers.pythondev_cflags))
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-        
-        if process.returncode != 0 or not os.path.exists(objectname):
-            print "Could not compile {0}, error = {1}".format(objectname, stderr)
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-
-
-
-    def c_pythondev_build(self, exename, objectnames):
-        
-        if os.path.exists(exename):
-            os.remove(exename)
-            
-        mpicxx = self.get_mpicxx_name()
-        arguments = [mpicxx]
-        arguments.extend(objectnames)
-        arguments.extend(shlex.split(config.compilers.pythondev_ldflags))
-        arguments.append("-o")
-        arguments.append(exename)
-        
-        if 'LIBS' in os.environ:
-            libs = os.environ['LIBS'].split()
-            arguments.extend(libs)
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(exename)
-            
-        if process.returncode != 0 or not (os.path.exists(exename) or os.path.exists(exename+'.exe')):
-            print "Could not compile {0}, error = {1}".format(exename, stderr)
-            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
-
-        print stdout
-        print stderr
-
+        compile_tools.c_pythondev_compile(interfacefile, string)
+        compile_tools.fortran_pythondev_buildso(self.sofile,  [interfacefile, codefile, self.interfacec_o_file] )
 
     def test1(self):
         instance = ForTestingInterface(self.exefile)
@@ -593,206 +372,3 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         instance.stop()
         self.assertEquals(int_out, 10)
         self.assertEquals(error, 0)
-        
-    def c_pythondev_buildso(self, soname, objectnames):
-        
-        if os.path.exists(soname):
-            os.remove(soname)
-        amuse_root = get_amuse_root_dir()
-            
-        mpicxx = self.get_mpicxx_name()
-        arguments = [mpicxx]
-        arguments.extend(objectnames)
-        arguments.extend(shlex.split(config.compilers.pythondev_ldflags))
-        arguments.append("-shared")
-        arguments.append("-o")
-        arguments.append(soname)
-        arguments.append("-L"+amuse_root+"/lib/amuse_mpi")
-        arguments.append("-lamuse_mpi")
-        
-        if 'LIBS' in os.environ:
-            libs = os.environ['LIBS'].split()
-            arguments.extend(libs)
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(soname)
-            
-        if process.returncode != 0 or not (os.path.exists(soname)):
-            print "Could not compile {0}, error = {1}".format(soname, stderr)
-            raise Exception("Could not build {0}, error = {1}".format(soname, stderr))
-
-        print stdout
-        print stderr
-
-
-
-
-
-    def c_compile(self, objectname, string):
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.c'
-        
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        
-        with open(sourcename, "w") as f:
-            f.write(string)
-            
-        mpicc = self.get_mpicc_name()
-        arguments = [mpicc]
-        arguments.extend(self.get_mpicc_flags().split())
-        arguments.extend(["-I", "lib/stopcond", "-fPIC", "-c",  "-o", objectname, sourcename])
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-        
-        if process.returncode != 0 or not os.path.exists(objectname):
-            print "Could not compile {0}, error = {1}".format(objectname, stderr)
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-
-
-
-    def get_mpicc_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-
-        if is_configured:
-            return config.mpi.mpicc
-        else:
-            return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
-            
-
-    def get_mpicxx_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-
-        if is_configured:
-            return config.mpi.mpicxx
-        else:
-            return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
-
-
-    def get_mpicc_flags(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'compilers')
-        except ImportError:
-            is_configured = False
-        
-        if is_configured:
-            return config.compilers.cc_flags
-        else:
-            return ""
-            
-
-    def get_mpicxx_flags(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'compilers')
-        except ImportError:
-            is_configured = False
-        
-        if is_configured:
-            return config.compilers.cxx_flags
-        else:
-            return ""
-    def fortran_compile(self, objectname, string):
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.f90'
-        
-        with open(sourcename, "w") as f:
-            f.write(string)
-        
-        arguments = self.get_mpif90_arguments()
-        arguments.extend(["-g", "-I{0}/lib/forsockets".format(self.get_amuse_root_dir()), "-fPIC", "-c",  "-o", objectname, sourcename])
-        arguments.append("-Wall")
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        process.wait()
-        
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-            
-        if process.returncode != 0 or not os.path.exists(objectname):
-            print "Could not compile {0}, error = {1}".format(objectname, stderr)
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-
-        print stdout
-        print stderr
-
-
-
-    def fortran_pythondev_buildso(self, soname, objectnames):
-        
-        if os.path.exists(soname):
-            os.remove(soname)
-        amuse_root = get_amuse_root_dir()
-            
-        arguments = self.get_mpif90_arguments()
-        arguments.extend(objectnames)
-        arguments.extend(shlex.split(config.compilers.pythondev_ldflags))
-        arguments.append("-shared")
-        arguments.append("-o")
-        arguments.append(soname)
-        arguments.append("-L"+amuse_root+"/lib/amuse_mpi")
-        arguments.append("-lamuse_mpi")
-        
-        if 'LIBS' in os.environ:
-            libs = os.environ['LIBS'].split()
-            arguments.extend(libs)
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(soname)
-            
-        if process.returncode != 0 or not (os.path.exists(soname)):
-            print "Could not compile {0}, error = {1}".format(soname, stderr)
-            raise Exception("Could not build {0}, error = {1}".format(soname, stderr))
-
-        print stdout
-        print stderr
-
-
-
-
-
-
-
-
