@@ -1,3 +1,10 @@
+import os
+import subprocess
+import time
+
+from amuse.rfi.tools import create_c
+
+
 def get_mpicc_name():
     try:
         from amuse import config
@@ -67,25 +74,27 @@ def c_compile(objectname, string):
     with open(sourcename, "w") as f:
         f.write(string)
 
-    mpicc = self.get_mpicc_name()
+    mpicc = get_mpicc_name()
     arguments = [mpicc]
-    arguments.extend(self.get_mpicc_flags().split())
-    arguments.extend(["-I", "lib/stopcond", "-c",  "-o", objectname, sourcename])
+    arguments.extend(get_mpicc_flags().split())
+    arguments.extend(["-I", "lib/stopcond", "-c",  "-o", objectname,
+                     sourcename])
 
     process = subprocess.Popen(
         arguments,
-        stdin = subprocess.PIPE,
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
     stdout, stderr = process.communicate()
 
     if process.returncode == 0:
-        self.wait_for_file(objectname)
+        wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        print "Could not compile {0}, error = {1}".format(objectname, stderr)
-        raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
+        print("Could not compile {0}, error = {1}".format(objectname, stderr))
+        raise Exception("Could not compile {0}, error = {1}".format(objectname,
+                                                                    stderr))
 
 
 def cxx_compile(objectname, string):
@@ -98,35 +107,37 @@ def cxx_compile(objectname, string):
     with open(sourcename, "w") as f:
         f.write(string)
 
-    mpicxx = self.get_mpicxx_name()
+    mpicxx = get_mpicxx_name()
     arguments = [mpicxx]
-    arguments.extend(self.get_mpicxx_flags().split())
-    arguments.extend(["-I", "lib/stopcond", "-c",  "-o", objectname, sourcename])
+    arguments.extend(get_mpicxx_flags().split())
+    arguments.extend(["-I", "lib/stopcond", "-c",  "-o", objectname,
+                     sourcename])
 
     process = subprocess.Popen(
         arguments,
-        stdin = subprocess.PIPE,
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
     stdout, stderr = process.communicate()
 
     if process.returncode == 0:
-        self.wait_for_file(objectname)
+        wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        print "Could not compile {0}, error = {1}".format(objectname, stderr)
-        raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
+        print("Could not compile {0}, error = {1}".format(objectname, stderr))
+        raise Exception("Could not compile {0}, error = {1}".format(objectname,
+                                                                    stderr))
 
-    print stdout
-    print stderr
+    print(stdout)
+    print(stderr)
 
 
 def c_build(exename, objectnames):
     if os.path.exists(exename):
         os.remove(exename)
 
-    mpicxx = self.get_mpicxx_name()
+    mpicxx = get_mpicxx_name()
     arguments = [mpicxx]
     arguments.extend(objectnames)
     arguments.append("-o")
@@ -138,24 +149,26 @@ def c_build(exename, objectnames):
 
     process = subprocess.Popen(
         arguments,
-        stdin = subprocess.PIPE,
-        stdout = subprocess.PIPE,
-        stderr = subprocess.PIPE
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
     )
     stdout, stderr = process.communicate()
 
     if process.returncode == 0:
-        self.wait_for_file(exename)
+        wait_for_file(exename)
 
-    if process.returncode != 0 or not (os.path.exists(exename) or os.path.exists(exename+'.exe')):
-        print "Could not compile {0}, error = {1}".format(exename, stderr)
-        raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
+    if process.returncode != 0 or not (os.path.exists(exename)
+                                       or os.path.exists(exename+'.exe')):
+        print("Could not compile {0}, error = {1}".format(exename, stderr))
+        raise Exception("Could not build {0}, error = {1}".format(exename,
+                                                                  stderr))
 
-    print stdout
-    print stderr
+    print(stdout)
+    print(stderr)
 
 
-def build_worker(path_to_results, specification_class):
+def build_worker(codestring, path_to_results, specification_class):
     path = os.path.abspath(path_to_results)
     codefile = os.path.join(path, "code.o")
     headerfile = os.path.join(path, "worker_code.h")
