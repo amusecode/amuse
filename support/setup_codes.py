@@ -13,8 +13,9 @@ except ModuleNotFoundError:
 
 import os.path
 import datetime
+import glob
+import shutil
 import stat
-
 from stat import ST_MODE
 from distutils import sysconfig
 from distutils.core import Command
@@ -23,6 +24,10 @@ from distutils.util import convert_path
 from distutils import log
 from distutils import spawn
 from distutils import file_util
+try:
+    from distutils.util import run_2to3
+except ImportError:
+    pass
 from distutils.errors import DistutilsError
 from subprocess import call, Popen, PIPE, STDOUT
 
@@ -636,8 +641,21 @@ class CodeCommand(Command):
         
         stringio.close()
         return result, content
-    
-    
+
+    def run_2to3_on_build_dirs(self, path=None):
+        dirs = [path] if path else self.makefile_src_paths()
+        for dir in dirs:
+            buildir = os.path.join(self.codes_dir,  os.path.relpath(dir, self.codes_src_dir))
+            run_2to3(self.pyfiles_in_build_dir(buildir))
+
+    def pyfiles_in_build_dir(self, builddir):
+        module_files = glob.glob(os.path.join(builddir, "*.py"))
+        result = []
+        for x in module_files:
+            result.append(os.path.abspath(x))
+        return result
+
+
 class SplitOutput(object) :
     def __init__(self, file1, file2) :
         self.file1 = file1
@@ -735,7 +753,9 @@ class BuildCodes(CodeCommand):
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
-        
+            if sys.hexversion > 0x03000000:
+                self.run_2to3_on_build_dirs()
+
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
             pass
@@ -984,7 +1004,9 @@ class BuildLibraries(CodeCommand):
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
-        
+            if sys.hexversion > 0x03000000:
+                self.run_2to3_on_build_dirs()
+
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
             pass
@@ -1165,8 +1187,9 @@ class DistCleanCodes(CodeCommand):
         for x in self.makefile_paths():
             self.announce("cleaning community code:" + x)
             self.call(['make','-C', x, 'distclean'], env=environment)
-        
-class BuildOneCode(CodeCommand):  
+
+
+class BuildOneCode(CodeCommand):
     description = "build one code"
     user_options = list(CodeCommand.user_options)
     user_options.append( ('code-name=', 'n', "name of the code",), )
@@ -1211,16 +1234,12 @@ class BuildOneCode(CodeCommand):
             path = os.path.join(self.lib_dir, name)
             if os.path.isdir(path):
                 yield path
-                
-    
-    
-    
+
     def run (self):
         environment = self.environment
         environment.update(os.environ)
-        
+
         results = []
-        
         for x in self.makefile_paths():
             shortname = x[len(self.codes_dir) + 1:].lower()
             
@@ -1240,7 +1259,6 @@ class BuildOneCode(CodeCommand):
             returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
             results.append(('default',returncode,))
 
-            
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
                 self.announce("building " + x + " version: " + target_name)
@@ -1262,8 +1280,7 @@ class BuildOneCode(CodeCommand):
                 self.announce("building " + x + " version: " + target_name)
                 returncode, _ = self.call(['make','-C', x, target], env = environment)
                 results.append((target,returncode,))
-            
-        
+
         for name, returncode in results:
             self.announce( "{0} ... {1}".format(name, "failed" if returncode == 2 else "succeeded"),  level = log.INFO)
             
