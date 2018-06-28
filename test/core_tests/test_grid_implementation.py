@@ -91,7 +91,7 @@ class TestCImplementationInterface(TestWithMPI):
         uc.needs_mpi = False
         code =  uc.result
 
-        compile_tools.cxx_compile(interfacefile, code)
+        compile_tools.cxx_compile(interfacefile, code,extra_args=['-I', path])
         compile_tools.c_build(self.exefile, [interfacefile, codefile] )
     
 
