@@ -172,7 +172,7 @@ def c_compile(objectname, string, extra_args=[]):
         wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments)))
 
 
 def cxx_compile(objectname, string, extra_args=[]):
@@ -192,7 +192,7 @@ def cxx_compile(objectname, string, extra_args=[]):
         wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments)))
 
 
 def c_build(exename, objectnames, extra_args=[]):
@@ -220,7 +220,7 @@ def c_build(exename, objectnames, extra_args=[]):
 
     if process.returncode != 0 or not (os.path.exists(exename)
                                        or os.path.exists(exename+'.exe')):
-        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments)))
 
 
 def c_pythondev_compile(objectname, string):
@@ -246,7 +246,7 @@ def c_pythondev_compile(objectname, string):
         wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments)))
 
 
 def c_pythondev_build(exename, objectnames):
@@ -272,7 +272,7 @@ def c_pythondev_build(exename, objectnames):
         wait_for_file(exename)
 
     if process.returncode != 0 or not (os.path.exists(exename) or os.path.exists(exename+'.exe')):
-        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments)))
 
 
 def c_pythondev_buildso(soname, objectnames):
@@ -302,7 +302,7 @@ def c_pythondev_buildso(soname, objectnames):
         wait_for_file(soname)
 
     if process.returncode != 0 or not (os.path.exists(soname)):
-        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(soname, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(soname, stdout, stderr, ' '.join(arguments)))
 
 
 def fortran_pythondev_buildso(soname, objectnames):
@@ -331,7 +331,7 @@ def fortran_pythondev_buildso(soname, objectnames):
         wait_for_file(soname)
 
     if process.returncode != 0 or not (os.path.exists(soname)):
-        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(soname, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(soname, stdout, stderr, ' '.join(arguments)))
 
 
 def fortran_compile(objectname, string, extra_args=[]):
@@ -357,7 +357,7 @@ def fortran_compile(objectname, string, extra_args=[]):
         wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments)))
 
 
 def fortran_build(exename, objectnames):
@@ -382,7 +382,7 @@ def fortran_build(exename, objectnames):
         wait_for_file(exename)
 
     if process.returncode != 0 or not os.path.exists(exename):
-        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments))))
+        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments)))
 
 
 def f90_compile(objectname, string, mpidir):
