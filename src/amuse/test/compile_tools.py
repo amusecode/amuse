@@ -144,67 +144,53 @@ def wait_for_file(filename):
         time.sleep(dt)
 
 
-def open_subprocess(arguments):
+def open_subprocess(arguments, stdin=None):
     process = subprocess.Popen(
         arguments,
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
-    stdout, stderr = process.communicate()
+    stdout, stderr = process.communicate(input=stdin)
     return process, stdout, stderr
 
 
 def c_compile(objectname, string, extra_args=[]):
-    root, ext = os.path.splitext(objectname)
-    sourcename = root + '.c'
-
     if os.path.exists(objectname):
         os.remove(objectname)
-
-    with open(sourcename, "w") as f:
-        f.write(string)
 
     mpicc = get_mpicc_name()
     arguments = [mpicc]
     arguments.extend(get_mpicc_flags().split())
-    arguments.extend(["-I", "lib/stopcond", "-c"] + extra_args + ["-o",
-                     objectname, sourcename])
+    arguments.extend(["-I", "lib/stopcond", "-x", "c", "-c"] + extra_args +
+                     ["-o", objectname, "-"])
 
-    process, stderr, stdout = open_subprocess(arguments)
+    process, stderr, stdout = open_subprocess(arguments, stdin=string)
 
     if process.returncode == 0:
         wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        print("Could not compile {0}, error = {1}".format(objectname, stderr))
         raise Exception("Could not compile {0}, error = {1}".format(objectname,
                                                                     stderr))
 
 
-def cxx_compile(objectname, string):
-    root, ext = os.path.splitext(objectname)
-    sourcename = root + '.cc'
-
+def cxx_compile(objectname, string, extra_args=[]):
     if os.path.exists(objectname):
         os.remove(objectname)
-
-    with open(sourcename, "w") as f:
-        f.write(string)
 
     mpicxx = get_mpicxx_name()
     arguments = [mpicxx]
     arguments.extend(get_mpicxx_flags().split())
-    arguments.extend(["-I", "lib/stopcond", "-c",  "-o", objectname,
-                     sourcename])
+    arguments.extend(["-I", "lib/stopcond", "-x", "c++", "-c"] + extra_args +
+                     ["-o", objectname, "-"])
 
-    process, stderr, stdout = open_subprocess(arguments)
+    process, stderr, stdout = open_subprocess(arguments, stdin=string)
 
     if process.returncode == 0:
         wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        print("Could not compile {0}, error = {1}".format(objectname, stderr))
         raise Exception("Could not compile {0}, error = {1}".format(objectname,
                                                                     stderr))
 
@@ -232,7 +218,6 @@ def c_build(exename, objectnames):
 
     if process.returncode != 0 or not (os.path.exists(exename)
                                        or os.path.exists(exename+'.exe')):
-        print("Could not compile {0}, error = {1}".format(exename, stderr))
         raise Exception("Could not build {0}, error = {1}".format(exename,
                                                                   stderr))
 
