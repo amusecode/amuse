@@ -442,6 +442,7 @@ def f90_build(exename, objectnames, libname):
     arguments.append(exename)
     arguments.extend(["-L{0}/lib/stopcond".format(rootdir), "-l"+libname])
     arguments.extend(["-L" + rootdir + "/lib/forsockets","-lforsockets"])
+    arguments.extend(get_ld_flags().split())
     print 'build command:'
     print ' '.join(arguments)
     process, stderr, stdout = open_subprocess(arguments)
