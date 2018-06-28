@@ -1,14 +1,21 @@
+from __future__ import print_function
+
 __revision__ = "$Id:$"
 
 import sys, os, re, subprocess
 
-import ConfigParser
-import StringIO
-    
+try:
+    import ConfigParser as configparser
+    from StringIO import StringIO
+except ModuleNotFoundError:
+    import configparser
+    from io import StringIO
+
 import os.path
 import datetime
+import glob
+import shutil
 import stat
-
 from stat import ST_MODE
 from distutils import sysconfig
 from distutils.core import Command
@@ -17,6 +24,10 @@ from distutils.util import convert_path
 from distutils import log
 from distutils import spawn
 from distutils import file_util
+try:
+    from distutils.util import run_2to3
+except ImportError:
+    pass
 from distutils.errors import DistutilsError
 from subprocess import call, Popen, PIPE, STDOUT
 
@@ -545,7 +556,7 @@ class CodeCommand(Command):
 
     def update_environment_from_cfgfile(self):
         if os.path.exists('amuse.cfg'):
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.read(['amuse.cfg'])
             for name, value in config.items('environment'):
                 if isinstance(value, str) and value:
@@ -556,12 +567,12 @@ class CodeCommand(Command):
                         
     def save_cfgfile_if_not_exists(self):
         if not os.path.exists('amuse.cfg'):
-            config = ConfigParser.RawConfigParser()
+            config = configparser.RawConfigParser()
             config.add_section('environment')
-            for name, value in self.environment.iteritems():
+            for name, value in self.environment.items():
                 config.set('environment', name, value)
                 
-            for name, value in self.environment_notset.iteritems():
+            for name, value in self.environment_notset.items():
                 config.set('environment', name, '')
             
             with open('amuse.cfg', 'wb') as f:
@@ -601,7 +612,7 @@ class CodeCommand(Command):
         return result
     
     def call(self, arguments, buildlogfile = None, **keyword_arguments):
-        stringio = StringIO.StringIO()
+        stringio = StringIO()
          
         self.announce(' '.join(arguments), log.DEBUG)
         
@@ -630,8 +641,21 @@ class CodeCommand(Command):
         
         stringio.close()
         return result, content
-    
-    
+
+    def run_2to3_on_build_dirs(self, path=None):
+        dirs = [path] if path else self.makefile_src_paths()
+        for dir in dirs:
+            buildir = os.path.join(self.codes_dir,  os.path.relpath(dir, self.codes_src_dir))
+            run_2to3(self.pyfiles_in_build_dir(buildir))
+
+    def pyfiles_in_build_dir(self, builddir):
+        module_files = glob.glob(os.path.join(builddir, "*.py"))
+        result = []
+        for x in module_files:
+            result.append(os.path.abspath(x))
+        return result
+
+
 class SplitOutput(object) :
     def __init__(self, file1, file2) :
         self.file1 = file1
@@ -729,7 +753,9 @@ class BuildCodes(CodeCommand):
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
-        
+            if sys.hexversion > 0x03000000:
+                self.run_2to3_on_build_dirs()
+
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
             pass
@@ -830,7 +856,7 @@ class BuildCodes(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            print build_to_special_targets
+            print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:
@@ -978,7 +1004,9 @@ class BuildLibraries(CodeCommand):
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
-        
+            if sys.hexversion > 0x03000000:
+                self.run_2to3_on_build_dirs()
+
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
             pass
@@ -1024,7 +1052,7 @@ class BuildLibraries(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            print build_to_special_targets
+            print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:
@@ -1159,8 +1187,9 @@ class DistCleanCodes(CodeCommand):
         for x in self.makefile_paths():
             self.announce("cleaning community code:" + x)
             self.call(['make','-C', x, 'distclean'], env=environment)
-        
-class BuildOneCode(CodeCommand):  
+
+
+class BuildOneCode(CodeCommand):
     description = "build one code"
     user_options = list(CodeCommand.user_options)
     user_options.append( ('code-name=', 'n', "name of the code",), )
@@ -1207,14 +1236,54 @@ class BuildOneCode(CodeCommand):
                 yield path
                 
     
-    
-    
+    def copy_amuse_src(self):
+        """Copy the Amuse source code to the build directory
+
+        Only needed for Python 3, to be able to convert the Amuse main
+        code to Python 2.
+
+        """
+        srcdir = os.path.dirname(self.codes_src_dir)
+        destdir = os.path.dirname(self.codes_dir)
+        if srcdir != destdir:
+            owd = os.getcwd()
+            os.chdir(srcdir)
+            amusebuilddir = os.path.join(destdir, 'amuse')
+            # Only Python 3.5+ supports '**', with recursive=True
+            # (even if this function is likely only run by Python 3.5+)
+            files = glob.glob('*.py')
+            files.extend(glob.glob(os.path.join('*', '*.py')))
+            files.extend(glob.glob(os.path.join('rfi', '*', '*.py')))
+            files.extend(glob.glob(os.path.join('community', '*', '*.py')))
+            files.extend(glob.glob(os.path.join('support', 'thirdparty', '*.py')))
+            files.extend(glob.glob(os.path.join('support', 'codes', '*.py')))
+            files.extend(glob.glob(os.path.join('rfi', 'tools', '*.template')))
+            os.chdir(owd)
+            destfiles = [os.path.join(amusebuilddir, filename)
+                         for filename in files]
+            existing = [os.path.exists(filename) for filename in destfiles]
+            files = [filename for filename, exist in zip(files, existing) if not exist]
+            destfiles = [filename for filename, exist in zip(destfiles, existing) if not exist]
+            files = [os.path.join(srcdir, filename) for filename in files]
+            destdirs = set([os.path.dirname(destfile) for destfile in destfiles])
+            for dest in destdirs:
+                os.makedirs(dest, exist_ok=True)
+            for src, dest in zip(files, destfiles):
+                shutil.copy(src, dest)
+            if sys.hexversion > 0x03000000:
+                for dest in destdirs:
+                    self.run_2to3_on_build_dirs(dest)
+
     def run (self):
         environment = self.environment
         environment.update(os.environ)
-        
+
+        if sys.hexversion > 0x03000000:
+            self.copy_amuse_src()
+            oldpythonpath = environment['PYTHONPATH']
+            environment['PYTHONPATH'] = ':' + os.path.realpath(os.path.dirname(self.codes_dir)) + environment['PYTHONPATH']
+
         results = []
-        
         for x in self.makefile_paths():
             shortname = x[len(self.codes_dir) + 1:].lower()
             
@@ -1234,7 +1303,6 @@ class BuildOneCode(CodeCommand):
             returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
             results.append(('default',returncode,))
 
-            
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
                 self.announce("building " + x + " version: " + target_name)
@@ -1256,7 +1324,9 @@ class BuildOneCode(CodeCommand):
                 self.announce("building " + x + " version: " + target_name)
                 returncode, _ = self.call(['make','-C', x, target], env = environment)
                 results.append((target,returncode,))
-            
+
+        if sys.hexversion >  0x03000000:
+            environment['PYTHONPATH'] = oldpythonpath
         
         for name, returncode in results:
             self.announce( "{0} ... {1}".format(name, "failed" if returncode == 2 else "succeeded"),  level = log.INFO)
