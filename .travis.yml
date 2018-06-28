@@ -12,7 +12,7 @@ matrix:
     - '2.7'
     compiler: gcc
     before_install:
-    - pip install numpy scipy matplotlib nose docutils mpi4py h5py
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
     install:
     - ./configure
     - make framework
@@ -26,9 +26,12 @@ matrix:
     - export PATH="$CONDA_PREFIX/bin:$PATH"
     - hash -r
     - conda update -yq conda
-    - conda install -y -c anaconda gfortran_osx-64
-    - conda install -y -c conda-forge mpi4py nose numpy docutils h5py
-      #- conda install -y -c conda-forge fftw openmpi cython mpfr gsl gmp pkg-config  # these are necessary for a full build including community codes
+    # gather the conda packages to install in one go, saving time
+    - export CONDA_PACKAGES="-c anaconda gfortran_osx-64"  # configure wants this, even just for the framework target
+    - export CONDA_PACKAGES="${CONDA_PACKAGES} -c conda-forge mpi4py nose numpy docutils h5py"  # additional basic dependencies
+    - export CONDA_PACKAGES="${CONDA_PACKAGES} -c conda-forge openmpi cython"  # for the compile_tests
+      #- export CONDA_PACKAGES="${CONDA_PACKAGES} -c conda-forge fftw mpfr gsl gmp pkg-config"  # for a full build including community codes
+    - conda install -y ${CONDA_PACKAGES}
     install:
     - env CXX=clang++ CC=clang LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib" ./configure --with-hdf5=$CONDA_PREFIX --with-gmp=$CONDA_PREFIX --with-mpfr=$CONDA_PREFIX --with-fftw=$CONDA_PREFIX --with-gsl-prefix=$CONDA_PREFIX
     - make framework
@@ -56,4 +59,4 @@ virtualenv:
 script:
 - export PYTHONPATH=${PWD}/src
 - nosetests -e "test_grid_implementation" -e "test_plot" test/core_tests
-  
+- nosetests test/compile_tests
