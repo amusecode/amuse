@@ -16,19 +16,19 @@ python_version_patch := $(word 3,${python_version_full})
 all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),3)
-	$(PYTHON) setup.py build_codes --inplace
+ifneq ($(python_version_major),2)
+	$(PYTHON) setup.py build_codes
 else
-	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
+	$(PYTHON) setup.py build_codes --inplace
 endif
 
 framework: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),3)
-	$(PYTHON) setup.py build_libraries --inplace
+ifneq ($(python_version_major),2)
+	$(PYTHON) setup.py build_libraries
 else
-	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
+	$(PYTHON) setup.py build_libraries --inplace
 endif
 
 build.py:
@@ -36,15 +36,6 @@ build.py:
 
 allinbuild:
 	$(PYTHON) setup.py build
-
-support3/setup_codes.py:support/setup_codes.py
-	2to3 -n -w -W support -o support3
-	
-build3:support3/setup_codes.py
-	$(PYTHON) setup.py build
-
-install3:support3/gen_codes.py
-	$(PYTHON) setup.py install
 
 docclean:
 	make -C doc clean
@@ -67,17 +58,17 @@ distclean:
 	-rm -f iamuse.sh
 	-rm -f ibis-deploy.sh
 	-rm -f build.py
-	
+
 	-rm -f test/*.000 test/fort.* test/perr test/pout test/test.h5 test/*.log
 	-rm -f test/codes_tests/perr test/codes_tests/pout
 	-rm -f test/core_tests/plummer_back_100.ini
 	-rm -f test/test_python_implementation test/twobody
-	
+
 	$(PYTHON) setup.py clean
 	$(PYTHON) setup.py dist_clean
 	$(PYTHON) setup.py dist_clean --inplace
 	$(PYTHON) setup.py clean_codes --inplace --codes-dir=src/omuse/community
-	
+
 	make -C doc clean
 	-find src -name "*.pyc" -exec rm \{} \;
 	-find src -type d -name "__pycache__" -exec rm -Rf \{} \;
@@ -86,7 +77,7 @@ distclean:
 
 tests:
 	$(PYTHON) setup.py tests
-	
+
 
 doc:
 	$(PYTHON) setup.py -q build_latex
@@ -106,7 +97,7 @@ ctags:
 release: distclean
 	sed 's/version = .*/version = "$(VERSION)",/' < setup.py > releasesetup.py
 	cp setup.py setup.py.bck
-	mv releasesetup.py setup.py 
+	mv releasesetup.py setup.py
 	make -C doc release
 	python setup.py  -q sdist
 	cp setup.py.bck setup.py
@@ -115,19 +106,29 @@ nightly:
 	make -C doc release
 	sed 's/version = .*/version = "$(VERSION)",/' < setup.py > nightlysetup.py
 	cp setup.py setup.py.bck
-	mv nightlysetup.py setup.py 
+	mv nightlysetup.py setup.py
 	python setup.py sdist
 	cp setup.py.bck setup.py
-	
+
 debian:
 	$(PYTHON) ./support/debian.py
 
 
 %.code:
 ifneq (,$(findstring s,$(MAKEFLAGS)))
+ifeq ($(python_version_major),2)
 	$(PYTHON) setup.py build_code --inplace --clean=$(CLEAN) --code-name=$*
 else
+	$(PYTHON) setup.py build_py
+	PYTHONPATH=build/lib:$PYTHONPATH $(PYTHON) setup.py build_code --clean=$(CLEAN) --code-name=$*
+endif
+else
+ifeq ($(python_version_major),2)
 	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$*
+else
+	$(PYTHON) setup.py build_py
+	$(PYTHON) setup.py -v build_code --clean=$(CLEAN) --code-name=$*
+endif
 endif
 
 %.ocode: | src/omuse
