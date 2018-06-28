@@ -223,6 +223,34 @@ def c_build(exename, objectnames, extra_args=[]):
         raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments)))
 
 
+def build_worker(codestring, path_to_results, specification_class):
+    path = os.path.abspath(path_to_results)
+    codefile = os.path.join(path, "code.o")
+    headerfile = os.path.join(path, "worker_code.h")
+    interfacefile = os.path.join(path, "interface.o")
+    exefile = os.path.join(path, "c_worker")
+
+    c_compile(codefile, codestring)
+
+    uc = create_c.GenerateACHeaderStringFromASpecificationClass()
+    uc.specification_class = specification_class
+    uc.needs_mpi = False
+    header = uc.result
+
+    with open(headerfile, "w") as f:
+        f.write(header)
+
+    uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
+    uc.specification_class = specification_class
+    uc.needs_mpi = False
+    code = uc.result
+
+    cxx_compile(interfacefile, code, extra_args=["-I",path])
+    c_build(exefile, [interfacefile, codefile])
+
+    return exefile
+
+
 def c_pythondev_compile(objectname, string):
     root, ext = os.path.splitext(objectname)
     sourcename = root + '.c'
