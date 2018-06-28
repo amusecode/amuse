@@ -2,7 +2,7 @@ from amuse.support.interface import InCodeComponentImplementation
 
 
 from amuse.test.amusetest import TestWithMPI
-import amuse.test.compile_tools as compile_tools
+from amuse.test import compile_tools
 import subprocess
 import os
 import time

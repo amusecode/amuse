@@ -208,9 +208,6 @@ def cxx_compile(objectname, string):
         raise Exception("Could not compile {0}, error = {1}".format(objectname,
                                                                     stderr))
 
-    print(stdout)
-    print(stderr)
-
 
 def c_build(exename, objectnames):
     if os.path.exists(exename):
@@ -238,9 +235,6 @@ def c_build(exename, objectnames):
         print("Could not compile {0}, error = {1}".format(exename, stderr))
         raise Exception("Could not build {0}, error = {1}".format(exename,
                                                                   stderr))
-
-    print(stdout)
-    print(stderr)
 
 
 def build_worker(codestring, path_to_results, specification_class):
@@ -324,9 +318,6 @@ def c_pythondev_build(self, exename, objectnames):
         print "Could not compile {0}, error = {1}".format(exename, stderr)
         raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
 
-    print stdout
-    print stderr
-
 
 def c_pythondev_buildso(soname, objectnames):
     if os.path.exists(soname):
@@ -358,9 +349,6 @@ def c_pythondev_buildso(soname, objectnames):
         print "Could not compile {0}, error = {1}".format(soname, stderr)
         raise Exception("Could not build {0}, error = {1}".format(soname, stderr))
 
-    print stdout
-    print stderr
-
 
 def fortran_pythondev_buildso(self, soname, objectnames):
     if os.path.exists(soname):
@@ -391,9 +379,6 @@ def fortran_pythondev_buildso(self, soname, objectnames):
         print "Could not compile {0}, error = {1}".format(soname, stderr)
         raise Exception("Could not build {0}, error = {1}".format(soname, stderr))
 
-    print stdout
-    print stderr
-
 
 def fortran_compile(objectname, string, extra_args=[]):
     if os.path.exists(objectname):
@@ -421,9 +406,6 @@ def fortran_compile(objectname, string, extra_args=[]):
         print "Could not compile {0}, error = {1}".format(objectname, stderr)
         raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
 
-    print stdout
-    print stderr
-
 
 def fortran_build(exename, objectnames):
     if os.path.exists(exename):
@@ -450,6 +432,3 @@ def fortran_build(exename, objectnames):
         print "Could not build {0}, error = {1}".format(exename, stderr)
         raise Exception("Could not build {0}, error = {1}".format(exename,
                                                                   stderr))
-
-    print stdout
-    print stderr

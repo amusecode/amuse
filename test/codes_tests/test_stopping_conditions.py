@@ -1,4 +1,5 @@
 from amuse.test.amusetest import TestWithMPI
+from amuse.test import compile_tools
 
 #cello
 from amuse.support.codes import stopping_conditions

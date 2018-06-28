@@ -1,6 +1,7 @@
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.test.amusetest import get_path_to_results
+from amuse.test import compile_tools
 import subprocess
 import os
 import numpy

@@ -3,7 +3,7 @@ from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
-import amuse.test.compile_tools as compile_tools
+from amuse.test import compile_tools
 from amuse.support import exceptions
 
 import subprocess
