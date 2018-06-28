@@ -280,7 +280,7 @@ class RunSpeedTests(object):
         interfacefile = os.path.join(path,"interface.o")
         self.exefile = os.path.join(path,"c_worker")
         
-        compile_tools.c_compile(codefile, codestring)
+        compile_tools.cxx_compile(codefile, codestring)
         
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = TestCode
@@ -297,7 +297,7 @@ class RunSpeedTests(object):
         
         #print string
         
-        compile_tools.cxx_compile(interfacefile, string)
+        compile_tools.cxx_compile(interfacefile, string, extra_args=['-I' , path])
         compile_tools.c_build(self.exefile, [interfacefile, codefile] )
     
     def start(self):
