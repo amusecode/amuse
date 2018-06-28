@@ -240,39 +240,15 @@ class _AbstractTestInterface(TestWithMPI):
     def get_libname(self):
         return "stopcond"
         
-    def build_worker(self):
-        path = os.path.abspath(self.get_path_to_results())
-        codefile = os.path.join(path,"code.o")
-        interfacefile = os.path.join(path,"interface.o")
-        self.exefile = os.path.join(path,"c_worker")
-        
-        compile_tools.cxx_compile(codefile, codestring)
-        
-        uc = create_c.GenerateACHeaderStringFromASpecificationClass()
-        uc.specification_class = self.get_interface_class()
-        uc.make_extern_c = True
-        uc.needs_mpi = True
-        uc.ignore_functions_from_specification_classes = [stopping_conditions.StoppingConditionInterface]
-        header =  uc.result
-
-        uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
-        uc.needs_mpi = True
-
-        uc.specification_class = self.get_interface_class()
-        code =  uc.result
-
-        string = '\n\n'.join([header, code])
-
-        compile_tools.cxx_compile(interfacefile, string)
-        compile_tools.c_build(self.exefile, [interfacefile, codefile],
-                              extra_args=["-L"+get_amuse_root_dir()+"/lib/stopcond",
-                                          "-l" + self.get_libname()])
-
     def setUp(self):
         super(_AbstractTestInterface, self).setUp()
         print "building"
         self.check_can_compile_modules()
-        self.build_worker()
+        self.exefile=compile_tools.build_worker(codestring, 
+            self.get_path_to_results(), 
+            self.get_interface_class(), write_header=False, 
+            extra_args=["-L"+get_amuse_root_dir()+"/lib/stopcond", "-l" + self.get_libname()]
+            )
         
     def get_interface_class(self):
         return ForTestingInterface
@@ -280,7 +256,7 @@ class _AbstractTestInterface(TestWithMPI):
 class TestInterface(_AbstractTestInterface):
     
     def test1(self):
-        print self.exefile
+        #~ print self.exefile
         instance = ForTestingInterface(self.exefile)
         instance.reset_stopping_conditions()
         next = instance.next_index_for_stopping_condition()
@@ -311,7 +287,7 @@ class TestInterface(_AbstractTestInterface):
         instance.reset_stopping_conditions()
         next = instance.next_index_for_stopping_condition()
         self.assertFalse(instance.stopping_conditions.pair_detection.is_set())
-        print next,instance.stopping_conditions.pair_detection.type
+        #~ print next,instance.stopping_conditions.pair_detection.type
         instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
          
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
@@ -390,7 +366,7 @@ class TestInterface(_AbstractTestInterface):
         nmax = 2048
         for i in range(nmax):
             next = instance.next_index_for_stopping_condition()
-            print i, next
+            #~ print i, next
             self.assertEquals(next, i)
         instance.stop()
     
@@ -446,7 +422,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         
         instance.mpi_distribute_stopping_conditions()
         
-        print pair_detection.type
+        #~ print pair_detection.type
         instance.fire_condition(
             pair_detection.type,
             1, 2, -1
@@ -482,7 +458,7 @@ class TestInterfaceMP(_AbstractTestInterface):
         
         instance.mpi_distribute_stopping_conditions()
         for rank in range(self.get_number_of_workers()):
-            print pair_detection.type
+            #~ print pair_detection.type
             instance.fire_condition(
                 pair_detection.type,
                 1, 2, rank
@@ -733,7 +709,7 @@ class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):
         nmax = 2048
         for i in range(nmax):
             next = instance.next_index_for_stopping_condition()
-            print i, next
+            #~ print i, next
             self.assertEquals(next, i)
         instance.stop()
     
@@ -798,7 +774,7 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         
         instance.mpi_distribute_stopping_conditions()
         
-        print pair_detection.type
+        #~ print pair_detection.type
         instance.fire_condition(
             pair_detection.type,
             1, 2, -1
@@ -835,7 +811,7 @@ class TestInterfaceFortranModuleMultiprocess(_AbstractTestInterfaceFortran):
         
         instance.mpi_distribute_stopping_conditions()
         for rank in range(self.get_number_of_workers()):
-            print pair_detection.type
+            #~ print pair_detection.type
             instance.fire_condition(
                 pair_detection.type,
                 1, 2, rank

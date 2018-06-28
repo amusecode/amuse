@@ -167,7 +167,7 @@ def c_compile(objectname, string, extra_args=[]):
                      + extra_args + ["-o", objectname, "-"])
 
     process, stderr, stdout = open_subprocess(arguments, stdin=string)
-
+    
     if process.returncode == 0:
         wait_for_file(objectname)
 
@@ -223,7 +223,8 @@ def c_build(exename, objectnames, extra_args=[]):
         raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments)))
 
 
-def build_worker(codestring, path_to_results, specification_class):
+def build_worker(codestring, path_to_results, specification_class, write_header=True, 
+      extra_args=[]):
     path = os.path.abspath(path_to_results)
     codefile = os.path.join(path, "code.o")
     headerfile = os.path.join(path, "worker_code.h")
@@ -237,16 +238,19 @@ def build_worker(codestring, path_to_results, specification_class):
     uc.needs_mpi = False
     header = uc.result
 
-    with open(headerfile, "w") as f:
-        f.write(header)
+    if write_header:
+      with open(headerfile, "w") as f:
+          f.write(header)
+      extra_args+=["-I",path]
 
     uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
     uc.specification_class = specification_class
     uc.needs_mpi = False
     code = uc.result
 
-    cxx_compile(interfacefile, code, extra_args=["-I",path])
-    c_build(exefile, [interfacefile, codefile])
+    cxx_compile(interfacefile, code if write_header else header+"\n\n"+code, 
+                    extra_args=extra_args)
+    c_build(exefile, [interfacefile, codefile], extra_args=extra_args)
 
     return exefile
 
