@@ -60,4 +60,4 @@ script:
 - export PYTHONPATH=${PWD}/src
 - nosetests test/reports/test_speed.py -sv
 - nosetests -e "test_grid_implementation" -e "test_plot" test/core_tests
-- nosetests test/compile_tests
+- nosetests test/compile_tests -sv
