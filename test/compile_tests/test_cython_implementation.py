@@ -6,7 +6,6 @@ from amuse.test import compile_tools
 from amuse.support import exceptions
 from amuse.support import options
 
-import subprocess
 import os
 import time
 import sys
@@ -146,13 +145,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
         if not hasattr(config.compilers, 'cython') or len(config.compilers.cython) == 0:
             self.skip("cython not configured")
             
-        process = subprocess.Popen(
-            [config.compilers.cython,'-V'],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        output, error = process.communicate()
+        process, output, error = compile_tools.open_subprocess([config.compilers.cython, '-V'])
         if process.returncode:
             self.skip("cython not available")
         
@@ -214,15 +207,7 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
 
         os.chmod(self.exefile, 0777)
         
-        process = subprocess.Popen(
-           # [config.compilers.cython, '--embed', sourcename, '-o', cname],
-            [config.compilers.cython,  sourcename, '-o', cname],
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
+        process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython,  sourcename, '-o', cname])
         
         if process.returncode == 0:
             self.wait_for_file(cname)
@@ -269,13 +254,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
         if not hasattr(config.compilers, 'cython') or len(config.compilers.cython) == 0:
             self.skip("cython not configured")
             
-        process = subprocess.Popen(
-            [config.compilers.cython,'-V'],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        output, error = process.communicate()
+        process, output, error = compile_tools.open_subprocess([config.compilers.cython, '-V'])
         if process.returncode:
             self.skip("cython not available")
         
@@ -330,17 +309,9 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
             f.write(script)
 
         os.chmod(self.exefile, 0777)
-        
-        process = subprocess.Popen(
-           # [config.compilers.cython, '--embed', sourcename, '-o', cname],
-            [config.compilers.cython,  sourcename, '-o', cname],
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        
+
+        process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython,  sourcename, '-o', cname])
+
         if process.returncode == 0:
             self.wait_for_file(cname)
         

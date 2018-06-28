@@ -1,6 +1,5 @@
 from amuse.test.amusetest import TestWithMPI
 from amuse.test import compile_tools
-import subprocess
 import os
 import time
 import shlex

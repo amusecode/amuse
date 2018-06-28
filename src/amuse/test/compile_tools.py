@@ -162,8 +162,9 @@ def c_compile(objectname, string, extra_args=[]):
     mpicc = get_mpicc_name()
     arguments = [mpicc]
     arguments.extend(get_mpicc_flags().split())
-    arguments.extend(["-I", "lib/stopcond", "-x", "c", "-c"] + extra_args +
-                     ["-o", objectname, "-"])
+    rootdir = get_amuse_root_dir()
+    arguments.extend(["-I", rootdir + "/lib/stopcond", "-x", "c", "-c"]
+                     + extra_args + ["-o", objectname, "-"])
 
     process, stderr, stdout = open_subprocess(arguments, stdin=string)
 
@@ -182,8 +183,9 @@ def cxx_compile(objectname, string, extra_args=[]):
     mpicxx = get_mpicxx_name()
     arguments = [mpicxx]
     arguments.extend(get_mpicxx_flags().split())
-    arguments.extend(["-I", "lib/stopcond", "-x", "c++", "-c"] + extra_args +
-                     ["-o", objectname, "-"])
+    rootdir = get_amuse_root_dir()
+    arguments.extend(["-I", rootdir + "/lib/stopcond", "-x", "c++", "-c"]
+                     + extra_args + ["-o", objectname, "-"])
 
     process, stderr, stdout = open_subprocess(arguments, stdin=string)
 
@@ -195,7 +197,7 @@ def cxx_compile(objectname, string, extra_args=[]):
                                                                     stderr))
 
 
-def c_build(exename, objectnames):
+def c_build(exename, objectnames, extra_args=[]):
     if os.path.exists(exename):
         os.remove(exename)
 
@@ -210,6 +212,8 @@ def c_build(exename, objectnames):
         arguments.extend(libs)
 
     arguments.extend(get_ld_flags().split())
+
+    arguments.extend(extra_args)
 
     process, stderr, stdout = open_subprocess(arguments)
 
@@ -273,11 +277,10 @@ def c_pythondev_compile(objectname, string):
         wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        print "Could not compile {0}, error = {1}".format(objectname, stderr)
         raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
 
 
-def c_pythondev_build(self, exename, objectnames):
+def c_pythondev_build(exename, objectnames):
     if os.path.exists(exename):
         os.remove(exename)
 
@@ -300,7 +303,6 @@ def c_pythondev_build(self, exename, objectnames):
         wait_for_file(exename)
 
     if process.returncode != 0 or not (os.path.exists(exename) or os.path.exists(exename+'.exe')):
-        print "Could not compile {0}, error = {1}".format(exename, stderr)
         raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
 
 
@@ -331,11 +333,10 @@ def c_pythondev_buildso(soname, objectnames):
         wait_for_file(soname)
 
     if process.returncode != 0 or not (os.path.exists(soname)):
-        print "Could not compile {0}, error = {1}".format(soname, stderr)
         raise Exception("Could not build {0}, error = {1}".format(soname, stderr))
 
 
-def fortran_pythondev_buildso(self, soname, objectnames):
+def fortran_pythondev_buildso(soname, objectnames):
     if os.path.exists(soname):
         os.remove(soname)
     amuse_root = get_amuse_root_dir()
@@ -361,7 +362,6 @@ def fortran_pythondev_buildso(self, soname, objectnames):
         wait_for_file(soname)
 
     if process.returncode != 0 or not (os.path.exists(soname)):
-        print "Could not compile {0}, error = {1}".format(soname, stderr)
         raise Exception("Could not build {0}, error = {1}".format(soname, stderr))
 
 
@@ -388,7 +388,6 @@ def fortran_compile(objectname, string, extra_args=[]):
         wait_for_file(objectname)
 
     if process.returncode != 0 or not os.path.exists(objectname):
-        print "Could not compile {0}, error = {1}".format(objectname, stderr)
         raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
 
 
@@ -414,6 +413,37 @@ def fortran_build(exename, objectnames):
         wait_for_file(exename)
 
     if process.returncode != 0 or not os.path.exists(exename):
-        print "Could not build {0}, error = {1}".format(exename, stderr)
         raise Exception("Could not build {0}, error = {1}".format(exename,
                                                                   stderr))
+
+
+def f90_compile(objectname, string, mpidir):
+    root, ext = os.path.splitext(objectname)
+    sourcename = root + '.f90'
+    if os.path.exists(objectname):
+        os.remove(objectname)
+    with open(sourcename, "w") as f:
+        f.write(string)
+
+    rootdir = get_amuse_root_dir()
+    arguments = get_mpif90_arguments()
+    arguments.extend(["-I", "{0}/lib/stopcond".format(rootdir, mpidir), "-I", rootdir + "/lib/forsockets", "-c",  "-o", objectname, sourcename])
+    process, stderr, stdout = open_subprocess(arguments)
+    if not os.path.exists(objectname):  # or process.poll() == 1:
+        raise Exception("Could not compile {0}, error = {1} ({2})".format(objectname, stderr, ' '.join(arguments)))
+
+
+def f90_build(exename, objectnames, libname):
+    rootdir = get_amuse_root_dir()
+
+    arguments = get_mpif90_arguments()
+    arguments.extend(objectnames)
+    arguments.append("-o")
+    arguments.append(exename)
+    arguments.extend(["-L{0}/lib/stopcond".format(rootdir), "-l"+libname])
+    arguments.extend(["-L" + rootdir + "/lib/forsockets","-lforsockets"])
+    print 'build command:'
+    print ' '.join(arguments)
+    process, stderr, stdout = open_subprocess(arguments)
+    if process.returncode != 0:
+        raise Exception("Could not build {0}, error = {1}".format(exename, stderr))

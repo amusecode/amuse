@@ -5,7 +5,6 @@ from amuse.test import compile_tools
 from amuse.support.codes import stopping_conditions
 from amuse.support.interface import InCodeComponentImplementation
 
-import subprocess
 import os
 import shlex
 
@@ -237,72 +236,6 @@ class ForTesting(InCodeComponentImplementation):
      
         
 class _AbstractTestInterface(TestWithMPI):
-    
-            
-    def get_mpicc_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.mpi.mpicc
-        else:
-            return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
-            
-    def get_mpicxx_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.mpi.mpicxx
-        else:
-            return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
-    
-    def cxx_compile(self, objectname, string):
-  
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.cc'
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        with open(sourcename, "w") as f:
-            f.write(string)
-        
-        rootdir = self.get_amuse_root_dir()
-        arguments = [self.get_mpicxx_name(), "-I",rootdir + "/lib/stopcond", "-c",  "-o", objectname, sourcename]
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        if not os.path.exists(objectname): # or process.poll() == 1:
-            raise Exception("Could not compile {0}, error = {1} ({2})".format(objectname, stderr, ' '.join(arguments)))
-    
-    def c_build(self, exename, objectnames):
-        rootdir = self.get_amuse_root_dir()
-        
-        arguments = [self.get_mpicxx_name()]
-        arguments.extend(objectnames)
-        arguments.append("-o")
-        arguments.append(exename)
-        arguments.extend(["-L"+rootdir+"/lib/stopcond","-l" + self.get_libname()])
-        print ' '.join(arguments)
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        if process.returncode != 0:
-            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
-    
     def get_libname(self):
         return "stopcond"
         
@@ -312,7 +245,7 @@ class _AbstractTestInterface(TestWithMPI):
         interfacefile = os.path.join(path,"interface.o")
         self.exefile = os.path.join(path,"c_worker")
         
-        self.cxx_compile(codefile, codestring)
+        compile_tools.cxx_compile(codefile, codestring)
         
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = self.get_interface_class()
@@ -328,12 +261,12 @@ class _AbstractTestInterface(TestWithMPI):
         code =  uc.result
 
         string = '\n\n'.join([header, code])
-        
-        #print string
-        
-        self.cxx_compile(interfacefile, string)
-        self.c_build(self.exefile, [interfacefile, codefile] )
-    
+
+        compile_tools.cxx_compile(interfacefile, string)
+        compile_tools.c_build(self.exefile, [interfacefile, codefile],
+                              extra_args=["-L"+rootdir+"/lib/stopcond",
+                                          "-l" + self.get_libname()])
+
     def setUp(self):
         super(_AbstractTestInterface, self).setUp()
         print "building"
@@ -649,44 +582,6 @@ class TestInterfaceMP(_AbstractTestInterface):
 
 class _AbstractTestInterfaceFortran(TestWithMPI):
     
-    def get_mpif90_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.mpi.mpif95
-        else:
-            return os.environ['MPIFC'] if 'MPIFC' in os.environ else 'mpif90'
-            
-    def get_mpif90_arguments(self):
-        name = self.get_mpif90_name()
-        return list(shlex.split(name))
-
-    def f90_compile(self, objectname, string):
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.f90'
-        mpidir = self.get_mpidir()
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        with open(sourcename, "w") as f:
-            f.write(string)
-        
-        rootdir = self.get_amuse_root_dir()
-        arguments = self.get_mpif90_arguments()
-        arguments.extend(["-I","{0}/lib/stopcond{1}".format(rootdir, mpidir), "-I", rootdir + "/lib/forsockets", "-c",  "-o", objectname, sourcename])
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        if not os.path.exists(objectname): # or process.poll() == 1:
-            raise Exception("Could not compile {0}, error = {1} ({2})".format(objectname, stderr, ' '.join(arguments)))
-    
     def get_libname(self):
         return 'stopcond'
     
@@ -701,27 +596,6 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
     
     def get_number_of_workers(self):
         return 1
-        
-    def f90_build(self, exename, objectnames):
-        rootdir = self.get_amuse_root_dir()
-        
-        arguments = self.get_mpif90_arguments()
-        arguments.extend(objectnames)
-        arguments.append("-o")
-        arguments.append(exename)
-        arguments.extend(["-L{0}/lib/stopcond".format(rootdir),"-l"+self.get_libname()])
-        arguments.extend(["-L" + rootdir + "/lib/forsockets","-lforsockets"])
-        print 'build command:'
-        print ' '.join(arguments)
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        if process.returncode != 0:
-            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
     
     def build_worker(self):
         path = os.path.abspath(self.get_path_to_results())
@@ -729,17 +603,18 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
         interfacefile = os.path.join(path,"interfacef90.o")
         self.exefile = os.path.join(path,"fortran_worker")
         
-        self.f90_compile(codefile, self.get_codestring())
+        compile_tools.f90_compile(codefile, self.get_codestring(),
+                                  self.get_mpidir())
         
         uf = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
         uf.needs_mpi = True
         uf.specification_class = self.get_interface_class()
         string =  uf.result
-        
-        #print string
-        
-        self.f90_compile(interfacefile, string)
-        self.f90_build(self.exefile, [interfacefile, codefile] )
+
+        compile_tools.f90_compile(interfacefile, string,
+                                  self.get_mpidir())
+        compile_tools.f90_build(self.exefile, [interfacefile, codefile],
+                                self.get_libname())
     
     def setUp(self):
         super(_AbstractTestInterfaceFortran, self).setUp()
