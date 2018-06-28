@@ -248,7 +248,7 @@ def build_worker(codestring, path_to_results, specification_class):
     uc.needs_mpi = False
     code = uc.result
 
-    cxx_compile(interfacefile, code)
+    cxx_compile(interfacefile, code, extra_args=["-I",path])
     c_build(exefile, [interfacefile, codefile])
 
     return exefile

@@ -1,5 +1,6 @@
 from amuse.test.amusetest import TestWithMPI
 from amuse.test import compile_tools
+from amuse.test.amusetest import get_amuse_root_dir
 
 #cello
 from amuse.support.codes import stopping_conditions
@@ -264,7 +265,7 @@ class _AbstractTestInterface(TestWithMPI):
 
         compile_tools.cxx_compile(interfacefile, string)
         compile_tools.c_build(self.exefile, [interfacefile, codefile],
-                              extra_args=["-L"+rootdir+"/lib/stopcond",
+                              extra_args=["-L"+get_amuse_root_dir()+"/lib/stopcond",
                                           "-l" + self.get_libname()])
 
     def setUp(self):
