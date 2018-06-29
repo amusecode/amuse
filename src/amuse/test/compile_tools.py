@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 import shlex
+import numpy
 
 from amuse.rfi.tools import create_c
 from amuse.rfi.core import config
@@ -268,6 +269,7 @@ def c_pythondev_compile(objectname, string):
     mpicc = get_mpicc_name()
     arguments = [mpicc]
     arguments.extend(get_mpicc_flags().split())
+    arguments.extend(["-I",numpy.get_include()])
 
     arguments.extend(["-I", amuse_root + "/lib/stopcond","-I", amuse_root + "/lib/amuse_mpi",  "-fPIC", "-c",  "-o", objectname, sourcename])
     arguments.extend(shlex.split(config.compilers.pythondev_cflags))
