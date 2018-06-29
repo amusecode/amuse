@@ -64,5 +64,4 @@ script:
 - nosetests -e "test_plot" test/core_tests
 - nosetests -e "test26" -e "test27" test/compile_tests/test_python_implementation.py -sv
 - nosetests -e "test_java_implementation" -e "test_python_implementation" -e "test_cython_implementation" test/compile_tests -sv
-- nosetests -e "TestCythonFortranImplementationInterface" test/compile_tests/test_cython_implementation.py -sv
 - nosetests -e "test20" -e "test21" test/compile_tests/test_java_implementation.py -sv
