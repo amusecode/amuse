@@ -493,7 +493,7 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
         
     def read_fortran_block_float_vectors(self, file, size = 3):
         result = self.read_fortran_block_floats(file)
-        return result.reshape(len(result)/size,size)
+        return result.reshape(len(result)//size,size)
         
     def write_fortran_block(self, file, input):
         format = self.endianness+'I'

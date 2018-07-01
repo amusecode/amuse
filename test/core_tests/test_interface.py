@@ -176,7 +176,7 @@ class CodeInterfaceWithUnitsOnLegacyFunctionTests(amusetest.TestCase):
         
         instance.get_handler("LEGACY").legacy_interface = TestImplementation()
         self.assertAlmostRelativeEquals(instance.echo_one(1. | units.rad), 1. | units.rad)
-        self.assertAlmostRelativeEquals(instance.echo_one(1.), 1. | units.rad)
+        self.assertAlmostRelativeEquals(instance.echo_one(1.), 1. | units.deg)
         
         
 class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):

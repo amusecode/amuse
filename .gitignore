@@ -16,6 +16,9 @@ support3/config.py
 *.mod
 *.mo
 *.ptx
+*.dSYM
+build/
+
 
 # files created running make / setup.py
 amuse.cfg
@@ -28,6 +31,12 @@ src/amuse.egg-info
 
 # directories and files generated in make
 # some of these should be patterns (the worker_code.cc / f90 stuff)
+*_worker
+worker_code.c
+worker_code.h
+worker_code.cc
+worker_code.pyx
+worker_code.f90
 src/amuse/community/aarsethzare/aarsethzare_worker
 src/amuse/community/aarsethzare/worker_code.f90
 src/amuse/community/adaptb/adaptb_worker
@@ -82,6 +91,8 @@ src/amuse/community/fastkick/worker_code.h
 src/amuse/community/fi/build/
 src/amuse/community/fi/build_mp/
 src/amuse/community/fi/fi_worker
+src/amuse/community/fi/fi_worker_gl
+src/amuse/community/fi/fi_worker_periodic_gl
 src/amuse/community/fi/src/globals.h.bck
 src/amuse/community/fi/worker_code-gl.f90
 src/amuse/community/fi/worker_code.f90
@@ -90,6 +101,7 @@ src/amuse/community/evtwin/src/trunk/code/ev
 src/amuse/community/evtwin/src/trunk/code/svn_version.f90
 src/amuse/community/evtwin/src/trunk/code/twin
 src/amuse/community/fastkick/fastkick_worker
+src/amuse/community/fastkick/fastkick_worker_gpu
 src/amuse/community/fastkick/interface.gpuo
 src/amuse/community/fastkick/worker_code.cc
 src/amuse/community/fastkick/worker_code.h
@@ -189,6 +201,7 @@ src/amuse/community/huayno/build/
 src/amuse/community/huayno/build_cl/
 src/amuse/community/huayno/build_mp/
 src/amuse/community/huayno/huayno_worker
+src/amuse/community/huayno/huayno_worker_cl
 src/amuse/community/huayno/huayno_worker_mp
 src/amuse/community/huayno/worker_code.cc
 src/amuse/community/huayno/worker_code.h
@@ -230,6 +243,7 @@ src/amuse/community/pikachu/worker_code.cc
 src/amuse/community/pikachu/worker_code.h
 src/amuse/community/ph4/interface.h
 src/amuse/community/ph4/ph4_worker
+src/amuse/community/ph4/ph4_worker_gpu
 src/amuse/community/ph4/src/close_encounter.gpuo
 src/amuse/community/ph4/src/debug.gpuo
 src/amuse/community/ph4/src/diag.gpuo
@@ -413,7 +427,8 @@ data/gadget2/output/info.txt
 data/gadget2/output/timings.txt
 data/adaptb/output/file.log
 data/adaptb/output/file.out
-data/galactics/output/model-*
+data/galactics
+data/gaslactics
 examples/syllabus/*.h5
 SeBa.data
 binev.data
@@ -428,4 +443,27 @@ data/halogen/output/test*.ascii
 data/gadget2/output/ewald_spc_table_64_dbl.dat
 core
 core.*
-
+*test*.hdf5
+cluster.1
+cluster.2
+test_results/code-sockets.f90
+test_results/code.c
+test_results/code.cc
+test_results/code.f90
+gas_interface
+interface
+test_results/interface-sockets.f90
+test_results/interface.cc
+test_results/interface.f90
+job_server
+plummer_back_100.ini
+pythonexe
+src/amuse/community/evtwin/src/trunk/lib/
+src/amuse/community/mobse/src/mobse
+src/amuse/community/mosse/mosse_c.f90
+src/amuse/community/mosse/mosse_cython.c
+src/amuse/community/mosse/mosse_cython.pyx
+src/amuse/community/mosse/src/mosse
+test/core_tests/test.txt
+test_concurrent
+test_python_sockets_implementation

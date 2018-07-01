@@ -2,7 +2,7 @@
       parameter(ipmax=1000)
       real apot(20,0:20000),rp(1000),pplot(1000),iplot(ipmax)
       data ifirst /0/
-      save rp,ifirst,nrp, rp, iplot
+      save rp,ifirst,nrp, iplot
       character*40 toplbl
 
       if (ifirst.eq.0) then

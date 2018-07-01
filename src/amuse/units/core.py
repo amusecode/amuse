@@ -867,6 +867,9 @@ class named_unit(unit):
     @late
     def base(self):
         return self.local_unit.base
+        
+    def is_none(self):
+        return self.local_unit.is_none
 
 class derived_unit(unit):
     """
