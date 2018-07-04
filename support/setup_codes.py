@@ -24,6 +24,8 @@ from distutils import log
 from distutils import spawn
 from distutils import file_util
 from distutils.errors import DistutilsError
+if sys.hexversion > 0x03000000:
+    from distutils.util import run_2to3
 from subprocess import call, Popen, PIPE, STDOUT
 
 try:
@@ -40,6 +42,7 @@ try:
 except ImportError:
     is_configured = False
     
+from glob import glob
 class GenerateInstallIni(Command):
     user_options =   (
         ('build-dir=', 'd', "directory to install to"),
@@ -493,7 +496,22 @@ class CodeCommand(Command):
                     input_path, 
                     output_path
                 )
-            
+
+            #
+            # HACK FOR RAMSES
+            # NEED TO COPY THE SRC DIR
+            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
+            # MAKEFILE
+            #
+            if shortname == 'ramses':
+                output_path = os.path.join(lib_builddir, 'src', 'namelist')
+                input_path = os.path.join(temp_builddir, 'src', 'namelist')
+                self.mkpath(output_path)
+                self.copy_tree(
+                    input_path, 
+                    output_path
+                )
+                        
     def subdirs_in_codes_src_dir(self):
         names = sorted(os.listdir(self.codes_src_dir))
         for name in names:
@@ -638,6 +656,21 @@ class CodeCommand(Command):
         return result, content
     
     
+    def run_2to3_on_build_dirs(self):
+        for dir in self.makefile_src_paths():
+            buildir = os.path.join(self.codes_dir,  os.path.relpath(dir, self.codes_src_dir))
+            run_2to3(self.pyfiles_in_build_dir(buildir))
+            
+        
+
+    def pyfiles_in_build_dir(self, builddir):
+        module_files = glob(os.path.join(builddir, "*.py"))
+        result = []
+        for x in module_files:
+            result.append(os.path.abspath(x))
+        return result
+        
+
 class SplitOutput(object) :
     def __init__(self, file1, file2) :
         self.file1 = file1
@@ -735,6 +768,8 @@ class BuildCodes(CodeCommand):
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
+            if sys.hexversion > 0x03000000:
+                self.run_2to3_on_build_dirs()
         
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
