@@ -16,19 +16,19 @@ python_version_patch := $(word 3,${python_version_full})
 all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),3)
-	$(PYTHON) setup.py build_codes --inplace
+ifneq ($(python_version_major),2)
+	$(PYTHON) setup.py build_codes
 else
-	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
+	$(PYTHON) setup.py build_codes --inplace
 endif
 
 framework: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),3)
-	$(PYTHON) setup.py build_libraries --inplace
+ifneq ($(python_version_major),2)
+	$(PYTHON) setup.py build_libraries
 else
-	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
+	$(PYTHON) setup.py build_libraries --inplace
 endif
 
 build.py:
@@ -36,15 +36,6 @@ build.py:
 
 allinbuild:
 	$(PYTHON) setup.py build
-
-support3/setup_codes.py:support/setup_codes.py
-	2to3 -n -w -W support -o support3
-	
-build3:support3/setup_codes.py
-	$(PYTHON) setup.py build
-
-install3:support3/gen_codes.py
-	$(PYTHON) setup.py install
 
 docclean:
 	make -C doc clean
@@ -125,9 +116,17 @@ debian:
 
 %.code:
 ifneq (,$(findstring s,$(MAKEFLAGS)))
+ifeq ($(python_version_major),2)
 	$(PYTHON) setup.py build_code --inplace --clean=$(CLEAN) --code-name=$*
 else
+	$(PYTHON) setup.py build_code --clean=$(CLEAN) --code-name=$*
+endif
+else
+ifeq ($(python_version_major),2)
 	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$*
+else
+	$(PYTHON) setup.py -v build_code --clean=$(CLEAN) --code-name=$*
+endif
 endif
 
 %.ocode: | src/omuse

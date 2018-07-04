@@ -1,5 +1,4 @@
 import time
-import urlparse
 import threading
 import traceback
 import json
@@ -8,9 +7,18 @@ import sys
 import linecache
 import inspect
 import os.path
-import BaseHTTPServer
-import SocketServer
-import Queue as queue
+try:  # Python 2
+    import Queue as queue
+    import urlparse
+    from StringIO import StringIO
+    from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+    import SocketServer as socketserver
+except ModuleNotFoundError:  # Python 3
+    import queue
+    from urllib import parse as urlparse
+    from io import StringIO
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    import socketserver
 
 from mpi4py import MPI
 from nose.plugins.capture import Capture
@@ -19,7 +27,6 @@ from nose.core import TestProgram
 from multiprocessing import Process, Queue
 from optparse import OptionParser
 from subprocess import call, Popen, PIPE
-from StringIO import StringIO
 
 EDITOR = None
 
@@ -70,7 +77,7 @@ def open_file(path, lineno = 1):
         
         call([EDITOR, path])
     
-class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
+class HandleRequest(BaseHTTPRequestHandler):
    
     
     def do_GET(self):
@@ -163,10 +170,10 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         return string, content_type
         
 
-class WebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class WebServer(socketserver.ThreadingMixIn, HTTPServer):
     
     def __init__(self, port, request_handler):
-        BaseHTTPServer.HTTPServer.__init__(self, ('', port), request_handler)
+        HTTPServer.__init__(self, ('', port), request_handler)
         self.daemon_threads = True
         self.events_queue = queue.Queue()
         

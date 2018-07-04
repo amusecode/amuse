@@ -1,5 +1,10 @@
+from __future__ import print_function
+
 import time
-import urlparse
+try:  # Python 2
+    import urlparse
+except ModuleNotFoundError:  # Python 3
+    from urllib import parse as urlparse
 import threading
 import json
 import os.path
@@ -53,15 +58,15 @@ class RunAllTestsWhenAChangeHappens(object):
                             path, module, testcase =  x.address
                             if path == element.path:
                                 x.reset_timing()
-                                print "will rerun: ", module, testcase
-                        
-                
-                print "Changed files:"
+                                print("will rerun: ", module, testcase)
+
+
+                print("Changed files:")
                 number_of_changed_files = 0
                 for element in monitor_directories.updated_elements:
                     if not element.is_file():
                         continue
-                    print element.path
+                    print(element.path)
                     number_of_changed_files += 1
                     
                 if number_of_changed_files > 0 or self.server.last_report is None:
@@ -208,9 +213,9 @@ if __name__ == '__main__':
       type="string")
       
     (options, args) = parser.parse_args()
-    
-    print "starting server on port: ", options.serverport
-    print "will use editor: ", options.editor
+
+    print("starting server on port: ", options.serverport)
+    print("will use editor: ", options.editor)
     webserver.EDITOR = options.editor
     
     if options.startbrowser == "yes":
