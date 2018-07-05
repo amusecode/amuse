@@ -20,6 +20,7 @@ from support.build_latex import build_latex
 from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries
 from support.setup_codes import ConfigureCodes
 from support.setup_codes import GenerateInstallIni
+from support.setup_codes import InstallLibraries
 from support.run_tests import run_tests
 if sys.hexversion > 0x03000000:
     from distutils.command.build_py import build_py_2to3
@@ -62,7 +63,8 @@ mapping_from_command_name_to_command_class = {
     'tests':run_tests, 
     'generate_main': generate_main,
     'generate_install_ini': GenerateInstallIni,
-    'install':install
+    'install':install,
+    'install_libraries':InstallLibraries
 }
 
 if sys.hexversion > 0x03000000:
@@ -74,6 +76,7 @@ Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))
 
 Install.sub_commands.insert(0, ('generate_install_ini',None) )
+Install.sub_commands.append(('install_libraries',None))
 
 def find_packages(where='.', exclude=()):
     """Return a list all Python packages found within directory 'where'
@@ -135,7 +138,7 @@ def find_data_files(srcdir, destdir, *wildcards, **kw):
 all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive = True)
 all_data_files.extend(find_data_files('support', 'share/amuse/support', '*', recursive = False))
 #all_data_files.extend(find_data_files('support3', 'share/amuse/support3', '*', recursive = False))
-all_data_files.extend(find_data_files('lib', 'share/amuse/lib', '*.h', '*.a', '*.mod', '*.inc', '*.so', '*.dylib', recursive = True))
+#~ all_data_files.extend(find_data_files('lib', 'share/amuse/lib', '*.h', '*.a', '*.mod', '*.inc', '*.so', '*.dylib', recursive = True))
 all_data_files.append(('share/amuse',['./config.mk','./build.py']))
 
 packages = find_packages('src')
