@@ -1287,22 +1287,7 @@ class ConfigureCodes(CodeCommand):
         self.announce("Running configure for AMUSE", level = 2)
         self.call(['configure', '--nompi'], env=environment)
  
-class ConfigureCodes(CodeCommand):
-
-    description = "run configure for amuse"
-
-    def run (self):
-        if os.path.exists('config.mk'):
-            self.announce("Already configured, not running configure", level = 2)
-            return
-            
-        environment = self.environment
-        environment.update(os.environ)
-        self.announce("Running configure for AMUSE", level = 2)
-        self.call(['configure', '--nompi'], env=environment)
         
-        
- 
 class CleanCodes(CodeCommand):
 
     description = "clean build products in codes"
