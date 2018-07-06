@@ -1285,8 +1285,7 @@ class ConfigureCodes(CodeCommand):
         environment = self.environment
         environment.update(os.environ)
         self.announce("Running configure for AMUSE", level = 2)
-        self.call(['configure', '--nompi'], env=environment)
- 
+        self.call(['./configure --disable-mpi'], env=environment, shell=True)
         
 class CleanCodes(CodeCommand):
 
