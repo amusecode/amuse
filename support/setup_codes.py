@@ -638,84 +638,6 @@ class CodeCommand(Command):
                     yield x
                     break
 
-    #~ def subdirs_in_codes_src_dir(self):
-        #~ names = sorted(os.listdir(self.codes_src_dir))
-        #~ for name in names:
-            #~ if name.startswith('.'):
-                #~ continue
-                #~ 
-            #~ path = os.path.join(self.codes_src_dir, name)
-            #~ if os.path.isdir(path):
-                #~ yield path
-                #~ 
-    #~ def subdirs_in_codes_dir(self):
-        #~ if not os.path.exists(self.codes_dir):
-            #~ return
-            #~ 
-        #~ names = sorted(os.listdir(self.codes_dir))
-        #~ for name in names:
-            #~ if name.startswith('.'):
-                #~ continue
-            #~ path = os.path.join(self.codes_dir, name)
-            #~ if os.path.isdir(path):
-                #~ yield path
-                #~ 
-    #~ def subdirs_in_lib_dir(self):
-        #~ if not os.path.exists(self.lib_dir):
-            #~ return
-#~ 
-        #~ names = sorted(os.listdir(self.lib_dir))
-        #~ for name in names:
-            #~ if name.startswith('.'):
-                #~ continue
-            #~ path = os.path.join(self.lib_dir, name)
-            #~ if os.path.isdir(path):
-                #~ yield path
-#~ 
-    #~ def subdirs_in_lib_src_dir(self):
-        #~ if not os.path.exists(self.lib_src_dir):
-            #~ return
-#~ 
-        #~ names = sorted(os.listdir(self.lib_src_dir))
-        #~ for name in names:
-            #~ if name.startswith('.'):
-                #~ continue
-            #~ path = os.path.join(self.lib_src_dir, name)
-            #~ if os.path.isdir(path):
-                #~ yield path
-            #~ 
-    #~ def makefile_libpaths(self):
-        #~ for x in self.subdirs_in_lib_dir():
-            #~ for name in ('makefile', 'Makefile'):
-                #~ makefile_path = os.path.join(x, name)
-                #~ if os.path.exists(makefile_path):
-                    #~ yield x
-                    #~ break
-#~ 
-    #~ def makefile_src_libpaths(self):
-        #~ for x in self.subdirs_in_lib_src_dir():
-            #~ for name in ('makefile', 'Makefile'):
-                #~ makefile_path = os.path.join(x, name)
-                #~ if os.path.exists(makefile_path):
-                    #~ yield x
-                    #~ break
-        #~ 
-    #~ def makefile_paths(self):
-        #~ for x in self.subdirs_in_codes_dir():
-            #~ for name in ('makefile', 'Makefile'):
-                #~ makefile_path = os.path.join(x, name)
-                #~ if os.path.exists(makefile_path):
-                    #~ yield x
-                    #~ break
-                    #~ 
-    #~ def makefile_src_paths(self):
-        #~ for x in self.subdirs_in_codes_src_dir():
-            #~ for name in ('makefile', 'Makefile'):
-                #~ makefile_path = os.path.join(x, name)
-                #~ if os.path.exists(makefile_path):
-                    #~ yield x
-                    #~ break
-#~ 
     def update_environment_from_cfgfile(self):
         if os.path.exists('amuse.cfg'):
             config = configparser.ConfigParser()
@@ -901,7 +823,7 @@ class BuildCodes(CodeCommand):
         if not self.lib_dir == self.lib_src_dir:
             self.copy_lib_to_build_dir()
             if sys.hexversion > 0x03000000:
-                self.run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
+                run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
         
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
@@ -930,7 +852,7 @@ class BuildCodes(CodeCommand):
         if not self.codes_dir == self.codes_src_dir:
             self.copy_codes_to_build_dir()
             if sys.hexversion > 0x03000000:
-                self.run_2to3_on_build_dirs(self.makefile_src_paths(self.codes_src_dir), self.codes_dir,self.codes_src_dir)
+                run_2to3_on_build_dirs(self.makefile_paths(self.codes_src_dir), self.codes_dir,self.codes_src_dir)
         
         #environment.update(self.environment)
         makefile_paths = list(self.makefile_paths(self.codes_dir))
@@ -1156,7 +1078,7 @@ class BuildLibraries(CodeCommand):
         if not self.lib_dir == self.lib_src_dir:
             self.copy_lib_to_build_dir()
             if sys.hexversion > 0x03000000:
-                self.run_2to3_on_build_dirs(self.makefile_libpaths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
+                run_2to3_on_build_dirs(self.makefile_libpaths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
         
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
