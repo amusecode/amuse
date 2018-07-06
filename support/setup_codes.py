@@ -19,6 +19,7 @@ from stat import ST_MODE
 from distutils import sysconfig
 from distutils.core import Command
 from distutils.dep_util import newer
+from distutils.dir_util import create_tree
 from distutils.util import convert_path
 from distutils import log
 from distutils import spawn
@@ -108,8 +109,6 @@ class InstallLibraries(Command):
                 self.lib_dir=os.path.join(self.build_temp, 'lib')
 
     def run(self):
-        print (self.lib_dir)
-
         data_dir = os.path.join(self.install_data,'share','amuse')
         if not self.root is None:
             data_dir = os.path.relpath(data_dir,self.root)
@@ -117,15 +116,18 @@ class InstallLibraries(Command):
         else:
             data_dir = os.path.abspath(data_dir)
 
-        print (data_dir)
-
-        # to do copy only:
+        # copy only:
         # '*.h', '*.a', '*.mod', '*.inc', '*.so', '*.dylib'
-        self.copy_tree(
-            self.lib_dir, 
-            os.path.join(data_dir,'lib')
-        )
+        files=[os.path.join(dp, f) for dp, dn, fn in os.walk(self.lib_dir) for f in fn]
+        ext=['.h', '.a', '.mod', '.inc', '.so', '.dylib']
+        files=[f  for f in files if (os.path.splitext(f)[1] in ext)]
+        files=[os.path.relpath(f,self.lib_dir) for f in files]
+        create_tree(os.path.join(data_dir,'lib'), files)
 
+        for f in files:
+            src=os.path.join(self.lib_dir,f)
+            target=os.path.join(data_dir,'lib', f)
+            self.copy_file(src,target)
 
 class GenerateInstallIni(Command):
     user_options =   (
