@@ -40,6 +40,7 @@ allinbuild:
 build:
 	$(PYTHON) setup.py build
 
+# should pick up prefix from configure?
 install:
 	$(PYTHON) setup.py install
 

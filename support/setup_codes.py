@@ -153,6 +153,8 @@ class GenerateInstallIni(Command):
             ('root', 'root'),
             ('force', 'force'),
         )
+        #~ print(self.install_data)
+        #~ raise
         
     def run(self):
         outfilename = os.path.join(self.build_dir, 'amuse', 'amuserc')
@@ -248,6 +250,7 @@ class CodeCommand(Command):
                 self.codes_dir = os.path.join(self.amuse_src_dir,'community')
                 self.codes_src_dir = self.codes_dir
             else:
+                #~ self.codes_dir = os.path.join(self.build_temp, 'src', 'amuse', 'community')
                 self.codes_dir = os.path.join(self.build_temp, 'codes')
                 self.codes_src_dir = os.path.join(self.amuse_src_dir,'community')
         else:
@@ -255,6 +258,7 @@ class CodeCommand(Command):
                 self.codes_src_dir = self.codes_dir
             else:
                 self.codes_src_dir = self.codes_dir
+                #~ self.codes_dir=os.path.join(self.build_temp, 'src', 'amuse', 'community')
                 self.codes_dir=os.path.join(self.build_temp, 'codes')
             
         if self.lib_dir is None:
@@ -492,11 +496,20 @@ class CodeCommand(Command):
             else:
                 self.environment_notset[varname] ='-L<directory> -l{0}'.format(libname)
      
-    
-                    
-    def copy_codes_to_build_dir(self):
+    def copy_build_prereq_to_build_dir(self):
+        if not os.path.exists(self.build_temp):
+            self.mkpath(self.build_temp)
+
         configpath=os.path.abspath(os.getcwd())
         self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
+        self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
+        self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
+        #~ self.copy_tree(os.path.join(configpath,"src"), os.path.join(self.build_temp,"src") )
+        path=os.path.join(self.build_temp,"src")
+        if not os.path.exists(path):
+            os.symlink(os.path.relpath(self.build_lib,self.build_temp), path)
+        
+    def copy_codes_to_build_dir(self):
 
         for dir in self.makefile_paths(self.codes_src_dir):
             reldir = os.path.relpath(dir, self.codes_src_dir)
@@ -823,6 +836,7 @@ class BuildCodes(CodeCommand):
             output.write('\n')
         
         if not self.lib_dir == self.lib_src_dir:
+            self.copy_build_prereq_to_build_dir()
             self.copy_lib_to_build_dir()
             if sys.hexversion > 0x03000000:
                 run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
@@ -1078,6 +1092,7 @@ class BuildLibraries(CodeCommand):
             output.write('\n')
         
         if not self.lib_dir == self.lib_src_dir:
+            self.copy_build_prereq_to_build_dir()
             self.copy_lib_to_build_dir()
             if sys.hexversion > 0x03000000:
                 run_2to3_on_build_dirs(self.makefile_libpaths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)

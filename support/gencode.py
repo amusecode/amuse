@@ -41,8 +41,11 @@ def get_amuse_directory_root():
         return os.path.abspath(directory_of_this_script)
 
 def setup_sys_path():
-    amuse_directory = get_amuse_directory()
-    sys.path.insert(0, get_amuse_directory_root())
+    #~ amuse_directory = get_amuse_directory()
+    #~ sys.path.insert(0, get_amuse_directory_root())
+    #~ sys.path.insert(0, amuse_directory)
+    #~ sys.path.insert(0, os.path.join(amuse_directory,"src"))
+    amuse_directory = os.environ["AMUSE_DIR"]
     sys.path.insert(0, amuse_directory)
     sys.path.insert(0, os.path.join(amuse_directory,"src"))
     
@@ -370,7 +373,7 @@ if __name__ == '__main__':
     from amuse.rfi.tools import create_dir
     from amuse.rfi.tools import create_python_worker
     from amuse.rfi.tools import create_cython
-    
+        
     uc = ParseCommandLine()
     uc.start()
     
