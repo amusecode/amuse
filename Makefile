@@ -1,6 +1,6 @@
 -include config.mk
 
-PYTHON ?= python2.6
+PYTHON ?= python
 VERSION ?= undefined
 CLEAN ?= yes
 
@@ -17,7 +17,7 @@ all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
 ifneq ($(python_version_major),2)
-	$(PYTHON) setup.py build_codes
+	$(PYTHON) setup.py build
 else
 	$(PYTHON) setup.py build_codes --inplace
 endif
@@ -36,6 +36,12 @@ build.py:
 
 allinbuild:
 	$(PYTHON) setup.py build
+
+build:
+	$(PYTHON) setup.py build
+
+install:
+	$(PYTHON) setup.py install
 
 docclean:
 	make -C doc clean
