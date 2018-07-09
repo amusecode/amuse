@@ -321,13 +321,14 @@ class PythonImplementation(object):
     def internal__accept_on_port(self, portname, outval):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
+        print "internal__accept_on_port", rank
         if rank == 0:
             communicator = MPI.COMM_SELF.Accept(portname, self.get_null_info(), 0)
             merged = communicator.Merge(False)
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
-        
+        print "internal__accept_on_port"        
         self.communicators.append(new_communicator)
         self.lastid += 1
         outval.value = self.lastid
@@ -337,6 +338,7 @@ class PythonImplementation(object):
     def internal__connect_to_port(self, portname, outval):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
+        print "internal__connect_to_port", rank
         if rank == 0:
             communicator = MPI.COMM_SELF.Connect(portname, self.get_null_info(), 0)
             merged = communicator.Merge(True)
@@ -345,7 +347,7 @@ class PythonImplementation(object):
             communicator.Disconnect()
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 0, 65)
-        
+        print "internal__connect_to_port"        
         self.communicators.append(new_communicator)
         self.lastid += 1
         outval.value = self.lastid

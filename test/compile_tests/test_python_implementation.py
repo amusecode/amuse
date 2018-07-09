@@ -882,9 +882,11 @@ class TestInterface(TestWithMPI):
         
     def test26(self):
         self.check_for_mpi()
-        instance1 = ForTestingInterface()
-        instance2 = ForTestingInterface()
+        instance1 = ForTestingInterface(redirection="none")
+        instance2 = ForTestingInterface(redirection="none")
         portname, error = instance1.internal__open_port()
+        print()
+        print(portname)
         self.assertTrue(len(portname) > 0)
         self.assertEquals(error, 0)
         request1 = instance1.internal__accept_on_port.async(portname)
