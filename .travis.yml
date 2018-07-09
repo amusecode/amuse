@@ -60,6 +60,7 @@ virtualenv:
 script:
 - export PYTHONPATH=${PWD}/src
 - nosetests test/reports/test_speed.py -sv
-- nosetests -e "test_grid_implementation" -e "test_plot" test/core_tests
-- nosetests -e "test26" test/compile_tests/test_python_implementation.py -sv
-- nosetests -e "test_python_implementation" test/compile_tests -sv
+- nosetests -e "test_plot" test/core_tests
+- nosetests -e "test26" -e "test27" test/compile_tests/test_python_implementation.py -sv
+- nosetests -e "test_java_implementation" -e "test_python_implementation" -e "test_cython_implementation" test/compile_tests -sv
+- nosetests -e "test20" -e "test21" test/compile_tests/test_java_implementation.py -sv
