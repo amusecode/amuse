@@ -342,11 +342,17 @@ class PythonImplementation(object):
         rank = MPI.COMM_WORLD.Get_rank()
         print "internal__connect_to_port", rank
         if rank == 0:
+            print "a"
             communicator = MPI.COMM_SELF.Connect(portname, self.get_null_info(), 0)
+            print "b"
             merged = communicator.Merge(True)
+            print "c"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
+            print "d"
             merged.Disconnect()
+            print "e"
             communicator.Disconnect()
+            print "f"
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 0, 65)
         print "internal__connect_to_port"        
