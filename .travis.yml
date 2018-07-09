@@ -27,9 +27,8 @@ matrix:
     - hash -r
     - conda update -yq conda
     # gather the conda packages to install in one go, saving time
-    - export CONDA_OPTIONS="-c anaconda"
+    - export CONDA_OPTIONS="-c conda-forge -c anaconda"  # N.B.: order matters, first is search first!
     - export CONDA_PACKAGES="gfortran_osx-64"  # configure wants this, even just for the framework target
-    - export CONDA_OPTIONS="${CONDA_OPTIONS} -c conda-forge"
     - export CONDA_PACKAGES="${CONDA_PACKAGES} mpi4py nose numpy docutils h5py"  # additional basic dependencies
     - export CONDA_PACKAGES="${CONDA_PACKAGES} openmpi cython"  # for the compile_tests
       #- export CONDA_PACKAGES="${CONDA_PACKAGES} -c conda-forge fftw mpfr gsl gmp pkg-config"  # for a full build including community codes
