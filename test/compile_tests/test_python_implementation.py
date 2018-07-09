@@ -885,7 +885,7 @@ class TestInterface(TestWithMPI):
         instance1 = ForTestingInterface(redirection="none")
         instance2 = ForTestingInterface(redirection="none")
         portname, error = instance1.internal__open_port()
-        print()
+        print(type(portname))
         print(portname)
         self.assertTrue(len(portname) > 0)
         self.assertEquals(error, 0)

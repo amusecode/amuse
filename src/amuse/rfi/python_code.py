@@ -315,7 +315,9 @@ class PythonImplementation(object):
         return getattr(MPI, 'INFO_NULL') if hasattr(MPI, 'INFO_NULL') else None
         
     def internal__open_port(self, outportname):
-        outportname.value = MPI.Open_port(self.get_null_info())
+        res = MPI.Open_port(self.get_null_info())
+        outportname.value = res
+        print "internal__open_port:", outportname.value, res
         return 0
         
     def internal__accept_on_port(self, portname, outval):
