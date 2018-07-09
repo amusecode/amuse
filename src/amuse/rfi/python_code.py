@@ -330,11 +330,11 @@ class PythonImplementation(object):
             print ">b"
             merged = communicator.Merge(False)
             print ">c"
-            merged.Disconnect()
-            print ">d"
-            communicator.Disconnect()
-            print ">e"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
+            print ">d"
+            merged.Disconnect()
+            print ">e"
+            communicator.Disconnect()
             print ">f"
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
