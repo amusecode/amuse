@@ -325,9 +325,17 @@ class PythonImplementation(object):
         rank = MPI.COMM_WORLD.Get_rank()
         print "internal__accept_on_port", rank
         if rank == 0:
+            print ">a"
             communicator = MPI.COMM_SELF.Accept(portname, self.get_null_info(), 0)
+            print ">b"
             merged = communicator.Merge(False)
+            print ">c"
+            merged.Disconnect()
+            print ">d"
+            communicator.Disconnect()
+            print ">e"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
+            print ">f"
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
         print "internal__accept_on_port"        
