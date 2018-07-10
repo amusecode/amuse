@@ -67,8 +67,8 @@ script:
     nosetests -e "test_cython_implementation" test/compile_tests -sv
   elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
     nosetests -e "test29" test/compile_tests/test_c_implementation.py -sv
-    nosetests -e "test29" test/compile_tests/test_c_sockets_implementation.py -sv
+#    nosetests -e "test29" test/compile_tests/test_c_sockets_implementation.py -sv
     nosetests -e "test19" test/compile_tests/test_fortran_implementation.py -sv
-    nosetests test/compile_tests/test_fortran_sockets_implementation.py -sv
-    nosetests -e "test20" -e "test21" test/compile_tests/test_python_implementation.py -sv
+#    nosetests test/compile_tests/test_fortran_sockets_implementation.py -sv
+    nosetests -e "test26" -e "test27" test/compile_tests/test_python_implementation.py -sv
   fi
