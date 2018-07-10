@@ -332,9 +332,9 @@ class PythonImplementation(object):
             print ">c"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
             print ">d"
-            merged.Disconnect()
-            print ">e"
             communicator.Disconnect()
+            print ">e"
+            merged.Disconnect()
             print ">f"
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
@@ -357,9 +357,9 @@ class PythonImplementation(object):
             print "c"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
             print "d"
-            merged.Disconnect()
-            print "e"
             communicator.Disconnect()
+            print "e"
+            merged.Disconnect()
             print "f"
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 0, 65)
