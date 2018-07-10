@@ -328,7 +328,7 @@ class PythonImplementation(object):
             print ">a"
             communicator = MPI.COMM_SELF.Accept(portname, self.get_null_info(), 0)
             print ">b"
-            merged = communicator.Merge(True)
+            merged = communicator.Merge(False)
             print ">c"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
             print ">d"
@@ -353,7 +353,7 @@ class PythonImplementation(object):
             print "a"
             communicator = MPI.COMM_SELF.Connect(portname, self.get_null_info(), 0)
             print "b"
-            merged = communicator.Merge(False)
+            merged = communicator.Merge(True)
             print "c"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
             print "d"
