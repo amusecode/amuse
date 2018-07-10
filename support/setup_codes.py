@@ -1282,35 +1282,20 @@ class BuildOneCode(CodeCommand):
         self.must_clean = self.clean == 'yes'
         self.must_dist_clean = self.clean == 'dist'
     
-    
-    def subdirs_in_codes_dir(self):
-        if not os.path.exists(self.codes_dir):
+    def subdirs_in_path(self,path):
+        if not os.path.exists(path):
             return
             
-        names = os.listdir(self.codes_dir)
+        names = os.listdir(path)
         for name in names:
             if name.startswith('.'):
                 continue
             if not name.lower().startswith(self.code_name.lower()):
                 continue
-            path = os.path.join(self.codes_dir, name)
+            path = os.path.join(path, name)
             if os.path.isdir(path):
                 yield path
-        
-    def subdirs_in_lib_dir(self):
-        names = os.listdir(self.lib_dir)
-        for name in names:
-            if name.startswith('.'):
-                continue
-            if not name.lower().startswith(self.code_name.lower()):
-                continue
-            path = os.path.join(self.lib_dir, name)
-            if os.path.isdir(path):
-                yield path
-                
-    
-    
-    
+
     def run (self):
         environment = self.environment
         environment.update(os.environ)
