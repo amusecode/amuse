@@ -698,8 +698,8 @@ class TestInterface(TestWithMPI):
             os.remove(error)
 
         instance = ForTesting(self.exefile, redirect_stderr_file = output, redirect_stdout_file = output, redirection="file")
-        instance.print_string("def")
-        instance.print_error_string("exex")
+        instance.print_string("abcdef")
+        instance.print_error_string("&Hfecd")
         instance.stop()
         
         time.sleep(0.2)
@@ -709,4 +709,5 @@ class TestInterface(TestWithMPI):
             content = f.read()
         print content.strip()[-8:]
         # some times java generates "Picked up _JAVA_OPTIONS" message, so only test:
-        self.assertTrue(content.strip().endswith("def\nexex"))
+        self.assertTrue("abcdef" in content)
+        self.assertTrue("&Hfecd" in content)
