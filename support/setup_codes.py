@@ -1095,7 +1095,7 @@ class BuildLibraries(CodeCommand):
             self.copy_build_prereq_to_build_dir()
             self.copy_lib_to_build_dir()
             if sys.hexversion > 0x03000000:
-                run_2to3_on_build_dirs(self.makefile_libpaths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
+                run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
         
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
@@ -1297,10 +1297,24 @@ class BuildOneCode(CodeCommand):
                 yield path
 
     def run (self):
+        self.run_command("build_py")
+
         environment = self.environment
         environment.update(os.environ)
         
         results = []
+        
+        if not self.lib_dir == self.lib_src_dir:
+            self.copy_build_prereq_to_build_dir()
+            self.copy_lib_to_build_dir()
+            if sys.hexversion > 0x03000000:
+                run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
+
+        if not self.codes_dir == self.codes_src_dir:
+            self.copy_codes_to_build_dir()
+            if sys.hexversion > 0x03000000:
+                run_2to3_on_build_dirs(self.makefile_paths(self.codes_src_dir), self.codes_dir,self.codes_src_dir)
+
         
         for x in self.makefile_paths(self.codes_dir):
             shortname = x[len(self.codes_dir) + 1:].lower()
@@ -1320,13 +1334,15 @@ class BuildOneCode(CodeCommand):
                 
             returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
             results.append(('default',returncode,))
-
             
             special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
                 self.announce("building " + x + " version: " + target_name)
                 returncode, _ = self.call(['make','-C', x, target], env = environment)
-                results.append((target,returncode,))
+                results.append((target,returncode,))            
+
+        if not self.codes_dir == self.codes_src_dir:
+            self.copy_worker_codes_to_build_dir()
         
         for x in self.makefile_paths(self.lib_dir):
             shortname = x[len(self.codes_dir) + 1:].lower()
