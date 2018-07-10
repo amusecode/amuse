@@ -683,6 +683,8 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists(error))
         with open(error,"r") as f:
             content = f.read()
+        print type(content), len(content)
+        print content
         self.assertEquals(content.strip(), "exex")
 
     def test21(self):
