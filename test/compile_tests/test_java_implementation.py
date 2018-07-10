@@ -683,9 +683,9 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists(error))
         with open(error,"r") as f:
             content = f.read()
-        print type(content), len(content)
-        print content
-        self.assertEquals(content.strip(), "exex")
+        print content.strip()[-4:]
+        # some times java generates "Picked up _JAVA_OPTIONS" message, so only test:
+        self.assertTrue(content.strip().endswith("exex"))
 
     def test21(self):
         path = os.path.abspath(self.get_path_to_results())
@@ -707,4 +707,6 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists(output))
         with open(output,"r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "def\nexex")
+        print content.strip()[-8:]
+        # some times java generates "Picked up _JAVA_OPTIONS" message, so only test:
+        self.assertTrue(content.strip().endswith("def\nexex"))
