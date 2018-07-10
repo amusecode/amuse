@@ -4,7 +4,6 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.support import exceptions
 from amuse.support import options
 
-import subprocess
 import os
 import time
 from amuse.units import nbody_system

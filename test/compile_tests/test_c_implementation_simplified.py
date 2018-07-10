@@ -3,9 +3,9 @@ from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
+from amuse.test import compile_tools
 from amuse.support import exceptions
 
-import subprocess
 import os
 import time
 from amuse.units import nbody_system
@@ -241,183 +241,30 @@ class ForTesting(InCodeComponentImplementation):
 
 
 class TestCImplementationInterface(TestWithMPI):
-    
-    def get_mpicc_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.mpi.mpicc
-        else:
-            return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
-            
-    def get_mpicxx_name(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'mpi')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            return config.mpi.mpicxx
-        else:
-            return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
-    
-    def get_mpicc_flags(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'compilers')
-        except ImportError:
-            is_configured = False
-        
-        if is_configured:
-            return config.compilers.cc_flags
-        else:
-            return ""
-            
-    def get_mpicxx_flags(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'compilers')
-        except ImportError:
-            is_configured = False
-        
-        if is_configured:
-            return config.compilers.cxx_flags
-        else:
-            return ""
-            
-    def wait_for_file(self, filename):
-        for dt in [0.01, 0.01, 0.02, 0.05]:
-            if os.path.exists(filename):
-                return
-            time.sleep(dt)
-        
-    def c_compile(self, objectname, string):
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.c'
-        
-        if os.path.exists(objectname):
-            os.remove(objectname)
-        
-        with open(sourcename, "w") as f:
-            f.write(string)
-            
-        mpicc = self.get_mpicc_name()
-        arguments = [mpicc]
-        arguments.extend(self.get_mpicc_flags().split())
-        arguments.extend(["-I", "lib/stopcond", "-c",  "-o", objectname, sourcename])
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-        
-        if process.returncode != 0 or not os.path.exists(objectname):
-            print "Could not compile {0}, error = {1}".format(objectname, stderr)
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-    
-    def cxx_compile(self, objectname, string):
-        root, ext = os.path.splitext(objectname)
-        sourcename = root + '.cc'
-        
-        if os.path.exists(objectname):
-            os.remove(objectname)
-            
-        with open(sourcename, "w") as f:
-            f.write(string)
-            
-        mpicxx = self.get_mpicxx_name()
-        arguments = [mpicxx]
-        arguments.extend(self.get_mpicxx_flags().split())
-        arguments.extend(["-I", "lib/stopcond", "-c",  "-o", objectname, sourcename])
-        
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(objectname)
-        
-        if process.returncode != 0 or not os.path.exists(objectname):
-            print "Could not compile {0}, error = {1}".format(objectname, stderr)
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
 
-        print stdout
-        print stderr
-            
-    def c_build(self, exename, objectnames):
-        
-        if os.path.exists(exename):
-            os.remove(exename)
-            
-        mpicxx = self.get_mpicxx_name()
-        arguments = [mpicxx]
-        arguments.extend(objectnames)
-        arguments.append("-o")
-        arguments.append(exename)
-        
-        if 'LIBS' in os.environ:
-            libs = os.environ['LIBS'].split()
-            arguments.extend(libs)
-            
-        process = subprocess.Popen(
-            arguments,
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate()
-        
-        if process.returncode == 0:
-            self.wait_for_file(exename)
-            
-        if process.returncode != 0 or not (os.path.exists(exename) or os.path.exists(exename+'.exe')):
-            print "Could not compile {0}, error = {1}".format(exename, stderr)
-            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
-
-        print stdout
-        print stderr
-    
     def build_worker(self):
-        
         path = os.path.abspath(self.get_path_to_results())
-        codefile = os.path.join(path,"code.o")
-        interfacefile = os.path.join(path,"interface.o")
-        self.exefile = os.path.join(path,"c_worker")
-        
-        self.c_compile(codefile, codestring)
-        
+        codefile = os.path.join(path, "code.o")
+        interfacefile = os.path.join(path, "interface.o")
+        self.exefile = os.path.join(path, "c_worker")
+
+        compile_tools.c_compile(codefile, codestring)
+
         uc = create_c.GenerateACHeaderStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
         uc.needs_mpi = False
-        header =  uc.result
-        
+        header = uc.result
+
         uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
         uc.specification_class = ForTestingInterface
         uc.needs_mpi = False
-        code =  uc.result
-        
+        code = uc.result
+
         string = '\n\n'.join([header, code])
-        
-        #print string
-        
-        self.cxx_compile(interfacefile, string)
-        self.c_build(self.exefile, [interfacefile, codefile] )
-    
+
+        compile_tools.cxx_compile(interfacefile, string)
+        compile_tools.c_build(self.exefile, [interfacefile, codefile])
+
     def setUp(self):
         super(TestCImplementationInterface, self).setUp()
         print "building...",

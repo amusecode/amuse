@@ -315,19 +315,30 @@ class PythonImplementation(object):
         return getattr(MPI, 'INFO_NULL') if hasattr(MPI, 'INFO_NULL') else None
         
     def internal__open_port(self, outportname):
-        outportname.value = MPI.Open_port(self.get_null_info())
+        res = MPI.Open_port(self.get_null_info())
+        outportname.value = res
+        print "internal__open_port:", outportname.value, res
         return 0
         
     def internal__accept_on_port(self, portname, outval):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
+        print "internal__accept_on_port", rank
         if rank == 0:
+            print ">a"
             communicator = MPI.COMM_SELF.Accept(portname, self.get_null_info(), 0)
+            print ">b"
             merged = communicator.Merge(False)
+            print ">c"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
+            print ">d"
+            communicator.Disconnect()
+            print ">e"
+            merged.Disconnect()
+            print ">f"
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
-        
+        print "internal__accept_on_port"        
         self.communicators.append(new_communicator)
         self.lastid += 1
         outval.value = self.lastid
@@ -337,15 +348,22 @@ class PythonImplementation(object):
     def internal__connect_to_port(self, portname, outval):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
+        print "internal__connect_to_port", rank
         if rank == 0:
+            print "a"
             communicator = MPI.COMM_SELF.Connect(portname, self.get_null_info(), 0)
+            print "b"
             merged = communicator.Merge(True)
+            print "c"
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
-            merged.Disconnect()
+            print "d"
             communicator.Disconnect()
+            print "e"
+            merged.Disconnect()
+            print "f"
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 0, 65)
-        
+        print "internal__connect_to_port"        
         self.communicators.append(new_communicator)
         self.lastid += 1
         outval.value = self.lastid

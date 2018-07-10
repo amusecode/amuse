@@ -1,5 +1,6 @@
 env:
   global:
+    - OMPI_MCA_rmaps_base_oversubscribe=yes
     - MINICONDA_VERSION="latest"
     - MINICONDA_PYTHON_MAJOR=2
     - MINICONDA_LINUX="Linux-x86_64"
@@ -12,7 +13,7 @@ matrix:
     - '2.7'
     compiler: gcc
     before_install:
-    - pip install numpy scipy matplotlib nose docutils mpi4py h5py
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
     install:
     - ./configure
     - make framework
@@ -26,9 +27,13 @@ matrix:
     - export PATH="$CONDA_PREFIX/bin:$PATH"
     - hash -r
     - conda update -yq conda
-    - conda install -y -c anaconda gfortran_osx-64
-    - conda install -y -c conda-forge mpi4py nose numpy docutils h5py
-      #- conda install -y -c conda-forge fftw openmpi cython mpfr gsl gmp pkg-config  # these are necessary for a full build including community codes
+    # gather the conda packages to install in one go, saving time
+    - export CONDA_OPTIONS="-c conda-forge -c anaconda"  # N.B.: order matters, first is search first!
+    - export CONDA_PACKAGES="gfortran_osx-64"  # configure wants this, even just for the framework target
+    - export CONDA_PACKAGES="${CONDA_PACKAGES} mpi4py nose numpy docutils h5py"  # additional basic dependencies
+    - export CONDA_PACKAGES="${CONDA_PACKAGES} openmpi cython"  # for the compile_tests
+      #- export CONDA_PACKAGES="${CONDA_PACKAGES} -c conda-forge fftw mpfr gsl gmp pkg-config"  # for a full build including community codes
+    - conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES}
     install:
     - env CXX=clang++ CC=clang LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib" ./configure --with-hdf5=$CONDA_PREFIX --with-gmp=$CONDA_PREFIX --with-mpfr=$CONDA_PREFIX --with-fftw=$CONDA_PREFIX --with-gsl-prefix=$CONDA_PREFIX
     - make framework
@@ -55,5 +60,9 @@ virtualenv:
 
 script:
 - export PYTHONPATH=${PWD}/src
-- nosetests -e "test_grid_implementation" -e "test_plot" test/core_tests
-  
+- nosetests test/reports/test_speed.py -sv
+- nosetests test/compile_tests/test_python_implementation.py:TestInterface.test26 -sv
+- nosetests -e "test_plot" test/core_tests
+- nosetests -e "test26" -e "test27" test/compile_tests/test_python_implementation.py -sv
+- nosetests -e "test_java_implementation" -e "test_python_implementation" -e "test_cython_implementation" test/compile_tests -sv
+- nosetests -e "test20" -e "test21" test/compile_tests/test_java_implementation.py -sv
