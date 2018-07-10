@@ -2715,8 +2715,6 @@ ac_config_files="$ac_config_files src/amuse/config.py:support/configpy.in"
 
 ac_config_files="$ac_config_files support/config.py:support/configpy.in"
 
-ac_config_files="$ac_config_files support3/config.py:support3/configpy.in"
-
 ac_config_files="$ac_config_files config.mk"
 
 ac_config_files="$ac_config_files build.py"
@@ -10145,7 +10143,6 @@ do
   case $ac_config_target in
     "src/amuse/config.py") CONFIG_FILES="$CONFIG_FILES src/amuse/config.py:support/configpy.in" ;;
     "support/config.py") CONFIG_FILES="$CONFIG_FILES support/config.py:support/configpy.in" ;;
-    "support3/config.py") CONFIG_FILES="$CONFIG_FILES support3/config.py:support3/configpy.in" ;;
     "config.mk") CONFIG_FILES="$CONFIG_FILES config.mk" ;;
     "build.py") CONFIG_FILES="$CONFIG_FILES build.py" ;;
 

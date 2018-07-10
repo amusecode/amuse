@@ -4,19 +4,11 @@ import sys
 import subprocess
 import inspect
 import os.path
-
-
-if sys.hexversion > 0x03000000:
-    from support3 import gencode
-else:
-    from support import gencode
+from support import gencode
 
 if __name__ == "__main__":
     try:
-        if sys.hexversion > 0x03000000:
-            from support3 import config
-        else:
-            from support import config
+        from support import config
         pythonexe = config.interpreters.python
     except ImportError as ex:
         pythonexe = sys.executable

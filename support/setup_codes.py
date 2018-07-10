@@ -1,10 +1,16 @@
+from __future__ import print_function
+
 __revision__ = "$Id:$"
 
 import sys, os, re, subprocess
 
-import ConfigParser
-import StringIO
-    
+try:
+    import ConfigParser as configparser
+    from StringIO import StringIO
+except ModuleNotFoundError:
+    import configparser
+    from io import StringIO
+
 import os.path
 import datetime
 import stat
@@ -13,11 +19,14 @@ from stat import ST_MODE
 from distutils import sysconfig
 from distutils.core import Command
 from distutils.dep_util import newer
+from distutils.dir_util import create_tree
 from distutils.util import convert_path
 from distutils import log
 from distutils import spawn
 from distutils import file_util
 from distutils.errors import DistutilsError
+if sys.hexversion > 0x03000000:
+    from distutils.util import run_2to3
 from subprocess import call, Popen, PIPE, STDOUT
 
 try:
@@ -34,6 +43,92 @@ try:
 except ImportError:
     is_configured = False
     
+from glob import glob
+
+def pyfiles_in_build_dir(builddir):
+    module_files = glob(os.path.join(builddir, "*.py"))
+    result = []
+    for x in module_files:
+        result.append(os.path.abspath(x))
+    return result
+
+def run_2to3_on_build_dirs(paths, target, src):
+    for dir in paths:
+        buildir = os.path.join(target,  os.path.relpath(dir, src))
+        run_2to3(pyfiles_in_build_dir(buildir))
+
+class InstallLibraries(Command):
+    user_options = [
+        ('build-temp=', 't',
+         "directory for temporary files (build by-products)"),
+        ('inplace', 'i',
+         "ignore build-lib and put compiled extensions into the source " +
+         "directory alongside your pure Python modules", 1),
+        ('no-inplace', 'k',
+         "put compiled extensions into the  build temp "),
+        ('lib-dir=', 'l', "directory containing libraries to build"),
+        ('install-data=', None, "installation directory for data files"),
+        ('root=', None, "install everything relative to this alternate root directory"),
+    ]
+
+    negative_opt = {'no-inplace':'inplace'}
+    
+    boolean_options = ['inplace']
+
+    def initialize_options (self):
+        self.codes_dir = None
+        self.lib_dir = None
+        self.inplace = False
+        self.build_lib = None
+        self.build_temp = None
+        self.install_data = None
+        self.root=None
+                
+    def finalize_options (self):
+        self.set_undefined_options(
+            'install',
+           ('build_lib', 'build_lib'),
+           ('root', 'root'),
+           ('install_data', 'install_data'),           
+        )
+
+        self.set_undefined_options(
+            'build',
+           ('build_temp', 'build_temp'),
+        )
+
+        if self.lib_dir is None:
+            if self.inplace:
+                self.lib_dir = os.path.join('lib')
+            else:
+                self.lib_dir = os.path.join(self.build_temp, 'lib')
+        else:
+            if self.inplace:
+                pass
+            else:
+                self.lib_dir=os.path.join(self.build_temp, 'lib')
+
+    def run(self):
+        data_dir = os.path.join(self.install_data,'share','amuse')
+        if not self.root is None:
+            data_dir = os.path.relpath(data_dir,self.root)
+            data_dir =  os.path.join('/',data_dir)
+        else:
+            data_dir = os.path.abspath(data_dir)
+
+        # copy only:
+        # '*.h', '*.a', '*.mod', '*.inc', '*.so', '*.dylib'
+        files=[os.path.join(dp, f) for dp, dn, fn in os.walk(self.lib_dir) for f in fn]
+        ext=['.h', '.a', '.mod', '.inc', '.so', '.dylib']
+        files=[f  for f in files if (os.path.splitext(f)[1] in ext)]
+        files=[os.path.relpath(f,self.lib_dir) for f in files]
+        create_tree(os.path.join(data_dir,'lib'), files)
+
+        for f in files:
+            src=os.path.join(self.lib_dir,f)
+            target=os.path.join(data_dir,'lib', f)
+            self.copy_file(src,target)
+
 class GenerateInstallIni(Command):
     user_options =   (
         ('build-dir=', 'd', "directory to install to"),
@@ -58,6 +153,8 @@ class GenerateInstallIni(Command):
             ('root', 'root'),
             ('force', 'force'),
         )
+        #~ print(self.install_data)
+        #~ raise
         
     def run(self):
         outfilename = os.path.join(self.build_dir, 'amuse', 'amuserc')
@@ -123,6 +220,7 @@ class CodeCommand(Command):
     def initialize_options (self):
         self.codes_dir = None
         self.lib_dir = None
+        self.lib_src_dir = None
         self.amuse_src_dir =  os.path.join('src','amuse')
         self.environment = {}
         self.environment_notset = {}
@@ -152,6 +250,7 @@ class CodeCommand(Command):
                 self.codes_dir = os.path.join(self.amuse_src_dir,'community')
                 self.codes_src_dir = self.codes_dir
             else:
+                #~ self.codes_dir = os.path.join(self.build_temp, 'src', 'amuse', 'community')
                 self.codes_dir = os.path.join(self.build_temp, 'codes')
                 self.codes_src_dir = os.path.join(self.amuse_src_dir,'community')
         else:
@@ -159,17 +258,23 @@ class CodeCommand(Command):
                 self.codes_src_dir = self.codes_dir
             else:
                 self.codes_src_dir = self.codes_dir
+                #~ self.codes_dir=os.path.join(self.build_temp, 'src', 'amuse', 'community')
                 self.codes_dir=os.path.join(self.build_temp, 'codes')
             
         if self.lib_dir is None:
             if self.inplace:
-                #self.lib_dir = os.path.join(self.amuse_src_dir, 'lib')
                 self.lib_dir = os.path.join('lib')
+                self.lib_src_dir = self.lib_dir
             else:
-                #self.lib_dir = os.path.join(self.build_temp, 'lib')
-                self.lib_dir = os.path.join('lib')
-        
-        
+                self.lib_dir = os.path.join(self.build_temp, 'lib')
+                self.lib_src_dir = os.path.join('lib')
+        else:
+            if self.inplace:
+                self.lib_src_dir = self.codes_dir
+            else:
+                self.lib_src_dir = self.codes_dir
+                self.lib_dir=os.path.join(self.build_temp, 'lib')
+
         if is_configured:
             self.environment['PYTHON'] = config.interpreters.python
         else:
@@ -193,7 +298,10 @@ class CodeCommand(Command):
         if 'MSYSCON' in os.environ:
             pass
         else:
-            self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+            if self.inplace:
+               self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+            else:
+               self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
         
     
     def set_fortran_variables(self):
@@ -388,16 +496,37 @@ class CodeCommand(Command):
             else:
                 self.environment_notset[varname] ='-L<directory> -l{0}'.format(libname)
      
-    
-                    
+    def copy_build_prereq_to_build_dir(self):
+        if not os.path.exists(self.build_temp):
+            self.mkpath(self.build_temp)
+
+        configpath=os.path.abspath(os.getcwd())
+        self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
+        self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
+        self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
+        #~ self.copy_tree(os.path.join(configpath,"src"), os.path.join(self.build_temp,"src") )
+        path=os.path.join(self.build_temp,"src")
+        if not os.path.exists(path):
+            os.symlink(os.path.relpath(self.build_lib,self.build_temp), path)
+        
     def copy_codes_to_build_dir(self):
-        for dir in self.makefile_src_paths():
+
+        for dir in self.makefile_paths(self.codes_src_dir):
             reldir = os.path.relpath(dir, self.codes_src_dir)
             self.copy_tree(
                 dir, 
                 os.path.join(self.codes_dir, reldir)
             )
         
+    def copy_lib_to_build_dir(self):
+        for dir in self.makefile_paths(self.lib_src_dir):
+            reldir = os.path.relpath(dir, self.lib_src_dir)
+            self.copy_tree(
+                dir, 
+                os.path.join(self.lib_dir, reldir)
+            )
+
+
     def copy_worker_codes_to_build_dir(self):
         if sys.platform == 'win32':
             worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?(.exe)?')
@@ -410,7 +539,7 @@ class CodeCommand(Command):
         if not os.path.exists(lib_binbuilddir):
             self.mkpath(lib_binbuilddir)
             
-        for srcdir in self.makefile_src_paths():
+        for srcdir in self.makefile_paths(self.codes_src_dir):
             reldir = os.path.relpath(srcdir, self.codes_src_dir)
             temp_builddir = os.path.join(self.codes_dir, reldir)
             
@@ -487,56 +616,37 @@ class CodeCommand(Command):
                     input_path, 
                     output_path
                 )
-            
-    def subdirs_in_codes_src_dir(self):
-        names = sorted(os.listdir(self.codes_src_dir))
-        for name in names:
-            if name.startswith('.'):
-                continue
-                
-            path = os.path.join(self.codes_src_dir, name)
-            if os.path.isdir(path):
-                yield path
-                
-    def subdirs_in_codes_dir(self):
-        if not os.path.exists(self.codes_dir):
+
+            #
+            # HACK FOR RAMSES
+            # NEED TO COPY THE SRC DIR
+            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE 
+            # MAKEFILE
+            #
+            if shortname == 'ramses':
+                output_path = os.path.join(lib_builddir, 'src', 'namelist')
+                input_path = os.path.join(temp_builddir, 'src', 'namelist')
+                self.mkpath(output_path)
+                self.copy_tree(
+                    input_path, 
+                    output_path
+                )
+                        
+    def subdirs_in_path(self,path):
+        if not os.path.exists(path):
             return
-            
-        names = sorted(os.listdir(self.codes_dir))
+
+        names = sorted(os.listdir(path))
         for name in names:
             if name.startswith('.'):
                 continue
-            path = os.path.join(self.codes_dir, name)
-            if os.path.isdir(path):
-                yield path
                 
-    def subdirs_in_lib_dir(self):
-        names = sorted(os.listdir(self.lib_dir))
-        for name in names:
-            if name.startswith('.'):
-                continue
-            path = os.path.join(self.lib_dir, name)
-            if os.path.isdir(path):
-                yield path
-            
-    def makefile_libpaths(self):
-        for x in self.subdirs_in_lib_dir():
-            for name in ('makefile', 'Makefile'):
-                makefile_path = os.path.join(x, name)
-                if os.path.exists(makefile_path):
-                    yield x
-                    break
-        
-    def makefile_paths(self):
-        for x in self.subdirs_in_codes_dir():
-            for name in ('makefile', 'Makefile'):
-                makefile_path = os.path.join(x, name)
-                if os.path.exists(makefile_path):
-                    yield x
-                    break
-                    
-    def makefile_src_paths(self):
-        for x in self.subdirs_in_codes_src_dir():
+            path_ = os.path.join(path, name)
+            if os.path.isdir(path_):
+                yield path_
+
+    def makefile_paths(self,path):
+        for x in self.subdirs_in_path(path):
             for name in ('makefile', 'Makefile'):
                 makefile_path = os.path.join(x, name)
                 if os.path.exists(makefile_path):
@@ -545,7 +655,7 @@ class CodeCommand(Command):
 
     def update_environment_from_cfgfile(self):
         if os.path.exists('amuse.cfg'):
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.read(['amuse.cfg'])
             for name, value in config.items('environment'):
                 if isinstance(value, str) and value:
@@ -556,15 +666,15 @@ class CodeCommand(Command):
                         
     def save_cfgfile_if_not_exists(self):
         if not os.path.exists('amuse.cfg'):
-            config = ConfigParser.RawConfigParser()
+            config = configparser.RawConfigParser()
             config.add_section('environment')
-            for name, value in self.environment.iteritems():
+            for name, value in self.environment.items():
                 config.set('environment', name, value)
                 
-            for name, value in self.environment_notset.iteritems():
+            for name, value in self.environment_notset.items():
                 config.set('environment', name, '')
             
-            with open('amuse.cfg', 'wb') as f:
+            with open('amuse.cfg', 'w') as f:
                 config.write(f)
 
     
@@ -601,7 +711,7 @@ class CodeCommand(Command):
         return result
     
     def call(self, arguments, buildlogfile = None, **keyword_arguments):
-        stringio = StringIO.StringIO()
+        stringio = StringIO()
          
         self.announce(' '.join(arguments), log.DEBUG)
         
@@ -630,7 +740,6 @@ class CodeCommand(Command):
         
         stringio.close()
         return result, content
-    
     
 class SplitOutput(object) :
     def __init__(self, file1, file2) :
@@ -718,8 +827,7 @@ class BuildCodes(CodeCommand):
         
         self.announce("building libraries and community codes", level = log.INFO)
         self.announce("build, for logging, see '{0}'".format(buildlog), level = log.INFO)
-        
-        
+                
         with open(buildlog, "w") as output:
             output.write('*'*100)
             output.write('\n')
@@ -727,14 +835,17 @@ class BuildCodes(CodeCommand):
             output.write('*'*100)
             output.write('\n')
         
-        if not self.codes_dir == self.codes_src_dir:
-            self.copy_codes_to_build_dir()
+        if not self.lib_dir == self.lib_src_dir:
+            self.copy_build_prereq_to_build_dir()
+            self.copy_lib_to_build_dir()
+            if sys.hexversion > 0x03000000:
+                run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
         
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
             pass
                   
-        for x in self.makefile_libpaths():
+        for x in self.makefile_paths(self.lib_dir):
             
             shortname = x[len(self.lib_dir) + 1:] + '-library'
             starttime = datetime.datetime.now()
@@ -754,10 +865,14 @@ class BuildCodes(CodeCommand):
                 self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.DEBUG)
                 lib_build.append(shortname)
             
-        #environment.update(self.environment)
-        makefile_paths = list(self.makefile_paths())
+        if not self.codes_dir == self.codes_src_dir:
+            self.copy_codes_to_build_dir()
+            if sys.hexversion > 0x03000000:
+                run_2to3_on_build_dirs(self.makefile_paths(self.codes_src_dir), self.codes_dir,self.codes_src_dir)
         
-            
+        #environment.update(self.environment)
+        makefile_paths = list(self.makefile_paths(self.codes_dir))
+
         build_to_special_targets = {}
         
         for x in makefile_paths:
@@ -830,7 +945,7 @@ class BuildCodes(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            print build_to_special_targets
+            print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:
@@ -976,14 +1091,17 @@ class BuildLibraries(CodeCommand):
             output.write('*'*100)
             output.write('\n')
         
-        if not self.codes_dir == self.codes_src_dir:
-            self.copy_codes_to_build_dir()
+        if not self.lib_dir == self.lib_src_dir:
+            self.copy_build_prereq_to_build_dir()
+            self.copy_lib_to_build_dir()
+            if sys.hexversion > 0x03000000:
+                run_2to3_on_build_dirs(self.makefile_libpaths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
         
         if not self.inplace:
             #self.environment["DOWNLOAD_CODES"] = "1"
             pass
-                  
-        for x in self.makefile_libpaths():
+        
+        for x in self.makefile_paths(self.lib_dir):
             
             shortname = x[len(self.lib_dir) + 1:] + '-library'
             starttime = datetime.datetime.now()
@@ -1004,8 +1122,7 @@ class BuildLibraries(CodeCommand):
                 lib_build.append(shortname)
             
         #environment.update(self.environment)
-        makefile_paths = list(self.makefile_paths())
-        
+        makefile_paths = list(self.makefile_paths(self.codes_dir))
             
         build_to_special_targets = {}
         
@@ -1024,7 +1141,7 @@ class BuildLibraries(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            print build_to_special_targets
+            print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:
@@ -1094,6 +1211,7 @@ class BuildLibraries(CodeCommand):
                 "Your configuration is out of date, please rerun configure",
                 level = level
             )
+
 class ConfigureCodes(CodeCommand):
 
     description = "run configure for amuse"
@@ -1106,24 +1224,8 @@ class ConfigureCodes(CodeCommand):
         environment = self.environment
         environment.update(os.environ)
         self.announce("Running configure for AMUSE", level = 2)
-        self.call(['configure', '--nompi'], env=environment)
- 
-class ConfigureCodes(CodeCommand):
-
-    description = "run configure for amuse"
-
-    def run (self):
-        if os.path.exists('config.mk'):
-            self.announce("Already configured, not running configure", level = 2)
-            return
-            
-        environment = self.environment
-        environment.update(os.environ)
-        self.announce("Running configure for AMUSE", level = 2)
-        self.call(['configure', '--nompi'], env=environment)
+        self.call(['./configure --disable-mpi'], env=environment, shell=True)
         
-        
- 
 class CleanCodes(CodeCommand):
 
     description = "clean build products in codes"
@@ -1133,12 +1235,12 @@ class CleanCodes(CodeCommand):
         environment = self.environment
         environment.update(os.environ)
         self.announce("Cleaning libraries and community codes", level = 2)
-        for x in self.makefile_libpaths():
+        for x in self.makefile_paths(self.lib_dir):
             self.announce("cleaning libary " + x)
             self.call(['make','-C', x, 'clean'], env=environment)
            
             
-        for x in self.makefile_paths():
+        for x in self.makefile_paths(self.codes_dir):
             if os.path.exists(x):
                 self.announce("cleaning " + x)
                 self.call(['make','-C', x, 'clean'], env=environment)
@@ -1152,11 +1254,11 @@ class DistCleanCodes(CodeCommand):
         environment.update(os.environ)
         
         self.announce("Cleaning for distribution, libraries and community codes", level = 2)
-        for x in self.makefile_libpaths():
+        for x in self.makefile_paths(self.lib_dir):
             self.announce("cleaning libary:" + x)
             self.call(['make','-C', x, 'distclean'], env=environment)
             
-        for x in self.makefile_paths():
+        for x in self.makefile_paths(self.codes_dir):
             self.announce("cleaning community code:" + x)
             self.call(['make','-C', x, 'distclean'], env=environment)
         
@@ -1215,7 +1317,7 @@ class BuildOneCode(CodeCommand):
         
         results = []
         
-        for x in self.makefile_paths():
+        for x in self.makefile_paths(self.codes_dir):
             shortname = x[len(self.codes_dir) + 1:].lower()
             
             self.announce( "building code {0}".format(shortname), level = log.INFO)
@@ -1241,7 +1343,7 @@ class BuildOneCode(CodeCommand):
                 returncode, _ = self.call(['make','-C', x, target], env = environment)
                 results.append((target,returncode,))
         
-        for x in self.makefile_libpaths():
+        for x in self.makefile_paths(self.lib_dir):
             shortname = x[len(self.codes_dir) + 1:].lower()
             self.announce( "building library {0}".format(shortname), level = log.INFO)
             

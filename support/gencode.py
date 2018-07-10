@@ -3,8 +3,14 @@ import os.path
 import os
 
 from optparse import OptionParser
-import config
 
+# Should probably use an absolute import here (support.config), but
+# we're not guaranteed this script will always be in a support
+# subdirectory with an __init__.py file.
+#try:  # running as a module
+#    from . import config
+#except (ImportError, ValueError):  # running as a stand-alone script
+#    import config
 
 
 if sys.hexversion > 0x03000000:
@@ -26,10 +32,20 @@ else:
         else:
             return os.path.abspath(directory_of_this_script)
 
+def get_amuse_directory_root():
+    filename_of_this_script = __file__
+    directory_of_this_script = os.path.dirname(os.path.dirname(filename_of_this_script))
+    if os.path.isabs(directory_of_this_script):
+        return directory_of_this_script
+    else:
+        return os.path.abspath(directory_of_this_script)
 
 def setup_sys_path():
-    amuse_directory = get_amuse_directory()
-    
+    #~ amuse_directory = get_amuse_directory()
+    #~ sys.path.insert(0, get_amuse_directory_root())
+    #~ sys.path.insert(0, amuse_directory)
+    #~ sys.path.insert(0, os.path.join(amuse_directory,"src"))
+    amuse_directory = os.environ["AMUSE_DIR"]
     sys.path.insert(0, amuse_directory)
     sys.path.insert(0, os.path.join(amuse_directory,"src"))
     
@@ -257,7 +273,12 @@ def make_file(settings):
     try:
         if settings.name_of_module_or_python_file.endswith('.py'):
             module = {}
-            execfile(settings.name_of_module_or_python_file, module)
+            # Replace with runpy in the future?
+            with open(settings.name_of_module_or_python_file) as fh:
+                text = fh.read()
+                code = compile(text, settings.name_of_module_or_python_file, 'exec')
+                exec(code, module)
+            #execfile(settings.name_of_module_or_python_file, module)
             specification_class = module[settings.name_of_class]
             if not settings.name_of_implementation_class is None:
                 implementation_class = module[settings.name_of_implementation_class]
@@ -305,7 +326,7 @@ def make_file(settings):
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
     
     if settings.output == '-':
-        print builder.result
+        sys.stdout.write(str(builder.result) + '\n')
     else:
         try:
             
@@ -313,7 +334,7 @@ def make_file(settings):
                 f.write(builder.result)
                 
             if settings.make_executable:
-                os.chmod(settings.output, 0777)
+                os.chmod(settings.output, 0o777)
                 
         except Exception as exception:
             uc.show_error_and_exit(exception)
@@ -343,14 +364,16 @@ def make_directory(settings):
 if __name__ == '__main__':
     
     setup_sys_path()
-    
+
+    from support import config
+
     from amuse.rfi.tools import create_c
     from amuse.rfi.tools import create_fortran
     from amuse.rfi.tools import create_java
     from amuse.rfi.tools import create_dir
     from amuse.rfi.tools import create_python_worker
     from amuse.rfi.tools import create_cython
-    
+        
     uc = ParseCommandLine()
     uc.start()
     

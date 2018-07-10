@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 import os
 import signal
@@ -52,7 +54,7 @@ def _run_the_tests(directory, do_update = False):
     call(["make", "clean"])
     call(["make", "all"])
     
-    print "start test run"
+    print("start test run")
     report = background_test.RunTests.instance.run_tests(None)
     return report
     
@@ -75,7 +77,7 @@ class MakeSVNStatusReport(object):
         commit_node = list(doc.getElementsByTagName('commit'))[0]
         revision = commit_node.getAttribute('revision')
         self.result = 'SVN revision: {0}'.format(revision)
-        print self.result
+        print(self.result)
         return self
         
 class MakePlatformReport(object):
@@ -143,7 +145,7 @@ class WriteTestReportOnTestingBlog(object):
             title += 'S' +  str(report.skipped) + ' ';
         
         title += str(delta_time) + 's';
-        print title
+        print(title)
         return title
         
     def titlestring_for_the_report(self):
@@ -304,8 +306,4 @@ if __name__ == '__main__':
         WriteTestReportOnTestingBlog(report).start()
     finally:
         #os.killpg(0, signal.SIGKILL)
-	pass
-    
-    
-    
-    
+        pass
