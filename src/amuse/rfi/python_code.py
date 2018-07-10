@@ -325,6 +325,8 @@ class PythonImplementation(object):
             communicator = MPI.COMM_SELF.Accept(portname, self.get_null_info(), 0)
             merged = communicator.Merge(False)
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
+            merged.Disconnect()
+            communicator.Disconnect()
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
         
