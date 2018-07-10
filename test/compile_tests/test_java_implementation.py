@@ -1,6 +1,7 @@
 from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
+from amuse.test import compile_tools
 from amuse.support import exceptions
 
 import subprocess
@@ -682,7 +683,9 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists(error))
         with open(error,"r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "exex")
+        print content.strip()[-4:]
+        # some times java generates "Picked up _JAVA_OPTIONS" message, so only test:
+        self.assertTrue(content.strip().endswith("exex"))
 
     def test21(self):
         path = os.path.abspath(self.get_path_to_results())
@@ -695,8 +698,8 @@ class TestInterface(TestWithMPI):
             os.remove(error)
 
         instance = ForTesting(self.exefile, redirect_stderr_file = output, redirect_stdout_file = output, redirection="file")
-        instance.print_string("def")
-        instance.print_error_string("exex")
+        instance.print_string("abcdef")
+        instance.print_error_string("&Hfecd")
         instance.stop()
         
         time.sleep(0.2)
@@ -704,4 +707,7 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists(output))
         with open(output,"r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "def\nexex")
+        print content.strip()[-8:]
+        # some times java generates "Picked up _JAVA_OPTIONS" message, so only test:
+        self.assertTrue("abcdef" in content)
+        self.assertTrue("&Hfecd" in content)

@@ -5,7 +5,6 @@ from amuse.community.distributed.interface import DistributedAmuse, Pilot
 from amuse.test.amusetest import TestWithMPI
 from amuse.support import exceptions
 
-import subprocess
 import os
 import time
 from amuse.units import nbody_system

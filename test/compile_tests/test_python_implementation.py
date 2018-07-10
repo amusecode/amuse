@@ -630,6 +630,7 @@ class TestInterface(TestWithMPI):
         request1 = x.sleep.async(0.4)
         self.assertRaises(Exception, lambda : x.sleep(0.01))
         request1.wait()
+        self.assertTrue(request1.is_result_available())        
         x.sleep(0.01)
         self.assertTrue(request1.is_result_available())
         x.stop()
@@ -905,13 +906,10 @@ class TestInterface(TestWithMPI):
         self.check_for_mpi()
         instance1 = ForTestingInterface(redirection="none")
         instance2 = ForTestingInterface(redirection="none")
-        print type(instance1)
         encoded_interface = pickle.dumps(instance1,0)
         decoded_interface = pickle.loads(encoded_interface)
         #pickle.loads(pickle.dumps(instance1,0))
         portname, error = instance2.internal__open_port()
-        print portname
-        print portname
         request1 = instance2.internal__accept_on_port.async(portname)
         request2 = instance1.internal__connect_to_port.async(portname)
         request1.wait()
@@ -976,7 +974,6 @@ class TestInterface(TestWithMPI):
         pool.add_request(request2, handle_result, [2])
         
         pool.wait()
-        print finished_requests, sequenced_requests_indices
         self.assertEquals(len(finished_requests), 1)
         self.assertEquals(len(pool), 1)
         self.assertEquals(finished_requests, [2])
@@ -1052,7 +1049,6 @@ class TestInterface(TestWithMPI):
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([3.0*i for i in range(N)])
-        print sums
         self.assertTrue(list(sums) == [3.0*i + 1 for i in range(N)])
         N = 11
         doubles = x.echo_double([1.0*i for i in range(N)])
