@@ -848,13 +848,17 @@ int _set_integrator(int value, int code_index){
             code->integrator = reb_simulation::REB_INTEGRATOR_HERMES;
             break;
         case 6:
-            code->integrator = reb_simulation::REB_INTEGRATOR_WHFASTHELIO;
+            // This integrator was removed
+            return -1;
             break;
         case 7:
             code->integrator = reb_simulation::REB_INTEGRATOR_NONE;
             break;
         case 8:
             code->integrator = reb_simulation::REB_INTEGRATOR_JANUS;
+            break;
+        case 9:
+            code->integrator = reb_simulation::REB_INTEGRATOR_MERCURIUS;
             break;
         default:
             code->integrator = reb_simulation::REB_INTEGRATOR_NONE;
