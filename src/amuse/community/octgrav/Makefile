@@ -1,15 +1,21 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= openmpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = openmpicxx
+endif
 
 CODEPATH = src/octgrav_v1.7d
 CODELIB = $(CODEPATH)/liboctgrav.a 
 
 
-CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
+ifeq ($(strip $(CUDA_TK)),)
+    CUDA_TK = /disks/koppoel1/CUDA23/cuda
+endif
 
 MUSE_INCLUDE_DIR = -I$(CODEPATH) -I$(CUDA_TK)/include 
 
@@ -17,11 +23,17 @@ CXXFLAGS+= $(MUSE_INCLUDE_DIR)
 
 OBJS = integrator.o interface.o 
 
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
-CUDA_LIBS ?= -lcudart
+ifeq ($(strip $(CUDA_LIBDIRS)),)
+    CUDA_LIBDIRS = -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
+endif
+ifeq ($(strip $(CUDA_LIBS)),)
+    CUDA_LIBS = -lcudart
+endif
 
 LIBS += $(CUDA_LIBDIRS) $(CUDA_LIBS) 
 

@@ -2,7 +2,9 @@
 
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
 # Set to empty string on purpose
@@ -12,15 +14,16 @@ AMUSE_DIR?=../../../..
 # make code
 ALL	 = 
 
-# all the ?= lines work as follows
-# if the variable is already defined, it will keep it's pre-defined value.
-# if the variable is not defined it will get the value after the ?= symbol.
-MPICXX   ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 CUDA_INSTALL_PATH := /usr/local/cuda
 MPI_INSTALL_PATH := /usr/lib64/openmpi/1.4-gcc
 
-NVCC ?= /usr/local/cuda/bin/nvcc
+ifeq ($(strip $(NVCC)),)
+    NVCC = /usr/local/cuda/bin/nvcc
+endif
 
 #possible options : -DCHECK_ERRORS -DCHECK_TIMES -DPLUMMER -DUNROLL -DGPUCORR -DGALAXY
 MYOPTS := -DUNROLL -DCHECK_ERRORS 
@@ -31,10 +34,16 @@ CUDALIB := -L$(CUDA_INSTALL_PATH)/lib64 -lcuda -lcudart
 MPIINCLUDE := -I$(MPI_INSTALL_PATH)/include
 MPILIB := -L$(MPI_INSTALL_PATH)/lib
 
-MPI_CXXFLAGS ?= $(MPIINCLUDE)
-MPI_CXXLIBS ?= $(MPILIB)  -lmpi -lmpi_cxx
+ifeq ($(strip $(MPI_CXXFLAGS)),)
+    MPI_CXXFLAGS = $(MPIINCLUDE)
+endif
+ifeq ($(strip $(MPI_CXXLIBS)),)
+    MPI_CXXLIBS = $(MPILIB)  -lmpi -lmpi_cxx
+endif
 
-OPENMP_CFLAGS ?= -fopenmp
+ifeq ($(strip $(OPENMP_CFLAGS)),)
+    OPENMP_CFLAGS = -fopenmp
+endif
 
 MYINCLUDE := -I./lib/ 
 

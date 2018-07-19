@@ -1,11 +1,17 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 include ${AMUSE_DIR}/config.mk
 
 FORTRAN = $(FC)
-MPIF90 ?= $(MPIFC)
-PYTHON ?= python
+ifeq ($(strip $(MPIF90)),)
+    MPIF90 = $(MPIFC)
+endif
+ifeq ($(strip $(PYTHON)),)
+    PYTHON = python
+endif
 
 export FORTRAN
 

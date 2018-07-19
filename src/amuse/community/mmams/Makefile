@@ -1,9 +1,13 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -14,7 +18,9 @@ MMAS_DIR  = src/mmas2/src/mmas
 EOS_DIR   = src/mmas2/src/eos
 USM_DIR   = src/mmas2/src/usm
 STD_SRCMMAS_DIRDIR   = src/mmas2/src/std
-GSL_LIBS ?= -lgsl -lgslcblas -lm
+ifeq ($(strip $(GSL_LIBS)),)
+    GSL_LIBS = -lgsl -lgslcblas -lm
+endif
 
 #INCLUDES = -I/opt/local/include -Isrc/mmas2/src
 INCLUDES = $(GSL_FLAGS)  -Isrc/mmas2/src
@@ -27,7 +33,9 @@ LIBS +=  -L$(BUILDDIR)/src/mmas -l_mmas2 \
 OBJECTS = interface.o
 SOURCES = interface.cc
 
-CMAKE_GENERATOR ?= Unix Makefiles
+ifeq ($(strip $(CMAKE_GENERATOR)),)
+    CMAKE_GENERATOR = Unix Makefiles
+endif
 
 all: $(BUILDDIR)/Makefile  mmas2 mmams_worker
 

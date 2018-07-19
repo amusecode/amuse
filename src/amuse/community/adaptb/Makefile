@@ -1,17 +1,31 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-GMP_LIBS ?= -L/home/boekholt/Packages/ -lgmp
-MPFR_LIBS ?= -L/home/boekholt/Packages/ -lmpfr
-MPFR_FLAGS ?= -I/home/boekholt/Packages/
+ifeq ($(strip $(GMP_LIBS)),)
+    GMP_LIBS = -L/home/boekholt/Packages/ -lgmp
+endif
+ifeq ($(strip $(MPFR_LIBS)),)
+    MPFR_LIBS = -L/home/boekholt/Packages/ -lmpfr
+endif
+ifeq ($(strip $(MPFR_FLAGS)),)
+    MPFR_FLAGS = -I/home/boekholt/Packages/
+endif
 LIBS += $(MPFR_LIBS) $(GMP_LIBS)
 
-MPICXX   ?= mpicxx
-CXX ?= g++
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(CXX)),)
+    CXX = g++
+endif
 
-CXXFLAGS ?= -Wall -g -O2
+ifeq ($(strip $(CXXFLAGS)),)
+    CXXFLAGS = -Wall -g -O2
+endif
 CXXFLAGS += -std=c++11
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

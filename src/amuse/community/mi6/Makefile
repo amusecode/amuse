@@ -1,13 +1,23 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX   ?= mpicxx
-CXXFLAGS ?= -Wall -g -O2
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(CXXFLAGS)),)
+    CXXFLAGS = -Wall -g -O2
+endif
 
-SAPPORO_LIBS ?= -L$(AMUSE_DIR)/lib/sapporo_light -lsapporo
-CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
+ifeq ($(strip $(SAPPORO_LIBS)),)
+    SAPPORO_LIBS = -L$(AMUSE_DIR)/lib/sapporo_light -lsapporo
+endif
+ifeq ($(strip $(CUDA_LIBS)),)
+    CUDA_LIBS = -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
+endif
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

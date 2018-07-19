@@ -1,11 +1,19 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPIFC ?= mpif90
-FORTRAN ?= gfortran
-FC ?= $(FORTRAN)
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = mpif90
+endif
+ifeq ($(strip $(FORTRAN)),)
+    FORTRAN = gfortran
+endif
+ifeq ($(strip $(FC)),)
+    FC = $(FORTRAN)
+endif
 
 FFLAGS   += -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)

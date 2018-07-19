@@ -1,7 +1,11 @@
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 CFLAGS   += -DTOOLBOX  $(MUSE_INCLUDE_DIR)
 CXXFLAGS += $(CFLAGS) 
@@ -20,13 +24,22 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 CODELIB = $(BUILDDIR)/libbhtree.a
 GPUCODELIB = $(GPU_BUILDDIR)/libbhtree.a
-G6LIBS ?= -L$(AMUSE_DIR)/lib/g6 -lg6
+ifeq ($(strip $(G6LIBS)),)
+    G6LIBS = -L$(AMUSE_DIR)/lib/g6 -lg6
+endif
 
-SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
-OPENMP_CFLAGS ?= 
-SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo $(OPENMP_CFLAGS)
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
-CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
+ifeq ($(strip $(SAPPORO_LIBDIRS)),)
+    SAPPORO_LIBDIRS = -L$(AMUSE_DIR)/lib/sapporo_light
+endif
+ifeq ($(strip $(OPENMP_CFLAGS)),)
+    OPENMP_CFLAGS = SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo $(OPENMP_CFLAGS)
+endif
+ifeq ($(strip $(CUDA_LIBDIRS)),)
+    CUDA_LIBDIRS = -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
+endif
+ifeq ($(strip $(CUDA_LIBS)),)
+    CUDA_LIBS = $(CUDA_LIBDIRS) -lcudart
+endif
 GPULIBS  =  $(CUDA_LIBS) $(SAPPORO_LIBS) -lpthread
 
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi

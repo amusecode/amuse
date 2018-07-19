@@ -1,9 +1,13 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPIFC ?= mpif90
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = mpif90
+endif
 FC    = $(MPIFC)
 FFLAGS = -g
 #FFLAGS   += 
@@ -19,7 +23,9 @@ export F77FLAGS
 
 CODELIB = src/libMikkola.a
 
-AMUSE_DIR?=../../amuse
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../amuse
+endif
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

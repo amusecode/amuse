@@ -1,15 +1,23 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
-MPICC ?= mpicc
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(MPICC)),)
+    MPICC = mpicc
+endif
 
 CC = $(MPICC)
 CXX = $(MPICXX)
 
-CXXFLAGS ?= -Wall -g -O2
+ifeq ($(strip $(CXXFLAGS)),)
+    CXXFLAGS = -Wall -g -O2
+endif
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

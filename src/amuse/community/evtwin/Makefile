@@ -1,11 +1,20 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPIFC ?= mpif90
-FORTRAN ?= gfortran
-FC ?= $(FORTRAN)
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = mpif90
+endif
+ifeq ($(strip $(FORTRAN)),)
+    FORTRAN = gfortran
+endif
+ifeq ($(strip $(FC)),)
+    FC = $(FORTRAN)
+endif
+FCFLAGS += -fcheck=bounds
 
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
@@ -23,7 +32,9 @@ FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
 LD = ld
 AR = ar ruv
 RANLIB = ranlib
-CMAKE_GENERATOR ?= Unix Makefiles
+ifeq ($(strip $(CMAKE_GENERATOR)),)
+    CMAKE_GENERATOR = Unix Makefiles
+endif
 
 all:    $(BUILDDIR)/Makefile evtwin_worker
 

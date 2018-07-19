@@ -1,7 +1,11 @@
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-PYTHON ?= python
+ifeq ($(strip $(PYTHON)),)
+    PYTHON = python
+endif
 
 ARGPARSE_AVAILABLE := $(shell $(PYTHON) -c "import argparse"  1>&2 2> /dev/null && echo "yes" || echo "no")
 

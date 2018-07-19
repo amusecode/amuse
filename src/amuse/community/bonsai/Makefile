@@ -1,16 +1,24 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX   ?= openmpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = openmpicxx
+endif
 
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
-CUDA_TK ?= /usr/local/cuda/
-CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcuda 
+ifeq ($(strip $(CUDA_TK)),)
+    CUDA_TK = /usr/local/cuda/
+endif
+ifeq ($(strip $(CUDA_LIBS)),)
+    CUDA_LIBS = -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcuda 
+endif
 
 #CXXFLAGS += -I$(CUDA_TK)/include
 LIBS += $(CUDA_LIBS) $(LDFLAGS) $(CUDA_LIBDIRS) -L/usr/lib64/nvidia $(SC_MPI_CLIBS)
