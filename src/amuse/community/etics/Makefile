@@ -1,13 +1,19 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include $(AMUSE_DIR)/config.mk
-GPUARCH ?= 35
+ifeq ($(strip $(GPUARCH)),)
+    GPUARCH = 35
+endif
 CUDAFLAGS += -arch=sm_$(GPUARCH)
 ######### ugly!!!! should be in the amuse base make file
 
 
-MPICXX   ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
@@ -19,8 +25,12 @@ CODELIB = build/libetics.a
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-CUDA_TK ?= /usr/local/cuda/
-CUDA_LIBS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcuda 
+ifeq ($(strip $(CUDA_TK)),)
+    CUDA_TK = /usr/local/cuda/
+endif
+ifeq ($(strip $(CUDA_LIBS)),)
+    CUDA_LIBS = -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcuda 
+endif
 
 all: compile etics_worker
 

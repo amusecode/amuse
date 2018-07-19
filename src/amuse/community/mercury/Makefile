@@ -1,9 +1,13 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPIFC ?= openmpif90
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = openmpif90
+endif
 
 FC = $(MPIFC)
 SRC=src

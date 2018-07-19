@@ -1,9 +1,13 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 SRCDIR		= src
 
@@ -13,14 +17,20 @@ BUILDDIR = build
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-#PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
+#ifeq ($(strip $(PROFLIBS)),)
+#    PROFLIBS = -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
+#endif
 
 ifneq ($(MAKEFILE_OPTIONS_FILE), )
 include $(MAKEFILE_OPTIONS_FILE)
 endif
 
-GSL_FLAGS ?= $(shell gsl-config --cflags)
-GSL_LIBS ?= $(shell gsl-config --libs)
+ifeq ($(strip $(GSL_FLAGS)),)
+    GSL_FLAGS = $(shell gsl-config --cflags)
+endif
+ifeq ($(strip $(GSL_LIBS)),)
+    GSL_LIBS = $(shell gsl-config --libs)
+endif
 GSL_INCL = $(GSL_FLAGS)
 
 

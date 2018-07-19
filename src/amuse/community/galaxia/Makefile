@@ -1,13 +1,23 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?= ../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPIFC ?= mpif90
-FC ?= gfortran
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = mpif90
+endif
+ifeq ($(strip $(FC)),)
+    FC = gfortran
+endif
 
-FSLIB ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets 
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
+ifeq ($(strip $(FSLIB)),)
+    FSLIB = -L$(AMUSE_DIR)/lib/forsockets -lforsockets 
+endif
+ifeq ($(strip $(FSINC)),)
+    FSINC = -I$(AMUSE_DIR)/lib/forsockets
+endif
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

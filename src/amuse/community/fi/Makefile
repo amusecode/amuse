@@ -1,12 +1,20 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPIFC ?= mpif90
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = mpif90
+endif
 FORTRAN=$(FC)
-PYTHON ?= python
-GL_PATH ?= ${AMUSE_DIR}/sandbox/pelupes/f90gl
+ifeq ($(strip $(PYTHON)),)
+    PYTHON = python
+endif
+ifeq ($(strip $(GL_PATH)),)
+    GL_PATH = ${AMUSE_DIR}/sandbox/pelupes/f90gl
+endif
 #/home/inti/libraries/f90gl-1.2.11
 
 SRC=src
@@ -24,12 +32,16 @@ GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
 X11LIB = -L/usr/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
-FFTW_LIBS ?= -lfftw3  -lfftw3_threads
+ifeq ($(strip $(FFTW_LIBS)),)
+    FFTW_LIBS = -lfftw3  -lfftw3_threads
+endif
 
 THREADLIB = -L. -lpthread $(BUILDDIR)/libpt.a
 PTHREADLIB = -L. -lpthread $(PERIODIC_BUILDDIR)/libpt.a
 
-OPENMP_FCFLAGS ?= -openmp -openmp_report0 
+ifeq ($(strip $(OPENMP_FCFLAGS)),)
+    OPENMP_FCFLAGS = -openmp -openmp_report0 
+endif
 
 PIC=#-fPIC
 

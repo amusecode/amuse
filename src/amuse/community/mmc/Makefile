@@ -1,9 +1,17 @@
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include $(AMUSE_DIR)/config.mk
 
-MPIFC  ?= mpif90
-MPIF90 ?= $(MPIFC)
-PYTHON ?= python
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = mpif90
+endif
+ifeq ($(strip $(MPIF90)),)
+    MPIF90 = $(MPIFC)
+endif
+ifeq ($(strip $(PYTHON)),)
+    PYTHON = python
+endif
 FC      = $(MPIFC)
 
 FCFLAGS   += -fno-automatic

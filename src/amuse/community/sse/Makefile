@@ -1,11 +1,17 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPIF90 ?= $(MPIFC)
+ifeq ($(strip $(MPIF90)),)
+    MPIF90 = $(MPIFC)
+endif
 
-FORTRAN ?= gfortran
+ifeq ($(strip $(FORTRAN)),)
+    FORTRAN = gfortran
+endif
 
 F77FLAGS = 
 ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))
@@ -14,8 +20,12 @@ endif
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-FSLIBS ?= -L$(AMUSE_DIR)/lib/forsockets -lforsockets
-FSINC ?= -I$(AMUSE_DIR)/lib/forsockets
+ifeq ($(strip $(FSLIBS)),)
+    FSLIBS = -L$(AMUSE_DIR)/lib/forsockets -lforsockets
+endif
+ifeq ($(strip $(FSINC)),)
+    FSINC = -I$(AMUSE_DIR)/lib/forsockets
+endif
 
 
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi

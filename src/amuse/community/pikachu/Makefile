@@ -1,19 +1,31 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX   ?= mpicxx
-CXXFLAGS ?= -Wall -g -O2
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(CXXFLAGS)),)
+    CXXFLAGS = -Wall -g -O2
+endif
 
 MAP_SEQ = -DTREE_MAP
 export MAP_SEQ
 CXXFLAGS += $(MAP_SEQ)
-SEQ_LIB ?= src/sequoia
-SEQUOIA_LIBS ?= -L$(SEQ_LIB) -lsequoia
+ifeq ($(strip $(SEQ_LIB)),)
+    SEQ_LIB = src/sequoia
+endif
+ifeq ($(strip $(SEQUOIA_LIBS)),)
+    SEQUOIA_LIBS = -L$(SEQ_LIB) -lsequoia
+endif
 SEQUOIA_INC = -DSEQUOIA -I$(SEQ_LIB)/include
 
-CUDA_LIBS ?= -lcuda -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
+ifeq ($(strip $(CUDA_LIBS)),)
+    CUDA_LIBS = -lcuda -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart
+endif
 CUDA_INC = -I$(CUDA_TK)/include
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py

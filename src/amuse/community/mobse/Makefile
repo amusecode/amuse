@@ -4,8 +4,12 @@ endif
 
 -include ${AMUSE_DIR}/config.mk 				  # NG has some doubts
 
-MPIFC ?= mpif90  								  # 
-FORTRAN ?= gfortran						  		  # 
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = mpif90  								  # 
+endif
+ifeq ($(strip $(FORTRAN)),)
+    FORTRAN = gfortran						  		  # 
+endif
 
 F77FLAGS =  									  # 
 ifneq (,$(findstring xlf, $(notdir $(FORTRAN))))  # 

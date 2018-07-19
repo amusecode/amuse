@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
 # Makefile to build the worker code.  First draft was auto-generated;
@@ -11,7 +13,9 @@ ALL	 = keplerorbiters_worker
 OPT	  = $(OPENMP_CFLAGS) # -O4 don't use O4 it is not defined on normal gcc, but has special meaning on LLVM/clang gcc
 #OPT	  =
 
-MPICXX   ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 CFLAGS   += $(OPT)
 CXXFLAGS += $(CFLAGS) 

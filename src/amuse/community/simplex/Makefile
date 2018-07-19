@@ -1,9 +1,13 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
--include $(AMUSE_DIR)/config.mk
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
+#-include $(AMUSE_DIR)/config.mk
 
-MPICXX ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 export MPICXX
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
@@ -23,22 +27,35 @@ HEALPIX_PATH = $(PLUGINS)/HEALPix/
 QHULL_PATH = $(PLUGINS)/qhull-2012.1/
 
 HDF5_PATH = /Users/jppaarde/sw/hdf5-1.6.10/installed
-HDF5_FLAGS ?= -I$(HDF5_PATH)/include
-HDF5_LIBS  ?= -L$(HDF5_PATH)/lib -lhdf5 -lz
+
+# HDF5_FLAGS ?= does not work if the variables are empty (from config.mk)
+# we use this ifeq pattern (more verbose, but it works)
+ifeq ($(strip $(HDF5_FLAGS)),)
+HDF5_FLAGS = -I$(HDF5_PATH)/include
+endif
+
+ifeq ($(strip $(HDF5_LIBS)),)
+HDF5_LIBS  = -L$(HDF5_PATH)/lib -lhdf5 -lz
+endif
 
 GSL_PATH = /usr/local/scisoft
 
-# here we use ?= to allow amuse configure to override these
-# variables
-GSL_FLAGS ?= -I$(GSL_PATH)/include
-GSL_LIBS ?= -L$(GSL_PATH)/lib -lgsl -lgslcblas
+ifeq ($(strip $(GSL_FLAGS)),)
+GSL_FLAGS = -I$(GSL_PATH)/include
+endif
+
+ifeq ($(strip $(GSL_FLAGS)),)
+GSL_LIBS = -L$(GSL_PATH)/lib -lgsl -lgslcblas
+endif
 
 LIBS =  $(HDF5_LIBS) \
         $(GSL_LIBS) \
         -L$(QHULL_PATH)/lib -lqhullstatic \
         -L$(HEALPIX_PATH)/lib  -lhealpix_cxx
 
-GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
+ifeq ($(strip $(GL_PATH)),)
+    GL_PATH = /home/inti/libraries/f90gl-1.2.11
+endif
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
 GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  #-lguide 
 GLLIBS= $(GLLIB) -lGL -lGLU -L/home/inti/libraries/freeglut-2.4.0/src/.libs -lglut \

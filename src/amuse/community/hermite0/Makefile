@@ -1,16 +1,26 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
-MPICC ?= mpicc
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(MPICC)),)
+    MPICC = mpicc
+endif
 
 CC = $(MPICC)
 CXX = $(MPICXX)
 
-CFLAGS ?= -O3 -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR) 
-CXXFLAGS ?= $(CFLAGS) 
+ifeq ($(strip $(CFLAGS)),)
+    CFLAGS = -O3 -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR) 
+endif
+ifeq ($(strip $(CXXFLAGS)),)
+    CXXFLAGS = $(CFLAGS) 
+endif
 
 LDFLAGS += -lm $(MUSE_LD_FLAGS)
 
@@ -19,7 +29,9 @@ AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 CODE_GENERATOR = $(PYTHON) $(AMUSE_DIR)/build.py
 
-#PROFLIBS ?= -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
+ifeq ($(strip $(PROFLIBS)),)
+    #PROFLIBS = -L$(AMUSE_DIR)/lib/ibis/src/profiling -libisprofiling -lmpi
+endif
 
 all: hermite0_worker
 
@@ -34,6 +46,7 @@ worker_code.h: interface.py
 
 hermite0_worker:	worker_code.cc worker_code.h $(A_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)  $(LIBS)  $(AM_LIBS)
+	#$(MPICXX) -static -static-libgcc  -static-libstdc++ $(CXXFLAGS) $(SC_FLAGS) $(AM_CFLAGS) $(LDFLAGS) $< $(A_OBJS) -o $@ $(SC_MPI_CLIBS)  $(LIBS)  $(AM_LIBS)
 
 hermite0_worker_cython: hermite0_cython.so
 	$(CODE_GENERATOR) --type=cython -m script -x amuse.community.hermite0.interface HermiteInterface -o $@ --cython-import hermite0_cython

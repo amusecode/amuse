@@ -1,16 +1,30 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-GFORTRAN_VERSION?=$(shell $(FC) -v 2>&1 | grep gcc\ version | cut -d\  -f3)
+ifeq ($(strip $(GFORTRAN_VERSION)),)
+    GFORTRAN_VERSION = $(shell $(FC) -v 2>&1 | grep gcc\ version | cut -d\  -f3)
+endif
 GFORTRAN_MAJOR_MINOR=$(shell echo $(GFORTRAN_VERSION) | cut -s -d'.' -f1,2)
-#IFORT_VERSION?=$(shell $(FC) -v 2>&1 | cut -d\  -f2)
+#ifeq ($(strip $(IFORT_VERSION)),)
+#    IFORT_VERSION = $(shell $(FC) -v 2>&1 | cut -d\  -f2)
+#endif
 #IFORT_MAJOR_MINOR=$(shell echo $(IFORT_VERSION) | cut -s -d'.' -f1,2)
-MPIF90 ?= mpif90
-FORTRAN ?= gfortran
-PYTHON ?= python
-FC      ?= $(FORTRAN)
+ifeq ($(strip $(MPIF90)),)
+    MPIF90 = mpif90
+endif
+ifeq ($(strip $(FORTRAN)),)
+    FORTRAN = gfortran
+endif
+ifeq ($(strip $(PYTHON)),)
+    PYTHON = python
+endif
+ifeq ($(strip $(FC)),)
+    FC = $(FORTRAN)
+endif
 MPIFC+= $(FCFLAGS)
 export FC MPIFC
 

@@ -1,9 +1,13 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=./././.
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ./././.
+endif
 -include $(AMUSE_DIR)/config.mk
 
-MPICXX   ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 CFLAGS   += -Wall -g -DCOLLISIONS_DUMMY -DLIBREBOUND
 CXXFLAGS += $(CFLAGS)  

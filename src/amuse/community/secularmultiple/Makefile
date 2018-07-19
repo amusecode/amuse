@@ -4,8 +4,12 @@ endif
 
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
-MPICC ?= mpicc
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(MPICC)),)
+    MPICC = mpicc
+endif
 
 CC = $(MPICC)
 CXX = $(MPICXX)

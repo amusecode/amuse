@@ -1,10 +1,16 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-CC ?= gcc
-CFLAGS ?= -O3
+ifeq ($(strip $(CC)),)
+    CC = gcc
+endif
+ifeq ($(strip $(CFLAGS)),)
+    CFLAGS = -O3
+endif
 
 CFLAGS +=  -std=c99 -Wall -W -O3
 

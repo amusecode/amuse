@@ -1,7 +1,11 @@
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-PYTHON ?= python
+ifeq ($(strip $(PYTHON)),)
+    PYTHON = python
+endif
 
 PYOPENGL_AVAILABLE := $(shell $(PYTHON) -c "import OpenGL"  1>&2 2> /dev/null && echo "yes" || echo "no")
 PYIMAGE_AVAILABLE := $(shell $(PYTHON) -c "from PIL import Image"  1>&2 2> /dev/null && echo "yes" || echo "no")

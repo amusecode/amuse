@@ -1,12 +1,20 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
-MPICC ?= mpicc
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(MPICC)),)
+    MPICC = mpicc
+endif
 
-OPENMP_CFLAGS?= -fopenmp
+ifeq ($(strip $(OPENMP_CFLAGS)),)
+    OPENMP_CFLAGS = -fopenmp
+endif
 
 ifneq (,$(findstring xlc, $(notdir $(CC))))
 CFLAGS += -qlanglvl=extc99
@@ -38,8 +46,12 @@ OPENMP_BUILDDIR = build_mp
 AM_LIBS = -L$(AMUSE_DIR)/lib/amuse_mpi -lamuse_mpi
 AM_CFLAGS = -I$(AMUSE_DIR)/lib/amuse_mpi
 
-CL_LIBS?=-L$(OPENCL)/lib/x86_64 -lOpenCL -lpthread -ldl -L$(STDCL)/lib -lstdcl
-CL_FLAGS?=-I$(OPENCL)/include -I$(STDCL)/include
+ifeq ($(strip $(CL_LIBS)),)
+    CL_LIBS = -L$(OPENCL)/lib/x86_64 -lOpenCL -lpthread -ldl -L$(STDCL)/lib -lstdcl
+endif
+ifeq ($(strip $(CL_FLAGS)),)
+    CL_FLAGS = -I$(OPENCL)/include -I$(STDCL)/include
+endif
 
 all:	huayno_worker
 

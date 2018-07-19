@@ -1,11 +1,19 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
-MPICXX ?= mpicxx
-MPICC ?= mpicc
-PYTHON ?= python
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(MPICC)),)
+    MPICC = mpicc
+endif
+ifeq ($(strip $(PYTHON)),)
+    PYTHON = python
+endif
 
 VERSION = 4.1
 
@@ -46,8 +54,12 @@ PATCH_FILES = $(PYTHON) ./patch_files.py
 
 ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o $(ATHENA_DIR)/src/*/*.o))
 
-FFTW_LIBS ?= -L/usr/lib -lfftw3
-FFTW_FLAGS ?= -I/usr/include
+ifeq ($(strip $(FFTW_LIBS)),)
+    FFTW_LIBS = -L/usr/lib -lfftw3
+endif
+ifeq ($(strip $(FFTW_FLAGS)),)
+    FFTW_FLAGS = -I/usr/include
+endif
 FFTWLIB = $(FFTW_LIBS)
 FFTWINC = $(FFTW_FLAGS)
  

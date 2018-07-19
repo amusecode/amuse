@@ -1,6 +1,8 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
 # Makefile to build the worker code.  First draft was auto-generated;
@@ -10,9 +12,15 @@ AMUSE_DIR?=../../../..
 ALL	 = smallN_worker
 OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
-MPICXX   ?= mpicxx
-SC_FLAGS ?= -I$(AMUSE_DIR)/lib/stopcond
-SC_CLIBS  ?=  -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi 
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
+ifeq ($(strip $(SC_FLAGS)),)
+    SC_FLAGS = -I$(AMUSE_DIR)/lib/stopcond
+endif
+ifeq ($(strip $(SC_CLIBS)),)
+    SC_CLIBS = -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi 
+endif
 
 CFLAGS   += -Wall -g $(OPT) -I../../ph4/src -I../ph4/src
 CXXFLAGS += $(CFLAGS) $(SC_FLAGS)

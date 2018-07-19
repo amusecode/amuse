@@ -1,10 +1,16 @@
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include $(AMUSE_DIR)/config.mk
 
 # need := to expand the variable here and not when it is used
 FORTRAN:=$(FC) 
-MPIFC ?= mpif90
-PYTHON ?= python
+ifeq ($(strip $(MPIFC)),)
+    MPIFC = mpif90
+endif
+ifeq ($(strip $(PYTHON)),)
+    PYTHON = python
+endif
 FC      = $(MPIFC)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -25,7 +31,9 @@ endif
 # ifort flags
 IFORT_MAJOR_MINOR=
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
-IFORT_VERSION?=$(shell $(FC) -v 2>&1 | cut -d\  -f2)
+ifeq ($(strip $(IFORT_VERSION)),)
+    IFORT_VERSION = $(shell $(FC) -v 2>&1 | cut -d\  -f2)
+endif
 IFORT_MAJOR_MINOR=$(shell echo $(IFORT_VERSION) | cut -s -d'.' -f1,2)
 FFLAGS += -FR
 endif

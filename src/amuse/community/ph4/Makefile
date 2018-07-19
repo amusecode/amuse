@@ -5,29 +5,45 @@
 
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include ${AMUSE_DIR}/config.mk
 
 ALL	 = ph4_worker # ph4_worker_gpu
 OPT	  = -I$(AMUSE_DIR)/lib/stopcond
 
-MPICXX   ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 CFLAGS   += -Wall -g -O2 $(OPT)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -L$(AMUSE_DIR)/lib/stopcond -lstopcond -lm $(MUSE_LD_FLAGS)
 
-CUDA_TK  ?= /usr/local/cuda
+ifeq ($(strip $(CUDA_TK)),)
+    CUDA_TK = /usr/local/cuda
+endif
 
-SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
-SAPPORO_LIBS ?= $(SAPPORO_LIBDIRS) -lsapporo
+ifeq ($(strip $(SAPPORO_LIBDIRS)),)
+    SAPPORO_LIBDIRS = -L$(AMUSE_DIR)/lib/sapporo_light
+endif
+ifeq ($(strip $(SAPPORO_LIBS)),)
+    SAPPORO_LIBS = $(SAPPORO_LIBDIRS) -lsapporo
+endif
 
 # Boost is needed by sapporo.
 
-BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
+ifeq ($(strip $(BOOSTLIBS)),)
+    BOOSTLIBS = -L/opt/local/lib -lboost_thread-mt
+endif
 
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
-CUDA_LIBS ?= $(CUDA_LIBDIRS) -lcudart
+ifeq ($(strip $(CUDA_LIBDIRS)),)
+    CUDA_LIBDIRS = -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
+endif
+ifeq ($(strip $(CUDA_LIBS)),)
+    CUDA_LIBS = $(CUDA_LIBDIRS) -lcudart
+endif
 
 LDFLAGS_GPU =	$(LDFLAGS) \
 		$(SAPPORO_LIBS) \
@@ -41,7 +57,9 @@ CODELIB = src/libph4.a
 CODELIB_GPU = src/libph4gpu.a
 
 
-AMUSE_DIR ?= ../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

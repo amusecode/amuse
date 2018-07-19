@@ -1,9 +1,13 @@
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=../../../..
+ifeq ($(strip $(AMUSE_DIR)),)
+    AMUSE_DIR = ../../../..
+endif
 -include $(AMUSE_DIR)/config.mk
 
-MPICXX   ?= mpicxx
+ifeq ($(strip $(MPICXX)),)
+    MPICXX = mpicxx
+endif
 
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
@@ -13,11 +17,21 @@ OBJS = interface.o
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-RM ?= rm
-JAVAC ?= javac
-JAR ?= jar
-MV ?= mv
-CP ?= cp
+ifeq ($(strip $(RM)),)
+    RM = rm
+endif
+ifeq ($(strip $(JAVAC)),)
+    JAVAC = javac
+endif
+ifeq ($(strip $(JAR)),)
+    JAR = jar
+endif
+ifeq ($(strip $(MV)),)
+    MV = mv
+endif
+ifeq ($(strip $(CP)),)
+    CP = cp
+endif
 
 UPDATE_URL = https://github.com/NLeSC/AMUSE-Distributed/archive/develop.zip
 UPDATE_ARCHIVE_DIR = AMUSE-Distributed-develop
