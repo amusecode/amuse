@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/amusecode/amuse.svg?branch=master)](https://travis-ci.org/amusecode/amuse)
-
 This directory contains the AMUSE software. With AMUSE you can write
 scripts to simulate astrophysical problems in different domains.
 
