@@ -18,40 +18,9 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 class TestMercuryInterface(TestWithMPI):
-
     
-    def is_fortan_version_up_to_date(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'compilers')
-            if is_configured:
-                is_configured = hasattr(config.compilers, 'gfortran_version')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            if not config.compilers.gfortran_version:
-                return True
-            
-            try:
-                parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
-            except:
-                parts = []
-                
-            if len(parts) < 2:
-                return True
-                
-            return parts[0] >= 4 and parts[1] > 1
-        else:
-            return True
-            
     def setUp(self):
         super(TestWithMPI, self).setUp()
-        self.check_fortran_version()
-        
-    def check_fortran_version(self):
-        if not self.is_fortan_version_up_to_date():
-            self.skip('cannot compile, fortran module names cannot be resolved correctly in this gfortran version')
             
     def test1(self):
         instance=MercuryInterface()  
@@ -279,38 +248,10 @@ class TestMercuryInterface(TestWithMPI):
 
 
 class TestMercury(TestWithMPI):
-    
-    def is_fortan_version_up_to_date(self):
-        try:
-            from amuse import config
-            is_configured = hasattr(config, 'compilers')
-            if is_configured:
-                is_configured = hasattr(config.compilers, 'gfortran_version')
-        except ImportError:
-            is_configured = False
-    
-        if is_configured:
-            if not config.compilers.gfortran_version:
-                return True
                 
-            parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
-            
-            if len(parts) < 2:
-                return True
-                
-            return parts[0] >= 4 and parts[1] > 1
-        else:
-            return True
-            
     def setUp(self):
         super(TestWithMPI, self).setUp()
-        self.check_fortran_version()
         
-    def check_fortran_version(self):
-        if not self.is_fortan_version_up_to_date():
-            self.skip('cannot compile, fortran module names cannot be resolved correctly in this gfortran version')
-    
-    
     def sun_and_earth(self):
         orbiter = datamodel.Particles(1)
         orbiter.mass = 5.97e24 | units.kg
