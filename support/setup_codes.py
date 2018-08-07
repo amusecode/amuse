@@ -1292,12 +1292,13 @@ class BuildOneCode(CodeCommand):
                 continue
             if not name.lower().startswith(self.code_name.lower()):
                 continue
-            path = os.path.join(path, name)
-            if os.path.isdir(path):
-                yield path
+            path_ = os.path.join(path, name)
+            if os.path.isdir(path_):
+                yield path_
 
     def run (self):
-        self.run_command("build_py")
+        if not self.inplace:
+            self.run_command("build_py")
 
         environment = self.environment
         environment.update(os.environ)
