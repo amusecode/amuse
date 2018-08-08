@@ -242,7 +242,7 @@ def build_worker(codestring, path_to_results, specification_class, write_header=
     if write_header:
       with open(headerfile, "w") as f:
           f.write(header)
-      extra_args+=["-I",path]
+      extra_args=extra_args+["-I",path]
 
     uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
     uc.specification_class = specification_class
