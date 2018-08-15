@@ -708,6 +708,7 @@ NETCDF_PREFIX
 NETCDF_LIBS
 NETCDF_FLAGS
 FOUND_NETCDF
+NF_CONFIG
 HDF5_LIBS
 HDF5_FLAGS
 FOUND_HDF5
@@ -8431,7 +8432,56 @@ fi
                     LIBS="$save_LIBS"
 	fi
 	if test x$FOUND_NETCDF != xyes; then
-                    netcdf_prefix=$PREFIX
+                    if test x$PREFIX != x; then
+                        netcdf_prefix=$PREFIX
+                    else
+                        # Extract the first word of "nf-config", so it can be a program name with args.
+set dummy nf-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_NF_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $NF_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_NF_CONFIG="$NF_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_NF_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_NF_CONFIG" && ac_cv_path_NF_CONFIG="no"
+  ;;
+esac
+fi
+NF_CONFIG=$ac_cv_path_NF_CONFIG
+if test -n "$NF_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $NF_CONFIG" >&5
+$as_echo "$NF_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+                        if test x$NF_CONFIG != xno; then
+                           netcdf_prefix=`nf-config --prefix`
+                        else
+                           netcdf_prefix="/usr"
+                        fi
+                    fi
                     ac_fn_c_check_header_mongrel "$LINENO" "netcdf.h" "ac_cv_header_netcdf_h" "$ac_includes_default"
 if test "x$ac_cv_header_netcdf_h" = xyes; then :
   NETCDF_FLAGS=""
@@ -8497,7 +8547,7 @@ ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest
 ac_compiler_gnu=$ac_cv_fc_compiler_gnu
 
                     save_FCFLAGS="$FCFLAGS"
-                    FCFLAGS="$save_FCFLAGS"
+                    FCFLAGS="-I$netcdf_prefix/include $save_FCFLAGS"
                     LIBS="-lnetcdf -lnetcdff"
                     { $as_echo "$as_me:${as_lineno-$LINENO}: checking Fortran netcdf presence" >&5
 $as_echo_n "checking Fortran netcdf presence... " >&6; }
@@ -8516,9 +8566,9 @@ $as_echo_n "checking Fortran netcdf presence... " >&6; }
 _ACEOF
 if ac_fn_fc_try_link "$LINENO"; then :
 
-                        NETCDFF_FLAGS=""
+                        NETCDFF_FLAGS="-I$netcdf_prefix/include "
                         NETCDFF_LIBS="-lnetcdf -lnetcdff"
-                        NETCDFF_PREFIX=""
+                        NETCDFF_PREFIX=$netcdf_prefix
                         FOUND_NETCDFF="yes"
                         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
