@@ -126,6 +126,7 @@ class InMemoryAttributeStorage(AttributeStorage):
             try:
                 storage.set_values(indices, values_to_set)
             except ValueError as ex:
+                raise Exception("unexpectedly not dead code path....")
                 # hack to set values between 
                 # with quanities with units.none
                 # and when values are stored without units
