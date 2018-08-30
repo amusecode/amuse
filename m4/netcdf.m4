@@ -88,7 +88,16 @@ AC_DEFUN([AX_NETCDF],[
                     LIBS="$save_LIBS"
 	fi
 	if test x$FOUND_NETCDF != xyes; then
-                    netcdf_prefix=$PREFIX
+                    if test x$PREFIX != x; then
+                        netcdf_prefix=$PREFIX 
+                    else
+                        AC_PATH_PROG( NF_CONFIG, nf-config, no)
+                        if test x$NF_CONFIG != xno; then
+                           netcdf_prefix=`nf-config --prefix`
+                        else
+                           netcdf_prefix="/usr"
+                        fi
+                    fi  
                     AC_CHECK_HEADER(
                         [netcdf.h],
                         [NETCDF_FLAGS=""
@@ -107,7 +116,7 @@ AC_DEFUN([AX_NETCDF],[
                     
                     AC_LANG_PUSH(Fortran)
                     save_FCFLAGS="$FCFLAGS"
-                    FCFLAGS="$save_FCFLAGS"
+                    FCFLAGS="-I$netcdf_prefix/include $save_FCFLAGS"
                     LIBS="-lnetcdf -lnetcdff"
                     AC_MSG_CHECKING([Fortran netcdf presence])
                     AC_LINK_IFELSE([
@@ -121,9 +130,9 @@ AC_DEFUN([AX_NETCDF],[
                             end
                         ])
                     ],[
-                        NETCDFF_FLAGS=""
+                        NETCDFF_FLAGS="-I$netcdf_prefix/include "
                         NETCDFF_LIBS="-lnetcdf -lnetcdff"
-                        NETCDFF_PREFIX=""
+                        NETCDFF_PREFIX=$netcdf_prefix
                         FOUND_NETCDFF="yes"
                         AC_MSG_RESULT([yes])
                     ],[
