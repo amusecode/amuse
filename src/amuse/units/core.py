@@ -869,7 +869,7 @@ class named_unit(unit):
         return self.local_unit.base
         
     def is_none(self):
-        return self.local_unit.is_none
+        return self.local_unit.is_none()
 
 class derived_unit(unit):
     """
