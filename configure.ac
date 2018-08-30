@@ -189,11 +189,11 @@ save_CPPFLAGS="$CPPFLAGS"
 CFLAGS="$MPFR_FLAGS $save_CFLAGS"
 CPPFLAGS="$MPFR_FLAGS $save_CPPFLAGS"
 cache_var=AS_TR_SH([ac_cv_header_mpfr.h])
-AC_CHECK_HEADER(
-    [mpreal.h],
-    [],
-    [AC_MSG_WARN([Cannot find header (mpreal.h) of the library MPFR with MPFR_FLAGS $MPFR_FLAGS.])]
-)
+#AC_CHECK_HEADER(
+#    [mpreal.h],
+#    [],
+#    [AC_MSG_WARN([Cannot find header (mpreal.h) of the library MPFR with MPFR_FLAGS $MPFR_FLAGS.])]
+#)
 $as_unset $cache_var
 CFLAGS="$save_CFLAGS"
 CPPFLAGS="$save_CPPFLAGS"
