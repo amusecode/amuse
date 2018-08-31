@@ -1239,6 +1239,12 @@ def is_unit(input):
     else:
         return False
 
+def isNumber(x):
+    try:
+        return 0 == x*0
+    except:
+        return False
+
 def as_vector_quantity(value):
     if is_quantity(value): 
         return value
@@ -1249,7 +1255,10 @@ def as_vector_quantity(value):
                 result.append(as_vector_quantity(subvalue))
             return result
         else:
-            return new_quantity(value, none)
+            if isNumber(value):
+                return new_quantity(value, none)
+            else:
+                raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
 
 def to_quantity(input):
     if is_quantity(input):

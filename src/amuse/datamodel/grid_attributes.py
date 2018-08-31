@@ -1,4 +1,4 @@
-from amuse.units.quantities import zero
+from amuse.units.quantities import zero, as_vector_quantity
 
 import numpy
 
@@ -17,14 +17,14 @@ def cellsize(grid):
     """Returns the lenght of each direction in the grid.
     Works for regular and cartesian grids.
     """
-    result = grid[grid.get_minimum_index()].position*0.
-    Ndim=len(grid.shape)
+    result = []
+    Ndim= len(grid.shape)
     cell1 = grid[(0,)*Ndim]
-    for i in range(len(result)):
+    for i in range(len( grid[grid.get_minimum_index()].position )): # shape of position not necessarily same as shape of the grid?
         if grid.shape[i] > 1:
             cell2=grid[(0,)*i+(1,)+(0,)*(Ndim-1-i)]
-            result[i:i+1]=(cell2.position-cell1.position)[i]      
-    return result
+            result.append((cell2.position-cell1.position)[i])      
+    return as_vector_quantity(result)
 
 @grids.BaseGrid.caching_function_for_set
 def get_minimum_index(grid):
@@ -104,6 +104,7 @@ def points(grid):
             else:
                 slicing.append(slice(None,-1))
                 offset.append(-1)
+                        
         result[slicing]=cell_centers+dx*numpy.asarray(offset)    
 
     return result
