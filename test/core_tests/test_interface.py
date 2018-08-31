@@ -176,8 +176,10 @@ class CodeInterfaceWithUnitsOnLegacyFunctionTests(amusetest.TestCase):
         
         instance.get_handler("LEGACY").legacy_interface = TestImplementation()
         self.assertAlmostRelativeEquals(instance.echo_one(1. | units.rad), 1. | units.rad)
-        self.assertAlmostRelativeEquals(instance.echo_one(1.), 1. | units.deg)
-        
+        # this was: self.assertAlmostRelativeEquals(instance.echo_one(1.), 1. | units.deg)
+        # but after 85bd5d99 or 945bc46, it needs to be:
+        self.assertAlmostRelativeEquals(instance.echo_one(1.), 1. | units.rad)
+        # this is indeed proper behaviour!! 
         
 class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     class TestClass(object):

@@ -8,6 +8,7 @@ import inspect
 from amuse.support import exceptions
 from amuse.support import literature
 from amuse.support import options
+from amuse.units.quantities import none
 from amuse.units.quantities import Quantity
 from amuse.units.quantities import to_quantity
 from amuse.units.quantities import is_quantity
@@ -35,11 +36,11 @@ class TestCase(unittest.TestCase):
         if is_quantity(first):
           # if the second is not a quantity and the first does not have the none unit then
           # we are comparing a quantity with a non-quanity
-          if not is_quantity(second) and not first.unit.is_none():
+          if not is_quantity(second) and not first.unit.base == none.base:
               raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(first, second))
         elif is_quantity(second):
           # by definition the first is not a quantity, so only check if second unit is not none
-          if not second.unit.is_none():
+          if not second.unit.base == none.base:
               raise TypeError("Cannot compare non-quantity: {0} with quantity: {1}.".format(first, second))
 
     def _convert_to_numeric(self, first, second, in_units):
