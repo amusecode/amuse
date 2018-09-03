@@ -587,6 +587,31 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(grid[...].mass,12.)
         self.assertEquals(grid.mass,12.)
 
+    def test48(self):
+        p=datamodel.Grid(3)
+
+        p.a1=1.
+        p.a2=1. | units.rad
+        p.a3=1. | units.deg
+        
+        # test all combinations:
+        
+        p[0].a1=2.
+        p[0].a2=2.
+        p[0].a3=2.
+                
+        p[1].a1=2. | units.rad
+        p[1].a2=2. | units.rad
+        p[1].a3=2. | units.rad
+        
+        p[2].a1=2. | units.deg
+        p[2].a2=2. | units.deg
+        p[2].a3=2. | units.deg
+        
+        self.assertEquals( p.a1, [2.,2., (2. | units.deg).value_in(units.none)])
+        self.assertEquals( p.a2, [2.,2., (2. | units.deg).value_in(units.none)])
+        self.assertEquals( p.a3, [(2. | units.rad).in_(units.deg),
+                                  (2. | units.rad).in_(units.deg) , 2. | units.deg])
 
 
 class TestGridFactories(amusetest.TestCase):
