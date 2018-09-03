@@ -749,7 +749,10 @@ class AbstractSet(object):
     def check_attribute(self, value):
         if not (is_quantity(value) or hasattr(value, 'as_set')):
             try:
-                return as_vector_quantity(value)
+                value=as_vector_quantity(value)
+                if value.unit == units.none:
+                    return value.number
+                return value
             except:
                 return value
         else:

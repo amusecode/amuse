@@ -625,6 +625,7 @@ class VectorQuantity(Quantity):
         >>> print vector
         [0.0, 3.5, 2.0] kg
         """
+        quantity = as_vector_quantity(quantity)
         if self.unit.is_zero():
             self.unit = quantity.unit
         self._number[index] = quantity.value_in(self.unit)
@@ -1238,16 +1239,26 @@ def is_unit(input):
     else:
         return False
 
+def isNumber(x):
+    try:
+        return 0 == x*0
+    except:
+        return False
+
 def as_vector_quantity(value):
-    if not is_quantity(value):
-        if hasattr(value, "__iter__"):
+    if is_quantity(value): 
+        return value
+    else:
+        if isinstance(value, __array_like):
             result = AdaptingVectorQuantity()
             for subvalue in value:
                 result.append(as_vector_quantity(subvalue))
             return result
         else:
-            raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
-    return value
+            if isNumber(value):
+                return new_quantity(value, none)
+            else:
+                raise Exception("Cannot convert '{0!r}' to a vector quantity".format(value))
 
 def to_quantity(input):
     if is_quantity(input):
