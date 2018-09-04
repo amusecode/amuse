@@ -956,7 +956,13 @@ class CodeInterface(OptionalAttributes):
         (Can be) called everytime just before a new set is created
         """
         pass    
-    
+
+    def before_get_data_store_names(self):
+        """
+        called before getting data store names (for state model) - should eventually 
+        not be necessary
+        """
+        pass    
 
     @option(type='string', sections=("channel",))
     def interpreter(self):

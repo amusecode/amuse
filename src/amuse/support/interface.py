@@ -1519,6 +1519,7 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
         self.__dict__ = state
 
     def data_store_names(self):
+        self.before_get_data_store_names()
         return self.get_handler('PARTICLES').mapping_from_name_to_set_definition.keys()
     
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
