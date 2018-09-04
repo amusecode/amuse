@@ -674,6 +674,42 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(time[1], 2.0 | units.s)
         self.assertEquals(time[2], 3.0 | units.s)
 
+    def test53(self):
+        grid = datamodel.Grid(3,2)
+        subgrid=grid[0:1,:]
+        for i in range(3):
+            grid.density = (i * 1.0) | units.kg/units.m**3
+            subgrid.savepoint((i + 1) * 1.0 | units.s)
+
+        time,dens = subgrid.get_timeline_of_attribute_as_vector("density")
+        self.assertEquals(dens.shape, (3,1,2))
+        self.assertEquals(dens[0], 0 | units.kg/units.m**3)
+        self.assertEquals(dens[1], 1 | units.kg/units.m**3)
+        self.assertEquals(dens[2], 2 | units.kg/units.m**3)
+        self.assertEquals(time[0], 1.0 | units.s)
+        self.assertEquals(time[1], 2.0 | units.s)
+        self.assertEquals(time[2], 3.0 | units.s)
+
+    def test54(self):
+        """
+        illustrates getting subgrid/gridpoint with history from subgrid with history
+        """
+        grid = datamodel.Grid(3,2)
+        subgrid=grid[0:1,:]
+        for i in range(3):
+            grid.density = (i * 1.0) | units.kg/units.m**3
+            subgrid.savepoint((i + 1) * 1.0 | units.s)
+        # if the gridpoint derives directly from subgrid, its defined on the original
+        # grid (which has no history...)
+        subsub=subgrid.savepoint((i + 1) * 1.0 | units.s)
+        time,dens = subsub[0,1].get_timeline_of_attribute_as_vector("density")
+        self.assertEquals(dens.shape, (3,))
+        self.assertEquals(dens[0], 0 | units.kg/units.m**3)
+        self.assertEquals(dens[1], 1 | units.kg/units.m**3)
+        self.assertEquals(dens[2], 2 | units.kg/units.m**3)
+        self.assertEquals(time[0], 1.0 | units.s)
+        self.assertEquals(time[1], 2.0 | units.s)
+        self.assertEquals(time[2], 3.0 | units.s)
 
 class TestGridFactories(amusetest.TestCase):
     def test1(self):

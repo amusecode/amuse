@@ -44,8 +44,12 @@ class AbstractGrid(AbstractSet):
         
         
     def savepoint(self, timestamp=None, **attributes):
-        instance = type(self)()
-        instance._private.attribute_storage = self._private.attribute_storage.copy()
+        try:
+            instance = type(self)()
+            instance._private.attribute_storage = self._private.attribute_storage.copy()
+        except:
+            instance=self.copy() # for the case of subgrid, maybe always ok
+
         instance.collection_attributes.timestamp = timestamp
         
         for name, value in attributes.iteritems():
@@ -447,6 +451,7 @@ class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):
         AbstractGrid.__init__(self, grid)
         
+        self._private.previous=None
         self._private.grid = grid
         self._private.indices = indexing.normalize_slices(grid.shape,indices)
         self._private.collection_attributes=grid.collection_attributes
@@ -455,6 +460,9 @@ class SubGrid(AbstractGrid):
         return self._private.grid
     
     def previous_state(self):
+        previous=self._private.previous
+        if previous:
+            return previous
         previous=self._private.grid.previous_state()
         if previous:
             return previous[self._private.indices]
@@ -516,6 +524,13 @@ class SubGrid(AbstractGrid):
         return Grid
 
     def iter_history(self):
+        if self._private.previous:
+            current = self._private.previous
+            while not current is None:
+                yield current
+                current = current._private.previous
+            return
+
         current = self._original_set().previous_state()
         while not current is None:
             yield current[self._private.indices]
