@@ -131,6 +131,27 @@ class AbstractGrid(AbstractSet):
             dimensionstr,
             attrstr
         )
+
+    def iter_history(self):
+        raise Exception("not implemented")
+        
+    @property
+    def history(self):
+        return reversed(list(self.iter_history()))
+
+    def get_timeline_of_attribute(self, attribute):
+        timeline = []
+        for x in self.history:
+            timeline.append((x.collection_attributes.timestamp, getattr(x,attribute)))
+        return timeline
+
+    def get_timeline_of_attribute_as_vector(self, attribute):
+        timestamps = AdaptingVectorQuantity()
+        timeline = AdaptingVectorQuantity()
+        for x in self.history:
+            timestamps.append(x.collection_attributes.timestamp)
+            timeline.append(getattr(x,attribute))
+        return timestamps,timeline
         
 class BaseGrid(AbstractGrid):
     def __init__(self, *args, **kwargs):
@@ -212,10 +233,6 @@ class BaseGrid(AbstractGrid):
             yield current
             current = current._private.previous
     
-    @property
-    def history(self):
-        return reversed(list(self.iter_history()))
-
     @classmethod
     def create(cls,*args,**kwargs):
         print ("Grid.create deprecated, use new_regular_grid instead")
@@ -432,9 +449,16 @@ class SubGrid(AbstractGrid):
         
         self._private.grid = grid
         self._private.indices = indexing.normalize_slices(grid.shape,indices)
-    
+        self._private.collection_attributes=grid.collection_attributes
+        
     def _original_set(self):
         return self._private.grid
+    
+    def previous_state(self):
+        previous=self._private.grid.previous_state()
+        if previous:
+            return previous[self._private.indices]
+        return previous
         
     def get_values_in_store(self, indices, attributes, by_key = True):
         normalized_indices = indexing.normalize_slices(self.shape,indices)
@@ -490,6 +514,12 @@ class SubGrid(AbstractGrid):
 
     def _factory_for_new_collection(self):
         return Grid
+
+    def iter_history(self):
+        current = self._original_set().previous_state()
+        while not current is None:
+            yield current[self._private.indices]
+            current = current.previous_state()
         
 class GridPoint(object):
 
@@ -515,6 +545,32 @@ class GridPoint(object):
     
     def get_containing_set(self):
         return self.grid
+
+    def iter_history(self):
+        current = self.get_containing_set().previous_state()
+        while not current is None:
+            yield current[self.index]
+            current = current.previous_state()
+
+    @property
+    def history(self):
+        return reversed(list(self.iter_history()))
+
+    def get_timeline_of_attribute(self, attribute):
+        timeline = []
+        for x in self.history:
+            timeline.append((x.grid.collection_attributes.timestamp, getattr(x,attribute)))
+        return timeline
+
+    def get_timeline_of_attribute_as_vector(self, attribute):
+        timestamps = AdaptingVectorQuantity()
+        timeline = AdaptingVectorQuantity()
+        for x in self.history:
+            timestamps.append(x.grid.collection_attributes.timestamp)
+            timeline.append(getattr(x,attribute))
+        return timestamps,timeline
+
+
         
 def new_subgrid_from_index(grid, index):
     if indexing.number_of_dimensions_after_index(grid.number_of_dimensions(), index) == 0:
