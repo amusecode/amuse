@@ -751,7 +751,7 @@ class MPIMessage(AbstractMessage):
         lengths = self.string_lengths(array)
         self.mpi_send(comm, [lengths, MPI.INT])
         
-        chars="\x00".join(array).encode("utf-8")
+        chars=(chr(0).join(array)+chr(0)).encode("utf-8")
         chars = numpy.fromstring(chars, dtype='uint8')
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
