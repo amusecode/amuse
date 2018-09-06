@@ -750,11 +750,8 @@ class MPIMessage(AbstractMessage):
             
         lengths = self.string_lengths(array)
         self.mpi_send(comm, [lengths, MPI.INT])
-        chars = "".encode('utf-8')
-        for string in array:
-            if hasattr(string, 'encode'):
-                string = string.encode('utf-8')
-            chars = chars + string + chr(0).encode('utf-8')
+        
+        chars=(chr(0).join(array)+chr(0)).encode("utf-8")
         chars = numpy.fromstring(chars, dtype='uint8')
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
