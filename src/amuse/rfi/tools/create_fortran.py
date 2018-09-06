@@ -492,7 +492,7 @@ RUN_LOOP_MPI_STRING = """
               
               characters_out(offset:offset+string_sizes_out(i)) = strings_out(i)
               offset = offset + string_sizes_out(i) + 1
-              characters_out(offset:offset) = char(0)
+              characters_out(offset-1:offset-1) = char(0)
             end do
             
             call MPI_SEND(string_sizes_out, header_out(HEADER_STRING_COUNT), MPI_INTEGER, 0, 999, parent, ioerror)
