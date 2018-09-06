@@ -666,23 +666,17 @@ class MPIMessage(AbstractMessage):
             sizes = numpy.empty(total, dtype='i')
             
             self.mpi_receive(comm, [sizes, MPI.INT])
-            
-            logger.debug("got %d strings of size %s", total, sizes)
-            
-            byte_size = 0
-            for size in sizes:
-                byte_size = byte_size + size + 1
+                        
+            byte_size=sizes.sum()+len(sizes)
+
+            logger.debug("expect %d strings for a total of %d bytes", total, byte_size)
                 
             data_bytes = numpy.empty(byte_size, dtype=numpy.uint8)
             self.mpi_receive(comm, [data_bytes, MPI.CHARACTER])
             
-            strings = []
-            begin = 0
-            for size in sizes:
-                strings.append(data_bytes[begin:begin + size].tostring().decode('latin_1'))
-                begin = begin + size + 1
+            strings=data_bytes.tostring().decode('latin_1').split(chr(0))
                 
-            logger.debug("got %d strings of size %s, data = %s", total, sizes, strings)
+            logger.debug("got %d strings", len(strings))
             return strings
         else:
             return []
