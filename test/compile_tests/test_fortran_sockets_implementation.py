@@ -306,8 +306,7 @@ class TestInterface(TestWithMPI):
         self.build_worker()
         
     def check_fortran_version(self):
-        if not compile_tools.is_fortran_version_up_to_date():
-            self.skip('cannot compile fortran socket modules with old fortran compilers (missing C support)')
+        pass
         
     def check_not_in_mpiexec(self):
         """

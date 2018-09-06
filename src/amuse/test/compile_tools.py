@@ -60,40 +60,6 @@ def get_mpicxx_flags():
     else:
         return ""
 
-
-def is_fortran_version_up_to_date():
-    try:
-        from amuse import config
-        is_configured = hasattr(config, 'compilers')
-        if is_configured:
-            is_configured = hasattr(config.compilers, 'gfortran_version')
-    except ImportError:
-        is_configured = False
-
-    if is_configured:
-        if not config.compilers.gfortran_version:
-            if not hasattr(config.compilers, 'ifort_version') or not config.compilers.ifort_version:
-                return True
-            try:
-                parts = [int(x) for x in config.compilers.ifort_version.split('.')]
-            except:
-                parts = []
-
-            return parts[0] > 9  
-
-        try:
-            parts = [int(x) for x in config.compilers.gfortran_version.split('.')]
-        except:
-            parts = []
-
-        if len(parts) < 2:
-            return True
-
-        return parts[0] >= 4 and parts[1] >= 3
-    else:
-        return True
-
-
 def get_mpif90_name():
     try:
         from amuse import config
