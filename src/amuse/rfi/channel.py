@@ -674,9 +674,13 @@ class MPIMessage(AbstractMessage):
             data_bytes = numpy.empty(byte_size, dtype=numpy.uint8)
             self.mpi_receive(comm, [data_bytes, MPI.CHARACTER])
             
-            strings=data_bytes.tostring().decode('latin_1').split(chr(0))
+            strings=data_bytes[:-1].tostring().decode('latin_1').split(chr(0))
                 
             logger.debug("got %d strings", len(strings))
+            
+            if len(strings) != total:
+                raise Exception("number of strings mismatch")
+            
             return strings
         else:
             return []
