@@ -7,7 +7,7 @@ import sys, os, re, subprocess
 try:
     import ConfigParser as configparser
     from StringIO import StringIO
-except (ImportError, ModuleNotFoundError):
+except ImportError:
     import configparser
     from io import StringIO
 
