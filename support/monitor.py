@@ -4,7 +4,7 @@ import time
 try:  # Python 2
     import urlparse
     from StringIO import StringIO
-except ModuleNotFoundError:  # Python 3
+except ImportError:  # Python 3
     from urllib import parse as urlparse
     from io import StringIO
 import threading

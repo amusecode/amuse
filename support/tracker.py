@@ -6,7 +6,7 @@ import socket, os
 import time
 try:  # Python 3
     import urlparse
-except ModuleNotFoundError:
+except ImportError:
     from urllib import parse as urlparse
 import threading
 import json
@@ -28,7 +28,7 @@ import textwrap
 
 try:  # Python 2
     from Queue import Queue
-except ModuleNotFoundError:  # Python 3
+except ImportError:  # Python 3
     from queue import Queue
 
 background_test.RunTests.instance = background_test.RunTests()

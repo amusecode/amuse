@@ -13,7 +13,7 @@ try:  # Python 2
     from StringIO import StringIO
     from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
     import SocketServer as socketserver
-except ModuleNotFoundError:  # Python 3
+except ImportError:  # Python 3
     import queue
     from urllib import parse as urlparse
     from io import StringIO

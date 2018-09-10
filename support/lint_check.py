@@ -13,7 +13,7 @@ from . import  webserver
 import json
 try:
     import urlparse
-except ModuleNotFoundError:
+except ImportError:
     from urllib import parse as urlparse
 import threading
 

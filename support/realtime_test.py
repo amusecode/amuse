@@ -3,7 +3,7 @@ from __future__ import print_function
 import time
 try:  # Python 2
     import urlparse
-except ModuleNotFoundError:  # Python 3
+except ImportError:  # Python 3
     from urllib import parse as urlparse
 import threading
 import json

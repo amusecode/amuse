@@ -10,7 +10,7 @@ try:  # Python 2
     import Queue as queue
     from StringIO import StringIO
     func_code_attr = 'func_code'
-except ModuleNotFoundError:  # Python 3
+except ImportError:  # Python 3
     import queue
     from io import StringIO
     func_code_attr = '__code__'
