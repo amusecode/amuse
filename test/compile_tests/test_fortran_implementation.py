@@ -477,11 +477,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error[0], 11)
         self.assertEquals(error[1], 11)
         self.assertEquals(error[2], 11)
-
-
-    
-
-
+        
     def test16(self):
         instance = ForTestingInterface(self.exefile)
         (output1, error1) = instance.echo_logical(True)
@@ -491,6 +487,11 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error2, 0)
         self.assertTrue(output1)
         self.assertFalse(output2)
+
+    def test16b(self):
+        instance = ForTesting(self.exefile)
+        output = instance.echo_logical([True, True,False, True, False])
+        self.assertEquals(output, [True, True, False, True, False])
         
     def xtest20(self):
         #
