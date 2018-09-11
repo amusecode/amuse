@@ -748,28 +748,22 @@ class MPIMessage(AbstractMessage):
         if len(array) == 0:
             return
             
-        lengths = self.string_lengths(array)
-        self.mpi_send(comm, [lengths, MPI.INT])
+        lengths = numpy.array( [len(s) for s in array] ,dtype='i')
         
         chars=(chr(0).join(array)+chr(0)).encode("utf-8")
         chars = numpy.fromstring(chars, dtype='uint8')
+
+        if len(chars) != lengths.sum()+len(lengths):
+            raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
+
+        self.mpi_send(comm, [lengths, MPI.INT])
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
     def send_booleans(self, comm, array):
         if len(array) > 0:
             sendbuffer = numpy.array(array, dtype='int32')
             self.mpi_send(comm, [sendbuffer, MPI.LOGICAL])
-    
-    def string_lengths(self, array):
-        lengths = numpy.zeros(len(array), dtype='i')
-        index = 0
         
-        for string in array:
-            lengths[index] = len(string)
-            index += 1
-        
-        return lengths
-    
     def set_error(self, message):
         self.strings = [message]
         self.error = True
@@ -2058,12 +2052,16 @@ class SocketMessage(AbstractMessage):
         if count > 0:
             lengths = self.receive_ints(socket, count)
             
+            total = lengths.sum() + len(lengths)
+                        
+            data_bytes = self._receive_all(total, socket)
+
             strings = []
-            
-            for i in range(count):
-                data_bytes = self._receive_all(lengths[i], socket)
-                strings.append(str(data_bytes.decode('utf-8')))
-            
+            begin = 0
+            for size in lengths:
+                strings.append(data_bytes[begin:begin + size].decode('utf-8'))
+                begin = begin + size + 1
+
             return strings
         else:
             return []
@@ -2122,21 +2120,16 @@ class SocketMessage(AbstractMessage):
             socket.sendall(data_buffer.tostring())
             
     def send_strings(self, socket, array):
-        header = []
-        data_bytes = []
-        
-        for i in range(len(array)):
+        if len(array) > 0:
             
-            #logger.debug("sending string %s", array[i])
+            lengths = numpy.array( [len(s) for s in array] ,dtype='int32')
+            chars=(chr(0).join(array)+chr(0)).encode("utf-8")
             
-            utf8_string = array[i].encode('utf-8')
-            header.append(len(utf8_string))
-            data_bytes.append(utf8_string)
-  
-        self.send_ints(socket, header);
-        
-        for i in range(len(data_bytes)):
-            socket.sendall(data_bytes[i])
+            if len(chars) != lengths.sum()+len(lengths):
+                raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
+
+            self.send_ints(socket, lengths);
+            socket.sendall(chars)
         
     def send_booleans(self, socket, array):
         if len(array) > 0:

@@ -652,12 +652,21 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     if(header_in[HEADER_STRING_COUNT] > 0) {
       receive_array_sockets(string_sizes_in, header_in[HEADER_STRING_COUNT] * sizeof(int), socketfd, rank);
       MPI_Bcast(string_sizes_in, header_in[HEADER_STRING_COUNT], MPI_INT, 0, MPI_COMM_WORLD);
-      for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {
-        strings_in[i] = new char[string_sizes_in[i] + 1];
-        receive_array_sockets(strings_in[i], string_sizes_in[i], socketfd, rank);
-        MPI_Bcast(strings_in[i], string_sizes_in[i], MPI_CHARACTER, 0, MPI_COMM_WORLD);
-        strings_in[i][string_sizes_in[i]] = '\\0';
+      
+      int total_string_size = 0;
+      for (int i = 0; i < header_in[HEADER_STRING_COUNT];i++) {
+        total_string_size += string_sizes_in[i] + 1;
       }
+      
+      characters_in = new char[total_string_size];
+      receive_array_sockets(characters_in, total_string_size, socketfd, rank);
+      MPI_Bcast(characters_in, total_string_size, MPI_CHARACTER, 0, MPI_COMM_WORLD);
+
+      int offset = 0;
+      for (int i = 0 ; i <  header_in[HEADER_STRING_COUNT];i++) {
+          strings_in[i] = characters_in + offset;
+          offset += string_sizes_in[i] + 1;
+      } 
     }
     
     header_out[HEADER_FLAGS] = 0;
@@ -711,19 +720,36 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
       }
           
       if(header_out[HEADER_STRING_COUNT] > 0) {
-        for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {
-          string_sizes_out[i] = strlen(strings_out[i]);
+        int offset = 0;
+        for( int i = 0; i < header_out[HEADER_STRING_COUNT] ; i++) {          
+          int length = strlen(strings_out[i]);
+          string_sizes_out[i] = length;
+          offset += length + 1;
         }
+        
+        characters_out = new char[offset + 1];
+        offset = 0;
+        
+        for( int i = 0; i < header_out[HEADER_STRING_COUNT]  ; i++) {
+          strcpy(characters_out+offset, strings_out[i]);
+          offset += string_sizes_out[i] + 1;
+        }
+        
         send_array_sockets(string_sizes_out, header_out[HEADER_STRING_COUNT] * sizeof(int), socketfd, 0);
-          
-        for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {
-          send_array_sockets(strings_out[i], string_sizes_out[i] * sizeof(char), socketfd, 0);
-        }
+        send_array_sockets(characters_out, offset * sizeof(char), socketfd, 0);
       }
         
       //fprintf(stderr, "sockets_mpicall done\\n");
     }
-
+    if (characters_in) { 
+        delete[] characters_in;
+        characters_in = 0;
+    }
+    
+    if (characters_out) {
+        delete[] characters_out;
+        characters_out = 0;
+    }
   }
   delete_arrays();
   
@@ -841,11 +867,20 @@ void run_sockets(int port, char *host) {
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
       receive_array_sockets(string_sizes_in, header_in[HEADER_STRING_COUNT] * sizeof(int), socketfd, 0);
-      for (int i = 0; i < header_in[HEADER_STRING_COUNT]; i++) {
-        strings_in[i] = new char[string_sizes_in[i] + 1];
-        receive_array_sockets(strings_in[i], string_sizes_in[i], socketfd, 0);
-        strings_in[i][string_sizes_in[i]] = '\\0';
+      
+      int total_string_size = 0;
+      for (int i = 0; i < header_in[HEADER_STRING_COUNT];i++) {
+        total_string_size += string_sizes_in[i] + 1;
       }
+      
+      characters_in = new char[total_string_size];
+      receive_array_sockets(characters_in, total_string_size, socketfd, 0);
+
+      int offset = 0;
+      for (int i = 0 ; i <  header_in[HEADER_STRING_COUNT];i++) {
+          strings_in[i] = characters_in + offset;
+          offset += string_sizes_in[i] + 1;
+      } 
     }
     
     header_out[HEADER_FLAGS] = 0;
@@ -896,16 +931,34 @@ void run_sockets(int port, char *host) {
     }
       
     if(header_out[HEADER_STRING_COUNT] > 0) {
-      for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {
-        string_sizes_out[i] = strlen(strings_out[i]);
-      }
-      send_array_sockets(string_sizes_out, header_out[HEADER_STRING_COUNT] * sizeof(int), socketfd, 0);
-      
-      for (int i = 0; i < header_out[HEADER_STRING_COUNT]; i++) {
-        send_array_sockets(strings_out[i], string_sizes_out[i] * sizeof(char), socketfd, 0);
-      }
+        int offset = 0;
+        for( int i = 0; i < header_out[HEADER_STRING_COUNT] ; i++) {          
+          int length = strlen(strings_out[i]);
+          string_sizes_out[i] = length;
+          offset += length + 1;
+        }
+        
+        characters_out = new char[offset + 1];
+        offset = 0;
+        
+        for( int i = 0; i < header_out[HEADER_STRING_COUNT]  ; i++) {
+          strcpy(characters_out+offset, strings_out[i]);
+          offset += string_sizes_out[i] + 1;
+        }
+        
+        send_array_sockets(string_sizes_out, header_out[HEADER_STRING_COUNT] * sizeof(int), socketfd, 0);
+        send_array_sockets(characters_out, offset * sizeof(char), socketfd, 0);
     }
     
+    if (characters_in) { 
+        delete[] characters_in;
+        characters_in = 0;
+    }
+    
+    if (characters_out) {
+        delete[] characters_out;
+        characters_out = 0;
+    }    
     //fprintf(stderr, "call done\\n");
   }
   delete_arrays();

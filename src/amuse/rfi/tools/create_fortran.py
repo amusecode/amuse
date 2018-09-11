@@ -444,7 +444,6 @@ RUN_LOOP_MPI_STRING = """
               offset = offset + string_sizes_in(i) + 1
               !print*, 'fortran: strings_in(i) ', i, strings_in(i) , ' of length ', string_sizes_in(i), &
               !' actually of size ', len_trim(strings_in(i))
-
           end do
           
         end if
@@ -532,8 +531,8 @@ RUN_LOOP_SOCKETS_STRING = """
       implicit none
     
       integer :: max_call_count = 255
-      integer :: must_run_loop
-      integer i, call_count, port
+      integer :: must_run_loop, maximum_size, total_string_length
+      integer :: i, offset, call_count, port
       character(len=32) :: port_string
       character(kind=c_char, len=64) :: host
       logical (c_bool), allocatable, target :: c_booleans_in(:)
@@ -637,11 +636,27 @@ RUN_LOOP_SOCKETS_STRING = """
           strings_in = ' '
           call receive_integers(c_loc(string_sizes_in), header_in(HEADER_STRING_COUNT))
 
+          maximum_size = 0
+          total_string_length = 0
           do i = 1, header_in(HEADER_STRING_COUNT), 1
-              strings_in(i) = ' '
-              call receive_string(c_loc(strings_in(i)), string_sizes_in(i))
+              total_string_length = total_string_length + string_sizes_in(i) + 1
+              if (string_sizes_in(i) .gt. maximum_size) then
+                maximum_size = string_sizes_in(i)
+              end if
           end do
           
+          call receive_string(c_loc(characters_in), total_string_length)
+          
+          offset = 1
+          do i = 1, header_in(HEADER_STRING_COUNT), 1
+              strings_in(i) = ' '
+              strings_in(i)  = characters_in(offset : (offset + string_sizes_in(i)))
+              strings_in(i)((string_sizes_in(i) + 1):(string_sizes_in(i) + 1)) = ' ' 
+              offset = offset + string_sizes_in(i) + 1
+              !print*, 'fortran: strings_in(i) ', i, strings_in(i) , ' of length ', string_sizes_in(i), &
+              !' actually of size ', len_trim(strings_in(i))
+          end do
+
         end if
         
         header_out = 0
@@ -678,19 +693,21 @@ RUN_LOOP_SOCKETS_STRING = """
         end if
    
         if (header_out(HEADER_STRING_COUNT) .gt. 0) then
-      
+          offset = 1
           do i = 1, header_out(HEADER_STRING_COUNT),1
+              
             string_sizes_out(i) = len_trim(strings_out(i))
-            
-            !print*, 'fortran: sending strings, strings_out(i) ', i, strings_out(i) , ' of length ', string_sizes_out(i), &
-            !'actually of size ', len_trim(strings_out(i))
+              
+              !print*, 'fortran: sending strings, strings_out(i) ', i, strings_out(i) , ' of length ', string_sizes_out(i), &
+              !' actually of size ', len_trim(strings_out(i))
+              
+            characters_out(offset:offset+string_sizes_out(i)) = strings_out(i)
+            offset = offset + string_sizes_out(i) + 1
+            characters_out(offset-1:offset-1) = char(0)
           end do
-        
+
           call send_integers(c_loc(string_sizes_out), header_out(HEADER_STRING_COUNT))
-          
-          do i = 1, header_out(HEADER_STRING_COUNT),1
-            call send_string(c_loc(strings_out(i)), string_sizes_out(i))
-          end do
+          call send_integers(c_loc(characters_out), offset-1 )
         end if
       end do
     
@@ -736,8 +753,8 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
       
       integer :: provided
       integer :: max_call_count = 255
-      integer :: must_run_loop
-      integer i, call_count, port, rank, ioerror
+      integer :: must_run_loop, maximum_size, total_string_length
+      integer :: i, offset, call_count, port, rank, ioerror
       character(len=32) :: port_string
       character(kind=c_char, len=64) :: host
       logical (c_bool), allocatable, target :: c_booleans_in(:)
@@ -865,22 +882,37 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
         end if
         
         if (header_in(HEADER_STRING_COUNT) .gt. 0) then
-
           strings_in = ' '
-            
+                    
           if (rank .eq. 0) then
             call receive_integers(c_loc(string_sizes_in), header_in(HEADER_STRING_COUNT))
           end if
-            
           call MPI_BCast(string_sizes_in, header_in(HEADER_STRING_COUNT), MPI_INTEGER, 0, MPI_COMM_WORLD, ioError);
 
+          maximum_size = 0
+          total_string_length = 0
           do i = 1, header_in(HEADER_STRING_COUNT), 1
-            strings_in(i) = ' '
-            if (rank .eq. 0) then
-              call receive_string(c_loc(strings_in(i)), string_sizes_in(i))
-            end if
-            call MPI_BCast(strings_in(i), string_sizes_in(i), MPI_CHARACTER, 0, MPI_COMM_WORLD, ioError);
+              total_string_length = total_string_length + string_sizes_in(i) + 1
+              if (string_sizes_in(i) .gt. maximum_size) then
+                maximum_size = string_sizes_in(i)
+              end if
           end do
+
+          if (rank .eq. 0) then
+            call receive_string(c_loc(characters_in), total_string_length)
+          endif
+          call MPI_BCast(characters_in, total_string_length, MPI_CHARACTER, 0, MPI_COMM_WORLD, ioError);
+          
+          offset = 1
+          do i = 1, header_in(HEADER_STRING_COUNT), 1
+              strings_in(i) = ' '
+              strings_in(i)  = characters_in(offset : (offset + string_sizes_in(i)))
+              strings_in(i)((string_sizes_in(i) + 1):(string_sizes_in(i) + 1)) = ' ' 
+              offset = offset + string_sizes_in(i) + 1
+              !print*, 'fortran: strings_in(i) ', i, strings_in(i) , ' of length ', string_sizes_in(i), &
+              !' actually of size ', len_trim(strings_in(i))
+          end do
+
         end if
         
         header_out = 0
@@ -922,20 +954,22 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
           end if
    
           if (header_out(HEADER_STRING_COUNT) .gt. 0) then
-      
+            offset = 1
             do i = 1, header_out(HEADER_STRING_COUNT),1
+                
               string_sizes_out(i) = len_trim(strings_out(i))
-            
-              !print*, 'fortran: sending strings, strings_out(i) ', i, strings_out(i) , ' of length ', string_sizes_out(i), &
-              !'actually of size ', len_trim(strings_out(i))
+                
+                !print*, 'fortran: sending strings, strings_out(i) ', i, strings_out(i) , ' of length ', string_sizes_out(i), &
+                !' actually of size ', len_trim(strings_out(i))
+                
+              characters_out(offset:offset+string_sizes_out(i)) = strings_out(i)
+              offset = offset + string_sizes_out(i) + 1
+              characters_out(offset-1:offset-1) = char(0)
             end do
-        
+  
             call send_integers(c_loc(string_sizes_out), header_out(HEADER_STRING_COUNT))
-          
-            do i = 1, header_out(HEADER_STRING_COUNT),1
-              call send_string(c_loc(strings_out(i)), string_sizes_out(i))
-            end do
-          end if
+            call send_integers(c_loc(characters_out), offset-1 )
+         end if
         end if
       end do
     
