@@ -404,10 +404,13 @@ class TestInterface(TestWithMPI):
       
     def test10(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
-        out = instance.return_string("abc")
+        out = instance.return_string("qwerty")
+        out = instance.return_string("abcdefghi")
+        
+        instance.stop()
         del instance
         
-        self.assertEquals(out, "abc")
+        self.assertEquals(out, "abcdefghi")
         
     def test11(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")

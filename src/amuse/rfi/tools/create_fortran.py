@@ -707,7 +707,7 @@ RUN_LOOP_SOCKETS_STRING = """
           end do
 
           call send_integers(c_loc(string_sizes_out), header_out(HEADER_STRING_COUNT))
-          call send_integers(c_loc(characters_out), offset-1 )
+          call send_string(c_loc(characters_out), offset-1 )
         end if
       end do
     
@@ -968,7 +968,7 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
             end do
   
             call send_integers(c_loc(string_sizes_out), header_out(HEADER_STRING_COUNT))
-            call send_integers(c_loc(characters_out), offset-1 )
+            call send_string(c_loc(characters_out), offset-1 )
          end if
         end if
       end do
