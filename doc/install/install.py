@@ -76,7 +76,7 @@ class InstallPrerequisites(object):
           (
             'netcdf-c' ,
             ['hdf'],  
-            '4.4.1',
+            '4.6.1',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-c/archive/',
             self.netcdf_build
@@ -96,7 +96,15 @@ class InstallPrerequisites(object):
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf4-python/archive/',
             self.python_build
-          ) ,          
+          ) ,    
+          (
+            'f90nml',
+            [],  
+            '0.21',
+            'v' , '.tar.gz', 
+            'https://github.com/marshallward/f90nml/archive/',
+            self.python_build
+          ),      
           (
             'docutils', 
             [], 
@@ -354,14 +362,9 @@ class InstallPrerequisites(object):
 
     def netcdf_build(self, path):
         env = os.environ.copy()
-        prev = ''
-        if 'LDFLAGS' in env:
-            prev = ' ' +env['LDFLAGS']
-        prev = ''
-        if 'CPPFLAGS' in env:
-            prev = ' ' +env['CPPFLAGS']
-        env['LDFLAGS'] = '-L{0}/lib'.format(self.prefix) + prev
-        env['CPPFLAGS'] = '-I{0}/include'.format(self.prefix) + prev
+        env['LDFLAGS'] = '-L{0}/lib '.format(self.prefix) + env.get('LDFLAGS','') 
+        env['CPPFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CPPFLAGS','')
+        env['CFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CFLAGS','')
         commands = []
         command = [
           './configure',
@@ -677,7 +680,7 @@ class InstallMatplotlib(InstallPrerequisites):
               (
                 'matplotlib' ,                   #name to refer by
                 [],                         #names of prerequisites (unused)
-                '1.1.0' ,                   #version string
+                '2.2.2' ,                   #version string
                 'matplotlib-', '.tar.gz',        #pre- and postfix for filename
                 'https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
                 self.matplotlib_build             #method to use for building - same as for FFTW should work
