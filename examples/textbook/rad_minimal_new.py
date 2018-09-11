@@ -63,34 +63,39 @@ def plot_ionization(ism, N, which, rmax, t_end, rS, ip):
         pyplot.close('all')
         pyplot.clf()
     pyplot.figure(figsize=(w,6))
+    pyplot.rcParams.update({'font.size': 22})
 
     colors = get_distinct(3)
-    rscolor = 'green'
+#    rscolor = 'green'
     
     ax1 = pyplot.subplot(1,2,1)
-    ax1.scatter(r, x, c=colors[0], lw=0, s=10)
-    ax1.plot(R, X, c=colors[1], lw=2)
-    ax1.plot([rS, rS], [-1,2], color=rscolor, linestyle='dashed', lw=2)
-    ax1.text(rS+0.08, 1.06, r'$R_s$', color=rscolor, fontsize=15)
+    #ax1.scatter(r, x, c=colors[0], lw=0, s=10)
+    ax1.scatter(r, x, c=x, lw=0, s=20, alpha=0.5, cmap="jet")
+    ax1.plot(R[1:], X[1:], c=colors[1], lw=3)
+    ax1.plot([rS, rS], [-1,2], color=colors[2], linestyle='dashed', lw=3)
+    ax1.text(rS+0.08, 1.06, r'$R_s$', color=colors[2], fontsize=20)
     ax1.set_xlim(0, rmax)
     ax1.set_ylim(-0.04, 1.19)
-    ax1.set_xlabel("r [pc]", fontsize=15)
-    ax1.set_ylabel(r'$\xi_{\rm ion}$', fontsize=15)
+    ax1.set_xlabel("r [pc]", fontsize=20)
+    ax1.set_ylabel(r'$\xi_{\rm ion}$', fontsize=20)
 
     ax2 = pyplot.subplot(1,2,2)
     h = numpy.array(hh)
     h *= 72*w/(6.*ll)		# approximate scaling
     ax2.set_aspect(1)
     sc2 = ax2.scatter(xx, yy, c=xi, s=numpy.pi*h**2,
-                      alpha=0.2, edgecolor=None)
+                      alpha=0.05, edgecolor=None, cmap="jet")
     if ll < rmax: ll = rmax
     ax2.set_xlim(-ll,ll)
     ax2.set_ylim(-ll,ll)
-    ax2.set_xlabel("x [pc]", fontsize=15)
-    ax2.set_ylabel("y [pc]", fontsize=15)
-    pyplot.colorbar(sc2, ax=ax2, fraction=0.046, pad=0.04)	# magic numbers!
-    circle = pyplot.Circle((0, 0), rS, color=rscolor,
-                           fill=False, linestyle='dashed', lw=2)
+    ax2.set_xlabel("x [pc]", fontsize=20)
+    ax2.set_ylabel("y [pc]", fontsize=20)
+    #for axi in ax2.flat:
+    ax2.xaxis.set_major_locator(pyplot.MaxNLocator(6))
+    ax2.yaxis.set_major_locator(pyplot.MaxNLocator(6))
+    #pyplot.colorbar(sc2, ax=ax2, fraction=0.046, pad=0.04)	# magic numbers!
+    circle = pyplot.Circle((0, 0), rS, color=colors[2],
+                           fill=False, linestyle='dashed', lw=3)
     ax2.add_artist(circle)
     
     if which == 0:
@@ -100,7 +105,7 @@ def plot_ionization(ism, N, which, rmax, t_end, rS, ip):
 
     param_string = "_N=%d_t=%.3f_Myr" % (N, t_end)
 
-    pyplot.suptitle(id_string+param_string, y=0.96, fontsize=16)
+    #pyplot.suptitle(id_string+param_string, y=0.96, fontsize=16)
 
     savefile = 'fig_ionization_of_GMC_'+id_string+param_string+'.png'
     pyplot.savefig(savefile, dpi=300)
