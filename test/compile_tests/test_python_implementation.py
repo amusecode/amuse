@@ -103,6 +103,17 @@ class ForTestingInterface(PythonCodeInterface):
         function.can_handle_array = True
         function.id = 15
         return function    
+
+    @legacy_function
+    def echo_bool():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='bool', direction=function.IN)
+        function.addParameter('string_out', dtype='bool', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.id = 16
+        return function    
+
         
     @legacy_function
     def sleep():
@@ -302,6 +313,10 @@ class ForTestingImplementation(object):
         
     def echo_string(self, string_in, string_out):
         string_out.value = string_in
+        return 0
+
+    def echo_bool(self, in_, out_):
+        out_.value = in_
         return 0
         
     def print_string(self, string_in):
@@ -1078,5 +1093,9 @@ class TestInterface(TestWithMPI):
         self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
         x.stop()
 
-
+    def test40(self):
+        x = ForTesting()
+        out = x.echo_bool([True, False, True])
+        self.assertEquals(out, [True, False, True])
+        x.stop()
 

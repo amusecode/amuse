@@ -1,3 +1,5 @@
+from amuse.support.interface import InCodeComponentImplementation
+
 from amuse.test.amusetest import TestWithMPI
 from amuse.test import compile_tools
 import os
@@ -279,6 +281,11 @@ class ForTestingInterface(CodeInterface):
         function.can_handle_array = True
         return function  
 
+class ForTesting(InCodeComponentImplementation):
+    
+    def __init__(self, exefile, **options):
+        InCodeComponentImplementation.__init__(self, ForTestingInterface(exefile, **options), **options)
+
 
 class TestInterface(TestWithMPI):
     
@@ -459,11 +466,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error[0], 11)
         self.assertEquals(error[1], 11)
         self.assertEquals(error[2], 11)
-
-
-    
-
-
+        
     def test16(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
         (output1, error1) = instance.echo_logical(True)
@@ -473,7 +476,12 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error2, 0)
         self.assertTrue(output1)
         self.assertFalse(output2)
-        
+
+    def test16b(self):
+        instance = ForTesting(self.exefile, channel_type="sockets")
+        output = instance.echo_logical([True, True,False, True, False])
+        self.assertEquals(output, [True, True, False, True, False])
+                
     def xtest20(self):
         #
         # TURNED OFF support for redirection,

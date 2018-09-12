@@ -654,8 +654,8 @@ class MPIMessage(AbstractMessage):
     
     def receive_booleans(self, comm, total):
         if total > 0:
-            result = numpy.empty(total, dtype='int32')
-            self.mpi_receive(comm, [result, MPI.LOGICAL])
+            result = numpy.empty(total, dtype='b')
+            self.mpi_receive(comm, [result, MPI.C_BOOL])
             return numpy.logical_not(result == 0)
         else:
             return []
@@ -757,8 +757,8 @@ class MPIMessage(AbstractMessage):
         
     def send_booleans(self, comm, array):
         if len(array) > 0:
-            sendbuffer = numpy.array(array, dtype='int32')
-            self.mpi_send(comm, [sendbuffer, MPI.LOGICAL])
+            sendbuffer = numpy.array(array, dtype='b')
+            self.mpi_send(comm, [sendbuffer, MPI.C_BOOL])
     
     def string_lengths(self, array):
         lengths = numpy.zeros(len(array), dtype='i')

@@ -718,13 +718,13 @@ class TestCImplementationInterface(TestWithMPI):
         
     def test31(self):
         x = ForTesting(self.exefile, max_message_length=10)
-        N = 10
+        N = 100
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([3.0*i for i in range(N)])
         print sums
         self.assertTrue(list(sums) == [3.0*i + 1 for i in range(N)])
-        N = 11
+        N = 101
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([3.0*i for i in range(N)])
