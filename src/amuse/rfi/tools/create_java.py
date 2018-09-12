@@ -286,10 +286,11 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
 
                 stringHeader.put(0, bytes.length);
 
-                ensureStringsCapacity();
+                ensureStringsCapacity(0);
 
                 stringBytes[0].clear();
                 stringBytes[0].put(bytes);
+                stringBytes[0].put( (byte) 0); // add extra zero
             } catch (UnsupportedEncodingException e) {
                 System.err.println("could not set error: " + e);
                 stringHeader.put(0, 0);
@@ -330,10 +331,11 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 stringHeader.put(position, bytes.length);
 
                 // make sure there is space for the string
-                ensureStringsCapacity();
+                ensureStringsCapacity(position);
 
                 stringBytes[position].clear();
                 stringBytes[position].put(bytes);
+                stringBytes[position].put( (byte) 0); // add extra zero
 
             } catch (UnsupportedEncodingException e) {
                 System.err.println("ERROR! UTF-8 not supported by the JVM!");
@@ -356,10 +358,11 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 stringHeader.put(index, bytes.length);
 
                 // make sure there is space for the string
-                ensureStringsCapacity();
+                ensureStringsCapacity(index);
 
                 stringBytes[index].clear();
                 stringBytes[index].put(bytes);
+                stringBytes[index].put( (byte) 0); // add extra zero
 
             } catch (UnsupportedEncodingException e) {
                 System.err.println("ERROR! UTF-8 not supported by the JVM!");
@@ -431,7 +434,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             }
             byte[] bytes = new byte[utf8length];
             stringBytes[index].position(0);
-            stringBytes[index].limit(utf8length);
+            stringBytes[index].limit(utf8length+1); // account for extra zero
             stringBytes[index].get(bytes);
 
             return new String(bytes, 0, utf8length, "UTF-8");
@@ -488,7 +491,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             for (int i = 0; i < getStringCount(); i++) {
                 int utf8Length = stringHeader.get(i);
 
-                stringBytes[i].clear().limit(utf8Length);
+                stringBytes[i].clear().limit(utf8Length + 1); // account for extra zero
             }
 
             // set the limit of the rest of the string bytes to 0
@@ -611,7 +614,7 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
             }
 
             for (int i = 0; i < getStringCount(); i++) {
-                int stringLength = stringHeader.get(i);
+                int stringLength = stringHeader.get(i) +1; // account for extra zero
                 if (stringBytes[i] == null || stringLength > stringBytes[i].capacity()) {
 
                     stringBytes[i] = ByteBuffer.allocateDirect(stringLength);
@@ -633,6 +636,49 @@ AMUSE_MESSAGE_CLASS_CODE_STRING = """
                 
                 //System.err.println("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
             }
+
+            return buffersUpdated;
+        }
+
+        public boolean ensureStringsCapacity(int index) {
+            // checking if the string header is big enough is checked above, so
+            // we
+            // only check if all strings listed in the header
+            boolean buffersUpdated = false;
+
+            if (stringBytes.length < getStringCount()) {
+                ByteBuffer[] oldStringBytes = stringBytes;
+                stringBytes = new ByteBuffer[getStringCount()];
+                for (int i = 0; i < oldStringBytes.length; i++) {
+                    stringBytes[i] = oldStringBytes[i];
+                }
+                buffersUpdated = true;
+            }
+
+            if (buffersUpdated) {
+                // update byte buffers array
+                ByteBuffer[] newByteBuffers = new ByteBuffer[allButStringByteBuffers.length + stringBytes.length];
+                for (int i = 0; i < allButStringByteBuffers.length; i++) {
+                    newByteBuffers[i] = allButStringByteBuffers[i];
+                }
+                for (int i = 0; i < stringBytes.length; i++) {
+                    newByteBuffers[allButStringByteBuffers.length + i] = stringBytes[i];
+                }
+                byteBuffers = newByteBuffers;
+
+                
+                //System.err.println("ensureStringsCapacity() Updated buffers to " + Arrays.toString(byteBuffers));
+            }
+
+            {
+              int stringLength = stringHeader.get(index) +1; // account for extra zero
+              if (stringBytes[index] == null || stringLength > stringBytes[index].capacity()) {
+  
+                  stringBytes[index] = ByteBuffer.allocateDirect(stringLength);
+                  byteBuffers[allButStringByteBuffers.length + index] = stringBytes[index];
+              }
+            }
+
 
             return buffersUpdated;
         }
