@@ -23,7 +23,6 @@ import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
 import nl.esciencecenter.amuse.distributed.jobs.AmuseJob;
 import nl.esciencecenter.amuse.distributed.resources.ResourceManager;
 import nl.esciencecenter.amuse.distributed.resources.ResourceSet;
-import nl.esciencecenter.xenon.Xenon;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,19 +45,16 @@ public class PilotSet {
 
     private final ArrayList<PilotManager> pilots;
 
-    private final Xenon xenon;
-
     private final UUID amuseID;
 
     private final boolean debug;
 
-    public PilotSet(Xenon xenon, ResourceSet resourceManager, UUID amuseID, boolean debug) throws DistributedAmuseException {
-        this.xenon = xenon;
+    public PilotSet( ResourceSet resourceManager, UUID amuseID, boolean debug) throws DistributedAmuseException {
         this.resourceManager = resourceManager;
         this.amuseID = amuseID;
         this.debug = debug;
         pilots = new ArrayList<PilotManager>();
-        jobStatusMonitor = new XenonJobStatusMonitor(this, xenon);
+        jobStatusMonitor = new XenonJobStatusMonitor(this);
         this.statusMonitor = new PilotStatusMonitor(this);
     }
 
@@ -70,7 +66,7 @@ public class PilotSet {
         ResourceManager resource = resourceManager.getResource(resourceName);
 
         PilotManager result = new PilotManager(resource, queueName, nodeCount, timeMinutes, slots, nodeLabel, options,
-                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), xenon, amuseID, debug);
+                resourceManager.getIplServerAddress(), resourceManager.getHubAddresses(), amuseID, debug);
 
         pilots.add(result);
 

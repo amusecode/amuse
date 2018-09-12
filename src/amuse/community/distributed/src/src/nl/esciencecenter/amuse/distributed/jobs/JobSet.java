@@ -59,6 +59,8 @@ public class JobSet extends Thread {
 
         this.pilots = pilots;
 
+        logger.info("*** new jobset {}", serverAddress);
+
         try {
             Properties properties = new Properties();
             properties.put("ibis.server.address", serverAddress);
