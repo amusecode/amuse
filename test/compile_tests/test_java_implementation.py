@@ -352,85 +352,6 @@ class ForTesting(InCodeComponentImplementation):
 
 class TestInterface(TestWithMPI):
     
-    def build_worker(self):
-        path = os.path.abspath(self.get_path_to_results())
-        self.exefile = os.path.join(path,"java_worker")
-       
-        #generate interface class
-        interfacefile = os.path.join(path,"CodeInterface.java")
-
-        uc = create_java.GenerateAJavaInterfaceStringFromASpecificationClass()
-        uc.specification_class = ForTestingInterface
-        interface =  uc.result
-
-        with open(interfacefile, "w") as f:
-            f.write(interface)
-        
-        #generate worker class
-        workerfile = os.path.join(path,"Worker.java")
-
-        uc = create_java.GenerateAJavaSourcecodeStringFromASpecificationClass()
-        uc.specification_class = ForTestingInterface
-        worker =  uc.result
-
-        with open(workerfile, "w") as f:
-            f.write(worker)
-
-        #write code imlementation to a file
-
-        codefile = os.path.join(path,"Code.java")
-
-        with open(codefile, "w") as f:
-            f.write(codestring)
-
-        #compile all code
-
-        if not config.java.is_enabled:
-            self.skip("java not enabled")
-
-        javac = config.java.javac
-        if not os.path.exists(javac):
-            self.skip("java compiler not available")
-            
-        jar = config.java.jar
-
-        jarfile = 'worker.jar'
-
-        tmpdir = os.path.join(path, "tmp")
-
-        shutil.rmtree(tmpdir, ignore_errors=True)
-        os.mkdir(tmpdir)
-
-        returncode = subprocess.call(
-            [javac, "-d", tmpdir, "Worker.java", "CodeInterface.java", "Code.java"],
-        cwd = path,
-        )
-            
-        if returncode != 0:
-            print "Could not compile worker"
-
-	#make jar file
-
-        returncode = subprocess.call(
-            [jar, '-cf', 'worker.jar', '-C', 'tmp', '.'],
-            cwd = path,
-        )
-            
-        if returncode != 0:
-            print "Could not compile worker"
-
-        #generate worker script
-
-        uc = create_java.GenerateAJavaWorkerScript()
-        uc.specification_class = ForTestingInterface
-        uc.code_dir = path
-        worker_script =  uc.result
-
-        with open(self.exefile, "w") as f:
-            f.write(worker_script)
-
-        os.chmod(self.exefile, 0777)
-
     def check_not_in_mpiexec(self):
         """
         The tests will fork another process, if the test run 
@@ -468,7 +389,7 @@ class TestInterface(TestWithMPI):
         print "building...",
         self.check_can_compile_modules()
         try:
-            self.build_worker()
+            self.exefile=compile_tools.build_java_worker(codestring, self.get_path_to_results(),ForTestingInterface)
         except Exception as ex:
             print ex
             raise
