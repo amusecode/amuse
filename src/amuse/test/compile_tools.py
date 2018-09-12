@@ -3,7 +3,9 @@ import subprocess
 import time
 import shlex
 import numpy
+import shutil
 
+from amuse.rfi.tools import create_java
 from amuse.rfi.tools import create_c
 from amuse.rfi.core import config
 from amuse.test.amusetest import get_amuse_root_dir
@@ -416,3 +418,84 @@ def f90_build(exename, objectnames, libname):
     process, stderr, stdout = open_subprocess(arguments)
     if process.returncode != 0:
         raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments)))
+
+def build_java_worker(codestring, path_to_results, specification_class):
+    path = os.path.abspath(path_to_results)
+    exefile = os.path.join(path,"java_worker")
+   
+    #generate interface class
+    interfacefile = os.path.join(path,"CodeInterface.java")
+
+    uc = create_java.GenerateAJavaInterfaceStringFromASpecificationClass()
+    uc.specification_class = specification_class
+    interface =  uc.result
+
+    with open(interfacefile, "w") as f:
+        f.write(interface)
+    
+    #generate worker class
+    workerfile = os.path.join(path,"Worker.java")
+
+    uc = create_java.GenerateAJavaSourcecodeStringFromASpecificationClass()
+    uc.specification_class = specification_class
+    worker =  uc.result
+
+    with open(workerfile, "w") as f:
+        f.write(worker)
+
+    #write code imlementation to a file
+
+    codefile = os.path.join(path,"Code.java")
+
+    with open(codefile, "w") as f:
+        f.write(codestring)
+
+    #compile all code
+
+    if not config.java.is_enabled:
+        raise Exception("java not enabled")
+
+    javac = config.java.javac
+    if not os.path.exists(javac):
+        raise Exception("java compiler not available")
+        
+    jar = config.java.jar
+
+    jarfile = 'worker.jar'
+
+    tmpdir = os.path.join(path, "_tmp")
+
+    shutil.rmtree(tmpdir, ignore_errors=True)
+    os.mkdir(tmpdir)
+
+    returncode = subprocess.call(
+        [javac, "-d", tmpdir, "Worker.java", "CodeInterface.java", "Code.java"],
+    cwd = path,
+    )
+        
+    if returncode != 0:
+        print "Could not compile worker"
+
+#make jar file
+
+    returncode = subprocess.call(
+        [jar, '-cf', 'worker.jar', '-C', tmpdir, '.'],
+        cwd = path,
+    )
+        
+    if returncode != 0:
+        print "Could not compile worker"
+
+    #generate worker script
+
+    uc = create_java.GenerateAJavaWorkerScript()
+    uc.specification_class = specification_class
+    uc.code_dir = path
+    worker_script =  uc.result
+
+    with open(exefile, "w") as f:
+        f.write(worker_script)
+
+    os.chmod(exefile, 0777)
+
+    return exefile
