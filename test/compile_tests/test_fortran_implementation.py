@@ -79,7 +79,7 @@ end function
 
 function hello_string(string_out)
     implicit none
-    character(len=4096) :: string_out
+    character(len=*) :: string_out
     integer :: hello_string
     
     string_out = 'hello'
@@ -157,6 +157,12 @@ function echo_logical(input, output)
     echo_logical = 0
 end function
 
+function get_element_status(ind,x) result(ret)
+  integer :: ind,ret
+  character(len=*) :: x
+  x="dry"
+  ret=0
+end function
 """
 
 class ForTestingInterface(CodeInterface):
@@ -286,6 +292,15 @@ class ForTestingInterface(CodeInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function  
+
+    @legacy_function
+    def get_element_status():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index', dtype='i', direction=function.IN)
+        function.addParameter('status', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
     
 class ForTesting(InCodeComponentImplementation):
     
@@ -619,3 +634,25 @@ class TestInterface(TestWithMPI):
         t2=time.time()
         print "2 time:",t2-t1,(t2-t1)/N  
         instance.stop()
+
+    def test32(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.get_element_status(numpy.arange(10))
+        del instance
+        
+        self.assertEquals(out, ["dry"]*10)
+
+    def test33(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.get_element_status(numpy.arange(100))
+        del instance
+        
+        self.assertEquals(out, ["dry"]*100)
+
+    def test34(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string(["abc"]*14)
+        del instance
+        
+        self.assertEquals(out, ["abc"]*14)
+        self.assertEquals(error, [0]*14)
