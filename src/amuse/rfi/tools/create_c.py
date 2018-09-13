@@ -641,7 +641,7 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
-      receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT], socketfd , rank);
+      receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd , rank);
       MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_C_BOOL, 0, MPI_COMM_WORLD);
     }
     
@@ -822,7 +822,7 @@ void run_sockets(int port, char *host) {
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
-      receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT], socketfd , 0);
+      receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd , 0);
     }
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
@@ -1265,7 +1265,9 @@ class GenerateACHeaderStringFromASpecificationClass\
     def output_sourcecode_for_function(self):
         return GenerateACHeaderDefinitionStringFromAFunctionSpecification()
         
-    def start(self):  
+    def start(self):
+        self.out + '#include "stdbool.h"'  
+        self.out.lf()
         if self.make_extern_c:
             self.out + "#ifdef __cplusplus"
             self.out.lf() + 'extern "C" {'

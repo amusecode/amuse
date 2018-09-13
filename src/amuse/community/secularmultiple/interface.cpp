@@ -21,7 +21,7 @@ int orbital_phases_random_seed = 0;
 /* basic interface *
  ******************/
  
-int new_particle(int * index_of_the_particle, int is_binary)
+int new_particle(int * index_of_the_particle, bool is_binary)
 {
 
     *index_of_the_particle = highest_particle_index;
@@ -258,7 +258,7 @@ int get_true_anomaly(int index_of_the_particle, double *value)
     
     return 0;
 }
-int set_sample_orbital_phases_randomly(int index_of_the_particle, int value)
+int set_sample_orbital_phases_randomly(int index_of_the_particle, bool value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -270,7 +270,7 @@ int set_sample_orbital_phases_randomly(int index_of_the_particle, int value)
     
     return 0;
 }
-int get_sample_orbital_phases_randomly(int index_of_the_particle, int *value)
+int get_sample_orbital_phases_randomly(int index_of_the_particle, bool *value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -987,7 +987,7 @@ int get_velocity_vector(int index_of_the_particle, double *x, double *y, double 
 /* PN terms *
  ************/
 
-int set_include_pairwise_1PN_terms(int index_of_the_particle, int include_pairwise_1PN_terms)
+int set_include_pairwise_1PN_terms(int index_of_the_particle, bool include_pairwise_1PN_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1000,7 +1000,7 @@ int set_include_pairwise_1PN_terms(int index_of_the_particle, int include_pairwi
         
     return 0;
 }
-int get_include_pairwise_1PN_terms(int index_of_the_particle, int *include_pairwise_1PN_terms)
+int get_include_pairwise_1PN_terms(int index_of_the_particle, bool *include_pairwise_1PN_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1014,7 +1014,7 @@ int get_include_pairwise_1PN_terms(int index_of_the_particle, int *include_pairw
     return 0;
 }
 
-int set_include_pairwise_25PN_terms(int index_of_the_particle, int include_pairwise_25PN_terms)
+int set_include_pairwise_25PN_terms(int index_of_the_particle, bool include_pairwise_25PN_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1027,7 +1027,7 @@ int set_include_pairwise_25PN_terms(int index_of_the_particle, int include_pairw
         
     return 0;
 }
-int get_include_pairwise_25PN_terms(int index_of_the_particle, int *include_pairwise_25PN_terms)
+int get_include_pairwise_25PN_terms(int index_of_the_particle, bool *include_pairwise_25PN_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1045,7 +1045,7 @@ int get_include_pairwise_25PN_terms(int index_of_the_particle, int *include_pair
 /*********
 /* tides *
  *********/
-int set_include_tidal_friction_terms(int index_of_the_particle, int include_tidal_friction_terms)
+int set_include_tidal_friction_terms(int index_of_the_particle, bool include_tidal_friction_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1058,7 +1058,7 @@ int set_include_tidal_friction_terms(int index_of_the_particle, int include_tida
         
     return 0;
 }
-int get_include_tidal_friction_terms(int index_of_the_particle, int *include_tidal_friction_terms)
+int get_include_tidal_friction_terms(int index_of_the_particle, bool *include_tidal_friction_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1099,7 +1099,7 @@ int get_tides_method(int index_of_the_particle, int *tides_method)
     return 0;
 }
 
-int set_include_tidal_bulges_precession_terms(int index_of_the_particle, int include_tidal_bulges_precession_terms)
+int set_include_tidal_bulges_precession_terms(int index_of_the_particle, bool include_tidal_bulges_precession_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1112,7 +1112,7 @@ int set_include_tidal_bulges_precession_terms(int index_of_the_particle, int inc
         
     return 0;
 }
-int get_include_tidal_bulges_precession_terms(int index_of_the_particle, int *include_tidal_bulges_precession_terms)
+int get_include_tidal_bulges_precession_terms(int index_of_the_particle, bool *include_tidal_bulges_precession_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1126,7 +1126,7 @@ int get_include_tidal_bulges_precession_terms(int index_of_the_particle, int *in
     return 0;
 }
 
-int set_include_rotation_precession_terms(int index_of_the_particle, int include_rotation_precession_terms)
+int set_include_rotation_precession_terms(int index_of_the_particle, bool include_rotation_precession_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1140,7 +1140,7 @@ int set_include_rotation_precession_terms(int index_of_the_particle, int include
     return 0;
 }
 
-int get_include_rotation_precession_terms(int index_of_the_particle, int *include_rotation_precession_terms)
+int get_include_rotation_precession_terms(int index_of_the_particle, bool *include_rotation_precession_terms)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1375,7 +1375,7 @@ int get_luminosity(int index_of_the_particle, double *value)
  ****************/
 
 /* secular breakdown*/
-int set_check_for_secular_breakdown(int index_of_the_particle, int value)
+int set_check_for_secular_breakdown(int index_of_the_particle, bool value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1387,7 +1387,7 @@ int set_check_for_secular_breakdown(int index_of_the_particle, int value)
 
     return 0;
 }
-int get_check_for_secular_breakdown(int index_of_the_particle, int* value)
+int get_check_for_secular_breakdown(int index_of_the_particle, bool* value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1401,7 +1401,7 @@ int get_check_for_secular_breakdown(int index_of_the_particle, int* value)
 }
 
 /* dynamical instablity*/
-int set_check_for_dynamical_instability(int index_of_the_particle, int value)
+int set_check_for_dynamical_instability(int index_of_the_particle, bool value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1413,7 +1413,7 @@ int set_check_for_dynamical_instability(int index_of_the_particle, int value)
 
     return 0;
 }
-int get_check_for_dynamical_instability(int index_of_the_particle, int* value)
+int get_check_for_dynamical_instability(int index_of_the_particle, bool* value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1503,7 +1503,7 @@ int get_dynamical_instability_K_parameter(int index_of_the_particle, double* val
 }
 
 /* physical collision / orbit crossing*/
-int set_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle, int value)
+int set_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle, bool value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1515,7 +1515,7 @@ int set_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle
 
     return 0;
 }
-int get_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle, int* value)
+int get_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle, bool* value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1529,7 +1529,7 @@ int get_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle
 }
 
 /* minimum periapse distance reached */
-int set_check_for_minimum_periapse_distance(int index_of_the_particle, int value)
+int set_check_for_minimum_periapse_distance(int index_of_the_particle, bool value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1541,7 +1541,7 @@ int set_check_for_minimum_periapse_distance(int index_of_the_particle, int value
 
     return 0;
 }
-int get_check_for_minimum_periapse_distance(int index_of_the_particle, int* value)
+int get_check_for_minimum_periapse_distance(int index_of_the_particle, bool* value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1579,7 +1579,7 @@ int get_check_for_minimum_periapse_distance_value(int index_of_the_particle, dou
 }
 
 /* RLOF at pericentre */
-int set_check_for_RLOF_at_pericentre(int index_of_the_particle, int value)
+int set_check_for_RLOF_at_pericentre(int index_of_the_particle, bool value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1591,7 +1591,7 @@ int set_check_for_RLOF_at_pericentre(int index_of_the_particle, int value)
 
     return 0;
 }
-int get_check_for_RLOF_at_pericentre(int index_of_the_particle, int* value)
+int get_check_for_RLOF_at_pericentre(int index_of_the_particle, bool* value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1604,7 +1604,7 @@ int get_check_for_RLOF_at_pericentre(int index_of_the_particle, int* value)
     return 0;
 }
 
-int set_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle, int value)
+int set_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle, bool value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1616,7 +1616,7 @@ int set_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle,
 
     return 0;
 }
-int get_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle, int* value)
+int get_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle, bool* value)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1631,7 +1631,7 @@ int get_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle,
 
 
 /* retrieve root finding state */
-int set_root_finding_state(int index_of_the_particle, int secular_breakdown_has_occurred, int dynamical_instability_has_occurred, int physical_collision_or_orbit_crossing_has_occurred, int minimum_periapse_distance_has_occurred, int RLOF_at_pericentre_has_occurred)
+int set_root_finding_state(int index_of_the_particle, bool secular_breakdown_has_occurred, bool dynamical_instability_has_occurred, bool physical_collision_or_orbit_crossing_has_occurred, bool minimum_periapse_distance_has_occurred, bool RLOF_at_pericentre_has_occurred)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -1648,7 +1648,7 @@ int set_root_finding_state(int index_of_the_particle, int secular_breakdown_has_
     
     return 0;
 }
-int get_root_finding_state(int index_of_the_particle, int *secular_breakdown_has_occurred, int *dynamical_instability_has_occurred, int *physical_collision_or_orbit_crossing_has_occurred, int* minimum_periapse_distance_has_occurred, int *RLOF_at_pericentre_has_occurred)
+int get_root_finding_state(int index_of_the_particle, bool *secular_breakdown_has_occurred, bool *dynamical_instability_has_occurred, bool *physical_collision_or_orbit_crossing_has_occurred, bool* minimum_periapse_distance_has_occurred, bool *RLOF_at_pericentre_has_occurred)
 {
     if (index_of_the_particle > highest_particle_index)
     {
@@ -2044,48 +2044,48 @@ int set_absolute_tolerance_eccentricity_vectors(double value)
     return 0;
 }
 
-int get_include_quadrupole_order_terms(int *value){
-    *value = include_quadrupole_order_terms ? 1 : 0;
+int get_include_quadrupole_order_terms(bool *value){
+    *value = include_quadrupole_order_terms;
     return 0;
 }
-int set_include_quadrupole_order_terms(int value){
-    include_quadrupole_order_terms = value == 1;
-    return 0;
-}
-
-int get_include_octupole_order_binary_pair_terms(int *value){
-    *value = include_octupole_order_binary_pair_terms ? 1 : 0;
-    return 0;
-}
-int set_include_octupole_order_binary_pair_terms(int value){
-    include_octupole_order_binary_pair_terms = value == 1;
+int set_include_quadrupole_order_terms(bool value){
+    include_quadrupole_order_terms = value;
     return 0;
 }
 
-int get_include_octupole_order_binary_triplet_terms(int *value){
-    *value = include_octupole_order_binary_triplet_terms ? 1 : 0;
+int get_include_octupole_order_binary_pair_terms(bool *value){
+    *value = include_octupole_order_binary_pair_terms;
     return 0;
 }
-int set_include_octupole_order_binary_triplet_terms(int value){
-    include_octupole_order_binary_triplet_terms = value == 1;
-    return 0;
-}
-
-int get_include_hexadecupole_order_binary_pair_terms(int *value){
-    *value = include_hexadecupole_order_binary_pair_terms ? 1 : 0;
-    return 0;
-}
-int set_include_hexadecupole_order_binary_pair_terms(int value){
-    include_hexadecupole_order_binary_pair_terms = value == 1;
+int set_include_octupole_order_binary_pair_terms(bool value){
+    include_octupole_order_binary_pair_terms = value;
     return 0;
 }
 
-int get_include_dotriacontupole_order_binary_pair_terms(int *value){
-    *value = include_dotriacontupole_order_binary_pair_terms ? 1 : 0;
+int get_include_octupole_order_binary_triplet_terms(bool *value){
+    *value = include_octupole_order_binary_triplet_terms;
     return 0;
 }
-int set_include_dotriacontupole_order_binary_pair_terms(int value){
-    include_dotriacontupole_order_binary_pair_terms = value == 1;
+int set_include_octupole_order_binary_triplet_terms(bool value){
+    include_octupole_order_binary_triplet_terms = value;
+    return 0;
+}
+
+int get_include_hexadecupole_order_binary_pair_terms(bool *value){
+    *value = include_hexadecupole_order_binary_pair_terms;
+    return 0;
+}
+int set_include_hexadecupole_order_binary_pair_terms(bool value){
+    include_hexadecupole_order_binary_pair_terms = value;
+    return 0;
+}
+
+int get_include_dotriacontupole_order_binary_pair_terms(bool *value){
+    *value = include_dotriacontupole_order_binary_pair_terms;
+    return 0;
+}
+int set_include_dotriacontupole_order_binary_pair_terms(bool value){
+    include_dotriacontupole_order_binary_pair_terms = value;
     return 0;
 }
 

@@ -16,6 +16,7 @@ from amuse.rfi.core import *
 codestring = """
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 int echo_int(int int_in, int * int_out) {
     *int_out = int_in;
@@ -124,7 +125,7 @@ int echo_inout_array_with_result(int * inout, int len) {
 }
 
 
-int echo_logical(int in, int * out) {
+int echo_logical(bool in, bool * out) {
     *out = in;
     return 0;
 }
