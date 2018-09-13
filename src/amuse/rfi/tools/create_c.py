@@ -1265,7 +1265,9 @@ class GenerateACHeaderStringFromASpecificationClass\
     def output_sourcecode_for_function(self):
         return GenerateACHeaderDefinitionStringFromAFunctionSpecification()
         
-    def start(self):  
+    def start(self):
+        self.out + '#include "stdbool.h"'  
+        self.out.lf()
         if self.make_extern_c:
             self.out + "#ifdef __cplusplus"
             self.out.lf() + 'extern "C" {'

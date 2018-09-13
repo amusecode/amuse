@@ -18,7 +18,7 @@ dtype_to_spec = DTypeToSpecDictionary({
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
                     'HEADER_DOUBLE_COUNT', 'double', 'MPI_DOUBLE'),
     'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'HEADER_BOOLEAN_COUNT', 'int', 'MPI_INTEGER'),
+                    'HEADER_BOOLEAN_COUNT', 'bool', 'MPI_C_BOOL'),
     'string' : DTypeSpec('strings_in', 'strings_out',
                     'HEADER_STRING_COUNT', 'char *', 'MPI_INTEGER'),
 })
@@ -503,7 +503,8 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
     def start(self):
         self.out + 'import numpy'
         self.out.lf() + 'cimport numpy'
-
+        self.out.lf() + 'cdef extern from "stdbool.h":'
+        self.out.lf() + '  ctypedef bint bool' 
         self.output_local_includes()
 
         self.output_mpi_defs()
