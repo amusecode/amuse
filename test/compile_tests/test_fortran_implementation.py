@@ -490,8 +490,8 @@ class TestInterface(TestWithMPI):
 
     def test16b(self):
         instance = ForTesting(self.exefile)
-        output = instance.echo_logical([True, True,False, True, False])
-        self.assertEquals(output, [True, True, False, True, False])
+        output = instance.echo_logical([True, True,False, True, False]*256)
+        self.assertEquals(output, [True, True, False, True, False]*256)
         
     def xtest20(self):
         #
