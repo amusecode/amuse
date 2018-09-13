@@ -3,7 +3,7 @@
 /*******************
 /* basic interface *
  ******************/
-int new_particle(int * index_of_the_particle, int is_binary);
+int new_particle(int * index_of_the_particle, bool is_binary);
 int delete_particle(int index_of_the_particle);
 
 int set_children(int index_of_the_particle, int child1, int child2);
@@ -32,8 +32,8 @@ int get_stellar_type(int index_of_the_particle, int *stellar_type);
 int set_true_anomaly(int index_of_the_particle, double value);
 int get_true_anomaly(int index_of_the_particle, double *value);
 
-int set_sample_orbital_phases_randomly(int index_of_the_particle, int value);
-int get_sample_orbital_phases_randomly(int index_of_the_particle, int *value);
+int set_sample_orbital_phases_randomly(int index_of_the_particle, bool value);
+int get_sample_orbital_phases_randomly(int index_of_the_particle, bool *value);
 
 
 /*******************************
@@ -130,22 +130,22 @@ int get_velocity_vector(int index_of_the_particle, double *x, double *y, double 
 /************
 /* PN terms *
  ************/
-int set_include_pairwise_1PN_terms(int index_of_the_particle, int include_pairwise_1PN_terms);
-int get_include_pairwise_1PN_terms(int index_of_the_particle, int *include_pairwise_1PN_terms);
-int set_include_pairwise_25PN_terms(int index_of_the_particle, int include_pairwise_25PN_terms);
-int get_include_pairwise_25PN_terms(int index_of_the_particle, int *include_pairwise_25PN_terms);
+int set_include_pairwise_1PN_terms(int index_of_the_particle, bool include_pairwise_1PN_terms);
+int get_include_pairwise_1PN_terms(int index_of_the_particle, bool *include_pairwise_1PN_terms);
+int set_include_pairwise_25PN_terms(int index_of_the_particle, bool include_pairwise_25PN_terms);
+int get_include_pairwise_25PN_terms(int index_of_the_particle, bool *include_pairwise_25PN_terms);
 
 /*********
 /* tides *
  *********/
-int set_include_tidal_friction_terms(int index_of_the_particle, int include_tidal_friction_terms);
-int get_include_tidal_friction_terms(int index_of_the_particle, int *include_tidal_friction_terms);
+int set_include_tidal_friction_terms(int index_of_the_particle, bool include_tidal_friction_terms);
+int get_include_tidal_friction_terms(int index_of_the_particle, bool *include_tidal_friction_terms);
 int set_tides_method(int index_of_the_particle, int tides_method);
 int get_tides_method(int index_of_the_particle, int *tides_method);
-int set_include_tidal_bulges_precession_terms(int index_of_the_particle, int include_tidal_bulges_precession_terms);
-int get_include_tidal_bulges_precession_terms(int index_of_the_particle, int *include_tidal_bulges_precession_terms);
-int set_include_rotation_precession_terms(int index_of_the_particle, int include_rotation_precession_terms);
-int get_include_rotation_precession_terms(int index_of_the_particle, int *include_rotation_precession_terms);
+int set_include_tidal_bulges_precession_terms(int index_of_the_particle, bool include_tidal_bulges_precession_terms);
+int get_include_tidal_bulges_precession_terms(int index_of_the_particle, bool *include_tidal_bulges_precession_terms);
+int set_include_rotation_precession_terms(int index_of_the_particle, bool include_rotation_precession_terms);
+int get_include_rotation_precession_terms(int index_of_the_particle, bool *include_rotation_precession_terms);
 int set_minimum_eccentricity_for_tidal_precession(int index_of_the_particle, double minimum_eccentricity_for_tidal_precession);
 int get_minimum_eccentricity_for_tidal_precession(int index_of_the_particle, double *minimum_eccentricity_for_tidal_precession);
 int set_tides_apsidal_motion_constant(int index_of_the_particle, double value);
@@ -168,11 +168,11 @@ int get_luminosity(int index_of_the_particle, double *luminosity);
 /* root finding *
  ****************/
 
-int set_check_for_secular_breakdown(int index_of_the_particle, int value);
-int get_check_for_secular_breakdown(int index_of_the_particle, int* value);
+int set_check_for_secular_breakdown(int index_of_the_particle, bool value);
+int get_check_for_secular_breakdown(int index_of_the_particle, bool* value);
 
-int set_check_for_dynamical_instability(int index_of_the_particle, int value);
-int get_check_for_dynamical_instability(int index_of_the_particle, int* value);
+int set_check_for_dynamical_instability(int index_of_the_particle, bool value);
+int get_check_for_dynamical_instability(int index_of_the_particle, bool* value);
 int set_dynamical_instability_criterion(int index_of_the_particle, int value);
 int get_dynamical_instability_criterion(int index_of_the_particle, int* value);
 int set_dynamical_instability_central_particle(int index_of_the_particle, int value);
@@ -180,21 +180,21 @@ int get_dynamical_instability_central_particle(int index_of_the_particle, int* v
 int set_dynamical_instability_K_parameter(int index_of_the_particle, double value);
 int get_dynamical_instability_K_parameter(int index_of_the_particle, double* value);
 
-int set_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle, int value);
-int get_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle, int* value);
+int set_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle, bool value);
+int get_check_for_physical_collision_or_orbit_crossing(int index_of_the_particle, bool* value);
 
-int set_check_for_minimum_periapse_distance(int index_of_the_particle, int value);
-int get_check_for_minimum_periapse_distance(int index_of_the_particle, int* value);
+int set_check_for_minimum_periapse_distance(int index_of_the_particle, bool value);
+int get_check_for_minimum_periapse_distance(int index_of_the_particle, bool* value);
 int set_check_for_minimum_periapse_distance_value(int index_of_the_particle, double value);
 int get_check_for_minimum_periapse_distance_value(int index_of_the_particle, double* value);
 
-int set_check_for_RLOF_at_pericentre(int index_of_the_particle, int value);
-int get_check_for_RLOF_at_pericentre(int index_of_the_particle, int* value);
-int set_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle, int value);
-int get_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle, int* value);
+int set_check_for_RLOF_at_pericentre(int index_of_the_particle, bool value);
+int get_check_for_RLOF_at_pericentre(int index_of_the_particle, bool* value);
+int set_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle, bool value);
+int get_check_for_RLOF_at_pericentre_use_sepinsky_fit(int index_of_the_particle, bool* value);
 
-int set_root_finding_state(int index_of_the_particle, int secular_breakdown_has_occurred, int dynamical_instability_has_occurred, int physical_collision_or_orbit_crossing_has_occurred, int minimum_periapse_distance_has_occurred, int RLOF_at_pericentre_has_occurred);
-int get_root_finding_state(int index_of_the_particle, int *secular_breakdown_has_occurred, int *dynamical_instability_has_occurred, int *physical_collision_or_orbit_crossing_has_occurred, int* minimum_periapse_distance_has_occurred, int *RLOF_at_pericentre_has_occurred);
+int set_root_finding_state(int index_of_the_particle, bool secular_breakdown_has_occurred, bool dynamical_instability_has_occurred, bool physical_collision_or_orbit_crossing_has_occurred, bool minimum_periapse_distance_has_occurred, bool RLOF_at_pericentre_has_occurred);
+int get_root_finding_state(int index_of_the_particle, bool *secular_breakdown_has_occurred, bool *dynamical_instability_has_occurred, bool *physical_collision_or_orbit_crossing_has_occurred, bool* minimum_periapse_distance_has_occurred, bool *RLOF_at_pericentre_has_occurred);
 
 
 /***********************
@@ -247,20 +247,20 @@ int set_relative_tolerance(double value);
 int get_absolute_tolerance_eccentricity_vectors(double *value);
 int set_absolute_tolerance_eccentricity_vectors(double value);
 
-int get_include_quadrupole_order_terms(int *value);
-int set_include_quadrupole_order_terms(int value);
+int get_include_quadrupole_order_terms(bool *value);
+int set_include_quadrupole_order_terms(bool value);
 
-int get_include_octupole_order_binary_pair_terms(int *value);
-int set_include_octupole_order_binary_pair_terms(int value);
+int get_include_octupole_order_binary_pair_terms(bool *value);
+int set_include_octupole_order_binary_pair_terms(bool value);
 
-int get_include_octupole_order_binary_triplet_terms(int *value);
-int set_include_octupole_order_binary_triplet_terms(int value);
+int get_include_octupole_order_binary_triplet_terms(bool *value);
+int set_include_octupole_order_binary_triplet_terms(bool value);
 
-int get_include_hexadecupole_order_binary_pair_terms(int *value);
-int set_include_hexadecupole_order_binary_pair_terms(int value);
+int get_include_hexadecupole_order_binary_pair_terms(bool *value);
+int set_include_hexadecupole_order_binary_pair_terms(bool value);
 
-int get_include_dotriacontupole_order_binary_pair_terms(int *value);
-int set_include_dotriacontupole_order_binary_pair_terms(int value);
+int get_include_dotriacontupole_order_binary_pair_terms(bool *value);
+int set_include_dotriacontupole_order_binary_pair_terms(bool value);
 
 int get_orbital_phases_random_seed(int *value);
 int set_orbital_phases_random_seed(int value);

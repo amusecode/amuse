@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include "stopcond.h"
 #include <string.h>
 #include <float.h>
@@ -343,21 +344,21 @@ int get_stopping_condition_number_of_steps_parameter_(int *value) {
     return get_stopping_condition_number_of_steps_parameter(value);
 }
 
-int set_stopping_condition_out_of_box_use_center_of_mass_parameter(int value) {
+int set_stopping_condition_out_of_box_use_center_of_mass_parameter(bool value) {
     use_center_of_mass_parameter = value;
     return 0;
 }
 
-int set_stopping_condition_out_of_box_use_center_of_mass_parameter_(int *value) {
+int set_stopping_condition_out_of_box_use_center_of_mass_parameter_(bool *value) {
     return set_stopping_condition_out_of_box_use_center_of_mass_parameter(*value);
 }
 
-int get_stopping_condition_out_of_box_use_center_of_mass_parameter(int *value) {
+int get_stopping_condition_out_of_box_use_center_of_mass_parameter(bool *value) {
     *value = use_center_of_mass_parameter;
     return 0;
 }
 
-int get_stopping_condition_out_of_box_use_center_of_mass_parameter_(int *value) {
+int get_stopping_condition_out_of_box_use_center_of_mass_parameter_(bool *value) {
     return get_stopping_condition_out_of_box_use_center_of_mass_parameter(value);
 }
 
