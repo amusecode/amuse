@@ -1,7 +1,7 @@
-from amuse.lab import *
 import numpy
 from amuse.lab import *
 from amuse.units import units
+from amuse.units import quantities
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.ext.bridge import bridge
@@ -146,7 +146,7 @@ def evolve_cluster_in_galaxy(N, W0, Rinit, tend, timestep, M, R):
     system = bridge(verbose=False)
     system.add_system(cluster_code, (galaxy_code,))
 
-    times = numpy.arange(0|units.Myr, tend, 100*timestep)
+    times = quantities.arange(0|units.Myr, tend, 100*timestep)
     for i,t in enumerate(times):
         print "Time=", t.in_(units.Myr)
         system.evolve_model(t, timestep=timestep)
