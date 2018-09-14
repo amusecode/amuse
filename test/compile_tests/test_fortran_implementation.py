@@ -656,3 +656,22 @@ class TestInterface(TestWithMPI):
         
         self.assertEquals(out, ["abc"]*14)
         self.assertEquals(error, [0]*14)
+
+    def test35(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string(["abc","def"]*100000)
+        del instance
+        
+        self.assertEquals(error[0], 0)
+        self.assertEquals(error[1], 0)
+        self.assertEquals(out[-2], "abc")
+        self.assertEquals(out[-1], "def")
+
+    def test36(self):
+        instance = ForTestingInterface(self.exefile)
+        N=255
+        out, error = instance.echo_string("a"*N)
+        del instance
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(out, "a"*N)

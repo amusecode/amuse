@@ -88,9 +88,12 @@ ISO_ARRAY_DEFINES_STRING = """
 
   character (c_char), allocatable, target :: strings_in(:) * 256
   character (c_char), allocatable, target :: strings_out(:) * 256
+
+  character (len=1000000) :: characters_in
+  character (len=1000000) :: characters_out
   
-  character (kind=c_char, len=1000000), target :: characters_in
-  character (kind=c_char, len=1000000), target :: characters_out
+  character (kind=c_char), target :: c_characters_in(1000000)
+  character (kind=c_char), target :: c_characters_out(1000000)
 """
 
 MODULE_GLOBALS_STRING = """
@@ -645,7 +648,13 @@ RUN_LOOP_SOCKETS_STRING = """
               end if
           end do
           
-          call receive_string(c_loc(characters_in), total_string_length)
+          call receive_string(c_loc(c_characters_in), total_string_length)
+          
+          ! this trick is necessary on older gfortran compilers (~<4.9)
+          ! as c_loc needs character(len=1)
+          do i=1, total_string_length
+            characters_in(i:i)=c_characters_in(i)
+          enddo
           
           offset = 1
           do i = 1, header_in(HEADER_STRING_COUNT), 1
@@ -706,8 +715,13 @@ RUN_LOOP_SOCKETS_STRING = """
             characters_out(offset-1:offset-1) = char(0)
           end do
 
+          total_string_length=offset-1
+          do i=1, total_string_length
+            c_characters_out(i)=characters_out(i:i)
+          enddo
+
           call send_integers(c_loc(string_sizes_out), header_out(HEADER_STRING_COUNT))
-          call send_string(c_loc(characters_out), offset-1 )
+          call send_string(c_loc(c_characters_out), offset-1 )
         end if
       end do
     
@@ -899,8 +913,13 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
           end do
 
           if (rank .eq. 0) then
-            call receive_string(c_loc(characters_in), total_string_length)
+            call receive_string(c_loc(c_characters_in), total_string_length)
           endif
+          
+          do i=1, total_string_length
+            characters_in(i:i)=c_characters_in(i)
+          enddo
+          
           call MPI_BCast(characters_in, total_string_length, MPI_CHARACTER, 0, MPI_COMM_WORLD, ioError);
           
           offset = 1
@@ -967,8 +986,13 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
               characters_out(offset-1:offset-1) = char(0)
             end do
   
+          total_string_length=offset-1
+          do i=1, total_string_length
+            c_characters_out(i)=characters_out(i:i)
+          enddo  
+  
             call send_integers(c_loc(string_sizes_out), header_out(HEADER_STRING_COUNT))
-            call send_string(c_loc(characters_out), offset-1 )
+            call send_string(c_loc(c_characters_out), offset-1 )
          end if
         end if
       end do
