@@ -436,6 +436,16 @@ RUN_LOOP_MPI_STRING = """
                 maximum_size = string_sizes_in(i)
               end if
           end do
+
+          if(maximum_size.GT.256) then
+            print*, "fortran_worker reports too large string"
+            stop          
+          endif
+
+          if(total_string_length.GT.1000000) then
+            print*, "fortran_worker reports too large string message"
+            stop
+          endif
           
           call MPI_BCast(characters_in, total_string_length, MPI_CHARACTER, 0, parent, ioError);
           
@@ -496,6 +506,12 @@ RUN_LOOP_MPI_STRING = """
               offset = offset + string_sizes_out(i) + 1
               characters_out(offset-1:offset-1) = char(0)
             end do
+
+          total_string_length=offset-1
+          if(total_string_length.GT.1000000) then
+            print*, "fortran_worker reports too large string message"
+            stop
+          endif
             
             call MPI_SEND(string_sizes_out, header_out(HEADER_STRING_COUNT), MPI_INTEGER, 0, 999, parent, ioerror)
             call MPI_SEND(characters_out, offset -1, MPI_CHARACTER, 0, 999, parent, ioerror)
@@ -647,6 +663,16 @@ RUN_LOOP_SOCKETS_STRING = """
                 maximum_size = string_sizes_in(i)
               end if
           end do
+
+          if(maximum_size.GT.256) then
+            print*, "fortran_worker reports too large string"
+            stop          
+          endif
+
+          if(total_string_length.GT.1000000) then
+            print*, "fortran_worker reports too large string message"
+            stop
+          endif
           
           call receive_string(c_loc(c_characters_in), total_string_length)
           
@@ -716,6 +742,12 @@ RUN_LOOP_SOCKETS_STRING = """
           end do
 
           total_string_length=offset-1
+
+          if(total_string_length.GT.1000000) then
+            print*, "fortran_worker reports too large string message"
+            stop
+          endif
+          
           do i=1, total_string_length
             c_characters_out(i)=characters_out(i:i)
           enddo
@@ -912,6 +944,16 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
               end if
           end do
 
+          if(maximum_size.GT.256) then
+            print*, "fortran_worker reports too large string"
+            stop          
+          endif
+
+          if(total_string_length.GT.1000000) then
+            print*, "fortran_worker reports too large string message"
+            stop
+          endif
+
           if (rank .eq. 0) then
             call receive_string(c_loc(c_characters_in), total_string_length)
           endif
@@ -987,6 +1029,12 @@ RUN_LOOP_SOCKETS_MPI_STRING = """
             end do
   
           total_string_length=offset-1
+
+          if(total_string_length.GT.1000000) then
+            print*, "fortran_Worker reports too large string message"
+            stop
+          endif
+
           do i=1, total_string_length
             c_characters_out(i)=characters_out(i:i)
           enddo  
