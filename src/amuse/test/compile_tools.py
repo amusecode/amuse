@@ -7,6 +7,7 @@ import shutil
 
 from amuse.rfi.tools import create_java
 from amuse.rfi.tools import create_c
+from amuse.rfi.tools import create_fortran
 from amuse.rfi.core import config
 from amuse.test.amusetest import get_amuse_root_dir
 
@@ -498,4 +499,21 @@ def build_java_worker(codestring, path_to_results, specification_class):
 
     os.chmod(exefile, 0777)
 
+    return exefile
+
+def build_fortran_worker(codestring, path_to_results, interface):
+    
+    path = os.path.abspath(path_to_results)  
+    codefile = os.path.join(path,"code.o")
+    interfacefile = os.path.join(path,"interface.o")
+    exefile = os.path.join(path,"fortran_worker")
+    
+    fortran_compile(codefile, codestring)
+    
+    uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
+    uc.specification_class = interface
+    uc.needs_mpi = True
+    string =  uc.result
+    fortran_compile(interfacefile, string)
+    fortran_build(exefile, [interfacefile, codefile] )
     return exefile

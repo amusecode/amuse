@@ -7,7 +7,6 @@ import shlex
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
-from amuse.rfi.tools import create_fortran
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
@@ -281,29 +280,14 @@ class ForTestingInterface(CodeInterface):
 
 
 class TestInterface(TestWithMPI):
-    
-    def build_worker(self):
         
-        path = os.path.abspath(self.get_path_to_results())
-        codefile = os.path.join(path,"code-sockets.o")
-        interfacefile = os.path.join(path,"interface-sockets.o")
-        self.exefile = os.path.join(path,"fortran_worker")
-        
-        compile_tools.fortran_compile(codefile, codestring)
-        
-        uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
-        uc.specification_class = ForTestingInterface
-        string =  uc.result
-        compile_tools.fortran_compile(interfacefile, string)
-        compile_tools.fortran_build(self.exefile, [interfacefile, codefile] )
-    
     def setUp(self):
         super(TestInterface, self).setUp()
         print "building"
         self.check_can_compile_modules()
         self.check_fortran_version()
         self.check_not_in_mpiexec()
-        self.build_worker()
+        self.exefile=compile_tools.build_fortran_worker(codestring, self.get_path_to_results(), ForTestingInterface)
         
     def check_fortran_version(self):
         pass
