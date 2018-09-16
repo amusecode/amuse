@@ -215,7 +215,12 @@ class TestCythonImplementationInterface(test_c_implementation.TestCImplementatio
 
         os.chmod(self.exefile, 0777)
         
-        process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython,  sourcename, '-o', cname])
+        import mpi4py
+        process, stdout, stderr = compile_tools.open_subprocess([config.compilers.cython, 
+        '-I',
+        mpi4py.get_include(),
+         sourcename, '-o', cname])
+
         
         if process.returncode == 0:
             compile_tools.wait_for_file(cname)
