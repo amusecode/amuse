@@ -655,7 +655,7 @@ class MPIMessage(AbstractMessage):
     def receive_booleans(self, comm, total):
         if total > 0:
             result = numpy.empty(total, dtype='b')
-            self.mpi_receive(comm, [result, MPI.C_BOOL or MPI.BYTE])
+            self.mpi_receive(comm, [result, MPI.C_BOOL or MPI.BYTE]) # if C_BOOL null datatype (ie undefined) fallback
             return numpy.logical_not(result == 0)
         else:
             return []

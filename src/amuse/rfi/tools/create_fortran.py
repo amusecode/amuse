@@ -419,7 +419,9 @@ RUN_LOOP_MPI_STRING = """
           call MPI_BCast(doubles_in, header_in(HEADER_DOUBLE_COUNT), MPI_REAL8, 0, parent, ioError);
         end if
         if (header_in(HEADER_BOOLEAN_COUNT) .gt. 0) then
-          call MPI_BCast(booleans_in, header_in(HEADER_BOOLEAN_COUNT), MPI_CHARACTER, 0, parent, ioError);
+          ! some older MPI do not define MPI_C_BOOL; this seems to work ok
+          ! maybe booleans_in in this call should be replaced by char (more portable) or logical*1  
+          call MPI_BCast(booleans_in, header_in(HEADER_BOOLEAN_COUNT), MPI_BYTE, 0, parent, ioError);
         end if
         if (header_in(HEADER_STRING_COUNT) .gt. 0) then
           strings_in = ' '
@@ -477,7 +479,7 @@ RUN_LOOP_MPI_STRING = """
             call MPI_SEND(doubles_out, header_out(HEADER_DOUBLE_COUNT), MPI_REAL8, 0, 999, parent, ioerror)
           end if
           if (header_out(HEADER_BOOLEAN_COUNT) .gt. 0) then
-            call MPI_SEND(booleans_out, header_out(HEADER_BOOLEAN_COUNT), MPI_CHARACTER, 0, 999, parent, ioerror)
+            call MPI_SEND(booleans_out, header_out(HEADER_BOOLEAN_COUNT), MPI_BYTE, 0, 999, parent, ioerror)
           end if
        
           if (header_out(HEADER_STRING_COUNT) .gt. 0) then
