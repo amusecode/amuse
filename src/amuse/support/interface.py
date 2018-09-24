@@ -22,6 +22,7 @@ from amuse.datamodel import parameters
 from amuse.datamodel import incode_storage
 
 import itertools
+from collections import defaultdict
 
 class ConvertArgumentsException(core.IncompatibleUnitsException):
     formatstring = "{0}"
@@ -859,22 +860,25 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.property_definitions = {}
         self.interface = interface
-        self.definitions = []
-        self.parameters = None
+        self.definitions = defaultdict(list,parameters=[])
+        self.parameters = {}
 
     def supports(self, name, was_found):
-        return name == 'parameters'
+        return name in self.definitions.keys()
 
     def get_attribute(self, name, value):
         if not self.parameters:
-            self.parameters =  parameters.new_parameters_instance_with_docs(self.definitions, self.interface)
+            for n,d in self.definitions.iteritems():
+                self.parameters[n] =  parameters.new_parameters_instance_with_docs(d, self.interface)
        
-        return self.parameters
+        return self.parameters[name or 'parameters']
 
     def attribute_names(self):
-        return set(['parameters'])
+        return set(self.definitions.keys())
 
-    def add_method_parameter(self, get_method, set_method, name, description, default_value = None,must_set_before_get = False, is_vector = False):
+    def add_method_parameter(self, get_method, set_method, name, description, 
+            default_value = None,must_set_before_get = False, is_vector = False,
+            parameter_set='parameters'):
         if is_vector:
             definition = parameters.ModuleVectorMethodParameterDefinition(
                 get_method,
@@ -893,18 +897,18 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
                 default_value,
                 must_set_before_get = must_set_before_get
             )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
         
-    def add_alias_parameter(self, name, aliased_name, description):
+    def add_alias_parameter(self, name, aliased_name, description,parameter_set='parameters'):
         definition = parameters.AliasParameterDefinition(
             name,
             aliased_name,
             description
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
 
-    def add_caching_parameter(self, function_name, parameter_name, name, description, default_value = None):
+    def add_caching_parameter(self, function_name, parameter_name, name, description, default_value = None,parameter_set='parameters'):
         definition = parameters.ModuleCachingParameterDefinition(
             function_name,
             parameter_name,
@@ -912,9 +916,9 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             description,
             default_value
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
-    def add_boolean_parameter(self, get_method, set_method, name, description, default_value = None):
+    def add_boolean_parameter(self, get_method, set_method, name, description, default_value = None,parameter_set='parameters'):
         definition = parameters.ModuleBooleanParameterDefinition(
             get_method,
             set_method,
@@ -922,15 +926,15 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             description,
             default_value
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
-    def add_default_form_parameter(self,name,description,default):
+    def add_default_form_parameter(self,name,description,default,parameter_set='parameters'):
         if isinstance(default,bool):
-          self.add_boolean_parameter("get_"+name,"set_"+name,name,description,default)
+          self.add_boolean_parameter("get_"+name,"set_"+name,name,description,default,parameter_set='parameters')
         else:
-          self.add_method_parameter("get_"+name,"set_"+name,name,description,default)
+          self.add_method_parameter("get_"+name,"set_"+name,name,description,default,parameter_set='parameters')
 
-    def add_array_parameter(self, get_method, set_method, range_method, name, description):
+    def add_array_parameter(self, get_method, set_method, range_method, name, description,parameter_set='parameters'):
         definition = parameters.ModuleArrayParameterDefinition(
             get_method,
             set_method,
@@ -938,7 +942,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             name,
             description
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
     def has_name(self, name):
         return name == 'PARAMETER'
@@ -948,10 +952,10 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
 
 
 
-    def add_vector_parameter(self, name, description, parameter_names):
+    def add_vector_parameter(self, name, description, parameter_names,parameter_set='parameters'):
         default_value = None
         for parameter_name in parameter_names:
-            for defined_parameter in self.definitions:
+            for defined_parameter in self.definitions[parameter_set]:
                 if defined_parameter.name == parameter_name:
                     if default_value is None:
                         if not is_quantity(defined_parameter.default_value):
@@ -965,11 +969,11 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             parameter_names,
             default_value
         )
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
 
-    def add_interface_parameter(self, name, description, default_value,state_guard=None):        
+    def add_interface_parameter(self, name, description, default_value,state_guard=None,parameter_set='parameters'):        
         definition=parameters.InterfaceParameterDefinition(name,description,default_value,state_guard=state_guard)
-        self.definitions.append(definition)
+        self.definitions[parameter_set].append(definition)
     
 class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
@@ -1521,6 +1525,11 @@ class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
     def data_store_names(self):
         self.before_get_data_store_names()
         return self.get_handler('PARTICLES').mapping_from_name_to_set_definition.keys()
+
+    def parameter_set_names(self):
+        #~ self.before_get_data_store_names()
+        return self.get_handler('PARAMETER').definitions.keys()
+
     
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
     formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
