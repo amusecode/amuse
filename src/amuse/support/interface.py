@@ -860,7 +860,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.property_definitions = {}
         self.interface = interface
-        self.definitions = defaultdict(list)
+        self.definitions = defaultdict(list,parameters=[])
         self.parameters = {}
 
     def supports(self, name, was_found):
@@ -868,8 +868,8 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
 
     def get_attribute(self, name, value):
         if not self.parameters:
-            for n in self.definitions or ['parameters']:
-                self.parameters[n] =  parameters.new_parameters_instance_with_docs(self.definitions[n], self.interface)
+            for n,d in self.definitions.iteritems():
+                self.parameters[n] =  parameters.new_parameters_instance_with_docs(d, self.interface)
        
         return self.parameters[name or 'parameters']
 
