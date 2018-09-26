@@ -899,11 +899,12 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             )
         self.definitions[parameter_set].append(definition)
         
-    def add_alias_parameter(self, name, aliased_name, description,parameter_set='parameters'):
+    def add_alias_parameter(self, name, aliased_name, description,parameter_set='parameters',alias_set=None):
         definition = parameters.AliasParameterDefinition(
             name,
             aliased_name,
-            description
+            description,
+            alias_set=alias_set
         )
         self.definitions[parameter_set].append(definition)
 
