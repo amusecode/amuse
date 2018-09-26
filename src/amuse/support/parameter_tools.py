@@ -1,6 +1,6 @@
 import f90nml
 from collections import defaultdict
-from omuse.units.quantities import new_quantity, to_quantity, is_quantity
+from amuse.units.quantities import new_quantity, to_quantity, is_quantity
 
 
 # CodeWithNamelistParameters
