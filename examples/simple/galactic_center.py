@@ -1,22 +1,22 @@
 """
 Evolves a cluster in the potention of the galactic center
-  
+
 Uses the bridge integrator to couple different codes.
 In this example a cluster is evolved  circling the galactic center, represented
 by a static potential.
 """
 from __future__ import print_function
 
-import numpy
+# import numpy
 
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 
 from amuse.ext.bridge import bridge
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+# from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.fi.interface import Fi
-from amuse.community.gadget2.interface import Gadget2
+# from amuse.community.gadget2.interface import Gadget2
 
 from matplotlib import pyplot
 
@@ -30,7 +30,8 @@ class GalacticCenterGravityCode(object):
     'get_potential_at_point'. Note that both functions get arrays of points.
     """
 
-    def __init__(self, R=1000. | units.parsec, M=1.6e10 | units.MSun, alpha=1.2):
+    def __init__(
+            self, R=1000. | units.parsec, M=1.6e10 | units.MSun, alpha=1.2):
         self.R = R
         self.M = M
         self.alpha = alpha
@@ -48,8 +49,8 @@ class GalacticCenterGravityCode(object):
     def get_potential_at_point(self, eps, x, y, z):
         r2 = x**2+y**2+z**2
         r = r2**0.5
-        c = constant.G*self.M/self.R**self.alpha
-        phi = c/(alpha-1)*(r**(self.alpha-1)-R**(self.alpha-1))
+        c = constants.G*self.M/self.R**self.alpha
+        phi = c/(self.alpha-1)*(r**(self.alpha-1)-self.R**(self.alpha-1))
         return phi
 
     def vcirc(self, r):
@@ -107,8 +108,7 @@ if __name__ == "__main__":
     # make cluster and Galactic center
     cluster = king_model_cluster(
             Fi, N, W0, Mcluster, Rcluster, parameters=[
-                ("epsilon_squared",
-                (0.01 | units.parsec)**2),
+                ("epsilon_squared", (0.01 | units.parsec)**2),
                 ("periodic_box_size", 200 | units.parsec),
                 ("timestep", timestep/4)
                 ]
@@ -125,7 +125,6 @@ if __name__ == "__main__":
     # setup bridge; cluster is evolved under influence of GC
     sys = bridge(verbose=False)
     sys.add_system(cluster, (center,), False)
-
 
     # evolve and make plots
     times = units.Myr([0., 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4])

@@ -1,5 +1,6 @@
 """
-Calculated theoretical pre-main-sequance evolutionary tracks for stars of various masses.
+Calculated theoretical pre-main-sequance evolutionary tracks for stars of
+various masses.
 After Iben, ApJ 141, 993, 1965
 """
 

@@ -23,7 +23,9 @@ def main():
     stellar_evolution = MESA()
     se_star = stellar_evolution.particles.add_particle(star)
 
-    print("Evolving a", star.mass, "star with", stellar_evolution.__class__.__name__, end=' ')
+    print(
+            "Evolving a", star.mass,
+            "star with", stellar_evolution.__class__.__name__, end=' ')
     print("until its radius exceeds", stop_radius)
     while (se_star.radius < stop_radius):
         se_star.evolve_one_step()
@@ -69,10 +71,15 @@ def main():
           stellar_evolution.particles)
 
     stellar_evolution.stop()
-    return temperatures_original, luminosities_original, temperatures_helium, luminosities_helium
+    return (
+            temperatures_original, luminosities_original, temperatures_helium,
+            luminosities_helium
+            )
 
 
-def plot_tracks(temperatures_original, luminosities_original, temperatures_helium, luminosities_helium):
+def plot_tracks(
+        temperatures_original, luminosities_original, temperatures_helium,
+        luminosities_helium):
     pyplot.figure(figsize=(8, 6))
     pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
 
@@ -87,6 +94,7 @@ def plot_tracks(temperatures_original, luminosities_original, temperatures_heliu
 
 
 if __name__ == "__main__":
-    temperatures_original, luminosities_original, temperatures_helium, luminosities_helium = main()
+    temperatures_original, luminosities_original, temperatures_helium, \
+            luminosities_helium = main()
     plot_tracks(temperatures_original, luminosities_original,
                 temperatures_helium, luminosities_helium)

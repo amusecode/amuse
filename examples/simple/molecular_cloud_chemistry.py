@@ -1,10 +1,11 @@
 """
 Evolves a molecular cloud with chemical evolution
 
-The dynamics is evolved in the sph code Fi, chemistry with Krome, assuming 
+The dynamics is evolved in the sph code Fi, chemistry with Krome, assuming
 an isothermal cloud (hence passive chemical evolution).
 
-Initial condition is a smooth spherical cloud with random velocities as in Bonnell et al. (2003)  
+Initial condition is a smooth spherical cloud with random velocities as in
+Bonnell et al. (2003)
 """
 import numpy
 

@@ -1,11 +1,14 @@
 """
-Evolves a stellar binary and reports the mass of each star during the evolution.
+Evolves a stellar binary and reports the mass of each star during the
+evolution.
 
 Shows the type of each star as they change.
 """
 from __future__ import print_function
 
-from amuse.lab import *
+from amuse.lab import (
+        SeBa, Particles, constants, units
+        )
 import numpy
 from matplotlib import pyplot
 
@@ -45,7 +48,8 @@ def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
     current_time = 0 | units.Myr
     while current_time < (1000 | units.Myr):
         code.update_time_steps()
-        # The next line appears a bit weird, but saves time for this simple test.
+        # The next line appears a bit weird, but saves time for this simple
+        # test.
         deltat = max(1.0*code.binaries[0].time_step, 0.1 | units.Myr)
         current_time = current_time + deltat
         code.evolve_model(current_time)
@@ -60,8 +64,9 @@ def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
             print(binary.age, "Child 2, change of stellar type",
                   previous_type_child2, ' -> ', binary.child2.stellar_type)
             previous_type_child2 = binary.child2.stellar_type
-        results.append((binary.age, binary.child1.mass, binary.child1.stellar_type,
-                        binary.child2.mass, binary.child2.stellar_type))
+        results.append(
+                (binary.age, binary.child1.mass, binary.child1.stellar_type,
+                    binary.child2.mass, binary.child2.stellar_type))
 
     code.stop()
     return results

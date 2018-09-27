@@ -1,10 +1,11 @@
 """
-Evolves a cluster until a collision is detected between two stars in the cluster.
+Evolves a cluster until a collision is detected between two stars in the
+cluster.
 
 The stars in the cluster are distributed using a plummer sphere, the
 masses are set according to a Salpeter initial mass function.
 
-By default the radii of all stars are equal and very large. 
+By default the radii of all stars are equal and very large.
 
 All units are in nbody units.
 """
@@ -12,15 +13,18 @@ from __future__ import print_function
 
 import numpy
 from matplotlib import pyplot
-from amuse.lab import *
+from amuse.lab import (
+        nbody_system, new_plummer_model, new_salpeter_mass_distribution_nbody,
+        Hermite
+        )
 
 
 def new_cluster(number_of_stars=1000, radius=None):
     """
-    Return a new cluster of stars with the given radii and a salpeter 
-    mass distribution.
+    Return a new cluster of stars with the given radii and a salpeter mass
+    distribution.
     """
-    if radius == None:
+    if radius is None:
         radius = (0.5 / number_of_stars) | nbody_system.length
 
     particles = new_plummer_model(number_of_stars)
@@ -94,4 +98,5 @@ if __name__ == "__main__":
             "No stopping collision detected in the given timeframe.")
 
     plot_particles_and_highlight_collision(
-        particles, stopping_condition.particles(0), stopping_condition.particles(1))
+        particles, stopping_condition.particles(0),
+        stopping_condition.particles(1))

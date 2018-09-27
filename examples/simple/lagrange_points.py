@@ -1,9 +1,10 @@
 """
-Make a contour plot of the effective potential of the Sun-Earth system (left) 
-and a system with a 10000 times more massive Earth with the Lagrangian points visible.
+Make a contour plot of the effective potential of the Sun-Earth system (left)
+and a system with a 10000 times more massive Earth with the Lagrangian points
+visible.
 """
 
-import numpy
+# import numpy
 from matplotlib import pyplot
 from amuse.plot import xlabel, ylabel, effective_iso_potential_plot
 

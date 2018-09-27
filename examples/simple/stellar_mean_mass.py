@@ -4,13 +4,15 @@ This routine was used to measure the <m> of a star cluster in order to
 incorporate <m>(t) and d<m>/dt in a parametrized cluster evolution code.
 """
 
-import sys
-import numpy
-from matplotlib import pyplot
-from amuse.plot import loglog, xlabel, ylabel
+# import sys
+# import numpy
+# from matplotlib import pyplot
+# from amuse.plot import loglog, xlabel, ylabel
 
 from amuse.community.sse.interface import SSE
-from amuse.lab import *
+from amuse.lab import (
+        units, Particles, new_salpeter_mass_distribution
+        )
 
 from optparse import OptionParser
 

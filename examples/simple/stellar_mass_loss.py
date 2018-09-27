@@ -3,10 +3,10 @@
     in the stellar evolution using MESA
     and calculate the effect this has on the stellar radius.
 """
-import numpy
+# import numpy
 
 from amuse.units import units
-from amuse.datamodel import Particle, Particles
+from amuse.datamodel import Particle
 from amuse.support.console import set_printing_strategy
 
 from amuse.community.mesa.interface import MESA

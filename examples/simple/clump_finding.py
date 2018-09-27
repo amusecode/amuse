@@ -4,7 +4,7 @@ in the particle set.
 """
 from __future__ import print_function
 
-import numpy
+# import numpy
 from numpy import random
 from matplotlib import pyplot
 

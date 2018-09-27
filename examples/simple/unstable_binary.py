@@ -1,14 +1,14 @@
 """
-Evolves two stars dynamically (hermit, nbody code) each star will 
+Evolves two stars dynamically (hermit, nbody code) each star will
 lose mass during the evolution (evtwin, stellar evolution code)
 
 We start with two stars, one 10.0 and one 1.0 solar mass star. These
-stars start orbiting with a stable kepler orbit. 
+stars start orbiting with a stable kepler orbit.
 After 2 orbital periods the stars will begin to lose mass and the binary
 will become unstable.
 """
 
-from amuse.plot import scatter, xlabel, ylabel, plot
+from amuse.plot import xlabel, ylabel, plot
 from matplotlib import pyplot
 from math import pi
 from amuse.units.optparse import OptionParser
@@ -17,7 +17,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units.nbody_system import nbody_to_si
 from amuse.community.evtwin.interface import EVtwin
-from amuse.community.sse.interface import SSE
+# from amuse.community.sse.interface import SSE
 from amuse.community.hermite0.interface import Hermite
 
 from amuse.datamodel import Particles
@@ -126,7 +126,7 @@ def main(
         kinetic_to_potential_ratio=0.8,
         periods=10,
         age=10 | units.Myr
-    ):
+        ):
     t_offset_stars = age
     t_end = periods * orbital_period
 

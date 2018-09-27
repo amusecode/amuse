@@ -2,10 +2,9 @@
 Runs the Orszag-Tang Vortex problem described in the Athena test-suite
 (http://www.astro.virginia.edu/VITA/ATHENA/ot.html):
 
-'The Orszag-Tang Vortex is a well-known test for MHD codes. The 
-intial conditions lead to a system of supersonic MHD turbulence,
-making this problem a good test of the algorithm's ability to 
-handle such turbulence and MHD shocks.' 
+'The Orszag-Tang Vortex is a well-known test for MHD codes. The intial
+conditions lead to a system of supersonic MHD turbulence, making this problem a
+good test of the algorithm's ability to handle such turbulence and MHD shocks.'
 """
 
 import numpy
@@ -14,7 +13,9 @@ from matplotlib import pyplot
 
 from amuse.community.athena.interface import Athena
 
-from amuse.units.generic_unit_system import *
+from amuse.units.generic_unit_system import (
+        mass, length, speed, time, current
+        )
 from amuse.datamodel import Grid
 density = mass / length**3
 momentum = speed * density
@@ -99,7 +100,8 @@ def initialize_grid(grid, magentic_field_grid):
             A_grid.Az[:-1, 1:, ...] - A_grid.Az[:-1, :-1, ...]
             ) / A_grid.cellsize().y
     magentic_field_grid.B2i = (
-            - (A_grid.Az[1:, :-1, ...] - A_grid.Az[:-1, :-1, ...]
+            - (
+                A_grid.Az[1:, :-1, ...] - A_grid.Az[:-1, :-1, ...]
                 ) / A_grid.cellsize().x
             )
     magentic_field_grid.B3i = 0.0 | magnetic_field
@@ -120,8 +122,8 @@ def initialize_grid(grid, magentic_field_grid):
             + magentic_field_grid.B2i[..., 1:, ...])*0.5
     magentic_field_grid.B3c = magentic_field_grid.B3i
 
-   # magentic_field_grid.B1c[-1,...,...] = magentic_field_grid.B1c[0,...,...]
-   # magentic_field_grid.B2c[...,-1,...] = magentic_field_grid.B2c[...,0,...]
+    # magentic_field_grid.B1c[-1,...,...] = magentic_field_grid.B1c[0,...,...]
+    # magentic_field_grid.B2c[...,-1,...] = magentic_field_grid.B2c[...,0,...]
 
     mu0 = 1.0 | (mass*length/time**2/current**2)
 

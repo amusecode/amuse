@@ -1,15 +1,22 @@
 import numpy
-from amuse.lab import *
+from amuse.lab import (
+        constants, units, Particles, nbody_system, Hermite
+        )
+from amuse.ext.orbital_elements import orbital_elements_from_binary
 
 
 def get_relative_velocity(total_mass, semimajor_axis, ecc):
-    return (constants.G * total_mass * ((1.0 + ecc)/(1.0 - ecc)) / semimajor_axis).sqrt()
+    return (
+            constants.G * total_mass * ((1.0 + ecc)/(1.0 - ecc))
+            / semimajor_axis).sqrt()
 
 
 def make_circular_binary(M, m, a):
     masses = [M.value_in(units.MSun), m.value_in(units.MSun)] | units.MSun
-    orbital_period = (4 * numpy.pi**2 * a**3 /
-                      (constants.G * masses.sum())).sqrt().as_quantity_in(units.day)
+    orbital_period = (
+            4 * numpy.pi**2 * a**3
+            / (constants.G * masses.sum())
+            ).sqrt().as_quantity_in(units.day)
 
     print "   Initializing inner binary"
     print "   Orbital period inner binary:", orbital_period
@@ -39,9 +46,6 @@ def post_supernova_eccentricity(M0, m0, M1, m1, a0, r0):
     e = numpy.sqrt(1 - (1-e0**2)
                    * ((1-(2*a0/r0)*(dM/(M0+m0)))) / ((1-dM/(m0+m0))**2))
     return e
-
-
-from amuse.ext.orbital_elements import orbital_elements_from_binary
 
 
 def supernova_in_binary_nbody(M0, m0, a0, tsn):
@@ -75,7 +79,10 @@ def supernova_in_binary_nbody(M0, m0, a0, tsn):
         M0, m0, stars[0].mass, stars[1].mass, a, r0)
     e_ana = post_supernova_eccentricity(
         M0, m0, stars[0].mass, stars[1].mass, a, r0)
-    print "Analytic solution to post orbit orbital parameters: a=", a_ana, "e=", e_ana
+    print(
+            "Analytic solution to post orbit orbital parameters: a=",
+            a_ana, "e=", e_ana,
+            )
     gravity.stop()
 
 

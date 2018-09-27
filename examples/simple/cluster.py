@@ -8,7 +8,7 @@ import numpy
 from matplotlib import pyplot
 from amuse.units import nbody_system
 from amuse.community.hermite0.interface import Hermite
-import logging
+# import logging
 
 from amuse.ic.plummer import new_plummer_model
 
@@ -22,15 +22,15 @@ def print_log(time, gravity, particles, total_energy_at_t0):
     potential_energy = gravity.potential_energy
     total_energy_at_this_time = kinetic_energy + potential_energy
     print("time                    : ", time)
-    print("energy error            : ", (total_energy_at_this_time -
-                                         total_energy_at_t0) / total_energy_at_t0)
+    print("energy error            : ", (
+        total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0)
 
 
 def simulate_small_cluster(
         number_of_stars=1000,
         end_time=40 | nbody_system.time,
         number_of_workers=1
-    ):
+        ):
     particles = new_plummer_model(number_of_stars)
     particles.scale_to_standard()
 

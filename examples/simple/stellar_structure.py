@@ -4,7 +4,7 @@ Make plots of the stellar structure of a star of given mass and age
 
 import numpy
 from matplotlib import pyplot
-from amuse.plot import plot, semilogx, semilogy, loglog, xlabel, ylabel
+from amuse.plot import semilogy, xlabel, ylabel
 
 from amuse.units import units
 from amuse.community.evtwin.interface import EVtwin

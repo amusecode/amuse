@@ -1,8 +1,12 @@
 """
 Creates a number of plots using the AMUSE unit aware plot functions.
 """
-from amuse.lab import *
-from amuse.plot import *
+from amuse.lab import (
+        units, quantities
+        )
+from amuse.plot import (
+        native_plot, plot, scatter, xlabel, ylabel, hist
+        )
 import numpy as np
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@ Evolves a cluster orbiting a massive central particle.
 """
 from __future__ import print_function
 
-import numpy
+# import numpy
 
 from amuse.units import units
 from amuse.units import constants
@@ -34,7 +34,7 @@ def new_cluster(
         number_of_particles,
         W0,
         converter
-    ):
+        ):
     particles = new_king_model(N, W0, convert_nbody=converter)
     particles.radius = 0.0 | units.parsec
     return particles
@@ -71,7 +71,8 @@ if __name__ == "__main__":
     galactic_center = new_galactic_center(central_mass)
 
     # shift the cluster to an orbit around GC
-    # (note the systems share the same coordinate frame, although units may differ)
+    # (note the systems share the same coordinate frame, although units may
+    # differ)
     vcirc = circular_velocity_for_stable_orbit(Rinit, central_mass)
     shift_particles(
         cluster,

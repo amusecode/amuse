@@ -3,7 +3,7 @@ Evolves the steady state solution of a star irridiating a H2 region.
 """
 from __future__ import print_function
 
-import numpy
+# import numpy
 import os
 from matplotlib import pyplot
 from optparse import OptionParser
@@ -11,15 +11,17 @@ from optparse import OptionParser
 from amuse.community.mocassin.interface import Mocassin, mocassin_rydberg_unit
 
 from amuse.units import units
-from amuse.units import nbody_system
+# from amuse.units import nbody_system
 
-from amuse.ext.protodisk import ProtoPlanetaryDisk
+# from amuse.ext.protodisk import ProtoPlanetaryDisk
 from amuse.datamodel import Particle
 from amuse.datamodel import Grid
 from amuse.io import write_set_to_file
 
 
-def make_grid(number_of_grid_cells, length, constant_hydrogen_density, inner_radius, outer_radius):
+def make_grid(
+        number_of_grid_cells, length, constant_hydrogen_density, inner_radius,
+        outer_radius):
     grid = Grid.create([number_of_grid_cells] * 3,
                        length.as_vector_with_length(3))
 
@@ -119,16 +121,23 @@ def main(number_of_grid_cells=15, min_convergence=20):
         radiative_transfer.step()
 
         percentage_converged = radiative_transfer.get_percentage_converged()
-        print("percentage converged :", percentage_converged, ", step :", i,
-              ", photons:", radiative_transfer.parameters.total_number_of_photons)
+        print(
+                "percentage converged :", percentage_converged,
+                ", step :", i,
+                ", photons:",
+                radiative_transfer.parameters.total_number_of_photons)
 
         if percentage_converged >= min_convergence:
             break
 
         if previous_percentage_converged > 5 and percentage_converged < 95:
             convergence_increase = (
-                percentage_converged-previous_percentage_converged)/previous_percentage_converged
-            if convergence_increase < 0.2 and radiative_transfer.parameters.total_number_of_photons < max_number_of_photons:
+                percentage_converged - previous_percentage_converged
+                ) / previous_percentage_converged
+            if (
+                    convergence_increase < 0.2
+                    and radiative_transfer.parameters.total_number_of_photons < max_number_of_photons
+                    ):
                 radiative_transfer.parameters.total_number_of_photons *= 2
 
         previous_percentage_converged = percentage_converged

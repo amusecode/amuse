@@ -14,16 +14,16 @@ Fragmentation in a rotating protostar -- Boss & Bodenheimer (1979, BB79,
     Rcloud -- radius of the cloud
     omega -- angular velocity of the cloud
     density_perturb -- amplitude of the density perturbation
-  
+
   Plot 10 snapshots of the simulations (bb79_rho_*.png)
        -- log10(rho [amu/cm**3]).
 """
 from __future__ import print_function
 
 import numpy
-import string
-import os
-import sys
+# import string
+# import os
+# import sys
 
 from matplotlib import pyplot
 from matplotlib import rc
@@ -41,10 +41,10 @@ rc('text', usetex=True)
 
 
 def get_grid_posvel(N=100, grid_size=1 | units.parsec):
-    """ 
+    """
     gives x,y(,z,vx,vy,vz) Cartesian coordinate grid (where z=0, vx=vy=vz=0)
     -- for plotting SPH quantities in the xy plane
-    -- N points on each axis; size of the grid 'grid_size' for x and y 
+    -- N points on each axis; size of the grid 'grid_size' for x and y
     """
 
     cell_center_positions_1d = numpy.linspace(-0.5, 0.5, N)
@@ -66,8 +66,8 @@ def get_grid_posvel(N=100, grid_size=1 | units.parsec):
 def plot_sph_rho(sph, N=100, grid_size=1 | units.parsec,
                  plot_name="cloud_plot_rho.png", plot_title="SPH density"):
     """
-    plots the log10(SPH density) in the xy plane 
-    input: sph -- set of sph particles 
+    plots the log10(SPH density) in the xy plane
+    input: sph -- set of sph particles
       N -- number of grid points (in x and y)
       grid_size -- size of the grid (x and y)
       plot_name -- name for the output figure
@@ -87,8 +87,8 @@ def plot_sph_rho(sph, N=100, grid_size=1 | units.parsec,
     pyplot.imshow(numpy.log10(rho.value_in(units.amu/units.cm**3)),
                   extent=extent)
     pyplot.title(plot_title)
-    #pyplot.xlabel('x [pc]')
-    #pyplot.ylabel('y [pc]')
+    # pyplot.xlabel('x [pc]')
+    # pyplot.ylabel('y [pc]')
     frame = pyplot.gca()
     frame.axes.get_xaxis().set_visible(False)
     frame.axes.get_yaxis().set_visible(False)

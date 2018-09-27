@@ -8,7 +8,7 @@ from matplotlib import pyplot
 
 from amuse.community.sse.interface import SSE
 from amuse.units import units
-from amuse.ext import solarsystem
+# from amuse.ext import solarsystem
 
 from amuse import datamodel
 

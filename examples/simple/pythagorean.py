@@ -3,13 +3,13 @@ Calculates the Pythagorean 3-body problem using different values for
 the smoothing length in the n-body code.
 """
 
-import numpy
-import time
+# import numpy
+# import time
 
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+# from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.hermite0.interface import Hermite
-from amuse.community.huayno.interface import Huayno
-from amuse.community.bhtree.interface import BHTree
+# from amuse.community.huayno.interface import Huayno
+# from amuse.community.bhtree.interface import BHTree
 from amuse.units import nbody_system
 from amuse.units.quantities import AdaptingVectorQuantity
 from matplotlib import pyplot
@@ -56,10 +56,10 @@ def run_pyth(interface, tend=100, dt=0.125, parameters=[]):
 
 
 if __name__ == "__main__":
-    codes_to_run = [('Hermite0, $\eta=0.03$', Hermite,  [("dt_param", 0.03)]),
-                    ('Hermite0, $\eta=0.01$', Hermite,  [("dt_param", 0.01)]),
-                    ('Hermite0, $\eta=0.003$', Hermite,  [("dt_param", 0.003)]),
-                    ('Hermite0, $\eta=0.001$', Hermite,  [("dt_param", 0.001)])]
+    codes_to_run = [('Hermite0, $\eta=0.03$', Hermite, [("dt_param", 0.03)]),
+                    ('Hermite0, $\eta=0.01$', Hermite, [("dt_param", 0.01)]),
+                    ('Hermite0, $\eta=0.003$', Hermite, [("dt_param", 0.003)]),
+                    ('Hermite0, $\eta=0.001$', Hermite, [("dt_param", 0.001)])]
     N = (len(codes_to_run)-1)/2+1
     f = pyplot.figure(figsize=(8, 4*N))
 

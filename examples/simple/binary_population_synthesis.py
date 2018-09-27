@@ -8,12 +8,12 @@ from amuse.units import units
 from amuse.units import quantities
 from amuse import datamodel
 from amuse.community.seba.interface import SeBa
-from amuse.community.bse.interface import BSE
+# from amuse.community.bse.interface import BSE
 
 from matplotlib import pyplot
 
 import numpy
-import time
+# import time
 
 USE_VECTOR_OPERATIONS = True
 
@@ -21,7 +21,7 @@ USE_VECTOR_OPERATIONS = True
 def multidimensional_meshgrid(*arrays):
     """
     Utitility function to create a multidimensional grid based
-    on a list of arrays. Each array defines a 
+    on a list of arrays. Each array defines a
     range in one dimension.
     """
     reversed_quantities = tuple(reversed(arrays))
@@ -53,7 +53,8 @@ def multidimensional_meshgrid(*arrays):
     return tuple(result[::-1])
 
 
-def create_binary(stars, binaries, primary_mass, mass_ratio, separation, eccentricity):
+def create_binary(
+        stars, binaries, primary_mass, mass_ratio, separation, eccentricity):
     """
     creates a single binary, the constituent stars will be accumulated
     in the stars partice set, the binary will be added to the binaries

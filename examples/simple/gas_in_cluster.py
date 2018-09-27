@@ -1,9 +1,12 @@
 """
 Simultaniously evolves gas and stars in a cluster.
 
-The stars and gas particles evolve in their respective codes (Hermite and Gadget2)
-The force of the gas particles on the star particles is calculated by a seperate code (BHTree)
-The force of the star particles on the gas particles is calculated by the star code (Hermite)
+The stars and gas particles evolve in their respective codes (Hermite and
+Gadget2)
+The force of the gas particles on the star particles is calculated by a
+seperate code (BHTree)
+The force of the star particles on the gas particles is calculated by the star
+code (Hermite)
 
 The bridge works in S.I. units, but for this example all times and energies are
 reported in nbody units.
@@ -20,8 +23,8 @@ from amuse.ic import plummer
 from amuse.ic import gasplummer
 
 from amuse.units import units
-from amuse.units import constants
-from amuse.units import quantities
+# from amuse.units import constants
+# from amuse.units import quantities
 from amuse.units import nbody_system
 
 import numpy
@@ -31,7 +34,8 @@ from matplotlib import pyplot
 class BridgeStarAndGasPlummerCode(object):
     """
     Calculates a cluster with stars and gas, using a fixed set of codes
-    (Hermite for stars, Gadget2 for gas and BHTree for gas to star interaction).
+    (Hermite for stars, Gadget2 for gas and BHTree for gas to star
+    interaction).
     """
 
     def __init__(
@@ -48,7 +52,7 @@ class BridgeStarAndGasPlummerCode(object):
             diagnostic_timestep=0.1 | nbody_system.time
             ):
 
-        if not seed is None:
+        if seed is not None:
             numpy.random.seed(seed)
 
         if ngas is None:
@@ -116,10 +120,10 @@ class BridgeStarAndGasPlummerCode(object):
         self.star_code.particles.add_particles(self.particles)
         self.gas_code.gas_particles.add_particles(self.gas_particles)
 
-        self.channel_from_code_to_memory_for_stars = self.star_code.particles.new_channel_to(
-            self.particles)
-        self.channel_from_code_to_memory_for_gas = self.gas_code.gas_particles.new_channel_to(
-            self.gas_particles)
+        self.channel_from_code_to_memory_for_stars = \
+            self.star_code.particles.new_channel_to(self.particles)
+        self.channel_from_code_to_memory_for_gas = \
+            self.gas_code.gas_particles.new_channel_to(self.gas_particles)
 
     def create_bridge(self):
         self.bridge_system = bridge.Bridge(
@@ -183,7 +187,8 @@ class BridgeStarAndGasPlummerCode(object):
             self.code.potential_energy + self.code.thermal_energy
         energy = self.converter.to_nbody(
             sum_energy).value_in(nbody_system.energy)
-        coreradius = self.star_code.particles.virial_radius().value_in(self.rscale.to_unit())
+        coreradius = self.star_code.particles.virial_radius().value_in(
+                self.rscale.to_unit())
 
         print("Time          :", time)
         print("Energy        :", energy)

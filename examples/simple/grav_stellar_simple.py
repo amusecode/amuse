@@ -1,5 +1,6 @@
 """
-    simple coupling of a stellar evolution and a gravitational code to simulate a cluster of stars.
+    simple coupling of a stellar evolution and a gravitational code to simulate
+    a cluster of stars.
 """
 from __future__ import print_function
 

@@ -3,8 +3,8 @@ Generates a Hertzsprung-Russell diagram for a single star
 """
 from __future__ import print_function
 
-import sys
-import numpy
+# import sys
+# import numpy
 from matplotlib import pyplot
 from amuse.plot import loglog, xlabel, ylabel
 
@@ -12,7 +12,7 @@ from amuse.units import units
 from amuse.community.sse.interface import SSE
 
 from amuse import datamodel
-from amuse.rfi.core import is_mpd_running
+# from amuse.rfi.core import is_mpd_running
 end_time = 2 | units.Gyr
 stellar_mass = 2.0 | units.MSun
 

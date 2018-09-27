@@ -1,15 +1,18 @@
 """
 Integrates a stellar orbit in the galactic potential
-  
-This example illustrates the use of a simple external potential and simple integrator, no
+
+This example illustrates the use of a simple external potential and simple
+integrator, no
 amuse community code is used.
 """
 
-import numpy
+# import numpy
 from amuse.units.optparse import OptionParser
 from math import atan
 from math import log
-from amuse.lab import *
+from amuse.lab import (
+        units, constants, AdaptingVectorQuantity, Particle
+        )
 from matplotlib import pyplot
 from amuse.plot import plot
 
@@ -54,7 +57,8 @@ class MilkyWay_galaxy(object):
         return constants.G * mass /\
             (r**2 + (a + (pos.z**2 + b**2).sqrt())**2).sqrt()
 
-    def halo_potential(self, pos, Mc=5.0E+10 | units.MSun, Rc=1.0 | units.kpc**2):
+    def halo_potential(
+            self, pos, Mc=5.0E+10 | units.MSun, Rc=1.0 | units.kpc**2):
         r = pos.length()
         rr = (r/Rc)
         return -constants.G * (Mc/Rc)*(0.5*log(1 + rr**2) + atan(rr)/rr)
@@ -93,7 +97,8 @@ def evolve_particle_in_potential(single_star, potential, t_end):
         time += dt
 
 
-def evolve_particle_trajectory_in_potential(single_star, potential, dt_diag, t_end):
+def evolve_particle_trajectory_in_potential(
+        single_star, potential, dt_diag, t_end):
     time = 0 | units.Myr
     x = [] | size_unit
     y = [] | size_unit
@@ -101,7 +106,9 @@ def evolve_particle_trajectory_in_potential(single_star, potential, dt_diag, t_e
     while time < t_end:
         evolve_particle_in_potential(single_star, potential, dt_diag)
         time += dt_diag
-        print("time=", time, single_star.position.length().as_quantity_in(units.AU))
+        print(
+                "time=", time,
+                single_star.position.length().as_quantity_in(units.AU))
         x.append(single_star.x)
         y.append(single_star.y)
         z.append(single_star.y)
@@ -125,7 +132,8 @@ def new_option_parser():
     result.add_option("-M", dest="mass", type="float", default=1.e+11,
                       unit=units.MSun, help="mass of the galaxy [%unit]")
     result.add_option("-e", dest="eps", type="float", default=0.0,
-                      unit=units.parsec, help="softening of the potential [%unit]")
+                      unit=units.parsec,
+                      help="softening of the potential [%unit]")
     result.add_option("-x", dest="x", type="float", default=8500,
                       unit=units.parsec, help="x-position [%unit]")
     result.add_option("-y", dest="y", type="float", default=0,

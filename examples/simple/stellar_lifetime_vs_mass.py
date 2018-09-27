@@ -1,12 +1,14 @@
-""" 
-Calculates the stellar lifetime in a range of masses between 
+"""
+Calculates the stellar lifetime in a range of masses between
 Mmax and Mmin using SSE (or another stellar evolution code)
 and an analytic expression.
 """
 
 import numpy
 from optparse import OptionParser
-from amuse.lab import *
+from amuse.lab import (
+        units, Particle
+        )
 from amuse.plot import plot
 from matplotlib import pyplot as plt
 from amuse.community.sse.interface import SSE
@@ -28,7 +30,7 @@ def stellar_lifetime(mZAMS, z=0.02):
     while not stellar_remnant_state(se.particles[0]):
         se.evolve_model()
     t_end = se.particles[0].age
-    tpe = se.particles[0].stellar_type
+    # tpe = se.particles[0].stellar_type
     se.particles.remove_particle(se.particles[0])
     return t_end
 

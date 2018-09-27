@@ -1,5 +1,6 @@
 """
-Generates a cluster using a plummer model with a salpeter Initial Mass Function.
+Generates a cluster using a plummer model with a salpeter Initial Mass
+Function.
 Compares the generated IMF against the expected line.
 """
 
