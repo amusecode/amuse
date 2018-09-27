@@ -1,0 +1,45 @@
+{
+    "creators": [
+        {
+            "affiliation": "Netherlands eScience Center",
+            "name": "Pelupessy, Inti"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "van Elteren, Arjen"
+        },
+        {
+            "affiliation": "Drexel University",
+            "name": "McMillan, Steve"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "Portegies Zwart, Simon",
+            "orcid": "0000-0001-5839-0302"
+        },
+        {
+            "name": "Rieder, Steven",
+            "orcid": "0000-0003-3688-5798"
+        },
+        {
+            "affiliation": "Netherlands eScience Center",
+            "name": "Bos, Patrick"
+        },
+        {
+            "affiliation": "Netherlands eScience Center",
+            "name": "Drost, Niels",
+            "orcid": "0000-0001-9795-7981"
+        }
+    ],
+    "description": "<p>Astrophysical Multipurpose Software Environment</p><p>Combine existing numerical codes in an easy to use Python framework. With AMUSE you can simulate objects such as star clusters, proto-planetary disks and galaxies.</p><p>What AMUSE can do for you:</p><ul><li>provides a homogeneous environment to design astrophysical simulations used by students and researchers</li><li>couples different simulation codes in a Python environment to be run locally or distributed</li><li>provides a very easy way to solve astronomical problems that involve complicated physical interactions</li><li>used for more than 40 scientific papers and PhD theses</li></ul>",
+    "keywords": [
+        "astronomy",
+        "multi-model simulation",
+        "model coupling",
+        "physics"
+    ],
+    "license": {
+        "id": "Apache-2.0"
+    },
+    "title": "AMUSE"
+}
