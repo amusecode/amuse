@@ -126,7 +126,8 @@ def setup_system():
 
 
 def setup_bridge(potential, cluster, current_age, timestep, orbit, code):
-    converter = nbody_system.nbody_to_si(current_age, cluster.position.length())
+    converter = nbody_system.nbody_to_si(
+        current_age, cluster.position.length())
     gravity = codelist[code](converter)
 
     cluster.mass = 0 | units.MSun
