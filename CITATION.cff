@@ -18,37 +18,76 @@ abstract: |
     </ul>"
 authors: 
   -
-    affiliation: "Netherlands eScience Center"
-    family-names: Pelupessy
-    given-names: Inti
+    affiliation: "Leiden University"
+    family-names: "Portegies Zwart"
+    given-names: Simon
+    orcid: "https://orcid.org/0000-0001-5839-0302"
   -
     affiliation: "Leiden University"
     family-names: Elteren
     given-names: Arjen
     name-particle: van
   -
+    affiliation: "Netherlands eScience Center"
+    family-names: Pelupessy
+    given-names: Inti
+  -
     affiliation: "Drexel University"
     family-names: McMillan
     given-names: Steve
-  -
-    affiliation: "Leiden University"
-    family-names: "Portegies Zwart"
-    given-names: Simon
-    orcid: "https://orcid.org/0000-0001-5839-0302"
   -
     affiliation: "University of Exeter"
     family-names: Rieder
     given-names: Steven
     orcid: "https://orcid.org/0000-0003-3688-5798"
   -
-    affiliation: "Netherlands eScience Center"
-    family-names: Bos
-    given-names: Patrick
+    affiliation: "Leiden University"
+    family-names: de Vries
+    given-names: Nathan
+  -
+    affiliation: "Leiden University"
+    family-names: Marosvolgyi
+    given-names: Marcell
+  -
+    affiliation: "Drexel University"
+    family-names: Whitehead
+    given-names: Alfred
+  -
+    affiliation: "Drexel University"
+    family-names: Wall
+    given-names: Joshua
   -
     affiliation: "Netherlands eScience Center"
     family-names: Drost
     given-names: Niels
     orcid: "https://orcid.org/0000-0001-9795-7981"
+  -
+    affiliation: "Leiden University"
+    family-names: Jilkova
+    given-names: Lucie
+  -
+    affiliation: "Leiden University"
+    family-names: Martinez Barbosa
+    given-names: Barbosa
+  -
+    affiliation: "Leiden University"
+    family-names: Beedorf
+    given-names: Jeroen
+  -
+    affiliation: "Leiden University"
+    family-names: Boekholt
+    given-names: Tjarda
+  -
+    affiliation: "Netherlands eScience Center"
+    family-names: Bos
+    given-names: Patrick
+  -
+    affiliation: "Netherlands eScience Center"
+    family-names: Werkhoven
+    given-names: Ben
+    name-particle: van
+
+
 cff-version: "1.0.3"
 date-released: 2018-09-27
 doi: "10.5281/zenodo.1435860"
@@ -58,7 +97,8 @@ keywords:
   - "model coupling"
   - physics
 license: "Apache-2.0"
-message: "If you use this software, please cite it using these metadata."
+message: "This is the software citation for the framework code. If you publish work
+with AMUSE please cite also the code papers of the components used."
 repository-code: "https://github.com/amusecode/amuse"
 title: AMUSE
 version: "11.3"
