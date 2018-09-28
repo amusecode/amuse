@@ -1,10 +1,8 @@
 # import time
 import numpy.random
-from amuse.lab import (
-        new_flat_mass_distribution,
-        new_plummer_model,
-        nbody,
-        )
+from amuse.ic.flatimf import new_flat_mass_distribution
+from amuse.ic.plummer import new_plummer_model
+from amuse.units import nbody_system as nbody
 
 # from amuse.community.asterisk.interface import AsteriskInterface
 from amuse.community.asterisk.interface import Asterisk

@@ -2,9 +2,7 @@
 import nose
 
 
-from amuse.lab import (
-        units,
-        )
+from amuse.units import units
 
 from amuse.community.distributed.interface import (
         # DistributedAmuseInterface,
