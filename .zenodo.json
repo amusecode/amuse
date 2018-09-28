@@ -53,7 +53,15 @@
         }, 
         {
             "affiliation": "Leiden University", 
+            "name": "van der Helm, Edwin"
+        }, 
+        {
+            "affiliation": "Leiden University", 
             "name": "Beedorf, Jeroen"
+        }, 
+        {
+            "affiliation": "Netherlands eScience Center", 
+            "name": "Bos, Patrick"
         }, 
         {
             "affiliation": "Leiden University", 
@@ -61,11 +69,47 @@
         }, 
         {
             "affiliation": "Netherlands eScience Center", 
-            "name": "Bos, Patrick"
+            "name": "van Werkhoven, Ben"
         }, 
         {
-            "affiliation": "Netherlands eScience Center", 
-            "name": "van Werkhoven, Ben"
+            "affiliation": "Leiden University", 
+            "name": "Wijnen, Thomas"
+        }, 
+        {
+            "affiliation": "Institute for Advanced Study", 
+            "name": "Hamers, Adrian"
+        }, 
+        {
+            "affiliation": "Booking.com", 
+            "name": "Caputo, Daniel"
+        }, 
+        {
+            "affiliation": "Leiden University", 
+            "name": "Ferrari, Guilherme"
+        }, 
+        {
+            "affiliation": "University of Amsterdam", 
+            "name": "Toonen, Silvia"
+        }, 
+        {
+            "affiliation": "Nvidia", 
+            "name": "Gaburov, Evghenii"
+        }, 
+        {
+            "affiliation": "TNO", 
+            "name": "Paardekooper, Jan-Pieter"
+        }, 
+        {
+            "affiliation": "University of Cambridge", 
+            "name": "Janes, Jurgen"
+        }, 
+        {
+            "affiliation": "Quintel Intellegence", 
+            "name": "Kruip, Chael"
+        }, 
+        {
+            "affiliation": "Georgia Institute of Technology", 
+            "name": "Altay, Gabriel"
         }
     ], 
     "description": "\"<p>\nAstrophysical Multipurpose Software Environment\n</p>\n<p>\nCombine existing numerical codes in an easy to use Python framework. With AMUSE you can simulate objects such as star clusters, proto-planetary disks and galaxies.\n</p>\n<p>\nWhat AMUSE can do for you:\n</p>\n<ul>\n<li>provides a homogeneous environment to design astrophysical simulations used by students and researchers</li>\n<li>couples different simulation codes in a Python environment to be run locally or distributed</li>\n<li>provides a very easy way to solve astronomical problems that involve complicated physical interactions</li>\n<li>used for more than 40 scientific papers and PhD theses</li>\n</ul>\"\n", 

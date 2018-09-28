@@ -71,21 +71,65 @@ authors:
     given-names: Carmen
   -
     affiliation: "Leiden University"
+    family-names: van der Helm
+    given-names: Edwin
+  -
+    affiliation: "Leiden University"
     family-names: Beedorf
     given-names: Jeroen
+  -
+    affiliation: "Netherlands eScience Center"
+    family-names: Bos
+    given-names: Patrick
   -
     affiliation: "Leiden University"
     family-names: Boekholt
     given-names: Tjarda
   -
     affiliation: "Netherlands eScience Center"
-    family-names: Bos
-    given-names: Patrick
-  -
-    affiliation: "Netherlands eScience Center"
     family-names: Werkhoven
     given-names: Ben
     name-particle: van
+  -
+    affiliation: "Leiden University"
+    family-names: Wijnen
+    given-names: Thomas
+  -
+    affiliation: "Institute for Advanced Study"
+    family-names: Hamers
+    given-names: Adrian
+  -
+    affiliation: "Booking.com"
+    family-names: Caputo
+    given-names: Daniel
+  -
+    affiliation: "Leiden University"
+    family-names: Ferrari
+    given-names: Guilherme
+  -
+    affiliation: "University of Amsterdam"
+    family-names: Toonen
+    given-names: Silvia
+  -
+    affiliation: "Nvidia"
+    family-names: Gaburov
+    given-names: Evghenii
+  -
+    affiliation: "TNO"
+    family-names: Paardekooper
+    given-names: Jan-Pieter
+  -
+    affiliation: "University of Cambridge"
+    family-names: Janes
+    given-names: Jurgen
+  -
+    affiliation: "Quintel Intellegence"
+    family-names: Kruip
+    given-names: Chael
+  -
+    affiliation: "Georgia Institute of Technology"
+    family-names: Altay
+    given-names: Gabriel
 
 
 cff-version: "1.0.3"
