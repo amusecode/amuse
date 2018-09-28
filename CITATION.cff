@@ -1,0 +1,153 @@
+# YAML 1.2
+---
+abstract: |
+    "<p>
+    Astrophysical Multipurpose Software Environment
+    </p>
+    <p>
+    Combine existing numerical codes in an easy to use Python framework. With AMUSE you can simulate objects such as star clusters, proto-planetary disks and galaxies.
+    </p>
+    <p>
+    What AMUSE can do for you:
+    </p>
+    <ul>
+    <li>provides a homogeneous environment to design astrophysical simulations used by students and researchers</li>
+    <li>couples different simulation codes in a Python environment to be run locally or distributed</li>
+    <li>provides a very easy way to solve astronomical problems that involve complicated physical interactions</li>
+    <li>used for more than 40 scientific papers and PhD theses</li>
+    </ul>"
+authors: 
+  -
+    affiliation: "Leiden University"
+    family-names: "Portegies Zwart"
+    given-names: Simon
+    orcid: "https://orcid.org/0000-0001-5839-0302"
+  -
+    affiliation: "Leiden University"
+    family-names: Elteren
+    given-names: Arjen
+    name-particle: van
+  -
+    affiliation: "Netherlands eScience Center"
+    family-names: Pelupessy
+    given-names: Inti
+  -
+    affiliation: "Drexel University"
+    family-names: McMillan
+    given-names: Steve
+  -
+    affiliation: "University of Exeter"
+    family-names: Rieder
+    given-names: Steven
+    orcid: "https://orcid.org/0000-0003-3688-5798"
+  -
+    affiliation: "Leiden University"
+    family-names: de Vries
+    given-names: Nathan
+  -
+    affiliation: "Leiden University"
+    family-names: Marosvolgyi
+    given-names: Marcell
+  -
+    affiliation: "Drexel University"
+    family-names: Whitehead
+    given-names: Alfred
+  -
+    affiliation: "Drexel University"
+    family-names: Wall
+    given-names: Joshua
+  -
+    affiliation: "Netherlands eScience Center"
+    family-names: Drost
+    given-names: Niels
+    orcid: "https://orcid.org/0000-0001-9795-7981"
+  -
+    affiliation: "Leiden University"
+    family-names: Jilkova
+    given-names: Lucie
+  -
+    affiliation: "Leiden University"
+    family-names: Martinez Barbosa
+    given-names: Carmen
+  -
+    affiliation: "Leiden University"
+    family-names: van der Helm
+    given-names: Edwin
+  -
+    affiliation: "Leiden University"
+    family-names: Beedorf
+    given-names: Jeroen
+  -
+    affiliation: "Netherlands eScience Center"
+    family-names: Bos
+    given-names: Patrick
+  -
+    affiliation: "Leiden University"
+    family-names: Boekholt
+    given-names: Tjarda
+  -
+    affiliation: "Netherlands eScience Center"
+    family-names: Werkhoven
+    given-names: Ben
+    name-particle: van
+  -
+    affiliation: "Leiden University"
+    family-names: Wijnen
+    given-names: Thomas
+  -
+    affiliation: "Institute for Advanced Study"
+    family-names: Hamers
+    given-names: Adrian
+  -
+    affiliation: "Booking.com"
+    family-names: Caputo
+    given-names: Daniel
+  -
+    affiliation: "Leiden University"
+    family-names: Ferrari
+    given-names: Guilherme
+  -
+    affiliation: "University of Amsterdam"
+    family-names: Toonen
+    given-names: Silvia
+  -
+    affiliation: "Nvidia"
+    family-names: Gaburov
+    given-names: Evghenii
+  -
+    affiliation: "TNO"
+    family-names: Paardekooper
+    given-names: Jan-Pieter
+  -
+    affiliation: "University of Cambridge"
+    family-names: Janes
+    given-names: Jurgen
+  -
+    affiliation: "University of Groningen"
+    family-names: Punzo
+    given-names: Davide
+  -
+    affiliation: "Quintel Intellegence"
+    family-names: Kruip
+    given-names: Chael
+  -
+    affiliation: "Georgia Institute of Technology"
+    family-names: Altay
+    given-names: Gabriel
+
+
+cff-version: "1.0.3"
+date-released: 2018-09-27
+doi: "10.5281/zenodo.1435860"
+keywords: 
+  - astronomy
+  - "multi-model simulation"
+  - "model coupling"
+  - physics
+license: "Apache-2.0"
+message: "This is the software citation for the framework code. If you publish work
+with AMUSE please cite also the code papers of the components used."
+repository-code: "https://github.com/amusecode/amuse"
+title: AMUSE
+version: "11.3"
+...
