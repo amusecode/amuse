@@ -6,9 +6,8 @@ and an analytic expression.
 
 import numpy
 from optparse import OptionParser
-from amuse.lab import (
-        units, Particle
-        )
+from amuse.units import units
+from amuse.datamodel import Particle
 from amuse.plot import plot
 from matplotlib import pyplot as plt
 from amuse.community.sse.interface import SSE

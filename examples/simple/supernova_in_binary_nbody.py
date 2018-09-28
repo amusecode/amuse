@@ -1,7 +1,7 @@
 import numpy
-from amuse.lab import (
-        constants, units, Particles, nbody_system, Hermite
-        )
+from amuse.units import constants, units, nbody_system
+from amuse.datamodel import Particles
+from amuse.community.hermite0.interface import Hermite
 from amuse.ext.orbital_elements import orbital_elements_from_binary
 
 

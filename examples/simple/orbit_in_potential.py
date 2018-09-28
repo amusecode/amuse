@@ -10,9 +10,9 @@ amuse community code is used.
 from amuse.units.optparse import OptionParser
 from math import atan
 from math import log
-from amuse.lab import (
-        units, constants, AdaptingVectorQuantity, Particle
-        )
+from amuse.units import units, constants
+from amuse.units.quantities import AdaptingVectorQuantity
+from amuse.datamodel import Particle
 from matplotlib import pyplot
 from amuse.plot import plot
 

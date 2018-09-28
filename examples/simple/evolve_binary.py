@@ -6,9 +6,9 @@ Shows the type of each star as they change.
 """
 from __future__ import print_function
 
-from amuse.lab import (
-        SeBa, Particles, constants, units
-        )
+from amuse.community.seba.interface import SeBa
+from amuse.datamodel import Particles
+from amuse.units import constants, units
 import numpy
 from matplotlib import pyplot
 

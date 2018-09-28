@@ -3,7 +3,6 @@ Runs the Kelvin-Helmholtz Instability problem in two dimensions with Athena.
 """
 import numpy
 from matplotlib import pyplot
-# from amuse.lab import *
 from amuse.community.athena.interface import Athena
 from amuse.units.generic_unit_system import (
         length, mass, speed, time, density

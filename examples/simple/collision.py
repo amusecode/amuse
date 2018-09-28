@@ -13,10 +13,10 @@ from __future__ import print_function
 
 import numpy
 from matplotlib import pyplot
-from amuse.lab import (
-        nbody_system, new_plummer_model, new_salpeter_mass_distribution_nbody,
-        Hermite
-        )
+from amuse.units import nbody_system
+from amuse.ic.plummer import new_plummer_model
+from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
+from amuse.community.hermite0.interface import Hermite
 
 
 def new_cluster(number_of_stars=1000, radius=None):

@@ -10,9 +10,9 @@ incorporate <m>(t) and d<m>/dt in a parametrized cluster evolution code.
 # from amuse.plot import loglog, xlabel, ylabel
 
 from amuse.community.sse.interface import SSE
-from amuse.lab import (
-        units, Particles, new_salpeter_mass_distribution
-        )
+from amuse.units import units
+from amuse.datamodel import Particles
+from amuse.ic.salpeter import new_salpeter_mass_distribution
 
 from optparse import OptionParser
 

@@ -1,8 +1,9 @@
 from __future__ import print_function
-from amuse.lab import (
-        units, nbody_system, Particle,
-        Athena, Hermite,
-        )
+
+from amuse.units import units, nbody_system
+from amuse.datamodel import Particle
+from amuse.community.athena.interface import Athena
+from amuse.community.hermite0.interface import Hermite
 
 from matplotlib import pyplot
 
@@ -78,7 +79,7 @@ def hydro_grid_in_potential_well(mass=1 | units.MSun, length=100 | units.AU):
 
     instance.evolve_model(100 | units.yr)
     print(instance.get_timestep().value_in(units.yr))
-    value_to_plot = instance.grid.rho[..., ..., 0].value_in(
+    value_to_plot = instance.grid.rho[:, :, 0].value_in(
         units.MSun / units.AU**3)
     # value_to_plot = potential[...,...,0].value_in(potential.unit)
     plot_grid(value_to_plot)
