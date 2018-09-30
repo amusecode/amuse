@@ -1,4 +1,8 @@
-import f90nml
+try:
+    import f90nml
+    HAS_F90NML=True
+except:
+    HAS_F90NML=False
 from collections import defaultdict
 from amuse.units.quantities import new_quantity, to_quantity, is_quantity
 
