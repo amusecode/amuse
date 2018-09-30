@@ -3,7 +3,11 @@ from amuse.datamodel import new_cartesian_grid
 from amuse.support.exceptions import AmuseException
 from amuse.test.amusetest import TestCase
 
-from amuse.ext import grid_remappers
+try:
+    from omuse.ext import grid_remappers
+except:
+    from amuse.ext import grid_remappers
+
 import numpy
 
 from amuse.datamodel.grids import *
