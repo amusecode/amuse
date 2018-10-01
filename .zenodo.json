@@ -116,7 +116,7 @@
             "name": "Altay, Gabriel"
         }
     ], 
-    "description": "\"<p>\nAstrophysical Multipurpose Software Environment\n</p>\n<p>\nCombine existing numerical codes in an easy to use Python framework. With AMUSE you can simulate objects such as star clusters, proto-planetary disks and galaxies.\n</p>\n<p>\nWhat AMUSE can do for you:\n</p>\n<ul>\n<li>provides a homogeneous environment to design astrophysical simulations used by students and researchers</li>\n<li>couples different simulation codes in a Python environment to be run locally or distributed</li>\n<li>provides a very easy way to solve astronomical problems that involve complicated physical interactions</li>\n<li>used for more than 40 scientific papers and PhD theses</li>\n</ul>\"\n", 
+    "description": "<p>Astrophysical Multipurpose Software Environment</p><p>Combine existing numerical codes in an easy to use Python framework. With AMUSE you can simulate objects such as star clusters, proto-planetary disks and galaxies.</p><p>What AMUSE can do for you:</p><ul><li>provides a homogeneous environment to design astrophysical simulations used by students and researchers</li><li>couples different simulation codes in a Python environment to be run locally or distributed</li><li>provides a very easy way to solve astronomical problems that involve complicated physical interactions</li><li>used for more than 40 scientific papers and PhD theses</li></ul>",
     "doi": "10.5281/zenodo.1435860", 
     "keywords": [
         "astronomy", 
