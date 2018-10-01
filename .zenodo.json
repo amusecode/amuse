@@ -124,10 +124,10 @@
         "model coupling",
         "physics"
     ],
-    "license": {
-        "id": "Apache-2.0"
-    },
+    "upload_type": "software",
+    "license": "id": "Apache-2.0",
     "publication_date": "2018-09-27",
     "title": "the Astrophysical Multipurpose Software Environment (AMUSE)",
-    "version": "11.3"
+    "version": "11.3",
+    "access_right": "open"
 }
