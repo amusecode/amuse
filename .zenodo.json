@@ -117,17 +117,14 @@
         }
     ],
     "description": "A Python framework to combine existing astrophysical simulation codes in numerical experiments. With AMUSE you can simulate objects such as star clusters, proto-planetary disks and galaxies.",
-    "doi": "10.5281/zenodo.1435860",
     "keywords": [
         "astronomy",
         "multi-model simulation",
         "model coupling",
         "physics"
     ],
-    "upload_type": "software",
-    "license": "Apache-2.0",
-    "publication_date": "2018-10-03",
-    "title": "the Astrophysical Multipurpose Software Environment (AMUSE)",
-    "version": "11.4",
-    "access_right": "open"
+    "license": {
+        "id": "Apache-2.0"
+    },
+    "title": "AMUSE: the Astrophysical Multipurpose Software Environment"
 }

@@ -122,7 +122,6 @@ authors:
 
 
 cff-version: "1.0.3"
-date-released: 2018-09-27
 doi: "10.5281/zenodo.1435860"
 keywords: 
   - astronomy
@@ -132,6 +131,5 @@ keywords:
 license: "Apache-2.0"
 message: "This is the software citation for the framework code. If you publish work with AMUSE please cite also the code papers of the components used."
 repository-code: "https://github.com/amusecode/amuse"
-title: "the Astrophysical Multipurpose Software Environment (AMUSE)"
-version: "11.3"
+title: "AMUSE: the Astrophysical Multipurpose Software Environment"
 ...
