@@ -125,7 +125,7 @@ def plot_hydro(time, sph, L=10):
         #m = 10.0*dmp.mass/dmp.mass.max()
         m = 30*numpy.log10(dmp.mass/dmp.mass.min())
         c = numpy.sqrt(dmp.mass/dmp.mass.max())
-        pyplot.scatter(-dmp.x.value_in(units.parsec), -dmp.y.value_in(units.parsec), c=c, s=m, lw=0, cmap=cm)
+        pyplot.scatter(dmp.y.value_in(units.parsec), dmp.x.value_in(units.parsec), c=c, s=m, lw=0, cmap=cm)
 
     pyplot.show()
 
