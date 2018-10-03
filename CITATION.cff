@@ -1,4 +1,6 @@
 # YAML 1.2
+# to generate .zenodo json: cffconvert -ig -f zenodo -of .zenodo.json
+# note we have omitted date released & version
 ---
 abstract: "A Python framework to combine existing astrophysical simulation codes in numerical experiments. With AMUSE you can simulate objects such as star clusters, proto-planetary disks and galaxies."
 authors: 
