@@ -126,8 +126,8 @@
     ],
     "upload_type": "software",
     "license": "Apache-2.0",
-    "publication_date": "2018-09-27",
+    "publication_date": "2018-10-03",
     "title": "the Astrophysical Multipurpose Software Environment (AMUSE)",
-    "version": "11.3",
+    "version": "11.4",
     "access_right": "open"
 }
