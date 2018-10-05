@@ -16,6 +16,7 @@ from amuse.rfi.core import *
 codestring = """
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 int echo_int(int int_in, int * int_out) {
     *int_out = int_in;
@@ -124,7 +125,7 @@ int echo_inout_array_with_result(int * inout, int len) {
 }
 
 
-int echo_logical(int in, int * out) {
+int echo_logical(bool in, bool * out) {
     *out = in;
     return 0;
 }
@@ -748,13 +749,13 @@ class TestCImplementationInterface(TestWithMPI):
         
     def test31(self):
         x = ForTesting(self.exefile, max_message_length=10)
-        N = 10
+        N = 100
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([3.0*i for i in range(N)])
         print sums
         self.assertTrue(list(sums) == [3.0*i + 1 for i in range(N)])
-        N = 11
+        N = 101
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
         sums = x.sum_doubles([3.0*i for i in range(N)])

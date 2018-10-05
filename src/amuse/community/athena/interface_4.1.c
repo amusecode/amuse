@@ -433,12 +433,12 @@ int get_nghost(int * value) {
     return 0;
 }
 
-int get_evolve_to_exact_time(int * value) {
+int get_evolve_to_exact_time(bool * value) {
     *value = evolve_to_exact_time;
     return 0;
 }
 
-int set_evolve_to_exact_time(int value) {
+int set_evolve_to_exact_time(bool value) {
     evolve_to_exact_time = value;
     return 0;
 }

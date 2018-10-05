@@ -129,12 +129,12 @@ int set_dt_dia(double _dt_dia){
     return 0;
 }
 
-int get_is_time_reversed_allowed(int *value){
-    *value = is_time_reversed_allowed ? 1 : 0;
+int get_is_time_reversed_allowed(bool *value){
+    *value = is_time_reversed_allowed;
     return 0;
 }
-int set_is_time_reversed_allowed(int value){
-    is_time_reversed_allowed = value == 1;
+int set_is_time_reversed_allowed(bool value){
+    is_time_reversed_allowed = value;
     return 0;
 }
 

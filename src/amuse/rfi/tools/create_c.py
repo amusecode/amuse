@@ -18,7 +18,7 @@ dtype_to_spec = DTypeToSpecDictionary({
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
                     'HEADER_DOUBLE_COUNT', 'double', 'MPI_DOUBLE'),
     'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'HEADER_BOOLEAN_COUNT', 'int', 'MPI_INTEGER'),
+                    'HEADER_BOOLEAN_COUNT', 'bool', 'MPI_C_BOOL'),
     'string' : DTypeSpec('strings_in', 'strings_out',
                     'HEADER_STRING_COUNT', 'int', 'MPI_INTEGER'),
 })
@@ -81,8 +81,8 @@ static float * floats_out;
 static double * doubles_in;
 static double * doubles_out;
 
-static int * booleans_in;
-static int * booleans_out;
+static bool * booleans_in;
+static bool * booleans_out;
 
 /* sizes of strings */
 static int * string_sizes_in;
@@ -350,8 +350,8 @@ void new_arrays(int max_call_count) {
   doubles_in = new double[ max_call_count * MAX_DOUBLES_IN];
   doubles_out = new double[ max_call_count * MAX_DOUBLES_OUT];
   
-  booleans_in = new int[ max_call_count * MAX_BOOLEANS_IN];
-  booleans_out = new int[ max_call_count * MAX_BOOLEANS_OUT];
+  booleans_in = new bool[ max_call_count * MAX_BOOLEANS_IN];
+  booleans_out = new bool[ max_call_count * MAX_BOOLEANS_OUT];
   
   string_sizes_in = new int[ max_call_count * MAX_STRINGS_IN];
   string_sizes_out = new int[ max_call_count * MAX_STRINGS_OUT];
@@ -442,7 +442,7 @@ void run_mpi(int argc, char *argv[]) {
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
-      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_INTEGER, 0, parent);
+      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_C_BOOL, 0, parent);
     }
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
@@ -499,7 +499,7 @@ void run_mpi(int argc, char *argv[]) {
         MPI_Send(doubles_out, header_out[HEADER_DOUBLE_COUNT], MPI_DOUBLE, 0, 999, parent);
       }
       if(header_out[HEADER_BOOLEAN_COUNT] > 0) {
-        MPI_Send(booleans_out, header_out[HEADER_BOOLEAN_COUNT], MPI_INTEGER, 0, 999, parent);
+        MPI_Send(booleans_out, header_out[HEADER_BOOLEAN_COUNT], MPI_C_BOOL, 0, 999, parent);
       }
       if(header_out[HEADER_STRING_COUNT] > 0) {
         int offset = 0;
@@ -641,12 +641,8 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
-      //receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT], socketfd , rank);
-      for (int i = 0; i < header_in[HEADER_BOOLEAN_COUNT]; i++) {
-        booleans_in[i] = 0;
-        receive_array_sockets(&booleans_in[i], 1, socketfd , rank);
-      }
-      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_INTEGER, 0, MPI_COMM_WORLD);
+      receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd , rank);
+      MPI_Bcast(booleans_in, header_in[HEADER_BOOLEAN_COUNT], MPI_C_BOOL, 0, MPI_COMM_WORLD);
     }
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
@@ -710,13 +706,7 @@ void run_sockets_mpi(int argc, char *argv[], int port, char *host) {
       }
           
       if(header_out[HEADER_BOOLEAN_COUNT] > 0) {
-          for (int i = 0; i < header_out[HEADER_BOOLEAN_COUNT]; i++) {
-            if (booleans_out[i]) {
-              send_array_sockets(&TRUE_BYTE, 1, socketfd, 0);
-            } else {
-              send_array_sockets(&FALSE_BYTE, 1, socketfd, 0);
-            }
-         }
+        send_array_sockets(booleans_out, header_out[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd, 0);
       }
           
       if(header_out[HEADER_STRING_COUNT] > 0) {
@@ -858,11 +848,7 @@ void run_sockets(int port, char *host) {
     }
     
     if(header_in[HEADER_BOOLEAN_COUNT] > 0) {
-      //receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT], socketfd , 0);
-      for (int i = 0; i < header_in[HEADER_BOOLEAN_COUNT]; i++) {
-        booleans_in[i] = 0;
-        receive_array_sockets(&booleans_in[i], 1, socketfd , 0);
-      }
+      receive_array_sockets(booleans_in, header_in[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd , 0);
     }
     
     if(header_in[HEADER_STRING_COUNT] > 0) {
@@ -921,13 +907,7 @@ void run_sockets(int port, char *host) {
     }
       
     if(header_out[HEADER_BOOLEAN_COUNT] > 0) {
-        for (int i = 0; i < header_out[HEADER_BOOLEAN_COUNT]; i++) {
-          if (booleans_out[i]) {
-            send_array_sockets(&TRUE_BYTE, 1, socketfd, 0);
-          } else {
-            send_array_sockets(&FALSE_BYTE, 1, socketfd, 0);
-          }
-       }
+        send_array_sockets(booleans_out, header_out[HEADER_BOOLEAN_COUNT] * sizeof(bool), socketfd, 0);
     }
       
     if(header_out[HEADER_STRING_COUNT] > 0) {
@@ -1338,7 +1318,9 @@ class GenerateACHeaderStringFromASpecificationClass\
     def output_sourcecode_for_function(self):
         return GenerateACHeaderDefinitionStringFromAFunctionSpecification()
         
-    def start(self):  
+    def start(self):
+        self.out + '#include "stdbool.h"'  
+        self.out.lf()
         if self.make_extern_c:
             self.out + "#ifdef __cplusplus"
             self.out.lf() + 'extern "C" {'
