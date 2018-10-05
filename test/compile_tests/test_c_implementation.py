@@ -432,6 +432,36 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertEquals(out[0], "abc")
         self.assertEquals(out[1], "def")
 
+    def test7b(self):
+        instance = ForTestingInterface(self.exefile)
+
+        out, error = instance.echo_int(numpy.arange(2000000))
+        
+        self.assertEquals(error, [0]*2000000)
+        self.assertEquals(out, numpy.arange(2000000))
+
+        instance.stop()
+
+    def test7c(self):
+        instance = ForTestingInterface(self.exefile)
+
+        out, error = instance.echo_string(["abc"]*10)
+        
+        self.assertEquals(error, [0]*10)
+        self.assertEquals(out, ["abc"]*10)
+
+        instance.stop()
+
+    def test7d(self):
+        instance = ForTestingInterface(self.exefile)
+
+        out, error = instance.echo_string(["abc"]*100000)
+        
+        self.assertEquals(error, [0]*100000)
+        self.assertEquals(out, ["abc"]*100000)
+
+        instance.stop()
+
     def test8(self):
         instance = ForTestingInterface(self.exefile)
         out1, out2, error = instance.echo_strings("abc","def")

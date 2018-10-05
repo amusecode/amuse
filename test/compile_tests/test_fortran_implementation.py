@@ -10,7 +10,6 @@ import shlex
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
-from amuse.rfi.tools import create_fortran
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
@@ -79,7 +78,7 @@ end function
 
 function hello_string(string_out)
     implicit none
-    character(len=4096) :: string_out
+    character(len=*) :: string_out
     integer :: hello_string
     
     string_out = 'hello'
@@ -157,6 +156,12 @@ function echo_logical(input, output)
     echo_logical = 0
 end function
 
+function get_element_status(ind,x) result(ret)
+  integer :: ind,ret
+  character(len=*) :: x
+  x="dry"
+  ret=0
+end function
 """
 
 class ForTestingInterface(CodeInterface):
@@ -286,6 +291,15 @@ class ForTestingInterface(CodeInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function  
+
+    @legacy_function
+    def get_element_status():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index', dtype='i', direction=function.IN)
+        function.addParameter('status', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
     
 class ForTesting(InCodeComponentImplementation):
     
@@ -317,28 +331,12 @@ class TestInterface(TestWithMPI):
             return
         else:
             self.skip("cannot run test as fortran does not support iso c bindings")
-
-    def build_worker(self):
-        
-        path = os.path.abspath(self.get_path_to_results())  
-        codefile = os.path.join(path,"code.o")
-        interfacefile = os.path.join(path,"interface.o")
-        self.exefile = os.path.join(path,"fortran_worker")
-        
-        compile_tools.fortran_compile(codefile, codestring)
-        
-        uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
-        uc.specification_class = ForTestingInterface
-        uc.needs_mpi = True
-        string =  uc.result
-        compile_tools.fortran_compile(interfacefile, string)
-        compile_tools.fortran_build(self.exefile, [interfacefile, codefile] )
     
     def setUp(self):
         super(TestInterface, self).setUp()
         print "building"
         self.check_can_compile_modules()
-        self.build_worker()
+        self.exefile=compile_tools.build_fortran_worker(codestring, self.get_path_to_results(), ForTestingInterface)
         
     def test1(self):
         instance = ForTestingInterface(self.exefile)
@@ -620,3 +618,44 @@ class TestInterface(TestWithMPI):
         t2=time.time()
         print "2 time:",t2-t1,(t2-t1)/N  
         instance.stop()
+
+    def test32(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.get_element_status(numpy.arange(10))
+        del instance
+        
+        self.assertEquals(out, ["dry"]*10)
+
+    def test33(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.get_element_status(numpy.arange(100))
+        del instance
+        
+        self.assertEquals(out, ["dry"]*100)
+
+    def test34(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string(["abc"]*14)
+        del instance
+        
+        self.assertEquals(out, ["abc"]*14)
+        self.assertEquals(error, [0]*14)
+
+    def test35(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string(["abc","def"]*100000)
+        del instance
+        
+        self.assertEquals(error[0], 0)
+        self.assertEquals(error[1], 0)
+        self.assertEquals(out[-2], "abc")
+        self.assertEquals(out[-1], "def")
+
+    def test36(self):
+        instance = ForTestingInterface(self.exefile)
+        N=255
+        out, error = instance.echo_string("a"*N)
+        del instance
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(out, "a"*N)

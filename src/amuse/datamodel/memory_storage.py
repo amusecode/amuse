@@ -142,8 +142,8 @@ class InMemoryAttributeStorage(AttributeStorage):
                         #~ storage.set_values(indices, units.none.new_quantity(values_to_set))
                     #~ else:
                         #~ raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
-                #~ else:
-                    #~ raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
+                else:
+                    raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
 
     def set_values_in_store_async(self, indices, attributes, list_of_values_to_set):
         from amuse.rfi.channel import FakeASyncRequest
@@ -292,6 +292,9 @@ class InMemoryGridAttributeStorage(object):
                         storage.set_values(indices, values_to_set.value_in(units.none))
                     else:
                         raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex)) 
+                else:
+                    raise AttributeError("exception in setting attribute '{0}', error was '{1}'".format(attribute, ex))
+
      
     def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index

@@ -573,31 +573,15 @@ class _AbstractTestInterfaceFortran(TestWithMPI):
     
     def get_number_of_workers(self):
         return 1
-    
-    def build_worker(self):
-        path = os.path.abspath(self.get_path_to_results())
-        codefile = os.path.join(path,"codef90.o")
-        interfacefile = os.path.join(path,"interfacef90.o")
-        self.exefile = os.path.join(path,"fortran_worker")
         
-        compile_tools.f90_compile(codefile, self.get_codestring(),
-                                  self.get_mpidir())
-        
-        uf = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
-        uf.needs_mpi = True
-        uf.specification_class = self.get_interface_class()
-        string =  uf.result
-
-        compile_tools.f90_compile(interfacefile, string,
-                                  self.get_mpidir())
-        compile_tools.f90_build(self.exefile, [interfacefile, codefile],
-                                self.get_libname())
-    
     def setUp(self):
         super(_AbstractTestInterfaceFortran, self).setUp()
         print "building"
         self.check_can_compile_modules()
-        self.build_worker()
+        self.exefile=compile_tools.build_fortran_worker(self.get_codestring(),
+            self.get_path_to_results(), self.get_interface_class(), needs_mpi= True, 
+            extra_fflags = ["-I","{0}/lib/stopcond".format( get_amuse_root_dir())],
+            extra_ldflags = ["-L{0}/lib/stopcond".format(get_amuse_root_dir()), "-l"+self.get_libname()] )
 
 
 class _TestInterfaceFortranSingleProcess(_AbstractTestInterfaceFortran):

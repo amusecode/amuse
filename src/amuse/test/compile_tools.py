@@ -7,6 +7,7 @@ import shutil
 
 from amuse.rfi.tools import create_java
 from amuse.rfi.tools import create_c
+from amuse.rfi.tools import create_fortran
 from amuse.rfi.core import config
 from amuse.test.amusetest import get_amuse_root_dir
 
@@ -193,7 +194,7 @@ def c_build(exename, objectnames, extra_args=[]):
 
 
 def build_worker(codestring, path_to_results, specification_class, write_header=True, 
-      extra_args=[]):
+      extra_args=[], needs_mpi = False):
     path = os.path.abspath(path_to_results)
     codefile = os.path.join(path, "code.o")
     headerfile = os.path.join(path, "worker_code.h")
@@ -204,7 +205,7 @@ def build_worker(codestring, path_to_results, specification_class, write_header=
 
     uc = create_c.GenerateACHeaderStringFromASpecificationClass()
     uc.specification_class = specification_class
-    uc.needs_mpi = False
+    uc.needs_mpi = needs_mpi
     header = uc.result
 
     if write_header:
@@ -214,7 +215,7 @@ def build_worker(codestring, path_to_results, specification_class, write_header=
 
     uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
     uc.specification_class = specification_class
-    uc.needs_mpi = False
+    uc.needs_mpi = needs_mpi
     code = uc.result
 
     cxx_compile(interfacefile, code if write_header else header+"\n\n"+code, 
@@ -362,7 +363,7 @@ def fortran_compile(objectname, string, extra_args=[]):
         raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments)))
 
 
-def fortran_build(exename, objectnames):
+def fortran_build(exename, objectnames, extra_args=[]):
     if os.path.exists(exename):
         os.remove(exename)
 
@@ -372,6 +373,7 @@ def fortran_build(exename, objectnames):
     arguments.append("-L{0}/lib/forsockets".format(get_amuse_root_dir()))
     arguments.append("-Wall")
     arguments.append("-lforsockets")
+    arguments.extend(extra_args)
 
     arguments.append("-o")
     arguments.append(exename)
@@ -384,39 +386,6 @@ def fortran_build(exename, objectnames):
         wait_for_file(exename)
 
     if process.returncode != 0 or not os.path.exists(exename):
-        raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments)))
-
-
-def f90_compile(objectname, string, mpidir):
-    root, ext = os.path.splitext(objectname)
-    sourcename = root + '.f90'
-    if os.path.exists(objectname):
-        os.remove(objectname)
-    with open(sourcename, "w") as f:
-        f.write(string)
-
-    rootdir = get_amuse_root_dir()
-    arguments = get_mpif90_arguments()
-    arguments.extend(["-I", "{0}/lib/stopcond".format(rootdir, mpidir), "-I", rootdir + "/lib/forsockets", "-c",  "-o", objectname, sourcename])
-    process, stderr, stdout = open_subprocess(arguments)
-    if not os.path.exists(objectname):  # or process.poll() == 1:
-        raise Exception("Could not compile {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(objectname, stdout, stderr, ' '.join(arguments)))
-
-
-def f90_build(exename, objectnames, libname):
-    rootdir = get_amuse_root_dir()
-
-    arguments = get_mpif90_arguments()
-    arguments.extend(objectnames)
-    arguments.append("-o")
-    arguments.append(exename)
-    arguments.extend(["-L{0}/lib/stopcond".format(rootdir), "-l"+libname])
-    arguments.extend(["-L" + rootdir + "/lib/forsockets","-lforsockets"])
-    arguments.extend(get_ld_flags().split())
-    print 'build command:'
-    print ' '.join(arguments)
-    process, stderr, stdout = open_subprocess(arguments)
-    if process.returncode != 0:
         raise Exception("Could not build {0}\nstdout:\n{1}\nstderr:\n{2}\narguments:\n{3}".format(exename, stdout, stderr, ' '.join(arguments)))
 
 def build_java_worker(codestring, path_to_results, specification_class):
@@ -498,4 +467,22 @@ def build_java_worker(codestring, path_to_results, specification_class):
 
     os.chmod(exefile, 0777)
 
+    return exefile
+
+def build_fortran_worker(codestring, path_to_results, interface, needs_mpi = True,
+                             extra_fflags=[], extra_ldflags=[]):
+    
+    path = os.path.abspath(path_to_results)  
+    codefile = os.path.join(path,"code.o")
+    interfacefile = os.path.join(path,"interface.o")
+    exefile = os.path.join(path,"fortran_worker")
+    
+    fortran_compile(codefile, codestring, extra_args=extra_fflags)
+    
+    uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
+    uc.specification_class = interface
+    uc.needs_mpi = needs_mpi
+    string =  uc.result
+    fortran_compile(interfacefile, string, extra_args=extra_fflags)
+    fortran_build(exefile, [interfacefile, codefile], extra_args=extra_ldflags )
     return exefile

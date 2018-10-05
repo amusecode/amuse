@@ -242,35 +242,13 @@ class ForTesting(InCodeComponentImplementation):
 
 class TestCImplementationInterface(TestWithMPI):
 
-    def build_worker(self):
-        path = os.path.abspath(self.get_path_to_results())
-        codefile = os.path.join(path, "code.o")
-        interfacefile = os.path.join(path, "interface.o")
-        self.exefile = os.path.join(path, "c_worker")
-
-        compile_tools.c_compile(codefile, codestring)
-
-        uc = create_c.GenerateACHeaderStringFromASpecificationClass()
-        uc.specification_class = ForTestingInterface
-        uc.needs_mpi = False
-        header = uc.result
-
-        uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
-        uc.specification_class = ForTestingInterface
-        uc.needs_mpi = False
-        code = uc.result
-
-        string = '\n\n'.join([header, code])
-
-        compile_tools.cxx_compile(interfacefile, string)
-        compile_tools.c_build(self.exefile, [interfacefile, codefile])
-
     def setUp(self):
         super(TestCImplementationInterface, self).setUp()
         print "building...",
         self.check_can_compile_modules()
         try:
-            self.build_worker()
+            self.exefile = compile_tools.build_worker(codestring, self.get_path_to_results(), 
+                ForTestingInterface, write_header=False)
         except Exception as ex:
             print ex
             raise

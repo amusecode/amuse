@@ -9,7 +9,6 @@ import shlex
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
-from amuse.rfi.tools import create_fortran
 from amuse.rfi import channel
 from amuse.rfi.core import *
 
@@ -288,29 +287,14 @@ class ForTesting(InCodeComponentImplementation):
 
 
 class TestInterface(TestWithMPI):
-    
-    def build_worker(self):
         
-        path = os.path.abspath(self.get_path_to_results())
-        codefile = os.path.join(path,"code-sockets.o")
-        interfacefile = os.path.join(path,"interface-sockets.o")
-        self.exefile = os.path.join(path,"fortran_worker")
-        
-        compile_tools.fortran_compile(codefile, codestring)
-        
-        uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
-        uc.specification_class = ForTestingInterface
-        string =  uc.result
-        compile_tools.fortran_compile(interfacefile, string)
-        compile_tools.fortran_build(self.exefile, [interfacefile, codefile] )
-    
     def setUp(self):
         super(TestInterface, self).setUp()
         print "building"
         self.check_can_compile_modules()
         self.check_fortran_version()
         self.check_not_in_mpiexec()
-        self.build_worker()
+        self.exefile=compile_tools.build_fortran_worker(codestring, self.get_path_to_results(), ForTestingInterface)
         
     def check_fortran_version(self):
         pass
@@ -411,10 +395,13 @@ class TestInterface(TestWithMPI):
       
     def test10(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
-        out = instance.return_string("abc")
+        out = instance.return_string("qwerty")
+        out = instance.return_string("abcdefghi")
+        
+        instance.stop()
         del instance
         
-        self.assertEquals(out, "abc")
+        self.assertEquals(out, "abcdefghi")
         
     def test11(self):
         instance = ForTestingInterface(self.exefile, channel_type="sockets")
@@ -527,4 +514,21 @@ class TestInterface(TestWithMPI):
             content = f.read()
         self.assertEquals(content.strip(), "exex\n exex")
         
+    def test35(self):
+        instance = ForTestingInterface(self.exefile, channel_type="sockets")
+        out, error = instance.echo_string(["abc","def"]*100000)
+        del instance
         
+        self.assertEquals(error[0], 0)
+        self.assertEquals(error[1], 0)
+        self.assertEquals(out[-2], "abc")
+        self.assertEquals(out[-1], "def")
+        
+    def test36(self):
+        instance = ForTestingInterface(self.exefile, channel_type="sockets")
+        N=255
+        out, error = instance.echo_string("a"*N)
+        del instance
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(out, "a"*N)
