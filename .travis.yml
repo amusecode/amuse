@@ -52,8 +52,8 @@ addons:
     - libmpfr-dev
     - libhdf5-serial-dev
     - hdf5-tools
-    - libopenmpi-dev
-    - openmpi-bin
+    - mpich-dev
+    - mpich
 
 virtualenv:
   system_site_packages: false
