@@ -1,6 +1,5 @@
 import numpy
 from amuse.support.interface import InCodeComponentImplementation
-from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.test import compile_tools
