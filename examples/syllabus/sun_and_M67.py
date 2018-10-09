@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import numpy
 from amuse.lab import *
 from amuse.couple import bridge
@@ -5,6 +7,7 @@ from matplotlib import pyplot
 
 
 class MilkyWay_galaxy(object):
+
     def get_gravity_at_point(self, eps, x, y, z):
         phi_0 = self.get_potential_at_point(eps, x, y, z)
         grav = AdaptingVectorQuantity()
@@ -47,7 +50,7 @@ def movie(time, sun_and_planets):
     for sp in sun_and_planets:
         R.append(sp.position.length())
     # - sun_and_planets.z
-    print R
+    print(R)
     pyplot.subplot(2, 2, 1)
     pyplot.scatter(sun_and_planets.x.value_in(units.kpc),
                    sun_and_planets.y.value_in(units.kpc),
@@ -124,9 +127,10 @@ def main(t_end, filename):
         Ekin = gravity.kinetic_energy
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, "M=", bodies.mass.sum(),
-        print "E= ", Etot, "Q= ", Ekin / Epot,
-        print "dE=", (Etot_init - Etot) / Etot, "ddE=", (Etot_prev - Etot) / Etot
+        print("T=", time, "M=", bodies.mass.sum(), end=' ')
+        print("E= ", Etot, "Q= ", Ekin / Epot, end=' ')
+        print("dE=", (Etot_init - Etot) / Etot,
+              "ddE=", (Etot_prev - Etot) / Etot)
         Etot_prev = Etot
         if filename:
             write_set_to_file(bodies.savepoint(time), filename, "hdf5")

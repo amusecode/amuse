@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from amuse.lab import *
 
 
@@ -8,4 +10,4 @@ def function(body):
 bodies = Particles(1)
 bodies.mass = 1 | units.MSun
 bodies.add_global_function_attribute("new_function", function)
-print bodies.new_function().in_(units.MSun)
+print(bodies.new_function().in_(units.MSun))

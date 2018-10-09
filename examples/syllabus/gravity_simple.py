@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Simple routine for running a gravity code
 """
@@ -29,9 +31,10 @@ def main(N=10, W0=7.0, t_end=10, dt=1, filename="nbody.hdf5"):
         Ekin = gravity.kinetic_energy
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, "M=", bodies.mass.sum(),
-        print "E= ", Etot, "Q= ", Ekin / Epot,
-        print "dE=", (Etot_init - Etot) / Etot, "ddE=", (Etot_prev - Etot) / Etot
+        print("T=", time, "M=", bodies.mass.sum(), end=' ')
+        print("E= ", Etot, "Q= ", Ekin / Epot, end=' ')
+        print("dE=", (Etot_init - Etot) / Etot,
+              "ddE=", (Etot_prev - Etot) / Etot)
         Etot_prev = Etot
     gravity.stop()
 

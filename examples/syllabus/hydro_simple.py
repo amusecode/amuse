@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Simple routine for running a hydrodynamics solver
 """
@@ -33,8 +35,19 @@ def main(N=100, Mtot=1 | units.MSun, Rvir=1 | units.RSun,
         Epot = hydro.potential_energy
         Eth = hydro.thermal_energy
         Etot = Ekin + Epot + Eth
-        print "T=", hydro.get_time(), "M=", hydro.gas_particles.mass.sum(),
-        print "E= ", Etot, "Q= ", (Ekin + Eth) / Epot, "dE=", (Etot_init - Etot) / Etot
+        print(
+            "T=",
+            hydro.get_time(),
+            "M=",
+            hydro.gas_particles.mass.sum(),
+            end=' ')
+        print(
+            "E= ",
+            Etot,
+            "Q= ",
+            (Ekin + Eth) / Epot,
+            "dE=",
+            (Etot_init - Etot) / Etot)
     hydro.stop()
 
 

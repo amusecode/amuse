@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
   example of molecular cloud evolution with explictly
   split SPH and grav evolution

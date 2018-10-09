@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Example AMUSE sciprt for generating a Plummer shere and plot the results.
 """

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Minimalistic routine for running a radiative transfer code.
 """
@@ -30,9 +32,9 @@ def main(N=1000, Lstar=100 | units.LSun, boxsize=10 | units.parsec,
     radiative.particles.add_particles(ism)
 
     radiative.evolve_model(t_end)
-    print "min ionization:", radiative.particles.xion.min()
-    print "average Xion:", radiative.particles.xion.mean()
-    print "max ionization:", radiative.particles.xion.max()
+    print("min ionization:", radiative.particles.xion.min())
+    print("average Xion:", radiative.particles.xion.mean())
+    print("max ionization:", radiative.particles.xion.max())
     radiative.stop()
 
 

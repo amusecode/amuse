@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Convert a 1D Henhey stellar model into a spherical particle distribution
 """

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from amuse.lab import *
 from amuse.ext.molecular_cloud import ism_cube
 
@@ -23,8 +25,15 @@ def new_disk_with_bump(Mstar=1 | units.MSun,
 
     mm = Mdisk / float(Ndisk)
     Nbump = Mbump / mm
-    print "Nbump=", Mbump, Rbump, Nbump
-    print "Mass =", Mstar, Mdisk, bodies.mass.sum().in_(units.MSun), bodies.mass.sum() / Mstar
+    print("Nbump=", Mbump, Rbump, Nbump)
+    print(
+        "Mass =",
+        Mstar,
+        Mdisk,
+        bodies.mass.sum().in_(
+            units.MSun),
+        bodies.mass.sum() /
+        Mstar)
     bump = new_plummer_gas_model(
         Nbump, convert_nbody=nbody_system.nbody_to_si(
             Mbump, Rbump))
@@ -102,10 +111,10 @@ def main(
         channel_to_local_gas.copy_attributes(["xion", ])
         write_set_to_file(ism, "rad.hdf5", 'hdf5')
 
-        print "Time=", time
-        print "min ionization:", rad.gas_particles.xion.min()
-        print "average Xion:", rad.gas_particles.xion.mean()
-        print "max ionization:", rad.gas_particles.xion.max()
+        print("Time=", time)
+        print("min ionization:", rad.gas_particles.xion.min())
+        print("average Xion:", rad.gas_particles.xion.mean())
+        print("max ionization:", rad.gas_particles.xion.max())
     rad.stop()
 
 

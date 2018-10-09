@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Example AMUSE sciprt for plotting the Salpeter mass function
 """

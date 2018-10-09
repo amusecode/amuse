@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Minimalistic routine for running a gravity code
 """
@@ -18,8 +20,8 @@ def main(N=10, W0=7.0, t_end=10):
     Ekin = gravity.kinetic_energy
     Epot = gravity.potential_energy
     Etot = Ekin + Epot
-    print "T=", gravity.get_time(), "M=", bodies.mass.sum(),
-    print "E= ", Etot, "Q= ", Ekin / Epot, "dE=", (Etot_init - Etot) / Etot
+    print("T=", gravity.get_time(), "M=", bodies.mass.sum(), end=' ')
+    print("E= ", Etot, "Q= ", Ekin / Epot, "dE=", (Etot_init - Etot) / Etot)
 
     gravity.stop()
 

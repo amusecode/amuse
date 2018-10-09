@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Initialize two stars to a ertain age and merge them using MMAMS
 """

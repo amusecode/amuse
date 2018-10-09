@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generates a grid of binaries with different, primary mass, mass ratio
 and separation and evolves these over time.

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Simple visualization for N-body integration.
    Reads particle set from file (nbody.hdf5) and prints frames.

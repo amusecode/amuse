@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from amuse.lab import *
 
 Second_Asymptotic_Giant_Branch = 6 | units.stellar_type
@@ -6,7 +8,8 @@ HeWhiteDwarf = 10 | units.stellar_type
 
 def stellar_remnant(stellar):
     remnant = True
-    if stellar.particles[0].stellar_type < HeWhiteDwarf or stellar.particles[0].stellar_type > 11 | units.stellar_type:
+    if stellar.particles[0].stellar_type < HeWhiteDwarf or stellar.particles[
+            0].stellar_type > 11 | units.stellar_type:
         remnant = False
     return remnant
 
@@ -26,7 +29,7 @@ def stellar_core_temperature_and_density(M, z):
         density_surface = star.get_density_profile(
             star.get_number_of_zones())[-1]
 
-        print star.age, T_surface, density_surface, T_core, density_core
+        print(star.age, T_surface, density_surface, T_core, density_core)
 
     stellar.stop()
 

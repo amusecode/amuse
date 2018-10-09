@@ -1,4 +1,5 @@
-from __future__ import print_function
+# -*- coding: utf-8 -*-
+
 import numpy
 from amuse.units import units
 from amuse.units import constants
@@ -19,6 +20,7 @@ of points.
 
 
 class GalacticCenterGravityCode(object):
+
     def __init__(
             self,
             R=1000. | units.parsec,

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
    Calculate the response of a star as a result of mass loss.
 """
@@ -41,7 +43,14 @@ def main(Mstar, z, dmdt):
         channel_to_framework.copy_attributes(copy_argument)
         star = stellar.particles.copy()
         zeta = calculate_zeta(star, z, dmdt)
-        print "Zeta=", zeta[0], bodies[0].age, bodies[0].mass, bodies[0].radius, dmdt, bodies[0].stellar_type
+        print(
+            "Zeta=",
+            zeta[0],
+            bodies[0].age,
+            bodies[0].mass,
+            bodies[0].radius,
+            dmdt,
+            bodies[0].stellar_type)
 
     stellar.stop()
 
