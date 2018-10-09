@@ -8,7 +8,8 @@ env:
 
 matrix:
   include:
-  - language: python
+  - name: "linux MPICH"
+    language: python
     python:
     - '2.7'
     compiler: gcc
@@ -17,7 +18,24 @@ matrix:
     install:
     - ./configure
     - make framework
-  - language: generic
+    addons:
+      apt:
+        packages:
+        - build-essential
+        - python-dev
+        - gfortran
+        - libgsl0-dev
+        - cmake
+        - libfftw3-3
+        - libfftw3-dev
+        - libmpfr4
+        - libmpfr-dev
+        - libhdf5-serial-dev
+        - hdf5-tools
+        - libopenmpi-dev
+        - openmpi-bin  
+  - name: "osx openmpi"
+    language: generic
     os: osx
     before_install:
     - export MINICONDA_OS=$MINICONDA_OSX
@@ -37,23 +55,6 @@ matrix:
     install:
     - env CXX=clang++ CC=clang LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib" ./configure --with-hdf5=$CONDA_PREFIX --with-gmp=$CONDA_PREFIX --with-mpfr=$CONDA_PREFIX --with-fftw=$CONDA_PREFIX --with-gsl-prefix=$CONDA_PREFIX
     - make framework
-
-addons:
-  apt:
-    packages:
-    - build-essential
-    - python-dev
-    - gfortran
-    - libgsl0-dev
-    - cmake
-    - libfftw3-3
-    - libfftw3-dev
-    - libmpfr4
-    - libmpfr-dev
-    - libhdf5-serial-dev
-    - hdf5-tools
-    - libmpich-dev
-    - mpich
 
 virtualenv:
   system_site_packages: false
