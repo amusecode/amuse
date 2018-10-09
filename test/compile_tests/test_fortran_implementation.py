@@ -156,6 +156,22 @@ function echo_logical(input, output)
     echo_logical = 0
 end function
 
+function echo_logical2(input, output, n)
+    implicit none
+    logical :: input(n), output(n)
+    integer :: echo_logical2, n,i
+    
+    output(i)=.FALSE.
+    do i=1,n
+      if(input(i)) then
+        output(i) = .TRUE.
+      endif
+    enddo
+    
+    echo_logical2 = 0
+end function
+
+
 function get_element_status(ind,x) result(ret)
   integer :: ind,ret
   character(len=*) :: x
@@ -275,6 +291,17 @@ class ForTestingInterface(CodeInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+
+    @legacy_function
+    def echo_logical2():
+        function = LegacyFunctionSpecification()
+        function.addParameter('input', dtype='bool', direction=function.IN)
+        function.addParameter('output', dtype='bool', direction=function.OUT)
+        function.addParameter('n', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+
         
     @legacy_function
     def print_string():
@@ -490,7 +517,12 @@ class TestInterface(TestWithMPI):
         instance = ForTesting(self.exefile)
         output = instance.echo_logical([True, True,False, True, False]*256)
         self.assertEquals(output, [True, True, False, True, False]*256)
-        
+
+    def test16c(self):
+        instance = ForTesting(self.exefile, redirection="none")
+        output = instance.echo_logical2([True, True,False, True, False]*1024)
+        self.assertEquals(output, [True, True, False, True, False]*1024)
+
     def xtest20(self):
         #
         # TURNED OFF support for redirection,

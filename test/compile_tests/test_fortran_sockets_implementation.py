@@ -468,6 +468,11 @@ class TestInterface(TestWithMPI):
         instance = ForTesting(self.exefile, channel_type="sockets")
         output = instance.echo_logical([True, True,False, True, False])
         self.assertEquals(output, [True, True, False, True, False])
+
+    def test16c(self):
+        instance = ForTesting(self.exefile, redirection="none")
+        output = instance.echo_logical2([True, True,False, True, False]*1024)
+        self.assertEquals(output, [True, True, False, True, False]*1024)
                 
     def xtest20(self):
         #

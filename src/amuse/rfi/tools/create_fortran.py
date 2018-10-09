@@ -50,7 +50,10 @@ ARRAY_DEFINES_STRING = """
   
   real*8, allocatable, target :: doubles_in(:)
   real*8, allocatable, target :: doubles_out(:)
-  
+
+  logical*1, allocatable, target :: c_booleans_in(:)
+  logical*1, allocatable, target :: c_booleans_out(:)
+
   logical, allocatable, target :: booleans_in(:)
   logical, allocatable, target :: booleans_out(:)
   
@@ -80,6 +83,9 @@ ISO_ARRAY_DEFINES_STRING = """
   real (c_double), allocatable, target :: doubles_in(:)
   real (c_double), allocatable, target :: doubles_out(:)
   
+  logical (c_bool), allocatable, target :: c_booleans_in(:)
+  logical (c_bool), allocatable, target :: c_booleans_out(:)
+
   logical, allocatable, target :: booleans_in(:)
   logical, allocatable, target :: booleans_out(:)
   
@@ -346,6 +352,8 @@ RUN_LOOP_MPI_STRING = """
       ALLOCATE(floats_out(max_call_count * MAX_FLOATS_OUT))
       ALLOCATE(doubles_in(max_call_count * MAX_DOUBLES_IN))
       ALLOCATE(doubles_out(max_call_count * MAX_DOUBLES_OUT))
+      ALLOCATE(c_booleans_in(max_call_count * MAX_BOOLEANS_IN))
+      ALLOCATE(c_booleans_out(max_call_count * MAX_BOOLEANS_OUT))
       ALLOCATE(booleans_in(max_call_count * MAX_BOOLEANS_IN))
       ALLOCATE(booleans_out(max_call_count * MAX_BOOLEANS_OUT))
       ALLOCATE(string_sizes_in(max_call_count * MAX_STRINGS_IN))
@@ -387,6 +395,8 @@ RUN_LOOP_MPI_STRING = """
           DEALLOCATE(floats_out)
           DEALLOCATE(doubles_in)
           DEALLOCATE(doubles_out)
+          DEALLOCATE(c_booleans_in)
+          DEALLOCATE(c_booleans_out)
           DEALLOCATE(booleans_in)
           DEALLOCATE(booleans_out)
           DEALLOCATE(string_sizes_in)
@@ -401,6 +411,8 @@ RUN_LOOP_MPI_STRING = """
           ALLOCATE(floats_out(max_call_count * MAX_FLOATS_OUT))
           ALLOCATE(doubles_in(max_call_count * MAX_DOUBLES_IN))
           ALLOCATE(doubles_out(max_call_count * MAX_DOUBLES_OUT))
+          ALLOCATE(c_booleans_in(max_call_count * MAX_BOOLEANS_IN))
+          ALLOCATE(c_booleans_out(max_call_count * MAX_BOOLEANS_OUT))
           ALLOCATE(booleans_in(max_call_count * MAX_BOOLEANS_IN))
           ALLOCATE(booleans_out(max_call_count * MAX_BOOLEANS_OUT))
           ALLOCATE(string_sizes_in(max_call_count * MAX_STRINGS_IN))
@@ -424,7 +436,10 @@ RUN_LOOP_MPI_STRING = """
         if (header_in(HEADER_BOOLEAN_COUNT) .gt. 0) then
           ! some older MPI do not define MPI_C_BOOL; this seems to work ok
           ! maybe booleans_in in this call should be replaced by char (more portable) or logical*1  
-          call MPI_BCast(booleans_in, header_in(HEADER_BOOLEAN_COUNT), MPI_BYTE, 0, parent, ioError);
+          call MPI_BCast(c_booleans_in, header_in(HEADER_BOOLEAN_COUNT), MPI_BYTE, 0, parent, ioError);
+          do i=1,header_in(HEADER_BOOLEAN_COUNT)
+              booleans_in(i)=logical(c_booleans_in(i))
+          enddo
         end if
         if (header_in(HEADER_STRING_COUNT) .gt. 0) then
           strings_in = ' '
@@ -491,7 +506,10 @@ RUN_LOOP_MPI_STRING = """
             call MPI_SEND(doubles_out, header_out(HEADER_DOUBLE_COUNT), MPI_REAL8, 0, 999, parent, ioerror)
           end if
           if (header_out(HEADER_BOOLEAN_COUNT) .gt. 0) then
-            call MPI_SEND(booleans_out, header_out(HEADER_BOOLEAN_COUNT), MPI_BYTE, 0, 999, parent, ioerror)
+            do i=1,header_out(HEADER_BOOLEAN_COUNT)
+              c_booleans_out(i)=booleans_out(i)
+            enddo
+            call MPI_SEND(c_booleans_out, header_out(HEADER_BOOLEAN_COUNT), MPI_BYTE, 0, 999, parent, ioerror)
           end if
        
           if (header_out(HEADER_STRING_COUNT) .gt. 0) then
