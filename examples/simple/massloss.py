@@ -10,13 +10,13 @@ from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units.quantities import VectorQuantity
 from amuse.plot import (
-        plot, native_plot)
+    plot, native_plot)
 
 
 def simulate_massloss(time):
     return units.MSun(
-            0.5*(1.0+1.0/(1.0+numpy.exp((time.value_in(time.unit)-70.0)/15.)))
-            )
+        0.5 * (1.0 + 1.0 / (1.0 + numpy.exp((time.value_in(time.unit) - 70.0) / 15.)))
+    )
 
 
 if __name__ == "__main__":
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     earth.mass = 5.9736e24 | units.kg
     earth.radius = 6371.0 | units.km
     earth.position = [0.0, 1.0, 0.0] | units.AU
-    earth.velocity = [2.0*numpy.pi, -0.0001, 0.0] | units.AU / units.yr
+    earth.velocity = [2.0 * numpy.pi, -0.0001, 0.0] | units.AU / units.yr
 
     instance = Hermite(convert_nbody)
     instance.particles.add_particles(particles)

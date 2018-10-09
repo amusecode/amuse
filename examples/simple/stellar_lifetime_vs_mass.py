@@ -35,11 +35,11 @@ def stellar_lifetime(mZAMS, z=0.02):
 
 
 def power_law_fit_to_main_sequence_lifetime(mZAMS):
-    return 2 + 1.0E+4/pow(mZAMS.value_in(units.MSun), 2.5) | units.Myr
+    return 2 + 1.0E+4 / pow(mZAMS.value_in(units.MSun), 2.5) | units.Myr
 
 
 def main(n=10, mmin=1.0, mmax=100, z=0.02):
-    dm = (mmax-mmin)/n
+    dm = (mmax - mmin) / n
     mZAMS = numpy.arange(mmin, mmax, dm) | units.MSun
     mmin = mmin | units.MSun
     mmax = mmax | units.MSun
@@ -53,7 +53,7 @@ def main(n=10, mmin=1.0, mmax=100, z=0.02):
     plot(mZAMS, t_analytic, label="analytic")
     plt.loglog()
     plt.legend()
-    plt.title("comparison between SSE and analytic with z="+str(z))
+    plt.title("comparison between SSE and analytic with z=" + str(z))
     plt.show()
 
 

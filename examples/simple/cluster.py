@@ -30,7 +30,7 @@ def simulate_small_cluster(
         number_of_stars=1000,
         end_time=40 | nbody_system.time,
         number_of_workers=1
-        ):
+):
     particles = new_plummer_model(number_of_stars)
     particles.scale_to_standard()
 
@@ -96,7 +96,7 @@ def plot_positions(times, positions_at_different_times):
 
     for index, (time, positions) in enumerate(
             zip(times, positions_at_different_times)
-            ):
+    ):
         subplot = figure.add_subplot(
             plot_matrix_size, plot_matrix_size, index + 1)
 
@@ -118,7 +118,7 @@ def plot_positions(times, positions_at_different_times):
         if index % plot_matrix_size == 0:
             spines.append('left')
 
-        if index >= ((number_of_rows - 1)*plot_matrix_size):
+        if index >= ((number_of_rows - 1) * plot_matrix_size):
             spines.append('bottom')
 
         adjust_spines(subplot, spines, numpy.arange(-4.0, 4.1, 1.0))
@@ -126,7 +126,7 @@ def plot_positions(times, positions_at_different_times):
         if index % plot_matrix_size == 0:
             subplot.set_ylabel('y')
 
-        if index >= ((number_of_rows - 1)*plot_matrix_size):
+        if index >= ((number_of_rows - 1) * plot_matrix_size):
             subplot.set_xlabel('x')
 
     pyplot.show()

@@ -205,6 +205,6 @@ if __name__ == "__main__":
 
     print("generated a population of", len(binaries), "binaries")
 
-    evolve_population(binaries, stars,  1 | units.Gyr, 250 | units.Myr)
+    evolve_population(binaries, stars, 1 | units.Gyr, 250 | units.Myr)
 
     make_hr_diagram(binaries)

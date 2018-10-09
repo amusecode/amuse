@@ -7,16 +7,16 @@ from amuse.ext.orbital_elements import orbital_elements_from_binary
 
 def get_relative_velocity(total_mass, semimajor_axis, ecc):
     return (
-            constants.G * total_mass * ((1.0 + ecc)/(1.0 - ecc))
-            / semimajor_axis).sqrt()
+        constants.G * total_mass * ((1.0 + ecc) / (1.0 - ecc))
+        / semimajor_axis).sqrt()
 
 
 def make_circular_binary(M, m, a):
     masses = [M.value_in(units.MSun), m.value_in(units.MSun)] | units.MSun
     orbital_period = (
-            4 * numpy.pi**2 * a**3
-            / (constants.G * masses.sum())
-            ).sqrt().as_quantity_in(units.day)
+        4 * numpy.pi**2 * a**3
+        / (constants.G * masses.sum())
+    ).sqrt().as_quantity_in(units.day)
 
     print "   Initializing inner binary"
     print "   Orbital period inner binary:", orbital_period
@@ -33,18 +33,18 @@ def make_circular_binary(M, m, a):
 
 
 def post_supernova_semimajor_axis(M0, m0, M1, m1, a0, r0):
-    dM = M0-M1
-    a = 0.5 * (M0+m0 - dM)/(0.5*(M0+m0) - (a0/r0)*dM)
+    dM = M0 - M1
+    a = 0.5 * (M0 + m0 - dM) / (0.5 * (M0 + m0) - (a0 / r0) * dM)
     return a
 
 # from Hills 1983 (Eq. 6) 1983ApJ...267..322H
 
 
 def post_supernova_eccentricity(M0, m0, M1, m1, a0, r0):
-    dM = M0-M1
+    dM = M0 - M1
     e0 = 0.0
-    e = numpy.sqrt(1 - (1-e0**2)
-                   * ((1-(2*a0/r0)*(dM/(M0+m0)))) / ((1-dM/(m0+m0))**2))
+    e = numpy.sqrt(1 - (1 - e0**2) * ((1 - (2 * a0 / r0) * \
+                   (dM / (M0 + m0)))) / ((1 - dM / (m0 + m0))**2))
     return e
 
 
@@ -55,7 +55,7 @@ def supernova_in_binary_nbody(M0, m0, a0, tsn):
     print "Initial binary: a=", a.in_(
         units.AU), "e=", e, "M=", stars[0].mass, "and m=", stars[1].mass
 
-    converter = nbody_system.nbody_to_si(M+m, a)
+    converter = nbody_system.nbody_to_si(M + m, a)
     gravity = Hermite(converter)
     gravity.particles.add_particles(stars)
 
@@ -69,7 +69,7 @@ def supernova_in_binary_nbody(M0, m0, a0, tsn):
 
     v_kick = (0, 0, 0) | units.kms
     stars[0].velocity += v_kick
-    gravity.evolve_model(2*tsn)
+    gravity.evolve_model(2 * tsn)
     M, m, a, e, ta_out, inc, lan_out, aop_out = orbital_elements_from_binary(
         stars, G=constants.G)
     print "Post supernova orbit: a=", a.in_(units.AU), "e=", e
@@ -80,9 +80,9 @@ def supernova_in_binary_nbody(M0, m0, a0, tsn):
     e_ana = post_supernova_eccentricity(
         M0, m0, stars[0].mass, stars[1].mass, a, r0)
     print(
-            "Analytic solution to post orbit orbital parameters: a=",
-            a_ana, "e=", e_ana,
-            )
+        "Analytic solution to post orbit orbital parameters: a=",
+        a_ana, "e=", e_ana,
+    )
     gravity.stop()
 
 
@@ -90,6 +90,6 @@ if __name__ in ('__main__'):
     M = 10 | units.MSun
     m = 10 | units.MSun
     a = 1 | units.AU
-    orbital_period = (4 * numpy.pi**2 * a**3 / (constants.G * (M+m))).sqrt()
-    tsn = 10*orbital_period
+    orbital_period = (4 * numpy.pi**2 * a**3 / (constants.G * (M + m))).sqrt()
+    tsn = 10 * orbital_period
     supernova_in_binary_nbody(M, m, a, tsn)

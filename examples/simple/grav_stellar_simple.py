@@ -45,11 +45,11 @@ def plot_results(stars, time):
 
     for x, y, mass_loss in zip(x.number, y.number, mass_loss):
         pyplot.annotate(
-                "%0.2f" % abs(mass_loss.number),
-                xy=(x, y+2),
-                horizontalalignment='center',
-                verticalalignment='bottom',
-                )
+            "%0.2f" % abs(mass_loss.number),
+            xy=(x, y + 2),
+            horizontalalignment='center',
+            verticalalignment='bottom',
+        )
 
     pyplot.axis('equal')
     pyplot.xlim([-60, 60])
@@ -105,14 +105,14 @@ def gravity_and_stellar_evolution(
 def parse_arguments():
     parser = OptionParser()
     parser.add_option(
-            "-N", dest="number_of_stars", type="int", default=100,
-            help="The number of stars in the cluster [%default].")
+        "-N", dest="number_of_stars", type="int", default=100,
+        help="The number of stars in the cluster [%default].")
     parser.add_option(
-            "-s", dest="size", type="float", unit=units.parsec, default=10,
-            help="The total size of the cluster [%default %unit].")
+        "-s", dest="size", type="float", unit=units.parsec, default=10,
+        help="The total size of the cluster [%default %unit].")
     parser.add_option(
-            "-t", dest="end_time", type="float", unit=units.Gyr, default=0.1,
-            help="The end time of the simulation [%default %unit].")
+        "-t", dest="end_time", type="float", unit=units.Gyr, default=0.1,
+        help="The end time of the simulation [%default %unit].")
 
     options, args = parser.parse_args()
     return options.__dict__
@@ -121,9 +121,9 @@ def parse_arguments():
 if __name__ == "__main__":
     options = parse_arguments()
     set_printing_strategy(
-            "custom",
-            preferred_units=[
-                units.MSun, units.parsec, units.Myr
-                ],
-            precision=3)
+        "custom",
+        preferred_units=[
+            units.MSun, units.parsec, units.Myr
+        ],
+        precision=3)
     gravity_and_stellar_evolution(**options)

@@ -13,7 +13,7 @@ from amuse import datamodel
 
 def simulate_evolution_tracks(
         masses=[0.5, 1.0, 1.25, 1.5, 2.25, 3.0, 5.0, 9.0, 15.0] | units.MSun
-        ):
+):
     stellar_evolution = MESA()
     stellar_evolution.parameters.AGB_wind_scheme = 0
     stellar_evolution.parameters.RGB_wind_scheme = 0
@@ -65,15 +65,15 @@ def plot_track(data):
         temperature = stardata['temperature']
         luminosity = stardata['luminosity']
         plot.loglog(
-                temperature[4:].value_in(temp_unit),
-                luminosity[4:].value_in(luminosity_unit),
-                marker="s")  # first few points show transient
+            temperature[4:].value_in(temp_unit),
+            luminosity[4:].value_in(luminosity_unit),
+            marker="s")  # first few points show transient
         plot.text(
-                1.25*temperature[-1].value_in(temp_unit),
-                0.5 * luminosity[-1].value_in(luminosity_unit),
-                str(mass))
-    plot.set_xlabel('Effective Temperature ['+str(temp_unit)+']')
-    plot.set_ylabel('Luminosity ['+str(luminosity_unit)+']')
+            1.25 * temperature[-1].value_in(temp_unit),
+            0.5 * luminosity[-1].value_in(luminosity_unit),
+            str(mass))
+    plot.set_xlabel('Effective Temperature [' + str(temp_unit) + ']')
+    plot.set_ylabel('Luminosity [' + str(luminosity_unit) + ']')
     plot.set_xlim(10**4.6, 10**3.5)
     plot.set_ylim(1.0e-2, 1.e5)
     pyplot.show()

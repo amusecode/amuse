@@ -150,7 +150,7 @@ def evolve_bridged_orbit_in_potential(potential, cluster, code, timestep,
     print(current_age, "->", orbit.particle.position)
     # Evolving backward
     gravity.particles.velocity *= -1
-    while bridge.model_time < current_age-(timestep/2.):
+    while bridge.model_time < current_age - (timestep / 2.):
         # print bridge.model_time, "-", gravity.particles.position[0]
         bridge.evolve_model(bridge.model_time + timestep)
         gravity_to_orbit.copy()
@@ -168,7 +168,7 @@ def evolve_bridged_orbit_in_potential(potential, cluster, code, timestep,
 
     # Evolving forward
     full_orbit = Particles()
-    while bridge.model_time < current_age-(timestep/2.):
+    while bridge.model_time < current_age - (timestep / 2.):
         full_orbit.add_particle(orbit.particle.copy())
         bridge.evolve_model(bridge.model_time + timestep)
         gravity_to_orbit.copy()

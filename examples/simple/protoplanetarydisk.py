@@ -16,14 +16,14 @@ from amuse.datamodel import Particles
 
 def make_map(sph, N=100, L=1):
 
-    x, y = numpy.indices((N+1, N+1))
+    x, y = numpy.indices((N + 1, N + 1))
 
-    x = L*(x.flatten()-N/2.)/N
-    y = L*(y.flatten()-N/2.)/N
-    z = x*0.
-    vx = 0.*x
-    vy = 0.*x
-    vz = 0.*x
+    x = L * (x.flatten() - N / 2.) / N
+    y = L * (y.flatten() - N / 2.) / N
+    z = x * 0.
+    vx = 0. * x
+    vy = 0. * x
+    vz = 0. * x
 
     x = units.AU(x)
     y = units.AU(y)
@@ -34,7 +34,7 @@ def make_map(sph, N=100, L=1):
 
     rho, rhovx, rhovy, rhovz, rhoe = sph.get_hydro_state_at_point(
         x, y, z, vx, vy, vz)
-    rho = rho.reshape((N+1, N+1))
+    rho = rho.reshape((N + 1, N + 1))
 
     return numpy.transpose(rho)
 
@@ -80,8 +80,8 @@ if __name__ == "__main__":
     rho = make_map(sph, N=200, L=L)
     sph.stop()
     pyplot.figure(figsize=(8, 8))
-    pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)),
-                  extent=[-L/2, L/2, -L/2, L/2], vmin=10, vmax=15)
+    pyplot.imshow(numpy.log10(1.e-5 + rho.value_in(units.amu / units.cm**3)),
+                  extent=[-L / 2, L / 2, -L / 2, L / 2], vmin=10, vmax=15)
     pyplot.title(tend)
     pyplot.xlabel('AU')
     pyplot.savefig('test.png')

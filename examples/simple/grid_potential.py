@@ -17,13 +17,13 @@ def hydro_grid_in_potential_well(mass=1 | units.MSun, length=100 | units.AU):
     density_hydrogen_in_stellar_wind = 10 | 1 / units.cm**3
     particles_per_mol = 6.022e23 | 1 / units.mol
     density_hydrogen_in_stellar_wind_in_moles = (
-            density_hydrogen_in_stellar_wind
-            / particles_per_mol
-            )
+        density_hydrogen_in_stellar_wind
+        / particles_per_mol
+    )
     density_gas = 100 * (
-            density_hydrogen_in_stellar_wind_in_moles
-            * molar_mass_hydrogen_proton
-            ).as_quantity_in(units.MSun / units.AU**3)
+        density_hydrogen_in_stellar_wind_in_moles
+        * molar_mass_hydrogen_proton
+    ).as_quantity_in(units.MSun / units.AU**3)
 
     # override with higher number for plotting
     density_gas = 1e-3 | units.MSun / units.AU**3

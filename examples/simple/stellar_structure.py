@@ -24,9 +24,9 @@ def structure_from_star(mass, age):
         radii_cubed = radius_profile**3
         radii_cubed.prepend(0 | units.m**3)
         mass_profile = (
-                (4.0/3.0 * numpy.pi) * density_profile
-                * (radii_cubed[1:] - radii_cubed[:-1])
-            )
+            (4.0 / 3.0 * numpy.pi) * density_profile
+            * (radii_cubed[1:] - radii_cubed[:-1])
+        )
         print("Derived mass profile from density and radius.")
 
     return dict(
@@ -57,20 +57,20 @@ def temperature_density_plot(data, mass, age):
     ylabel('Density')
     pyplot.subplot(2, 1, 2)
     semilogy(
-            data["radius"], data["composition"][0],
-            label=data["species_names"][0])
+        data["radius"], data["composition"][0],
+        label=data["species_names"][0])
     semilogy(
-            data["radius"], data["composition"][1],
-            label=data["species_names"][1])
+        data["radius"], data["composition"][1],
+        label=data["species_names"][1])
     semilogy(
-            data["radius"], data["composition"][2],
-            label=data["species_names"][2])
+        data["radius"], data["composition"][2],
+        label=data["species_names"][2])
     semilogy(
-            data["radius"], data["composition"][3],
-            label=data["species_names"][3])
+        data["radius"], data["composition"][3],
+        label=data["species_names"][3])
     semilogy(
-            data["radius"], data["composition"][4],
-            label=data["species_names"][4])
+        data["radius"], data["composition"][4],
+        label=data["species_names"][4])
     pyplot.ylim(0.0, 1.0)
     xlabel('Radius')
     ylabel('Mass fraction')

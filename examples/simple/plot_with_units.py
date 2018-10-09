@@ -3,15 +3,15 @@ Creates a number of plots using the AMUSE unit aware plot functions.
 """
 from amuse.units import units, quantities
 from amuse.plot import (
-        native_plot, plot, scatter, xlabel, ylabel, hist
-        )
+    native_plot, plot, scatter, xlabel, ylabel, hist
+)
 import numpy as np
 
 if __name__ == "__main__":
 
     # latex_support()
 
-    x = np.pi/20.0 * (range(-10, 10) | units.m)
+    x = np.pi / 20.0 * (range(-10, 10) | units.m)
     y1 = units.MSun.new_quantity(np.sin(x.number))
     y2 = units.MSun.new_quantity(x.number)
     native_plot.subplot(2, 2, 1)
@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     x = range(50) | units.Myr
     y1 = quantities.new_quantity(
-        np.sin(np.arange(0, 1.5, 0.03)), 1e50*units.erg)
+        np.sin(np.arange(0, 1.5, 0.03)), 1e50 * units.erg)
     y2 = -(1e43 | units.J) - y1
     native_plot.subplot(2, 2, 2)
     plot(x, y1, label='$E_\mathrm{kin}$')
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     y1 = units.N.new_quantity(np.random.normal(0.0, 1.0, 100))
     x = units.N.new_quantity(np.arange(-3, 3, 0.1))
-    y2 = np.exp(-np.arange(-3, 3, 0.1)**2)/np.sqrt(np.pi)
+    y2 = np.exp(-np.arange(-3, 3, 0.1)**2) / np.sqrt(np.pi)
     native_plot.subplot(2, 2, 4)
     plot(x, y2, 'y--', label='model')
     hist(y1, bins=12, range=(-3, 3), normed=True, label='data')

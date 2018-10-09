@@ -5,8 +5,8 @@ import numpy
 from matplotlib import pyplot
 from amuse.community.athena.interface import Athena
 from amuse.units.generic_unit_system import (
-        length, mass, speed, time, density
-        )
+    length, mass, speed, time, density
+)
 from amuse.datamodel import Grid
 
 GAMMA = 1.4
@@ -57,7 +57,7 @@ def initialize_grid(grid):
     vx = 0.5 | speed
     p = 2.5 | (mass / (length * time**2))
 
-    halfway = DIMENSIONS_OF_MESH[0]/2 - 1
+    halfway = DIMENSIONS_OF_MESH[0] / 2 - 1
 
     outerregion = numpy.logical_or(
         grid.y <= 0.25 | length, grid.y >= 0.75 | length)
