@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 """
    Simulate the radiative and hydrodynamial evolution of a disk with
    a single bump around a single star
 """
+from __future__ import print_function
 from time import time, localtime
 from amuse.lab import *
 from amuse.ext.molecular_cloud import ism_cube

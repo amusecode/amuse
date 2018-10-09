@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import print_function
 """
    Script for initializing a star and printing its structure
 """

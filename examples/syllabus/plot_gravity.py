@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 """
    Simple visualization for N-body integration.
    Reads particle set from file (nbody.hdf5) and prints frames.
 """
+from __future__ import print_function
 from matplotlib import pyplot
 from amuse.plot import scatter, xlabel, ylabel
 from amuse.lab import *

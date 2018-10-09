@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import print_function
 from amuse.lab import *
 
 Second_Asymptotic_Giant_Branch = 6 | units.stellar_type

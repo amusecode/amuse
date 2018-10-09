@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 """
    Example AMUSE sciprt for generating a Plummer shere and plot the results.
 """
+from __future__ import print_function
 from matplotlib.pyplot import show, xlim, ylim, figure
 from amuse.plot import scatter, xlabel, ylabel
 from amuse.lab import new_plummer_model

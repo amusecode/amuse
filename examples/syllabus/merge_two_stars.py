@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import print_function
 """
    Initialize two stars to a ertain age and merge them using MMAMS
 """

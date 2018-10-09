@@ -3,6 +3,7 @@
 """
    Initialize two stars to a ertain age and merge them using MMAMS
 """
+from __future__ import print_function
 import sys
 import numpy
 from amuse.lab import *

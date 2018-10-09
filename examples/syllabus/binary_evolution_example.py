@@ -3,7 +3,7 @@
 Generates a grid of binaries with different, primary mass, mass ratio
 and separation and evolves these over time.
 """
-
+from __future__ import print_function
 from amuse.units import units
 from amuse.units import quantities
 from amuse import datamodel

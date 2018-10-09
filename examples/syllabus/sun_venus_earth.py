@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-
 """
    Example AMUSE script for evolving Venus and Earth around the Sun.
    Syllabus List. 2.1 and 2.2
 """
+from __future__ import print_function
 from amuse.lab import Particles, units
 
 

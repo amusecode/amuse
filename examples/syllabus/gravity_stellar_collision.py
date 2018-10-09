@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import print_function
 """
    Nbody integration of N particles with a Salpeter initial mass
    function between Mmin and Mmax and with stellar evolution with

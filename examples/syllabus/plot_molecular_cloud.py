@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
   example of molecular cloud evolution with explictly
   split SPH and grav evolution
@@ -8,11 +7,9 @@
   as in Bonnell et al. (2003)
 
 """
-
+from __future__ import print_function
 import numpy
-
 from matplotlib import pyplot
-
 from amuse.lab import *
 from amuse.ext.molecular_cloud import molecular_cloud
 from amuse.ext.evrard_test import body_centered_grid_unit_cube

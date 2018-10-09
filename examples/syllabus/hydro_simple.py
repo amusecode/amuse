@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 """
    Simple routine for running a hydrodynamics solver
 """
+from __future__ import print_function
 from amuse.lab import *
 
 

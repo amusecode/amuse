@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 """
    example code for bridging a gravity solver with a hydrodynamics solver
 """
+from __future__ import print_function
 import numpy
 from amuse.lab import *
 from amuse.couple import bridge

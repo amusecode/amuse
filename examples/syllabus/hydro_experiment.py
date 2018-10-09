@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import print_function
 """
    Simulate the hydrodynamial evolve a disk with a single bump around a star
 """

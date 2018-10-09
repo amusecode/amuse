@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 """
 Convert a 1D Henhey stellar model into a spherical particle distribution
 """
+from __future__ import print_function
 from amuse.units import units
 from amuse.community.evtwin.interface import EVtwin
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH

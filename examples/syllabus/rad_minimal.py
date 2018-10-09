@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 """
    Minimalistic routine for running a radiative transfer code.
 """
+from __future__ import print_function
 from amuse.lab import *
 
 

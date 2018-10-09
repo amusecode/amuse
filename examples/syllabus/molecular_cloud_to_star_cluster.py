@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
   example of molecular cloud evolution with explictly
   split SPH and grav evolution
@@ -8,7 +7,7 @@
   as in Bonnell et al. (2003)
 
 """
-
+from __future__ import print_function
 import numpy
 
 from matplotlib import pyplot

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-
 """
    Example AMUSE sciprt for plotting the Salpeter mass function
 """
+from __future__ import print_function
 import numpy
 from matplotlib import pyplot
 from amuse.lab import new_salpeter_mass_distribution, units
