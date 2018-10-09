@@ -18,9 +18,9 @@ def main(filename="stellar.hdf5"):
     pyplot.ion()
     filename = "nbody.hdf5"
     stars = read_set_from_file(filename, 'hdf5')
-    m = 1 + 3.0*stars.mass/min(stars.mass)
-    lim = 2*max(max(stars.x).value_in(stars.x.unit),
-                stars.center_of_mass().length().value_in(stars.x.unit))
+    m = 1 + 3.0 * stars.mass / min(stars.mass)
+    lim = 2 * max(max(stars.x).value_in(stars.x.unit),
+                  stars.center_of_mass().length().value_in(stars.x.unit))
     for si in reversed(list(stars.iter_history())):
         c = si.temperature.value_in(units.K)
         scatter(si.temperature.value_in(units.K),

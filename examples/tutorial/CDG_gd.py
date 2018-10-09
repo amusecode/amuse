@@ -16,7 +16,7 @@ def main(Ncl, mcl, rcl, W0, t_end, n_steps):
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
 
     time = zero
-    dt = t_end/float(n_steps)
+    dt = t_end / float(n_steps)
     while time < t_end:
         Etot_prev = Etot_init
         time += dt
@@ -30,8 +30,8 @@ def main(Ncl, mcl, rcl, W0, t_end, n_steps):
         Etot = Ekin + Epot
 
         print "T=", time, "M=", bodies.mass.sum(), "E= ", Etot, "Q= ", \
-              Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot
+              Ekin / Epot,
+        print "dE=", (Etot_init - Etot) / Etot, "ddE=", (Etot_prev - Etot) / Etot
 
     gravity.stop()
 
@@ -59,9 +59,9 @@ def new_option_parser():
 
 if __name__ in ('__main__'):
     set_printing_strategy(
-            "custom",
-            preferred_units=[
-                units.MSun, units.RSun, units.yr],
-            precision=4, prefix="", separator=" [", suffix="]")
+        "custom",
+        preferred_units=[
+            units.MSun, units.RSun, units.yr],
+        precision=4, prefix="", separator=" [", suffix="]")
     o, arguments = new_option_parser().parse_args()
     main(**o.__dict__)

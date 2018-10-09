@@ -15,8 +15,8 @@ from amuse.ic import plummer
 from amuse.couple import multiples
 
 from amuse.units import (
-        units, nbody_system
-        )
+    units, nbody_system
+)
 
 from optparse import OptionParser
 
@@ -76,7 +76,7 @@ class MultiplesClusterCode(object):
         sum_energy = self.code.kinetic_energy + self.code.potential_energy
         energy0 = sum_energy.value_in(nbody_system.energy)
         coreradius = self.star_code.particles.virial_radius().value_in(
-                self.rscale.to_unit())
+            self.rscale.to_unit())
 
         print "Time          :", time
         print "Energy        :", energy0
@@ -98,11 +98,11 @@ class MultiplesClusterCode(object):
             self.code.potential_energy - self.code.multiples_energy_correction
         energy = sum_energy.value_in(nbody_system.energy)
         coreradius = self.star_code.particles.virial_radius().value_in(
-                self.rscale.to_unit())
+            self.rscale.to_unit())
 
         print "Time          :", time
         print "Energy        :", energy
-        print "Delta E       :", (energy-energy0)/energy0
+        print "Delta E       :", (energy - energy0) / energy0
         print "Virial radius :", coreradius
 
         self.stop()
@@ -117,7 +117,7 @@ class MultiplesClusterCode(object):
             self.code.multiples_energy_correction
         energy = sum_energy.value_in(nbody_system.energy)
         coreradius = self.star_code.particles.virial_radius().value_in(
-                self.rscale.to_unit())
+            self.rscale.to_unit())
 
         if self.line is None:
             pylab.ion()
@@ -160,7 +160,7 @@ class MultiplesClusterCode(object):
         if self.must_do_plot:
             self.update_plot(time=0 * self.delta_t, code=self.code)
 
-        for time in self.delta_t * range(1, self.ntimesteps+1):
+        for time in self.delta_t * range(1, self.ntimesteps + 1):
             self.code.evolve_model(time)
             print self.code.model_time
             if self.must_do_plot:
@@ -168,7 +168,7 @@ class MultiplesClusterCode(object):
             self.code.print_trees_summary()
 
     def create_code(self, star_code):
-        self.star_code = getattr(self, 'new_star_code_'+star_code)()
+        self.star_code = getattr(self, 'new_star_code_' + star_code)()
 
     def stop(self):
         self.star_code.stop()
@@ -243,8 +243,7 @@ def new_option_parser():
         default="hermite",
         dest="star_code",
         help="the code modelling the particles ('hermite', 'bhtree', 'octgrav', 'phigrape', 'ph4')",
-        type="string"
-    )
+        type="string")
     result.add_option(
         "-m", "--total-mass",
         default=1,
@@ -264,8 +263,7 @@ def new_option_parser():
         default=0.0,
         dest="star_smoothing_fraction",
         help="smoothing length of the stars as a fraction of the length scale (default 0)",
-        type="float"
-    )
+        type="float")
     result.add_option(
         "-s", "--seed",
         default=0,

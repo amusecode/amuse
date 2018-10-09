@@ -13,12 +13,12 @@ def main(filename="nbody.hdf5", lim=3):
     storage = store.StoreHDF(filename, "r")
     stars = storage.load()
 #    lim = 4*stars.center_of_mass().length().value_in(stars.x.unit)
-    lim = 2*max(max(stars.x).value_in(stars.x.unit),
-                stars.center_of_mass().length().value_in(stars.x.unit))
-    m = 1 + 3.0*stars.mass/min(stars.mass)
+    lim = 2 * max(max(stars.x).value_in(stars.x.unit),
+                  stars.center_of_mass().length().value_in(stars.x.unit))
+    m = 1 + 3.0 * stars.mass / min(stars.mass)
     for si in stars.history:
         time = si.get_timestamp()
-        pyplot.title("Cluster at t="+str(time))
+        pyplot.title("Cluster at t=" + str(time))
         print "time = ", time
         scatter(si.x, si.y, s=m)
         xlabel("X")

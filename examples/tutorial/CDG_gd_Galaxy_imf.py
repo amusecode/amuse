@@ -29,7 +29,7 @@ def main(Ncl, rcl, W0, Rgal, vgal, t_end, n_steps):
 
     gravity = bridge.Bridge()
     gravity.add_system(CDG, (MilkyWay_galaxy(),))
-    dt = t_end/float(n_steps)
+    dt = t_end / float(n_steps)
     gravity.timestep = dt
 
     filename = "nbody.hdf5"
@@ -40,7 +40,7 @@ def main(Ncl, rcl, W0, Rgal, vgal, t_end, n_steps):
     Etot_prev = Etot_init
 
     time = zero
-    dt = t_end/float(n_steps)
+    dt = t_end / float(n_steps)
     while time < t_end:
         time += dt
 
@@ -52,8 +52,8 @@ def main(Ncl, rcl, W0, Rgal, vgal, t_end, n_steps):
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
         print "T=", time, "M=", bodies.mass.sum(),
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot
+        print "E= ", Etot, "Q= ", Ekin / Epot,
+        print "dE=", (Etot_init - Etot) / Etot, "ddE=", (Etot_prev - Etot) / Etot
         Etot_prev = Etot
 
     gravity.stop()
@@ -79,8 +79,12 @@ def new_option_parser():
     result.add_option("-v", unit=units.parsec,
                       dest="vgal", type="float", default=100 | units.kms,
                       help="orbital velocity of the CDG [%default]")
-    result.add_option("-W", dest="W0", type="float", default=7.0,
-                      help="Dimension-less depth of the King potential (W0) [%default]")
+    result.add_option(
+        "-W",
+        dest="W0",
+        type="float",
+        default=7.0,
+        help="Dimension-less depth of the King potential (W0) [%default]")
     return result
 
 

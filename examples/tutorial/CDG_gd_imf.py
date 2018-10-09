@@ -24,7 +24,7 @@ def main(Ncl, rcl, W0, t_end, n_steps):
     Etot_prev = Etot_init
 
     time = zero
-    dt = t_end/float(n_steps)
+    dt = t_end / float(n_steps)
     while time < t_end:
         time += dt
 
@@ -36,8 +36,8 @@ def main(Ncl, rcl, W0, t_end, n_steps):
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
         print "T=", time, "M=", bodies.mass.sum(),
-        print "E= ", Etot, "Q= ", Ekin/Epot,
-        print "dE=", (Etot_init-Etot)/Etot, "ddE=", (Etot_prev-Etot)/Etot
+        print "E= ", Etot, "Q= ", Ekin / Epot,
+        print "dE=", (Etot_init - Etot) / Etot, "ddE=", (Etot_prev - Etot) / Etot
         Etot_prev = Etot
 
     gravity.stop()
@@ -57,8 +57,12 @@ def new_option_parser():
     result.add_option("-r", unit=units.parsec,
                       dest="rcl", type="float", default=10 | units.parsec,
                       help="cluster half-mass radius [%default]")
-    result.add_option("-W", dest="W0", type="float", default=7.0,
-                      help="Dimension-less depth of the King potential (W0) [%default]")
+    result.add_option(
+        "-W",
+        dest="W0",
+        type="float",
+        default=7.0,
+        help="Dimension-less depth of the King potential (W0) [%default]")
     return result
 
 

@@ -51,10 +51,10 @@ class GasPlummerModelExternalField(object):
         # radii = radii_squared**0.5
         plummer_radii_squared = radii_squared + self.radius_squared
         plummer_radii_15 = plummer_radii_squared ** 1.5
-        fr = -self.gravity_constant*self.total_mass/plummer_radii_15
-        ax = fr*dx
-        ay = fr*dy
-        az = fr*dz
+        fr = -self.gravity_constant * self.total_mass / plummer_radii_15
+        ax = fr * dx
+        ay = fr * dy
+        az = fr * dz
         return ax, ay, az
 
     def get_potential_at_point(self, eps, x, y, z):
@@ -65,7 +65,7 @@ class GasPlummerModelExternalField(object):
         # radii = radii_squared**0.5
 
         plummer_radii = (radii_squared + self.radius_squared)**0.5
-        phi = self.gravity_constant*self.total_mass/plummer_radii
+        phi = self.gravity_constant * self.total_mass / plummer_radii
         return -phi * 2
 
     def stop(self):
@@ -134,16 +134,16 @@ class AbstractStarAndGasPlummerCode(object):
 
         time = self.converter.to_nbody(time).value_in(nbody_system.time),
         sum_energy = (
-                code.kinetic_energy
-                + code.potential_energy
-                + code.thermal_energy
-                )
+            code.kinetic_energy
+            + code.potential_energy
+            + code.thermal_energy
+        )
         energy = self.converter.to_nbody(
             sum_energy).value_in(nbody_system.energy)
         coreradius = (
-                self.star_code.particles.virial_radius().value_in(
-                    self.rscale.to_unit())
-                )
+            self.star_code.particles.virial_radius().value_in(
+                self.rscale.to_unit())
+        )
         # kicke =  self.converter.to_nbody(code.kick_energy).value_in(nbody_system.energy)
 
         if self.line is None:
@@ -182,21 +182,21 @@ class AbstractStarAndGasPlummerCode(object):
         particles = plummer.new_plummer_model(
             self.nstars, convert_nbody=self.converter)
         particles.radius = self.star_epsilon
-        particles.mass = (1.0/self.nstars) * self.star_mass
+        particles.mass = (1.0 / self.nstars) * self.star_mass
         return particles
 
     def new_gas_cluster(self):
         particles = gasplummer.new_plummer_gas_model(
             self.ngas, convert_nbody=self.converter)
         particles.h_smooth = self.gas_epsilon
-        particles.mass = (1.0/self.ngas) * self.gas_mass
+        particles.mass = (1.0 / self.ngas) * self.gas_mass
         return particles
 
     def new_particles_cluster_as_gas(self):
         particles = plummer.new_plummer_model(
             self.ngas, convert_nbody=self.converter)
         particles.radius = self.gas_epsilon
-        particles.mass = (1.0/self.ngas) * self.gas_mass
+        particles.mass = (1.0 / self.ngas) * self.gas_mass
         return particles
 
     def stop(self):
@@ -207,7 +207,7 @@ class AbstractStarAndGasPlummerCode(object):
         if self.must_do_plot:
             self.update_plot(time=0 * self.delta_t, code=self.code)
 
-        for time in self.delta_t * range(1, self.ntimesteps+1):
+        for time in self.delta_t * range(1, self.ntimesteps + 1):
             self.code.evolve_model(time)
             print self.converter.to_nbody(self.code.time)
             if self.must_do_plot:
@@ -271,7 +271,7 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         energy = self.converter.to_nbody(
             sum_energy).value_in(nbody_system.energy)
         coreradius = self.star_code.particles.virial_radius().value_in(
-                self.rscale.to_unit())
+            self.rscale.to_unit())
 
         print "Time          :", time
         print "Energy        :", energy
@@ -297,7 +297,7 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         energy = self.converter.to_nbody(
             sum_energy).value_in(nbody_system.energy)
         coreradius = self.star_code.particles.virial_radius().value_in(
-                self.rscale.to_unit())
+            self.rscale.to_unit())
 
         print "Time          :", time
         print "Energy        :", energy
@@ -314,17 +314,17 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
             star_code,
             gas_to_star_interaction_code,
             star_to_gas_interaction_code):
-        self.star_code = getattr(self, 'new_star_code_'+star_code)()
-        self.gas_code = getattr(self, 'new_gas_code_'+gas_code)()
+        self.star_code = getattr(self, 'new_star_code_' + star_code)()
+        self.gas_code = getattr(self, 'new_gas_code_' + gas_code)()
 
         self.gas_to_star_codes = getattr(
             self,
-            'new_gas_to_star_interaction_codes_'+gas_to_star_interaction_code
-            )(self.gas_code)
+            'new_gas_to_star_interaction_codes_' + gas_to_star_interaction_code
+        )(self.gas_code)
         self.star_to_gas_codes = getattr(
             self,
-            'new_star_to_gas_interaction_codes_'+star_to_gas_interaction_code
-            )(self.star_code)
+            'new_star_to_gas_interaction_codes_' + star_to_gas_interaction_code
+        )(self.star_code)
 
     def create_bridge(self):
         bridge_code1 = bridge.GravityCodeInField(
@@ -506,7 +506,7 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         energy = self.converter.to_nbody(
             sum_energy).value_in(nbody_system.energy)
         coreradius = self.code.dm_particles.virial_radius().value_in(
-                self.rscale.to_unit())
+            self.rscale.to_unit())
 
         print "Time:", 0
         print "Energy:", energy
@@ -531,7 +531,7 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         energy = self.converter.to_nbody(
             sum_energy).value_in(nbody_system.energy)
         coreradius = self.code.dm_particles.virial_radius().value_in(
-                self.rscale.to_unit())
+            self.rscale.to_unit())
 
         print "Time:", time
         print "Energy:", energy
@@ -547,14 +547,14 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         if self.must_do_plot:
             self.update_plot(time=0 * self.delta_t, code=self.code)
 
-        for time in self.delta_t * range(1, self.ntimesteps+1):
+        for time in self.delta_t * range(1, self.ntimesteps + 1):
             self.code.evolve_model(time)
             print self.converter.to_nbody(self.code.model_time)
             if self.must_do_plot:
                 self.update_plot(time=self.code.time, code=self.code)
 
     def create_code(self, name):
-        self.code = getattr(self, 'new_sph_code_'+name)()
+        self.code = getattr(self, 'new_sph_code_' + name)()
 
     def stop(self):
         self.code.stop()
@@ -613,8 +613,7 @@ def new_option_parser():
         default="hermite",
         dest="star_code",
         help="the code modelling the particles ('hermite', 'bhtree', 'octgrav', 'phigrape')",
-        type="string"
-    )
+        type="string")
     result.add_option(
         "--sph-code",
         default="fi",
@@ -627,15 +626,13 @@ def new_option_parser():
         default="self",
         dest="gas_to_star_interaction_code",
         help="the code calculating the gravity field of the gas code for the star code (default is self, gas code will calculate field for star code)",
-        type="string"
-    )
+        type="string")
     result.add_option(
         "--star-gas-code",
         default="self",
         dest="star_to_gas_interaction_code",
         help="the code calculating the gravity field of the star code for the gas code (default is self, star code will calculate field for gas code)",
-        type="string"
-    )
+        type="string")
     result.add_option(
         "-m", "--total-mass",
         default=1000.0,
@@ -672,8 +669,7 @@ def new_option_parser():
         default=0.05,
         dest="gas_smoothing_fraction",
         help="smoothing length of the gas particles as a fraction of the length scale",
-        type="float"
-    )
+        type="float")
 
     result.add_option(
         "-s", "--seed",
