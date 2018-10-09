@@ -1,11 +1,4 @@
-from amuse.lab import (
-        new_salpeter_mass_distribution,
-        new_king_model,
-        units, nbody_system, zero,
-        BHTree,
-        write_set_to_file,
-        set_printing_strategy,
-        )
+from amuse.lab import *
 
 
 def main(Ncl, rcl, W0, t_end, n_steps):

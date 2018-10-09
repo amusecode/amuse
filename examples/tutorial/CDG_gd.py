@@ -1,10 +1,4 @@
-from amuse.lab import (
-        new_king_model,
-        nbody_system, units, zero,
-        Hermite,
-        write_set_to_file,
-        set_printing_strategy,
-        )
+from amuse.lab import *
 
 
 def main(Ncl, mcl, rcl, W0, t_end, n_steps):

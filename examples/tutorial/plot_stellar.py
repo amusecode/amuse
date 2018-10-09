@@ -6,9 +6,7 @@
 # import numpy
 from matplotlib import pyplot
 from amuse.plot import scatter
-from amuse.lab import (
-        read_set_from_file, units
-        )
+from amuse.lab import *
 from optparse import OptionParser
 
 

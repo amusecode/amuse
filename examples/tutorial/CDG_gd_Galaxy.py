@@ -1,10 +1,4 @@
-from amuse.lab import (
-        new_king_model,
-        units, nbody_system, zero,
-        BHTree,
-        write_set_to_file,
-        set_printing_strategy,
-        )
+from amuse.lab import *
 from amuse.couple import bridge
 from galaxy_model import MilkyWay_galaxy
 

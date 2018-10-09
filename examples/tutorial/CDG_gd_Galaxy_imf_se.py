@@ -6,15 +6,7 @@
    moment a 4th order Hermite integrator is used for the integration.
 """
 
-from amuse.lab import (
-        new_salpeter_mass_distribution,
-        new_king_model,
-        units, nbody_system, zero,
-        SeBa,
-        BHTree,
-        write_set_to_file,
-        set_printing_strategy,
-        )
+from amuse.lab import *
 from amuse.couple import bridge
 from galaxy_model import MilkyWay_galaxy
 

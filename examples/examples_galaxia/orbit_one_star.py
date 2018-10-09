@@ -140,10 +140,14 @@ class IntegrateOrbitStar(object):
         angle = self.initial_phase + self.omega*self.time
         C1 = particles.vx + self.omega*particles.y
         C2 = particles.vy - self.omega*particles.x
-        no_inertial_system.x = particles.x * \
-            numpy.cos(angle) + particles.y*numpy.sin(angle)
-        no_inertial_system.y = -particles.x * \
-            numpy.sin(angle) + particles.y*numpy.cos(angle)
+        no_inertial_system.x = (
+                particles.x * numpy.cos(angle)
+                + particles.y * numpy.sin(angle)
+                )
+        no_inertial_system.y = (
+                -particles.x * numpy.sin(angle)
+                + particles.y * numpy.cos(angle)
+                )
         no_inertial_system.z = particles.z
         no_inertial_system.vx = C1*numpy.cos(angle) + C2*numpy.sin(angle)
         no_inertial_system.vy = C2*numpy.cos(angle) - C1*numpy.sin(angle)

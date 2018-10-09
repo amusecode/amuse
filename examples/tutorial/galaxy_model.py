@@ -1,9 +1,5 @@
 import numpy
-from amuse.lab import (
-        # AdaptingVectorQuantity,
-        constants, units,
-        set_printing_strategy,
-        )
+from amuse.lab import *
 
 
 class MilkyWay_galaxy(object):
