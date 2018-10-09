@@ -1039,7 +1039,10 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
         for parameter in self.specification.parameters:
             if not parameter.datatype == 'bool':
                 continue
-            self.out.lf() + 'LOGICAL :: logical_'+parameter.name
+            if self.specification.must_handle_array:
+                self.out.lf() + 'LOGICAL, dimension('+self.length_parameter().name+') :: logical_'+parameter.name
+            else:
+                self.out.lf() + 'LOGICAL :: logical_'+parameter.name
             
 
 
@@ -1061,11 +1064,15 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
             if not parameter.datatype == 'bool':
                 continue
             if  parameter.direction == LegacyFunctionSpecification.OUT or parameter.direction == LegacyFunctionSpecification.INOUT:
-                self.out.lf() + 'if (logical_{0}) then'.format(parameter.name)
-                self.out.lf() + '  {0} = 1'.format(parameter.name)
-                self.out.lf() + 'else'
-                self.out.lf() + '{0} = 0'.format(parameter.name)
-                self.out.lf() + 'end if'
+                if self.specification.must_handle_array:
+                    self.out.lf() + '{0} = 0'.format(parameter.name)
+                    self.out.lf() + 'where(logical_{0}) {0} = 1'.format(parameter.name)
+                else:
+                    self.out.lf() + 'if (logical_{0}) then'.format(parameter.name)
+                    self.out.lf() + '  {0} = 1'.format(parameter.name)
+                    self.out.lf() + 'else'
+                    self.out.lf() + '{0} = 0'.format(parameter.name)
+                    self.out.lf() + 'end if'
                 
 
 
