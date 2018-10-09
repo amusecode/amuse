@@ -129,8 +129,11 @@ class AbstractGrid(AbstractSet):
         
     def __str__(self):
         dimensionstr = ' x '.join(([str(x) for x in self.shape]))
-        attrstr= ', '.join(self.get_attribute_names_defined_in_store())
-        return "{0} ({1}) ({2})".format(
+        attributes=self.get_attribute_names_defined_in_store()
+        settable=self.get_defined_settable_attribute_names()
+        strings=[a if a in settable else a+" (ro)" for a in attributes]
+        attrstr= ', '.join(strings)
+        return "{0}({1}) ( {2} )".format(
             self.__class__.__name__, 
             dimensionstr,
             attrstr
