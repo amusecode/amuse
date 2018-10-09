@@ -60,7 +60,7 @@ virtualenv:
 
 script:
 - export PYTHONPATH=${PWD}/src
-- nosetests test/reports/test_speed.py -sv
+- mpiexec nosetests test/reports/test_speed.py -sv
 - nosetests -e "test_plot" test/core_tests
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
