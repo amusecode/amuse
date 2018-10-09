@@ -1,11 +1,9 @@
 import os
-# import sys
 import numpy
 
 from amuse.community.fi import interface as interface
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.molecular_cloud import molecular_cloud
-# from amuse.ext.evrard_test import body_centered_grid_unit_cube
 
 from amuse.test.amusetest import get_path_to_results
 from amuse.rfi.core import is_mpd_running

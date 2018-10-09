@@ -1,5 +1,4 @@
 import sys
-# import numpy
 import os
 import warnings
 
@@ -146,7 +145,7 @@ def plot_HR_diagram(
 
         number_of_stars = len(masses)
         for j in range(number_of_stars):
-            #            Plot track of the current star j
+            # Plot track of the current star j
             x_values = temperature_tracks[j].value_in(units.K)
             y_values = luminosity_tracks[j].value_in(units.LSun)
             pyplot.loglog(x_values, y_values,

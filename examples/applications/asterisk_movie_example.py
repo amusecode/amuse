@@ -52,8 +52,10 @@ if __name__ in ('__main__', '__plot__'):
     # creating colored particles
     particles = new_particles_with_blackbody_color(particles)
     particles.alpha = 1.0
-    particles.radius = stellar_evolution.particles.radius.sqrt() * \
-        (1e4 | units.parsec).sqrt()
+    particles.radius = (
+            stellar_evolution.particles.radius.sqrt()
+            * (1e4 | units.parsec).sqrt()
+            )
 
     # creating visualization code
     converter = nbody.nbody_to_si(10.0 | units.parsec, masses.sum())

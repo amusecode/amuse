@@ -1,4 +1,3 @@
-# import sys
 import numpy
 import os
 import warnings
@@ -12,8 +11,6 @@ from amuse.community.mesa.interface import MESA
 from amuse.community.cachedse.interface import CachedStellarEvolution
 
 from amuse.test.amusetest import get_path_to_results
-
-# import numpy
 
 from amuse import datamodel
 from amuse.rfi.core import is_mpd_running

@@ -2,12 +2,9 @@
 In this script we simulate a plummer sphere on a grid
 """
 
-# from amuse.support.core import late
-
 from amuse.units import constants
 from amuse.units import units
 from amuse.units import nbody_system
-# from amuse.units.quantities import VectorQuantity
 from amuse.units.generic_unit_system import (
         time, length, speed, mass, density,
         )
@@ -15,17 +12,11 @@ from amuse.units.generic_unit_converter import (
         ConvertBetweenGenericAndSiUnits,
         )
 
-# from amuse.ext import cloud
 from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole
-# from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
-# from amuse.community.octgrav.interface import Octgrav
-
-# import sys
 
 try:
-    # from amuse import plot
     from matplotlib import pyplot
     IS_PLOT_AVAILABLE = True
 except ImportError:
@@ -35,7 +26,6 @@ except ImportError:
 import numpy
 from numpy import pi
 from optparse import OptionParser
-# from amuse import io
 from amuse.io import text
 
 from amuse.datamodel import Grid

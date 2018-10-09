@@ -1,5 +1,3 @@
-# import os
-# import sys
 import numpy
 try:
     from matplotlib import pyplot
@@ -70,8 +68,7 @@ class CalculateCloudShock(object):
 
     def new_instance_of_mpiamrvac_code(self):
         from amuse.community.mpiamrvac.interface import MpiAmrVac
-        # , redirection="none")
-        result = MpiAmrVac(number_of_workers=self.number_of_workers)
+        result = MpiAmrVac(number_of_workers=self.number_of_workers)  # , redirection="none")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         result.parameters.maximum_number_of_grid_levels = 3
