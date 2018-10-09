@@ -75,7 +75,10 @@ class Parameters(object):
 
         for name in sorted(self.names()):
             output += name + ": "
-            output += str(getattr(self, name))+"\n"
+            output += str(getattr(self, name))
+            if self.get_parameter(name).is_readonly():
+                output += "  (read only)"
+            output += "\n"
 
         return output
 
