@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
    Nbody integration of N particles in N-body units from t=0 to
    t_end=1 N-body time units.  The initial cluster is a King (1966)
@@ -51,9 +52,10 @@ def main(Ncl, rcl, W0, Rgal, vgal, t_end, n_steps):
         Ekin = gravity.kinetic_energy
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, "M=", bodies.mass.sum(),
-        print "E= ", Etot, "Q= ", Ekin / Epot,
-        print "dE=", (Etot_init - Etot) / Etot, "ddE=", (Etot_prev - Etot) / Etot
+        print("T=", time, "M=", bodies.mass.sum(), end=' ')
+        print("E= ", Etot, "Q= ", Ekin / Epot, end=' ')
+        print("dE=", (Etot_init - Etot) / Etot,
+              "ddE=", (Etot_prev - Etot) / Etot)
         Etot_prev = Etot
 
     gravity.stop()

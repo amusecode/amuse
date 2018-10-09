@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 from amuse.lab import *
 
 
@@ -29,9 +32,10 @@ def main(Ncl, mcl, rcl, W0, t_end, n_steps):
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
 
-        print "T=", time, "M=", bodies.mass.sum(), "E= ", Etot, "Q= ", \
-              Ekin / Epot,
-        print "dE=", (Etot_init - Etot) / Etot, "ddE=", (Etot_prev - Etot) / Etot
+        print("T=", time, "M=", bodies.mass.sum(), "E= ", Etot, "Q= ",
+              Ekin / Epot, end=' ')
+        print("dE=", (Etot_init - Etot) / Etot,
+              "ddE=", (Etot_prev - Etot) / Etot)
 
     gravity.stop()
 

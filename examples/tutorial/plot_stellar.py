@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 """
    Visualization for simple N-body integration.
    Reads particle set from file (stellar.hdf5) and prints subsequent frames.
 """
+
 # import sys
 # import numpy
 from matplotlib import pyplot

@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 """
    Visualization for simple N-body integration.
    Reads particle set from file (nbody.hdf5) and prints subsequent frames.
 """
+
 from matplotlib import pyplot
 from amuse.plot import scatter, xlabel, ylabel
 from amuse.io import store
@@ -19,7 +21,7 @@ def main(filename="nbody.hdf5", lim=3):
     for si in stars.history:
         time = si.get_timestamp()
         pyplot.title("Cluster at t=" + str(time))
-        print "time = ", time
+        print("time = ", time)
         scatter(si.x, si.y, s=m)
         xlabel("X")
         ylabel("Y")

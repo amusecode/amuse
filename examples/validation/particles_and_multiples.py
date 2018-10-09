@@ -1,5 +1,6 @@
-# from amuse.couple import bridge
+# -*- coding: utf-8 -*-
 
+# from amuse.couple import bridge
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.fi.interface import Fi
@@ -78,9 +79,9 @@ class MultiplesClusterCode(object):
         coreradius = self.star_code.particles.virial_radius().value_in(
             self.rscale.to_unit())
 
-        print "Time          :", time
-        print "Energy        :", energy0
-        print "Virial radius :", coreradius
+        print("Time          :", time)
+        print("Energy        :", energy0)
+        print("Virial radius :", coreradius)
 
         self.evolve_model()
 
@@ -100,15 +101,15 @@ class MultiplesClusterCode(object):
         coreradius = self.star_code.particles.virial_radius().value_in(
             self.rscale.to_unit())
 
-        print "Time          :", time
-        print "Energy        :", energy
-        print "Delta E       :", (energy - energy0) / energy0
-        print "Virial radius :", coreradius
+        print("Time          :", time)
+        print("Energy        :", energy)
+        print("Delta E       :", (energy - energy0) / energy0)
+        print("Virial radius :", coreradius)
 
         self.stop()
 
         if must_do_plot:
-            raw_input('Press enter...')
+            eval(input('Press enter...'))
 
     def update_plot(self, time, code):
 
@@ -160,9 +161,9 @@ class MultiplesClusterCode(object):
         if self.must_do_plot:
             self.update_plot(time=0 * self.delta_t, code=self.code)
 
-        for time in self.delta_t * range(1, self.ntimesteps + 1):
+        for time in self.delta_t * list(range(1, self.ntimesteps + 1)):
             self.code.evolve_model(time)
-            print self.code.model_time
+            print(self.code.model_time)
             if self.must_do_plot:
                 self.update_plot(time=self.code.model_time, code=self.code)
             self.code.print_trees_summary()

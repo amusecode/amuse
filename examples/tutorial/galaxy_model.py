@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import numpy
 from amuse.lab import *
 
 
 class MilkyWay_galaxy(object):
+
     def get_gravity_at_point(self, eps, x, y, z):
         phi_0 = self.get_potential_at_point(eps, x, y, z)
         # grav = AdaptingVectorQuantity()
@@ -48,8 +51,8 @@ if __name__ in ('__main__', '__plot__'):
     mwg = MilkyWay_galaxy()
     sun_pos = [8.5, 0, 0] | units.kpc
     eps = 1 | units.AU
-    print "Milky Way Galaxy:"
-    print "gravity at solar location:", \
-        mwg.get_gravity_at_point(eps, sun_pos[0], sun_pos[1], sun_pos[2])
-    print "potential at solar location:", \
-        mwg.get_potential_at_point(eps, sun_pos[0], sun_pos[1], sun_pos[2])
+    print("Milky Way Galaxy:")
+    print("gravity at solar location:",
+          mwg.get_gravity_at_point(eps, sun_pos[0], sun_pos[1], sun_pos[2]))
+    print("potential at solar location:",
+          mwg.get_potential_at_point(eps, sun_pos[0], sun_pos[1], sun_pos[2]))

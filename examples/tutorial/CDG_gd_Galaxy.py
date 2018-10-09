@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+
 from amuse.lab import *
 from amuse.couple import bridge
 from galaxy_model import MilkyWay_galaxy
@@ -39,9 +42,10 @@ def main(Ncl, mcl, rcl, W0, Rgal, vgal, t_end, n_steps):
         Ekin = gravity.kinetic_energy
         Epot = gravity.potential_energy
         Etot = Ekin + Epot
-        print "T=", time, "M=", bodies.mass.sum(),
-        print "E= ", Etot, "Q= ", Ekin / Epot,
-        print "dE=", (Etot_init - Etot) / Etot, "ddE=", (Etot_prev - Etot) / Etot
+        print("T=", time, "M=", bodies.mass.sum(), end=' ')
+        print("E= ", Etot, "Q= ", Ekin / Epot, end=' ')
+        print("dE=", (Etot_init - Etot) / Etot,
+              "ddE=", (Etot_prev - Etot) / Etot)
         Etot_prev = Etot
 
     gravity.stop()

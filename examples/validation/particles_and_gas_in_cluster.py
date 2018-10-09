@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from amuse.couple import bridge
 
 from amuse.community.bhtree.interface import BHTree
@@ -207,9 +209,9 @@ class AbstractStarAndGasPlummerCode(object):
         if self.must_do_plot:
             self.update_plot(time=0 * self.delta_t, code=self.code)
 
-        for time in self.delta_t * range(1, self.ntimesteps + 1):
+        for time in self.delta_t * list(range(1, self.ntimesteps + 1)):
             self.code.evolve_model(time)
-            print self.converter.to_nbody(self.code.time)
+            print((self.converter.to_nbody(self.code.time)))
             if self.must_do_plot:
                 self.update_plot(time=self.code.time, code=self.code)
 
@@ -233,8 +235,7 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
                  must_do_plot=True,
                  gas_to_star_interaction_code='none',
                  star_to_gas_interaction_code='none',
-                 **ignored_options
-                 ):
+                 **ignored_options):
 
         AbstractStarAndGasPlummerCode.__init__(
             self,
@@ -273,9 +274,9 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         coreradius = self.star_code.particles.virial_radius().value_in(
             self.rscale.to_unit())
 
-        print "Time          :", time
-        print "Energy        :", energy
-        print "Virial radius :", coreradius
+        print(("Time          :", time))
+        print(("Energy        :", energy))
+        print(("Virial radius :", coreradius))
 
         self.evolve_model()
 
@@ -299,14 +300,14 @@ class BridgeStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         coreradius = self.star_code.particles.virial_radius().value_in(
             self.rscale.to_unit())
 
-        print "Time          :", time
-        print "Energy        :", energy
-        print "Virial radius :", coreradius
+        print(("Time          :", time))
+        print(("Energy        :", energy))
+        print(("Virial radius :", coreradius))
 
         self.stop()
 
         if must_do_plot:
-            raw_input('Press enter...')
+            eval(input('Press enter...'))
 
     def create_codes(
             self,
@@ -508,9 +509,9 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         coreradius = self.code.dm_particles.virial_radius().value_in(
             self.rscale.to_unit())
 
-        print "Time:", 0
-        print "Energy:", energy
-        print "Virial radius:", coreradius
+        print(("Time:", 0))
+        print(("Energy:", energy))
+        print(("Virial radius:", coreradius))
 
         self.evolve_model()
 
@@ -533,23 +534,23 @@ class AllInOneStarAndGasPlummerCode(AbstractStarAndGasPlummerCode):
         coreradius = self.code.dm_particles.virial_radius().value_in(
             self.rscale.to_unit())
 
-        print "Time:", time
-        print "Energy:", energy
-        print "Virial radius:", coreradius
+        print(("Time:", time))
+        print(("Energy:", energy))
+        print(("Virial radius:", coreradius))
 
         self.stop()
 
         if must_do_plot:
-            raw_input('Press enter...')
+            eval(input('Press enter...'))
 
     def evolve_model(self):
 
         if self.must_do_plot:
             self.update_plot(time=0 * self.delta_t, code=self.code)
 
-        for time in self.delta_t * range(1, self.ntimesteps + 1):
+        for time in self.delta_t * list(range(1, self.ntimesteps + 1)):
             self.code.evolve_model(time)
-            print self.converter.to_nbody(self.code.model_time)
+            print((self.converter.to_nbody(self.code.model_time)))
             if self.must_do_plot:
                 self.update_plot(time=self.code.time, code=self.code)
 
@@ -612,8 +613,12 @@ def new_option_parser():
         "--star-code",
         default="hermite",
         dest="star_code",
-        help="the code modelling the particles ('hermite', 'bhtree', 'octgrav', 'phigrape')",
-        type="string")
+        help=(
+            "the code modelling the particles ('hermite', 'bhtree', "
+            "'octgrav', 'phigrape')"
+        ),
+        type="string"
+    )
     result.add_option(
         "--sph-code",
         default="fi",
@@ -625,14 +630,24 @@ def new_option_parser():
         "--gas-star-code",
         default="self",
         dest="gas_to_star_interaction_code",
-        help="the code calculating the gravity field of the gas code for the star code (default is self, gas code will calculate field for star code)",
-        type="string")
+        help=(
+            "the code calculating the gravity field of the gas code for "
+            "the star code (default is self, gas code will calculate field "
+            "for star code)"
+        ),
+        type="string"
+    )
     result.add_option(
         "--star-gas-code",
         default="self",
         dest="star_to_gas_interaction_code",
-        help="the code calculating the gravity field of the star code for the gas code (default is self, star code will calculate field for gas code)",
-        type="string")
+        help=(
+            "the code calculating the gravity field of the star code "
+            "for the gas code (default is self, star code will calculate "
+            "field for gas code)"
+        ),
+        type="string"
+    )
     result.add_option(
         "-m", "--total-mass",
         default=1000.0,
@@ -668,8 +683,12 @@ def new_option_parser():
         "--gas_smoothing_fraction",
         default=0.05,
         dest="gas_smoothing_fraction",
-        help="smoothing length of the gas particles as a fraction of the length scale",
-        type="float")
+        help=(
+            "smoothing length of the gas particles as a fraction "
+            "of the length scale"
+        ),
+        type="float"
+    )
 
     result.add_option(
         "-s", "--seed",
