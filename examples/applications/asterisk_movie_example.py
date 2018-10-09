@@ -4,13 +4,9 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 from amuse.ic.plummer import new_plummer_model
 from amuse.units import nbody_system as nbody
 
-# from amuse.community.asterisk.interface import AsteriskInterface
 from amuse.community.asterisk.interface import Asterisk
 
-# from matplotlib import pyplot
 from amuse.units import units
-# from amuse.datamodel import Particles
-# from amuse.ic.brokenimf import new_scalo_mass_distribution
 from amuse.ext.particles_with_color import new_particles_with_blackbody_color
 from amuse.community.seba.interface import SeBa
 from amuse.community.bhtree.interface import BHTree
@@ -29,9 +25,10 @@ def new_gravity(particles, converter):
 
 
 if __name__ in ('__main__', '__plot__'):
-    number_of_particles = 100
 
-    # create a Plummer sphere with a number of stars
+    number_of_particles = 100
+    
+    # create a plumber sphere with a number of stars
     numpy.random.seed(12345)
     masses = new_flat_mass_distribution(number_of_particles)
     converter = nbody.nbody_to_si(1.0 | units.parsec, masses.sum())
@@ -42,7 +39,7 @@ if __name__ in ('__main__', '__plot__'):
     # create simulation codes
     gravity = new_gravity(particles, converter)
     stellar_evolution = new_stellar_evolution(particles)
-
+    
     # create channels to and from the local particle set and the simulations
     from_gravity_to_local = gravity.particles.new_channel_to(particles)
     from_stellar_evolution_to_local = \
@@ -65,7 +62,7 @@ if __name__ in ('__main__', '__plot__'):
     # optional: set the zoom and rotation of the visualization
     # visualization.parameters.rotation = (15, -15, 45)
     # visualization.parameters.camera_distance = 100 | units.parsec
-
+    
     # add (now colored) particles to visualization
     visualization.particles.add_particles(particles)
     from_local_to_viz = particles.new_channel_to(visualization.particles)
@@ -74,7 +71,7 @@ if __name__ in ('__main__', '__plot__'):
     # evolve module for some time
     for i in range(1, 100):
         target_time = i * 0.05 | units.Myr
-        print 'starting evolve to time = ', target_time
+        print('starting evolve to time = ', target_time)
         gravity.evolve_model(target_time)
         from_gravity_to_local.copy()
         stellar_evolution.evolve_model(target_time)
@@ -90,8 +87,8 @@ if __name__ in ('__main__', '__plot__'):
         visualization.store_view(target_time)
 
     # give the user an opportunity to change the visualization settings
-    raw_input(
-        "\n\nTweak your visualization settings and press 'Enter' to continue... ")
+    # .. todo:: raw_input is not backwards compatible with python3
+    raw_input("\n\nTweak your visualization settings and press 'Enter' to continue... ")
 
     # generate screenshots while changing some visual parameters.
     for i in range(1, 100):

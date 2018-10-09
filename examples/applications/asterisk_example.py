@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import numpy.random
 
 from amuse.units import units, nbody_system
@@ -22,9 +24,10 @@ def new_gravity(particles, converter):
 
 
 if __name__ in ('__main__', '__plot__'):
-    number_of_particles = 100
 
-    # create a Plummer sphere with a number of stars
+    number_of_particles = 100
+    
+    # create a plumber sphere with a number of stars
     numpy.random.seed(12345)
     masses = new_flat_mass_distribution(number_of_particles)
     converter = nbody_system.nbody_to_si(1.0 | units.parsec, masses.sum())
@@ -35,7 +38,7 @@ if __name__ in ('__main__', '__plot__'):
     # create simulation codes
     gravity = new_gravity(particles, converter)
     stellar_evolution = new_stellar_evolution(particles)
-
+    
     # create channels to and from the local particle set and the simulations
     from_gravity_to_local = gravity.particles.new_channel_to(particles)
     from_stellar_evolution_to_local = \
@@ -71,7 +74,7 @@ if __name__ in ('__main__', '__plot__'):
 
     # evolve module for some time
     for i in range(1, 100):
-        print 'starting evolve to time = ', (i * 0.1 | units.Myr)
+        print('starting evolve to time = ', (i * 0.1 | units.Myr))
         target_time = i * 0.1 | units.Myr
         gravity.evolve_model(target_time)
         from_gravity_to_local.copy()
