@@ -1,6 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 Runs the Kelvin-Helmholtz Instability problem in two dimensions with Athena.
 """
+from __future__ import print_function
 import numpy
 from matplotlib import pyplot
 from amuse.community.athena.interface import Athena
@@ -104,7 +106,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     while t < end_time:
         instance.evolve_model(t)
 
-        print("time : ", t)
+        print(("time : ", t))
         t += dt
 
     print("copying results")

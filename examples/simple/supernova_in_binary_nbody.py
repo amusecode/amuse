@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function
 import numpy
 from amuse.units import constants, units, nbody_system
 from amuse.datamodel import Particles
@@ -18,8 +20,8 @@ def make_circular_binary(M, m, a):
         / (constants.G * masses.sum())
     ).sqrt().as_quantity_in(units.day)
 
-    print "   Initializing inner binary"
-    print "   Orbital period inner binary:", orbital_period
+    print("   Initializing inner binary")
+    print("   Orbital period inner binary:", orbital_period)
     stars = Particles(2)
     stars.mass = masses
     stars.position = [0.0, 0.0, 0.0] | units.AU
@@ -52,27 +54,27 @@ def supernova_in_binary_nbody(M0, m0, a0, tsn):
     stars = make_circular_binary(M0, m0, a0)
     M, m, a, e, ta_out, inc, lan_out, aop_out = orbital_elements_from_binary(
         stars, G=constants.G)
-    print "Initial binary: a=", a.in_(
-        units.AU), "e=", e, "M=", stars[0].mass, "and m=", stars[1].mass
+    print("Initial binary: a=", a.in_(
+        units.AU), "e=", e, "M=", stars[0].mass, "and m=", stars[1].mass)
 
     converter = nbody_system.nbody_to_si(M + m, a)
     gravity = Hermite(converter)
     gravity.particles.add_particles(stars)
 
-    print "Integrate binary to t=", tsn.in_(units.day)
+    print("Integrate binary to t=", tsn.in_(units.day))
     gravity.evolve_model(tsn)
     M, m, a, e, ta_out, inc, lan_out, aop_out = orbital_elements_from_binary(
         stars, G=constants.G)
-    print "Pre supernova orbit: a=", a.in_(units.AU), "e=", e
+    print("Pre supernova orbit: a=", a.in_(units.AU), "e=", e)
     stars[0].mass *= 0.1
-    print "Reduce stellar mass to: M=", stars[0].mass, "and m=", stars[1].mass
+    print("Reduce stellar mass to: M=", stars[0].mass, "and m=", stars[1].mass)
 
     v_kick = (0, 0, 0) | units.kms
     stars[0].velocity += v_kick
     gravity.evolve_model(2 * tsn)
     M, m, a, e, ta_out, inc, lan_out, aop_out = orbital_elements_from_binary(
         stars, G=constants.G)
-    print "Post supernova orbit: a=", a.in_(units.AU), "e=", e
+    print("Post supernova orbit: a=", a.in_(units.AU), "e=", e)
 
     r0 = a
     a_ana = post_supernova_semimajor_axis(

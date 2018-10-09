@@ -1,5 +1,5 @@
+# -*- coding: utf-8 -*-
 from __future__ import print_function
-
 from amuse.units import units, nbody_system
 from amuse.datamodel import Particle
 from amuse.community.athena.interface import Athena

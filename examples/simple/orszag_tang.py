@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Runs the Orszag-Tang Vortex problem described in the Athena test-suite
 (http://www.astro.virginia.edu/VITA/ATHENA/ot.html):
@@ -6,7 +7,7 @@ Runs the Orszag-Tang Vortex problem described in the Athena test-suite
 conditions lead to a system of supersonic MHD turbulence, making this problem a
 good test of the algorithm's ability to handle such turbulence and MHD shocks.'
 """
-
+from __future__ import print_function
 import numpy
 from matplotlib import pyplot
 
@@ -148,9 +149,9 @@ def initialize_grid(grid, magentic_field_grid):
     grid.rhovy = D0 * V0 * numpy.sin(2.0 * PI / l * grid.x)
     grid.rhovz = 0.0 | momentum
 
-    print("sum rho vx:", grid.rhovx.sum())
-    print("sum rho vy:", grid.rhovy.sum())
-    print("sum rho vz:", grid.rhovz.sum())
+    print(("sum rho vx:", grid.rhovx.sum()))
+    print(("sum rho vy:", grid.rhovy.sum()))
+    print(("sum rho vz:", grid.rhovz.sum()))
 
     grid.energy = (
         P0 / (GAMMA - 1)
@@ -190,7 +191,7 @@ def simulate_orszag_tang_problem(end_time):
     while t < end_time:
         instance.evolve_model(t)
 
-        print("time : ", t)
+        print(("time : ", t))
         t += dt
 
     print("copying results")

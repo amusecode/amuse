@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 Creates a protoplanetary disk around a sun-like star
 """
-
+from __future__ import print_function
 import numpy
 
 from matplotlib import pyplot

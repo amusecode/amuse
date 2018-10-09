@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 Evolves the sun and earth where the sun will lose mass every 220th step.
 """
-
+from __future__ import print_function
 import numpy
 from amuse.community.hermite0.interface import Hermite
 # from amuse.community.sse.interface import SSE

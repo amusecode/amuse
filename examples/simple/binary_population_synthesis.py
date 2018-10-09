@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generates a grid of binaries with different, primary mass, mass ratio
 and separation and evolves these over time.
@@ -25,7 +26,7 @@ def multidimensional_meshgrid(*arrays):
     range in one dimension.
     """
     reversed_quantities = tuple(reversed(arrays))
-    lengths = map(len, reversed_quantities)
+    lengths = list(map(len, reversed_quantities))
     dim = len(reversed_quantities)
 
     size = 1

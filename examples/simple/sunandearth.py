@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 Evolves the dynamic evolution of the earth around the sun.
 """
-
+from __future__ import print_function
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import quantities

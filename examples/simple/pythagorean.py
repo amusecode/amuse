@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 """
 Calculates the Pythagorean 3-body problem using different values for
 the smoothing length in the n-body code.
 """
-
+from __future__ import print_function
 # import numpy
 # import time
 

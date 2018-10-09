@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Generates a cluster using a plummer model with a salpeter Initial Mass
 Function.
 Compares the generated IMF against the expected line.
 """
-
+from __future__ import print_function
 import numpy
 from matplotlib import pyplot
 from amuse.units import units
@@ -66,7 +67,7 @@ def plot_particles_and_mass_distribution(particles):
     subplot.set_xscale('log')
     subplot.set_yscale('log')
 
-    subplot.set_xlabel(u'M [M\u2299]')
+    subplot.set_xlabel('M [M\u2299]')
     subplot.set_ylabel('N')
 
     pyplot.show()

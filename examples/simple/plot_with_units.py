@@ -1,11 +1,14 @@
+# -*- coding: utf-8 -*-
 """
 Creates a number of plots using the AMUSE unit aware plot functions.
 """
+from __future__ import print_function
 from amuse.units import units, quantities
 from amuse.plot import (
     native_plot, plot, scatter, xlabel, ylabel, hist
 )
 import numpy as np
+
 
 if __name__ == "__main__":
 
@@ -21,7 +24,7 @@ if __name__ == "__main__":
     ylabel('mass [$M_\odot$]')  # overrides auto unit!
     native_plot.legend(loc=2)
 
-    x = range(50) | units.Myr
+    x = list(range(50)) | units.Myr
     y1 = quantities.new_quantity(
         np.sin(np.arange(0, 1.5, 0.03)), 1e50 * units.erg)
     y2 = -(1e43 | units.J) - y1
@@ -32,7 +35,7 @@ if __name__ == "__main__":
     ylabel('E')
     native_plot.legend()
 
-    x = range(7) | units.day
+    x = list(range(7)) | units.day
     y1 = [0, 4, 2, 3, 2, 5, 1]
     y2 = [3, 0, 2, 2, 3, 0, 4]
     native_plot.subplot(2, 2, 3)

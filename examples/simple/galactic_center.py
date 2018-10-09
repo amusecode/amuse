@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Evolves a cluster in the potention of the galactic center
 
@@ -6,9 +7,7 @@ In this example a cluster is evolved  circling the galactic center, represented
 by a static potential.
 """
 from __future__ import print_function
-
 # import numpy
-
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system

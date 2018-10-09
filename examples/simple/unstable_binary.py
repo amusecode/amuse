@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Evolves two stars dynamically (hermit, nbody code) each star will
 lose mass during the evolution (evtwin, stellar evolution code)
@@ -7,7 +8,7 @@ stars start orbiting with a stable kepler orbit.
 After 2 orbital periods the stars will begin to lose mass and the binary
 will become unstable.
 """
-
+from __future__ import print_function
 from amuse.plot import xlabel, ylabel, plot
 from matplotlib import pyplot
 from math import pi
@@ -36,7 +37,7 @@ def set_up_initial_conditions(orbital_period, kinetic_to_potential_ratio):
     semimajor_axis = ((constants.G * stars.total_mass() *
                        (orbital_period / (2 * pi))**2.0)**(1.0 / 3.0))
     separation = 2 * semimajor_axis * (1 - kinetic_to_potential_ratio)
-    print("Initial separation:", separation.as_quantity_in(units.AU))
+    print(("Initial separation:", separation.as_quantity_in(units.AU)))
     relative_velocity = (
         (kinetic_to_potential_ratio / (1.0 - kinetic_to_potential_ratio))
         * constants.G * stars.total_mass() / semimajor_axis

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Evolves a stellar binary and reports the mass of each star during the
 evolution.
@@ -5,7 +6,6 @@ evolution.
 Shows the type of each star as they change.
 """
 from __future__ import print_function
-
 from amuse.community.seba.interface import SeBa
 from amuse.datamodel import Particles
 from amuse.units import constants, units

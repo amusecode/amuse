@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Calculates the stellar lifetime in a range of masses between
 Mmax and Mmin using SSE (or another stellar evolution code)
 and an analytic expression.
 """
-
+from __future__ import print_function
 import numpy
 from optparse import OptionParser
 from amuse.units import units
@@ -16,8 +17,7 @@ se = None
 
 
 def stellar_remnant_state(star):
-    return 10 <= star.stellar_type.value_in(units.stellar_type) and \
-        star.stellar_type.value_in(units.stellar_type) < 16
+    return 10 <= star.stellar_type.value_in(units.stellar_type) < 16
 
 
 def stellar_lifetime(mZAMS, z=0.02):

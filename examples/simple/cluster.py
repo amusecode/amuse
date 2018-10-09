@@ -1,17 +1,14 @@
+# -*- coding: utf-8 -*-
 """
 Evolves an equal mass stellar cluster.
 """
 from __future__ import print_function
-
 import numpy
-
 from matplotlib import pyplot
 from amuse.units import nbody_system
 from amuse.community.hermite0.interface import Hermite
 # import logging
-
 from amuse.ic.plummer import new_plummer_model
-
 # logging.basicConfig(level=logging.DEBUG)
 
 smoothing_length = 0.0 | nbody_system.length ** 2
@@ -66,7 +63,7 @@ def simulate_small_cluster(
 
 
 def adjust_spines(ax, spines, ticks):
-    for loc, spine in ax.spines.iteritems():
+    for loc, spine in ax.spines.items():
         if loc in spines:
             spine.set_position(('outward', 10))  # outward by 10 points
             spine.set_smart_bounds(True)

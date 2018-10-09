@@ -1,9 +1,9 @@
+# -*- coding: utf-8 -*-
 """
 Generates a random distribution of particles and uses Hop to determine clumps
 in the particle set.
 """
 from __future__ import print_function
-
 # import numpy
 from numpy import random
 from matplotlib import pyplot

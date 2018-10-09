@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Fragmentation in a rotating protostar -- Boss & Bodenheimer (1979, BB79,
   http://adsabs.harvard.edu/abs/1979ApJ...234..289B)

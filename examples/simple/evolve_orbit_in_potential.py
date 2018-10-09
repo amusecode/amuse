@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
     Evolve the orbital evolution in the galactic center potential
     with different N-body codes.
@@ -208,7 +209,7 @@ def parse_arguments():
     parser.add_option("-c", dest="codes", action="append", type="string",
                       help="The code to evolve the particle (can be used"
                       "multiple times). Available codes: {}."
-                      .format(codelist.keys()))
+                      .format(list(codelist.keys())))
     parser.add_option("-f", dest="filename", type="string", default=None,
                       help="Save the plot in a file with 'name'"
                       "[show matplotlib if not given].")

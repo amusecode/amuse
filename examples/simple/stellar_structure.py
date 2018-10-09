@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
 Make plots of the stellar structure of a star of given mass and age
 """
-
+from __future__ import print_function
 import numpy
 from matplotlib import pyplot
 from amuse.plot import semilogy, xlabel, ylabel

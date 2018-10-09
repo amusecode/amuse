@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Saves and loads a set of particles.
 The 'write_set_to_file' and 'read_set_from_file' functionso can hadle
 files in a variety of formats.
 """
-
+from __future__ import print_function
 # from amuse.units import nbody_system
 from amuse.ic.plummer import new_plummer_model
 from amuse.plot import plot, native_plot

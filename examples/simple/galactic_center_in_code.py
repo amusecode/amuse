@@ -1,10 +1,10 @@
+
+# -*- coding: utf-8 -*-
 """
 Evolves a cluster orbiting a massive central particle.
 """
 from __future__ import print_function
-
 # import numpy
-
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system

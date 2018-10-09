@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Simultaniously evolves gas and stars in a cluster.
 

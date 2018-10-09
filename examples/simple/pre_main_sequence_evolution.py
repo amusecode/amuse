@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Calculated theoretical pre-main-sequance evolutionary tracks for stars of
 various masses.
 After Iben, ApJ 141, 993, 1965
 """
-
+from __future__ import print_function
 from matplotlib import pyplot
 
 from amuse.units import units
@@ -29,9 +30,9 @@ def simulate_evolution_tracks(
         time = [] | units.yr
 
         print('Evolving pre main sequence star with')
-        print('    mass:', star.mass)
-        print('    luminosity:', star.luminosity)
-        print('    radius:', star.radius)
+        print(('    mass:', star.mass))
+        print(('    luminosity:', star.luminosity))
+        print(('    radius:', star.radius))
 
         while star.stellar_type == 17 | units.stellar_type:
             luminosity.append(star.luminosity)
@@ -39,11 +40,11 @@ def simulate_evolution_tracks(
             time.append(star.age)
             star.evolve_one_step()
 
-        print('Evolved pre main sequence star to:', star.stellar_type)
-        print('    age:', star.age)
-        print('    mass:', star.mass)
-        print('    luminosity:', star.luminosity)
-        print('    radius:', star.radius)
+        print(('Evolved pre main sequence star to:', star.stellar_type))
+        print(('    age:', star.age))
+        print(('    mass:', star.mass))
+        print(('    luminosity:', star.luminosity))
+        print(('    radius:', star.radius))
         print()
 
         stardata = {}
@@ -61,7 +62,7 @@ def plot_track(data):
     plot.set_title('Hertzsprung-Russell diagram', fontsize=12)
     temp_unit = units.K
     luminosity_unit = units.LSun
-    for mass, stardata in data.items():
+    for mass, stardata in list(data.items()):
         temperature = stardata['temperature']
         luminosity = stardata['luminosity']
         plot.loglog(
