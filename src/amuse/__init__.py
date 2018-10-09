@@ -25,12 +25,4 @@ Help on package amuse.ic in amuse:
 or (directly from the terminal):
 > pydoc amuse.ic
 """
-import numpy
-
-def numpy_fix():
-    try:
-      numpy.set_printoptions(legacy='1.13')
-    except TypeError:
-      pass
-      
-numpy_fix()
+from muse import *
