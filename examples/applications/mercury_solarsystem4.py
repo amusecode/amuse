@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import numpy
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.community.sse.interface import SSE
@@ -6,8 +8,8 @@ from amuse.units import units
 # from amuse.units.quantities import VectorQuantity
 
 from amuse.plot import (
-        plot, native_plot, plot3
-        )
+    plot, native_plot, plot3
+)
 
 try:
     from matplotlib import pyplot
@@ -26,7 +28,7 @@ class SSEWithMassEvolve(SSE):
 
         rc = 60.0 | (units.Gyr / units.MSun)
 
-        print "find"
+        print("find")
 
         while current_mass > mass:
             timestep = rc * (current_mass - mass)
@@ -36,7 +38,7 @@ class SSEWithMassEvolve(SSE):
             self.evolve_model(current_time)
             current_mass = self.particles[0].mass
 
-        print "done"
+        print("done")
         return current_time, current_mass
 
 
@@ -80,6 +82,7 @@ def testsse():
 
 
 def polyevolve():
+    # .. todo:: fixme:: unimported/undefined variabled Solarsystem
     sun, planets = Solarsystem.new_solarsystem()
 
     gd, se = setup_codes(sun, planets)
@@ -97,22 +100,22 @@ def polyevolve():
         time, dummymass = se.evolve_mass(mass)
         if i == 0:
             initialtime = time
-        print time, mass, "evolving gd"
-        gdtime = time-initialtime
-        print gdtime
+        print(time, mass, "evolving gd")
+        gdtime = time - initialtime
+        print(gdtime)
         err = gd.evolve_model(gdtime)
         channelp.copy()
         planets.savepoint(time)
         channels.copy()
         gd.central_particle.mass = sun[0].mass
-        print sun[0].mass
+        print(sun[0].mass)
         print(
-                sun[0].mass.value_in(units.MSun),
-                time.value_in(units.Myr),
-                planets[4].x.value_in(units.AU),
-                planets[4].y.value_in(units.AU),
-                planets[4].z.value_in(units.AU),
-                )
+            sun[0].mass.value_in(units.MSun),
+            time.value_in(units.Myr),
+            planets[4].x.value_in(units.AU),
+            planets[4].y.value_in(units.AU),
+            planets[4].z.value_in(units.AU),
+        )
 
     gd.stop()
     se.stop()

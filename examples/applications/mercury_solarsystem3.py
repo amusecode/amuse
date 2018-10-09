@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 # import numpy
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.community.sse.interface import SSE
@@ -6,8 +8,8 @@ from amuse.units import units
 from amuse.units.quantities import VectorQuantity
 
 from amuse.plot import (
-        plot, native_plot,
-        )
+    plot, native_plot,
+)
 
 try:
     from matplotlib import pyplot
@@ -40,19 +42,19 @@ def planetplot():
     channels = se.particles.new_channel_to(sun)
 
     for time in timerange:
-        err = gd.evolve_model(time-initial)
+        err = gd.evolve_model(time - initial)
         channelp.copy()
         # planets.savepoint(time)
         err = se.evolve_model(time)
         channels.copy()
         gd.central_particle.mass = sun.mass
         print(
-                sun[0].mass.value_in(units.MSun),
-                time.value_in(units.Myr),
-                planets[4].x.value_in(units.AU),
-                planets[4].y.value_in(units.AU),
-                planets[4].z.value_in(units.AU)
-                )
+            sun[0].mass.value_in(units.MSun),
+            time.value_in(units.Myr),
+            planets[4].x.value_in(units.AU),
+            planets[4].y.value_in(units.AU),
+            planets[4].z.value_in(units.AU)
+        )
 
     gd.stop()
     se.stop()

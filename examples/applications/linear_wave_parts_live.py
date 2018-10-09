@@ -1,8 +1,10 @@
+# -*- encoding: utf-8 -*-
 """
 In this script we simulate a 1d linear wave in a 2d field,
 the periodic boundaries are not handled in the code but by amuse
 (much slower at time of writing)
 """
+from __future__ import print_function
 import sys
 import numpy
 # import math
@@ -10,8 +12,8 @@ import numpy
 # from amuse.support.core import late
 # from amuse.units.quantities import VectorQuantity
 from amuse.units.generic_unit_system import (
-        time, length, speed, mass, density
-        )
+    time, length, speed, mass, density
+)
 
 from amuse.community.capreole.interface import Capreole
 from amuse import io
@@ -52,29 +54,29 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
         self.ybound2 = instance.get_boundary_grid('ybound2')
 
         self.xbound1_channel = instance.grid[
-                self.number_of_grid_points - self.nghost:, ..., ...
-                ].new_channel_to(self.xbound1)
+            self.number_of_grid_points - self.nghost:, ..., ...
+        ].new_channel_to(self.xbound1)
         self.xbound2_channel = instance.grid[
-                0: self.nghost, ..., ...].new_channel_to(self.xbound2)
+            0: self.nghost, ..., ...].new_channel_to(self.xbound2)
         self.ybound1_channel = instance.grid[
-                ..., self.number_of_grid_points-self.nghost:, ...
-                ].new_channel_to(
-                        self.ybound1[
-                            self.nghost:self.number_of_grid_points+self.nghost,
-                            ..., ...]
-                        )
+            ..., self.number_of_grid_points - self.nghost:, ...
+        ].new_channel_to(
+            self.ybound1[
+                self.nghost:self.number_of_grid_points + self.nghost,
+                ..., ...]
+        )
         self.ybound2_channel = instance.grid[
-                ..., 0:self.nghost, ...
-                ].new_channel_to(
-                        self.ybound2[
-                            self.nghost:self.number_of_grid_points+self.nghost,
-                            ..., ...]
-                        )
+            ..., 0:self.nghost, ...
+        ].new_channel_to(
+            self.ybound2[
+                self.nghost:self.number_of_grid_points + self.nghost,
+                ..., ...]
+        )
 
         xbound1_bottom = self.xbound1[0:self.nghost, 0:self.nghost, ...]
         xbound1_top = self.xbound1[
-                0:self.nghost,
-                self.number_of_grid_points - self.nghost:, ...]
+            0:self.nghost,
+            self.number_of_grid_points - self.nghost:, ...]
         ybound1_left = self.ybound1[0:self.nghost, 0:self.nghost, ...]
         ybound2_left = self.ybound2[0:self.nghost, 0:self.nghost, ...]
 
@@ -84,8 +86,8 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
 
         xbound2_bottom = self.xbound2[0:self.nghost, 0:self.nghost, ...]
         xbound2_top = self.xbound2[
-                0:self.nghost,
-                self.number_of_grid_points - self.nghost:, ...]
+            0:self.nghost,
+            self.number_of_grid_points - self.nghost:, ...]
         ybound1_right = self.ybound1[self.number_of_grid_points +
                                      self.nghost:, 0:self.nghost, ...]
         ybound2_right = self.ybound2[self.number_of_grid_points +
@@ -111,10 +113,8 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
 
     def evolve_model(self, time, endtime):
         while self.code.model_time < time:
-
-            if (
-                    self.code.get_timestep() + self.code.model_time
-                    ) >= time and time == endtime:
+            t_plus_dt = self.code.get_timestep() + self.code.model_time
+            if t_plus_dt >= time == endtime:
                 self.code.parameters.must_evolve_to_exact_time = True
 
             self.code.evolve_model(time)
@@ -147,12 +147,12 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
         for index in range(0, len(self.codes)):
             instance = self.codes[index]
             nx, ny, nz = instance.grid.shape
-            print nx, ny, nz
+            print(nx, ny, nz)
             xbound1 = instance.get_boundary_grid('xbound1')
             xbound2 = instance.get_boundary_grid('xbound2')
             xbound1_nghost_x, _, ybound1_nghost_z = xbound1.shape
             xbound2_nghost_x, _, ybound2_nghost_z = xbound2.shape
-            print xbound1_nghost_x, xbound2_nghost_x
+            print(xbound1_nghost_x, xbound2_nghost_x)
             ybound1 = instance.get_boundary_grid('ybound1')
             ybound2 = instance.get_boundary_grid('ybound2')
             ybound1_nghost_x, ybound1_nghost_y, ybound1_nghost_z = ybound1.shape
@@ -161,47 +161,47 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
             ybound2_nghost_x = (ybound2_nghost_x - nx) / 2
 
             xbound1_channel = instance.grid[
-                    nx - xbound1_nghost_x:, ..., ...].new_channel_to(xbound1)
+                nx - xbound1_nghost_x:, ..., ...].new_channel_to(xbound1)
             xbound2_channel = instance.grid[
-                    0:xbound2_nghost_x, ..., ...].new_channel_to(xbound2)
+                0:xbound2_nghost_x, ..., ...].new_channel_to(xbound2)
             if index == 0:
                 instance11 = self.codes[-1]
             else:
-                instance11 = self.codes[index-1]
-            print ybound1[ybound1_nghost_x:nx+ybound1_nghost_x, ..., ...].shape
-            print instance11.grid[..., ny-ybound1_nghost_y:, ...].shape
+                instance11 = self.codes[index - 1]
+            print(ybound1[ybound1_nghost_x:nx + ybound1_nghost_x, ..., ...].shape)
+            print(instance11.grid[..., ny - ybound1_nghost_y:, ...].shape)
             ybound1_channel = instance11.grid[
-                    ..., ny-ybound1_nghost_y:, ...].new_channel_to(
-                            ybound1[
-                                ybound1_nghost_x:nx+ybound1_nghost_x, ..., ...
-                                ]
-                            )
+                ..., ny - ybound1_nghost_y:, ...].new_channel_to(
+                ybound1[
+                    ybound1_nghost_x:nx + ybound1_nghost_x, ..., ...
+                ]
+            )
             nx11, ny11, nz11 = instance11.grid.shape
             ybound1_left_channel = instance11.grid[
-                    0:ybound1_nghost_x, ny11 - ybound1_nghost_y:, ...
-                    ].new_channel_to(ybound1[0:ybound1_nghost_x, ..., ...])
+                0:ybound1_nghost_x, ny11 - ybound1_nghost_y:, ...
+            ].new_channel_to(ybound1[0:ybound1_nghost_x, ..., ...])
             ybound1_right_channel = instance11.grid[
-                    nx11-ybound1_nghost_x:, ny11 - ybound1_nghost_y:, ...
-                    ].new_channel_to(ybound1[nx+ybound1_nghost_x:, ..., ...])
+                nx11 - ybound1_nghost_x:, ny11 - ybound1_nghost_y:, ...
+            ].new_channel_to(ybound1[nx + ybound1_nghost_x:, ..., ...])
 
-            if index == len(self.codes)-1:
+            if index == len(self.codes) - 1:
                 instance12 = self.codes[0]
             else:
-                instance12 = self.codes[index+1]
+                instance12 = self.codes[index + 1]
             ybound2_channel = instance12.grid[
-                    ..., 0:ybound2_nghost_y, ...].new_channel_to(
-                            ybound2[
-                                ybound2_nghost_x:nx+ybound2_nghost_x, ..., ...]
-                            )
+                ..., 0:ybound2_nghost_y, ...].new_channel_to(
+                ybound2[
+                    ybound2_nghost_x:nx + ybound2_nghost_x, ..., ...]
+            )
             nx12, ny12, nz12 = instance12.grid.shape
 
             ybound2_left_channel = instance12.grid[
-                    0:ybound2_nghost_x, 0:ybound2_nghost_y, ...
-                    ].new_channel_to(
-                            ybound2[0:ybound2_nghost_x, ..., ...])
+                0:ybound2_nghost_x, 0:ybound2_nghost_y, ...
+            ].new_channel_to(
+                ybound2[0:ybound2_nghost_x, ..., ...])
             ybound2_right_channel = instance12.grid[
-                    nx12-ybound2_nghost_x:, 0:ybound2_nghost_y, ...
-                    ].new_channel_to(ybound2[nx+ybound2_nghost_x:, ..., ...])
+                nx12 - ybound2_nghost_x:, 0:ybound2_nghost_y, ...
+            ].new_channel_to(ybound2[nx + ybound2_nghost_x:, ..., ...])
 
             channels.append(xbound1_channel)
             channels.append(xbound2_channel)
@@ -235,18 +235,19 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(object):
             if (min_timestep + code.model_time) >= time and time == endtime:
                 for x in self.codes:
                     x.parameters.must_evolve_to_exact_time = True
-            print min_timestep
+            print(min_timestep)
             for x in self.codes:
                 x.set_timestep(min_timestep)
 
             for x in self.codes:
                 x.evolve_model(x.model_time + (min_timestep * 2))
-                print "MODEL_TIME:", x.model_time
+                print("MODEL_TIME:", x.model_time)
 
             self.copy_to_boundary_cells()
 
 
-class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodesWithDifferentGridsSizes(object):
+class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodesWithDifferentGridsSizes(
+        object):
 
     """
         first version, grids connect on the y axis, whole system is periodic
@@ -286,74 +287,74 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodesWithDifferentGr
                                   self.number_of_grid_points - self.nghost:, ...]
 
             xbound1_channel = instance.grid[
-                    self.number_of_grid_points - self.nghost:, ..., ...
-                    ].new_channel_to(xbound1)
+                self.number_of_grid_points - self.nghost:, ..., ...
+            ].new_channel_to(xbound1)
             xbound2_channel = instance.grid[
-                    0: self.nghost, ..., ...].new_channel_to(xbound2)
+                0: self.nghost, ..., ...].new_channel_to(xbound2)
 
             if index == 0:
                 instance11 = self.codes[-1]
             else:
-                instance11 = self.codes[index-1]
+                instance11 = self.codes[index - 1]
             ybound1_channel = instance11.grid[
-                    ...,
-                    self.number_of_grid_points_per_code-self.nghost:,
-                    ...
-                    ].new_channel_to(
-                            ybound1[
-                                self.nghost:self.number_of_grid_points+self.nghost,
-                                ..., ...
-                                ]
-                            )
+                ...,
+                self.number_of_grid_points_per_code - self.nghost:,
+                ...
+            ].new_channel_to(
+                ybound1[
+                    self.nghost:self.number_of_grid_points + self.nghost,
+                    ..., ...
+                ]
+            )
             ybound1_left_channel = instance11.grid[
-                    0:self.nghost,
-                    self.number_of_grid_points_per_code - self.nghost:,
-                    ...].new_channel_to(ybound1[0:self.nghost, ..., ...])
+                0:self.nghost,
+                self.number_of_grid_points_per_code - self.nghost:,
+                ...].new_channel_to(ybound1[0:self.nghost, ..., ...])
             ybound1_right_channel = instance11.grid[
-                    -self.nghost:,
-                    self.number_of_grid_points_per_code - self.nghost:,
-                    ...].new_channel_to(
-                            ybound1[
-                                self.number_of_grid_points+self.nghost:,
-                                ...,
-                                ...]
-                            )
+                -self.nghost:,
+                self.number_of_grid_points_per_code - self.nghost:,
+                ...].new_channel_to(
+                ybound1[
+                    self.number_of_grid_points + self.nghost:,
+                    ...,
+                    ...]
+            )
 
-            if index == len(self.codes)-1:
+            if index == len(self.codes) - 1:
                 instance12 = self.codes[0]
             else:
-                instance12 = self.codes[index+1]
+                instance12 = self.codes[index + 1]
             ybound2_channel = instance12.grid[
+                ...,
+                0:self.nghost,
+                ...
+            ].new_channel_to(
+                ybound2[
+                    self.nghost:self.number_of_grid_points + self.nghost,
                     ...,
-                    0:self.nghost,
                     ...
-                    ].new_channel_to(
-                            ybound2[
-                                self.nghost:self.number_of_grid_points+self.nghost,
-                                ...,
-                                ...
-                                ]
-                            )
+                ]
+            )
 
             xbound1next = instance12.get_boundary_grid('xbound1')
             xbound2next = instance12.get_boundary_grid('xbound2')
             ybound2_left_channel = xbound1next[
-                    ...,
-                    0:self.nghost,
-                    ...
-                    ].new_channel_to(
-                            ybound2[0:self.nghost, ..., ...])
+                ...,
+                0:self.nghost,
+                ...
+            ].new_channel_to(
+                ybound2[0:self.nghost, ..., ...])
             ybound2_right_channel = xbound2next[
+                ...,
+                0:self.nghost,
+                ...
+            ].new_channel_to(
+                ybound2[
+                    self.number_of_grid_points + self.nghost:,
                     ...,
-                    0:self.nghost,
                     ...
-                    ].new_channel_to(
-                            ybound2[
-                                self.number_of_grid_points+self.nghost:,
-                                ...,
-                                ...
-                                ]
-                            )
+                ]
+            )
 
             channels.append(xbound1_channel)
             channels.append(xbound2_channel)
@@ -384,7 +385,7 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodesWithDifferentGr
             if code.model_time == 0.0 | t_unit:
                 min_timestep = time
 
-            if (min_timestep + code.model_time) >= time and time == endtime:
+            if (min_timestep + code.model_time) >= time == endtime:
                 for x in self.codes:
                     x.parameters.must_evolve_to_exact_time = True
 
@@ -412,16 +413,15 @@ class EvolveHydrodynamicsCodeWithPeriodicBoundaries(object):
     def evolve_model(self, time, endtime):
         while self.code.model_time < time:
 
-            if (
-                    self.code.get_timestep() + self.code.model_time
-                    ) >= time and time == endtime:
+            t_plus_dt = self.code.get_timestep() + self.code.model_time
+            if t_plus_dt >= time == endtime:
                 self.code.parameters.must_evolve_to_exact_time = True
 
             self.code.evolve_model(time)
 
 
 class CalculateLinearWave1D(object):
-    gamma = 5.0/3.0
+    gamma = 5.0 / 3.0
     wave_flag = 0
 
     def __init__(self,
@@ -486,10 +486,10 @@ class CalculateLinearWave1D(object):
             "MPIAMRVAC does not yet have support for detailed boundaries in amuse")
         from amuse.community.mpiamrvac.interface import MpiAmrVac
         result = MpiAmrVac(
-                mode="2d",
-                number_of_workers=self.number_of_workers,
-                debugger="xterm",
-                )
+            mode="2d",
+            number_of_workers=self.number_of_workers,
+            debugger="xterm",
+        )
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         return result
@@ -503,7 +503,7 @@ class CalculateLinearWave1D(object):
 
             instance.parameters.length_x = self.grid_length
             instance.parameters.length_y = (
-                    self.grid_length / self.number_of_codes)
+                self.grid_length / self.number_of_codes)
             instance.parameters.length_z = self.grid_length
 
             instance.parameters.z_boundary_conditions = (
@@ -539,7 +539,7 @@ class CalculateLinearWave1D(object):
         right_eigenmatrix[2][0] = velocity[1]
         right_eigenmatrix[3][0] = velocity[2]
         right_eigenmatrix[4][0] = (
-            1.0 | time/length) * (enthalpy - velocity[0]*amplitude)
+            1.0 | time / length) * (enthalpy - velocity[0] * amplitude)
         # right_eigenmatrix[0][1] = 0.0;
         # right_eigenmatrix[1][1] = 0.0;
         right_eigenmatrix[2][1] = 1.0 | speed
@@ -556,14 +556,14 @@ class CalculateLinearWave1D(object):
         right_eigenmatrix[1][3] = velocity[0]
         right_eigenmatrix[2][3] = velocity[1]
         right_eigenmatrix[3][3] = velocity[2]
-        right_eigenmatrix[4][3] = 0.5*velocity.length()
+        right_eigenmatrix[4][3] = 0.5 * velocity.length()
 
         right_eigenmatrix[0][4] = 1.0 | speed
         right_eigenmatrix[1][4] = velocity[0] + amplitude
         right_eigenmatrix[2][4] = velocity[1]
         right_eigenmatrix[3][4] = velocity[2]
         right_eigenmatrix[4][4] = (
-            1.0 | time/length) * (enthalpy + velocity[0]*amplitude)
+            1.0 | time / length) * (enthalpy + velocity[0] * amplitude)
         return right_eigenmatrix
 
     def initialize_grid(self, grid):
@@ -571,16 +571,16 @@ class CalculateLinearWave1D(object):
         momentum = speed * density
         energy = mass / (time**2 * length)
         rho = 1.0 | density
-        pressure = (1.0/self.gamma) | (mass / (length * time**2))
+        pressure = (1.0 / self.gamma) | (mass / (length * time**2))
         vx = (self.gamma * pressure / rho).sqrt()
         velocity = self.vflow_factor * vx * [1.0, 0.0, 0.0]
         velocity_squared = velocity.length()
-        energy = (pressure/(self.gamma - 1.0) +
-                  (0.5 | length / time)*rho*velocity_squared)
-        enthalpy = (energy + pressure)/rho
+        energy = (pressure / (self.gamma - 1.0) +
+                  (0.5 | length / time) * rho * velocity_squared)
+        enthalpy = (energy + pressure) / rho
         amplitude_squared = (self.gamma - 1.0) * max(
-                enthalpy - (0.5 | length/time) * velocity_squared,
-                1e-100 | enthalpy.unit)
+            enthalpy - (0.5 | length / time) * velocity_squared,
+            1e-100 | enthalpy.unit)
         amplitude = amplitude_squared.sqrt()
 
         nwave = 5
@@ -596,9 +596,10 @@ class CalculateLinearWave1D(object):
 
         grid.rho = rho
         grid.energy = energy
-        grid.rhovy = rho*self.vflow_factor*(1.0 | speed)
+        grid.rhovy = rho * self.vflow_factor * (1.0 | speed)
 
-        wave = self.amplitude*numpy.sin(grid.y * (2.0 | length**-1)*numpy.pi)
+        wave = self.amplitude * \
+            numpy.sin(grid.y * (2.0 | length**-1) * numpy.pi)
 
         grid.rho += wave * \
             right_eigenmatrix[0][self.wave_flag] * \
@@ -631,11 +632,13 @@ class CalculateLinearWave1D(object):
     def new_evolve_object(self, instance):
         """Returns a special object to evolve to code in time"""
         if self.use_boundaries:
-            # return EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(instance[0], self.number_of_grid_points, self.nghost)
+            # return
+            # EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(instance[0],
+            # self.number_of_grid_points, self.nghost)
             return EvolveHydrodynamicsCodeWithAmusePeriodicBoundariesAndNCodes(
-                    instance, self.number_of_grid_points,
-                    self.number_of_grid_points / self.number_of_codes,
-                    self.nghost)
+                instance, self.number_of_grid_points,
+                self.number_of_grid_points / self.number_of_codes,
+                self.nghost)
         else:
             return EvolveHydrodynamicsCodeWithPeriodicBoundaries(instance[0])
 
@@ -685,7 +688,7 @@ class CalculateLinearWave1D(object):
         return result
 
     def stop(self):
-        print "terminating code"
+        print("terminating code")
 
         for code in self.codes:
             code.stop()
@@ -727,7 +730,7 @@ def main():
         )
 
     if not IS_PLOT_AVAILABLE:
-        print "Plot is not available. stop now"
+        print("Plot is not available. stop now")
         return
     model1.initialize()
     # model2.initialize()
@@ -770,7 +773,7 @@ def main():
             line.set_data(y, rho)
             # line = plot1.plot(y,rho)[0]
             # lines.append(line)
-        print t
+        print(t)
         step += 1
         variables[0] = t
         variables[1] = step

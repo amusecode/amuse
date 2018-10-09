@@ -1,4 +1,5 @@
-# import time
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import numpy.random
 from amuse.ic.flatimf import new_flat_mass_distribution
 from amuse.ic.plummer import new_plummer_model
@@ -27,7 +28,7 @@ def new_gravity(particles, converter):
 if __name__ in ('__main__', '__plot__'):
 
     number_of_particles = 100
-    
+
     # create a plumber sphere with a number of stars
     numpy.random.seed(12345)
     masses = new_flat_mass_distribution(number_of_particles)
@@ -39,7 +40,7 @@ if __name__ in ('__main__', '__plot__'):
     # create simulation codes
     gravity = new_gravity(particles, converter)
     stellar_evolution = new_stellar_evolution(particles)
-    
+
     # create channels to and from the local particle set and the simulations
     from_gravity_to_local = gravity.particles.new_channel_to(particles)
     from_stellar_evolution_to_local = \
@@ -50,9 +51,9 @@ if __name__ in ('__main__', '__plot__'):
     particles = new_particles_with_blackbody_color(particles)
     particles.alpha = 1.0
     particles.radius = (
-            stellar_evolution.particles.radius.sqrt()
-            * (1e4 | units.parsec).sqrt()
-            )
+        stellar_evolution.particles.radius.sqrt()
+        * (1e4 | units.parsec).sqrt()
+    )
 
     # creating visualization code
     converter = nbody.nbody_to_si(10.0 | units.parsec, masses.sum())
@@ -62,7 +63,7 @@ if __name__ in ('__main__', '__plot__'):
     # optional: set the zoom and rotation of the visualization
     # visualization.parameters.rotation = (15, -15, 45)
     # visualization.parameters.camera_distance = 100 | units.parsec
-    
+
     # add (now colored) particles to visualization
     visualization.particles.add_particles(particles)
     from_local_to_viz = particles.new_channel_to(visualization.particles)
@@ -79,16 +80,19 @@ if __name__ in ('__main__', '__plot__'):
         from_local_to_viz.copy_attributes(
             ["x", "y", "z", "red", "green", "blue"])
         visualization.particles.radius = (
-                stellar_evolution.particles.radius.sqrt()
-                * (1e4 | units.parsec).sqrt()
-                )
+            stellar_evolution.particles.radius.sqrt()
+            * (1e4 | units.parsec).sqrt()
+        )
 
-        print 'updating visualization to time = ', target_time
+        print('updating visualization to time = ', target_time)
         visualization.store_view(target_time)
 
     # give the user an opportunity to change the visualization settings
     # .. todo:: raw_input is not backwards compatible with python3
-    raw_input("\n\nTweak your visualization settings and press 'Enter' to continue... ")
+    raw_input(
+        "\n\nTweak your visualization settings and press 'Enter' "
+        "to continue... "
+    )
 
     # generate screenshots while changing some visual parameters.
     for i in range(1, 100):

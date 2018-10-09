@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import os.path
 import numpy
 from amuse.test.amusetest import get_path_to_results
@@ -18,8 +20,8 @@ from amuse.community.mesa.interface import MESA
 from amuse.community.gadget2.interface import Gadget2
 # from amuse.community.fi.interface import Fi
 from amuse.ext.star_to_sph import (
-        pickle_stellar_model, convert_stellar_model_to_SPH,
-        )
+    pickle_stellar_model, convert_stellar_model_to_SPH,
+)
 
 from amuse.datamodel import Particles
 from amuse.datamodel import Grid
@@ -28,9 +30,11 @@ from amuse.datamodel import Grid
 def inject_supernova_energy(gas_particles):
     inner = gas_particles.select(
         lambda pos: pos.length_squared() < 100.0 | units.RSun**2, ["position"])
-    print len(inner), "innermost particles selected."
-    print "Adding", (1.0e51 | units.erg) / inner.total_mass(), "of supernova " \
+    print(len(inner), "innermost particles selected.")
+    print(
+        "Adding", (1.0e51 | units.erg) / inner.total_mass(), "of supernova "
         "(specific internal) energy to each of them."
+    )
     inner.u += (1.0e51 | units.erg) / inner.total_mass()
 
 
@@ -48,15 +52,15 @@ def setup_stellar_evolution_model():
     stellar_evolution.commit_particles()
 
     print(
-            "Evolving a MESA star with mass:",
-            stellar_evolution.particles[0].mass
-            )
+        "Evolving a MESA star with mass:",
+        stellar_evolution.particles[0].mass
+    )
     try:
         while True:
             stellar_evolution.evolve_model()
     except AmuseException as ex:
-        print "Evolved star to", stellar_evolution.particles[0].age
-        print "Radius:", stellar_evolution.particles[0].radius
+        print("Evolved star to", stellar_evolution.particles[0].age)
+        print("Radius:", stellar_evolution.particles[0].radius)
 
     pickle_stellar_model(stellar_evolution.particles[0], out_pickle_file)
     stellar_evolution.stop()
@@ -73,7 +77,7 @@ def run_supernova():
 
     pickle_file = setup_stellar_evolution_model()
 
-    print "Creating initial conditions from a MESA stellar evolution model..."
+    print("Creating initial conditions from a MESA stellar evolution model...")
     model = convert_stellar_model_to_SPH(
         None,
         number_of_sph_particles,
@@ -85,15 +89,17 @@ def run_supernova():
     core, gas_without_core, core_radius = \
         model.core_particle, model.gas_particles, model.core_radius
     if len(core):
-        print "Created", len(
+        print(
+            "Created", len(
             gas_without_core), "SPH particles and one 'core-particle':\n", core
-        print "Setting gravitational smoothing to:", core_radius
+        )
+        print("Setting gravitational smoothing to:", core_radius)
     else:
-        print "Warning: Only SPH particles created."
+        print("Warning: Only SPH particles created.")
 
     inject_supernova_energy(gas_without_core)
 
-    print "\nEvolving (SPH) to:", t_end
+    print("\nEvolving (SPH) to:", t_end)
     n_steps = 100
 
     unit_converter = ConvertBetweenGenericAndSiUnits(
@@ -115,7 +121,8 @@ def run_supernova():
     potential_energies = [] | units.J
     kinetic_energies = [] | units.J
     thermal_energies = [] | units.J
-    for time, i_step in [(i*t_end/n_steps, i) for i in range(0, n_steps+1)]:
+    for time, i_step in [(i * t_end / n_steps, i)
+                         for i in range(0, n_steps + 1)]:
         hydro_code.evolve_model(time)
         times.append(time)
         potential_energies.append(hydro_code.potential_energy)
@@ -130,15 +137,15 @@ def run_supernova():
         )
 
     energy_plot(
-            times, kinetic_energies, potential_energies, thermal_energies,
-            os.path.join(
-                get_path_to_results(),
-                "supernova_energy_evolution.png"
-                )
-            )
+        times, kinetic_energies, potential_energies, thermal_energies,
+        os.path.join(
+            get_path_to_results(),
+            "supernova_energy_evolution.png"
+        )
+    )
 
     hydro_code.stop()
-    print "All done!\n"
+    print("All done!\n")
 
 
 def energy_plot(time, E_kin, E_pot, E_therm, figname):
@@ -148,12 +155,12 @@ def energy_plot(time, E_kin, E_pot, E_therm, figname):
     plot(time, E_kin.as_quantity_in(units.erg), label='E_kin')
     plot(time, E_pot, label='E_pot')
     plot(time, E_therm, label='E_therm')
-    plot(time, E_kin+E_pot+E_therm, label='E_total')
+    plot(time, E_kin + E_pot + E_therm, label='E_total')
     xlabel('Time')
     ylabel('Energy')
     pyplot.legend(loc=3)
     pyplot.savefig(figname)
-    print "\nPlot of energy evolution was saved to: ", figname
+    print("\nPlot of energy evolution was saved to: ", figname)
     pyplot.close()
 
 
@@ -173,11 +180,11 @@ def hydro_plot(view, hydro_code, image_size, figname):
     grid = Grid.create(shape, axis_lengths)
     grid.x += view[0]
     grid.y += view[2]
-    speed = grid.z.reshape(size) * (0 | 1/units.s)
+    speed = grid.z.reshape(size) * (0 | 1 / units.s)
     rho, rhovx, rhovy, rhovz, rhoe = hydro_code.get_hydro_state_at_point(
-            grid.x.reshape(size),
-            grid.y.reshape(size),
-            grid.z.reshape(size), speed, speed, speed)
+        grid.x.reshape(size),
+        grid.y.reshape(size),
+        grid.z.reshape(size), speed, speed, speed)
 
     min_v = 800.0 | units.km / units.s
     max_v = 3000.0 | units.km / units.s
@@ -199,32 +206,39 @@ def hydro_plot(view, hydro_code, image_size, figname):
     blue = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(
         numpy.zeros_like(rho.number), log_E)).reshape(shape)
     alpha = numpy.minimum(
-            numpy.ones_like(log_v),
-            numpy.maximum(
-                numpy.zeros_like(log_v),
-                numpy.log((rho / (10*min_rho)))
-                )
-            ).reshape(shape)
+        numpy.ones_like(log_v),
+        numpy.maximum(
+            numpy.zeros_like(log_v),
+            numpy.log((rho / (10 * min_rho)))
+        )
+    ).reshape(shape)
 
     rgba = numpy.concatenate((red, green, blue, alpha), axis=2)
 
-    pyplot.figure(figsize=(image_size[0]/100.0, image_size[1]/100.0), dpi=100)
+    pyplot.figure(
+        figsize=(
+            image_size[0] /
+            100.0,
+            image_size[1] /
+            100.0),
+        dpi=100)
     im = pyplot.figimage(rgba, origin='lower')
 
     pyplot.savefig(figname, transparent=True, dpi=100,
                    facecolor='k', edgecolor='k')
-    print "\nHydroplot was saved to: ", figname
+    print("\nHydroplot was saved to: ", figname)
     pyplot.close()
 
 
 if __name__ == "__main__":
-    print "Test run to mimic a supernova in SPH"
-    print
-    print "Details:"
-    print "First a high-mass star is evolved up to the super giant phase using MESA. " \
-        "Then it is converted to SPH particles with the convert_stellar_model_to_SPH " \
-        "procedure (with a non-SPH 'core' particle). Finally the internal energies of " \
-        "the inner particles are increased, such that the star gains the 10^51 ergs " \
-        "released in supernova explosions."
-    print
+    print(
+      "Test run to mimic a supernova in SPH\n"
+      "\n"
+      "Details:\n"
+      "First a high-mass star is evolved up to the super giant phase using MESA.\n"
+      "Then it is converted to SPH particles with the convert_stellar_model_to_SPH\n"
+      "procedure (with a non-SPH 'core' particle). Finally the internal\n"
+      "energies of the inner particles are increased, such that the star\n"
+      "gains the 10^51 ergs released in supernova explosions.\n"
+    )
     run_supernova()

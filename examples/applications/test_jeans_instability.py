@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 from amuse.community.athena.interface import Athena
 from amuse.units import generic_unit_converter
 # from amuse.units import generic_unit_system
@@ -17,7 +19,7 @@ except ImportError:
 dyn = units.g * units.cm / units.s**2
 
 RUN_WITH_SELF_GRAVITY = True
-
+DEBUG = False
 
 class JeansInstability(object):
 
@@ -27,7 +29,7 @@ class JeansInstability(object):
             p0,
             wavenumber_factor=4.0,
             pertubation_amplitude=1e-3,
-            gamma=5.0/3.0,
+            gamma=5.0 / 3.0,
             ncells=100):
         self.rho0 = rho0
         self.p0 = p0
@@ -41,19 +43,19 @@ class JeansInstability(object):
             4 * numpy.pi * constants.G * self.rho0).sqrt() / self.sound_speed
         self.wavenumber = wavenumber_factor * self.jeans_wavenumber
         self.length_scale = (
-                0.5 * (
-                    numpy.pi * self.gamma * self.p0 / (
-                        constants.G * self.rho0**2
-                        )
-                    ).sqrt()
+            0.5 * (
+                numpy.pi * self.gamma * self.p0 / (
+                    constants.G * self.rho0**2
                 )
+            ).sqrt()
+        )
 
         self.unit_converter = \
             generic_unit_converter.ConvertBetweenGenericAndSiUnits(
-                    self.length_scale,
-                    1 | units.s,
-                    1 | units.g
-                )
+                self.length_scale,
+                1 | units.s,
+                1 | units.g
+            )
 
     def new_code(self):
         if RUN_WITH_SELF_GRAVITY:
@@ -116,13 +118,13 @@ class JeansInstability(object):
         while self.code.model_time + epsilon < time:
             self.code.evolve_model(time)
 
-            if 0:  # plot for debugging
+            if DEBUG:  # plot for debugging
                 phi = self.code.grid.gravitational_potential[:, :, 0]
                 figure = pyplot.figure(figsize=(10, 5))
                 plot = figure.add_subplot(1, 1, 1)
                 plot.imshow(phi.value_in(units.m**2 / units.s**2))
                 pyplot.show()
-                print phi[:, 1][0:10]
+                print(phi[:, 1][0:10])
                 self.P0 = phi
 
             # self.update_potential_grid()
@@ -149,7 +151,7 @@ class JeansInstability(object):
             r_squared = (dx**2 + dy**2 + dz**2 + epsilon_squared)
             r = r_squared.sqrt()
             r_3 = r * r_squared
-            force = grid.rho * volume / r_3
+            force = grid.rho * volume / r_3  # .. fixme:: volume is no defined
             ax = (force * dx).sum()
             ay = (force * dy).sum()
             az = (force * dz).sum()
@@ -176,11 +178,11 @@ class JeansInstability(object):
         #
 
         # wavenumbers as calculated in athena
-        dkx = 2.0*numpy.pi/nx
-        dky = 2.0*numpy.pi/ny
-        kx = ((((2.0*numpy.cos(numpy.arange(nx) * dkx))-2.0)/(dx**2))
+        dkx = 2.0 * numpy.pi / nx
+        dky = 2.0 * numpy.pi / ny
+        kx = ((((2.0 * numpy.cos(numpy.arange(nx) * dkx)) - 2.0) / (dx**2))
               ).value_in(units.m**-2)
-        ky = ((((2.0*numpy.cos(numpy.arange(ny) * dky))-2.0)/(dy**2))
+        ky = ((((2.0 * numpy.cos(numpy.arange(ny) * dky)) - 2.0) / (dy**2))
               ).value_in(units.m**-2)
 
         kx_grid, ky_grid = numpy.meshgrid(kx, ky)
@@ -217,7 +219,7 @@ class JeansInstability(object):
         # we removed the units for fft, replace these
         phi = phi | units.m**2 / units.s**2
 
-        if 0:  # plot for debugging
+        if DEBUG:  # plot for debugging
             phi_delta = phi  # - self.P0
             figure = pyplot.figure(figsize=(10, 5))
             plot = figure.add_subplot(1, 2, 1)
@@ -226,8 +228,8 @@ class JeansInstability(object):
             plot.imshow(
                 (phi - self.P0).value_in(units.m**2 / units.s**2)[1:, 1:])
             pyplot.show()
-            print phi[:, 1][0:10]
-            print (phi[:, 1][0:10] - self.P0[:, 1][0:10]) / phi[:, 1][0:10]
+            print(phi[:, 1][0:10])
+            print(phi[:, 1][0:10] - self.P0[:, 1][0:10]) / phi[:, 1][0:10]
 
     def gravity_for_code(self, field, grid):
         x = field.x.flatten()
@@ -269,10 +271,10 @@ class TestJeansInstability(amusetest.TestCase):
             x.jeans_wavenumber, 2.747 | units.cm**-1, 3)
         x.setup()
         self.assertAlmostRelativeEquals(
-                (x.code.grid.rho[:, 0, 0].sum()).as_quantity_in(
-                    units.g / units.cm**3
-                    ) / ncells, 1.5e7 | units.g / units.cm**3
-                )
+            (x.code.grid.rho[:, 0, 0].sum()).as_quantity_in(
+                units.g / units.cm**3
+            ) / ncells, 1.5e7 | units.g / units.cm**3
+        )
         x.stop()
 
 
@@ -297,7 +299,7 @@ if __name__ == '__main__':
         run.evolve_model(t)
         x.append(t)
         y.append(run.code.grid[2, 2, 0].rho)
-        print "evolved to", t, run.code.grid[2, 2, 0].rho
+        print("evolved to", t, run.code.grid[2, 2, 0].rho)
 
     if IS_PLOT_AVAILABLE:
         figure = pyplot.figure(figsize=(10, 5))

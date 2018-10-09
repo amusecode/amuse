@@ -1,15 +1,17 @@
+# -*- encoding: utf-8 -*-
 """
 In this script we simulate a 1d linear wave in a 2d field,
 the periodic boundaries are not handled in the code but by amuse
 (much slower at time of writing)
 """
+from __future__ import print_function
 import numpy
 
 # from amuse.support.core import late
 # from amuse.units.quantities import VectorQuantity
 from amuse.units.generic_unit_system import (
-        time, length, speed, mass, density
-        )
+    time, length, speed, mass, density
+)
 
 from amuse.community.capreole.interface import Capreole
 from amuse import io
@@ -49,31 +51,31 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
         self.ybound2 = instance.get_boundary_grid('ybound2')
 
         self.xbound1_channel = instance.grid[
-                self.number_of_grid_points - self.nghost:, ..., ...
-                ].new_channel_to(self.xbound1)
+            self.number_of_grid_points - self.nghost:, ..., ...
+        ].new_channel_to(self.xbound1)
         self.xbound2_channel = instance.grid[
-                0: self.nghost, ..., ...
-                ].new_channel_to(
+            0: self.nghost, ..., ...
+        ].new_channel_to(
             self.xbound2)
         self.ybound1_channel = instance.grid[
-                ..., self.number_of_grid_points-self.nghost:, ...
-                ].new_channel_to(
+            ..., self.number_of_grid_points - self.nghost:, ...
+        ].new_channel_to(
             self.ybound1[
-                self.nghost:self.number_of_grid_points+self.nghost, ..., ...
-                ])
+                self.nghost:self.number_of_grid_points + self.nghost, ..., ...
+            ])
         self.ybound2_channel = instance.grid[
-                ..., 0:self.nghost, ...
-                ].new_channel_to(
-                        self.ybound2[
-                            self.nghost:self.number_of_grid_points+self.nghost,
-                            ..., ...]
-                        )
+            ..., 0:self.nghost, ...
+        ].new_channel_to(
+            self.ybound2[
+                self.nghost:self.number_of_grid_points + self.nghost,
+                ..., ...]
+        )
 
         xbound1_bottom = self.xbound1[0:self.nghost, 0:self.nghost, ...]
         xbound1_top = self.xbound1[
-                0:self.nghost,
-                self.number_of_grid_points - self.nghost:,
-                ...]
+            0:self.nghost,
+            self.number_of_grid_points - self.nghost:,
+            ...]
         ybound1_left = self.ybound1[0:self.nghost, 0:self.nghost, ...]
         ybound2_left = self.ybound2[0:self.nghost, 0:self.nghost, ...]
 
@@ -83,9 +85,9 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
 
         xbound2_bottom = self.xbound2[0:self.nghost, 0:self.nghost, ...]
         xbound2_top = self.xbound2[
-                0:self.nghost,
-                self.number_of_grid_points - self.nghost:,
-                ...]
+            0:self.nghost,
+            self.number_of_grid_points - self.nghost:,
+            ...]
         ybound1_right = self.ybound1[self.number_of_grid_points +
                                      self.nghost:, 0:self.nghost, ...]
         ybound2_right = self.ybound2[self.number_of_grid_points +
@@ -114,7 +116,7 @@ class EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(object):
 
             if (
                     self.code.get_timestep() + self.code.model_time
-                    ) >= time and time == endtime:
+            ) >= time and time == endtime:
                 self.code.parameters.must_evolve_to_exact_time = True
 
             self.code.evolve_model(time)
@@ -138,14 +140,14 @@ class EvolveHydrodynamicsCodeWithPeriodicBoundaries(object):
 
             if (
                     self.code.get_timestep() + self.code.model_time
-                    ) >= time and time == endtime:
+            ) >= time and time == endtime:
                 self.code.parameters.must_evolve_to_exact_time = True
 
             self.code.evolve_model(time)
 
 
 class CalculateLinearWave1D(object):
-    gamma = 5.0/3.0
+    gamma = 5.0 / 3.0
     wave_flag = 0
 
     def __init__(self,
@@ -248,7 +250,7 @@ class CalculateLinearWave1D(object):
         right_eigenmatrix[2][0] = velocity[1]
         right_eigenmatrix[3][0] = velocity[2]
         right_eigenmatrix[4][0] = (
-            1.0 | time/length) * (enthalpy - velocity[0]*amplitude)
+            1.0 | time / length) * (enthalpy - velocity[0] * amplitude)
         # right_eigenmatrix[0][1] = 0.0;
         # right_eigenmatrix[1][1] = 0.0;
         right_eigenmatrix[2][1] = 1.0 | speed
@@ -265,14 +267,14 @@ class CalculateLinearWave1D(object):
         right_eigenmatrix[1][3] = velocity[0]
         right_eigenmatrix[2][3] = velocity[1]
         right_eigenmatrix[3][3] = velocity[2]
-        right_eigenmatrix[4][3] = 0.5*velocity.length()
+        right_eigenmatrix[4][3] = 0.5 * velocity.length()
 
         right_eigenmatrix[0][4] = 1.0 | speed
         right_eigenmatrix[1][4] = velocity[0] + amplitude
         right_eigenmatrix[2][4] = velocity[1]
         right_eigenmatrix[3][4] = velocity[2]
         right_eigenmatrix[4][4] = (
-            1.0 | time/length) * (enthalpy + velocity[0]*amplitude)
+            1.0 | time / length) * (enthalpy + velocity[0] * amplitude)
         return right_eigenmatrix
 
     def initialize_grid(self, grid):
@@ -280,16 +282,16 @@ class CalculateLinearWave1D(object):
         momentum = speed * density
         energy = mass / (time**2 * length)
         rho = 1.0 | density
-        pressure = (1.0/self.gamma) | (mass / (length * time**2))
+        pressure = (1.0 / self.gamma) | (mass / (length * time**2))
         vx = (self.gamma * pressure / rho).sqrt()
         velocity = self.vflow_factor * vx * [1.0, 0.0, 0.0]
         velocity_squared = velocity.length()
-        energy = (pressure/(self.gamma - 1.0) +
-                  (0.5 | length / time)*rho*velocity_squared)
-        enthalpy = (energy + pressure)/rho
+        energy = (pressure / (self.gamma - 1.0) +
+                  (0.5 | length / time) * rho * velocity_squared)
+        enthalpy = (energy + pressure) / rho
         amplitude_squared = (self.gamma - 1.0) * max(
-                enthalpy - (0.5 | length/time) * velocity_squared,
-                1e-100 | enthalpy.unit)
+            enthalpy - (0.5 | length / time) * velocity_squared,
+            1e-100 | enthalpy.unit)
         amplitude = amplitude_squared.sqrt()
 
         nwave = 5
@@ -305,35 +307,36 @@ class CalculateLinearWave1D(object):
 
         grid.rho = rho
         grid.energy = energy
-        grid.rhovy = rho*self.vflow_factor*(1.0 | speed)
+        grid.rhovy = rho * self.vflow_factor * (1.0 | speed)
 
-        wave = self.amplitude*numpy.sin(grid.y * (2.0 | length**-1)*numpy.pi)
+        wave = self.amplitude * \
+            numpy.sin(grid.y * (2.0 | length**-1) * numpy.pi)
 
         grid.rho += (
-                wave
-                * right_eigenmatrix[0][self.wave_flag]
-                * (1.0 | mass * time**2 / length**5)
-                )
+            wave
+            * right_eigenmatrix[0][self.wave_flag]
+            * (1.0 | mass * time**2 / length**5)
+        )
         grid.rhovx += (
-                wave
-                * right_eigenmatrix[3][self.wave_flag]
-                * (1.0 | mass * time / length**4)
-                )
+            wave
+            * right_eigenmatrix[3][self.wave_flag]
+            * (1.0 | mass * time / length**4)
+        )
         grid.rhovy += (
-                wave
-                * right_eigenmatrix[1][self.wave_flag]
-                * (1.0 | mass * time / length**4)
-                )
+            wave
+            * right_eigenmatrix[1][self.wave_flag]
+            * (1.0 | mass * time / length**4)
+        )
         grid.rhovz += (
-                wave
-                * right_eigenmatrix[2][self.wave_flag]
-                * (1.0 | mass * time / length**4)
-                )
+            wave
+            * right_eigenmatrix[2][self.wave_flag]
+            * (1.0 | mass * time / length**4)
+        )
         grid.energy += (
-                wave
-                * right_eigenmatrix[4][self.wave_flag]
-                * (1.0 | mass / length**3)
-                )
+            wave
+            * right_eigenmatrix[4][self.wave_flag]
+            * (1.0 | mass / length**3)
+        )
 
     def store_grids(self, grids, step):
         if __name__ == '__plot__':
@@ -352,7 +355,7 @@ class CalculateLinearWave1D(object):
         """Returns a special object to evolve to code in time"""
         if self.use_boundaries:
             return EvolveHydrodynamicsCodeWithAmusePeriodicBoundaries(
-                    instance, self.number_of_grid_points, self.nghost)
+                instance, self.number_of_grid_points, self.nghost)
         else:
             return EvolveHydrodynamicsCodeWithPeriodicBoundaries(instance)
 
@@ -374,7 +377,7 @@ class CalculateLinearWave1D(object):
 
         evolve.init_channels()
 
-        print "start evolve"
+        print("start evolve")
         dt = time / self.number_of_steps
         t = dt
         step = 1
@@ -382,17 +385,18 @@ class CalculateLinearWave1D(object):
             instance.parameters.must_evolve_to_exact_time = False
 
             evolve.evolve_model(t, time)
-            print "time : ", t, instance.model_time  # ,  instance.parameters.must_evolve_to_exact_time
+            # ,  instance.parameters.must_evolve_to_exact_time
+            print("time : ", t, instance.model_time)
 
             t += dt
             step += 1
 
-        print "copying results"
+        print("copying results")
         result = []
         for x in instance.itergrids():
             result.append(x.copy())
 
-        print "terminating code"
+        print("terminating code")
         instance.stop()
 
         return result
@@ -424,14 +428,14 @@ def main():
     if not IS_PLOT_AVAILABLE:
         return
 
-    print "Evolve model with amuse implementing the periodic boundaries"
+    print("Evolve model with amuse implementing the periodic boundaries")
     grids1 = model1.get_solution_at_time(1.0 | time)
-    print "Evolve model with the code implementing the periodic boundaries"
+    print("Evolve model with the code implementing the periodic boundaries")
     grids2 = model2.get_solution_at_time(1.0 | time)
     rho1 = grids1[0].rho[..., ..., 0].value_in(density)
     rho2 = grids2[0].rho[..., ..., 0].value_in(density)
     drho = rho2 - rho1
-    print drho.sum(), rho1[0][0], rho2[0][0], drho[0][0]
+    print(drho.sum(), rho1[0][0], rho2[0][0], drho[0][0])
     x = grids1[0].x[..., ..., 0].value_in(length)
     y = grids1[0].y[..., ..., 0].value_in(length)
     figure = pyplot.figure(figsize=(10, 5))

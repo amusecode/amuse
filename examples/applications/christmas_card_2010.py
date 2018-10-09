@@ -24,16 +24,20 @@ from amuse.datamodel import Grid
 
 
 def head_on_stellar_merger(
-        masses=[0.3, 3.0] | units.MSun,
-        star_age=310.0 | units.Myr,
-        initial_separation=4.0 | units.RSun,
-        angle=numpy.pi / 3,
-        initial_speed=3000.0 | units.km / units.s,
-        initial_speed_perpendicular=30.0 | units.km / units.s,
-        number_of_sph_particles=50000,
-        t_end=1.0e4 | units.s,
-        sph_code=Fi,
-    ):
+        masses=[
+            0.3,
+            3.0] | units.MSun,
+    star_age=310.0 | units.Myr,
+    initial_separation=4.0 | units.RSun,
+    angle=numpy.pi /
+    3,
+    initial_speed=3000.0 | units.km /
+    units.s,
+    initial_speed_perpendicular=30.0 | units.km /
+    units.s,
+    number_of_sph_particles=50000,
+    t_end=1.0e4 | units.s,
+        sph_code=Fi):
     """
     masses: Mass of the two stars
     star_age: Initial age of the stars
@@ -46,20 +50,25 @@ def head_on_stellar_merger(
 
     # Convert some of the input parameters to string, for use in output file
     # names:
-    n_string = "n" + ("%1.0e" % (number_of_sph_particles)
-                      ).replace("+0", "").replace("+", "")
-    t_end_string = "t" + ("%1.0e" % (t_end.value_in(units.s))
-                          ).replace("+0", "").replace("+", "")
+    n_string = "n" + ("%1.0e" % number_of_sph_particles).replace(
+        "+0", "").replace("+", "")
+    t_end_string = "t" + ("%1.0e" % t_end.value_in(units.s)).replace(
+        "+0", "").replace("+", "")
 
     base_output_file_name = os.path.join(
-        get_path_to_results(), "stellar_merger_"+n_string+"_"+t_end_string)
+        get_path_to_results(),
+        "stellar_merger_" +
+        n_string +
+        "_" +
+        t_end_string
+    )
 
     stars = Particles(2)
     stars.mass = masses
     try:
         stellar_evolution = MESA()
         stellar_evolution.initialize_code()
-    except:
+    except BaseException:
         print("MESA was not built. Returning.")
         return
     stellar_evolution.commit_parameters()
@@ -69,31 +78,31 @@ def head_on_stellar_merger(
     stellar_evolution.evolve_model(star_age)
 
     number_of_sph_particles_1 = int(
-            round(
-                number_of_sph_particles
-                * (
-                    stellar_evolution.particles[0].mass
-                    / stellar_evolution.particles.mass.sum()
-                    )
-                )
+        round(
+            number_of_sph_particles
+            * (
+                stellar_evolution.particles[0].mass
+                / stellar_evolution.particles.mass.sum()
             )
+        )
+    )
     number_of_sph_particles_2 = (
-            number_of_sph_particles - number_of_sph_particles_1
-            )
-    print "Creating initial conditions from a MESA stellar evolution model:"
+        number_of_sph_particles - number_of_sph_particles_1
+    )
+    print("Creating initial conditions from a MESA stellar evolution model:")
     print(
-            stellar_evolution.particles[0].mass,
-            "star consisting of", number_of_sph_particles_1, "particles."
-            )
+        stellar_evolution.particles[0].mass,
+        "star consisting of", number_of_sph_particles_1, "particles."
+    )
     sph_particles_1 = convert_stellar_model_to_SPH(
         stellar_evolution.particles[0],
         number_of_sph_particles_1,
         seed=12345
     ).gas_particles
     print(
-            stellar_evolution.particles[1].mass,
-            "star consisting of", number_of_sph_particles_2, "particles."
-            )
+        stellar_evolution.particles[1].mass,
+        "star consisting of", number_of_sph_particles_2, "particles."
+    )
     sph_particles_2 = convert_stellar_model_to_SPH(
         stellar_evolution.particles[1],
         number_of_sph_particles_2
@@ -124,9 +133,10 @@ def head_on_stellar_merger(
         if "parameter is read-only" not in str(exc):
             raise
     hydro_legacy_code.gas_particles.add_particles(all_sph_particles)
-    
+
     print("Evolving to t =", t_end, " (using", sph_code.__name__, "SPH code).")
-    for time, i_step in [(i*t_end/n_steps, i) for i in range(1, n_steps+1)]:
+    for time, i_step in [(i * t_end / n_steps, i)
+                         for i in range(1, n_steps + 1)]:
         hydro_legacy_code.evolve_model(time)
         if not i_step % 4:
             hydro_plot(
@@ -154,13 +164,14 @@ def hydro_plot(view, hydro_code, image_size, figname):
     grid = Grid.create(shape, axis_lengths)
     grid.x += view[0]
     grid.y += view[2]
-    speed = grid.z.reshape(size) * (0 | 1/units.s)
+    speed = grid.z.reshape(size) * (0 | 1 / units.s)
     rho, rhovx, rhovy, rhovz, rhoe = \
         hydro_code.get_hydro_state_at_point(
-                grid.x.reshape(size),
-                grid.y.reshape(size),
-                grid.z.reshape(size),
-                speed, speed, speed)
+            grid.x.reshape(size),
+            grid.y.reshape(size),
+            grid.z.reshape(size),
+            speed, speed, speed
+        )
 
     min_v = 800.0 | units.km / units.s
     max_v = 3000.0 | units.km / units.s
@@ -174,7 +185,7 @@ def hydro_plot(view, hydro_code, image_size, figname):
     log_v = numpy.log((v_sqr / min_v**2)) / numpy.log((max_v**2 / min_v**2))
     log_rho = numpy.log((rho / min_rho)) / numpy.log((max_rho / min_rho))
     log_E = numpy.log((E / min_E)) / numpy.log((max_E / min_E))
-    
+
     red = numpy.minimum(
         numpy.ones_like(rho.number),
         numpy.maximum(numpy.zeros_like(rho.number), log_rho)
@@ -193,21 +204,30 @@ def hydro_plot(view, hydro_code, image_size, figname):
     alpha = numpy.minimum(
         numpy.ones_like(log_v),
         numpy.maximum(numpy.zeros_like(log_v),
-        numpy.log((rho / (10*min_rho))))
+                      numpy.log((rho / (10 * min_rho))))
     ).reshape(shape)
-    
-    rgba = numpy.concatenate((red, green, blue, alpha), axis = 2)
-    
-    pyplot.figure(figsize = (image_size[0]/100.0, image_size[1]/100.0), dpi=100)
+
+    rgba = numpy.concatenate((red, green, blue, alpha), axis=2)
+
+    pyplot.figure(
+        figsize=(
+            image_size[0] /
+            100.0,
+            image_size[1] /
+            100.0),
+        dpi=100)
     pyplot.figimage(rgba, origin='lower')
-    
-    pyplot.savefig(figname, transparent=True, dpi = 100)
+
+    pyplot.savefig(figname, transparent=True, dpi=100)
     print("\nHydroplot was saved to: ", figname)
     pyplot.close()
 
 
-if __name__  == "__main__":
-    print("Running the simulation that formed the basis of the christmas card of Leiden Observatory of 2010.")
+if __name__ == "__main__":
+    print(
+        "Run the simulation that formed the basis of the "
+        "christmas card of Leiden Observatory of 2010."
+    )
     print()
     print("Details:")
     print(
@@ -222,8 +242,7 @@ if __name__  == "__main__":
         "the simulation, from top left to bottom right. The peak is created\n"
         " from a blend of all snapshots. The colors of the ornaments are:\n"
         "red, log of the density, green: log of the speed and for blue we\n"
-        "used the log of the specific internal energy."
-    )
+        "used the log of the specific internal energy.")
     print()
     if HAS_MATPLOTLIB:
         head_on_stellar_merger()

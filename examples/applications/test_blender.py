@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 # 1BPY
 """
 Name:  'sun-earth'
@@ -5,6 +6,7 @@ Blender: 249
 Group:'Add'
 Tooltip: 'Amuse example'
 """
+from __future__ import print_function
 from amuse.community.hermite0.interface import Hermite
 from amuse.units import nbody_system
 from amuse.units import units
@@ -48,18 +50,18 @@ class SunEarth(object):
         Sun = blender.Primitives.sphere(32, 32, 1)  # Make the sun avatar
         hermite.particles.add_particles(stars)
 
-        for i in range(1*365):
+        for i in range(1 * 365):
             hermite.evolve_model(i | units.day)
             hermite.particles.copy_values_of_all_attributes_to(stars)
             # update avatar positions:
             Earth.loc = (
-                    1*earth.position.value_in(units.AU)[0],
-                    1*earth.position.value_in(units.AU)[1],
-                    earth.position.value_in(units.AU)[2])
+                1 * earth.position.value_in(units.AU)[0],
+                1 * earth.position.value_in(units.AU)[1],
+                earth.position.value_in(units.AU)[2])
             Sun.loc = (
-                    1*sun.position.value_in(units.AU)[0],
-                    1*sun.position.value_in(units.AU)[1],
-                    sun.position.value_in(units.AU)[2])
+                1 * sun.position.value_in(units.AU)[0],
+                1 * sun.position.value_in(units.AU)[1],
+                sun.position.value_in(units.AU)[2])
             blender.Redraw()
 
         hermite.print_refs()

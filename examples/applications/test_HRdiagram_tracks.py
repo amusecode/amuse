@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import sys
 import os
 import warnings
@@ -25,8 +27,7 @@ stars with specified a masses.
 
 
 def stellar_remnant_state(star):
-    return 10 <= star.stellar_type.value_in(units.stellar_type) and \
-        star.stellar_type.value_in(units.stellar_type) < 16
+    return 10 <= star.stellar_type.value_in(units.stellar_type) < 16
 
 
 def simulate_evolution_tracks(
@@ -52,15 +53,15 @@ def simulate_evolution_tracks(
     stellar_evolution.commit_parameters()
 
     print(
-            "The evolution across the Hertzsprung-Russell diagram of ",
-            str(number_of_stars),
-            " stars with\nvarying masses will be simulated..."
-            )
+        "The evolution across the Hertzsprung-Russell diagram of ",
+        str(number_of_stars),
+        " stars with\nvarying masses will be simulated..."
+    )
 
     for j in range(number_of_stars):
         star = datamodel.Particle()
         star.mass = masses[j]
-        print "Created new star with mass: ", star.mass
+        print("Created new star with mass: ", star.mass)
 
         star = stellar_evolution.particles.add_particle(star)
         stellar_evolution.commit_particles()
@@ -82,31 +83,33 @@ def simulate_evolution_tracks(
                 # Check whether the age has stopped increasing
                 stopped_evolving = (star.age == previous_age)
             except Exception as ex:
-                print str(ex)
+                print(str(ex))
                 stopped_evolving = True
         if stopped_evolving:
-            print "Age did not increase during timestep. Aborted evolving..."
+            print("Age did not increase during timestep. Aborted evolving...")
         else:
             stellar_type_at_time.append(star.stellar_type)
             # Fudged: final stellar type annotation at previous (Teff, L);
             # BHs and neutron stars would otherwise fall off the chart.
             luminosity_at_time.append(luminosity_at_time[-1])
             temperature_at_time.append(temperature_at_time[-1])
-        print " ... evolved model to t = " + \
-            str(star.age.as_quantity_in(units.Myr))
         print(
-                "Star has now become a: ",
-                star.stellar_type,
-                "(stellar_type: "+str(
-                    star.stellar_type.value_in(units.stellar_type)
-                    )+")"
-                )
-        print
+            " ... evolved model to t = " +
+            str(star.age.as_quantity_in(units.Myr))
+        )
+        print(
+            "Star has now become a: ",
+            star.stellar_type,
+            "(stellar_type: " + str(
+                star.stellar_type.value_in(units.stellar_type)
+            ) + ")"
+        )
+        print()
         all_tracks_luminosity.append(luminosity_at_time)
         all_tracks_temperature.append(temperature_at_time)
         all_tracks_stellar_type.append(stellar_type_at_time)
 
-#        Remove the star before creating the next one. See comments at the top.
+        # Remove the star before creating the next one. See comments at the top
         stellar_evolution.particles.remove_particle(star)
 
     stellar_evolution.stop()
@@ -114,7 +117,7 @@ def simulate_evolution_tracks(
     plot_HR_diagram(masses, all_tracks_luminosity, all_tracks_temperature,
                     all_tracks_stellar_type, name_of_the_figure)
 
-    print "All done!"
+    print("All done!")
 
 
 def plot_HR_diagram(
@@ -129,7 +132,7 @@ def plot_HR_diagram(
         matplotlib.use("Agg", warn=False)
 
         from matplotlib import pyplot
-        print "Plotting the data..."
+        print("Plotting the data...")
         pyplot.figure(figsize=(7, 8))
         pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
         pyplot.xlabel('Effective Temperature (K)')
@@ -172,28 +175,28 @@ def plot_HR_diagram(
             text_offset_factor_y = 0.6
             for i, phase in enumerate(text_values):
                 pyplot.annotate(
-                        str(int(phase)),
-                        xy=(x_values[i], y_values[i]),
-                        xytext=(
-                            x_values[i]*text_offset_factor_x,
-                            y_values[i]*text_offset_factor_y)
-                        )
+                    str(int(phase)),
+                    xy=(x_values[i], y_values[i]),
+                    xytext=(
+                        x_values[i] * text_offset_factor_x,
+                        y_values[i] * text_offset_factor_y)
+                )
             text_offset_factor_x = 1.1
             text_offset_factor_y = 0.9
             pyplot.annotate(str(masses[j]), xy=(x_values[0], y_values[0]),
-                            xytext=(x_values[0]*text_offset_factor_x,
-                                    y_values[0]*text_offset_factor_y),
+                            xytext=(x_values[0] * text_offset_factor_x,
+                                    y_values[0] * text_offset_factor_y),
                             color='g', horizontalalignment='right')
 
         pyplot.axis([300000., 2500., 1.e-2, 1.e6])
         # Or use these axes to also view neutron stars and black holes:
         # pyplot.axis([1.e7, 2500., 1.e-11, 1.e6])
         pyplot.savefig(plotfile)
-        print "Meaning of the stellar evolution phase markers (black numbers):"
+        print("Meaning of the stellar evolution phase markers (black numbers):")
         for i in range(16):
-            print str(i)+": ", (i | units.stellar_type)
+            print(str(i) + ": ", (i | units.stellar_type))
     except ImportError:
-        print "Unable to produce plot: couldn't find matplotlib."
+        print("Unable to produce plot: couldn't find matplotlib.")
 
 
 class InstantiateCode(object):
@@ -207,18 +210,24 @@ class InstantiateCode(object):
         if number_of_stars > result.parameters.maximum_number_of_stars:
             result.parameters.maximum_number_of_stars = number_of_stars
             warnings.warn(
-                "You're simulating a large number of stars with EVtwin. This may not be such a good idea...")
+                "You're simulating a large number of stars with EVtwin. "
+                "This may not be such a good idea..."
+            )
         return result
 
     def mesa(self, number_of_stars):
         result = MESA()
         result.initialize_code()
-        if number_of_stars > (10):
+        if number_of_stars > 10:
             warnings.warn(
-                "You're simulating a large number of stars with MESA. This may not be such a good idea...")
-        if number_of_stars > (1000):
+                "You're simulating a large number of stars with MESA. "
+                "This may not be such a good idea..."
+            )
+        if number_of_stars > 1000:
             raise Exception(
-                "You want to simulate with more than 1000 stars using MESA, this is not supported")
+                "You want to simulate with more than 1000 stars using MESA, "
+                "this is not supported"
+            )
         return result
 
     def evtwin2sse(self, number_of_stars):
@@ -227,7 +236,10 @@ class InstantiateCode(object):
         # TODO add maximum_number_of_stars parameter to Evtwin2SSE
         # if number_of_stars > result.parameters.maximum_number_of_stars:
         #     result.parameters.maximum_number_of_stars = number_of_stars
-        #     warnings.warn("You're simulating a large number of stars with EVtwin. This may not be such a good idea...")
+        #     warnings.warn(
+        #         "You're simulating a large number of stars with EVtwin. "
+        #         "This may not be such a good idea..."
+        #     )
         return result
 
     def new_code(self, name_of_the_code, number_of_stars):
@@ -237,8 +249,8 @@ class InstantiateCode(object):
             raise Exception(
                 "Cannot instantiate code with name '{0}'".format(
                     name_of_the_code
-                    )
                 )
+            )
 
 
 def new_code(name_of_the_code, number_of_stars):
@@ -289,7 +301,7 @@ def new_commandline_option_parser():
 
 if __name__ == '__main__':
     if not is_mpd_running():
-        print "There is no mpd server running. Please do 'mpd &' first."
+        print("There is no mpd server running. Please do 'mpd &' first.")
         sys.exit()
     parser = new_commandline_option_parser()
     (options, arguments) = parser.parse_args()
@@ -299,10 +311,10 @@ if __name__ == '__main__':
 
     code = new_code(options.code, len(mass_list))
     if not (options.cacheDir is None):
-        print "Using cache directory: %s" % (options.cacheDir)
+        print("Using cache directory: %s" % (options.cacheDir))
         # As a special case, we use caching of the underlying models instead of
         # the model output for EVtwin2SSE
-        if (options.code == "evtwin2sse"):
+        if options.code == "evtwin2sse":
             code.cache_underlying_models(options.cacheDir)
         else:
             code = CachedStellarEvolution(code, options.cacheDir)

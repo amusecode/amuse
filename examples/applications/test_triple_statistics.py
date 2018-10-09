@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 In this script we simulate triple evolution.
 
@@ -6,8 +7,7 @@ http://arxiv.org/abs/1004.2506
 and
 http://arxiv.org/abs/1101.0399
 """
-
-
+from __future__ import print_function
 import numpy
 import sys
 # import time
@@ -59,16 +59,16 @@ class SimulateTripleSystemUntilDecay(object):
                     outer_particle.mass
                     * (
                         outer_particle.velocity.length_squared()
-                        )
-                    ) / 2.0
-                )
+                    )
+                ) / 2.0
+            )
             - (
                 self.gravitational_constant
                 * mass_inner
                 * outer_particle.mass
                 / distance_to_cm
-                )
-            )  # formula (3) in Orlov(2010)
+            )
+        )  # formula (3) in Orlov(2010)
 
         return energy > 0 | nbody_system.energy
 
@@ -78,9 +78,9 @@ class SimulateTripleSystemUntilDecay(object):
         distance_between_inner_particles = (
             inner_binary[0].position - inner_binary[1].position).length()
         return (
-                distance_to_cm
-                / distance_between_inner_particles
-                ) > self.distance_relative_to_inner_binary_axis
+            distance_to_cm
+            / distance_between_inner_particles
+        ) > self.distance_relative_to_inner_binary_axis
 
     def has_triple_an_escaper(self, particles):
         breakup_of_indices = (
@@ -157,9 +157,9 @@ def new_initial_system():
     mass = numpy.random.rand(3)
     mass = mass / mass.sum()
     result.mass = mass * (1.0 | nbody_system.mass)
-    a = (numpy.random.rand() * n) + (n+xi)
-    b = numpy.random.rand() * 2*n
-    c = (numpy.random.rand() * 2*n) + xi
+    a = (numpy.random.rand() * n) + (n + xi)
+    b = numpy.random.rand() * 2 * n
+    c = (numpy.random.rand() * 2 * n) + xi
     result[0].position = [0, 0, 0] | nbody_system.length
     result[1].position = [a, 0, 0] | nbody_system.length
     result[2].position = [b, c, 0] | nbody_system.length
@@ -172,7 +172,7 @@ def calculate_escape_time(index, number_of_systems):
     numpy.random.seed()
 
     # from amuse.community.smallN.muse_dynamics_mpi import SmallN
-    print "start of subprocess", index
+    print("start of subprocess", index)
     x0 = AdaptingVectorQuantity()
     y0 = AdaptingVectorQuantity()
     x1 = AdaptingVectorQuantity()
@@ -190,7 +190,7 @@ def calculate_escape_time(index, number_of_systems):
             particles = new_initial_system()
             code = SimulateTripleSystemUntilDecay(gravity, particles, index, x)
             tend = code.evolve_model_until_escape()
-            print index, x, tend
+            print(index, x, tend)
             code.stop()
             x0.append(particles[0].x)
             y0.append(particles[0].y)
@@ -205,7 +205,7 @@ def calculate_escape_time(index, number_of_systems):
     except KeyboardInterrupt:
         pass
 
-    print "end of subprocess", index
+    print("end of subprocess", index)
 
     return x0, y0, x1, y1, x2, y2, m0, m1, m2, tends
 
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     times = AdaptingVectorQuantity()
     counts = AdaptingVectorQuantity()
 
-    print "doing statistics"
+    print("doing statistics")
     sorted_times = data[-1].sorted()
     t = 0 | nbody_system.time
     tend = 1000 | nbody_system.time
@@ -254,8 +254,6 @@ if __name__ == '__main__':
     output.attribute_names = ("t", "n(t)")
     output.store()
 
-    print "done"
-"""
+    print("done")
 
-set logscale xy
-"""
+

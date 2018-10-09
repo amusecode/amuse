@@ -1,13 +1,15 @@
+# -*- encoding: utf-8 -*-
 """
 In this script we simulate a 1d linear wave in a 2d field
 """
+from __future__ import print_function
 import numpy
 
 # from amuse.support.core import late
 # from amuse.units.quantities import VectorQuantity
 from amuse.units.generic_unit_system import (
-        time, length, speed, mass, density
-        )
+    time, length, speed, mass, density
+)
 
 from amuse.community.capreole.interface import Capreole
 from amuse import io
@@ -26,7 +28,7 @@ except ImportError:
 
 
 class CalculateLinearWave1D(object):
-    gamma = 5.0/3.0
+    gamma = 5.0 / 3.0
     wave_flag = 0
 
     def __init__(self,
@@ -123,7 +125,7 @@ class CalculateLinearWave1D(object):
         right_eigenmatrix[2][0] = velocity[1]
         right_eigenmatrix[3][0] = velocity[2]
         right_eigenmatrix[4][0] = (
-            1.0 | time/length) * (enthalpy - velocity[0]*amplitude)
+            1.0 | time / length) * (enthalpy - velocity[0] * amplitude)
         # right_eigenmatrix[0][1] = 0.0;
         # right_eigenmatrix[1][1] = 0.0;
         right_eigenmatrix[2][1] = 1.0 | speed
@@ -140,14 +142,14 @@ class CalculateLinearWave1D(object):
         right_eigenmatrix[1][3] = velocity[0]
         right_eigenmatrix[2][3] = velocity[1]
         right_eigenmatrix[3][3] = velocity[2]
-        right_eigenmatrix[4][3] = 0.5*velocity.length()
+        right_eigenmatrix[4][3] = 0.5 * velocity.length()
 
         right_eigenmatrix[0][4] = 1.0 | speed
         right_eigenmatrix[1][4] = velocity[0] + amplitude
         right_eigenmatrix[2][4] = velocity[1]
         right_eigenmatrix[3][4] = velocity[2]
         right_eigenmatrix[4][4] = (
-            1.0 | time/length) * (enthalpy + velocity[0]*amplitude)
+            1.0 | time / length) * (enthalpy + velocity[0] * amplitude)
         return right_eigenmatrix
 
     def initialize_grid(self, grid):
@@ -155,16 +157,16 @@ class CalculateLinearWave1D(object):
         momentum = speed * density
         energy = mass / (time**2 * length)
         rho = 1.0 | density
-        pressure = (1.0/self.gamma) | (mass / (length * time**2))
+        pressure = (1.0 / self.gamma) | (mass / (length * time**2))
         vx = (self.gamma * pressure / rho).sqrt()
         velocity = self.vflow_factor * vx * [1.0, 0.0, 0.0]
         velocity_squared = velocity.length()
-        energy = (pressure/(self.gamma - 1.0) +
-                  (0.5 | length / time)*rho*velocity_squared)
-        enthalpy = (energy + pressure)/rho
+        energy = (pressure / (self.gamma - 1.0) +
+                  (0.5 | length / time) * rho * velocity_squared)
+        enthalpy = (energy + pressure) / rho
         amplitude_squared = (self.gamma - 1.0) * max(
-                enthalpy - (0.5 | length/time) * velocity_squared,
-                1e-100 | enthalpy.unit)
+            enthalpy - (0.5 | length / time) * velocity_squared,
+            1e-100 | enthalpy.unit)
         amplitude = amplitude_squared.sqrt()
 
         nwave = 5
@@ -180,9 +182,10 @@ class CalculateLinearWave1D(object):
 
         grid.rho = rho
         grid.energy = energy
-        grid.rhovy = rho*self.vflow_factor*(1.0 | speed)
+        grid.rhovy = rho * self.vflow_factor * (1.0 | speed)
 
-        wave = self.amplitude*numpy.sin(grid.y * (2.0 | length**-1)*numpy.pi)
+        wave = self.amplitude * \
+            numpy.sin(grid.y * (2.0 | length**-1) * numpy.pi)
 
         grid.rho += wave * \
             right_eigenmatrix[0][self.wave_flag] * \
@@ -227,7 +230,7 @@ class CalculateLinearWave1D(object):
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
 
-        print "start evolve"
+        print("start evolve")
         dt = time / self.number_of_steps
         t = dt
         step = 1
@@ -239,17 +242,17 @@ class CalculateLinearWave1D(object):
             instance.evolve_model(t)
 
             # ,  instance.parameters.must_evolve_to_exact_time
-            print "time : ", t, instance.model_time
+            print("time : ", t, instance.model_time)
 
             t += dt
             step += 1
 
-        print "copying results"
+        print("copying results")
         result = []
         for x in instance.itergrids():
             result.append(x.copy())
 
-        print "terminating code"
+        print("terminating code")
         instance.stop()
 
         return result
@@ -274,7 +277,7 @@ def main():
     rho0 = model.start_grids[0].rho[..., ..., 0].value_in(density)
     rho = grids[0].rho[..., ..., 0].value_in(density)
     drho = rho - rho0
-    print drho.sum(), rho[0][0], rho0[0][0], drho[0][0]
+    print(drho.sum(), rho[0][0], rho0[0][0], drho[0][0])
     x = grids[0].x[..., ..., 0].value_in(length)
     y = grids[0].y[..., ..., 0].value_in(length)
     figure = pyplot.figure(figsize=(10, 10))

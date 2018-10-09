@@ -26,7 +26,7 @@ def new_gravity(particles, converter):
 if __name__ in ('__main__', '__plot__'):
 
     number_of_particles = 100
-    
+
     # create a plumber sphere with a number of stars
     numpy.random.seed(12345)
     masses = new_flat_mass_distribution(number_of_particles)
@@ -38,7 +38,7 @@ if __name__ in ('__main__', '__plot__'):
     # create simulation codes
     gravity = new_gravity(particles, converter)
     stellar_evolution = new_stellar_evolution(particles)
-    
+
     # create channels to and from the local particle set and the simulations
     from_gravity_to_local = gravity.particles.new_channel_to(particles)
     from_stellar_evolution_to_local = \
@@ -83,11 +83,11 @@ if __name__ in ('__main__', '__plot__'):
         from_local_to_viz.copy_attributes(
             ["x", "y", "z", "red", "green", "blue"])
         visualization.particles.radius = (
-                stellar_evolution.particles.radius.sqrt()
-                * (1e4 | units.parsec).sqrt()
-                )
+            stellar_evolution.particles.radius.sqrt()
+            * (1e4 | units.parsec).sqrt()
+        )
 
-        print 'updating visualization to time = ', target_time
+        print('updating visualization to time = ', target_time)
         visualization.store_view(target_time)
 
     visualization.stop()

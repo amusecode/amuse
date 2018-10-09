@@ -1,10 +1,11 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 """
 first test of Fujii et al 2007
 
 (not yet fully checked)
 
 """
-
 # import numpy
 import os
 
@@ -54,17 +55,17 @@ def sys_from_king(base_class, N, W, converter, eps=None,
     parts = new_king_model(N, W0=W, convert_nbody=converter)
     parts.radius = 0. | nbody_system.length
     return sys_from_parts(
-            base_class, parts, converter, eps, timestep, usegl, mode)
+        base_class, parts, converter, eps, timestep, usegl, mode)
 
 
 def shift_sys(system, dx, dy, dz, dvx, dvy, dvz):
     parts = system.particles.copy()
-    parts.x = parts.x+dx
-    parts.y = parts.y+dy
-    parts.z = parts.z+dz
-    parts.vx = parts.vx+dvx
-    parts.vy = parts.vy+dvy
-    parts.vz = parts.vz+dvz
+    parts.x = parts.x + dx
+    parts.y = parts.y + dy
+    parts.z = parts.z + dz
+    parts.vx = parts.vx + dvx
+    parts.vy = parts.vy + dvy
+    parts.vz = parts.vz + dvz
     parts.copy_values_of_all_attributes_to(system.particles)
 
 
@@ -84,8 +85,8 @@ def validate_bridge():
     total_sim_time = convert_clu_to_gal(200 | nbody_system.time)
     total_sim_time = 200 | nbody_system.time
 
-    sim_step = 1./128 | nbody_system.time
-    dt_diag = 1./64 | nbody_system.time
+    sim_step = 1. / 128 | nbody_system.time
+    dt_diag = 1. / 64 | nbody_system.time
 
     eps_clu = convert_gal_to_clu(2.e-4 | nbody_system.length)
     eps_gal = 6.25e-3 | nbody_system.length
@@ -96,19 +97,19 @@ def validate_bridge():
                            eps_gal, sim_step, usegl=False)
 
     shift_sys(
-            cluster,
-            convert_clu.to_si(
-                convert_gal_to_clu(
-                    2.5 | nbody_system.length
-                    )
-                ),
-            0 | units.m,
-            0 | units.m,
-            0 | units.m/units.s,
-            convert_clu.to_si(
-                convert_gal_to_clu(0.65 | nbody_system.speed)
-                ),
-            0 | units.m/units.s)
+        cluster,
+        convert_clu.to_si(
+            convert_gal_to_clu(
+                2.5 | nbody_system.length
+            )
+        ),
+        0 | units.m,
+        0 | units.m,
+        0 | units.m / units.s,
+        convert_clu.to_si(
+            convert_gal_to_clu(0.65 | nbody_system.speed)
+        ),
+        0 | units.m / units.s)
 
     if hasattr(cluster, "start_viewer"):
         cluster.start_viewer()
@@ -135,20 +136,20 @@ def validate_bridge():
     tc = cluster.model_time
     tg = galaxy.model_time
 
-    print convert_gal.to_nbody(tg)
-    print 0.
-    # print Ep0,Ek0
-    # print Esp0,Esk0
+    print(convert_gal.to_nbody(tg))
+    print(0.)
+    # print(Ep0, Ek0)
+    # print(Esp0, Esk0)
     for x in cluster.get_center_of_mass_position():
-        print convert_gal.to_nbody(x),
-    print
+        print(convert_gal.to_nbody(x), end='')
+    print()
 
     part = bridgesys.particles.copy()
     part.savepoint(tg)
     storage.store(part.previous_state())
 
-    while(t < total_sim_time):
-        t = t+dt_diag
+    while t < total_sim_time:
+        t = t + dt_diag
         bridgesys.evolve_model(convert_gal.to_si(t),
                                timestep=convert_gal.to_si(sim_step))
 
@@ -159,12 +160,12 @@ def validate_bridge():
         Esk = cluster.potential_energy
         tc = cluster.model_time
         tg = galaxy.model_time
-        print convert_gal.to_nbody(tg)
-        print (Ep+Ek-Ep0-Ek0)/(Ep0+Ek0)
+        print(convert_gal.to_nbody(tg))
+        print(Ep + Ek - Ep0 - Ek0) / (Ep0 + Ek0)
         # print (Esp+Esk-Esp0-Esk0)/(Esp0+Esk0)
         for x in cluster.get_center_of_mass_position():
-            print convert_gal.to_nbody(x),
-        print
+            print(convert_gal.to_nbody(x), end='')
+        print()
 
         part = bridgesys.particles.copy()
         part.savepoint(tg)

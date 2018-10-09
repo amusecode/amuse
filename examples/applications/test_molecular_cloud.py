@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import os
 import numpy
 
@@ -24,7 +26,7 @@ def energy_plot(time, ek, ep, eth):
     pyplot.plot(time, ek)
     pyplot.plot(time, ep)
     pyplot.plot(time, eth)
-    pyplot.plot(time, ek+ep+eth)
+    pyplot.plot(time, ek + ep + eth)
     test_results_path = get_path_to_results()
     pyplot.savefig(os.path.join(test_results_path, "test.png"))
 
@@ -51,7 +53,7 @@ def run_cloud(x):
     nb.set_unitm_in_msun(10000.)
 
     ids, error = nb.new_sph_particle(mass, x, y, z, vx, vy, vz, u, smooth)
-    if filter(lambda x: x != 0, error) != []: raise Exception
+    if filter(lambda _x: _x != 0, error): raise Exception
 
     nb.commit_particles()
 
@@ -71,7 +73,7 @@ def run_cloud(x):
     Eth.append(e)
 
     while tnow < .8:
-        tnow = tnow+dt
+        tnow = tnow + dt
         nb.evolve_model(tnow)
         nb.synchronize_model()
         tnow, err = nb.get_time()

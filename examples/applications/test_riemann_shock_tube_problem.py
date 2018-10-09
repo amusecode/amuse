@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 """
 In this script we simulate the riemann shock tube problem in 3d.
 
@@ -29,7 +30,7 @@ on code from Bruce Fryxell), see:
 
 http://cococubed.asu.edu/code_pages/exact_riemann.shtml
 """
-
+from __future__ import print_function
 # from amuse.support.core import late
 
 # from amuse import io
@@ -39,8 +40,8 @@ from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.units.nbody_system import nbody_to_si
 from amuse.units.quantities import VectorQuantity
 from amuse.units.generic_unit_system import (
-        time, length, speed, mass, density,
-        )
+    time, length, speed, mass, density,
+)
 
 from amuse.community.athena.interface import Athena
 from amuse.community.capreole.interface import Capreole
@@ -81,7 +82,7 @@ class CalculateExactSolutionIn1D(object):
     p5 = 0.1795 | mass / (length * (time**2))
     u5 = 0.0 | speed
 
-    gamma = 5.0/3.0
+    gamma = 5.0 / 3.0
 
     def get_post_shock_pressure_p4(
             self,
@@ -95,13 +96,13 @@ class CalculateExactSolutionIn1D(object):
         f0 = self.calculate_p4_from_previous_value(p40)
         for x in range(maximum_number_of_iterations):
             f1 = self.calculate_p4_from_previous_value(p41)
-            if (f1 == f0):
+            if f1 == f0:
                 return p4
 
             p4 = p41 - (p41 - p40) * f1 / (f1 - f0)
 
             error = abs(p4 - p41) / p41
-            if (error < maxium_allowable_relative_error):
+            if error < maxium_allowable_relative_error:
                 return p4
 
             p40 = p41
@@ -109,8 +110,8 @@ class CalculateExactSolutionIn1D(object):
             f0 = f1
 
         raise Exception(
-                "solution did not converge in less than {0!r} steps.".format(
-                    maximum_number_of_iterations))
+            "solution did not converge in less than {0!r} steps.".format(
+                maximum_number_of_iterations))
 
     def get_post_shock_density_and_velocity_and_shock_speed(self, p4):
         z = (p4 / self.p5 - 1.0)
@@ -202,7 +203,7 @@ class CalculateExactSolutionIn1D(object):
 class CalculateSolutionIn3D(object):
     number_of_workers = 1
     number_of_grid_points = 10
-    gamma = 5.0/3.0
+    gamma = 5.0 / 3.0
     name_of_the_code = "capreole"
     hydro_code_options = dict()  # redirection="none")
     convert_generic_units = ConvertBetweenGenericAndSiUnits(
@@ -212,7 +213,7 @@ class CalculateSolutionIn3D(object):
 
     def __init__(self, **keyword_arguments):
         for x in keyword_arguments:
-            print x, keyword_arguments[x]
+            print(x, keyword_arguments[x])
             setattr(self, x, keyword_arguments[x])
 
         self.dimensions_of_mesh = (
@@ -253,19 +254,19 @@ class CalculateSolutionIn3D(object):
 
     def new_instance_of_gadget2_code(self):
         result = Gadget2(
-                self.convert_generic_units,
-                number_of_workers=self.number_of_workers,
-                mode="periodic",
-                **self.hydro_code_options)
+            self.convert_generic_units,
+            number_of_workers=self.number_of_workers,
+            mode="periodic",
+            **self.hydro_code_options)
         result.initialize_code()
         return result
 
     def new_instance_of_fi_code(self):
         result = Fi(
-                self.convert_nbody_units,
-                number_of_workers=self.number_of_workers,
-                mode="periodic",
-                **self.hydro_code_options)
+            self.convert_nbody_units,
+            number_of_workers=self.number_of_workers,
+            mode="periodic",
+            **self.hydro_code_options)
         result.initialize_code()
         result.parameters.self_gravity_flag = False
         result.parameters.timestep = 0.01 | time
@@ -313,7 +314,7 @@ class CalculateSolutionIn3D(object):
     def initialize_grid_with_shock(self, grid):
         energy = mass / (time**2 * length)
 
-        halfway = self.dimensions_of_mesh[0]/2 - 1
+        halfway = self.dimensions_of_mesh[0] / 2 - 1
 
         firsthalf = grid.x <= 0.5 | length
         secondhalf = grid.x > 0.5 | length
@@ -346,14 +347,14 @@ class CalculateSolutionIn3D(object):
             n_samples = self.number_of_grid_points * 3
             result = Particles(n_samples)
             result.position = [
-                (x, 0.5, 0.5) | length for x in numpy.linspace(0.0, 1.0, n_samples)
-                ]
+                (x, 0.5, 0.5) | length for x in numpy.linspace(
+                    0.0, 1.0, n_samples)]
             x, y, z = result.x, result.y, result.z
             if self.name_of_the_code == "fi":
                 x -= (0.5 | length)
                 y -= (0.5 | length)
                 z -= (0.5 | length)
-            no_speed = [0.0]*n_samples | speed
+            no_speed = [0.0] * n_samples | speed
             result.rho, result.rhovx, result.rhovy, result.rhovz, result.energy = [
                 self.convert_generic_units.to_generic(quantity) for quantity in
                 instance.get_hydro_state_at_point(x, y, z, no_speed, no_speed, no_speed)]
@@ -368,13 +369,13 @@ class CalculateSolutionIn3D(object):
         self.set_parameters(instance)
         self.set_initial_conditions(instance)
 
-        print "start evolve"
+        print("start evolve")
         instance.evolve_model(time)
 
-        print "copying results"
+        print("copying results")
         result = self.copy_results(instance)
 
-        print "terminating code"
+        print("terminating code")
         instance.stop()
 
         return result
@@ -389,12 +390,12 @@ def store_attributes(x, rho, rhovx, energy, filename):
 
 def store_attributes_of_line(grid, yindex=0, zindex=0, **options):
     store_attributes(
-            grid.x[..., yindex, zindex],
-            grid.rho[..., yindex, zindex],
-            grid.rhovx[..., yindex, zindex],
-            grid.energy[..., yindex, zindex],
-            filename="riemann_shock_tube_{name_of_the_code}_{number_of_grid_points}_{number_of_workers}.csv".format(**options)
-            )
+        grid.x[..., yindex, zindex],
+        grid.rho[..., yindex, zindex],
+        grid.rhovx[..., yindex, zindex],
+        grid.energy[..., yindex, zindex],
+        filename="riemann_shock_tube_{name_of_the_code}_{number_of_grid_points}_{number_of_workers}.csv".format(**options)
+    )
 
 
 def new_option_parser():
@@ -456,41 +457,44 @@ def test_riemann_shocktube_problem():
 
 
 def main(**options):
-    print "calculating shock using exact solution"
+    print("calculating shock using exact solution")
     exact = CalculateExactSolutionIn1D()
     xpositions, rho, p, u = exact.get_solution_at_time(0.12 | time)
 
-    print "calculating shock using code"
+    print("calculating shock using code")
     model = CalculateSolutionIn3D(**options)
     grids = model.get_solution_at_time(0.12 | time)
 
-    print "sampling grid"
+    print("sampling grid")
     if model.name_of_the_code in model.sph_hydro_codes:
         samples = grids
     else:
         samplepoints = [
             (x, 0.5, 0.5) | length for x in numpy.linspace(0.0, 1.0, 2000)]
-        print len(grids)
+        print(len(grids))
         samples = SamplePointsOnMultipleGrids(
             grids, samplepoints, SamplePointOnCellCenter)
-        print len(samples)
+        print(len(samples))
         samples.filterout_duplicate_indices()
-        print len(samples)
+        print(len(samples))
 
-    print "saving data"
+    print("saving data")
     store_attributes(xpositions, rho, u, p,
                      filename="exact_riemann_shock_tube_problem.csv")
     store_attributes(samples.x, samples.rho, samples.rhovx,
                      samples.energy, filename="riemann_shock_tube_problem.csv")
 
     if IS_PLOT_AVAILABLE:
-        print "plotting solution"
+        print("plotting solution")
 
         plot.plot(xpositions, rho)
         plot.scatter(samples.x, samples.rho)
         pyplot.xlim(0.3, 0.7)
         pyplot.ylim(0.5, 4.5)
-        pyplot.savefig("riemann_shock_tube_rho_"+model.name_of_the_code+".png")
+        pyplot.savefig(
+            "riemann_shock_tube_rho_" +
+            model.name_of_the_code +
+            ".png")
         pyplot.show()
 
 

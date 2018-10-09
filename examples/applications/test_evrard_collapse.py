@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import sys
 import os.path
 from optparse import OptionParser
@@ -43,16 +45,17 @@ def run_evrard(
         name_of_the_figure="evrard_collapse_test.png"):
 
     print(
-            "\nThe spherical collapse of an initially-cold adiabatic gas cloud,\n",
-            "consisting of ",
-            str(number_of_particles),
-            "particles will be simulated...\n"
-            )
+        "\nThe spherical collapse of an initially-cold adiabatic gas cloud,\n",
+        "consisting of ",
+        str(number_of_particles),
+        "particles will be simulated...\n"
+    )
 
     # (3 natural timescales)
     t_end = 3.0 * convert_nbody_units.to_si(1.0 | nbody_system.time)
-    print "Evolving to (3 natural timescales): ", t_end.as_quantity_in(
-        units.Myr)
+    print(
+        "Evolving to (3 natural timescales): ", t_end.as_quantity_in(units.Myr)
+    )
     n_steps = 100
 
     gas = new_evrard_gas_sphere(
@@ -80,7 +83,7 @@ def run_evrard(
         potential_energies.append([] | units.J)
         thermal_energies.append([] | units.J)
 
-    for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
+    for time in [i * t_end / n_steps for i in range(1, n_steps + 1)]:
         for i, hydro_legacy_code in enumerate(hydro_legacy_codes):
             hydro_legacy_code.evolve_model(time)
             kinetic_energies[i].append(hydro_legacy_code.kinetic_energy)
@@ -91,7 +94,7 @@ def run_evrard(
         hydro_legacy_code.stop()
     energy_plot(times, kinetic_energies, potential_energies,
                 thermal_energies, name_of_the_figure)
-    print "All done!\n"
+    print("All done!\n")
 
 
 def energy_plot(time, E_kin_list, E_pot_list, E_therm_list, figname):
@@ -100,16 +103,16 @@ def energy_plot(time, E_kin_list, E_pot_list, E_therm_list, figname):
     pyplot.figure(figsize=(5, 5))
     for i, (E_kin, E_pot, E_therm) in enumerate(
             zip(E_kin_list, E_pot_list, E_therm_list)
-            ):
+    ):
         plot(time, E_kin.as_quantity_in(units.erg), label=labels[i][0])
         plot(time, E_pot, label=labels[i][1])
         plot(time, E_therm, label=labels[i][2])
-        plot(time, E_kin+E_pot+E_therm, label=labels[i][3])
+        plot(time, E_kin + E_pot + E_therm, label=labels[i][3])
     xlabel('Time')
     ylabel('Energy')
     pyplot.legend(prop={'size': "x-small"}, loc=3)
     pyplot.savefig(figname)
-    print "\nPlot of energy evolution was saved to: ", figname
+    print("\nPlot of energy evolution was saved to: ", figname)
     pyplot.close()
 
 
@@ -128,7 +131,7 @@ class InstantiateCode(object):
             raise Exception(
                 "Cannot instantiate code with name '{0}'".format(
                     name_of_the_code)
-                )
+            )
 
 
 def new_code(name_of_the_code):
@@ -254,7 +257,7 @@ def new_commandline_option_parser():
 
 if __name__ == '__main__':
     if not is_mpd_running():
-        print "There is no mpd server running. Please do 'mpd &' first."
+        print("There is no mpd server running. Please do 'mpd &' first.")
         sys.exit()
     parser = new_commandline_option_parser()
     (options, arguments) = parser.parse_args()

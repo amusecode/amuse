@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import sys
 # import unittest
 import numpy
@@ -31,10 +33,10 @@ from amuse.ic.salpeter import new_salpeter_mass_distribution
 def plot_particles(particles, name_of_the_figure):
 
     if HAS_MATPLOTLIB:
-        print "plotting the data"
+        print("plotting the data")
 
         figure = pyplot.figure(figsize=(40, 40))
-        plots = map(lambda x: figure.add_subplot(4, 4, x+1), range(4*4))
+        plots = map(lambda x: figure.add_subplot(4, 4, x + 1), range(4 * 4))
 
         index = 0
         for data in particles.history:
@@ -72,23 +74,26 @@ def plot_particles(particles, name_of_the_figure):
             axes_3d.set_ylim(-10.0, 10.0)
             axes_3d.set_zlim(-10.0, 10.0)
 
-            figure.savefig("3d_"+name_of_the_figure)
+            figure.savefig("3d_" + name_of_the_figure)
 
 
 def print_log(time, gravity, particles,
               total_energy_at_t0, total_energy_at_this_time):
-    print "Evolved model to t = " + str(time)
-    print total_energy_at_t0.as_quantity_in(units.J), \
-        total_energy_at_this_time.as_quantity_in(units.J), \
+    print("Evolved model to t = " + str(time))
+    print(
+        total_energy_at_t0.as_quantity_in(units.J),
+        total_energy_at_this_time.as_quantity_in(units.J),
         (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
-    # print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
-    # print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
-    print "center of mass:", particles.center_of_mass()
-    print "center of mass velocity:", particles.center_of_mass_velocity()
+    )
+    # print("KE:" , particles.kinetic_energy().as_quantity_in(units.J))
+    # print("PE:" , end='')
+    # particles.potential_energy(gravity.parameters.epsilon_squared)
+    print("center of mass:", particles.center_of_mass())
+    print("center of mass velocity:", particles.center_of_mass_velocity())
     total_mass = 0 | units.kg
     for m in particles.mass:
         total_mass += m
-    print "total mass =", total_mass
+    print("total mass =", total_mass)
 
 
 def simulate_small_cluster(number_of_stars, end_time=40 | units.Myr,
@@ -110,19 +115,19 @@ def simulate_small_cluster(number_of_stars, end_time=40 | units.Myr,
 
     stellar_evolution = SSE()
 
-    print "setting masses of the stars"
+    print("setting masses of the stars")
     particles.radius = 0.0 | units.RSun
     particles.mass = salpeter_masses
 
-    print "initializing the particles"
+    print("initializing the particles")
     stellar_evolution.particles.add_particles(particles)
     from_stellar_evolution_to_model \
         = stellar_evolution.particles.new_channel_to(particles)
     from_stellar_evolution_to_model.copy_attributes(["mass"])
 
-    print "centering the particles"
+    print("centering the particles")
     particles.move_to_center()
-    print "scaling particles to viridial equilibrium"
+    print("scaling particles to viridial equilibrium")
     particles.scale_to_standard(convert_nbody)
 
     gravity.particles.add_particles(particles)
@@ -134,17 +139,17 @@ def simulate_small_cluster(number_of_stars, end_time=40 | units.Myr,
 
     total_energy_at_t0 = gravity.kinetic_energy + gravity.potential_energy
 
-    print "evolving the model until t = " + str(end_time)
+    print("evolving the model until t = " + str(end_time))
     while time < end_time:
         time += 0.25 | units.Myr
 
-        print "gravity evolve step starting"
+        print("gravity evolve step starting")
         gravity.evolve_model(time)
-        print "gravity evolve step done"
+        print("gravity evolve step done")
 
-        print "stellar evolution step starting"
+        print("stellar evolution step starting")
         stellar_evolution.evolve_model(time)
-        print "stellar evolution step done"
+        print("stellar evolution step done")
 
         from_gravity_to_model.copy()
         from_stellar_evolution_to_model.copy_attributes(["mass", "radius"])

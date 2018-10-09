@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import os
 # import sys
 import numpy
@@ -30,7 +32,7 @@ def energy_plot(time, ek, ep, eth):
     pyplot.plot(time, ek)
     pyplot.plot(time, ep)
     pyplot.plot(time, eth)
-    pyplot.plot(time, ek+ep+eth)
+    pyplot.plot(time, ek + ep + eth)
     test_results_path = get_path_to_results()
     pyplot.savefig(os.path.join(test_results_path, "evrard_test.png"))
 
@@ -53,7 +55,7 @@ def run_evrard(x):
     # nb.set_verbosity(0)
 
     ids, error = nb.new_sph_particle(mass, smooth, x, y, z, vx, vy, vz, u)
-    if filter(lambda x: x != 0, error) != []: raise Exception
+    if filter(lambda _x: _x != 0, error): raise Exception
     nb.commit_particles()
 
     if hasattr(nb, "viewer"):
@@ -71,7 +73,7 @@ def run_evrard(x):
     e, ret = nb.get_thermal_energy()
     Eth.append(e)
     while tnow < 3.0:
-        tnow = tnow+dt
+        tnow = tnow + dt
         nb.evolve_model(tnow)
         nb.synchronize_model()
         tnow, err = nb.get_time()

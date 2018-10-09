@@ -1,28 +1,30 @@
 #!/usr/bin/python
+# -*- encoding: utf-8 -*-
+from __future__ import print_function
 import sys
 # import webbrowser
 from amuse.units import units
 from amuse.community.distributed.interface import (
-        # DistributedAmuseInterface,
-        DistributedAmuse
-        )
+    # DistributedAmuseInterface,
+    DistributedAmuse
+)
 from amuse.community.distributed.interface import (
-        # Resource,
-        # Resources,
-        Pilot,
-        # Pilots,
-        )
+    # Resource,
+    # Resources,
+    Pilot,
+    # Pilots,
+)
 
-# Example on how to use the distributed code. This example should run most (if
-# not all) existing scripts.
+# Example on how to use the distributed code. This example should run most
+# (if not all) existing scripts.
 # This example only uses local resources to run on. Add remote resources to get
 # it to do something interesting.
 
-if (len(sys.argv) < 2):
-    print "usage: amuse.sh distributed_amuse.py existing_amuse_script.py"
+if len(sys.argv) < 2:
+    print("usage: amuse.sh distributed_amuse.py existing_amuse_script.py")
     sys.exit(1)
 
-print "Setting up distributed code"
+print("Setting up distributed code")
 instance = DistributedAmuse(redirection='none')
 instance.initialize_code()
 
@@ -36,8 +38,8 @@ instance.initialize_code()
 # resource.scheduler_type="sge"
 # resource.amuse_dir="/home/user/amuse"
 # instance.resources.add_resource(resource)
-print "Resources:"
-print instance.resources
+print("Resources:")
+print(instance.resources)
 
 # Claim nodes on the resources. In this example simply the "local" machine
 pilot = Pilot()
@@ -48,23 +50,23 @@ pilot.slots_per_node = 22
 pilot.label = 'local'
 instance.pilots.add_pilot(pilot)
 
-print "Pilots:"
-print instance.pilots
+print("Pilots:")
+print(instance.pilots)
 
-print "Waiting for pilots"
+print("Waiting for pilots")
 instance.wait_for_pilots()
 
-print "setting distributed as default channel"
+print("setting distributed as default channel")
 instance.use_for_all_workers()
 
-print "Running script"
+print("Running script")
 
 script = sys.argv[1]
 
 sys.argv = sys.argv[1:]
-
+# .. todo:: incompatible with python3, replace with exec(open(scritp).read())
 execfile(script)
 
-print "script done, stopping distributed code"
+print("script done, stopping distributed code")
 
 instance.stop()

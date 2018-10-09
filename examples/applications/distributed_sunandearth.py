@@ -1,9 +1,10 @@
+# -*- encoding: utf-8 -*-
 """
 Example of usage of the distributed code based on the 'sunandearth' simple
 example.
 Evolves the dynamic evolution of the earth around the sun.
 """
-
+from __future__ import print_function
 from amuse.units import nbody_system
 from amuse.units import units
 from amuse.units import quantities
@@ -11,25 +12,23 @@ from amuse.units import quantities
 from amuse.community.hermite0.interface import Hermite
 
 from amuse.community.distributed.interface import (
-        # DistributedAmuseInterface,
-        DistributedAmuse,
-        )
+    # DistributedAmuseInterface,
+    DistributedAmuse,
+)
 from amuse.community.distributed.interface import (
-        # Resource,
-        # Resources,
-        Pilot,
-        # Pilots,
-        )
+    # Resource,
+    # Resources,
+    Pilot,
+    # Pilots,
+)
 
 from matplotlib import pyplot
-
 from amuse import datamodel
-
 import webbrowser
 
 
 def start_distributed_amuse():
-    print "Creating distributed amuse"
+    print("Creating distributed amuse")
     distributed_amuse = DistributedAmuse(redirection='none')
     distributed_amuse.parameters.debug = True
     distributed_amuse.parameters.webinterface_port = 4556
@@ -47,8 +46,8 @@ def start_distributed_amuse():
     # resource.amuse_dir="/home/user/amuse"
     # distributed_amuse.resources.add_resource(resource)
 
-    print "Resources:"
-    print distributed_amuse.resources
+    print("Resources:")
+    print(distributed_amuse.resources)
 
     # Claim nodes on the resources. In this example simply the "local" machine
     pilot = Pilot()
@@ -59,13 +58,13 @@ def start_distributed_amuse():
     pilot.label = 'local'
     distributed_amuse.pilots.add_pilot(pilot)
 
-    print "Pilots:"
-    print distributed_amuse.pilots
+    print("Pilots:")
+    print(distributed_amuse.pilots)
 
-    print "Waiting for pilots"
+    print("Waiting for pilots")
     distributed_amuse.wait_for_pilots()
 
-    print "setting distributed as default channel"
+    print("setting distributed as default channel")
     distributed_amuse.use_for_all_workers()
 
     return distributed_amuse
@@ -91,7 +90,8 @@ def new_system_of_sun_and_earth():
 
 def simulate_system_until(particles, end_time):
     convert_nbody = nbody_system.nbody_to_si(
-        1.0 | units.MSun, 149.5e6 | units.km)
+        1.0 | units.MSun, 149.5e6 | units.km
+    )
 
     instance = Hermite(convert_nbody)
     instance.parameters.epsilon_squared = 0.0 | units.AU**2
