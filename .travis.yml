@@ -52,7 +52,7 @@ addons:
     - libmpfr-dev
     - libhdf5-serial-dev
     - hdf5-tools
-    - mpich-dev
+    - libmpich-dev
     - mpich
 
 virtualenv:
