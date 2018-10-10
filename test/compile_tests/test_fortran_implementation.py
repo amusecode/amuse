@@ -161,7 +161,7 @@ function echo_logical2(input, output, n)
     logical :: input(n), output(n)
     integer :: echo_logical2, n,i
     
-    output(i)=.FALSE.
+    output(1:n)=.FALSE.
     do i=1,n
       if(input(i)) then
         output(i) = .TRUE.
