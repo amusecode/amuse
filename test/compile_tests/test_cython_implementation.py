@@ -262,7 +262,11 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
 
     def test22(self):
         self.skip("this test uses mpi internals, skip here")
-                     
+
+    def test16c(self):
+        # https://stackoverflow.com/questions/49058191/boolean-numpy-arrays-with-cython
+        self.skip("boolean must_handle_array argument not yet working for cython")
+
     def skip_if_no_cython(self):
 
         if sys.hexversion > 0x03000000:
