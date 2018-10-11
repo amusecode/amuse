@@ -38,8 +38,7 @@ class CalculateLinearWave1D(object):
                  amplitude=1e-4 | speed,
                  vflow_factor=1.0,
                  grid_length=1.0 | length,
-                 number_of_steps=10,
-                 ):
+                 number_of_steps=10):
 
         self.number_of_grid_points = number_of_grid_points
         self.number_of_workers = number_of_workers

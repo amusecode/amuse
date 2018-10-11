@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 from __future__ import print_function
-import numpy
 import os
+import numpy
 import warnings
 
 from optparse import OptionParser
@@ -113,7 +113,9 @@ class InstantiateCode(object):
         if number_of_stars > result.parameters.maximum_number_of_stars:
             result.parameters.maximum_number_of_stars = number_of_stars
             warnings.warn(
-                "You're simulating a large number of stars with EVtwin. This may not be such a good idea...")
+                "You're simulating a large number of stars with EVtwin. "
+                "This may not be such a good idea..."
+            )
         return result
 
     def mesa(self, number_of_stars):
@@ -138,7 +140,7 @@ class InstantiateCode(object):
             raise Exception(
                 "Cannot instantiate code with name '{0}'".format(
                     name_of_the_code)
-            )
+                )
 
 
 def new_code(name_of_the_code, number_of_stars):
@@ -224,11 +226,11 @@ if __name__ == '__main__':
 
     code = new_code(options.code, options.number_of_stars)
 
-    if not (options.cacheDir is None):
-        print("Using cache directory: %s" % (options.cacheDir))
+    if options.cacheDir is not None:
+        print("Using cache directory: %s" % options.cacheDir)
         code = CachedStellarEvolution(code, options.cacheDir)
 
-    if not (options.salpeterSeed is None):
+    if options.salpeterSeed is not None:
         numpy.random.seed(options.salpeterSeed)
 
     simulate_stellar_evolution(

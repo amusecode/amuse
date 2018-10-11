@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-from __future__ import print_function
 # import numpy
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.community.sse.interface import SSE
@@ -8,8 +6,8 @@ from amuse.units import units
 from amuse.units.quantities import VectorQuantity
 
 from amuse.plot import (
-    plot, native_plot,
-)
+        plot, native_plot,
+        )
 
 try:
     from matplotlib import pyplot

@@ -102,8 +102,7 @@ def energy_plot(time, E_kin_list, E_pot_list, E_therm_list, figname):
         return
     pyplot.figure(figsize=(5, 5))
     for i, (E_kin, E_pot, E_therm) in enumerate(
-            zip(E_kin_list, E_pot_list, E_therm_list)
-    ):
+            zip(E_kin_list, E_pot_list, E_therm_list)):
         plot(time, E_kin.as_quantity_in(units.erg), label=labels[i][0])
         plot(time, E_pot, label=labels[i][1])
         plot(time, E_therm, label=labels[i][2])
@@ -131,7 +130,7 @@ class InstantiateCode(object):
             raise Exception(
                 "Cannot instantiate code with name '{0}'".format(
                     name_of_the_code)
-            )
+                )
 
 
 def new_code(name_of_the_code):

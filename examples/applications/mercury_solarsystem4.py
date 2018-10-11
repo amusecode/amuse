@@ -7,9 +7,7 @@ from amuse.ext.solarsystem import new_solar_system_for_mercury
 from amuse.units import units
 # from amuse.units.quantities import VectorQuantity
 
-from amuse.plot import (
-    plot, native_plot, plot3
-)
+from amuse.plot import plot, native_plot, plot3
 
 try:
     from matplotlib import pyplot
@@ -82,7 +80,6 @@ def testsse():
 
 
 def polyevolve():
-    # .. todo:: fixme:: unimported/undefined variabled Solarsystem
     sun, planets = Solarsystem.new_solarsystem()
 
     gd, se = setup_codes(sun, planets)
@@ -114,7 +111,7 @@ def polyevolve():
             time.value_in(units.Myr),
             planets[4].x.value_in(units.AU),
             planets[4].y.value_in(units.AU),
-            planets[4].z.value_in(units.AU),
+            planets[4].z.value_in(units.AU)
         )
 
     gd.stop()

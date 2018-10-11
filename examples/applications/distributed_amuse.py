@@ -1,24 +1,18 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+"""
+Example on how to use the distributed code. This example should run most (if
+not all) existing scripts.
+This example only uses local resources to run on. Add remote resources to get
+it to do something interesting.
+"""
 from __future__ import print_function
 import sys
 # import webbrowser
 from amuse.units import units
-from amuse.community.distributed.interface import (
-    # DistributedAmuseInterface,
-    DistributedAmuse
-)
-from amuse.community.distributed.interface import (
-    # Resource,
-    # Resources,
-    Pilot,
-    # Pilots,
-)
+from amuse.community.distributed.interface import DistributedAmuse
+from amuse.community.distributed.interface import Pilot
 
-# Example on how to use the distributed code. This example should run most
-# (if not all) existing scripts.
-# This example only uses local resources to run on. Add remote resources to get
-# it to do something interesting.
 
 if len(sys.argv) < 2:
     print("usage: amuse.sh distributed_amuse.py existing_amuse_script.py")

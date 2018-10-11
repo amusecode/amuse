@@ -1,11 +1,12 @@
 # -*- encoding: utf-8 -*-
 from __future__ import print_function
+import os
 import sys
 # import unittest
 import numpy
 # import random
 # import collections
-import os
+
 
 try:
     from matplotlib import pyplot

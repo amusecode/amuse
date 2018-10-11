@@ -1,14 +1,12 @@
 # -*- encoding: utf-8 -*-
-from __future__ import print_function
 """
 first test of Fujii et al 2007
 
 (not yet fully checked)
-
 """
-# import numpy
+from __future__ import print_function
 import os
-
+# import numpy
 from amuse.io import store
 from amuse.units import (nbody_system, units)
 # from amuse.units import constants
@@ -22,14 +20,14 @@ from amuse.ext.derived_grav_systems import copycat
 from amuse.ic.kingmodel import new_king_model
 
 
-def sys_from_parts(
-        base_class,
-        parts,
-        converter,
-        eps=None,
-        timestep=None,
-        usegl=False,
-        mode=None):
+def sys_from_parts(base_class,
+                   parts,
+                   converter,
+                   eps=None,
+                   timestep=None,
+                   usegl=False,
+                   mode=None):
+
     if mode is None:
         if usegl:
             interface = base_class(converter, use_gl=True)

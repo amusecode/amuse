@@ -11,16 +11,8 @@ from amuse.units import quantities
 
 from amuse.community.hermite0.interface import Hermite
 
-from amuse.community.distributed.interface import (
-    # DistributedAmuseInterface,
-    DistributedAmuse,
-)
-from amuse.community.distributed.interface import (
-    # Resource,
-    # Resources,
-    Pilot,
-    # Pilots,
-)
+from amuse.community.distributed.interface import DistributedAmuse
+from amuse.community.distributed.interface import Pilot
 
 from matplotlib import pyplot
 from amuse import datamodel

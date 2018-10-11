@@ -1,12 +1,12 @@
 # -*- encoding: utf-8 -*-
 from __future__ import print_function
+import numpy
 from amuse.community.athena.interface import Athena
 from amuse.units import generic_unit_converter
 # from amuse.units import generic_unit_system
 from amuse.units import units
 from amuse.units import constants
 from amuse.test import amusetest
-import numpy
 
 
 try:
@@ -20,6 +20,7 @@ dyn = units.g * units.cm / units.s**2
 
 RUN_WITH_SELF_GRAVITY = True
 DEBUG = False
+
 
 class JeansInstability(object):
 
@@ -180,10 +181,10 @@ class JeansInstability(object):
         # wavenumbers as calculated in athena
         dkx = 2.0 * numpy.pi / nx
         dky = 2.0 * numpy.pi / ny
-        kx = ((((2.0 * numpy.cos(numpy.arange(nx) * dkx)) - 2.0) / (dx**2))
-              ).value_in(units.m**-2)
+        kx = ((((2.0 * numpy.cos(numpy.arange(nx) * dkx)) - 2.0) / dx**2)
+             ).value_in(units.m**-2)
         ky = ((((2.0 * numpy.cos(numpy.arange(ny) * dky)) - 2.0) / (dy**2))
-              ).value_in(units.m**-2)
+             ).value_in(units.m**-2)
 
         kx_grid, ky_grid = numpy.meshgrid(kx, ky)
 
@@ -229,7 +230,7 @@ class JeansInstability(object):
                 (phi - self.P0).value_in(units.m**2 / units.s**2)[1:, 1:])
             pyplot.show()
             print(phi[:, 1][0:10])
-            print(phi[:, 1][0:10] - self.P0[:, 1][0:10]) / phi[:, 1][0:10]
+            print((phi[:, 1][0:10] - self.P0[:, 1][0:10]) / phi[:, 1][0:10])
 
     def gravity_for_code(self, field, grid):
         x = field.x.flatten()

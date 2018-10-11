@@ -23,21 +23,15 @@ from amuse.datamodel import ParticlesSuperset
 from amuse.datamodel import Grid
 
 
-def head_on_stellar_merger(
-        masses=[
-            0.3,
-            3.0] | units.MSun,
-    star_age=310.0 | units.Myr,
-    initial_separation=4.0 | units.RSun,
-    angle=numpy.pi /
-    3,
-    initial_speed=3000.0 | units.km /
-    units.s,
-    initial_speed_perpendicular=30.0 | units.km /
-    units.s,
-    number_of_sph_particles=50000,
-    t_end=1.0e4 | units.s,
-        sph_code=Fi):
+def head_on_stellar_merger(masses=[0.3, 3.0] | units.MSun,
+                           star_age=310.0 | units.Myr,
+                           initial_separation=4.0 | units.RSun,
+                           angle=numpy.pi / 3,
+                           initial_speed=3000.0 | units.km / units.s,
+                           initial_speed_perpendicular=30. | units.km / units.s,
+                           number_of_sph_particles=50000,
+                           t_end=1.0e4 | units.s,
+                           sph_code=Fi):
     """
     masses: Mass of the two stars
     star_age: Initial age of the stars
@@ -80,10 +74,8 @@ def head_on_stellar_merger(
     number_of_sph_particles_1 = int(
         round(
             number_of_sph_particles
-            * (
-                stellar_evolution.particles[0].mass
-                / stellar_evolution.particles.mass.sum()
-            )
+            * (stellar_evolution.particles[0].mass /
+               stellar_evolution.particles.mass.sum())
         )
     )
     number_of_sph_particles_2 = (
@@ -203,8 +195,10 @@ def hydro_plot(view, hydro_code, image_size, figname):
 
     alpha = numpy.minimum(
         numpy.ones_like(log_v),
-        numpy.maximum(numpy.zeros_like(log_v),
-                      numpy.log((rho / (10 * min_rho))))
+        numpy.maximum(
+            numpy.zeros_like(log_v),
+            numpy.log((rho / (10 * min_rho)))
+        )
     ).reshape(shape)
 
     rgba = numpy.concatenate((red, green, blue, alpha), axis=2)

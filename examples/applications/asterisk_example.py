@@ -24,10 +24,9 @@ def new_gravity(particles, converter):
 
 
 if __name__ in ('__main__', '__plot__'):
-
     number_of_particles = 100
 
-    # create a plumber sphere with a number of stars
+    # create a Plummer sphere with a number of stars
     numpy.random.seed(12345)
     masses = new_flat_mass_distribution(number_of_particles)
     converter = nbody_system.nbody_to_si(1.0 | units.parsec, masses.sum())
@@ -81,7 +80,8 @@ if __name__ in ('__main__', '__plot__'):
         stellar_evolution.evolve_model(target_time)
         from_stellar_evolution_to_local.copy()
         from_local_to_viz.copy_attributes(
-            ["x", "y", "z", "red", "green", "blue"])
+            ["x", "y", "z", "red", "green", "blue"]
+        )
         visualization.particles.radius = (
             stellar_evolution.particles.radius.sqrt()
             * (1e4 | units.parsec).sqrt()

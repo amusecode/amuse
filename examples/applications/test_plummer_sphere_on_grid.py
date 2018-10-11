@@ -1,18 +1,17 @@
-# -*- encoding: utf-8 -*-
 """
 In this script we simulate a plummer sphere on a grid
 """
-from __future__ import print_function
+import numpy
+from numpy import pi
+from optparse import OptionParser
+
 from amuse.units import constants
 from amuse.units import units
 from amuse.units import nbody_system
 from amuse.units.generic_unit_system import (
     time, length, speed, mass, density,
 )
-from amuse.units.generic_unit_converter import (
-    ConvertBetweenGenericAndSiUnits,
-)
-
+from amuse.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole
 from amuse.community.phiGRAPE.interface import PhiGRAPE
@@ -24,9 +23,6 @@ except ImportError:
     IS_PLOT_AVAILABLE = False
 
 
-import numpy
-from numpy import pi
-from optparse import OptionParser
 from amuse.io import text
 
 from amuse.datamodel import Grid
@@ -412,7 +408,8 @@ class CalculateSolutionIn3D(object):
         )
 
         self.rho_sphere = (
-            (0.75 * self.total_mass / (pi * (scaled_radius ** 3))))
+            (0.75 * self.total_mass / (pi * (scaled_radius ** 3)))
+        )
         grid.rho = (
             self.rho_medium
             + (
@@ -462,8 +459,7 @@ class CalculateSolutionIn3D(object):
         # print "max,min", max(self.grid.rhovy.flatten()), min(self.grid.rhovy.flatten())
         # print "max,min", max(self.grid.rhovz.flatten()), min(self.grid.rhovz.flatten())
         # print "max,min", max(self.grid.energy.flatten()), min(self.grid.energy.flatten())
-        # print "max,min", max(self.grid.rho.flatten()),
-        # min(self.grid.rho.flatten())
+        # print "max,min", max(self.grid.rho.flatten()), min(self.grid.rho.flatten())
 
         return self.grid
 

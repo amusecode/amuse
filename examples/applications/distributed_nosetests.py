@@ -1,18 +1,15 @@
 #!/usr/bin/python
 # -*- encoding: utf-8 -*-
+"""
+Simple script to run nosetests using the distributed code. Should work for
+any existing amuse test.
+This example only runs the tests on the local machine.
+"""
 from __future__ import print_function
 import nose
-from amuse.lab import *
-from amuse.community.distributed.interface import (
-    DistributedAmuseInterface, DistributedAmuse
-)
-from amuse.community.distributed.interface import (
-    Resource, Resources, Pilot, Pilots
-)
-
-# Simple script to run nosetests using the distributed code. Should work for
-# any existing amuse test.
-# This example only runs the tests on the local machine.
+from amuse.lab import units
+from amuse.community.distributed.interface import DistributedAmuse
+from amuse.community.distributed.interface import Pilot
 
 print("Setting up distributed code")
 instance = DistributedAmuse(redirection='none')

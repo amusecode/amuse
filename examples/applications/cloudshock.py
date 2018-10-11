@@ -72,7 +72,6 @@ class CalculateCloudShock(object):
 
     def new_instance_of_mpiamrvac_code(self):
         from amuse.community.mpiamrvac.interface import MpiAmrVac
-        # , redirection="none")
         result = MpiAmrVac(number_of_workers=self.number_of_workers)
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
@@ -95,7 +94,7 @@ class CalculateCloudShock(object):
         instance.parameters.length_y = 4 * self.mesh_length
         instance.parameters.length_z = self.mesh_length
 
-        result = instance.commit_parameters()
+        _ = instance.commit_parameters()
 
     def new_grid(self):
         # .. todo:: Grid is not defined/imported anywhere in this file
@@ -175,7 +174,7 @@ class CalculateCloudShock(object):
 
                 print("time : ", t)
 
-                #self.store_grids(instance.itergrids(), step)
+                # self.store_grids(instance.itergrids(), step)
 
                 t += dt
                 step += 1
@@ -221,15 +220,13 @@ def main():
     if not IS_PLOT_AVAILABLE:
         return
 
-    # .. todo:: 'levels' not used anywhere
     levels = numpy.linspace(numpy.min(rho), numpy.max(rho), 255)
     figure = pyplot.figure(figsize=(10, 10))
     plot = figure.add_subplot(1, 1, 1)
     plot.imshow(rho, origin='lower')
     figure.savefig('cloudshock_{0}_{1}.png'.format(
         name_of_the_code,
-        number_of_grid_points)
-    )
+        number_of_grid_points))
     pyplot.show()
 
 

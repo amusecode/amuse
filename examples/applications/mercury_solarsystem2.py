@@ -1,12 +1,9 @@
 # -*- encoding: utf-8 -*-
-from __future__ import print_function
 import numpy
 from amuse.community.mercury.interface import MercuryWayWard
 from amuse.ext.solarsystem import new_solar_system_for_mercury
 from amuse.units import units
-from amuse.plot import (
-    plot, native_plot,
-)
+from amuse.plot import plot, native_plot
 
 try:
     from matplotlib import pyplot

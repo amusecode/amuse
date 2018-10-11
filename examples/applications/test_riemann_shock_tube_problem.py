@@ -31,8 +31,8 @@ on code from Bruce Fryxell), see:
 http://cococubed.asu.edu/code_pages/exact_riemann.shtml
 """
 from __future__ import print_function
+import numpy
 # from amuse.support.core import late
-
 # from amuse import io
 from amuse.io import text
 from amuse.units import (units, constants)
@@ -42,7 +42,6 @@ from amuse.units.quantities import VectorQuantity
 from amuse.units.generic_unit_system import (
     time, length, speed, mass, density,
 )
-
 from amuse.community.athena.interface import Athena
 from amuse.community.capreole.interface import Capreole
 from amuse.community.mpiamrvac.interface import MpiAmrVac
@@ -51,7 +50,6 @@ from amuse.community.gadget2.interface import Gadget2
 from amuse.community.fi.interface import Fi
 from amuse.ext.grid_to_sph import convert_grid_to_SPH
 
-import numpy
 
 try:
     from amuse import plot

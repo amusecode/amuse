@@ -101,7 +101,7 @@ def simulate_merger(galaxy1, galaxy2, dt=25. | units.Myr, tend=3. | units.Gyr):
 
     i = 0
     while dynamics.model_time < tend:
-        i = i + 1
+        i += 1
         dynamics.evolve_model(i * dt)
         print(
             "evolved to:", dynamics.model_time.as_quantity_in(

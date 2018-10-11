@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 from __future__ import print_function
-import sys
 import os
+import sys
 import warnings
 
 from optparse import OptionParser
@@ -30,11 +30,11 @@ def stellar_remnant_state(star):
     return 10 <= star.stellar_type.value_in(units.stellar_type) < 16
 
 
-def simulate_evolution_tracks(
-    stellar_evolution=SSE(),
-    masses=[0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun,
-    name_of_the_figure="HR_evolution_tracks.png"
-):
+def simulate_evolution_tracks(stellar_evolution=SSE(),
+                              masses=[
+                                  0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0
+                              ] | units.MSun,
+                              name_of_the_figure="HR_evolution_tracks.png"):
     """
     For every mass in the `masses' array, a stellar evolution track across the
     Hertzsprung-Russell diagram will be calculated and plotted. Each star will
@@ -310,8 +310,8 @@ if __name__ == '__main__':
     mass_list = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun
 
     code = new_code(options.code, len(mass_list))
-    if not (options.cacheDir is None):
-        print("Using cache directory: %s" % (options.cacheDir))
+    if options.cacheDir is not None:
+        print("Using cache directory: %s" % options.cacheDir)
         # As a special case, we use caching of the underlying models instead of
         # the model output for EVtwin2SSE
         if options.code == "evtwin2sse":

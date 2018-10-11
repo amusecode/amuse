@@ -1,13 +1,13 @@
 # -*- encoding: utf-8 -*-
 from __future__ import print_function
+import os
 import sys
+import threading
+import time
 # import unittest
 import numpy
 # import random
 # import collections
-import os
-import threading
-import time
 
 try:
     from matplotlib import pyplot

@@ -1,5 +1,3 @@
-# -*- encoding: utf-8 -*-
-from __future__ import print_function
 import numpy.random
 from amuse.ic.flatimf import new_flat_mass_distribution
 from amuse.ic.plummer import new_plummer_model
@@ -26,10 +24,9 @@ def new_gravity(particles, converter):
 
 
 if __name__ in ('__main__', '__plot__'):
-
     number_of_particles = 100
 
-    # create a plumber sphere with a number of stars
+    # create a Plummer sphere with a number of stars
     numpy.random.seed(12345)
     masses = new_flat_mass_distribution(number_of_particles)
     converter = nbody.nbody_to_si(1.0 | units.parsec, masses.sum())
@@ -88,7 +85,6 @@ if __name__ in ('__main__', '__plot__'):
         visualization.store_view(target_time)
 
     # give the user an opportunity to change the visualization settings
-    # .. todo:: raw_input is not backwards compatible with python3
     raw_input(
         "\n\nTweak your visualization settings and press 'Enter' "
         "to continue... "
