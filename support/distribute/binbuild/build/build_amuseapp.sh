@@ -308,7 +308,7 @@ if [ ! -e "pipsinstalled"  ]; then
         
     #~ ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
     # is this equivalent to..(?)
-    ${PYTHONHOME}/bin/pip install ipython==${IPYTHONVERSION}  || exit $?
+    #~ ${PYTHONHOME}/bin/pip install ipython==${IPYTHONVERSION}  || exit $?
 
     ${PYTHONHOME}/bin/pip install jupyter==${JUPYTERVERSION}  || exit $?
     
