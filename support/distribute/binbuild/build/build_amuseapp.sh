@@ -50,7 +50,7 @@ READLINEVERSION=6.2.4.1
 PYZMQVERSION=15.4.0
 TORNADOVERSION=4.4.1
 JUPYTERVERSION=1.0.0
-IPYTHONVERSION=4.0.0
+IPYTHONVERSION=4.1.0
 CYTHONVERSION=0.24.1
 FLASKVERSION=0.11.1
 PILLOWVERSION=3.3.1
@@ -308,7 +308,7 @@ if [ ! -e "pipsinstalled"  ]; then
         
     #~ ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
     # is this equivalent to..(?)
-    #~ ${PYTHONHOME}/bin/pip install ipython==${IPYTHONVERSION}  || exit $?
+    ${PYTHONHOME}/bin/pip install ipykernel==${IPYTHONVERSION}  || exit $?
 
     ${PYTHONHOME}/bin/pip install jupyter==${JUPYTERVERSION}  || exit $?
     
