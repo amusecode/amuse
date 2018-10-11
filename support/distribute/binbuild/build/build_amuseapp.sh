@@ -45,7 +45,7 @@ PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 
 OPENSSLVERSION="1.0.2l"
 
-PIPVERSION=8.1.2
+PIPVERSION=18.1
 READLINEVERSION=6.2.4.1
 PYZMQVERSION=15.4.0
 TORNADOVERSION=4.4.1
@@ -291,9 +291,12 @@ fi
 
 
 if [ ! -e "pipsinstalled"  ]; then
+
     ${PYTHONHOME}/bin/easy_install pip==${PIPVERSION}
 
     export PIP_CERT=`python -m pip._vendor.requests.certs`    
+    export PIP_NO_CACHE_DIR=1
+
 
     ${PYTHONHOME}/bin/pip install readline==${READLINEVERSION} || exit $?
         
