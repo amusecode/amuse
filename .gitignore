@@ -467,3 +467,19 @@ src/amuse/community/mosse/src/mosse
 test/core_tests/test.txt
 test_concurrent
 test_python_sockets_implementation
+
+# editors and ides
+*.tmp
+*.bak
+*.swp
+*~.nib
+*~
+
+.metadata
+.settings/
+*.pydevproject
+.cproject
+.autotools
+.buildpath
+
+.idea
