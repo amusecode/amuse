@@ -295,7 +295,7 @@ if [ ! -e "pipsinstalled"  ]; then
     ${PYTHONHOME}/bin/easy_install pip==${PIPVERSION}
 
     export PIP_CERT=`python -m pip._vendor.requests.certs`    
-    export PIP_NO_CACHE_DIR=1
+    export PIP_NO_CACHE_DIR=false
 
 
     ${PYTHONHOME}/bin/pip install readline==${READLINEVERSION} || exit $?
