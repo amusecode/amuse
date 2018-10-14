@@ -761,7 +761,10 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertTrue(list(sums) == [3.0*i +1 for i in range(N)])
         x.stop()
         
-        
+    def test32(self):
+        for i in range(100):
+          instance = ForTestingInterface(self.exefile)
+          instance.stop()
 
 
 
