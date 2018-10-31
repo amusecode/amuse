@@ -5,10 +5,10 @@ from numpy import pi
 from amuse.units import constants
 
 class MikkolaInterface(CodeInterface,
-                       GravitationalDynamicsInterface):
+                       GravitationalDynamicsInterface,
+                       StoppingConditionInterface):
     
-#    include_headers = ['worker_code.h']
-    use_modules = ['Mikkola',]
+    use_modules = ['Mikkola', 'StoppingConditions']
     
     def __init__(self, **keyword_arguments):
         CodeInterface.__init__(self, name_of_the_worker="mikkola_worker", **keyword_arguments)
@@ -267,6 +267,8 @@ class MikkolaInterface(CodeInterface,
 class Mikkola(GravitationalDynamics):
 
     def __init__(self, convert_nbody=None, **options):
+      
+        self.stopping_conditions = StoppingConditions(self)
         GravitationalDynamics.__init__(
             self, 
             MikkolaInterface(**options),
@@ -395,3 +397,8 @@ class Mikkola(GravitationalDynamics):
         if len(indices_to_add) > 0:
             incode_storage._add_indices(indices_to_add)
 
+
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        self.stopping_conditions.define_particle_set(object)
+        
