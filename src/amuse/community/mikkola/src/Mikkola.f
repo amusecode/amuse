@@ -89,6 +89,8 @@ c                                          stepr is now obsolete
           Clight = lightspeed
           N = Np
           MASS = 0
+          indexi = 0
+          indexj = 0
           DO i=1,3
              spin(i) = BHspin(i)
           end do
@@ -101,8 +103,7 @@ c                                          stepr is now obsolete
                 X(L+K) = POS(K,i)
                 V(L+K) = VEL(K,i)
              END DO   
-             indexi(I) = 0
-             indexj(I) = 0
+             
           END DO
           N_ini=N
           call Reduce2cm(x,m,N,cmxx) ! in this version output is in cm anyway

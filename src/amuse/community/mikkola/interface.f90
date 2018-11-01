@@ -303,6 +303,8 @@ FUNCTION evolve_model(end_time)
   error = is_stopping_condition_enabled(COLLISION_DETECTION, I);
   do_collision_detection = I.EQ.1;
   BHspin=[0.0, 0.0, 0.0] !spin of the first black hole (between 0 and 1) 
+  COLI = 0
+  COLJ = 0
   evolve_model = Mikkola_ARWV(current_time, BODY, POS,VEL,INDEX, &
 &                IWRR,Np,DELTAT,end_time,stepr,soft,cmet,  &
 &                lightspeed,Ixc,Nbh,BHspin,tolerance, &
