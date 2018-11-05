@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Evolves a stellar binary and reports the mass of each star during the
 evolution.
