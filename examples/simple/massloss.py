@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Evolves the sun and earth where the sun will lose mass every 220th step.
 """
