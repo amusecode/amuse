@@ -191,7 +191,7 @@ def simulate_orszag_tang_problem(end_time):
     while t < end_time:
         instance.evolve_model(t)
 
-        print(("time : ", t))
+        print("time : ", t)
         t += dt
 
     print("copying results")
