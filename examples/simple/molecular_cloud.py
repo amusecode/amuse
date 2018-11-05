@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Evolves a molecular cloud with explictly split gravtiy evolution
 
@@ -112,7 +112,7 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
 
     for i in range(nplot):
         ttarget = i * plot_timestep
-        print(("evolving to time:", ttarget.as_quantity_in(units.Myr)))
+        print("evolving to time:", ttarget.as_quantity_in(units.Myr))
         bridged_system.evolve_model(ttarget)
 
         rho = make_map(sph, N=200, grid_size=grid_size)
