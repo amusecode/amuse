@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Generates a Hertzsprung-Russell diagram for a single star
 """
