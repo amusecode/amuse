@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Runs the Kelvin-Helmholtz Instability problem in two dimensions with Athena.
 """
