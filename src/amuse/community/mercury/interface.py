@@ -495,7 +495,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
         """
         function = LegacyFunctionSpecification()
         function.addParameter('rmax', dtype='float64', direction=function.OUT,
-            description = "heliocentric distance at which objects are considered ejected")
+            description = "heliocentric distance at which objects are considered ejected", unit=units.AU)
         function.result_type = 'int32'
         return function
         
@@ -519,7 +519,7 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
         """
         function = LegacyFunctionSpecification()
         function.addParameter('cefac', dtype='float64', direction=function.OUT,
-            description = "Hybrid integrator changeover radius RCRIT (in Hill radii)")
+            description = "Hybrid integrator changeover radius RCRIT (in Hill radii)", unit=units.none)
         function.result_type = 'int32'
         return function
         
