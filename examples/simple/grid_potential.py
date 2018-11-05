@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 from __future__ import print_function
 from amuse.units import units, nbody_system
 from amuse.datamodel import Particle
