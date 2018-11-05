@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Calculates the Pythagorean 3-body problem using different values for
 the smoothing length in the n-body code.
