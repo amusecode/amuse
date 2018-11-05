@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Creates a helium burning star from the inner shells of a main sequence star.
 """
