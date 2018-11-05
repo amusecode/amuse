@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Evolves a molecular cloud with chemical evolution
 
@@ -55,9 +55,9 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
 
     update_chem(parts, parts)
 
-    print(("Tcloud:", parts.temperature.max().in_(units.K)))
-    print(("cloud n_H:", parts.number_density.max().in_(units.cm**-3)))
-    print(("freefall time:", tff.in_(units.Myr)))
+    print("Tcloud:", parts.temperature.max().in_(units.K))
+    print("cloud n_H:", parts.number_density.max().in_(units.cm**-3))
+    print("freefall time:", tff.in_(units.Myr))
 
     sph = Fi(conv)
     chem = Krome(redirection="none")
@@ -84,7 +84,7 @@ def run_mc(N=5000, Mcloud=10000. | units.MSun, Rcloud=1. | units.parsec):
     while i < (end_time / timestep + 0.5):
         evolve_sph_with_chemistry(sph, chem, i * timestep)
         tnow = sph.model_time
-        print(("done with step:", i, tnow.in_(units.Myr)))
+        print("done with step:", i, tnow.in_(units.Myr))
         i += 1
 
         n = (sph.particles.density / meanmwt).value_in(units.cm**-3)
