@@ -76,7 +76,7 @@ c  RCEN  = radius of central body (AU)
 c  JCEN(1,2,3) = J2,J4,J6 for central body (units of RCEN^i for Ji)
 c
 c Options:
-c  OPT(1) = close-encounter option (0=stop after an encounter, 1=continue)
+c  OPT(1) = stop integration after a close encounter (0=no, 1=yes)
 c  OPT(2) = collision option (0=no collisions, 1=merge, 2=merge+fragment)
 c  OPT(3) = time style (0=days 1=Greg.date 2/3=days/years w/respect to start)
 c  OPT(4) = o/p precision (1,2,3 = 4,9,15 significant figures)
