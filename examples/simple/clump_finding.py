@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Generates a random distribution of particles and uses Hop to determine clumps
 in the particle set.
