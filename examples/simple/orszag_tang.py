@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Runs the Orszag-Tang Vortex problem described in the Athena test-suite
 (http://www.astro.virginia.edu/VITA/ATHENA/ot.html):
@@ -149,9 +149,9 @@ def initialize_grid(grid, magentic_field_grid):
     grid.rhovy = D0 * V0 * numpy.sin(2.0 * PI / l * grid.x)
     grid.rhovz = 0.0 | momentum
 
-    print(("sum rho vx:", grid.rhovx.sum()))
-    print(("sum rho vy:", grid.rhovy.sum()))
-    print(("sum rho vz:", grid.rhovz.sum()))
+    print("sum rho vx:", grid.rhovx.sum())
+    print("sum rho vy:", grid.rhovy.sum())
+    print("sum rho vz:", grid.rhovz.sum())
 
     grid.energy = (
         P0 / (GAMMA - 1)
