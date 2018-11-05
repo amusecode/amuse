@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
     simple coupling of a stellar evolution and a gravitational code to simulate
     a cluster of stars.
