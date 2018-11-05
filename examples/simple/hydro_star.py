@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Converts a 1d stellar model into a 3d spherical gas model for a star
 """
