@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Integrates a stellar orbit in the galactic potential
 
@@ -21,7 +21,7 @@ from amuse.plot import plot
 class MilkyWay_galaxy(object):
 
     def __init__(self, potential="point_particle", M=1.6e10 | units.MSun):
-        print(("pot=", potential))
+        print("pot=", potential)
         if potential.find("Milky") >= 0:
             print("Milky Way Potential")
             self.potential = self.Milky_Way_potential
