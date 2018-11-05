@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Calculates the stellar lifetime in a range of masses between
 Mmax and Mmin using SSE (or another stellar evolution code)
