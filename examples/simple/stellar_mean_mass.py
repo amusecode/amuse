@@ -47,8 +47,8 @@ if __name__ == "__main__":
     Mmax = o.Mmax | units.MSun
     if o.verbose:
         print("#Selected parameters: ")
-        print(("#\tN=", o.N))
-        print(("#\tIMF=", o.Mmin, "MSun", o.Mmax, "MSun", o.x_imf))
+        print("#\tN=", o.N)
+        print("#\tIMF=", o.Mmin, "MSun", o.Mmax, "MSun", o.x_imf)
         print("#\t t [Myr] \t <m> [MSun] \t\t d<m>/dt [MSun/Myr]")
 
     stars.mass = new_salpeter_mass_distribution(
