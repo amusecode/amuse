@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Make a contour plot of the effective potential of the Sun-Earth system (left)
 and a system with a 10000 times more massive Earth with the Lagrangian points
