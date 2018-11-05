@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Calculates the mean mass of a stellar popultion as a function of time.
 This routine was used to measure the <m> of a star cluster in order to
