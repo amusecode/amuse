@@ -26,7 +26,7 @@ def multidimensional_meshgrid(*arrays):
     range in one dimension.
     """
     reversed_quantities = tuple(reversed(arrays))
-    lengths = list(map(len, reversed_quantities))
+    lengths = [len(x) for x in reversed_quantities]
     dim = len(reversed_quantities)
 
     size = 1
