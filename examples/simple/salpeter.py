@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Generates a cluster using a plummer model with a salpeter Initial Mass
 Function.
@@ -67,7 +67,7 @@ def plot_particles_and_mass_distribution(particles):
     subplot.set_xscale('log')
     subplot.set_yscale('log')
 
-    subplot.set_xlabel('M [M\u2299]')
+    subplot.set_xlabel('M [Msun]')
     subplot.set_ylabel('N')
 
     pyplot.show()
