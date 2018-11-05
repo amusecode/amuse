@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
     Set an artificial mass loss rate at a specific point
     in the stellar evolution using MESA
@@ -37,7 +37,7 @@ def print_report(star1, star2, mdot):
 
 
 def evolve_star_and_apply_mass_loss(radius, mdot):
-    print(("Evolve to radius = ", radius, "and then apply mdot =", mdot))
+    print("Evolve to radius = ", radius, "and then apply mdot =", mdot)
 
     stev = MESA(redirection='none')
 
@@ -49,14 +49,14 @@ def evolve_star_and_apply_mass_loss(radius, mdot):
 
     while star.radius < radius:
         star.evolve_one_step()
-        print(("evolved to:", star.age, "->", star.radius))
+        print("evolved to:", star.age, "->", star.radius)
 
     star1 = star.copy()
 
     # High mass loss rates can only be calculated for small time steps
     star.time_step = 1. | units.yr
     star.mass_change = mdot
-    print((star.mass_change))
+    print(star.mass_change)
     star.evolve_one_step()
 
     print_report(star1, star, mdot)
