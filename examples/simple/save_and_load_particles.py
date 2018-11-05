@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Saves and loads a set of particles.
 The 'write_set_to_file' and 'read_set_from_file' functionso can hadle
