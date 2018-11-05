@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Calculated theoretical pre-main-sequance evolutionary tracks for stars of
 various masses.
@@ -30,9 +30,9 @@ def simulate_evolution_tracks(
         time = [] | units.yr
 
         print('Evolving pre main sequence star with')
-        print(('    mass:', star.mass))
-        print(('    luminosity:', star.luminosity))
-        print(('    radius:', star.radius))
+        print('    mass:', star.mass)
+        print('    luminosity:', star.luminosity)
+        print('    radius:', star.radius)
 
         while star.stellar_type == 17 | units.stellar_type:
             luminosity.append(star.luminosity)
@@ -40,11 +40,11 @@ def simulate_evolution_tracks(
             time.append(star.age)
             star.evolve_one_step()
 
-        print(('Evolved pre main sequence star to:', star.stellar_type))
-        print(('    age:', star.age))
-        print(('    mass:', star.mass))
-        print(('    luminosity:', star.luminosity))
-        print(('    radius:', star.radius))
+        print('Evolved pre main sequence star to:', star.stellar_type)
+        print('    age:', star.age)
+        print('    mass:', star.mass)
+        print('    luminosity:', star.luminosity)
+        print('    radius:', star.radius)
         print()
 
         stardata = {}
