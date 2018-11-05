@@ -1,5 +1,4 @@
-
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Evolves a cluster orbiting a massive central particle.
 """
