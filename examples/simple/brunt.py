@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 # -*-noplot-*-
 from __future__ import print_function
 from matplotlib import pyplot
