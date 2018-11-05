@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Creates a number of plots using the AMUSE unit aware plot functions.
 """
