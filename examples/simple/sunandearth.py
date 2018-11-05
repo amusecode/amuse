@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
 Evolves the dynamic evolution of the earth around the sun.
 """
