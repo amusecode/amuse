@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 """
     Evolve the orbital evolution in the galactic center potential
     with different N-body codes.
