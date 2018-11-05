@@ -10,6 +10,11 @@ class PikachuInterface(CodeInterface, GravitationalDynamicsInterface, Literature
     Pikachu - a.k.a. P^3 Tree
     Hybrid N-body module, combining a tree (Barnes & Hut) to approximate long-range 
     forces, with direct summation of the forces from neighbour particles.
+    
+    .. [#] Iwasawa, M., Portegies Zwart, S., Makino, J., GPU-enabled particle-particle particle-tree 
+    scheme for simulating dense stellar cluster system, *Computational Astrophysics and Cosmology*,
+    **2**, 6 (2015)
+    
     """
     include_headers = ['worker_code.h', 'stopcond.h', 'interface.h']
     
