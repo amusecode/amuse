@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: ascii -*-
 from __future__ import print_function
 import numpy
 from amuse.units import constants, units, nbody_system
