@@ -40,8 +40,118 @@ from amuse.rfi import run_command_redirected
 
 from amuse.rfi import slurm
 
+class AbstractASyncRequest(object):
+    def __nonzero__(self):
+        return self.is_finished
 
-class ASyncRequest(object):
+    def waitone(self):
+        return self.wait()
+
+    def waitall(self):
+        while not self.is_finished:
+            self.wait()
+
+    def wait(self):
+        raise Exception("not implemented")
+
+    def is_result_available(self):
+        raise Exception("not implemented")
+
+    def result():
+        raise Exception("not implemented")
+
+    def add_result_handler(self, function, args = ()):
+        self.result_handlers.append([function,args])
+
+    def is_mpi_request(self):
+        return False
+
+    def is_socket_request(self):
+        return False
+ 
+    def is_other(self):
+        return not self.is_mpi_request() and not self.is_socket_request()
+        
+    def get_mpi_request(self):
+        raise Exception("not implemented")
+
+    def get_socket(self):
+        raise Exception("not implemented")
+        
+    #~ def is_pool(self):
+        #~ return False
+        
+    def join(self, other):
+        pool = AsyncRequestsPool()
+        pool.add_request(self, lambda x: x.result())
+        pool.add_request(other, lambda x: x.result())
+        return pool
+
+    def waits_for(self):
+        return self
+
+class DependentASyncRequest(AbstractASyncRequest):
+    def __init__(self, parent, request_factory):
+        
+        self.request=None
+        self.parent=parent
+        
+        def handler(arg):
+            result=arg()
+            self.request=request_factory()
+            for h in self.result_handlers:
+                self.request.add_result_handler(*h)
+            return result
+
+        self.parent.add_result_handler(handler)
+        
+        self.result_handlers = []
+
+    def wait(self):
+        if self.is_finished:
+            return
+    
+        self.parent.wait()
+        self.request.wait()
+
+    def is_result_available(self):
+        if self.is_finished:
+            return True
+
+        if not self.parent.is_finished:
+            return False
+
+        return self.request.is_result_available()
+
+    @property
+    def is_finished(self):
+        if self.request is None:
+            return False
+        return self.request.is_finished
+
+    def result(self):
+        self.wait()
+        return self.request._result
+
+    def is_mpi_request(self):
+        if self.request is None:
+            return self.parent.is_mpi_request()
+        else:
+            return self.request.is_mpi_request()
+    
+    def is_socket_request(self):
+        if self.request is None:
+            return self.parent.is_socket_request()
+        else:
+            return self.request.is_socket_request()
+
+    def waits_for(self):
+        if self.request is not None:
+            return self.request
+        else:
+            return self.parent.waits_for()
+
+class ASyncRequest(AbstractASyncRequest):
         
     def __init__(self, request, message, comm, header):
         self.request = request
@@ -52,9 +162,6 @@ class ASyncRequest(object):
         self.is_set = False
         self._result = None
         self.result_handlers = []
-
-    def waitone(self):
-        return self.wait()
 
     def wait(self):
         if self.is_finished:
@@ -73,10 +180,7 @@ class ASyncRequest(object):
             
         self.is_finished = self.request.Test()
         return self.is_finished
-        
-    def add_result_handler(self, function, args = ()):
-        self.result_handlers.append([function,args])
-    
+
     def get_message(self):
         return self.message
         
@@ -107,28 +211,11 @@ class ASyncRequest(object):
             self._set_result()
         
         return self._result
-        
-    def _new_handler(self, result_handler, args=(), kwargs={}):
-        return
-        
+
     def is_mpi_request(self):
         return True
 
-    def is_other(self):
-        return False
-        
-    def is_pool(self):
-        return False
-        
-    def join(self, other):
-        pool = AsyncRequestsPool()
-        pool.add_request(self, lambda x: x.result())
-        pool.add_request(other, lambda x: x.result())
-        return pool
-        
-
-
-class ASyncSocketRequest(object):
+class ASyncSocketRequest(AbstractASyncRequest):
         
     def __init__(self, message, socket):
         self.message = message
@@ -149,9 +236,6 @@ class ASyncSocketRequest(object):
                 break
         
         self.is_finished = True
-
-    def waitone(self):
-        return self.wait()
     
     def is_result_available(self):
         if self.is_finished:
@@ -161,27 +245,25 @@ class ASyncSocketRequest(object):
         
         self.is_finished = len(readables) == 1
         return self.is_finished
-        
-    def add_result_handler(self, function):
-        self.result_handlers.append(function)
-    
+            
     def get_message(self):
         return self.message
         
     def _set_result(self):
         class CallingChain(object):
-            def __init__(self, outer, inner):
+            def __init__(self, outer, args, inner):
                 self.outer = outer
                 self.inner = inner
+                self.args=args
                 
             def __call__(self):
-                return self.outer(self.inner)
+                return self.outer(self.inner, *self.args)
                 
         self.message.receive(self.socket)
         
         current = self.get_message
-        for x in self.result_handlers:
-            current = CallingChain(x, current)
+        for x,args in self.result_handlers:
+            current = CallingChain(x, args, current)
         
         self._result = current()
         
@@ -194,15 +276,9 @@ class ASyncSocketRequest(object):
             self._set_result()
         
         return self._result
-    
-    def is_mpi_request(self):
-        return False
-        
-    def is_other(self):
-        return False
-        
-    def is_pool(self):
-        return False
+
+    def is_socket_request(self):
+        return True
 
 class FakeASyncRequest(object):
         
@@ -226,10 +302,7 @@ class FakeASyncRequest(object):
     
     def is_result_available(self):
         return True
-        
-    def add_result_handler(self, function, args = ()):
-        self.result_handlers.append([function,args])
-    
+            
     def _set_result(self):
         class CallingChain(object):
             def __init__(self, outer, args,  inner):
@@ -257,28 +330,8 @@ class FakeASyncRequest(object):
             self._set_result()
         
         return self._result
-        
-    def _new_handler(self, result_handler, args=(), kwargs={}):
-        return
-        
-    def is_mpi_request(self):
-        return False
 
-    def is_other(self):
-        return True
-        
-    def is_pool(self):
-        return False
-        
-    def join(self, other):
-        pool = AsyncRequestsPool()
-        pool.add_request(self, lambda x: x.result())
-        pool.add_request(other, lambda x: x.result())
-        return pool
-
-        
-
-class ASyncRequestSequence(object):
+class ASyncRequestSequence(AbstractASyncRequest):
         
     def __init__(self, create_next_request, args = ()):
         self.create_next_request = create_next_request
@@ -358,25 +411,13 @@ class ASyncRequestSequence(object):
             self._set_result()
         
         return self._result
-        
-    def _new_handler(self, result_handler, args=(), kwargs={}):
-        return
-        
+
     def is_mpi_request(self):
         return self.current_async_request.is_mpi_request()
 
-    def is_other(self):
-        return self.current_async_request.is_other()
-        
-    def is_pool(self):
-        return False
-        
-    def join(self, other):
-        pool = AsyncRequestsPool()
-        pool.add_request(self, lambda x: x.result())
-        pool.add_request(other, lambda x: x.result())
-        return pool
-        
+    def is_socket_request(self):
+        return self.current_async_request.is_socket_request()
+
 class AsyncRequestWithHandler(object):
     
     def __init__(self, pool, async_request, result_handler, args=(), kwargs={}):
@@ -430,45 +471,45 @@ class AsyncRequestsPool(object):
     def wait(self):
         
         # TODO need to cleanup this code
-        #
+        #        
         while len(self.requests_and_handlers) > 0:
-            requests = [x.async_request for x in self.requests_and_handlers if x.async_request.is_other()]
+            requests = [x.async_request.waits_for() for x in self.requests_and_handlers if x.async_request.is_other()]
             indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_other()]
+            
             if len(requests) > 0:
                 for index, x in zip(indices, requests):
-                    x.waitone()
+                    x.wait_for().waitone()
 
                     request_and_handler = self.requests_and_handlers[index]
                     if request_and_handler.async_request.is_result_available():
                         self.registered_requests.remove(request_and_handler.async_request)
                     
-                        del self.requests_and_handlers[index]
+                        self.requests_and_handlers.pop(index)
                     
                         request_and_handler.run()
+                        break
 
-            requests = [x.async_request.request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
+            requests = [x.async_request.waits_for().request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
             indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
-            
             if len(requests) > 0:
                 index = MPI.Request.Waitany(requests)
-                  
+                
                 index = indices[index]
                 
                 request_and_handler = self.requests_and_handlers[index]
                 
-                request_and_handler.async_request.waitone()  # will set the finished flag
+                request_and_handler.async_request.waits_for().waitone()  # will set the finished flag
                 
                 if request_and_handler.async_request.is_result_available():
                     self.registered_requests.remove(request_and_handler.async_request)
                     
-                    del self.requests_and_handlers[index]
+                    self.requests_and_handlers.pop(index)
                     
                     request_and_handler.run()
                     break
-                
-            
-            sockets = [x.async_request.socket for x in self.requests_and_handlers if not x.async_request.is_mpi_request()]
-            indices = [i for i, x in enumerate(self.requests_and_handlers) if not x.async_request.is_mpi_request()]
+                            
+            sockets = [x.async_request.waits_for().socket for x in self.requests_and_handlers if x.async_request.is_socket_request()]
+            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_socket_request()]
             if len(sockets) > 0:
                 readable, _, _ = select.select(sockets, [], [])
                 indices_to_delete = []
@@ -479,28 +520,35 @@ class AsyncRequestsPool(object):
                     index = indices[index]
                     
                     request_and_handler = self.requests_and_handlers[index]
+
+                    request_and_handler.async_request.waits_for().waitone()  # will set the finished flag
+
+                    if request_and_handler.async_request.is_result_available():
+  
+                        self.registered_requests.remove(request_and_handler.async_request)
                     
-                    self.registered_requests.remove(request_and_handler.async_request)
+                        indices_to_delete.append(index)
                     
-                    indices_to_delete.append(index)
+                        request_and_handler.run()
                     
-                    request_and_handler.async_request.waitone()  # will set the finished flag
-                    
-                    request_and_handler.run()
-                    
-                
                 for x in reversed(list(sorted(indices_to_delete))):
                     
-                    del self.requests_and_handlers[x]
+                    self.requests_and_handlers.pop(x)
                 
                 if len(indices_to_delete) > 0:
                     break
-            
+
+    def join(self, other):
+        if isinstance(other, AbstractASyncRequest):
+            self.add_request(other, lambda x: x.result())
+        return self
             
     def __len__(self):
         return len(self.requests_and_handlers)
         
-        
+    def __nonzero__(self):
+        return len(self)==0
+
 class AbstractMessage(object):
     
     def __init__(self,
