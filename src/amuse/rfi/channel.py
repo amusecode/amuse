@@ -280,7 +280,7 @@ class ASyncSocketRequest(AbstractASyncRequest):
     def is_socket_request(self):
         return True
 
-class FakeASyncRequest(object):
+class FakeASyncRequest(AbstractASyncRequest):
         
     def __init__(self, result):
         self.is_finished = False
