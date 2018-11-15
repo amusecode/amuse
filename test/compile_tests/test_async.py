@@ -26,6 +26,10 @@ int do_sleep(int in) {
     return 0;
 }
 
+int return_error() {
+    return -1;
+}
+
 """
 
 class ForTestingInterface(test_c_implementation.ForTestingInterface):
@@ -35,6 +39,13 @@ class ForTestingInterface(test_c_implementation.ForTestingInterface):
         function.addParameter('int_in', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function 
+
+    @legacy_function
+    def return_error():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function 
+
 
 class ForTesting(InCodeComponentImplementation):
     
@@ -168,4 +179,84 @@ class TestASync(TestWithMPI):
         instance1.stop()
         instance2.stop()
         self.assertTrue(t2-t1 < 2.)
+
+    def test9(self):
+        instance = ForTesting(self.exefile)
+        for x in range(10):
+            instance.echo_int(x, async=True)
+        results=instance.async_request.results
+        self.assertEquals(results, range(10))
+        instance.stop()
+
+    def test10(self):
+        instance = ForTesting(self.exefile)
+        r1=instance.do_sleep(1, async=True)
+        r2=instance.return_error( async=True)
+        r3=instance.echo_int(10, async=True)
+        try:
+            results=instance.async_request.results
+        except Exception as ex:
+            print ex
+        print r1.is_result_available()
+        print r2.is_result_available()
+        print r2.result()
+        try:
+            print r3.is_result_available()
+        except Exception as ex:
+            print ex
+
+        instance.stop()
+
+    def test11(self):
+        """ cross dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, async=True)
+        request1=instance1.echo_int(10, async=True)
+        
+        def fac():
+          return instance2.echo_int(20, async=True)
+
+        #~ request2=instance2.echo_int(20, async_dependency=request1)
+        request2=channel.DependentASyncRequest(request1, fac)
+
+        request2.wait()
+        
+        self.assertEqual(request2.result(),20)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test12(self):
+        """ cross dependency with input-output dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, async=True)
+        request1=instance1.echo_int(10, async=True)
+        
+        results=dict()
+        
+        def safe_result(arg, index):
+            result=arg()
+            print index
+            results[index]=result
+            return result
+        
+        request1.add_result_handler(safe_result,(1,))
+        
+        def fac():
+          return instance2.echo_int(results[1], async=True)
+
+        #~ request2=instance2.echo_int(??, async_factory=fac)
+        request2=channel.DependentASyncRequest(request1, fac)
+
+        request2.wait()
+        
+        self.assertEqual( request2.result(), 10)
+        
+        instance1.stop()
+        instance2.stop()
+
 

@@ -57,8 +57,12 @@ class AbstractASyncRequest(object):
     def is_result_available(self):
         raise Exception("not implemented")
 
-    def result():
+    def result(self):
         raise Exception("not implemented")
+
+    @property
+    def results(self):
+        return [self.result()]
 
     def add_result_handler(self, function, args = ()):
         self.result_handlers.append([function,args])
@@ -112,6 +116,8 @@ class DependentASyncRequest(AbstractASyncRequest):
             return
     
         self.parent.wait()
+        if self.request is None:
+            raise Exception("something went wrong (exception of parent?)")
         self.request.wait()
 
     def is_result_available(self):
@@ -121,6 +127,9 @@ class DependentASyncRequest(AbstractASyncRequest):
         if not self.parent.is_finished:
             return False
 
+        if self.request is None:
+            raise Exception("something went wrong (exception of parent?)")
+            
         return self.request.is_result_available()
 
     @property
@@ -132,6 +141,10 @@ class DependentASyncRequest(AbstractASyncRequest):
     def result(self):
         self.wait()
         return self.request._result
+
+    @property
+    def results(self):
+        return self.parent.results+[self.result()]        
 
     def is_mpi_request(self):
         if self.request is None:
@@ -424,7 +437,7 @@ class AsyncRequestWithHandler(object):
         self.async_request = async_request
         if result_handler is None:
             def empty(request):
-                request.result()
+                return request.result()
             result_handler = empty
         self.result_handler = result_handler
         self.args = args
@@ -437,10 +450,12 @@ class AsyncRequestWithHandler(object):
         
 class AsyncRequestsPool(object):
     
-    def __init__(self):
+    def __init__(self, *requests):
         self.requests_and_handlers = []
         self.registered_requests = set([])
         self.result_handlers = []
+        for x in requests:
+            self.add_request(x)
         
     def add_request(self, async_request, result_handler = None, args=(), kwargs={}):
         if async_request is None:
