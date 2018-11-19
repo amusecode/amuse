@@ -265,8 +265,9 @@ class CartesianGrid(CartesianBaseGrid):
     GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(CartesianBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
 
 # maintains compatibility with previous def.
-Grid=RegularGrid
-
+class Grid(RegularGrid):
+    GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(RegularBaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
+    
 def new_cartesian_grid(shape, cellsize, axes_names = "xyz",offset=None):
         """Returns a cartesian grid with cells of size cellsize.
         """

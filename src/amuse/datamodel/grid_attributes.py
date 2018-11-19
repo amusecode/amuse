@@ -4,9 +4,11 @@ import numpy
 
 from amuse.datamodel import base
 from amuse.datamodel import grids
-grids.AbstractGrid.add_global_vector_attribute("position", ["x","y","z"])
-grids.AbstractGrid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
-grids.AbstractGrid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
+
+# maintain for backwards compatibility, these should go..
+grids.Grid.add_global_vector_attribute("position", ["x","y","z"])
+grids.Grid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
+grids.Grid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
 
 @grids.BaseGrid.caching_function_for_set
 def cellsize(grid):
