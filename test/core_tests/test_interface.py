@@ -1358,7 +1358,8 @@ class TestGridWithBinding(amusetest.TestCase):
         
         grid = instance.grid
         
-        self.assertEqual(grid.__class__.__name__, "RegularGrid")
+        self.assertEqual(grid.__class__.__name__, "Grid")
+        self.assertTrue(isinstance(grid, datamodel.RegularGrid))
         
     def test4(self):
         original = self.TestInterface()
