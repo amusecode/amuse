@@ -71,7 +71,8 @@ class TestGridAttributes(amusetest.TestCase):
         self.assertEquals(grid.get_index((6.2,3.7)), [6,3])
         self.assertEquals(grid.get_index(x=[6.2],y=[3.7]), [6,3])
         self.assertEquals(grid.get_index(y=[6.2],x=[3.7]), [3,6])
-        self.assertEquals(grid.get_index(y=6.2,x=3.7), [3,6])
+        self.assertEquals(grid.get_index(y=6.2,x=3.7)[0], 3)
+        self.assertEquals(grid.get_index(y=6.2,x=3.7)[1], 6)
         
     def test7(self):
         grid=new_regular_grid((10,10),[20,10] | units.m,axes_names="ab")

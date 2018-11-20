@@ -1065,4 +1065,8 @@ def _get_array_of_positions_from_arguments(axes_names, **kwargs):
         return kwargs['pos']
     if kwargs.get('position',None):
         return kwargs['position']
-    return column_stack([kwargs[x] for x in axes_names])
+    
+    coordinates=[kwargs[x] for x in axes_names]
+    if numpy.rank(coordinates[0])==0:
+      return coordinates
+    return column_stack(coordinates)
