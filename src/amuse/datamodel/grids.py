@@ -4,6 +4,7 @@ from amuse.units import units
 from amuse.units import generic_unit_system
 from amuse.units import quantities
 from amuse.units.quantities import Quantity
+from amuse.units.quantities import VectorQuantity
 from amuse.units.quantities import new_quantity
 from amuse.units.quantities import zero
 from amuse.units.quantities import column_stack
@@ -103,17 +104,22 @@ class AbstractGrid(AbstractSet):
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         return result
         
-    def samplePoint(self, position=None, must_return_values_on_cell_center = False, **kwargs):
-        if must_return_values_on_cell_center:
+    def samplePoint(self, position=None, method="nearest", **kwargs):
+        if method in ["nearest"]:
             return SamplePointOnCellCenter(self, position=position, **kwargs)
+        elif method in ["interpolation", "linear"]:
+            return SamplePointWithInterpolation(self, position=position, **kwargs)
         else:
-            return SamplePointWithIntepolation(self, position=position, **kwargs)
+            raise Exception("unknown sample method")
         
-    def samplePoints(self, positions=None, must_return_values_on_cell_center = False, **kwargs):
-        if must_return_values_on_cell_center:
+    def samplePoints(self, positions=None, method="nearest", **kwargs):
+        if method in ["nearest"]:
             return SamplePointsOnGrid(self, positions, SamplePointOnCellCenter, **kwargs)
+        elif method in ["interpolation", "linear"]:
+            return SamplePointsOnGrid(self, positions, SamplePointWithInterpolation, **kwargs)
         else:
-            return SamplePointsOnGrid(self, positions, SamplePointWithIntepolation, **kwargs)
+            raise Exception("unknown sample method")
+
     
     def __len__(self):
         return self.shape[0]
@@ -783,7 +789,7 @@ class SamplePointOnCellCenter(object):
     def __getattr__(self, name_of_the_attribute):
         return self.get_value_of_attribute(name_of_the_attribute)
 
-class SamplePointWithIntepolation(object):
+class SamplePointWithInterpolation(object):
     """
     Vxyz =
     V000 (1 - x) (1 - y) (1 - z) +
@@ -884,7 +890,7 @@ class SamplePointWithIntepolation(object):
 
 class SamplePointsOnGrid(object):
     
-    def __init__(self, grid, points=None, samples_factory = SamplePointWithIntepolation, **kwargs):
+    def __init__(self, grid, points=None, samples_factory = SamplePointWithInterpolation, **kwargs):
         self.grid = grid
         points=self.grid._get_array_of_positions_from_arguments(pos=points,**kwargs)
         self.samples = [samples_factory(grid, x) for x in points]
@@ -918,7 +924,7 @@ class SamplePointsOnGrid(object):
 
 class SamplePointsOnMultipleGrids(object):
     
-    def __init__(self, grids, points, samples_factory = SamplePointWithIntepolation, index_factory = None):
+    def __init__(self, grids, points, samples_factory = SamplePointWithInterpolation, index_factory = None):
         self.grids = grids
         self.points = points
         self.samples_factory = samples_factory
@@ -1068,5 +1074,5 @@ def _get_array_of_positions_from_arguments(axes_names, **kwargs):
     
     coordinates=[kwargs[x] for x in axes_names]
     if numpy.rank(coordinates[0])==0:
-      return coordinates
+      return VectorQuantity.new_from_scalar_quantities(*coordinates)
     return column_stack(coordinates)
