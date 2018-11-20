@@ -532,5 +532,13 @@ class TestNumpyFunctionWithUnits(amusetest.TestCase):
 
         self.assertAlmostRelativeEquals(y, fit_values, 1)
 
-
+    def test5(self):
+        a=[1,2,3] | units.m
+        b=[4,5,6] | units.m
+        
+        ab1=quantities.column_stack((a,b))
+        ab2=quantities.column_stack((a.number,b.number)) | units.m
+        
+        self.assertEquals(ab1,ab2)
+        
 

@@ -1,4 +1,4 @@
-from amuse.units.quantities import zero, as_vector_quantity
+from amuse.units.quantities import zero, as_vector_quantity, column_stack
 
 import numpy
 
@@ -205,4 +205,22 @@ def get_overlap_with(grid, grid1,eps=None):
 #    coordinates fully inside the grid """
 #    gridminx,gridminy=sys.grid.get_minimum_position()
 #    gridmaxx,gridmaxy=sys.grid.get_maximum_position()
+
+@grids.BaseGrid.function_for_set
+def get_index(grid, pos=None, **kwargs):
+    raise Exception("not implemented for a {0} grid".format(grid.__class__.__name__))
+
+@grids.RegularBaseGrid.function_for_set
+def get_index(grid, pos=None, **kwargs):
+    pos=grid._get_array_of_positions_from_arguments(pos=pos,**kwargs)
+    offset = pos - grid.get_minimum_position()
+    indices = (offset / grid.cellsize())
+    return numpy.floor(indices).astype(numpy.int)
+
+@grids.BaseGrid.function_for_set
+def _get_array_of_positions_from_arguments(grid, **kwargs):
+    return grids._get_array_of_positions_from_arguments(grid.get_axes_names(), **kwargs)
+
+           
+      
 
