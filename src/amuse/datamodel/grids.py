@@ -4,8 +4,10 @@ from amuse.units import units
 from amuse.units import generic_unit_system
 from amuse.units import quantities
 from amuse.units.quantities import Quantity
+from amuse.units.quantities import VectorQuantity
 from amuse.units.quantities import new_quantity
 from amuse.units.quantities import zero
+from amuse.units.quantities import column_stack
 from amuse.support import exceptions
 from amuse.datamodel.base import *
 from amuse.datamodel.memory_storage import *
@@ -102,17 +104,22 @@ class AbstractGrid(AbstractSet):
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         return result
         
-    def samplePoint(self, position, must_return_values_on_cell_center = False):
-        if must_return_values_on_cell_center:
-            return SamplePointOnCellCenter(self, position)
+    def samplePoint(self, position=None, method="nearest", **kwargs):
+        if method in ["nearest"]:
+            return SamplePointOnCellCenter(self, position=position, **kwargs)
+        elif method in ["interpolation", "linear"]:
+            return SamplePointWithInterpolation(self, position=position, **kwargs)
         else:
-            return SamplePointWithIntepolation(self, position)
+            raise Exception("unknown sample method")
         
-    def samplePoints(self, positions, must_return_values_on_cell_center = False):
-        if must_return_values_on_cell_center:
-            return SamplePointsOnGrid(self, positions, SamplePointOnCellCenter)
+    def samplePoints(self, positions=None, method="nearest", **kwargs):
+        if method in ["nearest"]:
+            return SamplePointsOnGrid(self, positions, SamplePointOnCellCenter, **kwargs)
+        elif method in ["interpolation", "linear"]:
+            return SamplePointsOnGrid(self, positions, SamplePointWithInterpolation, **kwargs)
         else:
-            return SamplePointsOnGrid(self, positions, SamplePointWithIntepolation)
+            raise Exception("unknown sample method")
+
     
     def __len__(self):
         return self.shape[0]
@@ -244,6 +251,18 @@ class BaseGrid(AbstractGrid):
     def create(cls,*args,**kwargs):
         print ("Grid.create deprecated, use new_regular_grid instead")
         return new_regular_grid(*args,**kwargs)
+
+    def get_axes_names(self):
+        if "position" in self.GLOBAL_DERIVED_ATTRIBUTES:
+            result=self.GLOBAL_DERIVED_ATTRIBUTES["position"].attribute_names
+        elif "position" in self._derived_attributes:
+            result=self._derived_attributes["position"].attribute_names
+        else:
+            try:
+              result=self._axes_names
+            except:
+              raise Exception("do not know how to find axes_names")
+        return list(result)
 
 class UnstructuredGrid(BaseGrid):
     GLOBAL_DERIVED_ATTRIBUTES=CompositeDictionary(BaseGrid.GLOBAL_DERIVED_ATTRIBUTES)
@@ -741,9 +760,9 @@ class GridInformationChannel(object):
         self.target.set_values_in_store(self.index, target, converted)        
 
 class SamplePointOnCellCenter(object):
-    def __init__(self, grid, point):
+    def __init__(self, grid, point=None, **kwargs):
         self.grid = grid
-        self.point = point
+        self.point = self.grid._get_array_of_positions_from_arguments(pos=point, **kwargs)
         
     @late
     def position(self):
@@ -751,9 +770,7 @@ class SamplePointOnCellCenter(object):
     
     @late
     def index(self):
-        offset = self.point - self.grid.get_minimum_position()
-        indices = (offset / self.grid.cellsize())
-        return numpy.floor(indices).astype(numpy.int)
+        return self.grid.get_index(self.point)
         
     @late
     def isvalid(self):
@@ -772,7 +789,7 @@ class SamplePointOnCellCenter(object):
     def __getattr__(self, name_of_the_attribute):
         return self.get_value_of_attribute(name_of_the_attribute)
 
-class SamplePointWithIntepolation(object):
+class SamplePointWithInterpolation(object):
     """
     Vxyz =
     V000 (1 - x) (1 - y) (1 - z) +
@@ -785,9 +802,9 @@ class SamplePointWithIntepolation(object):
     V111 x y z
     """
     
-    def __init__(self, grid, point):
+    def __init__(self, grid, point=None, **kwargs):
         self.grid = grid
-        self.point = point
+        self.point = self.grid._get_array_of_positions_from_arguments(pos=point, **kwargs)
         
     @late
     def position(self):
@@ -795,10 +812,8 @@ class SamplePointWithIntepolation(object):
     
     @late
     def index(self):
-        offset = self.point - self.grid.get_minimum_position()
-        indices = (offset / self.grid.cellsize())
-        return numpy.floor(indices)
-        
+        return self.grid.get_index(self.point)
+                
     @late
     def index_for_000_cell(self):
         offset = self.point - self.grid[0,0,0].position
@@ -875,8 +890,9 @@ class SamplePointWithIntepolation(object):
 
 class SamplePointsOnGrid(object):
     
-    def __init__(self, grid, points, samples_factory = SamplePointWithIntepolation):
+    def __init__(self, grid, points=None, samples_factory = SamplePointWithInterpolation, **kwargs):
         self.grid = grid
+        points=self.grid._get_array_of_positions_from_arguments(pos=points,**kwargs)
         self.samples = [samples_factory(grid, x) for x in points]
         self.samples = [x for x in self.samples if x.isvalid ]
         
@@ -908,7 +924,7 @@ class SamplePointsOnGrid(object):
 
 class SamplePointsOnMultipleGrids(object):
     
-    def __init__(self, grids, points, samples_factory = SamplePointWithIntepolation, index_factory = None):
+    def __init__(self, grids, points, samples_factory = SamplePointWithInterpolation, index_factory = None):
         self.grids = grids
         self.points = points
         self.samples_factory = samples_factory
@@ -1047,3 +1063,16 @@ class NonOverlappingGridsIndexer(object):
         index = numpy.floor(index).astype(numpy.int)
         index_of_grid = self.grids_on_index[tuple(index)]
         return self.grids[index_of_grid]
+
+
+# convenience function to convert input arguments to positions (or vector of "points")
+def _get_array_of_positions_from_arguments(axes_names, **kwargs):
+    if kwargs.get('pos',None):
+        return kwargs['pos']
+    if kwargs.get('position',None):
+        return kwargs['position']
+    
+    coordinates=[kwargs[x] for x in axes_names]
+    if numpy.rank(coordinates[0])==0:
+      return VectorQuantity.new_from_scalar_quantities(*coordinates)
+    return column_stack(coordinates)
