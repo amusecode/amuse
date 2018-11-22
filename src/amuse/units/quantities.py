@@ -451,9 +451,11 @@ class VectorQuantity(Quantity):
 
 
     def as_vector_with_length(self, length):
-        if len(self)!=1:
-            raise exceptions.AmuseException("Can only resize a vector with length=1")
-        return self.new_from_scalar_quantities(*[self[0]]*length)
+        if len(self)==length:
+            return self.copy()
+        if len(self)==1:
+            return self.new_from_scalar_quantities(*[self[0]]*length)
+        raise exceptions.AmuseException("as_vector_with_length only valid for same length or 1")
 
     def as_vector_quantity(self):
         return self
