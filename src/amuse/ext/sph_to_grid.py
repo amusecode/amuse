@@ -33,6 +33,8 @@ class _SPH2Grid(object):
         
         grid = Grid.create(self.dimensions, 
             self.box_size.as_vector_with_length(3))
+        grid.add_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
+
         
         zero = numpy.zeros(self.dimensions).flatten() | units.m / units.s
         rho, rhovx, rhovy, rhovz, rhoe = self.sph_code.get_hydro_state_at_point(
