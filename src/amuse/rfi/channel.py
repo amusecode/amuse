@@ -356,7 +356,7 @@ class ASyncRequestSequence(AbstractASyncRequest):
         self.is_set = False
         self._result = None
         self.result_handlers = []
-        self.results = []
+        self._results = []
 
     def wait(self):
         if self.is_finished:
@@ -377,14 +377,17 @@ class ASyncRequestSequence(AbstractASyncRequest):
         self.current_async_request.wait()
         
         self.is_result_available()
-        
-    
+
+    @property
+    def results(self):
+        return self._results
+            
     def is_result_available(self):
         if self.is_finished:
             return True
         
         if self.current_async_request.is_result_available():
-            self.results.append(self.current_async_request.result())
+            self._results.append(self.current_async_request.result())
             self.index += 1
             self.current_async_request = self.create_next_request(self.index, *self.args)
             if not self.current_async_request is None:
@@ -397,7 +400,7 @@ class ASyncRequestSequence(AbstractASyncRequest):
         self.result_handlers.append([function,args])
     
     def get_message(self):
-        return self.results
+        return self._results
         
     def _set_result(self):
         class CallingChain(object):
