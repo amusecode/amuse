@@ -102,6 +102,10 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         self.definition.check_wrapped_method(self)
     
     def __call__(self, *list_arguments, **keyword_arguments):
+        if keyword_arguments.get("async", False):
+            keyword_arguments.pop("async")
+            return self.async(*list_arguments, **keyword_arguments)
+        
         object = self.precall()
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
         result = self.method(*list_arguments, **keyword_arguments)
@@ -126,11 +130,11 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         def handle_result(function):
             
             result = function()
-            
+
             result = self.convert_result(result)
         
             self.postcall(object)
-            
+                        
             return result
         
         request.add_result_handler(handle_result)
