@@ -42,7 +42,7 @@ def LagrangianRadii(stars, verbose=False, massf=MassFraction):
     iL = 0
     mt = 0 | units.none
     Lagrad = []
-    for d2i, mi in d2m :
+    for d2i, mi in d2m:
         mt += mi
         while mt >= massf[iL]:
             Lagrad.append(d2i.sqrt())
