@@ -22,7 +22,7 @@ def distance_sq(stars, com):
     return (stars.position - com).lengths_squared()
 
 
-def LagrangianRadii(stars, verbose=False, massf=MassFraction) :
+def LagrangianRadii(stars, verbose=False, massf=MassFraction):
 
     com = stars.center_of_mass()
     #stars.position = stars.position - com
@@ -50,7 +50,7 @@ def LagrangianRadii(stars, verbose=False, massf=MassFraction) :
                 print "Lagrangian Radius M= ", mt, \
                       "(iL=", iL, ") at d= ", Lagrad[-1]
             iL += 1
-            if iL >= len(massf) :
+            if iL >= len(massf):
                 break
     return Lagrad
 
@@ -64,7 +64,7 @@ def main()
         stars = int(sys.argv[1])
     with_units = len(sys.argv) > 2
 
-    if not with_units :
+    if not with_units:
         mass_unit = nbody_system.mass
         length_unit = nbody_system.length
     else :
@@ -91,7 +91,7 @@ def main()
     stars = new_plummer_model(nstars, convert_nbody, random_state=seed)
     stars.mass = masses 
     
-    LagrangianRadii(stars, verbose=1)
+    LagrangianRadii(stars, verbose=True)
 
 
 if __name__ == '__main__':
