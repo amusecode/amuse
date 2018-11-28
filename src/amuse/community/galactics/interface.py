@@ -312,10 +312,10 @@ class GalactICsImplementation(object):
             else:
                 halo_data=numpy.array([])    
             
-            self._number_of_particles_updated = (len(halo_data)+len(bulge_data)+len(disk_data))/7
-            self._number_of_halo_particles=len(halo_data)/7
-            self._number_of_bulge_particles=len(bulge_data)/7
-            self._number_of_disk_particles=len(disk_data)/7
+            self._number_of_particles_updated = (len(halo_data)+len(bulge_data)+len(disk_data))//7
+            self._number_of_halo_particles=len(halo_data)//7
+            self._number_of_bulge_particles=len(bulge_data)//7
+            self._number_of_disk_particles=len(disk_data)//7
             data=numpy.concatenate((disk_data,bulge_data,halo_data))              
             self._particle_data = numpy.reshape(data,( self._number_of_particles_updated,7))
             self._particles_generated = True
