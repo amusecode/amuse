@@ -41,13 +41,11 @@ def get_amuse_directory_root():
         return os.path.abspath(directory_of_this_script)
 
 def setup_sys_path():
-    try:
-        src_root_directory = os.environ["MUSE_PACKAGE_DIR"]
-    except:
-        src_root_directory = os.environ["AMUSE_DIR"]
+    amuse_directory = os.environ["AMUSE_DIR"]
+    sys.path.insert(0, amuse_directory)
+    src_root_directory = os.environ["MUSE_PACKAGE_DIR"]
     sys.path.insert(0, src_root_directory)
     sys.path.insert(0, os.path.join(src_root_directory,"src"))
-    
     sys.path.append(os.getcwd())
 
 class ParseCommandLine(object):
