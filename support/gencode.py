@@ -362,7 +362,7 @@ if __name__ == '__main__':
     
     setup_sys_path()
 
-    from support import config
+    import config
 
     from amuse.rfi.tools import create_c
     from amuse.rfi.tools import create_fortran
