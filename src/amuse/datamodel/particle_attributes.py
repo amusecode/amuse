@@ -515,9 +515,6 @@ class HopContainer(object):
         else:
             if len(self.code.particles) > 0:
                 self.code.particles.remove_particles(self.code.particles)
-
-    def stop(self):
-        self.code.stop()
         
 
 def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_neighbours=7,
@@ -536,7 +533,11 @@ def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_
     if isinstance(hop, HopContainer):
         hop.initialize(unit_converter)
         hop = hop.code
-    hop.particles.add_particles(particles)
+    try:
+        hop.particles.add_particles(particles)
+    except:
+        hop.stop()
+        raise exceptions.AmuseException("Hop needs a converter to work with this particleset")
     hop.parameters.density_method=2
     hop.parameters.number_of_neighbors_for_local_density=number_of_neighbours
     hop.calculate_densities()
