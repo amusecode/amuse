@@ -515,6 +515,9 @@ class HopContainer(object):
         else:
             if len(self.code.particles) > 0:
                 self.code.particles.remove_particles(self.code.particles)
+
+    def stop(self):
+        self.code.stop()
         
 
 def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_neighbours=7,
