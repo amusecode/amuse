@@ -43,8 +43,11 @@ def get_amuse_directory_root():
 def setup_sys_path():
     amuse_directory = os.environ["AMUSE_DIR"]
     sys.path.insert(0, amuse_directory)
-    src_root_directory = os.environ["MUSE_PACKAGE_DIR"]
-    sys.path.insert(0, src_root_directory)
+    try:
+      src_root_directory = os.environ["MUSE_PACKAGE_DIR"]
+      sys.path.insert(0, src_root_directory)
+    except:
+      src_root_directory = amuse_directory
     sys.path.insert(0, os.path.join(src_root_directory,"src"))
     sys.path.append(os.getcwd())
 
