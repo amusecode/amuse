@@ -31,7 +31,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         if self.channel_type != 'sockets':
             raise Exception("Distributed Amuse must be started with sockets channel, not '%s'" % self.channel_type)
         
-        CodeInterface.__init__(self, name_of_the_worker="distributed_worker_java", **keyword_arguments)
+        CodeInterface.__init__(self, name_of_the_worker="distributed_worker", **keyword_arguments)
         LiteratureReferencesMixIn.__init__(self)
 
 
