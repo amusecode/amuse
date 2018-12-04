@@ -1073,6 +1073,6 @@ def _get_array_of_positions_from_arguments(axes_names, **kwargs):
         return kwargs['position']
     
     coordinates=[kwargs[x] for x in axes_names]
-    if numpy.rank(coordinates[0])==0:
+    if numpy.ndim(coordinates[0])==0:
       return VectorQuantity.new_from_scalar_quantities(*coordinates)
     return column_stack(coordinates)
