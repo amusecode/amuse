@@ -55,7 +55,7 @@ def LagrangianRadii(stars, verbose=False, massf=MassFraction):
     return Lagrad
 
 
-def main()
+def main():
     assert is_mpd_running()
     seed = None
 
