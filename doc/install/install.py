@@ -47,7 +47,7 @@ class InstallPrerequisites(object):
             [],                        #names of prerequisites (unused)
             '1.8.0' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
-            'http://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
+            'https://pypi.python.org/packages/source/n/numpy/', #download url, filename is appended
             self.numpy_build          #method to use for building
           ),
           (
@@ -55,7 +55,7 @@ class InstallPrerequisites(object):
             [], 
             '1.0.0', 
             'nose-' , '.tar.gz', 
-            'http://pypi.python.org/packages/source/n/nose/', 
+            'https://pypi.python.org/packages/source/n/nose/', 
             self.python_build
           ),
           (
@@ -76,10 +76,10 @@ class InstallPrerequisites(object):
           (
             'netcdf-c' ,
             ['hdf'],  
-            '4.4.1',
+            '4.6.1',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-c/archive/',
-            self.basic_build
+            self.netcdf_build
           ) ,
           (
             'netcdf-fortran' ,
@@ -87,7 +87,7 @@ class InstallPrerequisites(object):
             '4.4.4',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-fortran/archive/',
-            self.basic_build
+            self.netcdf_build
           ) ,
           (
             'netcdf4-python' ,
@@ -96,21 +96,29 @@ class InstallPrerequisites(object):
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf4-python/archive/',
             self.python_build
-          ) ,          
+          ) ,    
+          (
+            'f90nml',
+            [],  
+            '0.21',
+            'v' , '.tar.gz', 
+            'https://github.com/marshallward/f90nml/archive/',
+            self.python_build
+          ),      
           (
             'docutils', 
             [], 
             '0.7', 
             'docutils-','.tar.gz', 
-            'http://pypi.python.org/packages/source/d/docutils/', 
+            'https://pypi.python.org/packages/source/d/docutils/', 
             self.python_build
           ) ,
           (
             'mpich2', 
             [], 
-            '3.1.4', 
+            '3.2', 
             'mpich-', '.tar.gz', 
-            'http://www.mpich.org/static/tarballs/3.1.4/', 
+            'http://www.mpich.org/static/tarballs/3.2/', 
             self.mpich2_build
           ) ,
           (
@@ -351,6 +359,24 @@ class InstallPrerequisites(object):
         
         for x in commands:
             self.run_application(x, path)
+
+    def netcdf_build(self, path):
+        env = os.environ.copy()
+        env['LDFLAGS'] = '-L{0}/lib '.format(self.prefix) + env.get('LDFLAGS','') 
+        env['CPPFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CPPFLAGS','')
+        env['CFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CFLAGS','')
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path, env=env)
     
     def cmake_build(self, path):
         commands = []
@@ -511,7 +537,7 @@ class InstallPrerequisites(object):
                 print "Download location may have changed"
                 print "Please download the source file yourself, "
                 print "or contact the AMUSE development team."
-                print "http://castle.strw.leidenuniv/trac/amuse"
+                print "https://github.com/amusecode/amuse/issues"
                 print
                 print "To download the file you can update the URL in"
                 print "one of the following lines and run the command."
@@ -585,11 +611,11 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
           '--with-device=ch3:sock',
         ]
         if self.use_hydra_process_manager:
-            command.append('--with-pm=hydra:mpd:gforker')
+            command.append('--with-pm=hydra:gforker')
         elif self.use_gforker_process_manager:
-            command.append('--with-pm=gforker:hydra:mpd')
+            command.append('--with-pm=gforker:hydra')
         else:
-            command.append('--with-pm=mpd:hydra:gforker')
+            command.append('--with-pm=hydra:gforker')
             
         commands.append(command)
         commands.append(['make'])
@@ -641,7 +667,7 @@ class InstallMatplotlib(InstallPrerequisites):
                 '1.2.11' ,                   #version string
                 'zlib-', '.tar.gz',        #pre- and postfix for filename
                 'http://zlib.net/', #download url, filename is appended
-                self.basic_build             #method to use for building - same as for FFTW should work
+                self.zlib_build             #method to use for building - same as for FFTW should work
               ) ,
               (
                 'png' ,                   #name to refer by
@@ -654,13 +680,27 @@ class InstallMatplotlib(InstallPrerequisites):
               (
                 'matplotlib' ,                   #name to refer by
                 [],                         #names of prerequisites (unused)
-                '1.1.0' ,                   #version string
+                '2.2.2' ,                   #version string
                 'matplotlib-', '.tar.gz',        #pre- and postfix for filename
-                ' http://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
+                'https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
                 self.matplotlib_build             #method to use for building - same as for FFTW should work
               ),
         )
         
+    def zlib_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
+
     def basic_build(self, path):
         commands = []
         command = [
@@ -668,6 +708,11 @@ class InstallMatplotlib(InstallPrerequisites):
           '--prefix='+self.prefix,
           '--enable-shared'
         ]
+        import platform
+        if platform.processor() == 'ppc64le':
+            command.extend([
+                "--build=ppc64le-unknown-linux-gnu",
+            ])
         commands.append(command)
         commands.append(['make'])
         commands.append(['make', 'install'])

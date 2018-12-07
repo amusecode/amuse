@@ -67,7 +67,13 @@ def read_disk_with_bump(image_id=1, filename="hydro.hdf5"):
             com = si.center_of_mass()
             return si
 
-def irradiate_disk_with_bump(Mstar = 10|units.MSun, tstar = 20|units.Myr, Ndisk=100, Mdisk=0.9|units.MSun,  Rmin=1.0|units.AU, Rmax=100.0|units.AU,  Mbump=0.1|units.MSun,Rbump=10.0|units.AU, abump=10|units.AU, t_end=10|units.yr, n_steps=10):
+def irradiate_disk_with_bump(Mstar = 10|units.MSun, tstar = 20|units.Myr,
+                             Ndisk=100, Mdisk=0.9|units.MSun,
+                             Rmin=1.0|units.AU, Rmax=100.0|units.AU,
+                             Mbump=0.1|units.MSun, Rbump=10.0|units.AU,
+                             abump=10|units.AU,
+                             t_end=10|units.yr, n_steps=10,
+                             filename = None, image_id=1):
     dt = t_end/float(n_steps)
 
     stellar = SeBa()
@@ -87,7 +93,8 @@ def irradiate_disk_with_bump(Mstar = 10|units.MSun, tstar = 20|units.Myr, Ndisk=
     source.u = (9. |units.kms)**2 #internal_energy
     stellar.stop()
 
-    ism = new_disk_with_bump(source[0].mass, Ndisk, Mdisk, Rmin, Rmax, Mbump, Rbump, abump)
+    ism = new_disk_with_bump(source[0].mass, Ndisk, Mdisk, Rmin, Rmax,
+                             Mbump, Rbump, abump)
     ism.flux = 0 | units.s**-1
     ism.xion = 0.0 #ionization_fraction
 
@@ -215,9 +222,9 @@ def new_option_parser():
     result.add_option("-t", unit=units.yr,
                       dest="t_end", type="float", default = 1|units.yr,
                       help="radiation time [%default]")
-    result.add_option("-f",
-                      dest="filename", default = None,
-                      help="input filename [%default]")
+    # result.add_option("-f",
+    #                   dest="filename", default = None,
+    #                   help="input filename [%default]")
     result.add_option("--tstar", unit=units.Myr,
                       dest="tstar", type="float", default = 20|units.Myr,
                       help="age of the star [%default]")

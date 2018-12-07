@@ -174,7 +174,7 @@ real get_random_mass_ratio(real q_lower, real q_upper,
 			   real exponent);
 			      
 enum sma_distribution {Unknown_smaf=-1, 
-		       Equal_sma, sma_Power_Law, Duquennoy_Mayor, Eggleton};
+		       Equal_sma, sma_Power_Law, Duquennoy_Mayor, Raghavan, Eggleton};
 char* type_string(sma_distribution smaf);
 sma_distribution 
     extract_semimajor_axis_distribution_type_string(char* type_string);

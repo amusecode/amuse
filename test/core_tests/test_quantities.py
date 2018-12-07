@@ -379,8 +379,8 @@ class TestQuantities(amusetest.TestCase):
         self.assertAlmostEqual(trigo.arctan(trigo.tan(a)),45. | units.deg,13)
 
     def test32(self):
-        a=numpy.array([[1,2,3],[4,5,6]]) |  units.m
-        b=numpy.array([[1,2,3],[4,5,6]])
+        a=numpy.array([[1.,2.,3.],[4.,5.,6.]]) |  units.m
+        b=numpy.array([[1.,2.,3.],[4.,5.,6.]])
         self.assertEquals(list(a.flatten()), list(a.flat))
         flat1=b.flat
         flat2=a.flat
@@ -389,7 +389,19 @@ class TestQuantities(amusetest.TestCase):
         flat2.next()
         self.assertEqual(flat1.index,flat2.index)
         self.assertEqual(flat1.base,flat2.base.number)
-        self.assertEqual(flat1.copy(),flat2.copy().number)
+        self.assertEqual(flat1.copy(),flat2.copy().number)        
+
+    def test32b(self):
+        a=numpy.array([[1.,2.,3.],[4.,5.,6.]]) |  units.m
+        b=numpy.array([[1.,2.,3.],[4.,5.,6.]])
+        flat1=b.flat
+        flat2=a.flat
+        self.assertEqual(flat1[2:5],flat2[2:5].number)
+        self.assertEqual(flat1,flat2.number)
+        
+        flat2[:]=numpy.arange(6) | units.cm
+        a_=numpy.array([[0.,1.,2.],[3.,4.,5.]]) |  units.cm
+        self.assertEqual(a, a_)
 
     def test33(self):
         a=[1,2,3,4]
@@ -478,6 +490,13 @@ class TestAdaptingVectorQuantities(amusetest.TestCase):
         self.assertEquals(x.number, numpy.array([1,2,3,4,5,6,7,8,9,10]))
         self.assertEquals(x, [1,2,3,4,5,6,7,8,9,10]|units.kg)
 
+    def test6(self):
+        x =  6 | units.kg
+        y =  5 | units.kg
+        self.assertEquals(x/y, 1) 
+        self.assertEquals(x//y, 1) 
+        self.assertEquals(operator.__truediv__(x,y), 1.2)
+
 class TestNumpyFunctionWithUnits(amusetest.TestCase):
 
     def test1(self):
@@ -513,5 +532,13 @@ class TestNumpyFunctionWithUnits(amusetest.TestCase):
 
         self.assertAlmostRelativeEquals(y, fit_values, 1)
 
-
+    def test5(self):
+        a=[1,2,3] | units.m
+        b=[4,5,6] | units.m
+        
+        ab1=quantities.column_stack((a,b))
+        ab2=quantities.column_stack((a.number,b.number)) | units.m
+        
+        self.assertEquals(ab1,ab2)
+        
 

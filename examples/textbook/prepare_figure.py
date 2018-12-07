@@ -2,12 +2,11 @@ from matplotlib import pyplot
 #import seaborn 
 
 # These are the "Tableau 20" colors as RGB.    
-tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),    
-             (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150),    
-             (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),    
-             (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),    
-             (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)]   
-
+tableau20 = [(31, 119, 180), (174, 199, 232), (255, 127, 14), (255, 187, 120),
+             (44, 160, 44), (152, 223, 138), (214, 39, 40), (255, 152, 150), 
+             (148, 103, 189), (197, 176, 213), (140, 86, 75), (196, 156, 148),
+             (227, 119, 194), (247, 182, 210), (127, 127, 127), (199, 199, 199),
+             (188, 189, 34), (219, 219, 141), (23, 190, 207), (158, 218, 229)]
 
 # colors
 almost_black = '#262626'
@@ -57,26 +56,21 @@ xarr = [[12],
 # get specified nr of distinct colours in HTML hex format.
 # in: nr - number of colours [1..12]
 # returns: list of distinct colours in HTML hex
+
 def get_distinct(nr):
 
-    #
     # check if nr is in correct range
-    #
     
     if nr < 1 or nr > 12:
         print "wrong nr of distinct colours!"
         return
 
-    #
     # get list of indices
-    #
     
     lst = xarr[nr-1]
     
-    #
-    # generate colour list by stepping through indices and looking them up
-    # in the colour table
-    #
+    # generate colour list by stepping through indices and looking them
+    # up in the colour table
 
     i_col = 0
     col = [0] * nr
@@ -85,7 +79,8 @@ def get_distinct(nr):
         i_col+=1
     return col
 
-# displays usage information and produces example plot.
+# display usage information and produce example plot.
+
 if __name__ == '__main__':
     import numpy as np
     import matplotlib.mlab as mlab
@@ -128,7 +123,7 @@ from cycler import cycler
 def single_frame(x_label, y_label, logx=False, logy=False, xsize=12, ysize=10,
                  ymin=-1, ymax=-1):
 
-    pyplot.rcParams.update({'font.size': 25})
+    pyplot.rcParams.update({'font.size': 20})
     #pyplot.rcParams['axes.color_cycle'] = [blue, green, red, sand, light_blue,
     #                                       pink, crimson, violet, brown,
     #                                       steal, rose, yellow, cyan ]

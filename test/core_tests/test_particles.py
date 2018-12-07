@@ -1460,6 +1460,32 @@ class TestParticlesExtra(amusetest.TestCase):
         self.assertEquals(particles[0].z, 1 | units.kg)
         self.assertEquals(particles.z.unit, units.kg)
 
+    def test23(self):
+        p=datamodel.Particles(3)
+
+        p.a1=1.
+        p.a2=1. | units.rad
+        p.a3=1. | units.deg
+        
+        # test all combinations:
+        
+        p[0].a1=2.
+        p[0].a2=2.
+        p[0].a3=2.
+                
+        p[1].a1=2. | units.rad
+        p[1].a2=2. | units.rad
+        p[1].a3=2. | units.rad
+        
+        p[2].a1=2. | units.deg
+        p[2].a2=2. | units.deg
+        p[2].a3=2. | units.deg
+        
+        self.assertEquals( p.a1, [2.,2., (2. | units.deg).value_in(units.none)])
+        self.assertEquals( p.a2, [2.,2., (2. | units.deg).value_in(units.none)])
+        self.assertEquals( p.a3, [(2. | units.rad).in_(units.deg),
+                                  (2. | units.rad).in_(units.deg) , 2. | units.deg])
+        
 
 
 class TestStars(amusetest.TestCase):

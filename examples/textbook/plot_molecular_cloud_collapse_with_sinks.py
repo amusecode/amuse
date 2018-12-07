@@ -86,6 +86,8 @@ def plot_hydro_and_stars(time, sph, L=10):
     rho=make_map(sph,N=200,L=L)
     pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5)
 #    subplot.set_title("GMC at zero age")
+    cbar = fig.colorbar(cax, ticks=[4, 7.5, 11], orientation='vertical', fraction=0.045)
+    cbar.set_label('projected density [$amu/cm^3$]', rotation=270)
 
     stars = get_stars_from_molecular_clous(sph.gas_particles)
     if len(stars):
@@ -112,15 +114,18 @@ def plot_hydro(time, sph, L=10):
     gas = sph.code.gas_particles
     dmp = sph.code.dm_particles
     rho=make_map(sph,N=200,L=L)
-    pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5, origin="lower")
+    cax = pyplot.imshow(numpy.log10(1.e-5+rho.value_in(units.amu/units.cm**3)), extent=[-L/2,L/2,-L/2,L/2],vmin=1,vmax=5, origin="lower")
 
+    cbar = fig.colorbar(cax, orientation='vertical', fraction=0.045)
+#    cbar.set_label('projected density [$amu/cm^3$]', rotation=270)
+    
     cm = pyplot.cm.get_cmap('RdBu')
 #    cm = pyplot.cm.jet #gist_ncar
     if len(dmp):
         #m = 10.0*dmp.mass/dmp.mass.max()
         m = 30*numpy.log10(dmp.mass/dmp.mass.min())
         c = numpy.sqrt(dmp.mass/dmp.mass.max())
-        pyplot.scatter(-dmp.x.value_in(units.parsec), -dmp.y.value_in(units.parsec), c=c, s=m, lw=0, cmap=cm)
+        pyplot.scatter(dmp.y.value_in(units.parsec), dmp.x.value_in(units.parsec), c=c, s=m, lw=0, cmap=cm)
 
     pyplot.show()
 

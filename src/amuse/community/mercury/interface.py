@@ -486,6 +486,54 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
             integrator not supported (wrong input)
         """
         return function
+        
+    @legacy_function
+    def get_rmax():
+        """
+        Retrieve the maximal radius (rmax) -- heliocentric distance at 
+        which objects are considered ejected.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('rmax', dtype='float64', direction=function.OUT,
+            description = "heliocentric distance at which objects are considered ejected", unit=units.AU)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def set_rmax():
+        """
+        Set the maximal radius (rmax) -- heliocentric distance at 
+        which objects are considered ejected.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('rmax', dtype='float64', direction=function.IN,
+            description = "heliocentric distance at which objects are considered ejected", unit=units.AU)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def get_cefac():
+        """
+        Retrieve the parameter to set the changeover distance RCRIT of the hybrid integrator: 
+        RCRIT = cefac * R_HILL (n_1 in section 4.2 of Chambers 1999)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('cefac', dtype='float64', direction=function.OUT,
+            description = "Hybrid integrator changeover radius RCRIT (in Hill radii)", unit=units.none)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def set_cefac():
+        """
+        Set the parameter to set the changeover distance RCRIT of the hybrid integrator: 
+        RCRIT = cefac * R_HILL (n_1 in section 4.2 of Chambers 1999)
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('cefac', dtype='float64', direction=function.IN,
+            description = "Hybrid integrator changeover radius RCRIT (in Hill radii)", unit=units.none)
+        function.result_type = 'int32'
+        return function
 
     @legacy_function
     def get_elements_file():
@@ -668,7 +716,7 @@ class MercuryWayWard(GravitationalDynamics):
             "get_initial_timestep",
             "set_initial_timestep",
             "timestep",
-            "current simulation time", 
+            "initial timestep", 
             default_value = 8.0 | units.day
         )
         
@@ -678,7 +726,23 @@ class MercuryWayWard(GravitationalDynamics):
             "integrator",
             "integrator to use", 
             default_value = 10
-        )        
+        )
+        
+        object.add_method_parameter(
+            "get_rmax",
+            "set_rmax",
+            "rmax",
+            "heliocentric distance at for ejection", 
+            default_value = 100. | units.AU
+        )
+        
+        object.add_method_parameter(
+            "get_cefac",
+            "set_cefac",
+            "cefac",
+            "Hybrid integrator changeover radius RCRIT (in Hill radii)", 
+            default_value = 3. | units.none
+        )
 
         object.add_method_parameter(
             "get_elements_file",

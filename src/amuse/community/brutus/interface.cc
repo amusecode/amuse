@@ -24,6 +24,12 @@ int numDigits = numBits/4;
 string out_directory;
 std::map<int, int> local_index_map;
 
+/*
+ * We need this result_strings array to ensure that
+ * C++ strings are not reclaimed before the function ends
+ */
+string result_strings[10];
+
 Brutus *brutus = NULL;
 
 mpreal t_begin = "0";
@@ -108,7 +114,8 @@ int set_t_begin_string(char* tb) {
     return 0;
 }
 int get_t_begin_string(char **tb) {
-    *tb = (char*) t_begin.toString().c_str();
+    result_strings[0] = t_begin.toString();
+    *tb = (char*) result_strings[0].c_str();
     return 0;
 }
 int set_t_begin(double tb) {
@@ -136,7 +143,8 @@ int set_eta_string(char* myeta) {
     return 0;
 }
 int get_eta_string(char **myeta) {
-    *myeta = (char*) eta.toString().c_str();
+    result_strings[0] = eta.toString();
+    *myeta = (char*) result_strings[0].c_str();
     return 0;
 }
 int set_eta(double myeta) {
@@ -160,7 +168,8 @@ int set_t_string(char* tt) {
     return 0;
 }
 int get_t_string(char **tt) {
-    *tt = (char*) t.toString().c_str();
+    result_strings[0] = t.toString();
+    *tt = (char*) result_strings[0].c_str();
     return 0;
 }
 int set_t(double tt) {
@@ -185,7 +194,8 @@ int set_bs_tolerance_string(char *bs_tolerance) {
     return 0;
 }
 int get_bs_tolerance_string(char **bs_tolerance) {
-    *bs_tolerance = (char*) epsilon.toString().c_str();
+    result_strings[0] = epsilon.toString();
+    *bs_tolerance = (char*) result_strings[0].c_str();
     return 0;
 }
 int set_bs_tolerance(double bs_tolerance) {
@@ -249,7 +259,8 @@ int get_mass_string(int id, char **mass) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  *mass = (char*) data[id*7+0].toString().c_str();
+  result_strings[0] = data[id*7+0].toString();
+  *mass = (char*) result_strings[0].c_str();
   return 0;
 } 
 int set_mass_string(int id, char *mass) {
@@ -278,9 +289,12 @@ int get_position_string(int id, char **x, char **y, char **z) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  *x = (char*) data[id*7+1].toString().c_str();
-  *y = (char*) data[id*7+2].toString().c_str();
-  *z = (char*) data[id*7+3].toString().c_str();
+  result_strings[0] = data[id*7+1].toString();
+  result_strings[1] = data[id*7+2].toString();
+  result_strings[2] = data[id*7+3].toString();
+  *x = (char*) result_strings[0].c_str();
+  *y = (char*) result_strings[1].c_str();
+  *z = (char*) result_strings[2].c_str();
   return 0;
 }
 int set_position_string(int id, char *x, char *y, char *z) {
@@ -315,9 +329,12 @@ int get_velocity_string(int id, char **vx, char **vy, char **vz) {
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  *vx = (char*) data[id*7+4].toString().c_str();
-  *vy = (char*) data[id*7+5].toString().c_str();
-  *vz = (char*) data[id*7+6].toString().c_str();
+  result_strings[0] = data[id*7+4].toString();
+  result_strings[1] = data[id*7+5].toString();
+  result_strings[2] = data[id*7+6].toString();
+  *vx = (char*) result_strings[0].c_str();
+  *vy = (char*) result_strings[1].c_str();
+  *vz = (char*) result_strings[2].c_str();
   return 0;
 }
 int set_velocity_string(int id, char* vx, char* vy, char* vz) {
@@ -352,14 +369,18 @@ int get_state_string(int id, char** m, char** x, char** y, char** z, char** vx, 
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  *radius = (char*) data_radius[id].toString().c_str();
-  *m = (char*) data[id*7+0].toString().c_str();
-  *x = (char*) data[id*7+1].toString().c_str();
-  *y = (char*) data[id*7+2].toString().c_str();
-  *z = (char*) data[id*7+3].toString().c_str();
-  *vx = (char*) data[id*7+4].toString().c_str();
-  *vy = (char*) data[id*7+5].toString().c_str();
-  *vz = (char*) data[id*7+6].toString().c_str();
+  for (int i = 0; i > 7; i++) {
+  	result_strings[i] = data[id*7+i].toString();
+  }
+  result_strings[7] = data_radius[id].toString();
+  *m = (char*) result_strings[0].c_str();
+  *x = (char*) result_strings[1].c_str();
+  *y = (char*) result_strings[2].c_str();
+  *z = (char*) result_strings[3].c_str();
+  *vx = (char*) result_strings[4].c_str();
+  *vy = (char*) result_strings[5].c_str();
+  *vz = (char*) result_strings[6].c_str();
+  *radius = (char*) result_strings[7].c_str();
   return 0;
 }
 int set_state_string(int id, char* m, char* x, char* y, char* z, char* vx, char* vy, char* vz, char* radius) {
@@ -409,7 +430,8 @@ int get_radius_string(int id, char** radius){
   if (id < 0 || id >= particle_id_counter){
     return -1;
   }
-  *radius = (char*) data_radius[id].toString().c_str();
+  result_strings[0] = data_radius[id].toString();
+  *radius = (char*) result_strings[0].c_str();
   return 0;
 }
 int set_radius_string(int id, char* radius) {

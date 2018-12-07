@@ -3,7 +3,6 @@ AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 
 AC_CONFIG_FILES([src/amuse/config.py:support/configpy.in])
 AC_CONFIG_FILES([support/config.py:support/configpy.in])
-AC_CONFIG_FILES([support3/config.py:support3/configpy.in])
 AC_CONFIG_FILES([config.mk])
 AC_CONFIG_FILES([build.py],[chmod +x build.py])
 
@@ -190,11 +189,11 @@ save_CPPFLAGS="$CPPFLAGS"
 CFLAGS="$MPFR_FLAGS $save_CFLAGS"
 CPPFLAGS="$MPFR_FLAGS $save_CPPFLAGS"
 cache_var=AS_TR_SH([ac_cv_header_mpfr.h])
-AC_CHECK_HEADER(
-    [mpreal.h],
-    [],
-    [AC_MSG_WARN([Cannot find header (mpreal.h) of the library MPFR with MPFR_FLAGS $MPFR_FLAGS.])]
-)
+#AC_CHECK_HEADER(
+#    [mpreal.h],
+#    [],
+#    [AC_MSG_WARN([Cannot find header (mpreal.h) of the library MPFR with MPFR_FLAGS $MPFR_FLAGS.])]
+#)
 $as_unset $cache_var
 CFLAGS="$save_CFLAGS"
 CPPFLAGS="$save_CPPFLAGS"

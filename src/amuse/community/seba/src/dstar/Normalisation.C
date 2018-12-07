@@ -54,8 +54,10 @@
 ////             -G/g Semi major axis option: 0) Equal_sma
 ////                                          1) Power Law [default]
 ////                                          2) Duquennoy & Mayor (1987)
+////                                          3) Raghavan (2010)
+////                                          4) Eggleton (1999)
 ////            Option -G requires one of the following strings:
-////                      (Equal_sma, sma_Power_Law, Duquennoy_Mayor)
+////                      (Equal_sma, sma_Power_Law, Duquennoy_Mayor, Raghavan, Eggleton)
 ////                   -g requires appropriate interger (see double_star.h)
 ////             -E   maximum eccentricity [1] 
 ////             -e   minimum eccentricity [0] 
@@ -386,7 +388,7 @@ int main(int argc, char ** argv) {
 
 
 
-    print_initial_binary_distributions(m_min, m_max, mf, m_exp, sigma,
+    print_initial_binary_distributions(m_min, m_max, mf, m_exp, //sigma,
 			       q_min, q_max, qf, q_exp,
 			       a_min, a_max, af, a_exp,
 			       e_min, e_max, ef, e_exp);
@@ -402,7 +404,7 @@ int main(int argc, char ** argv) {
 
       }
       else if (random_initialization) 
-	mkrandom_binary(m_min_std, m_max_std, mf, m_exp, sigma,
+	mkrandom_binary(m_min_std, m_max_std, mf, m_exp, //sigma,
 			q_min_std, q_max_std, qf, q_exp,
 			a_min_std, a_max_std, af, a_exp,
 			e_min_std, e_max_std, ef, e_exp,

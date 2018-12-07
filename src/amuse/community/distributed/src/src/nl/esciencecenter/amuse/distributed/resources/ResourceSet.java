@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import nl.esciencecenter.amuse.distributed.DistributedAmuseException;
-import nl.esciencecenter.xenon.Xenon;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +22,18 @@ public class ResourceSet {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceSet.class);
 
-    private final Xenon xenon;
-
     private final Server iplServer;
 
     private final ArrayList<ResourceManager> resources;
 
     private final boolean startHubs;
+    
+    private final String amuseRootDir;
 
-    public ResourceSet(Xenon xenon, String amuseRootDir, boolean startHubs) throws DistributedAmuseException {
+    public ResourceSet(String amuseRootDir, boolean startHubs) throws DistributedAmuseException {
         resources = new ArrayList<ResourceManager>();
-        this.xenon = xenon;
         this.startHubs = startHubs;
+        this.amuseRootDir = amuseRootDir;
 
         try {
             Properties properties = new Properties();
@@ -67,8 +66,15 @@ public class ResourceSet {
             gatewayLocation = getResource(gateway).getLocation();
         }
 
-        ResourceManager result = new ResourceManager(name, location, gatewayLocation, amuseDir, tmpDir, schedulerType, queueName, timeMinutes, this.startHubs,
-                xenon, iplServer);
+        String username = null;
+        String hostname = location;
+        if(location != null && location.indexOf("@") != -1 ) {
+            username = location.substring(0, location.indexOf("@"));
+            hostname = location.substring(location.indexOf("@")+1); 
+          }
+
+        ResourceManager result = new ResourceManager(name, username, hostname, gatewayLocation, amuseDir, tmpDir, 
+                                      schedulerType, queueName, timeMinutes, this.startHubs, iplServer);
 
         resources.add(result);
 

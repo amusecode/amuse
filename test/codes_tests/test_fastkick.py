@@ -371,6 +371,20 @@ class TestFastKick(TestWithMPI):
         fastkick.cleanup_code()
         fastkick.stop()
     
+    def test13(self):
+        number_of_sources = 10
+        mass, length, G = nbody_system.mass, nbody_system.length, nbody_system.G
+        sources = Particles(
+                mass=numpy.ones(number_of_sources)|mass,
+                x=0|length, 
+                y=0|length, 
+                z=0|length)
+        
+        instance = self.new_fastkick_instance()
+        instance.particles.add_particles(sources)
+        self.assertAlmostRelativeEqual(instance.particles.mass, 1 | mass)
+        instance.particles.mass = 2 | mass
+        self.assertAlmostRelativeEqual(instance.particles.mass, 2 | mass)
 
 class TestFastKickGPU(TestFastKick):
 

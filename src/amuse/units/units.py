@@ -25,6 +25,7 @@ Ry = named('rydberg unit', 'Ry', (constants.Rydberg_constant * constants.h * con
 # astronomical units
 angstrom = named('angstrom', 'angstrom', 1e-10*m)
 AU =  named('astronomical unit', 'AU', 149597870691.0  * m)
+au =  named('astronomical unit', 'au', 149597870691.0  * m)
 AUd = named('AU per day','AUd', 149597870691.0  * m / day)
 parsec=named('parsec','parsec', AU / numpy.tan(numpy.pi/(180*60*60)))
 kpc=named('kilo parsec','kpc',10**3 * parsec)
@@ -88,4 +89,6 @@ object_key = core.key_unit('object_key','key')
 #rad=named('radian','rad',m/m) (defined in derivedsi.py)
 pi=numpy.pi | rad
 rev=named('revolutions','rev',(2*numpy.pi) * rad)
-deg=named('degree','deg',(numpy.pi/180) *  rad)  
+deg=named('degree','deg',(numpy.pi/180) *  rad)
+arcmin=named('arcminutes', 'arcmin', (1./60) * deg)
+arcsec=named('arcseconds', 'arcsec', (1./3600) * deg)

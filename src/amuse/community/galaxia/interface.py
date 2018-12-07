@@ -13,6 +13,7 @@ from amuse.community.interface.gd import GravityFieldInterface, GravityFieldCode
 from amuse.rfi.core import legacy_function
 from amuse.rfi.core import LegacyFunctionSpecification
 
+# note: angle units can be added (unit.rad) - however breaks current scripts
 
 class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
    """
@@ -162,7 +163,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
                             , description="local density",unit= 2.32e7*units.MSun/units.kpc**3)
       function.addParameter('npoints', dtype='i', direction=function.LENGTH)
       function.result_type = 'int32'
-      function.can_handle_array = True 
+      function.must_handle_array = True 
       return function
    
    
@@ -191,7 +192,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       Retrieve the epicyclic frequency due to the axisymmetric potetial at a given point
       """
       function = LegacyFunctionSpecification() 
-      function.can_handle_array = True 
+      function.must_handle_array = True 
       function.addParameter('x', dtype='float64', direction=function.IN
                             , description="x position",unit=units.kpc)
       function.addParameter('y', dtype='float64', direction=function.IN
@@ -210,7 +211,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       Retrieve the density of the 3D spiral arms at a given point
       """
       function = LegacyFunctionSpecification() 
-      function.can_handle_array = True 
+      function.must_handle_array = True 
       function.addParameter('x', dtype='float64', direction=function.IN
                             , description="x position",unit=units.kpc)
       function.addParameter('y', dtype='float64', direction=function.IN
@@ -230,7 +231,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       and at a given time.
       """
       function = LegacyFunctionSpecification() 
-      function.can_handle_array = True
+      function.must_handle_array = True
       function.addParameter('t', dtype='float64', direction=function.IN
                             , description="time",unit= 97781310.5721*units.yr)
       function.addParameter('x', dtype='float64', direction=function.IN
@@ -268,7 +269,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       Retrieve the eigen values of the tidal tensor.
       """
       function = LegacyFunctionSpecification() 
-      function.can_handle_array = True
+      function.must_handle_array = True
       function.addParameter('t', dtype='float64', direction=function.IN
                             , description="time",unit= 97781310.5721*units.yr)
       function.addParameter('x', dtype='float64', direction=function.IN
@@ -296,7 +297,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       Retrieve the tidal radius of a star cluster
       """
       function = LegacyFunctionSpecification() 
-      function.can_handle_array = True
+      function.must_handle_array = True
       function.addParameter('t', dtype='float64', direction=function.IN
                             , description="time",unit= 97781310.5721*units.yr)
       function.addParameter('x', dtype='float64', direction=function.IN
@@ -340,7 +341,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
    @legacy_function
    def get_initial_phase():
       function = LegacyFunctionSpecification()
-      function.addParameter('initial_phase', dtype='float64', direction=function.OUT )
+      function.addParameter('initial_phase', dtype='float64', direction=function.OUT)# unit=units.rad 
       function.result_type = 'int32'
       return function;
 
@@ -362,14 +363,14 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
    @legacy_function   
    def set_bar_phase():
       function = LegacyFunctionSpecification()  
-      function.addParameter('bar_phase', dtype='float64', direction=function.IN)
+      function.addParameter('bar_phase', dtype='float64', direction=function.IN)# unit=units.rad
       function.result_type = 'int32'
       return function;
    
    @legacy_function   
    def get_bar_phase():
       function = LegacyFunctionSpecification()  
-      function.addParameter('bar_phase', dtype='float64', direction=function.OUT)
+      function.addParameter('bar_phase', dtype='float64', direction=function.OUT)# unit=units.rad
       function.result_type = 'int32'
       return function;
    
@@ -469,14 +470,14 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
    @legacy_function   
    def set_spiral_phase():
       function = LegacyFunctionSpecification()  
-      function.addParameter('spiral_phase', dtype='float64', direction=function.IN)
+      function.addParameter('spiral_phase', dtype='float64', direction=function.IN)# unit=units.rad
       function.result_type = 'int32'
       return function;
    
    @legacy_function   
    def get_spiral_phase():
       function = LegacyFunctionSpecification()  
-      function.addParameter('spiral_phase', dtype='float64', direction=function.OUT)
+      function.addParameter('spiral_phase', dtype='float64', direction=function.OUT)# unit=units.rad
       function.result_type = 'int32'
       return function;
    
@@ -690,21 +691,6 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
        function.result_type = 'int32'
        return function;
 
-
-   # LEPINE MODEL
-   @legacy_function   
-   def set_spiral_model():
-       function = LegacyFunctionSpecification()  
-       function.addParameter('spiral_model', dtype='float64', direction=function.IN)
-       function.result_type = 'int32'
-       return function;
-    
-   @legacy_function   
-   def get_spiral_model():
-       function = LegacyFunctionSpecification()  
-       function.addParameter('spiral_model', dtype='float64', direction=function.OUT)
-       function.result_type = 'int32'
-       return function;
    
    @legacy_function   
    def set_omega_spiral2():
@@ -903,7 +889,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
      2 -- Lepine (2D)
      """
      function = LegacyFunctionSpecification()
-     function.addParameter('spiral_model', dtype='float64', direction=function.IN,
+     function.addParameter('spiral_model', dtype='int32', direction=function.IN,
                            description='model of spiral arms (default: 0; TWA 2D arms)')
      function.result_type = 'int32'
      return function
@@ -917,7 +903,7 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       2 -- Lepine (2D)
       """
       function = LegacyFunctionSpecification()
-      function.addParameter('spiral_model', dtype='float64', direction=function.OUT,
+      function.addParameter('spiral_model', dtype='int32', direction=function.OUT,
                             description='model of spiral arms (default: 0; TWA 2D arms)')
       function.result_type = 'int32'
       return function
@@ -996,7 +982,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          None,
          "initial_phase",
          "phase of the system. To convert between inertial and rotating frames",
-         default_value = 0 
+         default_value = 0 # | units.rad
          )
       object.add_method_parameter(
          "get_flag",
@@ -1012,7 +998,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          "set_bar_phase",
          "bar_phase",
          "Initial phase of the bar",
-         default_value = 0
+         default_value = 0 #| units.rad
          )
        
       object.add_method_parameter(
@@ -1077,7 +1063,7 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          "set_spiral_phase",
          "spiral_phase",
          "Initial phase of the spiral arms",
-         default_value = 0
+         default_value = 0 #| units.rad
          )
       
 
@@ -1118,8 +1104,8 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
          "get_r_sigma",
          "set_r_sigma",
          "r_sigma",
-         " 1/rsigma",
-         default_value = 0.4 | units.kpc**-1
+         "scalelength rsigma of the spiral arms",
+         default_value = 2.5 | units.kpc
          )
 
       object.add_method_parameter(
@@ -1345,3 +1331,6 @@ class BarAndSpirals3D(CommonCode, GravityFieldCode):
    @property
    def model_time(self):
       return self.parameters.time
+
+   def get_density_at_point(self,x,y,z):
+      return self.get_local_density(self.parameters.time,x,y,z)

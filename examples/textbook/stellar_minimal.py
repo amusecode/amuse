@@ -1,8 +1,10 @@
 """
-   Minimalistic routine for running a stellar evolution code
+   Minimal routine for running a stellar evolution code
 """
+
+###BOOKLISTSTART###
 from amuse.lab import *
-    
+
 def main(m, z, model_time):
     stellar = MESA()
     stellar.parameters.metallicity = z
@@ -21,21 +23,24 @@ def main(m, z, model_time):
         ", R=", stellar.particles.radius.in_(units.RSun)
         
     stellar.stop()
-    
+###BOOKLISTSTOP###
+
+###BOOKLISTSTART2###
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-m", unit= units.MSun,
-                      dest="m", type="float", default = 1.0 | units.MSun,
+    result.add_option("-m", unit=units.MSun,
+                      dest="m", type="float", default=1.0|units.MSun,
                       help="stellar mass [%default]")
-    result.add_option("-t", unit = units.Myr,
+    result.add_option("-t", unit=units.Myr,
                       dest="model_time", type="float", 
-                      default = 4700.0|units.Myr,
+                      default=4700.0|units.Myr,
                       help="end time of the simulation [%default]")
     result.add_option("-z", dest="z", type="float", 
-                      default = 0.02, help="metalicity [%default]")
+                      default=0.02, help="metallicity [%default]")
     return result
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
     main(**o.__dict__)
+###BOOKLISTSTOP2###

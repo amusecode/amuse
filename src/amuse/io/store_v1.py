@@ -78,6 +78,8 @@ class HDF5Attribute(object):
                 dataset.attrs["units"] = "UNICODE"
                 return HDF5UnicodeAttribute(name, dataset)
             else:
+                if not hasattr(shape, '__iter__'): 
+                    shape = shape,
                 dtype = numpy.asanyarray(input).dtype
                 dataset = group.create_dataset(name, shape=shape, dtype=dtype)
                 dataset.attrs["units"] = "none"

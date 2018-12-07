@@ -52,9 +52,13 @@ class PythonImplementation(object):
             self.implementation._interface = self
         
 
-    def start(self):
-        parent = self.intercomm
-        self.communicators.append(parent)
+    def start(self, mpi_port = None):
+        if mpi_port is None:
+            parent = self.intercomm
+            self.communicators.append(parent)
+        else:
+            parent = MPI.COMM_WORLD.Connect(mpi_port, MPI.INFO_NULL, 0)
+            self.communicators.append(parent)
         self.activeid = 0
         self.lastid += 1
         
@@ -80,7 +84,7 @@ class PythonImplementation(object):
                     try:
                         self.handle_message(message, result_message)
                     except Exception as ex:
-                        print ex
+                        print "EX:", ex
                         traceback.print_exc()
                         result_message.set_error(str(ex))
                         #for type, attribute in self.dtype_to_message_attribute.iteritems():
@@ -142,7 +146,6 @@ class PythonImplementation(object):
     def handle_message(self, input_message, output_message):
         legacy_function = self.mapping_from_tag_to_legacy_function[input_message.function_id]
         specification = legacy_function.specification
-        
         dtype_to_count = self.get_dtype_to_count(specification)
         
         
@@ -308,17 +311,22 @@ class PythonImplementation(object):
         outval.value = self.polling_interval 
         return 0
         
+    def get_null_info(self):
+        return getattr(MPI, 'INFO_NULL') if hasattr(MPI, 'INFO_NULL') else None
+        
     def internal__open_port(self, outportname):
-        outportname.value = MPI.Open_port(None)
+        outportname.value = MPI.Open_port(self.get_null_info())
         return 0
         
     def internal__accept_on_port(self, portname, outval):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
         if rank == 0:
-            communicator = MPI.COMM_SELF.Accept(portname, None, 0)
+            communicator = MPI.COMM_SELF.Accept(portname, self.get_null_info(), 0)
             merged = communicator.Merge(False)
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
+            merged.Disconnect()
+            communicator.Disconnect()
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
         
@@ -332,7 +340,7 @@ class PythonImplementation(object):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
         if rank == 0:
-            communicator = MPI.COMM_SELF.Connect(portname, None, 0)
+            communicator = MPI.COMM_SELF.Connect(portname, self.get_null_info(), 0)
             merged = communicator.Merge(True)
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
             merged.Disconnect()

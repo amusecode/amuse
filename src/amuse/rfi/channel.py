@@ -40,8 +40,131 @@ from amuse.rfi import run_command_redirected
 
 from amuse.rfi import slurm
 
+class AbstractASyncRequest(object):
+    def __nonzero__(self):
+        return self.is_finished
 
-class ASyncRequest(object):
+    def waitone(self):
+        return self.wait()
+
+    def waitall(self):
+        while not self.is_finished:
+            self.wait()
+
+    def wait(self):
+        raise Exception("not implemented")
+
+    def is_result_available(self):
+        raise Exception("not implemented")
+
+    def result(self):
+        raise Exception("not implemented")
+
+    @property
+    def results(self):
+        return [self.result()]
+
+    def add_result_handler(self, function, args = ()):
+        self.result_handlers.append([function,args])
+
+    def is_mpi_request(self):
+        return False
+
+    def is_socket_request(self):
+        return False
+ 
+    def is_other(self):
+        return not self.is_mpi_request() and not self.is_socket_request()
+        
+    def get_mpi_request(self):
+        raise Exception("not implemented")
+
+    def get_socket(self):
+        raise Exception("not implemented")
+        
+    #~ def is_pool(self):
+        #~ return False
+        
+    def join(self, other):
+        pool = AsyncRequestsPool()
+        pool.add_request(self, lambda x: x.result())
+        pool.add_request(other, lambda x: x.result())
+        return pool
+
+    def waits_for(self):
+        return self
+
+class DependentASyncRequest(AbstractASyncRequest):
+    def __init__(self, parent, request_factory):
+        
+        self.request=None
+        self.parent=parent
+        
+        def handler(arg):
+            result=arg()
+            self.request=request_factory()
+            for h in self.result_handlers:
+                self.request.add_result_handler(*h)
+            return result
+
+        self.parent.add_result_handler(handler)
+        
+        self.result_handlers = []
+
+    def wait(self):
+        if self.is_finished:
+            return
+    
+        self.parent.wait()
+        if self.request is None:
+            raise Exception("something went wrong (exception of parent?)")
+        self.request.wait()
+
+    def is_result_available(self):
+        if self.is_finished:
+            return True
+
+        if not self.parent.is_finished:
+            return False
+
+        if self.request is None:
+            raise Exception("something went wrong (exception of parent?)")
+            
+        return self.request.is_result_available()
+
+    @property
+    def is_finished(self):
+        if self.request is None:
+            return False
+        return self.request.is_finished
+
+    def result(self):
+        self.wait()
+        return self.request._result
+
+    @property
+    def results(self):
+        return self.parent.results+[self.result()]        
+
+    def is_mpi_request(self):
+        if self.request is None:
+            return self.parent.is_mpi_request()
+        else:
+            return self.request.is_mpi_request()
+    
+    def is_socket_request(self):
+        if self.request is None:
+            return self.parent.is_socket_request()
+        else:
+            return self.request.is_socket_request()
+
+    def waits_for(self):
+        if self.request is not None:
+            return self.request
+        else:
+            return self.parent.waits_for()
+
+class ASyncRequest(AbstractASyncRequest):
         
     def __init__(self, request, message, comm, header):
         self.request = request
@@ -58,6 +181,10 @@ class ASyncRequest(object):
             return
     
         self.request.Wait()
+
+        if not self.is_set:
+            self._set_result()
+
         self.is_finished = True
     
     def is_result_available(self):
@@ -66,10 +193,7 @@ class ASyncRequest(object):
             
         self.is_finished = self.request.Test()
         return self.is_finished
-        
-    def add_result_handler(self, function, args = ()):
-        self.result_handlers.append([function,args])
-    
+
     def get_message(self):
         return self.message
         
@@ -100,25 +224,11 @@ class ASyncRequest(object):
             self._set_result()
         
         return self._result
-        
-    def _new_handler(self, result_handler, args=(), kwargs={}):
-        return
-        
+
     def is_mpi_request(self):
         return True
-        
-    def is_pool(self):
-        return False
-        
-    def join(self, other):
-        pool = AsyncRequestsPool()
-        pool.add_request(self, lambda x: x.result())
-        pool.add_request(other, lambda x: x.result())
-        return pool
-        
 
-
-class ASyncSocketRequest(object):
+class ASyncSocketRequest(AbstractASyncRequest):
         
     def __init__(self, message, socket):
         self.message = message
@@ -148,27 +258,25 @@ class ASyncSocketRequest(object):
         
         self.is_finished = len(readables) == 1
         return self.is_finished
-        
-    def add_result_handler(self, function):
-        self.result_handlers.append(function)
-    
+            
     def get_message(self):
         return self.message
         
     def _set_result(self):
         class CallingChain(object):
-            def __init__(self, outer, inner):
+            def __init__(self, outer, args, inner):
                 self.outer = outer
                 self.inner = inner
+                self.args=args
                 
             def __call__(self):
-                return self.outer(self.inner)
+                return self.outer(self.inner, *self.args)
                 
         self.message.receive(self.socket)
         
         current = self.get_message
-        for x in self.result_handlers:
-            current = CallingChain(x, current)
+        for x,args in self.result_handlers:
+            current = CallingChain(x, args, current)
         
         self._result = current()
         
@@ -181,17 +289,62 @@ class ASyncSocketRequest(object):
             self._set_result()
         
         return self._result
+
+    def is_socket_request(self):
+        return True
+
+class FakeASyncRequest(AbstractASyncRequest):
+        
+    def __init__(self, result):
+        self.is_finished = False
+        self.is_set = False
+        self.__result = result
+        self.result_handlers = []
+
+    def wait(self):
+        if self.is_finished:
+            return
     
-    def is_mpi_request(self):
-        return False
-        
-        
-    def is_pool(self):
-        return False
+        if not self.is_set:
+            self._set_result()
 
-        
+        self.is_finished = True
 
-class ASyncRequestSequence(object):
+    def waitone(self):
+        return self.wait()
+    
+    def is_result_available(self):
+        return True
+            
+    def _set_result(self):
+        class CallingChain(object):
+            def __init__(self, outer, args,  inner):
+                self.outer = outer
+                self.inner = inner
+                self.args = args
+                
+            def __call__(self):
+                return self.outer(self.inner, *self.args)
+                
+        
+        current = lambda : self.__result
+
+        for x, args in self.result_handlers:
+            current = CallingChain(x, args, current)
+        
+        self._result = current()
+        
+        self.is_set = True
+        
+    def result(self):
+        self.wait()
+        
+        if not self.is_set:
+            self._set_result()
+        
+        return self._result
+
+class ASyncRequestSequence(AbstractASyncRequest):
         
     def __init__(self, create_next_request, args = ()):
         self.create_next_request = create_next_request
@@ -203,23 +356,38 @@ class ASyncRequestSequence(object):
         self.is_set = False
         self._result = None
         self.result_handlers = []
-        self.results = []
+        self._results = []
 
     def wait(self):
         if self.is_finished:
             return
             
+        while not self.is_finished:
+            self.current_async_request.wait()
+        
+            self.is_result_available()
+
+        if not self.is_set:
+            self._set_result()
+
+    def waitone(self):
+        if self.is_finished:
+            return
+
         self.current_async_request.wait()
         
         self.is_result_available()
-        
-    
+
+    @property
+    def results(self):
+        return self._results
+            
     def is_result_available(self):
         if self.is_finished:
             return True
         
         if self.current_async_request.is_result_available():
-            self.results.append(self.current_async_request.result())
+            self._results.append(self.current_async_request.result())
             self.index += 1
             self.current_async_request = self.create_next_request(self.index, *self.args)
             if not self.current_async_request is None:
@@ -232,7 +400,7 @@ class ASyncRequestSequence(object):
         self.result_handlers.append([function,args])
     
     def get_message(self):
-        return self.results
+        return self._results
         
     def _set_result(self):
         class CallingChain(object):
@@ -259,29 +427,20 @@ class ASyncRequestSequence(object):
             self._set_result()
         
         return self._result
-        
-    def _new_handler(self, result_handler, args=(), kwargs={}):
-        return
-        
+
     def is_mpi_request(self):
         return self.current_async_request.is_mpi_request()
-        
-    def is_pool(self):
-        return False
-        
-    def join(self, other):
-        pool = AsyncRequestsPool()
-        pool.add_request(self, lambda x: x.result())
-        pool.add_request(other, lambda x: x.result())
-        return pool
-        
+
+    def is_socket_request(self):
+        return self.current_async_request.is_socket_request()
+
 class AsyncRequestWithHandler(object):
     
     def __init__(self, pool, async_request, result_handler, args=(), kwargs={}):
         self.async_request = async_request
         if result_handler is None:
             def empty(request):
-                request.result()
+                return request.result()
             result_handler = empty
         self.result_handler = result_handler
         self.args = args
@@ -294,12 +453,16 @@ class AsyncRequestWithHandler(object):
         
 class AsyncRequestsPool(object):
     
-    def __init__(self):
+    def __init__(self, *requests):
         self.requests_and_handlers = []
         self.registered_requests = set([])
         self.result_handlers = []
+        for x in requests:
+            self.add_request(x)
         
     def add_request(self, async_request, result_handler = None, args=(), kwargs={}):
+        if async_request is None:
+            return
         if async_request in self.registered_requests:
             raise Exception("Request is already registered, cannot register a request more than once")
             
@@ -319,35 +482,52 @@ class AsyncRequestsPool(object):
     def waitall(self):
         while len(self) > 0:
             self.wait()
+
+    def waitone(self):
+        return self.wait()
         
     def wait(self):
         
         # TODO need to cleanup this code
-        #
+        #        
         while len(self.requests_and_handlers) > 0:
-            requests = [x.async_request.request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
-            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
+            requests = [x.async_request.waits_for() for x in self.requests_and_handlers if x.async_request.is_other()]
+            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_other()]
             
             if len(requests) > 0:
+                for index, x in zip(indices, requests):
+                    x.wait_for().waitone()
+
+                    request_and_handler = self.requests_and_handlers[index]
+                    if request_and_handler.async_request.is_result_available():
+                        self.registered_requests.remove(request_and_handler.async_request)
+                    
+                        self.requests_and_handlers.pop(index)
+                    
+                        request_and_handler.run()
+                        break
+
+            requests = [x.async_request.waits_for().request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
+            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
+            if len(requests) > 0:
                 index = MPI.Request.Waitany(requests)
-                  
+                
                 index = indices[index]
                 
                 request_and_handler = self.requests_and_handlers[index]
                 
-                request_and_handler.async_request.wait()  # will set the finished flag
+                request_and_handler.async_request.waits_for().waitone()  # will set the finished flag
                 
                 if request_and_handler.async_request.is_result_available():
                     self.registered_requests.remove(request_and_handler.async_request)
                     
-                    del self.requests_and_handlers[index]
+                    self.requests_and_handlers.pop(index)
                     
                     request_and_handler.run()
                     break
-                
-            
-            sockets = [x.async_request.socket for x in self.requests_and_handlers if not x.async_request.is_mpi_request()]
-            indices = [i for i, x in enumerate(self.requests_and_handlers) if not x.async_request.is_mpi_request()]
+                            
+            sockets = [x.async_request.waits_for().socket for x in self.requests_and_handlers if x.async_request.is_socket_request()]
+            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_socket_request()]
             if len(sockets) > 0:
                 readable, _, _ = select.select(sockets, [], [])
                 indices_to_delete = []
@@ -358,28 +538,35 @@ class AsyncRequestsPool(object):
                     index = indices[index]
                     
                     request_and_handler = self.requests_and_handlers[index]
+
+                    request_and_handler.async_request.waits_for().waitone()  # will set the finished flag
+
+                    if request_and_handler.async_request.is_result_available():
+  
+                        self.registered_requests.remove(request_and_handler.async_request)
                     
-                    self.registered_requests.remove(request_and_handler.async_request)
+                        indices_to_delete.append(index)
                     
-                    indices_to_delete.append(index)
+                        request_and_handler.run()
                     
-                    request_and_handler.async_request.wait()  # will set the finished flag
-                    
-                    request_and_handler.run()
-                    
-                
                 for x in reversed(list(sorted(indices_to_delete))):
                     
-                    del self.requests_and_handlers[x]
+                    self.requests_and_handlers.pop(x)
                 
                 if len(indices_to_delete) > 0:
                     break
-            
+
+    def join(self, other):
+        if isinstance(other, AbstractASyncRequest):
+            self.add_request(other, lambda x: x.result())
+        return self
             
     def __len__(self):
         return len(self.requests_and_handlers)
         
-        
+    def __nonzero__(self):
+        return len(self)==0
+
 class AbstractMessage(object):
     
     def __init__(self,
@@ -533,8 +720,8 @@ class MPIMessage(AbstractMessage):
     
     def receive_booleans(self, comm, total):
         if total > 0:
-            result = numpy.empty(total, dtype='int32')
-            self.mpi_receive(comm, [result, MPI.LOGICAL])
+            result = numpy.empty(total, dtype='b')
+            self.mpi_receive(comm, [result, MPI.C_BOOL or MPI.BYTE]) # if C_BOOL null datatype (ie undefined) fallback
             return numpy.logical_not(result == 0)
         else:
             return []
@@ -627,31 +814,22 @@ class MPIMessage(AbstractMessage):
         if len(array) == 0:
             return
             
-        lengths = self.string_lengths(array)
-        self.mpi_send(comm, [lengths, MPI.INT])
-        chars = "".encode('utf-8')
-        for string in array:
-            if hasattr(string, 'encode'):
-                string = string.encode('utf-8')
-            chars = chars + string + chr(0).encode('utf-8')
+        lengths = numpy.array( [len(s) for s in array] ,dtype='i')
+        
+        chars=(chr(0).join(array)+chr(0)).encode("utf-8")
         chars = numpy.fromstring(chars, dtype='uint8')
+
+        if len(chars) != lengths.sum()+len(lengths):
+            raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
+
+        self.mpi_send(comm, [lengths, MPI.INT])
         self.mpi_send(comm, [chars, MPI.CHARACTER])
         
     def send_booleans(self, comm, array):
         if len(array) > 0:
-            sendbuffer = numpy.array(array, dtype='int32')
-            self.mpi_send(comm, [sendbuffer, MPI.LOGICAL])
-    
-    def string_lengths(self, array):
-        lengths = numpy.zeros(len(array), dtype='i')
-        index = 0
-        
-        for string in array:
-            lengths[index] = len(string)
-            index += 1
-        
-        return lengths
-    
+            sendbuffer = numpy.array(array, dtype='b')
+            self.mpi_send(comm, [sendbuffer, MPI.C_BOOL or MPI.BYTE])
+
     def set_error(self, message):
         self.strings = [message]
         self.error = True
@@ -940,10 +1118,12 @@ class AbstractMessageChannel(OptionalAttributes):
     def custom_args(self):
         return '--hold -e gdb --args'
     
-    
-        
     @option(type='boolean', sections=("channel",))
     def must_check_if_worker_is_up_to_date(self):
+        return True
+
+    @option(type='boolean', sections=("channel",))
+    def check_worker_location(self):
         return True
     
     @option(type="int", sections=("channel",))
@@ -985,20 +1165,35 @@ Please do a 'make clean; make' in the root directory.
 """.format(type(object).__name__))
 
     def get_full_name_of_the_worker(self, type):
-        
+
         if os.path.isabs(self.name_of_the_worker):
-            if os.path.exists(self.name_of_the_worker):
-                if not os.access(self.name_of_the_worker, os.X_OK):
-                    raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(self.name_of_the_worker))
+            full_name_of_the_worker=self.name_of_the_worker
+ 
+            if not self.check_worker_location:
+                return full_name_of_the_worker
+            
+            if not os.path.exists(full_name_of_the_worker):
+                raise exceptions.CodeException("The worker path has been specified, but it is not found: \n{0}".format(full_name_of_the_worker))
+
+            if not os.access(full_name_of_the_worker, os.X_OK):
+                raise exceptions.CodeException("The worker application exists, but it is not executable.\n{0}".format(full_name_of_the_worker))
        
-                return self.name_of_the_worker
+            return full_name_of_the_worker
         
         exe_name = self.worker_code_prefix + self.name_of_the_worker + self.worker_code_suffix
-        
+
+        if not self.check_worker_location:
+            if len(self.worker_code_directory) > 0:
+                full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
+                full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+                return full_name_of_the_worker
+            else:
+                raise Exception("Must provide a worker_code_directory")
+
         tried_workers = []
         found = False
-        
-        if len(self.worker_code_directory) > 0 and os.path.exists(self.worker_code_directory):
+                
+        if len(self.worker_code_directory) > 0:
             full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
             found = os.path.exists(full_name_of_the_worker)
@@ -1233,7 +1428,6 @@ class MpiChannel(AbstractMessageChannel):
         
         if self._mpi_is_broken_after_possible_code_crash:
             raise exceptions.CodeException("Another code has crashed, cannot spawn a new code, please stop the script and retry")
-        
         if not self.hostname is None:
             self.info = MPI.Info.Create()
             self.info['host'] = self.hostname
@@ -1248,9 +1442,6 @@ class MpiChannel(AbstractMessageChannel):
         self._is_inuse = False
         self._communicated_splitted_message = False
     
-    
-
-
 
     @classmethod
     def ensure_mpi_initialized(cls):
@@ -1264,6 +1455,9 @@ class MpiChannel(AbstractMessageChannel):
     @classmethod
     def is_threaded(cls):
         #We want this for backwards compatibility with mpi4py versions < 2.0.0
+        #currently unused after Init/Init_threaded was removed from
+        #this module.
+        from mpi4py import rc
         try:
             return rc.threaded
         except AttributeError:
@@ -1370,6 +1564,7 @@ class MpiChannel(AbstractMessageChannel):
         return MPI.COMM_WORLD.rank == 0
         
     def start(self):
+        
         if not self.debugger_method is None:
             command, arguments = self.debugger_method(self.full_name_of_the_worker, self, interpreter_executable=self.interpreter_executable)
         else:
@@ -1383,7 +1578,7 @@ class MpiChannel(AbstractMessageChannel):
                     arguments = [self.full_name_of_the_worker]
             else:
                 command, arguments = self.REDIRECT(self.full_name_of_the_worker, self.redirect_stdout_file, self.redirect_stderr_file, command=self.python_exe_for_redirection, interpreter_executable=self.interpreter_executable)
-                
+
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info=self.info)
             
         
@@ -1923,12 +2118,16 @@ class SocketMessage(AbstractMessage):
         if count > 0:
             lengths = self.receive_ints(socket, count)
             
+            total = lengths.sum() + len(lengths)
+                        
+            data_bytes = self._receive_all(total, socket)
+
             strings = []
-            
-            for i in range(count):
-                data_bytes = self._receive_all(lengths[i], socket)
-                strings.append(str(data_bytes.decode('utf-8')))
-            
+            begin = 0
+            for size in lengths:
+                strings.append(data_bytes[begin:begin + size].decode('utf-8'))
+                begin = begin + size + 1
+
             return strings
         else:
             return []
@@ -1987,21 +2186,16 @@ class SocketMessage(AbstractMessage):
             socket.sendall(data_buffer.tostring())
             
     def send_strings(self, socket, array):
-        header = []
-        data_bytes = []
-        
-        for i in range(len(array)):
+        if len(array) > 0:
             
-            #logger.debug("sending string %s", array[i])
+            lengths = numpy.array( [len(s) for s in array] ,dtype='int32')
+            chars=(chr(0).join(array)+chr(0)).encode("utf-8")
             
-            utf8_string = array[i].encode('utf-8')
-            header.append(len(utf8_string))
-            data_bytes.append(utf8_string)
-  
-        self.send_ints(socket, header);
-        
-        for i in range(len(data_bytes)):
-            socket.sendall(data_bytes[i])
+            if len(chars) != lengths.sum()+len(lengths):
+                raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
+
+            self.send_ints(socket, lengths);
+            socket.sendall(chars)
         
     def send_booleans(self, socket, array):
         if len(array) > 0:

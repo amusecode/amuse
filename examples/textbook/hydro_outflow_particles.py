@@ -8,36 +8,41 @@ set_printing_strategy("custom", #nbody_converter = converter,
                       precision = 5, prefix = "", separator = " [", suffix = "]"
 )
 
+###BOOKLISTSTART1###
 def new_sph_particles_from_stellar_wind(stars, mgas):
-    new_sph=datamodel.Particles(0)
+    new_sph = datamodel.Particles(0)
     for si in stars:
         Ngas = int(-si.Mwind/mgas)
-        if Ngas==0:
+        if Ngas == 0:
             continue 
         Mgas = mgas*Ngas
         si.Mwind += Mgas
-        add=datamodel.Particles(Ngas)
+        add = datamodel.Particles(Ngas)
         add.mass = mgas
-        add.h_smooth=0. | units.parsec
+        add.h_smooth = 0. | units.parsec
 
-        dx,dy,dz=uniform_unit_sphere(Ngas).make_xyz()
-        add.x=si.x+(dx * si.radius)
-        add.y=si.y+(dy * si.radius)
-        add.z=si.z+(dz * si.radius)
+        dx,dy,dz = uniform_unit_sphere(Ngas).make_xyz()
+        add.x = si.x+(dx * si.radius)
+        add.y = si.y+(dy * si.radius)
+        add.z = si.z+(dz * si.radius)
         for ri in range(len(add)):
             r = add[ri].position-si.position
             r = r/r.length()
-            v_wind = (constants.G*si.mass/(add[ri].position-si.position).length()).sqrt()
-            add[ri].u= 0.5 * (v_wind)**2
-            add[ri].vx=si.vx + r[0]*si.terminal_wind_velocity
-            add[ri].vy=si.vy + r[1]*si.terminal_wind_velocity
-            add[ri].vz=si.vz + r[2]*si.terminal_wind_velocity
+            v_wind = (constants.G*si.mass
+                       / (add[ri].position-si.position).length()).sqrt()
+            add[ri].u = 0.5 * (v_wind)**2
+            add[ri].vx = si.vx + r[0]*si.terminal_wind_velocity
+            add[ri].vy = si.vy + r[1]*si.terminal_wind_velocity
+            add[ri].vz = si.vz + r[2]*si.terminal_wind_velocity
         new_sph.add_particles(add)  
     return new_sph
+###BOOKLISTSTOP1###
 
+###BOOKLISTSTART2###
 def v_terminal_teff(star):
-  t4=(numpy.log10(star.temperature.value_in(units.K))-4.).clip(0.,1.)
-  return (30 | units.km/units.s) + ((4000 | units.km/units.s)*t4)
+    t4 = (numpy.log10(star.temperature.value_in(units.K))-4.).clip(0.,1.)
+    return (30 | units.km/units.s) + ((4000 | units.km/units.s)*t4)
+###BOOKLISTSTOP2###
 
 def main():
     stars = Particles(2)
@@ -64,7 +69,7 @@ def main():
     dt = 0.1|units.day
     mgas =  0.1*abs(stars.dmdt.sum()*dt)
 
-    converter=nbody_system.nbody_to_si(1|units.MSun, a)
+    converter = nbody_system.nbody_to_si(1|units.MSun, a)
     bodies = Particles(0)
     bodies.mass = mgas
     bodies.position = (0,0,0)|units.AU
@@ -73,10 +78,10 @@ def main():
     bodies.h_smooth= 0.01*a
 
     hydro = Fi(converter, redirection="none")
-    if len(bodies)>0:
+    if len(bodies) > 0:
         hydro.gas_particles.add_particles(bodies)
-    hydro.parameters.use_hydro_flag=True
-    hydro.parameters.timestep=dt
+    hydro.parameters.use_hydro_flag = True
+    hydro.parameters.timestep = dt
     hydro.parameters.periodic_box_size = 1000*a
     hydro_to_framework = hydro.gas_particles.new_channel_to(bodies)
 
@@ -86,12 +91,11 @@ def main():
     while hydro.model_time < 10|units.yr:
         stars.Mwind += stars.dmdt*dt
         new_sph = new_sph_particles_from_stellar_wind(stars, mgas)
-
-        if len(new_sph)>0: 
+        if len(new_sph) > 0: 
             bodies.add_particles(new_sph)
             bodies.synchronize_to(hydro.gas_particles)
         print "time=", hydro.model_time, "Ngas=", len(bodies), mgas*len(bodies)
-        if len(bodies)>100:
+        if len(bodies) > 100:
             hydro.evolve_model(hydro.model_time+dt)
             hydro_to_framework.copy()
             if istep%10 == 0:

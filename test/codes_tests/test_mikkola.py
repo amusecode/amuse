@@ -779,4 +779,31 @@ class TestMikkola(TestWithMPI):
             instance.evolve_model(0.3 | units.yr)  
         except exceptions.AmuseException as ex:
             self.assertEquals(ex.errorcode, -4)
-
+            
+    def test16(self):
+        particles = datamodel.Particles(3)
+        particles.mass = [0.1,0.1, 0.0001] | nbody_system.mass
+        particles.radius = [0.3, 0.3, 0.1] | nbody_system.length
+        particles.x = [-0.5, 0.5, 10] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.velocity = [0,0,0] | nbody_system.speed
+        particles[-1].vy = 10 | nbody_system.speed
+        instance = Mikkola()
+        instance.initialize_code()
+        instance.parameters.set_defaults()
+        instance.parameters.lightspeed = 0 | nbody_system.speed
+        instance.particles.add_particles(particles)
+        collisions = instance.stopping_conditions.collision_detection
+        collisions.enable()
+        instance.evolve_model(10.0 | nbody_system.time)
+        print instance.particles.position
+        self.assertTrue(collisions.is_set())
+        print instance.model_time
+        print len(collisions.particles(0))
+        self.assertTrue(instance.model_time < 2 | nbody_system.time)
+        print collisions.particles(0).key
+        print collisions.particles(1).key
+        self.assertEquals(len(collisions.particles(0)), 1)
+        self.assertEquals(len(collisions.particles(1)), 1)
+        instance.stop()

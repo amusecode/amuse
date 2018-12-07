@@ -300,8 +300,14 @@ class JobServer(object):
         return True
 
     def waitall(self):
-      while self.wait():
-        pass
+        while len(self.pool)==0 and self.job_list:
+            if self.number_available_codes>0:
+                raise Exception("JobServer: this should not happen")    
+            if self.number_starting_codes==0:
+                raise Exception("JobServer: no codes available")
+        while len(self.pool)>0 or self.job_list:        
+            self.pool.wait()
+            self.last_finished_job=self._finished_jobs[-1]
     
     @property
     def finished_jobs(self):

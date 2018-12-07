@@ -9,14 +9,15 @@ from amuse.couple import multiples
 # Awkward syntax here because multiples needs a function that resets
 # and returns a small-N integrator.
 
+###BOOKLISTSTART1###
 SMALLN = None
 def init_smalln(converter):
     global SMALLN
     SMALLN = SmallN(convert_nbody=converter)
-
 def new_smalln():
     SMALLN.reset()
     return SMALLN
+###BOOKLISTSTOP1###
 
 def stop_smalln():
     global SMALLN
@@ -51,13 +52,12 @@ def print_diagnostics(grav, E0=None):
     
     return E
 
+###BOOKLISTSTART2###
 def integrate_system(N, t_end, seed=None):
 
-    # Initialize an N-body module and load a stellar system.
-
-    mass = N|units.MSun
+    total_mass = N|units.MSun
     length = 1|units.parsec
-    converter = nbody_system.nbody_to_si(mass, length)
+    converter = nbody_system.nbody_to_si(total_mass, length)
     gravity = ph4(convert_nbody=converter)
     gravity.initialize_code()
     gravity.parameters.set_defaults()
@@ -65,48 +65,32 @@ def integrate_system(N, t_end, seed=None):
 
     if seed is not None: numpy.random.seed(seed)
     stars = new_plummer_model(N, convert_nbody=converter)
-    stars.mass = mass/N
+    stars.mass = total_mass/N
     stars.scale_to_standard(convert_nbody=converter,
                             smoothing_length_squared
                              = gravity.parameters.epsilon_squared)
-
-    # Star IDs are important, as they are used in multiples bookkeeping.
-    
     id = numpy.arange(N)
     stars.id = id+1
-
-    # Set dynamical radii.
-
     stars.radius = 0.5/N | units.parsec
 
     gravity.particles.add_particles(stars)
 
-    # Enable collision detection.
-
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
 
-    # Define the small-N code.
-
     init_smalln(converter)
-
-    # Define a Kepler module.
-
     kep = Kepler(unit_converter=converter)
     kep.initialize_code()
-
-    # Create the multiples module.
-
     multiples_code = multiples.Multiples(gravity, new_smalln, kep,
                                          constants.G)
     multiples_code.neighbor_perturbation_limit = 0.05
+    multiples_code.global_debug = 1
+###BOOKLISTSTOP2###
 
-    multiples_code.global_debug = 1	# 0: no output from multiples
-    					# 1: minimal output
-                                        # 2: debugging output
-                                        # 3: even more output
-
-    # Print selected multiples settings.
+    #	global_debug = 0: no output from multiples
+    #	               1: minimal output
+    #	               2: debugging output
+    #	               3: even more output
 
     print ''
     print 'multiples_code.neighbor_veto =', \
@@ -118,14 +102,14 @@ def integrate_system(N, t_end, seed=None):
     print 'multiples_code.wide_perturbation_limit =', \
         multiples_code.wide_perturbation_limit
 
-    # Advance the system.
+    time = numpy.sqrt(length**3/(constants.G*total_mass))
+    print '\ntime unit =', time.in_(units.Myr)    
+###BOOKLISTSTART3###
 
-    time = numpy.sqrt(length**3/(constants.G*mass))
-    print '\ntime unit =', time.in_(units.Myr)
-    
     E0 = print_diagnostics(multiples_code)
     multiples_code.evolve_model(t_end)
     print_diagnostics(multiples_code, E0)
+###BOOKLISTSTOP3###
 
     gravity.stop()
     kep.stop()
@@ -134,4 +118,4 @@ def integrate_system(N, t_end, seed=None):
 if __name__ in ('__main__'):
     N = 100
     t_end = 10.0 | units.Myr
-    integrate_system(N, t_end) #, 42)
+    integrate_system(N, t_end, 42)

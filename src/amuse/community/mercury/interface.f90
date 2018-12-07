@@ -354,6 +354,32 @@ function get_integrator(t_) result(ret)
   ret=get_algor(t_)
 end function
 
+function set_rmax(r_max) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  real*8 :: r_max
+  ret = mercury_set_rmax(r_max)
+end function
+function get_rmax(r_max) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  real*8 :: r_max
+  ret = mercury_get_rmax(r_max)
+end function
+
+function set_cefac(cefac_n1) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  real*8 :: cefac_n1
+  ret = mercury_set_cefac(cefac_n1)
+end function
+function get_cefac(cefac_n1) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  real*8 :: cefac_n1
+  ret = mercury_get_cefac(cefac_n1)
+end function
+
 function set_elements_file(s) result(ret)
   use amuse_mercuryMod
   integer :: ret

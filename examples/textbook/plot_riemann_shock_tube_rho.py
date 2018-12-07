@@ -40,12 +40,12 @@ def plot_riemann_shock_tube_rho():
         
     x, rho = read_csv("riemann_shock_tube_problem_exact.csv")
     pyplot.plot(x,rho, c=color[0])
-    x, rho = read_csv("riemann_shock_tube_problem_fiN5.csv")
+    x, rho = read_csv("riemann_shock_tube_rho_fiN7.csv")
     pyplot.scatter(x, rho, c=color[1], s=100, marker="o", lw=0)
     x, rho = read_csv("riemann_shock_tube_problem_athenaN2.csv")
     pyplot.scatter(x, rho, c=color[2], s=100, marker="s", lw=0)
 
-    pyplot.xlim(0.0,1.0)
+    pyplot.xlim(0.2,0.8)
 
 #        pyplot.savefig("riemann_shock_tube_rho_"+model.name_of_the_code+".png")
     pyplot.savefig("riemann_shock_tube_rho")

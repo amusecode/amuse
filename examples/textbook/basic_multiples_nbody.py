@@ -53,8 +53,6 @@ def print_diagnostics(grav, E0=None):
 
 def integrate_system(N, t_end, seed=None):
 
-    # Initialize an N-body module and load a stellar system.
-
     gravity = ph4()
     gravity.initialize_code()
     gravity.parameters.set_defaults()
@@ -65,42 +63,30 @@ def integrate_system(N, t_end, seed=None):
     stars.scale_to_standard(smoothing_length_squared
                              = gravity.parameters.epsilon_squared)
 
-    # Star IDs are important as they are used in multiples bookkeeping.
-    
     id = numpy.arange(N)
     stars.id = id+1
 
-    # Set dynamical radii.
+    # Set dynamical radii for encounters.
 
     stars.radius = 0.5*stars.mass.number | nbody_system.length
 
     gravity.particles.add_particles(stars)
 
-    # Enable collision detection.
-
     stopping_condition = gravity.stopping_conditions.collision_detection
     stopping_condition.enable()
 
-    # Define the small-N code.
-
     init_smalln()
-
-    # Define a Kepler module.
-
     kep = Kepler(unit_converter=None)
     kep.initialize_code()
-
-    # Create the multiples module.
-
     multiples_code = multiples.Multiples(gravity, new_smalln, kep)
     multiples_code.neighbor_perturbation_limit = 0.05
 
-    multiples_code.global_debug = 1	# 0: no output from multiples
-    					# 1: minimal output
-                                        # 2: debugging output
-                                        # 3: even more output
+    multiples_code.global_debug = 1
 
-    # Print selected multiples settings.
+    #	global_debug = 0: no output from multiples
+    #	               1: minimal output
+    #	               2: debugging output
+    #	               3: even more output
 
     print ''
     print 'multiples_code.neighbor_veto =', \

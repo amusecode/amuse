@@ -30,6 +30,8 @@ def main():
     planet = ss[1]
     moon = ss[2]
     converter=nbody_system.nbody_to_si(star.mass,planet.position.length())
+
+###BOOKLISTSTART###
     star_gravity = ph4(converter)
     star_gravity.particles.add_particle(star)
 
@@ -46,9 +48,10 @@ def main():
     write_set_to_file(ss, filename, 'hdf5')
     
     gravity = bridge.Bridge()
-    gravity.add_system(star_gravity, (planet_gravity,moon_gravity) )
-    gravity.add_system(planet_gravity, (star_gravity,moon_gravity) )
-    gravity.add_system(moon_gravity, (star_gravity,planet_gravity) )
+    gravity.add_system(star_gravity, (planet_gravity,moon_gravity))
+    gravity.add_system(planet_gravity, (star_gravity,moon_gravity))
+    gravity.add_system(moon_gravity, (star_gravity,planet_gravity))
+###BOOKLISTSTOP###
 
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init

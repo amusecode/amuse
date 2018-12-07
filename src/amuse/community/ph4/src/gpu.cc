@@ -71,11 +71,7 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 
 	// Define my j-range.
 
-	n = nj/mpi_size;
-	if (n*mpi_size < nj) n++;
-	j_start = mpi_rank*n;
-	j_end = j_start + n;
-	if (mpi_rank == mpi_size-1) j_end = nj;
+	define_domain(j_start, j_end);
     }
 
     // Load all local particles into the GPU.
@@ -107,16 +103,14 @@ void jdata::update_gpu(int jlist[], int njlist)
     // Load data for the listed j-particles into the GPU.
 
     static int my_nj = -1;
-    static int n, j_start;
+    static int n, j_start, j_end;
     static real a2[3] = {0,0,0}, j6[3] = {0,0,0}, k18[3] = {0,0,0};
 
     if (my_nj != nj) {
 
 	// (Re)define my j-range.  Only necessary if nj changes.
 
-	n = nj/mpi_size;
-	if (n*mpi_size < nj) n++;
-	j_start = mpi_rank*n;
+	n = define_domain(j_start, j_end);
 	my_nj = nj;
     }
 
@@ -182,16 +176,14 @@ void idata::update_gpu()
     // Code is essentially identical to the jdata version.
 
     static int my_nj = -1;
-    static int n, j_start;
+    static int n, j_start, j_end;
     static real a2[3], j6[3], k18[3] = {0,0,0};
 
     if (my_nj != jdat->nj) {
 
 	// Define my j-range.
 
-	n = jdat->nj/jdat->mpi_size;
-	if (n*jdat->mpi_size < jdat->nj) n++;
-	j_start = jdat->mpi_rank*n;
+	n = jdat->define_domain(j_start, j_end);
 	my_nj = jdat->nj;
     }
 
@@ -282,11 +274,7 @@ void jdata::sync_gpu()
 
     if (my_nj != nj) {
 	// cout << in_function << ": resetting domains" << endl << flush;
-	int n = nj/mpi_size;
-	if (n*mpi_size < nj) n++;
-	j_start = mpi_rank*n;
-	j_end = j_start + n;
-	if (mpi_rank == mpi_size-1) j_end = nj;
+	define_domain(j_start, j_end);
 	localnj = j_end - j_start;
 	my_nj = nj;
     }
@@ -367,11 +355,7 @@ void idata::get_partial_acc_and_jerk_on_gpu(bool pot)	// default = false
 
     if (my_nj != jdat->nj) {
 	// cout << "resetting domains" << endl << flush;
-	int n = jdat->nj/jdat->mpi_size;
-	if (n*jdat->mpi_size < jdat->nj) n++;
-	j_start = jdat->mpi_rank*n;
-	j_end = j_start + n;
-	if (jdat->mpi_rank == jdat->mpi_size-1) j_end = jdat->nj;
+	jdat->define_domain(j_start, j_end);
 	localnj = j_end - j_start;
 	my_nj = jdat->nj;
     }
@@ -614,11 +598,7 @@ void jdata::get_densities_on_gpu()	// under development
 
 	// Define my j-range.
 
-	int n = nj/mpi_size;
-	if (n*mpi_size < nj) n++;
-	j_start = mpi_rank*n;
-	j_end = j_start + n;
-	if (mpi_rank == mpi_size-1) j_end = nj;
+	define_domain(j_start, j_end);
 	localnj = j_end - j_start;
 
 	nneighbors = new int[npipes];

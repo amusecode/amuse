@@ -156,9 +156,9 @@ class InstallPrerequisites(object):
           (
             'png' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '1.6.31' ,                   #version string
+            '1.6.29' ,                   #version string
             'libpng-', '.tar.gz',        #pre- and postfix for filename
-            'https://downloads.sourceforge.net/project/libpng/libpng16/1.6.31/', #download url, filename is appended
+            'https://downloads.sourceforge.net/project/libpng/libpng16/older-releases/1.6.29/', #download url, filename is appended
             self.png_build             #method to use for building - same as for FFTW should work
           ) ,
           (
@@ -346,6 +346,7 @@ class InstallPrerequisites(object):
         env['BLAS'] = 'None'
         env['LAPACK'] = 'None'
         env['ATLAS'] = 'None'
+	self.run_application(['patch', 'gnu.py', os.path.abspath(os.path.join(os.path.dirname(__file__), 'gnu.py.patch'))], cwd=os.path.join(path,'numpy','distutils','fcompiler'), env=env)
         self.run_application([sys.executable,'setup.py','build'], cwd=path, env=env)
         self.run_application([sys.executable,'setup.py','install'], cwd=path, env=env)
         
@@ -560,7 +561,7 @@ class InstallPrerequisites(object):
                 print "Download location may have changed"
                 print "Please download the source file yourself, "
                 print "or contact the AMUSE development team."
-                print "http://castle.strw.leidenuniv/trac/amuse"
+                print "https://github.com/amusecode/amuse/issues"
                 print
                 print "To download the file you can update the URL in"
                 print "one of the following lines and run the command."

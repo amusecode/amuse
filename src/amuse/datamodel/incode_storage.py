@@ -207,6 +207,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
             raise
         return self.convert_return_value(return_value, storage, attributes_to_return)
     
+
     def get_attribute_values_async(self, storage, attributes_to_return, *indices):
         
         self.check_arguments(storage, indices, attributes_to_return)
@@ -896,7 +897,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         return self.get_value_in_store(index, attribute)
    
     def get_values_in_store(self, indices_in_the_code, attributes):
-    
+
         if indices_in_the_code is None:
             indices_in_the_code = self.code_indices
             
@@ -915,6 +916,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         return results
         
     
+
     def get_values_in_store_async(self, indices_in_the_code, attributes):
     
         if indices_in_the_code is None:
@@ -927,13 +929,23 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         
         getters = self.select_getters_for(attributes)
         if len(getters) > 1:
-            raise Exception("more than 1 getters needed for this set of attributes, not supported yet in async mode")
-        
-        for getter in getters:
-            request = getter.get_attribute_values_async(self, attributes, indices_in_the_code)
-            def result_handler(inner, mapping):
-                mapping.update(inner())
-            request.add_result_handler(result_handler, mapping_from_attribute_to_result)
+            def new_request(index, getters, attributes, indices_in_the_code):
+                if index >= len(getters):
+                    return None
+                getter = getters[index]
+                request = getter.get_attribute_values_async(self, attributes, indices_in_the_code)
+                def result_handler(inner, mapping):
+                    mapping.update(inner())
+                request.add_result_handler(result_handler, (mapping_from_attribute_to_result,))
+                return request
+
+            request = ASyncRequestSequence(new_request, args=(getters,attributes, indices_in_the_code))
+        else:
+            for getter in getters:
+                request = getter.get_attribute_values_async(self, attributes, indices_in_the_code)
+                def result_handler(inner, mapping):
+                    mapping.update(inner())
+                request.add_result_handler(result_handler, (mapping_from_attribute_to_result,))
     
         def all_handler(inner, mapping):
             inner()
@@ -942,7 +954,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
                 results.append(mapping[attribute])
             return results
             
-        request.add_result_handler(all_handler, mapping_from_attribute_to_result)
+        request.add_result_handler(all_handler, (mapping_from_attribute_to_result,))
         return request
         
     def set_values_in_store(self, indices_in_the_code, attributes, values):
@@ -954,6 +966,27 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(self, attributes, values, indices_in_the_code)
+
+    def set_values_in_store_async(self, indices_in_the_code, attributes, values):
+        if indices_in_the_code is None:
+            indices_in_the_code = self.code_indices
+
+        if len(indices_in_the_code) == 0:
+            return
+        setters = self.select_setters_for(attributes)
+        if len(setters) > 1:
+            def new_request(index, setters, attributes, values, indices_in_the_code):
+                if index >= len(setters):
+                    return None
+                setter = setters[index]
+                request = setter.set_attribute_values_async(self, attributes, values, indices_in_the_code)
+                return request
+
+            request = ASyncRequestSequence(new_request, args=(setters,attributes, values, indices_in_the_code))
+        else:
+            for setter in setters:
+                request = setter.set_attribute_values(self, attributes, values, indices_in_the_code)
+        return request
     
 
     def remove_particles_from_store(self, indices_in_the_code):
@@ -1091,7 +1124,9 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         for attribute in attributes:
             returned_value = mapping_from_attribute_to_result[attribute]
             
-            if len(array_of_indices[0].shape) == 0:
+            if len(array_of_indices)==0:
+                value=returned_value
+            elif len(array_of_indices[0].shape) == 0:
                 value = returned_value[0]
             else:
                 if len(returned_value)!=numpy.product(array_of_indices[0].shape):
@@ -1106,9 +1141,13 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         
     def set_values_in_store(self,  indices, attributes, quantities):
         array_of_indices = self._to_arrays_of_indices(indices)
-    
-        one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
         one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
+        if len(one_dimensional_array_of_indices)==0:
+            one_dimensional_values = [x for x in quantities]
+        else:
+            one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
+
+        
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(self, attributes, one_dimensional_values, *one_dimensional_array_of_indices)
      
@@ -1116,8 +1155,11 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     def set_values_in_store_async(self,  indices, attributes, quantities):
         array_of_indices = self._to_arrays_of_indices(indices)
     
-        one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
         one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
+        if len(one_dimensional_array_of_indices)==0:
+            one_dimensional_values = [x for x in quantities]
+        else:
+            one_dimensional_values = [(x.reshape(-1) if is_quantity(x) else numpy.asanyarray(x).reshape(-1)) for x in quantities]
         selected_setters = list([setter for setter in self.select_setters_for(attributes)])
         
         def next_request(index, setters):

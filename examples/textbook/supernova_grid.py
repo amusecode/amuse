@@ -13,22 +13,29 @@ def plot_grid(grid, time= 0.0|units.day):
     pyplot.rcParams.update({'font.size': 30})
     figure = pyplot.figure(figsize=(12, 12))
 
-    halfway = len(grid.rho[...,0,0])/2 - 1
-    rho = grid.rho[...,...,halfway].value_in(units.g/units.cm**3)
+    halfway = len(grid.rho[...,0,0])/2 
+    rho = grid.rho[:,:,halfway].value_in(units.g/units.cm**3)
+    print "Extrema density:", halfway, rho.min(), rho.max()
+    max_dens = rho.max()
+#    max_dens = 32
 
     plot = figure.add_subplot(1,1,1)
-    cax = plot.imshow(rho, interpolation='nearest', origin = 'lower', extent=[-5, 5, -5, 5])
-    max_dens = rho.max()
+#    cax = plot.imshow(rho, interpolation='nearest', origin = 'lower', extent=[-5, 5, -5, 5], cmap="hot")
+    cax = plot.imshow(rho, interpolation='bicubic', origin = 'lower', extent=[-5, 5, -5, 5], cmap="hot")
     cbar = figure.colorbar(cax, ticks=[1.e-8, 0.5*max_dens, max_dens], orientation='vertical', fraction=0.045)
-    cbar.ax.set_yticklabels(['Low', ' ', 'High'])  # horizontal colorbar
-    cbar.set_label('mid-plane density', rotation=270)
+    rmin = 0.0 
+    rmid = "%.1f" % (0.5*max_dens)
+    rmax = "%.1f" % (max_dens)
+#    cbar.ax.set_yticklabels(['Low', ' ', 'High'])  # horizontal colorbar
+    cbar.ax.set_yticklabels([rmin, ' ', rmax])  # horizontal colorbar
+    cbar.set_label('mid-plane density [$g/cm^3$]', rotation=270)
     pyplot.xlabel("x [R$_\odot$]")
     pyplot.ylabel("y [R$_\odot$]")
     t = int(time.value_in(units.s))
     filename = "supernova_grid_T"+str(t)+".png"
     figure.savefig(filename)
-    pyplot.show()
-    
+#    pyplot.show()
+
 def setup_sph_code(sph_code, N, L, rho, u):
     converter = ConvertBetweenGenericAndSiUnits(L, rho, constants.G)
     sph_code = sph_code(converter, mode = 'periodic')#, redirection = 'none')
@@ -146,7 +153,7 @@ def run_grid_code(hydro, grid, t_end, dt):
     plot_grid(grid)
         
     while hydro.model_time<t_end:
-        print "Time=", hydro.model_time.in_(units.Myr)
+        print "Time=", hydro.model_time.in_(units.s)
         hydro.evolve_model(hydro.model_time + dt)
         ctg.copy()
         plot_grid(grid, hydro.model_time)
@@ -156,7 +163,7 @@ def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-t", unit=units.s,
-                      dest="t_end", type="float", default = 500.0|units.s,
+                      dest="t_end", type="float", default = 300.0|units.s,
                       help="end time of the simulation [%default]")
     result.add_option("-d", unit=units.s,
                       dest="dt", type="float", default = 50.0|units.s,
@@ -171,7 +178,7 @@ def new_option_parser():
                       dest="core_mass", type="float", default = 1.4|units.MSun,
                       help="Mass of the stellar core [%default]")
     result.add_option("-n", 
-                      dest="resolution", type="int", default = 100,
+                      dest="resolution", type="int", default = 256,
                       help="Resolution of the grid [%default]")
     result.add_option("-r", unit=units.RSun,
                       dest="core_radius", type="float", default = 0.1|units.RSun,

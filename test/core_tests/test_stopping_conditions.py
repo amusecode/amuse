@@ -1,7 +1,7 @@
 from amuse.test import amusetest
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.codes.stopping_conditions import StoppingConditions
+from amuse.community.interface.stopping_conditions import StoppingConditions
 from amuse import datamodel
 from amuse.units import units
 from amuse.support import interface

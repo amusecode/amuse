@@ -12,7 +12,8 @@ def calculate_orbital_elements(star, planet):
     p = Particles()
     p.add_particle(star)
     p.add_particle(planet)
-    M, m, a, e, ta_out, outc_out, lan_out, aop_out = orbital_elements_from_binary(p, G=constants.G)
+    M, m, a, e, ta_out, outc_out, lan_out, aop_out \
+        = orbital_elements_from_binary(p, G=constants.G)
     return a, e
 
 from amuse.ext.orbital_elements import new_binary_from_orbital_elements
@@ -25,7 +26,7 @@ def make_planetesimal_disk(Nplanetesimals):
     a = amin + (amax-amin)*numpy.random.random_sample(Nplanetesimals)
     e = emax*numpy.random.random_sample(Nplanetesimals)
     i = imax*numpy.random.random_sample(Nplanetesimals)
-    ta = 0 #numpy.acos(np.random.uniform(0,2*numpy.pi,Nplanetesimals))
+    ta = 0  # numpy.acos(np.random.uniform(0,2*numpy.pi,Nplanetesimals))
     loan = 0
     aof = 0
     mp = 0.1 | units.MEarth
@@ -66,10 +67,10 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
 
     Mdisk = fmdisk * Mstar
     converter=nbody_system.nbody_to_si(Mstar, Rmax)
-    star_and_planets, disk = initialize_star_and_planetary_system(Mstar, Ndisk, Mdisk, Rmin, Rmax)
+    star_and_planets, disk \
+        = initialize_star_and_planetary_system(Mstar, Ndisk, Mdisk, Rmin, Rmax)
 
     hydro=Fi(converter)
-#    hydror = Fi(channel_type="ibis", hostname="galgewater")
  
     hydro.parameters.use_hydro_flag=True
     hydro.parameters.radiation_flag=False
@@ -84,11 +85,13 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
     gravity = Hermite(converter)
     gravity.particles.add_particles(star_and_planets)
 
-    planet_attributes=["x", "y", "z", "vx", "vy", "vz", "mass", "semimajor_axis", "eccentricity"]
-    disk_attributes=["x", "y", "z", "vx", "vy", "vz", "mass", "u", "rho", "h_smooth"]
+    planet_attributes=["x", "y", "z", "vx", "vy", "vz",
+                       "mass", "semimajor_axis", "eccentricity"]
+    disk_attributes=["x", "y", "z", "vx", "vy", "vz",
+                     "mass", "u", "rho", "h_smooth"]
     channel_to_planets = gravity.particles.new_channel_to(star_and_planets)
-    channel_from_hydro_to_framework = hydro.particles.new_channel_to(disk,
-                                                                     attributes=disk_attributes)
+    channel_from_hydro_to_framework \
+        = hydro.particles.new_channel_to(disk, attributes=disk_attributes)
     channel_from_hydro_to_framework.copy()
 
     moving_bodies = ParticlesSuperset([star_and_planets, disk])
@@ -96,7 +99,8 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
 
     index = 0
     filename = "planetary_system_i{0:04}.amuse".format(index)
-    write_set_to_file(star_and_planets, filename, 'amuse', attribute_names=planet_attributes,
+    write_set_to_file(star_and_planets, filename, 'amuse',
+                      attribute_names=planet_attributes,
                       append_to_file=False)
     write_set_to_file(disk, filename, 'amuse', attribute_names=disk_attributes)
     
@@ -114,7 +118,8 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
         time += dt
         gravity_hydro.evolve_model(time)
 
-        Etot_prev_se = gravity_hydro.kinetic_energy + gravity_hydro.potential_energy
+        Etot_prev_se = gravity_hydro.kinetic_energy \
+                        + gravity_hydro.potential_energy
 
         channel_to_planets.copy()
         channel_from_hydro_to_framework.copy()
@@ -126,9 +131,11 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
         
         index += 1
         filename = "planetary_system_i{0:04}.amuse".format(index)
-        write_set_to_file(star_and_planets, filename, 'amuse', attribute_names=planet_attributes,
+        write_set_to_file(star_and_planets, filename, 'amuse',
+                          attribute_names=planet_attributes,
                           append_to_file=False)
-        write_set_to_file(disk, filename, 'amuse', attribute_names=disk_attributes)
+        write_set_to_file(disk, filename, 'amuse',
+                          attribute_names=disk_attributes)
 
         Ekin = gravity_hydro.kinetic_energy 
         Epot = gravity_hydro.potential_energy
@@ -143,7 +150,7 @@ def main(Mstar, Ndisk, fmdisk, Rmin, Rmax, t_end, n_steps):
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-n", dest="n_steps", type="float", default = 1000,
+    result.add_option("-n", dest="n_steps", type="float", default = 100,
                       help="number of diagnostics time steps [10]")
     result.add_option("--Ndisk", dest="Ndisk", type="int",default = 100000,
                       help="number of disk particles [100]")

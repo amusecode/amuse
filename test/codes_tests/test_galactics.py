@@ -1,6 +1,7 @@
 import os
 import os.path
 import numpy
+import platform
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
@@ -137,7 +138,13 @@ class GalactICsInterfaceTests(TestWithMPI):
         self.assertAlmostRelativeEquals(masses, numpy.ones(number_of_particles_halo)*masses[0])
         total_mass = masses.sum() 
         
-        expected_mean_pos = numpy.array([73.768384103536604, 76.03533643054962, 75.176319462463255])
+        if platform.processor() == 'ppc64le':
+            # on ppc64le, the model generation has small differences from intel
+            # change expected pos
+            expected_mean_pos = numpy.array([73.5628, 76.251034, 75.53434])
+        else:
+            expected_mean_pos = numpy.array([73.768384103536604, 76.03533643054962, 75.176319462463255])
+
         expected_mean_vel = numpy.array([0.92904859858192501, 0.94953939936682585, 0.92897711758688095])
             
         x_positions, y_positions, z_positions, errors = instance.get_position(range(number_of_particles_halo))

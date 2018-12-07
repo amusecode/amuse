@@ -1,5 +1,5 @@
 """
-   example code for bridging a gravity solver with a hydrodynamics solver
+   example code bridging a gravity solver with a hydrodynamics solver
 """
 import numpy
 from amuse.lab import *
@@ -31,7 +31,8 @@ def evolve_binary_in_common_envelope(stars, envelope, t_end):
 
     model_time = 0 | units.Myr
     filename = "XiTau_Hydro.amuse"
-    write_set_to_file(stars.savepoint(model_time), filename, 'amuse', append_to_file=False)
+    write_set_to_file(stars.savepoint(model_time), filename, 'amuse',
+                      append_to_file=False)
     write_set_to_file(envelope, filename, 'amuse')
 
     gravhydro = bridge.Bridge(use_threading=False)
@@ -67,7 +68,8 @@ if __name__ in ('__main__', '__plot__'):
     m1 = 3.2|units.MSun
     m2 = 3.1|units.MSun
     from amuse.ext.orbital_elements import new_binary_from_orbital_elements
-    inner_binary = new_binary_from_orbital_elements(m1, m2, a, e, G=constants.G)
+    inner_binary = new_binary_from_orbital_elements(m1, m2, a, e,
+                                                    G=constants.G)
 
     XiTau = read_set_from_file("Hydro_PrimaryStar_XiTau.amuse", "amuse")
     for ci in XiTau.history:
@@ -81,7 +83,8 @@ if __name__ in ('__main__', '__plot__'):
     m12 = inner_binary.mass.sum()
     m3 = XiTau_core.mass + XiTau_envelope.mass.sum()
     print "M3=", m3.in_(units.MSun)
-    outer_binary = new_binary_from_orbital_elements(m12, m3, ao, eo, G=constants.G)
+    outer_binary = new_binary_from_orbital_elements(m12, m3, ao, eo,
+                                                    G=constants.G)
 
     inner_binary.position += outer_binary[0].position
     inner_binary.velocity += outer_binary[0].velocity

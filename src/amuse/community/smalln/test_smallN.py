@@ -227,7 +227,7 @@ if __name__ == '__main__':
     t_end = 50.0 | nbody_system.time
     delta_t = 1.0 | nbody_system.time
     accuracy_parameter = 0.1
-    random_seed = -1
+    random_seed = 123432111
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")

@@ -863,3 +863,64 @@ class TestHermite(TestWithMPI):
         hermite.stop()
         self.assertEquals(id(channel1), id(channel2))
 
+    def test25(self):
+        hermite = Hermite()
+        hermite.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        particles = datamodel.Particles(10)
+        particles.position = ([0,0,0] )| nbody_system.length
+        particles.velocity = ([1,0,0] )| nbody_system.speed
+        particles.radius = 0| nbody_system.length
+        particles.mass = 0.1| nbody_system.mass
+        particles.x = numpy.linspace(1, 10, 10) | nbody_system.length 
+        particles.vx = numpy.linspace(1, 5, 10) | nbody_system.speed 
+                
+        hermite.particles.add_particles(particles)
+
+        request = hermite.particles.get_values_in_store_async(None, ["x"])
+        request.wait()
+        print request.result()
+        self.assertEquals(request.result()[0], particles.x)
+        request = hermite.particles.get_values_in_store_async(None, ["x", "vx"])
+        request.wait()
+        print request.result()
+        self.assertEquals(request.result()[0], particles.x)
+        self.assertEquals(request.result()[1], particles.vx)
+        p = particles.copy()
+        channel = hermite.particles.new_channel_to(p)
+        p.x = 0 | nbody_system.length
+        p.vx = 0 | nbody_system.speed
+        request = channel.copy_attributes_async(("x","vx",), async_get = True)
+        request.wait()
+        self.assertEquals(p.x, particles.x)
+        self.assertEquals(p.vx, particles.vx)
+        p.x = 0 | nbody_system.length
+        p.vx = 0 | nbody_system.speed
+        channel = p.new_channel_to(hermite.particles)
+        request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = False, async_set = True)
+        request.wait()
+        self.assertEquals(p.x, hermite.particles.x)
+        self.assertEquals(p.vx, hermite.particles.vx)
+        channel = p.new_channel_to(particles)
+        request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = False, async_set = True)
+        request.wait()
+        self.assertEquals(p.x, particles.x)
+        self.assertEquals(p.vx, particles.vx)
+        request = channel.copy_attributes_async(("x", "y", "z","vx","vy","vz"), async_get = True, async_set = False)
+        request.wait()
+        self.assertEquals(p.x, particles.x)
+        self.assertEquals(p.vx, particles.vx)
+
+        
+
+
+
+
+
+
+        
+
+
+
+
+

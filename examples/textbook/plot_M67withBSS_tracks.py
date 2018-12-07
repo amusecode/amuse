@@ -1,5 +1,5 @@
 """
-   Minimalistic routine for running a stellar evolution code
+   Minimal routine for running a stellar evolution code.
 """
 from amuse.lab import *
 from matplotlib import pyplot 
@@ -8,12 +8,11 @@ import plot_M67Data
 from prepare_figure import single_frame, figure_frame, set_tickmarks
 from distinct_colours import get_distinct
 
-#NBSS = [S984,S975,S997,S1082,S2204]
-TBSS = [6170,6820,6675,7050,6650]
-LBSS = [12.259,11.078,12.127,11.226,12.892]
+TBSS = [6170, 6820, 6675, 7050, 6650]
+LBSS = [12.259, 11.078, 12.127, 11.226, 12.892]
 
 def single_star_evolution(M, z, model_time):
-#    stellar = MESA()
+
     stellar = SeBa()
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(Particle(mass=M))
@@ -25,14 +24,14 @@ def single_star_evolution(M, z, model_time):
     L = [] | units.LSun
     T = [] | units.K
     while stellar.particles[0].age<model_time:
-        time+=dt
+        time += dt
         stellar.evolve_model(time)
         L.append(stellar.particles[0].luminosity)
         T.append(stellar.particles[0].temperature)
 
     final_luminosity = stellar.particles.luminosity
     print "L(t=0)=", initial_luminosity, \
-        ", L (t=", stellar.particles.age, ")=", \
+          ", L (t=", stellar.particles.age, ")=", \
         final_luminosity, stellar.particles.radius
     stellar.stop()
     return L, T
@@ -56,10 +55,12 @@ if __name__ in ('__main__', '__plot__'):
 
     x_label = "T [$K$]"
     y_label = "L [$L_\odot$]"
-    figure = single_frame(x_label, y_label, logx=False, logy=True, xsize=14, ysize=10)
+    figure = single_frame(x_label, y_label, logx=False, logy=True,
+                          xsize=14, ysize=10)
     color = get_distinct(6)
 
-    L, T = single_star_evolution(M=1.4|units.MSun, z=0.04, model_time=4|units.Gyr)
+    L, T = single_star_evolution(M=1.4|units.MSun, z=0.04,
+                                 model_time=4|units.Gyr)
     pyplot.plot(T.value_in(units.K),L.value_in(units.LSun), c=color[0])
 
     L, T = single_star_evolution(**o.__dict__)
@@ -74,5 +75,7 @@ if __name__ in ('__main__', '__plot__'):
     pyplot.xlim(9000, 4000)
     pyplot.ylim(1, 50)
 
-#    pyplot.show()
-    pyplot.savefig("fig_M67withBSS_tracks")
+    save_file = 'fig_M67withBSS_tracks.png'
+    pyplot.savefig(save_file)
+    print '\nSaved figure in file', save_file,'\n'
+    pyplot.show()

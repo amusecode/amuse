@@ -67,6 +67,7 @@ parameters={
             "gas_disk_number_of_particles": dict(dtype="int32", default=1000 ,description="number of gas particles"),
             "gas_disk_velocity_dispersion": dict(dtype="float64", default=0. ,description="velocity dispersion of gas particles"),
             "gas_disk_random_seed": dict(dtype="int64", default=543212345 ,description="random seed for gas disk"),
+            "reuse_cached_model" : dict(dtype="bool", default=True, description="if True reuse cached preexisting model with the same parameters"),
 }
 
 class GaslactICsImplementation(object):
@@ -236,7 +237,7 @@ class GaslactICsImplementation(object):
            os.path.exists(os.path.join( data_directory, 'dbh.dat')) and \
            os.path.exists(os.path.join( data_directory, 'dbh.finished')) and \
            os.path.exists(os.path.join( data_directory, 'getfreqs.finished')) and \
-           (os.path.exists(os.path.join( data_directory, 'diskdf.finished')) or not self._generate_disk_flag):
+           (os.path.exists(os.path.join( data_directory, 'diskdf.finished')) or self._disk_type_parameter in [0,2]):
              return True
         else:
              return False
@@ -244,7 +245,7 @@ class GaslactICsImplementation(object):
     def _location_dbh_dat(self, in_dbh,in_diskdf):
         data_directory=self._data_directory(in_dbh,in_diskdf)
         
-        if self._directory_contains_valid_model(data_directory):
+        if self._directory_contains_valid_model(data_directory) and self._reuse_cached_model:
             is_new = False
         else:
             is_new = True
@@ -289,8 +290,8 @@ class GaslactICsImplementation(object):
               proc.communicate(in_diskdf)
               if proc.returncode==0:
                 open(os.path.join(dbh_dir,"diskdf.finished"),'a').close()
-            else:
-              raise Exception("diskdf fail")
+              else:
+                raise Exception("diskdf fail")
                                 
             return 0
         except Exception as ex:
@@ -437,6 +438,8 @@ class GaslactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRe
         .. [#] Kuijken K., Dubinski J., 1995, MNRAS, 277, 1341 (original version)
         .. [#] Widrow L.M., Dubinski J., 2005, ApJ, 631, 838 (2nd version)
         .. [#] Widrow L.M., Pym B., Dubinski J., 2008, ApJ, 679, 1239 (current version)
+        .. [#] Pelupessy, F. I. et al., 2013, The Astrophysical Multipurpose Software Environment, 
+               Astronomy and Astrophysics 557, 84 [2013A&A...557A..84P] (gas version)
     """
     
     def __init__(self, **options):
@@ -761,8 +764,8 @@ class GaslactICs(CommonCode):
         number_of_updated_particles,number_of_updated_gas_particles = self.get_number_of_particles_updated()
         if number_of_updated_particles:
             self.particles._private.attribute_storage._add_indices(
-                range(number_of_updated_particles)
-            )
+                range(number_of_updated_gas_particles,number_of_updated_particles)
+            ) # this should generate disjoint sets (gas_particles not in particles) 
         if number_of_updated_gas_particles:
             self.gas_particles._private.attribute_storage._add_indices(
                 range(number_of_updated_gas_particles)

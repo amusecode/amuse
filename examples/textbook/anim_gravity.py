@@ -42,6 +42,7 @@ if __name__ in ('__main__'):
     
     filename = dir+'gravity.h5'
     particles = read_set_from_file(filename, "hdf5")
+    print particles.history
 
     x = []
     y = []

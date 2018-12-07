@@ -6,6 +6,8 @@ from amuse.units import nbody_system, generic_unit_system, generic_unit_converte
 from amuse.units import units
 from amuse.datamodel import parameters
 from amuse.support.interface import HandleParameters
+from amuse.support.interface import InCodeComponentImplementation
+
 
 class BaseTestModule(object):
     def before_get_parameter(self):
@@ -1129,7 +1131,7 @@ class TestParameters(amusetest.TestCase):
         x = parameters_handler.get_attribute(None, None)
         self.assertTrue("length" in str(x))
         self.assertTrue("[1.0, 2.0, 3.0] length" in str(x))
-        
+
     def test18(self):
         print "Testing array parameters"
         definitions = []
@@ -1157,3 +1159,84 @@ class TestParameters(amusetest.TestCase):
         self.assertEqual(x.param, [1.,2.,3.] | generic_unit_system.length)
         x.param*=2
         self.assertEqual(x.param, [2.,4.,6.] | generic_unit_system.length)
+        
+    def test19(self):
+        print "Testing multiple parameter sets"
+        
+        class TestModule(BaseTestModule):
+            x = 123.0 | generic_unit_system.length
+            y = 456.0 | generic_unit_system.length
+            z = 789.0 | generic_unit_system.length
+            
+            def get_length_x(self):
+                return self.x
+            def set_length_x(self, value):
+                self.x = value
+            def get_length_y(self):
+                return self.y
+            def set_length_y(self, value):
+                self.y = value
+            def get_length_z(self):
+                return self.z
+            def set_length_z(self, value):
+                self.z = value
+        
+        o = TestModule()
+        parameters_handler = HandleParameters(o)
+        for par_name in ["length_x", "length_y", "length_z"]:
+            parameters_handler.add_method_parameter(
+                "get_"+par_name, 
+                "set_"+par_name,
+                par_name, 
+                "a test parameter", 
+                default_value = 10.0 | generic_unit_system.length,
+                parameter_set = par_name+"_set"
+            )
+        
+        for i,par_name in enumerate(["length_x", "length_y", "length_z"]):
+            x = parameters_handler.get_attribute(par_name+"_set", None)
+            self.assertTrue([123.0, 456.0, 789.0][i] == getattr(x,par_name).number)
+        
+    def test20(self):
+        print "Testing multiple parameter sets 2"
+        
+        class TestInterface(BaseTestModule):
+            x = 123.0 
+            y = 456.0
+            
+            def get_x(self):
+                return self.x
+            def set_x(self, value):
+                self.x = value
+            def get_y(self):
+                return self.y
+            def set_y(self, value):
+                self.y = value
+
+
+        class Testing(InCodeComponentImplementation):
+    
+            def __init__(self, **options):
+                  InCodeComponentImplementation.__init__(self, TestInterface(), **options)
+
+            def define_parameters(self,object):
+                  object.add_method_parameter(
+                    "get_x", "set_x", "x", "test parameter", 123.
+                  )
+                  object.add_method_parameter(
+                    "get_y", "set_y", "y", "test parameter 2", 456.,
+                    parameter_set="parameters2"
+                  )
+                  object.add_alias_parameter(
+                    "y_alias","y", " new y", parameter_set="parameters2"
+                  )
+
+        t=Testing()
+
+        self.assertEqual(set(t.parameter_set_names()), set(('parameters','parameters2')))
+
+        self.assertEqual(t.parameters.x,123.)
+        self.assertEqual(t.parameters2.y,456.)
+        t.parameters2.y=789.
+        self.assertEqual(t.parameters2.y,789.)
+        self.assertEqual(t.parameters2.y_alias,789.)

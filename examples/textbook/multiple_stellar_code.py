@@ -1,5 +1,6 @@
 from amuse.lab import *
 
+###BOOKLISTSTART###
 def evolve_with_different_stellar_model():
     times = [10, 100, 1000] | units.Myr
     stars = Particles(mass=[1, 2, 4]|units.MSun)
@@ -16,6 +17,7 @@ def evolve_with_different_stellar_model():
     for time, star in zip(times, stars):
         print "Time=", time, "M=", star.mass
         stellar.stop()
+###BOOKLISTSTOP###
 
 def evolve_with_same_stellar_model():
     time = [10, 100, 1000] | units.Myr
@@ -27,12 +29,12 @@ def evolve_with_same_stellar_model():
         si.evolve_for(ti)
         channel.copy()
 
-    print "Time=", stellar.model_time, "age=", stars.age, "\n\tmass=", stars.mass
+    print "Time=", stellar.model_time, "age=", stars.age, \
+          "\n\tmass=", stars.mass
     stellar.stop()
 
 if __name__ in ('__main__', '__plot__'):
     set_printing_strategy("custom",\
         preferred_units = [units.MSun, units.RSun, units.Myr],\
         precision = 6, prefix = "", separator = "[", suffix = "]")
-    #evolve_with_different_stellar_model()
     evolve_with_same_stellar_model()
