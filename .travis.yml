@@ -34,32 +34,32 @@ matrix:
         - hdf5-tools
         - libmpich-dev
         - mpich  
-  - name: "linux openmpi"
-    language: python
-    python:
-    - '2.7'
-    compiler: gcc
-    before_install:
-    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
-    install:
-    - ./configure
-    - make framework
-    addons:
-      apt:
-        packages:
-        - build-essential
-        - python-dev
-        - gfortran
-        - libgsl0-dev
-        - cmake
-        - libfftw3-3
-        - libfftw3-dev
-        - libmpfr4
-        - libmpfr-dev
-        - libhdf5-serial-dev
-        - hdf5-tools
-        - libopenmpi-dev
-        - openmpi-bin
+#  - name: "linux openmpi"
+#    language: python
+#    python:
+#    - '2.7'
+#    compiler: gcc
+#    before_install:
+#    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
+#    install:
+#    - ./configure
+#    - make framework
+#    addons:
+#      apt:
+#        packages:
+#        - build-essential
+#        - python-dev
+#        - gfortran
+#        - libgsl0-dev
+#        - cmake
+#        - libfftw3-3
+#        - libfftw3-dev
+#        - libmpfr4
+#        - libmpfr-dev
+#        - libhdf5-serial-dev
+#        - hdf5-tools
+#        - libopenmpi-dev
+#        - openmpi-bin
   - name: "osx openmpi"
     language: generic
     os: osx
