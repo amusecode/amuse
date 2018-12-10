@@ -151,9 +151,9 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '3.8.2' ,                   #version string
+            '3.13.1' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
-            'http://www.cmake.org/files/v3.8/', #download url, filename is appended
+            'http://www.cmake.org/files/v3.13/', #download url, filename is appended
             self.cmake_build             #method to use for building
           ) ,
           (
@@ -228,7 +228,7 @@ class InstallPrerequisites(object):
             os.makedirs(self.temp_dir)
     
     def run_application(self, args, cwd, env = None):
-        print "starting " , ' '.join(args)
+        print "starting " , ' '.join(args), cwd
         process = subprocess.Popen(args, cwd=cwd, env = env)
         returncode = process.wait()
         if returncode != 0:
@@ -556,7 +556,7 @@ class InstallPrerequisites(object):
         proc=subprocess.Popen(["tar","tf",app_file], stdout=subprocess.PIPE)
         out,err=proc.communicate()
         out=out.split("\n")
-        return os.path.split(out[0])[0]
+        return os.path.normpath(out[0]).split(os.sep)[0]
             
     def build_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
