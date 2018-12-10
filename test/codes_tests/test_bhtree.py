@@ -714,7 +714,7 @@ class TestBHTree(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
         energy_total_t0 = instance.potential_energy + instance.kinetic_energy
-        request = instance.evolve_model.async(1.0 | nbody_system.time)
+        request = instance.evolve_model.asynchronous(1.0 | nbody_system.time)
         request.result()
         energy_total_t1 = instance.potential_energy + instance.kinetic_energy
         

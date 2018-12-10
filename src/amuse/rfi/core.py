@@ -144,7 +144,7 @@ class CodeFunction(object):
         
         return request
 
-    def async(self, *arguments_list, **keyword_arguments):
+    def asynchronous(self, *arguments_list, **keyword_arguments):
         if self.interface.async_request is not None:
             def factory():
               return self._async_request(*arguments_list, **keyword_arguments)

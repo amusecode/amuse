@@ -615,7 +615,7 @@ class TestInterface(TestWithMPI):
         x = ForTestingInterface()
         result = x.sleep(2)
         self.assertEquals(result, 0)
-        request = x.sleep.async(0.01)
+        request = x.sleep.asynchronous(0.01)
         request.wait()
         result = request.result()
         self.assertEquals(result, 0)
@@ -624,9 +624,9 @@ class TestInterface(TestWithMPI):
     def test15(self):
         x = ForTestingInterface()
         y = ForTestingInterface()
-        request1 = x.sleep.async(0.5)
+        request1 = x.sleep.asynchronous(0.5)
         self.assertFalse(request1.is_result_available())
-        request2 = y.sleep.async(1.5)
+        request2 = y.sleep.asynchronous(1.5)
         self.assertFalse(request2.is_result_available())
         request2.wait()
         self.assertTrue(request1.is_result_available())
@@ -642,7 +642,7 @@ class TestInterface(TestWithMPI):
     
     def test16(self):
         x = ForTestingInterface()
-        request1 = x.sleep.async(0.4)
+        request1 = x.sleep.asynchronous(0.4)
         self.assertRaises(Exception, lambda : x.sleep(0.01))
         request1.wait()
         self.assertTrue(request1.is_result_available())        
@@ -653,7 +653,7 @@ class TestInterface(TestWithMPI):
     def test17(self):
         x = ForTesting()
         self.assertTrue(x.sleep.is_async_supported)
-        request= x.sleep.async(0.2 | units.s)
+        request= x.sleep.asynchronous(0.2 | units.s)
         request.wait()
         result = request.result()
         self.assertEquals(result, [])
@@ -767,8 +767,8 @@ class TestInterface(TestWithMPI):
         
         x = ForTestingInterface()
         y = ForTestingInterface()
-        request1 = x.sleep.async(0.5)
-        request2 = y.sleep.async(1.5)
+        request1 = x.sleep.asynchronous(0.5)
+        request2 = y.sleep.asynchronous(1.5)
         finished_requests = []
         
         def handle_result(request, index):
@@ -902,8 +902,8 @@ class TestInterface(TestWithMPI):
         portname, error = instance1.internal__open_port()
         self.assertTrue(len(portname) > 0)
         self.assertEquals(error, 0)
-        request1 = instance1.internal__accept_on_port.async(portname)
-        request2 = instance2.internal__connect_to_port.async(portname)
+        request1 = instance1.internal__accept_on_port.asynchronous(portname)
+        request2 = instance2.internal__connect_to_port.asynchronous(portname)
         request1.wait()
         request2.wait()
         port_id1, error1 = request1.result()                 
@@ -925,8 +925,8 @@ class TestInterface(TestWithMPI):
         decoded_interface = pickle.loads(encoded_interface)
         #pickle.loads(pickle.dumps(instance1,0))
         portname, error = instance2.internal__open_port()
-        request1 = instance2.internal__accept_on_port.async(portname)
-        request2 = instance1.internal__connect_to_port.async(portname)
+        request1 = instance2.internal__accept_on_port.asynchronous(portname)
+        request2 = instance1.internal__connect_to_port.asynchronous(portname)
         request1.wait()
         request2.wait()
         port_id1, error1 = request1.result()     
@@ -949,7 +949,7 @@ class TestInterface(TestWithMPI):
         x = ForTestingInterface()
         def next_request(index):
             if index < 3:
-                return x.sleep.async(0.1)
+                return x.sleep.asynchronous(0.1)
             else:
                 return None
                 
@@ -972,12 +972,12 @@ class TestInterface(TestWithMPI):
         def next_request(index):
             if index < 4:
                 sequenced_requests_indices.append(index)
-                return x.sleep.async(0.5)
+                return x.sleep.asynchronous(0.5)
             else:
                 return None
                 
         request1 = ASyncRequestSequence(next_request)
-        request2 = y.sleep.async(1.0)
+        request2 = y.sleep.asynchronous(1.0)
         finished_requests = []
         
         def handle_result(request, index):
@@ -1087,7 +1087,7 @@ class TestInterface(TestWithMPI):
 
     def test37(self):
         x = ForTestingInterface()
-        request = x.echo_quantity.async([20, 30, 40] | units.m)
+        request = x.echo_quantity.asynchronous([20, 30, 40] | units.m)
         quantity_out, error = request.result()
         self.assertEquals(error, 0)
         self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))

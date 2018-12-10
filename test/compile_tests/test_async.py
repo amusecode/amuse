@@ -74,7 +74,7 @@ class TestASync(TestWithMPI):
 
     def test2(self):
         instance = ForTestingInterface(self.exefile)
-        request = instance.echo_int.async(10)
+        request = instance.echo_int.asynchronous(10)
         self.assertEqual(request, instance.async_request)
         request.wait()
         int_out,error=request.result()
@@ -84,8 +84,8 @@ class TestASync(TestWithMPI):
 
     def test3(self):
         instance = ForTestingInterface(self.exefile)
-        request1 = instance.do_sleep.async(1)
-        request2 = instance.echo_int.async(10)
+        request1 = instance.do_sleep.asynchronous(1)
+        request2 = instance.echo_int.asynchronous(10)
         self.assertEqual(request2, instance.async_request)
         request2.wait()
         int_out,error=request2.result()
@@ -95,8 +95,8 @@ class TestASync(TestWithMPI):
 
     def test4(self):
         instance = ForTesting(self.exefile)
-        request1 = instance.do_sleep(1, async=True)
-        request2 = instance.echo_int(10, async=True)
+        request1 = instance.do_sleep(1, return_request=True)
+        request2 = instance.echo_int(10, return_request=True)
         self.assertEqual(request2, instance.async_request)
         instance.async_request.wait()
         int_out=request2.result()
@@ -105,10 +105,10 @@ class TestASync(TestWithMPI):
 
     def test5(self):
         instance = ForTesting(self.exefile)
-        instance.do_sleep(1, async=True)
+        instance.do_sleep(1, return_request=True)
         requests=[]
         for x in range(10):
-            requests.append(instance.echo_int(x, async=True))
+            requests.append(instance.echo_int(x, return_request=True))
         instance.async_request.wait()
         for i,x in enumerate(requests):
             self.assertEquals(x.result(), i)
@@ -118,7 +118,7 @@ class TestASync(TestWithMPI):
         instance = ForTesting(self.exefile)
         requests=[]
         for x in range(10):
-            requests.append(instance.echo_int(x, async=True))
+            requests.append(instance.echo_int(x, return_request=True))
         instance.async_request.wait()
         for i,x in enumerate(requests):
             self.assertEquals(x.result(), i)
@@ -131,12 +131,12 @@ class TestASync(TestWithMPI):
 
         requests=[]
         for x in range(10):
-            requests.append([instance1.echo_int(x, async=True),x])
+            requests.append([instance1.echo_int(x, return_request=True),x])
         for x in range(10):
-            requests.append([instance2.echo_int(x, async=True),x])
+            requests.append([instance2.echo_int(x, return_request=True),x])
 
-        instance1.do_sleep(1, async=True)
-        instance2.do_sleep(1, async=True)
+        instance1.do_sleep(1, return_request=True)
+        instance2.do_sleep(1, return_request=True)
 
         pool=instance1.async_request.join(instance2.async_request)
         pool.waitall()
@@ -156,12 +156,12 @@ class TestASync(TestWithMPI):
 
         requests=[]
         for x in range(10):
-            requests.append([instance1.echo_int(x, async=True),x])
+            requests.append([instance1.echo_int(x, return_request=True),x])
         for x in range(10):
-            requests.append([instance2.echo_int(x, async=True),x])
+            requests.append([instance2.echo_int(x, return_request=True),x])
 
-        instance1.do_sleep(1, async=True)
-        instance2.do_sleep(1, async=True)
+        instance1.do_sleep(1, return_request=True)
+        instance2.do_sleep(1, return_request=True)
 
         pool=instance1.async_request.join(instance2.async_request)
         
@@ -183,16 +183,16 @@ class TestASync(TestWithMPI):
     def test9(self):
         instance = ForTesting(self.exefile)
         for x in range(10):
-            instance.echo_int(x, async=True)
+            instance.echo_int(x, return_request=True)
         results=instance.async_request.results
         self.assertEquals(results, range(10))
         instance.stop()
 
     def test10(self):
         instance = ForTesting(self.exefile)
-        r1=instance.do_sleep(1, async=True)
-        r2=instance.return_error( async=True)
-        r3=instance.echo_int(10, async=True)
+        r1=instance.do_sleep(1, return_request=True)
+        r2=instance.return_error( return_request=True)
+        r3=instance.echo_int(10, return_request=True)
         try:
             results=instance.async_request.results
         except Exception as ex:
@@ -212,11 +212,11 @@ class TestASync(TestWithMPI):
         instance1 = ForTesting(self.exefile)
         instance2 = ForTesting(self.exefile)
         
-        instance1.do_sleep(1, async=True)
-        request1=instance1.echo_int(10, async=True)
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
         
         def fac():
-          return instance2.echo_int(20, async=True)
+          return instance2.echo_int(20, return_request=True)
 
         #~ request2=instance2.echo_int(20, async_dependency=request1)
         request2=channel.DependentASyncRequest(request1, fac)
@@ -233,8 +233,8 @@ class TestASync(TestWithMPI):
         instance1 = ForTesting(self.exefile)
         instance2 = ForTesting(self.exefile)
         
-        instance1.do_sleep(1, async=True)
-        request1=instance1.echo_int(10, async=True)
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
         
         results=dict()
         
@@ -247,7 +247,7 @@ class TestASync(TestWithMPI):
         request1.add_result_handler(safe_result,(1,))
         
         def fac():
-          return instance2.echo_int(results[1], async=True)
+          return instance2.echo_int(results[1], return_request=True)
 
         #~ request2=instance2.echo_int(??, async_factory=fac)
         request2=channel.DependentASyncRequest(request1, fac)
