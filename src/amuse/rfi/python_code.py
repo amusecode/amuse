@@ -8,6 +8,7 @@ import os
 import socket
 import traceback
 import types
+import warnings
 
 from amuse.rfi.channel import ClientSideMPIMessage
 from amuse.rfi.channel import SocketMessage
@@ -67,7 +68,7 @@ class PythonImplementation(object):
         self.must_run = True
         while self.must_run:
             if self.id_to_activate >= 0 and self.id_to_activate != self.activeid:
-                print "activating:", self.id_to_activate
+                warnings.warn("activating: "+str(self.id_to_activate))
                 self.activeid = self.id_to_activate
                 self.id_to_activate = -1
                 parent = self.communicators[self.activeid]
@@ -84,7 +85,7 @@ class PythonImplementation(object):
                     try:
                         self.handle_message(message, result_message)
                     except Exception as ex:
-                        print "EX:", ex
+                        warnings.warn(str(ex))
                         traceback.print_exc()
                         result_message.set_error(str(ex))
                         #for type, attribute in self.dtype_to_message_attribute.iteritems():
@@ -175,7 +176,11 @@ class PythonImplementation(object):
         units = [False] * len(specification.output_parameters)
         if specification.must_handle_array:
             keyword_arguments = self.new_keyword_arguments_from_message(input_message, None,  specification, input_units)
-            result = method(**keyword_arguments)
+            try: 
+                result = method(**keyword_arguments)
+            except TypeError, ex:
+                warnings.warn("mismatch in python function specification(?): "+str(ex))
+                result = method(*list(keyword_arguments))
             self.fill_output_message(output_message, None, result, keyword_arguments, specification, units)
         else:
             for index in range(input_message.call_count):
@@ -183,11 +188,12 @@ class PythonImplementation(object):
                 try:
                     result = method(**keyword_arguments)
                     if result < 0:
-                        print result, keyword_arguments
-                except TypeError:
+                        warnings.warn("result <0 detected: "+str( (result, keyword_arguments) ))
+                except TypeError, ex:
+                    warnings.warn("mismatch in python function specification(?): "+str(ex))
                     result = method(*list(keyword_arguments))
                     if result < 0:
-                        print "list", result, keyword_arguments, list(keyword_arguments)
+                        warnings.warn("result <0 detected: list "+str( (result, keyword_arguments) ))
                 self.fill_output_message(output_message, index, result, keyword_arguments, specification, units)
         
             
@@ -367,7 +373,7 @@ class PythonImplementation(object):
         try:
             os.close(0)
         except Exception as ex:
-            print ex
+            warnings.warn( str(ex))
             
         if stdoutfile != "none":
             if stdoutfile != "/dev/null":
@@ -447,20 +453,21 @@ class PythonImplementation(object):
         return True
 
     def internal__become_code(self, number_of_workers, modulename, classname):
-        print number_of_workers, modulename, classname
+        warnings.warn(" possible experimental code path?")
+        #~ print number_of_workers, modulename, classname
         world = self.freeworld
         color = 0 if world.rank < number_of_workers else 1
         key = world.rank if world.rank < number_of_workers else world.rank - number_of_workers
-        print "CC,", color, key, world.rank, world.size
+        #~ print "CC,", color, key, world.rank, world.size
         newcomm = world.Split(color, key)
-        print ("nc:", newcomm.size, newcomm.rank)
-        print ("AA", self.world, color, self.world.rank, self.world.size)
+        #~ print ("nc:", newcomm.size, newcomm.rank)
+        #~ print ("AA", self.world, color, self.world.rank, self.world.size)
         try:
             new_intercomm = newcomm.Create_intercomm(0, self.world, 0, color)
         except Exception as ex:
-            print ex
-            raise
-        print ("nccc:", new_intercomm.Get_remote_size(), new_intercomm.rank)
+            warnings.warn(str(ex))
+            raise ex
+        #~ print ("nccc:", new_intercomm.Get_remote_size(), new_intercomm.rank)
         
         self.communicators.append(new_intercomm)
         self.id_to_activate = len(self.communicators) - 1
