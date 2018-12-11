@@ -364,9 +364,9 @@ class ForTestingImplementation(object):
             return -1
             
             
-    def copy_over_interface(self, communicator_id, encoded_interface):
+    def copy_over_interface(self, comm_identifier, encoded_interface):
         self._other = pickle.loads(encoded_interface.encode("latin-1"))
-        self._other.channel.intercomm = self._interface.communicators[communicator_id]
+        self._other.channel.intercomm = self._interface.communicators[comm_identifier]
         return 0
     
     def deep_echo_string(self, string_in, string_out):

@@ -320,15 +320,15 @@ class PythonImplementation(object):
     def get_null_info(self):
         return getattr(MPI, 'INFO_NULL') if hasattr(MPI, 'INFO_NULL') else None
         
-    def internal__open_port(self, outportname):
-        outportname.value = MPI.Open_port(self.get_null_info())
+    def internal__open_port(self, port_identifier):
+        port_identifier.value = MPI.Open_port(self.get_null_info())
         return 0
         
-    def internal__accept_on_port(self, portname, outval):
+    def internal__accept_on_port(self, port_identifier, comm_identifier):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
         if rank == 0:
-            communicator = MPI.COMM_SELF.Accept(portname, self.get_null_info(), 0)
+            communicator = MPI.COMM_SELF.Accept(port_identifier, self.get_null_info(), 0)
             merged = communicator.Merge(False)
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
             merged.Disconnect()
@@ -338,15 +338,15 @@ class PythonImplementation(object):
         
         self.communicators.append(new_communicator)
         self.lastid += 1
-        outval.value = self.lastid
+        comm_identifier.value = self.lastid
         return 0
     
     
-    def internal__connect_to_port(self, portname, outval):
+    def internal__connect_to_port(self, port_identifier, comm_identifier):
         new_communicator = None
         rank = MPI.COMM_WORLD.Get_rank()
         if rank == 0:
-            communicator = MPI.COMM_SELF.Connect(portname, self.get_null_info(), 0)
+            communicator = MPI.COMM_SELF.Connect(port_identifier, self.get_null_info(), 0)
             merged = communicator.Merge(True)
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
             merged.Disconnect()
@@ -356,13 +356,13 @@ class PythonImplementation(object):
         
         self.communicators.append(new_communicator)
         self.lastid += 1
-        outval.value = self.lastid
+        comm_identifier.value = self.lastid
         return 0
         
-    def internal__activate_communicator(self, commid):
-        if commid > self.lastid or commid < 0:
+    def internal__activate_communicator(self, comm_identifier):
+        if comm_identifier > self.lastid or comm_identifier < 0:
             return -1
-        self.id_to_activate = commid
+        self.id_to_activate = comm_identifier
         return 0
         
     
