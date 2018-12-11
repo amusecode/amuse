@@ -215,7 +215,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         def result_handler(inner):
             return self.convert_return_value(inner(), storage, attributes_to_return)
             
-        async_request = self.method.async(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
+        async_request = self.method.asynchronous(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         async_request.add_result_handler(result_handler)
         return async_request
     
@@ -335,7 +335,7 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
         list_args, keyword_args2 = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
         keyword_args.update(keyword_args2)
         list_arguments.extend(list_args)
-        async_request = self.method.async(*list_arguments, **keyword_args)
+        async_request = self.method.asynchronous(*list_arguments, **keyword_args)
         return async_request
     
     
@@ -449,7 +449,7 @@ class ParticleSetGriddedAttributesMethod(ParticleSetAttributesMethod):
         for key, value in keyword_args.iteritems():
             keyword_args[key] = value.reshape(-1)
         
-        async_request = self.method.async(*one_dimensional_arrays_of_args, **keyword_args)
+        async_request = self.method.asynchronous(*one_dimensional_arrays_of_args, **keyword_args)
         return async_request
         
 
