@@ -76,10 +76,10 @@ class RemoteCodeImplementation(object):
        return dump_and_encode(None)
      except Exception as ex:
        return dump_and_encode(RemoteCodeException(ex))
-   def _func(self,f,argin,kwargin,argout):
+   def _func(self,func,argin,kwargin,argout):
      try:
-       self.scope.update(dict(f=f,argin=argin,kwargin=kwargin))
-       exec "func=decode_and_load(f)" in self.scope
+       self.scope.update(dict(func=func,argin=argin,kwargin=kwargin))
+       exec "func=decode_and_load(func)" in self.scope
        exec "arg=decode_and_load(argin)" in self.scope
        exec "kwarg=decode_and_load(kwargin)" in self.scope
        exec "result=func(*arg,**kwarg)" in self.scope
