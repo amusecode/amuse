@@ -153,7 +153,7 @@ class RemoteCodeInterface(PythonCodeInterface):
         return decode_and_load(result)
 
     def async_func(self,f,*args,**kwargs):
-        request=self._func.async(dump_and_encode(f),
+        request=self._func.asynchronous(dump_and_encode(f),
                                  dump_and_encode(args),
                                  dump_and_encode(kwargs) )
         def f(x):
