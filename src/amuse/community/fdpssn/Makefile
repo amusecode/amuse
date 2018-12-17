@@ -43,10 +43,10 @@ $(CODELIB):
 	make -C src all
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py P3TARInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py FDPSSNInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py P3TARInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py FDPSSNInterface -o $@
 
 fdpssn_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(INC) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
