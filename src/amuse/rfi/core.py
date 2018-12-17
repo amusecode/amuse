@@ -8,6 +8,7 @@ import pydoc
 import traceback
 import random
 import sys
+import warnings
 
 import inspect
 import functools
@@ -98,8 +99,11 @@ class CodeFunction(object):
         self.specification = specification
     
     def __call__(self, *arguments_list, **keyword_arguments):
-        #~ if self.interface.async_request:
-            #~ self.interface.async_request.wait()
+        if self.interface.async_request:
+            try:
+                self.interface.async_request.wait()
+            except Exception,ex:
+                warnings.warn("Ignored exception: " + str(ex))
             
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         

@@ -198,7 +198,7 @@ class TestASync(TestWithMPI):
         r3=instance.echo_int(1, return_request=True)
         r4=instance.echo_int(2, return_request=True)
         self.assertRaises(Exception, instance.async_request.waitall,
-            expected_message="Error when calling 'return_error' of a 'ForTesting', errorcode is -1")
+            expected_message="Error in dependent call: Error when calling 'return_error' of a 'ForTesting', errorcode is -1")
         self.assertTrue( r1.is_result_available() )
         self.assertFalse( r2.is_result_available() )
         self.assertTrue(  r2.is_finished )
@@ -293,6 +293,18 @@ class TestASync(TestWithMPI):
         self.assertRaises(Exception, r.result, expected_message="Error when calling 'return_error' of a 'ForTesting', errorcode is -1")        
         self.assertFalse(r.is_result_available())
         self.assertTrue(r.is_finished)
+        instance.stop()
+
+    def test15(self):
+        instance = ForTesting(self.exefile)
+
+        instance.do_sleep(1, return_request=True)
+        instance.return_error( return_request=True)
+        instance.echo_int(1, return_request=True)
+        instance.echo_int(1, return_request=True)
+        #~ self.assertRinstance.echo_int(1)
+        
+
         instance.stop()
 
 class TestASyncDistributed(TestASync):

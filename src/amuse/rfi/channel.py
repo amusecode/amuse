@@ -143,7 +143,13 @@ class DependentASyncRequest(AbstractASyncRequest):
         return self.request.is_finished
 
     def wait(self):    
-        self.parent.wait()
+        try:
+            self.parent.wait()
+        except Exception, ex:
+            message=str(ex)
+            if not message.startswith("Error in dependent call: "):
+                message="Error in dependent call: "+str(ex)
+            raise type(ex)(message)
         if self.request is None:
             raise Exception("something went wrong (exception of parent?)")
         self.request.wait()

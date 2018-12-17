@@ -443,7 +443,8 @@ class TestInterface(TestWithMPI):
     def test16(self):
         x = ForTestingInterface(channel_type = 'sockets')
         request1 = x.sleep.asynchronous(0.4)
-        self.assertRaises(Exception, lambda : x.sleep(0.01))
+        x.sleep(0.01)
+        self.assertTrue(request1.is_result_available(), True)
         request1.wait()
         x.sleep(0.01) # no longer raises exception, wait finishes call..
         request1.result()
