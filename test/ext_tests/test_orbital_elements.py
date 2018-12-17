@@ -3,6 +3,8 @@ import numpy
 from amuse.test import amusetest
 
 from amuse.ext.orbital_elements import (
+        generate_binaries,
+        get_orbital_elements_from_binaries,
         new_binary_from_orbital_elements,
         # get_orbital_elements_from_binary,
         orbital_elements_for_rel_posvel_arrays,
@@ -648,3 +650,16 @@ class KeplerTests(amusetest.TestCase):
                     argument_of_periapsis[i],
                     rad_to_deg*argument_of_periapsis_ext[i])
             self.assertAlmostEqual(true_anomaly[i], rad_to_deg*ta_ext[i])
+
+    def test16(self):
+        """ tests a mismatch in shape in generate_binaries """
+        m1=[1]*5 | nbody_system.mass
+        m2=[0]*5 | nbody_system.mass
+        a=[1.]*5 | nbody_system.length
+        ecc=numpy.array([0,0,.99999,0.1,0.5])
+        ta=[180,180,20,30,0]| units.deg
+        primaries,secondaries=generate_binaries(m1,m2,a,eccentricity=ecc,true_anomaly=ta)
+        m1_,m2_,a_,ecc_,ta_,i_,lasc_,ap_= get_orbital_elements_from_binaries(primaries,secondaries)
+        self.assertAlmostEquals(ecc,ecc_)
+      
+      

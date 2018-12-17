@@ -23,10 +23,9 @@ UPDATE_URL = https://github.com/NLeSC/AMUSE-Distributed/archive/develop.zip
 UPDATE_ARCHIVE_DIR = AMUSE-Distributed-develop
 
 #this target intentionally left blank
-ALL = 
+ALL = distributed_worker
 
 all: $(ALL)
-	#dummy target, use distributed_worker_java to build
 
 java_check:
 #Makefile requires these checks to be at the beginning of the line
@@ -54,16 +53,16 @@ update:
 
 clean:
 	$(RM) -f *.so *.o *.pyc 
-	$(RM) *~ distributed distributed_worker_java 
+	$(RM) *~ distributed distributed_worker 
 	$(RM) -f *.jar CodeInterface.java Worker.java binev.data
 	$(RM) -rf tmp
 	make -C src clean
 
 CodeInterface.java: interface.py
-	$(CODE_GENERATOR) --type=java --mode=interface interface.py DistributedAmuseInterface -o $@
+	$(CODE_GENERATOR) --type=java --mode=interface amuse.community.distributed.interface DistributedAmuseInterface -o $@
 
 Worker.java: interface.py
-	$(CODE_GENERATOR) --type=java --mode=class interface.py DistributedAmuseInterface -o $@
+	$(CODE_GENERATOR) --type=java --mode=class amuse.community.distributed.interface DistributedAmuseInterface -o $@
 
 src/dist/distributed-amuse.jar: $(shell find src -name "*.java")
 	@echo Compiling Distributed Code
@@ -77,5 +76,5 @@ worker.jar: Worker.java CodeInterface.java Code.java src/dist/distributed-amuse.
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp
 
-distributed_worker_java: interface.py java_check worker.jar src/dist/distributed-amuse.jar
-	$(CODE_GENERATOR) -x --type=java --mode=script interface.py DistributedAmuseInterface -o $@
+distributed_worker: interface.py java_check worker.jar src/dist/distributed-amuse.jar
+	$(CODE_GENERATOR) -x --type=java --mode=script amuse.community.distributed.interface DistributedAmuseInterface -o $@

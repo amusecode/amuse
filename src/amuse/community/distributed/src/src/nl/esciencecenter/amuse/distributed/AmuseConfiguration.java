@@ -42,7 +42,7 @@ public class AmuseConfiguration {
 
             if (line == null) {
                 return;
-            } else if (line.trim().isEmpty() || line.startsWith("#") || line.startsWith("export")) {
+            } else if ( ( ! line.contains("=") ) || line.startsWith("#")) {
                 //SKIP
             } else {
                 String[] elements = line.split("=", 2);

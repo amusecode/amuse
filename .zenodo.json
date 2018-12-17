@@ -1,0 +1,130 @@
+{
+    "creators": [
+        {
+            "affiliation": "Leiden University",
+            "name": "Portegies Zwart, Simon",
+            "orcid": "0000-0001-5839-0302"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "van Elteren, Arjen"
+        },
+        {
+            "affiliation": "Netherlands eScience Center",
+            "name": "Pelupessy, Inti"
+        },
+        {
+            "affiliation": "Drexel University",
+            "name": "McMillan, Steve"
+        },
+        {
+            "affiliation": "University of Exeter",
+            "name": "Rieder, Steven",
+            "orcid": "0000-0003-3688-5798"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "de Vries, Nathan"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "Marosvolgyi, Marcell"
+        },
+        {
+            "affiliation": "Drexel University",
+            "name": "Whitehead, Alfred"
+        },
+        {
+            "affiliation": "Drexel University",
+            "name": "Wall, Joshua"
+        },
+        {
+            "affiliation": "Netherlands eScience Center",
+            "name": "Drost, Niels",
+            "orcid": "0000-0001-9795-7981"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "Jilkova, Lucie"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "Martinez Barbosa, Carmen"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "van der Helm, Edwin"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "Beedorf, Jeroen"
+        },
+        {
+            "affiliation": "Netherlands eScience Center",
+            "name": "Bos, Patrick"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "Boekholt, Tjarda"
+        },
+        {
+            "affiliation": "Netherlands eScience Center",
+            "name": "van Werkhoven, Ben"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "Wijnen, Thomas"
+        },
+        {
+            "affiliation": "Institute for Advanced Study",
+            "name": "Hamers, Adrian"
+        },
+        {
+            "affiliation": "Booking.com",
+            "name": "Caputo, Daniel"
+        },
+        {
+            "affiliation": "Leiden University",
+            "name": "Ferrari, Guilherme"
+        },
+        {
+            "affiliation": "University of Amsterdam",
+            "name": "Toonen, Silvia"
+        },
+        {
+            "affiliation": "Nvidia",
+            "name": "Gaburov, Evghenii"
+        },
+        {
+            "affiliation": "TNO",
+            "name": "Paardekooper, Jan-Pieter"
+        },
+        {
+            "affiliation": "University of Cambridge",
+            "name": "Janes, Jurgen"
+        },
+        {
+            "affiliation": "University of Groningen",
+            "name": "Punzo, Davide"
+        },
+        {
+            "affiliation": "Quintel Intellegence",
+            "name": "Kruip, Chael"
+        },
+        {
+            "affiliation": "Georgia Institute of Technology",
+            "name": "Altay, Gabriel"
+        }
+    ],
+    "description": "A Python framework to combine existing astrophysical simulation codes in numerical experiments. With AMUSE you can simulate objects such as star clusters, proto-planetary disks and galaxies.",
+    "keywords": [
+        "astronomy",
+        "multi-model simulation",
+        "model coupling",
+        "physics"
+    ],
+    "license": {
+        "id": "Apache-2.0"
+    },
+    "title": "AMUSE: the Astrophysical Multipurpose Software Environment"
+}

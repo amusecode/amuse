@@ -18,7 +18,7 @@ dtype_to_spec = DTypeToSpecDictionary({
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
                     'HEADER_DOUBLE_COUNT', 'double', 'MPI_DOUBLE'),
     'bool' : DTypeSpec('booleans_in', 'booleans_out',
-                    'HEADER_BOOLEAN_COUNT', 'int', 'MPI_INTEGER'),
+                    'HEADER_BOOLEAN_COUNT', 'bool', 'MPI_C_BOOL'),
     'string' : DTypeSpec('strings_in', 'strings_out',
                     'HEADER_STRING_COUNT', 'char *', 'MPI_INTEGER'),
 })
@@ -129,7 +129,7 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
                 if parameter.datatype == 'string':
                     raise Exception("unknown...")
                 else:     
-                    self.out + 'numpy.ndarray[' + spec.type + ', ndim=1, mode="c"] ' + name
+                    self.out + 'numpy.ndarray[' + spec.type + ', ndim=1, mode="c", cast=True] ' + name
             elif self.specification.must_handle_array and parameter.direction == LegacyFunctionSpecification.LENGTH:
                 self.out + 'int ' + name
             else:
@@ -227,7 +227,7 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
                 if parameter.datatype == 'string':
                     raise Exception("unknown...")
                 else:     
-                    self.out.lf() + 'cdef numpy.ndarray[' + spec.type + ', ndim=1, mode="c"]  inout_' + parameter.name + ' = ' +  parameter.name + '.value'
+                    self.out.lf() + 'cdef numpy.ndarray[' + spec.type + ', ndim=1, mode="c", cast=True]  inout_' + parameter.name + ' = ' +  parameter.name + '.value'
             elif self.specification.must_handle_array and parameter.direction == LegacyFunctionSpecification.OUT:
                 if parameter.datatype == 'string':
                     raise Exception("unknown...")
@@ -235,7 +235,7 @@ class GenerateACythonStringOfAFunctionSpecification(MakeCythonCodeString):
                 spec = self.dtype_to_spec[parameter.datatype]
             
                 
-                self.out.lf() + 'cdef numpy.ndarray[' + spec.type + ', ndim=1, mode="c"]  output_' + parameter.name + ' = ' +  'numpy.zeros('+self.length_parameter().name +', dtype = '+self.numpy_dtype(spec)+')'
+                self.out.lf() + 'cdef numpy.ndarray[' + spec.type + ', ndim=1, mode="c", cast=True]  output_' + parameter.name + ' = ' +  'numpy.zeros('+self.length_parameter().name +', dtype = '+self.numpy_dtype(spec)+')'
             elif parameter.direction == LegacyFunctionSpecification.OUT:
                 spec = self.dtype_to_spec[parameter.datatype]
             
@@ -503,7 +503,8 @@ class GenerateACythonSourcecodeStringFromASpecificationClass\
     def start(self):
         self.out + 'import numpy'
         self.out.lf() + 'cimport numpy'
-
+        self.out.lf() + 'cdef extern from "stdbool.h":'
+        self.out.lf() + '  ctypedef bint bool' 
         self.output_local_includes()
 
         self.output_mpi_defs()
@@ -838,7 +839,7 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
             'int64' : 'INTEGER(kind = c_long)',
             'float32' : 'REAL(kind=c_float)',
             'float64' : 'REAL(kind=c_double)',
-            'bool' : 'INTEGER(kind = c_int)',
+            'bool' : 'LOGICAL(kind = c_bool)',
             'string' : 'type(C_ptr)'
         }
 
@@ -1038,7 +1039,10 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
         for parameter in self.specification.parameters:
             if not parameter.datatype == 'bool':
                 continue
-            self.out.lf() + 'LOGICAL :: logical_'+parameter.name
+            if self.specification.must_handle_array:
+                self.out.lf() + 'LOGICAL, dimension('+self.length_parameter().name+') :: logical_'+parameter.name
+            else:
+                self.out.lf() + 'LOGICAL :: logical_'+parameter.name
             
 
 
@@ -1049,7 +1053,7 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
             if not parameter.datatype == 'bool':
                 continue
             if  parameter.direction == LegacyFunctionSpecification.IN or parameter.direction == LegacyFunctionSpecification.INOUT:
-                self.out.lf() + 'logical_{0} = {0} .EQ. 1'.format(parameter.name)
+                self.out.lf() + 'logical_{0} = {0}'.format(parameter.name)
                 
 
 
@@ -1060,15 +1064,7 @@ class GenerateAFortranInterfaceStringOfAFunctionSpecification(MakeCythonCodeStri
             if not parameter.datatype == 'bool':
                 continue
             if  parameter.direction == LegacyFunctionSpecification.OUT or parameter.direction == LegacyFunctionSpecification.INOUT:
-                self.out.lf() + 'if (logical_{0}) then'.format(parameter.name)
-                self.out.lf() + '  {0} = 1'.format(parameter.name)
-                self.out.lf() + 'else'
-                self.out.lf() + '{0} = 0'.format(parameter.name)
-                self.out.lf() + 'end if'
-                
-
-
-
+                self.out.lf() +' {0} = logical_{0}'.format(parameter.name)
 
 
 

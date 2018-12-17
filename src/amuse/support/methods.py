@@ -102,6 +102,10 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         self.definition.check_wrapped_method(self)
     
     def __call__(self, *list_arguments, **keyword_arguments):
+        if keyword_arguments.get("return_request", False):
+            keyword_arguments.pop("return_request")
+            return self.asynchronous(*list_arguments, **keyword_arguments)
+        
         object = self.precall()
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
         result = self.method(*list_arguments, **keyword_arguments)
@@ -112,25 +116,25 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         
         return result
     
-    def async(self, *list_arguments, **keyword_arguments):
+    def asynchronous(self, *list_arguments, **keyword_arguments):
         if not self.is_async_supported:
-            raise exceptions.AmuseException("async call is not supported for this method")
+            raise exceptions.AmuseException("asynchronous call is not supported for this method")
         
         
         object = self.precall()
         
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
         
-        request = self.method.async(*list_arguments, **keyword_arguments)
+        request = self.method.asynchronous(*list_arguments, **keyword_arguments)
         
         def handle_result(function):
             
             result = function()
-            
+
             result = self.convert_result(result)
         
             self.postcall(object)
-            
+                        
             return result
         
         request.add_result_handler(handle_result)
@@ -195,8 +199,8 @@ class ProxyingMethodWrapper(AbstractCodeMethodWrapper):
     def __call__(self, *list_arguments, **keyword_arguments):
         return self.method(*list_arguments, **keyword_arguments)
     
-    def async(self, *list_arguments, **keyword_arguments):
-        return self.method.async(*list_arguments, **keyword_arguments)
+    def asynchronous(self, *list_arguments, **keyword_arguments):
+        return self.method.asynchronous(*list_arguments, **keyword_arguments)
 
     def __str__(self):
         return 'wrapped<{0}>'.format(self.method)

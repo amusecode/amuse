@@ -6,7 +6,6 @@ include build.py.in
 include amuserc.example
 include ez_setup.py
 include support/configpy.in
-include support3/configpy.in
 
 recursive-include src *
 recursive-include test *
@@ -15,9 +14,6 @@ recursive-include data *
 recursive-include support *.py
 recursive-include support *.java
 recursive-include support *.class
-recursive-include support3 *.py
-recursive-include support3 *.java
-recursive-include support3 *.class
 recursive-include examples *.py
 recursive-include examples *.py
 recursive-include examples *.txt

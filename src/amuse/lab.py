@@ -68,6 +68,8 @@ from amuse.community.sphray.interface import SPHRay, SPHRayInterface
 
 from amuse.community.sse.interface import SSE, SSEInterface
 from amuse.community.bse.interface import BSE, BSEInterface
+from amuse.community.mosse.interface import MOSSE, MOSSEInterface                                                   
+from amuse.community.mobse.interface import MOBSE, MOBSEInterface
 from amuse.community.seba.interface import SeBa, SeBaInterface
 from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 from amuse.community.mesa.interface import MESA, MESAInterface

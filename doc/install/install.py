@@ -76,7 +76,7 @@ class InstallPrerequisites(object):
           (
             'netcdf-c' ,
             ['hdf'],  
-            '4.4.1',
+            '4.6.1',
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf-c/archive/',
             self.netcdf_build
@@ -96,7 +96,15 @@ class InstallPrerequisites(object):
             'v' , '.tar.gz' , 
             'https://github.com/Unidata/netcdf4-python/archive/',
             self.python_build
-          ) ,          
+          ) ,    
+          (
+            'f90nml',
+            [],  
+            '0.21',
+            'v' , '.tar.gz', 
+            'https://github.com/marshallward/f90nml/archive/',
+            self.python_build
+          ),      
           (
             'docutils', 
             [], 
@@ -143,9 +151,9 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '3.8.2' ,                   #version string
+            '3.13.1' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
-            'http://www.cmake.org/files/v3.8/', #download url, filename is appended
+            'http://www.cmake.org/files/v3.13/', #download url, filename is appended
             self.cmake_build             #method to use for building
           ) ,
           (
@@ -220,7 +228,7 @@ class InstallPrerequisites(object):
             os.makedirs(self.temp_dir)
     
     def run_application(self, args, cwd, env = None):
-        print "starting " , ' '.join(args)
+        print "starting " , ' '.join(args), cwd
         process = subprocess.Popen(args, cwd=cwd, env = env)
         returncode = process.wait()
         if returncode != 0:
@@ -354,14 +362,9 @@ class InstallPrerequisites(object):
 
     def netcdf_build(self, path):
         env = os.environ.copy()
-        prev = ''
-        if 'LDFLAGS' in env:
-            prev = ' ' +env['LDFLAGS']
-        prev = ''
-        if 'CPPFLAGS' in env:
-            prev = ' ' +env['CPPFLAGS']
-        env['LDFLAGS'] = '-L{0}/lib'.format(self.prefix) + prev
-        env['CPPFLAGS'] = '-I{0}/include'.format(self.prefix) + prev
+        env['LDFLAGS'] = '-L{0}/lib '.format(self.prefix) + env.get('LDFLAGS','') 
+        env['CPPFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CPPFLAGS','')
+        env['CFLAGS'] = '-I{0}/include '.format(self.prefix) + env.get('CFLAGS','')
         commands = []
         command = [
           './configure',
@@ -553,7 +556,7 @@ class InstallPrerequisites(object):
         proc=subprocess.Popen(["tar","tf",app_file], stdout=subprocess.PIPE)
         out,err=proc.communicate()
         out=out.split("\n")
-        return os.path.split(out[0])[0]
+        return os.path.normpath(out[0]).split(os.sep)[0]
             
     def build_apps(self, names, skip):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
@@ -677,7 +680,7 @@ class InstallMatplotlib(InstallPrerequisites):
               (
                 'matplotlib' ,                   #name to refer by
                 [],                         #names of prerequisites (unused)
-                '1.1.0' ,                   #version string
+                '2.2.2' ,                   #version string
                 'matplotlib-', '.tar.gz',        #pre- and postfix for filename
                 'https://pypi.python.org/packages/source/m/matplotlib/', #download url, filename is appended
                 self.matplotlib_build             #method to use for building - same as for FFTW should work

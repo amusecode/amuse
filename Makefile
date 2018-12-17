@@ -1,6 +1,6 @@
 -include config.mk
 
-PYTHON ?= python2.6
+PYTHON ?= python
 VERSION ?= undefined
 CLEAN ?= yes
 
@@ -16,19 +16,19 @@ python_version_patch := $(word 3,${python_version_full})
 all: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),3)
-	$(PYTHON) setup.py build_codes --inplace
+ifneq ($(python_version_major),2)
+	$(PYTHON) setup.py build
 else
-	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
+	$(PYTHON) setup.py build_codes --inplace
 endif
 
 framework: build.py
 	@-mkdir -p test_results
 	$(PYTHON) setup.py generate_main
-ifneq ($(python_version_major),3)
-	$(PYTHON) setup.py build_libraries --inplace
+ifneq ($(python_version_major),2)
+	$(PYTHON) setup.py build_libraries
 else
-	$(error you cannot build the codes in the source directories for Python 3, please run 'make build3')
+	$(PYTHON) setup.py build_libraries --inplace
 endif
 
 build.py:
@@ -37,13 +37,11 @@ build.py:
 allinbuild:
 	$(PYTHON) setup.py build
 
-support3/setup_codes.py:support/setup_codes.py
-	2to3 -n -w -W support -o support3
-	
-build3:support3/setup_codes.py
+build:
 	$(PYTHON) setup.py build
 
-install3:support3/gen_codes.py
+# should pick up prefix from configure?
+install:
 	$(PYTHON) setup.py install
 
 docclean:
@@ -58,15 +56,13 @@ oclean:
 	$(PYTHON) setup.py clean_codes --inplace --codes-dir=src/omuse/community
 
 distclean:
-	-rm -f config.mk
 	-rm -f support/config.py
-	-rm -f support/config.pyc
 	-rm -f src/amuse/config.py
-	-rm -f src/amuse/config.pyc
 	-rm -f amuse.sh
 	-rm -f iamuse.sh
 	-rm -f ibis-deploy.sh
 	-rm -f build.py
+	-rm -rf test_results src/amuse.egg-info
 	
 	-rm -f test/*.000 test/fort.* test/perr test/pout test/test.h5 test/*.log
 	-rm -f test/codes_tests/perr test/codes_tests/pout
@@ -75,14 +71,20 @@ distclean:
 	
 	$(PYTHON) setup.py clean
 	$(PYTHON) setup.py dist_clean
+	$(PYTHON) setup.py clean_codes --inplace
 	$(PYTHON) setup.py dist_clean --inplace
 	$(PYTHON) setup.py clean_codes --inplace --codes-dir=src/omuse/community
 	
 	make -C doc clean
-	-find src -name "*.pyc" -exec rm \{} \;
-	-find src -type d -name "__pycache__" -exec rm -Rf \{} \;
-	-find src -type d -name "ccache" -exec rm -Rf \{} \;
+	-find ./ -name "*.pyc" -exec rm \{} \;
+	-find ./ -type d -name "__pycache__" -exec rm -Rf \{} \;
+	-find ./ -type d -name "ccache" -exec rm -Rf \{} \;
 	-rm -Rf build
+	-rm -f config.mk
+	-rm -f config.log build.log config.status
+	-rm -f amuse.cfg
+	-rm -f test*.pickle test.csv
+
 
 tests:
 	$(PYTHON) setup.py tests
@@ -125,9 +127,17 @@ debian:
 
 %.code:
 ifneq (,$(findstring s,$(MAKEFLAGS)))
+ifeq ($(python_version_major),2)
 	$(PYTHON) setup.py build_code --inplace --clean=$(CLEAN) --code-name=$*
 else
+	$(PYTHON) setup.py build_code --clean=$(CLEAN) --code-name=$*
+endif
+else
+ifeq ($(python_version_major),2)
 	$(PYTHON) setup.py -v build_code --inplace --clean=$(CLEAN) --code-name=$*
+else
+	$(PYTHON) setup.py -v build_code --clean=$(CLEAN) --code-name=$*
+endif
 endif
 
 %.ocode: | src/omuse

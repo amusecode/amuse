@@ -105,7 +105,9 @@ def main(N, Rvir, Qvir, Fd, t_end, filename):
     
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     Etot_prev = Etot_init
+###BOOKLISTSTOP1###
 
+###BOOKLISTSTART0###
     dt = t_end/10.
     time = 0 | units.yr
     while gravity.model_time < t_end:
@@ -123,7 +125,7 @@ def main(N, Rvir, Qvir, Fd, t_end, filename):
         Etot_prev = Etot
 
     gravity.stop()
-###BOOKLISTSTOP1###
+###BOOKLISTSTOP0###
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser

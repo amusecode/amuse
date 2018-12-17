@@ -718,7 +718,7 @@ void jdata::predict_all(real t,
     predict_time = t;
 }
 
-void jdata::advance()
+void jdata::advance(bool zero_step_mode)	// default = false
 {
     const char *in_function = "jdata::advance";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -732,7 +732,11 @@ void jdata::advance()
     //		correct the i-list
     //		scatter the i-list
 
-    real tnext = idat->set_list();	// determine next time, make ilist
+    real tnext = system_time;
+    if (!zero_step_mode)
+	tnext = idat->set_list();	// determine next time, make ilist
+    else
+	idat->set_list_all();		// zero-advance all stars
 
     if (!use_gpu) {
 
@@ -744,25 +748,30 @@ void jdata::advance()
 
     // All of the actual work is done by idata::advance.
 
-    idat->advance(tnext);
-    block_steps += 1;
-    total_steps += idat->ni;
+    idat->advance(tnext, zero_step_mode);
 
-    // Note that system_time remains unchanged until the END of the step.
+    if (!zero_step_mode) {
+	block_steps += 1;
+	total_steps += idat->ni;
 
-    system_time = tnext;
-    sched->update();
+	// Note that system_time remains unchanged until the END of the step.
+
+	system_time = tnext;
+	sched->update();
+    }
 }
 
 #define EPS 0.001	// see couple/multiples.py
 
-bool jdata::advance_and_check_encounter()
+bool jdata::advance_and_check_encounter(bool zero_step_mode) // default = false
 {
     bool status = false;
     int collision_detection_enabled;
 
     //cout << "advance..." << endl << flush;
-    advance();
+
+    advance(zero_step_mode);
+
     //int p = cout.precision(16);
     //cout << "time = " << system_time << endl << flush;
     //cout.precision(p);
@@ -805,6 +814,7 @@ bool jdata::advance_and_check_encounter()
 		set_stopping_condition_particle_index(stopping_index, 0, coll1);
 		set_stopping_condition_particle_index(stopping_index, 1, coll2);
 		status = true;
+
 // 		PRC(j1); PRL(j2);
 // 		PRC(id[j1]); PRL(id[j2]);
 // 		cout << "set stopping condition " << coll1 << " " << coll2

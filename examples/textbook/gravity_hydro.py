@@ -11,9 +11,9 @@ from amuse.ext.orbital_elements import orbital_elements_from_binary
 class BaseCode:
     def __init__(self, code, particles, eps=0|units.RSun):
 
-        self.particles = particles
-        m = self.particles.mass.sum()
-        l = self.particles.position.length()
+        self.local_particles = particles
+        m = self.local_particles.mass.sum()
+        l = self.local_particles.position.length()
         self.converter = nbody_system.nbody_to_si(m, l)
         self.code = code(self.converter)
         self.code.parameters.epsilon_squared = eps**2
@@ -46,11 +46,11 @@ class BaseCode:
 class Gravity(BaseCode):
     def __init__(self, code, particles, eps=0|units.RSun):
         BaseCode.__init__(self, code, particles, eps)
-        self.code.particles.add_particles(self.particles)
+        self.code.particles.add_particles(self.local_particles)
         self.channel_to_framework \
-            = self.code.particles.new_channel_to(self.particles)
+            = self.code.particles.new_channel_to(self.local_particles)
         self.channel_from_framework \
-            = self.particles.new_channel_to(self.code.particles)
+            = self.local_particles.new_channel_to(self.code.particles)
         self.initial_total_energy = self.total_energy
 ###BOOKLISTSTOP2###
 
@@ -60,11 +60,11 @@ class Hydro(BaseCode):
                  dt=None, Rbound=None):
         BaseCode.__init__(self, code, particles, eps)
         self.channel_to_framework \
-            = self.code.gas_particles.new_channel_to(self.particles)
+            = self.code.gas_particles.new_channel_to(self.local_particles)
         self.channel_from_framework \
-            = self.particles.new_channel_to(self.code.gas_particles)
+            = self.local_particles.new_channel_to(self.code.gas_particles)
         self.code.gas_particles.add_particles(particles)
-        m = self.particles.mass.sum()
+        m = self.local_particles.mass.sum()
         l = self.code.gas_particles.position.length()
         if Rbound is None:
             Rbound = 10*l
@@ -118,6 +118,7 @@ def gravity_hydro_bridge(Mprim, Msec, a, ecc, t_end, n_steps,
         hydro.copy_to_framework()
         write_set_to_file(stars.savepoint(model_time), filename, 'amuse')
         write_set_to_file(ism, filename, 'amuse')
+        print "P=", model_time.in_(units.yr), gravity.particles.x.in_(units.au)
     gravity.stop()
     hydro.stop()
 ###BOOKLISTSTOP4###
@@ -153,4 +154,5 @@ def new_option_parser():
 
 if __name__ in ('__main__', '__plot__'):
     o, arguments  = new_option_parser().parse_args()
+    numpy.random.seed(123)
     gravity_hydro_bridge(**o.__dict__)

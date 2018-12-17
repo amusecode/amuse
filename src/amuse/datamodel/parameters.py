@@ -75,7 +75,10 @@ class Parameters(object):
 
         for name in sorted(self.names()):
             output += name + ": "
-            output += str(getattr(self, name))+"\n"
+            output += str(getattr(self, name))
+            if self.get_parameter(name).is_readonly():
+                output += "  (read only)"
+            output += "\n"
 
         return output
 
@@ -382,19 +385,28 @@ class AbstractParameterDefinition(object):
 
 class AliasParameterDefinition(AbstractParameterDefinition):
     
-    def __init__(self, name, aliased_name, description):
+    def __init__(self, name, aliased_name, description, alias_set=None):
         AbstractParameterDefinition.__init__(self, name, description)
         self.aliased_name = aliased_name
+        self.alias_set = alias_set
         self.default_value = None
     
     def get_default_value(self, parameter_set):
         return parameter_set.get_parameter(self.aliased_name).definition.get_default_value(parameter_set)
         
     def get_value(self, parameter, object):
-        return getattr(parameter.parameter_set, self.aliased_name)
+        if self.alias_set:
+            parameter_set=getattr(object, self.alias_set)
+        else:
+            parameter_set=parameter.parameter_set
+        return getattr(parameter_set, self.aliased_name)
 
     def set_value(self, parameter, object, quantity):
-        return setattr(parameter.parameter_set, self.aliased_name, quantity)
+        if self.alias_set:
+            parameter_set=getattr(object, self.alias_set)
+        else:
+            parameter_set=parameter.parameter_set
+        return setattr(parameter_set, self.aliased_name, quantity)
 
     def set_default_value(self, parameter, object):
         pass
@@ -441,8 +453,6 @@ class ParameterDefinition(AbstractParameterDefinition):
 class InterfaceParameterDefinition(ParameterDefinition):
     def __init__(self, name, description, default_value,state_guard=None):
         AbstractParameterDefinition.__init__(self, name, description)
-        if default_value is None:
-          raise Exception("interface parameters need default value")
         self.default_value = default_value
         self.must_set_before_get = False
         self.value=default_value

@@ -164,12 +164,13 @@ class CreateFortranStub(object):
         return result
         
     @late
-    def dtype_to_fortantype(self):
+    def dtype_to_fortrantype(self):
         return {
             'int32':'INTEGER', 
             'float64':'DOUBLE PRECISION', 
             'float32':'REAL',
             'string':'CHARACTER(LEN=*)',
+            'bool':'LOGICAL',
         }
         
     def output_subprogram_start(self):
@@ -201,7 +202,7 @@ class CreateFortranStub(object):
 
     def output_parameter_type_definiton_lines(self):
         for dtype,parameters in self.dtype_to_parameters.iteritems():
-            typestring = self.dtype_to_fortantype[dtype]
+            typestring = self.dtype_to_fortrantype[dtype]
             first = True
             
             self.out.lf()
@@ -228,7 +229,7 @@ class CreateFortranStub(object):
     
     def output_function_type(self):
         if self.specification_is_for_function:
-            typestring = self.dtype_to_fortantype[self.specification.result_type]
+            typestring = self.dtype_to_fortrantype[self.specification.result_type]
             self.out.lf()
             self.out + typestring + ' :: ' + self.specification.name
 
@@ -249,6 +250,7 @@ class CreateFortranStub(object):
             'float64':'0.0', 
             'float32':'0.0',
             'string':'0',
+            'bool':'0',
         }
         
 
@@ -334,6 +336,7 @@ class CreateCStub(object):
                 'float64':'double', 
                 'float32':'float',
                 'string':'char *',
+                'bool':'_Bool',
             }
         else:
             return {
@@ -341,6 +344,7 @@ class CreateCStub(object):
                 'float64':'float64', 
                 'float32':'float32',
                 'string':'char *',
+                'bool':'_Bool',
             }
     @late
     def dtype_to_returnvalue(self):
@@ -349,6 +353,7 @@ class CreateCStub(object):
             'float64':'0.0', 
             'float32':'0.0',
             'string':'0',
+            'bool':'0',
         }
             
 

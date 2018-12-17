@@ -49,6 +49,8 @@ class TestAmusetestTestCase(TestCase):
         self.assertRaises(self.failureException, self.assertIsOfOrder, 
             1.0 | units.m, [0.3, 1.0, 4.0] | units.m, expected_message = 
             "@0, 1.0 m is not of order 0.3 m\n@2, 1.0 m is not of order 4.0 m")
+            
+      
     
     def test5(self):
         self.assertRaises(AmuseException, (1 | units.m).as_quantity_in, units.kg)
@@ -75,4 +77,14 @@ class TestAmusetestTestCase(TestCase):
             1 | units.cm, expected_message = error_message)
         self.assertRaises(AmuseException, lambda: 1 + (1|units.m))
         self.assertRaises(ZeroDivisionError, lambda: 1|units.m/0)
+
+
+    def test6(self):
+        self.assertRaises(TypeError, self.assertAlmostRelativeEqual, 
+            1.0 | units.m, 1.0, places = 3, expected_message = 
+            "Cannot compare quantity: 1.0 m with non-quantity: 1.0.")
+    
+        self.assertRaises(TypeError, self.assertAlmostRelativeEqual, 
+            1.0, 1.0 | units.m, places = 3, expected_message = 
+            "Cannot compare non-quantity: 1.0 with quantity: 1.0 m.")
     

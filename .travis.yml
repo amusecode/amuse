@@ -1,0 +1,105 @@
+env:
+  global:
+    - OMPI_MCA_rmaps_base_oversubscribe=yes
+    - MINICONDA_VERSION="latest"
+    - MINICONDA_PYTHON_MAJOR=2
+    - MINICONDA_LINUX="Linux-x86_64"
+    - MINICONDA_OSX="MacOSX-x86_64"
+
+matrix:
+  allow_failures:
+  - name: "linux openmpi"
+  include:
+  - name: "linux MPICH"
+    language: python
+    python:
+    - '2.7'
+    compiler: gcc
+    before_install:
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
+    install:
+    - ./configure
+    - make framework
+    addons:
+      apt:
+        packages:
+        - build-essential
+        - python-dev
+        - gfortran
+        - libgsl0-dev
+        - cmake
+        - libfftw3-3
+        - libfftw3-dev
+        - libmpfr4
+        - libmpfr-dev
+        - libhdf5-serial-dev
+        - hdf5-tools
+        - libmpich-dev
+        - mpich  
+  - name: "linux openmpi"
+    language: python
+    python:
+    - '2.7'
+    compiler: gcc
+    before_install:
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
+    install:
+    - ./configure
+    - make framework
+    addons:
+      apt:
+        packages:
+        - build-essential
+        - python-dev
+        - gfortran
+        - libgsl0-dev
+        - cmake
+        - libfftw3-3
+        - libfftw3-dev
+        - libmpfr4
+        - libmpfr-dev
+        - libhdf5-serial-dev
+        - hdf5-tools
+        - libopenmpi-dev
+        - openmpi-bin
+  - name: "osx openmpi"
+    language: generic
+    os: osx
+    before_install:
+    - export MINICONDA_OS=$MINICONDA_OSX
+    - wget "http://repo.continuum.io/miniconda/Miniconda$MINICONDA_PYTHON_MAJOR-$MINICONDA_VERSION-$MINICONDA_OS.sh" -O miniconda.sh;
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export CONDA_PREFIX=$HOME/miniconda
+    - export PATH="$CONDA_PREFIX/bin:$PATH"
+    - hash -r
+    - conda update -yq conda
+    # gather the conda packages to install in one go, saving time
+    - export CONDA_OPTIONS="-c conda-forge -c anaconda"  # N.B.: order matters, first is search first!
+    - export CONDA_PACKAGES="gfortran_osx-64"  # configure wants this, even just for the framework target
+    - export CONDA_PACKAGES="${CONDA_PACKAGES} mpi4py nose numpy docutils h5py"  # additional basic dependencies
+    - export CONDA_PACKAGES="${CONDA_PACKAGES} openmpi cython"  # for the compile_tests
+      #- export CONDA_PACKAGES="${CONDA_PACKAGES} -c conda-forge fftw mpfr gsl gmp pkg-config"  # for a full build including community codes
+    - conda install -y ${CONDA_OPTIONS} ${CONDA_PACKAGES}
+    install:
+    - env CXX=clang++ CC=clang LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib" ./configure --with-hdf5=$CONDA_PREFIX --with-gmp=$CONDA_PREFIX --with-mpfr=$CONDA_PREFIX --with-fftw=$CONDA_PREFIX --with-gsl-prefix=$CONDA_PREFIX
+    - make framework
+
+virtualenv:
+  system_site_packages: false
+
+script:
+- export PYTHONPATH=${PWD}/src
+- |
+  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    mpiexec nosetests test/reports/test_speed.py -sv
+    mpiexec nosetests -e "test_plot" test/core_tests
+    mpiexec nosetests -e "test_cython_implementation" test/compile_tests -sv
+  elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    nosetests test/reports/test_speed.py -sv
+    nosetests -e "test_plot" test/core_tests
+    nosetests -e "test29" test/compile_tests/test_c_implementation.py -sv
+    #nosetests -e "test29" test/compile_tests/test_c_sockets_implementation.py -sv
+    nosetests -e "test19" test/compile_tests/test_fortran_implementation.py -sv
+    #nosetests test/compile_tests/test_fortran_sockets_implementation.py -sv
+    nosetests -e "test26" -e "test27" test/compile_tests/test_python_implementation.py -sv
+  fi

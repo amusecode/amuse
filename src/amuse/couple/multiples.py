@@ -6,7 +6,7 @@ import copy
 
 from amuse.datamodel import particle_attributes
 from amuse.datamodel import trees
-from amuse.datamodel import Particles 
+from amuse.datamodel import Particle, Particles 
 from amuse.rfi.core import is_mpd_running
 from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution_nbody
@@ -158,7 +158,7 @@ class Multiples(object):
         if gravity_constant is None:		# default is N-body units
             gravity_constant = nbody_system.G
         
-        self.multiples = Particles()
+        #self.multiples = Particles()		# not used?
         self.gravity_constant = gravity_constant
         self.debug_encounters = False
 
@@ -288,6 +288,50 @@ class Multiples(object):
             leaves_in_result.vz += dvz
         return result
 
+    def create_binary(self, star1, star2):
+
+        # Experimental code to include a binary directly into the
+        # multiples database.
+
+        M,a,e,r,E,tperi = get_component_binary_elements(star1, star2, 
+                                                        self.kepler, 1)
+
+        binary = Particles()
+        binary.add_particle(star1)
+        binary.add_particle(star2)
+        
+        cm = Particle(mass=M,
+                      position=binary.center_of_mass(),
+                      velocity=binary.center_of_mass_velocity())
+        binary.add_particle(cm)
+
+        binary.child1 = None
+        binary.child2 = None
+        cm = binary[2]
+        cm.child1 = binary[0]
+        cm.child2 = binary[1]
+        
+        set_radii(binary, self.kepler, self.global_debug)
+
+        self.gravity_code.particles.remove_particle(star1)
+        self.gravity_code.particles.remove_particle(star2)
+
+        # Complete the bookkeeping.
+        
+        tree = trees.BinaryTreesOnAParticleSet(binary,
+                                               "child1", "child2")
+
+        for t in tree.iter_binary_trees():	# only one tree...
+            t.particle.id = assign_id_to_root(t)
+            self.gravity_code.particles.add_particle(t.particle)
+            self.root_to_tree[t.particle] = t.copy()
+            print '\nCreated binary from', star1.id, 'and', star2.id, \
+                  ' CM =', t.particle.id
+            print 'M =', M, ' a =', a, ' e =', e, ' E =', E
+
+        self.gravity_code.particles.synchronize_to(self._inmemory_particles)
+        self.channel_from_code_to_memory.copy_attribute("index_in_code", "id")
+
     def check_trees(self):
 
         # Print out some debugging information on multiples in the system.
@@ -397,7 +441,7 @@ class Multiples(object):
         count_resolve_encounter = 0
         count_ignore_encounter = 0
         
-        while time < end_time:
+        while time <= end_time:		# the <= here allows zero-length steps
 
             if self.global_debug > 1:
                 print ''
@@ -408,18 +452,19 @@ class Multiples(object):
             self.gravity_code.evolve_model(end_time)
             newtime = self.gravity_code.model_time
            
-            # JB, modified this, in Bonsai we can take a 0 time-step
-            # to detect multiples. That would cause the newtime ==
-            # time to evaluate to true when there are multiples
-            # detected and break out of the evaluate loop before the
-            # time reached end_time
+            # JB modified this: in Bonsai we can take a zero-length
+            # time step to detect multiples. That would cause the
+            # newtime == time to evaluate to true when there are
+            # multiples detected and break out of the evaluate loop
+            # before the time reached end_time.  Same is now possible
+            # with ph4 (SLWM, 6/18).
 
             if newtime == time and (stopping_condition.is_set() == False):
                 break
             
             #self.gravity_code.evolve_model(end_time)
             time = newtime
-            
+
             if stopping_condition.is_set():
 
                 # Synchronize everything for now.  Later we can
@@ -712,7 +757,8 @@ class Multiples(object):
             'stars': stars.copy(),
             #'gravity_stars': gravity_stars.copy(),
             'self.root_to_tree': self.root_to_tree.copy(),
-            'particles_in_encounter': Particles(0)
+            'particles_in_encounter': Particles(0),
+            'scattering_stars': Particles(0)
         }
         snapshot['particles_in_encounter'].add_particle(snapshot['star1'])
         snapshot['particles_in_encounter'].add_particle(snapshot['star2'])
@@ -815,6 +861,7 @@ class Multiples(object):
                             print 'unknown star',
                         print 'to scattering list'
                         sys.stdout.flush()
+                    snapshot['scattering_stars'].add_particle(star)
                     #initial_scale = sorted_distances[i]    # don't expand!
                 else:
                     if self.global_debug > 0:
@@ -860,15 +907,16 @@ class Multiples(object):
                                                         self.kepler, 1)
 
         Etop = E*star1.mass*star2.mass/M
-        peri = a*(1-e)
         ttrans = self.gravity_constant*M/(4*abs(E))**1.5
 
         # Note: transit time = 0.056 * period for a bound orbit.
 
         if e < 1:
+            peri = a*(1-e)
             apo = a*(1+e)
             period = self.kepler.get_period()
         else:
+            peri = a*(e-1)
             apo = 1.e9*a	# 1.e9 is large but otherwise arbitrary
             period = 1.e9*ttrans
 
@@ -888,7 +936,7 @@ class Multiples(object):
             #print "rescaling out:", (star1.position - star2.position).length()
 
         # 2c. Remove the interacting stars from the gravity module.
-
+        
         for star in scattering_stars:
             gravity_stars.remove_particle(star)
 
@@ -1095,6 +1143,7 @@ class Multiples(object):
             #gravity_stars = snapshot['gravity_stars']
             gravity_stars.add_particle(star1)
             gravity_stars.add_particle(star2)
+            gravity_stars.add_particles(snapshot['scattering_stars'])
             self.root_to_tree = snapshot['self.root_to_tree']
             zero_en = 0.0 * E0
 
@@ -1396,7 +1445,7 @@ class Multiples(object):
             print 'dphi_2 =', dphi_2
 
         # 7a. Set radii to reflect multiple structure.
-            
+
         set_radii(particles_in_encounter, self.kepler, self.global_debug)
 
         # Print diagnostics on added particles. Strip dimensions
@@ -1416,7 +1465,6 @@ class Multiples(object):
                     if rij > r:
                         r = rij
                         v = ((i.velocity-j.velocity)**2).sum().sqrt()
-
                         vr = ((j.velocity-i.velocity) \
                                * (j.position-i.position)).sum()
 
@@ -1424,7 +1472,7 @@ class Multiples(object):
             print ''
             print 'M =', top_level_nodes.mass.sum(),
             print 'Etop =', Etop
-        if self.global_debug > 1:
+        if self.global_debug > 1 and len(top_level_nodes) > 1:
             print '                 r =', r
             print '                 v =', v
             print '                 v.r =', vr
@@ -1450,8 +1498,8 @@ class Multiples(object):
             #tree.particle.components = subset
             #print 'adding particle:'
             #print tree.particle
-            gravity_stars.add_particle(tree.particle)	# Steve: add_particles
-            self.after.add_particle(tree.particle)	#        is broken?
+            gravity_stars.add_particle(tree.particle)
+            self.after.add_particle(tree.particle)
             multiples_particles.add_particle(tree.particle)
 
         if self.global_debug > 1:            
