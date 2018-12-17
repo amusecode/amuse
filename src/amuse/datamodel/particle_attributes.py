@@ -535,9 +535,9 @@ def densitycentre_coreradius_coredens(particles, unit_converter=None, number_of_
         hop = hop.code
     try:
         hop.particles.add_particles(particles)
-    except:
+    except Exception, ex:
         hop.stop()
-        raise exceptions.AmuseException("Hop needs a converter to work with this particleset")
+        raise exceptions.AmuseException(str(ex)+" (note: check whether Hop needs a converter here)")
     hop.parameters.density_method=2
     hop.parameters.number_of_neighbors_for_local_density=number_of_neighbours
     hop.calculate_densities()
