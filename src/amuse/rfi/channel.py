@@ -42,7 +42,7 @@ from amuse.rfi import slurm
 
 class AbstractASyncRequest(object):
     def __nonzero__(self):
-        return self.is_finished
+        return not self.is_finished
 
     def waitone(self):
         return self.wait()
@@ -54,8 +54,21 @@ class AbstractASyncRequest(object):
     def wait(self):
         raise Exception("not implemented")
 
+    @property
+    def is_finished(self):
+        return self._is_finished
+
+    @property
+    def is_result_set(self):
+        return self._is_result_set
+
     def is_result_available(self):
         raise Exception("not implemented")
+
+    def is_failed(self):
+        if not self.is_finished:
+            return False
+        return not self.is_result_set
 
     def result(self):
         raise Exception("not implemented")
@@ -92,6 +105,8 @@ class AbstractASyncRequest(object):
         return pool
 
     def waits_for(self):
+        if self.is_finished:
+            return None
         return self
 
 class DependentASyncRequest(AbstractASyncRequest):
@@ -99,7 +114,7 @@ class DependentASyncRequest(AbstractASyncRequest):
         
         self.request=None
         self.parent=parent
-        
+                
         def handler(arg):
             result=arg()
             self.request=request_factory()
@@ -111,10 +126,23 @@ class DependentASyncRequest(AbstractASyncRequest):
         
         self.result_handlers = []
 
-    def wait(self):
-        if self.is_finished:
-            return
-    
+    @property
+    def is_result_set(self):
+        if self.request is None:
+            return False
+        return self.request.is_result_set
+
+    @property
+    def is_finished(self):
+        if self.request is None:
+            if self.parent.is_finished:
+                return True  
+            else:
+                return False
+        
+        return self.request.is_finished
+
+    def wait(self):    
         self.parent.wait()
         if self.request is None:
             raise Exception("something went wrong (exception of parent?)")
@@ -122,25 +150,25 @@ class DependentASyncRequest(AbstractASyncRequest):
 
     def is_result_available(self):
         if self.is_finished:
-            return True
+            if self.request is None:
+                return False
 
-        if not self.parent.is_finished:
-            return False
+        #~ if not self.parent.is_finished:
+            #~ return False
 
         if self.request is None:
-            raise Exception("something went wrong (exception of parent?)")
+            return False
+            #~ raise Exception("something went wrong (exception of parent?)")
             
         return self.request.is_result_available()
 
-    @property
-    def is_finished(self):
-        if self.request is None:
-            return False
-        return self.request.is_finished
-
     def result(self):
         self.wait()
-        return self.request._result
+
+        if not self.request._is_result_set:
+            raise Exception("result unexpectedly not available")
+
+        return self.request.result()
 
     @property
     def results(self):
@@ -159,6 +187,8 @@ class DependentASyncRequest(AbstractASyncRequest):
             return self.request.is_socket_request()
 
     def waits_for(self):
+        if self.is_finished:
+            return None
         if self.request is not None:
             return self.request
         else:
@@ -171,33 +201,34 @@ class ASyncRequest(AbstractASyncRequest):
         self.message = message
         self.header = header
         self.comm = comm
-        self.is_finished = False
-        self.is_set = False
+        self._is_finished = False
+        self._is_result_set = False
+        self._called_set_result = False
         self._result = None
         self.result_handlers = []
 
     def wait(self):
         if self.is_finished:
             return
-    
+
+        self._is_finished = True
+                
         self.request.Wait()
-
-        if not self.is_set:
-            self._set_result()
-
-        self.is_finished = True
+        self._set_result()
     
     def is_result_available(self):
         if self.is_finished:
-            return True
-            
-        self.is_finished = self.request.Test()
-        return self.is_finished
+            return self._is_result_set
+        return self.request.Test()
 
     def get_message(self):
         return self.message
         
     def _set_result(self):
+        if self._called_set_result:
+            return
+        self._called_set_result=True
+      
         class CallingChain(object):
             def __init__(self, outer, args,  inner):
                 self.outer = outer
@@ -215,14 +246,14 @@ class ASyncRequest(AbstractASyncRequest):
         
         self._result = current()
         
-        self.is_set = True
+        self._is_result_set = True
         
     def result(self):
         self.wait()
-        
-        if not self.is_set:
-            self._set_result()
-        
+
+        if not self._is_result_set:
+            raise Exception("result unexpectedly not available")
+
         return self._result
 
     def is_mpi_request(self):
@@ -234,35 +265,40 @@ class ASyncSocketRequest(AbstractASyncRequest):
         self.message = message
         self.socket = socket
         
-        self.is_finished = False
-        self.is_set = False
+        self._is_finished = False
+        self._is_result_set = False
+        self._called_set_result = False
         self._result = None
         self.result_handlers = []
 
     def wait(self):
         if self.is_finished:
             return
-    
+
+        self._is_finished = True
+
         while True:
             readables, _r, _x = select.select([self.socket], [], [])
             if len(readables) == 1:
-                break
-        
-        self.is_finished = True
-    
+                break        
+        self._set_result()
+
     def is_result_available(self):
         if self.is_finished:
-            return True
+            return self._is_result_set
             
         readables, _r, _x = select.select([self.socket], [], [], 0.001)
         
-        self.is_finished = len(readables) == 1
-        return self.is_finished
+        return len(readables) == 1
             
     def get_message(self):
         return self.message
         
     def _set_result(self):
+        if self._called_set_result:
+            return
+        self._called_set_result=True
+
         class CallingChain(object):
             def __init__(self, outer, args, inner):
                 self.outer = outer
@@ -280,14 +316,14 @@ class ASyncSocketRequest(AbstractASyncRequest):
         
         self._result = current()
         
-        self.is_set = True
+        self._is_result_set = True
         
     def result(self):
         self.wait()
-        
-        if not self.is_set:
-            self._set_result()
-        
+
+        if not self._is_result_set:
+            raise Exception("result unexpectedly not available")
+
         return self._result
 
     def is_socket_request(self):
@@ -296,27 +332,27 @@ class ASyncSocketRequest(AbstractASyncRequest):
 class FakeASyncRequest(AbstractASyncRequest):
         
     def __init__(self, result):
-        self.is_finished = False
-        self.is_set = False
+        self._is_finished = False
+        self._is_result_set = False
+        self._called_set_result = False
+        self._result = None
         self.__result = result
         self.result_handlers = []
 
     def wait(self):
         if self.is_finished:
             return
-    
-        if not self.is_set:
-            self._set_result()
-
-        self.is_finished = True
-
-    def waitone(self):
-        return self.wait()
-    
+        self._is_finished = True                
+        self._set_result()
+        
     def is_result_available(self):
         return True
             
     def _set_result(self):
+        if self._called_set_result:
+            return
+        self._called_set_result=True
+
         class CallingChain(object):
             def __init__(self, outer, args,  inner):
                 self.outer = outer
@@ -325,8 +361,7 @@ class FakeASyncRequest(AbstractASyncRequest):
                 
             def __call__(self):
                 return self.outer(self.inner, *self.args)
-                
-        
+                        
         current = lambda : self.__result
 
         for x, args in self.result_handlers:
@@ -334,14 +369,14 @@ class FakeASyncRequest(AbstractASyncRequest):
         
         self._result = current()
         
-        self.is_set = True
+        self._is_result_set = True
         
     def result(self):
         self.wait()
-        
-        if not self.is_set:
-            self._set_result()
-        
+
+        if not self._is_result_set:
+            raise Exception("result unexpectedly not available")
+
         return self._result
 
 class ASyncRequestSequence(AbstractASyncRequest):
@@ -352,23 +387,30 @@ class ASyncRequestSequence(AbstractASyncRequest):
         self.index = 0
         self.current_async_request = self.create_next_request(self.index, *self.args)
         self.request = self.current_async_request.request
-        self.is_finished = False
-        self.is_set = False
+        self._is_finished = False
+        self._is_result_set = False
+        self._called_set_result = False
         self._result = None
         self.result_handlers = []
         self._results = []
+
+    @property
+    def is_finished(self):
+        self._next_request()
+        return self.current_async_request is None
 
     def wait(self):
         if self.is_finished:
             return
             
-        while not self.is_finished:
+        self._is_finished=True
+
+        while self.current_async_request is not None:
             self.current_async_request.wait()
         
-            self.is_result_available()
+            self._next_request()
 
-        if not self.is_set:
-            self._set_result()
+        self._set_result()
 
     def waitone(self):
         if self.is_finished:
@@ -376,7 +418,24 @@ class ASyncRequestSequence(AbstractASyncRequest):
 
         self.current_async_request.wait()
         
-        self.is_result_available()
+        self._next_request()
+        
+        if self.current_async_request is None:
+            self._is_finished=True
+            self._set_result()
+        
+
+    def _next_request(self):
+        if self.current_async_request is not None and \
+           self.current_async_request.is_result_available():
+            self._results.append(self.current_async_request.result())
+            self.index += 1
+            self.current_async_request = self.create_next_request(self.index, *self.args)
+            if not self.current_async_request is None:
+                self.request = self.current_async_request.request
+            else:
+                self._set_result()
+      
 
     @property
     def results(self):
@@ -386,15 +445,9 @@ class ASyncRequestSequence(AbstractASyncRequest):
         if self.is_finished:
             return True
         
-        if self.current_async_request.is_result_available():
-            self._results.append(self.current_async_request.result())
-            self.index += 1
-            self.current_async_request = self.create_next_request(self.index, *self.args)
-            if not self.current_async_request is None:
-                self.request = self.current_async_request.request
+        self._next_request()
             
-        self.is_finished =  self.current_async_request is None
-        return self.is_finished
+        return self.current_async_request is None
         
     def add_result_handler(self, function, args = ()):
         self.result_handlers.append([function,args])
@@ -403,6 +456,10 @@ class ASyncRequestSequence(AbstractASyncRequest):
         return self._results
         
     def _set_result(self):
+        if self._called_set_result:
+            return
+        self._called_set_result=True
+
         class CallingChain(object):
             def __init__(self, outer, args,  inner):
                 self.outer = outer
@@ -418,14 +475,14 @@ class ASyncRequestSequence(AbstractASyncRequest):
         
         self._result = current()
         
-        self.is_set = True
+        self._is_result_set = True
         
     def result(self):
         self.wait()
         
-        if not self.is_set:
-            self._set_result()
-        
+        if not self._is_result_set:
+            raise Exception("result unexpectedly not available")
+
         return self._result
 
     def is_mpi_request(self):
@@ -433,6 +490,9 @@ class ASyncRequestSequence(AbstractASyncRequest):
 
     def is_socket_request(self):
         return self.current_async_request.is_socket_request()
+
+    def waits_for(self):
+        return self.current_async_request
 
 class AsyncRequestWithHandler(object):
     

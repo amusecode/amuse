@@ -98,6 +98,9 @@ class CodeFunction(object):
         self.specification = specification
     
     def __call__(self, *arguments_list, **keyword_arguments):
+        #~ if self.interface.async_request:
+            #~ self.interface.async_request.wait()
+            
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
         handle_as_array = self.must_handle_as_array(dtype_to_values)
@@ -138,7 +141,8 @@ class CodeFunction(object):
                 dtype_to_result = function()
             except Exception, ex:
                 raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
-            return self.converted_results(dtype_to_result, handle_as_array)
+            result=self.converted_results(dtype_to_result, handle_as_array)
+            return result
             
         request.add_result_handler(handle_result)
         

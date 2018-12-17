@@ -17,6 +17,7 @@ import test_c_implementation
 
 from amuse.test import compile_tools
 
+from amuse.community.distributed.interface import DistributedAmuse, Pilot
 
 codestring=test_c_implementation.codestring+"""
 #include <unistd.h>
@@ -26,7 +27,8 @@ int do_sleep(int in) {
     return 0;
 }
 
-int return_error() {
+int return_error(int * out) {
+    *out=123;
     return -1;
 }
 
@@ -43,6 +45,7 @@ class ForTestingInterface(test_c_implementation.ForTestingInterface):
     @legacy_function
     def return_error():
         function = LegacyFunctionSpecification()
+        function.addParameter('out', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function 
 
@@ -192,19 +195,19 @@ class TestASync(TestWithMPI):
         instance = ForTesting(self.exefile)
         r1=instance.do_sleep(1, return_request=True)
         r2=instance.return_error( return_request=True)
-        r3=instance.echo_int(10, return_request=True)
-        try:
-            results=instance.async_request.results
-        except Exception as ex:
-            print ex
-        print r1.is_result_available()
-        print r2.is_result_available()
-        print r2.result()
-        try:
-            print r3.is_result_available()
-        except Exception as ex:
-            print ex
-
+        r3=instance.echo_int(1, return_request=True)
+        r4=instance.echo_int(2, return_request=True)
+        self.assertRaises(Exception, instance.async_request.waitall,
+            expected_message="Error when calling 'return_error' of a 'ForTesting', errorcode is -1")
+        self.assertTrue( r1.is_result_available() )
+        self.assertFalse( r2.is_result_available() )
+        self.assertTrue(  r2.is_finished )
+        self.assertTrue(  r3.is_finished )
+        self.assertFalse(  bool(r3) )
+        self.assertTrue(  r4.is_finished )
+        self.assertTrue(  r4.waits_for() is None )
+        self.assertFalse( r3.is_result_available() )
+        
         instance.stop()
 
     def test11(self):
@@ -240,7 +243,6 @@ class TestASync(TestWithMPI):
         
         def safe_result(arg, index):
             result=arg()
-            print index
             results[index]=result
             return result
         
@@ -258,5 +260,82 @@ class TestASync(TestWithMPI):
         
         instance1.stop()
         instance2.stop()
+
+    def test13(self):
+        instance = ForTesting(self.exefile)
+
+        r=instance.echo_int(1, return_request=True)
+        time.sleep(0.1)
+        self.assertTrue(r.is_result_available())
+        r.result()
+
+        r=instance.return_error(return_request=True)
+        time.sleep(0.1)
+        self.assertTrue(r.is_result_available())
+        self.assertTrue(r.is_result_available())
+        self.assertRaises(Exception, r.result, expected_message="Error when calling 'return_error' of a 'ForTesting', errorcode is -1")        
+        self.assertFalse(r.is_result_available())
+        self.assertTrue(r.is_finished)
+        instance.stop()
+
+    def test14(self):
+        instance = ForTesting(self.exefile, channel_type="sockets")
+
+        r=instance.echo_int(1, return_request=True)
+        time.sleep(0.1)
+        self.assertTrue(r.is_result_available())
+        r.result()
+
+        r=instance.return_error(return_request=True)
+        time.sleep(0.1)
+        self.assertTrue(r.is_result_available())
+        self.assertTrue(r.is_result_available())
+        self.assertRaises(Exception, r.result, expected_message="Error when calling 'return_error' of a 'ForTesting', errorcode is -1")        
+        self.assertFalse(r.is_result_available())
+        self.assertTrue(r.is_finished)
+        instance.stop()
+
+class TestASyncDistributed(TestASync):
+
+    def setUp(self):
+        self.check_not_in_mpiexec()
+        super(TestASyncDistributed, self).setUp()
+        #instance = DistributedAmuse(redirection='none')
+        self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
+        self.distinstance.parameters.debug = False
+
+        #~ print "Resources:"
+        #~ print self.distinstance.resources
+
+        pilot = Pilot()
+        pilot.resource_name='local'
+        pilot.node_count=1
+        pilot.time= 2|units.hour
+        pilot.slots_per_node=2
+        pilot.label='local'
+        self.distinstance.pilots.add_pilot(pilot)
+        #~ print "Pilots:"
+        #~ print self.distinstance.pilots
+
+        #~ print "Waiting for pilots"
+        self.distinstance.wait_for_pilots()
+        self.distinstance.use_for_all_workers()
+
+    def tearDown(self):
+        #~ print "Stopping distributed code"
+        self.distinstance.stop()
+
+    def check_not_in_mpiexec(self):
+        """
+        The tests will fork another process, if the test run
+        is itself an mpi process, the tests may fail. 
+        
+        For the hydra process manager the tests will fail.
+        So skip the tests if we detect hydra
+        """
+        if 'HYDI_CONTROL_FD' in os.environ:
+            return
+        if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
+            self.skip('cannot run the socket tests under hydra process manager')
 
 

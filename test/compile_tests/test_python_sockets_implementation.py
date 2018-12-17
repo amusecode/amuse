@@ -445,7 +445,7 @@ class TestInterface(TestWithMPI):
         request1 = x.sleep.asynchronous(0.4)
         self.assertRaises(Exception, lambda : x.sleep(0.01))
         request1.wait()
-        self.assertRaises(Exception, lambda : x.sleep(0.01))
+        x.sleep(0.01) # no longer raises exception, wait finishes call..
         request1.result()
         x.sleep(0.01)
         self.assertTrue(request1.is_result_available())
