@@ -112,6 +112,7 @@ src/amuse/community/fi/src/globals.h.bck
 src/amuse/community/fi/worker_code-gl.f90
 src/amuse/community/fi/worker_code.f90
 src/amuse/community/evtwin/evtwin_worker
+src/amuse/community/evtwin/worker_code.f90
 src/amuse/community/evtwin/src/trunk/code/ev
 src/amuse/community/evtwin/src/trunk/code/svn_version.f90
 src/amuse/community/evtwin/src/trunk/code/twin
@@ -119,13 +120,15 @@ src/amuse/community/fastkick/fastkick_worker
 src/amuse/community/fastkick/interface.gpuo
 src/amuse/community/fastkick/worker_code.cc
 src/amuse/community/fastkick/worker_code.h
+src/amuse/community/fdpssn/worker_code.cc
+src/amuse/community/fdpssn/worker_code.h
+src/amuse/community/fdpssn/fdpssn_worker
 src/amuse/community/fi/build/
 src/amuse/community/fi/build_mp/
 src/amuse/community/fi/fi_worker
 src/amuse/community/fi/src/globals.h.bck
 src/amuse/community/fi/worker_code-gl.f90
 src/amuse/community/fi/worker_code.f90
-src/amuse/community/evtwin/worker_code.f90
 src/amuse/community/fi/build_map/
 src/amuse/community/fi/build_map_mp/
 src/amuse/community/fi/build_periodic/
@@ -483,3 +486,4 @@ test_python_sockets_implementation
 .buildpath
 
 .idea
+
