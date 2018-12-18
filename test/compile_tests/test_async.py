@@ -52,8 +52,8 @@ class ForTestingInterface(test_c_implementation.ForTestingInterface):
     @legacy_function
     def echo_2_int():
         function = LegacyFunctionSpecification()
-        function.addParameter('int_in1', dtype='int32', direction=function.IN)
-        function.addParameter('int_in2', dtype='int32', direction=function.IN, default = 1)
+        function.addParameter('int_in1', dtype='int32', direction=function.IN, unit=units.m)
+        function.addParameter('int_in2', dtype='int32', direction=function.IN, default = 1, unit=units.kg)
         function.addParameter('int_out1', dtype='int32', direction=function.OUT, unit=units.m)
         function.addParameter('int_out2', dtype='int32', direction=function.OUT, unit=units.kg)
         function.addParameter('len', dtype='int32', direction=function.LENGTH)
@@ -323,7 +323,7 @@ class TestASync(TestWithMPI):
         instance = ForTesting(self.exefile)
 
         instance.do_sleep(1, return_request=True)
-        result=instance.echo_2_int([11,12,13],[3,2,1], return_request=True)
+        result=instance.echo_2_int([11,12,13] | units.m,[3,2,1]| units.kg, return_request=True)
 
         r1=result[0]
         r2=result[1]
