@@ -164,7 +164,7 @@ class DependentASyncRequest(AbstractASyncRequest):
         if self.is_finished:
             if self.request is None:
                 return False
-\
+
         #~ if not self.parent.is_finished:
             #~ return False
 
