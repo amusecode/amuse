@@ -109,6 +109,12 @@ class AbstractASyncRequest(object):
             return None
         return self
 
+    def __getitem__(self, index):
+        return IndexedASyncRequest(self,index)
+       
+    def __call__(self):
+        return self.result()
+        
 class DependentASyncRequest(AbstractASyncRequest):
     def __init__(self, parent, request_factory):
         
@@ -158,7 +164,7 @@ class DependentASyncRequest(AbstractASyncRequest):
         if self.is_finished:
             if self.request is None:
                 return False
-
+\
         #~ if not self.parent.is_finished:
             #~ return False
 
@@ -180,6 +186,12 @@ class DependentASyncRequest(AbstractASyncRequest):
     def results(self):
         return self.parent.results+[self.result()]        
 
+    def add_result_handler(self, function, args = ()):
+        if self.request is None:
+            self.result_handlers.append([function,args])
+        else:
+            self.request.add_result_handler(function,args)
+
     def is_mpi_request(self):
         if self.request is None:
             return self.parent.is_mpi_request()
@@ -199,6 +211,29 @@ class DependentASyncRequest(AbstractASyncRequest):
             return self.request
         else:
             return self.parent.waits_for()
+
+class IndexedASyncRequest(DependentASyncRequest):
+    def __init__(self, parent, index):
+        self.request=None
+        self.parent=parent
+        self.index=index
+                
+        def handler(arg):
+            result=arg()
+            self.request=FakeASyncRequest(result.__getitem__(index))
+            #~ self.request=FakeASyncRequest()
+            for h in self.result_handlers:
+                self.request.add_result_handler(*h)
+            return result
+
+        self.parent.add_result_handler(handler)
+        
+        self.result_handlers = []
+
+    #~ def result(self):
+        #~ self.wait()
+        #~ return self.parent.result().__getitem__(self.index)
+
 
 class ASyncRequest(AbstractASyncRequest):
         
@@ -337,7 +372,7 @@ class ASyncSocketRequest(AbstractASyncRequest):
 
 class FakeASyncRequest(AbstractASyncRequest):
         
-    def __init__(self, result):
+    def __init__(self, result=None):
         self._is_finished = False
         self._is_result_set = False
         self._called_set_result = False

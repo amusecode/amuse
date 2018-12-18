@@ -49,6 +49,18 @@ class ForTestingInterface(test_c_implementation.ForTestingInterface):
         function.result_type = 'int32'
         return function 
 
+    @legacy_function
+    def echo_2_int():
+        function = LegacyFunctionSpecification()
+        function.addParameter('int_in1', dtype='int32', direction=function.IN)
+        function.addParameter('int_in2', dtype='int32', direction=function.IN, default = 1)
+        function.addParameter('int_out1', dtype='int32', direction=function.OUT, unit=units.m)
+        function.addParameter('int_out2', dtype='int32', direction=function.OUT, unit=units.kg)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+
 
 class ForTesting(InCodeComponentImplementation):
     
@@ -306,6 +318,37 @@ class TestASync(TestWithMPI):
         
 
         instance.stop()
+
+    def test16(self):
+        instance = ForTesting(self.exefile)
+
+        instance.do_sleep(1, return_request=True)
+        result=instance.echo_2_int([11,12,13],[3,2,1], return_request=True)
+
+        r1=result[0]
+        r2=result[1]
+        
+        self.assertEquals(r1.result(),[11,12,13] | units.m)
+        self.assertEquals(r2.result(),[3,2,1] | units.kg)
+        
+        instance.stop()
+
+    def test17(self):
+        instance = ForTestingInterface(self.exefile)
+
+        instance.do_sleep.asynchronous(1)
+        request=instance.echo_2_int.asynchronous([11,12,13],[3,2,1])
+
+        r1=request["int_out1"]
+        r2=request["int_out2"]
+        
+        self.assertEquals(r1.result(),[11,12,13] )
+        self.assertEquals(r2.result(),[3,2,1] )
+        
+
+        instance.stop()
+
+
 
 class TestASyncDistributed(TestASync):
 
