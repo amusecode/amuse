@@ -155,11 +155,23 @@ public:
     PS::F64vec getPos() const {
         return pos;
     }
+    PS::F64vec getVel() const {
+        return vel;
+    }
+    PS::F64 getMass() const {
+        return mass;
+    }
     PS::F64 getCharge() const {
         return mass;
     }
     void setPos(const PS::F64vec& pos){
-       this->pos = pos;
+        this->pos = pos;
+    }
+    void setVel(const PS::F64vec& vel){
+        this->vel = vel;
+    }
+    void setMass(const PS::F64& mass){
+        this->mass = mass;
     }
     void copyFromForce(const Force_grav & f) {
         this->acc = f.acc;
@@ -231,11 +243,23 @@ public:
     PS::F64vec getPos() const{
         return this->pos;
     }
+    PS::F64vec getVel() const{
+        return this->vel;
+    }
+    PS::F64 getMass() const{
+        return this->mass;
+    }
     PS::F64 getRSearch() const{
         return this->smth;
     }
     void setPos(const PS::F64vec& pos){
-       this->pos = pos;
+        this->pos = pos;
+    }
+    void setVel(const PS::F64vec& vel){
+        this->vel = vel;
+    }
+    void setMass(const PS::F64& mass){
+        this->mass = mass;
     }
     void writeAscii(FILE* fp) const{
         fprintf(fp,
