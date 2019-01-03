@@ -32,15 +32,18 @@ from amuse.support.console import set_printing_strategy
 
 """ Equation 47-52 of Sepinsky """
 
+
 def low_q_low_A(q, A):
     log_q = numpy.log10(q)
 
-    return 1 + 0.11 * (1-A) - 0.05 * (1-A) * numpy.exp(-(0.5 * (1 + A) + log_q)**2)
+    return 1 + 0.11 * (1 - A) - 0.05 * (1 - A) * numpy.exp(-(0.5 * (1 + A) + log_q)**2)
+
 
 def high_q_low_A(q, A):
     log_q = numpy.log10(q)
 
-    return 1.226 - 0.21 * A - 0.15 * (1-A) * numpy.exp((0.25 * A - 0.3) * (log_q)**1.55)
+    return 1.226 - 0.21 * A - 0.15 * (1 - A) * numpy.exp((0.25 * A - 0.3) * (log_q)**1.55)
+
 
 def low_q_medium_A(q, A):
     log_q = numpy.log10(q)
@@ -51,14 +54,16 @@ def low_q_medium_A(q, A):
     g_2 = 0.0004 + 0.0021 * log_A
     return g_0 + g_1 * log_q + g_2 * (log_q)**2
 
+
 def high_q_medium_A(q, A):
     log_q = numpy.log10(q)
     log_A = numpy.log10(A)
 
-    h_0 = 1.0071 -  0.0907 * log_A - 0.0495 * (log_A)**2
-    h_1 = -0.004 -  0.163 * log_A - 0.214 * (log_A)**2
-    h_2 = 0.00022 -  0.0108 * log_A - 0.02718 * (log_A)**2
+    h_0 = 1.0071 - 0.0907 * log_A - 0.0495 * (log_A)**2
+    h_1 = -0.004 - 0.163 * log_A - 0.214 * (log_A)**2
+    h_2 = 0.00022 - 0.0108 * log_A - 0.02718 * (log_A)**2
     return h_0 + h_1 * log_q + h_2 * (log_q)**2
+
 
 def low_q_high_A(q, A):
     log_q = numpy.log10(q)
@@ -80,6 +85,7 @@ def low_q_high_A(q, A):
 
     return i_0 + i_1 * numpy.exp(-i_2 * (log_q + i_3)**2)
 
+
 def high_q_high_A(q, A):
     log_q = numpy.log10(q)
     log_A = numpy.log10(A)
@@ -99,8 +105,10 @@ def high_q_high_A(q, A):
 
     return j_0 + j_1 * numpy.exp(-j_2 * (log_q)**j_3)
 
-functions = {'low': {'low':low_q_low_A, 'medium':low_q_medium_A, 'high':low_q_high_A },
-             'high': {'low':high_q_low_A, 'medium':high_q_medium_A, 'high':high_q_high_A }}
+
+functions = {'low': {'low': low_q_low_A, 'medium': low_q_medium_A, 'high': low_q_high_A},
+             'high': {'low': high_q_low_A, 'medium': high_q_medium_A, 'high': high_q_high_A}}
+
 
 def pick_formula(q, A):
     log_q = numpy.log10(q)
@@ -113,17 +121,21 @@ def pick_formula(q, A):
 
     return function(q, A)
 
+
 vec_pick_formula = numpy.vectorize(pick_formula)
+
 
 def sepinsky_formula(q=1, A=1):
     """ The correction to the Eggleton Roche radius following Sepinsky, Willems and Kalogera 2007 """
     return vec_pick_formula(q, A)
+
 
 def sepinsky_A_parameter(eccentricity=0.0, angular_velocity_ratio=1.0, true_anomaly=numpy.pi):
     """ Euation 21 of Sepinsky 2007 """
     numerator = angular_velocity_ratio**2 * (1.0 + eccentricity)**4
     denominator = (1.0 + eccentricity * numpy.cos(true_anomaly))**3
     return numerator / denominator
+
 
 def eggleton_formula(mass_ratio):
     """ Use the Eggleton formula for the given mass ratio.
@@ -134,15 +146,17 @@ def eggleton_formula(mass_ratio):
         angular_velocity_ratio = 1
     """
 
-    two_third = mass_ratio**(2.0/3.0)
-    one_third = mass_ratio**(1.0/3.0)
-    return 0.49 * two_third / ( 0.6 * two_third + numpy.log(1.0 + one_third))
+    two_third = mass_ratio**(2.0 / 3.0)
+    one_third = mass_ratio**(1.0 / 3.0)
+    return 0.49 * two_third / (0.6 * two_third + numpy.log(1.0 + one_third))
+
 
 def separation(semimajor_axis, eccentricity, true_anomaly):
     """ Return the orbital separation in the same units as the semimajor axis"""
-    numerator = semimajor_axis * (1.0-eccentricity**2)
+    numerator = semimajor_axis * (1.0 - eccentricity**2)
     denominator = 1.0 + eccentricity * numpy.cos(true_anomaly)
     return numerator / denominator
+
 
 class Roche_Orbit(object):
     """
@@ -153,10 +167,10 @@ class Roche_Orbit(object):
         Sepinsky, Willems and Kalogera 2007
     """
 
-    def __init__(self, mass_1=1.0|units.MSun, mass_2=1.0|units.MSun, eccentricity=0.0,
-            true_anomaly=0.0, angular_velocity_ratio=1.0, semimajor_axis=1.0|units.RSun,
-            period=None):
-        self.mass_1 =  mass_1
+    def __init__(self, mass_1=1.0 | units.MSun, mass_2=1.0 | units.MSun, eccentricity=0.0,
+                 true_anomaly=0.0, angular_velocity_ratio=1.0, semimajor_axis=1.0 | units.RSun,
+                 period=None):
+        self.mass_1 = mass_1
         self.mass_2 = mass_2
         self.eccentricity = eccentricity
         self.true_anomaly = true_anomaly
@@ -187,7 +201,7 @@ class Roche_Orbit(object):
 
     @period.setter
     def period(self, period):
-        self.semimajor_axis = (period/(2.0 * numpy.pi) * (self.total_mass * constants.G).sqrt())**(2.0/3.0)
+        self.semimajor_axis = (period / (2.0 * numpy.pi) * (self.total_mass * constants.G).sqrt())**(2.0 / 3.0)
 
     def sepinsky_over_eggleton(self):
         return sepinsky_formula(self.mass_ratio, self.A)
@@ -208,7 +222,8 @@ class Roche_Orbit(object):
     def separation(self):
         return separation(self.semimajor_axis, self.eccentricity, self.true_anomaly)
 
-def create_orbit_from_particles(particles, angular_velocity=0.|units.yr**-1):
+
+def create_orbit_from_particles(particles, angular_velocity=0. | units.yr**-1):
     """
         Use mass, position and velocity to determine orbital parameters.
         Then setup Roche_Orbit
@@ -225,7 +240,6 @@ def create_orbit_from_particles(particles, angular_velocity=0.|units.yr**-1):
 
     roche.semimajor_axis = mu * separation / (2 * mu - separation * speed_squared)
 
-
     e_vector = speed_squared * position_vector / mu - position_vector.dot(velocity_vector) * velocity_vector / mu - position_vector / separation
     roche.eccentricity = numpy.sqrt((e_vector * e_vector).sum())
 
@@ -236,24 +250,26 @@ def create_orbit_from_particles(particles, angular_velocity=0.|units.yr**-1):
         roche.true_anomaly = 2. * numpy.pi - roche.true_anomaly
 
     period = (4. * numpy.pi**2 * roche.semimajor_axis**3 / mu).sqrt()
-    peri_orbital_angular_velocity = 2. * numpy.pi / period * (1. + roche.eccentricity)**2/ (1-roche.eccentricity**2)**(3./2.)
+    peri_orbital_angular_velocity = 2. * numpy.pi / period * (1. + roche.eccentricity)**2 / (1 - roche.eccentricity**2)**(3. / 2.)
     roche.angular_velocity_ratio = angular_velocity / peri_orbital_angular_velocity
 
     return roche
 
+
 def new_option_parser():
     parser = OptionParser(description="Calculate the Roche radius for a given orbit.")
-    parser.add_option("-a", dest="semimajor_axis", type="float", default = 1.0, unit=units.AU, help="The orbit semimajor axis [%default %unit]")
-    parser.add_option("-p", dest="period", type="float", default = 0.0, unit=units.day, help="The orbital period, which sets the semimajor axis [%unit]")
-    parser.add_option("-e", dest="eccentricity", type="float", default = 0.0, help="The orbit eccentricity [%default]")
-    parser.add_option("-M", dest="mass_1", type="float", default = 1.0, unit=units.MSun, help="The mass of the primary (the object that has the Roche lobe) [%default %unit]")
-    parser.add_option("-m", dest="mass_2", type="float", default = 1.0, unit=units.MSun, help="The mass of the secondary (the object which causes the Roche lobe) [%default %unit]")
-    parser.add_option("-n", dest="true_anomaly", type="float", default = 0.0, help="The true anomaly, the angle between the objects location and it's periastron location [%default]")
-    parser.add_option("-f", dest="angular_velocity_ratio", type="float", default = 1.0, help="The rotational angular velocity of object 1, in units of the orbital angular velocity at periastron [%default]")
+    parser.add_option("-a", dest="semimajor_axis", type="float", default=1.0, unit=units.AU, help="The orbit semimajor axis [%default %unit]")
+    parser.add_option("-p", dest="period", type="float", default=0.0, unit=units.day, help="The orbital period, which sets the semimajor axis [%unit]")
+    parser.add_option("-e", dest="eccentricity", type="float", default=0.0, help="The orbit eccentricity [%default]")
+    parser.add_option("-M", dest="mass_1", type="float", default=1.0, unit=units.MSun, help="The mass of the primary (the object that has the Roche lobe) [%default %unit]")
+    parser.add_option("-m", dest="mass_2", type="float", default=1.0, unit=units.MSun, help="The mass of the secondary (the object which causes the Roche lobe) [%default %unit]")
+    parser.add_option("-n", dest="true_anomaly", type="float", default=0.0, help="The true anomaly, the angle between the objects location and it's periastron location [%default]")
+    parser.add_option("-f", dest="angular_velocity_ratio", type="float", default=1.0, help="The rotational angular velocity of object 1, in units of the orbital angular velocity at periastron [%default]")
     return parser
 
+
 def create_orbit_from_options():
-    options, args  = new_option_parser().parse_args()
+    options, args = new_option_parser().parse_args()
     options = options.__dict__
 
     period = options.pop("period")
@@ -265,8 +281,9 @@ def create_orbit_from_options():
 
     return orbit
 
+
 def print_results(orbit):
-    set_printing_strategy("custom", preferred_units = [units.MSun, units.RSun, units.Myr], precision = 7)
+    set_printing_strategy("custom", preferred_units=[units.MSun, units.RSun, units.Myr], precision=7)
 
     if orbit.A == 1.0:
         print "This is a circular, corotating orbit, so the eggleton formula is correct."
@@ -279,8 +296,8 @@ def print_results(orbit):
     print "Eggleton Roche radius =", orbit.eggleton_roche_radius()
     print "Sepinsky Roche radius =", orbit.sepinsky_roche_radius()
 
+
 if __name__ == '__main__':
 
     orbit = create_orbit_from_options()
     print_results(orbit)
-

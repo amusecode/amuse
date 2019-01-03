@@ -17,10 +17,10 @@ def kudritzki_wind_velocity(mass, radius, luminosity, temperature,
       sigma_e:   Thomson absorption coefficient
       Gamma:     Ratio of radiative Thomson to gravitational acceleration
     """
-    sigma_e = 0.398 * (1 + I_He*Y)/(1 + 4*Y)
+    sigma_e = 0.398 * (1 + I_He * Y) / (1 + 4 * Y)
     Gamma = 7.66E-5 * sigma_e * (luminosity.value_in(units.LSun)
                                  / mass.value_in(units.MSun))
-    v_esc = (2*constants.G * mass / radius*(1 - Gamma))**0.5
+    v_esc = (2 * constants.G * mass / radius * (1 - Gamma))**0.5
 
     condlist = [temperature >= 21000. | units.K,
                 (10000. | units.K < temperature) &
@@ -36,7 +36,7 @@ class PositionGenerator(object):
         self.cube_generator = {
             "random": self.random_cube,
             "regular": self.regular_grid_unit_cube,
-            }[grid_type]
+        }[grid_type]
 
         self.rotate = rotate
 
@@ -44,17 +44,17 @@ class PositionGenerator(object):
         number = array
         if quantities.is_quantity(array):
             number = array.number
-        three_vector = numpy.transpose([number]*3)
+        three_vector = numpy.transpose([number] * 3)
         if quantities.is_quantity(array):
             three_vector = three_vector | array.unit
         return three_vector
 
     def regular_grid_unit_cube(self, N):
-        n = int(numpy.ceil(N**(1./3.)))
-        start = -1. + 1./n
-        stop = 1. - 1./n
+        n = int(numpy.ceil(N**(1. / 3.)))
+        start = -1. + 1. / n
+        stop = 1. - 1. / n
         # complex step number tells mgrid to work like linspace
-        step = n*1j
+        step = n * 1j
 
         grid = numpy.mgrid[start: stop: step,
                            start: stop: step,
@@ -88,14 +88,14 @@ class PositionGenerator(object):
         """ Using the Euler-Rodrigues formula """
         axis = numpy.asarray(axis)
         theta = numpy.asarray(angle)
-        axis = axis/numpy.sqrt(numpy.dot(axis, axis))
-        a = numpy.cos(theta/2.)
-        b, c, d = -axis * numpy.sin(theta/2.)
-        aa, bb, cc, dd = a*a, b*b, c*c, d*d
-        bc, ad, ac, ab, bd, cd = b*c, a*d, a*c, a*b, b*d, c*d
-        m = [[aa+bb-cc-dd, 2*(bc+ad), 2*(bd-ac)],
-             [2*(bc-ad), aa+cc-bb-dd, 2*(cd+ab)],
-             [2*(bd+ac), 2*(cd-ab), aa+dd-bb-cc]]
+        axis = axis / numpy.sqrt(numpy.dot(axis, axis))
+        a = numpy.cos(theta / 2.)
+        b, c, d = -axis * numpy.sin(theta / 2.)
+        aa, bb, cc, dd = a * a, b * b, c * c, d * d
+        bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
+        m = [[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
+             [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
+             [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]]
         return numpy.asarray(m)
 
     def rotate_positions(self, positions, axis, angle):
@@ -104,7 +104,7 @@ class PositionGenerator(object):
         return numpy.asarray(rotated)
 
     def uniform_hollow_sphere(self, N, rmin):
-        cube_sphere_ratio = 4/3. * numpy.pi * 0.5**3 * (1 - rmin**3)
+        cube_sphere_ratio = 4 / 3. * numpy.pi * 0.5**3 * (1 - rmin**3)
         estimatedN = N / cube_sphere_ratio
 
         while True:
@@ -134,7 +134,7 @@ class PositionGenerator(object):
         positions = self.uniform_hollow_sphere(N, 1. * rmin / rmax)
         vector_lengths = numpy.sqrt((positions**2).sum(1))
 
-        unit_vectors = positions/self.as_three_vector(vector_lengths)
+        unit_vectors = positions / self.as_three_vector(vector_lengths)
 
         int_v_over_total = (((vector_lengths * rmax)**3 - rmin**3)
                             / (rmax**3 - rmin**3))
@@ -181,16 +181,16 @@ class StarsWithMassLoss(Particles):
                                       mass=0 | units.MSun,
                                       radius=0 | units.RSun,
                                       age=0 | units.Myr,
-                                      temperature=0 | units.K ,
-                                      luminosity = 0 | units.LSun,
-                                      stellar_type = 1 | units.stellar_type,
+                                      temperature=0 | units.K,
+                                      luminosity=0 | units.LSun,
+                                      stellar_type=1 | units.stellar_type,
                                       x=0 | units.m,
                                       y=0 | units.m,
                                       z=0 | units.m,
                                       vx=0 | units.ms,
                                       vy=0 | units.ms,
                                       vz=0 | units.ms,
-                                      wind_mass_loss_rate=0 | units.MSun/units.yr,
+                                      wind_mass_loss_rate=0 | units.MSun / units.yr,
                                       initial_wind_velocity=0 | units.ms,
                                       terminal_wind_velocity=0 | units.ms,
                                       mechanical_energy=0 | units.J,
@@ -198,7 +198,6 @@ class StarsWithMassLoss(Particles):
                                       )
 
         self.set_global_mu()
-
 
     def add_particles(self, particles, *args, **kwargs):
         new_particles = super(StarsWithMassLoss, self).add_particles(
@@ -252,8 +251,8 @@ class StarsWithMassLoss(Particles):
         for attr in attributes:
             if attr not in self._private.attribute_names:
                 raise AttributeError("You tried to set attribute '{0}'"
-                    " but this attribute is not accepted for this set."
-                    .format(attr))
+                                     " but this attribute is not accepted for this set."
+                                     .format(attr))
 
         # TODO
         super(StarsWithMassLoss, self).set_values_in_store(
@@ -312,7 +311,7 @@ class StarsWithMassLoss(Particles):
         """
         if mu is None:
             X = 1.0 - Y - Z
-            ion_num = X*(1.0+x_ion) + Y*(1.0+2.0*x_ion)/4.0 + Z*x_ion/2.0
+            ion_num = X * (1.0 + x_ion) + Y * (1.0 + 2.0 * x_ion) / 4.0 + Z * x_ion / 2.0
             mu = constants.proton_mass / ion_num
 
         self.mu = mu
@@ -432,7 +431,7 @@ class SimpleWind(PositionGenerator):
         """
             set the internal energy from the stellar surface temperature.
         """
-        return (3./2. * constants.kB * star.temperature / star.mu)
+        return (3. / 2. * constants.kB * star.temperature / star.mu)
 
     def internal_energy_from_velocity(self, star, wind=None):
         """
@@ -466,7 +465,7 @@ class SimpleWind(PositionGenerator):
         return wind
 
     def create_wind_particles_for_one_star(self, star):
-        Ngas = int(star.lost_mass/self.sph_particle_mass)
+        Ngas = int(star.lost_mass / self.sph_particle_mass)
         star.lost_mass -= Ngas * self.sph_particle_mass
 
         wind = self.wind_sphere(star, Ngas)
@@ -524,7 +523,7 @@ class SimpleWind(PositionGenerator):
         """
         required_mass = number * self.sph_particle_mass
         total_mass_loss = self.particles.wind_mass_loss_rate.sum()
-        time = 1.0 * required_mass/total_mass_loss
+        time = 1.0 * required_mass / total_mass_loss
         wind_gas = Particles()
         while len(wind_gas) < number:
             time = 1.1 * time
@@ -541,7 +540,7 @@ class SimpleWind(PositionGenerator):
         self.particles.set_begin_time(time)
 
     def get_gravity_at_point(self, eps, x, y, z):
-        return [0, 0, 0] | units.m/units.s**2
+        return [0, 0, 0] | units.m / units.s**2
 
     def get_potential_at_point(self, radius, x, y, z):
         return [0, 0, 0] | units.J
@@ -575,7 +574,7 @@ class AccelerationFunction(object):
     def velocity_from_radius(self, radius, star):
         def stripped_acceleration(r1):
             acc = self.acceleration_from_radius(r1 | units.RSun, star)
-            return acc.value_in(units.RSun/units.yr**2)
+            return acc.value_in(units.RSun / units.yr**2)
 
         def acc_integral(r):
             start = star.radius.value_in(units.RSun)
@@ -584,7 +583,7 @@ class AccelerationFunction(object):
             return result[0]
 
         integral = numpy.vectorize(acc_integral)(radius.value_in(units.RSun))
-        integral = integral | units.RSun**2/units.yr**2
+        integral = integral | units.RSun**2 / units.yr**2
 
         return (2. * integral + star.initial_wind_velocity**2).sqrt()
 
@@ -596,7 +595,7 @@ class AccelerationFunction(object):
 
         def inverse_velocity(r1):
             velocity = self.velocity_from_radius(r1 | units.RSun, star)
-            return 1. / velocity.value_in(units.RSun/units.yr)
+            return 1. / velocity.value_in(units.RSun / units.yr)
 
         def one_radius(t):
             def residual(r2):
@@ -624,7 +623,7 @@ class AccelerationFunction(object):
 
         def inverse_velocity(r1):
             velocity = self.velocity_from_radius(r1 | units.RSun, star)
-            velocity = velocity.value_in(units.RSun/units.s)
+            velocity = velocity.value_in(units.RSun / units.s)
             return 1. / velocity
 
         def cumulative_inverse_velocity(q):
@@ -668,6 +667,7 @@ class ConstantVelocityAcceleration(AccelerationFunction):
     """
         A very basic "acceleration" function that ensures a constant velocity,
     """
+
     def __init__(self, use_initial=False):
         super(ConstantVelocityAcceleration, self).__init__()
         self.use_initial = use_initial
@@ -679,7 +679,7 @@ class ConstantVelocityAcceleration(AccelerationFunction):
             return star.terminal_wind_velocity
 
     def acceleration_from_radius(self, radius, star):
-        return numpy.zeros_like(radius, dtype=float) | units.m/units.s**2
+        return numpy.zeros_like(radius, dtype=float) | units.m / units.s**2
 
     def velocity_from_radius(self, radius, star):
         return numpy.ones_like(radius, dtype=float) * self.velocity(star)
@@ -694,30 +694,30 @@ class ConstantVelocityAcceleration(AccelerationFunction):
 
 class RSquaredAcceleration(AccelerationFunction):
     def scaling(self, star):
-        denominator = 1./star.radius
+        denominator = 1. / star.radius
 
         if star.acc_cutoff is not None:
-            denominator = denominator - 1./star.acc_cutoff
+            denominator = denominator - 1. / star.acc_cutoff
 
         numerator = star.terminal_wind_velocity**2 - star.initial_wind_velocity**2
         return 0.5 * numerator / denominator
 
     def acceleration_from_radius(self, r, star):
-        acc = self.scaling(star)/r**2
+        acc = self.scaling(star) / r**2
         return self.fix_acc_cutoff(r, acc, star)
 
     def velocity_from_radius(self, r, star):
-        v = (2 * self.scaling(star) * (1./star.radius - 1./r)
+        v = (2 * self.scaling(star) * (1. / star.radius - 1. / r)
              + star.initial_wind_velocity**2).sqrt()
         return self.fix_v_cutoff(r, v, star)
 
 
 class DelayedRSquaredAcceleration(AccelerationFunction):
     def scaling(self, star):
-        denominator = 1./star.acc_start
+        denominator = 1. / star.acc_start
 
         if star.acc_cutoff is not None:
-            denominator = denominator - 1./star.acc_cutoff
+            denominator = denominator - 1. / star.acc_cutoff
 
         numerator = star.terminal_wind_velocity**2 - star.initial_wind_velocity**2
         return 0.5 * numerator / denominator
@@ -730,12 +730,12 @@ class DelayedRSquaredAcceleration(AccelerationFunction):
         return self.fix_cutoffs(test, v, star, star.initial_wind_velocity)
 
     def acceleration_from_radius(self, r, star):
-        acc = self.scaling(star)/r**2
+        acc = self.scaling(star) / r**2
         acc = self.fix_acc_start_cutoff(r, acc, star)
         return self.fix_acc_cutoff(r, acc, star)
 
     def velocity_from_radius(self, r, star):
-        v = (2 * self.scaling(star) * (1./star.acc_start - 1./r)
+        v = (2 * self.scaling(star) * (1. / star.acc_start - 1. / r)
              + star.initial_wind_velocity**2).sqrt()
         v = self.fix_v_start_cutoff(r, v, star)
         return self.fix_v_cutoff(r, v, star)
@@ -757,7 +757,7 @@ class BetaLawAcceleration(AccelerationFunction):
     def velocity_from_radius(self, r, star):
         v_start = star.initial_wind_velocity
         v_end = star.terminal_wind_velocity
-        return v_start + (v_end - v_start) * (1 - star.radius/r)**self.beta
+        return v_start + (v_end - v_start) * (1 - star.radius / r)**self.beta
 
 
 class LogisticVelocityAcceleration(AccelerationFunction):
@@ -805,7 +805,7 @@ class AGBAcceleration(AccelerationFunction):
 
         scaling = self.r_mid**self.alpha
 
-        return v_init, v_end, scaling, r/star.radius
+        return v_init, v_end, scaling, r / star.radius
 
     def acceleration_from_radius(self, r, star):
         v_init, v_end, scaling, r_over_R = self.short(r, star)
@@ -819,7 +819,7 @@ class AGBAcceleration(AccelerationFunction):
         v_init, v_end, scaling, r_over_R = self.short(r, star)
 
         denominator = 1 + scaling * r_over_R**(-self.alpha)
-        v = v_init + (v_end - v_init)/denominator
+        v = v_init + (v_end - v_init) / denominator
         return self.fix_v_cutoff(r, v, star)
 
 
@@ -882,7 +882,7 @@ class AcceleratingWind(SimpleWind):
             attributes_names=['radius'])
 
         self.internal_energy_formula = self.scaled_u_from_T
-        self.gamma = 5./3.
+        self.gamma = 5. / 3.
 
         self.staging_radius = None
 
@@ -896,7 +896,7 @@ class AcceleratingWind(SimpleWind):
         """
             set the internal energy from the stellar surface temperature.
         """
-        u_0 = (3./2. * constants.kB * star.temperature / star.mu)
+        u_0 = (3. / 2. * constants.kB * star.temperature / star.mu)
         if wind is None:
             return u_0
 
@@ -942,20 +942,20 @@ class AcceleratingWind(SimpleWind):
         rho = m_dot / (4 * numpy.pi * v * radii**2)
         rho_init = m_dot / (4. * numpy.pi * v_init * star.radius**2)
 
-        k = (self.gamma-1) * rho_init**(1-self.gamma) * u
+        k = (self.gamma - 1) * rho_init**(1 - self.gamma) * u
 
-        dvdr = a/v
+        dvdr = a / v
 
-        acceleration = (self.gamma * k * rho**(self.gamma-1)
-                        * (2./radii + dvdr/v))
+        acceleration = (self.gamma * k * rho**(self.gamma - 1)
+                        * (2. / radii + dvdr / v))
 
         return acceleration
 
     def radial_velocities(self, gas, star):
         rad_velocity = [] | units.ms
-        pos_vel = zip(gas.position-star.position, gas.velocity-star.velocity)
+        pos_vel = zip(gas.position - star.position, gas.velocity - star.velocity)
         for pos, vel in pos_vel:
-            rad_direction = pos/pos.length()
+            rad_direction = pos / pos.length()
             scalar_projection = vel.dot(rad_direction)
 
             rad_velocity.append(scalar_projection)
@@ -976,12 +976,11 @@ class AcceleratingWind(SimpleWind):
         return acc
 
     def acceleration(self, star, radii):
-        accelerations = numpy.zeros(radii.shape) | units.m/units.s**2
+        accelerations = numpy.zeros(radii.shape) | units.m / units.s**2
 
         i_acc = radii >= star.radius
         if star.acc_cutoff is not None:
             i_acc = i_acc & (radii < star.acc_cutoff)
-
 
         accelerations[i_acc] += self.acc_function.acceleration_from_radius(radii[i_acc], star)
 
@@ -1009,7 +1008,7 @@ class AcceleratingWind(SimpleWind):
 
     def get_gravity_at_point(self, eps, x, y, z):
         total_acceleration = (
-            numpy.zeros(shape=(len(x), 3)) | units.m/units.s**2)
+            numpy.zeros(shape=(len(x), 3)) | units.m / units.s**2)
 
         positions = quantities.as_vector_quantity([x, y, z]).transpose()
         for star in self.particles:
@@ -1066,7 +1065,7 @@ class HeatingWind(SimpleWind):
         mass_lost = wind.mass.sum()
         lmech = star.mechanical_energy
 
-        lmech_wind = lmech / (star.lost_mass/mass_lost + 1)
+        lmech_wind = lmech / (star.lost_mass / mass_lost + 1)
         star.mechanical_energy -= lmech_wind
 
         if self.went_supernova(star, mass_lost):

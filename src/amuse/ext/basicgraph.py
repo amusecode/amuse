@@ -18,6 +18,7 @@ UnionFind and MinimumSpanningTree taken from PADS:
 
 """
 
+
 class UnionFind(object):
     """Union-find data structure.
 
@@ -60,7 +61,7 @@ class UnionFind(object):
         for ancestor in path:
             self.parents[ancestor] = root
         return root
-        
+
     def __iter__(self):
         """Iterate through all items ever found or unioned by this structure."""
         return iter(self.parents)
@@ -68,23 +69,22 @@ class UnionFind(object):
     def union(self, *objects):
         """Find the sets containing the objects and merge them all."""
         roots = [self[x] for x in objects]
-        heaviest = max([(self.weights[r],r) for r in roots], key = lambda x: x[0])[1]
+        heaviest = max([(self.weights[r], r) for r in roots], key=lambda x: x[0])[1]
         for r in roots:
             if r != heaviest:
                 self.weights[heaviest] += self.weights[r]
                 self.parents[r] = heaviest
 
     def sets(self):
-      sets={}
-      for v in self.parents:
-        sets.setdefault(self[v],set()).add(v)
-      return sets.values()
+        sets = {}
+        for v in self.parents:
+            sets.setdefault(self[v], set()).add(v)
+        return sets.values()
 
-                
 
 class Graph(dict):
     def add_edge(self, n1, n2, w):
-        if callable(w): w=w(n1,n2)
+        if callable(w): w = w(n1, n2)
         self.setdefault(n1, {}).update({n2: w})
         self.setdefault(n2, {}).update({n1: w})
 
@@ -92,11 +92,11 @@ class Graph(dict):
         self[n1].pop(n2)
         self[n2].pop(n1)
 
-    def add_node(self,n):
+    def add_node(self, n):
         self.setdefault(n, {})
-    
+
     def all_edges(self):
-        return [(self[u][v],u,v) for u in self for v in self[u]]
+        return [(self[u][v], u, v) for u in self for v in self[u]]
 
 
 def MinimumSpanningTree(G):
@@ -106,20 +106,21 @@ def MinimumSpanningTree(G):
     length of edge u,v, and G[u][v] should always equal G[v][u].
     The tree is returned as a list of edges.
     """
-    
+
     # Kruskal's algorithm: sort edges by weight, and add them one at a time.
     # We use Kruskal's algorithm, first because it is very simple to
     # implement once UnionFind exists, and second, because the only slow
     # part (the sort) is sped up by being built in to Python.
     subtrees = UnionFind()
     tree = []
-    edges = [(G[u][v],u,v) for u in G for v in G[u]]
-    edges.sort(key=lambda x:x[0])
-    for W,u,v in edges:
+    edges = [(G[u][v], u, v) for u in G for v in G[u]]
+    edges.sort(key=lambda x: x[0])
+    for W, u, v in edges:
         if subtrees[u] != subtrees[v]:
-            tree.append((W,u,v))
-            subtrees.union(u,v)
-    return tree        
+            tree.append((W, u, v))
+            subtrees.union(u, v)
+    return tree
+
 
 def MinimumSpanningTreeFromEdges(edges):
     """
@@ -128,19 +129,19 @@ def MinimumSpanningTreeFromEdges(edges):
     (w,u,v), such that u,v are nodes, w is the length of the edge.
     The tree is returned as a list of edges.
     """
-    
+
     # Kruskal's algorithm: sort edges by weight, and add them one at a time.
     # We use Kruskal's algorithm, first because it is very simple to
     # implement once UnionFind exists, and second, because the only slow
     # part (the sort) is sped up by being built in to Python.
     subtrees = UnionFind()
     tree = []
-    edges.sort(key=lambda x:x[0])
-    for W,u,v in edges:
+    edges.sort(key=lambda x: x[0])
+    for W, u, v in edges:
         if subtrees[u] != subtrees[v]:
-            tree.append((W,u,v))
-            subtrees.union(u,v)
-    return tree        
+            tree.append((W, u, v))
+            subtrees.union(u, v)
+    return tree
 
 
 def ConnectedComponents(G):
@@ -150,12 +151,13 @@ def ConnectedComponents(G):
     that and if v in G[u] than u in G[v]. the connected components are 
     returned as sets of nodes. 
     """
-    u=UnionFind() 
+    u = UnionFind()
     for v in G:
-      nset=set(G[v])
-      nset.add(v)
-      u.union(*nset)
+        nset = set(G[v])
+        nset.add(v)
+        u.union(*nset)
     return u.sets()
+
 
 def ConnectedComponentsFromEdges(edges):
     """ 
@@ -163,28 +165,27 @@ def ConnectedComponentsFromEdges(edges):
     the connected components are returned as sets of nodes. note this does
     not find singletons. 
     """
-    u=UnionFind() 
+    u = UnionFind()
     for e in edges:
-      u.union(e[1],e[2])
+        u.union(e[1], e[2])
     return u.sets()
 
 
-if __name__=="__main__":
-  graph = Graph()
+if __name__ == "__main__":
+    graph = Graph()
 
-  graph.add_edge(0, 1, 1.0)
-  graph.add_edge(1, 2, 1.0)
-  graph.add_edge(2, 0, 1.0)
-  
-  graph.add_edge(3, 4, 1.0)
-  graph.add_edge(4, 5, 1.0)
-  graph.add_edge(5, 3, 1.0)
-  
-  print graph[0]
-  
-  first, second = ConnectedComponents(graph)
-  print first
-  print second
-  
-  print MinimumSpanningTree(graph)
-  
+    graph.add_edge(0, 1, 1.0)
+    graph.add_edge(1, 2, 1.0)
+    graph.add_edge(2, 0, 1.0)
+
+    graph.add_edge(3, 4, 1.0)
+    graph.add_edge(4, 5, 1.0)
+    graph.add_edge(5, 3, 1.0)
+
+    print graph[0]
+
+    first, second = ConnectedComponents(graph)
+    print first
+    print second
+
+    print MinimumSpanningTree(graph)

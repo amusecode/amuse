@@ -11,147 +11,152 @@ from amuse.units import generic_unit_converter
 from amuse.units import units
 
 from amuse import datamodel
-def make_ifft_real(nf,vi):
-    if vi.ndim==3:
-# body of cube
-        vi[1:nf,1:2*nf,1:2*nf]=numpy.conj(vi[2*nf-1:nf:-1,2*nf-1:0:-1,2*nf-1:0:-1])
+
+
+def make_ifft_real(nf, vi):
+    if vi.ndim == 3:
+        # body of cube
+        vi[1:nf, 1:2 * nf, 1:2 * nf] = numpy.conj(vi[2 * nf - 1:nf:-1, 2 * nf - 1:0:-1, 2 * nf - 1:0:-1])
 
 # 3 lower + middle planes
-        vi[0,1:nf,1:2*nf]=numpy.conj(vi[0,2*nf-1:nf:-1,2*nf-1:0:-1])
-        vi[1:nf,0,1:2*nf]=numpy.conj(vi[2*nf-1:nf:-1,0,2*nf-1:0:-1])
-        vi[1:nf,1:2*nf,0]=numpy.conj(vi[2*nf-1:nf:-1,2*nf-1:0:-1,0])
-        vi[nf,1:nf,1:2*nf]=numpy.conj(vi[nf,2*nf-1:nf:-1,2*nf-1:0:-1])
+        vi[0, 1:nf, 1:2 * nf] = numpy.conj(vi[0, 2 * nf - 1:nf:-1, 2 * nf - 1:0:-1])
+        vi[1:nf, 0, 1:2 * nf] = numpy.conj(vi[2 * nf - 1:nf:-1, 0, 2 * nf - 1:0:-1])
+        vi[1:nf, 1:2 * nf, 0] = numpy.conj(vi[2 * nf - 1:nf:-1, 2 * nf - 1:0:-1, 0])
+        vi[nf, 1:nf, 1:2 * nf] = numpy.conj(vi[nf, 2 * nf - 1:nf:-1, 2 * nf - 1:0:-1])
 
 # 7 lines
-        vi[0,0,1:nf]=numpy.conj(vi[0,0,2*nf-1:nf:-1])
-        vi[0,1:nf,0]=numpy.conj(vi[0,2*nf-1:nf:-1,0])
-        vi[1:nf,0,0]=numpy.conj(vi[2*nf-1:nf:-1,0,0])
-        vi[0,nf,1:nf]=numpy.conj(vi[0,nf,2*nf-1:nf:-1])
-        vi[nf,0,1:nf]=numpy.conj(vi[nf,0,2*nf-1:nf:-1])
-        vi[nf,nf,1:nf]=numpy.conj(vi[nf,nf,2*nf-1:nf:-1])
-        vi[nf,1:nf,0]=numpy.conj(vi[nf,2*nf-1:nf:-1,0])
+        vi[0, 0, 1:nf] = numpy.conj(vi[0, 0, 2 * nf - 1:nf:-1])
+        vi[0, 1:nf, 0] = numpy.conj(vi[0, 2 * nf - 1:nf:-1, 0])
+        vi[1:nf, 0, 0] = numpy.conj(vi[2 * nf - 1:nf:-1, 0, 0])
+        vi[0, nf, 1:nf] = numpy.conj(vi[0, nf, 2 * nf - 1:nf:-1])
+        vi[nf, 0, 1:nf] = numpy.conj(vi[nf, 0, 2 * nf - 1:nf:-1])
+        vi[nf, nf, 1:nf] = numpy.conj(vi[nf, nf, 2 * nf - 1:nf:-1])
+        vi[nf, 1:nf, 0] = numpy.conj(vi[nf, 2 * nf - 1:nf:-1, 0])
 
 # 8 points
-        vi[0,0,0]=2*numpy.real(vi[0,0,0])
-        vi[nf,0,0]=2*numpy.real(vi[nf,0,0])
-        vi[0,nf,0]=2*numpy.real(vi[0,nf,0])
-        vi[nf,nf,0]=2*numpy.real(vi[nf,nf,0])
+        vi[0, 0, 0] = 2 * numpy.real(vi[0, 0, 0])
+        vi[nf, 0, 0] = 2 * numpy.real(vi[nf, 0, 0])
+        vi[0, nf, 0] = 2 * numpy.real(vi[0, nf, 0])
+        vi[nf, nf, 0] = 2 * numpy.real(vi[nf, nf, 0])
 
-        vi[0,0,nf]=2*numpy.real(vi[0,0,nf])
-        vi[nf,0,nf]=2*numpy.real(vi[nf,0,nf])
-        vi[0,nf,nf]=2*numpy.real(vi[0,nf,nf])
-        vi[nf,nf,nf]=2*numpy.real(vi[nf,nf,nf])
+        vi[0, 0, nf] = 2 * numpy.real(vi[0, 0, nf])
+        vi[nf, 0, nf] = 2 * numpy.real(vi[nf, 0, nf])
+        vi[0, nf, nf] = 2 * numpy.real(vi[0, nf, nf])
+        vi[nf, nf, nf] = 2 * numpy.real(vi[nf, nf, nf])
         return vi
-    
-    return -1  
-  
+
+    return -1
+
+
 def random_field(nf=32, power=-3., seed=None):
     if seed is not None:
         numpy.random.seed(seed)
-    
-    freq=numpy.mgrid[-nf:nf,-nf:nf,-nf:nf]   
 
-    fi,fj,fk=freq
+    freq = numpy.mgrid[-nf:nf, -nf:nf, -nf:nf]
 
-    fi=fi.flatten()
-    fj=fj.flatten()
-    fk=fk.flatten()
-    
-    norm=-numpy.log(numpy.random.uniform(0.,1.,len(fi)))*(fi**2+fj**2+fk**2+1.e-30)**(power/4.)
-    phase=numpy.random.uniform(0.,1.,len(fi))*2*numpy.pi
-    vi=norm*numpy.exp(phase*1j)
+    fi, fj, fk = freq
 
-    vi=vi.reshape(nf*2,nf*2,nf*2)
+    fi = fi.flatten()
+    fj = fj.flatten()
+    fk = fk.flatten()
 
-    vi[nf,nf,nf]=0.
-    
-    vi=make_ifft_real(nf,vi)
+    norm = -numpy.log(numpy.random.uniform(0., 1., len(fi))) * (fi**2 + fj**2 + fk**2 + 1.e-30)**(power / 4.)
+    phase = numpy.random.uniform(0., 1., len(fi)) * 2 * numpy.pi
+    vi = norm * numpy.exp(phase * 1j)
 
-    vi=numpy.fft.ifftshift( vi)
+    vi = vi.reshape(nf * 2, nf * 2, nf * 2)
 
-    vi=numpy.fft.ifftn(vi)
+    vi[nf, nf, nf] = 0.
 
-    if vi.imag.max()>1.e-16:
+    vi = make_ifft_real(nf, vi)
+
+    vi = numpy.fft.ifftshift(vi)
+
+    vi = numpy.fft.ifftn(vi)
+
+    if vi.imag.max() > 1.e-16:
         print "check random field"
     return vi
 
-def make_div_free(nf,vx,vy,vz):
 
-    vx=numpy.fft.fftn(vx)
-    vx=vx.flatten()
-    vy=numpy.fft.fftn(vy)
-    vy=vy.flatten()
-    vz=numpy.fft.fftn(vz)
-    vz=vz.flatten()
+def make_div_free(nf, vx, vy, vz):
 
-    freq=numpy.mgrid[-nf:1.*nf,-nf:1.*nf,-nf:1.*nf] 
-    fi,fj,fk=freq
-    fi=numpy.fft.fftshift( fi)
-    fj=numpy.fft.fftshift( fj)
-    fk=numpy.fft.fftshift( fk)
+    vx = numpy.fft.fftn(vx)
+    vx = vx.flatten()
+    vy = numpy.fft.fftn(vy)
+    vy = vy.flatten()
+    vz = numpy.fft.fftn(vz)
+    vz = vz.flatten()
 
-    fi=fi.flatten()
-    fj=fj.flatten()
-    fk=fk.flatten()
-    ff=fi*fi+fj*fj+fk*fk+1.e-30
-    
-    vdotf=(vx*fi+vy*fj+vz*fk)
-    vx=vx-fi*vdotf/ff
-    vy=vy-fj*vdotf/ff
-    vz=vz-fk*vdotf/ff
+    freq = numpy.mgrid[-nf:1. * nf, -nf:1. * nf, -nf:1. * nf]
+    fi, fj, fk = freq
+    fi = numpy.fft.fftshift(fi)
+    fj = numpy.fft.fftshift(fj)
+    fk = numpy.fft.fftshift(fk)
 
-    del fi,fj,fk,ff
+    fi = fi.flatten()
+    fj = fj.flatten()
+    fk = fk.flatten()
+    ff = fi * fi + fj * fj + fk * fk + 1.e-30
 
-    vx=vx.reshape(2*nf,2*nf,2*nf)
-    vy=vy.reshape(2*nf,2*nf,2*nf)
-    vz=vz.reshape(2*nf,2*nf,2*nf)
+    vdotf = (vx * fi + vy * fj + vz * fk)
+    vx = vx - fi * vdotf / ff
+    vy = vy - fj * vdotf / ff
+    vz = vz - fk * vdotf / ff
+
+    del fi, fj, fk, ff
+
+    vx = vx.reshape(2 * nf, 2 * nf, 2 * nf)
+    vy = vy.reshape(2 * nf, 2 * nf, 2 * nf)
+    vz = vz.reshape(2 * nf, 2 * nf, 2 * nf)
 
 # zero out nyquist freq planes: strictly speaking this is too drastic....
-# inside the nyquist planes only v// f x f_mirror needs to be enforced (methinks) 
-    vx[nf,0:2*nf,0:2*nf]=0.
-    vx[0:2*nf,nf,0:2*nf]=0.
-    vx[0:2*nf,0:2*nf,nf]=0.
-    vy[nf,0:2*nf,0:2*nf]=0.
-    vy[0:2*nf,nf,0:2*nf]=0.
-    vy[0:2*nf,0:2*nf,nf]=0.
-    vz[nf,0:2*nf,0:2*nf]=0.
-    vz[0:2*nf,nf,0:2*nf]=0.
-    vz[0:2*nf,0:2*nf,nf]=0.
+# inside the nyquist planes only v// f x f_mirror needs to be enforced (methinks)
+    vx[nf, 0:2 * nf, 0:2 * nf] = 0.
+    vx[0:2 * nf, nf, 0:2 * nf] = 0.
+    vx[0:2 * nf, 0:2 * nf, nf] = 0.
+    vy[nf, 0:2 * nf, 0:2 * nf] = 0.
+    vy[0:2 * nf, nf, 0:2 * nf] = 0.
+    vy[0:2 * nf, 0:2 * nf, nf] = 0.
+    vz[nf, 0:2 * nf, 0:2 * nf] = 0.
+    vz[0:2 * nf, nf, 0:2 * nf] = 0.
+    vz[0:2 * nf, 0:2 * nf, nf] = 0.
 
-    vx=numpy.fft.ifftn(vx)
-    vy=numpy.fft.ifftn(vy)
-    vz=numpy.fft.ifftn(vz)
+    vx = numpy.fft.ifftn(vx)
+    vy = numpy.fft.ifftn(vy)
+    vz = numpy.fft.ifftn(vz)
 
-    if vx.imag.max()>1.e-16:
+    if vx.imag.max() > 1.e-16:
         print "check div-free field"
-    if vy.imag.max()>1.e-16:
+    if vy.imag.max() > 1.e-16:
         print "check div-free field"
-    if vz.imag.max()>1.e-16:
+    if vz.imag.max() > 1.e-16:
         print "check div-free field"
 
-    return vx.real,vy.real,vz.real
+    return vx.real, vy.real, vz.real
 
-def interpolate_trilinear(x,y,z,farray):
 
-    if farray.ndim!=3:
+def interpolate_trilinear(x, y, z, farray):
+
+    if farray.ndim != 3:
         return -1
-      
-    nx,ny,nz=farray.shape    
-    dx=2./nx
-    dy=2./ny
-    dz=2./nz
 
-    fx,xint=numpy.modf((x+1)/dx)
-    fy,yint=numpy.modf((y+1)/dy)
-    fz,zint=numpy.modf((z+1)/dz)
+    nx, ny, nz = farray.shape
+    dx = 2. / nx
+    dy = 2. / ny
+    dz = 2. / nz
 
-    xint=xint.astype('i')
-    yint=yint.astype('i')
-    zint=zint.astype('i')
+    fx, xint = numpy.modf((x + 1) / dx)
+    fy, yint = numpy.modf((y + 1) / dy)
+    fz, zint = numpy.modf((z + 1) / dz)
 
-    xint1=numpy.mod(xint+1,nx)
-    yint1=numpy.mod(yint+1,ny)
-    zint1=numpy.mod(zint+1,nz)
+    xint = xint.astype('i')
+    yint = yint.astype('i')
+    zint = zint.astype('i')
+
+    xint1 = numpy.mod(xint + 1, nx)
+    yint1 = numpy.mod(yint + 1, ny)
+    zint1 = numpy.mod(zint + 1, nz)
 
     q111 = farray[xint, yint, zint]
     q211 = farray[xint1, yint, zint]
@@ -162,64 +167,65 @@ def interpolate_trilinear(x,y,z,farray):
     q222 = farray[xint1, yint1, zint1]
     q122 = farray[xint, yint1, zint1]
 
-    return (q222* fx*fy*fz +  
-      q122* (1-fx)*fy*fz +  
-      q212* fx*(1-fy)*fz +  
-      q112* (1-fx)*(1-fy)*fz +  
-      q221* fx*fy*(1-fz) +  
-      q121* (1-fx)*fy*(1-fz) +  
-      q211* fx*(1-fy)*(1-fz) +  
-      q111* (1-fx)*(1-fy)*(1-fz))
+    return (q222 * fx * fy * fz +
+            q122 * (1 - fx) * fy * fz +
+            q212 * fx * (1 - fy) * fz +
+            q112 * (1 - fx) * (1 - fy) * fz +
+            q221 * fx * fy * (1 - fz) +
+            q121 * (1 - fx) * fy * (1 - fz) +
+            q211 * fx * (1 - fy) * (1 - fz) +
+            q111 * (1 - fx) * (1 - fy) * (1 - fz))
+
 
 class molecular_cloud(object):
-    def __init__(self,nf=32,power=-3.,targetN=10000, ethep_ratio=0.01,
-                   convert_nbody=None,ekep_ratio=1.,seed=None,base_grid=None):
-        self.nf=nf
-        self.power=power
-        self.targetN=targetN
-        self.convert_nbody=convert_nbody
-        self.seed=seed
-        self.base_grid=base_grid
-        self.ethep_ratio=ethep_ratio
-        self.ekep_ratio=ekep_ratio
-      
+    def __init__(self, nf=32, power=-3., targetN=10000, ethep_ratio=0.01,
+                 convert_nbody=None, ekep_ratio=1., seed=None, base_grid=None):
+        self.nf = nf
+        self.power = power
+        self.targetN = targetN
+        self.convert_nbody = convert_nbody
+        self.seed = seed
+        self.base_grid = base_grid
+        self.ethep_ratio = ethep_ratio
+        self.ekep_ratio = ekep_ratio
+
     def new_model(self):
         if self.seed is not None:
             numpy.random.seed(self.seed)
-        vx_field=random_field(self.nf,self.power)
-        vy_field=random_field(self.nf,self.power)
-        vz_field=random_field(self.nf,self.power)
+        vx_field = random_field(self.nf, self.power)
+        vy_field = random_field(self.nf, self.power)
+        vz_field = random_field(self.nf, self.power)
 
-        vx_field,vy_field,vz_field=make_div_free(self.nf,vx_field,vy_field,vz_field)
+        vx_field, vy_field, vz_field = make_div_free(self.nf, vx_field, vy_field, vz_field)
 
-        base_sphere=uniform_unit_sphere(self.targetN,base_grid=self.base_grid)
-        x,y,z=base_sphere.make_xyz()
-        self.actualN=len(x)
-        vx=interpolate_trilinear(x,y,z,vx_field)
-        vy=interpolate_trilinear(x,y,z,vy_field)
-        vz=interpolate_trilinear(x,y,z,vz_field)
-        mass=numpy.ones_like(x)/self.actualN
+        base_sphere = uniform_unit_sphere(self.targetN, base_grid=self.base_grid)
+        x, y, z = base_sphere.make_xyz()
+        self.actualN = len(x)
+        vx = interpolate_trilinear(x, y, z, vx_field)
+        vy = interpolate_trilinear(x, y, z, vy_field)
+        vz = interpolate_trilinear(x, y, z, vz_field)
+        mass = numpy.ones_like(x) / self.actualN
 
-        vx=vx-vx.mean()
-        vy=vy-vy.mean()
-        vz=vz-vz.mean()
+        vx = vx - vx.mean()
+        vy = vy - vy.mean()
+        vz = vz - vz.mean()
 
-        Ep=3./5
-        self.internalE=Ep*self.ethep_ratio
-        Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
-        vfac=sqrt(self.ekep_ratio*Ep/Ek)
-        vx=vx*vfac
-        vy=vy*vfac
-        vz=vz*vfac
-        Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
+        Ep = 3. / 5
+        self.internalE = Ep * self.ethep_ratio
+        Ek = 0.5 * mass[0] * (vx**2 + vy**2 + vz**2).sum()
+        vfac = sqrt(self.ekep_ratio * Ep / Ek)
+        vx = vx * vfac
+        vy = vy * vfac
+        vz = vz * vfac
+        Ek = 0.5 * mass[0] * (vx**2 + vy**2 + vz**2).sum()
 
-        internal_energy=numpy.ones_like(x)*self.internalE
-      
-        return (mass,x,y,z,vx,vy,vz,internal_energy)
+        internal_energy = numpy.ones_like(x) * self.internalE
+
+        return (mass, x, y, z, vx, vy, vz, internal_energy)
 
     @property
     def result(self):
-        mass,x,y,z,vx,vy,vz,u = self.new_model()
+        mass, x, y, z, vx, vy, vz, u = self.new_model()
         result = datamodel.Particles(self.actualN)
         result.mass = nbody_system.mass.new_quantity(mass)
         result.x = nbody_system.length.new_quantity(x)
@@ -236,48 +242,49 @@ class molecular_cloud(object):
 
         return result
 
+
 class constant_density_div_free_power_law_v_ism_cube(object):
-    def __init__(self,nf=32,power=-3.,targetN=10000, eketh_ratio=1.,
-                   convert=None,seed=None,base_grid=None):
-        self.nf=nf
-        self.power=power
-        self.targetN=targetN
-        self.convert=convert
-        self.seed=seed
-        self.base_grid=base_grid
-        self.eketh_ratio=eketh_ratio
-      
+    def __init__(self, nf=32, power=-3., targetN=10000, eketh_ratio=1.,
+                 convert=None, seed=None, base_grid=None):
+        self.nf = nf
+        self.power = power
+        self.targetN = targetN
+        self.convert = convert
+        self.seed = seed
+        self.base_grid = base_grid
+        self.eketh_ratio = eketh_ratio
+
     def new_model(self):
         if self.seed is not None:
             numpy.random.seed(self.seed)
-        vx_field=random_field(self.nf,self.power)
-        vy_field=random_field(self.nf,self.power)
-        vz_field=random_field(self.nf,self.power)
+        vx_field = random_field(self.nf, self.power)
+        vy_field = random_field(self.nf, self.power)
+        vz_field = random_field(self.nf, self.power)
 
-        vx_field,vy_field,vz_field=make_div_free(self.nf,vx_field,vy_field,vz_field)
+        vx_field, vy_field, vz_field = make_div_free(self.nf, vx_field, vy_field, vz_field)
 
-        base_cube=uniform_unit_cube(self.targetN,base_grid=self.base_grid)
-        x,y,z=base_cube.make_xyz()
-        self.actualN=len(x)
-        vx=interpolate_trilinear(x,y,z,vx_field)
-        vy=interpolate_trilinear(x,y,z,vy_field)
-        vz=interpolate_trilinear(x,y,z,vz_field)
-        mass=numpy.ones_like(x)/self.actualN
+        base_cube = uniform_unit_cube(self.targetN, base_grid=self.base_grid)
+        x, y, z = base_cube.make_xyz()
+        self.actualN = len(x)
+        vx = interpolate_trilinear(x, y, z, vx_field)
+        vy = interpolate_trilinear(x, y, z, vy_field)
+        vz = interpolate_trilinear(x, y, z, vz_field)
+        mass = numpy.ones_like(x) / self.actualN
 
-        Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
-        vfac=sqrt(1/self.eketh_ratio/Ek)
-        vx=vx*vfac
-        vy=vy*vfac
-        vz=vz*vfac
-        Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
+        Ek = 0.5 * mass[0] * (vx**2 + vy**2 + vz**2).sum()
+        vfac = sqrt(1 / self.eketh_ratio / Ek)
+        vx = vx * vfac
+        vy = vy * vfac
+        vz = vz * vfac
+        Ek = 0.5 * mass[0] * (vx**2 + vy**2 + vz**2).sum()
 
-        internal_energy=numpy.ones_like(x)
-      
-        return (mass,x,y,z,vx,vy,vz,internal_energy)
+        internal_energy = numpy.ones_like(x)
+
+        return (mass, x, y, z, vx, vy, vz, internal_energy)
 
     @property
     def result(self):
-        mass,x,y,z,vx,vy,vz,u = self.new_model()
+        mass, x, y, z, vx, vy, vz, u = self.new_model()
         result = datamodel.Particles(self.actualN)
         result.mass = nbody_system.mass.new_quantity(mass)
         result.x = nbody_system.length.new_quantity(x)
@@ -294,40 +301,38 @@ class constant_density_div_free_power_law_v_ism_cube(object):
 
         return result
 
-def ism_cube(targetN=10000,L=10| units.parsec,density=(1.14 | units.amu/units.cm**3), u=50 | (units. kms)**2,
-      nf=32,power=-3.,seed=None,base_grid=None, eketh_ratio=1.):
-    
-    total_mass=density*(2*L)**3
-    internalE=total_mass*u
+
+def ism_cube(targetN=10000, L=10 | units.parsec, density=(1.14 | units.amu / units.cm**3), u=50 | (units. kms)**2,
+             nf=32, power=-3., seed=None, base_grid=None, eketh_ratio=1.):
+
+    total_mass = density * (2 * L)**3
+    internalE = total_mass * u
     convert = generic_unit_converter.ConvertBetweenGenericAndSiUnits(total_mass, L, internalE)
-    return constant_density_div_free_power_law_v_ism_cube(convert=convert,targetN=targetN,nf=nf,
-                             power=power,seed=seed,base_grid=base_grid,eketh_ratio=eketh_ratio)
+    return constant_density_div_free_power_law_v_ism_cube(convert=convert, targetN=targetN, nf=nf,
+                                                          power=power, seed=seed, base_grid=base_grid, eketh_ratio=eketh_ratio)
 
 
 def new_ism_cube(
-    number_of_particles = 1000, 
-    cube_size = 10| units.parsec,
-    density = (1.14 | units.amu/units.cm**3),
-    u = 50 | (units. kms)**2):
-    
+        number_of_particles=1000,
+        cube_size=10 | units.parsec,
+        density=(1.14 | units.amu / units.cm**3),
+        u=50 | (units. kms)**2):
+
     result = ism_cube(number_of_particles, cube_size, density, u).result
     result.rho = density
     return result
 
-if __name__=="__main__":
-    cloud=ism_cube()
-    parts=cloud.result
+
+if __name__ == "__main__":
+    cloud = ism_cube()
+    parts = cloud.result
     print parts[0].u**0.5
-    print len(parts)*parts[0].mass.in_(units.MSun)
+    print len(parts) * parts[0].mass.in_(units.MSun)
 
-    mu=1.4 | units.amu
-    gamma1=1.6667-1
-    print 'Temp:', (gamma1*min(parts.u)*mu/constants.kB).in_(units.K)
+    mu = 1.4 | units.amu
+    gamma1 = 1.6667 - 1
+    print 'Temp:', (gamma1 * min(parts.u) * mu / constants.kB).in_(units.K)
 
-    total_mass=10000. | units.MSun
-    radius=10. | units.parsec
-    print 'dens:',(total_mass*3/4./3.1415/radius**3).in_(units.amu/units.cm**3) 
-  
-  
-  
-  
+    total_mass = 10000. | units.MSun
+    radius = 10. | units.parsec
+    print 'dens:', (total_mass * 3 / 4. / 3.1415 / radius**3).in_(units.amu / units.cm**3)

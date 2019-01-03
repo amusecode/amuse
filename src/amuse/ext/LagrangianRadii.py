@@ -67,7 +67,7 @@ def main():
     if not with_units:
         mass_unit = nbody_system.mass
         length_unit = nbody_system.length
-    else :
+    else:
         mass_unit = units.MSun
         length_unit = units.parsec
 
@@ -81,7 +81,7 @@ def main():
 
     if not with_units:
         convert_nbody = None
-        masses /= m_tot.value_in(nbody_system.mass)  # scale to unit mass 
+        masses /= m_tot.value_in(nbody_system.mass)  # scale to unit mass
         m_tot = 1 | nbody_system.mass
     else:
         convert_nbody = nbody_system.nbody_to_si(m_tot, r_vir)
@@ -89,8 +89,8 @@ def main():
         print m_tot
 
     stars = new_plummer_model(nstars, convert_nbody, random_state=seed)
-    stars.mass = masses 
-    
+    stars.mass = masses
+
     LagrangianRadii(stars, verbose=True)
 
 
