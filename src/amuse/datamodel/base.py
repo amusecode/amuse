@@ -20,74 +20,78 @@ import random
 import inspect
 import warnings
 
+
 class KeyGenerator(object):
-    
+
     def next(self):
         pass
-        
+
     def next_set_of_keys(self, length):
         pass
-        
+
+
 class BasicUniqueKeyGenerator(KeyGenerator):
-    
-    def __init__(self, lowest_unique_key = 1):
+
+    def __init__(self, lowest_unique_key=1):
         self.lowest_unique_key = lowest_unique_key
-    
+
     def next(self):
         new_key = self.lowest_unique_key
         self.lowest_unique_key += 1
         return new_key
-        
+
     def next_set_of_keys(self, length):
         if length == 0:
-            return  []
-            
+            return []
+
         from_key = self.lowest_unique_key
         to_key = from_key + length;
         self.lowest_unique_key += length
         return numpy.arange(from_key, to_key)
-        
+
 
 class RandomNumberUniqueKeyGenerator(KeyGenerator):
     DEFAULT_NUMBER_OF_BITS = 64
-    
-    def __init__(self, number_of_bits = None, random = None):
+
+    def __init__(self, number_of_bits=None, random=None):
         if number_of_bits is None:
             number_of_bits = self.DEFAULT_NUMBER_OF_BITS
         if number_of_bits > 64:
             raise exceptions.AmuseException("number of bits is larger than 64, this is currently unsupported!")
         self.number_of_bits = number_of_bits
-        
+
         if random is None:
             random = numpy.random.mtrand.RandomState()
         self.random = random
-        
 
     def next(self):
         return numpy.array([random.getrandbits(self.number_of_bits)], dtype=numpy.uint64)[0]
-        
+
     def next_set_of_keys(self, length):
         if length == 0:
-            return  []
+            return []
         try:
-            minint = -2** ((self.number_of_bits // 2) - 1)
-            maxint = 2** ((self.number_of_bits // 2) - 1)
-            low = self.random.random_integers(minint,maxint,length)
-            high = self.random.random_integers(minint,maxint,length)
+            minint = -2 ** ((self.number_of_bits // 2) - 1)
+            maxint = 2 ** ((self.number_of_bits // 2) - 1)
+            low = self.random.random_integers(minint, maxint, length)
+            high = self.random.random_integers(minint, maxint, length)
             return numpy.array(low + (high << 32), dtype=numpy.uint64)
         except:
-             return numpy.array([random.getrandbits(self.number_of_bits) for i in range(length)], dtype='uint64')
-       
-        
+            return numpy.array([random.getrandbits(self.number_of_bits) for i in range(length)], dtype='uint64')
+
+
 UniqueKeyGenerator = RandomNumberUniqueKeyGenerator()
+
 
 def set_sequential_key_generator(start_number):
     global UniqueKeyGenerator
-    UniqueKeyGenerator = BasicUniqueKeyGenerator(lowest_unique_key = start_number)
-    
-def set_random_key_generator(number_of_bits = RandomNumberUniqueKeyGenerator.DEFAULT_NUMBER_OF_BITS):
+    UniqueKeyGenerator = BasicUniqueKeyGenerator(lowest_unique_key=start_number)
+
+
+def set_random_key_generator(number_of_bits=RandomNumberUniqueKeyGenerator.DEFAULT_NUMBER_OF_BITS):
     global UniqueKeyGenerator
-    UniqueKeyGenerator = RandomNumberUniqueKeyGenerator(number_of_bits = number_of_bits)
+    UniqueKeyGenerator = RandomNumberUniqueKeyGenerator(number_of_bits=number_of_bits)
+
 
 class AttributeStorage(object):
     """
@@ -95,92 +99,92 @@ class AttributeStorage(object):
     storage classes and the particle sets
     """
     __version__ = -1
-    
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         """
         Adds particles with the given keys to the set. If attribute names
         and values are specified these are also set for the new particles.
         """
         pass
-        
+
     def remove_particles_from_store(self, keys):
         """
         Removes particles with the given keys from the set. 
         """
         pass
-        
+
     def get_values_in_store(self, indices, attributes):
         """
         Gets the values for the attributes of the particles at the given indices.
         """
         pass
-        
+
     def set_values_in_store(self, indices, attributes, list_of_values_to_set):
         """
         Sets the attributes of the particles at the given indices to the given values.
         """
         pass
-        
+
     def get_attribute_names_defined_in_store(self):
         """
         Gets the attribute names
         """
         pass
-    
+
     def has_key_in_store(self, key):
         """
         Returns true if the given key can be found in the store
         """
         return False
-        
+
     def get_all_keys_in_store(self):
         """
         Gets the list of all keys stored
         """
         return []
-        
+
     def get_all_indices_in_store(self):
         """
         Gets the list of all valid indices in store.
         """
         return []
-        
+
     def get_indices_of_keys(self, keys):
         """
         Returns the indices where the particles are stored with
         the given keys.
         """
         return []
-        
+
     def __len__(self):
         """
         Returns the number of particles in store.
         """
         return 0
-        
+
     def get_value_in_store(self, index, attribute):
         """
         Returns the value of an attribute for a particle at the given
         index.
         """
-        return self.get_values_in_store([index],[attribute])[0][0]
-        
-    
+        return self.get_values_in_store([index], [attribute])[0][0]
+
     def get_defined_attribute_names(self):
-        return []    
-    
+        return []
+
     def get_defined_settable_attribute_names(self):
         return self.get_defined_attribute_names()
-    
-    
+
+
 class DerivedAttribute(object):
     """
     Abstract base class for calculated properties and 
     methods on sets.
     """
+
     def get_values_for_entities(self, particles):
         return None
-    
+
     def set_values_for_entities(self, particles, value):
         raise exceptions.AmuseException("cannot set value of a DerivedAttribute")
 
@@ -190,57 +194,58 @@ class DerivedAttribute(object):
     def set_value_for_entity(self, particles, key, value):
         raise exceptions.AmuseException("cannot set value of a DerivedAttribute")
 
+
 class AbstractAttributeValue(object):
     def __str__(self):
         return self._values.__str__()
-    
+
     def __repr__(self):
         return self._values.__repr__()
-        
+
     def __eq__(self, other):
         if isinstance(other, AbstractAttributeValue):
             return self._values == other._values
         else:
             return self._values == other
-    
+
     def __len__(self):
         return len(self.indices)
-    
+
     def __add__(self, other):
         if isinstance(other, AbstractAttributeValue):
             return self._values + other._values
         else:
             return self._values + other
-        
+
     def __radd__(self, other):
-        return  self._values + other
-        
+        return self._values + other
+
     def __sub__(self, other):
         if isinstance(other, AbstractAttributeValue):
             return self._values - other._values
         else:
             return self._values - other
-        
+
     def __rsub__(self, other):
         return other - self._values
-    
+
     def __mul__(self, other):
         if isinstance(other, AbstractAttributeValue):
             return self._values * other._values
         else:
             return self._values * other
-        
+
     def __rmul__(self, other):
         return self._values * other
-    
-    #def __imul__(self, other):
+
+    # def __imul__(self, other):
     #    if isinstance(other, Vector):
     #        newvalues = self._values * other._values
     #    else:
     #        newvalues = self._values * other
     #    self._set_values_for_entities(newvalues)
     #    return newvalues
-    
+
     def __pow__(self, other):
         return self._values ** other
 
@@ -249,23 +254,22 @@ class AbstractAttributeValue(object):
             return self._values / other._values
         else:
             return self._values / other
-    
+
     def __rdiv__(self, other):
         return other / self._values
-    
+
     def is_quantity(self):
         return hasattr(self._values, "is_quantity") and self._values.is_quantity()
-    
+
     def __getattr__(self, name):
         return getattr(self._values, name)
-    
-     
+
     def __neg__(self):
         return -self._values
-    
+
     def __abs__(self):
         return abs(self._values)
-    
+
     def __lt__(self, other):
         if isinstance(other, AbstractAttributeValue):
             return self._values < other._values
@@ -277,39 +281,40 @@ class AbstractAttributeValue(object):
             return self._values > other._values
         else:
             return self._values > other
-        
+
     def __ne__(self, other):
         if isinstance(other, AbstractAttributeValue):
             return self._values != other._values
         else:
             return self._values != other
-        
+
     def __le__(self, other):
         if isinstance(other, AbstractAttributeValue):
             return self._values <= other._values
         else:
             return self._values <= other
-    
+
     def __ge__(self, other):
         if isinstance(other, AbstractAttributeValue):
             return self._values >= other._values
         else:
             return self._values >= other
-    
+
     def __dir__(self):
         return dir(self._values)
-    
-class VectorAttributeValue(AbstractAttributeValue):    
+
+
+class VectorAttributeValue(AbstractAttributeValue):
     def __init__(self, collection, indices, attribute_names):
         self.collection = collection
         self.indices = indices
         self.attribute_names = attribute_names
         self._values
-            
+
     @late
     def _values(self):
         values = self.collection.get_values_in_store(self.indices, self.attribute_names)
-          
+
         unit_of_the_values = None
         is_a_quantity = None
         for quantity in values:
@@ -318,7 +323,7 @@ class VectorAttributeValue(AbstractAttributeValue):
                 if is_a_quantity:
                     unit_of_the_values = quantity.unit
                 break
-    
+
         if is_a_quantity:
             results = []
             for quantity in values:
@@ -327,34 +332,33 @@ class VectorAttributeValue(AbstractAttributeValue):
                 results.append(quantity.value_in(unit_of_the_values))
         else:
             results = values
-        
+
         results = numpy.array(results)
         for i in range(len(results.shape) - 1, 0, -1):
-            results = numpy.swapaxes(results,0,i)
-        
+            results = numpy.swapaxes(results, 0, i)
+
         if is_a_quantity:
             return unit_of_the_values.new_quantity(results)
         else:
             return results
 
-    
     def __getitem__(self, index):
-        
+
         return self._values.__getitem__(index)
-    
+
     def __setitem__(self, index, value):
         raise Exception("must implement set item")
-    
+
     def _set_values_for_entities(self, value):
         is_value_a_quantity = is_quantity(value)
         if is_value_a_quantity:
             vectors = value.number
         else:
             vectors = numpy.asanyarray(value)
-            
-        split = numpy.split(vectors, len(self.attribute_names), axis = vectors.ndim - 1)
+
+        split = numpy.split(vectors, len(self.attribute_names), axis=vectors.ndim - 1)
         split = [x.reshape(x.shape[0] if len(x.shape) <= 2 else x.shape[:-1]) for x in split]
-       
+
         if is_value_a_quantity:
             list_of_values = []
             for i in range(len(self.attribute_names)):
@@ -362,22 +366,22 @@ class VectorAttributeValue(AbstractAttributeValue):
                 list_of_values.append(values)
         else:
             list_of_values = split
-            
+
         self.collection.set_values_in_store(self.indices, self.attribute_names, list_of_values)
-  
-    
-    
+
+
 class VectorAttribute(DerivedAttribute):
     """
     Combine multiple attributes into a vecter attribute
     """
-    def  __init__(self, attribute_names):
+
+    def __init__(self, attribute_names):
         self.attribute_names = attribute_names
-    
+
     def get_values_for_entities(self, instance):
-        #if 1:
+        # if 1:
         #    return VectorAttributeValue(instance, instance.get_all_indices_in_store(), self.attribute_names)
-        
+
         values = [instance.__getattr__(attribute) for attribute in self.attribute_names]
         unit_of_the_values = None
         is_a_quantity = None
@@ -387,7 +391,7 @@ class VectorAttribute(DerivedAttribute):
                 if is_a_quantity:
                     unit_of_the_values = quantity.unit
                 break
-    
+
         if is_a_quantity:
             results = []
             for quantity in values:
@@ -396,11 +400,11 @@ class VectorAttribute(DerivedAttribute):
                 results.append(quantity.value_in(unit_of_the_values))
         else:
             results = values
-        
+
         results = numpy.array(results)
         for i in range(len(results.shape) - 1, 0, -1):
-            results = numpy.swapaxes(results,0,i)
-        
+            results = numpy.swapaxes(results, 0, i)
+
         if is_a_quantity:
             return unit_of_the_values.new_quantity(results)
         else:
@@ -412,23 +416,23 @@ class VectorAttribute(DerivedAttribute):
             vectors = value.number
         else:
             vectors = numpy.asanyarray(value)
-            
-        split = numpy.split(vectors, len(self.attribute_names), axis = vectors.ndim - 1)
+
+        split = numpy.split(vectors, len(self.attribute_names), axis=vectors.ndim - 1)
         split = [x.reshape(x.shape[0] if len(x.shape) <= 2 else x.shape[:-1]) for x in split]
-       
+
         if is_value_a_quantity:
             list_of_values = []
             for i in range(len(self.attribute_names)):
-               values = value.unit.new_quantity(split[i])
-               list_of_values.append(values)
+                values = value.unit.new_quantity(split[i])
+                list_of_values.append(values)
         else:
             list_of_values = split
-            
+
         instance.set_values_in_store(instance.get_all_indices_in_store(), self.attribute_names, list_of_values)
-    
+
     def get_value_for_entity(self, instance, particle, index):
         values = instance._get_values_for_entity(index, self.attribute_names)
-          
+
         unit_of_the_values = None
         is_a_quantity = None
         for quantity in values:
@@ -437,7 +441,7 @@ class VectorAttribute(DerivedAttribute):
                 if is_a_quantity:
                     unit_of_the_values = quantity.unit
                 break
-            
+
         if is_a_quantity:
             results = []
             for quantity in values:
@@ -445,7 +449,7 @@ class VectorAttribute(DerivedAttribute):
             return unit_of_the_values.new_quantity(results)
         else:
             return numpy.asarray(values)
-            
+
     def set_value_for_entity(self, instance, key, vector):
         list_of_values = []
         for quantity in vector:
@@ -456,67 +460,74 @@ class VectorAttribute(DerivedAttribute):
         instance._set_values_for_entity(key, self.attribute_names, list_of_values)
 
 
-    
 class CalculatedAttribute(DerivedAttribute):
     """
     Calculate the value of an attribute based
     on existing attributes.
     """
-    def  __init__(self, function, attribute_names = None):
+
+    def __init__(self, function, attribute_names=None):
         self.function = function
         if attribute_names is None:
             arguments, varargs, kwargs, defaults = inspect.getargspec(function)
-            self.attribute_names = arguments 
+            self.attribute_names = arguments
         else:
             self.attribute_names = attribute_names
-    
+
     def get_values_for_entities(self, instance):
         values = instance.get_values_in_store(instance.get_all_indices_in_store(), self.attribute_names)
         return self.function(*values)
-    
-    def get_value_for_entity(self, particles,  particle, index):
+
+    def get_value_for_entity(self, particles, particle, index):
         values = particles._get_values_for_entity(index, self.attribute_names)
         return self.function(*values)
-        
+
 
 def new_particles_function_attribute_with_doc(function):
     class BoundParticlesFunctionAttribute(object):
         if function.__doc__:
             __doc__ = ("\n  Documentation on '{0}' particles function attribute:"
-                "\n\n".format(function.__name__) + function.__doc__)
+                       "\n\n".format(function.__name__) + function.__doc__)
         _function = staticmethod(function)
-        def  __init__(self):
+
+        def __init__(self):
             self.particles = None
+
         def __call__(self, *list_arguments, **keyword_arguments):
             return self._function(self.particles, *list_arguments, **keyword_arguments)
-    
+
     return BoundParticlesFunctionAttribute
+
 
 def new_particle_function_attribute_with_doc(function):
     class BoundParticleFunctionAttribute(object):
         if function.__doc__:
             __doc__ = ("\n  Documentation on '{0}' particle function attribute:"
-                "\n\n".format(function.__name__) + function.__doc__)
+                       "\n\n".format(function.__name__) + function.__doc__)
         _function = staticmethod(function)
-        def  __init__(self):
+
+        def __init__(self):
             self.particles = None
             self.index = None
             self.particle = None
+
         def __call__(self, *list_arguments, **keyword_arguments):
             return self._function(self.particles, self.particle, *list_arguments, **keyword_arguments)
-    
+
     return BoundParticleFunctionAttribute
-    
+
+
 def new_caching_particles_function_attribute_with_doc(name, function):
     class CachingBoundParticlesFunctionAttribute(object):
         if function.__doc__:
             __doc__ = ("\n  Documentation on '{0}' particles function attribute:"
-                "\n\n".format(function.__name__) + function.__doc__)
+                       "\n\n".format(function.__name__) + function.__doc__)
         _function = staticmethod(function)
-        _name =  name
-        def  __init__(self):
+        _name = name
+
+        def __init__(self):
             self.particles = None
-            
+
         def __call__(self, *list_arguments, **keyword_arguments):
             cached_results = self.particles._private.cached_results
             if self._name in cached_results.results:
@@ -525,137 +536,138 @@ def new_caching_particles_function_attribute_with_doc(name, function):
                 result = self._function(self.particles, *list_arguments, **keyword_arguments)
                 cached_results.results[self._name] = result
             return result
-            
+
     return CachingBoundParticlesFunctionAttribute
 
 
 class FunctionAttribute(DerivedAttribute):
-    
-    def  __init__(self, particles_function = None, particle_function = None):
+
+    def __init__(self, particles_function=None, particle_function=None):
         self.particles_function_attribute = new_particles_function_attribute_with_doc(particles_function)
         self.particle_function_attribute = new_particle_function_attribute_with_doc(particle_function)
-    
+
     def get_values_for_entities(self, particles):
         function_attribute = self.particles_function_attribute()
         function_attribute.particles = particles
         return function_attribute
-    
+
     def get_value_for_entity(self, particles, particle, index):
         function_attribute = self.particle_function_attribute()
         function_attribute.particles = particles
         function_attribute.particle = particle
         function_attribute.index = index
         return function_attribute
-    
+
     def __getstate__(self):
         return self.particles_function_attribute._function, self.particle_function_attribute._function
-    
+
     def __setstate__(self, state):
         self.particles_function_attribute = new_particles_function_attribute_with_doc(state[0])
         self.particle_function_attribute = new_particle_function_attribute_with_doc(state[1])
-        
+
+
 class CachingFunctionAttribute(DerivedAttribute):
-    
-    def  __init__(self, name_of_the_attribute, particles_function = None, particle_function = None):
+
+    def __init__(self, name_of_the_attribute, particles_function=None, particle_function=None):
         self.particles_function_attribute = new_caching_particles_function_attribute_with_doc(name_of_the_attribute, particles_function)
         self.particle_function_attribute = new_particle_function_attribute_with_doc(particle_function)
-    
+
     def get_values_for_entities(self, particles):
         function_attribute = self.particles_function_attribute()
         function_attribute.particles = particles
         return function_attribute
-    
+
     def get_value_for_entity(self, particles, particle, index):
         function_attribute = self.particle_function_attribute()
         function_attribute.particles = particles
         function_attribute.particle = particle
         function_attribute.index = index
         return function_attribute
-    
+
     def __getstate__(self):
         return self.particles_function_attribute._function, self.particle_function_attribute._function
-    
+
     def __setstate__(self, state):
         if state[0]:
-          self.particles_function_attribute = new_caching_particles_function_attribute_with_doc(state[0].__name__,state[0])
+            self.particles_function_attribute = new_caching_particles_function_attribute_with_doc(state[0].__name__, state[0])
         if state[1]:
-          self.particle_function_attribute = new_particle_function_attribute_with_doc(state[1].__name__,state[1])
+            self.particle_function_attribute = new_particle_function_attribute_with_doc(state[1].__name__, state[1])
 
 
 class CollectionAttributes(object):
     """
     Objects of this class store attributes for
     a particles collection or a grid.
-    
+
     These attributes are user set "meta" information such
     as a timestamp.
     """
-    
-    def __init__(self, attributes = None):
+
+    def __init__(self, attributes=None):
         if attributes is None:
             attributes = OrderedDictionary()
         else:
             attributes = attributes.copy()
-        
+
         object.__setattr__(self, '_attributes', attributes)
-    
+
     def __getattr__(self, name):
         try:
             return self._attributes[name]
         except KeyError:
             raise AttributeError('uknown attribute: {0!r}'.format(name))
-        
+
     def __setattr__(self, name, value):
         self._attributes[name] = value
-    
+
     def __getstate__(self):
         return self._attributes
-        
+
     def __setstate__(self, data):
         object.__setattr__(self, '_attributes', data)
-        
+
     def __str__(self):
         lines = []
         for name, value in self._attributes.iteritems():
             lines.append("{0}: {1}".format(name, value))
         return '\n'.join(lines)
-    
+
     def _copy_for_collection(self, newcollection):
         return CollectionAttributes(self._attributes)
-        
+
     def iteritems(self):
         return self._attributes.iteritems()
+
+
 class CachedResults(object):
     """
     Stores results for functions that only need to be called once
     """
-    
+
     def __init__(self):
         self.results = {}
-    
+
     def __getstate__(self):
-        return {'results':{}}
-        
-    
-        
+        return {'results': {}}
+
 
 class PrivateProperties(object):
     """
     Defined for superclasses to store private properties.
     Every set has :meth:`__setattr__` defined.
-    
+
     The :meth:`__setattr__` function will set all attributes
     of the entities in the set to the specified value(s).
-    
+
     To be able to define attributes on the set itself we
     use an instance of this class, attributes can be 
     defined as::
-    
+
         self._private.new_attribute = 'new value'
-    
+
     Subclass implementers do not need to
     use the :meth:`object.__setattr__` syntax.
-    
+
     For documentation about the :meth:`~object.__setattr__`
     call please see the 
     `python data model <http://docs.python.org/reference/datamodel.html>`_ 
@@ -680,13 +692,14 @@ class PrivateProperties(object):
 class UndefinedAttribute(object):
     def __get__(self, obj, type=None):
         raise AttributeError()
-        
+
+
 class AbstractSet(object):
     """
     Abstract superclass of all sets of particles and grids. 
     """
     GLOBAL_DERIVED_ATTRIBUTES = {}
-        
+
     # this construct is needed to ensure that numpy
     # handles grids and particle sets as scalar objects
     # and not as sequences
@@ -694,34 +707,33 @@ class AbstractSet(object):
     # grid in a field of that array and not the contents of
     # the grid (i.e. the grid points)
     if compare_version_strings(numpy.__version__, '1.7.0') < 0:
-        __array_interface__ = {'shape':() }
+        __array_interface__ = {'shape': ()}
     else:
-        __array_interface__ = {'shape':(),'typestr':'|O4' }
-    
+        __array_interface__ = {'shape': (), 'typestr': '|O4'}
+
     __array_struct__ = UndefinedAttribute()
     __array__ = UndefinedAttribute()
-    
-    def __init__(self, original = None):
+
+    def __init__(self, original=None):
         if original is None:
             derived_attributes = self.GLOBAL_DERIVED_ATTRIBUTES
         else:
             derived_attributes = original._derived_attributes
-            
+
         object.__setattr__(self, "_derived_attributes", CompositeDictionary(derived_attributes))
         object.__setattr__(self, "_private", PrivateProperties())
-        
+
         self._private.collection_attributes = CollectionAttributes()
         self._private.cached_results = CachedResults()
-    
 
     @property
     def collection_attributes(self):
-        return self._private.collection_attributes 
-    
+        return self._private.collection_attributes
+
     @property
     def key(self):
         return self.get_all_keys_in_store()
-        
+
     def __getattr__(self, name_of_the_attribute):
         if name_of_the_attribute == '__setstate__':
             raise AttributeError('type object {0!r} has no attribute {1!r}'.format(type(self), name_of_the_attribute))
@@ -737,19 +749,19 @@ class AbstractSet(object):
                     raise
                 else:
                     raise AttributeError("You tried to access attribute '{0}'"
-                        " but this attribute is not defined for this set.".format(name_of_the_attribute))
-    
+                                         " but this attribute is not defined for this set.".format(name_of_the_attribute))
+
     def _get_derived_attribute_value(self, name_of_the_attribute):
         if name_of_the_attribute in self._derived_attributes:
             return self._derived_attributes[name_of_the_attribute].get_values_for_entities(self)
         else:
             raise AttributeError("You tried to access attribute '{0}'"
-                " but this attribute is not defined for this set.".format(name_of_the_attribute))
-    
+                                 " but this attribute is not defined for this set.".format(name_of_the_attribute))
+
     def check_attribute(self, value):
         if not (is_quantity(value) or hasattr(value, 'as_set')):
             try:
-                value=as_vector_quantity(value)
+                value = as_vector_quantity(value)
                 if value.unit == units.none:
                     return value.number
                 return value
@@ -757,90 +769,88 @@ class AbstractSet(object):
                 return value
         else:
             return value
-            
+
     def __setattr__(self, name_of_the_attribute, value):
         value = self.check_attribute(value)
         if name_of_the_attribute in self._derived_attributes:
             self._derived_attributes[name_of_the_attribute].set_values_for_entities(self, value)
         else:
             self.set_values_in_store(self.get_all_indices_in_store(), [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
-    
+
     def _get_value_of_attribute(self, particle, index, attribute):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].get_value_for_entity(self, particle, index)
         else:
             return self.get_value_in_store(index, attribute)
-            
+
     def _get_values_for_entity(self, index, attributes):
         return [x[0] for x in self.get_values_in_store([index], attributes)]
-        
+
     def _set_values_for_entity(self, index, attributes, values):
         return self.set_values_in_store([index], attributes, values)
-    
+
     def _set_value_of_attribute(self, index, attribute, value):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].set_value_for_entity(self, index, value)
         else:
             return self.set_values_in_store(numpy.asarray([index]), [attribute], [value])
-            
-            
-            
+
     def _convert_to_entities_or_quantities(self, x):
         if hasattr(x, 'unit') and x.unit.iskey():
             return self._subset(x.number)
         else:
             return x
-        
+
     def _convert_from_entities_or_quantities(self, x):
         return x
-        
+
     #
     # Particle storage interface
     #
-    
+
     def get_all_values_of_attribute_in_store(self, attribute):
         return self.get_values_in_store(self.get_all_indices_in_store(), [attribute])[0]
-        
+
     def get_values_in_store(self, indices, attributes):
         pass
-    
+
     def set_values_in_store(self, indices, attributes, values):
         pass
-        
+
     def add_particles_to_store(self, indices, attributes, values):
         pass
-        
+
     def remove_particles_from_store(self, indices):
         pass
-    
+
     def get_all_keys_in_store(self):
         return []
-        
+
     def get_all_indices_in_store(self):
         return []
-        
+
     def has_key_in_store(self):
         return False
-    
+
     def get_attribute_names_defined_in_store(self):
         return []
 
     def _original_set(self):
         return self
-    
+
     def add_vector_attribute(self, name_of_the_attribute, name_of_the_components):
         self._derived_attributes[name_of_the_attribute] = VectorAttribute(name_of_the_components)
-    
+
     @classmethod
     def add_global_vector_attribute(cls, name_of_the_attribute, name_of_the_components):
         """
         Define a *global* vector attribute, coupling two or more scalar attributes into
         one vector attribute. The vector will be defined for all particle sets
         created after calling this function.
-        
+
         :argument name_of_the_attribute: Name to reference the vector attribute by. 
         :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(2)
         >>> Particles.add_global_vector_attribute('vel', ['vx','vy'])
@@ -848,31 +858,30 @@ class AbstractSet(object):
         >>> particles.vy = [3.0 , 4.0] | units.m / units.s
         >>> particles.vel
         quantity<[[1.0, 3.0], [2.0, 4.0]] m / s>
-        
+
         """
         cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = VectorAttribute(name_of_the_components)
-    
-    
-    def add_calculated_attribute(self, name_of_the_attribute, function, attributes_names = None):
+
+    def add_calculated_attribute(self, name_of_the_attribute, function, attributes_names=None):
         """
         Define a read-only calculated attribute, values for the attribute are
         calculated using the given function. The functions argument 
         names are interperted as attribute names. For example, if
         the given function is::
-        
+
             def norm(x, y):
                 return (x*x + y*y).sqrt()
-                
+
         The attributes "x" and "y" will be retrieved from the particles
         and send to the "norm" function.
-        
+
         The calculated values are not stored on the particles. Values
         are recalculated every time this attribute is accessed.
-        
+
         :argument name_of_the_attribute: Name to reference the attribute by. 
         :argument function: Function to call, when attribute is accessed
-          
-        
+
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(2)
         >>> particles.x = [1.0 , 2.0] | units.m 
@@ -885,24 +894,23 @@ class AbstractSet(object):
         [12.0, 8.0] m**2
         >>> print particles[1].xy
         8.0 m**2
-        
+
         """
-        
+
         self._derived_attributes[name_of_the_attribute] = CalculatedAttribute(function, attributes_names)
-    
-    
+
     @classmethod
-    def add_global_calculated_attribute(cls, name_of_the_attribute, function, attributes_names = None):
+    def add_global_calculated_attribute(cls, name_of_the_attribute, function, attributes_names=None):
         """
         Define a *global* vector attribute, coupling two or more scalar attributes into
         one vector attribute. The vector will be defined for all particle sets
         created after calling this function.
-        
+
         :argument name_of_the_attribute: Name to reference the vector attribute by. 
         :argument function: Name of the function to call. 
         :argument attributes_names: List of strings, each string a name of a scalar attribute, if None uses argument names.
-        
-        
+
+
         >>> from amuse.datamodel import Particles
         >>> Particles.add_global_calculated_attribute("xy", lambda x, y : x * y)
         >>> particles = Particles(2)
@@ -911,18 +919,17 @@ class AbstractSet(object):
         >>> print particles.xy
         [3.0, 8.0] m**2
         >>> del Particles.GLOBAL_DERIVED_ATTRIBUTES['xy']
-        
+
         """
         cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = CalculatedAttribute(function, attributes_names)
-    
-    
-    def add_function_attribute(self, name_of_the_attribute, function, function_for_particle = None):
+
+    def add_function_attribute(self, name_of_the_attribute, function, function_for_particle=None):
         """
         Define a function attribute, adding a function to the particles
-        
+
         :argument name_of_the_attribute: Name to reference the vector attribute by. 
         :argument function: A function, first argument will be the particles.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(2)
         >>> particles.x = [1.0 , 2.0] | units.m
@@ -933,22 +940,21 @@ class AbstractSet(object):
         >>> particles.sum_of_x()
         quantity<3.0 m>
 
-        
+
         """
-        
+
         self._derived_attributes[name_of_the_attribute] = FunctionAttribute(function, function_for_particle)
-        
-    
-    def add_caching_function_attribute(self, name_of_the_attribute, function, function_for_particle = None):
+
+    def add_caching_function_attribute(self, name_of_the_attribute, function, function_for_particle=None):
         """
         Define a function attribute, adding a function to the particles, the function will
         be evaluated once for the set, after that the function will return the same results.
         The function must not take any arguments and the caching only works for the whole set (not on single
         particles) 
-        
+
         :argument name_of_the_attribute: Name to reference the vector attribute by. 
         :argument function: A function, first argument will be the particles.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(2)
         >>> particles.x = [1.0, 2.0] | units.m
@@ -958,25 +964,24 @@ class AbstractSet(object):
         >>> particles.add_caching_function_attribute("sum_of_x", sumx)
         >>> particles.sum_of_x()
         quantity<3.0 m>
-        
+
         >>> particles.x = [3.0, 4.0] | units.m
         >>> particles.sum_of_x()
         quantity<3.0 m>
 
-        
+
         """
-        
+
         self._derived_attributes[name_of_the_attribute] = CachingFunctionAttribute(name_of_the_attribute, function, function_for_particle)
-        
-    
+
     @classmethod
-    def add_global_function_attribute(cls, name_of_the_attribute, function, function_for_particle = None):
+    def add_global_function_attribute(cls, name_of_the_attribute, function, function_for_particle=None):
         """
         Define a function attribute, adding a function to the particles
-        
+
         :argument name_of_the_attribute: Name to reference the attribute by. 
         :argument function: A function, first argument will be the particles.
-        
+
         >>> from amuse.datamodel import Particles
         >>> def sumx(p):
         ...   return p.x.sum()
@@ -987,20 +992,19 @@ class AbstractSet(object):
         >>> particles.sum_of_x()
         quantity<6.0 m>
         >>> del Particles.GLOBAL_DERIVED_ATTRIBUTES['sum_of_x']
-        
+
         """
-        
+
         cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = FunctionAttribute(function, function_for_particle)
-        
-        
+
     @classmethod
-    def add_global_caching_function_attribute(cls, name_of_the_attribute, function, function_for_particle = None):
+    def add_global_caching_function_attribute(cls, name_of_the_attribute, function, function_for_particle=None):
         """
         Define a function attribute, adding a function to the particles
-        
+
         :argument name_of_the_attribute: Name to reference the attribute by. 
         :argument function: A function, first argument will be the particles.
-        
+
         >>> from amuse.datamodel import Particles
         >>> def sumx(p):
         ...   return p.x.sum()
@@ -1014,19 +1018,18 @@ class AbstractSet(object):
         >>> particles.sum_of_x()
         quantity<6.0 m>
         >>> del Particles.GLOBAL_DERIVED_ATTRIBUTES['sum_of_x']
-        
+
         """
-        
+
         cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = CachingFunctionAttribute(name_of_the_attribute, function, function_for_particle)
-        
-    
+
     def add_particle_function_attribute(self, name_of_the_attribute, function):
         """
         Define a function working on one particle
-        
+
         :argument name_of_the_attribute: Name to reference the attribute by. 
         :argument function: A function, first argument will be the particle.
-        
+
         >>> from amuse.datamodel import Particles
         >>> def xsquared(set, p):
         ...   return p.x * p.x
@@ -1038,17 +1041,17 @@ class AbstractSet(object):
         quantity<16.0 m**2>
         """
         self._derived_attributes[name_of_the_attribute] = FunctionAttribute(None, function)
-        
+
     def __len__(self):
         return len(self.get_all_keys_in_store())
 
-    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particles, x : True):
+    def copy(self, memento=None, keep_structure=False, filter_attributes=lambda particles, x: True):
         """ Creates a new in particle set and copies all attributes and 
         values into this set. 
-        
+
         The history of the set is not copied over.
-        
-        
+
+
         Keyword arguments:
         memento -- internal, a dictionary to keep track of already copied sets in 
                    case of links between particles (default: None, will be created)
@@ -1056,23 +1059,23 @@ class AbstractSet(object):
                    the original set and return a new subset (default: False)
         """
         raise NotImplementedError()
-        
+
     def copy_to_memory(self):
         warnings.warn("deprecated, pleasy change 'copy_to_memory' to 'copy'", DeprecationWarning)
         return self.copy()
-    
+
     def _factory_for_new_collection(self):
         raise NotImplementedError()
-        
+
     def copy_values_of_attribute_to(self, attribute_name, particles):
         """
         Copy values of one attribute from this set to the 
         other set. Will only copy values for the particles
         in both sets. See also :meth:`synchronize_to`.
-        
+
         If you need to do this a lot, setup a dedicated
         channel.
-        
+
         >>> from amuse.datamodel import Particles,Particle
         >>> particles1 = Particles(2)
         >>> particles1.x = [1.0, 2.0] | units.m
@@ -1084,24 +1087,22 @@ class AbstractSet(object):
         >>> particles1.copy_values_of_attribute_to("x", particles2)
         >>> print particles2.x
         [3.0, 4.0] m
-        
+
         """
         channel = self.new_channel_to(particles)
         channel.copy_attributes([attribute_name])
-    
+
     def new_channel_to(self, other):
         raise NotImplementedError()
-        
-    
-    
+
     def __sub__(self, particles):
         """
         Returns a subset of the set without the given particle(s)
         Attribute values are not stored by the subset. The subset 
         provides a view on two or more sets of particles.
-        
+
         :parameter particles: (set of) particle(s) to be subtracted from self.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(4)
         >>> particles.x = [1.0, 2.0, 3.0, 4.0] | units.m
@@ -1125,19 +1126,18 @@ class AbstractSet(object):
                 new_keys.remove(key)
             else:
                 raise exceptions.AmuseException("Unable to subtract a particle, because "
-                    "it is not part of this set.")
+                                                "it is not part of this set.")
         return self._subset(new_keys)
-    
+
     def add_particles(self, particles):
         raise NotImplementedError()
-    
-    
+
     def add_particle(self, particle):
         """
         Add one particle to the set. 
-        
+
         :parameter particle: particle to add
-        
+
         >>> from amuse.datamodel import Particles,Particle
         >>> particles = Particles()
         >>> print len(particles)
@@ -1150,17 +1150,16 @@ class AbstractSet(object):
         1
         >>> print particles.x
         [1.0] m
-        
+
         """
         return self.add_particles(particle.as_set())[0]
-        
-    
+
     def remove_particles(self, particles):
         """
         Removes particles from the supplied set from this set.
-        
+
         :parameter particles: set of particles to remove from this set
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles1 = Particles(2)
         >>> particles1.x = [1.0, 2.0] | units.m
@@ -1175,20 +1174,18 @@ class AbstractSet(object):
         """
         if len(particles) == 0:
             return
-        
+
         keys = particles.get_all_keys_in_store()
         self.remove_particles_from_store(keys)
-        
-    
 
     def remove_particle(self, particle):
         """
         Removes a particle from this set.
-        
+
         Result is undefined if particle is not part of the set
-        
+
         :parameter particle: particle to remove from this set
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles1 = Particles(2)
         >>> particles1.x = [1.0, 2.0] | units.m
@@ -1199,7 +1196,7 @@ class AbstractSet(object):
         [2.0] m
         """
         self.remove_particles(particle.as_set())
-        
+
     def synchronize_to(self, other_particles):
         """
         Synchronize the particles of this set
@@ -1209,9 +1206,9 @@ class AbstractSet(object):
         will check if particles have been removed or
         added it will not copy values of existing particles
         over.
-        
+
         :parameter other_particles: particle set wich has to be updated
-        
+
         >>> from amuse.datamodel import Particles, Particle
         >>> particles = Particles(2)
         >>> particles.x = [1.0, 2.0] | units.m
@@ -1227,33 +1224,33 @@ class AbstractSet(object):
         >>> particles.synchronize_to(copy)
         >>> print copy.x
         [1.0, 2.0, 3.0] m
-        
+
         """
         other_keys = set(other_particles.get_all_keys_in_store())
         my_keys = set(self.get_all_keys_in_store())
         added_keys = my_keys - other_keys
         removed_keys = other_keys - my_keys
-        
+
         added_keys = list(added_keys)
         if added_keys:
             attributes = self.get_attribute_names_defined_in_store()
-            attributes= [x for x in attributes if x not in other_particles._derived_attributes]
+            attributes = [x for x in attributes if x not in other_particles._derived_attributes]
             values = self.get_values_in_store(added_keys, attributes)
             other_particles.add_particles_to_store(added_keys, attributes, values)
-        
+
         removed_keys = list(removed_keys)
         if removed_keys:
             other_particles.remove_particles_from_store(removed_keys)
-        
+
     def copy_values_of_all_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
-        channel.copy_attributes(self.get_attribute_names_defined_in_store())   
-    
+        channel.copy_attributes(self.get_attribute_names_defined_in_store())
+
     def as_set(self):
         """
         Returns a subset view on this set. The subset
         will contain all particles of this set.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(3)
         >>> particles.x = [1.0, 2.0, 3.0] | units.m
@@ -1264,8 +1261,7 @@ class AbstractSet(object):
         [1.0, 2.0, 3.0] m
         """
         return self._subset(self.get_all_keys_in_store())
-    
-    
+
     def select(self, selection_function, attributes):
         """
         Returns a subset view on this set. The subset
@@ -1273,7 +1269,7 @@ class AbstractSet(object):
         function returned True. The selection function 
         is called with scalar quantities defined by
         the attributes parameter
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(3)
         >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
@@ -1283,10 +1279,10 @@ class AbstractSet(object):
         [20.0, 30.0] kg
         >>> print subset.x
         [2.0, 3.0] m
-        
+
         """
         keys = self.get_all_keys_in_store()
-        #values = self._get_values(keys, attributes) #fast but no vectors
+        # values = self._get_values(keys, attributes) #fast but no vectors
         values = map(lambda x: getattr(self, x), attributes)
         selected_keys = []
         for index in range(len(keys)):
@@ -1297,19 +1293,19 @@ class AbstractSet(object):
             if selection_function(*arguments):
                 selected_keys.append(key)
         return self._subset(selected_keys)
-        
-    def select_array(self, selection_function, attributes = ()):
+
+    def select_array(self, selection_function, attributes=()):
         """
         Returns a subset view on this set. The subset
         will contain all particles for which the selection
         function returned True. The selection function 
         is called with a vector quantities containing all
         the values for the attributes parameter.
-        
+
         This function can be faster than the select function
         as it works on entire arrays. The selection_function
         is called once.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(3)
         >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
@@ -1319,8 +1315,8 @@ class AbstractSet(object):
         [20.0, 30.0] kg
         >>> print subset.x
         [2.0, 3.0] m
-        
-        
+
+
         >>> particles = Particles(999)
         >>> particles.x = units.m.new_quantity(numpy.arange(1,1000))
         >>> subset = particles.select_array(lambda x : x > (500 | units.m), ("x",) )
@@ -1328,19 +1324,19 @@ class AbstractSet(object):
         499
         """
         keys = self.get_all_keys_in_store()
-        #values = self._get_values(keys, attributes) #fast but no vectors
+        # values = self._get_values(keys, attributes) #fast but no vectors
         values = map(lambda x: getattr(self, x), attributes)
-        
+
         selections = selection_function(*values)
-        selected_keys =  numpy.compress(selections, keys)
-        
+        selected_keys = numpy.compress(selections, keys)
+
         return self._subset(selected_keys)
-    
+
     def difference(self, other):
         """
         Returns a new subset containing the difference between
         this set and the provided set.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(3)
         >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
@@ -1351,19 +1347,19 @@ class AbstractSet(object):
         2
         >>> len(less_than_15kg)
         1
-        
+
         """
         return self.as_set().difference(other)
-        
+
     def get_timestamp(self):
         return None
-    
+
     def has_duplicates(self):
         """
         Returns True when a set contains a particle with the
         same key more than once. Particles with the same
         key are interpreted as the same particles.
-        
+
         >>> from amuse.datamodel import Particles,Particle
         >>> particles = Particles()
         >>> p1 = particles.add_particle(Particle(1))
@@ -1377,18 +1373,14 @@ class AbstractSet(object):
         True
         """
         return len(self) != len(set(self.get_all_keys_in_store()))
-    
-    
 
-        
     def _subset(self, keys):
         raise NotImplementedError()
-        
-        
+
     def __dir__(self):
         """
         Utility function for introspection of paricle objects
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(3)
         >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
@@ -1397,36 +1389,34 @@ class AbstractSet(object):
         True
         >>> print 'x' in dir(particles)
         True
-        
+
         """
         result = []
         result.extend(dir(type(self)))
         result.extend(self._attributes_for_dir())
         return result
 
-    
     def _attributes_for_dir(self):
         result = []
         result.extend(self.get_attribute_names_defined_in_store())
         result.extend(self._derived_attributes.keys())
         return result
-        
-    
+
     def all_attributes(self):
         result = []
         result.append('key')
         result.extend(self._attributes_for_dir())
         return result
-        
+
     def stored_attributes(self):
         """
         Returns a list of the names of the attributes defined on
         the objects in this set (or grid).
-        
+
         This list will not contain the set specific methods, or derived
         attributes (such as function attributes or vector attributes)
         for a list with all these attributes please use ``dir``.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(3)
         >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
@@ -1438,13 +1428,13 @@ class AbstractSet(object):
         result.append('key')
         result.extend(self.get_attribute_names_defined_in_store())
         return result
-    
+
     def is_empty(self):
-        return self.__len__()==0
+        return self.__len__() == 0
 
     def get_value_in_store(self, key, attribute):
-        return self.get_values_in_store(numpy.asarray([key]),[attribute])[0][0]
-        
+        return self.get_values_in_store(numpy.asarray([key]), [attribute])[0][0]
+
     def _convert_to_entity_or_quantity(self, x):
         if is_quantity(x):
             if x.unit.iskey():
@@ -1460,9 +1450,9 @@ class AbstractSet(object):
         particle(s) and this particle set. Attribute values are
         not stored by the subset. The subset provides a view
         on two or more sets of particles.
-        
+
         :parameter particles: (set of) particle(s) to be added to self.
-        
+
         >>> from amuse.datamodel import Particles
         >>> particles = Particles(4)
         >>> particles1 = particles[:2]
@@ -1478,26 +1468,21 @@ class AbstractSet(object):
         [1.0, 2.0, 3.0, 4.0] m
         """
         raise NotImplementedError()
-    
-    
 
     @classmethod
     def function_for_set(cls, function):
         cls.add_global_function_attribute(function.__name__, function)
         return function
-    
+
     @classmethod
     def attribute_for_set(cls, function):
         cls.add_global_calculated_attribute(function.__name__, function)
         return function
-        
+
     @classmethod
     def caching_function_for_set(cls, function):
         cls.add_global_caching_function_attribute(function.__name__, function)
         return function
-
-    
-    
 
     def are_all_keys_in_set(self, keys):
         try:
@@ -1505,6 +1490,7 @@ class AbstractSet(object):
             return True
         except Exception as ex:
             return False
+
 
 class LinkedArray(numpy.ndarray):
     """Links between particles and particle sets are stored in LinkedArrays.
@@ -1516,14 +1502,14 @@ class LinkedArray(numpy.ndarray):
     def __array_finalize__(self, array_object):
         if array_object is None:
             return
-        
-    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+
+    def copy(self, memento=None, keep_structure=False, filter_attributes=lambda particle_set, x: True):
         from amuse.datamodel.particles import Particle
         from amuse.datamodel.grids import GridPoint
-        
+
         if memento is None:
             memento = {}
-            
+
         result = LinkedArray(self.flatten())
         index = 0
         for x in result:
@@ -1538,12 +1524,12 @@ class LinkedArray(numpy.ndarray):
                 result[index] = copy_of_container._get_particle_unsave(x.key)
             elif isinstance(x, GridPoint):
                 container = x.get_containing_set()
-    
+
                 if id(container) in memento:
                     copy_of_container = memento[id(container)]
                 else:
                     copy_of_container = container.copy(memento, keep_structure, filter_attributes)
-                
+
                 result[index] = GridPoint(x.index, copy_of_container)
             elif isinstance(x, AbstractSet):
                 if id(x) in memento:
@@ -1554,22 +1540,22 @@ class LinkedArray(numpy.ndarray):
             else:
                 raise exceptions.AmuseException("unkown type in link {0}, copy not implemented".format(type(x)))
             index += 1
-        
+
         return result.reshape(self.shape)
-    
-    def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None, filter_attributes = lambda particle_set, x : True):
+
+    def copy_with_link_transfer(self, from_container, to_container, must_copy=False, memento=None, filter_attributes=lambda particle_set, x: True):
         from amuse.datamodel.particles import Particle
         from amuse.datamodel.grids import GridPoint
-        
+
         if memento is None:
             memento = dict()
-            
+
         result = LinkedArray(numpy.empty_like(self))
         index = 0
         for index in numpy.ndindex(*self.shape):
             if len(index) == 1:
                 index = index[0]
-            x = self[index]                
+            x = self[index]
             if x is None:
                 result[index] = None
             elif isinstance(x, Particle):
@@ -1586,7 +1572,7 @@ class LinkedArray(numpy.ndarray):
                     result[index] = x
             elif isinstance(x, AbstractSet):
                 if must_copy:
-                    copy_of_container = x.copy(memento, keep_structure = True, filter_attributes = filter_attributes)
+                    copy_of_container = x.copy(memento, keep_structure=True, filter_attributes=filter_attributes)
                     result[index] = copy_of_container
                 else:
                     if from_container is None or x is from_container:
@@ -1595,19 +1581,18 @@ class LinkedArray(numpy.ndarray):
                         result[index] = x
             else:
                 raise exceptions.AmuseException("unkown type in link {0}, transfer link not implemented".format(type(x)))
-                
+
         return result
-        
 
     def as_set(self):
         from amuse.datamodel.particles import Particle
         from amuse.datamodel.particles import ParticlesMaskedSubset
-        
+
         linked_set = None
         mask = []
         keys = []
         index = 0
-        
+
         flattened = LinkedArray(self.flatten())
         for x in flattened:
             if x is None:
@@ -1623,33 +1608,33 @@ class LinkedArray(numpy.ndarray):
                     )
                 keys.append(x.key)
                 mask.append(False)
-            else:                        
+            else:
                 raise exceptions.AmuseException(
                     "could not convert the linked array to a subset as this array also contains sets of particles, grids or gridpoints"
                 )
             index += 1
-            
+
         if linked_set is None or len(linked_set) == 0:
-           dtype = 'uint64'
+            dtype = 'uint64'
         else:
-           dtype = linked_set.get_all_keys_in_store().dtype
-           
+            dtype = linked_set.get_all_keys_in_store().dtype
+
         masked_keys = numpy.ma.masked_array(
             numpy.asarray(
                 keys,
-                dtype = dtype
-            ), 
+                dtype=dtype
+            ),
             mask=mask
         )
-        
+
         if linked_set is None:
             return ParticlesMaskedSubset(None, masked_keys)
         else:
             return linked_set._masked_subset(masked_keys)
-    
+
     def to_print_list(self):
         from amuse.datamodel.particles import Particle
-        
+
         result = []
         for x in self:
             if x is None:
@@ -1658,8 +1643,10 @@ class LinkedArray(numpy.ndarray):
                 result.append(x.key)
             else:
                 result.append(type(x))
-                
+
         return result
+
+
 class FixedLinkedArray(LinkedArray):
     """Links between particles and particle sets are stored in LinkedArrays.
     """
@@ -1668,14 +1655,12 @@ class FixedLinkedArray(LinkedArray):
         result.linked_set = linked_set
         return result
 
-
     def __array_finalize__(self, array_object):
         if array_object is None:
             return
         self.linked_set = getattr(array_object, 'linked_set', None)
-        
 
-    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+    def copy(self, memento=None, keep_structure=False, filter_attributes=lambda particle_set, x: True):
         if memento is None:
             memento = {}
 
@@ -1683,37 +1668,29 @@ class FixedLinkedArray(LinkedArray):
             copy_of_container = memento[id(self.linked_set)]
         else:
             copy_of_container = self.linked_set.copy(memento, keep_structure, filter_attributes)
-      
+
         return FixedLinkedArray(numpy.array(self, copy=True), copy_of_container)
-    
 
-
-    def copy_with_link_transfer(self, from_container, to_container, must_copy = False, memento = None, filter_attributes = lambda particle_set, x : True):
+    def copy_with_link_transfer(self, from_container, to_container, must_copy=False, memento=None, filter_attributes=lambda particle_set, x: True):
         if memento is None:
             memento = dict()
 
         if must_copy:
-            new_container = x.copy(memento, keep_structure = True, filter_attributes = filter_attributes)
+            new_container = x.copy(memento, keep_structure=True, filter_attributes=filter_attributes)
         else:
             if from_container is None or self.linked_set is from_container:
                 new_container = to_container
             else:
                 new_container = self.linked_set
         return FixedLinkedArray(numpy.array(self, copy=True), new_container)
-        
-
-
 
     def as_set(self):
         from amuse.datamodel.particles import ParticlesSubset
-        
-        
+
         return self.linked_set._subset(self)
-    
 
     def to_print_list(self):
         return list(self)
-
 
     def get_particles(self, index):
         keys = self.__getitem__(index)
@@ -1721,18 +1698,8 @@ class FixedLinkedArray(LinkedArray):
             return self.linked_set._subset(keys)
         else:
             return self.linked_set._get_particle_unsave(keys)
-        
-
-
 
     def set_particles(self, index, value):
         if not self.linked_set.are_all_keys_in_set(value.as_set().key):
             raise Exception("trying to link to a particle that is not in the linked set")
         self.__setitem__(index, value.key)
-
-
-
-
-
-
-

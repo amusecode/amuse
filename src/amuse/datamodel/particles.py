@@ -24,6 +24,7 @@ try:
 except:
     EllipsisType = type(Ellipsis)
 
+
 class AbstractParticleSet(AbstractSet):
     """
     Abstract superclass of all sets of particles.
@@ -144,16 +145,14 @@ class AbstractParticleSet(AbstractSet):
     # the grid (i.e. the grid points)
     # grids have the same trick
     if compare_version_strings(numpy.__version__, '1.7.0') < 0:
-        __array_interface__ = {'shape':() }
+        __array_interface__ = {'shape': ()}
     else:
-        __array_interface__ = {'shape':(),'typestr':'|O4' }
+        __array_interface__ = {'shape': (), 'typestr': '|O4'}
 
     GLOBAL_DERIVED_ATTRIBUTES = {}
 
-
-    def __init__(self, original = None):
+    def __init__(self, original=None):
         AbstractSet.__init__(self, original)
-
 
     def __delattr__(self, name):
         self.remove_attribute_from_store(name)
@@ -164,7 +163,7 @@ class AbstractParticleSet(AbstractSet):
 
     def remove_attribute_from_store(self, name):
         pass
-        
+
     def remove_particles_from_store(self, indices):
         pass
 
@@ -179,7 +178,6 @@ class AbstractParticleSet(AbstractSet):
 
     def get_indices_of_keys(self, keys):
         pass
-
 
     #
     #
@@ -199,7 +197,6 @@ class AbstractParticleSet(AbstractSet):
         original_set = self._original_set()
         for key, index in zip(self.get_all_keys_in_store(), self.get_all_indices_in_store()):
             yield original_set._get_particle_unsave(key, index)
-
 
     def get_all_particles_at(self, *indices):
         all_keys = self.get_all_keys_in_store()
@@ -230,8 +227,7 @@ class AbstractParticleSet(AbstractSet):
         """
         return self.to_string()
 
-
-    def to_string(self, attributes_to_show = None, split_at = 20):
+    def to_string(self, attributes_to_show=None, split_at=20):
         """
         Display string of a particle set.
 
@@ -256,7 +252,7 @@ class AbstractParticleSet(AbstractSet):
         attributes = sorted(self.get_attribute_names_defined_in_store())
         if attributes_to_show:
             attributes = [x for x in attributes if x in attributes_to_show]
-        
+
         if len(self) == 0:
             return self.empty_particles_set_string(attributes)
 
@@ -264,8 +260,8 @@ class AbstractParticleSet(AbstractSet):
         format_str20 = '{0: >20}'.format
         format_str11 = '{0!s: >11}'.format
 
-        columns = map(lambda x : [format_str11(x)], attributes)
-        columns.insert(0,[format_str20('key')])
+        columns = map(lambda x: [format_str11(x)], attributes)
+        columns.insert(0, [format_str20('key')])
 
         all_values = self.get_values_in_store(self.get_all_indices_in_store(), attributes)
         for index, quantity in enumerate(all_values):
@@ -279,33 +275,33 @@ class AbstractParticleSet(AbstractSet):
             column.append('=' * 11)
             if len(quantity) > split_at * 2:
                 if isinstance(quantity, LinkedArray):
-                    values_to_show = list(map(format_str11,quantity[:split_at].to_print_list()))
+                    values_to_show = list(map(format_str11, quantity[:split_at].to_print_list()))
                     values_to_show.append(format_str11('...'))
-                    values_to_show.extend(map(format_str11,quantity[-split_at:].to_print_list()))
+                    values_to_show.extend(map(format_str11, quantity[-split_at:].to_print_list()))
                 elif hasattr(quantity, 'dtype'):
                     if numpy.issubdtype(quantity.dtype, numpy.floating):
-                        values_to_show = list(map(format_float,quantity[:split_at]))
+                        values_to_show = list(map(format_float, quantity[:split_at]))
                         values_to_show.append(format_str11('...'))
-                        values_to_show.extend(map(format_float,quantity[-split_at:]))
+                        values_to_show.extend(map(format_float, quantity[-split_at:]))
                     else:
-                        values_to_show = list(map(format_str11,quantity[:split_at]))
+                        values_to_show = list(map(format_str11, quantity[:split_at]))
                         values_to_show.append(format_str11('...'))
-                        values_to_show.extend(map(format_str11,quantity[-split_at:]))
+                        values_to_show.extend(map(format_str11, quantity[-split_at:]))
                 else:
-                    values_to_show = list(map(format_str11,quantity[:split_at]))
+                    values_to_show = list(map(format_str11, quantity[:split_at]))
                     values_to_show.append(format_str11('...'))
-                    values_to_show.extend(map(format_str11,quantity[-split_at:]))
+                    values_to_show.extend(map(format_str11, quantity[-split_at:]))
             else:
                 if isinstance(quantity, LinkedArray):
-                    values_to_show = map(format_str11,quantity.to_print_list())
+                    values_to_show = map(format_str11, quantity.to_print_list())
                 elif hasattr(quantity, 'dtype'):
                     if numpy.issubdtype(quantity.dtype, numpy.floating):
                         try:
-                            values_to_show = map(format_float,quantity)
+                            values_to_show = map(format_float, quantity)
                         except ValueError:
-                            values_to_show = map(format_str11,quantity)
+                            values_to_show = map(format_str11, quantity)
                     else:
-                        values_to_show = map(format_str11,quantity)
+                        values_to_show = map(format_str11, quantity)
                 else:
                     values_to_show = map(format_str11, quantity)
 
@@ -321,7 +317,7 @@ class AbstractParticleSet(AbstractSet):
             values_to_show.append(format_str20('...'))
             values_to_show.extend(map(format_str20, particle_keys[-split_at:]))
         else:
-            values_to_show = map(format_str20,particle_keys)
+            values_to_show = map(format_str20, particle_keys)
 
         column.extend(values_to_show)
 
@@ -333,9 +329,8 @@ class AbstractParticleSet(AbstractSet):
             row = [x[i] for x in columns]
             rows.append(row)
 
-        lines = map(lambda  x : '  '.join(x), rows)
+        lines = map(lambda x: '  '.join(x), rows)
         return '\n'.join(lines)
-
 
     def _get_particle(self, key):
         if self.has_key_in_store(key):
@@ -343,12 +338,12 @@ class AbstractParticleSet(AbstractSet):
         else:
             return None
 
-    def _get_particle_unsave(self, key, index = None):
+    def _get_particle_unsave(self, key, index=None):
         return Particle(
             key,
             self._original_set(),
-            set_index = index,
-            set_version = self._get_version()
+            set_index=index,
+            set_version=self._get_version()
         )
 
     def can_extend_attributes(self):
@@ -360,13 +355,13 @@ class AbstractParticleSet(AbstractSet):
     def _is_superset(self):
         return False
 
-    def as_binary_tree(self, name_of_first_child = 'child1', name_of_second_child = 'child2'):
+    def as_binary_tree(self, name_of_first_child='child1', name_of_second_child='child2'):
         return trees.ChildTreeOnParticleSet(self, (name_of_first_child, name_of_second_child))
 
-    def new_binary_tree_wrapper(self, name_of_first_child = 'child1', name_of_second_child = 'child2'):
+    def new_binary_tree_wrapper(self, name_of_first_child='child1', name_of_second_child='child2'):
         return trees.ChildTreeOnParticleSet(self, (name_of_first_child, name_of_second_child))
 
-    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+    def copy(self, memento=None, keep_structure=False, filter_attributes=lambda particle_set, x: True):
         attributes = self.get_attribute_names_defined_in_store()
         attributes = [x for x in attributes if filter_attributes(self, x)]
         keys = self.get_all_keys_in_store()
@@ -389,9 +384,7 @@ class AbstractParticleSet(AbstractSet):
 
         return result
 
-
-
-    def copy_to_new_particles(self, keys = None, keys_generator = None, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+    def copy_to_new_particles(self, keys=None, keys_generator=None, memento=None, keep_structure=False, filter_attributes=lambda particle_set, x: True):
         if keys_generator is None:
             keys_generator = base.UniqueKeyGenerator
 
@@ -399,7 +392,7 @@ class AbstractParticleSet(AbstractSet):
 
         if not keys is None:
             if len(keys) != len(my_keys):
-                    raise Exception('not enough new keys given for the copy')
+                raise Exception('not enough new keys given for the copy')
             else:
                 particle_keys = keys
         else:
@@ -454,7 +447,7 @@ class AbstractParticleSet(AbstractSet):
         """
         keys = self.get_all_keys_in_store()
         result = Particles()
-        result.add_particles_to_store(keys, [],[])
+        result.add_particles_to_store(keys, [], [])
         return result
 
     def copy_values_of_attribute_to(self, attribute_name, particles):
@@ -515,7 +508,7 @@ class AbstractParticleSet(AbstractSet):
         original_particles_set = self._original_set()
         if not original_particles_set is particles._original_set():
             raise exceptions.AmuseException("Can't create new subset from particles belonging to "
-                "separate particle sets. Try creating a superset instead.")
+                                            "separate particle sets. Try creating a superset instead.")
         keys = list(self.key) + list(particles.key)
         new_set = ParticlesSubset(original_particles_set, keys)
         if new_set.has_duplicates():
@@ -606,13 +599,13 @@ class AbstractParticleSet(AbstractSet):
         [1.0, 2.0, 3.0, 4.0] m
         """
         if len(particles) == 0:
-            return ParticlesSubset(self._original_set(),[])
+            return ParticlesSubset(self._original_set(), [])
 
         attributes = particles.get_attribute_names_defined_in_store()
-        attributes= [x for x in attributes if x not in self._derived_attributes]
-        
+        attributes = [x for x in attributes if x not in self._derived_attributes]
+
         indices = particles.get_all_indices_in_store()
-        keys =  particles.get_all_keys_in_store()
+        keys = particles.get_all_keys_in_store()
         values = particles.get_values_in_store(indices, attributes)
         values = map(self._convert_from_entities_or_quantities, values)
         converted = []
@@ -631,9 +624,7 @@ class AbstractParticleSet(AbstractSet):
                 else:
                     raise
             self.add_particles_to_store(keys, attributes, converted)
-        return ParticlesSubset(self._original_set(),keys)
-
-
+        return ParticlesSubset(self._original_set(), keys)
 
     def add_particle(self, particle):
         """
@@ -686,14 +677,14 @@ class AbstractParticleSet(AbstractSet):
 
         """
         try:
-          not_in_set=x-x.get_intersecting_subset_in(self)
-          self.add_particles(not_in_set)
-          return x.get_intersecting_subset_in(self)
-        except:  
-          if x in self:
-              return x.as_particle_in_set(self)
-          else:
-              return self.add_particle(x)
+            not_in_set = x - x.get_intersecting_subset_in(self)
+            self.add_particles(not_in_set)
+            return x.get_intersecting_subset_in(self)
+        except:
+            if x in self:
+                return x.as_particle_in_set(self)
+            else:
+                return self.add_particle(x)
 
     def remove_particles(self, particles):
         """
@@ -712,14 +703,12 @@ class AbstractParticleSet(AbstractSet):
         >>> print particles1.x
         [2.0] m
         """
-        
+
         if len(particles) == 0:
             return
-        
+
         indices = self.get_indices_of_keys(particles.get_all_keys_in_store())
         self.remove_particles_from_store(indices)
-
-
 
     def remove_particle(self, particle):
         """
@@ -774,19 +763,19 @@ class AbstractParticleSet(AbstractSet):
         added_keys = numpy.asarray(list(my_keys - other_keys))
         removed_keys = other_keys - my_keys
         removed_keys = list(removed_keys)
-       
+
         if len(removed_keys) > 0:
             other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
-            
+
         if len(added_keys) > 0:
             added_indices = self.get_indices_of_keys(added_keys)
             if len(added_indices) > 1:
                 sort_indices = numpy.argsort(added_indices)
                 added_indices = added_indices[sort_indices]
                 added_keys = added_keys[sort_indices]
-                
+
             attributes = self.get_attribute_names_defined_in_store()
-            attributes= [x for x in attributes if x not in other_particles._derived_attributes]
+            attributes = [x for x in attributes if x not in other_particles._derived_attributes]
             values = self.get_values_in_store(added_indices, attributes)
             converted = []
             memento = {}
@@ -808,15 +797,11 @@ class AbstractParticleSet(AbstractSet):
                         raise
                 other_particles.add_particles_to_store(added_keys, attributes, converted)
 
-
-
-
-
     def compressed(self):
         return self
 
     def get_valid_particles_mask(self):
-        return numpy.ones(len(self), dtype = numpy.bool)
+        return numpy.ones(len(self), dtype=numpy.bool)
 
     def as_set(self):
         """
@@ -832,7 +817,6 @@ class AbstractParticleSet(AbstractSet):
         [1.0, 2.0, 3.0] m
         """
         return self._subset(self.get_all_keys_in_store())
-
 
     def select(self, selection_function, attributes):
         """
@@ -854,7 +838,7 @@ class AbstractParticleSet(AbstractSet):
         """
         keys = self.get_all_keys_in_store()
 
-        #values = self._get_values(keys, attributes) #fast but no vectors
+        # values = self._get_values(keys, attributes) #fast but no vectors
         values = map(lambda x: getattr(self, x), attributes)
         selected_keys = []
         for index in range(len(keys)):
@@ -866,7 +850,7 @@ class AbstractParticleSet(AbstractSet):
                 selected_keys.append(key)
         return self._subset(selected_keys)
 
-    def select_array(self, selection_function, attributes = ()):
+    def select_array(self, selection_function, attributes=()):
         """
         Returns a subset view on this set. The subset
         will contain all particles for which the selection
@@ -895,10 +879,10 @@ class AbstractParticleSet(AbstractSet):
         500
         """
         keys = self.get_all_keys_in_store()
-        #values = self._get_values(keys, attributes) #fast but no vectors
+        # values = self._get_values(keys, attributes) #fast but no vectors
         quantities = [getattr(self, x) for x in attributes]
         selections = selection_function(*quantities)
-        selected_keys =  numpy.compress(selections, keys)
+        selected_keys = numpy.compress(selections, keys)
 
         return self._subset(selected_keys)
 
@@ -942,9 +926,6 @@ class AbstractParticleSet(AbstractSet):
         """
         return len(self) != len(set(self.get_all_keys_in_store()))
 
-
-
-
     def _subset(self, keys):
         return ParticlesSubset(self._original_set(), keys)
 
@@ -987,7 +968,6 @@ class AbstractParticleSet(AbstractSet):
         """
         return self.__getitem__(getattr(self, attribute).argsort(kind=kind))
 
-
     def sorted_by_attributes(self, *attributes):
         """
         Returns a subset with the same particles, but sorted
@@ -1010,7 +990,7 @@ class AbstractParticleSet(AbstractSet):
         keys = self.get_all_keys_in_store()
         values = self.get_values_in_store(indices, attributes)
         values = [x.number for x in values]
-        sorted_indices =  numpy.lexsort(values)
+        sorted_indices = numpy.lexsort(values)
 
         return self._subset(keys[sorted_indices])
 
@@ -1032,7 +1012,6 @@ class AbstractParticleSet(AbstractSet):
         result.extend(self._attributes_for_dir())
         return result
 
-
     def __contains__(self, particle):
         """
         Check if a particle is part of a set
@@ -1047,9 +1026,8 @@ class AbstractParticleSet(AbstractSet):
         False
 
         """
-        
-        return isinstance(particle, Particle) and self.has_key_in_store(particle.key)
 
+        return isinstance(particle, Particle) and self.has_key_in_store(particle.key)
 
     def all_attributes(self):
         result = []
@@ -1057,12 +1035,11 @@ class AbstractParticleSet(AbstractSet):
         result.extend(self._attributes_for_dir())
         return result
 
-
     def is_empty(self):
-        return self.__len__()==0
+        return self.__len__() == 0
 
     def get_intersecting_subset_in(self, other):
-        selected_keys = filter(lambda x : other.has_key_in_store(x), self.get_all_keys_in_store())
+        selected_keys = filter(lambda x: other.has_key_in_store(x), self.get_all_keys_in_store())
         return other._subset(selected_keys)
 
     def _as_masked_subset_in(self, other):
@@ -1073,9 +1050,8 @@ class AbstractParticleSet(AbstractSet):
     def random_sample(self, number_of_particles):
         return self.__getitem__(random.sample(xrange(len(self)), number_of_particles))
 
-
-    def empty_particles_set_string(self, attributes = ()):
-        result = 'empty particles set ('+self.__class__.__name__+')'
+    def empty_particles_set_string(self, attributes=()):
+        result = 'empty particles set (' + self.__class__.__name__ + ')'
         if len(attributes) > 0:
             sorted_attributes = sorted(attributes)
             sorted_attributes.insert(0, 'key')
@@ -1087,17 +1063,16 @@ class AbstractParticleSet(AbstractSet):
                 result += ','.join(x)
         return result
 
-    def divide_attributes(self, attributes = (), n = 3):
+    def divide_attributes(self, attributes=(), n=3):
         y = []
         for x in attributes:
             y.append(x)
             if len(y) == n:
                 yield y
                 y = []
-            
+
     def get_all_values_of_attribute_in_store(self, attribute):
         return self.get_values_in_store(None, [attribute])[0]
-        
 
     def __setattr__(self, name_of_the_attribute, value):
         value = self.check_attribute(value)
@@ -1108,6 +1083,8 @@ class AbstractParticleSet(AbstractSet):
 
     def get_containing_set(self):
         return self
+
+
 class Particles(AbstractParticleSet):
     """
     A set of particles. Attributes and values are stored in
@@ -1119,7 +1096,8 @@ class Particles(AbstractParticleSet):
 
 
     """
-    def __init__(self, size = 0, storage = None, keys = None, keys_generator = None, particles = None, is_working_copy = True, **attributes):
+
+    def __init__(self, size=0, storage=None, keys=None, keys_generator=None, particles=None, is_working_copy=True, **attributes):
         AbstractParticleSet.__init__(self)
 
         self._private.version = 0
@@ -1130,12 +1108,11 @@ class Particles(AbstractParticleSet):
         else:
             self._private.attribute_storage = storage
 
-
         if keys_generator is None:
             keys_generator = base.UniqueKeyGenerator
 
         if not particles is None:
-            if isinstance(particles,AbstractParticleSet):
+            if isinstance(particles, AbstractParticleSet):
                 self.add_particles(particles)
             else:
                 for x in iter(particles):
@@ -1163,15 +1140,14 @@ class Particles(AbstractParticleSet):
                 else:
                     try:
                         if isinstance(attributevalue, basestring):
-                            number_of_attributes = max(number_of_attributes,1)
+                            number_of_attributes = max(number_of_attributes, 1)
                         else:
                             number_of_attributes = max(number_of_attributes, len(attributevalue))
-                    except: #fails for numbers
-                        number_of_attributes = max(number_of_attributes,1)
+                    except:  # fails for numbers
+                        number_of_attributes = max(number_of_attributes, 1)
 
             particle_keys = keys_generator.next_set_of_keys(number_of_attributes)
             self.add_particles_to_store(particle_keys)
-
 
         self._private.version = 0
 
@@ -1187,7 +1163,6 @@ class Particles(AbstractParticleSet):
         self._private.previous = None
         self.collection_attributes.timestamp = None
 
-
     def __getitem__(self, index):
         if index is None:
             keys = self.get_all_keys_in_store()
@@ -1201,21 +1176,20 @@ class Particles(AbstractParticleSet):
         else:
             return Particle(keys, self, index, self._get_version())
 
-
     def _get_version(self):
         return self._private.version
 
     def __iter__(self):
-        keys =  self.get_all_keys_in_store()
+        keys = self.get_all_keys_in_store()
         indices = self.get_all_indices_in_store()
         version = self._get_version()
 
         for i in range(len(keys)):
-            yield Particle(keys[i], self,  indices[i], version)
+            yield Particle(keys[i], self, indices[i], version)
 
-    def savepoint(self, timestamp=None, format = 'memory', **attributes):
+    def savepoint(self, timestamp=None, format='memory', **attributes):
         if format == 'memory':
-            instance = type(self)(is_working_copy = False)
+            instance = type(self)(is_working_copy=False)
             instance._private.attribute_storage = self._private.attribute_storage.copy()
             instance.collection_attributes.timestamp = timestamp
 
@@ -1252,7 +1226,6 @@ class Particles(AbstractParticleSet):
             yield current
             current = current._private.previous
 
-
     def get_state_at_timestamp(self, timestamp):
         previous_timestamp = None
         states_and_distances = []
@@ -1267,7 +1240,7 @@ class Particles(AbstractParticleSet):
             raise exceptions.AmuseException("You asked for a state at timestamp '{0}', but the set does not have any saved states so this state cannot be returned")
 
         accompanying_state, min_distance = states_and_distances[0]
-        for state, distance  in states_and_distances:
+        for state, distance in states_and_distances:
             if distance < min_distance:
                 min_distance = distance
                 accompanying_state = state
@@ -1300,32 +1273,28 @@ class Particles(AbstractParticleSet):
         return timeline, chrono_values
 
     def get_timeline_of_attributes(self, particle_key, attributes):
-        result = map(lambda x: [], range(len(attributes)+1))
-        units = map(lambda x: None, range(len(attributes)+1))
+        result = map(lambda x: [], range(len(attributes) + 1))
+        units = map(lambda x: None, range(len(attributes) + 1))
 
         for x in self.history:
             if x.has_key_in_store(particle_key):
                 index = x.get_indices_of_keys([particle_key])[0]
-                if  units[0] is None:
+                if units[0] is None:
                     units[0] = x.collection_attributes.timestamp.unit
                 for i, attribute in enumerate(attributes):
                     quantity = x._get_value_of_attribute(x[index], index, attribute)
-                    if  units[i+1] is None:
-                        units[i+1] = quantity.unit
-                    result[i+1].append(quantity.value_in(units[i+1]))
+                    if units[i + 1] is None:
+                        units[i + 1] = quantity.unit
+                    result[i + 1].append(quantity.value_in(units[i + 1]))
 
-        return list(map(lambda value,unit : unit.new_quantity(value), result, units))
-
-
-   
+        return list(map(lambda value, unit: unit.new_quantity(value), result, units))
 
     def remove_attribute_from_store(self, name):
         self._private.attribute_storage.remove_attribute_from_store(name)
-        
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         self._private.attribute_storage.add_particles_to_store(keys, attributes, values)
         self._private.version += 1
-
 
     def remove_particles_from_store(self, indices):
         self._private.attribute_storage.remove_particles_from_store(indices)
@@ -1343,7 +1312,7 @@ class Particles(AbstractParticleSet):
             self._private.attribute_storage.get_values_in_store(indices, defined_attributes)
         ))
         #print missing_attributes, "shape" in missing_attributes
-        #if "shape" in missing_attributes:
+        # if "shape" in missing_attributes:
         #    import traceback
         #    traceback.print_stack()
         #    raise Exception("hello is this ok????")
@@ -1353,7 +1322,6 @@ class Particles(AbstractParticleSet):
 
     def get_values_in_store_async(self, indices, attributes):
         return self._private.attribute_storage.get_values_in_store_async(indices, attributes)
-
 
     def get_indices_of_keys(self, keys):
         return self._private.attribute_storage.get_indices_of(keys)
@@ -1385,7 +1353,6 @@ class Particles(AbstractParticleSet):
     def can_extend_attributes(self):
         return self._private.attribute_storage.can_extend_attributes()
 
-
     def _remove_indices_in_attribute_storage(self, indices):
         self._private.attribute_storage._remove_indices(indices)
         self._private.version += 1
@@ -1397,13 +1364,13 @@ class Particles(AbstractParticleSet):
     @staticmethod
     def is_quantity():
         return False
-        
-    def new_particle(key = None, **keyword_arguments):
-        return self.add_particle(Particle(key = key, **keyword_arguments))
-        
+
+    def new_particle(key=None, **keyword_arguments):
+        return self.add_particle(Particle(key=key, **keyword_arguments))
+
 
 class BoundSupersetParticlesFunctionAttribute(object):
-    def  __init__(self, name, superset):
+    def __init__(self, name, superset):
         self.name = name
         self.superset = superset
         self.subsetfunctions = []
@@ -1427,8 +1394,8 @@ class BoundSupersetParticlesFunctionAttribute(object):
             return result
         return [item for one_result in subset_results for item in one_result]
 
-class DerivedSupersetAttribute(DerivedAttribute):
 
+class DerivedSupersetAttribute(DerivedAttribute):
 
     def __init__(self, name):
         self.name = name
@@ -1438,7 +1405,7 @@ class DerivedSupersetAttribute(DerivedAttribute):
         offset = 0
         for subset in superset._private.particle_sets:
 
-            subset_result =  getattr(subset, self.name)
+            subset_result = getattr(subset, self.name)
             if hasattr(subset_result, '__call__'):
                 if len(subset) > 0:
                     if result is None:
@@ -1449,11 +1416,11 @@ class DerivedSupersetAttribute(DerivedAttribute):
                 if len(subset_result) == 0:
                     continue
                 if result is None:
-                    shape = [len(superset),] + list(subset_result.shape[1:])
+                    shape = [len(superset), ] + list(subset_result.shape[1:])
                     result = VectorQuantity.zeros(shape, subset_result.unit)
                     offset = 0
                 try:
-                    result[offset:len(subset_result)+offset] = subset_result
+                    result[offset:len(subset_result) + offset] = subset_result
                 except ValueError:
                     raise AttributeError("Subsets return incompatible quantities for attribute '{0}', attribute cannot be queried from the superset".format(self.name))
                 offset += len(subset_result)
@@ -1462,11 +1429,11 @@ class DerivedSupersetAttribute(DerivedAttribute):
                 if len(subset_result) == 0:
                     continue
                 if result is None:
-                    shape = [len(superset),] + list(subset_result.shape[1:])
+                    shape = [len(superset), ] + list(subset_result.shape[1:])
                     result = numpy.zeros(shape, dtype=subset_result.dtype)
                     offset = 0
                 try:
-                    result[offset:len(subset_result)+offset] = subset_result
+                    result[offset:len(subset_result) + offset] = subset_result
                 except ValueError:
                     raise AttributeError("Subsets return incompatible quantities for attribute '{0}', attribute cannot be queried from the superset".format(self.name))
                 offset += len(subset_result)
@@ -1482,6 +1449,7 @@ class DerivedSupersetAttribute(DerivedAttribute):
 
     def set_value_for_entity(self, superset, key, value):
         raise exceptions.AmuseException("Internal AMUSE error, a single entity (Particle) should always be bound to the subset and not the superset")
+
 
 class ParticlesSuperset(AbstractParticleSet):
     """A superset of particles. Attribute values are not
@@ -1512,7 +1480,7 @@ class ParticlesSuperset(AbstractParticleSet):
     [10.0, 20.0, 30.0, 40.0, 70.0, 60.0] kg
     """
 
-    def __init__(self, particle_sets, index_to_default_set=None, names = None):
+    def __init__(self, particle_sets, index_to_default_set=None, names=None):
         AbstractParticleSet.__init__(self)
 
         if not names is None:
@@ -1522,7 +1490,6 @@ class ParticlesSuperset(AbstractParticleSet):
 
         self._private.particle_sets = list(particle_sets)
         self._private.index_to_default_set = index_to_default_set
-
 
         names_of_derived_attributes_in_all_subsets = None
         for subset in particle_sets:
@@ -1542,13 +1509,12 @@ class ParticlesSuperset(AbstractParticleSet):
         if self.has_duplicates():
             raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
 
-
     def _ensure_updated_set_properties(self):
         if self._private.version == self._get_subsets_version():
             return
 
         self._private.version = self._get_subsets_version()
-        self._private.length = numpy.sum([len(x) for x in  self._private.particle_sets])
+        self._private.length = numpy.sum([len(x) for x in self._private.particle_sets])
         self._private.indices = numpy.arange(self._private.length)
         self._private.keys = self._get_concatenated_keys_in_store()
         self._private.key_to_index = {}
@@ -1584,7 +1550,6 @@ class ParticlesSuperset(AbstractParticleSet):
 
         return self._private.version
 
-
     def __getitem__(self, index):
         self._ensure_updated_set_properties()
 
@@ -1600,7 +1565,7 @@ class ParticlesSuperset(AbstractParticleSet):
                 index = self.get_all_indices_in_store()[index]
                 for set in self._private.particle_sets:
                     length = len(set)
-                    if index < (offset+length):
+                    if index < (offset + length):
                         return set[index - offset]
                     offset += length
                 raise Exception('index not found on superset')
@@ -1611,7 +1576,7 @@ class ParticlesSuperset(AbstractParticleSet):
         else:
             return None
 
-    def _get_particle_unsave(self, key, index = -1):
+    def _get_particle_unsave(self, key, index=-1):
         if index >= 0:
             offset, subset = self._get_offset_and_subset_for_index(index)
             index -= offset
@@ -1620,9 +1585,8 @@ class ParticlesSuperset(AbstractParticleSet):
             return self._get_subset_for_key(key)._get_particle_unsave(key)
 
     def _split_keys_over_sets(self, keys):
-        split_sets = [ [] for x in self._private.particle_sets ]
-        split_indices = [ [] for x in self._private.particle_sets ]
-
+        split_sets = [[] for x in self._private.particle_sets]
+        split_indices = [[] for x in self._private.particle_sets]
 
         if keys is None:
             offset = 0
@@ -1641,23 +1605,22 @@ class ParticlesSuperset(AbstractParticleSet):
             indices_array = numpy.arange(len(keys_array))
             for setindex, x in enumerate(self._private.particle_sets):
                 mask = self._in1d(keys_array, x.get_all_keys_in_store(), True)
-                split_sets[setindex] =  keys_array[mask]
+                split_sets[setindex] = keys_array[mask]
                 split_indices[setindex] = indices_array[mask]
 
         return split_sets, split_indices
 
-
     def _split_indices_over_sets(self, indices):
         self._ensure_updated_set_properties()
 
-        split_sets = [ [] for x in self._private.particle_sets ]
-        split_indices = [ [] for x in self._private.particle_sets ]
+        split_sets = [[] for x in self._private.particle_sets]
+        split_indices = [[] for x in self._private.particle_sets]
 
         offset = 0
         if isinstance(indices, set):
             indices = numpy.array(list(indices))
 
-        if indices is None or isinstance(indices,EllipsisType):
+        if indices is None or isinstance(indices, EllipsisType):
             offset = 0
 
             for setindex, x in enumerate(self._private.particle_sets):
@@ -1671,19 +1634,17 @@ class ParticlesSuperset(AbstractParticleSet):
         else:
             result_indices_array = numpy.arange(len(indices))
             for setindex, x in enumerate(self._private.particle_sets):
-                mask = numpy.logical_and( (indices >= offset) , (indices < (offset + len(x))) )
+                mask = numpy.logical_and((indices >= offset), (indices < (offset + len(x))))
                 indices_in_store = numpy.asarray(x.get_all_indices_in_store())
-                split_sets[setindex] = indices_in_store[(indices-offset)[mask]]
+                split_sets[setindex] = indices_in_store[(indices - offset)[mask]]
                 split_indices[setindex] = result_indices_array[mask]
                 offset = offset + len(x)
         return split_sets, split_indices
 
-
-
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         if not self._private.index_to_default_set is None:
             self._private.particle_sets[self._private.index_to_default_set].add_particles_to_store(keys,
-                attributes, values)
+                                                                                                   attributes, values)
         else:
             raise exceptions.AmuseException("Cannot add particles to a superset")
 
@@ -1696,7 +1657,6 @@ class ParticlesSuperset(AbstractParticleSet):
 
             set.remove_particles_from_store(indices_in_subset)
 
-
     def get_values_in_store(self, indices, attributes):
         split_indices_in_subset, split_indices_in_input = self._split_indices_over_sets(indices)
 
@@ -1705,7 +1665,7 @@ class ParticlesSuperset(AbstractParticleSet):
         for indices_in_subset, indices_in_input, set in zip(split_indices_in_subset, split_indices_in_input, self._private.particle_sets):
             if len(indices_in_subset) > 0:
                 values_for_set = set.get_values_in_store(indices_in_subset, attributes)
-                indices_and_values.append( (indices_in_input, values_for_set) )
+                indices_and_values.append((indices_in_input, values_for_set))
 
         if indices is None or isinstance(indices, EllipsisType):
             resultlength = len(self)
@@ -1714,14 +1674,14 @@ class ParticlesSuperset(AbstractParticleSet):
 
         values = [[]] * len(attributes)
         units = [None] * len(attributes)
-        converts = [lambda x : x] * len(attributes)
+        converts = [lambda x: x] * len(attributes)
         for indices, values_for_set in indices_and_values:
             for valueindex, quantity in enumerate(values_for_set):
                 resultvalue = values[valueindex]
                 if len(resultvalue) == 0:
                     if not is_quantity(quantity):
                         dtype = quantity.dtype
-                        converts[valueindex] = lambda x : x
+                        converts[valueindex] = lambda x: x
                         units[valueindex] = None
                     else:
                         dtype = quantity.number.dtype
@@ -1729,7 +1689,7 @@ class ParticlesSuperset(AbstractParticleSet):
                         units[valueindex] = quantity.unit
                     shape = list(quantity.shape)
                     shape[0] = resultlength
-                    resultvalue = numpy.zeros(shape,dtype=dtype)
+                    resultvalue = numpy.zeros(shape, dtype=dtype)
                     values[valueindex] = resultvalue
 
                 resultunit = units[valueindex]
@@ -1739,11 +1699,11 @@ class ParticlesSuperset(AbstractParticleSet):
                     current_dtype = quantity.dtype
                     result_dtype = resultvalue.dtype
                     if (result_dtype.kind == 'S' or result_dtype.kind == 'U') and (current_dtype.itemsize > result_dtype.itemsize):
-                        resultvalue = numpy.asarray(resultvalue, dtype = current_dtype)
+                        resultvalue = numpy.asarray(resultvalue, dtype=current_dtype)
                         values[valueindex] = resultvalue
                     resultvalue[indices] = quantity
 
-        return map(lambda u,v : u(v), converts, values)
+        return map(lambda u, v: u(v), converts, values)
 
     def set_values_in_store(self, indices, attributes, values):
         split_indices_in_subset, split_indices_in_input = self._split_indices_over_sets(indices)
@@ -1758,17 +1718,17 @@ class ParticlesSuperset(AbstractParticleSet):
             for valueindex, quantity in enumerate(values):
                 if is_quantity(quantity):
                     if quantity.is_scalar():
-                        numbers = [quantity.number]*len(indices_in_input)
+                        numbers = [quantity.number] * len(indices_in_input)
                     elif quantity.is_vector() and len(quantity) < len_indices:
-                        numbers = numpy.take([quantity.number]*len_indices,indices_in_input)
+                        numbers = numpy.take([quantity.number] * len_indices, indices_in_input)
                     else:
                         numbers = numpy.take(quantity.number, indices_in_input)
                     quantities[valueindex] = quantity.unit.new_quantity(numbers)
                 else:
                     if not hasattr(quantity, 'ndim'):
-                        numbers = numpy.asarray([quantity]*len(indices_in_input))
+                        numbers = numpy.asarray([quantity] * len(indices_in_input))
                     elif len(quantity) < len_indices:
-                        numbers = numpy.take([quantity]*len_indices,indices_in_input)
+                        numbers = numpy.take([quantity] * len_indices, indices_in_input)
                     else:
                         numbers = numpy.take(quantity, indices_in_input)
                     quantities[valueindex] = numbers
@@ -1817,7 +1777,7 @@ class ParticlesSuperset(AbstractParticleSet):
 
     def get_indices_of_keys(self, keys):
         self._ensure_updated_set_properties()
-        
+
         mapping_from_particle_to_index = self._private.key_to_index
         result = []
         notfoundkeys = []
@@ -1828,22 +1788,20 @@ class ParticlesSuperset(AbstractParticleSet):
                 foundkeys.append(x)
             except KeyError:
                 notfoundkeys.append(x)
-        
+
         if not len(notfoundkeys) == 0:
             raise exceptions.KeysNotInStorageException(
-                numpy.asarray(foundkeys), 
-                numpy.asarray(result), 
+                numpy.asarray(foundkeys),
+                numpy.asarray(result),
                 numpy.asarray(notfoundkeys)
             )
         return numpy.array(result)
-
 
     def has_key_in_store(self, key):
         for set in self._private.particle_sets:
             if set.has_key_in_store(key):
                 return True
         return False
-
 
     def _original_set(self):
         return self
@@ -1858,7 +1816,7 @@ class ParticlesSuperset(AbstractParticleSet):
         offset = 0
         for set in self._private.particle_sets:
             setlen = len(set)
-            if index >= offset and index < (offset+setlen):
+            if index >= offset and index < (offset + setlen):
                 return offset, set
             offset += setlen
         return None, None
@@ -1874,12 +1832,12 @@ class ParticlesSuperset(AbstractParticleSet):
             ar1, rev_idx = numpy.unique(ar1, return_inverse=True)
             ar2 = numpy.unique(ar2)
 
-        ar = numpy.concatenate( (ar1, ar2) )
+        ar = numpy.concatenate((ar1, ar2))
         order = ar.argsort(kind='mergesort')
         sar = ar[order]
         equal_adj = (sar[1:] == sar[:-1])
-        flag = numpy.concatenate( (equal_adj, [False] ) )
-        index = order.argsort(kind='mergesort')[:len( ar1 )]
+        flag = numpy.concatenate((equal_adj, [False]))
+        index = order.argsort(kind='mergesort')[:len(ar1)]
 
         if assume_unique:
             return flag[index]
@@ -1895,13 +1853,14 @@ class ParticlesSuperset(AbstractParticleSet):
                 dtype = subsetkeys.dtype
             result.extend(subsetkeys)
 
-        return numpy.array(result, dtype = dtype)
+        return numpy.array(result, dtype=dtype)
 
     def get_subsets(self):
         return list(self._private.particle_sets)
 
     def get_subset(self, name):
         return self._private.mapping_from_name_to_set[name]
+
 
 class ParticlesSubset(AbstractParticleSet):
     """A subset of particles. Attribute values are not
@@ -1922,14 +1881,13 @@ class ParticlesSubset(AbstractParticleSet):
         self._private.version = -1
         self._private.indices = None
 
-
     def __getitem__(self, index):
         keys = self.get_all_keys_in_store()[index]
         if hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:
             key = keys
-            if key > 0 and key < 18446744073709551615L: #2**64 - 1
+            if key > 0 and key < 18446744073709551615L:  # 2**64 - 1
                 return self._private.particles._get_particle_unsave(key, self.get_all_indices_in_store()[index])
             else:
                 return None
@@ -1939,21 +1897,21 @@ class ParticlesSubset(AbstractParticleSet):
 
     def compressed(self):
         keys = self._private.keys
-        return self._subset(keys[numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)])
+        return self._subset(keys[numpy.logical_and(keys > 0, keys < 18446744073709551615L)])
 
     def get_valid_particles_mask(self):
         keys = self._private.keys
-        return numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)
+        return numpy.logical_and(keys > 0, keys < 18446744073709551615L)
 
     def unconverted_set(self):
         return ParticlesSubset(self._private.particles.unconverted_set(), self._private.keys)
 
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         """
         Adds particles from to the subset, also
         adds the particles to the superset
         """
-        self._private.keys = numpy.concatenate((self._private.keys,  numpy.array(keys,dtype='uint64')))
+        self._private.keys = numpy.concatenate((self._private.keys, numpy.array(keys, dtype='uint64')))
         self._private.set_of_keys |= set(keys)
         self._private.particles.add_particles_to_store(keys, attributes, values)
 
@@ -1972,13 +1930,12 @@ class ParticlesSubset(AbstractParticleSet):
                 index_in_local_list.append(index)
             index += 1
         set_to_remove = set(self._private.keys[index_in_local_list])
-        self._private.keys = numpy.delete(self._private.keys,index_in_local_list)
+        self._private.keys = numpy.delete(self._private.keys, index_in_local_list)
         self._private.set_of_keys -= set_to_remove
         self._private.particles.remove_particles_from_store(indices)
 
         self._private.version = -1
         self._private.indices = None
-
 
     def get_values_in_store(self, indices, attributes):
         if indices is None or indices is Ellipsis:
@@ -2012,7 +1969,7 @@ class ParticlesSubset(AbstractParticleSet):
 
     def get_all_keys_in_store(self):
         self._sync_with_set()
-            
+
         return self._private.keys
 
     def get_all_indices_in_store(self):
@@ -2031,9 +1988,9 @@ class ParticlesSubset(AbstractParticleSet):
 
     def get_indices_of_keys(self, keys):
         self._sync_with_set()
-        
+
         return self._private.particles.get_indices_of_keys(keys)
-        
+
     def _sync_with_set(self):
         if self._private.particles is None:
             return
@@ -2052,7 +2009,7 @@ class ParticlesSubset(AbstractParticleSet):
 
     def difference(self, other):
         self._sync_with_set()
-        
+
         new_set_of_keys = self._private.set_of_keys.difference(other.as_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
 
@@ -2079,7 +2036,7 @@ class ParticlesSubset(AbstractParticleSet):
     def as_set(self):
         return self
 
-    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+    def copy(self, memento=None, keep_structure=False, filter_attributes=lambda particle_set, x: True):
         self._sync_with_set()
         if keep_structure:
             result = ParticlesSubset(None, [])
@@ -2098,7 +2055,6 @@ class ParticlesSubset(AbstractParticleSet):
             return result
         else:
             return super(ParticlesSubset, self).copy(memento, keep_structure, filter_attributes)
-
 
 
 class ParticlesMaskedSubset(ParticlesSubset):
@@ -2130,7 +2086,7 @@ class ParticlesMaskedSubset(ParticlesSubset):
 
     def __iter__(self):
         original_set = self._original_set()
-        for key in self._private.keys :
+        for key in self._private.keys:
             if key is ma.masked:
                 yield None
             else:
@@ -2143,7 +2099,7 @@ class ParticlesMaskedSubset(ParticlesSubset):
             if numpy.all(~ keys.mask):
                 return self._subset(keys.data)
             else:
-                return ParticlesMaskedSubset(self._original_set(),keys)
+                return ParticlesMaskedSubset(self._original_set(), keys)
         else:
             key = keys
             if not key is ma.masked:
@@ -2157,24 +2113,21 @@ class ParticlesMaskedSubset(ParticlesSubset):
     def unconverted_set(self):
         return ParticlesMaskedSubset(self._private.particles.unconverted_set(), self._private.keys)
 
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         raise Exception("Cannot add particles to a masked subset")
 
     def remove_particles_from_store(self, keys):
         raise Exception("Cannot remove particles from a masked subset")
-
 
     def get_values_in_store(self, indices, attributes):
         if indices is None:
             indices = self.get_all_indices_in_store()
         return self._private.particles.get_values_in_store(indices, attributes)
 
-
         #subkeys = keys[~mask]
         #subvalues = self._private.particles.get_values_in_store(subkeys, attributes)
 
         #raise Exception("not implemented more of this")
-
 
     def set_values_in_store(self, indices, attributes, values):
         if indices is None:
@@ -2202,8 +2155,8 @@ class ParticlesMaskedSubset(ParticlesSubset):
             mask = self._private.keys.mask
             mask = ~mask
             indices = self._private.particles.get_indices_of_keys(self._private.keys[mask])
-            self._private.indices = -1 * numpy.ones(len(self._private.keys), dtype = indices.dtype)
-            self._private.indices = numpy.ma.array(self._private.indices, dtype = indices.dtype)
+            self._private.indices = -1 * numpy.ones(len(self._private.keys), dtype=indices.dtype)
+            self._private.indices = numpy.ma.array(self._private.indices, dtype=indices.dtype)
             self._private.indices.mask = self._private.keys.mask
             self._private.indices[mask] = indices
             self._private.version = self._private.particles._get_version()
@@ -2217,15 +2170,14 @@ class ParticlesMaskedSubset(ParticlesSubset):
         if len(keys) == 1:
             return self._private.particles.get_indices_of_keys(keys)
         keys = numpy.ma.array(keys, dtype='uint64')
-        result = -1 * numpy.ones(len(keys), dtype = numpy.int32)
+        result = -1 * numpy.ones(len(keys), dtype=numpy.int32)
         result[~keys.mask] = self._private.particles.get_indices_of_keys(keys[~keys.mask])
         return result
 
     def previous_state(self):
         return ParticlesMaskedSubset(self._private.particles.previous_state(), self._private.keys)
 
-
-    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+    def copy(self, memento=None, keep_structure=False, filter_attributes=lambda particle_set, x: True):
         attributes = self.get_attribute_names_defined_in_store()
         attributes = [x for x in attributes if filter_attributes(self, x)]
 
@@ -2246,9 +2198,7 @@ class ParticlesMaskedSubset(ParticlesSubset):
         result._private.collection_attributes = self._private.collection_attributes._copy_for_collection(result)
         return result
 
-
-
-    def copy_to_new_particles(self, keys = None, keys_generator = None, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+    def copy_to_new_particles(self, keys=None, keys_generator=None, memento=None, keep_structure=False, filter_attributes=lambda particle_set, x: True):
         if keys_generator is None:
             keys_generator = UniqueKeyGenerator
 
@@ -2322,12 +2272,12 @@ class ParticlesOverlay(AbstractParticleSet):
     [10.0, 20.0, 30.0] kg
     """
 
-    def __init__(self, particles, overlay_set = None):
+    def __init__(self, particles, overlay_set=None):
         AbstractParticleSet.__init__(self)
 
         self._private.base_set = particles
         if overlay_set is None:
-            overlay_set = Particles(keys = self._private.base_set.key)
+            overlay_set = Particles(keys=self._private.base_set.key)
         self._private.overlay_set = overlay_set
         self._private.base_version = self._private.base_set._get_version()
         object.__setattr__(self, "_derived_attributes", particles._derived_attributes)
@@ -2375,8 +2325,7 @@ class ParticlesOverlay(AbstractParticleSet):
         return len(self._private.overlay_set)
 
     def _get_version(self):
-        return self._private.overlay_set._get_version() +  self._private.base_set._get_version()
-
+        return self._private.overlay_set._get_version() + self._private.base_set._get_version()
 
     def __getitem__(self, index):
         self._ensure_updated_set_properties()
@@ -2395,7 +2344,7 @@ class ParticlesOverlay(AbstractParticleSet):
         attributes_inoverlay = []
         indices_inbase = []
         indices_inoverlay = []
-        for i,x in enumerate(attributes):
+        for i, x in enumerate(attributes):
             if x in inbase:
                 attributes_inbase.append(x)
                 indices_inbase.append(i)
@@ -2404,7 +2353,7 @@ class ParticlesOverlay(AbstractParticleSet):
                 indices_inoverlay.append(i)
         return (attributes_inbase, indices_inbase), (attributes_inoverlay, indices_inoverlay)
 
-    def _split_attributes_and_values(self, attributes, values, is_setter = True):
+    def _split_attributes_and_values(self, attributes, values, is_setter=True):
         if is_setter:
             inbase = set(self._private.base_set.get_settable_attribute_names_defined_in_store())
         else:
@@ -2413,7 +2362,7 @@ class ParticlesOverlay(AbstractParticleSet):
         attributes_inoverlay = []
         values_inbase = []
         values_inoverlay = []
-        for x,y in zip(attributes, values):
+        for x, y in zip(attributes, values):
             if x in inbase:
                 attributes_inbase.append(x)
                 values_inbase.append(y)
@@ -2422,15 +2371,13 @@ class ParticlesOverlay(AbstractParticleSet):
                 values_inoverlay.append(y)
         return (attributes_inbase, values_inbase), (attributes_inoverlay, values_inoverlay)
 
-
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         self._ensure_updated_set_properties()
 
         (
             (attributes_inbase, values_inbase),
             (attributes_inoverlay, values_inoverlay)
         ) = self._split_attributes_and_values(attributes, values)
-
 
         self._private.base_set.add_particles_to_store(keys, attributes_inbase, values_inbase)
         self._private.overlay_set.add_particles_to_store(keys, attributes_inoverlay, values_inoverlay)
@@ -2442,12 +2389,10 @@ class ParticlesOverlay(AbstractParticleSet):
 
         indices = numpy.asarray(indices)
 
-        self._private.base_set.remove_particles_from_store(indices[...,0])
-        self._private.overlay_set.remove_particles_from_store(indices[...,1])
+        self._private.base_set.remove_particles_from_store(indices[..., 0])
+        self._private.overlay_set.remove_particles_from_store(indices[..., 1])
 
         self._private.base_version = self._private.base_set._get_version()
-
-
 
     def get_values_in_store(self, indices, attributes):
         self._ensure_updated_set_properties()
@@ -2457,8 +2402,7 @@ class ParticlesOverlay(AbstractParticleSet):
             (attributes_inoverlay, indices_inoverlay)
         ) = self._split_attributes(attributes)
 
-
-        if indices is None or isinstance(indices,EllipsisType):
+        if indices is None or isinstance(indices, EllipsisType):
             indices0 = self._private.base_set.get_all_indices_in_store()
             indices1 = self._private.overlay_set.get_all_indices_in_store()
         else:
@@ -2491,7 +2435,6 @@ class ParticlesOverlay(AbstractParticleSet):
             (attributes_inoverlay, values_inoverlay)
         ) = self._split_attributes_and_values(attributes, values)
 
-
         if indices is None:
             indices0 = self._private.base_set.get_all_indices_in_store()
             indices1 = self._private.overlay_set.get_all_indices_in_store()
@@ -2508,7 +2451,6 @@ class ParticlesOverlay(AbstractParticleSet):
             self._private.base_set.set_values_in_store(indices0, attributes_inbase, values_inbase)
         if len(attributes_inoverlay) > 0:
             self._private.overlay_set.set_values_in_store(indices1, attributes_inoverlay, values_inoverlay)
-
 
     def get_attribute_names_defined_in_store(self):
         result = list(self._private.base_set.get_attribute_names_defined_in_store())
@@ -2548,8 +2490,7 @@ class ParticlesOverlay(AbstractParticleSet):
 
     def _original_set(self):
         return self
-    
-    
+
     def synchronize_to(self, other_particles):
         """
         Synchronize the particles of this set
@@ -2585,15 +2526,15 @@ class ParticlesOverlay(AbstractParticleSet):
         added_keys = numpy.asarray(list(my_keys - other_keys))
         removed_keys = other_keys - my_keys
         removed_keys = list(removed_keys)
-       
+
         if len(removed_keys) > 0:
             other_particles.remove_particles_from_store(other_particles.get_indices_of_keys(removed_keys))
-            
+
         if len(added_keys) > 0:
             added_indices = self.get_indices_of_keys(added_keys)
-                
+
             attributes = self.get_attribute_names_defined_in_store()
-            attributes= [x for x in attributes if x not in other_particles._derived_attributes]
+            attributes = [x for x in attributes if x not in other_particles._derived_attributes]
             values = self.get_values_in_store(added_indices, attributes)
             converted = []
             memento = {}
@@ -2616,7 +2557,6 @@ class ParticlesOverlay(AbstractParticleSet):
                 other_particles.add_particles_to_store(added_keys, attributes, converted)
 
 
-
 class ParticlesWithFilteredAttributes(AbstractParticleSet):
     """An overlaytof a particles set. The overlay
     filters attributes for the particles in the
@@ -2632,7 +2572,7 @@ class ParticlesWithFilteredAttributes(AbstractParticleSet):
     ['mass', 'radius']
     """
 
-    def __init__(self, particles, attributes_names, new_names = []):
+    def __init__(self, particles, attributes_names, new_names=[]):
         AbstractParticleSet.__init__(self)
 
         self._private.base_set = particles
@@ -2685,7 +2625,7 @@ class ParticlesWithFilteredAttributes(AbstractParticleSet):
         else:
             return Particle(keys, self)
 
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         attributes_inbase = self._convert_to_base_set(attributes)
         self._private.base_set.add_particles_to_store(keys, attributes_inbase, values)
 
@@ -2721,6 +2661,7 @@ class ParticlesWithFilteredAttributes(AbstractParticleSet):
 
     def _original_set(self):
         return self
+
 
 class ParticlesWithUnitsConverted(AbstractParticleSet):
     """
@@ -2770,7 +2711,6 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
             """
             return quantity
 
-
         def from_target_to_source(quantity):
             """
             Converts the quantity from the target units
@@ -2779,7 +2719,6 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
             :parameter quantity: quantity to convert
             """
             return quantity
-
 
     def __init__(self, particles, converter):
         AbstractParticleSet.__init__(self, particles)
@@ -2808,17 +2747,16 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         return self._private.particles._get_version()
 
     def shallow_copy(self):
-        copiedParticles =  self._private.particles.shallow_copy()
+        copiedParticles = self._private.particles.shallow_copy()
         return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
 
     def unconverted_set(self):
         return self._private.particles
 
-
     def can_extend_attributes(self):
         return self._private.particles.can_extend_attributes()
 
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         converted_values = []
         for quantity in values:
             converted_quantity = self._private.converter.from_source_to_target(quantity)
@@ -2902,7 +2840,6 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         return self._private.converter.generic_to_si
 
 
-
 class ParticlesWithAttributesTransformed(AbstractParticleSet):
     """
     A view on a particle sets. Some attributes are transformed
@@ -2950,8 +2887,6 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
             else:
                 return quantity
 
-
-
         return cls(
             particles,
             get_function,
@@ -2964,7 +2899,6 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
             self._private.get_function,
             self._private.set_function
         )
-
 
     def get_valid_particles_mask(self):
         return self._private.particles.get_valid_particles_mask()
@@ -2984,17 +2918,16 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
         return self._private.particles._get_version()
 
     def shallow_copy(self):
-        copiedParticles =  self._private.particles.shallow_copy()
+        copiedParticles = self._private.particles.shallow_copy()
         return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
 
     def unconverted_set(self):
         return self._private.particles
 
-
     def can_extend_attributes(self):
         return self._private.particles.can_extend_attributes()
 
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         converted_values = []
         for quantity in values:
             converted_quantity = self._private.converter.from_source_to_target(quantity)
@@ -3025,7 +2958,6 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
                 converted_quantity = self._private.get_function(attribute, quantity)
                 converted_values.append(converted_quantity)
         return converted_values
-
 
     def set_values_in_store(self, indices, attributes, values):
         converted_values = []
@@ -3080,8 +3012,6 @@ class ParticlesWithAttributesTransformed(AbstractParticleSet):
         return self._private.converter.generic_to_si
 
 
-
-
 class ParticleInformationChannel(object):
 
     def __init__(self, from_particles, to_particles, attributes=None, target_names=None):
@@ -3097,16 +3027,14 @@ class ParticleInformationChannel(object):
         if (
             (self.from_version == self.from_particles._get_version()) and
             (self.to_version == self.to_particles._get_version())
-           ):
+        ):
             return
-
 
         self.keys = self.intersecting_keys()
         self.from_indices = self.from_particles.get_indices_of_keys(self.keys)
         self.to_indices = self.to_particles.get_indices_of_keys(self.keys)
         self.from_version = self.from_particles._get_version()
         self.to_version = self.to_particles._get_version()
-
 
     def reverse(self):
         if self.target_names is None:
@@ -3126,9 +3054,9 @@ class ParticleInformationChannel(object):
     def intersecting_keys(self):
         from_keys = self.from_particles.get_all_keys_in_store()
         to_keys = self.to_particles.get_all_keys_in_store()
-        return numpy.intersect1d(from_keys,to_keys) #filter(lambda x : self.to_particles._has_key(x), from_keys)
+        return numpy.intersect1d(from_keys, to_keys)  # filter(lambda x : self.to_particles._has_key(x), from_keys)
 
-    def copy_attributes(self, attributes, target_names = None):
+    def copy_attributes(self, attributes, target_names=None):
         if target_names is None:
             target_names = attributes
 
@@ -3139,12 +3067,12 @@ class ParticleInformationChannel(object):
 
         if len(self.from_indices) == 0:
             return
-        
+
         if len(self.keys) == 0:
             return
-        
+
         values = self.from_particles.get_values_in_store(self.from_indices, attributes)
-        
+
         converted = []
         for x in values:
             if isinstance(x, LinkedArray):
@@ -3153,7 +3081,7 @@ class ParticleInformationChannel(object):
                 converted.append(x)
         self.to_particles.set_values_in_store(self.to_indices, target_names, converted)
 
-    def copy_attributes_async(self, attributes, target_names = None, async_get = True, async_set = False):
+    def copy_attributes_async(self, attributes, target_names=None, async_get=True, async_set=False):
 
         if target_names is None:
             target_names = attributes
@@ -3165,12 +3093,13 @@ class ParticleInformationChannel(object):
 
         if len(self.from_indices) == 0:
             return
-        
+
         if len(self.keys) == 0:
             return
-       
+
         if async_get:
             request = self.from_particles.get_values_in_store_async(self.from_indices, attributes)
+
             def result_handler(inner):
                 values = inner()
                 converted = []
@@ -3185,7 +3114,7 @@ class ParticleInformationChannel(object):
             return request
         elif async_set:
             values = self.from_particles.get_values_in_store(self.from_indices, attributes)
-            
+
             converted = []
             for x in values:
                 if isinstance(x, LinkedArray):
@@ -3194,10 +3123,6 @@ class ParticleInformationChannel(object):
                     converted.append(x)
             request = self.to_particles.set_values_in_store_async(self.to_indices, target_names, converted)
             return request
-
-
-
-
 
     def copy(self):
         if not self.attributes is None:
@@ -3211,7 +3136,6 @@ class ParticleInformationChannel(object):
         names_to_copy = self.from_particles.get_attribute_names_defined_in_store()
         self.copy_attributes(list(names_to_copy))
 
-
     def copy_overlapping_attributes(self):
         from_names = self.from_particles.get_attribute_names_defined_in_store()
         to_names = self.to_particles.get_settable_attribute_names_defined_in_store()
@@ -3219,8 +3143,7 @@ class ParticleInformationChannel(object):
 
         self.copy_attributes(list(names_to_copy))
 
-
-    def copy_attribute(self, name, target_name = None):
+    def copy_attribute(self, name, target_name=None):
         """ Copy the values of one attribute from the source set to the target set.
         The copied attribute can have a different name in the target set.
 
@@ -3246,12 +3169,12 @@ class ParticleInformationChannel(object):
             target_name = name
 
         self._reindex()
-        
+
         if len(self.keys) == 0:
             return
-            
-        data = self.from_particles.get_values_in_store(self.from_indices, [name,])
-        self.to_particles.set_values_in_store(self.to_indices, [target_name,], data)
+
+        data = self.from_particles.get_values_in_store(self.from_indices, [name, ])
+        self.to_particles.set_values_in_store(self.to_indices, [target_name, ], data)
 
     def transform_values(self, attributes, f):
         values = self.from_particles.get_values_in_store(self.from_indices, attributes)
@@ -3279,23 +3202,23 @@ class ParticleInformationChannel(object):
 
         """
         self._reindex()
-        
+
         if len(self.keys) == 0:
             return
 
         if function is None:
-            function=lambda *x : x
+            function = lambda *x: x
 
         if not self.to_particles.can_extend_attributes():
             target_attributes = self.to_particles.get_defined_settable_attribute_names()
             if not set(target).issubset(set(target_attributes)):
                 raise Exception("trying to set unsettable attributes {0}".format(
-                                list(set(target)-set(target_attributes))) )
-        converted=self.transform_values(source, function)
+                                list(set(target) - set(target_attributes))))
+        converted = self.transform_values(source, function)
         if len(converted) != len(target):
             raise Exception("function {0} returns {1} values while target attributes are {2} of length {3}".format(
                             function.__name__, len(converted), target, len(target)))
-        self.to_particles.set_values_in_store(self.to_indices, target, converted)        
+        self.to_particles.set_values_in_store(self.to_indices, target, converted)
 
 
 class Channels(object):
@@ -3308,11 +3231,11 @@ class Channels(object):
         self._channels.append(channel)
 
     def add_channels(self, channels):
-            if isinstance(channels, Channels):
-                self._channels += channels._channels
-            else:
-                for chan in iter(channels):
-                    self.add_channel(chan)
+        if isinstance(channels, Channels):
+            self._channels += channels._channels
+        else:
+            for chan in iter(channels):
+                self.add_channel(chan)
 
     def remove_channel(self, channel):
         self._channels.remove(channel)
@@ -3320,6 +3243,7 @@ class Channels(object):
     def copy(self):
         for channel in self._channels:
             channel.copy()
+
 
 class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
     """
@@ -3356,7 +3280,7 @@ class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
         return self._private.particles._get_version()
 
     def shallow_copy(self):
-        copiedParticles =  self._private.particles.shallow_copy()
+        copiedParticles = self._private.particles.shallow_copy()
         return ParticlesWithNamespacedAttributesView(
             copiedParticles,
             self._private.namespace
@@ -3368,7 +3292,7 @@ class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
     def can_extend_attributes(self):
         return self._private.particles.can_extend_attributes()
 
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         namespace = self._private.namespace
         namespaced_attributes = [namespace + '__' + x for x in attributes]
         self._private.particles.add_particles_to_store(keys, namespaced_attributes, values)
@@ -3381,7 +3305,6 @@ class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
         namespaced_attributes = [namespace + '__' + x for x in attributes]
         return self._private.particles.get_values_in_store(indices, namespaced_attributes)
 
-
     def set_values_in_store(self, indices, attributes, values):
         namespace = self._private.namespace
         namespaced_attributes = [namespace + '__' + x for x in attributes]
@@ -3389,14 +3312,13 @@ class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
 
     def get_attribute_names_defined_in_store(self):
         names = self._private.particles.get_attribute_names_defined_in_store()
-        namespace_prefix = self._private.namespace  + '__'
+        namespace_prefix = self._private.namespace + '__'
         len_namespace_prefix = len(namespace_prefix)
         return [x[len_namespace_prefix:] for x in names if x.startswith(namespace_prefix)]
 
-
     def get_settable_attribute_names_defined_in_store(self):
         names = self._private.particles.get_settable_attribute_names_defined_in_store()
-        namespace_prefix = self._private.namespace  + '__'
+        namespace_prefix = self._private.namespace + '__'
         len_namespace_prefix = len(namespace_prefix)
         return [x[len_namespace_prefix:] for x in names if x.startswith(namespace_prefix)]
 
@@ -3431,12 +3353,12 @@ class ParticlesWithNamespacedAttributesView(AbstractParticleSet):
         )
 
 
-
 class DomainAttribute(DerivedAttribute):
     """
     Combine multiple attributes into the same namespace
     """
-    def  __init__(self, name):
+
+    def __init__(self, name):
         self.name = name
 
     def get_values_for_entities(self, instance):
@@ -3460,10 +3382,9 @@ class DomainAttribute(DerivedAttribute):
         raise AttributeError('"{0}" is already defined as a namespace attribute, you cannot assign a value to it'.format(self.name))
 
 
-
-
 class Stars(Particles):
     pass
+
 
 class Particle(object):
     """A physical object or a physical region simulated as a
@@ -3483,25 +3404,26 @@ class Particle(object):
     # otherwhise it would go through the __getattr__ function
     # which will slow it down by a factor 3
     if compare_version_strings(numpy.__version__, '1.7.0') < 0:
-        __array_interface__ = {'shape':() }
+        __array_interface__ = {'shape': ()}
     else:
-        __array_interface__ = {'shape':(),'typestr':'|O4' }
+        __array_interface__ = {'shape': (), 'typestr': '|O4'}
 
     def __len__(self):
         raise AttributeError()
+
     def __iter__(self):
         raise AttributeError()
 
     __array_struct__ = UndefinedAttribute()
     __array__ = UndefinedAttribute()
 
-    def __init__(self, key = None, particles_set = None, set_index = None, set_version = -1, **keyword_arguments):
+    def __init__(self, key=None, particles_set=None, set_index=None, set_version=-1, **keyword_arguments):
         if particles_set is None:
             if key == None:
                 particles_set = Particles(1)
                 key = particles_set.get_all_keys_in_store()[0]
             else:
-                particles_set = Particles(1, keys = [key])
+                particles_set = Particles(1, keys=[key])
 
         object.__setattr__(self, "key", key)
         object.__setattr__(self, "particles_set", particles_set)
@@ -3522,7 +3444,6 @@ class Particle(object):
         object.__setattr__(self, "_set_index", None)
         object.__setattr__(self, "_set_version", None)
 
-
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
         if self._set_index is None or self._set_version != self.particles_set._get_version():
             object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
@@ -3534,7 +3455,6 @@ class Particle(object):
             new_value_for_the_attribute
         )
 
-
     def __getattr__(self, name_of_the_attribute):
         if self._set_index is None or self._set_version != self.particles_set._get_version():
             object.__setattr__(self, "_set_index", self.particles_set.get_indices_of_keys([self.key])[0])
@@ -3545,7 +3465,7 @@ class Particle(object):
             raise AttributeError("You tried to access attribute '{0}' but this attribute is not defined for this set.".format(name_of_the_attribute, ex))
 
     def children(self):
-        return self.particles_set.select(lambda x : x == self, ["parent"])
+        return self.particles_set.select(lambda x: x == self, ["parent"])
 
     def descendents(self):
         result = self.children()
@@ -3563,14 +3483,13 @@ class Particle(object):
 
         child.parent = self
 
-
     def copy(self):
         return self.particles_set.copy()._get_particle(self.key)
 
     def empty_copy(self):
         keys = [self.key]
         result = Particles()
-        result.add_particles_to_store(keys, [],[])
+        result.add_particles_to_store(keys, [], [])
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self.particles_set._derived_attributes))
         return result._get_particle(self.key)
 
@@ -3624,7 +3543,7 @@ class Particle(object):
         output = 'Particle('
         output += str(self.key)
         output += ', set=<{0}>'.format(id(self.particles_set))
-        
+
         for name, value in self.particles_set._values_of_particle(self._set_index):
             output += '\n    , '
             output += name
@@ -3641,8 +3560,6 @@ class Particle(object):
                 output += str(value)
         output += ')'
         return output
-
-
 
     def __dir__(self):
         result = []
@@ -3703,7 +3620,7 @@ class Particle(object):
         values = self.particles_set.get_values_in_store((self._set_index), attribute_names)
         updated_values = callback(*values)
         self.particles_set.set_values_in_store((self._set_index), attribute_names, updated_values)
-        
+
 
 def create_particle_set(**args):
     """
@@ -3715,24 +3632,22 @@ def create_particle_set(**args):
     >>> print len(particles)
     2
     """
-    if len(args)==0:
+    if len(args) == 0:
         raise Exception("provide quantities")
 
-    n=len(args.values()[0])
+    n = len(args.values()[0])
 
     for a in args:
-        nn=len(args[a])
-        if nn!=n:
+        nn = len(args[a])
+        if nn != n:
             raise Exception("unequal length quantities")
 
-    particles=Particles(n)
+    particles = Particles(n)
 
     for a in args:
-        setattr(particles,a,args[a])
+        setattr(particles, a, args[a])
 
     return particles
-
-
 
 
 class UpdatingParticlesSubset(AbstractParticleSet):
@@ -3749,12 +3664,11 @@ class UpdatingParticlesSubset(AbstractParticleSet):
         AbstractParticleSet.__init__(self, particles)
         self._private.particles = particles
         self._private.selection_function = selection_function
-        
+
         self._private.keys = []                     # numpy.array(keys, dtype='uint64')
         self._private.set_of_keys = set([])
         self._private.version = -1
         self._private.indices = None
-
 
     def __getitem__(self, index):
         keys = self.get_all_keys_in_store()[index]
@@ -3762,7 +3676,7 @@ class UpdatingParticlesSubset(AbstractParticleSet):
             return self._subset(keys)
         else:
             key = keys
-            if key > 0 and key < 18446744073709551615L: #2**64 - 1
+            if key > 0 and key < 18446744073709551615L:  # 2**64 - 1
                 return self._private.particles._get_particle_unsave(key, self.get_all_indices_in_store()[index])
             else:
                 return None
@@ -3770,25 +3684,20 @@ class UpdatingParticlesSubset(AbstractParticleSet):
     def _get_version(self):
         return self._private.particles._get_version()
 
-
-
     def compressed(self):
         self._sync_with_set()
         keys = self._private.keys
-        return self._subset(keys[numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)])
-
+        return self._subset(keys[numpy.logical_and(keys > 0, keys < 18446744073709551615L)])
 
     def get_valid_particles_mask(self):
         self._sync_with_set()
         keys = self._private.keys
-        return numpy.logical_and(keys > 0 ,  keys < 18446744073709551615L)
-
+        return numpy.logical_and(keys > 0, keys < 18446744073709551615L)
 
     def unconverted_set(self):
         return UpdatedParticlesSubset(self._private.particles.unconverted_set(), self._private.selection_function)
 
-
-    def add_particles_to_store(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes=[], values=[]):
         """
         Adds particles from to the subset, also
         adds the particles to the superset
@@ -3797,7 +3706,6 @@ class UpdatingParticlesSubset(AbstractParticleSet):
         self._private.set_of_keys = set([])
         self._private.version = -1
         self._private.particles.add_particles_to_store(keys, attributes, values)
-
 
     def remove_particles_from_store(self, indices):
         """
@@ -3821,14 +3729,11 @@ class UpdatingParticlesSubset(AbstractParticleSet):
         self._private.version = -1
         self._private.indices = None
 
-
-
     def get_values_in_store(self, indices, attributes):
         if indices is None:
             indices = self.get_all_indices_in_store()
 
         return self._private.particles.get_values_in_store(indices, attributes)
-
 
     def set_values_in_store(self, indices, attributes, values):
         if indices is None:
@@ -3844,7 +3749,7 @@ class UpdatingParticlesSubset(AbstractParticleSet):
 
     def get_all_keys_in_store(self):
         self._sync_with_set()
-            
+
         return self._private.keys
 
     def get_all_indices_in_store(self):
@@ -3856,7 +3761,6 @@ class UpdatingParticlesSubset(AbstractParticleSet):
         self._sync_with_set()
         return key in self._private.set_of_keys
 
-
     def _original_set(self):
         return self._private.particles
 
@@ -3865,9 +3769,9 @@ class UpdatingParticlesSubset(AbstractParticleSet):
 
     def get_indices_of_keys(self, keys):
         self._sync_with_set()
-        
+
         return self._private.particles.get_indices_of_keys(keys)
-        
+
     def _sync_with_set(self):
         if self._private.particles is None:
             return
@@ -3884,18 +3788,14 @@ class UpdatingParticlesSubset(AbstractParticleSet):
                 self._private.set_of_keys = set(self._private.keys)
                 self._private.version = self._private.particles._get_version()
 
-
-
     def previous_state(self):
         return ParticlesSubset(self._private.particles.previous_state(), self._private.selection_function)
 
-
     def difference(self, other):
         self._sync_with_set()
-        
+
         new_set_of_keys = self._private.set_of_keys.difference(other.as_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
-
 
     def union(self, other):
         """
@@ -3920,7 +3820,7 @@ class UpdatingParticlesSubset(AbstractParticleSet):
     def as_set(self):
         return self
 
-    def copy(self, memento = None, keep_structure = False, filter_attributes = lambda particle_set, x : True):
+    def copy(self, memento=None, keep_structure=False, filter_attributes=lambda particle_set, x: True):
         self._sync_with_set()
         if keep_structure:
             result = UpdatingParticlesSubset(None, self._private.seleciton_function)
@@ -3940,7 +3840,3 @@ class UpdatingParticlesSubset(AbstractParticleSet):
             return result
         else:
             return super(UpdatingParticlesSubset, self).copy(memento, keep_structure, filter_attributes)
-
-
-
-
