@@ -1,12 +1,12 @@
 
-#This is an auto generated file, do not change manually. Instead if you want to add constants
-#or change them, change the nist.txt file and run nist.py
+# This is an auto generated file, do not change manually. Instead if you want to add constants
+# or change them, change the nist.txt file and run nist.py
 
 import numpy
 from amuse.units.si import *
 from amuse.units.derivedsi import *
 
-#BASE UNITS***********************************************
+# BASE UNITS***********************************************
 X220X_lattice_spacing_of_silicon = 1.920155762e-10 | m
 alpha_particle_mass = 6.6446562e-27 | kg
 alpha_particle_mass_energy_equivalent = 5.97191917e-10 | J
@@ -104,103 +104,103 @@ triton_mass = 5.00735588e-27 | kg
 triton_mass_energy_equivalent = 4.50038703e-10 | J
 unified_atomic_mass_unit = 1.660538782e-27 | kg
 von_Klitzing_constant = 25812.807557 | ohm
-#DERIVED UNITS***********************************************
-alpha_particle_molar_mass = 0.00400150617913 | kg*mol**-1
+# DERIVED UNITS***********************************************
+alpha_particle_molar_mass = 0.00400150617913 | kg * mol**-1
 atomic_mass_unit_hyphen_inverse_meter_relationship = 7.513006671e+14 | m**-1
-atomic_unit_of_1st_hyperpolarizablity = 3.206361533e-53 | C**3*m**3*J**-2
-atomic_unit_of_2nd_hyperpolarizablity = 6.23538095e-65 | C**4*m**4*J**-3
-atomic_unit_of_action = 1.054571628e-34 | J*s
-atomic_unit_of_charge_density = 1.0812023e+12 | C*m**-3
-atomic_unit_of_electric_dipole_mom = 8.47835281e-30 | C*m
-atomic_unit_of_electric_field = 5.14220632e+11 | V*m**-1
-atomic_unit_of_electric_field_gradient = 9.71736166e+21 | V*m**-2
-atomic_unit_of_electric_polarizablity = 1.6487772536e-41 | C**2*m**2*J**-1
-atomic_unit_of_electric_quadrupole_mom = 4.48655107e-40 | C*m**2
-atomic_unit_of_mag_dipole_mom = 1.85480183e-23 | J*T**-1
-atomic_unit_of_magnetizability = 7.891036433e-29 | J*T**-2
-atomic_unit_of_momentum = 1.992851565e-24 | kg*m*s**-1
-atomic_unit_of_permittivity = 1.112650056e-10 | F*m**-1
-atomic_unit_of_velocity = 2187691.2541 | m*s**-1
+atomic_unit_of_1st_hyperpolarizablity = 3.206361533e-53 | C**3 * m**3 * J**-2
+atomic_unit_of_2nd_hyperpolarizablity = 6.23538095e-65 | C**4 * m**4 * J**-3
+atomic_unit_of_action = 1.054571628e-34 | J * s
+atomic_unit_of_charge_density = 1.0812023e+12 | C * m**-3
+atomic_unit_of_electric_dipole_mom = 8.47835281e-30 | C * m
+atomic_unit_of_electric_field = 5.14220632e+11 | V * m**-1
+atomic_unit_of_electric_field_gradient = 9.71736166e+21 | V * m**-2
+atomic_unit_of_electric_polarizablity = 1.6487772536e-41 | C**2 * m**2 * J**-1
+atomic_unit_of_electric_quadrupole_mom = 4.48655107e-40 | C * m**2
+atomic_unit_of_mag_dipole_mom = 1.85480183e-23 | J * T**-1
+atomic_unit_of_magnetizability = 7.891036433e-29 | J * T**-2
+atomic_unit_of_momentum = 1.992851565e-24 | kg * m * s**-1
+atomic_unit_of_permittivity = 1.112650056e-10 | F * m**-1
+atomic_unit_of_velocity = 2187691.2541 | m * s**-1
 Avogadro_constant = 6.02214179e+23 | mol**-1
-Bohr_magneton = 9.27400915e-24 | J*T**-1
-Bohr_magneton_in_Hz_div_T = 13996246040.0 | Hz*T**-1
-Bohr_magneton_in_inverse_meters_per_tesla = 46.6864515 | m**-1*T**-1
-Bohr_magneton_in_K_div_T = 0.6717131 | K*T**-1
-kB = 1.3806504e-23 | J*K**-1
-Boltzmann_constant_in_Hz_div_K = 20836644000.0 | Hz*K**-1
-Boltzmann_constant_in_inverse_meters_per_kelvin = 69.50356 | m**-1*K**-1
-conventional_value_of_Josephson_constant = 4.835979e+14 | Hz*V**-1
-deuteron_mag_mom = 4.33073465e-27 | J*T**-1
-deuteron_molar_mass = 0.00201355321272 | kg*mol**-1
-electric_constant = 8.854187817e-12 | F*m**-1
-electron_charge_to_mass_quotient = -1.75882015e+11 | C*kg**-1
-electron_gyromag_ratio = 1.76085977e+11 | s**-1*T**-1
-electron_gyromag_ratio_over_2_pi = 28024.95364 | MHz*T**-1
-electron_mag_mom = -9.28476377e-24 | J*T**-1
-electron_molar_mass = 5.4857990943e-07 | kg*mol**-1
+Bohr_magneton = 9.27400915e-24 | J * T**-1
+Bohr_magneton_in_Hz_div_T = 13996246040.0 | Hz * T**-1
+Bohr_magneton_in_inverse_meters_per_tesla = 46.6864515 | m**-1 * T**-1
+Bohr_magneton_in_K_div_T = 0.6717131 | K * T**-1
+kB = 1.3806504e-23 | J * K**-1
+Boltzmann_constant_in_Hz_div_K = 20836644000.0 | Hz * K**-1
+Boltzmann_constant_in_inverse_meters_per_kelvin = 69.50356 | m**-1 * K**-1
+conventional_value_of_Josephson_constant = 4.835979e+14 | Hz * V**-1
+deuteron_mag_mom = 4.33073465e-27 | J * T**-1
+deuteron_molar_mass = 0.00201355321272 | kg * mol**-1
+electric_constant = 8.854187817e-12 | F * m**-1
+electron_charge_to_mass_quotient = -1.75882015e+11 | C * kg**-1
+electron_gyromag_ratio = 1.76085977e+11 | s**-1 * T**-1
+electron_gyromag_ratio_over_2_pi = 28024.95364 | MHz * T**-1
+electron_mag_mom = -9.28476377e-24 | J * T**-1
+electron_molar_mass = 5.4857990943e-07 | kg * mol**-1
 electron_volt_hyphen_inverse_meter_relationship = 806554.465 | m**-1
-elementary_charge_over_h = 2.417989454e+14 | A*J**-1
-Faraday_constant = 96485.3399 | C*mol**-1
-first_radiation_constant = 3.74177118e-16 | W*m**2
-first_radiation_constant_for_spectral_radiance = 1.191042759e-16 | W*m**2*sr**-1
+elementary_charge_over_h = 2.417989454e+14 | A * J**-1
+Faraday_constant = 96485.3399 | C * mol**-1
+first_radiation_constant = 3.74177118e-16 | W * m**2
+first_radiation_constant_for_spectral_radiance = 1.191042759e-16 | W * m**2 * sr**-1
 hartree_hyphen_inverse_meter_relationship = 21947463.137 | m**-1
-helion_molar_mass = 0.0030149322473 | kg*mol**-1
+helion_molar_mass = 0.0030149322473 | kg * mol**-1
 hertz_hyphen_inverse_meter_relationship = 3.335640951e-09 | m**-1
-Josephson_constant = 4.83597891e+14 | Hz*V**-1
+Josephson_constant = 4.83597891e+14 | Hz * V**-1
 joule_hyphen_inverse_meter_relationship = 5.03411747e+24 | m**-1
 kelvin_hyphen_inverse_meter_relationship = 69.50356 | m**-1
 kilogram_hyphen_inverse_meter_relationship = 4.52443915e+41 | m**-1
 Loschmidt_constant_X27315_K_and__101325_kPaX = 2.6867774e+25 | m**-3
-mag_constant = 1.2566370614e-06 | N*A**-2
-molar_gas_constant = 8.314472 | J*mol**-1*K**-1
-molar_mass_constant = 0.001 | kg*mol**-1
-molar_mass_of_carbon_hyphen_12 = 0.012 | kg*mol**-1
-molar_Planck_constant = 3.9903126821e-10 | J*s*mol**-1
-molar_Planck_constant_times_c = 0.11962656472 | J*m*mol**-1
-molar_volume_of_ideal_gas_X27315_K_and__100_kPaX = 0.022710981 | m**3*mol**-1
-molar_volume_of_ideal_gas_X27315_K_and__101325_kPaX = 0.022413996 | m**3*mol**-1
-molar_volume_of_silicon = 1.20588349e-05 | m**3*mol**-1
-muon_mag_mom = -4.49044786e-26 | J*T**-1
-muon_molar_mass = 0.0001134289256 | kg*mol**-1
-natural_unit_of_action = 1.054571628e-34 | J*s
-natural_unit_of_momentum = 2.73092406e-22 | kg*m*s**-1
-natural_unit_of_velocity = 299792458.0 | m*s**-1
-neutron_gyromag_ratio = 183247185.0 | s**-1*T**-1
-neutron_gyromag_ratio_over_2_pi = 29.1646954 | MHz*T**-1
-neutron_mag_mom = -9.6623641e-27 | J*T**-1
-neutron_molar_mass = 0.00100866491597 | kg*mol**-1
-G = 6.67428e-11 | m**3*kg**-1*s**-2
-nuclear_magneton = 5.05078324e-27 | J*T**-1
-nuclear_magneton_in_inverse_meters_per_tesla = 0.02542623616 | m**-1*T**-1
-nuclear_magneton_in_K_div_T = 0.00036582637 | K*T**-1
-nuclear_magneton_in_MHz_div_T = 7.62259384 | MHz*T**-1
-h = 6.62606896e-34 | J*s
-Planck_constant_over_2_pi = 1.054571628e-34 | J*s
-proton_charge_to_mass_quotient = 95788339.2 | C*kg**-1
-proton_gyromag_ratio = 267522209.9 | s**-1*T**-1
-proton_gyromag_ratio_over_2_pi = 42.5774821 | MHz*T**-1
-proton_mag_mom = 1.410606662e-26 | J*T**-1
-proton_molar_mass = 0.00100727646677 | kg*mol**-1
-quantum_of_circulation = 0.00036369475199 | m**2*s**-1
-quantum_of_circulation_times_2 = 0.000727389504 | m**2*s**-1
+mag_constant = 1.2566370614e-06 | N * A**-2
+molar_gas_constant = 8.314472 | J * mol**-1 * K**-1
+molar_mass_constant = 0.001 | kg * mol**-1
+molar_mass_of_carbon_hyphen_12 = 0.012 | kg * mol**-1
+molar_Planck_constant = 3.9903126821e-10 | J * s * mol**-1
+molar_Planck_constant_times_c = 0.11962656472 | J * m * mol**-1
+molar_volume_of_ideal_gas_X27315_K_and__100_kPaX = 0.022710981 | m**3 * mol**-1
+molar_volume_of_ideal_gas_X27315_K_and__101325_kPaX = 0.022413996 | m**3 * mol**-1
+molar_volume_of_silicon = 1.20588349e-05 | m**3 * mol**-1
+muon_mag_mom = -4.49044786e-26 | J * T**-1
+muon_molar_mass = 0.0001134289256 | kg * mol**-1
+natural_unit_of_action = 1.054571628e-34 | J * s
+natural_unit_of_momentum = 2.73092406e-22 | kg * m * s**-1
+natural_unit_of_velocity = 299792458.0 | m * s**-1
+neutron_gyromag_ratio = 183247185.0 | s**-1 * T**-1
+neutron_gyromag_ratio_over_2_pi = 29.1646954 | MHz * T**-1
+neutron_mag_mom = -9.6623641e-27 | J * T**-1
+neutron_molar_mass = 0.00100866491597 | kg * mol**-1
+G = 6.67428e-11 | m**3 * kg**-1 * s**-2
+nuclear_magneton = 5.05078324e-27 | J * T**-1
+nuclear_magneton_in_inverse_meters_per_tesla = 0.02542623616 | m**-1 * T**-1
+nuclear_magneton_in_K_div_T = 0.00036582637 | K * T**-1
+nuclear_magneton_in_MHz_div_T = 7.62259384 | MHz * T**-1
+h = 6.62606896e-34 | J * s
+Planck_constant_over_2_pi = 1.054571628e-34 | J * s
+proton_charge_to_mass_quotient = 95788339.2 | C * kg**-1
+proton_gyromag_ratio = 267522209.9 | s**-1 * T**-1
+proton_gyromag_ratio_over_2_pi = 42.5774821 | MHz * T**-1
+proton_mag_mom = 1.410606662e-26 | J * T**-1
+proton_molar_mass = 0.00100727646677 | kg * mol**-1
+quantum_of_circulation = 0.00036369475199 | m**2 * s**-1
+quantum_of_circulation_times_2 = 0.000727389504 | m**2 * s**-1
 Rydberg_constant = 10973731.5685 | m**-1
-second_radiation_constant = 0.014387752 | m*K
-shielded_helion_gyromag_ratio = 203789473.0 | s**-1*T**-1
-shielded_helion_gyromag_ratio_over_2_pi = 32.43410198 | MHz*T**-1
-shielded_helion_mag_mom = -1.074552982e-26 | J*T**-1
-shielded_proton_gyromag_ratio = 267515336.2 | s**-1*T**-1
-shielded_proton_gyromag_ratio_over_2_pi = 42.5763881 | MHz*T**-1
-shielded_proton_mag_mom = 1.410570419e-26 | J*T**-1
-c = 299792458.0 | m*s**-1
-standard_acceleration_of_gravity = 9.80665 | m*s**-2
-Stefan_hyphen_Boltzmann_constant = 5.6704e-08 | W*m**-2*K**-4
-tau_molar_mass = 0.00190768 | kg*mol**-1
+second_radiation_constant = 0.014387752 | m * K
+shielded_helion_gyromag_ratio = 203789473.0 | s**-1 * T**-1
+shielded_helion_gyromag_ratio_over_2_pi = 32.43410198 | MHz * T**-1
+shielded_helion_mag_mom = -1.074552982e-26 | J * T**-1
+shielded_proton_gyromag_ratio = 267515336.2 | s**-1 * T**-1
+shielded_proton_gyromag_ratio_over_2_pi = 42.5763881 | MHz * T**-1
+shielded_proton_mag_mom = 1.410570419e-26 | J * T**-1
+c = 299792458.0 | m * s**-1
+standard_acceleration_of_gravity = 9.80665 | m * s**-2
+Stefan_hyphen_Boltzmann_constant = 5.6704e-08 | W * m**-2 * K**-4
+tau_molar_mass = 0.00190768 | kg * mol**-1
 Thomson_cross_section = 6.652458558e-29 | m**2
-triton_mag_mom = 1.504609361e-26 | J*T**-1
-triton_molar_mass = 0.0030155007134 | kg*mol**-1
-Wien_frequency_displacement_law_constant = 58789330000.0 | Hz*K**-1
-Wien_wavelength_displacement_law_constant = 0.0028977685 | m*K
-#RATIOS ***********************************************
+triton_mag_mom = 1.504609361e-26 | J * T**-1
+triton_molar_mass = 0.0030155007134 | kg * mol**-1
+Wien_frequency_displacement_law_constant = 58789330000.0 | Hz * K**-1
+Wien_wavelength_displacement_law_constant = 0.0028977685 | m * K
+# RATIOS ***********************************************
 alpha_particle_hyphen_electron_mass_ratio = 7294.2995365 | none
 alpha_particle_hyphen_proton_mass_ratio = 3.97259968951 | none
 deuteron_hyphen_electron_mag_mom_ratio = -0.0004664345537 | none
@@ -280,17 +280,17 @@ triton_hyphen_neutron_mag_mom_ratio = -1.55718553 | none
 triton_hyphen_proton_mag_mom_ratio = 1.066639908 | none
 triton_hyphen_proton_mass_ratio = 2.9937170309 | none
 weak_mixing_angle = 0.22255 | none
-#DERIVED CONSTANTS***********************************************
+# DERIVED CONSTANTS***********************************************
 pi = numpy.pi
 hbar = h / (2.0 * numpy.pi)
 four_pi_stefan_boltzmann = 4.0 * numpy.pi * Stefan_hyphen_Boltzmann_constant
-mu0 = 4 * numpy.pi * 1.e-7 | N/A**2
+mu0 = 4 * numpy.pi * 1.e-7 | N / A**2
 eps0 = mu0**-1 * c**-2
 sidereal_day = 86164.100352 | s
-#machine constants
+# machine constants
 eps = numpy.finfo(numpy.double).eps
-precision = int(numpy.log10(2/eps))
-#DROPPED UNITS***********************************************
+precision = int(numpy.log10(2 / eps))
+# DROPPED UNITS***********************************************
 """alpha_particle_mass_energy_equivalent_in_MeV = 3727.379109 | MeV
 alpha_particle_mass_in_u = 4.00150617913 | u
 atomic_mass_constant_energy_equivalent_in_MeV = 931.494028 | MeV
