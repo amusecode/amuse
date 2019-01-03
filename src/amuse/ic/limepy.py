@@ -34,8 +34,6 @@ class Limepy(LiteratureReferencesMixIn):
         self.model = limepy(*args, **kwargs)
         self.kwargs = kwargs
 
-
-
     @property
     def result(self):
         stars = sample(self.model, **self.kwargs)
