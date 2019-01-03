@@ -6,6 +6,7 @@ from amuse.plot import plot, scatter
 from prepare_figure import single_frame, figure_frame, set_tickmarks
 from distinct_colours import get_distinct
 
+
 def stellar_density_profile_at_time(mass, time):
     stellar = MESA()
     stellar.parameters.metallicity = 0.02
@@ -20,8 +21,9 @@ def stellar_density_profile_at_time(mass, time):
 
     return m, L, rho
 
+
 if __name__ == "__main__":
-    
+
     x_label = "L [LSun]"
     y_label = "density [$g/cm^{3}$]"
     figure = single_frame(x_label, y_label, logx=True, logy=True,
@@ -40,23 +42,23 @@ if __name__ == "__main__":
     symbol = ['v', 'v', 'o', 'o', '^', '^']
     i = 0
     for imass in range(len(mass)):
-        dm = 0.2*mass[imass]
+        dm = 0.2 * mass[imass]
         time = age[imass]
         m, L, rho = stellar_density_profile_at_time(mass[imass], time)
         pyplot.plot(L.value_in(units.LSun),
-                    rho.value_in(units.g/units.cm**3),
+                    rho.value_in(units.g / units.cm**3),
                     lw=4, c=color[imass], label='$10M_\odot$', ls=ls[imass])
         mlim = dm
         for mi in range(len(m)):
-            if m[mi]>mlim:
+            if m[mi] > mlim:
                 mlim += dm
                 print mi, len(L), len(rho)
                 pyplot.scatter(L[mi].value_in(units.LSun),
-                               rho[mi].value_in(units.g/units.cm**3),
+                               rho[mi].value_in(units.g / units.cm**3),
                                c=color[imass], s=150, marker=symbol[imass],
                                lw=0)
         pyplot.scatter(L[-1].value_in(units.LSun),
-                       rho[-1].value_in(units.g/units.cm**3),
+                       rho[-1].value_in(units.g / units.cm**3),
                        c=color[imass], s=150, marker=symbol[imass], lw=0)
 
     pyplot.xlabel(x_label)
@@ -64,5 +66,5 @@ if __name__ == "__main__":
 
     save_file = 'fig_1_5_10_MSun_stellar_core_luminosity'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print '\nSaved figure in file', save_file, '\n'
     pyplot.show()

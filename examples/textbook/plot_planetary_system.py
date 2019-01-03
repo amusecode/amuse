@@ -18,25 +18,26 @@ from amuse.units.optparse import OptionParser
 from time import sleep
 from amuse.ext.orbital_elements import orbital_elements_from_binary
 
+
 def plot_single_image(planets, disk, lim, index):
 
-    #centered on the Sun
+    # centered on the Sun
     com = planets[0].position
     planets.position -= com
     disk.position -= com
-    
+
     left, width = 0.1, 0.65
     bottom, height = 0.1, 0.65
-    bottom_h = left_h = left+width+0.05
+    bottom_h = left_h = left + width + 0.05
     rect_scatter = [left, bottom, width, height]
     rect_histx = [left, bottom_h, width, 0.2]
     rect_histy = [left_h, bottom, 0.2, height]
 
-    fig = pyplot.figure(figsize=(12,12))	
+    fig = pyplot.figure(figsize=(12, 12))
     time = disk.get_timestamp()
     # pyplot.title("Cluster at t="+str(time.in_(units.Gyr)))
     xy = pyplot.axes(rect_scatter)
-    xy.text(110,110, "protoplanetary disk (img#"+str(index)+")",
+    xy.text(110, 110, "protoplanetary disk (img#" + str(index) + ")",
             ha='left', va='bottom')
     xz = pyplot.axes(rect_histx)
     yz = pyplot.axes(rect_histy)
@@ -50,7 +51,7 @@ def plot_single_image(planets, disk, lim, index):
               positions.z.value_in(units.AU)
 
     alpha = 0.01
-    us        = disk.u
+    us = disk.u
     u_min, u_max = min(us), max(us)
     print "u=", u_min, u_max
     log_u = numpy.log((us / u_min)) / numpy.log((u_max / u_min))
@@ -68,41 +69,42 @@ def plot_single_image(planets, disk, lim, index):
     green = clipped_log_p
     colors = numpy.transpose(numpy.array([red, green, blue]))
 
-    sizes = 2000*disk.h_smooth/disk.h_smooth.max()
-    xy.scatter(x, y, sizes, c=colors, edgecolors = "none", alpha = alpha)
-    xy.set_xlim( (-lim, lim) )
-    xy.set_ylim( (-lim, lim) )
-    sizes = 100*disk.h_smooth/disk.h_smooth.max()
-    xz.scatter(x, z, sizes, c=colors, edgecolors = "none", alpha = alpha)
-    yz.scatter(z, y, sizes, c=colors, edgecolors = "none", alpha = alpha)
-    xz.set_xlim( xy.get_xlim() )
-    yz.set_ylim( xy.get_xlim() )
-    yz.set_xlim( (-0.05*lim, 0.05*lim) )
-    xz.set_ylim( (-0.05*lim, 0.05*lim) )
+    sizes = 2000 * disk.h_smooth / disk.h_smooth.max()
+    xy.scatter(x, y, sizes, c=colors, edgecolors="none", alpha=alpha)
+    xy.set_xlim((-lim, lim))
+    xy.set_ylim((-lim, lim))
+    sizes = 100 * disk.h_smooth / disk.h_smooth.max()
+    xz.scatter(x, z, sizes, c=colors, edgecolors="none", alpha=alpha)
+    yz.scatter(z, y, sizes, c=colors, edgecolors="none", alpha=alpha)
+    xz.set_xlim(xy.get_xlim())
+    yz.set_ylim(xy.get_xlim())
+    yz.set_xlim((-0.05 * lim, 0.05 * lim))
+    xz.set_ylim((-0.05 * lim, 0.05 * lim))
 
     from distinct_colours import get_distinct
     c = get_distinct(len(planets))
 #    m = 1000 * planets.mass/planets.mass.max()
-    m = 100 * numpy.log10(1+planets.mass/planets.mass.min())
+    m = 100 * numpy.log10(1 + planets.mass / planets.mass.min())
     #m[0] = min(10*m[1:].max(), 30)
     xy.scatter(planets.x.value_in(units.AU), planets.y.value_in(units.AU),
-               s=m, c=c, lw=0) 
+               s=m, c=c, lw=0)
     xz.scatter(planets.x.value_in(units.AU), planets.z.value_in(units.AU),
-               s=m, c=c, lw=0) 
+               s=m, c=c, lw=0)
     yz.scatter(planets.z.value_in(units.AU), planets.y.value_in(units.AU),
-               s=m, c=c, lw=0) 
+               s=m, c=c, lw=0)
 
     filename = "planetary_system_i{0:04}.png".format(index)
     fig.savefig(filename)
 
-def XX_main(filename, lim=-1|units.AU, image_id=-1):
+
+def XX_main(filename, lim=-1 | units.AU, image_id=-1):
     if image_id < 0:
         pyplot.ion()
     star = read_set_from_file("earlysolarsystem.amuse", "amuse")
     planet = read_set_from_file("earlysolarsystem.amuse", "amuse")
     disk = read_set_from_file("earlysolarsystem.amuse", "amuse")
 
-    mc = read_set_from_file(filename, "hdf5") # particles
+    mc = read_set_from_file(filename, "hdf5")  # particles
     time = 0
     snapshot_id = 0
     for si, ssi in zip(mc.history, star.history):
@@ -115,9 +117,10 @@ def XX_main(filename, lim=-1|units.AU, image_id=-1):
         if image_id == snapshot_id:
             print "Stop plotting"
             break
-        if image_id<0:
+        if image_id < 0:
             pyplot.draw()
             pyplot.cla()
+
 
 def calculate_orbital_elements(star, planet):
     p = Particles()
@@ -127,17 +130,19 @@ def calculate_orbital_elements(star, planet):
         = orbital_elements_from_binary(p, G=constants.G)
     return a, e
 
-def main(filename, lim=-1|units.AU, image_id=-1):
+
+def main(filename, lim=-1 | units.AU, image_id=-1):
     if image_id < 0:
         output_multiple_images(lim)
     else:
         output_single_image(lim, image_id)
 
+
 def output_single_image(lim, snapshot_id):
     filename = "planetary_system_i{0:04}.amuse".format(snapshot_id)
     bodies = read_set_from_file(filename, "amuse")
     for bi in bodies.history:
-        if len(bi)<=20:
+        if len(bi) <= 20:
             planets = bi.copy()
             time = bi.get_timestamp()
             print "Orbits at t=", time, planets.semimajor_axis.in_(units.AU), \
@@ -148,6 +153,7 @@ def output_single_image(lim, snapshot_id):
             print "Snapshot=", snapshot_id, time
             plot_single_image(planets, disk, lim.value_in(units.AU),
                               snapshot_id)
+
 
 def output_multiple_images(lim):
     snapshot_id = 0
@@ -173,21 +179,23 @@ def output_multiple_images(lim):
                     break
         snapshot_id += 1
         filename = "planetary_system_i{0:04}.amuse".format(snapshot_id)
-            
+
+
 def new_option_parser():
     result = OptionParser()
-    result.add_option("-f", dest="filename", default = "hydro.hdf5",
+    result.add_option("-f", dest="filename", default="hydro.hdf5",
                       help="output filename [%default]")
-    result.add_option("-l", unit=units.AU, 
-                      dest="lim", type="float", default = 100|units.AU,
+    result.add_option("-l", unit=units.AU,
+                      dest="lim", type="float", default=100 | units.AU,
                       help="axis length [%default]")
-    result.add_option("-i", 
-                      dest="image_id", type="int", default = 281,
+    result.add_option("-i",
+                      dest="image_id", type="int", default=281,
                       help="image id [%default]")
     return result
 
+
 if __name__ in ('__main__', '__plot__'):
-    o, arguments  = new_option_parser().parse_args()
+    o, arguments = new_option_parser().parse_args()
     main(**o.__dict__)
 
 

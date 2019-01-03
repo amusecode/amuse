@@ -11,13 +11,14 @@ from distinct_colours import get_distinct
 
 default_options = dict()
 
+
 def evolve_single_star(mass, tend):
     star = Particles(1)
     star.mass = mass
     stellar_evolution = MESA()
     stellar_evolution.particles.add_particles(star)
     time = [] | units.Myr
-    stellar_type = [] 
+    stellar_type = []
     mass = [] | units.MSun
     radius = [] | units.RSun
     temperature = [] | units.K
@@ -37,7 +38,8 @@ def evolve_single_star(mass, tend):
 
     stellar_evolution.stop()
     return time, stellar_type, mass, radius, temperature, luminosity
-    
+
+
 def print_stars(stellar_evolution):
     print "Primary:   Time=", stellar_evolution.model_time.in_(units.Myr), \
         stellar_evolution.particles[0].mass.in_(units.MSun), \
@@ -51,6 +53,8 @@ def print_stars(stellar_evolution):
         stellar_evolution.particles[1].luminosity.in_(units.LSun)
 
 ###BOOKLISTSTART1###
+
+
 def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
     stars = Particles(2)
     stars.mass = [Mprim.value_in(units.MSun),
@@ -71,7 +75,7 @@ def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
 
 ###BOOKLISTSTART2###
     handler = CollisionHandler(merger_code,
-                               stellar_evolution_code = stellar_evolution)
+                               stellar_evolution_code=stellar_evolution)
     merger_product = handler.handle_collision(stellar_evolution.particles[0],
                                               stellar_evolution.particles[1])
     merged = stellar_evolution.particles[0]
@@ -84,7 +88,7 @@ def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
     radius = [] | units.RSun
     temperature = [] | units.K
     luminosity = [] | units.LSun
-    
+
 ###BOOKLISTSTART3###
     stellar_evolution.evolve_model(keep_synchronous=True)
     p = stellar_evolution.particles[0]
@@ -98,7 +102,7 @@ def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
         radius.append(p.radius)
         temperature.append(p.temperature)
         luminosity.append(p.luminosity)
-        
+
 ###BOOKLISTSTART4###
         print "Time=", stellar_evolution.model_time, p.stellar_type, \
             p.mass, p.radius, p.temperature.in_(units.K), \
@@ -111,38 +115,40 @@ def merge_two_stars_and_evolve(Mprim, Msec, tcoll, tend):
 
     return time, stellar_type, mass, radius, temperature, luminosity
 
+
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("--tcoll", unit=units.Myr,
                       dest="tcoll", type="float",
-                      default = 150|units.Myr,
+                      default=150 | units.Myr,
                       help="moment of collision [%default]")
     result.add_option("--tend", unit=units.Myr,
                       dest="tend", type="float",
-                      default = 2|units.Gyr,
+                      default=2 | units.Gyr,
                       help="evolution after the collision [%default]")
     result.add_option("-M", unit=units.MSun,
                       dest="Mprim", type="float",
-                      default = 3|units.MSun,
+                      default=3 | units.MSun,
                       help="Primary ZAMS mass [%default]")
     result.add_option("-m", unit=units.MSun,
                       dest="Msec", type="float",
-                      default = 1|units.MSun,
+                      default=1 | units.MSun,
                       help="Secondary ZAMS mass [%default]")
 
     return result
 
-if __name__ in ('__main__','__plot__'):
+
+if __name__ in ('__main__', '__plot__'):
 
     # High-level structure of merge_two_stars_and_evolve.py and
     # merge_two_stars_sph_evolve.py are designed to be identical.
-    
-    set_printing_strategy("custom", #nbody_converter = converter, 
-                          precision = 11, prefix = "", 
-                          separator = " [", suffix = "]")
 
-    o, arguments  = new_option_parser().parse_args()
+    set_printing_strategy("custom",  # nbody_converter = converter,
+                          precision=11, prefix="",
+                          separator=" [", suffix="]")
+
+    o, arguments = new_option_parser().parse_args()
     Mprim = o.Mprim
     Msec = o.Msec
     tend = o.tend
@@ -168,15 +174,15 @@ if __name__ in ('__main__','__plot__'):
                    c=color[1], s=150, marker='^',
                    edgecolor='k', zorder=2)
 
-    tms = 0 |units.Myr
+    tms = 0 | units.Myr
     for i in range(len(stp)):
         if stp[i] < 2 | units.stellar_type:
             tms = time[i]
-    if tms <= 1|units.Myr:
-        tms = 10|units.Myr
+    if tms <= 1 | units.Myr:
+        tms = 10 | units.Myr
     print "Main-sequence lifetime =", tms.in_(units.Myr)
-    
-    tcoll = 0.5*tms
+
+    tcoll = 0.5 * tms
     icoll = 0
     for i in range(len(stp)):
         if time[i] <= tcoll:
@@ -186,9 +192,9 @@ if __name__ in ('__main__','__plot__'):
                    c=color[2], s=150, marker='o',
                    edgecolor='k', zorder=2)
 
-    print "Evolve single star of mass", (Mprim+Msec).in_(units.MSun)
+    print "Evolve single star of mass", (Mprim + Msec).in_(units.MSun)
     time, stp, mass, radius, temperature, luminosity \
-        = evolve_single_star(Mprim+Msec, tend)
+        = evolve_single_star(Mprim + Msec, tend)
     pyplot.plot(temperature.value_in(units.K),
                 luminosity.value_in(units.LSun),
                 c=color[0], lw=2, zorder=1)
@@ -219,11 +225,11 @@ if __name__ in ('__main__','__plot__'):
                    luminosity[0].value_in(units.LSun),
                    c=color[3], s=150, marker='^',
                    edgecolor='k', zorder=2)
-    
+
     ax = pyplot.gca()
     ax.tick_params(axis='both', which='both', direction='in')
 
     save_file = 'merge_two_stars_and_evolve.pdf'
     pyplot.savefig(save_file)
-    print '\nSaved figure in file', save_file,'\n'
+    print '\nSaved figure in file', save_file, '\n'
     pyplot.show()

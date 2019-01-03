@@ -1,9 +1,11 @@
 from amuse.lab import *
 
 ###BOOKLISTSTART###
+
+
 def evolve_with_different_stellar_model():
     times = [10, 100, 1000] | units.Myr
-    stars = Particles(mass=[1, 2, 4]|units.MSun)
+    stars = Particles(mass=[1, 2, 4] | units.MSun)
     stellars = [SeBa(), MESA(), SSE()]
     channels = []
     for star, stellar in zip(stars, stellars):
@@ -19,9 +21,10 @@ def evolve_with_different_stellar_model():
         stellar.stop()
 ###BOOKLISTSTOP###
 
+
 def evolve_with_same_stellar_model():
     time = [10, 100, 1000] | units.Myr
-    stars = Particles(mass=[1, 2, 4]|units.MSun)
+    stars = Particles(mass=[1, 2, 4] | units.MSun)
     stellar = SeBa()
     stellar.particles.add_particles(stars)
     channel = stellar.particles.new_channel_to(stars)
@@ -33,8 +36,9 @@ def evolve_with_same_stellar_model():
           "\n\tmass=", stars.mass
     stellar.stop()
 
+
 if __name__ in ('__main__', '__plot__'):
     set_printing_strategy("custom",\
-        preferred_units = [units.MSun, units.RSun, units.Myr],\
-        precision = 6, prefix = "", separator = "[", suffix = "]")
+        preferred_units=[units.MSun, units.RSun, units.Myr],\
+        precision=6, prefix="", separator="[", suffix="]")
     evolve_with_same_stellar_model()

@@ -11,17 +11,23 @@ from amuse.couple import multiples
 
 ###BOOKLISTSTART1###
 SMALLN = None
+
+
 def init_smalln(converter):
     global SMALLN
     SMALLN = SmallN(convert_nbody=converter)
+
+
 def new_smalln():
     SMALLN.reset()
     return SMALLN
 ###BOOKLISTSTOP1###
 
+
 def stop_smalln():
     global SMALLN
     SMALLN.stop()
+
 
 def print_diagnostics(grav, E0=None):
 
@@ -38,40 +44,41 @@ def print_diagnostics(grav, E0=None):
     print '   ', Nmul, 'multiples,', 'total energy =', Emul
     E = ke + pe + Emul
     print '    uncorrected total energy =', E
-    
+
     # Apply known corrections.
-    
+
     Etid = grav.multiples_external_tidal_correction \
             + grav.multiples_internal_tidal_correction  # tidal error
-    Eerr = grav.multiples_integration_energy_error	# integration error
+    Eerr = grav.multiples_integration_energy_error  # integration error
 
     E -= Etid + Eerr
     print '    corrected total energy =', E
 
-    if E0 is not None: print '    relative energy error=', (E-E0)/E0
-    
+    if E0 is not None: print '    relative energy error=', (E - E0) / E0
+
     return E
 
 ###BOOKLISTSTART2###
+
+
 def integrate_system(N, t_end, seed=None):
 
-    total_mass = N|units.MSun
-    length = 1|units.parsec
+    total_mass = N | units.MSun
+    length = 1 | units.parsec
     converter = nbody_system.nbody_to_si(total_mass, length)
     gravity = ph4(convert_nbody=converter)
     gravity.initialize_code()
     gravity.parameters.set_defaults()
-    gravity.parameters.epsilon_squared = (0.0|units.parsec)**2
+    gravity.parameters.epsilon_squared = (0.0 | units.parsec)**2
 
     if seed is not None: numpy.random.seed(seed)
     stars = new_plummer_model(N, convert_nbody=converter)
-    stars.mass = total_mass/N
+    stars.mass = total_mass / N
     stars.scale_to_standard(convert_nbody=converter,
-                            smoothing_length_squared
-                             = gravity.parameters.epsilon_squared)
+                            smoothing_length_squared=gravity.parameters.epsilon_squared)
     id = numpy.arange(N)
-    stars.id = id+1
-    stars.radius = 0.5/N | units.parsec
+    stars.id = id + 1
+    stars.radius = 0.5 / N | units.parsec
 
     gravity.particles.add_particles(stars)
 
@@ -102,8 +109,8 @@ def integrate_system(N, t_end, seed=None):
     print 'multiples_code.wide_perturbation_limit =', \
         multiples_code.wide_perturbation_limit
 
-    time = numpy.sqrt(length**3/(constants.G*total_mass))
-    print '\ntime unit =', time.in_(units.Myr)    
+    time = numpy.sqrt(length**3 / (constants.G * total_mass))
+    print '\ntime unit =', time.in_(units.Myr)
 ###BOOKLISTSTART3###
 
     E0 = print_diagnostics(multiples_code)
@@ -114,7 +121,8 @@ def integrate_system(N, t_end, seed=None):
     gravity.stop()
     kep.stop()
     stop_smalln()
-    
+
+
 if __name__ in ('__main__'):
     N = 100
     t_end = 10.0 | units.Myr

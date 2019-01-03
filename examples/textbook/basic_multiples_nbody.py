@@ -10,17 +10,22 @@ from amuse.couple import multiples
 # and returns a small-N integrator.
 
 SMALLN = None
+
+
 def init_smalln():
     global SMALLN
     SMALLN = SmallN()
+
 
 def new_smalln():
     SMALLN.reset()
     return SMALLN
 
+
 def stop_smalln():
     global SMALLN
     SMALLN.stop()
+
 
 def print_diagnostics(grav, E0=None):
 
@@ -37,38 +42,38 @@ def print_diagnostics(grav, E0=None):
     print '   ', Nmul, 'multiples,', 'total energy =', Emul
     E = ke + pe + Emul
     print '    uncorrected total energy =', E
-    
+
     # Apply known corrections.
-    
+
     Etid = grav.multiples_external_tidal_correction \
             + grav.multiples_internal_tidal_correction  # tidal error
-    Eerr = grav.multiples_integration_energy_error	# integration error
+    Eerr = grav.multiples_integration_energy_error  # integration error
 
     E -= Etid + Eerr
     print '    corrected total energy =', E
 
-    if E0 is not None: print '    relative energy error=', (E-E0)/E0
-    
+    if E0 is not None: print '    relative energy error=', (E - E0) / E0
+
     return E
+
 
 def integrate_system(N, t_end, seed=None):
 
     gravity = ph4()
     gravity.initialize_code()
     gravity.parameters.set_defaults()
-    
+
     if seed is not None: numpy.random.seed(seed)
     stars = new_plummer_model(N)
-    stars.mass = 1./N | nbody_system.mass
-    stars.scale_to_standard(smoothing_length_squared
-                             = gravity.parameters.epsilon_squared)
+    stars.mass = 1. / N | nbody_system.mass
+    stars.scale_to_standard(smoothing_length_squared=gravity.parameters.epsilon_squared)
 
     id = numpy.arange(N)
-    stars.id = id+1
+    stars.id = id + 1
 
     # Set dynamical radii for encounters.
 
-    stars.radius = 0.5*stars.mass.number | nbody_system.length
+    stars.radius = 0.5 * stars.mass.number | nbody_system.length
 
     gravity.particles.add_particles(stars)
 
@@ -107,8 +112,9 @@ def integrate_system(N, t_end, seed=None):
     gravity.stop()
     kep.stop()
     stop_smalln()
-    
+
+
 if __name__ in ('__main__'):
     N = 100
     t_end = 10.0 | nbody_system.time
-    integrate_system(N, t_end) #, 42)
+    integrate_system(N, t_end)  # , 42)

@@ -13,10 +13,11 @@ from gravity_class import Gravity
 #from prepare_figure import single_frame, figure_frame, set_tickmarks
 #from distinct_colours import get_distinct
 
+
 def _plot_orbits(x, y, z):
     from matplotlib import pyplot, rc
-    fig = pyplot.figure(figsize=(14,14))
-    font = {'size' : 30}
+    fig = pyplot.figure(figsize=(14, 14))
+    font = {'size': 30}
     rc('font', **font)
     pyplot.figaspect(1.0)
     pyplot.scatter(x[0].value_in(units.AU), y[0].value_in(units.AU), 200, lw=0)
@@ -28,13 +29,14 @@ def _plot_orbits(x, y, z):
 #    pyplot.show()
     pyplot.savefig("SStars_1Jan2001_orbits")
 
+
 def plot_orbits(x, y, z):
     from matplotlib import pyplot, rc
-    fig = pyplot.figure(figsize=(14,14))
+    fig = pyplot.figure(figsize=(14, 14))
     ax = pyplot.gca()
-    ax.minorticks_on() # switch on the minor ticks
+    ax.minorticks_on()  # switch on the minor ticks
     ax.locator_params(nbins=3)
-    font = {'size' : 30}
+    font = {'size': 30}
     rc('font', **font)
     pyplot.figaspect(1.0)
     pyplot.scatter(x[0].value_in(units.AU), y[0].value_in(units.AU), 200, lw=0)
@@ -46,16 +48,17 @@ def plot_orbits(x, y, z):
 #    pyplot.show()
     pyplot.savefig("SStars_1Jan2001_orbits")
 
+
 def main(t_end=1, n_steps=1, filename=None):
 
-    black_hole, stars = initialize_sstars(2001|units.yr, S_name, S_a_arcsec, S_ecc, S_inc, S_omra, S_Omega, S_tperi, S_Period)
+    black_hole, stars = initialize_sstars(2001 | units.yr, S_name, S_a_arcsec, S_ecc, S_inc, S_omra, S_Omega, S_tperi, S_Period)
     print "N=", len(stars)
 
     gravity = Gravity(Mercury, [black_hole, stars])
     model_time = gravity.model_time
 
     model_time = 0 | units.Myr
-    dt_diag = t_end/float(n_steps)
+    dt_diag = t_end / float(n_steps)
     t_diag = model_time
     dt = dt_diag
     x = [] | units.AU
@@ -69,21 +72,23 @@ def main(t_end=1, n_steps=1, filename=None):
         z.append(gravity.particles.z)
 
     gravity.stop()
-    plot_orbits(x, y, z)    
+    plot_orbits(x, y, z)
+
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
-    result.add_option("-n", dest="n_steps", type="int", default = 100,
+    result.add_option("-n", dest="n_steps", type="int", default=100,
                       help="number of diagnostics time steps [10]")
-    result.add_option("-f", dest="filename", default = None,
+    result.add_option("-f", dest="filename", default=None,
                       help="write output filename")
     result.add_option("-t", unit=units.yr,
-                      dest="t_end", type="float", default = 500|units.yr,
+                      dest="t_end", type="float", default=500 | units.yr,
 #                      dest="t_end", type="float", default = 1678|units.yr,
                       help="end time of the simulation [%default]")
     return result
 
+
 if __name__ in ('__main__', '__plot__'):
-    o, arguments  = new_option_parser().parse_args()
+    o, arguments = new_option_parser().parse_args()
     main(**o.__dict__)

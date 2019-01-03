@@ -4,6 +4,7 @@ from amuse.lab import *
 from amuse.ext.galactics_model import new_galactics_model
 from prepare_figure import single_frame
 
+
 def make_plot(disk1, disk2, filename):
     x_label = "X [kpc]"
     y_label = "Y [kpc]"
@@ -19,8 +20,9 @@ def make_plot(disk1, disk2, filename):
                    c=c[1], alpha=1, s=1, lw=0)
     pyplot.savefig(filename)
 
+
 def make_galaxies(M_galaxy, R_galaxy, n_halo, n_bulge, n_disk):
-    converter=nbody_system.nbody_to_si(M_galaxy, R_galaxy)
+    converter = nbody_system.nbody_to_si(M_galaxy, R_galaxy)
     galaxy1 = new_galactics_model(n_halo,
                                   converter,
                                   #do_scale = True,
@@ -30,20 +32,21 @@ def make_galaxies(M_galaxy, R_galaxy, n_halo, n_bulge, n_disk):
     galaxy2.mass = galaxy1.mass
     galaxy2.position = galaxy1.position
     galaxy2.velocity = galaxy1.velocity
-    
-    galaxy1.rotate(0., numpy.pi/2, numpy.pi/4)
+
+    galaxy1.rotate(0., numpy.pi / 2, numpy.pi / 4)
     galaxy1.position += [100.0, 100, 0] | units.kpc
 #    galaxy1.velocity += [-3000.0, 0.0, -3000.0] | units.km/units.s
-    galaxy1.velocity += [-10.0, 0.0, -10.0] | units.km/units.s
+    galaxy1.velocity += [-10.0, 0.0, -10.0] | units.km / units.s
 
-    galaxy2.rotate(numpy.pi/4, numpy.pi/4, 0.0)
+    galaxy2.rotate(numpy.pi / 4, numpy.pi / 4, 0.0)
     galaxy2.position -= [100.0, 0, 0] | units.kpc
-    galaxy2.velocity -= [0.0, 0.0, 0] | units.km/units.s
+    galaxy2.velocity -= [0.0, 0.0, 0] | units.km / units.s
 
     return galaxy1, galaxy2, converter
 
+
 def simulate_merger(galaxy1, galaxy2, converter, n_halo, t_end):
-    converter = nbody_system.nbody_to_si(1.0e12|units.MSun, 100|units.kpc)
+    converter = nbody_system.nbody_to_si(1.0e12 | units.MSun, 100 | units.kpc)
     dynamics = Gadget2(converter, number_of_workers=4)
     dynamics.parameters.epsilon_squared = (100 | units.parsec)**2
     set1 = dynamics.particles.add_particles(galaxy1)
@@ -55,32 +58,34 @@ def simulate_merger(galaxy1, galaxy2, converter, n_halo, t_end):
     make_plot(disk1, disk2, "Galaxy_merger_t0Myr")
     dynamics.evolve_model(t_end)
     make_plot(disk1, disk2,
-              "Galaxy_merger_t"+str(t_end.value_in(units.Myr))+"Myr")
+              "Galaxy_merger_t" + str(t_end.value_in(units.Myr)) + "Myr")
 
     dynamics.stop()
+
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser
     result = OptionParser()
     result.add_option("-M", unit=units.MSun,
-                      dest="M_galaxy", default = 1.0e12 | units.MSun,
+                      dest="M_galaxy", default=1.0e12 | units.MSun,
                       help="Galaxy mass [%default]")
     result.add_option("-R", unit=units.kpc,
-                      dest="R_galaxy", default = 10 | units.kpc,
+                      dest="R_galaxy", default=10 | units.kpc,
                       help="Galaxy size [%default]")
-    result.add_option("--n_bulge", dest="n_bulge", default = 10000,
+    result.add_option("--n_bulge", dest="n_bulge", default=10000,
                       help="number of stars in the bulge [%default]")
-    result.add_option("--n_disk", dest="n_disk", default = 10000,
+    result.add_option("--n_disk", dest="n_disk", default=10000,
                       help="number of stars in the disk [%default]")
-    result.add_option("--n_halo", dest="n_halo", default = 20000,
+    result.add_option("--n_halo", dest="n_halo", default=20000,
                       help="number of stars in the halo [%default]")
     result.add_option("--t_end", unit=units.Myr,
-                      dest="t_end", default = 200|units.Myr,
+                      dest="t_end", default=200 | units.Myr,
                       help="End of the simulation [%default]")
     return result
 
+
 if __name__ == '__main__':
-    o, arguments  = new_option_parser().parse_args()
+    o, arguments = new_option_parser().parse_args()
     galaxy1, galaxy2, converter = make_galaxies(o.M_galaxy, o.R_galaxy,
                                                 o.n_halo, o.n_bulge, o.n_disk)
     simulate_merger(galaxy1, galaxy2, converter, o.n_halo, o.t_end)

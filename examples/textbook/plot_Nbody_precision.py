@@ -1,7 +1,8 @@
-from amuse.lab import * 
+from amuse.lab import *
 import numpy
 from distinct_colours import get_distinct
 from matplotlib import pyplot
+
 
 def energy_error_of_integrated_Nbody_system(code, particles,
                                             end_time, precision):
@@ -13,7 +14,7 @@ def energy_error_of_integrated_Nbody_system(code, particles,
     gravity.particles.add_particles(particles)
     channel_from_to_framework = gravity.particles.new_channel_to(particles)
 
-    E0 = gravity.particles.potential_energy(G=nbody_system.G) 
+    E0 = gravity.particles.potential_energy(G=nbody_system.G)
     E0 += gravity.particles.kinetic_energy()
     gravity.evolve_model(end_time)
     channel_from_to_framework.copy()
@@ -21,8 +22,9 @@ def energy_error_of_integrated_Nbody_system(code, particles,
                             + gravity.particles.kinetic_energy()
     gravity.stop()
 
-    de = (Et-E0)/E0
+    de = (Et - E0) / E0
     return de
+
 
 def get_dE(code, precision, t_end):
     dE = []
@@ -32,17 +34,18 @@ def get_dE(code, precision, t_end):
         dE.append(abs(dEi))
         print "integrated with precision=", pri, "dE/E=", dEi
     return dE
-    
-if __name__ in ('__main__','__plot__'):
+
+
+if __name__ in ('__main__', '__plot__'):
 
     numpy.random.seed(31415)
 
     particles = new_plummer_model(1000)
     precision = 10.**numpy.linspace(0., -3., 10)
 
-    t_end = 1.0| nbody_system.time
+    t_end = 1.0 | nbody_system.time
     cols = get_distinct(2)
-    
+
     print 'ph4'
     code = ph4
     dE = get_dE(code, precision, t_end)
@@ -57,8 +60,8 @@ if __name__ in ('__main__','__plot__'):
     t1 = 0.02
     ep = 4.e-5
     eb = 0.07
-    pyplot.plot([t0, t1], [ep, ep*(t1/t0)**4], c=cols[0], lw=2)
-    pyplot.plot([t0, t1], [eb, eb*(t1/t0)**2], c=cols[1], lw=2)
+    pyplot.plot([t0, t1], [ep, ep * (t1 / t0)**4], c=cols[0], lw=2)
+    pyplot.plot([t0, t1], [eb, eb * (t1 / t0)**2], c=cols[1], lw=2)
 
     pyplot.xlabel('time step parameter')
     pyplot.xlim(1.e-4, 3.)
@@ -72,4 +75,4 @@ if __name__ in ('__main__','__plot__'):
     print "\nOutput saved in", save_file
     pyplot.show()
 
-    
+

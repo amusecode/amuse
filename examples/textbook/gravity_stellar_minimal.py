@@ -1,6 +1,7 @@
 from amuse.lab import *
 from amuse.units.optparse import OptionParser
-    
+
+
 def main(N, t_end, W0, Rvir, Mmin, Mmax, z):
 
 ###BOOKLISTSTART1###
@@ -10,7 +11,7 @@ def main(N, t_end, W0, Rvir, Mmin, Mmax, z):
     bodies = new_king_model(N, W0, convert_nbody=converter)
     bodies.mass = masses
     bodies.scale_to_standard(convert_nbody=converter)
-    
+
     stellar = SSE()
     stellar.parameters.metallicity = z
     stellar.particles.add_particle(bodies)
@@ -29,7 +30,7 @@ def main(N, t_end, W0, Rvir, Mmin, Mmax, z):
 ###BOOKLISTSTOP1###
 
     filename = "bodies.hdf5"
-    
+
 ###BOOKLISTSTART2###
     Etot_init = gravity.kinetic_energy + gravity.potential_energy
     dE_gr = 0 | Etot_init.unit
@@ -37,9 +38,9 @@ def main(N, t_end, W0, Rvir, Mmin, Mmax, z):
     dt = stellar.particles.time_step.amin()
     while time < t_end:
 
-        dt = min(dt, t_end-time)
-        
-        stellar.evolve_model(time + dt/2)
+        dt = min(dt, t_end - time)
+
+        stellar.evolve_model(time + dt / 2)
         channel_from_stellar_to_gravity.copy()
 
         Etot_gr = gravity.kinetic_energy + gravity.potential_energy
@@ -54,45 +55,47 @@ def main(N, t_end, W0, Rvir, Mmin, Mmax, z):
         write_set_to_file(bodies, filename)
 ###BOOKLISTSTOP2###
 
-    Ekin = gravity.kinetic_energy 
+    Ekin = gravity.kinetic_energy
     Epot = gravity.potential_energy
     Etot = Ekin + Epot
-    dE = Etot_init-Etot
+    dE = Etot_init - Etot
     Mtot = bodies.mass.sum()
-    print "T=", time, 
-    print "M=", Mtot, "(dM[SE]=", Mtot/Mtot_init, ")",
-    print "E= ", Etot, "Q= ", Ekin/Epot,
-    print "dE/E=", (Etot_init-Etot)/Etot,
-    print "(dE[gr]/E=", dE_gr/Etot, ",", 
-    print "dE[se]/E=", (Etot_init-Etot-dE_gr)/Etot, ")"
+    print "T=", time,
+    print "M=", Mtot, "(dM[SE]=", Mtot / Mtot_init, ")",
+    print "E= ", Etot, "Q= ", Ekin / Epot,
+    print "dE/E=", (Etot_init - Etot) / Etot,
+    print "(dE[gr]/E=", dE_gr / Etot, ",",
+    print "dE[se]/E=", (Etot_init - Etot - dE_gr) / Etot, ")"
     Etot_init -= dE
 
     gravity.stop()
     stellar.stop()
-    
+
+
 def new_option_parser():
     result = OptionParser()
-    result.add_option("-N", dest="N", type="int",default = 100,
+    result.add_option("-N", dest="N", type="int", default=100,
                       help="number of stars [100]")
     result.add_option("-M", unit=units.MSun,
-                      dest="Mmax", type="float",default = 100 | units.MSun,
+                      dest="Mmax", type="float", default=100 | units.MSun,
                       help="maximal stellar mass [100] MSun")
     result.add_option("-m", unit=units.MSun,
-                      dest="Mmin", type="float",default = 0.1|units.MSun,
+                      dest="Mmin", type="float", default=0.1 | units.MSun,
                       help="minimal stellar mass [0.1] MSun")
     result.add_option("-R", unit=units.parsec,
-                      dest="Rvir", type="float",default = 1.0|units.parsec,
+                      dest="Rvir", type="float", default=1.0 | units.parsec,
                       help="cluser virial radius [1] in parsec")
     result.add_option("-t", unit=units.Myr,
-                      dest="t_end", type="float", default = 1.0|units.Myr,
+                      dest="t_end", type="float", default=1.0 | units.Myr,
                       help="end time of the simulation [1] Myr")
-    result.add_option("-W", dest="W0", type="float", default = 7.0,
+    result.add_option("-W", dest="W0", type="float", default=7.0,
                       help="structure parameter for King model [7]")
-    result.add_option("-z", dest="z", type="float", default = 0.02,
+    result.add_option("-z", dest="z", type="float", default=0.02,
                       help="metalicity [0.02]")
     return result
 
+
 if __name__ in ('__main__', '__plot__'):
-    o, arguments  = new_option_parser().parse_args()
+    o, arguments = new_option_parser().parse_args()
     main(**o.__dict__)
 

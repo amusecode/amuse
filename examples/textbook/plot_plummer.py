@@ -7,8 +7,9 @@ from matplotlib.pyplot import show, xlim, ylim, figure
 from amuse.plot import scatter, xlabel, ylabel
 from amuse.lab import new_plummer_model
 
-def main(N=10): 
-    figure(figsize=(5,5))
+
+def main(N=10):
+    figure(figsize=(5, 5))
     bodies = new_plummer_model(N)
     scatter(bodies.x, bodies.y)
     xlim(-1, 1)
@@ -17,7 +18,8 @@ def main(N=10):
     ylabel("Y")
     show()
 ###BOOKLISTSTOP###
-    
+
+
 def new_option_parser():
     from optparse import OptionParser
     result = OptionParser()
@@ -27,5 +29,5 @@ def new_option_parser():
 
 
 if __name__ in ('__main__', '__plot__'):
-    o, arguments  = new_option_parser().parse_args()
+    o, arguments = new_option_parser().parse_args()
     main(**o.__dict__)

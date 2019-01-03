@@ -12,17 +12,17 @@ import pickle
 
 try:
     amusedir = os.environ['AMUSE_DIR']
-    dir = amusedir+'/examples/textbook/'
+    dir = amusedir + '/examples/textbook/'
 except:
     print 'Environment variable AMUSE_DIR not set'
     dir = './'
 
-filename = dir+'Obs_Trapezium_disksizes.pkl'
+filename = dir + 'Obs_Trapezium_disksizes.pkl'
 filepointer = open(filename, 'r')
 (R_obs, yc_obs) = pickle.load(filepointer)
 filepointer.close()
 
-filename = dir+'Tr_N2000_R0.5pc_Q0.5_F1.6.pkl'
+filename = dir + 'Tr_N2000_R0.5pc_Q0.5_F1.6.pkl'
 filepointer = open(filename, 'r')
 (R_sim, yc_sim) = pickle.load(filepointer)
 filepointer.close()
@@ -40,11 +40,11 @@ x_label = 'R [$R_\odot$]'
 y_label = '$f_{<R}$'
 figure = single_frame(x_label, y_label, xsize=14, ysize=10)
 
-pyplot.plot(R_obs, 95*yc_obs, c=color[0])
-pyplot.plot(R_sim, 95*yc_sim, c=color[1], ls="--")
+pyplot.plot(R_obs, 95 * yc_obs, c=color[0])
+pyplot.plot(R_sim, 95 * yc_sim, c=color[1], ls="--")
 
 save_file = 'Tr_N2000_R05pc_Q05_F16_r1.png'
 pyplot.savefig(save_file)
-print '\nSaved figure in file', save_file,'\n'
+print '\nSaved figure in file', save_file, '\n'
 pyplot.show()
 

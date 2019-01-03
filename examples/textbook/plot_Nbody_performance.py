@@ -24,17 +24,19 @@ color = get_distinct(len(color))
 lstyles = ['-.', '-.', '-.', '-.', '--', '-', '-', '-', '-']
 lwidth = [2, 2, 4, 2, 4, 2, 2, 2, 4]
 
+
 def read_file(filename, column, keyword):
     x = []
     fptr = open(filename)
     lines = fptr.readlines()
     for line in lines:
         l = line.split()
-        if l[1]==keyword:
+        if l[1] == keyword:
             # print line
             x.append(float(line.split()[column]))
     fptr.close()
     return x
+
 
 def main(filename=None, lim=-1):
 
@@ -42,12 +44,12 @@ def main(filename=None, lim=-1):
 
     try:
         amusedir = os.environ['AMUSE_DIR']
-        dir = amusedir+'/examples/textbook/'
+        dir = amusedir + '/examples/textbook/'
     except:
         print 'Environment variable AMUSE_DIR not set'
         dir = './'
 
-    filename = dir+filename
+    filename = dir + filename
 
     from matplotlib import pyplot, rc
     x_label = "N"
@@ -56,9 +58,9 @@ def main(filename=None, lim=-1):
                           xsize=14, ysize=10)
 
     npp = [12, 512]
-    ntc = [1024, 2000*1024]
-    tpp = map(lambda x: 0.01*x*x, npp) 
-    ttc = map(lambda x: 1.e-6*(x*math.log(x)), ntc) 
+    ntc = [1024, 2000 * 1024]
+    tpp = map(lambda x: 0.01 * x * x, npp)
+    ttc = map(lambda x: 1.e-6 * (x * math.log(x)), ntc)
     pyplot.plot(npp, tpp, c='k', ls='-', lw=4)
     pyplot.plot(ntc, ttc, c='k', ls='-', lw=4)
     pyplot.text(12, 8, '$N^2$')
@@ -86,17 +88,19 @@ def main(filename=None, lim=-1):
 
     save_file = "Nbody_performance.png"
     pyplot.savefig(save_file)
-    print "\nSaved figure in file", save_file,'\n'
+    print "\nSaved figure in file", save_file, '\n'
     pyplot.show()
+
 
 def new_option_parser():
     result = OptionParser()
     result.add_option("-f", dest="filename", default='NbodyAMUSE.test',
                       help="output filename [NbodyAMUSE.test]")
-    result.add_option("-l", dest="lim", type="float", default = -1,
+    result.add_option("-l", dest="lim", type="float", default=-1,
                       help="boxsize")
     return result
 
+
 if __name__ in ('__main__', '__plot__'):
-    o, arguments  = new_option_parser().parse_args()
+    o, arguments = new_option_parser().parse_args()
     main(**o.__dict__)

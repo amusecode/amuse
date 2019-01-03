@@ -5,12 +5,14 @@ from amuse.lab import *
 from prepare_figure import *
 from distinct_colours import get_distinct
 
+
 def orbital_elements(primary, secondary):
     stellar_pair = Particles()
     stellar_pair.add_particle(primary)
     stellar_pair.add_particle(secondary)
     Johannes.initialize_from_particles(stellar_pair)
     return Johannes.get_elements()
+
 
 def read_and_process_file(filename):
     stars = read_set_from_file(filename, "hdf5")
@@ -25,14 +27,15 @@ def read_and_process_file(filename):
 
     Etot = Ek + Ep
     ENorm = Etot[0]
-    Etot = (Etot-ENorm)/ENorm
+    Etot = (Etot - ENorm) / ENorm
     return t, Etot
-    
+
+
 def main():
     colors = get_distinct(4)
     figure = pyplot.figure(figsize=(16, 12))
     ax = pyplot.gca()
-    ax.minorticks_on() # switch on the minor ticks
+    ax.minorticks_on()  # switch on the minor ticks
     ax.locator_params(nbins=3)
 
     x_label = "t [year]"
@@ -50,13 +53,14 @@ def main():
     t, E = read_and_process_file("SunAndEarthAndMoon_TBB.h5")
     pyplot.plot(t.value_in(units.yr), E, c=colors[1], label="Three-body bridge")
     #    pyplot.plot(t.value_in(units.year), E)
-    
+
     t, E = read_and_process_file("SunAndEarthAndMoon_TBBH.h5")
     pyplot.plot(t.value_in(units.yr), E, c=colors[2], label="Hierarchical bridge")
 
     pyplot.legend(loc=4, borderaxespad=0.)
     pyplot.savefig("fig_three_body_bridge")
     pyplot.show()
+
 
 if __name__ == '__main__':
     main()
