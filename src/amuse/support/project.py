@@ -6,6 +6,7 @@ import os.path
 import shutil
 import pickle
 
+
 def new_working_directory(script_filename=None, sub_directories=[]):
     """
     Call this function from your script to create a new directory and move 
@@ -26,9 +27,11 @@ def new_working_directory(script_filename=None, sub_directories=[]):
         shutil.copy(script_filename, new_directory)
     os.chdir(new_directory)
 
+
 def store_results_in_file(results, datafile):
     with open(datafile, 'wb') as outfile:
         pickle.dump(results, outfile)
+
 
 def load_results_from_file(datafile):
     with open(datafile, 'rb') as infile:
