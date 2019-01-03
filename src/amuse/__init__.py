@@ -27,10 +27,12 @@ or (directly from the terminal):
 """
 import numpy
 
+
 def numpy_fix():
     try:
-      numpy.set_printoptions(legacy='1.13')
+        numpy.set_printoptions(legacy='1.13')
     except TypeError:
-      pass
-      
+        pass
+
+
 numpy_fix()

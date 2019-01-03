@@ -68,7 +68,7 @@ from amuse.community.sphray.interface import SPHRay, SPHRayInterface
 
 from amuse.community.sse.interface import SSE, SSEInterface
 from amuse.community.bse.interface import BSE, BSEInterface
-from amuse.community.mosse.interface import MOSSE, MOSSEInterface                                                   
+from amuse.community.mosse.interface import MOSSE, MOSSEInterface
 from amuse.community.mobse.interface import MOBSE, MOBSEInterface
 from amuse.community.seba.interface import SeBa, SeBaInterface
 from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
@@ -97,10 +97,11 @@ from amuse.ic.kingmodel import new_king_model
 from amuse.ic.gasplummer import new_plummer_gas_model
 from amuse.ext.molecular_cloud import new_ism_cube
 
-def vector(value = [], unit = None):
+
+def vector(value=[], unit=None):
     if unit is None:
         if isinstance(value, core.unit):
-            return VectorQuantity([], unit = value)
+            return VectorQuantity([], unit=value)
         elif isinstance(value, ScalarQuantity):
             return value.as_vector_with_length(1)
         else:
@@ -112,5 +113,3 @@ def vector(value = [], unit = None):
             return value.as_vector_with_length(1)
         else:
             return VectorQuantity(value, unit)
-            
-
