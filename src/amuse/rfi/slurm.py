@@ -1,6 +1,5 @@
 
 
-
 def parse_slurm_tasks_per_node(string):
     per_node = string.split(',')
     result = []
@@ -11,26 +10,27 @@ def parse_slurm_tasks_per_node(string):
             nodes = parts[1]
         else:
             nodes = None
-            
+
         try:
             count = int(count)
         except:
-            count = 0 # unparsable number
+            count = 0  # unparsable number
         if nodes:
-            nodes = nodes[1:-1] # skip the 'x' character and the closing ')' character
+            nodes = nodes[1:-1]  # skip the 'x' character and the closing ')' character
             try:
                 nodes = int(nodes)
             except:
-                nodes = 1 # unparsable number, assume 1
+                nodes = 1  # unparsable number, assume 1
             for _ in range(nodes):
                 result.append(count)
         else:
             result.append(count)
     return result
-    
+
+
 def parse_slurm_nodelist(string):
     result = []
-    
+
     name_characters = []
     position = 0
     while position < len(string):
@@ -54,11 +54,12 @@ def parse_slurm_nodelist(string):
         result.append(name)
         name_characters = []
     return result
-    
+
+
 def parse_ids(string, position):
     result = []
-    end = string.index(']',position)
-    count_ranges = string[position+1:end]
+    end = string.index(']', position)
+    count_ranges = string[position + 1:end]
     for count_range in count_ranges.split(','):
         if '-' in count_range:
             from_id, to_id = count_range.split('-')
@@ -66,8 +67,9 @@ def parse_ids(string, position):
                 result.append(str(number));
         else:
             result.append(count_range)
-    return result, end+1
-        
+    return result, end + 1
+
+
 if __name__ == "__main__":
     print parse_slurm_tasks_per_node("10(x4),3")
     print parse_slurm_nodelist("tcn[595,597-598,600-606],tcn100")
