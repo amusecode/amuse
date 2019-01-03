@@ -92,7 +92,6 @@ from amuse import datamodel
 from amuse.support.exceptions import AmuseException
 
 
-
 class AbstractCalculateFieldForCodes(object):
     """
     Calculated gravity and potential fields using the particles
@@ -112,35 +111,35 @@ class AbstractCalculateFieldForCodes(object):
         should prevent the radius of the input codes from being used.
         """
         self.codes_to_calculate_field_for = input_codes
-        self.verbose=verbose
+        self.verbose = verbose
         if required_attributes is None:
             self.required_attributes = lambda p, attribute_name: True
         else:
             self.required_attributes = lambda p, attribute_name: attribute_name in required_attributes
 
-    def evolve_model(self,tend,timestep=None):
+    def evolve_model(self, tend, timestep=None):
         """
         """
 
-    def get_potential_at_point(self,radius,x,y,z):
+    def get_potential_at_point(self, radius, x, y, z):
         code = self._setup_code()
         try:
             for input_code in self.codes_to_calculate_field_for:
-                particles = input_code.particles.copy(filter_attributes = self.required_attributes)
+                particles = input_code.particles.copy(filter_attributes=self.required_attributes)
                 code.particles.add_particles(particles)
             code.commit_particles()
-            return code.get_potential_at_point(radius,x,y,z)
+            return code.get_potential_at_point(radius, x, y, z)
         finally:
             self._cleanup_code(code)
 
-    def get_gravity_at_point(self,radius,x,y,z):
+    def get_gravity_at_point(self, radius, x, y, z):
         code = self._setup_code()
         try:
             for input_code in self.codes_to_calculate_field_for:
-                particles = input_code.particles.copy(filter_attributes = self.required_attributes)
+                particles = input_code.particles.copy(filter_attributes=self.required_attributes)
                 code.particles.add_particles(particles)
             code.commit_particles()
-            return code.get_gravity_at_point(radius,x,y,z)
+            return code.get_gravity_at_point(radius, x, y, z)
         finally:
             self._cleanup_code(code)
 
@@ -168,6 +167,7 @@ class CalculateFieldForCodes(AbstractCalculateFieldForCodes):
     def _cleanup_code(self, code):
         code.stop()
 
+
 class CalculateFieldForCodesUsingReinitialize(AbstractCalculateFieldForCodes):
     """
     Calculated gravity and potential fields using the particles
@@ -184,6 +184,7 @@ class CalculateFieldForCodesUsingReinitialize(AbstractCalculateFieldForCodes):
 
     def _cleanup_code(self, code):
         code.reset()
+
 
 class CalculateFieldForCodesUsingRemove(AbstractCalculateFieldForCodes):
     """
@@ -209,17 +210,17 @@ class CalculateFieldForParticles(object):
     of particles can be from another code.
     """
 
-    def __init__(self, particles = None, gravity_constant = None,
-            softening_mode="shared", G = None):
+    def __init__(self, particles=None, gravity_constant=None,
+                 softening_mode="shared", G=None):
         if particles is None:
-            self.particles=datamodel.Particles()
+            self.particles = datamodel.Particles()
         else:
             self.particles = particles
         if gravity_constant is None:
             gravity_constant = G
         elif not G is None:
             raise Exception("both the parameter 'gravity_constant'({0}) and the parameter 'G'({1}) are given, please specify only one!".format(gravity_constant, G))
-            
+
         if gravity_constant is None:
             if len(particles) and hasattr(particles, 'mass'):
                 try:
@@ -242,19 +243,21 @@ class CalculateFieldForParticles(object):
 
     def _softening_lengths_squared_individual(self):
         return self.particles.radius**2
+
     def _softening_lengths_squared_h_smooth(self):
         return self.particles.h_smooth**2
+
     def _softening_lengths_squared_shared(self):
-        return self.smoothing_length_squared#.as_vector_with_length(len(self.particles))
+        return self.smoothing_length_squared  # .as_vector_with_length(len(self.particles))
 
     def cleanup_code(self):
         self.particles = datamodel.Particles()
 
-    def evolve_model(self,tend,timestep=None):
+    def evolve_model(self, tend, timestep=None):
         """
         """
 
-    def get_potential_at_point(self,radius,x,y,z):
+    def get_potential_at_point(self, radius, x, y, z):
         positions = self.particles.position
         result = quantities.AdaptingVectorQuantity()
 
@@ -268,8 +271,7 @@ class CalculateFieldForParticles(object):
             result.append(-self.gravity_constant * energy_of_this_particle)
         return result
 
-
-    def get_gravity_at_point(self,radius,x,y,z):
+    def get_gravity_at_point(self, radius, x, y, z):
         positions = self.particles.position
         m1 = self.particles.mass
         result_ax = quantities.AdaptingVectorQuantity()
@@ -280,11 +282,11 @@ class CalculateFieldForParticles(object):
             dy = y[i] - positions.y
             dz = z[i] - positions.z
             dr_squared = ((dx * dx) + (dy * dy) + (dz * dz) +
-                self._softening_lengths_squared() + radius[i]**2)
+                          self._softening_lengths_squared() + radius[i]**2)
 
-            ax = -self.gravity_constant * (m1*dx/dr_squared**1.5).sum()
-            ay = -self.gravity_constant * (m1*dy/dr_squared**1.5).sum()
-            az = -self.gravity_constant * (m1*dz/dr_squared**1.5).sum()
+            ax = -self.gravity_constant * (m1 * dx / dr_squared**1.5).sum()
+            ay = -self.gravity_constant * (m1 * dy / dr_squared**1.5).sum()
+            az = -self.gravity_constant * (m1 * dz / dr_squared**1.5).sum()
 
             result_ax.append(ax)
             result_ay.append(ay)
@@ -292,10 +294,7 @@ class CalculateFieldForParticles(object):
         return result_ax, result_ay, result_az
 
 
-
-
 class GravityCodeInField(object):
-
 
     def __init__(self, code, field_codes, do_sync=True, verbose=False, radius_is_eps=False, h_smooth_is_eps=False, zero_smoothing=False):
         """
@@ -309,9 +308,9 @@ class GravityCodeInField(object):
         else:
             self.time = quantities.zero
 
-        self.do_sync=do_sync
-        self.verbose=verbose
-        self.timestep=None
+        self.do_sync = do_sync
+        self.verbose = verbose
+        self.timestep = None
         self.radius_is_eps = radius_is_eps
         self.h_smooth_is_eps = h_smooth_is_eps
 
@@ -320,17 +319,16 @@ class GravityCodeInField(object):
             required_attributes.append('radius')
         elif self.h_smooth_is_eps:
             required_attributes.append('h_smooth')
-        self.required_attributes = lambda p, x : x in required_attributes
+        self.required_attributes = lambda p, x: x in required_attributes
 
-        if not hasattr(self.code,"parameters"):
-            self.zero_smoothing=True
-        elif not hasattr(self.code.parameters,"epsilon_squared"):
-            self.zero_smoothing=True
+        if not hasattr(self.code, "parameters"):
+            self.zero_smoothing = True
+        elif not hasattr(self.code.parameters, "epsilon_squared"):
+            self.zero_smoothing = True
         else:
-            self.zero_smoothing=zero_smoothing
+            self.zero_smoothing = zero_smoothing
 
-
-    def evolve_model(self,tend,timestep=None):
+    def evolve_model(self, tend, timestep=None):
         """
         evolve combined system to tend, timestep fixes timestep
         """
@@ -338,45 +336,43 @@ class GravityCodeInField(object):
         if timestep is None:
             timestep = self.timestep
 
-        first=True
-        while self.time < (tend-timestep/2.):
+        first = True
+        while self.time < (tend - timestep / 2.):
             if first:
-                self.kick(timestep/2.)
-                first=False
+                self.kick(timestep / 2.)
+                first = False
             else:
                 self.kick(timestep)
 
-            self.drift(self.time+timestep)
+            self.drift(self.time + timestep)
 
-            self.time+=timestep
+            self.time += timestep
 
         if not first:
-             self.kick(timestep/2.)
-
-
+            self.kick(timestep / 2.)
 
     def synchronize_model(self):
         """
         explicitly synchronize all components
         """
-        if hasattr(self.code,"synchronize_model"):
+        if hasattr(self.code, "synchronize_model"):
             if(self.verbose):
-                print self.code.__class__.__name__,"is synchronizing",
+                print self.code.__class__.__name__, "is synchronizing",
 
             self.code.synchronize_model()
 
             if(self.verbose):
                 print ".. done"
 
-    def get_potential_at_point(self,radius,x,y,z):
-        return self.code.get_potential_at_point(radius,x,y,z)
+    def get_potential_at_point(self, radius, x, y, z):
+        return self.code.get_potential_at_point(radius, x, y, z)
 
-    def get_gravity_at_point(self,radius,x,y,z):
-        return self.code.get_gravity_at_point(radius,x,y,z)
+    def get_gravity_at_point(self, radius, x, y, z):
+        return self.code.get_gravity_at_point(radius, x, y, z)
 
     @property
     def model_time(self):
-         return self.time
+        return self.time
 
     @property
     def potential_energy(self):
@@ -384,7 +380,7 @@ class GravityCodeInField(object):
             return quantities.zero
 
         result = self.code.potential_energy
-        particles = self.code.particles.copy(filter_attributes = self.required_attributes)
+        particles = self.code.particles.copy(filter_attributes=self.required_attributes)
 
         for y in self.field_codes:
             energy = self.get_potential_energy_in_field_code(particles, y)
@@ -397,7 +393,7 @@ class GravityCodeInField(object):
 
     @property
     def thermal_energy(self):
-        if hasattr(self.code,'thermal_energy'):
+        if hasattr(self.code, 'thermal_energy'):
             return self.code.thermal_energy
         else:
             return quantities.zero
@@ -421,13 +417,12 @@ class GravityCodeInField(object):
             raise AttributeError
 
     def drift(self, tend):
-        if not hasattr(self.code,"evolve_model"):
+        if not hasattr(self.code, "evolve_model"):
             return
         if (self.verbose):
             print self.code.__class__.__name__, "is evolving to", tend
 
         self.code.evolve_model(tend)
-
 
         if(self.verbose):
             print ".. done"
@@ -438,19 +433,19 @@ class GravityCodeInField(object):
             please do not try to optimize this, I know it is called every kick but
             only calculating it at the start causes an annoying bug in certain uses of the code.
         """
-        return len(self.code.particles)==0 or not (hasattr(self, 'particles') and 'vx' in self.particles.get_attribute_names_defined_in_store())
+        return len(self.code.particles) == 0 or not (hasattr(self, 'particles') and 'vx' in self.particles.get_attribute_names_defined_in_store())
 
     def kick(self, dt):
 
         if self.cannot_kick():
             return quantities.zero
 
-        particles = self.code.particles.copy(filter_attributes = self.required_attributes)
+        particles = self.code.particles.copy(filter_attributes=self.required_attributes)
         kinetic_energy_before = particles.kinetic_energy()
 
         for field_code in self.field_codes:
             if(self.verbose):
-                print self.code.__class__.__name__,"receives kick from",field_code.__class__.__name__,
+                print self.code.__class__.__name__, "receives kick from", field_code.__class__.__name__,
 
             self.kick_with_field_code(
                 particles,
@@ -461,12 +456,11 @@ class GravityCodeInField(object):
             if(self.verbose):
                 print ".. done"
 
-        channel=particles.new_channel_to(self.code.particles)
-        channel.copy_attributes(["vx","vy","vz"])
+        channel = particles.new_channel_to(self.code.particles)
+        channel.copy_attributes(["vx", "vy", "vz"])
 
         kinetic_energy_after = particles.kinetic_energy()
         return kinetic_energy_after - kinetic_energy_before
-
 
     def _softening_lengths(self, particles):
         if self.radius_is_eps:
@@ -474,21 +468,21 @@ class GravityCodeInField(object):
         elif self.h_smooth_is_eps:
             return particles.h_smooth
         elif self.zero_smoothing:
-            return 0.*particles.x
+            return 0. * particles.x
         else:
             return (self.code.parameters.epsilon_squared**0.5).as_vector_with_length(len(particles))
 
     def get_potential_energy_in_field_code(self, particles, field_code):
-        pot=field_code.get_potential_at_point(
+        pot = field_code.get_potential_at_point(
             self._softening_lengths(particles),
             particles.x,
             particles.y,
             particles.z
         )
-        return (pot*particles.mass).sum() / 2
+        return (pot * particles.mass).sum() / 2
 
     def kick_with_field_code(self, particles, field_code, dt):
-        ax,ay,az=field_code.get_gravity_at_point(
+        ax, ay, az = field_code.get_gravity_at_point(
             self._softening_lengths(particles),
             particles.x,
             particles.y,
@@ -496,7 +490,7 @@ class GravityCodeInField(object):
         )
         self.update_velocities(particles, dt, ax, ay, az)
 
-    def update_velocities(self,particles, dt,  ax, ay, az):
+    def update_velocities(self, particles, dt, ax, ay, az):
         particles.vx += dt * ax
         particles.vy += dt * ay
         particles.vz += dt * az
@@ -504,30 +498,31 @@ class GravityCodeInField(object):
     def stop(self):
         self.code.stop()
 
+
 class Bridge(object):
-    def __init__(self, timestep = None, verbose=False, use_threading=True,method=None):
+    def __init__(self, timestep=None, verbose=False, use_threading=True, method=None):
         """
         verbose indicates whether to output some run info
         """
-        self.codes=[]
-        self.time=quantities.zero
-        self.verbose=verbose
-        self.timestep=timestep
+        self.codes = []
+        self.time = quantities.zero
+        self.verbose = verbose
+        self.timestep = timestep
         self.kick_energy = quantities.zero
         self.use_threading = use_threading
         self.time_offsets = dict()
-        self.method=method
+        self.method = method
         self.channels = datamodel.Channels()
 
     def add_system(self, interface, partners=set(), do_sync=True,
-            radius_is_eps=False, h_smooth_is_eps=False, zero_smoothing=False):
+                   radius_is_eps=False, h_smooth_is_eps=False, zero_smoothing=False):
         """
         add a system to bridge integrator
         """
 
         if hasattr(interface, "particles"):
             code = GravityCodeInField(interface, partners, do_sync, self.verbose,
-                radius_is_eps, h_smooth_is_eps, zero_smoothing)
+                                      radius_is_eps, h_smooth_is_eps, zero_smoothing)
             self.add_code(code)
         else:
             if len(partners):
@@ -536,11 +531,10 @@ class Bridge(object):
 
     def add_code(self, code):
         self.codes.append(code)
-        if hasattr(code,"model_time"):
-            self.time_offsets[code]=(self.time-code.model_time)
+        if hasattr(code, "model_time"):
+            self.time_offsets[code] = (self.time - code.model_time)
         else:
-            self.time_offsets[code]=quantities.zero
-
+            self.time_offsets[code] = quantities.zero
 
     def evolve_model(self, tend, timestep=None):
         """
@@ -548,47 +542,46 @@ class Bridge(object):
         """
         if timestep is None:
             if self.timestep is None:
-                timestep=tend-self.time
+                timestep = tend - self.time
             else:
                 timestep = self.timestep
 
         if self.method is None:
-            return self.evolve_joined_leapfrog(tend,timestep)
+            return self.evolve_joined_leapfrog(tend, timestep)
         else:
-            return self.evolve_simple_steps(tend,timestep)
+            return self.evolve_simple_steps(tend, timestep)
 
-    def evolve_simple_steps(self,tend,timestep):
-        while self.time < (tend-timestep/2):
-            self._drift_time=self.time
-            self.method(self.kick_codes,self.drift_codes_dt, timestep)
+    def evolve_simple_steps(self, tend, timestep):
+        while self.time < (tend - timestep / 2):
+            self._drift_time = self.time
+            self.method(self.kick_codes, self.drift_codes_dt, timestep)
             self.channels.copy()
-            self.time=self.time+timestep
+            self.time = self.time + timestep
 
-    def evolve_joined_leapfrog(self,tend,timestep):
-        first=True
-        while self.time < (tend-timestep/2.):
+    def evolve_joined_leapfrog(self, tend, timestep):
+        first = True
+        while self.time < (tend - timestep / 2.):
             if first:
-                self.kick_codes(timestep/2.)
-                first=False
+                self.kick_codes(timestep / 2.)
+                first = False
             else:
                 self.kick_codes(timestep)
 
-            self.drift_codes(self.time+timestep)
+            self.drift_codes(self.time + timestep)
 
             self.channels.copy()
             self.time += timestep
 
         if not first:
-            self.kick_codes(timestep/2.)
-
+            self.kick_codes(timestep / 2.)
 
     def synchronize_model(self):
         """
         explicitly synchronize all components
         """
         for x in self.codes:
-            if hasattr(x,"synchronize_model"):
-                if(self.verbose): print x.__class__.__name__,"is synchronizing",
+            if hasattr(x, "synchronize_model"):
+                if(self.verbose): print x.__class__.__name__, "is synchronizing",
                 x.synchronize_model()
                 if(self.verbose): print ".. done"
 
@@ -597,55 +590,55 @@ class Bridge(object):
             if hasattr(one_code, "stop"):
                 one_code.stop()
 
-    def get_potential_at_point(self,radius,x,y,z):
-        pot=quantities.zero
+    def get_potential_at_point(self, radius, x, y, z):
+        pot = quantities.zero
         for code in self.codes:
-            _pot=code.get_potential_at_point(radius,x,y,z)
-            pot=pot+_pot
+            _pot = code.get_potential_at_point(radius, x, y, z)
+            pot = pot + _pot
         return pot
 
-    def get_gravity_at_point(self,radius,x,y,z):
-        ax=quantities.zero
-        ay=quantities.zero
-        az=quantities.zero
+    def get_gravity_at_point(self, radius, x, y, z):
+        ax = quantities.zero
+        ay = quantities.zero
+        az = quantities.zero
         for code in self.codes:
-            _ax,_ay,_az=code.get_gravity_at_point(radius,x,y,z)
-            ax=ax+_ax
-            ay=ay+_ay
-            az=az+_az
-        return ax,ay,az
+            _ax, _ay, _az = code.get_gravity_at_point(radius, x, y, z)
+            ax = ax + _ax
+            ay = ay + _ay
+            az = az + _az
+        return ax, ay, az
 
     @property
     def model_time(self):
-         return self.time
+        return self.time
 
     @property
     def potential_energy(self):
-        result=quantities.zero
+        result = quantities.zero
         for x in self.codes:
-            result+=x.potential_energy
+            result += x.potential_energy
         return result
 
     @property
     def kinetic_energy(self):
-        result=quantities.zero
+        result = quantities.zero
         for x in self.codes:
-            result+=x.kinetic_energy
-        return result #- self.kick_energy
+            result += x.kinetic_energy
+        return result  # - self.kick_energy
 
     @property
     def thermal_energy(self):
-        result=quantities.zero
+        result = quantities.zero
         for x in self.codes:
-            if hasattr(x,'thermal_energy'):
-                result+=x.thermal_energy
+            if hasattr(x, 'thermal_energy'):
+                result += x.thermal_energy
         return result
 
     @property
     def particles(self):
-        array=[]
+        array = []
         for x in self.codes:
-            if hasattr(x,"particles"):
+            if hasattr(x, "particles"):
                 array.append(x.particles)
         if len(array) == 0:
             raise AttributeError
@@ -655,9 +648,9 @@ class Bridge(object):
 
     @property
     def gas_particles(self):
-        array=[]
+        array = []
         for x in self.codes:
-            if hasattr(x,"gas_particles"):
+            if hasattr(x, "gas_particles"):
                 array.append(x.gas_particles)
         if len(array) == 0:
             raise AttributeError
@@ -667,11 +660,11 @@ class Bridge(object):
 
     @property
     def dm_particles(self):
-        array=[]
+        array = []
         for x in self.codes:
-            if hasattr(x,"dm_particles"):
+            if hasattr(x, "dm_particles"):
                 array.append(x.dm_particles)
-            elif hasattr(x,"particles"):
+            elif hasattr(x, "particles"):
                 array.append(x.particles)
         if len(array) == 0:
             raise AttributeError
@@ -680,19 +673,19 @@ class Bridge(object):
         return datamodel.ParticlesSuperset(array)
 
 # 'private' functions
-    def drift_codes_dt(self,dt):
-        self._drift_time+=dt
+    def drift_codes_dt(self, dt):
+        self._drift_time += dt
         self.drift_codes(self._drift_time)
 
-    def drift_codes(self,tend):
-        threads=[]
+    def drift_codes(self, tend):
+        threads = []
 
         for x in self.codes:
-            offset=self.time_offsets[x]
-            if hasattr(x,"drift"):
-                threads.append(threading.Thread(target=x.drift, args=(tend-offset,)) )
-            elif hasattr(x,"evolve_model"):
-                threads.append(threading.Thread(target=x.evolve_model, args=(tend-offset,)) )
+            offset = self.time_offsets[x]
+            if hasattr(x, "drift"):
+                threads.append(threading.Thread(target=x.drift, args=(tend - offset,)))
+            elif hasattr(x, "evolve_model"):
+                threads.append(threading.Thread(target=x.evolve_model, args=(tend - offset,)))
 
         if self.use_threading:
             for x in threads:
@@ -704,11 +697,11 @@ class Bridge(object):
             for x in threads:
                 x.run()
 
-    def kick_codes(self,dt):
+    def kick_codes(self, dt):
 
         de = quantities.zero
         for x in self.codes:
-            if hasattr(x,"kick"):
+            if hasattr(x, "kick"):
                 de += x.kick(dt)
 
         self.kick_energy += de
