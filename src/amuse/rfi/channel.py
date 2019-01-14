@@ -112,8 +112,8 @@ class AbstractASyncRequest(object):
     def __getitem__(self, index):
         return IndexedASyncRequest(self,index)
        
-    def __call__(self):
-        return self.result()
+    #~ def __call__(self):
+        #~ return self.result()
         
 class DependentASyncRequest(AbstractASyncRequest):
     def __init__(self, parent, request_factory):
