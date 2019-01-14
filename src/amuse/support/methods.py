@@ -2,6 +2,8 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.units import nbody_system
 
+from amuse.rfi.channel import DependentASyncRequest
+
 import inspect
 
 class AbstractCodeMethodWrapper(object):
@@ -105,7 +107,13 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         if keyword_arguments.get("return_request", False):
             keyword_arguments.pop("return_request")
             return self.asynchronous(*list_arguments, **keyword_arguments)
-        
+        if "async_dependency" in keyword_arguments:
+            async_dependency=keyword_arguments.pop("async_dependency")
+            keyword_arguments["return_request"]=True
+            def factory():
+                return self.asynchronous(*list_arguments, **keyword_arguments)
+            return DependentASyncRequest(async_dependency, factory)
+
         object = self.precall()
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
         result = self.method(*list_arguments, **keyword_arguments)

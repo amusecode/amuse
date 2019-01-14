@@ -243,6 +243,23 @@ class TestASync(TestWithMPI):
         instance1.stop()
         instance2.stop()
 
+    def test11b(self):
+        """ cross dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
+        request2=instance2.echo_int(20, async_dependency=request1)
+
+        request2.wait()
+        self.assertTrue(request1.is_result_available())
+        
+        self.assertEqual(request2.result(),20)
+        
+        instance1.stop()
+        instance2.stop()
+
     def test12(self):
         """ cross dependency with input-output dependency """
         instance1 = ForTesting(self.exefile)
@@ -268,6 +285,23 @@ class TestASync(TestWithMPI):
 
         request2.wait()
         
+        self.assertEqual( request2.result(), 10)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def xtest12b(self):
+        """ cross dependency with input-output dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
+
+        request2=instance2.echo_int(request1)
+        
+        request2.wait()
+
         self.assertEqual( request2.result(), 10)
         
         instance1.stop()
