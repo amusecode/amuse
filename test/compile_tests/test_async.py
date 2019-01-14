@@ -290,7 +290,7 @@ class TestASync(TestWithMPI):
         instance1.stop()
         instance2.stop()
 
-    def xtest12b(self):
+    def test12b(self):
         """ cross dependency with input-output dependency """
         instance1 = ForTesting(self.exefile)
         instance2 = ForTesting(self.exefile)
@@ -298,7 +298,7 @@ class TestASync(TestWithMPI):
         instance1.do_sleep(1, return_request=True)
         request1=instance1.echo_int(10, return_request=True)
 
-        request2=instance2.echo_int(request1)
+        request2=instance2.echo_int(request1, return_request=True)
         
         request2.wait()
 
@@ -306,6 +306,53 @@ class TestASync(TestWithMPI):
         
         instance1.stop()
         instance2.stop()
+
+    def test12c(self):
+        """ cross dependency with input-output dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_2_int(1 | units.m , 2 | units.kg, return_request=True)
+
+        request2=instance2.echo_2_int(request1[0], request1[1], return_request=True)
+        
+        print "do...wait..."
+        request2.wait()
+        print "done", request2.result()
+
+        self.assertEqual( request2.result()[0], 1 | units.m)
+        self.assertEqual( request2.result()[1], 2 | units.kg)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test12c(self):
+        """ cross dependency with input-output dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        instance3 = ForTesting(self.exefile)
+        instance4 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_2_int(1 | units.m , 2 | units.kg, return_request=True)
+        request1b=instance1.do_sleep(1, return_request=True)
+        request2=instance2.echo_2_int(3 | units.m , 4 | units.kg, return_request=True)
+        request3=instance3.echo_2_int(request2[0] , 5 | units.kg, return_request=True)
+
+        instance4.do_sleep(1, return_request=True)
+        request4=instance4.echo_2_int(request2[0], request3[1], return_request=True, async_dependency=request1b)
+        
+        request3.wait()
+
+        self.assertEqual( request4.result()[0], 3 | units.m)
+        self.assertEqual( request4.result()[1], 5 | units.kg)
+        
+        instance1.stop()
+        instance2.stop()
+        instance3.stop()
+        instance4.stop()
+
 
     def test13(self):
         instance = ForTesting(self.exefile)

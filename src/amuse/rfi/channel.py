@@ -177,7 +177,7 @@ class DependentASyncRequest(AbstractASyncRequest):
     def result(self):
         self.wait()
 
-        if not self.request._is_result_set:
+        if not self.request.is_result_set:
             raise Exception("result unexpectedly not available")
 
         return self.request.result()
@@ -565,7 +565,8 @@ class AsyncRequestsPool(object):
         if async_request is None:
             return
         if async_request in self.registered_requests:
-            raise Exception("Request is already registered, cannot register a request more than once")
+            return
+            #~ raise Exception("Request is already registered, cannot register a request more than once")
             
         self.registered_requests.add(async_request)
         
