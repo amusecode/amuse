@@ -429,6 +429,49 @@ class TestASync(TestWithMPI):
 
         instance.stop()
 
+    def test18(self):
+        """ test pool as depedency 1 """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        instance3 = ForTesting(self.exefile)
+        
+        request0=instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
+        request2=instance2.echo_int(10, return_request=True)
+        request=channel.AsyncRequestsPool(request1,request2)
+                        
+        request3=instance3.echo_int(11, async_dependency=request)
+        request3.wait()
+        self.assertTrue(request1.is_result_available())
+        self.assertTrue(request2.is_result_available())
+        self.assertEqual( request3.result(), 11)
+        
+        instance1.stop()
+        instance2.stop()
+        instance3.stop()
+
+    def xtest18b(self):
+        """ test pool as depedency 2 """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        instance3 = ForTesting(self.exefile)
+        
+        request0=instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
+        request2=instance1.echo_int(10, return_request=True)
+        request=channel.AsyncRequestsPool(request1,request2)
+                        
+        request3=instance3.echo_int(11, async_dependency=request)
+        request3.wait()
+        self.assertTrue(request1.is_result_available())
+        self.assertTrue(request2.is_result_available())
+        self.assertEqual( request3.result(), 11)
+        
+        instance1.stop()
+        instance2.stop()
+        instance3.stop()
+
+
 
 
 class TestASyncDistributed(TestASync):

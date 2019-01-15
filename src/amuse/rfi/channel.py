@@ -99,9 +99,14 @@ class AbstractASyncRequest(object):
         #~ return False
         
     def join(self, other):
-        pool = AsyncRequestsPool()
-        pool.add_request(self, lambda x: x.result())
-        pool.add_request(other, lambda x: x.result())
+        if isinstance(other, AbstractASyncRequest):
+            pool = AsyncRequestsPool()
+            pool.add_request(self, lambda x: x.result())
+            pool.add_request(other, lambda x: x.result())
+        elif isinstance(other, AsyncRequestsPool):
+            return other.join(self)
+        else:
+            raise Exception("error: join only possible with ASyncRequest or Pool")
         return pool
 
     def waits_for(self):
@@ -120,7 +125,9 @@ class DependentASyncRequest(AbstractASyncRequest):
         
         self.request=None
         self.parent=parent
-                
+        if isinstance(parent, AsyncRequestsPool):
+            self.parent=PoolDependentASyncRequest(parent)
+        
         def handler(arg):
             result=arg()
             self.request=request_factory()
@@ -150,7 +157,7 @@ class DependentASyncRequest(AbstractASyncRequest):
 
     def wait(self):    
         try:
-            self.parent.wait()
+            self.parent.waitall()
         except Exception, ex:
             message=str(ex)
             if not message.startswith("Error in dependent call: "):
@@ -212,27 +219,35 @@ class DependentASyncRequest(AbstractASyncRequest):
         else:
             return self.parent.waits_for()
 
+class PoolDependentASyncRequest(DependentASyncRequest):
+    def __init__(self, parent):
+        self.parent=parent
+        self.request=FakeASyncRequest()        
+        self.result_handlers = []
+
+
+
 class IndexedASyncRequest(DependentASyncRequest):
     def __init__(self, parent, index):
-        self.request=None
         self.parent=parent
         self.index=index
-                
-        def handler(arg):
-            result=arg()
-            self.request=FakeASyncRequest(result.__getitem__(index))
+                        
+        self.request=FakeASyncRequest()
+        #~ def handler(arg):
+            #~ result=arg()
+            #~ #self.request=FakeASyncRequest(result.__getitem__(index))
             #~ self.request=FakeASyncRequest()
-            for h in self.result_handlers:
-                self.request.add_result_handler(*h)
-            return result
+            #~ for h in self.result_handlers:
+                #~ self.request.add_result_handler(*h)
+            #~ return result
 
-        self.parent.add_result_handler(handler)
+        #~ self.parent.add_result_handler(handler)
         
         self.result_handlers = []
 
-    #~ def result(self):
-        #~ self.wait()
-        #~ return self.parent.result().__getitem__(self.index)
+    def result(self):
+        self.wait()
+        return self.parent.result().__getitem__(self.index)
 
 
 class ASyncRequest(AbstractASyncRequest):
@@ -591,7 +606,7 @@ class AsyncRequestsPool(object):
     def wait(self):
         
         # TODO need to cleanup this code
-        #        
+        #
         while len(self.requests_and_handlers) > 0:
             requests = [x.async_request.waits_for() for x in self.requests_and_handlers if x.async_request.is_other()]
             indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_other()]
@@ -661,6 +676,10 @@ class AsyncRequestsPool(object):
     def join(self, other):
         if isinstance(other, AbstractASyncRequest):
             self.add_request(other, lambda x: x.result())
+        elif isinstance(other, AsyncRequestsPool):
+            raise Exception("join with pool not implemented yet...")
+        else:
+            raise Exception("can only join request or pool")
         return self
             
     def __len__(self):
@@ -668,6 +687,9 @@ class AsyncRequestsPool(object):
         
     def __nonzero__(self):
         return len(self)==0
+
+    def waits_for(self):
+        raise Exception("pool has no waits for, should never be called")
 
 class AbstractMessage(object):
     
