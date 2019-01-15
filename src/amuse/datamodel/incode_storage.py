@@ -103,7 +103,7 @@ from amuse.datamodel import Particle
 from amuse.datamodel import Grid
 from amuse.datamodel import AttributeStorage
 
-from amuse.rfi.channel import ASyncRequestSequence
+from amuse.rfi.async_request import ASyncRequestSequence
 
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):

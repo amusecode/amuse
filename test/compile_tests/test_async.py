@@ -10,7 +10,7 @@ from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi.tools import create_c
-from amuse.rfi import channel
+from amuse.rfi.async_request import DependentASyncRequest, AsyncRequestsPool
 from amuse.rfi.core import *
 
 import test_c_implementation
@@ -234,7 +234,7 @@ class TestASync(TestWithMPI):
           return instance2.echo_int(20, return_request=True)
 
         #~ request2=instance2.echo_int(20, async_dependency=request1)
-        request2=channel.DependentASyncRequest(request1, fac)
+        request2=DependentASyncRequest(request1, fac)
 
         request2.wait()
         
@@ -281,7 +281,7 @@ class TestASync(TestWithMPI):
           return instance2.echo_int(results[1], return_request=True)
 
         #~ request2=instance2.echo_int(??, async_factory=fac)
-        request2=channel.DependentASyncRequest(request1, fac)
+        request2=DependentASyncRequest(request1, fac)
 
         request2.wait()
         
@@ -438,7 +438,7 @@ class TestASync(TestWithMPI):
         request0=instance1.do_sleep(1, return_request=True)
         request1=instance1.echo_int(10, return_request=True)
         request2=instance2.echo_int(10, return_request=True)
-        request=channel.AsyncRequestsPool(request1,request2)
+        request=AsyncRequestsPool(request1,request2)
                         
         request3=instance3.echo_int(11, async_dependency=request)
         request3.wait()
@@ -459,7 +459,7 @@ class TestASync(TestWithMPI):
         request0=instance1.do_sleep(1, return_request=True)
         request1=instance1.echo_int(10, return_request=True)
         request2=instance1.echo_int(10, return_request=True)
-        request=channel.AsyncRequestsPool(request1,request2)
+        request=AsyncRequestsPool(request1,request2)
                         
         request3=instance3.echo_int(11, async_dependency=request)
         request3.wait()

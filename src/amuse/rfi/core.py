@@ -28,7 +28,7 @@ from amuse.rfi.channel import MultiprocessingMPIChannel
 from amuse.rfi.channel import DistributedChannel
 from amuse.rfi.channel import SocketChannel
 from amuse.rfi.channel import is_mpd_running
-from amuse.rfi.channel import DependentASyncRequest
+from amuse.rfi.async_request import DependentASyncRequest
 
 try:
     from amuse import config

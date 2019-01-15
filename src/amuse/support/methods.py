@@ -2,7 +2,7 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.units import nbody_system
 
-from amuse.rfi.channel import DependentASyncRequest, AbstractASyncRequest, FakeASyncRequest
+from amuse.rfi.async_request import DependentASyncRequest, AbstractASyncRequest, FakeASyncRequest
 
 import inspect
 
