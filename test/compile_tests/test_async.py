@@ -471,6 +471,72 @@ class TestASync(TestWithMPI):
         instance2.stop()
         instance3.stop()
 
+    def test19(self):
+        """ test sum request """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        
+        r1=instance1.echo_int(1, return_request=True)
+        r2=instance2.echo_int(2, return_request=True)
+        s=r1+r2
+        r1=instance1.echo_int(2, return_request=True)
+        r2=instance2.echo_int(3, return_request=True)
+        m=r1*r2
+        r1=instance1.echo_int(12, return_request=True)
+        r2=instance2.echo_int(3, return_request=True)
+        d=r1/r2
+        
+        self.assertEqual( s.result(), 3)
+        self.assertEqual( m.result(), 6)
+        self.assertEqual( d.result(), 4)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test19b(self):
+        """ test sum request """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        
+        r1=instance1.echo_int(1, return_request=True)
+        s=r1+2
+        r1=instance1.echo_int(2, return_request=True)
+        m=r1*3
+        r2=instance2.echo_int(3, return_request=True)
+        d=12/r2
+        
+        self.assertEqual( s.result(), 3)
+        self.assertEqual( m.result(), 6)
+        self.assertEqual( d.result(), 4)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test20(self):
+        """ some more tests of request expressions """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        instance3 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_2_int(1 | units.m , 2 | units.kg, return_request=True)
+        request2=instance2.echo_2_int(4 | units.m , 6 | units.kg, return_request=True)
+        request3a=instance3.echo_int(request2[0] / request1[0]-4, return_request=True)
+        request3b=instance3.echo_int(request2[1] / request1[1]-3, return_request=True)
+
+        request3a.wait()
+        request3b.wait()
+
+        self.assertEqual( request3a.result(), 0 )
+        self.assertEqual( request3b.result(), 0 )
+        
+        instance1.stop()
+        instance2.stop()
+        instance3.stop()
 
 
 

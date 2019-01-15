@@ -16,6 +16,8 @@ import array
 import logging
 import shlex
 
+import operator
+
 logger = logging.getLogger(__name__)
 
 #
@@ -116,6 +118,44 @@ class AbstractASyncRequest(object):
 
     def __getitem__(self, index):
         return IndexedASyncRequest(self,index)
+
+    #~ def __getattr__(self, name):
+        #~ print name, "<<"
+        
+    def __add__(self, other):
+        return baseOperatorASyncRequest(self,other, operator.add)
+    def __radd__(self, other):
+        return baseOperatorASyncRequest(self,other, lambda x,y: operator.add(y,x))
+    def __sub__(self, other):
+        return baseOperatorASyncRequest(self,other, operator.sub)
+    def __rsub__(self, other):
+        return baseOperatorASyncRequest(self,other, lambda x,y: operator.sub(y,x))
+    def __mul__(self, other):
+        return baseOperatorASyncRequest(self,other, operator.__mul__)
+    def __rmul__(self, other):
+        return baseOperatorASyncRequest(self,other, lambda x,y: operator.mul(y,x))
+    def __truediv__(self, other):
+        return baseOperatorASyncRequest(self,other, operator.truediv)
+    def __rtruediv__(self, other):
+        return baseOperatorASyncRequest(self,other, lambda x,y: operator.truediv(y,x))
+    def __floordiv__(self, other):
+        return baseOperatorASyncRequest(self,other, operator.floordiv)
+    def __rfloordiv__(self, other):
+        return baseOperatorASyncRequest(self,other, lambda x,y: operator.floordiv(y,x))
+    def __div__(self, other):
+        return baseOperatorASyncRequest(self,other, operator.div)
+    def __rdiv__(self, other):
+        return baseOperatorASyncRequest(self,other, lambda x,y: operator.div(y,x))
+    def __pow__(self, other):
+        return baseOperatorASyncRequest(self,other, operator.pow)
+    def __rpow__(self, other):
+        return baseOperatorASyncRequest(self,other, lambda x,y: operator.pow(y,x))
+    def __mod__(self, other):
+        return baseOperatorASyncRequest(self,other, operator.mod)
+    def __rmod__(self, other):
+        return baseOperatorASyncRequest(self,other, lambda x,y: operator.mod(y,x))
+    def __neg__(self):
+        return baseOperatorASyncRequest(self, None, operator.neg)
        
     #~ def __call__(self):
         #~ return self.result()
@@ -225,30 +265,36 @@ class PoolDependentASyncRequest(DependentASyncRequest):
         self.request=FakeASyncRequest()        
         self.result_handlers = []
 
-
-
 class IndexedASyncRequest(DependentASyncRequest):
     def __init__(self, parent, index):
         self.parent=parent
         self.index=index
-                        
-        self.request=FakeASyncRequest()
-        #~ def handler(arg):
-            #~ result=arg()
-            #~ #self.request=FakeASyncRequest(result.__getitem__(index))
-            #~ self.request=FakeASyncRequest()
-            #~ for h in self.result_handlers:
-                #~ self.request.add_result_handler(*h)
-            #~ return result
-
-        #~ self.parent.add_result_handler(handler)
-        
+        self.request=FakeASyncRequest()        
         self.result_handlers = []
 
     def result(self):
         self.wait()
         return self.parent.result().__getitem__(self.index)
 
+class baseOperatorASyncRequest(DependentASyncRequest):
+    def __init__(self, first, second, operator):
+        self._first=first
+        self._second=second
+        self._operator=operator
+        if isinstance( second, AbstractASyncRequest):
+            pool=AsyncRequestsPool(first,second)
+            self.parent=PoolDependentASyncRequest(pool)
+        else:
+            self.parent=first
+        self.request=FakeASyncRequest()        
+        self.result_handlers = []
+    def result(self):
+        self.wait()
+        first=self._first.result()
+        second=self._second.result() if isinstance( self._second, AbstractASyncRequest) else self._second
+        if second is None: 
+            return self._operator(first)
+        return self._operator(first,second)
 
 class ASyncRequest(AbstractASyncRequest):
         
