@@ -450,7 +450,7 @@ class TestASync(TestWithMPI):
         instance2.stop()
         instance3.stop()
 
-    def xtest18b(self):
+    def test18b(self):
         """ test pool as depedency 2 """
         instance1 = ForTesting(self.exefile)
         instance2 = ForTesting(self.exefile)

@@ -77,7 +77,7 @@ class AbstractASyncRequest(object):
     def results(self):
         return [self.result()]
 
-    def add_result_handler(self, function, args = ()):
+    def add_result_handler(self, function, args = ()): 
         self.result_handlers.append([function,args])
 
     def is_mpi_request(self):
@@ -613,7 +613,7 @@ class AsyncRequestsPool(object):
             
             if len(requests) > 0:
                 for index, x in zip(indices, requests):
-                    x.wait_for().waitone()
+                    x.waits_for().waitone()
 
                     request_and_handler = self.requests_and_handlers[index]
                     if request_and_handler.async_request.is_result_available():
@@ -624,8 +624,16 @@ class AsyncRequestsPool(object):
                         request_and_handler.run()
                         break
 
-            requests = [x.async_request.waits_for().request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
-            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
+            requests_ = [x.async_request.waits_for().request for x in self.requests_and_handlers if x.async_request.is_mpi_request()]
+            indices_ = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_mpi_request()]
+            
+            requests=[]
+            indices=[]
+            for r,i in zip(requests_, indices_):
+                if r not in requests:
+                    requests.append(r)
+                    indices.append(i)
+                        
             if len(requests) > 0:
                 index = MPI.Request.Waitany(requests)
                 
@@ -643,8 +651,16 @@ class AsyncRequestsPool(object):
                     request_and_handler.run()
                     break
                             
-            sockets = [x.async_request.waits_for().socket for x in self.requests_and_handlers if x.async_request.is_socket_request()]
+            sockets_ = [x.async_request.waits_for().socket for x in self.requests_and_handlers if x.async_request.is_socket_request()]
             indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_socket_request()]
+
+            sockets=[]
+            indices=[]
+            for r,i in zip(sockets_, indices_):
+                if r not in sockets:
+                    sockets.append(r)
+                    indices.append(i)
+
             if len(sockets) > 0:
                 readable, _, _ = select.select(sockets, [], [])
                 indices_to_delete = []
