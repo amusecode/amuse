@@ -562,6 +562,21 @@ class TestASync(TestWithMPI):
         instance1.stop()
         instance2.stop()
 
+    def test21(self):
+        """ some more tests of request expressions """
+        instance1 = ForTesting(self.exefile)
+
+        a=[10,30,15] | units.m
+        b=[1,3,5] | units.kg
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_2_int(a , b, return_request=True)
+        
+        request2=(3*request1[1]/(2.*request1[0])+(55. | units.kg/units.m))
+        self.assertEquals( request2.result(), (3*b/(2.*a)+(55. | units.kg/units.m)) )
+        
+        instance1.stop()
+
 
 
 class TestASyncDistributed(TestASync):
