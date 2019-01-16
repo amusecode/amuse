@@ -15,8 +15,8 @@ from amuse.units import units
 from amuse import datamodel
 from amuse.rfi import python_code
 from amuse.rfi.core import *
-from amuse.rfi.channel import AsyncRequestsPool
-from amuse.rfi.channel import ASyncRequestSequence
+from amuse.rfi.async_request import AsyncRequestsPool
+from amuse.rfi.async_request import ASyncRequestSequence
 from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
 
 from amuse.support import exceptions
