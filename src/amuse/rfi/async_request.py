@@ -1,4 +1,6 @@
+import select
 import operator
+
 import channel
 
 class AbstractASyncRequest(object):
@@ -615,7 +617,6 @@ class AsyncRequestsPool(object):
         while len(self.requests_and_handlers) > 0:
             requests = [x.async_request.waits_for() for x in self.requests_and_handlers if x.async_request.is_other()]
             indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_other()]
-            
             if len(requests) > 0:
                 for index, x in zip(indices, requests):
                     x.waits_for().waitone()
@@ -657,7 +658,7 @@ class AsyncRequestsPool(object):
                     break
                             
             sockets_ = [x.async_request.waits_for().socket for x in self.requests_and_handlers if x.async_request.is_socket_request()]
-            indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_socket_request()]
+            indices_ = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_socket_request()]
 
             sockets=[]
             indices=[]

@@ -538,6 +538,30 @@ class TestASync(TestWithMPI):
         instance2.stop()
         instance3.stop()
 
+    def test21(self):
+        """ test sum request, sockets """
+        instance1 = ForTesting(self.exefile, channel_type="sockets")
+        instance2 = ForTesting(self.exefile, channel_type="sockets")
+        
+        instance1.do_sleep(1, return_request=True)
+        
+        r1=instance1.echo_int(1, return_request=True)
+        r2=instance2.echo_int(2, return_request=True)
+        s=r1+r2
+        r1=instance1.echo_int(2, return_request=True)
+        r2=instance2.echo_int(3, return_request=True)
+        m=r1*r2
+        r1=instance1.echo_int(12, return_request=True)
+        r2=instance2.echo_int(3, return_request=True)
+        d=r1/r2
+        
+        self.assertEqual( s.result(), 3)
+        self.assertEqual( m.result(), 6)
+        self.assertEqual( d.result(), 4)
+        
+        instance1.stop()
+        instance2.stop()
+
 
 
 class TestASyncDistributed(TestASync):
