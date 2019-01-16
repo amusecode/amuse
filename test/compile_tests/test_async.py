@@ -580,7 +580,7 @@ class TestASyncDistributed(TestASync):
         pilot.resource_name='local'
         pilot.node_count=1
         pilot.time= 2|units.hour
-        pilot.slots_per_node=2
+        pilot.slots_per_node=8
         pilot.label='local'
         self.distinstance.pilots.add_pilot(pilot)
         #~ print "Pilots:"
