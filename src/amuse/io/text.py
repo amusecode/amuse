@@ -398,7 +398,7 @@ class TableFormattedText(base.FileFormatProcessor):
                         column += 1
                 if unit is None:
                     unitstring= '1:-1:0:0:0:0:0:0:0'
-                    desctiption = '(-)'
+                    description = '(-)'
                 else:
                     unitstring = '{0:.18g}:{1:.0f}:{2:.18g}:{3:.18g}:{4:.18g}:{5:.18g}:{6:.18g}:{7:.18g}:{8:.18g}'.format(*unit.to_array_of_floats())
                     description = '(' + unit.describe_array_of_floats() + ')'
@@ -688,9 +688,3 @@ class AmuseText(TableFormattedText):
     def use_fractions(self):
         """"Output floats as fractions, will be more precise"""
         return True
-
-
-
-
-
-
