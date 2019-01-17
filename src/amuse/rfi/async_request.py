@@ -117,6 +117,13 @@ class AbstractASyncRequest(object):
         return baseOperatorASyncRequest(self,other, lambda x,y: operator.mod(y,x))
     def __neg__(self):
         return baseOperatorASyncRequest(self, None, operator.neg)
+    
+    def __iter__(self):
+        if self._result_index:
+            for i in self._result_index:
+                yield self[i]
+        else:
+            yield self
        
     #~ def __call__(self):
         #~ return self.result()
@@ -124,6 +131,7 @@ class AbstractASyncRequest(object):
 class DependentASyncRequest(AbstractASyncRequest):
     def __init__(self, parent, request_factory):
         
+        self._result_index=None
         self.request=None
         self.parent=parent
         if isinstance(parent, AsyncRequestsPool):
@@ -232,6 +240,10 @@ class IndexedASyncRequest(DependentASyncRequest):
         self.index=index
         self.request=FakeASyncRequest()        
         self.result_handlers = []
+        try:
+            self._result_index=parent._result_index[index]
+        except:
+            self._result_index=None
 
     def result(self):
         self.wait()
@@ -249,6 +261,11 @@ class baseOperatorASyncRequest(DependentASyncRequest):
             self.parent=first
         self.request=FakeASyncRequest()        
         self.result_handlers = []
+        try:
+            self._result_index=first._result_index[index]
+        except:
+            self._result_index=None
+                    
     def result(self):
         self.wait()
         first=self._first.result()
@@ -269,6 +286,7 @@ class ASyncRequest(AbstractASyncRequest):
         self._called_set_result = False
         self._result = None
         self.result_handlers = []
+        self._result_index=None
 
     def wait(self):
         if self.is_finished:
@@ -333,6 +351,7 @@ class ASyncSocketRequest(AbstractASyncRequest):
         self._called_set_result = False
         self._result = None
         self.result_handlers = []
+        self._result_index=None
 
     def wait(self):
         if self.is_finished:
@@ -401,6 +420,7 @@ class FakeASyncRequest(AbstractASyncRequest):
         self._result = None
         self.__result = result
         self.result_handlers = []
+        self._result_index=None
 
     def wait(self):
         if self.is_finished:
@@ -456,6 +476,7 @@ class ASyncRequestSequence(AbstractASyncRequest):
         self._result = None
         self.result_handlers = []
         self._results = []
+        self._result_index=None
 
     @property
     def is_finished(self):

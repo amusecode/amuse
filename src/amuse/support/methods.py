@@ -145,20 +145,26 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
                 return self.asynchronous(*list_arguments_, **keyword_arguments_)
 
             if keyword_arguments.get("return_request", False):
-                return DependentASyncRequest(request, factory)
+                request=DependentASyncRequest(request, factory)
+                request._result_index=self.convert_result_index()
+                return request
             else:
                 return DependentASyncRequest(request, factory).result()
             
 
         if keyword_arguments.get("return_request", False):
             keyword_arguments.pop("return_request")
-            return self.asynchronous(*list_arguments, **keyword_arguments)
+            request = self.asynchronous(*list_arguments, **keyword_arguments)
+            request._result_index=self.convert_result_index()
+            return request
         if keyword_arguments.get("async_dependency", None) is not None:
             async_dependency=keyword_arguments.pop("async_dependency")
             keyword_arguments["return_request"]=True
             def factory():
                 return self.asynchronous(*list_arguments, **keyword_arguments)
-            return DependentASyncRequest(async_dependency, factory)
+            request = DependentASyncRequest(async_dependency, factory)
+            request._result_index=self.convert_result_index()
+            return request
 
 
 
@@ -203,6 +209,9 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
     
     def convert_result(self, result):
         return self.definition.convert_result(self, result)
+
+    def convert_result_index(self):
+        return self.definition.convert_result_index(self)
     
     def precall(self):
         return self.definition.precall(self)

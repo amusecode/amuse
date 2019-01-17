@@ -37,6 +37,7 @@ class OldObjectsBindingMixin(object):
         self.particles.copy_values_of_all_attributes_to(particles)
 
 class MethodArgumentOrResultType(object):
+     _returns_result=True
      
      def append_result_value(self, method, definition, value, result):
          result.append(self.convert_result_value(method, definition, value))
@@ -56,6 +57,7 @@ class UnitMethodArgumentOrResultType(MethodArgumentOrResultType):
         return (_get_result_type, ("UNIT",))
 
 class ErrorCodeMethodArgumentOrResultType(MethodArgumentOrResultType):
+    _returns_result=False
 
     def append_result_value(self, method, definition, value, result):
         self.convert_result_value(method, definition, value)
@@ -627,6 +629,26 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     def convert_result(self, method, result):
         return self.handle_return_value(method, result)
+    
+    # this function tries to determine the size of results from definition
+    # its a bit ad-hoc. in spite of what the name suggests it determines it from scratch
+    # (and not converting the index from the wrapped function's result_index)    
+    def convert_result_index(self, method):
+        if self.return_units is None:
+            return None
+        else:
+            if not self.is_return_units_iterable:
+                return None
+            else:                
+                nresult = 0
+                for unit in self.return_units:
+                    if not hasattr(unit,"_returns_result"):
+                        nresult+=1
+                    else:
+                        if unit._returns_result:
+                            nresult+=1
+                
+                return range(nresult)
 
     @late
     def has_same_name_as_original(self):

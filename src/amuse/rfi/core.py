@@ -160,6 +160,8 @@ class CodeFunction(object):
         else:
             request=self._async_request(*arguments_list, **keyword_arguments)
 
+        request._result_index=self.result_index()
+
         def handle_result(function):
 
             result=function()
@@ -186,6 +188,17 @@ class CodeFunction(object):
                 if count > 0:
                     return True
         return False
+    
+    """
+    Get list of result keys
+    """
+    def result_index(self):
+        index=[]
+        for parameter in self.specification.output_parameters:
+            index.append(parameter.name)
+        if not self.specification.result_type is None:
+            index.append("__result")
+        return index
         
     """
     Convert results from an MPI message to a return value.

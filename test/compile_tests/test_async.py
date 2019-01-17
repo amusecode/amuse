@@ -577,6 +577,37 @@ class TestASync(TestWithMPI):
         
         instance1.stop()
 
+    def test22(self):
+        """ tests of unpack """
+        instance1 = ForTesting(self.exefile)
+
+        a=[10,30,15] | units.m
+        b=[1,3,5] | units.kg
+        
+        #~ instance1.do_sleep(1, return_request=True)
+        a_,b_=instance1.echo_2_int(a , b, return_request=True)
+        
+        self.assertEquals( (3*b_/(2.*a_)+(55. | units.kg/units.m)).result(), (3*b/(2.*a)+(55. | units.kg/units.m)) )
+        
+        instance1.stop()
+
+    def test23(self):
+        """ tests of unpack """
+        instance1 = ForTestingInterface(self.exefile)
+
+        a=[10,30,15]
+        b=[1,3,5]
+        
+        #~ instance1.do_sleep(1, return_request=True)
+        res=instance1.echo_2_int.asynchronous(a,b)
+        #~ res=res['int_out1']
+        a_,b_, err= res
+      
+
+        self.assertEquals( a,a_.result() )
+        self.assertEquals( b,b_.result() )
+        
+        instance1.stop()
 
 
 class TestASyncDistributed(TestASync):
