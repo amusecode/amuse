@@ -10,13 +10,14 @@ from amuse.units import nbody_system
 from amuse.units import units
 from amuse import datamodel
 from amuse.rfi.tools import create_c
-from amuse.rfi import channel
+from amuse.rfi import async_request
 from amuse.rfi.core import *
 
 import test_c_implementation
 
 from amuse.test import compile_tools
 
+from amuse.community.distributed.interface import DistributedAmuse, Pilot
 
 codestring=test_c_implementation.codestring+"""
 #include <unistd.h>
@@ -26,7 +27,8 @@ int do_sleep(int in) {
     return 0;
 }
 
-int return_error() {
+int return_error(int * out) {
+    *out=123;
     return -1;
 }
 
@@ -43,8 +45,21 @@ class ForTestingInterface(test_c_implementation.ForTestingInterface):
     @legacy_function
     def return_error():
         function = LegacyFunctionSpecification()
+        function.addParameter('out', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function 
+
+    @legacy_function
+    def echo_2_int():
+        function = LegacyFunctionSpecification()
+        function.addParameter('int_in1', dtype='int32', direction=function.IN, unit=units.m)
+        function.addParameter('int_in2', dtype='int32', direction=function.IN, default = 1, unit=units.kg)
+        function.addParameter('int_out1', dtype='int32', direction=function.OUT, unit=units.m)
+        function.addParameter('int_out2', dtype='int32', direction=function.OUT, unit=units.kg)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
 
 
 class ForTesting(InCodeComponentImplementation):
@@ -192,19 +207,19 @@ class TestASync(TestWithMPI):
         instance = ForTesting(self.exefile)
         r1=instance.do_sleep(1, return_request=True)
         r2=instance.return_error( return_request=True)
-        r3=instance.echo_int(10, return_request=True)
-        try:
-            results=instance.async_request.results
-        except Exception as ex:
-            print ex
-        print r1.is_result_available()
-        print r2.is_result_available()
-        print r2.result()
-        try:
-            print r3.is_result_available()
-        except Exception as ex:
-            print ex
-
+        r3=instance.echo_int(1, return_request=True)
+        r4=instance.echo_int(2, return_request=True)
+        self.assertRaises(Exception, instance.async_request.waitall,
+            expected_message="Error in dependent call: Error when calling 'return_error' of a 'ForTesting', errorcode is -1")
+        self.assertTrue( r1.is_result_available() )
+        self.assertFalse( r2.is_result_available() )
+        self.assertTrue(  r2.is_finished )
+        self.assertTrue(  r3.is_finished )
+        self.assertFalse(  bool(r3) )
+        self.assertTrue(  r4.is_finished )
+        self.assertTrue(  r4.waits_for() is None )
+        self.assertFalse( r3.is_result_available() )
+        
         instance.stop()
 
     def test11(self):
@@ -219,9 +234,26 @@ class TestASync(TestWithMPI):
           return instance2.echo_int(20, return_request=True)
 
         #~ request2=instance2.echo_int(20, async_dependency=request1)
-        request2=channel.DependentASyncRequest(request1, fac)
+        request2=async_request.DependentASyncRequest(request1, fac)
 
         request2.wait()
+        
+        self.assertEqual(request2.result(),20)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test11b(self):
+        """ cross dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
+        request2=instance2.echo_int(20, async_dependency=request1)
+
+        request2.wait()
+        self.assertTrue(request1.is_result_available())
         
         self.assertEqual(request2.result(),20)
         
@@ -240,7 +272,6 @@ class TestASync(TestWithMPI):
         
         def safe_result(arg, index):
             result=arg()
-            print index
             results[index]=result
             return result
         
@@ -250,7 +281,7 @@ class TestASync(TestWithMPI):
           return instance2.echo_int(results[1], return_request=True)
 
         #~ request2=instance2.echo_int(??, async_factory=fac)
-        request2=channel.DependentASyncRequest(request1, fac)
+        request2=async_request.DependentASyncRequest(request1, fac)
 
         request2.wait()
         
@@ -258,5 +289,368 @@ class TestASync(TestWithMPI):
         
         instance1.stop()
         instance2.stop()
+
+    def test12b(self):
+        """ cross dependency with input-output dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
+
+        request2=instance2.echo_int(request1, return_request=True)
+        
+        request2.wait()
+
+        self.assertEqual( request2.result(), 10)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test12c(self):
+        """ cross dependency with input-output dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_2_int(1 | units.m , 2 | units.kg, return_request=True)
+
+        request2=instance2.echo_2_int(request1[0], request1[1], return_request=True)
+        
+        print "do...wait..."
+        request2.wait()
+        print "done", request2.result()
+
+        self.assertEqual( request2.result()[0], 1 | units.m)
+        self.assertEqual( request2.result()[1], 2 | units.kg)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test12c(self):
+        """ cross dependency with input-output dependency """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        instance3 = ForTesting(self.exefile)
+        instance4 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_2_int(1 | units.m , 2 | units.kg, return_request=True)
+        request1b=instance1.do_sleep(1, return_request=True)
+        request2=instance2.echo_2_int(3 | units.m , 4 | units.kg, return_request=True)
+        request3=instance3.echo_2_int(request2[0] , 5 | units.kg, return_request=True)
+
+        instance4.do_sleep(1, return_request=True)
+        request4=instance4.echo_2_int(request2[0], request3[1], return_request=True, async_dependency=request1b)
+        
+        request3.wait()
+
+        self.assertEqual( request4.result()[0], 3 | units.m)
+        self.assertEqual( request4.result()[1], 5 | units.kg)
+        
+        instance1.stop()
+        instance2.stop()
+        instance3.stop()
+        instance4.stop()
+
+
+    def test13(self):
+        instance = ForTesting(self.exefile)
+
+        r=instance.echo_int(1, return_request=True)
+        time.sleep(0.1)
+        self.assertTrue(r.is_result_available())
+        r.result()
+
+        r=instance.return_error(return_request=True)
+        time.sleep(0.1)
+        self.assertTrue(r.is_result_available())
+        self.assertTrue(r.is_result_available())
+        self.assertRaises(Exception, r.result, expected_message="Error when calling 'return_error' of a 'ForTesting', errorcode is -1")        
+        self.assertFalse(r.is_result_available())
+        self.assertTrue(r.is_finished)
+        instance.stop()
+
+    def test14(self):
+        instance = ForTesting(self.exefile, channel_type="sockets")
+
+        r=instance.echo_int(1, return_request=True)
+        time.sleep(0.1)
+        self.assertTrue(r.is_result_available())
+        r.result()
+
+        r=instance.return_error(return_request=True)
+        time.sleep(0.1)
+        self.assertTrue(r.is_result_available())
+        self.assertTrue(r.is_result_available())
+        self.assertRaises(Exception, r.result, expected_message="Error when calling 'return_error' of a 'ForTesting', errorcode is -1")        
+        self.assertFalse(r.is_result_available())
+        self.assertTrue(r.is_finished)
+        instance.stop()
+
+    def test15(self):
+        instance = ForTesting(self.exefile)
+
+        instance.do_sleep(1, return_request=True)
+        instance.return_error( return_request=True)
+        instance.echo_int(1, return_request=True)
+        instance.echo_int(1, return_request=True)
+        #~ self.assertRinstance.echo_int(1)
+        
+
+        instance.stop()
+
+    def test16(self):
+        instance = ForTesting(self.exefile)
+
+        instance.do_sleep(1, return_request=True)
+        result=instance.echo_2_int([11,12,13] | units.m,[3,2,1]| units.kg, return_request=True)
+
+        r1=result[0]
+        r2=result[1]
+        
+        self.assertEquals(r1.result(),[11,12,13] | units.m)
+        self.assertEquals(r2.result(),[3,2,1] | units.kg)
+        
+        instance.stop()
+
+    def test17(self):
+        instance = ForTestingInterface(self.exefile)
+
+        instance.do_sleep.asynchronous(1)
+        request=instance.echo_2_int.asynchronous([11,12,13],[3,2,1])
+
+        r1=request["int_out1"]
+        r2=request["int_out2"]
+        
+        self.assertEquals(r1.result(),[11,12,13] )
+        self.assertEquals(r2.result(),[3,2,1] )
+        
+
+        instance.stop()
+
+    def test18(self):
+        """ test pool as depedency 1 """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        instance3 = ForTesting(self.exefile)
+        
+        request0=instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
+        request2=instance2.echo_int(10, return_request=True)
+        request=async_request.AsyncRequestsPool(request1,request2)
+                        
+        request3=instance3.echo_int(11, async_dependency=request)
+        request3.wait()
+        self.assertTrue(request1.is_result_available())
+        self.assertTrue(request2.is_result_available())
+        self.assertEqual( request3.result(), 11)
+        
+        instance1.stop()
+        instance2.stop()
+        instance3.stop()
+
+    def test18b(self):
+        """ test pool as depedency 2 """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        instance3 = ForTesting(self.exefile)
+        
+        request0=instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_int(10, return_request=True)
+        request2=instance1.echo_int(10, return_request=True)
+        request=async_request.AsyncRequestsPool(request1,request2)
+                        
+        request3=instance3.echo_int(11, async_dependency=request)
+        request3.wait()
+        self.assertTrue(request1.is_result_available())
+        self.assertTrue(request2.is_result_available())
+        self.assertEqual( request3.result(), 11)
+        
+        instance1.stop()
+        instance2.stop()
+        instance3.stop()
+
+    def test19(self):
+        """ test sum request """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        
+        r1=instance1.echo_int(1, return_request=True)
+        r2=instance2.echo_int(2, return_request=True)
+        s=r1+r2
+        r1=instance1.echo_int(2, return_request=True)
+        r2=instance2.echo_int(3, return_request=True)
+        m=r1*r2
+        r1=instance1.echo_int(12, return_request=True)
+        r2=instance2.echo_int(3, return_request=True)
+        d=r1/r2
+        
+        self.assertEqual( s.result(), 3)
+        self.assertEqual( m.result(), 6)
+        self.assertEqual( d.result(), 4)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test19b(self):
+        """ test sum request """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        
+        r1=instance1.echo_int(1, return_request=True)
+        s=r1+2
+        r1=instance1.echo_int(2, return_request=True)
+        m=r1*3
+        r2=instance2.echo_int(3, return_request=True)
+        d=12/r2
+        
+        self.assertEqual( s.result(), 3)
+        self.assertEqual( m.result(), 6)
+        self.assertEqual( d.result(), 4)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test20(self):
+        """ some more tests of request expressions """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        instance3 = ForTesting(self.exefile)
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_2_int(1 | units.m , 2 | units.kg, return_request=True)
+        request2=instance2.echo_2_int(4 | units.m , 6 | units.kg, return_request=True)
+        request3a=instance3.echo_int(request2[0] / request1[0]-4, return_request=True)
+        request3b=instance3.echo_int(request2[1] / request1[1]-3, return_request=True)
+
+        request3a.wait()
+        request3b.wait()
+
+        self.assertEqual( request3a.result(), 0 )
+        self.assertEqual( request3b.result(), 0 )
+        
+        instance1.stop()
+        instance2.stop()
+        instance3.stop()
+
+    def test21(self):
+        """ test sum request, sockets """
+        instance1 = ForTesting(self.exefile, channel_type="sockets")
+        instance2 = ForTesting(self.exefile, channel_type="sockets")
+        
+        instance1.do_sleep(1, return_request=True)
+        
+        r1=instance1.echo_int(1, return_request=True)
+        r2=instance2.echo_int(2, return_request=True)
+        s=r1+r2
+        r1=instance1.echo_int(2, return_request=True)
+        r2=instance2.echo_int(3, return_request=True)
+        m=r1*r2
+        r1=instance1.echo_int(12, return_request=True)
+        r2=instance2.echo_int(3, return_request=True)
+        d=r1/r2
+        
+        self.assertEqual( s.result(), 3)
+        self.assertEqual( m.result(), 6)
+        self.assertEqual( d.result(), 4)
+        
+        instance1.stop()
+        instance2.stop()
+
+    def test21(self):
+        """ some more tests of request expressions """
+        instance1 = ForTesting(self.exefile)
+
+        a=[10,30,15] | units.m
+        b=[1,3,5] | units.kg
+        
+        instance1.do_sleep(1, return_request=True)
+        request1=instance1.echo_2_int(a , b, return_request=True)
+        
+        request2=(3*request1[1]/(2.*request1[0])+(55. | units.kg/units.m))
+        self.assertEquals( request2.result(), (3*b/(2.*a)+(55. | units.kg/units.m)) )
+        
+        instance1.stop()
+
+    def test22(self):
+        """ tests of unpack """
+        instance1 = ForTesting(self.exefile)
+
+        a=[10,30,15] | units.m
+        b=[1,3,5] | units.kg
+        
+        #~ instance1.do_sleep(1, return_request=True)
+        a_,b_=instance1.echo_2_int(a , b, return_request=True)
+        
+        self.assertEquals( (3*b_/(2.*a_)+(55. | units.kg/units.m)).result(), (3*b/(2.*a)+(55. | units.kg/units.m)) )
+        
+        instance1.stop()
+
+    def test23(self):
+        """ tests of unpack """
+        instance1 = ForTestingInterface(self.exefile)
+
+        a=[10,30,15]
+        b=[1,3,5]
+        
+        #~ instance1.do_sleep(1, return_request=True)
+        res=instance1.echo_2_int.asynchronous(a,b)
+        #~ res=res['int_out1']
+        a_,b_, err= res
+      
+
+        self.assertEquals( a,a_.result() )
+        self.assertEquals( b,b_.result() )
+        
+        instance1.stop()
+
+
+class TestASyncDistributed(TestASync):
+
+    def setUp(self):
+        self.check_not_in_mpiexec()
+        super(TestASyncDistributed, self).setUp()
+        #instance = DistributedAmuse(redirection='none')
+        self.distinstance = self.new_instance_of_an_optional_code(DistributedAmuse)#, redirection='none')
+        self.distinstance.parameters.debug = False
+
+        #~ print "Resources:"
+        #~ print self.distinstance.resources
+
+        pilot = Pilot()
+        pilot.resource_name='local'
+        pilot.node_count=1
+        pilot.time= 2|units.hour
+        pilot.slots_per_node=8
+        pilot.label='local'
+        self.distinstance.pilots.add_pilot(pilot)
+        #~ print "Pilots:"
+        #~ print self.distinstance.pilots
+
+        #~ print "Waiting for pilots"
+        self.distinstance.wait_for_pilots()
+        self.distinstance.use_for_all_workers()
+
+    def tearDown(self):
+        #~ print "Stopping distributed code"
+        self.distinstance.stop()
+
+    def check_not_in_mpiexec(self):
+        """
+        The tests will fork another process, if the test run
+        is itself an mpi process, the tests may fail. 
+        
+        For the hydra process manager the tests will fail.
+        So skip the tests if we detect hydra
+        """
+        if 'HYDI_CONTROL_FD' in os.environ:
+            return
+        if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
+            self.skip('cannot run the socket tests under hydra process manager')
 
 

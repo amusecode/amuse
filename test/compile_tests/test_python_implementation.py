@@ -15,8 +15,8 @@ from amuse.units import units
 from amuse import datamodel
 from amuse.rfi import python_code
 from amuse.rfi.core import *
-from amuse.rfi.channel import AsyncRequestsPool
-from amuse.rfi.channel import ASyncRequestSequence
+from amuse.rfi.async_request import AsyncRequestsPool
+from amuse.rfi.async_request import ASyncRequestSequence
 from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
 
 from amuse.support import exceptions
@@ -643,7 +643,8 @@ class TestInterface(TestWithMPI):
     def test16(self):
         x = ForTestingInterface()
         request1 = x.sleep.asynchronous(0.4)
-        self.assertRaises(Exception, lambda : x.sleep(0.01))
+        x.sleep(0.01)
+        self.assertTrue(request1.is_result_available(), True)
         request1.wait()
         self.assertTrue(request1.is_result_available())        
         x.sleep(0.01)

@@ -2,6 +2,8 @@ from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.units import nbody_system
 
+from amuse.rfi.async_request import DependentASyncRequest, AbstractASyncRequest, FakeASyncRequest
+
 import inspect
 
 class AbstractCodeMethodWrapper(object):
@@ -102,10 +104,70 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         self.definition.check_wrapped_method(self)
     
     def __call__(self, *list_arguments, **keyword_arguments):
+        if any(isinstance(x, AbstractASyncRequest) for x in list_arguments) or \
+           any(isinstance(x, AbstractASyncRequest) for x in keyword_arguments):
+            async_dependency=keyword_arguments.get("async_dependency", None)
+            list_arguments_=[]
+            keyword_arguments_=dict()
+            for arg in list_arguments:
+                if isinstance(arg, AbstractASyncRequest):
+                    if async_dependency is None:
+                        async_dependency=arg
+                    else:
+                        async_dependency.join(arg)              
+            for key,arg in keyword_arguments.items():
+                if isinstance(arg, AbstractASyncRequest):
+                    if async_dependency is None:
+                        async_dependency=arg
+                    else:
+                        async_dependency.join(arg)              
+
+            def dummy_factory():
+                return FakeASyncRequest()
+
+            # need this step in between to make sure results are available
+            request=DependentASyncRequest(async_dependency, dummy_factory)
+
+            def factory():
+                list_arguments_=[]
+                keyword_arguments_=dict()
+                for arg in list_arguments:
+                    if isinstance(arg, AbstractASyncRequest):
+                        list_arguments_.append(arg.result())
+                    else:
+                        list_arguments_.append(arg)                    
+                for key,arg in keyword_arguments.items():
+                    if isinstance(arg, AbstractASyncRequest):
+                        keyword_arguments_[key]=arg.result()
+                    else:
+                        keyword_arguments_[key]=arg
+                  
+                return self.asynchronous(*list_arguments_, **keyword_arguments_)
+
+            if keyword_arguments.get("return_request", False):
+                request=DependentASyncRequest(request, factory)
+                request._result_index=self.convert_result_index()
+                return request
+            else:
+                return DependentASyncRequest(request, factory).result()
+            
+
         if keyword_arguments.get("return_request", False):
             keyword_arguments.pop("return_request")
-            return self.asynchronous(*list_arguments, **keyword_arguments)
-        
+            request = self.asynchronous(*list_arguments, **keyword_arguments)
+            request._result_index=self.convert_result_index()
+            return request
+        if keyword_arguments.get("async_dependency", None) is not None:
+            async_dependency=keyword_arguments.pop("async_dependency")
+            keyword_arguments["return_request"]=True
+            def factory():
+                return self.asynchronous(*list_arguments, **keyword_arguments)
+            request = DependentASyncRequest(async_dependency, factory)
+            request._result_index=self.convert_result_index()
+            return request
+
+
+
         object = self.precall()
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
         result = self.method(*list_arguments, **keyword_arguments)
@@ -147,6 +209,9 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
     
     def convert_result(self, result):
         return self.definition.convert_result(self, result)
+
+    def convert_result_index(self):
+        return self.definition.convert_result_index(self)
     
     def precall(self):
         return self.definition.precall(self)

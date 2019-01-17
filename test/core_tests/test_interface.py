@@ -1817,6 +1817,7 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
     
     def test3(self):
         class TestClass(object):
+            async_request=None
            
             @legacy_function
             def echo_inputs():
