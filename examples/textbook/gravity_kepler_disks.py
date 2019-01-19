@@ -1,9 +1,15 @@
-from amuse.lab import *
+# from amuse.lab import *
 #from amuse.io import store
 #from amuse.community.seba.interface import SeBa
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units import constants
+from amuse.ic.brokenimf import new_kroupa_mass_distribution
 from amuse.ext.orbital_elements import orbital_elements_from_binary
 from amuse.community.fractalcluster.interface import new_fractal_cluster_model
-
+from amuse.community.ph4.interface import ph4
+from amuse.io import write_set_to_file
+from amuse.datamodel import Particles
 ###BOOKLISTSTART3###
 def resolve_close_encounter(time, bodies):
     orbital_elements = orbital_elements_from_binary(bodies, G=constants.G)

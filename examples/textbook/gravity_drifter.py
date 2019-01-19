@@ -1,9 +1,10 @@
 import numpy
-from amuse.lab import *
+# from amuse.lab import *
 from amuse.units import units
 from amuse.units import quantities
 from amuse.units import constants
 from amuse.units import nbody_system
+from amuse.datamodel import Particles
 from amuse.ext.bridge import bridge
 from amuse.community.phiGRAPE.interface import PhiGRAPE
 from amuse.community.ph4.interface import ph4

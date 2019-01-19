@@ -5,8 +5,14 @@
 """
 import numpy
 from matplotlib import pyplot
-from amuse.lab import *
+# from amuse.lab import *
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.ic.salpeter import new_salpeter_mass_distribution
+from amuse.ic.kingmodel import new_king_model
 from amuse.ext.LagrangianRadii import LagrangianRadii
+from amuse.community.ph4.interface import ph4
+from amuse.community.sse.interface import SSE
 from prepare_figure import single_frame
 from distinct_colours import get_distinct
 

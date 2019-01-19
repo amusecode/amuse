@@ -1,7 +1,17 @@
 import numpy
-from amuse.lab import *
+# from amuse.lab import *
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units.quantities import zero
+from amuse.ic.salpeter import new_salpeter_mass_distribution
+from amuse.ic.kingmodel import new_king_model
 from amuse.io import store
+from amuse.io import write_set_to_file
+from amuse.datamodel import Particles
 from amuse.community.seba.interface import SeBa
+from amuse.community.ph4.interface import ph4
+
+
 
 def merge_two_stars(bodies, particles_in_encounter):
     com_pos = particles_in_encounter.center_of_mass()

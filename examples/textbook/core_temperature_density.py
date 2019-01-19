@@ -1,4 +1,7 @@
-from amuse.lab import *
+# from amuse.lab import *
+from amuse.units import units
+from amuse.community.mesa.interface import MESA
+from amuse.datamodel import Particle
 
 Second_Asymptotic_Giant_Branch = 6 | units.stellar_type
 HeWhiteDwarf = 10 | units.stellar_type

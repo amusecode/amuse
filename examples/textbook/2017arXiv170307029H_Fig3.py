@@ -1,6 +1,10 @@
 import numpy
-from amuse.lab import *
+# from amuse.lab import *
 from matplotlib import pyplot
+from amuse.datamodel import Particles 
+from amuse.io import read_set_from_file
+from amuse.units import units
+from amuse.units import constants
 
 R_young_stars = [ 0.1012221753955787, 0.2968660204589863,
                   0.5017430508551541, 0.7046418772801384, 0.8984687805821738,

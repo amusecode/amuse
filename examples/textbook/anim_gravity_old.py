@@ -1,7 +1,10 @@
 import os
 from matplotlib import pyplot
 import matplotlib.animation as animation
-from amuse.lab import *
+# from amuse.lab import *
+from amuse.io import read_set_from_file
+from amuse.units import units
+
 
 fig = pyplot.figure(figsize=(8,8))
 ax = fig.add_subplot(1,1,1)

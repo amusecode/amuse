@@ -1,8 +1,16 @@
 import math, numpy
 from matplotlib import pyplot
-from amuse.lab import *
+# from amuse.lab import *
 from optparse import OptionParser
 from amuse.ext.LagrangianRadii import LagrangianRadii
+from amuse.units import nbody_system
+from amuse.ic.kingmodel import new_king_model
+from amuse.ic.salpeter import new_powerlaw_mass_distribution
+from amuse.units import units
+from amuse.community.ph4.interface import ph4
+from amuse.datamodel import Particles
+from amuse.units.quantities import zero
+
 
 def merge_two_stars(bodies, particles_in_encounter, tcoll):
     com_pos = particles_in_encounter.center_of_mass()
@@ -47,7 +55,7 @@ def main(N=10, W0=7.0, t_end=10, nsteps=10,
 
     time = 0.0 | t_end.unit
     Nenc = 0
-    dEk_enc = zero    
+    dEk_enc = zero  
     dEp_enc = zero
 
     t = []
@@ -156,7 +164,7 @@ def new_option_parser():
     result = OptionParser()
     result.add_option("-f", dest="filename", default = "gravity_stellar.hdf5",
                       help="output filename [gravity_stellar.hdf5]")
-    result.add_option("-N", dest="N", type="int",default = 1000,
+    result.add_option("-N", dest="N", type="int",default = 100,
                       help="number of stars [100]")
     result.add_option("-n", dest="nsteps", type="int",default = 100,
                       help="number of output steps [10]")

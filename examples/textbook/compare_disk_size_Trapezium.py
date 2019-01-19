@@ -3,7 +3,7 @@ import os
 import numpy
 import math
 from matplotlib import pyplot
-from amuse.lab import *
+# from amuse.lab import *
 
 from prepare_figure import single_frame, figure_frame, set_tickmarks
 from distinct_colours import get_distinct

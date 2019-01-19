@@ -1,6 +1,13 @@
-from amuse.lab import *
+# from amuse.lab import *
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.ic.salpeter import new_salpeter_mass_distribution
+from amuse.ic.kingmodel import new_king_model
 from amuse.units.optparse import OptionParser
-    
+from amuse.community.sse.interface import SSE
+from amuse.community.ph4.interface import ph4
+from amuse.io import write_set_to_file
+
 def main(N, t_end, W0, Rvir, Mmin, Mmax, z):
 
 ###BOOKLISTSTART1###

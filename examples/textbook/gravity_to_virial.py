@@ -1,7 +1,12 @@
 """
    Simple routine for running a gravity code
 """
-from amuse.lab import *
+# from amuse.lab import *
+from amuse.units import nbody_system
+from amuse.ic.plummer import new_plummer_model
+from amuse.community.ph4.interface import ph4
+from amuse.community.huayno.interface import Huayno
+from amuse.community.bhtree.interface import BHTree
 from matplotlib import pyplot
 from prepare_figure import single_frame, figure_frame, set_tickmarks
 from distinct_colours import get_distinct

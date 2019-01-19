@@ -1,5 +1,9 @@
-from amuse.lab import * 
-
+# from amuse.lab import * 
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.community.huayno.interface import Huayno
+from amuse.datamodel import Particles
+from amuse.community.kepler.interface import Kepler
 from amuse.ext.solarsystem import solar_system_in_time
 from prepare_figure import single_frame, figure_frame, \
     			   set_tickmarks, get_distinct

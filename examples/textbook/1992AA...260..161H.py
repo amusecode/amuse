@@ -1,9 +1,19 @@
 import math
 import numpy
-from amuse.lab import *
+# from amuse.lab import *
 from amuse.ext.protodisk import ProtoPlanetaryDisk
 from optparse import OptionParser
 from amuse.couple import bridge
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.ic.gasplummer import new_plummer_gas_model
+from amuse.units import constants
+from amuse.datamodel import Particles
+from amuse.community.fi.interface import Fi
+from amuse.community.hermite0.interface import Hermite
+from amuse.datamodel import ParticlesSuperset
+from amuse.io import write_set_to_file
+
 
 def main(Mstar=1, Ndisk=100, Mdisk= 0.001, Rmin=1, Rmax=100, t_end=10, n_steps=10, filename="nbody.hdf5"):
 #    numpy.random.seed(111)

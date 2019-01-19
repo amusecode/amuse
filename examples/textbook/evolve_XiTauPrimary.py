@@ -1,4 +1,12 @@
-from amuse.lab import *
+# from amuse.lab import *
+from amuse.units import units 
+from amuse.community.mesa.interface import MESA
+from amuse.io import write_set_to_file
+from amuse.datamodel import Particle
+from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
+
+
+
 
 def new_option_parser():
     from amuse.units.optparse import OptionParser

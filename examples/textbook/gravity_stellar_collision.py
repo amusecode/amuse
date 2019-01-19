@@ -3,9 +3,19 @@
    function between Mmin and Mmax and with stellar evolution with
    metallicity z.
 """
-from amuse.lab import *
+# from amuse.lab import *
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units.quantities import zero
+from amuse.datamodel import Particles
 from amuse.io import store
+from amuse.io import write_set_to_file
 from amuse.community.seba.interface import SeBa
+from amuse.support.console import set_printing_strategy
+from amuse.ic.salpeter import new_salpeter_mass_distribution
+from amuse.ic.kingmodel import new_king_model
+from amuse.community.ph4.interface import ph4
+
 
 ###BOOKLISTSTART1###
 def merge_two_stars(bodies, particles_in_encounter):

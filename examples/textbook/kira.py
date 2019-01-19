@@ -1,7 +1,18 @@
-from amuse.lab import *
+# from amuse.lab import *
 from amuse.units.quantities import as_vector_quantity
 from amuse.couple import encounters
 from amuse.units import quantities
+from amuse.units import units
+from amuse.units import nbody_system
+from amuse.units import constants
+from amuse.datamodel import Particles
+from amuse.support.console import set_printing_strategy
+from amuse.ic.salpeter import new_salpeter_mass_distribution
+from amuse.ic.plummer import new_plummer_model
+from amuse.community.hermite0.interface import Hermite
+from amuse.community.seba.interface import SeBa
+from amuse.community.kepler.interface import Kepler
+from amuse.community.smalln.interface import SmallN
 import numpy
 import logging
 
