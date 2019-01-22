@@ -133,13 +133,13 @@ def run_hacs(infile = None,
 
     #-----------------------------------------------------------------
 
-    gravity.parameters.nmax    = nmax;
-    gravity.parameters.dtmax   = dt_max;
+    gravity.parameters.nmax    = nmax
+    gravity.parameters.dtmax   = dt_max
 #    gravity.parameters.n_ngb   = n_ngb;
-    gravity.parameters.eta_irr = eta_irr;
-    gravity.parameters.eta_reg = eta_reg;
+    gravity.parameters.eta_irr = eta_irr
+    gravity.parameters.eta_reg = eta_reg
     gravity.parameters.eps2    = softening_length**2
-    gravity.commit_parameters();
+    gravity.commit_parameters()
 
 
     print "adding particles"
@@ -203,7 +203,7 @@ def run_hacs(infile = None,
             gravity.particles.remove_particle(star1)
             gravity.particles.remove_particle(star2)
            
-            gravity.recommit_particles();
+            gravity.recommit_particles()
             
             print 'ls=', len(stars)
             
