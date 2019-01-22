@@ -322,42 +322,42 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       function = LegacyFunctionSpecification()  
       function.addParameter('time', dtype='float64', direction=function.IN, unit=97781310.5721*units.yr)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_time():
       function = LegacyFunctionSpecification()  
       function.addParameter('time', dtype='float64', direction=function.OUT, unit= 97781310.5721*units.yr)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function
    def get_omega_sys():
       function = LegacyFunctionSpecification()
       function.addParameter('omega_system', dtype='float64', direction=function.OUT, unit=10*units.km/(units.s*units.kpc) )
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function
    def get_initial_phase():
       function = LegacyFunctionSpecification()
       function.addParameter('initial_phase', dtype='float64', direction=function.OUT)# unit=units.rad 
       function.result_type = 'int32'
-      return function;
+      return function
 
    @legacy_function
    def get_flag():
       function = LegacyFunctionSpecification()
       function.addParameter('xflag', dtype='float64', direction=function.OUT )
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def set_flag():
       function = LegacyFunctionSpecification()  
       function.addParameter('xflag', dtype='float64', direction=function.IN)
       function.result_type = 'int32'
-      return function;
+      return function
    
    # BAR
    @legacy_function   
@@ -365,42 +365,42 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       function = LegacyFunctionSpecification()  
       function.addParameter('bar_phase', dtype='float64', direction=function.IN)# unit=units.rad
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_bar_phase():
       function = LegacyFunctionSpecification()  
       function.addParameter('bar_phase', dtype='float64', direction=function.OUT)# unit=units.rad
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def set_mass_bar():
       function = LegacyFunctionSpecification()  
       function.addParameter('mass_bar', dtype='float64', direction=function.IN, unit= 2.32e7*units.MSun)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_mass_bar():
       function = LegacyFunctionSpecification()  
       function.addParameter('mass_bar', dtype='float64', direction=function.OUT, unit=2.32e7*units.MSun)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def set_aaxis_bar():
       function = LegacyFunctionSpecification()  
       function.addParameter('aaxis_bar', dtype='float64', direction=function.IN, unit=units.kpc)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_aaxis_bar():
        function = LegacyFunctionSpecification()  
        function.addParameter('aaxis_bar', dtype='float64', direction=function.OUT, unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
 
 
    @legacy_function   
@@ -408,63 +408,63 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       function = LegacyFunctionSpecification()  
       function.addParameter('caxis_bar', dtype='float64', direction=function.IN, unit=units.kpc)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_caxis_bar():
        function = LegacyFunctionSpecification()  
        function.addParameter('caxis_bar', dtype='float64', direction=function.OUT, unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def set_axis_ratio_bar():
        function = LegacyFunctionSpecification()  
        function.addParameter('axis_ratio_bar', dtype='float64', direction=function.IN)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_axis_ratio_bar():
        function = LegacyFunctionSpecification()  
        function.addParameter('axis_ratio_bar', dtype='float64', direction=function.OUT)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_omega_bar():
        function = LegacyFunctionSpecification()  
        function.addParameter('omega_bar', dtype='float64', direction=function.IN, unit=10.*units.km/(units.s*units.kpc))
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_omega_bar():
        function = LegacyFunctionSpecification()  
        function.addParameter('omega_bar', dtype='float64', direction=function.OUT, unit=10.*units.km/(units.s*units.kpc))
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_nbt():
        function = LegacyFunctionSpecification()  
        function.addParameter('nbt', dtype='float64', direction=function.IN)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_nbt():
        function = LegacyFunctionSpecification()  
        function.addParameter('nbt', dtype='float64', direction=function.OUT)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function
    def get_tgrowth():
       function = LegacyFunctionSpecification()
       function.addParameter('tgrowth_bar', dtype='float64', direction=function.OUT, unit= 97781310.5721*units.yr)
       function.result_type = 'int32'
-      return function;
+      return function
    
    #SPIRAL 
    @legacy_function   
@@ -472,70 +472,70 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       function = LegacyFunctionSpecification()  
       function.addParameter('spiral_phase', dtype='float64', direction=function.IN)# unit=units.rad
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_spiral_phase():
       function = LegacyFunctionSpecification()  
       function.addParameter('spiral_phase', dtype='float64', direction=function.OUT)# unit=units.rad
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def set_m():
        function = LegacyFunctionSpecification()  
        function.addParameter('m', dtype='float64', direction=function.IN)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_m():
        function = LegacyFunctionSpecification()  
        function.addParameter('m', dtype='float64', direction=function.OUT)
        function.result_type = 'int32'
-       return function;
+       return function
    
    @legacy_function   
    def set_tan_pitch_angle():
        function = LegacyFunctionSpecification()  
        function.addParameter('tan_pitch_angle', dtype='float64', direction=function.IN)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_tan_pitch_angle():
        function = LegacyFunctionSpecification()  
        function.addParameter('tan_pitch_angle', dtype='float64', direction=function.OUT)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_r_sigma():
        function = LegacyFunctionSpecification()  
        function.addParameter('r_sigma', dtype='float64', direction=function.IN, unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_r_sigma():
        function = LegacyFunctionSpecification()  
        function.addParameter('r_sigma', dtype='float64', direction=function.OUT, unit= units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def set_omega_spiral():
       function = LegacyFunctionSpecification()  
       function.addParameter('omega_spiral', dtype='float64', direction=function.IN, unit=10*units.kms/units.kpc)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_omega_spiral():
       function = LegacyFunctionSpecification()  
       function.addParameter('omega_spiral', dtype='float64', direction=function.OUT, unit= 10*units.kms/units.kpc)
       function.result_type = 'int32'
-      return function;
+      return function
 
    #TWA
      
@@ -544,42 +544,42 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
        function = LegacyFunctionSpecification()  
        function.addParameter('N', dtype='float64', direction=function.IN)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_N():
        function = LegacyFunctionSpecification()  
        function.addParameter('N', dtype='float64', direction=function.OUT)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def set_rsp():
        function = LegacyFunctionSpecification()  
        function.addParameter('rsp', dtype='float64', direction=function.IN, unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_rsp():
        function = LegacyFunctionSpecification()  
        function.addParameter('rsp', dtype='float64', direction=function.OUT, unit= units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_amplitude():
        function = LegacyFunctionSpecification()  
        function.addParameter('amplitude', dtype='float64', direction=function.IN, unit=100*units.kms**2/units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_amplitude():
        function = LegacyFunctionSpecification()  
        function.addParameter('amplitude', dtype='float64', direction=function.OUT, unit= 100*units.kms**2/units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
 
    # CG02 spiral arms
@@ -668,28 +668,28 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
        function = LegacyFunctionSpecification()  
        function.addParameter('t_sim', dtype='float64', direction=function.IN, unit= 97781310.5721*units.yr )
        function.result_type = 'int32'
-       return function; 
+       return function
 
    @legacy_function   
    def get_t_sim():
        function = LegacyFunctionSpecification()  
        function.addParameter('t_sim', dtype='float64', direction=function.OUT, unit= 97781310.5721*units.yr )
        function.result_type = 'int32'
-       return function; 
+       return function
    
    @legacy_function   
    def set_sigma_s():
        function = LegacyFunctionSpecification()  
        function.addParameter('sigma_s', dtype='float64', direction=function.IN, unit= 97781310.5721*units.yr)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_sigma_s():
        function = LegacyFunctionSpecification()  
        function.addParameter('sigma_s', dtype='float64', direction=function.OUT, unit=97781310.5721*units.yr)
        function.result_type = 'int32'
-       return function;
+       return function
 
    
    @legacy_function   
@@ -697,70 +697,70 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
        function = LegacyFunctionSpecification()  
        function.addParameter('omega_spiral2', dtype='float64', direction=function.IN, unit=10.*units.km/(units.s*units.kpc))
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_omega_spiral2():
        function = LegacyFunctionSpecification()  
        function.addParameter('omega_spiral2', dtype='float64', direction=function.OUT, unit=10.*units.km/(units.s*units.kpc))
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_amplitude2():
        function = LegacyFunctionSpecification()  
        function.addParameter('amplitude2', dtype='float64', direction=function.IN, unit= 100*units.kms**2/units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_amplitude2():
        function = LegacyFunctionSpecification()  
        function.addParameter('amplitude2', dtype='float64', direction=function.OUT, unit= 100*units.kms**2/units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_tan_pitch_angle2():
        function = LegacyFunctionSpecification()  
        function.addParameter('tan_pitch_angle2', dtype='float64', direction=function.IN)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_tan_pitch_angle2():
        function = LegacyFunctionSpecification()  
        function.addParameter('tan_pitch_angle2', dtype='float64', direction=function.OUT)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_m2():
        function = LegacyFunctionSpecification()  
        function.addParameter('m2', dtype='float64', direction=function.IN)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_m2():
        function = LegacyFunctionSpecification()  
        function.addParameter('m2', dtype='float64', direction=function.OUT)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def set_phi21():
        function = LegacyFunctionSpecification()  
        function.addParameter('phi21_spiral', dtype='float64', direction=function.IN)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_phi21():
        function = LegacyFunctionSpecification()  
        function.addParameter('phi21_spiral', dtype='float64', direction=function.OUT)
        function.result_type = 'int32'
-       return function;
+       return function
   
   
    # _____________________ AXI_____________________________________________
@@ -769,98 +769,98 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
        function = LegacyFunctionSpecification()  
        function.addParameter('mass_bulge', dtype='float64', direction=function.IN, unit=2.32e7*units.MSun)
        function.result_type = 'int32'
-       return function;
+       return function
        
    @legacy_function  
    def get_mass_bulge():
        function = LegacyFunctionSpecification()  
        function.addParameter('mass_bulge', dtype='float64', direction=function.OUT, unit=2.32e7*units.MSun)
        function.result_type = 'int32'
-       return function;
+       return function
    
    @legacy_function   
    def set_b_bulge():
        function = LegacyFunctionSpecification()  
        function.addParameter('b_bulge', dtype='float64', direction=function.IN,unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_b_bulge():
        function = LegacyFunctionSpecification()  
        function.addParameter('b_bulge', dtype='float64', direction=function.OUT,unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
    
    @legacy_function   
    def set_mass_disk():
        function = LegacyFunctionSpecification()  
        function.addParameter('mass_disk', dtype='float64', direction=function.IN,unit=2.32e7*units.MSun)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_mass_disk():
        function = LegacyFunctionSpecification()  
        function.addParameter('mass_disk', dtype='float64', direction=function.OUT,unit=2.32e7*units.MSun)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_a_disk():
        function = LegacyFunctionSpecification()  
        function.addParameter('a_disk', dtype='float64', direction=function.IN,unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_a_disk():
        function = LegacyFunctionSpecification()  
        function.addParameter('a_disk', dtype='float64', direction=function.OUT,unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_b_disk():
        function = LegacyFunctionSpecification()  
        function.addParameter('b_disk', dtype='float64', direction=function.IN,unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_b_disk():
        function = LegacyFunctionSpecification()  
        function.addParameter('b_disk', dtype='float64', direction=function.OUT,unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_mass_halo():
        function = LegacyFunctionSpecification()  
        function.addParameter('mass_halo', dtype='float64', direction=function.IN,unit=2.32e7*units.MSun)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_mass_halo():
        function = LegacyFunctionSpecification()  
        function.addParameter('mass_halo', dtype='float64', direction=function.OUT,unit=2.32e7*units.MSun)
        function.result_type = 'int32'
-       return function;
+       return function
 
    @legacy_function   
    def set_a_halo():
        function = LegacyFunctionSpecification()  
        function.addParameter('a_halo', dtype='float64', direction=function.IN,unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
     
    @legacy_function   
    def get_a_halo():
        function = LegacyFunctionSpecification()  
        function.addParameter('a_halo', dtype='float64', direction=function.OUT,unit=units.kpc)
        function.result_type = 'int32'
-       return function;
+       return function
 
     
     # The following function sets the force of the spiral TWA or bar
@@ -870,14 +870,14 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       function = LegacyFunctionSpecification()  
       function.addParameter('spiral_contribution', dtype='int32', direction=function.IN)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_spiral_contribution():
       function = LegacyFunctionSpecification()  
       function.addParameter('spiral_contribution', dtype='int32', direction=function.OUT)
       function.result_type = 'int32'
-      return function;
+      return function
 
    
    @legacy_function
@@ -914,28 +914,28 @@ class BarAndSpiralsInterface(CodeInterface, CommonCodeInterface):
       function = LegacyFunctionSpecification()  
       function.addParameter('bar_contribution', dtype='int32', direction=function.IN)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_bar_contribution():
       function = LegacyFunctionSpecification()  
       function.addParameter('bar_contribution', dtype='int32', direction=function.OUT)
       function.result_type = 'int32'
-      return function;
+      return function
 
    @legacy_function   
    def set_transient_spiral():
       function = LegacyFunctionSpecification()  
       function.addParameter('transient_spiral', dtype='int32', direction=function.IN)
       function.result_type = 'int32'
-      return function;
+      return function
    
    @legacy_function   
    def get_transient_spiral():
       function = LegacyFunctionSpecification()  
       function.addParameter('transient_spiral', dtype='int32', direction=function.OUT)
       function.result_type = 'int32'
-      return function;
+      return function
 
    
    def before_set_parameter(self):
