@@ -683,7 +683,7 @@ class LegacyFunctionSpecification(object):
             if x.has_default_value():
                 yield x
                 
-    result_type = property(_get_result_type, _set_result_type);
+    result_type = property(_get_result_type, _set_result_type)
 
 
 

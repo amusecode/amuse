@@ -53,7 +53,7 @@ if __name__ == '__main__':
                 elif cols[1] == 'Multiple':
                     bin_id = int(cols[2])
                     #if log: q = log10(q)
-                    strsplit = cols[10].split('=');
+                    strsplit = cols[10].split('=')
                     if len(strsplit) == 2:
                         mykT = float(strsplit[1])
                         mydata = [tlist[len(tlist)-1], bin_id, mykT]

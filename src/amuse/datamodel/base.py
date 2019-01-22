@@ -43,7 +43,7 @@ class BasicUniqueKeyGenerator(KeyGenerator):
             return  []
             
         from_key = self.lowest_unique_key
-        to_key = from_key + length;
+        to_key = from_key + length
         self.lowest_unique_key += length
         return numpy.arange(from_key, to_key)
         

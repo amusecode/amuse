@@ -212,42 +212,42 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('isothermal_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_isothermal():
         """ get_isothermal(): isothermal if 1, Temperature evolution if 0 """
         function = LegacyFunctionSpecification()  
         function.addParameter('isothermal_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def set_H_caseA():
         """ set_H_caseA([0,1]): use case A for H if 1, not if 0 """
         function = LegacyFunctionSpecification()  
         function.addParameter('H_caseA_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_H_caseA():
         """ get_H_caseA(): use case A for H if 1, not if 0  """
         function = LegacyFunctionSpecification()  
         function.addParameter('H_caseA_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def set_He_caseA():
         """ set_He_caseA([0,1]): use case A for H if 1, not if 0 """
         function = LegacyFunctionSpecification()  
         function.addParameter('He_caseA_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_He_caseA():
         """ get_He_caseA(): use case A for H if 1, not if 0  """
         function = LegacyFunctionSpecification()  
         function.addParameter('He_caseA_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_raynumber():
@@ -255,14 +255,14 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('number_rays', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_raynumber():
         """ get number of rays per unit time  """
         function = LegacyFunctionSpecification()  
         function.addParameter('number_rays', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_defaultspectype():
@@ -270,14 +270,14 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('defaultspectype', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_defaultspectype():
         """ get default specType (negative in units of rydbergs, or positive integer) """
         function = LegacyFunctionSpecification()  
         function.addParameter('defaultspectype', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
         
     @legacy_function   
@@ -286,14 +286,14 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('iontempsolver', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_iontempsolver():
         """ get solver to use (1,2 = euler, bdf)  """
         function = LegacyFunctionSpecification()  
         function.addParameter('iontempsolver', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_boundary():
@@ -301,14 +301,14 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('boundary', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_boundary():
         """ get boundary condition to use (-1,0,1 = reflective, vacuum, periodic)  """
         function = LegacyFunctionSpecification()  
         function.addParameter('boundary', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_boxsize():
@@ -316,14 +316,14 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('boxsize', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_boxsize():
         """ get box size in kpc   """
         function = LegacyFunctionSpecification()  
         function.addParameter('boxsize', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_globalHefraction():
@@ -331,14 +331,14 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('globalHefraction', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_globalHefraction():
         """ get He mass fraction (f_H+f_He=1 )   """
         function = LegacyFunctionSpecification()  
         function.addParameter('globalHefraction', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_momentum_kicks():
@@ -346,14 +346,14 @@ class SPHRayInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function = LegacyFunctionSpecification()  
         function.addParameter('momentum_kicks', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_momentum_kicks():
         """ set_momentume_kicks([0,1]): calc momentum kicks if 1, not if 0 """
         function = LegacyFunctionSpecification()  
         function.addParameter('momentum_kicks', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function    
     def evolve_model():
