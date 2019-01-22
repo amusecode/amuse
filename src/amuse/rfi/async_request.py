@@ -600,7 +600,6 @@ class AsyncRequestsPool(object):
     def __init__(self, *requests):
         self.requests_and_handlers = []
         self.registered_requests = set([])
-        self.result_handlers = []
         for x in requests:
             self.add_request(x)
         
@@ -720,7 +719,13 @@ class AsyncRequestsPool(object):
         if isinstance(other, AbstractASyncRequest):
             self.add_request(other, lambda x: x.result())
         elif isinstance(other, AsyncRequestsPool):
-            raise Exception("join with pool not implemented yet...")
+            for x in other.requests_and_handlers:
+                self.add_request(
+                    x.async_request,
+                    x.result_handler,
+                    args = x.args,
+                    kwargs = x.kwargs
+                    )
         else:
             raise Exception("can only join request or pool")
         return self

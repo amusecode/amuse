@@ -609,6 +609,33 @@ class TestASync(TestWithMPI):
         
         instance1.stop()
 
+    def test24(self):
+        """ more test of pool """
+        instance1 = ForTesting(self.exefile)
+        instance2 = ForTesting(self.exefile)
+        
+        r1=instance1.echo_int(1, return_request=True)
+        r2=instance1.echo_int(2, return_request=True)
+        r3=instance2.echo_int(3, return_request=True)
+        r4=instance2.echo_int(4, return_request=True)
+        
+        p1=r1.join(r3)
+        p2=r2.join(r4)
+        
+        p3=p1.join(p2)
+        
+        self.assertTrue(p3 is p1)
+        
+        p3.waitall()
+        
+        self.assertEqual(r1.result(), 1)
+        self.assertEqual(r2.result(), 2)
+        self.assertEqual(r3.result(), 3)
+        self.assertEqual(r4.result(), 4)
+        
+        instance1.stop()
+        instance2.stop()
+
 
 class TestASyncDistributed(TestASync):
 
