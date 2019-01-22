@@ -158,9 +158,8 @@ def run_molecular_cloud(N=100, Mcloud=100. | units.MSun,
   
 if __name__ in ("__main__","__plot__"):
 
-    parts = run_molecular_cloud(1000,
-                                Mcloud=10000.|units.MSun,
-                                Rcloud=3.|units.parsec)
-
-
-    
+    parts = run_molecular_cloud(
+        1000,
+        Mcloud=10000. | units.MSun,
+        Rcloud=3. | units.parsec,
+    )
