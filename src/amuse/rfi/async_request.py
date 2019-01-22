@@ -62,7 +62,9 @@ class AbstractASyncRequest(object):
         #~ return False
         
     def join(self, other):
-        if isinstance(other, AbstractASyncRequest):
+        if other is None:
+            return self
+        elif isinstance(other, AbstractASyncRequest):
             pool = AsyncRequestsPool()
             pool.add_request(self, lambda x: x.result())
             pool.add_request(other, lambda x: x.result())
@@ -716,7 +718,9 @@ class AsyncRequestsPool(object):
                     break
 
     def join(self, other):
-        if isinstance(other, AbstractASyncRequest):
+        if other is None:
+            return self
+        elif isinstance(other, AbstractASyncRequest):
             self.add_request(other, lambda x: x.result())
         elif isinstance(other, AsyncRequestsPool):
             for x in other.requests_and_handlers:
