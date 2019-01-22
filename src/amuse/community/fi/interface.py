@@ -370,7 +370,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('number_of_particles', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function    
     def get_hydro_state_at_point():
@@ -407,14 +407,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('use_hydro_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_use_hydro():
         """ get_use_hydro(): SPH hydro if 1, gravity only if 0 """
         function = LegacyFunctionSpecification()  
         function.addParameter('use_hydro_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_radiate():
@@ -423,7 +423,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('radiation_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_radiate():
         """ get_radiate(): rad cooling/heating if 1, not if 0
@@ -431,7 +431,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('radiation_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_starform():
@@ -439,14 +439,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('star_formation_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_starform():
         """ get_starform(): star formation if 1, not if 0 """        
         function = LegacyFunctionSpecification()  
         function.addParameter('star_formation_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_cosmo():
@@ -454,14 +454,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_cosmo():
         """ get_cosmo(): not functional at the moment """        
         function = LegacyFunctionSpecification()  
         function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_sqrttstp():
@@ -469,14 +469,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('square_root_timestep_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_sqrttstp():
         """ get_sqrttstp(): use sqrt(eps/acc) timestep crit if 1"""        
         function = LegacyFunctionSpecification()  
         function.addParameter('square_root_timestep_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_acc_tstp():
@@ -484,14 +484,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('acc_timestep_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_acc_tstp():
         """ get_acc_tstp(): use vref/acc timestep crit if 1"""            
         function = LegacyFunctionSpecification()  
         function.addParameter('acc_timestep_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_freetstp():
@@ -499,14 +499,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('freeform_timestep_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_freetstp():
         """ get_freetstp(): use freeform timestep crit if 1"""            
         function = LegacyFunctionSpecification()  
         function.addParameter('freeform_timestep_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_usequad():
@@ -514,14 +514,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('quadrupole_moments_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_usequad():
         """ get_usequad(): calc. and use quadrupole cell moments if 1"""                
         function = LegacyFunctionSpecification()  
         function.addParameter('quadrupole_moments_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_directsum():
@@ -529,14 +529,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('direct_sum_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_directsum():
         """ get_directsum(): direct N**2 grav sum if 1"""                
         function = LegacyFunctionSpecification()  
         function.addParameter('direct_sum_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_selfgrav():
@@ -545,14 +545,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('self_gravity_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_selfgrav():
         """ get_selfgrav(): calculate self-gravity if 1 """
         function = LegacyFunctionSpecification()  
         function.addParameter('self_gravity_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_fixthalo():
@@ -560,14 +560,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('fixed_halo_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_fixthalo():
         """ get_fixthalo(): use fixed (spherical) potential if 1 """    
         function = LegacyFunctionSpecification()  
         function.addParameter('fixed_halo_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_adaptive_eps():
@@ -575,14 +575,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('adaptive_smoothing_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_adaptive_eps():
         """ get_adaptive_eps(): use of adaptive grav smoothing for all part if 1 """    
         function = LegacyFunctionSpecification()  
         function.addParameter('adaptive_smoothing_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_gdgop():
@@ -590,14 +590,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('gadget_cell_opening_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_gdgop():
         """ get_gdgop(): use of gadget cell opening criterion if 1 """        
         function = LegacyFunctionSpecification()  
         function.addParameter('gadget_cell_opening_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_smoothinput():
@@ -606,7 +606,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('smooth_input_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_smoothinput():
         """ get_smoothinput(): smooth input SPH prop. if 1 
@@ -614,7 +614,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('smooth_input_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_consph():
@@ -623,7 +623,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('conservative_sph_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_consph():
         """ get_consph(): use springel&Hernquist conservative SPH form. if 1 
@@ -631,7 +631,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('conservative_sph_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_sphinit():
@@ -640,7 +640,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('sph_dens_init_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_sphinit():
         """ set_sphinit([0,1]): initialize sph dens and hsmooth if 1 
@@ -648,7 +648,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('sph_dens_init_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_uentropy():
@@ -656,14 +656,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('integrate_entropy_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_uentropy():
         """ get_uentropy(): integrate entropy if 1, internal energy if 0"""        
         function = LegacyFunctionSpecification()  
         function.addParameter('integrate_entropy_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_isotherm():
@@ -672,7 +672,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('isothermal_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_isotherm():
         """ get_isotherm(): isothermal gas if 1
@@ -680,7 +680,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('isothermal_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_eps_is_h():
@@ -688,14 +688,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('eps_is_h_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_eps_is_h():
         """ get_eps_is_h(): gas particles grav. eps to SPH h if 1"""        
         function = LegacyFunctionSpecification()  
         function.addParameter('eps_is_h_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_balsara():
@@ -703,14 +703,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('balsara_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_balsara():
         """ set_balsara([0,1]): use Balsara viscosity limiter if 1"""        
         function = LegacyFunctionSpecification()  
         function.addParameter('balsara_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_mingaseps():
@@ -718,14 +718,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('mingaseps_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_mingaseps():
         """ set_mingaseps([0,1]): enforce minimum gas grav eps if 1"""        
         function = LegacyFunctionSpecification()  
         function.addParameter('mingaseps_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
 
 
@@ -736,14 +736,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('first_snapshot', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_firstsnap():
         """ no. of first snapshot """
         function = LegacyFunctionSpecification()  
         function.addParameter('first_snapshot', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_stepout():
@@ -751,14 +751,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('output_interval', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_stepout():
         """ no. of steps between output """
         function = LegacyFunctionSpecification()  
         function.addParameter('output_interval', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_steplog():
@@ -766,14 +766,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('log_interval', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_steplog():
         """ no. of steps between logs """
         function = LegacyFunctionSpecification()  
         function.addParameter('log_interval', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_max_tbin():
@@ -781,14 +781,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('maximum_time_bin', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_max_tbin():
         """ maximum time bin (dtime*2**-max_tbin=minimum time step)"""
         function = LegacyFunctionSpecification()  
         function.addParameter('maximum_time_bin', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_minppbin():
@@ -796,14 +796,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('minimum_part_per_bin', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_minppbin():
         """ target no. of particles per time bin"""
         function = LegacyFunctionSpecification()  
         function.addParameter('minimum_part_per_bin', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_targetnn():
@@ -811,14 +811,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('targetnn', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_targetnn():
         """ target no. of neighbour particles for variable grav. eps"""
         function = LegacyFunctionSpecification()  
         function.addParameter('targetnn', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_verbosity():
@@ -826,14 +826,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('verbosity', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_verbosity():
         """ level of terminal output (0=minimum)"""
         function = LegacyFunctionSpecification()  
         function.addParameter('verbosity', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_nsmooth():
@@ -841,14 +841,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('nsmooth', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_nsmooth():
         """ target number of SPH neighbours"""
         function = LegacyFunctionSpecification()  
         function.addParameter('nsmooth', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
 # real
     @legacy_function
@@ -857,14 +857,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('pboxsize', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_pboxsize():
         """ size of simulation domain box (particles outside get deleted)"""
         function = LegacyFunctionSpecification()  
         function.addParameter('pboxsize', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_dtime():
@@ -872,14 +872,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('dtime', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_dtime():
         """ timestep (code units)"""
         function = LegacyFunctionSpecification()  
         function.addParameter('dtime', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_unitm_in_msun():
@@ -887,14 +887,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('unitm_in_msun', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_unitm_in_msun():
         """ code mass unit (in Msun, 10^9 standard) """
         function = LegacyFunctionSpecification()  
         function.addParameter('unitm_in_msun', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_unitl_in_kpc():
@@ -902,14 +902,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('unitl_in_kpc', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_unitl_in_kpc():
         """ code length unit (in kpc, 1) """
         function = LegacyFunctionSpecification()  
         function.addParameter('unitl_in_kpc', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
 
     @legacy_function
@@ -918,14 +918,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('tstepcrit', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_tstepcrit():
         """ sqrttstp timestep constant (unitless,standard=1.) """
         function = LegacyFunctionSpecification()  
         function.addParameter('tstepcrit', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_tstpcr2():
@@ -933,14 +933,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('tstpcr2', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_tstpcr2():
         """ acc_tstp timestep constant (unitless,standard=0.25) """
         function = LegacyFunctionSpecification()  
         function.addParameter('tstpcr2', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_freev():
@@ -948,14 +948,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('freev', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_freev():
         """ freeform timestep constant """    
         function = LegacyFunctionSpecification()  
         function.addParameter('freev', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_freea():
@@ -963,14 +963,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('freea', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_freea():
         """ freeform timestep constant """    
         function = LegacyFunctionSpecification()  
         function.addParameter('freea', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_freevexp():
@@ -978,14 +978,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('freevexp', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_freevexp():
         """ freeform timestep constant """    
         function = LegacyFunctionSpecification()  
         function.addParameter('freevexp', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_freeaexp():
@@ -993,14 +993,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('freeaexp', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_freeaexp():
         """ freeform timestep constant """    
         function = LegacyFunctionSpecification()  
         function.addParameter('freeaexp', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_bh_tol():
@@ -1008,14 +1008,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('bh_tol', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_bh_tol():
         """ Barnes Hut opening angle parameter (unitless, 0.5) """    
         function = LegacyFunctionSpecification()  
         function.addParameter('bh_tol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_eps():
@@ -1023,14 +1023,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('eps', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_eps():
         """ gravitational softening length, spline soft. (code length, 1.) """    
         function = LegacyFunctionSpecification()  
         function.addParameter('eps', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     def set_eps2(self,eps2):
         return self.set_eps(eps2**0.5)
@@ -1044,14 +1044,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('gdgtol', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_gdgtol():
         """ Gadget cell openings criterion parameter  (unitless, .01) """    
         function = LegacyFunctionSpecification()  
         function.addParameter('gdgtol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_nn_tol():
@@ -1059,14 +1059,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('nn_tol', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_nn_tol():
         """ fractional tolerance in nn_target  (0.1) """        
         function = LegacyFunctionSpecification()  
         function.addParameter('nn_tol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_epsgas():
@@ -1074,14 +1074,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('epsgas', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_epsgas():
         """ gas grav smoothing eps"""        
         function = LegacyFunctionSpecification()  
         function.addParameter('epsgas', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_gamma():
@@ -1089,14 +1089,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('gamma', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_gamma():
         """ gas polytropic index (1.666667) """        
         function = LegacyFunctionSpecification()  
         function.addParameter('gamma', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_alpha():
@@ -1104,14 +1104,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('alpha', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_alpha():
         """ SPH artificial viscosity alpha parameter (0.5) """        
         function = LegacyFunctionSpecification()  
         function.addParameter('alpha', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_beta():
@@ -1119,14 +1119,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('beta', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_beta():
         """ SPH artificial viscosity beta parameter (2*alpha=1.0) """        
         function = LegacyFunctionSpecification()  
         function.addParameter('beta', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_epssph():
@@ -1134,14 +1134,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('epssph', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_epssph():
         """ SPH artificial viscosity safety against divergence (0.01) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('epssph', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_courant():
@@ -1149,14 +1149,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('courant', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_courant():
         """ SPH courant condition parameter (0.3) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('courant', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_removgas():
@@ -1164,14 +1164,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('removgas', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_removgas():
         """ minimum gas particle mass (fraction of initial (average) mass) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('removgas', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_consthsm():
@@ -1179,14 +1179,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('consthsm', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_consthsm():
         """ SPH smoothing length if constant"""            
         function = LegacyFunctionSpecification()  
         function.addParameter('consthsm', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_nsmtol():
@@ -1194,14 +1194,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('nsmtol', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_nsmtol():
         """ tolerance in number of SPH neighbours """            
         function = LegacyFunctionSpecification()  
         function.addParameter('nsmtol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_graineff():
@@ -1209,14 +1209,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('graineff', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_graineff():
         """ FUV grain heating efficiency parameter (unitless, 0.05) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('graineff', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_crionrate():
@@ -1224,14 +1224,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('crionrate', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_crionrate():
         """ primary cosmic ray ionization rate (in units of 1.e-17 sec^-1, 3.6) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('crionrate', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_heat_par1():
@@ -1239,14 +1239,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('heat_par1', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_heat_par1():
         """ additional heating 1 (0.0)"""            
         function = LegacyFunctionSpecification()  
         function.addParameter('heat_par1', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_heat_par2():
@@ -1254,14 +1254,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('heat_par2', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_heat_par2():
         """ additional heating 2 (0.0)"""            
         function = LegacyFunctionSpecification()  
         function.addParameter('heat_par2', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_cool_par():
@@ -1269,14 +1269,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('cool_par', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_cool_par():
         """ additional cooling (0.0)"""            
         function = LegacyFunctionSpecification()  
         function.addParameter('cool_par', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_optdepth():
@@ -1284,14 +1284,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('optdepth', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_optdepth():
         """ 1/(mean free path) for UV photons (code length **-1, 0.0)"""            
         function = LegacyFunctionSpecification()  
         function.addParameter('optdepth', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_tcollfac():
@@ -1299,14 +1299,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('tcollfac', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_tcollfac():
         """ star formation delay parameter (unitless, 1) """
         function = LegacyFunctionSpecification()  
         function.addParameter('tcollfac', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_masscrit():
@@ -1314,14 +1314,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('masscrit', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_masscrit():
         """ star formation cloud reference mass (Msun, 1.e5) """
         function = LegacyFunctionSpecification()  
         function.addParameter('masscrit', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_sfeff():
@@ -1329,14 +1329,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('sfeff', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_sfeff():
         """ gas particle mass fraction converted to stars (0.125) """
         function = LegacyFunctionSpecification()  
         function.addParameter('sfeff', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_tbubble():
@@ -1344,14 +1344,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('tbubble', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_tbubble():
         """ Supernova activity time, (Myr, 3.e7) """
         function = LegacyFunctionSpecification()  
         function.addParameter('tbubble', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_sne_eff():
@@ -1359,14 +1359,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('sne_eff', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_sne_eff():
         """ Supernova feedback coupling efficiency, (0.1) """
         function = LegacyFunctionSpecification()  
         function.addParameter('sne_eff', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_tsnbeg():
@@ -1374,14 +1374,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('tsnbeg', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_tsnbeg():
         """ Supernova feedback start time, (Myr, 3.e6) """
         function = LegacyFunctionSpecification()  
         function.addParameter('tsnbeg', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_rhomax():
@@ -1389,14 +1389,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('rhomax', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_rhomax():
         """ Maximum density in case of star formation (force SF if exceeded, ignored if star formation is off) """
         function = LegacyFunctionSpecification()  
         function.addParameter('rhomax', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
 
 # character
@@ -1406,14 +1406,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('halofile', dtype='string', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_halofile():
         """ halo model file (none) """
         function = LegacyFunctionSpecification()  
         function.addParameter('halofile', dtype='string', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_feedback():
@@ -1421,14 +1421,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('feedback', dtype='string', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_feedback():
         """ feedback model (fuv, pres, kine, solo, solh) """
         function = LegacyFunctionSpecification()  
         function.addParameter('feedback', dtype='string', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_sfmode():
@@ -1436,14 +1436,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('sfmode', dtype='string', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_sfmode():
         """ star formation model (gerritsen, nieuw) """
         function = LegacyFunctionSpecification()  
         function.addParameter('sfmode', dtype='string', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_hupdatemethod():
@@ -1451,14 +1451,14 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('hupdatemethod', dtype='string', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_hupdatemethod():
         """ SPH smoothing length criterion (at the moment always 'mass')  """
         function = LegacyFunctionSpecification()  
         function.addParameter('hupdatemethod', dtype='string', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_sph_visc():
@@ -1467,7 +1467,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('sph_visc', dtype='string', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_sph_visc():
         """ SPH viscosity (sph,sphv, bulk)  
@@ -1475,7 +1475,7 @@ class FiInterface(
         function = LegacyFunctionSpecification()  
         function.addParameter('sph_visc', dtype='string', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_time_step():
@@ -1579,7 +1579,7 @@ class GlFiInterface(FiInterface):
         function.addParameter('y', dtype='d', direction=function.OUT, unit=nbody_system.length)
         function.addParameter('z', dtype='d', direction=function.OUT, unit=nbody_system.length)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_image_target():
@@ -1589,7 +1589,7 @@ class GlFiInterface(FiInterface):
         function.addParameter('y', dtype='d', direction=function.IN, unit=nbody_system.length)
         function.addParameter('z', dtype='d', direction=function.IN, unit=nbody_system.length)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def get_viewpoint():
@@ -1599,7 +1599,7 @@ class GlFiInterface(FiInterface):
         function.addParameter('y', dtype='d', direction=function.OUT, unit=nbody_system.length)
         function.addParameter('z', dtype='d', direction=function.OUT, unit=nbody_system.length)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_viewpoint():
@@ -1609,7 +1609,7 @@ class GlFiInterface(FiInterface):
         function.addParameter('y', dtype='d', direction=function.IN, unit=nbody_system.length)
         function.addParameter('z', dtype='d', direction=function.IN, unit=nbody_system.length)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def get_upvector():
@@ -1619,7 +1619,7 @@ class GlFiInterface(FiInterface):
         function.addParameter('y', dtype='d', direction=function.OUT, unit=units.none)
         function.addParameter('z', dtype='d', direction=function.OUT, unit=units.none)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def get_image_angle():
@@ -1627,7 +1627,7 @@ class GlFiInterface(FiInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('image_angle', dtype='d', direction=function.OUT, unit=units.deg)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def set_image_angle():
@@ -1635,7 +1635,7 @@ class GlFiInterface(FiInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('image_angle', dtype='d', direction=function.IN, unit=units.deg)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function   
     def get_image_ratio():
@@ -1643,7 +1643,7 @@ class GlFiInterface(FiInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('image_ratio', dtype='d', direction=function.OUT, unit=None)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def viewer():
@@ -3488,14 +3488,14 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('random_seed', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_random_seed():
         """ random seed to use """            
         function = LegacyFunctionSpecification()  
         function.addParameter('random_seed', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_extinction_flag():
@@ -3503,14 +3503,14 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('extinction_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_extinction_flag():
         """ whether to use the particle opacities (0=no, 1= yes) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('extinction_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
 
     @legacy_function
@@ -3519,14 +3519,14 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('minimum_distance', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_minimum_distance():
         """ minimum distance to the camera particles can have """            
         function = LegacyFunctionSpecification()  
         function.addParameter('minimum_distance', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_image_angle():
@@ -3534,14 +3534,14 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('image_angle', dtype='d', direction=function.IN,unit=units.deg)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_image_angle():
         """ angle of image in x direction (for perpective proj.) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('image_angle', dtype='d', direction=function.OUT,unit=units.deg)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_image_width():
@@ -3549,14 +3549,14 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('image_width', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_image_width():
         """ angle of image in x direction (for parallel proj.) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('image_width', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_image_pixel_size():
@@ -3565,7 +3565,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('nx', dtype='i', direction=function.IN)
         function.addParameter('ny', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_image_pixel_size():
         """ pixel size of generated image """            
@@ -3573,7 +3573,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('nx', dtype='i', direction=function.OUT)
         function.addParameter('ny', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     def get_index_range_inclusive(self):
         ni,nj,error = self.get_image_pixel_size()
@@ -3588,7 +3588,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('y', dtype='d', direction=function.IN)
         function.addParameter('z', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_image_target():
         """ target point of image """            
@@ -3597,7 +3597,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('y', dtype='d', direction=function.OUT)
         function.addParameter('z', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_viewpoint():
@@ -3607,7 +3607,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('y', dtype='d', direction=function.IN)
         function.addParameter('z', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_viewpoint():
         """ camera position (for perspective proj) """            
@@ -3616,7 +3616,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('y', dtype='d', direction=function.OUT)
         function.addParameter('z', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_projection_direction():
@@ -3626,7 +3626,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('y', dtype='d', direction=function.IN)
         function.addParameter('z', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_projection_direction():
         """ direction of projection (for parallel proj) """            
@@ -3635,7 +3635,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('y', dtype='d', direction=function.OUT)
         function.addParameter('z', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_upvector():
@@ -3645,7 +3645,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('y', dtype='d', direction=function.IN)
         function.addParameter('z', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_upvector():
         """ specify the orientation of the image by setting the direction vector of image y """            
@@ -3654,7 +3654,7 @@ class FiMapInterface(CodeInterface):
         function.addParameter('y', dtype='d', direction=function.OUT)
         function.addParameter('z', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
     @legacy_function
     def set_projection_mode():
@@ -3662,14 +3662,14 @@ class FiMapInterface(CodeInterface):
         function = LegacyFunctionSpecification()  
         function.addParameter('projection_mode', dtype='string', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
     @legacy_function   
     def get_projection_mode():
         """ projection mode (parallel or projection """
         function = LegacyFunctionSpecification()  
         function.addParameter('projection_mode', dtype='string', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
 
 
     @legacy_function    
