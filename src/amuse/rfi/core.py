@@ -103,7 +103,7 @@ class CodeFunction(object):
             try:
                 self.interface.async_request.wait()
             except Exception,ex:
-                warnings.warn("Ignored exception: " + str(ex))
+                warnings.warn("Ignored exception in async call: " + str(ex))
             
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
@@ -788,6 +788,9 @@ class CodeInterface(OptionalAttributes):
             if self.polling_interval_in_milliseconds > 0:
                 self.internal__set_message_polling_interval(int(self.polling_interval_in_milliseconds * 1000))
         
+    def wait(self):
+        if self.async_request is not None:
+            self.async_request.wait()
 
     @option(type="int", sections=("channel",))
     def polling_interval_in_milliseconds(self):

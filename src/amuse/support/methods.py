@@ -104,23 +104,19 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         self.definition.check_wrapped_method(self)
     
     def __call__(self, *list_arguments, **keyword_arguments):
+        async_dependency=keyword_arguments.pop("async_dependency", None)
+        return_request=keyword_arguments.pop("return_request", False)
+        
         if any(isinstance(x, AbstractASyncRequest) for x in list_arguments) or \
            any(isinstance(x, AbstractASyncRequest) for x in keyword_arguments):
-            async_dependency=keyword_arguments.get("async_dependency", None)
             list_arguments_=[]
             keyword_arguments_=dict()
             for arg in list_arguments:
                 if isinstance(arg, AbstractASyncRequest):
-                    if async_dependency is None:
-                        async_dependency=arg
-                    else:
-                        async_dependency.join(arg)              
+                        async_dependency=arg.join(async_dependency)              
             for key,arg in keyword_arguments.items():
                 if isinstance(arg, AbstractASyncRequest):
-                    if async_dependency is None:
-                        async_dependency=arg
-                    else:
-                        async_dependency.join(arg)              
+                        async_dependency=arg.join(async_dependency)              
 
             def dummy_factory():
                 return FakeASyncRequest()
@@ -144,29 +140,27 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
                   
                 return self.asynchronous(*list_arguments_, **keyword_arguments_)
 
-            if keyword_arguments.get("return_request", False):
-                request=DependentASyncRequest(request, factory)
+            request=DependentASyncRequest(request, factory)
+            if return_request:
                 request._result_index=self.convert_result_index()
                 return request
             else:
-                return DependentASyncRequest(request, factory).result()
-            
+                return request.result()
 
-        if keyword_arguments.get("return_request", False):
-            keyword_arguments.pop("return_request")
-            request = self.asynchronous(*list_arguments, **keyword_arguments)
-            request._result_index=self.convert_result_index()
-            return request
-        if keyword_arguments.get("async_dependency", None) is not None:
-            async_dependency=keyword_arguments.pop("async_dependency")
-            keyword_arguments["return_request"]=True
+        if async_dependency is not None:
             def factory():
                 return self.asynchronous(*list_arguments, **keyword_arguments)
             request = DependentASyncRequest(async_dependency, factory)
+            if return_request:
+                request._result_index=self.convert_result_index()
+                return request
+            else:
+                return request.result()
+
+        if return_request:
+            request = self.asynchronous(*list_arguments, **keyword_arguments)
             request._result_index=self.convert_result_index()
             return request
-
-
 
         object = self.precall()
         list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)

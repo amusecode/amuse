@@ -250,7 +250,7 @@ class TestASync(TestWithMPI):
         
         instance1.do_sleep(1, return_request=True)
         request1=instance1.echo_int(10, return_request=True)
-        request2=instance2.echo_int(20, async_dependency=request1)
+        request2=instance2.echo_int(20, async_dependency=request1, return_request=True)
 
         request2.wait()
         self.assertTrue(request1.is_result_available())
@@ -440,7 +440,7 @@ class TestASync(TestWithMPI):
         request2=instance2.echo_int(10, return_request=True)
         request=async_request.AsyncRequestsPool(request1,request2)
                         
-        request3=instance3.echo_int(11, async_dependency=request)
+        request3=instance3.echo_int(11, async_dependency=request, return_request=True)
         request3.wait()
         self.assertTrue(request1.is_result_available())
         self.assertTrue(request2.is_result_available())
@@ -461,7 +461,7 @@ class TestASync(TestWithMPI):
         request2=instance1.echo_int(10, return_request=True)
         request=async_request.AsyncRequestsPool(request1,request2)
                         
-        request3=instance3.echo_int(11, async_dependency=request)
+        request3=instance3.echo_int(11, async_dependency=request, return_request=True)
         request3.wait()
         self.assertTrue(request1.is_result_available())
         self.assertTrue(request2.is_result_available())
