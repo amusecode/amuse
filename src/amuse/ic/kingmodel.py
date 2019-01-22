@@ -56,9 +56,9 @@ class MakeKingModel(object):
         max_steps = 50
         previous_sum = -1.0e30
         for i in range(max_steps):
-            sum = self.trapint_gaus2(a, b, i, previous_sum);
+            sum = self.trapint_gaus2(a, b, i, previous_sum)
             if (abs(sum - previous_sum) < eps * abs(previous_sum)): return sum
-            previous_sum = sum;
+            previous_sum = sum
         return 0.0
         
     # Integrate func from a to b in n steps, using the trapezoid rule.
@@ -73,7 +73,7 @@ class MakeKingModel(object):
             for i in range(base):
                 sum = sum + self.gaus2(x)
                 x = x + dx
-            return 0.5 * (previous_sum + (b - a)/base * sum);
+            return 0.5 * (previous_sum + (b - a)/base * sum)
             
     def gaus2(self, x):
         return x*x*math.exp(-x*x)

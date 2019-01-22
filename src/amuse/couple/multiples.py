@@ -1650,7 +1650,7 @@ class Multiples(object):
 
             time = 0 * end_time
 
-            resolve_collision_code.set_time(time);
+            resolve_collision_code.set_time(time)
             resolve_collision_code.particles.add_particles(particles)
             resolve_collision_code.commit_particles()
 

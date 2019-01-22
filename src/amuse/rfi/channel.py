@@ -1668,7 +1668,7 @@ class SocketMessage(AbstractMessage):
             if len(chars) != lengths.sum()+len(lengths):
                 raise Exception("send_strings size mismatch {0} vs {1}".format( len(chars) , lengths.sum()+len(lengths) ))
 
-            self.send_ints(socket, lengths);
+            self.send_ints(socket, lengths)
             socket.sendall(chars)
         
     def send_booleans(self, socket, array):
@@ -2158,7 +2158,7 @@ class DistributedChannel(AbstractMessageChannel):
         
         arguments = {'string': [self.executable, self.redirect_stdout_file, self.redirect_stderr_file, self.label, self.worker_dir], 'int32': [self.number_of_workers, self.number_of_threads], 'bool': [ self.dynamic_python_code]}
         
-        message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments);
+        message = SocketMessage(call_id=1, function_id=10101010, call_count=1, dtype_to_arguments=arguments)
 
         message.send(self.socket)
         
