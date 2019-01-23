@@ -1242,7 +1242,7 @@ class MpiChannel(AbstractMessageChannel):
             cls._scheduler_nodes = all_nodes
             cls._scheduler_index = 1     # start at 1 assumes that the python script is running on the first node as the first task
             cls._scheduler_initialized = True
-            print "NODES:", cls._scheduler_nodes
+            logger.info(("NODES:", cls._scheduler_nodes))
         hostnames = []
         count = 0
         while count < number_of_workers:
@@ -1252,7 +1252,7 @@ class MpiChannel(AbstractMessageChannel):
                 if cls._scheduler_index >= len(cls._scheduler_nodes):
                     cls._scheduler_index  = 0
         host = ','.join(hostnames)
-        print "HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE']
+        logger.info(("HOST:", host, cls._scheduler_index, os.environ['SLURM_TASKS_PER_NODE']))
         info = MPI.Info.Create()
         info['host'] = host                                                     #actually in mpich and openmpi, the host parameter is interpreted as a comma separated list of host names,
         return info
@@ -2327,7 +2327,7 @@ class LocalChannel(AbstractMessageChannel):
         import python_code
         
         module = import_module.import_unique(self.package + "." + self.so_module)
-        print module, self.package + "." + self.so_module
+        logger.info((module, self.package + "." + self.so_module))
         module.set_comm_world(MPI.COMM_SELF)
         self.local_implementation = python_code.CythonImplementation(module, self.legacy_interface_type)
         self.module = module
