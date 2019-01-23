@@ -5,6 +5,9 @@ import shutil
 import os
 
 import atexit
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class _ModuleRegister(object):
@@ -75,7 +78,7 @@ def cleanup():
             try:
                 os.remove(filename)
             except Exception as ex:
-                print "Could not delete file:",filename,", exception:",ex
+                logger.warning(("Could not delete file:",filename,", exception:",ex))
 
 # this struct will be passed as a ponter,
 # so we don't have to worry about the right layout
@@ -101,7 +104,7 @@ dl_iterate_phdr.restype = ctypes.c_int
 count = [0]
 def callback(info, size, data):
     # simple search
-    print "CLEANUP:", info.contents.dlpi_name
+    logger.info(("CLEANUP:", info.contents.dlpi_name))
     count[0] += 1
     return 0
   
@@ -126,6 +129,5 @@ def cleanup_module(mod):
             try:
                 os.remove(filename)
             except Exception as ex:
-                print "CLEANUP Could not delete file:",filename,", exception:",ex
+                logger.warning(("CLEANUP Could not delete file:",filename,", exception:",ex))
         mod.__ctypesfilename__ = None
-                

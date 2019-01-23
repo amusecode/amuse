@@ -36,6 +36,7 @@ except ImportError as ex:
     class config(object):
         is_mpi_enabled = False
 
+logger = logging.getLogger(__name__)
 CODE_LOG = logging.getLogger("code")
 if CODE_LOG.level == logging.NOTSET:
     CODE_LOG.setLevel(logging.WARN)
@@ -1114,7 +1115,7 @@ class PythonCodeInterface(CodeInterface):
     
     def __init__(self, implementation_factory = None, name_of_the_worker = None, **options):
         if self.channel_type == 'distributed':
-            print "Warning! Distributed channel not fully supported by PythonCodeInterface yet"
+            logger.warning("Warning! Distributed channel not fully supported by PythonCodeInterface yet")
         self.implementation_factory = implementation_factory
         
         CodeInterface.__init__(self, name_of_the_worker, **options)
