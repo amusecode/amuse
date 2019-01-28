@@ -78,7 +78,7 @@ class jdata {
     int njbuf;
 
 #ifndef NOMPI
-    MPI::Intracomm mpi_comm;		// communicator for the N-body system
+    MPI_Comm mpi_comm;		// communicator for the N-body system
 #endif
 
     int mpi_size;
@@ -179,7 +179,7 @@ class jdata {
     void set_manage_encounters(int m);
 
 #ifndef NOMPI
-    void setup_mpi(MPI::Intracomm comm);
+    void setup_mpi(MPI_Comm comm);
 #endif
     int define_domain(int& j_start, int& j_end);
     void setup_gpu();
