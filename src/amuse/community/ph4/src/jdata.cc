@@ -40,14 +40,16 @@
 #include <stopcond.h>
 
 #ifndef NOMPI
-void jdata::setup_mpi(MPI::Intracomm comm)
+void jdata::setup_mpi(MPI_Comm comm)
 {
     const char *in_function = "jdata::setup_mpi";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     mpi_comm = comm;
-    mpi_size = mpi_comm.Get_size();
-    mpi_rank = mpi_comm.Get_rank();
+    //mpi_size = mpi_comm.Get_size();
+    //mpi_rank = mpi_comm.Get_rank();
+    MPI_Comm_size(mpi_comm, &mpi_size);
+    MPI_Comm_rank(mpi_comm, &mpi_rank);
 }
 #endif
 
@@ -595,7 +597,8 @@ real jdata::get_pot(bool reeval)		// default = false
 	}
 
 #ifndef NOMPI
-	mpi_comm.Allreduce(&mypot, &total_pot, 1, MPI_DOUBLE, MPI_SUM);
+	//mpi_comm.Allreduce(&mypot, &total_pot, 1, MPI_DOUBLE, MPI_SUM);
+    MPI_Allreduce(&mypot, &total_pot, 1, MPI_DOUBLE, MPI_SUM, mpi_comm);
 #else
     total_pot = mypot;
 #endif
