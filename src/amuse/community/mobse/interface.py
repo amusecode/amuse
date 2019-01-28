@@ -281,9 +281,9 @@ class MOBSE(common.CommonCode):
         self.model_time = 0.0 | units.yr
         
     
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
     
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "z_in",
             "metallicity",
@@ -291,7 +291,7 @@ class MOBSE(common.CommonCode):
             0.02
         )
                 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "neta_in",
             "reimers_mass_loss_coefficient",
@@ -299,7 +299,7 @@ class MOBSE(common.CommonCode):
             0.5
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "bwind_in",
             "binary_enhanced_mass_loss_parameter",
@@ -307,7 +307,7 @@ class MOBSE(common.CommonCode):
             0.0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "hewind_in",
             "helium_star_mass_loss_factor",
@@ -315,7 +315,7 @@ class MOBSE(common.CommonCode):
             1.0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "alpha1_in",
             "common_envelope_efficiency",
@@ -323,7 +323,7 @@ class MOBSE(common.CommonCode):
             1.0
         )
             
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "CElambda_in",
             "common_envelope_binding_energy_factor",
@@ -331,7 +331,7 @@ class MOBSE(common.CommonCode):
             0.1
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "ceflag_in",
             "common_envelope_model_flag",
@@ -339,7 +339,7 @@ class MOBSE(common.CommonCode):
             0
         )
             
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "tflag_in",
             "tidal_circularisation_flag",
@@ -347,7 +347,7 @@ class MOBSE(common.CommonCode):
             1
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "ifflag_in",
             "white_dwarf_IFMR_flag",
@@ -355,7 +355,7 @@ class MOBSE(common.CommonCode):
             0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "wdflag_in",
             "white_dwarf_cooling_flag",
@@ -363,7 +363,7 @@ class MOBSE(common.CommonCode):
             1
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "bhflag_in",
             "black_hole_kick_flag",
@@ -371,7 +371,7 @@ class MOBSE(common.CommonCode):
             1
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "nsflag_in",
             "neutron_star_mass_flag",
@@ -379,7 +379,7 @@ class MOBSE(common.CommonCode):
             3
         )
 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "piflag_in",
             "pair_instability_flag",
@@ -387,7 +387,7 @@ class MOBSE(common.CommonCode):
             1
         )
             
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "mxns_in",
             "maximum_neutron_star_mass",
@@ -395,7 +395,7 @@ class MOBSE(common.CommonCode):
             3.0 | units.MSun
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "idum_in",
             "SN_kick_random_seed",
@@ -403,7 +403,7 @@ class MOBSE(common.CommonCode):
             29769
         )
             
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts1_in",
             "fractional_time_step_1",
@@ -411,7 +411,7 @@ class MOBSE(common.CommonCode):
             0.05
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts2_in",
             "fractional_time_step_2",
@@ -419,7 +419,7 @@ class MOBSE(common.CommonCode):
             0.01
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts3_in",
             "fractional_time_step_3",
@@ -427,7 +427,7 @@ class MOBSE(common.CommonCode):
             0.02
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "sigma1_in",
             "SN_kick_speed_dispersion_ICS",
@@ -435,7 +435,7 @@ class MOBSE(common.CommonCode):
             265.0 | units.km / units.s
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "sigma2_in",
             "SN_kick_speed_dispersion_ECS",
@@ -443,7 +443,7 @@ class MOBSE(common.CommonCode):
             7.0 | units.km / units.s
         )
 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "beta_in",
             "wind_velocity_factor",
@@ -451,7 +451,7 @@ class MOBSE(common.CommonCode):
             0.125
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "xi_in",
             "wind_accretion_efficiency",
@@ -459,7 +459,7 @@ class MOBSE(common.CommonCode):
             1.0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "acc2_in",
             "wind_accretion_factor",
@@ -467,7 +467,7 @@ class MOBSE(common.CommonCode):
             1.5
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "epsnov_in",
             "nova_retained_accreted_matter_fraction",
@@ -475,7 +475,7 @@ class MOBSE(common.CommonCode):
             0.001
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "eddfac_in",
             "Eddington_mass_transfer_limit_factor",
@@ -483,7 +483,7 @@ class MOBSE(common.CommonCode):
             1.0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "gamma_in",
             "Roche_angular_momentum_factor",
@@ -492,22 +492,22 @@ class MOBSE(common.CommonCode):
         )
     
     
-    def define_state(self, object):
-        common.CommonCode.define_state(self, object)
-        object.add_transition('INITIALIZED','RUN','commit_parameters')
-        object.add_method('RUN', 'evolve_binary')
+    def define_state(self, handler):
+        common.CommonCode.define_state(self, handler)
+        handler.add_transition('INITIALIZED','RUN','commit_parameters')
+        handler.add_method('RUN', 'evolve_binary')
         
-        object.add_method('RUN','before_get_parameter')
-        object.add_method('RUN','before_set_parameter')
+        handler.add_method('RUN','before_get_parameter')
+        handler.add_method('RUN','before_set_parameter')
     
         
         
          
-    def define_particle_sets(self, object):
-        object.define_inmemory_set('particles', MOBSEStars)
-        object.define_inmemory_set('binaries', MOBSEBinaries)
+    def define_particle_sets(self, handler):
+        handler.define_inmemory_set('particles', MOBSEStars)
+        handler.define_inmemory_set('binaries', MOBSEBinaries)
         
-        object.add_attribute(
+        handler.add_attribute(
             'binaries',
             'time_step', 
             '_get_time_step', 

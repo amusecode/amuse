@@ -643,7 +643,7 @@ class FlashInterface(CodeInterface, HydrodynamicsInterface):
 #    def __init__(self, unit_converter = None, **options):
 #        InCodeComponentImplementation.__init__(self,  FlashInterface(**options), **options)
 
-#        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+#        handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
 
 #####################################################
 # Attempt to copy amrvac's class implemenation, working so far! - Josh
@@ -661,11 +661,11 @@ class Flash(CommonCode):
         
 #        self.set_parameters_filename(self.default_parameters_filename)
         
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if self.unit_converter is None:
             return
         
-        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+        handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
 
 
     def get_index_range_inclusive(self, index_of_grid = 1, nproc=0):
@@ -699,7 +699,7 @@ class Flash(CommonCode):
 
         return vel_array
 
-    def define_methods(self, object):
+    def define_methods(self, handler):
         
         #length = units.cm
         #time = units.s
@@ -714,371 +714,371 @@ class Flash(CommonCode):
 
 ### These two are included in CommonCode
 
-        #object.add_method(
+        #handler.add_method(
             #'initialize_code',
             #(),
-            #(object.ERROR_CODE)
+            #(handler.ERROR_CODE)
         #)
                 
         
-        #object.add_method(
+        #handler.add_method(
             #'cleanup_code',
             #(),
-            #(object.ERROR_CODE)
+            #(handler.ERROR_CODE)
         #)
         
-        object.add_method(
+        handler.add_method(
             'evolve_model',
             (time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (length, length, length, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (length, length, length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_index_of_position',
             (length, length, length),
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX,
-             object.INDEX, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,
+             handler.INDEX, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_max_refinement",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_state',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (density, momentum, momentum, momentum, energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'set_grid_state',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,
             density, momentum, momentum, momentum, energy),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_grid_energy_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             ( energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'set_grid_energy_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,
              energy),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_grid_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (density,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'set_grid_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,
             density),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_grid_momentum_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (momentum, momentum, momentum, 
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_momentum_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,
             momentum, momentum, momentum), 
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_velocity',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (speed, speed, speed, 
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'set_grid_velocity',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,
             speed, speed, speed), 
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_potential',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (potential, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (potential, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_potential_at_point',
             (length, length, length, length),
-            (potential, object.ERROR_CODE,)
+            (potential, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_gravity_at_point',
             (length, length, length, length),
-            (acc, acc, acc, object.ERROR_CODE,)
+            (acc, acc, acc, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_cell_volume',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (length**3, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (length**3, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_number_of_procs',
             (),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_all_local_num_grids',
-            (object.INDEX),
-            (object.INDEX, object.ERROR_CODE)
+            (handler.INDEX),
+            (handler.INDEX, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_data_all_local_blks',
-            (object.NO_UNIT),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.NO_UNIT),
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_1blk_cell_coords',
-            (object.NO_UNIT,object.NO_UNIT,object.NO_UNIT),
-            (length, object.ERROR_CODE)
+            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT),
+            (length, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_leaf_indices',
-            (object.NO_UNIT),
-            (object.NO_UNIT, object.INDEX, object.INDEX, object.ERROR_CODE)
+            (handler.NO_UNIT),
+            (handler.NO_UNIT, handler.INDEX, handler.INDEX, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'kick_grid',
             (time),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'kick_block',
-            (acc, acc, acc, object.INDEX, object.INDEX, object.NO_UNIT, time),
-            (object.ERROR_CODE)
+            (acc, acc, acc, handler.INDEX, handler.INDEX, handler.NO_UNIT, time),
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_timestep",
             (),
-            (time, object.ERROR_CODE,)
+            (time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_timestep",
             (time),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_end_time",
             (),
-            (time, object.ERROR_CODE,)
+            (time, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_end_time",
             (time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_time',
             (),
-            (time, object.ERROR_CODE,)
+            (time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_max_num_steps',
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_max_num_steps',
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_restart',
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_restart',
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_hydro_state_at_point',
             (length, length, length,
                 speed, speed, speed),
             (density, momentum, momentum, 
-                momentum, energy, object.ERROR_CODE)
+                momentum, energy, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_number_of_particles',
             (),
-            (object.NO_UNIT,object.ERROR_CODE,)
+            (handler.NO_UNIT,handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_accel_gas_on_particles',
             (length,length,length,length),
-            (acc,acc,acc, object.ERROR_CODE,)
+            (acc,acc,acc, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_num_part_prop',
             (),
-            (object.NO_UNIT,object.ERROR_CODE)
+            (handler.NO_UNIT,handler.ERROR_CODE)
         )
         
         ### I'm implementing this with my own defined function
         ### so that the structure of the array return looks
         ### right.
         
-        #object.add_method(
+        #handler.add_method(
             #'get_particle_position',
-            #(object.NO_UNIT),
-            #(length, length, length, object.ERROR_CODE) 
+            #(handler.NO_UNIT),
+            #(length, length, length, handler.ERROR_CODE) 
         #)
         
-        object.add_method(
+        handler.add_method(
             'set_particle_position',
-            (object.NO_UNIT, length, length, length),
-            (object.ERROR_CODE)
+            (handler.NO_UNIT, length, length, length),
+            (handler.ERROR_CODE)
         )
         
         ### Same as above.
         
-        #object.add_method(
+        #handler.add_method(
             #'get_particle_velocity',
-            #(object.NO_UNIT),
-            #(speed, speed, speed, object.ERROR_CODE)
+            #(handler.NO_UNIT),
+            #(speed, speed, speed, handler.ERROR_CODE)
         #)
         
-        object.add_method(
+        handler.add_method(
             'set_particle_velocity',
-            (object.NO_UNIT, speed, speed, speed),
-            (object.ERROR_CODE)
+            (handler.NO_UNIT, speed, speed, speed),
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'make_sink',
             (length, length, length),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_particle_mass',
-            (object.INDEX),
-            (mass, object.ERROR_CODE)
+            (handler.INDEX),
+            (mass, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_particle_mass',
-            (object.INDEX, mass),
-            (object.ERROR_CODE)
+            (handler.INDEX, mass),
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_particle_gpot',
-            (object.INDEX),
-            (potential, object.ERROR_CODE)
+            (handler.INDEX),
+            (potential, handler.ERROR_CODE)
         )
 
-        object.add_method(
+        handler.add_method(
             'set_particle_gpot',
-            (object.NO_UNIT, potential),
-            (object.ERROR_CODE)
+            (handler.NO_UNIT, potential),
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_particle_tags',
-            (object.INDEX),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.INDEX),
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_particle_proc',
-            (object.INDEX),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.INDEX),
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_particle_block',
-            (object.INDEX),
-            (object.INDEX, object.ERROR_CODE)
+            (handler.INDEX),
+            (handler.INDEX, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'write_chpt',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_new_tags',
-            (object.NO_UNIT),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.NO_UNIT),
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_number_of_new_tags',
             (),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'clear_new_tags',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'particles_gather',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
         
-#        object.add_method(
+#        handler.add_method(
 #            'make_particle_tree',
 #            (),
-#            (object.ERROR_CODE)
+#            (handler.ERROR_CODE)
 #        )
 
     def specify_grid(self, definition, index_of_grid = 1, nproc=0):
@@ -1120,7 +1120,7 @@ class Flash(CommonCode):
 
 
 
-    # Define an object that returns a list of all the blocks in the simulation.
+    # Define an handler that returns a list of all the blocks in the simulation.
     # This iterates over all processors and then loops over the blocks on the local processors.
     def itergrids(self):
         m = self.get_number_of_procs()
@@ -1133,27 +1133,27 @@ class Flash(CommonCode):
                 yield self._create_new_grid(self.specify_grid, index_of_grid = y, nproc=x)
 
 
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)   
-        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+    def define_state(self, handler): 
+        CommonCode.define_state(self, handler)   
+        handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
         
-        object.add_transition('EDIT', 'RUN', 'initialize_grid')
-        object.add_method('RUN', 'evolve_model')
-        object.add_method('RUN', 'get_hydro_state_at_point')
+        handler.add_transition('EDIT', 'RUN', 'initialize_grid')
+        handler.add_method('RUN', 'evolve_model')
+        handler.add_method('RUN', 'get_hydro_state_at_point')
         
         for state in ['EDIT', 'RUN']:
             for methodname in [
@@ -1219,5 +1219,5 @@ class Flash(CommonCode):
                     #'make_particle_tree',
                     'write_chpt'
                 ]:
-                object.add_method(state, methodname)
+                handler.add_method(state, methodname)
 

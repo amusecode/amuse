@@ -224,9 +224,9 @@ class MOSSE(common.CommonCode):
         self.model_time = 0.0 | units.yr
         
     
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
     
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "z_in",
             "metallicity",
@@ -234,7 +234,7 @@ class MOSSE(common.CommonCode):
             0.02
         )
                 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "neta_in",
             "reimers_mass_loss_coefficient",
@@ -242,7 +242,7 @@ class MOSSE(common.CommonCode):
             0.5
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "bwind_in",
             "binary_enhanced_mass_loss_parameter",
@@ -250,7 +250,7 @@ class MOSSE(common.CommonCode):
             0.0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "hewind_in",
             "helium_star_mass_loss_factor",
@@ -258,7 +258,7 @@ class MOSSE(common.CommonCode):
             1.0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "sigma1_in",
             "SN_kick_speed_dispersion_ICS",
@@ -266,7 +266,7 @@ class MOSSE(common.CommonCode):
             265.0 | units.km / units.s
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "sigma2_in",
             "SN_kick_speed_dispersion_ECS",
@@ -274,7 +274,7 @@ class MOSSE(common.CommonCode):
             7.0 | units.km / units.s
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "ifflag_in",
             "white_dwarf_IFMR_flag",
@@ -282,7 +282,7 @@ class MOSSE(common.CommonCode):
             0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "wdflag_in",
             "white_dwarf_cooling_flag",
@@ -290,7 +290,7 @@ class MOSSE(common.CommonCode):
             1
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "bhflag_in",
             "black_hole_kick_flag",
@@ -298,7 +298,7 @@ class MOSSE(common.CommonCode):
             1
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "nsflag_in",
             "neutron_star_mass_flag",
@@ -306,7 +306,7 @@ class MOSSE(common.CommonCode):
             3
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "piflag_in",
             "pair_instability_flag",
@@ -314,7 +314,7 @@ class MOSSE(common.CommonCode):
             1
         )
 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "mxns_in",
             "maximum_neutron_star_mass",
@@ -322,7 +322,7 @@ class MOSSE(common.CommonCode):
             3.0 | units.MSun
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "idum_in",
             "SN_kick_random_seed",
@@ -330,7 +330,7 @@ class MOSSE(common.CommonCode):
             29769
         )
             
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts1_in",
             "fractional_time_step_1",
@@ -338,7 +338,7 @@ class MOSSE(common.CommonCode):
             0.05
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts2_in",
             "fractional_time_step_2",
@@ -346,7 +346,7 @@ class MOSSE(common.CommonCode):
             0.01
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts3_in",
             "fractional_time_step_3",
@@ -354,19 +354,19 @@ class MOSSE(common.CommonCode):
             0.02
         )
     
-    def define_state(self, object):
-        common.CommonCode.define_state(self, object)
-        object.add_transition('INITIALIZED','RUN','commit_parameters')
-        object.add_method('RUN', 'evolve_star')
+    def define_state(self, handler):
+        common.CommonCode.define_state(self, handler)
+        handler.add_transition('INITIALIZED','RUN','commit_parameters')
+        handler.add_method('RUN', 'evolve_star')
         
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('RUN', 'before_set_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('RUN', 'before_set_parameter')
     
          
-    def define_particle_sets(self, object):
-        object.define_inmemory_set('particles', MOSSEParticles)
+    def define_particle_sets(self, handler):
+        handler.define_inmemory_set('particles', MOSSEParticles)
         
-        object.add_attribute(
+        handler.add_attribute(
             'particles',
             'time_step', 
             'get_time_step', 
@@ -374,7 +374,7 @@ class MOSSE(common.CommonCode):
              'mass', 'main_sequence_lifetime', 'epoch')
         )
         
-        object.add_attribute(
+        handler.add_attribute(
             'particles',
             'mass_loss_wind', 
             'get_mass_loss_wind', 
@@ -383,7 +383,7 @@ class MOSSE(common.CommonCode):
              'CO_core_mass')
         )
         
-        object.add_attribute(
+        handler.add_attribute(
             'particles',
             'gyration_radius', 
             'get_gyration_radius', 

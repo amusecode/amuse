@@ -608,37 +608,37 @@ class DistributedAmuse(CommonCode):
                 
         self.overridden().cleanup_code()
         
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)   
-        object.add_transition('INITIALIZED','RUN','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+    def define_state(self, handler): 
+        CommonCode.define_state(self, handler)   
+        handler.add_transition('INITIALIZED','RUN','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
         
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('INITIALIZED', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('INITIALIZED', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
 
-        object.add_method('RUN', 'startup_viz')
-        object.add_method('RUN', 'new_resource')
-        object.add_method('RUN', 'new_pilot')
-        object.add_method('RUN', 'submit_script_job')
-        object.add_method('RUN', 'submit_function_job')
-        object.add_method('RUN', 'get_resource_state')
-        object.add_method('RUN', 'get_pilot_state')
-        object.add_method('RUN', 'get_pilot_status')
-        object.add_method('RUN', 'get_script_job_state')
-        object.add_method('RUN', 'get_script_job_status')
-        object.add_method('RUN', 'get_function_job_state')
-        object.add_method('RUN', 'get_function_job_status')
-        object.add_method('RUN', 'get_worker_state')
-        object.add_method('RUN', 'get_worker_status')
-        object.add_method('RUN', 'use_for_distributed_workers')
-        object.add_method('RUN', 'use_for_all_workers')
+        handler.add_method('RUN', 'startup_viz')
+        handler.add_method('RUN', 'new_resource')
+        handler.add_method('RUN', 'new_pilot')
+        handler.add_method('RUN', 'submit_script_job')
+        handler.add_method('RUN', 'submit_function_job')
+        handler.add_method('RUN', 'get_resource_state')
+        handler.add_method('RUN', 'get_pilot_state')
+        handler.add_method('RUN', 'get_pilot_status')
+        handler.add_method('RUN', 'get_script_job_state')
+        handler.add_method('RUN', 'get_script_job_status')
+        handler.add_method('RUN', 'get_function_job_state')
+        handler.add_method('RUN', 'get_function_job_status')
+        handler.add_method('RUN', 'get_worker_state')
+        handler.add_method('RUN', 'get_worker_status')
+        handler.add_method('RUN', 'use_for_distributed_workers')
+        handler.add_method('RUN', 'use_for_all_workers')
 
     
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
               
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_debug",
             "set_debug",
             "debug", 
@@ -646,7 +646,7 @@ class DistributedAmuse(CommonCode):
             default_value = False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_start_hubs",
             "set_start_hubs",
             "start_hubs", 
@@ -654,7 +654,7 @@ class DistributedAmuse(CommonCode):
             default_value = True
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_worker_port",
             None,
             "worker_port", 
@@ -662,7 +662,7 @@ class DistributedAmuse(CommonCode):
             default_value = 0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_webinterface_port",
             "set_webinterface_port",
             "webinterface_port", 
@@ -670,7 +670,7 @@ class DistributedAmuse(CommonCode):
             default_value = 0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_worker_startup_timeout",
             "set_worker_startup_timeout",
             "worker_startup_timeout", 
@@ -678,7 +678,7 @@ class DistributedAmuse(CommonCode):
             default_value = 60 | units.s
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_worker_queue_timeout",
             "set_worker_queue_timeout",
             "worker_queue_timeout", 
@@ -686,56 +686,56 @@ class DistributedAmuse(CommonCode):
             default_value = 60 | units.s
         )
 
-        object.add_interface_parameter(
+        handler.add_interface_parameter(
             "startup_viz",
             "whether to startup simple smartsockets vizualization",
             False
         )
 
     
-    def define_particle_sets(self, object):
-        object.define_super_set('items', ['_resources', 'pilots', 'script_jobs', 'function_jobs', '_workers'])
+    def define_particle_sets(self, handler):
+        handler.define_super_set('items', ['_resources', 'pilots', 'script_jobs', 'function_jobs', '_workers'])
         
         #resources
-        object.define_set('resources', 'resource_id')
-        object.set_new('resources', 'new_resource')
-        object.set_delete('resources', 'delete_resource')
-        object.add_getter('resources', 'get_resource_state')
-        object.mapping_from_name_to_set_definition['resources'].particles_factory = Resources
+        handler.define_set('resources', 'resource_id')
+        handler.set_new('resources', 'new_resource')
+        handler.set_delete('resources', 'delete_resource')
+        handler.add_getter('resources', 'get_resource_state')
+        handler.mapping_from_name_to_set_definition['resources'].particles_factory = Resources
         
         #pilots
-        object.define_set('pilots', 'pilot_id')
-        object.set_new('pilots', 'new_pilot')
-        object.set_delete('pilots', 'delete_pilot')
-        object.add_getter('pilots', 'get_pilot_state')
-        object.add_getter('pilots', 'get_pilot_status', names = ('status',))
-        object.mapping_from_name_to_set_definition['pilots'].particles_factory = Pilots
+        handler.define_set('pilots', 'pilot_id')
+        handler.set_new('pilots', 'new_pilot')
+        handler.set_delete('pilots', 'delete_pilot')
+        handler.add_getter('pilots', 'get_pilot_state')
+        handler.add_getter('pilots', 'get_pilot_status', names = ('status',))
+        handler.mapping_from_name_to_set_definition['pilots'].particles_factory = Pilots
         
         #script jobs
         #FOR NOW, SCRIPT AND FUNCTION JOBS ARE DISABLED
-        #object.define_set('script_jobs', 'job_id')
-        #object.set_new('script_jobs', 'submit_script_job')
-        #object.set_delete('script_jobs', 'delete_script_job')
-        #object.add_getter('script_jobs', 'get_script_job_state')
-        #object.add_getter('script_jobs', 'get_script_job_status', names = ('status',))
-        #object.mapping_from_name_to_set_definition['script_jobs'].particles_factory = ScriptJobs
+        #handler.define_set('script_jobs', 'job_id')
+        #handler.set_new('script_jobs', 'submit_script_job')
+        #handler.set_delete('script_jobs', 'delete_script_job')
+        #handler.add_getter('script_jobs', 'get_script_job_state')
+        #handler.add_getter('script_jobs', 'get_script_job_status', names = ('status',))
+        #handler.mapping_from_name_to_set_definition['script_jobs'].particles_factory = ScriptJobs
 
         
         #function jobs
         #FOR NOW, SCRIPT AND FUNCTION JOBS ARE DISABLED
-        #object.define_set('function_jobs', 'job_id')
-        #object.set_new('function_jobs', 'submit_function_job')
-        #object.set_delete('function_jobs', 'delete_function_job')
-        #object.add_getter('function_jobs', 'get_function_job_state')
-        #object.add_getter('function_jobs', 'get_function_job_status')
-        #object.mapping_from_name_to_set_definition['function_jobs'].particles_factory = FunctionJobs
+        #handler.define_set('function_jobs', 'job_id')
+        #handler.set_new('function_jobs', 'submit_function_job')
+        #handler.set_delete('function_jobs', 'delete_function_job')
+        #handler.add_getter('function_jobs', 'get_function_job_state')
+        #handler.add_getter('function_jobs', 'get_function_job_status')
+        #handler.mapping_from_name_to_set_definition['function_jobs'].particles_factory = FunctionJobs
         
         #workers
-        object.define_set('_workers', 'worker_id')
-        object.set_new('_workers', 'new_worker')
-        object.set_delete('_workers', 'delete_worker')
-        object.add_getter('_workers', 'get_worker_state')
-        object.add_getter('_workers', 'get_worker_status', names = ('status',))
+        handler.define_set('_workers', 'worker_id')
+        handler.set_new('_workers', 'new_worker')
+        handler.set_delete('_workers', 'delete_worker')
+        handler.add_getter('_workers', 'get_worker_state')
+        handler.add_getter('_workers', 'get_worker_status', names = ('status',))
         
     @property
     def workers(self):

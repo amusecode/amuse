@@ -683,366 +683,366 @@ class Mocassin(InCodeComponentImplementation):
         nsizes = 1
         return (1, ni, 1, nj, 1, nk, 1, nspecies, 1, nsizes)
         
-    def define_methods(self, object):
+    def define_methods(self, handler):
         
-        object.add_method(
+        handler.add_method(
             'commit_grid',
             (),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'commit_particles',
             (),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'iterate',
             (),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'step',
             (),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
         
-        object.add_method(
+        handler.add_method(
             'get_percentage_converged',
             (),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (handler.NO_UNIT, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             'get_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.cm, units.cm, units.cm, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (units.cm, units.cm, units.cm, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_max_indices',
-            (object.INDEX),
-            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX),
+            (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.ERROR_CODE,)
             
         )
-        object.add_method(
+        handler.add_method(
             'get_grid_electron_temperature',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.K, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (units.K, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_hydrogen_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.cm**-3, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (units.cm**-3, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_hydrogen_density',
-            (object.INDEX, object.INDEX, object.INDEX, units.cm**-3 , object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, units.cm**-3 , handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_grid_dust_number_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.cm**-3, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (units.cm**-3, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_dust_number_density',
-            (object.INDEX, object.INDEX, object.INDEX, units.cm**-3, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, units.cm**-3, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         
         
                 
-        object.add_method(
+        handler.add_method(
             'get_grid_electron_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.cm**-3, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (units.cm**-3, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_electron_density',
-            (object.INDEX, object.INDEX, object.INDEX, units.cm**-3 , object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, units.cm**-3 , handler.INDEX),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_grid_dust_temperature',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (units.K, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (units.K, handler.ERROR_CODE,)
         )
         
 
-        object.add_method(
+        handler.add_method(
             'get_grid_ion_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_ion_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.NO_UNIT , object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.NO_UNIT , handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_active',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'define_stars',
             (units.cm, units.cm, units.cm, units.K, 1e36 * units.erg * (units.s**-1)),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_abundancies_filename",
-            (object.NO_UNIT,  ),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT,  ),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_abundancies_filename",
-            (object.NO_UNIT, object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_constant_hydrogen_density",
             (),
-            (1.0/units.cm**3, object.ERROR_CODE,)
+            (1.0/units.cm**3, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_constant_hydrogen_density",
             (1.0/units.cm**3, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_convergence_limit",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_convergence_limit",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_emit_rate_of_photons",
             (),
-            (1e36 / units.s, object.ERROR_CODE,)
+            (1e36 / units.s, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_emit_rate_of_photons",
             (1e36 / units.s, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_high_limit_of_the_frequency_mesh",
             (),
-            (mocassin_rydberg_unit, object.ERROR_CODE,)
+            (mocassin_rydberg_unit, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_high_limit_of_the_frequency_mesh",
             (mocassin_rydberg_unit, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_initial_nebular_temperature",
             (),
-            (units.K, object.ERROR_CODE,)
+            (units.K, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_initial_nebular_temperature",
             (units.K, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_inner_radius_of_the_ionised_region",
             (),
-            (units.cm, object.ERROR_CODE,)
+            (units.cm, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_inner_radius_of_the_ionised_region",
             (units.cm, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_input_directory",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_input_directory",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_mocassin_output_directory",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_mocassin_output_directory",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_low_limit_of_the_frequency_mesh",
             (),
-            (mocassin_rydberg_unit, object.ERROR_CODE,)
+            (mocassin_rydberg_unit, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_low_limit_of_the_frequency_mesh",
             (mocassin_rydberg_unit, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_maximum_number_of_monte_carlo_iterations",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_maximum_number_of_monte_carlo_iterations",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_minimum_convergence_level",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_minimum_convergence_level",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_number_of_ionisation_stages",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_number_of_ionisation_stages",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
         
-        object.add_method(
+        handler.add_method(
             "get_symmetricXYZ",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_symmetricXYZ",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_dust",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_dust",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_dust_species_filename",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_dust_species_filename",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_dust_sizes_filename",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_dust_sizes_filename",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_total_number_of_photons",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_total_number_of_photons",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_total_number_of_points_in_frequency_mesh",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_total_number_of_points_in_frequency_mesh",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_write_snapshot_every_iteration",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_write_snapshot_every_iteration",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'setup_mesh',
-            (object.NO_UNIT,  object.NO_UNIT, object.NO_UNIT, units.cm, units.cm, units.cm, object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,  handler.NO_UNIT, handler.NO_UNIT, units.cm, units.cm, units.cm, handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_abundancies_filename",
             "set_abundancies_filename", 
             "abundancies_filename", 
@@ -1051,7 +1051,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_constant_hydrogen_density",
             "set_constant_hydrogen_density", 
             "constant_hydrogen_density", 
@@ -1060,7 +1060,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_convergence_limit",
             "set_convergence_limit", 
             "convergence_limit", 
@@ -1069,7 +1069,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_emit_rate_of_photons",
             "set_emit_rate_of_photons", 
             "emit_rate_of_photons", 
@@ -1078,7 +1078,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_high_limit_of_the_frequency_mesh",
             "set_high_limit_of_the_frequency_mesh", 
             "high_limit_of_the_frequency_mesh", 
@@ -1087,7 +1087,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_initial_nebular_temperature",
             "set_initial_nebular_temperature", 
             "initial_nebular_temperature", 
@@ -1096,7 +1096,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        #~ object.add_method_parameter(
+        #~ handler.add_method_parameter(
             #~ "get_inner_radius_of_the_ionised_region",
             #~ "set_inner_radius_of_the_ionised_region", 
             #~ "inner_radius_of_the_ionised_region", 
@@ -1105,7 +1105,7 @@ class Mocassin(InCodeComponentImplementation):
         #~ )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_input_directory",
             "set_input_directory", 
             "input_directory", 
@@ -1114,7 +1114,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_low_limit_of_the_frequency_mesh",
             "set_low_limit_of_the_frequency_mesh", 
             "low_limit_of_the_frequency_mesh", 
@@ -1123,7 +1123,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_maximum_number_of_monte_carlo_iterations",
             "set_maximum_number_of_monte_carlo_iterations", 
             "maximum_number_of_monte_carlo_iterations", 
@@ -1132,7 +1132,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_minimum_convergence_level",
             "set_minimum_convergence_level", 
             "minimum_convergence_level", 
@@ -1141,7 +1141,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_number_of_ionisation_stages",
             "set_number_of_ionisation_stages", 
             "number_of_ionisation_stages", 
@@ -1152,7 +1152,7 @@ class Mocassin(InCodeComponentImplementation):
     
         
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_symmetricXYZ",
             "set_symmetricXYZ", 
             "symmetricXYZ", 
@@ -1160,7 +1160,7 @@ class Mocassin(InCodeComponentImplementation):
             default_value = 0.0
         )
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dust",
             "set_dust", 
             "dust", 
@@ -1168,7 +1168,7 @@ class Mocassin(InCodeComponentImplementation):
             default_value = False
         )
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dust_species_filename",
             "set_dust_species_filename", 
             "dust_species_filename", 
@@ -1176,14 +1176,14 @@ class Mocassin(InCodeComponentImplementation):
             default_value = "none"
         )
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dust_sizes_filename",
             "set_dust_sizes_filename", 
             "dust_sizes_filename", 
             "Name of the file that contains a list of grain sizes and their fractions",
             default_value = "none"
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_total_number_of_photons",
             "set_total_number_of_photons", 
             "total_number_of_photons", 
@@ -1192,7 +1192,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_total_number_of_points_in_frequency_mesh",
             "set_total_number_of_points_in_frequency_mesh", 
             "total_number_of_points_in_frequency_mesh", 
@@ -1201,7 +1201,7 @@ class Mocassin(InCodeComponentImplementation):
         )
     
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_write_snapshot_every_iteration",
             "set_write_snapshot_every_iteration", 
             "write_snapshot_every_iteration", 
@@ -1209,7 +1209,7 @@ class Mocassin(InCodeComponentImplementation):
             default_value = 0.0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshx",
             "nx", 
@@ -1218,7 +1218,7 @@ class Mocassin(InCodeComponentImplementation):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshy",
             "ny", 
@@ -1227,7 +1227,7 @@ class Mocassin(InCodeComponentImplementation):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshz",
             "nz", 
@@ -1235,21 +1235,21 @@ class Mocassin(InCodeComponentImplementation):
             10,
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "xlength",
             "length_x", 
             "length of model in the x direction", 
             2e19 | units.cm,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "ylength",
             "length_y", 
             "length of model in the x direction", 
             2e19 | units.cm,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "zlength",
             "length_z", 
@@ -1257,13 +1257,13 @@ class Mocassin(InCodeComponentImplementation):
             2e19 | units.cm,
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "mesh_size",
             "number of cells in the x, y and z directions",
             ("nx", "ny", "nz")
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "mesh_length",
             "length of the model in the x, y and z directions",
             ("length_x", "length_y", "length_z")
@@ -1274,33 +1274,33 @@ class Mocassin(InCodeComponentImplementation):
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
         
-    def define_particle_sets(self, object):
-        object.define_grid('grid')
-        object.set_grid_range('grid', 'get_index_range_inclusive')
-        object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
-        object.add_getter('grid', 'get_grid_electron_temperature', names=('electron_temperature',))
-        object.add_getter('grid', 'get_grid_electron_density', names=('electron_density',))
-        object.add_setter('grid', 'set_grid_electron_density', names=('electron_density',))
-        object.add_getter('grid', 'get_grid_hydrogen_density', names=('hydrogen_density',))
-        object.add_setter('grid', 'set_grid_hydrogen_density', names=('hydrogen_density',))
-        object.add_getter('grid', 'get_grid_dust_number_density', names=('dust_number_density',))
-        object.add_setter('grid', 'set_grid_dust_number_density', names=('dust_number_density',))
+    def define_particle_sets(self, handler):
+        handler.define_grid('grid')
+        handler.set_grid_range('grid', 'get_index_range_inclusive')
+        handler.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
+        handler.add_getter('grid', 'get_grid_electron_temperature', names=('electron_temperature',))
+        handler.add_getter('grid', 'get_grid_electron_density', names=('electron_density',))
+        handler.add_setter('grid', 'set_grid_electron_density', names=('electron_density',))
+        handler.add_getter('grid', 'get_grid_hydrogen_density', names=('hydrogen_density',))
+        handler.add_setter('grid', 'set_grid_hydrogen_density', names=('hydrogen_density',))
+        handler.add_getter('grid', 'get_grid_dust_number_density', names=('dust_number_density',))
+        handler.add_setter('grid', 'set_grid_dust_number_density', names=('dust_number_density',))
         
-        object.define_extra_keywords('grid', {'index_of_grid':1})
+        handler.define_extra_keywords('grid', {'index_of_grid':1})
         
         
-        object.define_grid('ion_density_grid')
-        object.set_grid_range('ion_density_grid', 'get_index_range_inclusive_ion_density_grid')
-        object.add_getter('ion_density_grid', 'get_grid_ion_density', names=('density',))
-        object.add_setter('ion_density_grid', 'set_grid_ion_density', names=('density',))
-        object.define_extra_keywords('ion_density_grid', {'index_of_grid':1})
+        handler.define_grid('ion_density_grid')
+        handler.set_grid_range('ion_density_grid', 'get_index_range_inclusive_ion_density_grid')
+        handler.add_getter('ion_density_grid', 'get_grid_ion_density', names=('density',))
+        handler.add_setter('ion_density_grid', 'set_grid_ion_density', names=('density',))
+        handler.define_extra_keywords('ion_density_grid', {'index_of_grid':1})
 
-        object.define_grid('dust_temperature_grid')
-        object.set_grid_range('dust_temperature_grid', 'get_index_range_inclusive_dust_temperature_grid')
-        object.add_getter('dust_temperature_grid', 'get_grid_dust_temperature', names=('temperature',))
-        object.define_extra_keywords('dust_temperature_grid', {'index_of_grid':1})
+        handler.define_grid('dust_temperature_grid')
+        handler.set_grid_range('dust_temperature_grid', 'get_index_range_inclusive_dust_temperature_grid')
+        handler.add_getter('dust_temperature_grid', 'get_grid_dust_temperature', names=('temperature',))
+        handler.define_extra_keywords('dust_temperature_grid', {'index_of_grid':1})
         
-        object.define_inmemory_set('particles')
+        handler.define_inmemory_set('particles')
         
     def commit_particles(self):
         self.define_stars(
