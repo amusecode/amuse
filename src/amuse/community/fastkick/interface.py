@@ -124,7 +124,7 @@ class FastKickInterface(CodeInterface, CommonCodeInterface, GravityFieldInterfac
 
 
 
-class FastKickDoc(handler):
+class FastKickDoc(object):
 
     def __get__(self, instance, owner):
         return instance.legacy_doc+"\n\n"+instance.parameters.__doc__
