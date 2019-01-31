@@ -20,9 +20,9 @@ case $i in
 esac
 done
 
-BASEDIR=`pwd`
-PLATFORM=`uname`
-ARCHITECTURE=`uname -m`
+BASEDIR=$(pwd)
+PLATFORM=$(uname)
+ARCHITECTURE=$(uname -m)
 
 #TMPDIR=/data1/vanelteren/tmp
 SVNURL=http://www.amusecode.org/svn/trunk
@@ -294,7 +294,7 @@ if [ ! -e "pipsinstalled"  ]; then
 
     ${PYTHONHOME}/bin/easy_install pip==${PIPVERSION}
 
-    export PIP_CERT=`python -m pip._vendor.requests.certs`    
+    export PIP_CERT=$(python -m pip._vendor.requests.certs)
     export PIP_NO_CACHE_DIR=false
 
 
@@ -389,7 +389,7 @@ if [ ! -e "amuseinstalled" ]; then
     fi
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
 
-    export PYTHONPATH=${PYTHONPATH}:`pwd`/src
+    export PYTHONPATH=${PYTHONPATH}:$(pwd)/src
 
     # first build omuse codes..
     if [ "${BUILD}" == "omuse" ]; then
