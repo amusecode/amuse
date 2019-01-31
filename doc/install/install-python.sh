@@ -87,8 +87,8 @@ echo "Done"
 
 # Build
 echo "Building"
-MACHINE=`(uname -m) 2>/dev/null`
-PLATFORM=`uname`
+MACHINE=$(uname -m 2>/dev/null)
+PLATFORM=$(uname)
 echo "Building OpenSSL"
 cd ${SOURCE_DIR}/${OPENSSLDIR}
 if [ ${PLATFORM} == 'Darwin' ]; then
