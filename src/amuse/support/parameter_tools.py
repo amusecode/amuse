@@ -55,9 +55,12 @@ class CodeWithNamelistParameters(object):
             if getattr(parameter_set, name) is None:  # omit if value is None
                 continue
             if is_quantity(p["default"]):
-                group[short]=to_quantity(getattr(parameter_set, name)).value_in(p["default"].unit)
+                value=to_quantity(getattr(parameter_set, name)).value_in(p["default"].unit)
             else:
-                group[short]=getattr(parameter_set, name)
+                value=getattr(parameter_set, name)            
+            if isinstance(value,numpy.ndarray):
+                value=list(value)  # necessary until f90nml supports numpy arrays
+            group[short]=value
         
         if do_patch:
             f90nml.patch(nml_file or self._nml_file,patch,outputfile)
