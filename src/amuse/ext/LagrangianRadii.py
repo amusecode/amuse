@@ -1,4 +1,5 @@
 import collections
+import logging
 import numpy
 import operator
 import os
@@ -16,6 +17,8 @@ from amuse.ic.plummer import new_plummer_model
 from amuse.ic.salpeter import new_salpeter_mass_distribution
 MassFraction = [0.005, 0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 1.0] \
     | units.none
+
+logger = logging.getLogger(__name__)
 
 
 def distance_sq(stars, com):
@@ -47,8 +50,12 @@ def LagrangianRadii(stars, verbose=False, massf=MassFraction):
         while mt >= massf[iL]:
             Lagrad.append(d2i.sqrt())
             if verbose:
-                print "Lagrangian Radius M= ", mt, \
-                      "(iL=", iL, ") at d= ", Lagrad[-1]
+                logging.info(
+                    "Lagrangian Radius M= %s (iL= %s) at d= %s",
+                    mt,
+                    iL,
+                    Lagrad[-1],
+                )
             iL += 1
             if iL >= len(massf):
                 break
@@ -86,10 +93,10 @@ def main():
     else:
         convert_nbody = nbody_system.nbody_to_si(m_tot, r_vir)
         convert_nbody.set_as_default()
-        print m_tot
+        logging.debug(m_tot)
 
     stars = new_plummer_model(nstars, convert_nbody, random_state=seed)
-    stars.mass = masses 
+    stars.mass = masses
     
     LagrangianRadii(stars, verbose=True)
 

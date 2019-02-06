@@ -1,5 +1,6 @@
-import weakref
+import logging
 import numpy
+import weakref
 from amuse.units import nbody_system
 from amuse.units import generic_unit_system
 from amuse.units import quantities
@@ -10,6 +11,9 @@ from amuse.support import exceptions
 import warnings
 
 from amuse.support.core import OrderedDictionary
+
+logger = logging.getLogger(__name__)
+
 
 class Parameters(object):
     __name__ = 'Parameters'
@@ -137,11 +141,18 @@ class Parameters(object):
             try:
                 value = x.get_value()
             except:
-                print "could not get value for:", x.definition.name, default_value
+                logger.warning(
+                    "could not get value for: %s %s",
+                    x.definition.name, default_value,
+                )
                 continue
-            print x.definition.name, value, default_value
+            logger.info(
+                "%s %s %s", x.definition.name, value, default_value
+            )
             if not value == default_value:
-               print "!default value is not equal to value in code: {0}".format(x.definition.name)
+               logger.warning(
+                   "!default value is not equal to value in code: {0}".format(x.definition.name)
+               )
             
 
     def copy(self):
@@ -350,11 +361,14 @@ class ParametersWithUnitsConverted(object):
             try:
                 value = x.get_value()
             except:
-                print "could not get value for:", x.definition.name, default_value
+                logger.warning(
+                    "could not get value for:", x.definition.name, default_value
+                )
                 continue
-            print x.definition.name, value, default_value
+            logger.info("%s %s %s", x.definition.name, value, default_value)
             if not value == default_value:
-                print "default value is not equal to value in code: {0}".format(x.definition.name)
+                logger.warning(
+                    "default value is not equal to value in code: {0}".format(x.definition.name))
             
 
 class AbstractParameterDefinition(object):

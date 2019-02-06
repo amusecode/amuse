@@ -92,6 +92,7 @@ from amuse.units.quantities import is_quantity
 from amuse.support.core import late
 from amuse.support import exceptions
 
+import logging
 import numpy
 import inspect
 
@@ -104,6 +105,9 @@ from amuse.datamodel import Grid
 from amuse.datamodel import AttributeStorage
 
 from amuse.rfi.async_request import ASyncRequestSequence
+
+logger = logging.getLogger(__name__)
+
 
 class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, attribute_names = None):
@@ -203,7 +207,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         try:
             return_value = self.method(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
-            print self.method
+            logger.info(self.method)
             raise
         return self.convert_return_value(return_value, storage, attributes_to_return)
     
@@ -250,7 +254,7 @@ class ParticleGetGriddedAttributesMethod(ParticleGetAttributesMethod):
         try:
             return_value = self.method(*one_dimensional_arrays_of_indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         except:
-            print self.method
+            logger.info(self.method)
             raise
             
         mapping_from_name_to_value = self.convert_return_value(return_value, storage, attributes_to_return)
