@@ -25,14 +25,18 @@ SPLIT_10TH_SS_M35
 
 """
 
-from amuse.support.exceptions import AmuseException
+import logging
+import numpy
+from numpy import cos,sin
 import threading
-from amuse.units import quantities
+
 from amuse import datamodel
 from amuse.ext.bridge import bridge
-import numpy
+from amuse.support.exceptions import AmuseException
+from amuse.units import quantities
 
-from numpy import cos,sin
+logger = logging.getLogger(__name__)
+
 
 def inertial_to_rotating(t,omega,parts):
   x=parts.x
@@ -61,12 +65,17 @@ class Rotating_Bridge(bridge):
         ax= quantities.zero
         ay= quantities.zero
         az= quantities.zero
-        if(self.verbose):  
-            print system.__class__.__name__,"receives kick from",
+        if(self.verbose):
+            logger.info(
+                "receives kick from %s",
+                system.__class__.__name__,
+            )
         for y in partners:
             if system is not y:
-                if(self.verbose):  
-                    print y.__class__.__name__,
+                if(self.verbose):
+                    logger.info(
+                        y.__class__.__name__,
+                    )
                 _ax,_ay,_az= y.get_gravity_at_point(parts.radius,parts.x,parts.y,parts.z)
                 ax+=_ax
                 ay+=_ay
@@ -89,16 +98,21 @@ class Rotating_Bridge(bridge):
         channel=parts.new_channel_to(system.particles)
         channel.copy_attributes(["vx","vy","vz"])   
         if(self.verbose):
-            print ".. done"
+            logger.info(".. done")
             
     def kick_systems(self,dt):
 
         for x in self.systems:
             if self.do_sync[x]:
                 if hasattr(x,"synchronize_model"):
-                    if(self.verbose): print x.__class__.__name__,"is synchronizing",
-                    x.synchronize_model()    
-                    if(self.verbose):  print ".. done"
+                    if(self.verbose):
+                        logger.info(
+                            "%s is synchronizing",
+                            x.__class__.__name__,
+                        )
+                    x.synchronize_model()
+                    if(self.verbose):
+                        logger.info(".. done")
         for x in self.systems:
             if hasattr(x,"particles"):
                         self.kick_system_rotational(x, self.partners[x], dt)

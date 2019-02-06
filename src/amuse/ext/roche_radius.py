@@ -24,11 +24,15 @@
 
         print orbit.sepinsky_roche_radius()
 """
+import logging
 import numpy
 import math
 from amuse.units.optparse import OptionParser
 from amuse.units import units, constants, quantities
 from amuse.support.console import set_printing_strategy
+
+logger = logging.getLogger(__name__)
+
 
 """ Equation 47-52 of Sepinsky """
 
@@ -269,18 +273,30 @@ def print_results(orbit):
     set_printing_strategy("custom", preferred_units = [units.MSun, units.RSun, units.Myr], precision = 7)
 
     if orbit.A == 1.0:
-        print "This is a circular, corotating orbit, so the eggleton formula is correct."
+        logger.info(
+            "This is a circular, corotating orbit, so the eggleton formula is correct."
+        )
     else:
-        print "Warning: This is not a circular, corotating orbit, so the eggleton formula is not correct."
+        logger.info(
+            "Warning: This is not a circular, corotating orbit, so the eggleton formula is not correct."
+        )
 
-    print "Roche radius for: M =", orbit.mass_1, "m =", orbit.mass_2, "a =", orbit.semimajor_axis, "e =", orbit.eccentricity
-    print
+    logger.info(
+        "Roche radius for: M = %s"
+        " m = %s"
+        " a = %s"
+        " e = %s",
+        orbit.mass_1,
+        orbit.mass_2,
+        orbit.semimajor_axis,
+        orbit.eccentricity,
+    )
 
-    print "Eggleton Roche radius =", orbit.eggleton_roche_radius()
-    print "Sepinsky Roche radius =", orbit.sepinsky_roche_radius()
+    logger.info("Eggleton Roche radius = %s", orbit.eggleton_roche_radius())
+    logger.info("Sepinsky Roche radius = %s", orbit.sepinsky_roche_radius())
+
 
 if __name__ == '__main__':
 
     orbit = create_orbit_from_options()
     print_results(orbit)
-

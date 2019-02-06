@@ -75,21 +75,25 @@
   sync call may induce extra errors that degrade the order of the
   integrator).
 
-"""  
+"""
 
 
 # issues:
-# - for now, units in si 
+# - for now, units in si
 # - a common coordinate system is used for all systems
 # - sync of systems should be checked
 # - timestepping: adaptive dt?
 
 import threading
+import logging
 
 from amuse.units import quantities
 from amuse.units import units
 
 from amuse import datamodel
+
+logger = logging.getLogger(__name__)
+
 
 def potential_energy(system, get_potential):
     parts=system.particles.copy()
@@ -103,7 +107,7 @@ def kick_system(system, get_gravity, dt):
     parts.vy=parts.vy+dt*ay
     parts.vz=parts.vz+dt*az
     channel=parts.new_channel_to(system.particles)
-    channel.copy_attributes(["vx","vy","vz"])   
+    channel.copy_attributes(["vx","vy","vz"])
 #    parts.copy_values_of_all_attributes_to(system.particles)
 
 
@@ -111,7 +115,7 @@ class bridge(object):
     def __init__(self,verbose=False,method=None, use_threading=True):
         """
         verbose indicates whether to output some run info
-        """  
+        """
         self.systems=set()
         self.partners=dict()
         self.time_offsets=dict()
@@ -121,7 +125,7 @@ class bridge(object):
         self.timestep=None
         self.method=method
         self.use_threading=use_threading
-    
+
     def add_system(self, interface,  partners=set(),do_sync=True):
         """
         add a system to bridge integrator  
@@ -129,15 +133,15 @@ class bridge(object):
         if hasattr(interface,"model_time"):
             self.time_offsets[interface]=(self.time-interface.model_time)
         else:
-            self.time_offsets[interface]=quantities.zero     
+            self.time_offsets[interface]=quantities.zero
         self.systems.add(interface)
         for p in partners:
             if not hasattr(p,"get_gravity_at_point"):
                 return -1
         self.partners[interface]=partners
-        self.do_sync[interface]=do_sync  
+        self.do_sync[interface]=do_sync
         return 0
-      
+
     def evolve_model(self,tend,timestep=None):
         """
         evolve combined system to tend, timestep fixes timestep
@@ -147,11 +151,11 @@ class bridge(object):
                 timestep=tend-self.time
             else:
                 timestep = self.timestep
-                
+
         if self.method==None:
           return self.evolve_joined_leapfrog(tend,timestep)
         else:
-          return self.evolve_simple_steps(tend,timestep)          
+          return self.evolve_simple_steps(tend,timestep)
 
     def evolve_simple_steps(self,tend,timestep):
         while self.time < (tend-timestep/2):
@@ -159,14 +163,14 @@ class bridge(object):
             self._kick_time=self.time
             self.method(self.kick_systems,self.drift_systems_dt, timestep)
             self.time=self.time+timestep
-        return 0    
+        return 0
 
     def evolve_joined_leapfrog(self,tend,timestep):
         first=True
         self._drift_time=self.time
         self._kick_time=self.time
         while self.time < (tend-timestep/2):
-             if first:      
+             if first:
                  self.kick_systems(timestep/2)
                  first=False
              else:
@@ -174,26 +178,31 @@ class bridge(object):
              self.drift_systems(self.time+timestep)
              self.time=self.time+timestep
         if not first:
-             self.kick_systems(timestep/2)         
+             self.kick_systems(timestep/2)
         return 0
-    
+
     def synchronize_model(self):
         """ 
         explicitly synchronize all components
         """
         for x in self.systems:
             if hasattr(x,"synchronize_model"):
-                if(self.verbose): print x.__class__.__name__,"is synchronizing",
-                x.synchronize_model()    
-                if(self.verbose): print ".. done"
-                            
+                if(self.verbose):
+                    logger.info(
+                        "%s is synchronizing",
+                        x.__class__.__name__,
+                    )
+                x.synchronize_model()
+                if(self.verbose):
+                    logger.info(".. done")
+
     def get_potential_at_point(self,radius,x,y,z):
         pot=quantities.zero
         for sys in self.systems:
             _pot=sys.get_potential_at_point(radius,x,y,z)
             pot=pot+_pot
         return pot
-        
+
     def get_gravity_at_point(self,radius,x,y,z):
         ax=quantities.zero
         ay=quantities.zero
@@ -206,9 +215,9 @@ class bridge(object):
         return ax,ay,az
 
     @property
-    def model_time(self):  
+    def model_time(self):
          return self.time
-      
+
     @property
     def potential_energy(self):
         Ep=quantities.zero
@@ -220,31 +229,31 @@ class bridge(object):
                     if hasattr(y,"particles"):
                       Ep+=_Ep
                     else:
-                      Ep+=2*_Ep  
+                      Ep+=2*_Ep
         return Ep
-    
+
     @property
-    def kinetic_energy(self):  
+    def kinetic_energy(self):
         Ek=quantities.zero
         for x in self.systems:
             Ek+=x.kinetic_energy
         return Ek
-        
+
     @property
-    def thermal_energy(self):  
+    def thermal_energy(self):
         result=quantities.zero
         for x in self.systems:
             if hasattr(x,'thermal_energy'):
                 result+=x.thermal_energy
         return result
-          
+
     @property
     def particles(self):
         arr=[]
         for x in self.systems:
             if hasattr(x,"particles"):
                 arr.append(x.particles)
-        return datamodel.ParticlesSuperset(arr)                
+        return datamodel.ParticlesSuperset(arr)
 
     @property
     def gas_particles(self):
@@ -252,7 +261,7 @@ class bridge(object):
         for x in self.systems:
             if hasattr(x,"gas_particles"):
                 arr.append(x.gas_particles)
-        return datamodel.ParticlesSuperset(arr)                
+        return datamodel.ParticlesSuperset(arr)
 
 
 # 'private' functions
@@ -266,32 +275,45 @@ class bridge(object):
             if hasattr(x,"evolve_model"):
                 offset=self.time_offsets[x]
                 if(self.verbose):
-                    print "evolving", x.__class__.__name__,
+                    logger.info(
+                        "evolving %s", x.__class__.__name__,
+                    )
                 threads.append(threading.Thread(target=x.evolve_model, args=(tend-offset,)) )
         if self.use_threading:
             for x in threads:
-                x.start()            
+                x.start()
             for x in threads:
                 x.join()
         else:
             for x in threads:
                 x.run()
-        if(self.verbose): 
-            print ".. done"
+        if(self.verbose):
+            logger.info(".. done")
         return 0
 
     def kick_systems(self,dt):
         for x in self.systems:
             if self.do_sync[x]:
                 if hasattr(x,"synchronize_model"):
-                    if(self.verbose): print x.__class__.__name__,"is synchronizing",
-                    x.synchronize_model()    
-                    if(self.verbose):  print ".. done"
+                    if(self.verbose):
+                        logger.info(
+                            "%s is synchronizing",
+                            x.__class__.__name__,
+                        )
+                    x.synchronize_model()
+                    if(self.verbose):
+                        logger.info(".. done")
         for x in self.systems:
             if hasattr(x,"particles") and len(x.particles)>0:
                 for y in self.partners[x]:
                     if x is not y:
-                        if(self.verbose):  print x.__class__.__name__,"receives kick from",y.__class__.__name__,
+                        if(self.verbose):
+                            logger.info(
+                                "%s receives kick from %s",
+                                x.__class__.__name__,
+                                y.__class__.__name__,
+                            )
                         kick_system(x,y.get_gravity_at_point,dt)
-                        if(self.verbose):  print ".. done"
+                        if(self.verbose):
+                            logger.info(".. done")
         return 0

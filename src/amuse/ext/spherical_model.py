@@ -1,9 +1,13 @@
 import numpy
+import logging
 
 from amuse.support.exceptions import AmuseException, AmuseWarning
 from amuse.units import units, nbody_system, generic_unit_system, constants
 from amuse.datamodel import Particles
 from amuse.ext.sobol import i4_sobol_generate
+
+logger = logging.getLogger(__name__)
+
 
 class EnclosedMassInterpolator(object):
     """
@@ -166,9 +170,9 @@ class UniformSphericalDistribution(object):
         from amuse.community.fi.interface import Fi
         
         if self.target_rms < 0.0001:
-            print "warning: target_rms may not succeed"
+            logger.warning("target_rms may not succeed")
         if self.number_of_particles < 1000:
-            print "warning: not enough particles"
+            logger.warning("not enough particles")
         
         N = 2 * self.number_of_particles
         L = 1 | nbody_system.length
@@ -218,10 +222,12 @@ class UniformSphericalDistribution(object):
             rms = rho.std()/rho.mean()
             minrms = min(minrms, rms)
             if (rms > 2.0*minrms) or (i > 300):
-                print " RMS(rho) convergence warning:", i, rms, minrms
+                logger.warning(
+                    " RMS(rho) convergence warning: %i %s %s", i, rms, minrms
+                )
             if i > 100000:
-                print "i> 100k steps - not sure about this..."
-                print " rms:", rms
+                logger.warning("i> 100k steps - not sure about this...")
+                logger.warning(" rms: %s", rms)
                 break
         
         x = sph.particles.x.value_in(nbody_system.length)
