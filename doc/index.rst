@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-The Astrophysical Multi-Scale Environment
-==========================================
+The Astrophysical Multipurpose Software Environment
+===================================================
 
 Contents:
 
