@@ -22,7 +22,10 @@ For openmpi do::
 	  python-nose python-numpy python-setuptools python-docutils \
 	  python-h5py python-setuptools git
 	
-	> sudo easy_install mpi4py
+	>  [sudo] pip install mpi4py
+	or alternatively setuptools easy_install (deprecated):
+	>  [sudo] easy_install mpi4py
+
 
 For mpich do::
 	
@@ -34,7 +37,9 @@ For mpich do::
 	  python-nose python-numpy python-setuptools python-docutils \
 	  python-h5py python-setuptools git
 	
-	> sudo easy_install mpi4py
+	>  [sudo] pip install mpi4py
+	or alternatively setuptools easy_install (deprecated):
+	>  [sudo] easy_install mpi4py
 
 .. note::
 	
