@@ -17,7 +17,7 @@ from support.setup_codes import (
     ConfigureCodes, GenerateInstallIni, InstallLibraries,
 )
 from support.run_tests import run_tests
-from ez_setup import use_setuptools
+# from ez_setup import use_setuptools
 if sys.hexversion > 0x03000000:
     from distutils.command.build_py import build_py_2to3
     from os import walk as py_walk
@@ -28,7 +28,7 @@ if sys.hexversion > 0x03000000:
 else:
     from os.path import walk
 
-use_setuptools()
+# use_setuptools()
 
 extensions = []
 
@@ -180,7 +180,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='amuse',
-    version="12.0.a0",
+    version="12.0",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={
@@ -195,12 +195,11 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
-        'License :: Apache Software License 2.0',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
         'Programming Language :: C',
         'Programming Language :: C++',
         'Programming Language :: Fortran',
