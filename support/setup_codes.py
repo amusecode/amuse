@@ -112,7 +112,7 @@ class InstallLibraries(Command):
         data_dir = os.path.join(self.install_data,'share','amuse')
         if not self.root is None:
             data_dir = os.path.relpath(data_dir,self.root)
-            data_dir =  os.path.join('/',data_dir)
+            # data_dir =  os.path.join('/',data_dir)
         else:
             data_dir = os.path.abspath(data_dir)
 
