@@ -1,8 +1,8 @@
 from __future__ import print_function
 
-__revision__ = "$Id:$"
-
-import sys, os, re, subprocess
+import sys
+import os
+import re
 
 try:
     import ConfigParser as configparser
@@ -13,21 +13,16 @@ except ImportError:
 
 import os.path
 import datetime
-import stat
 
-from stat import ST_MODE
-from distutils import sysconfig
+from distutils import (
+    log, spawn, file_util,
+)
 from distutils.core import Command
-from distutils.dep_util import newer
 from distutils.dir_util import create_tree
-from distutils.util import convert_path
-from distutils import log
-from distutils import spawn
-from distutils import file_util
 from distutils.errors import DistutilsError
+from subprocess import Popen, PIPE, STDOUT
 if sys.hexversion > 0x03000000:
     from distutils.util import run_2to3
-from subprocess import call, Popen, PIPE, STDOUT
 
 try:
     from numpy.distutils import fcompiler
