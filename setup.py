@@ -180,7 +180,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='amuse',
-    version="12.0.0",
+    version="12.0.a0",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={
