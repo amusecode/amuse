@@ -175,9 +175,12 @@ package_data = {
     ]
 }
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 setup(
     name='amuse',
-    version="11",
+    version="12.0.0",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={
@@ -206,6 +209,9 @@ setup(
     url='http://www.amusecode.org/',
     author_email='info@amusecode.org',
     author='The Amuse Team',
+    description='The Astrophysical Multipurpose Software Environment',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     install_requires=[
         'docutils>=0.6',
         'numpy>=1.2.2',
