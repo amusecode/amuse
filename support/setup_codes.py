@@ -110,11 +110,7 @@ class InstallLibraries(Command):
 
     def run(self):
         data_dir = os.path.join(self.install_data,'share','amuse')
-        if not self.root is None:
-            data_dir = os.path.relpath(data_dir,self.root)
-            # data_dir =  os.path.join('/',data_dir)
-        else:
-            data_dir = os.path.abspath(data_dir)
+        data_dir = os.path.abspath(data_dir)
 
         # copy only:
         # '*.h', '*.a', '*.mod', '*.inc', '*.so', '*.dylib'
