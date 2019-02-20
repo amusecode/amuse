@@ -88,6 +88,7 @@ data:
 clean:
 	rm -f *.o *.pyc
 	rm -f worker_code.f90
+	rm -f ramses_worker
 	rm -f ramses_worker_*
 	rm -Rf $(BUILDDIR)
 	rm -Rf $(BUILDDIR2D)
