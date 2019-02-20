@@ -20,7 +20,7 @@ class MocassinInterface(CodeInterface, CommonCodeInterface,
         self._abundancies_table = None
     
     def get_default_input_directory(self):
-        return os.path.join(self.get_code_src_directory(), 'mocassin.{0}'.format(self.MOCASSIN_VERSION), '')
+        return os.path.join(os.path.dirname(__file__), 'data', 'mocassin.{0}'.format(self.MOCASSIN_VERSION), '')
     
     def setup_abundancies(self):
         abundancies_file_name = os.path.join(self.output_directory, 'tmp_abundancies_file')

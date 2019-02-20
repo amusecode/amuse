@@ -17,7 +17,7 @@ class GalactICsImplementation(object):
         self._output_directory = "./"
         self._particles_generated = False
         self._particle_data = numpy.array([])
-        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "bin")
+        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "bin")
         
         
     def get_output_path(self, output_path):

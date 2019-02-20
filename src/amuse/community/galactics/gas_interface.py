@@ -76,7 +76,7 @@ class GaslactICsImplementation(object):
         self._output_directory = "./"
         self._particles_generated = False
         self._particle_data = numpy.array([])
-        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gas_src", "bin")
+        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "gbin")
     
     def get_output_path(self, output_path):
         output_path.value = self._output_directory
