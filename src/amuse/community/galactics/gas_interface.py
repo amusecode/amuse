@@ -76,7 +76,7 @@ class GaslactICsImplementation(object):
         self._output_directory = "./"
         self._particles_generated = False
         self._particle_data = numpy.array([])
-        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gas_src", "bin")
+        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "gbin")
     
     def get_output_path(self, output_path):
         output_path.value = self._output_directory
@@ -207,7 +207,7 @@ class GaslactICsImplementation(object):
 
     def _new_dbh_dir(self, data_directory,in_dbh,in_diskdf):
         if not os.path.exists(data_directory):
-            os.mkdir(data_directory)
+            os.makedirs(data_directory)
 #        with open(os.path.join(data_directory, "in.gendenspsi"), "w") as f:
 #            f.write("2000 40\n")
         # for clarity, also store the used input parameters in this directory:
