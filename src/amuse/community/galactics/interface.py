@@ -382,7 +382,6 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         PythonCodeInterface.__init__(self, GalactICsImplementation, **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
-        self.set_src_bin_path(os.path.join(self.get_code_src_directory(), 'bin'))
     
     def _check_if_worker_is_up_to_date(self):
         if not os.path.exists(os.path.join(GalactICsImplementation()._bin_path, "dbh")):
