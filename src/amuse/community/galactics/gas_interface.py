@@ -207,7 +207,7 @@ class GaslactICsImplementation(object):
 
     def _new_dbh_dir(self, data_directory,in_dbh,in_diskdf):
         if not os.path.exists(data_directory):
-            os.mkdir(data_directory)
+            os.makedirs(data_directory)
 #        with open(os.path.join(data_directory, "in.gendenspsi"), "w") as f:
 #            f.write("2000 40\n")
         # for clarity, also store the used input parameters in this directory:
