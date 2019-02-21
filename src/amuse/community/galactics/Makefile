@@ -20,39 +20,48 @@ FFLAGS = $(FCFLAGS) -qfixed -qextname
 endif
 
 
-BINDIR = src/bin/
+BINDIR = data/bin/
 EXES = $(BINDIR)dbh $(BINDIR)genhalo $(BINDIR)genbulge \
   $(BINDIR)getfreqs $(BINDIR)gendisk $(BINDIR)diskdf $(BINDIR)toascii
 
-GASBINDIR = gas_src/bin/
+GASBINDIR = data/gbin/
 GASEXES = $(GASBINDIR)dbh $(GASBINDIR)genhalo $(GASBINDIR)genbulge  \
   $(GASBINDIR)getfreqs $(GASBINDIR)gendisk $(GASBINDIR)diskdf $(GASBINDIR)gengas $(GASBINDIR)toascii
 
 all: $(BINDIR) $(EXES) $(GASBINDIR) $(GASEXES) 
 
 $(BINDIR):
-	cd src; mkdir bin
+	mkdir -p $(BINDIR)
 
 $(GASBINDIR):
-	cd gas_src; mkdir bin
+	mkdir -p $(GASBINDIR)
 
 $(EXES): Makefile
+	mkdir src/bin
+	mkdir gas_src/bin
 	echo $(findstring xlf, $(notdir $(FORTRAN)))
 	make -C src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" F77FLAGS="$(F77FLAGS)"
 	make -C src/src install
 	make -C src/potsrc all CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" F77FLAGS="$(F77FLAGS)"
 	make -C src/potsrc install
+	cp src/bin/* $(BINDIR)/
+
 
 $(GASEXES): Makefile 
 	echo $(findstring xlf, $(notdir $(FORTRAN)))
 	make -C gas_src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" FFLAGS2="$(FCFLAGS)" F77FLAGS="$(F77FLAGS)" PGSTUB=1
 	make -C gas_src/src install
+	cp gas_src/bin/* $(GASBINDIR)/
 
 
 clean:
-	rm -f *.pyc
 	make -C src/src clean
 	make -C gas_src/src purge
 	make -C src/potsrc clean
 	rm -f src/bin/*
 	rm -f gas_src/bin/*
+
+distclean: clean
+	rm -f *.pyc
+	rm -rf data
+

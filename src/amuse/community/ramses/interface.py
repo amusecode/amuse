@@ -52,7 +52,7 @@ class RamsesInterface(CodeInterface, HydrodynamicsInterface,
         return os.path.join(self.amuse_root_directory, 'src', 'amuse', 'community', 'ramses', 'src')
     
     def get_default_input_directory(self):
-        return os.path.join(os.path.dirname(__file__), 'src', 'namelist')
+        return os.path.join(os.path.dirname(__file__), 'data', 'namelist')
     
     @legacy_function   
     def setup_mesh():

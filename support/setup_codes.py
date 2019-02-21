@@ -109,12 +109,8 @@ class InstallLibraries(Command):
                 self.lib_dir = os.path.join(self.build_temp, 'lib')
 
     def run(self):
-        data_dir = os.path.join(self.install_data, 'share', 'amuse')
-        if self.root is not None:
-            data_dir = os.path.relpath(data_dir, self.root)
-            data_dir = os.path.join('/', data_dir)
-        else:
-            data_dir = os.path.abspath(data_dir)
+        data_dir = os.path.join(self.install_data,'share','amuse')
+        data_dir = os.path.abspath(data_dir)
 
         # copy only:
         # '*.h', '*.a', '*.mod', '*.inc', '*.so', '*.dylib'
@@ -623,86 +619,17 @@ class CodeCommand(Command):
                             "will not copy executable: {0}, it does not match"
                             " the worker pattern".format(name), level=log.WARN
                         )
-
-            have_downloaded_codes = True
-            if have_downloaded_codes:
-                #
-                # HACK FOR MESA
-                # NEED TO COPY THE DATA DIR
-                # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE
-                # MAKEFILE
-                #
-                # TURNED OFF MESA COPY, AS THE DATA DIR IS TOO LARGE
-                #
-                if False and shortname == 'mesa':
-                    output_path = os.path.join(
-                        lib_builddir, 'src', 'mesa', 'data'
-                    )
-                    input_path = os.path.join(
-                        temp_builddir, 'src', 'mesa', 'data'
-                    )
-                    self.mkpath(output_path)
-                    self.copy_tree(
-                        input_path,
-                        output_path
-                    )
-
-                #
-                # HACK FOR MOCASSIN
-                # NEED TO COPY THE DATA DIR
-                # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE
-                # MAKEFILE
-                #
-                if (
-                        shortname == 'mocassin'
-                        and os.path.exists(
-                            os.path.join(
-                                temp_builddir, 'src', 'mocassin.2.02.70'
-                            )
-                        )
-                ):
-                    output_path = os.path.join(
-                        lib_builddir, 'src', 'mocassin.2.02.70'
-                    )
-                    input_path = os.path.join(
-                        temp_builddir, 'src', 'mocassin.2.02.70'
-                    )
-                    self.mkpath(output_path)
-                    self.copy_tree(
-                        input_path,
-                        output_path
-                    )
-            #
-            # HACK FOR GALACTICS
-            # NEED TO COPY THE BIN DIR
-            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE
-            # MAKEFILE
-            #
-            if shortname == 'galactics':
-                output_path = os.path.join(lib_builddir, 'src', 'bin')
-                input_path = os.path.join(temp_builddir, 'src', 'bin')
-                self.mkpath(output_path)
-                self.copy_tree(
-                    input_path,
-                    output_path
-                )
-
-            #
-            # HACK FOR RAMSES
-            # NEED TO COPY THE SRC DIR
-            # NEED TO IMPLEMENT A COPY OR SOME SUCH IN THE
-            # MAKEFILE
-            #
-            if shortname == 'ramses':
-                output_path = os.path.join(lib_builddir, 'src', 'namelist')
-                input_path = os.path.join(temp_builddir, 'src', 'namelist')
-                self.mkpath(output_path)
-                self.copy_tree(
-                    input_path,
-                    output_path
-                )
-
-    def subdirs_in_path(self, path):
+            
+            # also copy file or dir named data
+            path=os.path.join(temp_builddir,'data')
+            topath = os.path.join(lib_builddir, 'data')
+            if os.path.isfile(path):
+                self.copy_file(path, topath)                
+            if os.path.isdir(path):
+                self.copy_tree(path, topath)                
+            
+                                    
+    def subdirs_in_path(self,path):
         if not os.path.exists(path):
             return
 

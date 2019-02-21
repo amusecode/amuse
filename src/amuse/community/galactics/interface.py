@@ -17,7 +17,7 @@ class GalactICsImplementation(object):
         self._output_directory = "./"
         self._particles_generated = False
         self._particle_data = numpy.array([])
-        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src", "bin")
+        self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "bin")
         
         
     def get_output_path(self, output_path):
@@ -180,7 +180,7 @@ class GalactICsImplementation(object):
     
     def _new_dbh_dir(self, data_directory,in_dbh,in_diskdf):
         if not os.path.exists(data_directory):
-            os.mkdir(data_directory)
+            os.makedirs(data_directory)
         with open(os.path.join(data_directory, "in.gendenspsi"), "w") as f:
             f.write("2000 40\n")
         # for clarity, also store the used input parameters in this directory:
@@ -382,7 +382,6 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         PythonCodeInterface.__init__(self, GalactICsImplementation, **options)
         LiteratureReferencesMixIn.__init__(self)
         CodeWithDataDirectories.__init__(self)
-        self.set_src_bin_path(os.path.join(self.get_code_src_directory(), 'bin'))
     
     def _check_if_worker_is_up_to_date(self):
         if not os.path.exists(os.path.join(GalactICsImplementation()._bin_path, "dbh")):
