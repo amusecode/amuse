@@ -1,27 +1,25 @@
-from ez_setup import use_setuptools
-use_setuptools()
-    
-from distutils.command.build import build
-from distutils.command.clean import clean
-from distutils.command.install import install
-from distutils.util import convert_path
-from distutils.cmd import Command
-from distutils.extension import Extension
-from setuptools import setup
-
 import sys
 import os
 import fnmatch
 import re
 import glob
 
+from distutils.command.build import build
+from distutils.command.clean import clean
+from distutils.command.install import install
+from distutils.util import convert_path
+from setuptools import setup
+
+from ez_setup import use_setuptools
+
 from support.generate_main import generate_main
 from support.build_latex import build_latex
-from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries
-from support.setup_codes import ConfigureCodes
-from support.setup_codes import GenerateInstallIni
-from support.setup_codes import InstallLibraries
+from support.setup_codes import (
+    BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries,
+    ConfigureCodes, GenerateInstallIni, InstallLibraries,
+)
 from support.run_tests import run_tests
+
 if sys.hexversion > 0x03000000:
     from distutils.command.build_py import build_py_2to3
     from os import walk as py_walk
@@ -30,8 +28,9 @@ if sys.hexversion > 0x03000000:
             callback(args, root, files)
 else:
     from os.path import walk
-    
 
+
+use_setuptools()
 #include_dirs.append(sysconfig.get_python_inc())
 
 extensions = []
