@@ -3,134 +3,69 @@ scripts to simulate astrophysical problems in different domains.
 
 The documentation and the software can be found at:
 
-* http://www.amusecode.org
+* https://github.com/amusecode/amuse
+* http://www.amusecode.org (currently outdated)
 
 Getting Started
 ===============
 
-To build amuse you need a working build environment and install some
-prerequisites. This document contains the quick install
-instructions, if these fail please look at the detailed descriptions
-of the installation procedure in the documents in the 'doc/install'
-directory.
+To install AMUSE you need to first install some prerequisites. An MPI
+installation is needed, both OpenMPI and MPICH are known to work.
+The installation method below assumes a Python2 environment, but Python3 has
+been tested with some success.
 
-Compilers
-=========
+## Installing prerequisites
 
-To build AMUSE from source you need to have a working build
-environment. The AMUSE build system needs a C++ and a fortan 90
-compiler. Please check first if you have a working build environment
-on your system.
+### macOS:
 
-In Ubuntu you can setup the environment with (as root):
-
+Use a package manager (e.g. macports) to install the prerequisites:
 ```bash
-apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
+sudo port install gcc7 openmpi-gcc7 hdf5 gsl cmake gmp mpfr fftw-3 +gcc7
+sudo port install python27 py27-virtualenv 
+```
+Next, set the just installed compilers to be the default.
+```bash
+sudo port select --set mpi openmpi-gcc7-fortran
+sudo port select --set gcc mp-gcc7
+sudo port select --set python2 python27
 ```
 
-In Fedora you can setup the environment with (as root)::
+### Linux (Ubuntu):
+
+For openmpi:
 
 ```bash
-yum groupinstall "Development Tools" "Development Libraries"
+sudo apt-get install build-essential gfortran python-dev \
+libopenmpi-dev openmpi-bin \
+libgsl0-dev cmake libfftw3-3 libfftw3-dev \
+libgmp3-dev libmpfr4 libmpfr-dev \
+libhdf5-serial-dev hdf5-tools \
+python-nose python-numpy python-setuptools python-docutils \
+python-h5py python-setuptools git
 ```
 
-In OS X you can install homebrew or macports package managers (both
-need the Apple Developer Tools). If you do not want to use any of
-these package managers you will need to install a fortran compiler
-as the Apple Developer Tools do not include a fortran compiler, you
-can find one at:
-
-* http://hpc.sourceforge.net/
-
-Installing Prerequisites
-========================
-
-This document describes installation of the pre-requisite software
-packages to a user directory. If you have a recent Ubuntu or Fedora
-distribution you can follow the installation instructions in
-`doc/install/howto-install-prerequisites.txt` to install the
-packages as part of the system.
-
-1. Make a prerequisite software directory (can be set to any directory)
-
-    ```bash
-    mkdir ~/amuse/prerequisites
-    ```
-
-2. Set the PREFIX, PATH and LD_LIBRARY_PATH environement variables
-
-    ```bash
-    export PREFIX=~/amuse/prerequisites
-    export PATH=${PREFIX}/bin:${PATH}
-    export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
-    ```
-
-    2b. If you have ifort and/or icc, or if you encounter problems with NetCDF 
-    (optional dependency) you may need to set also:
-
-    ```bash
-    export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
-    export CPATH=${PREFIX}/include:${CPATH}
-    ```
-
-3. Download and install python
-
-    ```bash
-    cd doc/install
-    ./install-python.sh
-    ```
-
-4. Download and install the other pre-requisites
-   (script is also in the `doc/install` directory)
-
-    ```bash
-    ./install.py install
-    ```
-
-Set Environment
-===============
-You can set the the PREFIX, PATH and LD_LIBRARY_PATH environment
-variables in you bashrc file. Please make sure the ${PREFIX}/bin
-directory is first in the path.
-
-In bash, you can extend your `.bashrc` file with:
+For mpich:
 
 ```bash
-export PREFIX=~/amuse/prerequisites
-export PATH=${PREFIX}/bin:${PATH}
-export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+sudo apt-get install build-essential gfortran python-dev \
+mpich libmpich-dev \
+libgsl0-dev cmake libfftw3-3 libfftw3-dev \
+libgmp3-dev libmpfr4 libmpfr-dev \
+libhdf5-serial-dev hdf5-tools \
+python-nose python-numpy python-setuptools python-docutils \
+python-h5py python-setuptools git
 ```
 
-Building AMUSE
-==============
-
-All modules can be build with a configure and make command. Start
-make from the main amuse directory (directory this README file lives
-in). The main task of the configure script is to check if the
-prerequisite packages have been installed.
-
-1. Configure the source code
-
-    ```bash
-    ./configure
-    ```
-
-2. Build the code with make
-    
-    ```bash
-    make
-    ```
-
-Running the tests
-=================
-AMUSE comes with a large set of tests, most can be run automatically.
-To run these tests start the nosetests command from the main
-amuse directory (directory this README file lives in).
-
-To run these tests do:
-
-1. Run the automatic tests
-
+## Installing AMUSE
+The preferred way of installing AMUSE is in a clean virtual environment.
+In this environment, first install mpi4py:
 ```bash
-nosetests -v
+pip install mpi4py
 ```
+
+Then, install AMUSE and its prerequisite packages (this will take a long time):
+```bash
+pip install amuse
+```
+
+Done!
