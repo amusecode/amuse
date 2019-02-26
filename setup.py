@@ -177,10 +177,12 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
-        'License :: Apache Software License 2.0',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX',
         'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
         'Programming Language :: C',
         'Programming Language :: C++',
         'Programming Language :: Fortran',
@@ -192,7 +194,8 @@ setup(
     install_requires = [
         'docutils>=0.6',
         'numpy>=1.2.2',
-        'nose>=0.11.1'
+        'nose>=0.11.1',
+        'mpi4py>=1.1.0',
+        'h5py>=1.1.0',        
     ]
 )
-
