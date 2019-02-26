@@ -1,5 +1,10 @@
-This directory contains the AMUSE software. With AMUSE you can write
-scripts to simulate astrophysical problems in different domains.
+This package contains the AMUSE software. With AMUSE you can write scripts to
+simulate astrophysical problems in different domains.
+
+This release (12.0a3) does not contain the following codes, for space-saving reasons:
+- MESA
+- SimpleX
+- EVTwin
 
 The documentation and the software can be found at:
 

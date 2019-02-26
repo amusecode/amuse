@@ -62,7 +62,6 @@ from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole, CapreoleInterface
 from amuse.community.mpiamrvac.interface import MpiAmrVac, MpiAmrVacInterface
 
-from amuse.community.simplex.interface import SimpleX, SimpleXInterface
 from amuse.community.mocassin.interface import Mocassin, MocassinInterface
 from amuse.community.sphray.interface import SPHRay, SPHRayInterface
 
@@ -71,8 +70,6 @@ from amuse.community.bse.interface import BSE, BSEInterface
 from amuse.community.mosse.interface import MOSSE, MOSSEInterface                                                   
 from amuse.community.mobse.interface import MOBSE, MOBSEInterface
 from amuse.community.seba.interface import SeBa, SeBaInterface
-from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
-from amuse.community.mesa.interface import MESA, MESAInterface
 from amuse.community.mmams.interface import MakeMeAMassiveStar, MakeMeAMassiveStarInterface
 
 from amuse.community.hop.interface import Hop, HopInterface
