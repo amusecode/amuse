@@ -169,7 +169,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='amuse',
-    version="12.0a3",
+    version="12.0a4",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'': 'src', 'amuse.test.suite' :'test', 'amuse.examples' : 'examples'},
@@ -200,6 +200,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     install_requires=[
+        'wheel>=0.33',
         'docutils>=0.6',
         'numpy>=1.2.2',
         'nose>=0.11.1',

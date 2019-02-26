@@ -1,7 +1,7 @@
 This package contains the AMUSE software. With AMUSE you can write scripts to
 simulate astrophysical problems in different domains.
 
-This release (12.0a3) does not contain the following codes, for space-saving reasons:
+This release (12.0a4) does not contain the following codes, for space-saving reasons:
 - MESA
 - SimpleX
 - EVTwin
@@ -63,9 +63,9 @@ python-h5py python-setuptools git
 
 ## Installing AMUSE
 The preferred way of installing AMUSE is in a clean virtual environment.
-In this environment, first install mpi4py:
+In this environment, first install wheel and mpi4py:
 ```bash
-pip install mpi4py
+pip install wheel mpi4py
 ```
 
 Then, install AMUSE and its prerequisite packages (this will take a long time):
