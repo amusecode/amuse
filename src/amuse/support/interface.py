@@ -889,11 +889,17 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         return name in self.definitions.keys()
 
     def get_attribute(self, name, value):
-        if not self.parameters:
-            for n,d in self.definitions.iteritems():
-                self.parameters[n] =  parameters.new_parameters_instance_with_docs(d, self.interface)
-       
-        return self.parameters[name or 'parameters']
+        # note: parameters can be added after init, not yet removed
+
+        name=name or 'parameters'
+
+        if name not in self.parameters:
+            d=self.definitions[name]
+            self.parameters[name] = parameters.new_parameters_instance_with_docs(d, self.interface)
+        else:
+            self.parameters[name].update()       
+        result=self.parameters[name]
+        return result
 
     def attribute_names(self):
         return set(self.definitions.keys())

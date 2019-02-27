@@ -1240,3 +1240,61 @@ class TestParameters(amusetest.TestCase):
         t.parameters2.y=789.
         self.assertEqual(t.parameters2.y,789.)
         self.assertEqual(t.parameters2.y_alias,789.)
+
+    def test21(self):
+        print "Test change in parameter sets"
+        
+        class TestInterface(BaseTestModule):
+            x = 123.0 
+            y = 456.0
+            
+            def get_x(self):
+                return self.x
+            def set_x(self, value):
+                self.x = value
+            def get_y(self):
+                return self.y
+            def set_y(self, value):
+                self.y = value
+
+
+        class Testing(InCodeComponentImplementation):
+    
+            def __init__(self, **options):
+                  InCodeComponentImplementation.__init__(self, TestInterface(), **options)
+
+            def define_parameters(self,handler):
+                  handler.add_method_parameter(
+                    "get_x", "set_x", "x", "test parameter", 123.
+                  )
+            def define_additional_parameters(self):
+                  handler=self.get_handler('PARAMETER')
+                  handler.add_method_parameter(
+                    "get_y", "set_y", "y", "test parameter 2", 456.,
+                    parameter_set="parameters2"
+                  )
+                  handler.add_alias_parameter(
+                    "y_alias","y", " new y", parameter_set="parameters2"
+                  )
+                  handler.add_method_parameter(
+                    "get_y", "set_y", "y", "test parameter", 456.
+                  )
+
+
+
+
+        t=Testing()
+
+        self.assertEqual(set(t.parameter_set_names()), set(('parameters',)))
+        
+        
+        t.define_additional_parameters()
+        self.assertEqual(set(t.parameter_set_names()), set(('parameters','parameters2')))
+
+        self.assertEqual(t.parameters.x,123.)
+        self.assertEqual(t.parameters2.y,456.)
+        t.parameters2.y=789.
+        self.assertEqual(t.parameters2.y,789.)
+        self.assertEqual(t.parameters2.y_alias,789.)
+        self.assertEqual(t.parameters.y,789.)
+
