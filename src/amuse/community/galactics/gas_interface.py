@@ -78,12 +78,12 @@ class GaslactICsImplementation(object):
         self._particle_data = numpy.array([])
         self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "gbin")
     
-    def get_output_path(self, output_path):
-        output_path.value = self._output_directory
+    def get_output_path(self, output_directory):
+        output_directory.value = self._output_directory
         return 0
     
-    def set_output_path(self, output_path):
-        self._output_directory = output_path
+    def set_output_path(self, output_directory):
+        self._output_directory = output_directory
         return 0
     
     def set_src_bin_path(self, src_bin_path):
@@ -225,11 +225,11 @@ class GaslactICsImplementation(object):
     def _data_directory(self,in_dbh,in_diskdf):
         return os.path.join(self._output_directory, "model"+str(hash(in_dbh+in_diskdf)))
         
-    def model_present(self,x):
+    def model_present(self,model_present):
         in_dbh = self.generate_in_dbh_string()
         in_diskdf = self.generate_in_diskdf_string()
         data_directory=self._data_directory(in_dbh,in_diskdf)
-        x.value=self._directory_contains_valid_model(data_directory)      
+        model_present.value=self._directory_contains_valid_model(data_directory)      
         return 0
 
     def _directory_contains_valid_model(self,data_directory):
@@ -522,8 +522,8 @@ class GaslactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRe
         Return the number of particles added during the last generate_particles.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('number', dtype='int32', direction=function.OUT)
-        function.addParameter('number_of_gas', dtype='int32', direction=function.OUT)
+        function.addParameter('number_of_particles_updated', dtype='int32', direction=function.OUT)
+        function.addParameter('number_of_gas_particles_updated', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
 

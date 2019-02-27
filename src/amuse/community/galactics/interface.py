@@ -20,12 +20,12 @@ class GalactICsImplementation(object):
         self._bin_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "bin")
         
         
-    def get_output_path(self, output_path):
-        output_path.value = self._output_directory
+    def get_output_path(self, output_directory):
+        output_directory.value = self._output_directory
         return 0
     
-    def set_output_path(self, output_path):
-        self._output_directory = output_path
+    def set_output_path(self, output_directory):
+        self._output_directory = output_directory
         return 0
     
     def set_src_bin_path(self, src_bin_path):
@@ -475,7 +475,7 @@ class GalactICsInterface(PythonCodeInterface, CommonCodeInterface, LiteratureRef
         Return the number of particles added during the last generate_particles.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('index', dtype='int32', direction=function.OUT)
+        function.addParameter('number_of_particles_updated', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
