@@ -1276,6 +1276,10 @@ class TestParameters(amusetest.TestCase):
                   handler.add_alias_parameter(
                     "y_alias","y", " new y", parameter_set="parameters2"
                   )
+                  handler.add_method_parameter(
+                    "get_y", "set_y", "y", "test parameter", 456.
+                  )
+
 
 
 
@@ -1292,4 +1296,5 @@ class TestParameters(amusetest.TestCase):
         t.parameters2.y=789.
         self.assertEqual(t.parameters2.y,789.)
         self.assertEqual(t.parameters2.y_alias,789.)
+        self.assertEqual(t.parameters.y,789.)
 
