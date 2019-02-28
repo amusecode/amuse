@@ -491,11 +491,11 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
     def get_rmax():
         """
         Retrieve the maximal radius (rmax) -- heliocentric distance at 
-        which objects are considered ejected.
+        which handlers are considered ejected.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('rmax', dtype='float64', direction=function.OUT,
-            description = "heliocentric distance at which objects are considered ejected", unit=units.AU)
+            description = "heliocentric distance at which handlers are considered ejected", unit=units.AU)
         function.result_type = 'int32'
         return function
         
@@ -503,11 +503,11 @@ class MercuryInterface(CodeInterface, CommonCodeInterface, CodeWithDataDirectori
     def set_rmax():
         """
         Set the maximal radius (rmax) -- heliocentric distance at 
-        which objects are considered ejected.
+        which handlers are considered ejected.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('rmax', dtype='float64', direction=function.IN,
-            description = "heliocentric distance at which objects are considered ejected", unit=units.AU)
+            description = "heliocentric distance at which handlers are considered ejected", unit=units.AU)
         function.result_type = 'int32'
         return function
         
@@ -703,8 +703,8 @@ class MercuryWayWard(GravitationalDynamics):
         self.set_integration_parameters_file(os.devnull)
         self.set_restart_file(os.devnull)
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_time",
             None,
             "time",
@@ -712,7 +712,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = 0.0 | units.day
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_initial_timestep",
             "set_initial_timestep",
             "timestep",
@@ -720,7 +720,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = 8.0 | units.day
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_integrator",
             "set_integrator",
             "integrator",
@@ -728,7 +728,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = 10
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_rmax",
             "set_rmax",
             "rmax",
@@ -736,7 +736,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = 100. | units.AU
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_cefac",
             "set_cefac",
             "cefac",
@@ -744,7 +744,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = 3. | units.none
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_elements_file",
             "set_elements_file",
             "elements_file",
@@ -752,7 +752,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = None
         )        
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_close_encounters_file",
             "set_close_encounters_file",
             "close_encounters_file",
@@ -760,7 +760,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = None
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_info_file",
             "set_info_file",
             "info_file",
@@ -768,7 +768,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = None
         )        
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bigbody_file",
             "set_bigbody_file",
             "bigbody_file",
@@ -776,7 +776,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = None
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_smallbody_file",
             "set_smallbody_file",
             "smallbody_file",
@@ -784,7 +784,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = None
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_integration_parameters_file",
             "set_integration_parameters_file",
             "integration_parameters_file",
@@ -792,7 +792,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = None
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_restart_file",
             "set_restart_file",
             "restart_file",
@@ -800,7 +800,7 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = None
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -808,70 +808,70 @@ class MercuryWayWard(GravitationalDynamics):
             default_value = 0.0 | units.day
         )
 
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
 
     
-    def define_properties(self, object):
-        object.add_property("get_kinetic_energy")
-        object.add_property("get_potential_energy")
-        object.add_property("get_total_energy")
-        object.add_property("get_center_of_mass_position")
-        object.add_property("get_center_of_mass_velocity")
-        object.add_property("get_total_mass")
+    def define_properties(self, handler):
+        handler.add_property("get_kinetic_energy")
+        handler.add_property("get_potential_energy")
+        handler.add_property("get_total_energy")
+        handler.add_property("get_center_of_mass_position")
+        handler.add_property("get_center_of_mass_velocity")
+        handler.add_property("get_total_mass")
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        object.add_method('EDIT', 'new_central_particle')
-        object.add_method('EDIT', 'new_orbiter')
-        object.add_method('UPDATE', 'new_orbiter')
-        object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
-        self.stopping_conditions.define_state(object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        handler.add_method('EDIT', 'new_central_particle')
+        handler.add_method('EDIT', 'new_orbiter')
+        handler.add_method('UPDATE', 'new_orbiter')
+        handler.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
+        self.stopping_conditions.define_state(handler)
 
 
 
-    def define_particle_sets(self, object):
-        object.define_super_set('particles', ['central_particle','orbiters'],
+    def define_particle_sets(self, handler):
+        handler.define_super_set('particles', ['central_particle','orbiters'],
             index_to_default_set=0)
 
-        object.define_set('orbiters', 'id')
-        object.set_new('orbiters', 'new_orbiter')
-        object.set_delete('orbiters', 'delete_particle')
-        object.add_setter('orbiters', 'set_orbiter_state') 
-        object.add_getter('orbiters', 'get_orbiter_state') 
-        object.add_setter('orbiters', 'set_mass')
-        object.add_getter('orbiters', 'get_mass')
-        object.add_setter('orbiters', 'set_density')
-        object.add_getter('orbiters', 'get_density')
-        object.add_setter('orbiters', 'set_position')
-        object.add_getter('orbiters', 'get_position')
-        object.add_setter('orbiters', 'set_velocity')
-        object.add_getter('orbiters', 'get_velocity')
-        object.add_setter('orbiters', 'set_angularmomentum')
-        object.add_getter('orbiters', 'get_angularmomentum')
-        object.add_setter('orbiters', 'set_celimit')
-        object.add_getter('orbiters', 'get_celimit')
+        handler.define_set('orbiters', 'id')
+        handler.set_new('orbiters', 'new_orbiter')
+        handler.set_delete('orbiters', 'delete_particle')
+        handler.add_setter('orbiters', 'set_orbiter_state') 
+        handler.add_getter('orbiters', 'get_orbiter_state') 
+        handler.add_setter('orbiters', 'set_mass')
+        handler.add_getter('orbiters', 'get_mass')
+        handler.add_setter('orbiters', 'set_density')
+        handler.add_getter('orbiters', 'get_density')
+        handler.add_setter('orbiters', 'set_position')
+        handler.add_getter('orbiters', 'get_position')
+        handler.add_setter('orbiters', 'set_velocity')
+        handler.add_getter('orbiters', 'get_velocity')
+        handler.add_setter('orbiters', 'set_angularmomentum')
+        handler.add_getter('orbiters', 'get_angularmomentum')
+        handler.add_setter('orbiters', 'set_celimit')
+        handler.add_getter('orbiters', 'get_celimit')
 
-        object.define_set('central_particle', 'id')
-        object.set_new('central_particle', 'new_central_particle')
-        object.add_setter('central_particle', 'set_central_particle_state')
-        object.add_getter('central_particle', 'get_central_particle_state')
-        object.add_setter('central_particle', 'set_central_mass')
-        object.add_getter('central_particle', 'get_central_mass')
-        object.add_setter('central_particle', 'set_central_radius')
-        object.add_getter('central_particle', 'get_central_radius')
-        object.add_setter('central_particle', 'set_central_oblateness')
-        object.add_getter('central_particle', 'get_central_oblateness')
-        object.add_setter('central_particle', 'set_central_spin')
-        object.add_getter('central_particle', 'get_central_spin')
+        handler.define_set('central_particle', 'id')
+        handler.set_new('central_particle', 'new_central_particle')
+        handler.add_setter('central_particle', 'set_central_particle_state')
+        handler.add_getter('central_particle', 'get_central_particle_state')
+        handler.add_setter('central_particle', 'set_central_mass')
+        handler.add_getter('central_particle', 'get_central_mass')
+        handler.add_setter('central_particle', 'set_central_radius')
+        handler.add_getter('central_particle', 'get_central_radius')
+        handler.add_setter('central_particle', 'set_central_oblateness')
+        handler.add_getter('central_particle', 'get_central_oblateness')
+        handler.add_setter('central_particle', 'set_central_spin')
+        handler.add_getter('central_particle', 'get_central_spin')
 
-        #GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+        #GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)
 
-    def define_methods(self, object):
-        #GravitationalDynamics.define_methods(self, object)
-        object.add_method('evolve_model', (units.day), ( object.ERROR_CODE, ))
-        object.add_method(
+    def define_methods(self, handler):
+        #GravitationalDynamics.define_methods(self, handler)
+        handler.add_method('evolve_model', (units.day), ( handler.ERROR_CODE, ))
+        handler.add_method(
             'new_orbiter',
             (
                 units.MSun,
@@ -885,17 +885,17 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                object.NO_UNIT
+                handler.NO_UNIT
             ),
             (
-                object.INDEX, 
-                object.ERROR_CODE
+                handler.INDEX, 
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             'get_orbiter_state',
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.MSun,
@@ -909,14 +909,14 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                object.NO_UNIT,
-                object.ERROR_CODE
+                handler.NO_UNIT,
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             'get_central_particle_state',
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.MSun,
@@ -927,14 +927,14 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
 
-        object.add_method(
+        handler.add_method(
             'set_orbiter_state',
             (
-                object.INDEX,
+                handler.INDEX,
                 units.MSun,
                 units.g/units.cm**3,
                 units.AU,
@@ -946,13 +946,13 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                object.NO_UNIT
+                handler.NO_UNIT
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             'new_central_particle',
             (
                 units.MSun,
@@ -965,15 +965,15 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day
             ),
             (
-                object.INDEX, 
-                object.ERROR_CODE
+                handler.INDEX, 
+                handler.ERROR_CODE
             )
         )
 
-        object.add_method(
+        handler.add_method(
             'set_central_particle_state',
             (
-                object.INDEX,
+                handler.INDEX,
                 units.MSun,
                 units.AU,
                 units.AU**2,
@@ -984,307 +984,307 @@ class MercuryWayWard(GravitationalDynamics):
                 units.MSun * units.AU**2/units.day
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
 
-        object.add_method(
+        handler.add_method(
             "set_initial_timestep",
             (
                 units.day,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_initial_timestep",
             (
             ),
             (
                 units.day,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
 
 
 
-        object.add_method(
+        handler.add_method(
             "set_mass",
             (
-                object.INDEX,
+                handler.INDEX,
                 units.MSun,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_mass",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.MSun,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_central_mass",
             (
-                object.INDEX,
+                handler.INDEX,
                 units.MSun,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_central_mass",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.MSun,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
 
         #assuming celimit is RCEH, clouse-encounter limit
         #expressed in units Hill radius, I use unit none
         #see comments in: src/mercury_main.for
-        object.add_method(
+        handler.add_method(
             "set_celimit",
             (
-                object.INDEX,
-                object.NO_UNIT,
+                handler.INDEX,
+                handler.NO_UNIT,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_celimit",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE
+                handler.NO_UNIT,
+                handler.ERROR_CODE
             )
         )
 
-        object.add_method(
+        handler.add_method(
             "set_position",
             (
-                object.INDEX,
+                handler.INDEX,
                 units.AU,
                 units.AU,
                 units.AU,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_position",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.AU,
                 units.AU,
                 units.AU,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_velocity",
             (
-                object.INDEX,
+                handler.INDEX,
                 units.AUd,
                 units.AUd,
                 units.AUd,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_velocity",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.AUd,
                 units.AUd,
                 units.AUd,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_angularmomentum",
             (
-                object.INDEX,
+                handler.INDEX,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_angularmomentum",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_central_spin",
             (
-                object.INDEX,
+                handler.INDEX,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_central_spin",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
 
-        object.add_method(
+        handler.add_method(
             'set_density',
             (
-                object.INDEX,
+                handler.INDEX,
                 units.g/units.cm**3
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )    
-        object.add_method(
+        handler.add_method(
             'get_density',
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.g/units.cm**3,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )    
-        object.add_method(
+        handler.add_method(
             'get_central_oblateness',
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.AU**2,
                 units.AU**4,
                 units.AU**6,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             'set_central_oblateness',
             (
-                object.INDEX,
+                handler.INDEX,
                 units.AU**2,
                 units.AU**4,
                 units.AU**6,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             'get_central_radius',
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 units.AU,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             'set_central_radius',
             (
-                object.INDEX,
+                handler.INDEX,
                 units.AU,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
         
-        object.add_method(
+        handler.add_method(
             "get_time",
             (),
-            (units.day, object.ERROR_CODE,)
+            (units.day, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_kinetic_energy",
             (),
-            (units.MSun*units.AU**2/units.day**2, object.ERROR_CODE,)
+            (units.MSun*units.AU**2/units.day**2, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_total_angular_momentum",
             (),
-            (units.MSun*units.AU**2/units.day, object.ERROR_CODE,)
+            (units.MSun*units.AU**2/units.day, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_potential_energy",
             (),
-            (units.MSun*units.AU**2/units.day**2, object.ERROR_CODE,)
+            (units.MSun*units.AU**2/units.day**2, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_total_energy",
             (),
-            (units.MSun*units.AU**2/units.day**2, object.ERROR_CODE,)
+            (units.MSun*units.AU**2/units.day**2, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_center_of_mass_position",
             (),
-            (units.AU, units.AU, units.AU, object.ERROR_CODE,)
+            (units.AU, units.AU, units.AU, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_center_of_mass_velocity",
             (),
-            (units.AUd, units.AUd, units.AUd, object.ERROR_CODE,)
+            (units.AUd, units.AUd, units.AUd, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_total_mass",
             (),
-            (units.MSun, object.ERROR_CODE,)
+            (units.MSun, handler.ERROR_CODE,)
         )
         
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
  
 class Mercury(MercuryWayWard):
     def __init__(self, *args, **kargs):
@@ -1294,10 +1294,10 @@ class Mercury(MercuryWayWard):
         self.particles_accessed=True
         self.committed=False
 
-    def define_parameters(self, object):
-        MercuryWayWard.define_parameters(self,object)
+    def define_parameters(self, handler):
+        MercuryWayWard.define_parameters(self,handler)
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2",
             "epsilon_squared",
@@ -1490,14 +1490,14 @@ class Mercury(MercuryWayWard):
 
         return self.overridden().get_gravity_at_point(eps,xx,yy,zz)
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        object.add_method('EDIT', 'new_central_particle')
-        object.add_method('EDIT', 'new_orbiter')
-        object.add_method('UPDATE', 'new_orbiter')
-        object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
-        object.add_method('RUN', 'recommit_particles')
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        handler.add_method('EDIT', 'new_central_particle')
+        handler.add_method('EDIT', 'new_orbiter')
+        handler.add_method('UPDATE', 'new_orbiter')
+        handler.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
+        handler.add_method('RUN', 'recommit_particles')
     def cleanup_code(self):
         self._particles=Particles(0)
         self.model_time=0.|units.s

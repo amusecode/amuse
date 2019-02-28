@@ -869,63 +869,63 @@ class GravitationalDynamics(common.CommonCode):
         
         common.CommonCode.__init__(self, legacy_interface, **options)
 
-    def define_properties(self, object):
-        object.add_property("get_kinetic_energy")
-        object.add_property("get_potential_energy")
-        object.add_property("get_total_radius")
-        object.add_property("get_center_of_mass_position")
-        object.add_property("get_center_of_mass_velocity")
-        object.add_property("get_total_mass")
-        object.add_property('get_time', public_name = "model_time")
+    def define_properties(self, handler):
+        handler.add_property("get_kinetic_energy")
+        handler.add_property("get_potential_energy")
+        handler.add_property("get_total_radius")
+        handler.add_property("get_center_of_mass_position")
+        handler.add_property("get_center_of_mass_velocity")
+        handler.add_property("get_total_mass")
+        handler.add_property('get_time', public_name = "model_time")
 
-    def define_state(self, object): 
-        common.CommonCode.define_state(self, object)   
-        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
+    def define_state(self, handler): 
+        common.CommonCode.define_state(self, handler)   
+        handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)    
         
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
-        object.add_method('EVOLVED','before_get_parameter')
-        
-        
-        object.add_method('EDIT', 'new_particle')
-        object.add_method('EDIT', 'delete_particle')
-        object.add_method('UPDATE', 'new_particle')
-        object.add_method('UPDATE', 'delete_particle')
-        object.add_transition('EDIT', 'RUN', 'commit_particles')
-        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
-        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
-        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
-        object.add_method('EVOLVED', 'evolve_model')
-        object.add_transition('EVOLVED','RUN', 'synchronize_model')
-        object.add_method('RUN', 'synchronize_model')
-        object.add_method('RUN', 'get_state')
-        object.add_method('RUN', 'get_mass')
-        object.add_method('RUN', 'get_position')
-        object.add_method('RUN', 'get_velocity')
-        object.add_method('RUN', 'get_potential')
-        object.add_method('RUN', 'get_potential_energy')
-        object.add_method('RUN', 'get_kinetic_energy')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
+        handler.add_method('EVOLVED','before_get_parameter')
         
         
-    def define_parameters(self, object):
-        object.add_method_parameter(
+        handler.add_method('EDIT', 'new_particle')
+        handler.add_method('EDIT', 'delete_particle')
+        handler.add_method('UPDATE', 'new_particle')
+        handler.add_method('UPDATE', 'delete_particle')
+        handler.add_transition('EDIT', 'RUN', 'commit_particles')
+        handler.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        handler.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        handler.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        handler.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
+        handler.add_method('EVOLVED', 'evolve_model')
+        handler.add_transition('EVOLVED','RUN', 'synchronize_model')
+        handler.add_method('RUN', 'synchronize_model')
+        handler.add_method('RUN', 'get_state')
+        handler.add_method('RUN', 'get_mass')
+        handler.add_method('RUN', 'get_position')
+        handler.add_method('RUN', 'get_velocity')
+        handler.add_method('RUN', 'get_potential')
+        handler.add_method('RUN', 'get_potential_energy')
+        handler.add_method('RUN', 'get_kinetic_energy')
+        
+        
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_time_step",
             None,
             "timestep",
@@ -933,7 +933,7 @@ class GravitationalDynamics(common.CommonCode):
             default_value = 0.7 | nbody_system.time
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -941,19 +941,19 @@ class GravitationalDynamics(common.CommonCode):
             default_value = 0.0 | nbody_system.time
         )
 
-    def define_methods(self, object):
-        common.CommonCode.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        common.CommonCode.define_methods(self, handler)
+        handler.add_method(
             'evolve_model',
             (
                 nbody_system.time,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
 
-        object.add_method(
+        handler.add_method(
             "new_particle",
             (
                 nbody_system.mass,
@@ -966,23 +966,23 @@ class GravitationalDynamics(common.CommonCode):
                 nbody_system.length,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "delete_particle",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_state",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 nbody_system.mass,
@@ -993,13 +993,13 @@ class GravitationalDynamics(common.CommonCode):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.length,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_state",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 nbody_system.mass,
                 nbody_system.length,
                 nbody_system.length,
@@ -1010,216 +1010,216 @@ class GravitationalDynamics(common.CommonCode):
                 nbody_system.length,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_mass",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 nbody_system.mass,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_mass",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 nbody_system.mass,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_radius",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 nbody_system.length,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_radius",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 nbody_system.length,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_position",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_position",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_velocity",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_velocity",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
         
-        object.add_method(
+        handler.add_method(
             "get_potential",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
-            (nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+            (nbody_system.length ** 2  * nbody_system.time ** -2, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             'get_indices_of_colliding_particles',
             (),
             (
-                object.NO_UNIT,
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
             )
         )
 
        
-        object.add_method(
+        handler.add_method(
             'commit_particles',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'recommit_particles',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             'synchronize_model',
             (),
-            (object.ERROR_CODE)
+            (handler.ERROR_CODE)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_time_step",
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_kinetic_energy",
             (),
-            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_potential_energy",
             (),
-            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_total_radius",
             (),
-            (nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_center_of_mass_position",
             (),
-            (nbody_system.length,nbody_system.length,nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length,nbody_system.length,nbody_system.length, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_center_of_mass_velocity",
             (),
-            (nbody_system.length / nbody_system.time,nbody_system.length / nbody_system.time,nbody_system.length / nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.length / nbody_system.time,nbody_system.length / nbody_system.time,nbody_system.length / nbody_system.time, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             "get_total_mass",
             (),
-            (nbody_system.mass, object.ERROR_CODE,)
+            (nbody_system.mass, handler.ERROR_CODE,)
         )
 
 
-        object.add_method(
+        handler.add_method(
             'get_time',
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
 
 
-    def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_setter('particles', 'set_state')
-        object.add_getter('particles', 'get_state')
-        object.add_setter('particles', 'set_mass')
-        object.add_getter('particles', 'get_mass', names = ('mass',))
-        object.add_setter('particles', 'set_position')
-        object.add_getter('particles', 'get_position')
-        object.add_setter('particles', 'set_velocity')
-        object.add_getter('particles', 'get_velocity')
-        object.add_setter('particles', 'set_radius')
-        object.add_getter('particles', 'get_radius')
-        object.add_query('particles', 'get_indices_of_colliding_particles', public_name = 'select_colliding_particles')
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'index_of_the_particle')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_state')
+        handler.add_getter('particles', 'get_state')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        handler.add_setter('particles', 'set_position')
+        handler.add_getter('particles', 'get_position')
+        handler.add_setter('particles', 'set_velocity')
+        handler.add_getter('particles', 'get_velocity')
+        handler.add_setter('particles', 'set_radius')
+        handler.add_getter('particles', 'get_radius')
+        handler.add_query('particles', 'get_indices_of_colliding_particles', public_name = 'select_colliding_particles')
 
     def get_colliding_particles(self):
         subset = self.colliding_particles_method._run(self, self.particles)
         return subset
 
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
             
     def commit_parameters(self):
         self.parameters.send_not_set_parameters_to_code()
@@ -1244,8 +1244,8 @@ class GravitationalDynamics(common.CommonCode):
 
 class GravityFieldCode(object):
         
-    def define_state(self, object): 
-        object.add_method('RUN', 'get_gravity_at_point')
-        object.add_method('RUN', 'get_potential_at_point')
+    def define_state(self, handler): 
+        handler.add_method('RUN', 'get_gravity_at_point')
+        handler.add_method('RUN', 'get_potential_at_point')
         
         

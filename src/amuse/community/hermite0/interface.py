@@ -216,28 +216,28 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
             **options
         )
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
-        self.stopping_conditions.define_state(object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
+        self.stopping_conditions.define_state(handler)
         
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2", 
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dt_param",
             "set_dt_param",
             "dt_param",
             "timestep scaling factor", 
             default_value = 0.03
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_end_time_accuracy_factor",
             "set_end_time_accuracy_factor",
             "end_time_accuracy_factor",
@@ -251,14 +251,14 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
             """,
             default_value = 1.0
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dt_dia",
             "set_dt_dia",
             "dt_dia", 
             "time interval between diagnostics output", 
             default_value = 1.0 | nbody_system.time
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_is_time_reversed_allowed",
             "set_is_time_reversed_allowed",
             "is_time_reversed_allowed", 
@@ -266,7 +266,7 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
             default_value = False
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -274,74 +274,74 @@ class Hermite(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
         
-        object.add_method(
+        handler.add_method(
             "get_eps2",
             (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_dt_param",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_dt_param",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_dt_dia",
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_dt_dia",
             (nbody_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_time",
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_time",
             (nbody_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_pair_detect_factor",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_pair_detect_factor",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
     
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
         
-        self.stopping_conditions.define_particle_set(object)
+        self.stopping_conditions.define_particle_set(handler)

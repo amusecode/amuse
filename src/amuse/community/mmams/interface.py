@@ -258,11 +258,11 @@ class MakeMeAMassiveStar(CommonCode):
     def set_create_new_key(self, value):
         self.create_new_key = value
     
-    def define_properties(self, object):
-        object.add_property("get_number_of_particles")
+    def define_properties(self, handler):
+        handler.add_property("get_number_of_particles")
     
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_target_n_shells_mixing", 
             "set_target_n_shells_mixing",
             "target_n_shells_mixing", 
@@ -270,7 +270,7 @@ class MakeMeAMassiveStar(CommonCode):
             default_value = 200
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_target_n_shells", 
             "set_target_n_shells",
             "target_n_shells", 
@@ -278,7 +278,7 @@ class MakeMeAMassiveStar(CommonCode):
             default_value = 10000
         ) 
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_dump_mixed_flag",
             "set_dump_mixed_flag",
             "dump_mixed_flag",
@@ -286,7 +286,7 @@ class MakeMeAMassiveStar(CommonCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_do_shock_heating_flag",
             "set_do_shock_heating_flag",
             "do_shock_heating_flag",
@@ -294,7 +294,7 @@ class MakeMeAMassiveStar(CommonCode):
             True
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_create_new_key",
             "set_create_new_key",
             "create_new_key",
@@ -302,86 +302,86 @@ class MakeMeAMassiveStar(CommonCode):
             True
         )
     
-    def define_methods(self, object):
-        CommonCode.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        CommonCode.define_methods(self, handler)
+        handler.add_method(
             "new_particle",
             (units.MSun,),
-            (object.INDEX, object.ERROR_CODE,)
+            (handler.INDEX, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "delete_particle",
-            (object.INDEX,),
-            (object.ERROR_CODE,)
+            (handler.INDEX,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "read_usm",
-            (object.NO_UNIT,),
-            (object.INDEX, object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.INDEX, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "add_shell",
-            (object.INDEX, units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                units.K, units.LSun, units.amu, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT),
-            (object.ERROR_CODE,)
+            (handler.INDEX, units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+                units.K, units.LSun, units.amu, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, 
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_stellar_model_element",
-            (object.INDEX, object.INDEX,),
+            (handler.INDEX, handler.INDEX,),
             (units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                object.NO_UNIT, units.K, units.LSun, units.amu,
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
+                handler.NO_UNIT, units.K, units.LSun, units.amu,
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, 
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_number_of_zones",
-            (object.INDEX, ),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX, ),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_number_of_particles",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "merge_two_stars",
-            (object.INDEX, object.INDEX,),
-            (object.INDEX, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX,),
+            (handler.INDEX, handler.ERROR_CODE,)
         )
         
-        object.add_method("get_target_n_shells_mixing", (), (object.NO_UNIT, object.ERROR_CODE,)) 
-        object.add_method("set_target_n_shells_mixing", (object.NO_UNIT, ), (object.ERROR_CODE,)) 
+        handler.add_method("get_target_n_shells_mixing", (), (handler.NO_UNIT, handler.ERROR_CODE,)) 
+        handler.add_method("set_target_n_shells_mixing", (handler.NO_UNIT, ), (handler.ERROR_CODE,)) 
         
-        object.add_method("get_target_n_shells", (), (object.NO_UNIT, object.ERROR_CODE,)) 
-        object.add_method("set_target_n_shells", (object.NO_UNIT, ), (object.ERROR_CODE,)) 
+        handler.add_method("get_target_n_shells", (), (handler.NO_UNIT, handler.ERROR_CODE,)) 
+        handler.add_method("set_target_n_shells", (handler.NO_UNIT, ), (handler.ERROR_CODE,)) 
         
-        object.add_method("get_number_of_particles", (), (object.NO_UNIT, object.ERROR_CODE,)) 
+        handler.add_method("get_number_of_particles", (), (handler.NO_UNIT, handler.ERROR_CODE,)) 
     
-    def define_errorcodes(self, object):
-        object.add_errorcode(-1, 'Unspecified, other error.')
-        object.add_errorcode(-2, 'Specified zone is undefined for this particle.')
-        object.add_errorcode(-3, 'A particle with the given index was not found.')
+    def define_errorcodes(self, handler):
+        handler.add_errorcode(-1, 'Unspecified, other error.')
+        handler.add_errorcode(-2, 'Specified zone is undefined for this particle.')
+        handler.add_errorcode(-3, 'A particle with the given index was not found.')
     
-    def define_particle_sets(self, object):
-        object.define_super_set('particles', ['native_stars', 'imported_stars', 'merge_products'], 
+    def define_particle_sets(self, handler):
+        handler.define_super_set('particles', ['native_stars', 'imported_stars', 'merge_products'], 
             index_to_default_set = 0)
         
-        object.define_set('native_stars', 'index_of_the_particle')
-        object.set_new('native_stars', 'new_particle')
+        handler.define_set('native_stars', 'index_of_the_particle')
+        handler.set_new('native_stars', 'new_particle')
         
-        object.define_set('imported_stars', 'index_of_the_particle')
-        object.set_new('imported_stars', 'read_usm')
+        handler.define_set('imported_stars', 'index_of_the_particle')
+        handler.set_new('imported_stars', 'read_usm')
         
-        object.define_set('merge_products', 'index_of_the_particle')
-        object.set_new('merge_products', 'merge_stars')
+        handler.define_set('merge_products', 'index_of_the_particle')
+        handler.set_new('merge_products', 'merge_stars')
         
         for particle_set_name in ['native_stars', 'imported_stars', 'merge_products']:
-            object.set_delete(particle_set_name, 'delete_particle')
-            object.add_getter(particle_set_name, 'get_number_of_zones')
-            object.add_getter(particle_set_name, 'get_mass')
-            object.add_method(particle_set_name, 'add_shell') 
-            object.add_method(particle_set_name, 'get_stellar_model', 'get_internal_structure') 
+            handler.set_delete(particle_set_name, 'delete_particle')
+            handler.add_getter(particle_set_name, 'get_number_of_zones')
+            handler.add_getter(particle_set_name, 'get_mass')
+            handler.add_method(particle_set_name, 'add_shell') 
+            handler.add_method(particle_set_name, 'get_stellar_model', 'get_internal_structure') 
     
     
     def get_stellar_model(self, index_of_the_particle):

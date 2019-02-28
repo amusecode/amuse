@@ -1426,205 +1426,205 @@ class SecularMultiple(InCodeComponentImplementation):
 #        self.verbose = True
 #        self.debug = True
        
-    def define_particle_sets(self,object):
+    def define_particle_sets(self,handler):
        
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new   ('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
+        handler.define_set('particles', 'index_of_the_particle')
+        handler.set_new   ('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
         
-        object.add_setter('particles', 'set_children', names = ('child1','child2') )
-        object.add_getter('particles', 'get_children', names = ('child1','child2') )
-        object.add_setter('particles', 'set_mass')
-        object.add_getter('particles', 'get_mass')
-        object.add_setter('particles', 'set_mass_dot_external')
-        object.add_getter('particles', 'get_mass_dot_external')
-        object.add_setter('particles', 'set_radius')
-        object.add_getter('particles', 'get_radius')
-        object.add_setter('particles', 'set_radius_dot_external')
-        object.add_getter('particles', 'get_radius_dot_external')
-        object.add_setter('particles', 'set_radius_ddot_external')
-        object.add_getter('particles', 'get_radius_ddot_external')
+        handler.add_setter('particles', 'set_children', names = ('child1','child2') )
+        handler.add_getter('particles', 'get_children', names = ('child1','child2') )
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass')
+        handler.add_setter('particles', 'set_mass_dot_external')
+        handler.add_getter('particles', 'get_mass_dot_external')
+        handler.add_setter('particles', 'set_radius')
+        handler.add_getter('particles', 'get_radius')
+        handler.add_setter('particles', 'set_radius_dot_external')
+        handler.add_getter('particles', 'get_radius_dot_external')
+        handler.add_setter('particles', 'set_radius_ddot_external')
+        handler.add_getter('particles', 'get_radius_ddot_external')
 
-        object.add_getter('particles', 'get_level')
+        handler.add_getter('particles', 'get_level')
         
-        object.add_setter('particles', 'set_stellar_type')
-        object.add_getter('particles', 'get_stellar_type')
+        handler.add_setter('particles', 'set_stellar_type')
+        handler.add_getter('particles', 'get_stellar_type')
 
-        object.add_setter('particles', 'set_true_anomaly')
-        object.add_getter('particles', 'get_true_anomaly')
+        handler.add_setter('particles', 'set_true_anomaly')
+        handler.add_getter('particles', 'get_true_anomaly')
 
-        object.add_setter('particles', 'set_sample_orbital_phases_randomly')
-        object.add_getter('particles', 'get_sample_orbital_phases_randomly')
+        handler.add_setter('particles', 'set_sample_orbital_phases_randomly')
+        handler.add_getter('particles', 'get_sample_orbital_phases_randomly')
 
-        object.add_setter('particles', 'set_instantaneous_perturbation_delta_mass')
-        object.add_getter('particles', 'get_instantaneous_perturbation_delta_mass')
-        object.add_setter('particles', 'set_instantaneous_perturbation_delta_position')
-        object.add_getter('particles', 'get_instantaneous_perturbation_delta_position')
-        object.add_setter('particles', 'set_instantaneous_perturbation_delta_velocity')
-        object.add_getter('particles', 'get_instantaneous_perturbation_delta_velocity')
+        handler.add_setter('particles', 'set_instantaneous_perturbation_delta_mass')
+        handler.add_getter('particles', 'get_instantaneous_perturbation_delta_mass')
+        handler.add_setter('particles', 'set_instantaneous_perturbation_delta_position')
+        handler.add_getter('particles', 'get_instantaneous_perturbation_delta_position')
+        handler.add_setter('particles', 'set_instantaneous_perturbation_delta_velocity')
+        handler.add_getter('particles', 'get_instantaneous_perturbation_delta_velocity')
 
-        object.add_setter('particles', 'set_spin_vector')
-        object.add_getter('particles', 'get_spin_vector')
-        object.add_setter('particles', 'set_spin_vector_dot_external')
-        object.add_getter('particles', 'get_spin_vector_dot_external')
-        object.add_setter('particles', 'set_orbital_vectors')
-        object.add_getter('particles', 'get_orbital_vectors')
-        object.add_setter('particles', 'set_orbital_vectors_dot_external')
-        object.add_getter('particles', 'get_orbital_vectors_dot_external')
-        object.add_setter('particles', 'set_orbital_elements', names = ('semimajor_axis','eccentricity','inclination','argument_of_pericenter','longitude_of_ascending_node') )
-        object.add_getter('particles', 'get_orbital_elements', names = ('semimajor_axis','eccentricity','inclination','argument_of_pericenter','longitude_of_ascending_node') )
-        object.add_getter('particles', 'get_inclination_relative_to_parent')
-        object.add_getter('particles', 'get_de_dt')
+        handler.add_setter('particles', 'set_spin_vector')
+        handler.add_getter('particles', 'get_spin_vector')
+        handler.add_setter('particles', 'set_spin_vector_dot_external')
+        handler.add_getter('particles', 'get_spin_vector_dot_external')
+        handler.add_setter('particles', 'set_orbital_vectors')
+        handler.add_getter('particles', 'get_orbital_vectors')
+        handler.add_setter('particles', 'set_orbital_vectors_dot_external')
+        handler.add_getter('particles', 'get_orbital_vectors_dot_external')
+        handler.add_setter('particles', 'set_orbital_elements', names = ('semimajor_axis','eccentricity','inclination','argument_of_pericenter','longitude_of_ascending_node') )
+        handler.add_getter('particles', 'get_orbital_elements', names = ('semimajor_axis','eccentricity','inclination','argument_of_pericenter','longitude_of_ascending_node') )
+        handler.add_getter('particles', 'get_inclination_relative_to_parent')
+        handler.add_getter('particles', 'get_de_dt')
 
-        object.add_setter('particles', 'set_position_vector')
-        object.add_getter('particles', 'get_position_vector')
-        object.add_setter('particles', 'set_velocity_vector')
-        object.add_getter('particles', 'get_velocity_vector')
+        handler.add_setter('particles', 'set_position_vector')
+        handler.add_getter('particles', 'get_position_vector')
+        handler.add_setter('particles', 'set_velocity_vector')
+        handler.add_getter('particles', 'get_velocity_vector')
 
-        object.add_setter('particles', 'set_include_pairwise_1PN_terms')
-        object.add_getter('particles', 'get_include_pairwise_1PN_terms')
-        object.add_setter('particles', 'set_include_pairwise_25PN_terms')
-        object.add_getter('particles', 'get_include_pairwise_25PN_terms')
+        handler.add_setter('particles', 'set_include_pairwise_1PN_terms')
+        handler.add_getter('particles', 'get_include_pairwise_1PN_terms')
+        handler.add_setter('particles', 'set_include_pairwise_25PN_terms')
+        handler.add_getter('particles', 'get_include_pairwise_25PN_terms')
 
-        object.add_setter('particles', 'set_tides_method')
-        object.add_getter('particles', 'get_tides_method')
-        object.add_setter('particles', 'set_include_tidal_friction_terms')
-        object.add_getter('particles', 'get_include_tidal_friction_terms')
-        object.add_setter('particles', 'set_include_tidal_bulges_precession_terms')
-        object.add_getter('particles', 'get_include_tidal_bulges_precession_terms')
-        object.add_setter('particles', 'set_include_rotation_precession_terms')
-        object.add_getter('particles', 'get_include_rotation_precession_terms')
-        object.add_setter('particles', 'set_minimum_eccentricity_for_tidal_precession')
-        object.add_getter('particles', 'get_minimum_eccentricity_for_tidal_precession')
+        handler.add_setter('particles', 'set_tides_method')
+        handler.add_getter('particles', 'get_tides_method')
+        handler.add_setter('particles', 'set_include_tidal_friction_terms')
+        handler.add_getter('particles', 'get_include_tidal_friction_terms')
+        handler.add_setter('particles', 'set_include_tidal_bulges_precession_terms')
+        handler.add_getter('particles', 'get_include_tidal_bulges_precession_terms')
+        handler.add_setter('particles', 'set_include_rotation_precession_terms')
+        handler.add_getter('particles', 'get_include_rotation_precession_terms')
+        handler.add_setter('particles', 'set_minimum_eccentricity_for_tidal_precession')
+        handler.add_getter('particles', 'get_minimum_eccentricity_for_tidal_precession')
 
-        object.add_setter('particles', 'set_tides_apsidal_motion_constant')
-        object.add_getter('particles', 'get_tides_apsidal_motion_constant')
-        object.add_setter('particles', 'set_tides_gyration_radius')
-        object.add_getter('particles', 'get_tides_gyration_radius')
-        object.add_setter('particles', 'set_tides_viscous_time_scale')
-        object.add_getter('particles', 'get_tides_viscous_time_scale')
-        object.add_setter('particles', 'set_tides_viscous_time_scale_prescription')
-        object.add_getter('particles', 'get_tides_viscous_time_scale_prescription')
-        object.add_setter('particles', 'set_convective_envelope_mass')
-        object.add_getter('particles', 'get_convective_envelope_mass')
-        object.add_setter('particles', 'set_convective_envelope_radius')
-        object.add_getter('particles', 'get_convective_envelope_radius')
-        object.add_setter('particles', 'set_luminosity')
-        object.add_getter('particles', 'get_luminosity')
+        handler.add_setter('particles', 'set_tides_apsidal_motion_constant')
+        handler.add_getter('particles', 'get_tides_apsidal_motion_constant')
+        handler.add_setter('particles', 'set_tides_gyration_radius')
+        handler.add_getter('particles', 'get_tides_gyration_radius')
+        handler.add_setter('particles', 'set_tides_viscous_time_scale')
+        handler.add_getter('particles', 'get_tides_viscous_time_scale')
+        handler.add_setter('particles', 'set_tides_viscous_time_scale_prescription')
+        handler.add_getter('particles', 'get_tides_viscous_time_scale_prescription')
+        handler.add_setter('particles', 'set_convective_envelope_mass')
+        handler.add_getter('particles', 'get_convective_envelope_mass')
+        handler.add_setter('particles', 'set_convective_envelope_radius')
+        handler.add_getter('particles', 'get_convective_envelope_radius')
+        handler.add_setter('particles', 'set_luminosity')
+        handler.add_getter('particles', 'get_luminosity')
 
-        object.add_setter('particles', 'set_check_for_secular_breakdown')
-        object.add_getter('particles', 'get_check_for_secular_breakdown')
-        object.add_setter('particles', 'set_check_for_dynamical_instability')
-        object.add_getter('particles', 'get_check_for_dynamical_instability')
-        object.add_setter('particles', 'set_dynamical_instability_criterion')
-        object.add_getter('particles', 'get_dynamical_instability_criterion')
-        object.add_setter('particles', 'set_dynamical_instability_central_particle')
-        object.add_getter('particles', 'get_dynamical_instability_central_particle')
-        object.add_setter('particles', 'set_dynamical_instability_K_parameter')
-        object.add_getter('particles', 'get_dynamical_instability_K_parameter')
+        handler.add_setter('particles', 'set_check_for_secular_breakdown')
+        handler.add_getter('particles', 'get_check_for_secular_breakdown')
+        handler.add_setter('particles', 'set_check_for_dynamical_instability')
+        handler.add_getter('particles', 'get_check_for_dynamical_instability')
+        handler.add_setter('particles', 'set_dynamical_instability_criterion')
+        handler.add_getter('particles', 'get_dynamical_instability_criterion')
+        handler.add_setter('particles', 'set_dynamical_instability_central_particle')
+        handler.add_getter('particles', 'get_dynamical_instability_central_particle')
+        handler.add_setter('particles', 'set_dynamical_instability_K_parameter')
+        handler.add_getter('particles', 'get_dynamical_instability_K_parameter')
 
-        object.add_setter('particles', 'set_check_for_physical_collision_or_orbit_crossing')
-        object.add_getter('particles', 'get_check_for_physical_collision_or_orbit_crossing')
+        handler.add_setter('particles', 'set_check_for_physical_collision_or_orbit_crossing')
+        handler.add_getter('particles', 'get_check_for_physical_collision_or_orbit_crossing')
         
-        object.add_setter('particles', 'set_check_for_minimum_periapse_distance')
-        object.add_getter('particles', 'get_check_for_minimum_periapse_distance')
-        object.add_setter('particles', 'set_check_for_minimum_periapse_distance_value')
-        object.add_getter('particles', 'get_check_for_minimum_periapse_distance_value')
+        handler.add_setter('particles', 'set_check_for_minimum_periapse_distance')
+        handler.add_getter('particles', 'get_check_for_minimum_periapse_distance')
+        handler.add_setter('particles', 'set_check_for_minimum_periapse_distance_value')
+        handler.add_getter('particles', 'get_check_for_minimum_periapse_distance_value')
         
-        object.add_setter('particles', 'set_check_for_RLOF_at_pericentre')
-        object.add_getter('particles', 'get_check_for_RLOF_at_pericentre')
-        object.add_setter('particles', 'set_check_for_RLOF_at_pericentre_use_sepinsky_fit')
-        object.add_getter('particles', 'get_check_for_RLOF_at_pericentre_use_sepinsky_fit')
+        handler.add_setter('particles', 'set_check_for_RLOF_at_pericentre')
+        handler.add_getter('particles', 'get_check_for_RLOF_at_pericentre')
+        handler.add_setter('particles', 'set_check_for_RLOF_at_pericentre_use_sepinsky_fit')
+        handler.add_getter('particles', 'get_check_for_RLOF_at_pericentre_use_sepinsky_fit')
         
-        object.add_setter('particles', 'set_root_finding_state')
-        object.add_getter('particles', 'get_root_finding_state')
+        handler.add_setter('particles', 'set_root_finding_state')
+        handler.add_getter('particles', 'get_root_finding_state')
 
 
-        object.define_set('external_particles', 'index_of_the_external_particle')
-        object.set_new   ('external_particles', 'new_external_particle')
-        object.set_delete('external_particles', 'delete_external_particle')
+        handler.define_set('external_particles', 'index_of_the_external_particle')
+        handler.set_new   ('external_particles', 'new_external_particle')
+        handler.set_delete('external_particles', 'delete_external_particle')
         
-        object.add_setter('external_particles', 'set_external_mass')
-        object.add_getter('external_particles', 'get_external_mass')
-        object.add_setter('external_particles', 'set_external_path')
-        object.add_getter('external_particles', 'get_external_path')
-        object.add_setter('external_particles', 'set_external_mode')
-        object.add_getter('external_particles', 'get_external_mode')
+        handler.add_setter('external_particles', 'set_external_mass')
+        handler.add_getter('external_particles', 'get_external_mass')
+        handler.add_setter('external_particles', 'set_external_path')
+        handler.add_getter('external_particles', 'get_external_path')
+        handler.add_setter('external_particles', 'set_external_mode')
+        handler.add_getter('external_particles', 'get_external_mode')
 
-        object.add_setter('external_particles', 'set_external_t_ref')
-        object.add_getter('external_particles', 'get_external_t_ref')
-        object.add_setter('external_particles', 'set_external_t_passed')
-        object.add_getter('external_particles', 'get_external_t_passed')
+        handler.add_setter('external_particles', 'set_external_t_ref')
+        handler.add_getter('external_particles', 'get_external_t_ref')
+        handler.add_setter('external_particles', 'set_external_t_passed')
+        handler.add_getter('external_particles', 'get_external_t_passed')
 
-        object.add_setter('external_particles', 'set_external_r0_vectors')
-        object.add_getter('external_particles', 'get_external_r0_vectors')        
-        object.add_setter('external_particles', 'set_external_rdot_vectors', names = ('rdot_vec_x','rdot_vec_y','rdot_vec_z') )
-        object.add_getter('external_particles', 'get_external_rdot_vectors', names = ('rdot_vec_x','rdot_vec_y','rdot_vec_z') )
+        handler.add_setter('external_particles', 'set_external_r0_vectors')
+        handler.add_getter('external_particles', 'get_external_r0_vectors')        
+        handler.add_setter('external_particles', 'set_external_rdot_vectors', names = ('rdot_vec_x','rdot_vec_y','rdot_vec_z') )
+        handler.add_getter('external_particles', 'get_external_rdot_vectors', names = ('rdot_vec_x','rdot_vec_y','rdot_vec_z') )
         
-        object.add_setter('external_particles', 'set_external_eccentricity')
-        object.add_getter('external_particles', 'get_external_eccentricity')
-        object.add_setter('external_particles', 'set_external_periapse_distance')
-        object.add_getter('external_particles', 'get_external_periapse_distance')
+        handler.add_setter('external_particles', 'set_external_eccentricity')
+        handler.add_getter('external_particles', 'get_external_eccentricity')
+        handler.add_setter('external_particles', 'set_external_periapse_distance')
+        handler.add_getter('external_particles', 'get_external_periapse_distance')
 
-        object.add_setter('external_particles', 'set_external_e_hat_vectors')
-        object.add_getter('external_particles', 'get_external_e_hat_vectors')        
-        object.add_setter('external_particles', 'set_external_h_hat_vectors')
-        object.add_getter('external_particles', 'get_external_h_hat_vectors')        
+        handler.add_setter('external_particles', 'set_external_e_hat_vectors')
+        handler.add_getter('external_particles', 'get_external_e_hat_vectors')        
+        handler.add_setter('external_particles', 'set_external_h_hat_vectors')
+        handler.add_getter('external_particles', 'get_external_h_hat_vectors')        
         
-        object.add_getter('external_particles', 'get_external_r_vectors')        
+        handler.add_getter('external_particles', 'get_external_r_vectors')        
         
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_relative_tolerance",
             "set_relative_tolerance",
             "relative_tolerance",
             "relative_tolerance",
             default_value = 1.0e-16
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_absolute_tolerance_eccentricity_vectors",
             "set_absolute_tolerance_eccentricity_vectors",
             "absolute_tolerance_eccentricity_vectors",
             "absolute_tolerance_eccentricity_vectors",
             default_value = 1.0e-14
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_include_quadrupole_order_terms",
             "set_include_quadrupole_order_terms",
             "include_quadrupole_order_terms",
             "include_quadrupole_order_terms",
             default_value = True
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_include_octupole_order_binary_pair_terms",
             "set_include_octupole_order_binary_pair_terms",
             "include_octupole_order_binary_pair_terms",
             "include_octupole_order_binary_pair_terms",
             default_value = True
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_include_octupole_order_binary_triplet_terms",
             "set_include_octupole_order_binary_triplet_terms",
             "include_octupole_order_binary_triplet_terms",
             "include_octupole_order_binary_triplet_terms",
             default_value = False
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_include_hexadecupole_order_binary_pair_terms",
             "set_include_hexadecupole_order_binary_pair_terms",
             "include_hexadecupole_order_binary_pair_terms",
             "include_hexadecupole_order_binary_pair_terms",
             default_value = False
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_include_dotriacontupole_order_binary_pair_terms",
             "set_include_dotriacontupole_order_binary_pair_terms",
             "include_dotriacontupole_order_binary_pair_terms",
             "include_dotriacontupole_order_binary_pair_terms",
             default_value = False
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_orbital_phases_random_seed",
             "set_orbital_phases_random_seed",
             "orbital_phases_random_seed",
@@ -1633,7 +1633,7 @@ class SecularMultiple(InCodeComponentImplementation):
         )
 
 
-    def define_methods(self, object):
+    def define_methods(self, handler):
         pass
 
     def before_get_parameter(self):

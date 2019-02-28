@@ -173,14 +173,14 @@ class PhiGRAPE(GravitationalDynamics, GravityFieldCode):
             **options
         )
                                        
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
-        self.stopping_conditions.define_state(object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
+        self.stopping_conditions.define_state(handler)
 
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2",
             "epsilon_squared",
@@ -188,7 +188,7 @@ class PhiGRAPE(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta",
             "set_eta1",
             "timestep_parameter",
@@ -196,7 +196,7 @@ class PhiGRAPE(GravitationalDynamics, GravityFieldCode):
             default_value = 0.02
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_s",
             "set_eta_s",
             "initial_timestep_parameter",
@@ -204,14 +204,14 @@ class PhiGRAPE(GravitationalDynamics, GravityFieldCode):
             default_value = 0.01
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_initialize_once",
             "set_initialize_once",
             "initialize_gpu_once",
             "set to 1 if the gpu must only be initialized once, 0 if it can be initialized for every call\nIf you want to run multiple instances of the code on the same gpu this parameter needs to be 0 (default)",
             default_value = 0
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -219,62 +219,62 @@ class PhiGRAPE(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
 
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
 
-        object.add_method(
+        handler.add_method(
             "get_eps2",
             (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_eta",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_eta1",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_eta_s",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_eta_s",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_initialize_once",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_initialize_once",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
 
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
 
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)
         

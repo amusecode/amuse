@@ -203,7 +203,7 @@ class Hacs64(GravitationalDynamics):
                                        convert_nbody,
                                        **keyword_arguments)
 
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
 
         # Set/get parameters specific to the module, not part of the
         # standard interface.  Accessors used here must be defined
@@ -212,7 +212,7 @@ class Hacs64(GravitationalDynamics):
         #
         #        ph4.parameters.timestep_parameter = xxx
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nmax",                        # getter name in interface.cc
             "set_nmax",                        # setter name in interface.cc
             "nmax",                            # python parameter name
@@ -220,7 +220,7 @@ class Hacs64(GravitationalDynamics):
             default_value = -1    # default
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dtmax",                        # getter name in interface.cc
             "set_dtmax",                        # setter name in interface.cc
             "dtmax",                            # python parameter name
@@ -228,7 +228,7 @@ class Hacs64(GravitationalDynamics):
             default_value = 0.0625 | nbody_system.time    # default
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_h2max",                        # getter name in interface.cc
             "set_h2max",                        # setter name in interface.cc
             "h2max",                            # python parameter name
@@ -236,7 +236,7 @@ class Hacs64(GravitationalDynamics):
             default_value = 0.5 | nbody_system.length*nbody_system.length   # default
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_reg",                        # getter name in interface.cc
             "set_eta_reg",                        # setter name in interface.cc
             "eta_reg",        # python parameter name
@@ -244,7 +244,7 @@ class Hacs64(GravitationalDynamics):
             default_value = 0.1                # default
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta_irr",                         # getter name in interface.cc
             "set_eta_irr",                         # setter name in interface.cc
             "eta_irr",              # python parameter name
@@ -252,7 +252,7 @@ class Hacs64(GravitationalDynamics):
             default_value = 0.6
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2",                        # already defined in standard interface
             "set_eps2",                        # already defined in standard interface
             "eps2",                             # python parameter name
@@ -260,7 +260,7 @@ class Hacs64(GravitationalDynamics):
             default_value = 0.0  | nbody_system.length * nbody_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -268,7 +268,7 @@ class Hacs64(GravitationalDynamics):
             default_value = 0.0 | nbody_system.time
         )
         
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
 
     def update_particle_set(self):
         """
@@ -306,52 +306,51 @@ class Hacs64(GravitationalDynamics):
         if len(indices_to_add) > 0:
             incode_storage._add_indices(indices_to_add)
         
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
 
         # Similarly, we can add module-specific methods, if desired.
         # See hermite0/interface.py for examples.
 
-        object.add_method("get_nmax", (),
-            (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_nmax", (object.NO_UNIT, ),
-            (object.ERROR_CODE,))
+        handler.add_method("get_nmax", (),
+            (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_nmax", (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,))
         
-        object.add_method("get_dtmax", (),
-            (nbody_system.time, object.ERROR_CODE,))
-        object.add_method("set_dtmax", (nbody_system.time, ),
-            (object.ERROR_CODE,))
+        handler.add_method("get_dtmax", (),
+            (nbody_system.time, handler.ERROR_CODE,))
+        handler.add_method("set_dtmax", (nbody_system.time, ),
+            (handler.ERROR_CODE,))
 
-        object.add_method("get_h2max", (),
-            (nbody_system.length*nbody_system.length, object.ERROR_CODE,))
-        object.add_method("set_h2max", (nbody_system.length*nbody_system.length, ),
-            (object.ERROR_CODE,))
+        handler.add_method("get_h2max", (),
+            (nbody_system.length*nbody_system.length, handler.ERROR_CODE,))
+        handler.add_method("set_h2max", (nbody_system.length*nbody_system.length, ),
+            (handler.ERROR_CODE,))
 
-        object.add_method("get_eta_irr", (),
-            (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_eta_irr", (object.NO_UNIT, ),
-            (object.ERROR_CODE,))
+        handler.add_method("get_eta_irr", (),
+            (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_eta_irr", (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,))
 
-        object.add_method("get_eta_reg", (),
-            (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_eta_reg", (object.NO_UNIT, ),
-            (object.ERROR_CODE,))
+        handler.add_method("get_eta_reg", (),
+            (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_eta_reg", (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,))
 
-        object.add_method("get_eps2", (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,))
-        object.add_method("set_eps2", (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,))
+        handler.add_method("get_eps2", (),
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE,))
+        handler.add_method("set_eps2", (nbody_system.length * nbody_system.length, ),
+            (handler.ERROR_CODE,))
         
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
     
 
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
         
-        self.stopping_conditions.define_particle_set(object)
+        self.stopping_conditions.define_particle_set(handler)
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
         
-        self.stopping_conditions.define_state(object)
-
+        self.stopping_conditions.define_state(handler)

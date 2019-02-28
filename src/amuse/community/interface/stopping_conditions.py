@@ -98,7 +98,7 @@ class StoppingConditionInterface(object):
         condition can be set multiple times.   
         
         Stopping conditions are set when the code determines
-        that the conditions are met. The objects or or information
+        that the conditions are met. The objects or information
         about the condition can be retrieved with
         the get_stopping_condition_info method.
         """
@@ -471,8 +471,8 @@ class StoppingConditions(object):
     def supported_conditions(self):
         return [name for name, condition in self.all_conditions() if condition.is_supported()]
         
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_stopping_condition_timeout_parameter",
             "set_stopping_condition_timeout_parameter", 
             "stopping_conditions_timeout", 
@@ -480,7 +480,7 @@ class StoppingConditions(object):
             default_value = 4.0 |  units.s
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_stopping_condition_number_of_steps_parameter",
             "set_stopping_condition_number_of_steps_parameter", 
             "stopping_conditions_number_of_steps", 
@@ -488,7 +488,7 @@ class StoppingConditions(object):
             default_value = 1.0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_stopping_condition_out_of_box_parameter",
             "set_stopping_condition_out_of_box_parameter", 
             "stopping_conditions_out_of_box_size", 
@@ -496,7 +496,7 @@ class StoppingConditions(object):
             default_value = 0.0 |  nbody.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_stopping_condition_minimum_density_parameter",
             "set_stopping_condition_minimum_density_parameter", 
             "stopping_condition_minimum_density", 
@@ -504,7 +504,7 @@ class StoppingConditions(object):
             default_value = -1.0 | generic_unit_system.density
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_stopping_condition_maximum_density_parameter",
             "set_stopping_condition_maximum_density_parameter", 
             "stopping_condition_maximum_density", 
@@ -512,7 +512,7 @@ class StoppingConditions(object):
             default_value = -1.0 | generic_unit_system.density
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_stopping_condition_minimum_internal_energy_parameter",
             "set_stopping_condition_minimum_internal_energy_parameter", 
             "stopping_condition_minimum_internal_energy", 
@@ -520,7 +520,7 @@ class StoppingConditions(object):
             default_value = -1.0 | generic_unit_system.specific_energy
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_stopping_condition_maximum_internal_energy_parameter",
             "set_stopping_condition_maximum_internal_energy_parameter", 
             "stopping_condition_maximum_internal_energy", 
@@ -528,7 +528,7 @@ class StoppingConditions(object):
             default_value = -1.0 | generic_unit_system.specific_energy
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_stopping_condition_out_of_box_use_center_of_mass_parameter",
             "set_stopping_condition_out_of_box_use_center_of_mass_parameter", 
             "stopping_conditions_out_of_box_use_center_of_mass", 
@@ -537,143 +537,143 @@ class StoppingConditions(object):
         )
         
 
-    def define_methods(self, object):
-        object.add_method(
+    def define_methods(self, handler):
+        handler.add_method(
             'get_stopping_condition_particle_index',
             (   
-                object.NO_UNIT,
-                object.NO_UNIT,
+                handler.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
         
-        object.add_method(
+        handler.add_method(
             'has_stopping_condition',
             (   
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             'is_stopping_condition_enabled',
             (   
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             'is_stopping_condition_set',
             (   
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             'get_stopping_condition_info',
             (   
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.NO_UNIT,
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             'get_number_of_stopping_conditions_set',
             (   
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             'enable_stopping_condition',
-            ( object.NO_UNIT,),
+            ( handler.NO_UNIT,),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             'disable_stopping_condition',
-            ( object.NO_UNIT,),
+            ( handler.NO_UNIT,),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
         
-        object.add_method(
+        handler.add_method(
             "get_stopping_condition_timeout_parameter",
             (),
-            (units.s, object.ERROR_CODE,)
+            (units.s, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_stopping_condition_timeout_parameter",
             (units.s, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_stopping_condition_number_of_steps_parameter",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_stopping_condition_number_of_steps_parameter",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_stopping_condition_out_of_box_parameter",
             (),
-            (nbody.length, object.ERROR_CODE,)
+            (nbody.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_stopping_condition_out_of_box_parameter",
             (nbody.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method("get_stopping_condition_minimum_density_parameter", 
-            (), (generic_unit_system.density, object.ERROR_CODE,))
-        object.add_method("set_stopping_condition_minimum_density_parameter", 
-            (generic_unit_system.density, ), (object.ERROR_CODE,))
+        handler.add_method("get_stopping_condition_minimum_density_parameter", 
+            (), (generic_unit_system.density, handler.ERROR_CODE,))
+        handler.add_method("set_stopping_condition_minimum_density_parameter", 
+            (generic_unit_system.density, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_stopping_condition_maximum_density_parameter", 
-            (), (generic_unit_system.density, object.ERROR_CODE,))
-        object.add_method("set_stopping_condition_maximum_density_parameter", 
-            (generic_unit_system.density, ), (object.ERROR_CODE,))
+        handler.add_method("get_stopping_condition_maximum_density_parameter", 
+            (), (generic_unit_system.density, handler.ERROR_CODE,))
+        handler.add_method("set_stopping_condition_maximum_density_parameter", 
+            (generic_unit_system.density, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_stopping_condition_minimum_internal_energy_parameter", 
-            (), (generic_unit_system.specific_energy, object.ERROR_CODE,))
-        object.add_method("set_stopping_condition_minimum_internal_energy_parameter", 
-            (generic_unit_system.specific_energy, ), (object.ERROR_CODE,))
+        handler.add_method("get_stopping_condition_minimum_internal_energy_parameter", 
+            (), (generic_unit_system.specific_energy, handler.ERROR_CODE,))
+        handler.add_method("set_stopping_condition_minimum_internal_energy_parameter", 
+            (generic_unit_system.specific_energy, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_stopping_condition_maximum_internal_energy_parameter", 
-            (), (generic_unit_system.specific_energy, object.ERROR_CODE,))
-        object.add_method("set_stopping_condition_maximum_internal_energy_parameter", 
-            (generic_unit_system.specific_energy, ), (object.ERROR_CODE,))
+        handler.add_method("get_stopping_condition_maximum_internal_energy_parameter", 
+            (), (generic_unit_system.specific_energy, handler.ERROR_CODE,))
+        handler.add_method("set_stopping_condition_maximum_internal_energy_parameter", 
+            (generic_unit_system.specific_energy, ), (handler.ERROR_CODE,))
         
-    def define_particle_set(self, object, name_of_the_set = 'particles'):
-        object.add_query(name_of_the_set, 'get_stopping_condition_particle_index')
-    def define_state(self, object): 
+    def define_particle_set(self, handler, name_of_the_set = 'particles'):
+        handler.add_query(name_of_the_set, 'get_stopping_condition_particle_index')
+    def define_state(self, handler): 
         for method_name in [
             'get_stopping_condition_particle_index',
             'has_stopping_condition',
@@ -683,5 +683,5 @@ class StoppingConditions(object):
             'get_number_of_stopping_conditions_set',
             'enable_stopping_condition',
             'disable_stopping_condition']:
-            object.add_method('!UNINITIALIZED!END', method_name)
+            handler.add_method('!UNINITIALIZED!END', method_name)
 
