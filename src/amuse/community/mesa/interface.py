@@ -956,9 +956,9 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.model_time = 0.0 | units.yr
         
     
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_metallicity",
             "set_metallicity",
             "metallicity", 
@@ -966,7 +966,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = 0.02
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_max_age_stop_condition",
             "set_max_age_stop_condition",
             "max_age_stop_condition", 
@@ -974,7 +974,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = 1.0e36 | units.yr
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_min_timestep_stop_condition",
             "set_min_timestep_stop_condition",
             "min_timestep_stop_condition", 
@@ -982,7 +982,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = 1.0e-6 | units.s
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_max_iter_stop_condition",
             "set_max_iter_stop_condition",
             "max_iter_stop_condition", 
@@ -990,7 +990,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = -1111
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_convective_overshoot_parameter",
             "set_convective_overshoot_parameter",
             "herwig_convective_overshoot_parameter", 
@@ -998,7 +998,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_mixing_length_ratio",
             "set_mixing_length_ratio",
             "mixing_length_ratio", 
@@ -1006,7 +1006,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = 2.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_semi_convection_efficiency",
             "set_semi_convection_efficiency",
             "semi_convection_efficiency", 
@@ -1015,7 +1015,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_RGB_wind_scheme",
             "set_RGB_wind_scheme",
             "RGB_wind_scheme", 
@@ -1024,7 +1024,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = 1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_AGB_wind_scheme",
             "set_AGB_wind_scheme",
             "AGB_wind_scheme", 
@@ -1033,35 +1033,35 @@ class MESA(StellarEvolution, InternalStellarStructure):
             default_value = 1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_reimers_wind_efficiency",
             "set_reimers_wind_efficiency",
             "reimers_wind_efficiency", 
             "The Reimers mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 1).",
             default_value = 0.5
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_blocker_wind_efficiency",
             "set_blocker_wind_efficiency",
             "blocker_wind_efficiency", 
             "The Blocker mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 2).",
             default_value = 0.1
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_de_jager_wind_efficiency",
             "set_de_jager_wind_efficiency",
             "de_jager_wind_efficiency", 
             "The de Jager mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 3).",
             default_value = 0.8
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dutch_wind_efficiency",
             "set_dutch_wind_efficiency",
             "dutch_wind_efficiency", 
             "The Dutch mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 4).",
             default_value = 0.8
         )
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_stabilize_new_stellar_model_flag",
             "set_stabilize_new_stellar_model_flag",
             "stabilize_new_stellar_model_flag",
@@ -1071,339 +1071,339 @@ class MESA(StellarEvolution, InternalStellarStructure):
         
         
         
-    def define_particle_sets(self, object):
-        object.define_super_set('particles', ['native_stars', 'imported_stars', 'pre_ms_stars'], 
+    def define_particle_sets(self, handler):
+        handler.define_super_set('particles', ['native_stars', 'imported_stars', 'pre_ms_stars'], 
             index_to_default_set = 0)
         
-        object.define_set('imported_stars', 'index_of_the_star')
-        object.set_new('imported_stars', 'finalize_stellar_model')
-        object.set_delete('imported_stars', 'delete_star')
+        handler.define_set('imported_stars', 'index_of_the_star')
+        handler.set_new('imported_stars', 'finalize_stellar_model')
+        handler.set_delete('imported_stars', 'delete_star')
         
-        object.define_set('native_stars', 'index_of_the_star')
-        object.set_new('native_stars', 'new_particle')
-        object.set_delete('native_stars', 'delete_star')
+        handler.define_set('native_stars', 'index_of_the_star')
+        handler.set_new('native_stars', 'new_particle')
+        handler.set_delete('native_stars', 'delete_star')
         
-        object.define_set('pre_ms_stars', 'index_of_the_star')
-        object.set_new('pre_ms_stars', 'new_pre_ms_particle')
-        object.set_delete('pre_ms_stars', 'delete_star')
+        handler.define_set('pre_ms_stars', 'index_of_the_star')
+        handler.set_new('pre_ms_stars', 'new_pre_ms_particle')
+        handler.set_delete('pre_ms_stars', 'delete_star')
         
         for particle_set_name in ['native_stars', 'imported_stars', 'pre_ms_stars']:
-            object.add_getter(particle_set_name, 'get_radius', names = ('radius',))
-            object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
-            object.add_getter(particle_set_name, 'get_mass', names = ('mass',))
-            object.add_setter(particle_set_name, 'set_mass', names = ('mass',))
-            object.add_getter(particle_set_name, 'get_core_mass', names = ('core_mass',))
-            object.add_getter(particle_set_name, 'get_mass_loss_rate', names = ('wind',))
-            object.add_getter(particle_set_name, 'get_age', names = ('age',))
-            object.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
-            object.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
-            object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
-            object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
+            handler.add_getter(particle_set_name, 'get_radius', names = ('radius',))
+            handler.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
+            handler.add_getter(particle_set_name, 'get_mass', names = ('mass',))
+            handler.add_setter(particle_set_name, 'set_mass', names = ('mass',))
+            handler.add_getter(particle_set_name, 'get_core_mass', names = ('core_mass',))
+            handler.add_getter(particle_set_name, 'get_mass_loss_rate', names = ('wind',))
+            handler.add_getter(particle_set_name, 'get_age', names = ('age',))
+            handler.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
+            handler.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
+            handler.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
+            handler.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
             
-            object.add_getter(particle_set_name, 'get_manual_mass_transfer_rate', names = ('mass_change',))
-            object.add_setter(particle_set_name, 'set_manual_mass_transfer_rate', names = ('mass_change',))
+            handler.add_getter(particle_set_name, 'get_manual_mass_transfer_rate', names = ('mass_change',))
+            handler.add_setter(particle_set_name, 'set_manual_mass_transfer_rate', names = ('mass_change',))
             
-            object.add_method(particle_set_name, 'get_accrete_same_as_surface')
-            object.add_method(particle_set_name, 'set_accrete_same_as_surface')
-            object.add_method(particle_set_name, 'get_accrete_composition_non_metals')
-            object.add_method(particle_set_name, 'set_accrete_composition_non_metals')
-            object.add_method(particle_set_name, 'get_accrete_composition_metals_identifier')
-            object.add_method(particle_set_name, 'set_accrete_composition_metals_identifier')
-            object.add_method(particle_set_name, 'get_accrete_composition_metals')
-            object.add_method(particle_set_name, 'set_accrete_composition_metals')
+            handler.add_method(particle_set_name, 'get_accrete_same_as_surface')
+            handler.add_method(particle_set_name, 'set_accrete_same_as_surface')
+            handler.add_method(particle_set_name, 'get_accrete_composition_non_metals')
+            handler.add_method(particle_set_name, 'set_accrete_composition_non_metals')
+            handler.add_method(particle_set_name, 'get_accrete_composition_metals_identifier')
+            handler.add_method(particle_set_name, 'set_accrete_composition_metals_identifier')
+            handler.add_method(particle_set_name, 'get_accrete_composition_metals')
+            handler.add_method(particle_set_name, 'set_accrete_composition_metals')
             
-            object.add_method(particle_set_name, 'evolve_one_step')
-            object.add_method(particle_set_name, 'evolve_for')
+            handler.add_method(particle_set_name, 'evolve_one_step')
+            handler.add_method(particle_set_name, 'evolve_for')
             InternalStellarStructure.define_particle_sets(
                 self, 
-                object, 
+                handler, 
                 set_name = particle_set_name
             )
-            object.add_method(particle_set_name, 'get_mass_profile')
-            object.add_method(particle_set_name, 'set_mass_profile')
-            object.add_method(particle_set_name, 'get_cumulative_mass_profile')
-            object.add_method(particle_set_name, 'get_luminosity_profile')
-            object.add_method(particle_set_name, 'set_luminosity_profile')
-            object.add_method(particle_set_name, 'get_entropy_profile')
-            object.add_method(particle_set_name, 'get_thermal_energy_profile')
-            object.add_method(particle_set_name, 'get_brunt_vaisala_frequency_squared_profile')
-            object.add_method(particle_set_name, 'get_IDs_of_species')
-            object.add_method(particle_set_name, 'get_masses_of_species')
-            object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
-            object.add_method(particle_set_name, 'reset_number_of_backups_in_a_row')
+            handler.add_method(particle_set_name, 'get_mass_profile')
+            handler.add_method(particle_set_name, 'set_mass_profile')
+            handler.add_method(particle_set_name, 'get_cumulative_mass_profile')
+            handler.add_method(particle_set_name, 'get_luminosity_profile')
+            handler.add_method(particle_set_name, 'set_luminosity_profile')
+            handler.add_method(particle_set_name, 'get_entropy_profile')
+            handler.add_method(particle_set_name, 'get_thermal_energy_profile')
+            handler.add_method(particle_set_name, 'get_brunt_vaisala_frequency_squared_profile')
+            handler.add_method(particle_set_name, 'get_IDs_of_species')
+            handler.add_method(particle_set_name, 'get_masses_of_species')
+            handler.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
+            handler.add_method(particle_set_name, 'reset_number_of_backups_in_a_row')
             
-    def define_state(self, object):
-        StellarEvolution.define_state(self, object)
-        object.add_method('EDIT', 'new_pre_ms_particle')
-        object.add_method('UPDATE', 'new_pre_ms_particle')
-        object.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
-        object.add_method('EDIT', 'finalize_stellar_model')
-        object.add_method('UPDATE', 'finalize_stellar_model')
-        object.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
+    def define_state(self, handler):
+        StellarEvolution.define_state(self, handler)
+        handler.add_method('EDIT', 'new_pre_ms_particle')
+        handler.add_method('UPDATE', 'new_pre_ms_particle')
+        handler.add_transition('RUN', 'UPDATE', 'new_pre_ms_particle', False)
+        handler.add_method('EDIT', 'finalize_stellar_model')
+        handler.add_method('UPDATE', 'finalize_stellar_model')
+        handler.add_transition('RUN', 'UPDATE', 'finalize_stellar_model', False)
     
-    def define_errorcodes(self, object):
-        InternalStellarStructure.define_errorcodes(self, object)
-        object.add_errorcode(-1, 'Something went wrong...')
-        object.add_errorcode(-4, 'Not implemented.')
-        object.add_errorcode(-11, 'Evolve terminated: Unspecified stop condition reached.')
-        object.add_errorcode(-12, 'Evolve terminated: Maximum age reached.')
-        object.add_errorcode(-13, 'Evolve terminated: Maximum number of iterations reached.')
-        object.add_errorcode(-14, 'Evolve terminated: Maximum number of backups reached.')
-        object.add_errorcode(-15, 'Evolve terminated: Minimum timestep limit reached.')
+    def define_errorcodes(self, handler):
+        InternalStellarStructure.define_errorcodes(self, handler)
+        handler.add_errorcode(-1, 'Something went wrong...')
+        handler.add_errorcode(-4, 'Not implemented.')
+        handler.add_errorcode(-11, 'Evolve terminated: Unspecified stop condition reached.')
+        handler.add_errorcode(-12, 'Evolve terminated: Maximum age reached.')
+        handler.add_errorcode(-13, 'Evolve terminated: Maximum number of iterations reached.')
+        handler.add_errorcode(-14, 'Evolve terminated: Maximum number of backups reached.')
+        handler.add_errorcode(-15, 'Evolve terminated: Minimum timestep limit reached.')
     
-    def define_methods(self, object):
-        InternalStellarStructure.define_methods(self, object)
-        StellarEvolution.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        InternalStellarStructure.define_methods(self, handler)
+        StellarEvolution.define_methods(self, handler)
+        handler.add_method(
             "new_pre_ms_particle",
             (units.MSun),
-            (object.INDEX, object.ERROR_CODE)
+            (handler.INDEX, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "set_time_step", 
-            (object.INDEX, units.yr), 
-            (object.ERROR_CODE,)
+            (handler.INDEX, units.yr), 
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_core_mass",
-            (object.INDEX,),
-            (units.MSun, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_mass_loss_rate",
-            (object.INDEX,),
-            (units.g / units.s, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.g / units.s, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_manual_mass_transfer_rate",
-            (object.INDEX,),
-            (units.MSun / units.yr, object.ERROR_CODE,)
+            (handler.INDEX,),
+            (units.MSun / units.yr, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_manual_mass_transfer_rate",
-            (object.INDEX, units.MSun / units.yr),
-            (object.ERROR_CODE,)
+            (handler.INDEX, units.MSun / units.yr),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_number_of_backups_in_a_row", 
-            (object.INDEX,), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX,), 
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "reset_number_of_backups_in_a_row", 
-            (object.INDEX,), 
-            (object.ERROR_CODE,)
+            (handler.INDEX,), 
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_mass_fraction_at_zone", 
-            (object.INDEX,object.NO_UNIT,), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX,handler.NO_UNIT,), 
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_mass_fraction_at_zone", 
-            (object.INDEX, object.NO_UNIT, object.NO_UNIT,), 
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT, handler.NO_UNIT,), 
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_luminosity_at_zone", 
-            (object.INDEX,object.NO_UNIT,), 
-            (units.erg/units.s, object.ERROR_CODE,)
+            (handler.INDEX,handler.NO_UNIT,), 
+            (units.erg/units.s, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "set_luminosity_at_zone", 
-            (object.INDEX, object.NO_UNIT, units.erg/units.s,), 
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.NO_UNIT, units.erg/units.s,), 
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_entropy_at_zone", 
-            (object.INDEX,object.NO_UNIT,), 
-            (units.erg/units.K, object.ERROR_CODE,)
+            (handler.INDEX,handler.NO_UNIT,), 
+            (units.erg/units.K, handler.ERROR_CODE,)
         )        
-        object.add_method(
+        handler.add_method(
             "get_thermal_energy_at_zone", 
-            (object.INDEX,object.NO_UNIT,), 
-            (units.erg/units.g, object.ERROR_CODE,)
+            (handler.INDEX,handler.NO_UNIT,), 
+            (units.erg/units.g, handler.ERROR_CODE,)
         )        
-        object.add_method(
+        handler.add_method(
             "get_id_of_species", 
-            (object.INDEX,object.NO_UNIT,), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX,handler.NO_UNIT,), 
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_mass_of_species", 
-            (object.INDEX,object.NO_UNIT,), 
-            (units.amu, object.ERROR_CODE,)
+            (handler.INDEX,handler.NO_UNIT,), 
+            (units.amu, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "erase_memory", 
-            (object.INDEX,), 
-            (object.ERROR_CODE,),
+            (handler.INDEX,), 
+            (handler.ERROR_CODE,),
             public_name = "_erase_memory"
         )
-        object.add_method(
+        handler.add_method(
             "new_stellar_model", 
             (units.MSun, units.cm, units.g / units.cm**3, units.K, units.erg / units.s, 
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, 
-                object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,), 
-            (object.ERROR_CODE,)
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, 
+                handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,), 
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "finalize_stellar_model", 
             (units.yr,), 
-            (object.INDEX, object.ERROR_CODE,)
+            (handler.INDEX, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_max_age_stop_condition", 
             (), 
-            (units.yr, object.ERROR_CODE,)
+            (units.yr, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_max_age_stop_condition", 
             (units.yr, ), 
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_min_timestep_stop_condition", 
             (), 
-            (units.s, object.ERROR_CODE,)
+            (units.s, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_min_timestep_stop_condition", 
             (units.s, ), 
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_max_iter_stop_condition", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_max_iter_stop_condition", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_mixing_length_ratio", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_mixing_length_ratio", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_semi_convection_efficiency", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_semi_convection_efficiency", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_RGB_wind_scheme", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_RGB_wind_scheme", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_AGB_wind_scheme", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_AGB_wind_scheme", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_reimers_wind_efficiency", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_reimers_wind_efficiency", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_blocker_wind_efficiency", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_blocker_wind_efficiency", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_de_jager_wind_efficiency", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_de_jager_wind_efficiency", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "get_dutch_wind_efficiency", 
             (), 
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
     
-        object.add_method(
+        handler.add_method(
             "set_dutch_wind_efficiency", 
-            (object.NO_UNIT, ), 
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ), 
+            (handler.ERROR_CODE,)
         )
         
     

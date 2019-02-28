@@ -213,9 +213,9 @@ class SSE(common.CommonCode):
         self.model_time = 0.0 | units.yr
         
     
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
     
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "z_in",
             "metallicity",
@@ -223,7 +223,7 @@ class SSE(common.CommonCode):
             0.02
         )
                 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "neta_in",
             "reimers_mass_loss_coefficient",
@@ -231,7 +231,7 @@ class SSE(common.CommonCode):
             0.5
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "bwind_in",
             "binary_enhanced_mass_loss_parameter",
@@ -239,7 +239,7 @@ class SSE(common.CommonCode):
             0.0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "hewind_in",
             "helium_star_mass_loss_factor",
@@ -247,7 +247,7 @@ class SSE(common.CommonCode):
             0.5
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "sigma_in",
             "SN_kick_speed_dispersion",
@@ -255,7 +255,7 @@ class SSE(common.CommonCode):
             190.0 | units.km / units.s
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "ifflag_in",
             "white_dwarf_IFMR_flag",
@@ -263,7 +263,7 @@ class SSE(common.CommonCode):
             0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "wdflag_in",
             "white_dwarf_cooling_flag",
@@ -271,7 +271,7 @@ class SSE(common.CommonCode):
             1
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "bhflag_in",
             "black_hole_kick_flag",
@@ -279,7 +279,7 @@ class SSE(common.CommonCode):
             0
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "nsflag_in",
             "neutron_star_mass_flag",
@@ -287,7 +287,7 @@ class SSE(common.CommonCode):
             1
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "mxns_in",
             "maximum_neutron_star_mass",
@@ -295,7 +295,7 @@ class SSE(common.CommonCode):
             3.0 | units.MSun
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts1_in",
             "fractional_time_step_1",
@@ -303,7 +303,7 @@ class SSE(common.CommonCode):
             0.05
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts2_in",
             "fractional_time_step_2",
@@ -311,7 +311,7 @@ class SSE(common.CommonCode):
             0.01
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "initialize",
             "pts3_in",
             "fractional_time_step_3",
@@ -319,19 +319,19 @@ class SSE(common.CommonCode):
             0.02
         )
     
-    def define_state(self, object):
-        common.CommonCode.define_state(self, object)
-        object.add_transition('INITIALIZED','RUN','commit_parameters')
-        object.add_method('RUN', 'evolve_star')
+    def define_state(self, handler):
+        common.CommonCode.define_state(self, handler)
+        handler.add_transition('INITIALIZED','RUN','commit_parameters')
+        handler.add_method('RUN', 'evolve_star')
         
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('RUN', 'before_set_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('RUN', 'before_set_parameter')
     
          
-    def define_particle_sets(self, object):
-        object.define_inmemory_set('particles', SSEParticles)
+    def define_particle_sets(self, handler):
+        handler.define_inmemory_set('particles', SSEParticles)
         
-        object.add_attribute(
+        handler.add_attribute(
             'particles',
             'time_step', 
             'get_time_step', 
@@ -339,7 +339,7 @@ class SSE(common.CommonCode):
              'mass', 'main_sequence_lifetime', 'epoch')
         )
         
-        object.add_attribute(
+        handler.add_attribute(
             'particles',
             'mass_loss_wind', 
             'get_mass_loss_wind', 
@@ -348,7 +348,7 @@ class SSE(common.CommonCode):
              'CO_core_mass')
         )
         
-        object.add_attribute(
+        handler.add_attribute(
             'particles',
             'gyration_radius', 
             'get_gyration_radius', 

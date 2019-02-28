@@ -154,11 +154,11 @@ class Adaptb(GravitationalDynamics):
         self.parameters.adaptb_output_directory = self.output_directory
         return result
     
-    def define_parameters(self, object):
-        GravitationalDynamics.define_parameters(self, object)
-        self.stopping_conditions.define_parameters(object)
+    def define_parameters(self, handler):
+        GravitationalDynamics.define_parameters(self, handler)
+        self.stopping_conditions.define_parameters(handler)
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bs_tolerance_float64", 
             "set_bs_tolerance_float64",
             "bs_tolerance", 
@@ -166,7 +166,7 @@ class Adaptb(GravitationalDynamics):
             default_value = 1.0e-6
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2", 
             "set_eps2",
             "epsilon_squared", 
@@ -174,7 +174,7 @@ class Adaptb(GravitationalDynamics):
             default_value = 0.0 | nbody_system.length**2
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dt_print", 
             "set_dt_print",
             "dt_print", 
@@ -182,7 +182,7 @@ class Adaptb(GravitationalDynamics):
             default_value = 0.1 | nbody_system.time
         )
     
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_word_length", 
             "set_word_length",
             "word_length", 
@@ -190,7 +190,7 @@ class Adaptb(GravitationalDynamics):
             default_value = 64
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_adaptb_output_directory", 
             "set_adaptb_output_directory",
             "adaptb_output_directory", 
@@ -198,7 +198,7 @@ class Adaptb(GravitationalDynamics):
             default_value = "./"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_max_cpu_time", 
             "set_max_cpu_time",
             "time_limit_cpu", 
@@ -206,34 +206,34 @@ class Adaptb(GravitationalDynamics):
             default_value = 3600.0 | units.s
         )
         
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        self.stopping_conditions.define_methods(object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        self.stopping_conditions.define_methods(handler)
         
-        object.add_method("get_bs_tolerance_float64", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_bs_tolerance_float64", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_bs_tolerance_float64", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_bs_tolerance_float64", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_eps2", (), (nbody_system.length**2, object.ERROR_CODE,))
-        object.add_method("set_eps2", (nbody_system.length**2, ), (object.ERROR_CODE,))
+        handler.add_method("get_eps2", (), (nbody_system.length**2, handler.ERROR_CODE,))
+        handler.add_method("set_eps2", (nbody_system.length**2, ), (handler.ERROR_CODE,))
     
-        object.add_method("get_dt_print", (), (nbody_system.time, object.ERROR_CODE,))
-        object.add_method("set_dt_print", (nbody_system.time, ), (object.ERROR_CODE,))
+        handler.add_method("get_dt_print", (), (nbody_system.time, handler.ERROR_CODE,))
+        handler.add_method("set_dt_print", (nbody_system.time, ), (handler.ERROR_CODE,))
     
-        object.add_method("get_word_length", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_word_length", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_word_length", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_word_length", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_adaptb_output_directory", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_adaptb_output_directory", (object.NO_UNIT, ), (object.ERROR_CODE,))
+        handler.add_method("get_adaptb_output_directory", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_adaptb_output_directory", (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_max_cpu_time", (), (units.s, object.ERROR_CODE,))
-        object.add_method("set_max_cpu_time", (units.s, ), (object.ERROR_CODE,))
+        handler.add_method("get_max_cpu_time", (), (units.s, handler.ERROR_CODE,))
+        handler.add_method("set_max_cpu_time", (units.s, ), (handler.ERROR_CODE,))
     
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)
 
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        self.stopping_conditions.define_state(object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        self.stopping_conditions.define_state(handler)
 

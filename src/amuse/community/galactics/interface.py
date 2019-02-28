@@ -11,6 +11,7 @@ from subprocess import Popen, PIPE
 
 from amuse.rfi.core import PythonCodeInterface
 
+
 class GalactICsImplementation(object):
     
     def __init__(self):
@@ -551,8 +552,8 @@ class GalactICs(CommonCode):
         self.parameters.set_defaults()
         self.parameters.output_directory = self.get_output_directory()
     
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_output_path", 
             "set_output_path",
             "output_directory", 
@@ -562,7 +563,7 @@ class GalactICs(CommonCode):
         
         # boolean parameters
         for par in ["generate_halo_flag", "generate_disk_flag", "generate_bulge_flag"]:
-            object.add_boolean_parameter(
+            handler.add_boolean_parameter(
                 "get_"+par,
                 "set_"+par,
                 par,
@@ -570,7 +571,7 @@ class GalactICs(CommonCode):
                 True
             )
         for par in ["halo_do_center_flag", "bulge_do_center_flag", "disk_do_center_flag"]:
-            object.add_boolean_parameter(
+            handler.add_boolean_parameter(
                 "get_"+par,
                 "set_"+par,
                 par,
@@ -579,70 +580,70 @@ class GalactICs(CommonCode):
             )
         
         # integer parameters
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_number_of_grid_intervals",
             "set_number_of_grid_intervals",
             "number_of_grid_intervals",
             "Number of gridpoints in the radial direction",
             default_value = 90000
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_order_of_multipole_expansion",
             "set_order_of_multipole_expansion",
             "order_of_multipole_expansion",
             "order of multipole expansion - even number - should be l=10 for models with disks - l=0 for purely spherical models without a disk",
             default_value = 10
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_number_of_radial_steps_correction_fns",
             "set_number_of_radial_steps_correction_fns",
             "number_of_radial_steps_correction_fns_disk_df",
             "The number of intervals for correction functions (min. 6); used in calculation of the DF of the disk",
             default_value = 10
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_number_of_iterations",
             "set_number_of_iterations",
             "number_of_iterations_disk_df",
             "The number of iterations in calculation of the DF of the disk",
             default_value = 50
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_halo_number_of_particles",
             "set_halo_number_of_particles",
             "halo_number_of_particles",
             "The number of halo particles to generate",
             default_value = 200000
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bulge_number_of_particles",
             "set_bulge_number_of_particles",
             "bulge_number_of_particles",
             "The number of bulge particles to generate",
             default_value = 50000
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_disk_number_of_particles",
             "set_disk_number_of_particles",
             "disk_number_of_particles",
             "The number of disk particles to generate",
             default_value = 100000
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_halo_random_seed",
             "set_halo_random_seed",
             "halo_random_seed",
             "The seed to the random number generator used to generate the halo particles",
             default_value = -1
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bulge_random_seed",
             "set_bulge_random_seed",
             "bulge_random_seed",
             "The seed to the random number generator used to generate the bulge particles",
             default_value = -1
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_disk_random_seed",
             "set_disk_random_seed",
             "disk_random_seed",
@@ -651,133 +652,133 @@ class GalactICs(CommonCode):
         )
         
         # float parameters
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_halo_outer_radius",
             "set_halo_outer_radius",
             "halo_outer_radius",
             "The halo is smoothly truncated at this radius",
             default_value = 300.0 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_scale_velocity",
             "set_scale_velocity",
             "halo_scale_velocity",
             "The velocity scale of the halo",
             default_value = 3.26331115 | nbody_system.speed
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_scale_radius",
             "set_scale_radius",
             "halo_scale_radius",
             "The length scale of the halo",
             default_value = 6.06699419 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_truncation_delta_r",
             "set_truncation_delta_r",
             "halo_truncation_width",
             "The width of the smooth truncation at halo_outer_radius",
             default_value = 100.0 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_inner_cusp_slope",
             "set_inner_cusp_slope",
             "halo_inner_cusp_slope",
             "The slope of inner cusp of the halo density profile",
             default_value = 1.0
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_outer_slope",
             "set_outer_slope",
             "halo_outer_slope",
             "The outer slope of the halo density profile",
             default_value = 2.3
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_disk_mass",
             "set_disk_mass",
             "disk_mass",
             "The mass of the disk",
             default_value = 25.0 | nbody_system.mass
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_disk_scale_length",
             "set_disk_scale_length",
             "disk_scale_length",
             "The length scale of the disk",
             default_value = 5.8097949 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_disk_outer_radius",
             "set_disk_outer_radius",
             "disk_outer_radius",
             "The disk is smoothly truncated at this radius",
             default_value = 40.5 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_disk_scale_height_sech2",
             "set_disk_scale_height_sech2",
             "disk_scale_height_sech2",
             "The vertical scale length of the disk. The disk falls off as sech^2 in the z-direction.",
             default_value = 0.5 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_disk_truncation_dr",
             "set_disk_truncation_dr",
             "disk_truncation_width",
             "The width of the smooth truncation at disk_outer_radius",
             default_value = 1.5 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_Sersic_index_n",
             "set_Sersic_index_n",
             "Sersic_index",
             "The Sersic index of the bulge (1.0 for a classical bulge)",
             default_value = 0.937324703
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bulge_velocity",
             "set_bulge_velocity",
             "bulge_scale_velocity",
             "The velocity scale of the bulge",
             default_value = 3.21182013 | nbody_system.speed
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bulge_scale_radius",
             "set_bulge_scale_radius",
             "bulge_scale_radius",
             "The length scale of the bulge",
             default_value = 1.50395405 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_radial_grid_delta_r",
             "set_radial_grid_delta_r",
             "radial_grid_delta_r",
             "Spacing of the grid in the radial direction",
             default_value = 0.01 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_central_radial_vel_dispersion",
             "set_central_radial_vel_dispersion",
             "disk_central_radial_velocity_dispersion",
             "The velocity dispersion of the disk in the radial direction at the center (in units of vertical velocity dispersion)",
             default_value = 0.73
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_scale_length_of_sigR2",
             "set_scale_length_of_sigR2",
             "disk_scale_length_of_sigR2",
             "The length scale of the exponential decline of the velocity dispersion of the disk in the radial direction.",
             default_value = 5.8097949 | nbody_system.length
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_halo_streaming_fraction",
             "set_halo_streaming_fraction",
             "halo_streaming_fraction",
             "Control for rotating halo: distribution function is split in positive and negative angular momentum, and recombined with this parameter (F = aF+ + (1-a)F-); 0.5 means no rotation",
             default_value = 0.50
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bulge_streaming_fraction",
             "set_bulge_streaming_fraction",
             "bulge_streaming_fraction",
@@ -785,23 +786,23 @@ class GalactICs(CommonCode):
             default_value = 0.80
         )
     
-    def define_methods(self, object):
-        CommonCode.define_methods(self, object)
-        object.add_method("generate_particles", (), (object.ERROR_CODE,))
-        object.add_method("get_number_of_particles_updated", (), (object.NO_UNIT, object.ERROR_CODE,))
+    def define_methods(self, handler):
+        CommonCode.define_methods(self, handler)
+        handler.add_method("generate_particles", (), (handler.ERROR_CODE,))
+        handler.add_method("get_number_of_particles_updated", (), (handler.NO_UNIT, handler.ERROR_CODE,))
         
-        object.add_method("get_mass", (object.INDEX,), 
-            (nbody_system.mass, object.ERROR_CODE)
+        handler.add_method("get_mass", (handler.INDEX,), 
+            (nbody_system.mass, handler.ERROR_CODE)
         )
-        object.add_method("get_position", (object.INDEX,), 
-            (nbody_system.length, nbody_system.length, nbody_system.length, object.ERROR_CODE)
+        handler.add_method("get_position", (handler.INDEX,), 
+            (nbody_system.length, nbody_system.length, nbody_system.length, handler.ERROR_CODE)
         )
-        object.add_method("get_velocity", (object.INDEX,), 
-            (nbody_system.speed, nbody_system.speed, nbody_system.speed, object.ERROR_CODE)
+        handler.add_method("get_velocity", (handler.INDEX,), 
+            (nbody_system.speed, nbody_system.speed, nbody_system.speed, handler.ERROR_CODE)
         )
         
-        object.add_method("get_output_path", (), (object.NO_UNIT, object.ERROR_CODE,))
-        object.add_method("set_output_path", (object.NO_UNIT,), (object.ERROR_CODE,))
+        handler.add_method("get_output_path", (), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method("set_output_path", (handler.NO_UNIT,), (handler.ERROR_CODE,))
         
         for par in ["_number_of_grid_intervals", "_order_of_multipole_expansion", 
                 "_number_of_radial_steps_correction_fns", "_number_of_iterations", 
@@ -810,73 +811,73 @@ class GalactICs(CommonCode):
                 "_disk_number_of_particles", "_disk_random_seed",
                 "_inner_cusp_slope", "_outer_slope", "_Sersic_index_n", "_central_radial_vel_dispersion", 
                 "_halo_streaming_fraction", "_bulge_streaming_fraction"]:
-            object.add_method("get"+par, (), (object.NO_UNIT, object.ERROR_CODE,))
-            object.add_method("set"+par, (object.NO_UNIT, ), (object.ERROR_CODE,))
+            handler.add_method("get"+par, (), (handler.NO_UNIT, handler.ERROR_CODE,))
+            handler.add_method("set"+par, (handler.NO_UNIT, ), (handler.ERROR_CODE,))
         
         for par in ["_halo_outer_radius", "_scale_radius", "_truncation_delta_r", 
                 "_disk_scale_length", "_disk_outer_radius", "_disk_scale_height_sech2", 
                 "_disk_truncation_dr", "_bulge_scale_radius", "_radial_grid_delta_r", 
                 "_scale_length_of_sigR2"]:
-            object.add_method("get"+par, (), (nbody_system.length, object.ERROR_CODE,))
-            object.add_method("set"+par, (nbody_system.length, ), (object.ERROR_CODE,))
+            handler.add_method("get"+par, (), (nbody_system.length, handler.ERROR_CODE,))
+            handler.add_method("set"+par, (nbody_system.length, ), (handler.ERROR_CODE,))
         
         for par in ["_scale_velocity", "_bulge_velocity"]:
-            object.add_method("get"+par, (), (nbody_system.speed, object.ERROR_CODE,))
-            object.add_method("set"+par, (nbody_system.speed, ), (object.ERROR_CODE,))
+            handler.add_method("get"+par, (), (nbody_system.speed, handler.ERROR_CODE,))
+            handler.add_method("set"+par, (nbody_system.speed, ), (handler.ERROR_CODE,))
         
-        object.add_method("get_disk_mass", (), (nbody_system.mass, object.ERROR_CODE,))
-        object.add_method("set_disk_mass", (nbody_system.mass, ), (object.ERROR_CODE,))
+        handler.add_method("get_disk_mass", (), (nbody_system.mass, handler.ERROR_CODE,))
+        handler.add_method("set_disk_mass", (nbody_system.mass, ), (handler.ERROR_CODE,))
     
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
     
-    def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_getter('particles', 'get_mass')
-        object.add_getter('particles', 'get_position')
-        object.add_getter('particles', 'get_velocity')
+    def define_particle_sets(self, handler):
+        handler.define_set('particles', 'index_of_the_particle')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_getter('particles', 'get_mass')
+        handler.add_getter('particles', 'get_position')
+        handler.add_getter('particles', 'get_velocity')
     
-    def define_state(self, object):
-        CommonCode.define_state(self, object)
+    def define_state(self, handler):
+        CommonCode.define_state(self, handler)
         
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('UPDATE','CHANGE_PARAMETERS_UPDATE','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_UPDATE','UPDATE','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_set_parameter')
 
-        object.add_method('CHANGE_PARAMETERS_RUN', 'model_present')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'model_present')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','model_present')
-        object.add_method('INITIALIZED','model_present')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'model_present')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'model_present')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','model_present')
+        handler.add_method('INITIALIZED','model_present')
 
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
-        object.add_method('UPDATE','before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE','before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('UPDATE','before_get_parameter')
         
-        object.add_transition('EDIT', 'UPDATE', 'generate_particles', False)
-        object.add_transition('UPDATE', 'RUN', 'update_particle_set')
-        object.add_transition('RUN', 'EDIT', 'clear_particle_set')
-        object.add_method('RUN', 'invoke_state_change_updated')
-        object.add_method('EDIT', 'get_number_of_particles_updated')
-        object.add_method('UPDATE', 'get_number_of_particles_updated')
-        object.add_method('RUN', 'get_number_of_particles_updated')
-        object.add_method('RUN', 'get_number_of_particles')
-        object.add_method('RUN', 'get_mass')
-        object.add_method('RUN', 'get_position')
-        object.add_method('RUN', 'get_velocity')
+        handler.add_transition('EDIT', 'UPDATE', 'generate_particles', False)
+        handler.add_transition('UPDATE', 'RUN', 'update_particle_set')
+        handler.add_transition('RUN', 'EDIT', 'clear_particle_set')
+        handler.add_method('RUN', 'invoke_state_change_updated')
+        handler.add_method('EDIT', 'get_number_of_particles_updated')
+        handler.add_method('UPDATE', 'get_number_of_particles_updated')
+        handler.add_method('RUN', 'get_number_of_particles_updated')
+        handler.add_method('RUN', 'get_number_of_particles')
+        handler.add_method('RUN', 'get_mass')
+        handler.add_method('RUN', 'get_position')
+        handler.add_method('RUN', 'get_velocity')
     
     def generate_particles(self):
         result = self.overridden().generate_particles()

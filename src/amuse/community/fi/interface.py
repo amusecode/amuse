@@ -10,13 +10,14 @@ from amuse.support.options import option
 from amuse.units import generic_unit_system 
 from amuse.community.interface.common import CommonCode
 
+
 class FiInterface(
-    CodeInterface,
-    GravitationalDynamicsInterface,
-    LiteratureReferencesMixIn,
-    StoppingConditionInterface,
-    GravityFieldInterface,
-    CodeWithDataDirectories):   
+        CodeInterface,
+        GravitationalDynamicsInterface,
+        LiteratureReferencesMixIn,
+        StoppingConditionInterface,
+        GravityFieldInterface,
+        CodeWithDataDirectories):   
     """
     FI is a parallel TreeSPH code for galaxy simulations. Extensively 
     rewritten, extended and parallelized it is a development from code from 
@@ -1705,71 +1706,71 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         
         return result
 
-    def define_properties(self, object):
-        GravitationalDynamics.define_properties(self, object)
-        object.add_property("get_thermal_energy")
-        object.add_property("get_total_energy")
+    def define_properties(self, handler):
+        GravitationalDynamics.define_properties(self, handler)
+        handler.add_property("get_thermal_energy")
+        handler.add_property("get_total_energy")
     
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
         
-        object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
-        object.add_method('END', 'initialize_code')
+        handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+        handler.add_method('END', 'initialize_code')
 
-        object.add_method('EDIT', 'new_dm_particle')
-        object.add_method('UPDATE', 'new_dm_particle')
-        object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
-        object.add_method('EDIT', 'new_sph_particle')
-        object.add_method('UPDATE', 'new_sph_particle')
-        object.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
-        object.add_method('EDIT', 'new_star_particle')
-        object.add_method('UPDATE', 'new_star_particle')
-        object.add_transition('RUN', 'UPDATE', 'new_star_particle', False)
-        object.add_method('RUN', 'get_velocity')
-        object.add_method('RUN', 'get_acceleration')
-        object.add_method('RUN', 'get_internal_energy')
-        object.add_method('RUN', 'get_dinternal_energy_dt')
-        object.add_method('RUN', 'get_smoothing_length')
-        object.add_method('RUN', 'get_density')
-        object.add_method('RUN', 'get_pressure')
-        object.add_method('RUN', 'get_star_tform')
-        object.add_method('RUN', 'get_state_sph')
-        object.add_method('RUN', 'get_state_star')
+        handler.add_method('EDIT', 'new_dm_particle')
+        handler.add_method('UPDATE', 'new_dm_particle')
+        handler.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
+        handler.add_method('EDIT', 'new_sph_particle')
+        handler.add_method('UPDATE', 'new_sph_particle')
+        handler.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
+        handler.add_method('EDIT', 'new_star_particle')
+        handler.add_method('UPDATE', 'new_star_particle')
+        handler.add_transition('RUN', 'UPDATE', 'new_star_particle', False)
+        handler.add_method('RUN', 'get_velocity')
+        handler.add_method('RUN', 'get_acceleration')
+        handler.add_method('RUN', 'get_internal_energy')
+        handler.add_method('RUN', 'get_dinternal_energy_dt')
+        handler.add_method('RUN', 'get_smoothing_length')
+        handler.add_method('RUN', 'get_density')
+        handler.add_method('RUN', 'get_pressure')
+        handler.add_method('RUN', 'get_star_tform')
+        handler.add_method('RUN', 'get_state_sph')
+        handler.add_method('RUN', 'get_state_star')
         
-        object.remove_transition('EVOLVED', 'RUN', 'synchronize_model')
-        object.add_transition('EVOLVED', 'UPDATED', 'update_particle_set')
-        object.add_transition('UPDATED', 'RUN', 'synchronize_model')
+        handler.remove_transition('EVOLVED', 'RUN', 'synchronize_model')
+        handler.add_transition('EVOLVED', 'UPDATED', 'update_particle_set')
+        handler.add_transition('UPDATED', 'RUN', 'synchronize_model')
         
-        object.add_method('RUN', 'get_kinetic_energy')
-        object.add_method('RUN', 'get_potential_energy')
-        object.add_method('RUN', 'get_thermal_energy')
-        object.add_method('RUN', 'get_total_energy')
-        object.add_method('RUN', 'get_total_radius')
-        object.add_method('RUN', 'get_center_of_mass_position')
-        object.add_method('RUN', 'get_center_of_mass_velocity')
-        object.add_method('RUN', 'get_total_mass')
-        object.add_method('RUN', 'get_time')
-        object.add_method('EDIT', 'get_time')
-        object.add_method('UPDATE', 'get_time')
-        object.add_method('INITIALIZED', 'get_time')
+        handler.add_method('RUN', 'get_kinetic_energy')
+        handler.add_method('RUN', 'get_potential_energy')
+        handler.add_method('RUN', 'get_thermal_energy')
+        handler.add_method('RUN', 'get_total_energy')
+        handler.add_method('RUN', 'get_total_radius')
+        handler.add_method('RUN', 'get_center_of_mass_position')
+        handler.add_method('RUN', 'get_center_of_mass_velocity')
+        handler.add_method('RUN', 'get_total_mass')
+        handler.add_method('RUN', 'get_time')
+        handler.add_method('EDIT', 'get_time')
+        handler.add_method('UPDATE', 'get_time')
+        handler.add_method('INITIALIZED', 'get_time')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'get_time')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'get_time')
-        object.add_method('CHANGE_PARAMETERS_UPDATE', 'get_time')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'get_time')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'get_time')
+        handler.add_method('CHANGE_PARAMETERS_UPDATE', 'get_time')
         
         
-        object.add_method('RUN', 'get_hydro_state_at_point')
+        handler.add_method('RUN', 'get_hydro_state_at_point')
 
-        object.add_method('EDIT', 'get_gravity_at_point')
-        object.add_method('EDIT', 'get_potential_at_point')
+        handler.add_method('EDIT', 'get_gravity_at_point')
+        handler.add_method('EDIT', 'get_potential_at_point')
         
         
-        self.stopping_conditions.define_state(object)
+        self.stopping_conditions.define_state(handler)
     
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_eps2", 
             "set_eps2",
             "epsilon_squared", 
@@ -1777,7 +1778,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.length * nbody_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dtime", 
             "set_dtime",
             "timestep", 
@@ -1786,7 +1787,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         ) 
         
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_radiate",
             "set_radiate",
             "radiation_flag",
@@ -1795,7 +1796,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_starform",
             "set_starform",
             "star_formation_flag",
@@ -1804,7 +1805,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_use_hydro",
             "set_use_hydro",
             "use_hydro_flag",
@@ -1812,7 +1813,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_sqrttstp",
             "set_sqrttstp",
             "square_root_timestep_flag",
@@ -1820,7 +1821,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_acc_tstp",
             "set_acc_tstp",
             "acc_timestep_flag",
@@ -1828,7 +1829,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_freetstp",
             "set_freetstp",
             "freeform_timestep_flag",
@@ -1836,7 +1837,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_usequad",
             "set_usequad",
             "quadrupole_moments_flag",
@@ -1844,7 +1845,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_directsum",
             "set_directsum",
             "direct_sum_flag",
@@ -1852,7 +1853,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_selfgrav",
             "set_selfgrav",
             "self_gravity_flag",
@@ -1860,7 +1861,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_fixthalo",
             "set_fixthalo",
             "fixed_halo_flag",
@@ -1868,7 +1869,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_adaptive_eps",
             "set_adaptive_eps",
             "adaptive_smoothing_flag",
@@ -1876,7 +1877,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_gdgop",
             "set_gdgop",
             "gadget_cell_opening_flag",
@@ -1884,7 +1885,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_smoothinput",
             "set_smoothinput",
             "smooth_input_flag",
@@ -1892,7 +1893,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_consph",
             "set_consph",
             "conservative_sph_flag",
@@ -1900,7 +1901,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_sphinit",
             "set_sphinit",
             "sph_dens_init_flag",
@@ -1908,7 +1909,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_uentropy",
             "set_uentropy",
             "integrate_entropy_flag",
@@ -1916,7 +1917,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             True
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_isotherm",
             "set_isotherm",
             "isothermal_flag",
@@ -1924,7 +1925,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_eps_is_h",
             "set_eps_is_h",
             "eps_is_h_flag",
@@ -1932,7 +1933,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             True
         )
 
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_balsara",
             "set_balsara",
             "balsara_flag",
@@ -1940,7 +1941,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
 
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_mingaseps",
             "set_mingaseps",
             "enforce_min_sph_grav_softening_flag",
@@ -1949,7 +1950,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         )
         
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_firstsnap", 
             "set_firstsnap",
             "first_snapshot", 
@@ -1957,7 +1958,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_stepout", 
             "set_stepout",
             "output_interval", 
@@ -1965,7 +1966,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 5
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_steplog", 
             "set_steplog",
             "log_interval", 
@@ -1973,7 +1974,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 5
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_max_tbin", 
             "set_max_tbin",
             "maximum_time_bin", 
@@ -1981,7 +1982,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 4096
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_minppbin", 
             "set_minppbin",
             "minimum_part_per_bin", 
@@ -1989,7 +1990,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_targetnn", 
             "set_targetnn",
             "targetnn", 
@@ -1997,7 +1998,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 32
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_verbosity", 
             "set_verbosity",
             "verbosity", 
@@ -2005,7 +2006,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nsmooth", 
             "set_nsmooth",
             "n_smooth", 
@@ -2014,7 +2015,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
         )
         
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_pboxsize", 
             "set_pboxsize",
             "periodic_box_size", 
@@ -2022,7 +2023,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 10000.0 | nbody_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_unitm_in_msun", 
             "set_unitm_in_msun",
             "code_mass_unit", 
@@ -2030,7 +2031,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0e9 | units.MSun
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_unitl_in_kpc", 
             "set_unitl_in_kpc",
             "code_length_unit", 
@@ -2038,7 +2039,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0 | units.kpc
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_tstepcrit", 
             "set_tstepcrit",
             "sqrt_timestep_crit_constant", 
@@ -2046,7 +2047,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_tstpcr2", 
             "set_tstpcr2",
             "acc_timestep_crit_constant", 
@@ -2054,7 +2055,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.25
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_freev", 
             "set_freev",
             "free_timestep_crit_constant_v", 
@@ -2062,7 +2063,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.5
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_freea", 
             "set_freea",
             "free_timestep_crit_constant_a", 
@@ -2070,7 +2071,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.35
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_freevexp", 
             "set_freevexp",
             "free_timestep_crit_constant_vexp", 
@@ -2078,7 +2079,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_freeaexp", 
             "set_freeaexp",
             "free_timestep_crit_constant_aexp", 
@@ -2086,7 +2087,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = -1.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_bh_tol", 
             "set_bh_tol",
             "opening_angle", 
@@ -2094,7 +2095,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.5
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gdgtol", 
             "set_gdgtol",
             "gadget_cell_opening_constant", 
@@ -2102,7 +2103,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.01
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nn_tol", 
             "set_nn_tol",
             "nn_tol", 
@@ -2110,7 +2111,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_epsgas", 
             "set_epsgas",
             "gas_epsilon", 
@@ -2118,7 +2119,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.005 | nbody_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gamma", 
             "set_gamma",
             "gamma", 
@@ -2126,7 +2127,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1.6666667
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_alpha", 
             "set_alpha",
             "artificial_viscosity_alpha", 
@@ -2134,7 +2135,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.5
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_beta", 
             "set_beta",
             "beta", 
@@ -2142,7 +2143,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_epssph", 
             "set_epssph",
             "sph_artificial_viscosity_eps", 
@@ -2150,7 +2151,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.01
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_courant", 
             "set_courant",
             "courant", 
@@ -2158,7 +2159,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.3
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_removgas", 
             "set_removgas",
             "min_gas_part_mass", 
@@ -2166,7 +2167,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.25
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_consthsm", 
             "set_consthsm",
             "sph_h_const", 
@@ -2174,7 +2175,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.2 | nbody_system.length
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_nsmtol", 
             "set_nsmtol",
             "n_smooth_tol", 
@@ -2182,7 +2183,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_graineff", 
             "set_graineff",
             "grain_heat_eff", 
@@ -2190,7 +2191,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.05
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_crionrate", 
             "set_crionrate",
             "zeta_cr_ion_rate", 
@@ -2198,7 +2199,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 3.6 | 1.8e-17 * units.s**-1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_heat_par1", 
             "set_heat_par1",
             "heat_par1", 
@@ -2206,7 +2207,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_heat_par2", 
             "set_heat_par2",
             "heat_par2", 
@@ -2214,7 +2215,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_cool_par", 
             "set_cool_par",
             "cool_par", 
@@ -2222,7 +2223,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_optdepth", 
             "set_optdepth",
             "optical_depth", 
@@ -2230,7 +2231,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_tcollfac", 
             "set_tcollfac",
             "star_form_delay_fac", 
@@ -2238,7 +2239,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_masscrit", 
             "set_masscrit",
             "star_form_mass_crit", 
@@ -2246,7 +2247,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 1.0e5 | units.MSun
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_sfeff", 
             "set_sfeff",
             "star_form_eff", 
@@ -2254,7 +2255,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.25
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_tbubble", 
             "set_tbubble",
             "supernova_duration", 
@@ -2262,7 +2263,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 3.0e7 | units.Myr
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_sne_eff", 
             "set_sne_eff",
             "supernova_eff", 
@@ -2270,7 +2271,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_tsnbeg", 
             "set_tsnbeg",
             "t_supernova_start", 
@@ -2278,7 +2279,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 3.0e6 | units.Myr
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_rhomax", 
             "set_rhomax",
             "max_density", 
@@ -2286,7 +2287,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 100.0 |nbody_system.density
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_halofile", 
             "set_halofile",
             "halofile", 
@@ -2294,7 +2295,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = "none"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_feedback", 
             "set_feedback",
             "feedback", 
@@ -2302,7 +2303,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = "fuv"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_sfmode", 
             "set_sfmode",
             "star_formation_mode", 
@@ -2310,7 +2311,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = "gerritsen"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_hupdatemethod", 
             "set_hupdatemethod",
             "h_update_method", 
@@ -2318,7 +2319,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = "mass"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_sph_visc", 
             "set_sph_visc",
             "sph_viscosity", 
@@ -2326,7 +2327,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = "sph"
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_fi_data_directory", 
             "set_fi_data_directory",
             "fi_data_directory", 
@@ -2334,7 +2335,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = ""
         )
 
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_periodic_boundaries_flag",
             None,
             "periodic_boundaries_flag",
@@ -2342,7 +2343,7 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             False
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -2350,93 +2351,93 @@ class Fi(GravitationalDynamics, GravityFieldCode):
             default_value = 0.0 | nbody_system.time
         )
         
-        self.stopping_conditions.define_parameters(object)        
+        self.stopping_conditions.define_parameters(handler)        
     
-    def define_particle_sets(self, object):
-        object.define_super_set('particles', ['dm_particles','gas_particles','star_particles'], 
+    def define_particle_sets(self, handler):
+        handler.define_super_set('particles', ['dm_particles','gas_particles','star_particles'], 
             index_to_default_set = 0)
         
-        object.define_set('dm_particles', 'id')
-        object.set_new('dm_particles', 'new_dm_particle')
-        object.set_delete('dm_particles', 'delete_particle')
-        object.add_setter('dm_particles', 'set_state')
-        object.add_getter('dm_particles', 'get_state')
-        object.add_setter('dm_particles', 'set_mass')
-        object.add_getter('dm_particles', 'get_mass', names = ('mass',))
-        object.add_setter('dm_particles', 'set_position')
-        object.add_getter('dm_particles', 'get_position')
-        object.add_setter('dm_particles', 'set_radius')
-        object.add_getter('dm_particles', 'get_radius')
-        object.add_setter('dm_particles', 'set_velocity')
-        object.add_getter('dm_particles', 'get_velocity')
+        handler.define_set('dm_particles', 'id')
+        handler.set_new('dm_particles', 'new_dm_particle')
+        handler.set_delete('dm_particles', 'delete_particle')
+        handler.add_setter('dm_particles', 'set_state')
+        handler.add_getter('dm_particles', 'get_state')
+        handler.add_setter('dm_particles', 'set_mass')
+        handler.add_getter('dm_particles', 'get_mass', names = ('mass',))
+        handler.add_setter('dm_particles', 'set_position')
+        handler.add_getter('dm_particles', 'get_position')
+        handler.add_setter('dm_particles', 'set_radius')
+        handler.add_getter('dm_particles', 'get_radius')
+        handler.add_setter('dm_particles', 'set_velocity')
+        handler.add_getter('dm_particles', 'get_velocity')
         
-        object.define_set('gas_particles', 'id')
-        object.set_new('gas_particles', 'new_sph_particle')
-        object.set_delete('gas_particles', 'delete_particle')
-        object.add_setter('gas_particles', 'set_state_sph')
-        object.add_getter('gas_particles', 'get_state_sph')
-        object.add_setter('gas_particles', 'set_mass')
-        object.add_getter('gas_particles', 'get_mass', names = ('mass',))
-        object.add_getter('gas_particles', 'get_radius')
-        object.add_setter('gas_particles', 'set_radius')
-        object.add_setter('gas_particles', 'set_position')
-        object.add_getter('gas_particles', 'get_position')
-        object.add_setter('gas_particles', 'set_velocity')
-        object.add_getter('gas_particles', 'get_velocity')
-        object.add_setter('gas_particles', 'set_internal_energy')
-        object.add_getter('gas_particles', 'get_internal_energy')
-        object.add_getter('gas_particles', 'get_dinternal_energy_dt')
-        object.add_setter('gas_particles', 'set_smoothing_length')
-        object.add_getter('gas_particles', 'get_smoothing_length')
-        object.add_getter('gas_particles', 'get_density', names = ('rho',))
-        object.add_getter('gas_particles', 'get_density', names = ('density',))
-        object.add_getter('gas_particles', 'get_pressure')
+        handler.define_set('gas_particles', 'id')
+        handler.set_new('gas_particles', 'new_sph_particle')
+        handler.set_delete('gas_particles', 'delete_particle')
+        handler.add_setter('gas_particles', 'set_state_sph')
+        handler.add_getter('gas_particles', 'get_state_sph')
+        handler.add_setter('gas_particles', 'set_mass')
+        handler.add_getter('gas_particles', 'get_mass', names = ('mass',))
+        handler.add_getter('gas_particles', 'get_radius')
+        handler.add_setter('gas_particles', 'set_radius')
+        handler.add_setter('gas_particles', 'set_position')
+        handler.add_getter('gas_particles', 'get_position')
+        handler.add_setter('gas_particles', 'set_velocity')
+        handler.add_getter('gas_particles', 'get_velocity')
+        handler.add_setter('gas_particles', 'set_internal_energy')
+        handler.add_getter('gas_particles', 'get_internal_energy')
+        handler.add_getter('gas_particles', 'get_dinternal_energy_dt')
+        handler.add_setter('gas_particles', 'set_smoothing_length')
+        handler.add_getter('gas_particles', 'get_smoothing_length')
+        handler.add_getter('gas_particles', 'get_density', names = ('rho',))
+        handler.add_getter('gas_particles', 'get_density', names = ('density',))
+        handler.add_getter('gas_particles', 'get_pressure')
         
-        object.define_set('star_particles', 'id')
-        object.set_new('star_particles', 'new_star_particle')
-        object.set_delete('star_particles', 'delete_particle')
-        object.add_setter('star_particles', 'set_state_star')
-        object.add_getter('star_particles', 'get_state_star')
-        object.add_setter('star_particles', 'set_mass')
-        object.add_getter('star_particles', 'get_mass', names = ('mass',))
-        object.add_setter('star_particles', 'set_position')
-        object.add_getter('star_particles', 'get_position')
-        object.add_setter('star_particles', 'set_radius')
-        object.add_getter('star_particles', 'get_radius')
-        object.add_setter('star_particles', 'set_velocity')
-        object.add_getter('star_particles', 'get_velocity')
-        object.add_setter('star_particles', 'set_star_tform')
-        object.add_getter('star_particles', 'get_star_tform')
+        handler.define_set('star_particles', 'id')
+        handler.set_new('star_particles', 'new_star_particle')
+        handler.set_delete('star_particles', 'delete_particle')
+        handler.add_setter('star_particles', 'set_state_star')
+        handler.add_getter('star_particles', 'get_state_star')
+        handler.add_setter('star_particles', 'set_mass')
+        handler.add_getter('star_particles', 'get_mass', names = ('mass',))
+        handler.add_setter('star_particles', 'set_position')
+        handler.add_getter('star_particles', 'get_position')
+        handler.add_setter('star_particles', 'set_radius')
+        handler.add_getter('star_particles', 'get_radius')
+        handler.add_setter('star_particles', 'set_velocity')
+        handler.add_getter('star_particles', 'get_velocity')
+        handler.add_setter('star_particles', 'set_star_tform')
+        handler.add_getter('star_particles', 'get_star_tform')
         
-        self.stopping_conditions.define_particle_set(object, 'particles')
+        self.stopping_conditions.define_particle_set(handler, 'particles')
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
-        object.add_method(
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
+        handler.add_method(
             "set_velocity",
             (
-                object.INDEX,
+                handler.INDEX,
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
             ),
             (
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_velocity",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "new_dm_particle",
             (
                 nbody_system.mass,
@@ -2449,11 +2450,11 @@ class Fi(GravitationalDynamics, GravityFieldCode):
                 nbody_system.length,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "new_sph_particle",
             (
                 nbody_system.mass,
@@ -2467,14 +2468,14 @@ class Fi(GravitationalDynamics, GravityFieldCode):
                 nbody_system.length,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_state_sph",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 nbody_system.mass,
@@ -2486,13 +2487,13 @@ class Fi(GravitationalDynamics, GravityFieldCode):
                 nbody_system.speed,
                 nbody_system.specific_energy,
                 nbody_system.length,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_state_sph",
             (
-                object.INDEX,
+                handler.INDEX,
                 nbody_system.mass,
                 nbody_system.length,
                 nbody_system.length,
@@ -2504,61 +2505,61 @@ class Fi(GravitationalDynamics, GravityFieldCode):
                 nbody_system.length,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_internal_energy",
             (
-                object.INDEX,
+                handler.INDEX,
                 nbody_system.specific_energy,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_internal_energy",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 nbody_system.specific_energy,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_dinternal_energy_dt",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 nbody_system.specific_energy/nbody_system.time,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_smoothing_length",
-            (object.INDEX, nbody_system.length),
-            (object.ERROR_CODE,)
+            (handler.INDEX, nbody_system.length),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_smoothing_length",
-            (object.INDEX,),
-            (nbody_system.length, object.ERROR_CODE)
+            (handler.INDEX,),
+            (nbody_system.length, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "get_density",
-            (object.INDEX,),
-            (nbody_system.density, object.ERROR_CODE)
+            (handler.INDEX,),
+            (nbody_system.density, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             "get_pressure",
-            (object.INDEX,),
-            (nbody_system.pressure, object.ERROR_CODE)
+            (handler.INDEX,),
+            (nbody_system.pressure, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             "new_star_particle",
             (
                 nbody_system.mass,
@@ -2572,14 +2573,14 @@ class Fi(GravitationalDynamics, GravityFieldCode):
                 nbody_system.length,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE,
+                handler.INDEX,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_state_star",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 nbody_system.mass,
@@ -2591,13 +2592,13 @@ class Fi(GravitationalDynamics, GravityFieldCode):
                 nbody_system.speed,
                 nbody_system.time,
                 nbody_system.length,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_state_star",
             (
-                object.INDEX,
+                handler.INDEX,
                 nbody_system.mass,
                 nbody_system.length,
                 nbody_system.length,
@@ -2609,671 +2610,671 @@ class Fi(GravitationalDynamics, GravityFieldCode):
                 nbody_system.length,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "set_star_tform",
             (
-                object.INDEX,
+                handler.INDEX,
                 nbody_system.time,
             ),
             (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_star_tform",
             (
-                object.INDEX,
+                handler.INDEX,
             ),
             (
                 nbody_system.time,
-                object.ERROR_CODE
+                handler.ERROR_CODE
             )
         )
         
-        object.add_method(
+        handler.add_method(
             'get_hydro_state_at_point',
             (nbody_system.length, nbody_system.length, nbody_system.length,
                 nbody_system.speed, nbody_system.speed, nbody_system.speed),
             (nbody_system.density, nbody_system.momentum_density, nbody_system.momentum_density, 
-                nbody_system.momentum_density, nbody_system.energy_density, object.ERROR_CODE)
+                nbody_system.momentum_density, nbody_system.energy_density, handler.ERROR_CODE)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_eps2",
             (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_dtime",
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_dtime",
             (nbody_system.time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_firstsnap",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_firstsnap",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_stepout",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_stepout",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_steplog",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_steplog",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_max_tbin",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_max_tbin",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_minppbin",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_minppbin",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_targetnn",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_targetnn",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_verbosity",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_verbosity",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_nsmooth",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_nsmooth",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_pboxsize",
             (),
-            (nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_pboxsize",
             (nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_unitm_in_msun",
             (),
-            (units.MSun, object.ERROR_CODE,)
+            (units.MSun, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_unitm_in_msun",
             (units.MSun, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_unitl_in_kpc",
             (),
-            (units.kpc, object.ERROR_CODE,)
+            (units.kpc, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_unitl_in_kpc",
             (units.kpc, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_tstepcrit",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_tstepcrit",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_tstpcr2",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_tstpcr2",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_freev",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_freev",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_freea",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_freea",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_freevexp",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_freevexp",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_freeaexp",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_freeaexp",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_bh_tol",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_bh_tol",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_gdgtol",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_gdgtol",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_nn_tol",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_nn_tol",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_epsgas",
             (),
-            (nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_epsgas",
             (nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_gamma",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_gamma",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_alpha",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_alpha",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_beta",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_beta",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_epssph",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_epssph",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_courant",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_courant",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_removgas",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_removgas",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_consthsm",
             (),
-            (nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_consthsm",
             (nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_nsmtol",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_nsmtol",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_graineff",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_graineff",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_crionrate",
             (),
-            (1.8e-17 * units.s**-1, object.ERROR_CODE,)
+            (1.8e-17 * units.s**-1, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_crionrate",
             (1.8e-17 * units.s**-1, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_heat_par1",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_heat_par1",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_heat_par2",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_heat_par2",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_cool_par",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_cool_par",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_optdepth",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_optdepth",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_tcollfac",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_tcollfac",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_masscrit",
             (),
-            (units.MSun, object.ERROR_CODE,)
+            (units.MSun, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_masscrit",
             (units.MSun, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_sfeff",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_sfeff",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_tbubble",
             (),
-            (units.Myr, object.ERROR_CODE,)
+            (units.Myr, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_tbubble",
             (units.Myr, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_sne_eff",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_sne_eff",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_tsnbeg",
             (),
-            (units.Myr, object.ERROR_CODE,)
+            (units.Myr, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_tsnbeg",
             (units.Myr, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_rhomax",
             (),
-            (nbody_system.density, object.ERROR_CODE,)
+            (nbody_system.density, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_rhomax",
             (nbody_system.density, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_halofile",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_halofile",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_feedback",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_feedback",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_sfmode",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_sfmode",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_hupdatemethod",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_hupdatemethod",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_sph_visc",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_sph_visc",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_fi_data_directory",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_fi_data_directory",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_thermal_energy",
             (),
-            (nbody_system.energy, object.ERROR_CODE,)
+            (nbody_system.energy, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_total_energy",
             (),
-            (nbody_system.energy, object.ERROR_CODE,)
+            (nbody_system.energy, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_number_of_sph_particles_removed",
             (
             ),
             (
-                object.NO_UNIT,
-                object.ERROR_CODE
+                handler.NO_UNIT,
+                handler.ERROR_CODE
             )
         )
-        object.add_method(
+        handler.add_method(
             "get_id_of_removed_sph_particle",
             (
-                object.NO_UNIT,
+                handler.NO_UNIT,
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE
+                handler.INDEX,
+                handler.ERROR_CODE
             )
         )
 
-        self.stopping_conditions.define_methods(object)       
+        self.stopping_conditions.define_methods(handler)       
         
     def update_particle_set(self):
         """
@@ -3301,10 +3302,10 @@ class FiViewer(Fi):
     def __init__(self, convert_nbody = None, mode = 'normal', **options):
         Fi.__init__(self, convert_nbody = convert_nbody, mode = mode, use_gl = True , **options)
 
-    def define_parameters(self, object):
-        Fi.define_parameters(self,object)
+    def define_parameters(self, handler):
+        Fi.define_parameters(self,handler)
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_viewpoint",
             "set_viewpoint",
             "viewpoint",
@@ -3312,7 +3313,7 @@ class FiViewer(Fi):
             [0,1,0] | nbody_system.length, is_vector=True
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_image_target",
             "set_image_target",
             "image_target",
@@ -3320,7 +3321,7 @@ class FiViewer(Fi):
             [0,0,0] | nbody_system.length, is_vector=True
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_upvector",
             None,
             "upvector",
@@ -3328,7 +3329,7 @@ class FiViewer(Fi):
             [0,0,1] , is_vector=True
         )        
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_image_angle", 
             "set_image_angle",
             "image_angle", 
@@ -3336,7 +3337,7 @@ class FiViewer(Fi):
             default_value = 45 | units.deg
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_image_ratio", 
             None,
             "image_ratio", 
@@ -3345,19 +3346,19 @@ class FiViewer(Fi):
         )        
         
         
-    def define_state(self, object):
-        object.set_initial_state('UNINITIALIZED')
-        object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
-        object.add_transition('!UNINITIALIZED!STOPPED', 'END', 'cleanup_code')
-        object.add_transition('END', 'STOPPED', 'stop', False)
-        object.add_method('STOPPED', 'stop')
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_method('EDIT', 'new_dm_particle')
-        object.add_method('EDIT', 'new_sph_particle')
-        object.add_method('EDIT', 'new_star_particle')
-        object.add_method('UPDATE', 'delete_particle')
-        object.add_transition('EDIT', 'UPDATE', 'delete_particle')
-        object.add_transition('UPDATE', 'EDIT', 'trigger_partremoval')
+    def define_state(self, handler):
+        handler.set_initial_state('UNINITIALIZED')
+        handler.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
+        handler.add_transition('!UNINITIALIZED!STOPPED', 'END', 'cleanup_code')
+        handler.add_transition('END', 'STOPPED', 'stop', False)
+        handler.add_method('STOPPED', 'stop')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_method('EDIT', 'new_dm_particle')
+        handler.add_method('EDIT', 'new_sph_particle')
+        handler.add_method('EDIT', 'new_star_particle')
+        handler.add_method('UPDATE', 'delete_particle')
+        handler.add_transition('EDIT', 'UPDATE', 'delete_particle')
+        handler.add_transition('UPDATE', 'EDIT', 'trigger_partremoval')
                   
 class FiMapInterface(CodeInterface):   
 
@@ -3703,126 +3704,126 @@ class FiMap(CommonCode):
         
         CommonCode.__init__(self,  FiMapInterface(**options), **options)
     
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
 
-    def define_methods(self, object):
-        object.add_method(
+    def define_methods(self, handler):
+        handler.add_method(
              'new_particle', 
               (
                 generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length,
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 generic_unit_system.length,
                 generic_unit_system.length**2,
-                object.NO_UNIT,                
+                handler.NO_UNIT,                
               ), 
               (
-                object.INDEX,                    
-                object.ERROR_CODE,
+                handler.INDEX,                    
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'set_state', 
               (
-                object.INDEX,
+                handler.INDEX,
                 generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length,
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 generic_unit_system.length,
                 generic_unit_system.length**2,
               ), 
               (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'set_weight', 
               (
-                object.INDEX,                    
-                object.NO_UNIT,
+                handler.INDEX,                    
+                handler.NO_UNIT,
               ), 
               (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'set_opacity_area', 
               (
-                object.INDEX,                    
+                handler.INDEX,                    
                 generic_unit_system.length**2,
               ), 
               (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'get_state', 
               (
-                object.INDEX,
+                handler.INDEX,
               ), 
               (
                 generic_unit_system.length,
                 generic_unit_system.length,
                 generic_unit_system.length,
-                object.NO_UNIT,
+                handler.NO_UNIT,
                 generic_unit_system.length,
                 generic_unit_system.length**2,
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'delete_particle', 
               (
-                object.INDEX,                    
+                handler.INDEX,                    
               ), 
               (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
         
-        object.add_method(
+        handler.add_method(
              'set_minimum_distance', 
               (
                 generic_unit_system.length,                    
               ), 
               (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'get_minimum_distance', 
               (
               ), 
               (
                 generic_unit_system.length,                    
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
 
-        object.add_method(
+        handler.add_method(
              'set_image_width', 
               (
                 generic_unit_system.length,                    
               ), 
               (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'get_image_width', 
               (
               ), 
               (
                 generic_unit_system.length,                    
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
 
-        object.add_method(
+        handler.add_method(
              'set_image_target', 
               (
                 generic_unit_system.length,                    
@@ -3830,10 +3831,10 @@ class FiMap(CommonCode):
                 generic_unit_system.length,                    
               ), 
               (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'get_image_target', 
               (
               ), 
@@ -3841,11 +3842,11 @@ class FiMap(CommonCode):
                 generic_unit_system.length,                    
                 generic_unit_system.length,                    
                 generic_unit_system.length,                    
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
 
-        object.add_method(
+        handler.add_method(
              'set_viewpoint', 
               (
                 generic_unit_system.length,                    
@@ -3853,10 +3854,10 @@ class FiMap(CommonCode):
                 generic_unit_system.length,                    
               ), 
               (
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
-        object.add_method(
+        handler.add_method(
              'get_viewpoint', 
               (
               ), 
@@ -3864,53 +3865,53 @@ class FiMap(CommonCode):
                 generic_unit_system.length,                    
                 generic_unit_system.length,                    
                 generic_unit_system.length,                    
-                object.ERROR_CODE,
+                handler.ERROR_CODE,
               )
         )
 
-        object.add_method(
+        handler.add_method(
              'get_image', 
               (
-                object.INDEX,
-                object.INDEX,
+                handler.INDEX,
+                handler.INDEX,
               ), 
               (
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
               )
         )
 
-        object.add_method(
+        handler.add_method(
              'get_opdepth_map', 
               (
-                object.INDEX,
-                object.INDEX,
+                handler.INDEX,
+                handler.INDEX,
               ), 
               (
-                object.NO_UNIT,
-                object.ERROR_CODE,
+                handler.NO_UNIT,
+                handler.ERROR_CODE,
               )
         )
 
 
-    def define_particle_sets(self, object):
-        object.define_grid('image')
-        object.set_grid_range('image', 'get_index_range_inclusive')    
-        object.add_getter('image', 'get_image')
-        object.add_getter('image', 'get_opdepth_map')
+    def define_particle_sets(self, handler):
+        handler.define_grid('image')
+        handler.set_grid_range('image', 'get_index_range_inclusive')    
+        handler.add_getter('image', 'get_image')
+        handler.add_getter('image', 'get_opdepth_map')
 
-        object.define_set('particles', 'id')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_setter('particles', 'set_state')
-        object.add_setter('particles', 'set_weight')
-        object.add_setter('particles', 'set_opacity_area')
-        object.add_getter('particles', 'get_state')
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_state')
+        handler.add_setter('particles', 'set_weight')
+        handler.add_setter('particles', 'set_opacity_area')
+        handler.add_getter('particles', 'get_state')
 
 
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_projection_mode", 
             "set_projection_mode",
             "projection_mode", 
@@ -3919,7 +3920,7 @@ class FiMap(CommonCode):
         )
 
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_random_seed", 
             "set_random_seed",
             "random_seed", 
@@ -3927,7 +3928,7 @@ class FiMap(CommonCode):
             default_value = 45678910
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_minimum_distance", 
             "set_minimum_distance",
             "minimum_distance", 
@@ -3935,7 +3936,7 @@ class FiMap(CommonCode):
             default_value = 0.001 | generic_unit_system.length
         )
 
-        object.add_boolean_parameter(
+        handler.add_boolean_parameter(
             "get_extinction_flag", 
             "set_extinction_flag",
             "extinction_flag", 
@@ -3943,7 +3944,7 @@ class FiMap(CommonCode):
             default_value = False
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_image_angle", 
             "set_image_angle",
             "image_angle", 
@@ -3951,7 +3952,7 @@ class FiMap(CommonCode):
             default_value = 45 | units.deg
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_image_width", 
             "set_image_width",
             "image_width", 
@@ -3960,129 +3961,129 @@ class FiMap(CommonCode):
         )
 
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_image_pixel_size", 
             "nx",
             "nx", 
             "image pixel size (horizontal)",
             640,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_image_pixel_size", 
             "ny",
             "ny", 
             "image pixel size (vertical)",
             480,
         )
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "image_size",
             "image pixel size",
             ("nx", "ny")
         )
 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_image_target", 
             "x",
             "target_x", 
             "x coordinate of the point which the image centers on",
             0 | generic_unit_system.length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_image_target", 
             "y",
             "target_y", 
             "y coordinate of the point which the image centers on",
             0 | generic_unit_system.length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_image_target", 
             "z",
             "target_z", 
             "z coordinate of the point which the image centers on",
             0 | generic_unit_system.length,
         )
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "image_target",
             "point which the image centers on",
             ("target_x", "target_y","target_z")
         )
 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_viewpoint", 
             "x",
             "viewpoint_x", 
             "x coordinate of the view point (camera location)",
             0 | generic_unit_system.length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_viewpoint", 
             "y",
             "viewpoint_y", 
             "y coordinate of the view point (camera location)",
             1. | generic_unit_system.length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_viewpoint", 
             "z",
             "viewpoint_z", 
             "z coordinate of the view point (camera location)",
             0 | generic_unit_system.length,
         )
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "viewpoint",
             "viewpoint (location of the camera)",
             ("viewpoint_x", "viewpoint_y","viewpoint_z")
         )
 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_upvector", 
             "x",
             "upvector_x", 
             "x component of the up-direction of the image",
             0,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_upvector", 
             "y",
             "upvector_y", 
             "y component of the up-direction of the image",
             0,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_upvector", 
             "z",
             "upvector_z", 
             "z component of the up-direction of the image",
             1,
         )
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "upvector",
             "direction of the up-vector",
             ("upvector_x", "upvector_y","upvector_z")
         )
 
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_projection_direction", 
             "x",
             "projection_direction_x", 
             "x component of projection direction (for parallel projections)",
             0,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_projection_direction", 
             "y",
             "projection_direction_y", 
             "y component of projection direction (for parallel projections)",
             -1,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_projection_direction", 
             "z",
             "projection_direction_z", 
             "z component of projection direction (for parallel projections)",
             0,
         )
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "projection_direction",
             "direction of projection (for parallel projection)",
             ("projection_direction_x", "projection_direction_y","projection_direction_z")
@@ -4102,30 +4103,30 @@ class FiMap(CommonCode):
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()
               
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)   
-        #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+    def define_state(self, handler): 
+        CommonCode.define_state(self, handler)   
+        #handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
-        object.add_transition('INITIALIZED','PREPROJ','commit_parameters')
-        object.add_transition('PREPROJ','PROJ','init_map')
-        object.add_transition('PROJ','ERASE','erase_map')
-        object.add_transition('ERASE','IMAGE','generate_projection')
-        object.add_transition('IMAGE','PROJ','new_particle',False)        
-        object.add_transition('IMAGE','PROJ','delete_particle',False)        
-        object.add_transition('IMAGE','PROJ','set_state',False)
-        object.add_transition('IMAGE','PROJ','set_weight',False)
-        object.add_transition('IMAGE','PROJ','set_opacity_area',False)
-        object.add_transition('PROJ','INITIALIZED','reset_map')
-        object.add_transition('IMAGE','INITIALIZED','reset_map')
-        object.add_method('IMAGE','get_image')
-        object.add_method('IMAGE','get_opdepth_map')
-        object.add_method('PROJ', 'new_particle')
-        object.add_method('PROJ', 'delete_particle')
-        object.add_method('PROJ', 'set_state')
-        object.add_method('PROJ', 'set_weight')
-        object.add_method('PROJ', 'set_opacity_area')
+        handler.add_transition('INITIALIZED','PREPROJ','commit_parameters')
+        handler.add_transition('PREPROJ','PROJ','init_map')
+        handler.add_transition('PROJ','ERASE','erase_map')
+        handler.add_transition('ERASE','IMAGE','generate_projection')
+        handler.add_transition('IMAGE','PROJ','new_particle',False)        
+        handler.add_transition('IMAGE','PROJ','delete_particle',False)        
+        handler.add_transition('IMAGE','PROJ','set_state',False)
+        handler.add_transition('IMAGE','PROJ','set_weight',False)
+        handler.add_transition('IMAGE','PROJ','set_opacity_area',False)
+        handler.add_transition('PROJ','INITIALIZED','reset_map')
+        handler.add_transition('IMAGE','INITIALIZED','reset_map')
+        handler.add_method('IMAGE','get_image')
+        handler.add_method('IMAGE','get_opdepth_map')
+        handler.add_method('PROJ', 'new_particle')
+        handler.add_method('PROJ', 'delete_particle')
+        handler.add_method('PROJ', 'set_state')
+        handler.add_method('PROJ', 'set_weight')
+        handler.add_method('PROJ', 'set_opacity_area')
 
-        object.add_method('INITIALIZED', 'before_set_parameter')  
-        object.add_method('PROJ', 'before_get_parameter')
-        object.add_method('PROJ', 'get_image_pixel_size')
-        object.add_method('IMAGE', 'get_image_pixel_size')
+        handler.add_method('INITIALIZED', 'before_set_parameter')  
+        handler.add_method('PROJ', 'before_get_parameter')
+        handler.add_method('PROJ', 'get_image_pixel_size')
+        handler.add_method('IMAGE', 'get_image_pixel_size')

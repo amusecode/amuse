@@ -689,25 +689,25 @@ class Athena(CommonCode):
         self.stopping_conditions = StoppingConditions(self)
         CommonCode.__init__(self,  AthenaInterface(**options), **options)
         
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if self.unit_converter is None:
             return
         
-        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+        handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
 
-    def define_properties(self, object):
-        object.add_property('get_time', public_name = "model_time")
+    def define_properties(self, handler):
+        handler.add_property('get_time', public_name = "model_time")
         
-    def define_methods(self, object):
-        object.add_method(
+    def define_methods(self, handler):
+        handler.add_method(
             'evolve_model',
             (time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (length, length, length, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (length, length, length, handler.ERROR_CODE,)
         )
         
         density = mass / (length**3)
@@ -716,271 +716,271 @@ class Athena(CommonCode):
         potential_energy =  length ** 2 / time ** 2
         magnetic_field = mass / current / time ** 2
         
-        object.add_method(
+        handler.add_method(
             'set_grid_state',
-            (object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX,
             density, momentum, momentum, momentum, energy,
-            object.INDEX),
-            (object.ERROR_CODE,)
+            handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_magnetic_field',
-            (object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX,
              magnetic_field, magnetic_field, magnetic_field,
-            object.INDEX),
-            (object.ERROR_CODE,)
+            handler.INDEX),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_grid_state',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (density, momentum, momentum, momentum, energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_grid_energy_density',
-            (object.INDEX, object.INDEX, object.INDEX,
-            energy, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX,
+            energy, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_grid_energy_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             ( energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_grid_density',
-            (object.INDEX, object.INDEX, object.INDEX,
-            density, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX,
+            density, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_grid_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (density,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_grid_scalar',
-            (object.INDEX, object.INDEX, object.INDEX,
-            object.NO_UNIT, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX,
+            handler.NO_UNIT, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_grid_scalar',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (object.NO_UNIT,
-            object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (handler.NO_UNIT,
+            handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_grid_momentum_density',
-            (object.INDEX, object.INDEX, object.INDEX,
-            momentum, momentum, momentum, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX,
+            momentum, momentum, momentum, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_grid_momentum_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             ( momentum, momentum, momentum, 
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             'get_grid_magnetic_field',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             ( magnetic_field, magnetic_field, magnetic_field,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             'set_potential',
-            (object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX,
             potential_energy),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_potential',
-            (object.INDEX, object.INDEX, object.INDEX,),
+            (handler.INDEX, handler.INDEX, handler.INDEX,),
             (potential_energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             'get_grid_gravitational_potential',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX,),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,),
             (potential_energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
          
-        object.add_method(
+        handler.add_method(
             'get_interpolated_gravitational_potential',
             (length, length, length),
             (potential_energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_gravitational_acceleration',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX,),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,),
             (acceleration,acceleration,acceleration,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_acceleration',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX,),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX,),
             (acceleration,acceleration,acceleration,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_grid_acceleration',
-            (object.INDEX, object.INDEX, object.INDEX,
-            acceleration,acceleration,acceleration, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX,
+            acceleration,acceleration,acceleration, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_gravity_at_point',
             (length, length, length, length),
-            (acceleration, acceleration, acceleration, object.ERROR_CODE)
+            (acceleration, acceleration, acceleration, handler.ERROR_CODE)
         )
 
-        object.add_method(
+        handler.add_method(
             'get_potential_at_point',
             (length, length, length, length),
-            (potential, object.ERROR_CODE)
+            (potential, handler.ERROR_CODE)
         )
     
-        object.add_method(
+        handler.add_method(
             "get_isocsound",
             (),
-            (length / time, object.ERROR_CODE,)
+            (length / time, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_isocsound",
             (length / time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_timestep",
             (),
-            (time, object.ERROR_CODE,)
+            (time, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_timestep",
             (time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "get_gamma",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_gamma",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "get_courant_friedrichs_lewy_number",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_courant_friedrichs_lewy_number",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             'get_time',
             (),
-            (time, object.ERROR_CODE,)
+            (time, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             'set_four_pi_G',
             ( length**3 / (mass * time**2)),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_four_pi_G',
             (),
-            ( (length**3) / (mass * (time**2)), object.ERROR_CODE,)
+            ( (length**3) / (mass * (time**2)), handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_grav_mean_rho',
             (  mass / length**3, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_grav_mean_rho',
             (),
-            (mass / length**3, object.ERROR_CODE,)
+            (mass / length**3, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             'setup_mesh',
-            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, length, length, length,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, length, length, length,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_boundary',
-            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_boundary_state',
-            (object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX,
             density, momentum, momentum, momentum, energy,
-            object.INDEX, object.INDEX),
-            (object.ERROR_CODE,)
+            handler.INDEX, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_boundary_state',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (density, momentum, momentum, momentum, energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_boundary_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (length, length, length, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (length, length, length, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_boundary_index_range_inclusive',
-            (object.INDEX, object.INDEX),
-            (object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX),
+            (handler.NO_UNIT, handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_hydro_state_at_point',
             (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
                 generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
             (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
-                generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
+                generic_unit_system.momentum_density, generic_unit_system.energy_density, handler.ERROR_CODE)
         )
-        object.add_method(
+        handler.add_method(
             'get_hydro_state_for_cell',
             (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
                 generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
                 generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
             (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
-                generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
+                generic_unit_system.momentum_density, generic_unit_system.energy_density, handler.ERROR_CODE)
         )
         
         
         
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
     
     
     def specify_grid(self, definition, index_of_grid = 1):
@@ -1092,17 +1092,17 @@ class Athena(CommonCode):
                 self._create_new_grid(self.specify_mangnetic_filed_grid, index_of_grid = x),
             )
 
-    def define_particle_sets(self, object):
-        object.define_grid('potential_grid')
-        object.set_grid_range('potential_grid', 'get_index_range_for_potential')
-        object.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))
-        object.add_getter('potential_grid', 'get_potential', names=('potential',))
-        object.add_setter('potential_grid', 'set_potential', names=('potential', ))
-        object.define_extra_keywords('potential_grid', {'index_of_grid':1})
+    def define_particle_sets(self, handler):
+        handler.define_grid('potential_grid')
+        handler.set_grid_range('potential_grid', 'get_index_range_for_potential')
+        handler.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))
+        handler.add_getter('potential_grid', 'get_potential', names=('potential',))
+        handler.add_setter('potential_grid', 'set_potential', names=('potential', ))
+        handler.define_extra_keywords('potential_grid', {'index_of_grid':1})
         
         
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_isocsound", 
             "set_isocsound",
             "isothermal_sound_speed", 
@@ -1111,7 +1111,7 @@ class Athena(CommonCode):
             must_set_before_get = True
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gamma", 
             "set_gamma",
             "gamma", 
@@ -1120,7 +1120,7 @@ class Athena(CommonCode):
             must_set_before_get = True
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_four_pi_G", 
             "set_four_pi_G",
             "four_pi_G", 
@@ -1129,7 +1129,7 @@ class Athena(CommonCode):
             must_set_before_get = True
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_grav_mean_rho", 
             "set_grav_mean_rho",
             "gravity_mean_rho", 
@@ -1139,7 +1139,7 @@ class Athena(CommonCode):
         )
         
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_courant_friedrichs_lewy_number", 
             "set_courant_friedrichs_lewy_number",
             "courant_number", 
@@ -1149,7 +1149,7 @@ class Athena(CommonCode):
         )
         
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_evolve_to_exact_time", 
             "set_evolve_to_exact_time",
             "must_evolve_to_exact_time", 
@@ -1157,7 +1157,7 @@ class Athena(CommonCode):
             default_value = True
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshx",
             "nx", 
@@ -1166,7 +1166,7 @@ class Athena(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshy",
             "ny", 
@@ -1175,7 +1175,7 @@ class Athena(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshz",
             "nz", 
@@ -1183,21 +1183,21 @@ class Athena(CommonCode):
             10,
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "xlength",
             "length_x", 
             "length of model in the x direction", 
             10 | length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "ylength",
             "length_y", 
             "length of model in the x direction", 
             10 | length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "zlength",
             "length_z", 
@@ -1205,33 +1205,33 @@ class Athena(CommonCode):
             10 | length,
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "mesh_size",
             "number of cells in the x, y and z directions",
             ("nx", "ny", "nz")
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "mesh_length",
             "length of the model in the x, y and z directions",
             ("length_x", "length_y", "length_z")
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_parallel_decomposition", 
             "nx",
             "nproc_x", 
             "number of processors for the x direction",
             0,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_parallel_decomposition", 
             "ny",
             "nproc_y", 
             "number of processors for the y direction",
             0,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_parallel_decomposition", 
             "nz",
             "nproc_z", 
@@ -1239,13 +1239,13 @@ class Athena(CommonCode):
             0,
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "parallel_decomposition",
             "number of processors for each dimensions",
             ("nproc_x", "nproc_y", "nproc_z")
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "xbound1",
             "xbound1", 
@@ -1254,7 +1254,7 @@ class Athena(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "xbound2",
             "xbound2", 
@@ -1262,7 +1262,7 @@ class Athena(CommonCode):
             "reflective",
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "ybound1",
             "ybound1", 
@@ -1271,7 +1271,7 @@ class Athena(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "ybound2",
             "ybound2", 
@@ -1279,7 +1279,7 @@ class Athena(CommonCode):
             "reflective",
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "zbound1",
             "zbound1", 
@@ -1288,7 +1288,7 @@ class Athena(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "zbound2",
             "zbound2", 
@@ -1298,54 +1298,54 @@ class Athena(CommonCode):
         
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "x_boundary_conditions",
             "boundary conditions for the X directorion",
             ("xbound1", "xbound2")
         )
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "y_boundary_conditions",
             "boundary conditions for the Y directorion",
             ("ybound1", "ybound2")
         )
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "z_boundary_conditions",
             "boundary conditions for the Z directorion",
             ("zbound1", "zbound2")
         )
         
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
 
     def commit_parameters(self):
         self.parameters.send_not_set_parameters_to_code()
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
     
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)       
-        #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+    def define_state(self, handler): 
+        CommonCode.define_state(self, handler)       
+        #handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
         
-        object.add_transition('EDIT', 'RUN', 'initialize_grid')
-        object.add_method('RUN', 'evolve_model')
-        object.add_method('RUN', 'get_hydro_state_at_point')
+        handler.add_transition('EDIT', 'RUN', 'initialize_grid')
+        handler.add_method('RUN', 'evolve_model')
+        handler.add_method('RUN', 'get_hydro_state_at_point')
         
         for state in ['EDIT', 'RUN']:
             for methodname in [
@@ -1370,7 +1370,7 @@ class Athena(CommonCode):
                     'get_boundary_position_if_index',
                     'get_boundary_index_range_inclusive'
                 ]:
-                object.add_method(state, methodname)
+                handler.add_method(state, methodname)
                 
-        self.stopping_conditions.define_state(object)
+        self.stopping_conditions.define_state(handler)
 

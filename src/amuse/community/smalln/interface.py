@@ -322,8 +322,8 @@ class SmallN(GravitationalDynamics):
                                        convert_nbody,
                                        **keyword_arguments)
 
-    def define_parameters(self, object):
-        self.stopping_conditions.define_parameters(object)
+    def define_parameters(self, handler):
+        self.stopping_conditions.define_parameters(handler)
         
         # Set/get parameters specific to the module, not part of the
         # standard interface.  Accessors used here must be defined
@@ -332,7 +332,7 @@ class SmallN(GravitationalDynamics):
         #
         #     SmallN.parameters.timestep_parameter = xxx
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eta",                   # getter name in interface.cc
             "set_eta",                   # setter name in interface.cc
             "timestep_parameter",        # python parameter name
@@ -340,7 +340,7 @@ class SmallN(GravitationalDynamics):
             default_value = 0.14
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gamma",                 # getter name in interface.cc
             "set_gamma",                 # setter name in interface.cc
             "unperturbed_threshold",     # python parameter name
@@ -348,7 +348,7 @@ class SmallN(GravitationalDynamics):
             default_value = 1.e-6
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_allow_full_unperturbed",  # getter name in interface.cc
             "set_allow_full_unperturbed",  # setter name in interface.cc
             "allow_full_unperturbed",      # python parameter name
@@ -356,7 +356,7 @@ class SmallN(GravitationalDynamics):
             default_value = 1
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_outfile", 		   # getter name in interface.cc
             "set_outfile", 		   # setter name in interface.cc
             "outfile",      		   # python parameter name
@@ -364,7 +364,7 @@ class SmallN(GravitationalDynamics):
             default_value = ""
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_cm_index",		   # getter name in interface.cc
             "set_cm_index",		   # setter name in interface.cc
             "cm_index",			   # python parameter name
@@ -372,7 +372,7 @@ class SmallN(GravitationalDynamics):
             default_value = 100000
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -381,18 +381,18 @@ class SmallN(GravitationalDynamics):
         )
         
         
-    def define_particle_sets(self, object):
-        GravitationalDynamics.define_particle_sets(self, object)
-        self.stopping_conditions.define_particle_set(object)
-        object.add_getter("particles", 'get_children_of_particle')
+    def define_particle_sets(self, handler):
+        GravitationalDynamics.define_particle_sets(self, handler)
+        self.stopping_conditions.define_particle_set(handler)
+        handler.add_getter("particles", 'get_children_of_particle')
 
-    def define_methods(self, object):
-        self.stopping_conditions.define_methods(object)
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        self.stopping_conditions.define_methods(handler)
+        GravitationalDynamics.define_methods(self, handler)
 
         # Turn interface functions into methods.
 
-        object.add_method("new_particle",
+        handler.add_method("new_particle",
             (
                 nbody_system.mass,
                 nbody_system.length,
@@ -402,11 +402,11 @@ class SmallN(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.length,
-                object.NO_UNIT
+                handler.NO_UNIT
             ),
             (
-                object.INDEX,
-                object.ERROR_CODE
+                handler.INDEX,
+                handler.ERROR_CODE
             )
         )
 
@@ -439,8 +439,8 @@ class SmallN(GravitationalDynamics):
             print "dir(incode_storage)=", dir(incode_storage)
             raise
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
           
-        self.stopping_conditions.define_state(object)     
+        self.stopping_conditions.define_state(handler)     
 
