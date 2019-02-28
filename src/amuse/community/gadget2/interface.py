@@ -1194,7 +1194,7 @@ class Gadget2Interface(
         return function
     
 
-class Gadget2Doc(objet):
+class Gadget2Doc(object):
 
     def __get__(self, instance, owner):
         return instance.legacy_interface.__doc__+"\n\n"+instance.parameters.__doc__
