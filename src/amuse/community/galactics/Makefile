@@ -37,8 +37,8 @@ $(GASBINDIR):
 	mkdir -p $(GASBINDIR)
 
 $(EXES): Makefile
-	mkdir src/bin
-	mkdir gas_src/bin
+	mkdir -p src/bin
+	mkdir -p gas_src/bin
 	echo $(findstring xlf, $(notdir $(FORTRAN)))
 	make -C src/src all CC="$(CC)" CFLAGS="$(CFLAGS)" LDFLAGS="$(LDFLAGS)" F77="$(FC)" FFLAGS="$(FFLAGS)" F77FLAGS="$(F77FLAGS)"
 	make -C src/src install
