@@ -1,3 +1,5 @@
+from ConfigParser import ConfigParser
+
 try:
     import f90nml
     HAS_F90NML=True
@@ -66,3 +68,98 @@ class CodeWithNamelistParameters(object):
             f90nml.patch(nml_file or self._nml_file,patch,outputfile)
         else:
             f90nml.write(patch, outputfile, force=True)      
+
+class CodeWithIniFileParameters(object):
+    def __init__(self, inifile_parameters=dict()):
+        self._inifile_parameters=dict([((x["name"],x["group_name"]),x) for x in inifile_parameters])
+        self._optionxform=str
+        
+    def define_parameters(self,object):
+        for p in self._inifile_parameters.values():
+            if p["ptype"] in ["ini", "ini+normal"]:
+                parameter_set_name=p.get("set_name", p["group_name"])
+                object.add_interface_parameter( p["name"], p["description"], p["default"], "before_set_interface_parameter", parameter_set=parameter_set_name)
+        self.set_parameters()
+
+    def set_parameters(self):
+        for p in self._inifile_parameters.values():
+              parameter_set_name=p.get("set_name", None) or p["group_name"]
+              parameter_set=getattr(self, parameter_set_name)
+              name=p["name"]
+              value=p.get("value", None) or p["default"]
+              setattr(parameter_set, name, value)
+              
+    def read_inifile_parameters(self, configfile):
+        self._configfile=configfile
+        parser=ConfigParser()
+        parser.optionxform=self._optionxform
+        parser.read(configfile)
+        for section in parser.sections():
+            group=section
+            for option in parser.options(section):
+                key=(option,group)
+                if key in self._inifile_parameters:
+                    ptype=self._inifile_parameters[key]["ptype"]
+                    dtype=self._inifile_parameters[key]["dtype"]
+                    value=self.interpret_value(parser.get(group, option), dtype=dtype)
+                    if is_quantity(self._inifile_parameters[key]["default"]):
+                        value= new_quantity(val, to_quantity(self._inifile_parameters[key]["default"]).unit)
+                    self._inifile_parameters[key]["value"]=value
+                else:
+                    value=self.interpret_value(parser.get(group, option))
+                    self._inifile_parameters[key]=dict(
+                        group_name=group,
+                        name=option,
+                        set_name=group,
+                        default=value,
+                        value=value,
+                        short=option,
+                        ptype="ini",
+                        dtype="unknown",
+                        description="unknown parameter read from %s"%configfile
+                        )
+
+    def _convert(self, value, dtype):
+        if dtype is "bool":
+            if value.lower() in ["0", "false", "off","no"]:
+                return False
+            else:
+                return True
+        if dtype in ["str", None]:
+            return value
+        return numpy.fromstring(value, sep=",")[0]
+
+    def interpret_value(self,value, dtype=None):
+        if value.find(',')>=0:
+            return [self._convert(x, dtype) for x in value.split(",")]
+        return self._convert(value, dtype)
+
+    def output_format_value(self,value):
+        if isinstance(value, list):
+          return ','.join(value)
+        else:
+          return value
+
+
+    def write_inifile_parameters(self, outputfile):
+        parser=ConfigParser()
+        parser.optionxform=self._optionxform
+
+        for p in self._inifile_parameters.values():
+            name=p["name"]
+            group_name=p["group_name"]
+            short=p["short"]
+            parameter_set_name=p.get("set_name", group_name)
+            parameter_set=getattr(self, parameter_set_name)
+            if is_quantity(p["default"]):
+                value=to_quantity(getattr(parameter_set, name)).value_in(p["default"].unit)
+            else:
+                value=self.output_format_value(getattr(parameter_set, name))            
+            if not parser.has_section(group_name):
+                parser.add_section(group_name)
+            parser.set(group_name,short,value)
+        
+        f=open(outputfile, "w")
+        parser.write(f)
+        f.close()
+
