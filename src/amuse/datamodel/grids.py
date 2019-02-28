@@ -775,8 +775,8 @@ class SamplePointOnCellCenter(object):
     @late
     def isvalid(self):
         return numpy.logical_and(
-            numpy.all(self.index >= self.grid.get_minimum_index()),
-            numpy.all(self.index <= self.grid.get_maximum_index())
+            numpy.all(self.index >= self.grid.get_minimum_index()[:len(self.index)]),
+            numpy.all(self.index <= self.grid.get_maximum_index()[:len(self.index)])
         )
     
     @late
@@ -872,8 +872,8 @@ class SamplePointWithInterpolation(object):
     @late
     def isvalid(self):
         return numpy.logical_and(
-            numpy.all(self.index_for_000_cell >= self.grid.get_minimum_index()),
-            numpy.all(self.index_for_111_cell <= self.grid.get_maximum_index())
+            numpy.all(self.index_for_000_cell >= self.grid.get_minimum_index()[:len(self.index)]),
+            numpy.all(self.index_for_111_cell <= self.grid.get_maximum_index()[:len(self.index)])
         )
         
     def get_values_of_attribute(self, name_of_the_attribute):
