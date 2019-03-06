@@ -4,7 +4,7 @@ import sys
 import subprocess
 import inspect
 import os.path
-from support import gencode
+from amuse.rfi import gencode
 
 if __name__ == "__main__":
     try:
