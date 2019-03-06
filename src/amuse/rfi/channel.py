@@ -608,17 +608,23 @@ class AbstractMessageChannel(OptionalAttributes):
         return self.amuse_root_dir
     
     @option(type="string", sections=('data',))
-    def amuse_root_dir(self):
+    def amuse_root_dir(self):  # needed for location of data, so same as in support.__init__
         if 'AMUSE_DIR' in os.environ:
             return os.environ['AMUSE_DIR']    
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                raise exceptions.AmuseException("Could not locate AMUSE root directory!")
-            previous = result
-        return result
+
+        this = os.path.dirname(os.path.abspath(__file__))
+        
+        # installed
+        result=os.path.abspath(os.path.join(this, "..","..","..","..","..","share", "amuse"))
+        if os.path.exists(os.path.join(result,'build.py')):
+            return result
+        
+        # in-place
+        result=os.path.abspath(os.path.join(this, "..","..",".."))        
+        if os.path.exists(os.path.join(result,'build.py')):
+            return result
+
+        raise exceptions.AmuseException("Could not locate AMUSE root directory! set the AMUSE_DIR variable")
     
     def check_if_worker_is_up_to_date(self, object):
         if not self.must_check_if_worker_is_up_to_date:

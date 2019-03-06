@@ -156,12 +156,14 @@ class GenerateInstallIni(Command):
         outfilename = os.path.join(self.build_dir, 'amuse', 'amuserc')
         
         
-        data_dir = os.path.join(self.install_data,'share','amuse')
-        if not self.root is None:
-            data_dir = os.path.relpath(data_dir,self.root)
-            data_dir =  os.path.join('/',data_dir)
-        else:
-            data_dir = os.path.abspath(data_dir)
+        # this does not work for pip installs
+        #~ data_dir = os.path.join(self.install_data,'share','amuse')
+        #~ if not self.root is None:
+            #~ data_dir = os.path.relpath(data_dir,self.root)
+            #~ data_dir =  os.path.join('/',data_dir)
+        #~ else:
+            #~ data_dir = os.path.abspath(data_dir)
+
         installinilines = []
         installinilines.append('[channel]')
         installinilines.append('must_check_if_worker_is_up_to_date=0')
@@ -169,10 +171,10 @@ class GenerateInstallIni(Command):
         #installinilines.append('worker_code_directory={0}'.format(os.path.join(data_dir, 'bin')))
         if sys.platform == 'win32':
             installinilines.append('worker_code_suffix=".exe"')
-        installinilines.append('[data]')
-        installinilines.append('input_data_root_directory={0}'.format(os.path.join(data_dir, 'data')))
-        installinilines.append('output_data_root_directory=amuse-data')
-        installinilines.append('amuse_root_dir={0}'.format(data_dir))
+        #~ installinilines.append('[data]')
+        #~ installinilines.append('input_data_root_directory={0}'.format(os.path.join(data_dir, 'data')))
+        #~ installinilines.append('output_data_root_directory=amuse-data')
+        #~ installinilines.append('amuse_root_dir={0}'.format(data_dir))
         
         if 'BUILD_BINARY' in os.environ:
             installinilines.append('[test]')
