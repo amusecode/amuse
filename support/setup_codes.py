@@ -171,9 +171,9 @@ class GenerateInstallIni(Command):
         #installinilines.append('worker_code_directory={0}'.format(os.path.join(data_dir, 'bin')))
         if sys.platform == 'win32':
             installinilines.append('worker_code_suffix=".exe"')
-        #~ installinilines.append('[data]')
+        installinilines.append('[data]')
         #~ installinilines.append('input_data_root_directory={0}'.format(os.path.join(data_dir, 'data')))
-        #~ installinilines.append('output_data_root_directory=amuse-data')
+        installinilines.append('output_data_root_directory=_amuse_output_data')
         #~ installinilines.append('amuse_root_dir={0}'.format(data_dir))
         
         if 'BUILD_BINARY' in os.environ:
