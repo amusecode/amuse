@@ -297,14 +297,20 @@ class CodeCommand(Command):
             pass
         else:
             if self.inplace:
-               self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+               #~ self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+               path = os.path.abspath(os.getcwd())
             else:
-               self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
+               #~ self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
+               path=os.path.abspath(self.build_temp)
+            path=os.path.join(path,"src")
+            path=path+":"+self.environment.get('PYTHONPATH','')
+            
+            self.environment['PYTHONPATH'] = path
 
-            if self.inplace:
-               self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(os.getcwd())
-            else:
-               self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(self.build_temp)
+            #~ if self.inplace:
+               #~ self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(os.getcwd())
+            #~ else:
+               #~ self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(self.build_temp)
 
     
     def set_fortran_variables(self):

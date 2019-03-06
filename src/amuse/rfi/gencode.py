@@ -363,9 +363,9 @@ def make_directory(settings):
     
 if __name__ == '__main__':
     
-    setup_sys_path()
+    #~ setup_sys_path()
 
-    import config
+    from amuse import config
 
     from amuse.rfi.tools import create_c
     from amuse.rfi.tools import create_fortran
