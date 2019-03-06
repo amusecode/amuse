@@ -35,6 +35,7 @@ except ImportError:
 from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
+from amuse.support import get_amuse_root_dir
 from amuse.rfi import run_command_redirected
 
 from amuse.rfi import slurm
@@ -609,22 +610,7 @@ class AbstractMessageChannel(OptionalAttributes):
     
     @option(type="string", sections=('data',))
     def amuse_root_dir(self):  # needed for location of data, so same as in support.__init__
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']    
-
-        this = os.path.dirname(os.path.abspath(__file__))
-        
-        # installed
-        result=os.path.abspath(os.path.join(this, "..","..","..","..","..","share", "amuse"))
-        if os.path.exists(os.path.join(result,'build.py')):
-            return result
-        
-        # in-place
-        result=os.path.abspath(os.path.join(this, "..","..",".."))        
-        if os.path.exists(os.path.join(result,'build.py')):
-            return result
-
-        raise exceptions.AmuseException("Could not locate AMUSE root directory! set the AMUSE_DIR variable")
+        return get_amuse_root_dir()
     
     def check_if_worker_is_up_to_date(self, object):
         if not self.must_check_if_worker_is_up_to_date:
