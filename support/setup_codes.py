@@ -297,10 +297,10 @@ class CodeCommand(Command):
             pass
         else:
             if self.inplace:
-               #~ self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+               self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
                path = os.path.abspath(os.getcwd())
             else:
-               #~ self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
+               self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
                path=os.path.abspath(self.build_temp)
             path=os.path.join(path,"src")
             path=path+":"+self.environment.get('PYTHONPATH','')
