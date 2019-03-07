@@ -37,7 +37,7 @@ classifiers = [
     'Programming Language :: C++',
     'Programming Language :: Fortran',
     'Topic :: Scientific/Engineering :: Astronomy',
-],
+]
 
 setup(
     name=name,
