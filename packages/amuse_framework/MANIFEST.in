@@ -1,0 +1,25 @@
+include configure
+include README.md
+include config.mk.in
+include build.py.in
+include ez_setup.py
+include support/configpy.in
+
+recursive-include src/amuse *
+recursive-include lib *
+recursive-include support *
+
+exclude support/config.py
+exclude support/config.pyc
+
+recursive-exclude src/amuse/community *
+
+include src/amuse/community/__init__.py
+recursive-include src/amuse/community/interface *
+recursive-include src/amuse/community/distributed *
+
+recursive-exclude src *.pyc *.o *~ .pc ccache *.a
+recursive-exclude lib *.pyc *.o *~ ccache *.a
+recursive-exclude support *.pyc *.o *~ ccache *.a
+
+
