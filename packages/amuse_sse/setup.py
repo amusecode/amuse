@@ -112,8 +112,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='amuse_sse',
-    version="11",
+    name='amuse-sse',
+    version="12.0a5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'amuse.community.sse': 'src/amuse/community/sse'},
@@ -150,5 +150,6 @@ setup(
         'nose>=0.11.1',
         'mpi4py>=1.1.0',
         'h5py>=1.1.0',
+        'amuse-framework>=12.0a5',
     ]
 )
