@@ -138,8 +138,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='amuse',
-    version="11",
+    name='amuse-framework',
+    version="12.0a5",
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
     package_dir={'': 'src'},
