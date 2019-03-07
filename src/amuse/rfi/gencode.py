@@ -363,7 +363,7 @@ def make_directory(settings):
     
 if __name__ == '__main__':
     
-    #~ setup_sys_path()
+    # setup_sys_path()
 
     from amuse import config
 
