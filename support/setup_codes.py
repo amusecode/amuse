@@ -333,14 +333,14 @@ class CodeCommand(Command):
             
         mpif90 = os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
         
-        process = Popen([mpif90,'-show'], stdout = PIPE, stderr = PIPE)
+        process = Popen([mpif90,'-show'], stdout = PIPE, stderr = PIPE, shell=True)
         stdoutstring, stderrstring = process.communicate()
         if process.returncode == 0:
             parts = stdoutstring.split()
             self.environment['FORTRAN']  = parts[0]
             return
         
-        process = Popen([mpif90,'--showme '], stdout = PIPE, stderr = PIPE)
+        process = Popen([mpif90,'--showme '], stdout = PIPE, stderr = PIPE, shell=True)
         stdoutstring, stderrstring = process.communicate()
         if process.returncode == 0:
             parts = stdoutstring.split()
