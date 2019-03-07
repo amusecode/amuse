@@ -334,7 +334,7 @@ def make_file(settings):
                 f.write(builder.result)
                 
             if settings.make_executable:
-                os.chmod(settings.output, 0o777)
+                os.chmod(settings.output, 0o755)
                 
         except Exception as exception:
             uc.show_error_and_exit(exception)
