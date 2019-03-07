@@ -298,19 +298,13 @@ class CodeCommand(Command):
         else:
             if self.inplace:
                self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
-               path = os.path.abspath(os.getcwd())
             else:
                self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
-               path=os.path.abspath(self.build_temp)
-            path=os.path.join(path,"src")
-            path=path+":"+self.environment.get('PYTHONPATH','')
-            
-            self.environment['PYTHONPATH'] = path
 
-            #~ if self.inplace:
-               #~ self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(os.getcwd())
-            #~ else:
-               #~ self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(self.build_temp)
+            if self.inplace:
+               self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(os.getcwd())
+            else:
+               self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(self.build_temp)
 
     
     def set_fortran_variables(self):
@@ -695,6 +689,14 @@ class CodeCommand(Command):
         
         stringio.close()
         return result, content
+        
+    def build_environment(self):
+        environment=self.environment.copy()
+        environment.update(os.environ)
+        path=os.path.join(environment["AMUSE_DIR"],"src")
+        path=path+':'+environment.get("PYTHONPATH", "")
+        environment["PYTHONPATH"]=path
+        return environment
     
 class SplitOutput(object) :
     def __init__(self, file1, file2) :
@@ -775,8 +777,7 @@ class BuildCodes(CodeCommand):
         build = list()
         lib_build = list()
         lib_not_build = list()
-        environment = self.environment
-        environment.update(os.environ)
+        environment = self.build_environment()
         
         buildlog = 'build.log'
         
@@ -1030,8 +1031,7 @@ class BuildLibraries(CodeCommand):
         build = list()
         lib_build = list()
         lib_not_build = list()
-        environment = self.environment
-        environment.update(os.environ)
+        environment = self.build_environment()
         
         buildlog = 'build.log'
         
@@ -1176,8 +1176,7 @@ class ConfigureCodes(CodeCommand):
         if os.path.exists('config.mk'):
             self.announce("Already configured, not running configure", level = 2)
             return
-        environment = self.environment
-        environment.update(os.environ)
+        environment = self.build_environment()
         self.announce("Running configure for AMUSE", level = 2)
         self.call(['./configure'], env=environment, shell=True)
         
@@ -1187,8 +1186,7 @@ class CleanCodes(CodeCommand):
 
     def run (self):
             
-        environment = self.environment
-        environment.update(os.environ)
+        environment = self.build_environment()
         self.announce("Cleaning libraries and community codes", level = 2)
         for x in self.makefile_paths(self.lib_dir):
             self.announce("cleaning libary " + x)
@@ -1205,8 +1203,7 @@ class DistCleanCodes(CodeCommand):
     description = "clean for distribution"
 
     def run (self):
-        environment = self.environment
-        environment.update(os.environ)
+        environment = self.build_environment()
         
         self.announce("Cleaning for distribution, libraries and community codes", level = 2)
         for x in self.makefile_paths(self.lib_dir):
@@ -1255,8 +1252,7 @@ class BuildOneCode(CodeCommand):
         if not self.inplace:
             self.run_command("build_py")
 
-        environment = self.environment
-        environment.update(os.environ)
+        environment = self.build_environment()
         
         results = []
         
