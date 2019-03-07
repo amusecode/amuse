@@ -7,10 +7,10 @@ from optparse import OptionParser
 # Should probably use an absolute import here (support.config), but
 # we're not guaranteed this script will always be in a support
 # subdirectory with an __init__.py file.
-#try:  # running as a module
-#    from . import config
-#except (ImportError, ValueError):  # running as a stand-alone script
-#    import config
+# try:  # running as a module
+#     from . import config
+# except (ImportError, ValueError):  # running as a stand-alone script
+#     import config
 
 
 if sys.hexversion > 0x03000000:
@@ -363,9 +363,9 @@ def make_directory(settings):
     
 if __name__ == '__main__':
     
-    setup_sys_path()
+    # setup_sys_path()
 
-    import config
+    from amuse import config
 
     from amuse.rfi.tools import create_c
     from amuse.rfi.tools import create_fortran

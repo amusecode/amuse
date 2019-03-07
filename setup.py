@@ -137,7 +137,7 @@ def find_data_files(srcdir, destdir, *wildcards, **kw):
     return file_list
 
 all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive=True)
-all_data_files.extend(find_data_files('support', 'share/amuse/support', '*', recursive=False))
+# all_data_files.extend(find_data_files('support', 'share/amuse/support', '*', recursive=False))
 # all_data_files.extend(find_data_files('support3', 'share/amuse/support3', '*', recursive = False))
 # all_data_files.extend(find_data_files('lib', 'share/amuse/lib', '*.h', '*.a', '*.mod', '*.inc', '*.so', '*.dylib', recursive = True))
 all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
