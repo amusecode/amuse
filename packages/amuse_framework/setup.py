@@ -112,6 +112,7 @@ all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
 
 packages = find_packages('src', exclude=["amuse.community.*"])
 packages.append("amuse.community.interface")
+packages.append("amuse.community.distributed")
 #~ packages.extend(['amuse.test.suite.' + x for x in find_packages('test')])
 #~ packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
 
