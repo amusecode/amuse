@@ -1,5 +1,3 @@
-import os
-
 from setuptools import setup
 
 
@@ -16,14 +14,14 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
-    'amuse-framework>=%s'%version,
-    'amuse-sse>=%s'%version,
+    'amuse-framework>=%s' % version,
+    'amuse-sse>=%s' % version,
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
-classifiers=[
+classifiers = [
     'Development Status :: 4 - Beta',
     'Environment :: Console',
     'Intended Audience :: End Users/Desktop',
