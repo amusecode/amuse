@@ -498,6 +498,11 @@ class CodeCommand(Command):
                 self.environment[varname] = os.environ[varname]
             else:
                 self.environment_notset[varname] ='-L<directory> -l{0}'.format(libname)
+
+    def copy_config_to_build_dir(self):
+        configpath=os.path.abspath(os.getcwd())
+        topath=os.path.join(self.build_lib, "amuse")
+        self.copy_file(os.path.join(configpath,"config.mk"), topath) 
      
     def copy_build_prereq_to_build_dir(self):
         if not os.path.exists(self.build_temp):
@@ -885,6 +890,7 @@ class BuildCodes(CodeCommand):
                 
         
         if not self.codes_dir == self.codes_src_dir:
+            self.copy_config_to_build_dir()
             self.copy_worker_codes_to_build_dir()
             
         with open(buildlog, "a") as output:
