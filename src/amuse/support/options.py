@@ -26,9 +26,12 @@ class GlobalOptions(object):
                 self.config.read(resourcerc)  
         
         rootrc = os.path.join(self.amuse_rootdirectory, self.rcfilename)
+        datarc = os.path.join(self.amuse_data_location, self.rcfilename)
+
         homedirrc = os.path.join(self.homedirectory, '.' + self.rcfilename)
         
         self.config.read(rootrc)  
+        self.config.read(datarc)  
          
         if not preloadfp is None:
             self.config.readfp(preloadfp, "<amuserc>")
@@ -39,19 +42,27 @@ class GlobalOptions(object):
             self.config.read(os.environ['AMUSERC'])
         self.config.read(self.rcfilepath)
         
+
+    @late
+    def amuse_data_location(self):
+      
+        this = os.path.dirname(os.path.abspath(__file__))
+        
+        # installed
+        result=os.path.abspath(os.path.join(this, "..","..","..","..","..","share", "amuse"))
+        if os.path.exists(os.path.join(result,'build.py')):
+            return result
+        
+        # in-place
+        result=os.path.abspath(os.path.join(this, "..","..",".."))        
+        if os.path.exists(os.path.join(result,'build.py')):
+            return result
+
+        raise exceptions.AmuseException("Could not locate AMUSE root directory! set the AMUSE_DIR variable")
         
     @late
     def amuse_rootdirectory(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                return os.path.dirname(os.path.dirname(__file__))
-            previous = result
-        return result
+        return os.path.dirname(os.path.dirname(__file__))
     
     @late
     def rcfilepath(self):

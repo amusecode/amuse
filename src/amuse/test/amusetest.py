@@ -5,6 +5,7 @@ import os
 import sys
 import inspect
 
+from amuse.support import _Defaults
 from amuse.support import exceptions
 from amuse.support import literature
 from amuse.support import options
@@ -292,7 +293,7 @@ class TestWithMPI(TestCase):
             return True
 
 
-class TestDefaults(options.OptionalAttributes):
+class TestDefaults(_Defaults):
 
     @options.option(sections=['test'])
     def path_to_results(self):
@@ -326,24 +327,9 @@ class TestDefaults(options.OptionalAttributes):
     def name_of_testresults_directory(self):
         return 'test_results'
 
-    @options.option(sections=['data'])
-    def amuse_root_dir(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                return os.path.dirname(os.path.dirname(__file__))
-            previous = result
-        return result
-
     @options.option(type='boolean',sections=['test'])
     def can_run_tests_to_compile_modules(self):
         return True
-
-
 
 def get_path_to_results():
     return TestDefaults().path_to_results

@@ -53,7 +53,6 @@ update:
 
 clean:
 	$(RM) -f *.so *.o *.pyc 
-	$(RM) *~ distributed distributed_worker 
 	$(RM) -f *.jar CodeInterface.java Worker.java binev.data
 	$(RM) -rf tmp
 	make -C src clean
@@ -68,13 +67,22 @@ src/dist/distributed-amuse.jar: $(shell find src -name "*.java")
 	@echo Compiling Distributed Code
 	make -C src
 
-worker.jar: Worker.java CodeInterface.java Code.java src/dist/distributed-amuse.jar
+data/worker.jar: Worker.java CodeInterface.java Code.java data
 	$(RM) -r tmp
 	mkdir tmp
-	$(JAVAC) -g -cp "src/dist/*" -d tmp Worker.java CodeInterface.java Code.java
+	$(JAVAC) -g -cp "data/*" -d tmp Worker.java CodeInterface.java Code.java
 	@echo Building jar file
 	$(JAR) -cf worker.jar -C tmp .
 	$(RM) -rf tmp
+	$(MV) worker.jar data
 
-distributed_worker: interface.py java_check worker.jar src/dist/distributed-amuse.jar
+data: src/dist/distributed-amuse.jar
+	mkdir -p data
+	$(CP) src/dist/*.jar data/
+
+distributed_worker: interface.py java_check data/worker.jar src/dist/distributed-amuse.jar
 	$(CODE_GENERATOR) -x --type=java --mode=script amuse.community.distributed.interface DistributedAmuseInterface -o $@
+
+distclean: clean
+	$(RM) -rf data
+	$(RM) distributed distributed_worker 

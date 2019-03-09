@@ -132,9 +132,7 @@ public class PilotManager {
         result.setExecutable(configuration.getJava());
 
         List<String> classpath = result.getJavaClasspath();
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed/src/dist/*");
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed/worker.jar");
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed");
+        classpath.add(configuration.getAmuseHome().getPath() + "/community/distributed/data/*");
 
         result.setJavaMain(Pilot.class.getCanonicalName());
 

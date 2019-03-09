@@ -70,7 +70,7 @@ public class FunctionJobRunner extends JobRunner {
         
         builder.command().add(amuseScriptPath.toString());
 
-        Path scriptPath = amuseConfiguration.getAmuseHome().getAbsoluteFile().toPath().resolve("src/amuse/community/distributed/function_job_runner.py");
+        Path scriptPath = amuseConfiguration.getAmuseHome().getAbsoluteFile().toPath().resolve("community/distributed/function_job_runner.py");
         
         builder.command().add(scriptPath.toString());
 

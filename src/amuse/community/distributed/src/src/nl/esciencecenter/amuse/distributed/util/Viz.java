@@ -41,9 +41,7 @@ public class Viz extends Thread {
 
             //classpath
             List<String> classpath = jobDescription.getJavaClasspath();
-            classpath.add(amuseRootDir + "/src/amuse/community/distributed/src/dist/*");
-            classpath.add(amuseRootDir + "/src/amuse/community/distributed/worker.jar");
-            classpath.add(amuseRootDir + "/src/amuse/community/distributed");
+            classpath.add(amuseRootDir + "/community/distributed/data/*");
 
             jobDescription.setJavaMain("ibis.smartsockets.viz.SmartsocketsViz");
 

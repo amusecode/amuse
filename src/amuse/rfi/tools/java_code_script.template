@@ -5,11 +5,26 @@ import subprocess
 import sys
 
 java = '{java}'
-classpath = '{classpath}'
-amuse_root_dir = '{amuse_root_dir}'
+
+try:
+    from amuse.support import options
+    amuse_root_dir = options.GlobalOptions.instance().amuse_rootdirectory
+except:
+# fallback if amuse is not findable
+    amuse_root_dir = '{amuse_root_dir}'
+
+classpath = '{classpath}'.split(":")
 code_dir = '{code_dir}'
 
+classpath=":".join([os.path.join(amuse_root_dir, x) for x in classpath])
+code_dir=os.path.join(amuse_root_dir, code_dir)
+
 def main():
+
+    print("Starting Java code" )
+    print(" on amuse root dir: {{0}}".format( amuse_root_dir ) )
+    print(" with code dir: {{0}}".format( code_dir) )
+    print(" with classpath: {{0}}".format( classpath) )
 
     arguments = [java, "-Damuse.root.dir=" + amuse_root_dir, "-Dcode.dir=" + code_dir, "-cp", classpath, "Worker"]
     arguments = arguments + sys.argv[1:]
