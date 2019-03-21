@@ -1221,7 +1221,7 @@ class Particles(AbstractParticleSet):
                 instance = type(self)(is_working_copy = False)
                 instance._private.attribute_storage = self._private.attribute_storage.copy()
             except:
-                instance=self.copy()
+                instance = self.copy()
                 instance._private.is_working_copy = False
                 
             instance.collection_attributes.timestamp = timestamp
