@@ -511,10 +511,10 @@ class CodeCommand(Command):
         configpath=os.path.abspath(os.getcwd())
         self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
         self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
-        self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
+        #~ self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
         #~ self.copy_tree(os.path.join(configpath,"src"), os.path.join(self.build_temp,"src") )
         path=os.path.join(self.build_temp,"src")
-        if not os.path.exists(path):
+        if not os.path.exists(path) and not os.path.islink(path):
             os.symlink(os.path.relpath(self.build_lib,self.build_temp), path)
         
     def copy_codes_to_build_dir(self):
