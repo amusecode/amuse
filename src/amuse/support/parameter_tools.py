@@ -19,11 +19,11 @@ class CodeWithNamelistParameters(object):
     def __init__(self, namelist_parameters):
         self._namelist_parameters=dict([((x["short"],x["group_name"]),x) for x in namelist_parameters])
     
-    def define_parameters(self,object):
+    def define_parameters(self,handler):
         for p in self._namelist_parameters.values():
             if p["ptype"] in ["nml", "nml+normal"]:
                 parameter_set_name=p.get("set_name", "parameters_"+p["group_name"])
-                object.add_interface_parameter( p["name"], p["description"], p["default"], "before_set_interface_parameter", parameter_set=parameter_set_name)
+                handler.add_interface_parameter( p["name"], p["description"], p["default"], "before_set_interface_parameter", parameter_set=parameter_set_name)
 
     def read_namelist_parameters(self, inputfile):
 
@@ -74,11 +74,17 @@ class CodeWithIniFileParameters(object):
         self._inifile_parameters=dict([((x["name"],x["group_name"]),x) for x in inifile_parameters])
         self._optionxform=str
         
-    def define_parameters(self,object):
+    def define_parameters(self, handler):
+        _tmp=dict()
         for p in self._inifile_parameters.values():
             if p["ptype"] in ["ini", "ini+normal"]:
                 parameter_set_name=p.get("set_name", p["group_name"])
-                object.add_interface_parameter( p["name"], p["description"], p["default"], "before_set_interface_parameter", parameter_set=parameter_set_name)
+                if parameter_set_name not in _tmp:
+                    _tmp[parameter_set_name]=[ x.name for x in handler.definitions[parameter_set_name] ]
+                if not p["name"] in _tmp[parameter_set_name]:  
+                    handler.add_interface_parameter( p["name"], p["description"], p["default"], 
+                                      "before_set_interface_parameter", parameter_set=parameter_set_name)
+                    
         self.set_parameters()
 
     def set_parameters(self):

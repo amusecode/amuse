@@ -1108,6 +1108,8 @@ class AbstractParticleSet(AbstractSet):
 
     def get_containing_set(self):
         return self
+
+
 class Particles(AbstractParticleSet):
     """
     A set of particles. Attributes and values are stored in
@@ -1215,8 +1217,13 @@ class Particles(AbstractParticleSet):
 
     def savepoint(self, timestamp=None, format = 'memory', **attributes):
         if format == 'memory':
-            instance = type(self)(is_working_copy = False)
-            instance._private.attribute_storage = self._private.attribute_storage.copy()
+            try:
+                instance = type(self)(is_working_copy = False)
+                instance._private.attribute_storage = self._private.attribute_storage.copy()
+            except:
+                instance = self.copy()
+                instance._private.is_working_copy = False
+                
             instance.collection_attributes.timestamp = timestamp
 
             for name, value in attributes.iteritems():
