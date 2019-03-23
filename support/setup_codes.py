@@ -938,7 +938,8 @@ class BuildCodes(CodeCommand):
                 
         
         if not self.codes_dir == self.codes_src_dir:
-            self.copy_config_to_build_dir()
+            if supportrc["framework_install"]:
+                self.copy_config_to_build_dir()
             self.copy_worker_codes_to_build_dir()
             
         with open(buildlog, "a") as output:
@@ -1056,7 +1057,7 @@ class ConfigureCodes(CodeCommand):
         global config
         global is_configured
 
-        if os.path.exists('config.mk'):
+        if os.path.exists('config.mk') or is_configured:
             self.announce("Already configured, not running configure", level = 2)
             return
         environment = self.build_environment()
