@@ -4,6 +4,8 @@ __revision__ = "$Id:$"
 
 import sys, os, re, subprocess
 
+from . import supportrc
+
 try:
     import ConfigParser as configparser
     from StringIO import StringIO
@@ -38,7 +40,11 @@ except ImportError:
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
 try:
-    from . import config
+    if supportrc["framework_install"]:
+        from . import config
+    else:
+        from amuse import config
+        from amuse.support import get_amuse_root_dir
     is_configured = hasattr(config, 'compilers')
 except ImportError:
     is_configured = False
@@ -296,10 +302,13 @@ class CodeCommand(Command):
         if 'MSYSCON' in os.environ:
             pass
         else:
-            if self.inplace:
-               self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+            if not supportrc["framework_install"]:
+                self.environment['AMUSE_DIR'] = get_amuse_root_dir()
             else:
-               self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
+                if self.inplace:
+                   self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+                else:
+                   self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
 
             if self.inplace:
                self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(os.getcwd())
@@ -333,14 +342,14 @@ class CodeCommand(Command):
             
         mpif90 = os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
         
-        process = Popen([mpif90,'-show'], stdout = PIPE, stderr = PIPE, shell=True)
+        process = Popen([mpif90,'-show'], executable=mpif90, stdout = PIPE, stderr = PIPE, shell=True)
         stdoutstring, stderrstring = process.communicate()
         if process.returncode == 0:
             parts = stdoutstring.split()
             self.environment['FORTRAN']  = parts[0]
             return
         
-        process = Popen([mpif90,'--showme '], stdout = PIPE, stderr = PIPE, shell=True)
+        process = Popen([mpif90,'--showme '], executable=mpif90, stdout = PIPE, stderr = PIPE, shell=True)
         stdoutstring, stderrstring = process.communicate()
         if process.returncode == 0:
             parts = stdoutstring.split()
@@ -508,9 +517,10 @@ class CodeCommand(Command):
         if not os.path.exists(self.build_temp):
             self.mkpath(self.build_temp)
 
-        configpath=os.path.abspath(os.getcwd())
-        self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
-        self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
+        if supportrc["framework_install"]:
+            configpath=os.path.abspath(os.getcwd())
+            self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
+            self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
         #~ self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
         #~ self.copy_tree(os.path.join(configpath,"src"), os.path.join(self.build_temp,"src") )
         path=os.path.join(self.build_temp,"src")
@@ -759,7 +769,7 @@ class BuildCodes(CodeCommand):
 
     def initialize_options(self):
         CodeCommand.initialize_options(self)
-        self.clean = 'yes'
+        self.clean = 'no'
         
     def finalize_options (self):
         CodeCommand.finalize_options(self)
@@ -1043,13 +1053,19 @@ class ConfigureCodes(CodeCommand):
     description = "run configure for amuse"
 
     def run (self):
-        
+        global config
+        global is_configured
+
         if os.path.exists('config.mk'):
             self.announce("Already configured, not running configure", level = 2)
             return
         environment = self.build_environment()
         self.announce("Running configure for AMUSE", level = 2)
         self.call(['./configure'], env=environment, shell=True)
+
+        from . import config
+        is_configured=True
+
         
 class CleanCodes(CodeCommand):
 
