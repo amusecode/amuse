@@ -7,6 +7,9 @@ from distutils.command.install import install
 from distutils.util import convert_path
 from setuptools import setup
 
+import support
+support.use("system")
+
 from support.setup_codes import (
     BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries,
     ConfigureCodes, GenerateInstallIni, InstallLibraries,
