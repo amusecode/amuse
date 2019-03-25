@@ -12,9 +12,9 @@ def parse_configmk(filename):
         raise Exception("file: {0} is not an amuse configuration file".format(filename)) 
     for line in lines:
       if "=" in line:
-          var, value=line.split("=")
+          var, value=line.split("=",1)
           if "@" in value:
-              warnings.warn("parsing error while parsing {0}".format(filename))
+              warnings.warn("possible configuration error/ unconfigured variable in {0}".format(filename))
           cfgvars[var]=value.strip()
     return cfgvars
 
