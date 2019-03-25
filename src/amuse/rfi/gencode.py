@@ -162,6 +162,13 @@ class ParseCommandLine(object):
             default="",
             dest="function_name_prefix",
             help="Prefix for generated function names, relevant for cython")
+
+        self.parser.add_option(
+            "--get_amuse_dir",
+            action="store_true",
+            default=False,
+            dest="get_amuse_dir",
+            help="Only output amuse directory")
         
         self.options = None
         self.arguments = None
@@ -185,6 +192,8 @@ class ParseCommandLine(object):
         
         
     def parse_arguments(self):
+        if self.options.get_amuse_dir:
+            return
         if self.options.mode == 'dir':
             if len(self.arguments) != 1:
                 self.show_error_and_exit("incorrect number of arguments, need name of the code")
@@ -360,7 +369,7 @@ def make_directory(settings):
         
     builder.start()
     
-    
+
 if __name__ == '__main__':
     
     # setup_sys_path()
@@ -374,11 +383,16 @@ if __name__ == '__main__':
     from amuse.rfi.tools import create_python_worker
     from amuse.rfi.tools import create_cython
         
+    from amuse.support import get_amuse_root_dir    
+        
     uc = ParseCommandLine()
     uc.start()
     
     settings = uc.options
-    if settings.mode == 'dir':
+    if settings.get_amuse_dir:
+        print(get_amuse_root_dir())
+        exit(0)
+    elif settings.mode == 'dir':
         make_directory(settings)
     else:
         make_file(settings)

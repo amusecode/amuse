@@ -1,10 +1,9 @@
 AC_INIT([amuse], [3.1])
 AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 
-AC_CONFIG_FILES([src/amuse/config.py:support/configpy.in])
-AC_CONFIG_FILES([support/config.py:support/configpy.in])
 AC_CONFIG_FILES([config.mk])
 AC_CONFIG_FILES([build.py],[chmod +x build.py])
+AC_CONFIG_FILES([amusifier:build.py],[chmod +x amusifier])
 
 AC_PROG_CC()
 AC_PROG_CXX()
@@ -266,3 +265,5 @@ AC_CHECK_PYTHON_MODULE(matplotlib)
 #        [AC_MSG_WARN([Cython version $PYTHON_Cython_VERSION found, but at least 0.13 needed])]
 #)
 AC_OUTPUT()
+
+ AC_MSG_NOTICE( Configuration done. Configuration written to config.mk )
