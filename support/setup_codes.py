@@ -4,6 +4,8 @@ __revision__ = "$Id:$"
 
 import sys, os, re, subprocess
 
+from . import supportrc
+
 try:
     import ConfigParser as configparser
     from StringIO import StringIO
@@ -38,7 +40,11 @@ except ImportError:
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
 try:
-    from . import config
+    if supportrc["framework_install"]:
+        from . import config
+    else:
+        from amuse import config
+        from amuse.support import get_amuse_root_dir
     is_configured = hasattr(config, 'compilers')
 except ImportError:
     is_configured = False
@@ -296,10 +302,13 @@ class CodeCommand(Command):
         if 'MSYSCON' in os.environ:
             pass
         else:
-            if self.inplace:
-               self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+            if not supportrc["framework_install"]:
+                self.environment['AMUSE_DIR'] = get_amuse_root_dir()
             else:
-               self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
+                if self.inplace:
+                   self.environment['AMUSE_DIR'] = os.path.abspath(os.getcwd())
+                else:
+                   self.environment['AMUSE_DIR'] = os.path.abspath(self.build_temp)
 
             if self.inplace:
                self.environment['MUSE_PACKAGE_DIR'] = os.path.abspath(os.getcwd())
@@ -333,19 +342,23 @@ class CodeCommand(Command):
             
         mpif90 = os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
         
-        process = Popen([mpif90,'-show'], stdout = PIPE, stderr = PIPE, shell=True)
-        stdoutstring, stderrstring = process.communicate()
-        if process.returncode == 0:
-            parts = stdoutstring.split()
-            self.environment['FORTRAN']  = parts[0]
-            return
-        
-        process = Popen([mpif90,'--showme '], stdout = PIPE, stderr = PIPE, shell=True)
-        stdoutstring, stderrstring = process.communicate()
-        if process.returncode == 0:
-            parts = stdoutstring.split()
-            self.environment['FORTRAN']  = parts[0]
-            return  
+        try:
+            process = Popen([mpif90,'-show'], stdout = PIPE, stderr = PIPE)
+            stdoutstring, stderrstring = process.communicate()
+            if process.returncode == 0:
+                parts = stdoutstring.split()
+                self.environment['FORTRAN']  = parts[0]
+                return
+            
+            process = Popen([mpif90,'--showme '], stdout = PIPE, stderr = PIPE)
+            stdoutstring, stderrstring = process.communicate()
+            if process.returncode == 0:
+                parts = stdoutstring.split()
+                self.environment['FORTRAN']  = parts[0]
+                return  
+        except:
+            pass
+            
             
         compiler = fcompiler.new_fcompiler(requiref90=True)
         fortran_executable = compiler.executables['compiler_f90'][0]
@@ -508,13 +521,14 @@ class CodeCommand(Command):
         if not os.path.exists(self.build_temp):
             self.mkpath(self.build_temp)
 
-        configpath=os.path.abspath(os.getcwd())
-        self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
-        self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
-        self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
+        if supportrc["framework_install"]:
+            configpath=os.path.abspath(os.getcwd())
+            self.copy_file(os.path.join(configpath,"config.mk"), self.build_temp) 
+            self.copy_file(os.path.join(configpath,"build.py"), self.build_temp) 
+        #~ self.copy_tree(os.path.join(configpath,"support"), os.path.join(self.build_temp,"support") )
         #~ self.copy_tree(os.path.join(configpath,"src"), os.path.join(self.build_temp,"src") )
         path=os.path.join(self.build_temp,"src")
-        if not os.path.exists(path):
+        if not os.path.exists(path) and not os.path.islink(path):
             os.symlink(os.path.relpath(self.build_lib,self.build_temp), path)
         
     def copy_codes_to_build_dir(self):
@@ -702,6 +716,32 @@ class CodeCommand(Command):
         path=path+':'+environment.get("PYTHONPATH", "")
         environment["PYTHONPATH"]=path
         return environment
+
+
+    def do_clean(self):
+        environment = self.build_environment()        
+
+        for x in self.makefile_paths(self.lib_dir):
+            self.announce("cleaning libary " + x)
+            self.call(['make','-C', x, 'clean'], env=environment)
+           
+        for x in self.makefile_paths(self.codes_dir):
+            if os.path.exists(x):
+                self.announce("cleaning " + x)
+                self.call(['make','-C', x, 'clean'], env=environment)
+
+    def do_distclean(self):
+        environment = self.build_environment()        
+
+        for x in self.makefile_paths(self.lib_dir):
+            self.announce("cleaning libary:" + x)
+            self.call(['make','-C', x, 'distclean'], env=environment)
+            
+        for x in self.makefile_paths(self.codes_dir):
+            self.announce("cleaning community code:" + x)
+            self.call(['make','-C', x, 'distclean'], env=environment)
+
+
     
 class SplitOutput(object) :
     def __init__(self, file1, file2) :
@@ -727,7 +767,18 @@ class SplitOutput(object) :
 class BuildCodes(CodeCommand):
 
     description = "build interfaces to codes"
-    
+
+    user_options = list(CodeCommand.user_options)
+    user_options.append( ('clean=', 'c', "clean code",), )
+
+    def initialize_options(self):
+        CodeCommand.initialize_options(self)
+        self.clean = 'no'
+        
+    def finalize_options (self):
+        CodeCommand.finalize_options(self)
+        self.must_clean = self.clean == 'yes'
+        self.must_dist_clean = self.clean == 'dist'
     
     def run_make_on_directory(self, codename, directory, target, environment):
         buildlog = os.path.abspath("build.log")
@@ -774,6 +825,11 @@ class BuildCodes(CodeCommand):
         return False
     
     def run (self):
+        if self.must_clean:
+            self.do_clean()
+        if self.must_dist_clean:
+            self.do_distclean()
+
         not_build = list()
         is_download_needed = list()
         is_cuda_needed = list()
@@ -801,11 +857,7 @@ class BuildCodes(CodeCommand):
             self.copy_lib_to_build_dir()
             if sys.hexversion > 0x03000000:
                 run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
-        
-        if not self.inplace:
-            #self.environment["DOWNLOAD_CODES"] = "1"
-            pass
-                  
+                          
         for x in self.makefile_paths(self.lib_dir):
             
             shortname = x[len(self.lib_dir) + 1:] + '-library'
@@ -979,267 +1031,80 @@ class BuildCodes(CodeCommand):
             )
         
  
-class BuildLibraries(CodeCommand):
+class BuildLibraries(BuildCodes):
 
     description = "build just the supporting libraries"
-    
-    
-    def run_make_on_directory(self, codename, directory, target, environment):
-        buildlog = os.path.abspath("build.log")
-        
-        with open(buildlog, "a") as output:
-            output.write('*'*100)
-            output.write('\n')
-            output.write('Building librariy: {0}, target: {1}, in directory: {2}\n'.format(codename, target, directory))
-            output.write('*'*100)
-            output.write('\n')
-            output.flush()
-        
-        with open(buildlog, "ab") as output:
-            result, resultcontent = self.call(
-                ['make','-C', directory, target], 
-                output,
-                env = environment
-            )
-        
-        with open(buildlog, "a") as output:
-            output.write('*'*100)
-            output.write('\n')
-            
-        return result, resultcontent
-    
-    def is_download_needed(self, string):
-        for line in string.splitlines():
-            if 'DOWNLOAD_CODES' in line:
-                return True
-        return False
-        
-    def is_cuda_needed(self, string):
-        for line in string.splitlines():
-            if 'CUDA_TK variable is not set' in line:
-                return True
-            if 'CUDA_SDK variable is not set' in line:
-                return True
-        return False
-        
-    def are_python_imports_needed(self, string):
-        for line in string.splitlines():
-            if 'Python imports not available' in line:
-                return True
-        return False
-    
-    def run (self):
-        not_build = list()
-        is_download_needed = list()
-        is_cuda_needed = list()
-        not_build_special = {}
-        are_python_imports_needed = list()
-        build = list()
-        lib_build = list()
-        lib_not_build = list()
-        environment = self.build_environment()
-        
-        buildlog = 'build.log'
-        
-        self.announce("building libraries", level = log.INFO)
-        self.announce("build, for logging, see '{0}'".format(buildlog), level = log.INFO)
-        
-        
-        with open(buildlog, "w") as output:
-            output.write('*'*100)
-            output.write('\n')
-            output.write('Building libraries\n')
-            output.write('*'*100)
-            output.write('\n')
-        
-        if not self.lib_dir == self.lib_src_dir:
-            self.copy_build_prereq_to_build_dir()
-            self.copy_lib_to_build_dir()
-            if sys.hexversion > 0x03000000:
-                run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
-        
-        if not self.inplace:
-            #self.environment["DOWNLOAD_CODES"] = "1"
-            pass
-        
-        for x in self.makefile_paths(self.lib_dir):
-            
-            shortname = x[len(self.lib_dir) + 1:] + '-library'
-            starttime = datetime.datetime.now()
-            self.announce("[{1:%H:%M:%S}] building {0}".format(shortname, starttime), level =  log.INFO)
-            returncode, outputlog = self.run_make_on_directory(shortname, x, 'all', environment)
-            
-            endtime = datetime.datetime.now()
-            if returncode == 2:
-                self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.DEBUG)
-                if self.is_download_needed(outputlog):
-                    is_download_needed.append(x[len(self.lib_dir) + 1:])
-                elif self.is_cuda_needed(outputlog):
-                    is_cuda_needed.append(x[len(self.lib_dir) + 1:])
-                else:
-                    lib_not_build.append(shortname)
-            else:
-                self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.DEBUG)
-                lib_build.append(shortname)
-            
-        #environment.update(self.environment)
-        makefile_paths = list(self.makefile_paths(self.codes_dir))
-            
-        build_to_special_targets = {}
-        
-            
-        with open(buildlog, "a") as output:
-            output.write('*'*80)
-            output.write('\n')
-            output.write('Building finished\n')
-            output.write('*'*80)
-            output.write('\n')
-            
-        self.announce("Environment variables")
-        self.announce("="*80)
-        sorted_keys = sorted(self.environment.keys())
-        for x in sorted_keys:
-            self.announce("%s\t%s" % (x , self.environment[x] ))
-        
-        if not self.is_mpi_enabled():
-            print(build_to_special_targets)
-            all_build = set(build)
-            not_build_copy = []
-            for x in not_build:
-                if x in build_to_special_targets:
-                    if not x in all_build:
-                        build.append(x)
-                        all_build.add(x)
-                else:
-                    not_build_copy.append(x)
-            not_build = not_build_copy
-                
-        
-        if not_build or not_build_special or is_download_needed or is_cuda_needed or are_python_imports_needed:
-            if not_build:
-                level = log.WARN
-            else:
-                level = log.INFO
-            if not_build:
-                self.announce("Community codes not built (because of errors):",  level = level)
-                self.announce("="*80,  level = level)
-                for x in not_build:
-                    self.announce(' * {0}'.format(x), level =  level)
-            if not_build_special:
-                self.announce("Optional builds failed, need special libraries:",  level = level)
-                for x in sorted(not_build_special.keys()):
-                    self.announce(' * {0} - {1}'.format(x, ', '.join(not_build_special[x])), level = level)
-            if is_cuda_needed:
-                self.announce("Optional builds failed, need CUDA/GPU libraries:",  level = level)
-                for x in is_cuda_needed:
-                    self.announce(' * {0}'.format(x), level = level)
-            if are_python_imports_needed:
-                self.announce("Optional builds failed, need additional python packages:",  level = level)
-                for x in are_python_imports_needed:
-                    self.announce(' * {0}'.format(x), level = level)
-            if is_download_needed:
-                self.announce("Optional builds failed, need separate download",  level = level)
-                for x in is_download_needed:
-                    self.announce(' * {0} , make {0}.code DOWNLOAD_CODES=1'.format(x), level = level)
 
-            self.announce("="*80,  level = level)
-        
-        if build:
-            level = log.INFO
-            self.announce("Community codes built",  level = level)
-            self.announce("="*80,  level = level)
-            for x in build:
-                if x in build_to_special_targets:
-                    y = build_to_special_targets[x]
-                    self.announce('* {0} ({1})'.format(x,','.join(y)),  level = level)
-                else:
-                    self.announce('* {0}'.format(x),  level = level)
-            self.announce("="*80,  level = level)
-        
-        level = log.INFO
-        self.announce(
-            "{0} out of {1} codes built, {2} out of {3} libraries built".format(
-                len(build), 
-                len(build) + len(not_build), 
-                len(lib_build), 
-                len(lib_build) + len(lib_not_build)
-            ),  
-            level = level
-        )
-        
-        if is_configured and (not hasattr(config, 'java') or not hasattr(config.java, 'is_enabled')):
-            self.announce(
-                "Your configuration is out of date, please rerun configure",
-                level = level
-            )
+    def subdirs_in_path(self,path):
+        # bit hackish way to filter out non lib stuff
+        if path not in [self.lib_dir, self.lib_src_dir]:
+            return 
+            
+        if not os.path.exists(path):
+            return
+
+        names = sorted(os.listdir(path))
+        for name in names:
+            if name.startswith('.'):
+                continue
+                
+            path_ = os.path.join(path, name)
+            if os.path.isdir(path_):
+                yield path_
 
 class ConfigureCodes(CodeCommand):
 
     description = "run configure for amuse"
 
     def run (self):
-        
+        global config
+        global is_configured
+
         if os.path.exists('config.mk'):
             self.announce("Already configured, not running configure", level = 2)
             return
         environment = self.build_environment()
         self.announce("Running configure for AMUSE", level = 2)
         self.call(['./configure'], env=environment, shell=True)
+
+        from . import config
+        is_configured=True
+
         
 class CleanCodes(CodeCommand):
 
     description = "clean build products in codes"
 
     def run (self):
-            
-        environment = self.build_environment()
+                  
         self.announce("Cleaning libraries and community codes", level = 2)
-        for x in self.makefile_paths(self.lib_dir):
-            self.announce("cleaning libary " + x)
-            self.call(['make','-C', x, 'clean'], env=environment)
-           
-            
-        for x in self.makefile_paths(self.codes_dir):
-            if os.path.exists(x):
-                self.announce("cleaning " + x)
-                self.call(['make','-C', x, 'clean'], env=environment)
+        self.do_clean()
+        
  
 class DistCleanCodes(CodeCommand):
 
     description = "clean for distribution"
 
-    def run (self):
-        environment = self.build_environment()
-        
+    def run (self):      
+      
         self.announce("Cleaning for distribution, libraries and community codes", level = 2)
-        for x in self.makefile_paths(self.lib_dir):
-            self.announce("cleaning libary:" + x)
-            self.call(['make','-C', x, 'distclean'], env=environment)
-            
-        for x in self.makefile_paths(self.codes_dir):
-            self.announce("cleaning community code:" + x)
-            self.call(['make','-C', x, 'distclean'], env=environment)
+        self.do_distclean()
         
-class BuildOneCode(CodeCommand):  
+class BuildOneCode(BuildCodes):  
     description = "build one code"
-    user_options = list(CodeCommand.user_options)
+
+    user_options = list(BuildCodes.user_options)
     user_options.append( ('code-name=', 'n', "name of the code",), )
-    user_options.append( ('clean=', 'c', "clean code",), )
-    
-    
+
     def initialize_options(self):
-        CodeCommand.initialize_options(self)
+        BuildCodes.initialize_options(self)
         self.code_name = None
-        self.clean = 'yes'
         
-    
     def finalize_options (self):
-        CodeCommand.finalize_options(self)
+        BuildCodes.finalize_options(self)
         if self.code_name is None:
             raise Exception("no code was specified")
-        self.must_clean = self.clean == 'yes'
-        self.must_dist_clean = self.clean == 'dist'
-    
+
     def subdirs_in_path(self,path):
         if not os.path.exists(path):
             return
@@ -1254,70 +1119,9 @@ class BuildOneCode(CodeCommand):
             if os.path.isdir(path_):
                 yield path_
 
-    def run (self):
+    def run(self):
         if not self.inplace:
             self.run_command("build_py")
-
-        environment = self.build_environment()
         
-        results = []
-        
-        if not self.lib_dir == self.lib_src_dir:
-            self.copy_build_prereq_to_build_dir()
-            self.copy_lib_to_build_dir()
-            if sys.hexversion > 0x03000000:
-                run_2to3_on_build_dirs(self.makefile_paths(self.lib_src_dir), self.lib_dir,self.lib_src_dir)
+        BuildCodes.run(self)
 
-        if not self.codes_dir == self.codes_src_dir:
-            self.copy_codes_to_build_dir()
-            if sys.hexversion > 0x03000000:
-                run_2to3_on_build_dirs(self.makefile_paths(self.codes_src_dir), self.codes_dir,self.codes_src_dir)
-
-        
-        for x in self.makefile_paths(self.codes_dir):
-            shortname = x[len(self.codes_dir) + 1:].lower()
-            
-            self.announce( "building code {0}".format(shortname), level = log.INFO)
-            if self.must_clean:
-                self.announce("cleaning " + x)
-                self.call(['make','-C', x, 'clean'], env=environment)
-                
-            if self.must_dist_clean:
-                self.announce("cleaning " + x)
-                self.call(['make','-C', x, 'distclean'], env=environment)
-                        
-#            if self.is_mpi_enabled():
-#                returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
-#                results.append(('default',returncode,))
-                
-            returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
-            results.append(('default',returncode,))
-            
-            special_targets = self.get_special_targets(shortname, x, environment)
-            for target,target_name in special_targets:
-                self.announce("building " + x + " version: " + target_name)
-                returncode, _ = self.call(['make','-C', x, target], env = environment)
-                results.append((target,returncode,))            
-
-        if not self.codes_dir == self.codes_src_dir:
-            self.copy_worker_codes_to_build_dir()
-        
-        for x in self.makefile_paths(self.lib_dir):
-            shortname = x[len(self.codes_dir) + 1:].lower()
-            self.announce( "building library {0}".format(shortname), level = log.INFO)
-            
-            self.announce("cleaning " + x)
-            self.call(['make','-C', x, 'clean'], env=environment)
-
-            returncode, _ = self.call(['make','-C', x, 'all'], env = environment)
-            results.append(('default',returncode,))
-            
-            special_targets = self.get_special_targets(shortname, x, environment)
-            for target,target_name in special_targets:
-                self.announce("building " + x + " version: " + target_name)
-                returncode, _ = self.call(['make','-C', x, target], env = environment)
-                results.append((target,returncode,))
-            
-        
-        for name, returncode in results:
-            self.announce( "{0} ... {1}".format(name, "failed" if returncode == 2 else "succeeded"),  level = log.INFO)
