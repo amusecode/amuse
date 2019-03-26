@@ -1,6 +1,6 @@
 #
 #  configuration from config.mk
-
+import os
 import warnings
 
 def parse_configmk(filename):
@@ -18,8 +18,13 @@ def parse_configmk(filename):
           cfgvars[var]=value.strip()
     return cfgvars
 
-configmk=parse_configmk("config.mk")
-
+try:
+  configmk=parse_configmk("config.mk")
+except:
+  from amuse.support import get_amuse_root_dir
+  print(">>", get_amuse_root_dir())
+  configmk=parse_configmk(os.path.join(get_amuse_root_dir(),"config.mk"))
+  
 class interpreters(object):
     python = configmk["PYTHON"] 
 
