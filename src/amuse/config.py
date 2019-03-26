@@ -19,11 +19,10 @@ def parse_configmk(filename):
     return cfgvars
 
 try:
-  configmk=parse_configmk("config.mk")
-except:
-  from amuse.support import get_amuse_root_dir
-  print(">>", get_amuse_root_dir())
-  configmk=parse_configmk(os.path.join(get_amuse_root_dir(),"config.mk"))
+    configmk=parse_configmk("config.mk")
+except IOError:
+    from amuse.support import get_amuse_root_dir
+    configmk=parse_configmk(os.path.join(get_amuse_root_dir(),"config.mk"))
   
 class interpreters(object):
     python = configmk["PYTHON"] 
