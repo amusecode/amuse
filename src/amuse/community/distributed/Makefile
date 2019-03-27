@@ -79,6 +79,8 @@ data/worker.jar: Worker.java CodeInterface.java Code.java data
 data: src/dist/distributed-amuse.jar
 	mkdir -p data
 	$(CP) src/dist/*.jar data/
+	$(CP) logback.xml data/
+	$(CP) smartsockets.properties data/
 
 distributed_worker: interface.py java_check data/worker.jar src/dist/distributed-amuse.jar
 	$(CODE_GENERATOR) -x --type=java --mode=script amuse.community.distributed.interface DistributedAmuseInterface -o $@
