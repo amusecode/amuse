@@ -34,8 +34,15 @@ from amuse.ext.galactics_model import new_galactics_model
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
 
-from amuse.community.bhtree.interface import BHTree, BHTreeInterface
-from amuse.community.hermite0.interface import Hermite, HermiteInterface
+missing_modules = []
+try:
+    from amuse.community.bhtree.interface import BHTree, BHTreeInterface
+except ImportError:
+    missing_modules.append("bhtree")
+try:
+    from amuse.community.hermite0.interface import Hermite, HermiteInterface
+except ImportError:
+    missing_modules.append("hermite0")
 from amuse.community.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
 from amuse.community.octgrav.interface import Octgrav, OctgravInterface
 from amuse.community.twobody.interface import TwoBody, TwoBodyInterface
@@ -76,6 +83,11 @@ from amuse.community.mesa.interface import MESA, MESAInterface
 from amuse.community.mmams.interface import MakeMeAMassiveStar, MakeMeAMassiveStarInterface
 
 from amuse.community.hop.interface import Hop, HopInterface
+
+if missing_modules:
+    print("Can't import the following modules (maybe they need to be installed?): ")
+    for x in missing_modules:
+        print("%s, " % x)
 
 from amuse.support.console import set_printing_strategy
 from amuse.support.console import get_current_printing_strategy
