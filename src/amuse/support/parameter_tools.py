@@ -1,3 +1,5 @@
+import numpy
+
 from ConfigParser import ConfigParser
 
 try:

@@ -3,9 +3,6 @@ build.py
 config.log
 config.mk
 config.status
-src/amuse/config.py
-support/config.py
-support3/config.py
 
 # general build / compile files
 *.a
