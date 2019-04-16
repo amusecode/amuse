@@ -29,6 +29,10 @@ from distutils import file_util
 from distutils.errors import DistutilsError
 if sys.hexversion > 0x03000000:
     from distutils.util import run_2to3
+from distutils.command.build import build
+from distutils.command.clean import clean
+from distutils.command.install import install
+
 from subprocess import call, Popen, PIPE, STDOUT
 
 try:
@@ -1125,3 +1129,54 @@ class BuildOneCode(BuildCodes):
         
         BuildCodes.run(self)
 
+class Clean(clean):
+
+    def run(self):
+        for cmd_name in self.get_sub_commands():
+            self.run_command(cmd_name)
+
+class Install(install):
+
+    def run(self):
+        for cmd_name in self.get_sub_commands():
+            self.run_command(cmd_name)
+
+        install.run(self)
+
+def setup_commands():
+    from generate_main import generate_main
+    from build_latex import build_latex
+    from support.run_tests import run_tests
+
+    if sys.hexversion > 0x03000000:
+        from distutils.command.build_py import build_py_2to3
+
+    mapping_from_command_name_to_command_class = {
+        'build_latex': build_latex,
+        'build_codes': BuildCodes,
+        'build_libraries': BuildLibraries,
+        'build_code': BuildOneCode,
+        'configure_codes': ConfigureCodes,
+        'clean_codes': CleanCodes,
+        'dist_clean': DistCleanCodes,
+        'clean_python': clean,
+        'clean': Clean,
+        'tests': run_tests,
+        'generate_main': generate_main,
+        'generate_install_ini': GenerateInstallIni,
+        'install': install,
+        'install_libraries': InstallLibraries
+    }
+    
+    if sys.hexversion > 0x03000000:
+        mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
+    
+    build.sub_commands.insert(0, ('configure_codes', None))
+    build.sub_commands.append(('build_codes', None))
+    Clean.sub_commands.append(('clean_codes', None))
+    Clean.sub_commands.append(('clean_python', None))
+    
+    Install.sub_commands.insert(0, ('generate_install_ini', None))
+    Install.sub_commands.append(('install_libraries', None))
+    
+    return mapping_from_command_name_to_command_class
