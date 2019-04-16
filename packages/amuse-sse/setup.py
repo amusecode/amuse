@@ -1,22 +1,11 @@
 import sys
 import os
 
-from distutils.command.build import build
-from distutils.command.clean import clean
-from distutils.command.install import install
-from distutils.util import convert_path
 from setuptools import setup
 
 import support
 support.use("system")
-
-from support.setup_codes import (
-    BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode, BuildLibraries,
-    ConfigureCodes, GenerateInstallIni, InstallLibraries,
-)
-
-if sys.hexversion > 0x03000000:
-    from distutils.command.build_py import build_py_2to3
+from support.setup_codes import setup_commands
 
 name = 'amuse-sse'
 version = "12.0a5"
@@ -56,45 +45,6 @@ classifiers = [
 ]
 
 extensions = []
-
-
-class Clean(clean):
-
-    def run(self):
-        for cmd_name in self.get_sub_commands():
-            self.run_command(cmd_name)
-
-
-class Install(install):
-
-    def run(self):
-        for cmd_name in self.get_sub_commands():
-            self.run_command(cmd_name)
-
-        install.run(self)
-
-
-mapping_from_command_name_to_command_class = {
-    'build_codes': BuildCodes,
-    'build_libraries': BuildLibraries,
-    'build_code': BuildOneCode,
-    'configure_codes': ConfigureCodes,
-    'clean_codes': CleanCodes,
-    'dist_clean': DistCleanCodes,
-    'clean_python': clean,
-    'clean': Clean,
-    'generate_install_ini': GenerateInstallIni,
-    'install': install,
-    'install_libraries': InstallLibraries
-}
-
-if sys.hexversion > 0x03000000:
-    mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
-
-build.sub_commands.insert(0, ('configure_codes', None))
-build.sub_commands.append(('build_codes', None))
-Clean.sub_commands.append(('clean_codes', None))
-Clean.sub_commands.append(('clean_python', None))
 
 all_data_files = []
 
