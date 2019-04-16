@@ -8,17 +8,14 @@ recursive-include src/amuse *
 recursive-include lib *
 recursive-include support *
 
-exclude support/config.py
-exclude support/config.pyc
-
 recursive-exclude src/amuse/community *
 
 include src/amuse/community/__init__.py
 recursive-include src/amuse/community/interface *
 recursive-include src/amuse/community/distributed *
 
-recursive-exclude src *.pyc *.o *~ .pc ccache *.a
-recursive-exclude lib *.pyc *.o *~ ccache *.a
+recursive-exclude src *.pyc *.o *~ .pc ccache *.a *.so *.mod
+recursive-exclude lib *.pyc *.o *~ ccache *.a *.so *.mod
 recursive-exclude support *.pyc *.o *~ ccache *.a
 
 

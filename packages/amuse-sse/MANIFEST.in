@@ -2,5 +2,5 @@ recursive-include src *
 recursive-include support *
 
 recursive-exclude src *.pyc *.o *~ .pc ccache *.a
-
+recursive-exclude support *.pyc *.o *~ ccache *.a
 
