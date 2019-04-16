@@ -2,7 +2,6 @@ include configure
 include README.md
 include config.mk.in
 include build.py.in
-include ez_setup.py
 include support/configpy.in
 
 recursive-include src/amuse *
