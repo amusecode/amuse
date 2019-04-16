@@ -7,8 +7,6 @@ from distutils.command.install import install
 from distutils.util import convert_path
 from setuptools import setup, find_packages
 
-from ez_setup import use_setuptools
-
 from support.generate_main import generate_main
 from support.build_latex import build_latex
 from support.setup_codes import (
@@ -20,9 +18,6 @@ from support.misc import find_data_files
 
 if sys.hexversion > 0x03000000:
     from distutils.command.build_py import build_py_2to3
-
-use_setuptools()
-#include_dirs.append(sysconfig.get_python_inc())
 
 extensions = []
 

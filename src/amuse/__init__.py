@@ -34,3 +34,8 @@ def numpy_fix():
       pass
       
 numpy_fix()
+
+try:
+    from . import config
+except:
+    raise Exception("amuse is not configured correctly")
