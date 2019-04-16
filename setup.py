@@ -4,7 +4,6 @@ import os
 from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
-from distutils.util import convert_path
 from setuptools import setup, find_packages
 
 from support.generate_main import generate_main
