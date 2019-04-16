@@ -53,6 +53,8 @@ packages = ['amuse.community.sse']
 package_data = {
 }
 
+mapping_from_command_name_to_command_class=setup_commands()
+
 setup(
     name=name,
     version=version,
