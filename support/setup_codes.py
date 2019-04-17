@@ -36,10 +36,11 @@ from distutils.command.install import install
 
 from subprocess import call, Popen, PIPE, STDOUT
 
-from .generate_main import generate_main
-from .build_latex import build_latex
-from .run_tests import run_tests
-
+if supportrc["framework_install"]:
+    from .generate_main import generate_main
+    from .build_latex import build_latex
+    from .run_tests import run_tests
+  
 try:
     from numpy.distutils import fcompiler
 except ImportError:
@@ -47,12 +48,6 @@ except ImportError:
 
 # check if Python is called on the first line with this expression
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
-
-if not supportrc["framework_install"]:
-    try:
-        from amuse.support import get_amuse_root_dir
-    except ImportError:
-        raise Exception("AMUSE framework needs to be installed and environment set up.")
     
 from glob import glob
 
@@ -321,6 +316,10 @@ class CodeCommand(Command):
             pass
         else:
             if not supportrc["framework_install"]:
+                try:
+                    from amuse.support import get_amuse_root_dir
+                except ImportError:
+                    raise Exception("AMUSE framework needs to be installed and environment set up.")
                 self.environment['AMUSE_DIR'] = get_amuse_root_dir()
             else:
                 if self.inplace:
