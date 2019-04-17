@@ -11,7 +11,7 @@ name = 'amuse-sse'
 version = "12.0a5"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
-license = "Apache License 2.0"
+license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
     'wheel>=0.32',
@@ -62,6 +62,7 @@ setup(
     url=url,
     author_email=author_email,
     author=author,
+    license=license_,
     description=description,
     long_description=long_description,
     long_description_content_type=long_description_content_type,
