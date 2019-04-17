@@ -257,11 +257,15 @@ class CodeCommand(Command):
         self.config=None
 
         if supportrc["framework_install"]:
-            from . import config
+            try:
+                from . import config
+                self.config=config
+            except ImportError:
+                # continue
+                pass
         else:
             from amuse import config
-            
-        self.config=config
+            self.config=config
 
         if self.codes_dir is None:
             if self.inplace:
@@ -1073,12 +1077,20 @@ class ConfigureCodes(CodeCommand):
 
     def run (self):
 
-        if os.path.exists('config.mk') or is_configured:
+        if os.path.exists('config.mk') or self.config:
             self.announce("Already configured, not running configure", level = 2)
             return
         environment = self.build_environment()
         self.announce("Running configure for AMUSE", level = 2)
         self.call(['./configure'], env=environment, shell=True)
+        if not os.path.exists('config.mk'):
+            raise Exception("configure failed")
+        with open("config.mk") as infile:
+            self.announce("configure generated config.mk", level=2)
+            self.announce("="*80, level=2)
+            for line in infile:
+                self.announce(line[:-1], level=2)
+            self.announce("="*80, level=2)
 
         
 class CleanCodes(CodeCommand):
