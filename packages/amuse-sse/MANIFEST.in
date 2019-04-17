@@ -1,6 +1,7 @@
-recursive-include src *
-recursive-include support *
+include support/config.py
+include support/__init__.py
+include support/setup_codes.py
 
+recursive-include src *
 recursive-exclude src *.pyc *.o *~ .pc ccache *.a
-recursive-exclude support *.pyc *.o *~ ccache *.a
 
