@@ -48,15 +48,11 @@ except ImportError:
 # check if Python is called on the first line with this expression
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
-try:
-    if supportrc["framework_install"]:
-        from . import config
-    else:
-        from amuse import config
+if not supportrc["framework_install"]:
+    try:
         from amuse.support import get_amuse_root_dir
-    is_configured = hasattr(config, 'compilers')
-except ImportError:
-    is_configured = False
+    except ImportError:
+        raise Exception("AMUSE framework needs to be installed and environment set up.")
     
 from glob import glob
 
@@ -257,7 +253,16 @@ class CodeCommand(Command):
            ('debug', 'debug'),
            ('force', 'force'),
         )
-        
+
+        self.config=None
+
+        if supportrc["framework_install"]:
+            from . import config
+        else:
+            from amuse import config
+            
+        self.config=config
+
         if self.codes_dir is None:
             if self.inplace:
                 self.codes_dir = os.path.join(self.amuse_src_dir,'community')
@@ -288,8 +293,8 @@ class CodeCommand(Command):
                 self.lib_src_dir = self.codes_dir
                 self.lib_dir=os.path.join(self.build_temp, 'lib')
 
-        if is_configured:
-            self.environment['PYTHON'] = config.interpreters.python
+        if self.config:
+            self.environment['PYTHON'] = self.config.interpreters.python
         else:
             self.environment['PYTHON'] = sys.executable
             
@@ -333,8 +338,8 @@ class CodeCommand(Command):
             self.environment['FORTRAN'] = os.environ['FORTRAN']
             return
             
-        if is_configured:
-            self.environment['FORTRAN'] = config.compilers.fc
+        if self.config:
+            self.environment['FORTRAN'] = self.config.compilers.fc
             return
         
         if 'FC' in os.environ:
@@ -376,26 +381,26 @@ class CodeCommand(Command):
     
     
     def is_mpi_enabled(self):
-        if is_configured and hasattr(config.mpi, 'is_enabled'):
-            return config.mpi.is_enabled
+        if self.config and hasattr(self.config.mpi, 'is_enabled'):
+            return self.config.mpi.is_enabled
         else:
             return True
     
     def set_cuda_variables(self):
         all_found = True
-        if is_configured and config.cuda.is_enabled:
+        if self.config and self.config.cuda.is_enabled:
             self.found_cuda = True
-            self.environment['CUDA_LIBDIRS'] = '-L'+config.cuda.toolkit_path+'/lib' + ' -L'+config.cuda.toolkit_path+'/lib64'
-            self.environment['CUDA_TK'] = config.cuda.toolkit_path
-            self.environment['CUDA_SDK'] = config.cuda.sdk_path
-            if hasattr(config.cuda, 'cuda_libs'):
-                self.environment['CUDA_LIBS'] = config.cuda.cuda_libs
+            self.environment['CUDA_LIBDIRS'] = '-L'+self.config.cuda.toolkit_path+'/lib' + ' -L'+self.config.cuda.toolkit_path+'/lib64'
+            self.environment['CUDA_TK'] = self.config.cuda.toolkit_path
+            self.environment['CUDA_SDK'] = self.config.cuda.sdk_path
+            if hasattr(self.config.cuda, 'cuda_libs'):
+                self.environment['CUDA_LIBS'] = self.config.cuda.cuda_libs
             else:
                 raise DistutilsError("configuration is not up to date for cuda, please reconfigure amuse by running 'configure --enable-cuda'")
                
             return
             
-        if is_configured and not config.cuda.is_enabled:
+        if self.config and not self.config.cuda.is_enabled:
             self.found_cuda = True
             self.environment['CUDA_LIBDIRS'] = '-L/NOCUDACONFIGURED/lib' + ' -LNOCUDACONFIGURED/lib64'
             self.environment['CUDA_LIBS'] = '-lnocuda'
@@ -431,41 +436,41 @@ class CodeCommand(Command):
         self.found_cuda = True
 
     def set_mpi_variables(self):
-        if is_configured:
-            self.environment['MPICXX'] = config.mpi.mpicxx
-            self.environment['MPICC'] = config.mpi.mpicc
-            self.environment['MPIF90'] = config.mpi.mpif95
+        if self.config:
+            self.environment['MPICXX'] = self.config.mpi.mpicxx
+            self.environment['MPICC'] = self.config.mpi.mpicc
+            self.environment['MPIF90'] = self.config.mpi.mpif95
             return
 
     
     def set_compiler_variables(self):
-        if is_configured and not hasattr(config.compilers, 'found_fftw'):
+        if self.config and not hasattr(self.config.compilers, 'found_fftw'):
             raise DistutilsError("configuration is not up to date, please reconfigure amuse by running 'configure'")
             
-        if is_configured:
-            self.environment['CXX'] = config.compilers.cxx
-            self.environment['CC'] = config.compilers.cc
-            self.environment['FC'] = config.compilers.fc
-            self.environment['CFLAGS'] = config.compilers.cc_flags
-            self.environment['CXXFLAGS'] = config.compilers.cxx_flags
-            self.environment['FFLAGS'] = config.compilers.fc_flags
+        if self.config:
+            self.environment['CXX'] = self.config.compilers.cxx
+            self.environment['CC'] = self.config.compilers.cc
+            self.environment['FC'] = self.config.compilers.fc
+            self.environment['CFLAGS'] = self.config.compilers.cc_flags
+            self.environment['CXXFLAGS'] = self.config.compilers.cxx_flags
+            self.environment['FFLAGS'] = self.config.compilers.fc_flags
             
-            if config.compilers.found_fftw == 'yes':
-                self.environment['FFTW_FLAGS'] = config.compilers.fftw_flags
-                self.environment['FFTW_LIBS'] = config.compilers.fftw_libs
+            if self.config.compilers.found_fftw == 'yes':
+                self.environment['FFTW_FLAGS'] = self.config.compilers.fftw_flags
+                self.environment['FFTW_LIBS'] = self.config.compilers.fftw_libs
             
             
-            if config.compilers.found_gsl == 'yes':
-                self.environment['GSL_FLAGS'] = config.compilers.gsl_flags
-                self.environment['GSL_LIBS'] = config.compilers.gsl_libs
+            if self.config.compilers.found_gsl == 'yes':
+                self.environment['GSL_FLAGS'] = self.config.compilers.gsl_flags
+                self.environment['GSL_LIBS'] = self.config.compilers.gsl_libs
                 
             return
 
     def set_java_variables(self):
-        if is_configured and hasattr(config, 'java') and hasattr(config.java, 'is_enabled') and config.java.is_enabled:
-            self.environment['JAVA'] = config.java.java
-            self.environment['JAVAC'] = config.java.javac
-            self.environment['JAR'] = config.java.jar
+        if self.config and hasattr(self.config, 'java') and hasattr(self.config.java, 'is_enabled') and self.config.java.is_enabled:
+            self.environment['JAVA'] = self.config.java.java
+            self.environment['JAVAC'] = self.config.java.javac
+            self.environment['JAR'] = self.config.java.jar
         else:
             self.environment['JAVA'] = ''
             self.environment['JAVAC'] = ''
@@ -473,9 +478,9 @@ class CodeCommand(Command):
         return
 
     def set_openmp_flags(self):
-        if is_configured and hasattr(config, 'openmp'):
-            self.environment['OPENMP_FCFLAGS'] = config.openmp.fcflags
-            self.environment['OPENMP_CFLAGS'] = config.openmp.cflags
+        if self.config and hasattr(self.config, 'openmp'):
+            self.environment['OPENMP_FCFLAGS'] = self.config.openmp.fcflags
+            self.environment['OPENMP_CFLAGS'] = self.config.openmp.cflags
         else:
             self.environment['OPENMP_FCFLAGS'] = ''
             self.environment['OPENMP_CFLAGS'] = ''
@@ -495,11 +500,11 @@ class CodeCommand(Command):
                 self.environment['SAPPORO_LIBDIRS']
             )
         else:
-            if is_configured and hasattr(config.cuda, 'sapporo_version'):
-                if config.cuda.sapporo_version == '2':
+            if self.config and hasattr(self.config.cuda, 'sapporo_version'):
+                if self.config.cuda.sapporo_version == '2':
                     self.environment['SAPPORO_LIBS'] = '-L{0}/lib/sapporo-2 -lsapporo {1}'.format(
                         os.path.abspath(os.getcwd()),
-                        config.openmp.cflags
+                        self.config.openmp.cflags
                     )
                 else:
                     self.environment['SAPPORO_LIBS'] = '-L{0}/lib/sapporo_light -lsapporo'.format(
@@ -1034,7 +1039,7 @@ class BuildCodes(CodeCommand):
             level = level
         )
         
-        if is_configured and (not hasattr(config, 'java') or not hasattr(config.java, 'is_enabled')):
+        if self.config and (not hasattr(self.config, 'java') or not hasattr(self.config.java, 'is_enabled')):
             self.announce(
                 "Your configuration is out of date, please rerun configure",
                 level = level
@@ -1067,8 +1072,6 @@ class ConfigureCodes(CodeCommand):
     description = "run configure for amuse"
 
     def run (self):
-        global config
-        global is_configured
 
         if os.path.exists('config.mk') or is_configured:
             self.announce("Already configured, not running configure", level = 2)
@@ -1076,9 +1079,6 @@ class ConfigureCodes(CodeCommand):
         environment = self.build_environment()
         self.announce("Running configure for AMUSE", level = 2)
         self.call(['./configure'], env=environment, shell=True)
-
-        from . import config
-        is_configured=True
 
         
 class CleanCodes(CodeCommand):
