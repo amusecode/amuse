@@ -1170,6 +1170,7 @@ def setup_commands():
         'clean': Clean,
         'generate_install_ini': GenerateInstallIni,
         'install': install,
+        'build_libraries': BuildLibraries,
         'install_libraries': InstallLibraries
     }
     
@@ -1180,19 +1181,18 @@ def setup_commands():
     build.sub_commands.append(('build_codes', None))
     Clean.sub_commands.append(('clean_codes', None))
     Clean.sub_commands.append(('clean_python', None))
+    Install.sub_commands.insert(0, ('generate_install_ini', None))
+    Install.sub_commands.append(('install_libraries', None))
     
     if supportrc["framework_install"]:
         mapping_from_command_name_to_command_class.update(
             {
                 'build_latex': build_latex,
-                'build_libraries': BuildLibraries,
                 'generate_main': generate_main,
                 'tests': run_tests,
             }
         )
 
-        Install.sub_commands.insert(0, ('generate_install_ini', None))
-        Install.sub_commands.append(('install_libraries', None))
 
 
     
