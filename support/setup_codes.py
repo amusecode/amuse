@@ -729,7 +729,9 @@ class CodeCommand(Command):
     def build_environment(self):
         environment=self.environment.copy()
         environment.update(os.environ)
-        path=os.path.join(environment["AMUSE_DIR"],"src")
+        path=os.path.join(environment["MUSE_PACKAGE_DIR"],"src")
+        if environment["MUSE_PACKAGE_DIR"]!=environment["AMUSE_DIR"]:
+            path=path+":"+os.path.join(environment["AMUSE_DIR"],"src")
         path=path+':'+environment.get("PYTHONPATH", "")
         environment["PYTHONPATH"]=path
         return environment
