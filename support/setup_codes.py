@@ -115,7 +115,7 @@ class InstallLibraries(Command):
                 self.lib_dir=os.path.join(self.build_temp, 'lib')
 
     def run(self):
-        data_dir = os.path.join(self.install_data,'share','amuse')
+        data_dir = os.path.join(self.install_data,'share','amuse') # for the moment add to amuse..
         data_dir = os.path.abspath(data_dir)
 
         # copy only:
@@ -159,7 +159,7 @@ class GenerateInstallIni(Command):
         #~ raise
         
     def run(self):
-        outfilename = os.path.join(self.build_dir, 'amuse', 'amuserc')
+        outfilename = os.path.join(self.build_dir, supportrc["package_name"], 'amuserc')
         
         
         # this does not work for pip installs
@@ -186,7 +186,7 @@ class GenerateInstallIni(Command):
             installinilines.append('[test]')
             installinilines.append('can_run_tests_to_compile_modules=0')
 
-        self.mkpath(os.path.join(self.build_dir, 'amuse'))
+        self.mkpath(os.path.join(self.build_dir, supportrc["package_name"]))
         file_util.write_file(outfilename, installinilines)
         
         
@@ -225,7 +225,7 @@ class CodeCommand(Command):
         self.codes_dir = None
         self.lib_dir = None
         self.lib_src_dir = None
-        self.amuse_src_dir =  os.path.join('src','amuse')
+        self.amuse_src_dir =  os.path.join('src',supportrc["package_name"])
         self.environment = {}
         self.environment_notset = {}
         self.found_cuda = False
@@ -574,7 +574,7 @@ class CodeCommand(Command):
             worker_so_re = re.compile(r'([a-zA-Z0-9]+_)?cython(_[a-zA-Z0-9]+)?.so')
             
         
-        lib_binbuilddir = os.path.join(self.build_lib, 'amuse', '_workers')
+        lib_binbuilddir = os.path.join(self.build_lib, supportrc["package_name"], '_workers')
         if not os.path.exists(lib_binbuilddir):
             self.mkpath(lib_binbuilddir)
             
@@ -1164,12 +1164,10 @@ def setup_commands():
     mapping_from_command_name_to_command_class = {
         'build_codes': BuildCodes,
         'build_code': BuildOneCode,
-        'configure_codes': ConfigureCodes,
         'clean_codes': CleanCodes,
         'dist_clean': DistCleanCodes,
         'clean_python': clean,
         'clean': Clean,
-        'generate_install_ini': GenerateInstallIni,
         'install': install,
         'build_libraries': BuildLibraries,
         'install_libraries': InstallLibraries
@@ -1178,21 +1176,23 @@ def setup_commands():
     if sys.hexversion > 0x03000000:
         mapping_from_command_name_to_command_class['build_py'] = build_py_2to3
     
-    build.sub_commands.insert(0, ('configure_codes', None))
     build.sub_commands.append(('build_codes', None))
     Clean.sub_commands.append(('clean_codes', None))
     Clean.sub_commands.append(('clean_python', None))
-    Install.sub_commands.insert(0, ('generate_install_ini', None))
     Install.sub_commands.append(('install_libraries', None))
     
     if supportrc["framework_install"]:
         mapping_from_command_name_to_command_class.update(
             {
+                'configure_codes': ConfigureCodes,
+                'generate_install_ini': GenerateInstallIni,
                 'build_latex': build_latex,
                 'generate_main': generate_main,
                 'tests': run_tests,
             }
         )
+        build.sub_commands.insert(0, ('configure_codes', None))
+        Install.sub_commands.insert(0, ('generate_install_ini', None))
 
 
 
