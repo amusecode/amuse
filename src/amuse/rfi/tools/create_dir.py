@@ -1,9 +1,9 @@
-from amuse.support.core import late, print_out
+import os
 
+from amuse.support import get_amuse_root_dir
+from amuse.support.core import late, print_out
 from amuse.support.options import option
 from amuse.support.options import OptionalAttributes
-
-import os
 
 interface_file_template = """\
 from amuse.community import *
@@ -53,7 +53,7 @@ class {0.name_of_the_community_interface_class}Tests(TestWithMPI):
 makefile_template_cxx = """\
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?={0.reference_to_amuse_path}
+AMUSE_DIR?=$(realpath {0.reference_to_amuse_path} )
 -include $(AMUSE_DIR)/config.mk
 
 MPICXX   ?= mpicxx
@@ -66,14 +66,16 @@ OBJS = {0.name_of_the_interface_code}.o
 
 CODELIB = src/lib{0.name_of_the_community_code}.a
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
-
 all: {0.name_of_the_community_code}_worker 
 
 clean:
+\t$(RM) -rf __pycache__
 \t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 \t$(RM) *~ {0.name_of_the_community_code}_worker worker_code.cc
 \tmake -C src clean
+
+distclean: clean
+\tmake -C src distclean
 
 $(CODELIB):
 \tmake -C src all
@@ -109,6 +111,8 @@ all: $(CODELIB)
 
 clean:
 \t$(RM) -f *.o *.a
+
+distclean: clean
 
 $(CODELIB): $(CODEOBJS)
 \t$(RM) -f $@
@@ -232,18 +236,9 @@ class CreateADirectoryAndPopulateItWithFiles(OptionalAttributes):
     def name_of_the_superclass_for_the_code_interface_class(self):
         return "InCodeComponentImplementation"
         
-    @option(sections=['data'])
+    @late
     def amuse_root_dir(self):
-        if 'AMUSE_DIR' in os.environ:
-            return os.environ['AMUSE_DIR']    
-        previous = None
-        result = os.path.abspath(__file__)
-        while not os.path.exists(os.path.join(result,'build.py')):
-            result = os.path.dirname(result)
-            if result == previous:
-                return os.path.dirname(os.path.dirname(__file__))
-            previous = result
-        return result
+        return get_amuse_root_dir()
         
     def start(self):
         
@@ -310,7 +305,7 @@ class CreateADirectoryAndPopulateItWithFilesForACCode(CreateADirectoryAndPopulat
 makefile_template_fortran = """\
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?={0.reference_to_amuse_path}
+AMUSE_DIR?=$(realpath {0.reference_to_amuse_path} )
 -include $(AMUSE_DIR)/config.mk
 
 MPIFC ?= mpif90
@@ -322,14 +317,16 @@ OBJS = {0.name_of_the_interface_code}.o
 
 CODELIB = src/lib{0.name_of_the_community_code}.a
 
-CODE_GENERATOR = $(AMUSE_DIR)/build.py
-
 all: {0.name_of_the_community_code}_worker 
 
 clean:
+\t$(RM) -rf __pycache__
 \t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 \t$(RM) *~ worker_code worker_code.f90
 \tmake -C src clean
+
+distclean: clean
+\tmake -C src distclean
 
 $(CODELIB):
 \tmake -C src all
@@ -362,6 +359,8 @@ all: $(CODELIB)
 
 clean:
 \t$(RM) -f *.o *.a
+
+distclean: clean
 
 $(CODELIB): $(CODEOBJS)
 \t$(RM) -f $@

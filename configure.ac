@@ -5,6 +5,11 @@ AC_CONFIG_FILES([config.mk])
 AC_CONFIG_FILES([build.py],[chmod +x build.py])
 AC_CONFIG_FILES([amusifier:build.py],[chmod +x amusifier])
 
+#CODE_GENERATOR="\${AMUSE_DIR}/build.py"
+CODE_GENERATOR=amusifier
+
+AC_SUBST(CODE_GENERATOR)
+
 AC_PROG_CC()
 AC_PROG_CXX()
 AC_PROG_FC([],95)

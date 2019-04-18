@@ -793,6 +793,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+CODE_GENERATOR
 target_alias
 host_alias
 build_alias
@@ -2590,6 +2591,11 @@ ac_config_files="$ac_config_files config.mk"
 ac_config_files="$ac_config_files build.py"
 
 ac_config_files="$ac_config_files amusifier:build.py"
+
+
+#CODE_GENERATOR="\${AMUSE_DIR}/build.py"
+CODE_GENERATOR=amusifier
+
 
 
 ac_ext=c
