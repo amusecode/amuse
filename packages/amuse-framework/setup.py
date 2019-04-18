@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 from support.setup_codes import setup_commands
 
 name = 'amuse-framework'
-version = "12.0a5"
+version = "12.0.0"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
