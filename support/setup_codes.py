@@ -959,7 +959,8 @@ class BuildCodes(CodeCommand):
                 
         
         if not self.codes_dir == self.codes_src_dir:
-            self.copy_config_to_build_dir()
+            if supportrc["framework_install"]:
+                self.copy_config_to_build_dir()
             self.copy_worker_codes_to_build_dir()
             
         with open(buildlog, "a") as output:
