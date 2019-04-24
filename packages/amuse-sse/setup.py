@@ -8,7 +8,7 @@ support.use("system")
 from support.setup_codes import setup_commands
 
 name = 'amuse-sse'
-version = "12.0.0"
+version = "12.0.0rc1"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -20,9 +20,9 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
-    'amuse-framework>=12.0.0',
+    'amuse-framework>=12.0.0rc1',
 ]
-description = 'The Astrophysical Multipurpose Software Environment'
+description = 'The Astrophysical Multipurpose Software Environment - SSE'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
