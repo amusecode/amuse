@@ -1,12 +1,14 @@
 import sys
 import os
 
-from setuptools import setup, find_packages
-from support.setup_codes import setup_commands
-from support.misc import find_data_files
+from setuptools import setup
 
-name = 'amuse'
-version = "12.0"
+import support
+support.use("system")
+from support.setup_codes import setup_commands
+
+name = 'amuse-sse'
+version = "12.0.0"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -18,6 +20,7 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
+    'amuse-framework>=12.0.0',
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
 with open("README.md", "r") as fh:
@@ -43,29 +46,11 @@ classifiers = [
 
 extensions = []
 
-all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive=True)
-all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
+all_data_files = []
 
-packages = find_packages('src')
-packages.extend(['amuse.test.suite.' + x for x in find_packages('test')])
-packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
+packages = ['amuse.community.sse']
 
 package_data = {
-    'amuse.rfi.tools': ['*.template'],
-    'amuse.test.suite.core_tests': [
-        '*.txt', '*.dyn', '*.ini',
-        '*.nemo',
-        '*.dat', 'gadget_snapshot'
-    ],
-    'amuse.test.suite.codes_tests': [
-        '*.txt', 'test_sphray_data*'
-    ],
-    'amuse.test.suite.ticket_tests': [
-        '*.out'
-    ],
-    'amuse': [
-        '*rc'
-    ]
 }
 
 mapping_from_command_name_to_command_class=setup_commands()
@@ -84,9 +69,8 @@ setup(
     install_requires=install_requires,
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'': 'src', 'amuse.test.suite' :'test', 'amuse.examples' : 'examples'},
+    package_dir={'amuse.community.sse': 'src/amuse/community/sse'},
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
-    scripts=[ "amusifier" ],
 )

@@ -1,12 +1,8 @@
-import sys
-import os
+from setuptools import setup
 
-from setuptools import setup, find_packages
-from support.setup_codes import setup_commands
-from support.misc import find_data_files
 
 name = 'amuse'
-version = "12.0"
+version = "12.0a5"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -18,6 +14,8 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
+    'amuse-framework>=%s' % version,
+    'amuse-sse>=%s' % version,
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
 with open("README.md", "r") as fh:
@@ -41,35 +39,6 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Astronomy',
 ]
 
-extensions = []
-
-all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive=True)
-all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
-
-packages = find_packages('src')
-packages.extend(['amuse.test.suite.' + x for x in find_packages('test')])
-packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
-
-package_data = {
-    'amuse.rfi.tools': ['*.template'],
-    'amuse.test.suite.core_tests': [
-        '*.txt', '*.dyn', '*.ini',
-        '*.nemo',
-        '*.dat', 'gadget_snapshot'
-    ],
-    'amuse.test.suite.codes_tests': [
-        '*.txt', 'test_sphray_data*'
-    ],
-    'amuse.test.suite.ticket_tests': [
-        '*.out'
-    ],
-    'amuse': [
-        '*rc'
-    ]
-}
-
-mapping_from_command_name_to_command_class=setup_commands()
-
 setup(
     name=name,
     version=version,
@@ -82,11 +51,4 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
-    cmdclass=mapping_from_command_name_to_command_class,
-    ext_modules=extensions,
-    package_dir={'': 'src', 'amuse.test.suite' :'test', 'amuse.examples' : 'examples'},
-    packages=packages,
-    package_data=package_data,
-    data_files=all_data_files,
-    scripts=[ "amusifier" ],
 )

@@ -3,10 +3,9 @@ import os
 
 from setuptools import setup, find_packages
 from support.setup_codes import setup_commands
-from support.misc import find_data_files
 
-name = 'amuse'
-version = "12.0"
+name = 'amuse-framework'
+version = "12.0.0"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -43,12 +42,12 @@ classifiers = [
 
 extensions = []
 
-all_data_files = find_data_files('data', 'share/amuse/data', '*', recursive=True)
+all_data_files = []
 all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
 
-packages = find_packages('src')
-packages.extend(['amuse.test.suite.' + x for x in find_packages('test')])
-packages.extend(['amuse.examples.' + x for x in find_packages('examples')])
+packages = find_packages('src', exclude=["amuse.community.*"])
+packages.append("amuse.community.interface")
+packages.append("amuse.community.distributed")
 
 package_data = {
     'amuse.rfi.tools': ['*.template'],
@@ -84,7 +83,7 @@ setup(
     install_requires=install_requires,
     cmdclass=mapping_from_command_name_to_command_class,
     ext_modules=extensions,
-    package_dir={'': 'src', 'amuse.test.suite' :'test', 'amuse.examples' : 'examples'},
+    package_dir={'': 'src'},
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
