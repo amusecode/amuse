@@ -7,6 +7,11 @@ import sys, os, re, subprocess
 from . import supportrc
 
 try:
+    import numpy
+except ImportError:
+    raise Exception("numpy needed during build; check other prerequisites")
+
+try:
     import ConfigParser as configparser
     from StringIO import StringIO
 except ImportError:
@@ -304,8 +309,9 @@ class CodeCommand(Command):
         
         self.set_fortran_variables()
         
-        self.environment['F90'] = self.environment['FORTRAN']
-        self.environment['FC'] = self.environment['FORTRAN']
+        if 'FORTRAN' in self.environment:
+            self.environment['F90'] = self.environment['FORTRAN']
+            self.environment['FC'] = self.environment['FORTRAN']
         self.set_java_variables()
         self.set_openmp_flags()
         self.set_libdir_variables()
@@ -376,10 +382,11 @@ class CodeCommand(Command):
         except:
             pass
             
-            
-        compiler = fcompiler.new_fcompiler(requiref90=True)
-        fortran_executable = compiler.executables['compiler_f90'][0]
-        self.environment['FORTRAN'] = fortran_executable
+        
+        if fcompiler:    
+            compiler = fcompiler.new_fcompiler(requiref90=True)
+            fortran_executable = compiler.executables['compiler_f90'][0]
+            self.environment['FORTRAN'] = fortran_executable
     
     
     
@@ -1083,8 +1090,10 @@ class ConfigureCodes(CodeCommand):
             return
         environment = self.build_environment()
         self.announce("Running configure for AMUSE", level = 2)
-        self.call(['./configure'], env=environment, shell=True)
+        result,content=self.call(['./configure'], env=environment, shell=True)
         if not os.path.exists('config.mk'):
+            self.announce("config.mk not generated; output of configure:", level=2)
+            self.announce(content, level=2)
             raise Exception("configure failed")
         with open("config.mk") as infile:
             self.announce("configure generated config.mk", level=2)
