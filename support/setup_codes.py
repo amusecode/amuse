@@ -9,7 +9,7 @@ from . import supportrc
 try:
     import numpy
 except ImportError:
-    raise Exception("numpy needed during build; check other prerequisites")
+    print( "numpy etc needed during build; operation may fail" )
 
 try:
     import ConfigParser as configparser
