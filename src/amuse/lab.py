@@ -40,10 +40,10 @@ try:
 except ImportError:
     missing_modules.append("bhtree")
 try:
-    from amuse.community.hermite0.interface import Hermite, HermiteInterface
+    from amuse.community.hermite.interface import Hermite, HermiteInterface
 except ImportError:
-    missing_modules.append("hermite0")
-from amuse.community.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
+    missing_modules.append("hermite")
+from amuse.community.phigrape.interface import PhiGRAPE, PhiGRAPEInterface
 from amuse.community.octgrav.interface import Octgrav, OctgravInterface
 from amuse.community.twobody.interface import TwoBody, TwoBodyInterface
 from amuse.community.huayno.interface import Huayno, HuaynoInterface
