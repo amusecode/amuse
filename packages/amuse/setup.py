@@ -2,7 +2,7 @@ from setuptools import setup
 
 
 name = 'amuse'
-version = "12.0a5"
+version = "12.0.0rc3"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -15,7 +15,36 @@ install_requires = [
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
     'amuse-framework>=%s' % version,
+    'amuse-athena>=%s' % version,
+    'amuse-bhtree>=%s' % version,
+    'amuse-brutus>=%s' % version,
+    'amuse-bse>=%s' % version,
+    'amuse-capreole>=%s' % version,
+    'amuse-evtwin>=%s' % version,
+    'amuse-fastkick>=%s' % version,
+    'amuse-fi>=%s' % version,
+    'amuse-fractalcluster>=%s' % version,
+    'amuse-framework>=%s' % version,
+    'amuse-gadget2>=%s' % version,
+    'amuse-galactics>=%s' % version,
+    'amuse-galaxia>=%s' % version,
+    'amuse-halogen>=%s' % version,
+    'amuse-hermite>=%s' % version,
+    'amuse-hop>=%s' % version,
+    'amuse-huayno>=%s' % version,
+    'amuse-kepler>=%s' % version,
+    'amuse-kepler-orbiters>=%s' % version,
+    'amuse-mameclot>=%s' % version,
+    'amuse-mercury>=%s' % version,
+    'amuse-mmams>=%s' % version,
+    'amuse-ph4>=%s' % version,
+    'amuse-seba>=%s' % version,
+    'amuse-secularmultiple>=%s' % version,
+    'amuse-simplex>=%s' % version,
+    'amuse-smalln>=%s' % version,
+    'amuse-sphray>=%s' % version,
     'amuse-sse>=%s' % version,
+    'amuse-twobody>=%s' % version,
 ]
 description = 'The Astrophysical Multipurpose Software Environment'
 with open("README.md", "r") as fh:
