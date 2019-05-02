@@ -14,10 +14,10 @@ except ImportError:
 
 from amuse.units import nbody_system
 from amuse.units import units
-# from amuse.community.hermite0.interface import Hermite
+# from amuse.community.hermite.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.sse.interface import SSE
-# from amuse.community.phiGRAPE.interface import PhiGRAPE
+# from amuse.community.phigrape.interface import PhiGRAPE
 from amuse.test.amusetest import get_path_to_results
 
 from amuse.io import store

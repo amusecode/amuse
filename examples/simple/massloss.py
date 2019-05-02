@@ -3,7 +3,7 @@ Evolves the sun and earth where the sun will lose mass every 220th step.
 """
 
 import numpy
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 # from amuse.community.sse.interface import SSE
 from amuse import datamodel
 from amuse.units import units

@@ -1,11 +1,11 @@
 from amuse.couple import bridge
 
 from amuse.community.bhtree.interface import BHTree
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.community.fi.interface import Fi
 from amuse.community.octgrav.interface import Octgrav
 from amuse.community.gadget2.interface import Gadget2
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.phigrape.interface import PhiGRAPE
 
 from amuse.ic import plummer
 from amuse.ic import gasplummer

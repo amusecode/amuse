@@ -16,7 +16,7 @@ from __future__ import print_function
 from amuse.couple import bridge
 
 from amuse.community.bhtree.interface import BHTree
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.community.gadget2.interface import Gadget2
 
 from amuse.ic import plummer
