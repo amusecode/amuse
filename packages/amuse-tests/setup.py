@@ -19,7 +19,7 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
-    'amuse>=%s' % version,
+    'amuse-framework>=%s' % version,
 ]
 description = 'The Astrophysical Multipurpose Software Environment - tests'
 with open("README.md", "r") as fh:

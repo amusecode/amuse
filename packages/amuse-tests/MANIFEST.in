@@ -1,5 +1,5 @@
-include configure
-include README.md
+include support/__init__.py
+include support/setup_codes.py
 include pyproject.toml
 
 
