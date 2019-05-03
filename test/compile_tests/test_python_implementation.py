@@ -253,12 +253,18 @@ class ForTestingInterface(PythonCodeInterface):
 
 basic_python_exe = """#!{executable}
 import sys
+import os
 from subprocess import call
 
 if __name__ == '__main__':
     command = sys.argv[1:]
     
-    with open('pythonexe.log', 'a') as stream:
+    dirname=os.path.dirname(__file__)
+    dirname=os.path.abspath(dirname)
+    
+    logfile=os.path.join(dirname, 'pythonexe.log')
+    
+    with open(logfile, 'a') as stream:
         stream.write('start {{0}}\\n'.format(command[0]))
         stream.flush()
     
@@ -266,7 +272,7 @@ if __name__ == '__main__':
     
     returncode = call(command, close_fds=False)
     
-    with open('pythonexe.log', 'a') as stream:
+    with open(logfile, 'a') as stream:
         stream.write('end {{0}} {{1}}\\n'.format(command[0], returncode))
         stream.flush()
         
@@ -454,8 +460,13 @@ class TestCreatePythonWorker(TestCase):
             
 class TestInterface(TestWithMPI):
     
-    
-            
+    def ForTesting(self, **options):
+        options["worker_dir"]=self.get_path_to_results()
+        return ForTesting( **options)
+    def ForTestingInterface(self, **options):
+        options["worker_dir"]=self.get_path_to_results()
+        return ForTestingInterface(**options)
+
     def test2(self):
         implementation = ForTestingImplementation()
         x = python_code.PythonImplementation(implementation, ForTestingInterface)
@@ -512,7 +523,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(implementation.masses[4], 15.0)
         
     def test5(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         
         error = x.set_mass(1, 10.0)
         self.assertEquals(error, 0)
@@ -525,7 +536,7 @@ class TestInterface(TestWithMPI):
         
         
     def test6(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         
         errors = x.set_mass([1,2], [10.0,11.0])
         self.assertEquals(errors[0], 0)
@@ -540,7 +551,7 @@ class TestInterface(TestWithMPI):
         x.stop()
         
     def test7(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         
         int_out, error = x.echo_int(20)
         self.assertEquals(error, 0)
@@ -567,14 +578,14 @@ class TestInterface(TestWithMPI):
         
     
     def test9(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         string_out, error = x.echo_string("1234567")
         self.assertEquals(error, 0)
         self.assertEquals(string_out, "1234567")
         x.stop()
         
     def test10(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface( worker_dir=self.get_path_to_results())
         string_out, error = x.echo_string(["aaaaa", "bbbb"])
         self.assertEquals(error[0], 0)
         self.assertEquals(len(string_out), 2)
@@ -583,7 +594,7 @@ class TestInterface(TestWithMPI):
         x.stop()
         
     def test11(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         string_out, error = x.echo_string(["", "bbbb"])
         self.assertEquals(error[0], 0)
         self.assertEquals(len(string_out), 2)
@@ -592,7 +603,7 @@ class TestInterface(TestWithMPI):
         x.stop()
         
     def test12(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings("abc", "def")
         self.assertEquals(error, 0)
         self.assertEquals(str1_out, "cba")
@@ -601,7 +612,7 @@ class TestInterface(TestWithMPI):
         
         
     def test13(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         str1_out, str2_out, error = x.echo_strings(["abc", "def"], ["ghi", "jkl"])
         self.assertEquals(error[0], 0)
         self.assertEquals(error[1], 0)
@@ -612,7 +623,7 @@ class TestInterface(TestWithMPI):
         x.stop()
         
     def test14(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         result = x.sleep(2)
         self.assertEquals(result, 0)
         request = x.sleep.asynchronous(0.01)
@@ -622,8 +633,8 @@ class TestInterface(TestWithMPI):
         x.stop()
         
     def test15(self):
-        x = ForTestingInterface()
-        y = ForTestingInterface()
+        x = self.ForTestingInterface()
+        y = self.ForTestingInterface()
         request1 = x.sleep.asynchronous(0.5)
         self.assertFalse(request1.is_result_available())
         request2 = y.sleep.asynchronous(1.5)
@@ -641,7 +652,7 @@ class TestInterface(TestWithMPI):
     
     
     def test16(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         request1 = x.sleep.asynchronous(0.4)
         x.sleep(0.01)
         self.assertTrue(request1.is_result_available(), True)
@@ -652,7 +663,7 @@ class TestInterface(TestWithMPI):
         x.stop()
     
     def test17(self):
-        x = ForTesting()
+        x = self.ForTesting()
         self.assertTrue(x.sleep.is_async_supported)
         request= x.sleep.asynchronous(0.2 | units.s)
         request.wait()
@@ -662,7 +673,7 @@ class TestInterface(TestWithMPI):
     
     def test18(self):
         print "Testing the splitting of very long MPI messages into blocks"
-        x = ForTesting(max_message_length=10)
+        x = self.ForTesting(max_message_length=10)
         N = 100
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
@@ -683,7 +694,7 @@ class TestInterface(TestWithMPI):
     
     def test19(self):
         print "Testing the splitting of very long MPI messages into blocks II: strings"
-        x = ForTesting(max_message_length=10)
+        x = self.ForTesting(max_message_length=10)
         N = 100
         strings1, strings2 = x.echo_strings(['REDRUM' for i in range(N)],['stressed' for i in range(N)])
         self.assertTrue(list(strings1) == ['MURDER' for i in range(N)])
@@ -705,7 +716,7 @@ class TestInterface(TestWithMPI):
         if os.path.exists("perr.000"):
             os.remove("perr.000")
         
-        x = ForTesting(redirect_stderr_file = 'perr', redirect_stdout_file = 'pout', redirection="file")
+        x = self.ForTesting(redirect_stderr_file = 'perr', redirect_stdout_file = 'pout', redirection="file")
         x.print_string("abc")
         x.print_error_string("exex")
         x.stop()
@@ -722,7 +733,7 @@ class TestInterface(TestWithMPI):
             content = f.read()
         self.assertEquals(content.strip(), "exex")
         
-        x = ForTesting(redirect_stderr_file = 'pout', redirect_stdout_file = 'pout', redirection="file")
+        x = self.ForTesting(redirect_stderr_file = 'pout', redirect_stdout_file = 'pout', redirection="file")
         x.print_string("def")
         x.print_error_string("exex")
         x.stop()
@@ -736,7 +747,7 @@ class TestInterface(TestWithMPI):
     
     def test21(self):
         print "Testing must_handle_array for Python codes"
-        instance = ForTestingInterface()
+        instance = self.ForTestingInterface()
         
         x,y,z,err = instance.get_position(range(100))
         self.assertEquals(err, 0)
@@ -766,8 +777,8 @@ class TestInterface(TestWithMPI):
         
         pool = AsyncRequestsPool()
         
-        x = ForTestingInterface()
-        y = ForTestingInterface()
+        x = self.ForTestingInterface()
+        y = self.ForTestingInterface()
         request1 = x.sleep.asynchronous(0.5)
         request2 = y.sleep.asynchronous(1.5)
         finished_requests = []
@@ -799,24 +810,28 @@ class TestInterface(TestWithMPI):
 
     def test23(self):
         
-        if os.path.exists("pythonexe"):
-            os.remove("pythonexe")
+        path=self.get_path_to_results()
+        
+        exe=os.path.join(path,"pythonexe")
+        log=os.path.join(path,"pythonexe.log")
+        
+        if os.path.exists(exe):
+            os.remove(exe)
             
-        if os.path.exists("pythonexe.log"):
-            os.remove("pythonexe.log")
+        if os.path.exists(log):
+            os.remove(log)
             
         string = basic_python_exe.format(executable = sys.executable)
         
-        with open("pythonexe", 'w') as f:
+        with open(exe, 'w') as f:
             f.write(string)
             
-        os.chmod("pythonexe", 0777)
+        os.chmod(exe, 0777)
         
         
-        instance = ForTestingInterface(
+        instance = self.ForTestingInterface(
             use_python_interpreter = True,
-            python_interpreter = "./pythonexe",
-            redirection="none"
+            python_interpreter = exe
         )
         x,y,z,err = instance.get_position(range(100))
         self.assertEquals(err, 0)
@@ -827,9 +842,9 @@ class TestInterface(TestWithMPI):
         instance.stop()
         time.sleep(0.3)
         
-        self.assertTrue(os.path.exists('pythonexe.log'))
+        self.assertTrue(os.path.exists(log))
 
-        with open("pythonexe.log", 'r') as f:
+        with open(log, 'r') as f:
             loglines = f.read().splitlines()
             
         self.assertEquals(len(loglines), 2)
@@ -840,26 +855,30 @@ class TestInterface(TestWithMPI):
     def test24(self):
         
         # same as test23 but now with redirection is none
-        if os.path.exists("pythonexe"):
-            os.remove("pythonexe")
+        path=self.get_path_to_results()
+        
+        exe=os.path.join(path,"pythonexe")
+        log=os.path.join(path,"pythonexe.log")
+        
+        if os.path.exists(exe):
+            os.remove(exe)
             
-        if os.path.exists("pythonexe.log"):
-            os.remove("pythonexe.log")
+        if os.path.exists(log):
+            os.remove(log)
             
         string = basic_python_exe.format(executable = sys.executable)
         
-        with open("pythonexe", 'w') as f:
+        with open(exe, 'w') as f:
             f.write(string)
             
-        os.chmod("pythonexe", 0777)
+        os.chmod(exe, 0777)
         
         
-        instance = ForTestingInterface(
+        instance = self.ForTestingInterface(
             use_python_interpreter = True,
-            python_interpreter = "./pythonexe",
+            python_interpreter = exe,
             redirection="none"
         )
-        
         x,y,z,err = instance.get_position(range(100))
         self.assertEquals(err, 0)
         self.assertEquals(x, numpy.arange(0.0, 300.0, 3.0))
@@ -869,9 +888,9 @@ class TestInterface(TestWithMPI):
         instance.stop()
         time.sleep(0.3)
         
-        self.assertTrue(os.path.exists('pythonexe.log'))
+        self.assertTrue(os.path.exists(log))
 
-        with open("pythonexe.log", 'r') as f:
+        with open(log, 'r') as f:
             loglines = f.read().splitlines()
             
         self.assertEquals(len(loglines), 2)
@@ -881,7 +900,7 @@ class TestInterface(TestWithMPI):
 
     def test25(self):
         self.check_for_mpi()
-        instance = ForTestingInterface(polling_interval_in_milliseconds = 100)
+        instance = self.ForTestingInterface(polling_interval_in_milliseconds = 100)
         (output1, error1) = instance.internal__get_message_polling_interval()
         instance.stop()
         self.assertEquals(error1, 0)
@@ -889,7 +908,7 @@ class TestInterface(TestWithMPI):
     
 
     def test25(self):
-        instance = ForTestingInterface(polling_interval_in_milliseconds = 100)
+        instance = self.ForTestingInterface(polling_interval_in_milliseconds = 100)
         (output1, error1) = instance.internal__get_message_polling_interval()
         instance.stop()
         self.assertEquals(error1, 0)
@@ -898,8 +917,8 @@ class TestInterface(TestWithMPI):
         
     def test26(self):
         self.check_for_mpi()
-        instance1 = ForTestingInterface()
-        instance2 = ForTestingInterface()
+        instance1 = self.ForTestingInterface()
+        instance2 = self.ForTestingInterface()
         portname, error = instance1.internal__open_port()
         self.assertTrue(len(portname) > 0)
         self.assertEquals(error, 0)
@@ -920,8 +939,8 @@ class TestInterface(TestWithMPI):
 
     def test27(self):
         self.check_for_mpi()
-        instance1 = ForTestingInterface(redirection="none")
-        instance2 = ForTestingInterface(redirection="none")
+        instance1 = self.ForTestingInterface(redirection="none")
+        instance2 = self.ForTestingInterface(redirection="none")
         encoded_interface = pickle.dumps(instance1,0)
         decoded_interface = pickle.loads(encoded_interface)
         #pickle.loads(pickle.dumps(instance1,0))
@@ -947,7 +966,7 @@ class TestInterface(TestWithMPI):
         
 
     def test28(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         def next_request(index):
             if index < 3:
                 return x.sleep.asynchronous(0.1)
@@ -967,8 +986,8 @@ class TestInterface(TestWithMPI):
         
         pool = AsyncRequestsPool()
         
-        x = ForTestingInterface()
-        y = ForTestingInterface()
+        x = self.ForTestingInterface()
+        y = self.ForTestingInterface()
         sequenced_requests_indices = []
         def next_request(index):
             if index < 4:
@@ -1013,7 +1032,7 @@ class TestInterface(TestWithMPI):
     
 
     def test30(self):
-        instance= ForTesting()
+        instance= self.ForTesting()
         input = [1.0,2.0,3.0]
         output =  instance.sum_doubles(input, 5)
         self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])
@@ -1021,7 +1040,7 @@ class TestInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(output, [6.0, 7.0, 8.0])
 
     def test31(self):
-        x = ForTesting()
+        x = self.ForTesting()
         p = datamodel.Particles(5)
         p.mass = [1,2,3,4,5] | units.kg
         p.other = None
@@ -1031,7 +1050,7 @@ class TestInterface(TestWithMPI):
         x.stop()
     
     def test32(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         quantity_out, error = x.echo_quantity(20.0 | units.m)
         self.assertEquals(error, 0)
         self.assertEquals(quantity_out, 200 | (units.m/units.s))
@@ -1042,7 +1061,7 @@ class TestInterface(TestWithMPI):
 
 
     def test33(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         quantity_out, error = x.echo_quantity([20, 30, 40] | units.m)
         self.assertEquals(error, 0)
         self.assertEquals(quantity_out, [200, 300, 400] | (units.m/units.s))
@@ -1050,7 +1069,7 @@ class TestInterface(TestWithMPI):
 
 
     def test34(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         #self.assertException(x.echo_quantities_error, [20, 30, 40] | units.m)
         quantity_out, error = x.echo_quantities([20, 30, 40] | units.m)
         self.assertEquals(error, 0)
@@ -1060,7 +1079,7 @@ class TestInterface(TestWithMPI):
 
 
     def test35(self):
-        x = ForTesting(max_message_length=10)
+        x = self.ForTesting(max_message_length=10)
         N = 10
         doubles = x.echo_double([1.0*i for i in range(N)])
         self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
@@ -1078,7 +1097,7 @@ class TestInterface(TestWithMPI):
 
 
     def test36(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         self.assertRaises(exceptions.CodeException, x.echo_quantities_error, ([20, 30, 40] | units.m), expected_message = 
                 "Exception when calling function 'echo_quantities_error', of code 'ForTestingInterface', exception was 'Error in code: an unexpected event'")
         x.stop()
@@ -1087,7 +1106,7 @@ class TestInterface(TestWithMPI):
 
 
     def test37(self):
-        x = ForTestingInterface()
+        x = self.ForTestingInterface()
         request = x.echo_quantity.asynchronous([20, 30, 40] | units.m)
         quantity_out, error = request.result()
         self.assertEquals(error, 0)
@@ -1095,7 +1114,7 @@ class TestInterface(TestWithMPI):
         x.stop()
 
     def test40(self):
-        x = ForTesting()
+        x = self.ForTesting()
         out = x.echo_bool([True, False, True])
         self.assertEquals(out, [True, False, True])
         x.stop()
