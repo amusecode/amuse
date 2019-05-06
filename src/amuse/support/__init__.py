@@ -22,7 +22,6 @@ class _Defaults(OptionalAttributes):
         return GlobalOptions.amuse_data_location
 
 def get_amuse_root_dir():
-    warnings.warn("get_amuse_root_dir requested: ...")
     return _Defaults().amuse_root_dir
 
 def get_amuse_data_dir():
