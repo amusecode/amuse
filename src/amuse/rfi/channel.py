@@ -657,41 +657,39 @@ Please do a 'make clean; make' in the root directory.
                 raise Exception("Must provide a worker_code_directory")
 
         tried_workers = []
-        found = False
+
+        directory = os.path.dirname(inspect.getfile(type))
+        full_name_of_the_worker = os.path.join(directory, '..','..','_workers', exe_name)
+        full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+        if os.path.exists(full_name_of_the_worker):
+            return full_name_of_the_worker
+        tried_workers.append(full_name_of_the_worker)
                 
         if len(self.worker_code_directory) > 0:
             full_name_of_the_worker = os.path.join(self.worker_code_directory, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                tried_workers.append(full_name_of_the_worker)
-                
+            if os.path.exists(full_name_of_the_worker):
+                return full_name_of_the_worker
+            tried_workers.append(full_name_of_the_worker)
+                        
+        directory_of_this_module = os.path.dirname(os.path.dirname(__file__))
+        full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
+        full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
+        if os.path.exists(full_name_of_the_worker):
+            return full_name_of_the_worker
+        tried_workers.append(full_name_of_the_worker)
+
         current_type = type
-        while not found:
+        while not current_type.__bases__[0] is object:
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
             full_name_of_the_worker = os.path.join(directory_of_this_module, exe_name)
             full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                tried_workers.append(full_name_of_the_worker)
-                current_type = current_type.__bases__[0]
-                if current_type.__bases__[0] is object:
-                    break
-            else:
-                found = True
-        
-        if not found:
-            directory_of_this_module = os.path.dirname(os.path.dirname(__file__))
-            full_name_of_the_worker = os.path.join(directory_of_this_module, '_workers', exe_name)
-            full_name_of_the_worker = os.path.normpath(os.path.abspath(full_name_of_the_worker))
-            
-            found = os.path.exists(full_name_of_the_worker)
-            if not found:
-                raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
-            else:
-                found = True
-            
-        return full_name_of_the_worker
+            if os.path.exists(full_name_of_the_worker):
+                return full_name_of_the_worker
+            tried_workers.append(full_name_of_the_worker)
+            current_type = current_type.__bases__[0]
+
+        raise exceptions.CodeException("The worker application does not exist, it should be at: \n{0}".format('\n'.join(tried_workers)))
     
     def send_message(self, call_id=0, function_id=-1, dtype_to_arguments={}, encoded_units = None):
         pass

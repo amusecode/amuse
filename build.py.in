@@ -8,7 +8,7 @@ from amuse.rfi import gencode
 
 if __name__ == "__main__":
     try:
-        from support import config
+        from amuse import config
         pythonexe = config.interpreters.python
     except ImportError as ex:
         pythonexe = sys.executable

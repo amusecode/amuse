@@ -1116,12 +1116,11 @@ class PythonCodeInterface(CodeInterface):
         if self.channel_type == 'distributed':
             print "Warning! Distributed channel not fully supported by PythonCodeInterface yet"
         self.implementation_factory = implementation_factory
+        self.worker_dir=options.get("worker_dir",None)
         
-        CodeInterface.__init__(self, name_of_the_worker, **options)
+        CodeInterface.__init__(self, name_of_the_worker, **options)        
     
     def _start(self, name_of_the_worker = 'worker_code', **options):
-
-
 
         if name_of_the_worker is None:
             if self.implementation_factory is None:
@@ -1142,6 +1141,8 @@ class PythonCodeInterface(CodeInterface):
         from amuse.rfi.tools.create_python_worker import CreateAPythonWorker
         
         x = CreateAPythonWorker()
+        if self.worker_dir:
+            x.worker_dir=self.worker_dir
         x.channel_type = self.channel_type
         x.interface_class = type(self)
         x.implementation_factory = implementation_factory

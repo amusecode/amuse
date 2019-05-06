@@ -9,12 +9,6 @@ from distutils.dep_util import newer
 from distutils.util import convert_path
 from distutils import log
 
-try:
-    from . import config
-    is_configured = hasattr(config, 'compilers')
-except ImportError:
-    is_configured = False
-
 class generate_main(Command):
 
     description = "generate shell script to run amuse"
@@ -29,7 +23,6 @@ class generate_main(Command):
     def finalize_options (self):
         if self.amuse_dir is None:
             self.amuse_dir =os.path.dirname(os.path.dirname(__file__))
-            #self.amuse_dir ='/usr/share/amuse-2.2'
 
     def get_source_files(self):
         return self.latex_documents

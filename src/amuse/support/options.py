@@ -52,6 +52,11 @@ class GlobalOptions(object):
         result=os.path.abspath(os.path.join(this, "..","..","..","..","..","share", "amuse"))
         if os.path.exists(os.path.join(result,'build.py')):
             return result
+
+        # for some virtualenv setups
+        result=os.path.abspath(os.path.join(this, "..", "..","..","..","..","..","share", "amuse"))
+        if os.path.exists(os.path.join(result,'build.py')):
+            return result
         
         # in-place
         result=os.path.abspath(os.path.join(this, "..","..",".."))        
