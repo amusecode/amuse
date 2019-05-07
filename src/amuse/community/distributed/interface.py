@@ -23,7 +23,7 @@ class DistributedAmuseInterface(CodeInterface, CommonCodeInterface, LiteratureRe
         .. [#] The Distributed Amuse project is a collaboration between Sterrewacht Leiden and The Netherlands eScience Center.
     """
 
-    classpath = ['.', 'worker.jar', 'src/dist/*']
+    classpath = ['data/','data/*']
 
 # keeping a reference is no longer necessary
         

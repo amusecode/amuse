@@ -6,6 +6,7 @@ import sys
 import inspect
 import tempfile
 
+from amuse.support import _Defaults
 from amuse.support import exceptions
 from amuse.support import literature
 from amuse.support import options
@@ -295,7 +296,7 @@ class TestWithMPI(TestCase):
             return True
 
 
-class TestDefaults(options.OptionalAttributes):
+class TestDefaults(_Defaults):
 
     @late
     def temporarydir(self):
@@ -314,7 +315,7 @@ class TestDefaults(options.OptionalAttributes):
         test_results_dir = os.path.join(amuse_root_dir, self.name_of_testresults_directory)
         if os.path.exists(test_results_dir):
             try:
-                f = open('test.txt','w')
+                f = open(os.path.join(test_results_dir,'test.txt'),'w')
                 f.close()
                 return test_results_dir
             except IOError as ex:
@@ -325,10 +326,6 @@ class TestDefaults(options.OptionalAttributes):
     @options.option(sections=['test'])
     def name_of_testresults_directory(self):
         return 'test_results'
-
-    @options.option(sections=['data'])
-    def amuse_root_dir(self):
-        return get_amuse_root_dir()
 
     @options.option(type='boolean',sections=['test'])
     def can_run_tests_to_compile_modules(self):
