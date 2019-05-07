@@ -91,6 +91,7 @@ script:
 - export PYTHONPATH=${PWD}/src
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+    rm -rf test_results
     mpiexec nosetests test/reports/test_speed.py -sv
     mpiexec nosetests test/compile_tests/test_python_implementation.py -sv
     mpiexec nosetests -e "test_plot" test/core_tests
