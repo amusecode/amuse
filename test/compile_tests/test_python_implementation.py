@@ -585,7 +585,7 @@ class TestInterface(TestWithMPI):
         x.stop()
         
     def test10(self):
-        x = self.ForTestingInterface( worker_dir=self.get_path_to_results())
+        x = self.ForTestingInterface()
         string_out, error = x.echo_string(["aaaaa", "bbbb"])
         self.assertEquals(error[0], 0)
         self.assertEquals(len(string_out), 2)
