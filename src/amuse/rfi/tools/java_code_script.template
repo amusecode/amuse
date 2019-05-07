@@ -25,6 +25,7 @@ def main():
     print(" on amuse root dir: {{0}}".format( amuse_root_dir ) )
     print(" with code dir: {{0}}".format( code_dir) )
     print(" with classpath: {{0}}".format( classpath) )
+    sys.stdout.flush()
 
     arguments = [java, "-Damuse.root.dir=" + amuse_root_dir, "-Dcode.dir=" + code_dir, "-cp", classpath, "Worker"]
     arguments = arguments + sys.argv[1:]
