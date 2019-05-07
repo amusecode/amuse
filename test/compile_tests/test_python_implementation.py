@@ -464,6 +464,7 @@ class TestInterface(TestWithMPI):
         options["worker_dir"]=self.get_path_to_results()
         return ForTesting( **options)
     def ForTestingInterface(self, **options):
+        print "HMM:", self.get_path_to_results()
         options["worker_dir"]=self.get_path_to_results()
         return ForTestingInterface(**options)
 
