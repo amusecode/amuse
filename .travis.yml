@@ -88,7 +88,7 @@ virtualenv:
   system_site_packages: false
 
 script:
-- export PYTHONPATH=${PWD}/src
+- export PYTHONPATH=${PWD}/src:${PWD}
 - |
   if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
     mpiexec nosetests amuse.test.suite.compile_tests.test_python_implementation:TestInterface.test10 -sv
