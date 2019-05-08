@@ -1080,6 +1080,14 @@ class BuildLibraries(BuildCodes):
             if os.path.isdir(path_):
                 yield path_
 
+class BuildLibraries_inplace(BuildLibraries):
+
+    description = "build just the supporting libraries, in place"
+
+    def initialize_options(self):
+        BuildLibraries.initialize_options(self)
+        self.inplace=True
+
 class ConfigureCodes(CodeCommand):
 
     description = "run configure for amuse"
@@ -1197,6 +1205,7 @@ def setup_commands():
         'clean': Clean,
         'install': install,
         'build_libraries': BuildLibraries,
+        'build_libraries_in_place': BuildLibraries_inplace,
         'install_libraries': InstallLibraries,
         'develop' : Develop
     }
@@ -1208,7 +1217,7 @@ def setup_commands():
     Clean.sub_commands.append(('clean_codes', None))
     Clean.sub_commands.append(('clean_python', None))
     Install.sub_commands.append(('install_libraries', None))
-    
+    Develop.sub_commands.append(('build_libraries_in_place', None))
     
     if supportrc["framework_install"]:
         mapping_from_command_name_to_command_class.update(
