@@ -538,7 +538,10 @@ class CodeCommand(Command):
 
     def copy_config_to_build_dir(self):
         configpath=os.path.abspath(os.getcwd())
-        topath=os.path.join(self.build_lib, "amuse")
+        if self.inplace:
+            topath=self.amuse_src_dir
+        else:
+            topath=os.path.join(self.build_lib, "amuse")
         self.copy_file(os.path.join(configpath,"config.mk"), topath) 
      
     def copy_build_prereq_to_build_dir(self):
@@ -966,10 +969,10 @@ class BuildCodes(CodeCommand):
                     build_to_special_targets.setdefault(shortname, list()).append(target_name)
                     self.announce("[{2:%H:%M:%S}] building {0} - {1}, succeeded".format(shortname, target_name, endtime), level =  log.DEBUG)
                 
+        if supportrc["framework_install"]:
+            self.copy_config_to_build_dir()
         
         if not self.codes_dir == self.codes_src_dir:
-            if supportrc["framework_install"]:
-                self.copy_config_to_build_dir()
             self.copy_worker_codes_to_build_dir()
             
         with open(buildlog, "a") as output:
