@@ -2,14 +2,18 @@ from __future__ import print_function
 
 __revision__ = "$Id:$"
 
+import warnings
 import sys, os, re, subprocess
+import os.path
+import datetime
+import stat
 
 from . import supportrc
 
 try:
     import numpy
 except ImportError:
-    print( "numpy etc needed during build; operation may fail" )
+    warnings.warn( "numpy etc needed during build; operation may fail" )
 
 try:
     import ConfigParser as configparser
@@ -17,10 +21,6 @@ try:
 except ImportError:
     import configparser
     from io import StringIO
-
-import os.path
-import datetime
-import stat
 
 from stat import ST_MODE
 from distutils import sysconfig
@@ -989,7 +989,7 @@ class BuildCodes(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            print(build_to_special_targets)
+            #~ print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:
