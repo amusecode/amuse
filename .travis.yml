@@ -36,6 +36,32 @@ matrix:
         - hdf5-tools
         - libmpich-dev
         - mpich  
+  - name: "linux MPICH pip"
+    language: python
+    python:
+    - '2.7'
+    compiler: gcc
+    before_install:
+    - pip install numpy scipy matplotlib nose docutils mpi4py h5py Cython
+    install:
+    - pip install packages/amuse-framework
+    - pip install packages/amuse-tests
+    addons:
+      apt:
+        packages:
+        - build-essential
+        - python-dev
+        - gfortran
+        - libgsl0-dev
+        - cmake
+        - libfftw3-3
+        - libfftw3-dev
+        - libmpfr4
+        - libmpfr-dev
+        - libhdf5-serial-dev
+        - hdf5-tools
+        - libmpich-dev
+        - mpich  
   - name: "linux openmpi"
     language: python
     python:
