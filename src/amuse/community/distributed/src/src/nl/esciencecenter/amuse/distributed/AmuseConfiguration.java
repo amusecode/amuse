@@ -79,11 +79,11 @@ public class AmuseConfiguration {
         File configFile = new File(amuseHome, "config.mk");
         
         if(!configFile.isFile())
+            configFile = new File(amuseHome.toPath().resolve("../../../../share/amuse/config.mk").toString());
+        if(!configFile.isFile())
             configFile = new File(amuseHome.toPath().resolve("../../../../../share/amuse/config.mk").toString());
         if(!configFile.isFile())
-            configFile = new File(amuseHome.toPath().resolve("../../../../../../share/amuse/config.mk").toString());
-        if(!configFile.isFile())
-            configFile = new File(amuseHome.toPath().resolve("../../../config.mk").toString());
+            configFile = new File(amuseHome.toPath().resolve("../../config.mk").toString());
         if(!configFile.isFile())
             throw new DistributedAmuseException("cannot find config file: " + configFile);
 
