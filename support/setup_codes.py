@@ -1057,7 +1057,9 @@ class BuildCodes(CodeCommand):
                 "Your configuration is out of date, please rerun configure",
                 level = level
             )
-        
+
+        if supportrc["abort_on_build_failure"] and not_build:
+            raise Exception("Unexpected build failure(s) detected. Aborting.")
  
 class BuildLibraries(BuildCodes):
 
