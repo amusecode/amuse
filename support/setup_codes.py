@@ -968,8 +968,8 @@ class BuildCodes(CodeCommand):
                     build_to_special_targets.setdefault(shortname, list()).append(target_name)
                     self.announce("[{2:%H:%M:%S}] building {0} - {1}, succeeded".format(shortname, target_name, endtime), level =  log.DEBUG)
                 
-        if supportrc["framework_install"]:
-            self.copy_config_to_build_dir()
+        #~ if supportrc["framework_install"]:
+            #~ self.copy_config_to_build_dir()
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_worker_codes_to_build_dir()
