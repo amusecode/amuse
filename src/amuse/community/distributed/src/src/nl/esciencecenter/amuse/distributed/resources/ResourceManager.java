@@ -209,12 +209,11 @@ public class ResourceManager {
             
             Path amuseConfig = amuseHome.resolve("config.mk");
             if(!filesystem.exists(amuseConfig))
-                amuseConfig = amuseConfig.resolve("../../../../share/amuse/config.mk");
+                amuseConfig = amuseHome.resolve("../../../../share/amuse/config.mk");
             if(!filesystem.exists(amuseConfig)) 
-                amuseConfig = amuseConfig.resolve("../../../../../share/amuse/config.mk");
+                amuseConfig = amuseHome.resolve("../../../../../share/amuse/config.mk");
             if(!filesystem.exists(amuseConfig))
-                amuseConfig = amuseConfig.resolve("../../config.mk");
-                logger.info("testing " + amuseConfig);                
+                amuseConfig = amuseHome.resolve("../../config.mk");
             if(!filesystem.exists(amuseConfig))
                 throw new DistributedAmuseException("cannot find config file config.mk from " + amuseHome);
 
