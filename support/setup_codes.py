@@ -38,6 +38,7 @@ if sys.hexversion > 0x03000000:
 from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
+from setuptools.command.develop import develop
 
 from subprocess import call, Popen, PIPE, STDOUT
 
@@ -160,8 +161,6 @@ class GenerateInstallIni(Command):
             ('root', 'root'),
             ('force', 'force'),
         )
-        #~ print(self.install_data)
-        #~ raise
         
     def run(self):
         outfilename = os.path.join(self.build_dir, supportrc["package_name"], 'amuserc')
@@ -853,7 +852,7 @@ class BuildCodes(CodeCommand):
                 return True
         return False
     
-    def run (self):
+    def run (self):      
         if self.must_clean:
             self.do_clean()
         if self.must_dist_clean:
@@ -989,7 +988,6 @@ class BuildCodes(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            #~ print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:
@@ -1082,6 +1080,14 @@ class BuildLibraries(BuildCodes):
             if os.path.isdir(path_):
                 yield path_
 
+class BuildLibraries_inplace(BuildLibraries):
+
+    description = "build just the supporting libraries, in place"
+
+    def initialize_options(self):
+        BuildLibraries.initialize_options(self)
+        self.inplace=True
+
 class ConfigureCodes(CodeCommand):
 
     description = "run configure for amuse"
@@ -1161,18 +1167,33 @@ class BuildOneCode(BuildCodes):
         BuildCodes.run(self)
 
 class Clean(clean):
+    # make sure sub_commands are independent
+    sub_commands=list(clean.sub_commands)
 
     def run(self):
         for cmd_name in self.get_sub_commands():
             self.run_command(cmd_name)
 
 class Install(install):
-
+    sub_commands=list(install.sub_commands)
+    
     def run(self):
+        # this ensures sub commands are run first (only run once)
         for cmd_name in self.get_sub_commands():
             self.run_command(cmd_name)
 
         install.run(self)
+
+class Develop(develop):
+
+    sub_commands=list(develop.sub_commands)
+
+    def run(self):
+        # this ensures sub commands are run first (only run once)
+        for cmd_name in self.get_sub_commands():
+            self.run_command(cmd_name)
+
+        develop.run(self)
 
 def setup_commands():
     mapping_from_command_name_to_command_class = {
@@ -1184,7 +1205,9 @@ def setup_commands():
         'clean': Clean,
         'install': install,
         'build_libraries': BuildLibraries,
-        'install_libraries': InstallLibraries
+        'build_libraries_in_place': BuildLibraries_inplace,
+        'install_libraries': InstallLibraries,
+        'develop' : Develop
     }
     
     if sys.hexversion > 0x03000000:
@@ -1194,6 +1217,7 @@ def setup_commands():
     Clean.sub_commands.append(('clean_codes', None))
     Clean.sub_commands.append(('clean_python', None))
     Install.sub_commands.append(('install_libraries', None))
+    Develop.sub_commands.append(('build_libraries_in_place', None))
     
     if supportrc["framework_install"]:
         mapping_from_command_name_to_command_class.update(
@@ -1207,7 +1231,7 @@ def setup_commands():
         )
         build.sub_commands.insert(0, ('configure_codes', None))
         Install.sub_commands.insert(0, ('generate_install_ini', None))
-
+        Develop.sub_commands.insert(0, ('configure_codes', None))
 
 
     
