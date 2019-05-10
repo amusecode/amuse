@@ -1,4 +1,4 @@
-supportrc=dict(framework_install=True, package_name="amuse", abort_on_build_failure=True)
+supportrc=dict(framework_install=True, package_name="amuse", allow_build_failures='some')
 
 def use(arg):
     if arg == "package":
@@ -11,5 +11,7 @@ def use(arg):
 def set_package_name(arg):
     supportrc["package_name"]=arg
 
-def set_abort_on_build_failure(arg):
-    supportrc["abort_on_build_failure"]=arg
+def set_allow_build_failures(arg):
+    if arg=="yes" or (arg==True): arg='some'
+    if arg=="no" or (arg==False): arg='none'
+    supportrc["allow_build_failures"]=arg
