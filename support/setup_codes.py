@@ -1057,7 +1057,16 @@ class BuildCodes(CodeCommand):
                 "Your configuration is out of date, please rerun configure",
                 level = level
             )
-        
+
+        allow_build_failures=environment.get("AMUSE_ALLOW_BUILD_FAILURES", supportrc["allow_build_failures"])
+
+        if allow_build_failures=="none" and len(not_build)>0:
+            raise Exception("Unexpected build failure(s) detected. Aborting.")
+        if allow_build_failures=="some" and len(not_build)>0 and len(build)==0:
+            raise Exception("No succesful builds detected. Aborting.")
+        if allow_build_failures=="all" and len(not_build)>0 and len(build)==0:
+            self.announce("Continuing despite apparent build failure", level=level)
+
  
 class BuildLibraries(BuildCodes):
 
