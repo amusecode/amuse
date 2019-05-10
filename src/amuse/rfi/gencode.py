@@ -12,6 +12,18 @@ from optparse import OptionParser
 #except (ImportError, ValueError):  # running as a stand-alone script
 #    import config
 
+# setup_sys_path()
+
+from amuse import config
+
+from amuse.rfi.tools import create_c
+from amuse.rfi.tools import create_fortran
+from amuse.rfi.tools import create_java
+from amuse.rfi.tools import create_dir
+from amuse.rfi.tools import create_python_worker
+from amuse.rfi.tools import create_cython
+    
+from amuse.support import get_amuse_root_dir    
 
 if sys.hexversion > 0x03000000:
     def get_amuse_directory():
@@ -97,7 +109,7 @@ class ParseCommandLine(object):
     
     def __init__(self):
         self.parser = OptionParser(self.usage)
-        self.parser.prog = 'build.py' #hack to set the name, for reporting errors and help
+        #~ self.parser.prog = 'build.py' #hack to set the name, for reporting errors and help
         
         self.parser.add_option(
             "-t",
@@ -369,22 +381,7 @@ def make_directory(settings):
         
     builder.start()
     
-
-if __name__ == '__main__':
-    
-    # setup_sys_path()
-
-    from amuse import config
-
-    from amuse.rfi.tools import create_c
-    from amuse.rfi.tools import create_fortran
-    from amuse.rfi.tools import create_java
-    from amuse.rfi.tools import create_dir
-    from amuse.rfi.tools import create_python_worker
-    from amuse.rfi.tools import create_cython
-        
-    from amuse.support import get_amuse_root_dir    
-        
+def amusifier():
     uc = ParseCommandLine()
     uc.start()
     
@@ -396,4 +393,8 @@ if __name__ == '__main__':
         make_directory(settings)
     else:
         make_file(settings)
+
+if __name__ == '__main__':
+
+    amusifier()
     

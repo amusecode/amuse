@@ -6,7 +6,8 @@ import inspect
 import os.path
 from amuse.rfi import gencode
 
-if __name__ == "__main__":
+# I am not sure this is necessary anymore?
+def run_through_subprocess():
     try:
         from amuse import config
         pythonexe = config.interpreters.python
@@ -24,5 +25,7 @@ if __name__ == "__main__":
     sys.exit(returncode)
     
     #os.execv(pythonexe, arguments)
-        
+
+if __name__ == "__main__":
+    gencode.amusifier()
     
