@@ -1203,7 +1203,7 @@ def setup_commands():
         'dist_clean': DistCleanCodes,
         'clean_python': clean,
         'clean': Clean,
-        'install': install,
+        'install': Install,
         'build_libraries': BuildLibraries,
         'build_libraries_in_place': BuildLibraries_inplace,
         'install_libraries': InstallLibraries,
