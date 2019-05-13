@@ -577,10 +577,10 @@ class CodeCommand(Command):
 
     def copy_worker_codes_to_build_dir(self):
         if sys.platform == 'win32':
-            worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?(.exe)?')
+            worker_code_re = re.compile(r'(([a-zA-Z0-9]+_)*)?worker(_[a-zA-Z0-9]+)?(.exe)?')
         else:
-            worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?')
-            worker_so_re = re.compile(r'([a-zA-Z0-9]+_)?cython(_[a-zA-Z0-9]+)?.so')
+            worker_code_re = re.compile(r'(([a-zA-Z0-9]+_)*)?worker(_[a-zA-Z0-9]+)?')
+        worker_so_re = re.compile(r'(([a-zA-Z0-9]+_)*)?cython(_[a-zA-Z0-9]+)?.so')
             
         
         lib_binbuilddir = os.path.join(self.build_lib, supportrc["package_name"], '_workers')
@@ -624,7 +624,48 @@ class CodeCommand(Command):
                 self.copy_file(path, topath)                
             if os.path.isdir(path):
                 self.copy_tree(path, topath)                
+
+    def copy_worker_codes(self):
+        if sys.platform == 'win32':
+            worker_code_re = re.compile(r'(([a-zA-Z0-9]+_)*)?worker(_[a-zA-Z0-9]+)?(.exe)?')
+        else:
+            worker_code_re = re.compile(r'(([a-zA-Z0-9]+_)*)?worker(_[a-zA-Z0-9]+)?')
+        worker_so_re = re.compile(r'(([a-zA-Z0-9]+_)*)?cython(_[a-zA-Z0-9]+)?.so')
             
+        for srcdir in self.makefile_paths(self.codes_src_dir):
+            reldir = os.path.relpath(srcdir, self.codes_src_dir)
+            temp_builddir = os.path.join(self.codes_dir, reldir)
+            
+            self.announce("will copy worker: {0}".format(srcdir), level = log.INFO)
+            lib_builddir = os.path.join(self.build_lib, os.path.relpath(srcdir, os.path.join(self.amuse_src_dir, '..')))
+
+            shortname = reldir.lower()
+            self.announce(shortname, level = log.INFO)
+
+            for name in os.listdir(temp_builddir):
+                path = os.path.join(temp_builddir, name)
+                stat = os.stat(path)
+                
+                if os.path.isfile(path):
+                    if worker_so_re.match(name):
+                        topath = os.path.join(lib_builddir, name)
+                        self.copy_file(path, topath)
+                        continue
+
+                if os.path.isfile(path) and os.access(path, os.X_OK):
+                    if worker_code_re.match(name):
+                        topath = os.path.join(lib_builddir, name)
+                        self.copy_file(path, topath)
+                    elif not name.endswith('.py'):
+                        self.announce("will not copy executable: {0}, it does not match the worker pattern".format(name), level = log.WARN)
+            
+            # also copy file or dir named data
+            path=os.path.join(temp_builddir,'data')
+            topath = os.path.join(lib_builddir, 'data')
+            if os.path.isfile(path):
+                self.copy_file(path, topath)                
+            if os.path.isdir(path):
+                self.copy_tree(path, topath)
                                     
     def subdirs_in_path(self,path):
         if not os.path.exists(path):
@@ -973,6 +1014,7 @@ class BuildCodes(CodeCommand):
         
         if not self.codes_dir == self.codes_src_dir:
             self.copy_worker_codes_to_build_dir()
+            #~ self.copy_worker_codes()
             
         with open(buildlog, "a") as output:
             output.write('*'*80)
