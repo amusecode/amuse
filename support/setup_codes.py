@@ -1013,8 +1013,8 @@ class BuildCodes(CodeCommand):
             #~ self.copy_config_to_build_dir()
         
         if not self.codes_dir == self.codes_src_dir:
-            self.copy_worker_codes_to_build_dir()
-            #~ self.copy_worker_codes()
+            #~ self.copy_worker_codes_to_build_dir()
+            self.copy_worker_codes()
             
         with open(buildlog, "a") as output:
             output.write('*'*80)
