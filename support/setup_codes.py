@@ -1131,6 +1131,8 @@ class BuildLibraries(BuildCodes):
             if os.path.isdir(path_):
                 yield path_
 
+
+# the following two are for convenience, not strictly necessary 
 class BuildLibraries_inplace(BuildLibraries):
 
     description = "build just the supporting libraries, in place"
@@ -1138,6 +1140,15 @@ class BuildLibraries_inplace(BuildLibraries):
     def initialize_options(self):
         BuildLibraries.initialize_options(self)
         self.inplace=True
+
+class BuildCodes_inplace(BuildCodes):
+
+    description = "build interfaces to codes, in place"
+
+    def initialize_options(self):
+        BuildCodes.initialize_options(self)
+        self.inplace=True
+
 
 class ConfigureCodes(CodeCommand):
 
@@ -1258,7 +1269,8 @@ def setup_commands():
         'build_libraries': BuildLibraries,
         'build_libraries_in_place': BuildLibraries_inplace,
         'install_libraries': InstallLibraries,
-        'develop' : Develop
+        'develop' : Develop,
+        'develop_build' : BuildCodes_inplace
     }
     
     if sys.hexversion > 0x03000000:
