@@ -26,7 +26,7 @@ class CreateAPythonWorker(OptionalAttributes):
         
     @late
     def worker_dir(self):
-        os.path.abspath(os.path.curdir)
+        return os.path.abspath(os.path.curdir)
         
     @late
     def template_string(self):
