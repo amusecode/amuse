@@ -471,7 +471,6 @@ class ASyncRequestSequence(AbstractASyncRequest):
         self.args = args
         self.index = 0
         self.current_async_request = self.create_next_request(self.index, *self.args)
-        self.request = self.current_async_request.request
         self._is_finished = False
         self._is_result_set = False
         self._called_set_result = False
@@ -517,9 +516,7 @@ class ASyncRequestSequence(AbstractASyncRequest):
             self._results.append(self.current_async_request.result())
             self.index += 1
             self.current_async_request = self.create_next_request(self.index, *self.args)
-            if not self.current_async_request is None:
-                self.request = self.current_async_request.request
-            else:
+            if self.current_async_request is None:
                 self._set_result()
       
 

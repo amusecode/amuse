@@ -37,6 +37,9 @@ if __name__ == '__main__':
     x = PythonImplementation(instance, {interface})
     
     if use_sockets:
-        x.start_socket(portnumber, host)
+        if usempi:
+            x.start_socket_mpi(portnumber, host)
+        else:
+            x.start_socket(portnumber, host)
     else:
         x.start()

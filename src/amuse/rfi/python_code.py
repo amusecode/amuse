@@ -143,6 +143,48 @@ class PythonImplementation(object):
         
         client_socket.close()
         
+    def start_socket_mpi(self, port, host):
+        rank=MPI.COMM_WORLD.Get_rank()
+
+        if rank==0:
+            client_socket = socket.create_connection((host, port))
+        
+        self.must_run = True
+        while self.must_run:
+            
+            if rank==0:
+                message = SocketMessage()
+                message.receive(client_socket)
+            else:
+                message=None
+            
+            message=MPI.COMM_WORLD.bcast(message, root=0)
+                
+            result_message = SocketMessage(message.call_id, message.function_id, message.call_count)
+            
+            if message.function_id == 0:
+                self.must_run = False
+            else:
+                if message.function_id in self.mapping_from_tag_to_legacy_function:
+                    try:
+                        self.handle_message(message, result_message)
+                    except  BaseException as ex:
+                        traceback.print_exc()
+                        result_message.set_error(ex.__str__())
+                        for type, attribute in self.dtype_to_message_attribute.iteritems():
+                            array = getattr(result_message, attribute)
+                            packed = pack_array(array, result_message.call_count, type)
+                            setattr(result_message, attribute, packed)
+    
+                else:
+                    result_message.set_error("unknown function id " + message.function_id)
+            
+            if rank==0:
+                result_message.send(client_socket)
+        
+        if rank==0:
+            client_socket.close()
+
 
     def handle_message(self, input_message, output_message):
         legacy_function = self.mapping_from_tag_to_legacy_function[input_message.function_id]

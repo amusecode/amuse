@@ -807,6 +807,43 @@ class TestInterface(TestWithMPI):
         y.stop()
         x.stop()
 
+    def test22b(self):
+        
+        pool = AsyncRequestsPool()
+        
+        x = self.ForTestingInterface()
+        y = self.ForTestingInterface()
+        request1 = x.sleep.asynchronous(0.2)
+        request2 = y.sleep.asynchronous(0.2)
+        finished_requests = []
+        
+        def handle_result(request, index):
+            self.assertTrue(request.is_result_available())
+            finished_requests.append(index)
+            
+        pool.add_request(request1, handle_result, [1])
+        pool.add_request(request2, handle_result, [2])
+        
+        time.sleep(1.0)
+
+        pool.wait()
+        pool.wait()
+
+        self.assertEquals(len(finished_requests), 2)
+        self.assertEquals(len(pool), 0)
+        
+        self.assertTrue(request1.is_result_available())
+        self.assertTrue(request2.is_result_available())
+        
+        self.assertEquals(request1.result(), 0)
+        self.assertEquals(request2.result(), 0)
+        
+        pool.wait()
+        self.assertEquals(len(pool), 0)
+
+        y.stop()
+        x.stop()
+
 
     def test23(self):
         
@@ -909,10 +946,11 @@ class TestInterface(TestWithMPI):
 
     def test25(self):
         instance = self.ForTestingInterface(polling_interval_in_milliseconds = 100)
-        (output1, error1) = instance.internal__get_message_polling_interval()
+        if instance.channel.is_polling_supported():
+            (output1, error1) = instance.internal__get_message_polling_interval()
+            self.assertEquals(error1, 0)
+            self.assertEquals(output1, 100000)
         instance.stop()
-        self.assertEquals(error1, 0)
-        self.assertEquals(output1, 100000)
         
         
     def test26(self):
