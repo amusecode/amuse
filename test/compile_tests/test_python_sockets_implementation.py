@@ -15,6 +15,7 @@ from amuse.rfi.core import *
 from amuse.rfi.async_request import AsyncRequestsPool
 
 import test_python_implementation
+import test_python_implementation_mpi
                         
 class TestInterfaceSockets(test_python_implementation.TestInterface):
     def setUp(self):
@@ -116,3 +117,29 @@ class TestInterfaceSockets(test_python_implementation.TestInterface):
         
     def test27(self):
         pass # skip because only supported for mpi channel
+
+class TestInterfaceSocketsMPI(test_python_implementation_mpi.TestInterface):
+    def setUp(self):
+        self.check_not_in_mpiexec()
+        super(test_python_implementation_mpi.TestInterface, self).setUp()
+        
+    def check_not_in_mpiexec(self):
+        """
+        The tests will fork another process, if the test run
+        is itself an mpi process, the tests may fail. 
+        
+        For the hydra process manager the tests will fail.
+        So skip the tests if we detect hydra
+        """
+        if 'HYDRA_CONTROL_FD' in os.environ or 'PMI_FD' in os.environ:
+            self.skip('cannot run the socket tests under hydra process manager')
+            
+    def ForTesting(self, **options):
+        options["worker_dir"]=self.get_path_to_results()
+        options["channel_type"]="sockets"
+        return test_python_implementation_mpi.ForTesting( **options)
+    def ForTestingInterface(self, **options):
+        options["worker_dir"]=self.get_path_to_results()
+        options["channel_type"]="sockets"
+        return test_python_implementation_mpi.ForTestingInterface(**options)
+
