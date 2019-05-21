@@ -331,8 +331,9 @@ class PythonImplementation(object):
             communicator = MPI.COMM_SELF.Accept(port_identifier, self.get_null_info(), 0)
             merged = communicator.Merge(False)
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 1, 65)
-            merged.Disconnect()
-            communicator.Disconnect()
+
+            merged.Free()
+            communicator.Free()
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 1, 65)
         
@@ -348,9 +349,11 @@ class PythonImplementation(object):
         if rank == 0:
             communicator = MPI.COMM_SELF.Connect(port_identifier, self.get_null_info(), 0)
             merged = communicator.Merge(True)
+
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, merged, 0, 65)
-            merged.Disconnect()
-            communicator.Disconnect()
+
+            merged.Free()
+            communicator.Free()
         else:
             new_communicator = MPI.COMM_WORLD.Create_intercomm(0, MPI.COMM_WORLD, 0, 65)
         
