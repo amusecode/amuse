@@ -2588,9 +2588,9 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 ac_config_files="$ac_config_files config.mk"
 
-ac_config_files="$ac_config_files build.py"
+ac_config_files="$ac_config_files build.py:bin/amusifier.in"
 
-ac_config_files="$ac_config_files amusifier:build.py"
+ac_config_files="$ac_config_files bin/amusifier:build.py"
 
 
 #CODE_GENERATOR="\${AMUSE_DIR}/build.py"
@@ -9930,8 +9930,8 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "config.mk") CONFIG_FILES="$CONFIG_FILES config.mk" ;;
-    "build.py") CONFIG_FILES="$CONFIG_FILES build.py" ;;
-    "amusifier") CONFIG_FILES="$CONFIG_FILES amusifier:build.py" ;;
+    "build.py") CONFIG_FILES="$CONFIG_FILES build.py:bin/amusifier.in" ;;
+    "bin/amusifier") CONFIG_FILES="$CONFIG_FILES bin/amusifier:build.py" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -10348,7 +10348,7 @@ which seems to be undefined.  Please make sure it is defined" >&2;}
 
   case $ac_file$ac_mode in
     "build.py":F) chmod +x build.py ;;
-    "amusifier":F) chmod +x amusifier ;;
+    "bin/amusifier":F) chmod +x bin/amusifier ;;
 
   esac
 done # for ac_tag

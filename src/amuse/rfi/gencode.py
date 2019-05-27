@@ -176,7 +176,7 @@ class ParseCommandLine(object):
             help="Prefix for generated function names, relevant for cython")
 
         self.parser.add_option(
-            "--get_amuse_dir",
+            "--get-amuse-dir",
             action="store_true",
             default=False,
             dest="get_amuse_dir",

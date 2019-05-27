@@ -2,7 +2,7 @@ include Makefile
 include configure
 include README.txt
 include config.mk.in
-include build.py.in
+include bin/amusifier.in
 include amuserc.example
 
 recursive-include src *
