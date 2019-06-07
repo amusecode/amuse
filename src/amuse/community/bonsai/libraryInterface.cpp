@@ -741,7 +741,7 @@ int get_gravity_at_point(double eps, double x, double y, double z,
   double fz = 0;
   double pot = 0;
   getCurrentStateToHost();
-  for(i=0; i<n_bodies; i++) {
+  for(int i=0; i<n_bodies; i++) {
     dx = (x-bodies_pos[i].x);
     dy = (x-bodies_pos[i].y);
     dz = (x-bodies_pos[i].z);
