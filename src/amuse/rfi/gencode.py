@@ -289,7 +289,8 @@ def make_a_mpi_python_worker():
 def make_a_socket_python_worker():
     return make_a_python_worker('sockets')
     
-def make_file(settings):
+def make_file(uc):
+    settings=uc.options
     implementation_class = None
     try:
         if settings.name_of_module_or_python_file.endswith('.py'):
@@ -365,7 +366,8 @@ def make_file(settings):
 
 
 
-def make_directory(settings):
+def make_directory(uc):
+    settings=uc.options
 
     usecases = {
         ('c','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForACCode,    
@@ -385,14 +387,13 @@ def amusifier():
     uc = ParseCommandLine()
     uc.start()
     
-    settings = uc.options
-    if settings.get_amuse_dir:
+    if uc.options.get_amuse_dir:
         print(get_amuse_root_dir())
         exit(0)
-    elif settings.mode == 'dir':
-        make_directory(settings)
+    elif uc.options.mode == 'dir':
+        make_directory(uc)
     else:
-        make_file(settings)
+        make_file(uc)
 
 if __name__ == '__main__':
 
