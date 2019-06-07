@@ -710,7 +710,7 @@ int get_index_of_next_particle(int index_of_the_particle,
 
 int get_potential_at_point(double eps, double x, double y, double z,
   double * phi){
-  #fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+  //fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
   *phi = potential;
   
   return 0;
