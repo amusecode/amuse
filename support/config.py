@@ -13,7 +13,7 @@ def parse_configmk(filename):
     for line in lines:
       if "=" in line:
           var, value=line.split("=",1)
-          if "@" in value:
+          if value.startswith("@") and value.endswidth("@"):
               warnings.warn("possible configuration error/ unconfigured variable in {0}".format(filename))
           cfgvars[var]=value.strip()
     return cfgvars
