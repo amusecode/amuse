@@ -755,7 +755,7 @@ int get_gravity_at_point(double eps, double x, double y, double z,
   *forcex = fx;
   *forcey = fy;
   *forcez = fz;
-  potential = pot
+  potential = pot;
 
   return 0;
 }
