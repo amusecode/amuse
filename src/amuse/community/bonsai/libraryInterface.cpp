@@ -13,6 +13,7 @@
 #endif  
 #include "worker_code.h"
 
+double potential = 0;
 
 octree *bonsai;
 bool initialized = false;
@@ -709,8 +710,10 @@ int get_index_of_next_particle(int index_of_the_particle,
 
 int get_potential_at_point(double eps, double x, double y, double z,
   double * phi){
-  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return -2;
+  #fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+  *phi = potential;
+  
+  return 0;
 }
 
 
@@ -727,8 +730,34 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
 
 int get_gravity_at_point(double eps, double x, double y, double z,
   double * forcex, double * forcey, double * forcez){
-  fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  return -2;
+  //fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
+  double inf_dr_squared;
+  double dr_squared;
+  double dx;
+  double dy;
+  double dz;
+  double fx = 0;
+  double fy = 0;
+  double fz = 0;
+  double pot = 0;
+  getCurrentStateToHost();
+  for(i=0; i<n_bodies; i++) {
+    dx = (x-bodies_pos[i].x);
+    dy = (x-bodies_pos[i].y);
+    dz = (x-bodies_pos[i].z);
+    dr = sqrt(dx*dx + dy*dy + dz*dz + eps*eps);
+    inf_dr_cubed = 1./(dr*dr*dr);
+    fx -= bodies_pos[i].w*dx * inf_dr_cubed;
+    fy -= bodies_pos[i].w*dy * inf_dr_cubed;
+    fz -= bodies_pos[i].w*dz * inf_dr_cubed;
+    pot += bodies_pos[i].w/dr;
+  }
+  *forcex = fx;
+  *forcey = fy;
+  *forcez = fz;
+  potential = pot
+
+  return 0;
 }
 
 int cleanup_code(){
