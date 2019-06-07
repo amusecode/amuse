@@ -731,8 +731,8 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
 int get_gravity_at_point(double eps, double x, double y, double z,
   double * forcex, double * forcey, double * forcez){
   //fprintf(stderr,"NOT IMPLEMENTED: %s:%d \n", __FILE__, __LINE__);
-  double inf_dr_squared;
-  double dr_squared;
+  double inf_dr_cubed;
+  double dr;
   double dx;
   double dy;
   double dz;
