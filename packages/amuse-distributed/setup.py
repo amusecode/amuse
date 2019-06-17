@@ -1,7 +1,13 @@
+import sys
+import os
+
 from setuptools import setup
 
+import support
+support.use("system")
+from support.setup_codes import setup_commands
 
-name = 'amuse'
+name = 'amuse-distributed'
 version = "12.0.0rc3"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
@@ -14,40 +20,9 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
-    'amuse-framework>=%s' % version,
-    'amuse-athena>=%s' % version,
-    'amuse-bhtree>=%s' % version,
-    'amuse-brutus>=%s' % version,
-    'amuse-bse>=%s' % version,
-    'amuse-capreole>=%s' % version,
-    'amuse-distributed>=%s' % version,
-    'amuse-evtwin>=%s' % version,
-    'amuse-fastkick>=%s' % version,
-    'amuse-fi>=%s' % version,
-    'amuse-fractalcluster>=%s' % version,
-    'amuse-framework>=%s' % version,
-    'amuse-gadget2>=%s' % version,
-    'amuse-galactics>=%s' % version,
-    'amuse-galaxia>=%s' % version,
-    'amuse-halogen>=%s' % version,
-    'amuse-hermite>=%s' % version,
-    'amuse-hop>=%s' % version,
-    'amuse-huayno>=%s' % version,
-    'amuse-kepler>=%s' % version,
-    'amuse-kepler-orbiters>=%s' % version,
-    'amuse-mameclot>=%s' % version,
-    'amuse-mercury>=%s' % version,
-    'amuse-mmams>=%s' % version,
-    'amuse-ph4>=%s' % version,
-    'amuse-seba>=%s' % version,
-    'amuse-secularmultiple>=%s' % version,
-    'amuse-simplex>=%s' % version,
-    'amuse-smalln>=%s' % version,
-    'amuse-sphray>=%s' % version,
-    'amuse-sse>=%s' % version,
-    'amuse-twobody>=%s' % version,
+    'amuse-framework>=12.0.0rc3',
 ]
-description = 'The Astrophysical Multipurpose Software Environment'
+description = 'The Astrophysical Multipurpose Software Environment - Distributed AMUSE'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
@@ -69,6 +44,17 @@ classifiers = [
     'Topic :: Scientific/Engineering :: Astronomy',
 ]
 
+extensions = []
+
+all_data_files = []
+
+packages = ['amuse.community.distributed']
+
+package_data = {
+}
+
+mapping_from_command_name_to_command_class=setup_commands()
+
 setup(
     name=name,
     version=version,
@@ -81,4 +67,10 @@ setup(
     long_description=long_description,
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
+    cmdclass=mapping_from_command_name_to_command_class,
+    ext_modules=extensions,
+    package_dir={'amuse.community.distributed': 'src/amuse/community/distributed'},
+    packages=packages,
+    package_data=package_data,
+    data_files=all_data_files,
 )

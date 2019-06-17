@@ -47,7 +47,6 @@ all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
 
 packages = find_packages('src', exclude=["amuse.community.*"])
 packages.append("amuse.community.interface")
-packages.append("amuse.community.distributed")
 
 package_data = {
     'amuse.rfi.tools': ['*.template'],
