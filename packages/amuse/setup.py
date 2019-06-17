@@ -20,7 +20,6 @@ install_requires = [
     'amuse-brutus>=%s' % version,
     'amuse-bse>=%s' % version,
     'amuse-capreole>=%s' % version,
-    'amuse-distributed>=%s' % version,
     'amuse-evtwin>=%s' % version,
     'amuse-fastkick>=%s' % version,
     'amuse-fi>=%s' % version,
