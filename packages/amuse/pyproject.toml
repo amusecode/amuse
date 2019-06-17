@@ -6,7 +6,6 @@ requires = [
     'amuse-brutus>=12.0.0rc3',
     'amuse-bse>=12.0.0rc3',
     'amuse-capreole>=12.0.0rc3',
-    'amuse-distributed>=12.0.0rc3',
     'amuse-evtwin>=12.0.0rc3',
     'amuse-fastkick>=12.0.0rc3',
     'amuse-fi>=12.0.0rc3',
