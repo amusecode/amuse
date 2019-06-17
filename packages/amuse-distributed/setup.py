@@ -10,11 +10,11 @@ from support.setup_codes import setup_commands
 name = 'amuse-distributed'
 major_version = 12
 minor_version = 0
-patch_version = 0
-additional_version = ".rc4"  # e.g. ".rc1"
+micro_version = 0
+patch_version = ".rc4"  # e.g. ".rc1"
 post_version = ""  # e.g. ".post1"
 version = "%i.%i.%i%s%s" % (
-    major_version, minor_version, patch_version, additional_version,
+    major_version, minor_version, micro_version, patch_version,
     post_version
 )
 author = 'The AMUSE team'
