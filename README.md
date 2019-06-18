@@ -1,18 +1,18 @@
 This directory contains the AMUSE software. With AMUSE you can write
 scripts to simulate astrophysical problems in different domains.
 
-The documentation and the software can be found at:
+The documentation and more info can be found at:
 
 * http://www.amusecode.org
 
 Getting Started
 ===============
 
-To build amuse you need a working build environment and install some
-prerequisites. This document contains the quick install
-instructions, if these fail please look at the detailed descriptions
-of the installation procedure in the documents in the 'doc/install'
-directory.
+To build amuse you need a working build environment with python and 
+install some prerequisites. This document contains the quick install
+instructions, if these fail please look for options at the detailed 
+descriptions of the installation procedure in the documents in the 
+'doc/install' directory.
 
 Compilers
 =========
@@ -42,84 +42,48 @@ can find one at:
 
 * http://hpc.sourceforge.net/
 
+Finally, AMUSE needs Python 2 version >2.7 or Python3 version >=3.5 installed
+preferably with pip and virtualenv.
+
 Installing Prerequisites
 ========================
 
-This document describes installation of the pre-requisite software
-packages to a user directory. If you have a recent Ubuntu or Fedora
-distribution you can follow the installation instructions in
-`doc/install/howto-install-prerequisites.txt` to install the
-packages as part of the system.
+The following libraries need to be installed:
 
-1. Make a prerequisite software directory (can be set to any directory)
+* HDF (version 1.6.5 - 1.8.x)
+* h5py (version >= 1.2.0)
+* MPI (OpenMPI or MPICH)
 
-    ```bash
-    mkdir ~/amuse/prerequisites
-    ```
+The following are needed for some codes:
+* FFTW (version >= 3.0)
+* GSL
+* CMake (version >= 2.4)
+* GMP (version >= 4.2.1)
+* MPFR (version >= 2.3.1)
 
-2. Set the PREFIX, PATH and LD_LIBRARY_PATH environement variables
+Installing+building AMUSE
+=========================
 
-    ```bash
-    export PREFIX=~/amuse/prerequisites
-    export PATH=${PREFIX}/bin:${PATH}
-    export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
-    ```
-
-    2b. If you have ifort and/or icc, or if you encounter problems with NetCDF 
-    (optional dependency) you may need to set also:
-
-    ```bash
-    export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
-    export CPATH=${PREFIX}/include:${CPATH}
-    ```
-
-3. Download and install python
-
-    ```bash
-    cd doc/install
-    ./install-python.sh
-    ```
-
-4. Download and install the other pre-requisites
-   (script is also in the `doc/install` directory)
-
-    ```bash
-    ./install.py install
-    ```
-
-Set Environment
-===============
-You can set the the PREFIX, PATH and LD_LIBRARY_PATH environment
-variables in you bashrc file. Please make sure the ${PREFIX}/bin
-directory is first in the path.
-
-In bash, you can extend your `.bashrc` file with:
+AMUSE can be installed through pip:
 
 ```bash
-export PREFIX=~/amuse/prerequisites
-export PATH=${PREFIX}/bin:${PATH}
-export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+pip install [--user] amuse
 ```
 
-Building AMUSE
-==============
+AMUSE Development 
+=================
 
-All modules can be build with a configure and make command. Start
-make from the main amuse directory (directory this README file lives
-in). The main task of the configure script is to check if the
-prerequisite packages have been installed.
+Installing for AMUSE development can also be handled through pip, by executing
+in the root of a clone of the repository
 
-1. Configure the source code
+```bash
+pip install -e .
+```
+after this the codes need to be build:
 
-    ```bash
-    ./configure
-    ```
-
-2. Build the code with make
-    
-    ```bash
-    make
-    ```
+```bash
+python seteup.py develop_build
+```
 
 Running the tests
 =================
@@ -129,8 +93,14 @@ amuse directory (directory this README file lives in).
 
 To run these tests do:
 
-1. Run the automatic tests
+1. install the tests
 
 ```bash
-nosetests -v
+pip install [--user] amuse-tests
+```
+
+2. Run the automatic tests
+
+```bash
+nosetests -v amuse.tests.suite
 ```
