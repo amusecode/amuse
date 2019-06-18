@@ -69,7 +69,8 @@ AMUSE can be installed through pip:
 pip install [--user] amuse
 ```
 
-if necessary this will also install some required Python packages:
+This will build and install AMUSE with an extensive set of codes.
+If necessary this will also install some required Python packages:
 
 * Numpy (version >= 1.3.0)
 * h5py (version >= 1.2.0)
@@ -77,15 +78,27 @@ if necessary this will also install some required Python packages:
 * nose (version >= 0.11)
 * docutils (version >= 0.6)
 
+It is possible to install the minimal framework by:
+
+```bash
+pip install [--user] amuse-framework
+```
+
+This does not include any codes. These can be added
+```bash
+pip install [--user] amuse-<code name>
+```
+
 AMUSE Development 
 =================
 
-A install for AMUSE development can also be handled through pip, by executing
+An install for AMUSE development can also be handled through pip, by executing
 in the root of a clone of the repository
 
 ```bash
 pip install -e .
 ```
+
 after this the codes need to be build:
 
 ```bash
