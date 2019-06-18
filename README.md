@@ -51,7 +51,6 @@ Installing Prerequisites
 The following libraries need to be installed:
 
 * HDF (version 1.6.5 - 1.8.x)
-* h5py (version >= 1.2.0)
 * MPI (OpenMPI or MPICH)
 
 The following are needed for some codes:
@@ -70,10 +69,18 @@ AMUSE can be installed through pip:
 pip install [--user] amuse
 ```
 
+if necessary this will also install some required Python packages:
+
+* Numpy (version >= 1.3.0)
+* h5py (version >= 1.2.0)
+* mpi4py (version >= 1.0)
+* nose (version >= 0.11)
+* docutils (version >= 0.6)
+
 AMUSE Development 
 =================
 
-Installing for AMUSE development can also be handled through pip, by executing
+A install for AMUSE development can also be handled through pip, by executing
 in the root of a clone of the repository
 
 ```bash
