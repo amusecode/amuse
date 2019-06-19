@@ -34,60 +34,63 @@ from amuse.ext.galactics_model import new_galactics_model
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
 
-missing_modules = []
-try:
-    from amuse.community.bhtree.interface import BHTree, BHTreeInterface
-except ImportError:
-    missing_modules.append("bhtree")
-try:
-    from amuse.community.hermite0.interface import Hermite, HermiteInterface
-except ImportError:
-    missing_modules.append("hermite0")
-from amuse.community.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
-from amuse.community.octgrav.interface import Octgrav, OctgravInterface
-from amuse.community.twobody.interface import TwoBody, TwoBodyInterface
-from amuse.community.huayno.interface import Huayno, HuaynoInterface
-from amuse.community.ph4.interface import ph4, ph4Interface
-from amuse.community.bonsai.interface import Bonsai, BonsaiInterface
-from amuse.community.pikachu.interface import Pikachu, PikachuInterface
-from amuse.community.aarsethzare.interface import AarsethZare, AarsethZareInterface
-from amuse.community.adaptb.interface import Adaptb, AdaptbInterface
-from amuse.community.hacs64.interface import Hacs64, Hacs64Interface
-from amuse.community.higpus.interface import HiGPUs, HiGPUsInterface
-from amuse.community.kepler.interface import Kepler, KeplerInterface
-from amuse.community.mercury.interface import Mercury, MercuryInterface
-from amuse.community.mi6.interface import MI6, MI6Interface
-from amuse.community.mikkola.interface import Mikkola, MikkolaInterface
-from amuse.community.smalln.interface import SmallN, SmallNInterface
-from amuse.community.rebound.interface import Rebound, ReboundInterface
-from amuse.community.brutus.interface import Brutus, BrutusInterface
+_community_codes=[
+    "BHTree", 
+    "Hermite", 
+    "PhiGRAPE",
+    "Octgrav",
+    "TwoBody",
+    "Huayno",
+    "ph4",
+    "Bonsai",
+    "Pikachu",
+    "AarsethZare",
+    "Adaptb",
+    "Hacs64",
+    "HiGPUs",
+    "Kepler",
+    "Mercury",
+    "MI6",
+    "Mikkola",
+    "SmallN",
+    "Rebound",
+    "Brutus",
+    "Fi",
+    "Gadget2",
+    "Athena",
+    "Capreole",
+    "MpiAmrVac",
+    "SimpleX",
+    "Mocassin",
+    "SPHRay",
+    "SSE",
+    "BSE",
+    "MOSSE",
+    "MOBSE",
+    "SeBa",
+    "EVtwin",
+    "MESA",
+    "MakeMeAMassiveStar",
+    "Hop",
+    ]
 
 
-from amuse.community.fi.interface import Fi, FiInterface
-from amuse.community.gadget2.interface import Gadget2, Gadget2Interface
-from amuse.community.athena.interface import Athena, AthenaInterface
-from amuse.community.capreole.interface import Capreole, CapreoleInterface
-from amuse.community.mpiamrvac.interface import MpiAmrVac, MpiAmrVacInterface
+def _placeholder(name):
+    class _placeholder(object):
+        def __init__(self, *arg,**kwargs):
+            raise Exception("failed import, code {0} not available, maybe it needs to be (pip) installed?".format(name))
+    return _placeholder
 
-from amuse.community.simplex.interface import SimpleX, SimpleXInterface
-from amuse.community.mocassin.interface import Mocassin, MocassinInterface
-from amuse.community.sphray.interface import SPHRay, SPHRayInterface
-
-from amuse.community.sse.interface import SSE, SSEInterface
-from amuse.community.bse.interface import BSE, BSEInterface
-from amuse.community.mosse.interface import MOSSE, MOSSEInterface                                                   
-from amuse.community.mobse.interface import MOBSE, MOBSEInterface
-from amuse.community.seba.interface import SeBa, SeBaInterface
-from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
-from amuse.community.mesa.interface import MESA, MESAInterface
-from amuse.community.mmams.interface import MakeMeAMassiveStar, MakeMeAMassiveStarInterface
-
-from amuse.community.hop.interface import Hop, HopInterface
-
-if missing_modules:
-    print("Can't import the following modules (maybe they need to be installed?): ")
-    for x in missing_modules:
-        print("%s, " % x)
+for _name in _community_codes:
+    _interfacename=_name+"Interface"
+    _packagename=_name.lower()
+    try:
+        _interface=__import__("amuse.community."+_packagename+".interface", fromlist=[_name, _interfacename])
+        exec(_name+"=_interface."+_name)
+        exec(_interfacename+"=_interface."+_interfacename)
+    except:
+        exec(_name+"=_placeholder(_packagename)")
+        exec(_interfacename+"=_placeholder(_packagename)")
 
 from amuse.support.console import set_printing_strategy
 from amuse.support.console import get_current_printing_strategy
