@@ -86,11 +86,11 @@ for _name in _community_codes:
     _packagename=_name.lower()
     try:
         _interface=__import__("amuse.community."+_packagename+".interface", fromlist=[_name, _interfacename])
-        exec(_name+"=_interface."+_name)
-        exec(_interfacename+"=_interface."+_interfacename)
-    except:
-        exec(_name+"=_placeholder(_packagename)")
-        exec(_interfacename+"=_placeholder(_packagename)")
+        locals()[_name]=getattr(_interface,_name)
+        locals()[_interfacename]=getattr(_interface,_interfacename)
+    except ImportError:
+        locals()[_name]=_placeholder(_packagename)
+        locals()[_interfacename]=_placeholder(_packagename)
 
 from amuse.support.console import set_printing_strategy
 from amuse.support.console import get_current_printing_strategy
