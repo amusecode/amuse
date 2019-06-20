@@ -8,19 +8,24 @@ The documentation and more info can be found at:
 Getting Started
 ===============
 
-To build amuse you need a working build environment with python and 
-install some prerequisites. This document contains the quick install
-instructions, if these fail please look for options at the detailed 
-descriptions of the installation procedure in the documents in the 
-'doc/install' directory.
+In short, most probably
+
+```bash
+pip install amuse
+```
+should get you going if you have a linux or Mac were you compile 
+codes on (HDF5 and an MPI libraries must be installed). 
+
+Below are some hints for a quick install, if these fail please 
+look for options at the detailed descriptions of the installation 
+procedure in the documents in the 'doc/install' directory.
 
 Compilers
 =========
 
 To build AMUSE from source you need to have a working build
-environment. The AMUSE build system needs a C++ and a fortan 90
-compiler. Please check first if you have a working build environment
-on your system.
+environment. The AMUSE build system needs C/C++ and fortan 90
+compilers. 
 
 In Ubuntu you can setup the environment with (as root):
 
@@ -28,11 +33,7 @@ In Ubuntu you can setup the environment with (as root):
 apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
 ```
 
-In Fedora you can setup the environment with (as root)::
-
-```bash
-yum groupinstall "Development Tools" "Development Libraries"
-```
+Other distributions have similar package or package groups available.
 
 In OS X you can install homebrew or macports package managers (both
 need the Apple Developer Tools). If you do not want to use any of
@@ -42,8 +43,12 @@ can find one at:
 
 * http://hpc.sourceforge.net/
 
-Finally, AMUSE needs Python 2 version >2.7 or Python3 version >=3.5 installed
-preferably with pip and virtualenv.
+Python
+======
+
+AMUSE needs Python 2, version >2.7, or Python3 version >=3.5 installed
+preferably with pip and virtualenv. It may be necessary to update pip
+to a recent version.
 
 Installing Prerequisites
 ========================
@@ -78,6 +83,8 @@ If necessary this will also install some required Python packages:
 * nose (version >= 0.11)
 * docutils (version >= 0.6)
 
+If you are not using pip these must be installed by hand.
+
 It is possible to install the minimal framework by:
 
 ```bash
@@ -92,8 +99,9 @@ pip install [--user] amuse-<code name>
 AMUSE Development 
 =================
 
-An install for AMUSE development can also be handled through pip, by executing
-in the root of a clone of the repository
+If you are using Python 2, an AMUSE development install can also 
+be handled through pip, by executing (in the root of a clone of the 
+repository)
 
 ```bash
 pip install -e .
