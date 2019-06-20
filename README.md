@@ -99,9 +99,9 @@ pip install [--user] amuse-<code name>
 AMUSE Development 
 =================
 
-If you are using Python 2 ,an install for AMUSE development can also 
-be handled through pip, by executing in the root of a clone of the 
-repository
+If you are using Python 2, an AMUSE development install can also 
+be handled through pip, by executing (in the root of a clone of the 
+repository)
 
 ```bash
 pip install -e .
