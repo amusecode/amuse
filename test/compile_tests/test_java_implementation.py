@@ -386,14 +386,12 @@ class TestInterface(TestWithMPI):
         self.check_not_in_mpiexec()
         self.check_has_java()
         super(TestInterface, self).setUp()
-        print "building...",
         self.check_can_compile_modules()
         try:
             self.exefile=compile_tools.build_java_worker(codestring, self.get_path_to_results(),ForTestingInterface)
         except Exception as ex:
             print ex
             raise
-        print "done"
         
     def test1(self):
         instance = ForTestingInterface(self.exefile)
@@ -488,8 +486,6 @@ class TestInterface(TestWithMPI):
         for x in range(400):
             instance = ForTestingInterface(self.exefile)
             out, error = instance.echo_float(4.0)
-            if x % 100 == 0:
-                print "x:", x
             instance.stop()
 
     
@@ -497,7 +493,6 @@ class TestInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         (output_ints,) = instance.echo_array([4,5,6])
         instance.stop()
-        print output_ints
         self.assertEquals(output_ints[0], 4)
         self.assertEquals(output_ints[1], 5)
         self.assertEquals(output_ints[2], 6)
@@ -572,7 +567,6 @@ class TestInterface(TestWithMPI):
         
     def test19(self):
         instance = ForTestingInterface(self.exefile)
-        print 3935559000370003845
         int_out, error = instance.echo_long_long_int(3935559000370003845)
         instance.stop()
         self.assertEquals(int_out, 3935559000370003845)
@@ -590,8 +584,8 @@ class TestInterface(TestWithMPI):
             os.remove(error)
 
         instance = ForTesting(self.exefile, redirect_stderr_file = error, redirect_stdout_file = output, redirection="file")
-        instance.print_string("abc")
-        instance.print_error_string("exex")
+        instance.print_string("test_string_123")
+        instance.print_error_string("error_string_123")
         instance.stop()
         
         time.sleep(0.2)
@@ -599,14 +593,13 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists(output))
         with open(output,"r") as f:
             content = f.read()
-        self.assertEquals(content.strip(), "abc")
+        self.assertTrue("test_string_123" in content.strip())
         
         self.assertTrue(os.path.exists(error))
         with open(error,"r") as f:
             content = f.read()
-        print content.strip()[-4:]
         # some times java generates "Picked up _JAVA_OPTIONS" message, so only test:
-        self.assertTrue(content.strip().endswith("exex"))
+        self.assertTrue(content.strip().endswith("error_string_123"))
 
     def test21(self):
         path = os.path.abspath(self.get_path_to_results())
@@ -619,6 +612,7 @@ class TestInterface(TestWithMPI):
             os.remove(error)
 
         instance = ForTesting(self.exefile, redirect_stderr_file = output, redirect_stdout_file = output, redirection="file")
+
         instance.print_string("abcdef")
         instance.print_error_string("&Hfecd")
         instance.stop()
@@ -628,7 +622,6 @@ class TestInterface(TestWithMPI):
         self.assertTrue(os.path.exists(output))
         with open(output,"r") as f:
             content = f.read()
-        print content.strip()[-8:]
         # some times java generates "Picked up _JAVA_OPTIONS" message, so only test:
         self.assertTrue("abcdef" in content)
         self.assertTrue("&Hfecd" in content)

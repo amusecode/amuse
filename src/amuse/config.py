@@ -13,7 +13,7 @@ def parse_configmk(filename):
     for line in lines:
       if "=" in line:
           var, value=line.split("=",1)
-          if "@" in value:
+          if value.startswith("@") and value.endswidth("@"):
               warnings.warn("possible configuration error/ unconfigured variable in {0}".format(filename))
           cfgvars[var]=value.strip()
     return cfgvars
@@ -21,7 +21,7 @@ def parse_configmk(filename):
 try:
     configmk=parse_configmk("config.mk")
 except IOError:
-    from amuse.support import get_amuse_root_dir
+    from .support import get_amuse_root_dir
     configmk=parse_configmk(os.path.join(get_amuse_root_dir(),"config.mk"))
   
 class interpreters(object):

@@ -49,9 +49,8 @@ public class Hub extends Thread {
 
         //classpath
         List<String> classpath = result.getJavaClasspath();
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed/src/dist/*");
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed/worker.jar");
-        classpath.add(configuration.getAmuseHome().getPath() + "/src/amuse/community/distributed");
+        classpath.add(configuration.getAmuseHome().getPath() + "/community/distributed/data/");
+        classpath.add(configuration.getAmuseHome().getPath() + "/community/distributed/data/*");
 
         result.setJavaMain("ibis.ipl.server.Server");
 

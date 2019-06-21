@@ -16,6 +16,8 @@ config.status
 *.dSYM
 build/
 
+# generated when packaging
+*.egg-info
 
 # files created running make / setup.py
 amuse.cfg

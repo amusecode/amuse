@@ -88,5 +88,5 @@ setup(
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
-    scripts=[ "amusifier" ],
+    scripts=[ "bin/amusifier" ],
 )

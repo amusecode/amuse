@@ -1602,7 +1602,7 @@ class SocketMessage(AbstractMessage):
     
     def send(self, socket):
         
-        flags = numpy.array([self.big_endian, False, len(self.encoded_units) > 0, False], dtype="b")
+        flags = numpy.array([self.big_endian, self.error, len(self.encoded_units) > 0, False], dtype="b")
 
         header = numpy.array([
             self.call_id,
@@ -1938,7 +1938,7 @@ class SocketChannel(AbstractMessageChannel):
         
 
 
-    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         request = SocketMessage().nonblocking_receive(self.socket)
     
         def handle_result(function):
@@ -1957,7 +1957,10 @@ class SocketChannel(AbstractMessageChannel):
             if message.error:
                 raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
         
-            return message.to_result(handle_as_array)
+            if has_units:
+                return message.to_result(handle_as_array), message.encoded_units
+            else:
+                return message.to_result(handle_as_array)
 
         request.add_result_handler(handle_result)
     
@@ -2249,11 +2252,14 @@ class DistributedChannel(AbstractMessageChannel):
         if message.error:
             raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
-        return message.to_result(handle_as_array)
+        if has_units:
+            return message.to_result(handle_as_array), message.encoded_units
+        else:
+            return message.to_result(handle_as_array)
     
     
 
-    def nonblocking_recv_message(self, call_id, function_id, handle_as_array):
+    def nonblocking_recv_message(self, call_id, function_id, handle_as_array, has_units=False):
         #       raise exceptions.CodeException("Nonblocking receive not supported by DistributedChannel")
         request = SocketMessage().nonblocking_receive(self.socket)
         
@@ -2273,7 +2279,10 @@ class DistributedChannel(AbstractMessageChannel):
             if message.error:
                 raise exceptions.CodeException("Error in (asynchronous) communication with worker: " + message.strings[0])
         
-            return message.to_result(handle_as_array)
+            if has_units:
+                return message.to_result(handle_as_array), message.encoded_units
+            else:
+                return message.to_result(handle_as_array)
 
         request.add_result_handler(handle_result)
             

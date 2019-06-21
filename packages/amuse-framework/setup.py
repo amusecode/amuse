@@ -5,7 +5,15 @@ from setuptools import setup, find_packages
 from support.setup_codes import setup_commands
 
 name = 'amuse-framework'
-version = "12.0.0rc3"
+major_version = 12
+minor_version = 0
+micro_version = 0
+pre_version = ".rc4"  # e.g. ".rc1"
+post_version = ".post1"  # e.g. ".post1"
+version = "%i.%i.%i%s%s" % (
+    major_version, minor_version, micro_version, pre_version,
+    post_version
+)
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -47,7 +55,6 @@ all_data_files.append(('share/amuse', ['./config.mk', './build.py']))
 
 packages = find_packages('src', exclude=["amuse.community.*"])
 packages.append("amuse.community.interface")
-packages.append("amuse.community.distributed")
 
 package_data = {
     'amuse.rfi.tools': ['*.template'],
@@ -87,5 +94,5 @@ setup(
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
-    scripts=[ "amusifier" ],
+    scripts=[ "bin/amusifier" ],
 )

@@ -12,6 +12,18 @@ from optparse import OptionParser
 #except (ImportError, ValueError):  # running as a stand-alone script
 #    import config
 
+# setup_sys_path()
+
+from amuse import config
+
+from amuse.rfi.tools import create_c
+from amuse.rfi.tools import create_fortran
+from amuse.rfi.tools import create_java
+from amuse.rfi.tools import create_dir
+from amuse.rfi.tools import create_python_worker
+from amuse.rfi.tools import create_cython
+    
+from amuse.support import get_amuse_root_dir    
 
 if sys.hexversion > 0x03000000:
     def get_amuse_directory():
@@ -97,7 +109,7 @@ class ParseCommandLine(object):
     
     def __init__(self):
         self.parser = OptionParser(self.usage)
-        self.parser.prog = 'build.py' #hack to set the name, for reporting errors and help
+        #~ self.parser.prog = 'build.py' #hack to set the name, for reporting errors and help
         
         self.parser.add_option(
             "-t",
@@ -164,7 +176,7 @@ class ParseCommandLine(object):
             help="Prefix for generated function names, relevant for cython")
 
         self.parser.add_option(
-            "--get_amuse_dir",
+            "--get-amuse-dir",
             action="store_true",
             default=False,
             dest="get_amuse_dir",
@@ -277,7 +289,8 @@ def make_a_mpi_python_worker():
 def make_a_socket_python_worker():
     return make_a_python_worker('sockets')
     
-def make_file(settings):
+def make_file(uc):
+    settings=uc.options
     implementation_class = None
     try:
         if settings.name_of_module_or_python_file.endswith('.py'):
@@ -353,7 +366,8 @@ def make_file(settings):
 
 
 
-def make_directory(settings):
+def make_directory(uc):
+    settings=uc.options
 
     usecases = {
         ('c','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForACCode,    
@@ -369,31 +383,19 @@ def make_directory(settings):
         
     builder.start()
     
-
-if __name__ == '__main__':
-    
-    # setup_sys_path()
-
-    from amuse import config
-
-    from amuse.rfi.tools import create_c
-    from amuse.rfi.tools import create_fortran
-    from amuse.rfi.tools import create_java
-    from amuse.rfi.tools import create_dir
-    from amuse.rfi.tools import create_python_worker
-    from amuse.rfi.tools import create_cython
-        
-    from amuse.support import get_amuse_root_dir    
-        
+def amusifier():
     uc = ParseCommandLine()
     uc.start()
     
-    settings = uc.options
-    if settings.get_amuse_dir:
+    if uc.options.get_amuse_dir:
         print(get_amuse_root_dir())
         exit(0)
-    elif settings.mode == 'dir':
-        make_directory(settings)
+    elif uc.options.mode == 'dir':
+        make_directory(uc)
     else:
-        make_file(settings)
+        make_file(uc)
+
+if __name__ == '__main__':
+
+    amusifier()
     

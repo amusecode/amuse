@@ -1,26 +1,31 @@
 This directory contains the AMUSE software. With AMUSE you can write
 scripts to simulate astrophysical problems in different domains.
 
-The documentation and the software can be found at:
+The documentation and more info can be found at:
 
 * http://www.amusecode.org
 
 Getting Started
 ===============
 
-To build amuse you need a working build environment and install some
-prerequisites. This document contains the quick install
-instructions, if these fail please look at the detailed descriptions
-of the installation procedure in the documents in the 'doc/install'
-directory.
+In short, most probably
+
+```bash
+pip install amuse
+```
+should get you going if you have a linux or Mac were you compile 
+codes on (HDF5 and an MPI libraries must be installed). 
+
+Below are some hints for a quick install, if these fail please 
+look for options at the detailed descriptions of the installation 
+procedure in the documents in the 'doc/install' directory.
 
 Compilers
 =========
 
 To build AMUSE from source you need to have a working build
-environment. The AMUSE build system needs a C++ and a fortan 90
-compiler. Please check first if you have a working build environment
-on your system.
+environment. The AMUSE build system needs C/C++ and fortan 90
+compilers. 
 
 In Ubuntu you can setup the environment with (as root):
 
@@ -28,11 +33,7 @@ In Ubuntu you can setup the environment with (as root):
 apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
 ```
 
-In Fedora you can setup the environment with (as root)::
-
-```bash
-yum groupinstall "Development Tools" "Development Libraries"
-```
+Other distributions have similar package or package groups available.
 
 In OS X you can install homebrew or macports package managers (both
 need the Apple Developer Tools). If you do not want to use any of
@@ -42,84 +43,75 @@ can find one at:
 
 * http://hpc.sourceforge.net/
 
+Python
+======
+
+AMUSE needs Python 2, version >2.7, or Python3 version >=3.5 installed
+preferably with pip and virtualenv. It may be necessary to update pip
+to a recent version.
+
 Installing Prerequisites
 ========================
 
-This document describes installation of the pre-requisite software
-packages to a user directory. If you have a recent Ubuntu or Fedora
-distribution you can follow the installation instructions in
-`doc/install/howto-install-prerequisites.txt` to install the
-packages as part of the system.
+The following libraries need to be installed:
 
-1. Make a prerequisite software directory (can be set to any directory)
+* HDF (version 1.6.5 - 1.8.x)
+* MPI (OpenMPI or MPICH)
 
-    ```bash
-    mkdir ~/amuse/prerequisites
-    ```
+The following are needed for some codes:
+* FFTW (version >= 3.0)
+* GSL
+* CMake (version >= 2.4)
+* GMP (version >= 4.2.1)
+* MPFR (version >= 2.3.1)
 
-2. Set the PREFIX, PATH and LD_LIBRARY_PATH environement variables
+Installing+building AMUSE
+=========================
 
-    ```bash
-    export PREFIX=~/amuse/prerequisites
-    export PATH=${PREFIX}/bin:${PATH}
-    export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
-    ```
-
-    2b. If you have ifort and/or icc, or if you encounter problems with NetCDF 
-    (optional dependency) you may need to set also:
-
-    ```bash
-    export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
-    export CPATH=${PREFIX}/include:${CPATH}
-    ```
-
-3. Download and install python
-
-    ```bash
-    cd doc/install
-    ./install-python.sh
-    ```
-
-4. Download and install the other pre-requisites
-   (script is also in the `doc/install` directory)
-
-    ```bash
-    ./install.py install
-    ```
-
-Set Environment
-===============
-You can set the the PREFIX, PATH and LD_LIBRARY_PATH environment
-variables in you bashrc file. Please make sure the ${PREFIX}/bin
-directory is first in the path.
-
-In bash, you can extend your `.bashrc` file with:
+AMUSE can be installed through pip:
 
 ```bash
-export PREFIX=~/amuse/prerequisites
-export PATH=${PREFIX}/bin:${PATH}
-export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
+pip install [--user] amuse
 ```
 
-Building AMUSE
-==============
+This will build and install AMUSE with an extensive set of codes.
+If necessary this will also install some required Python packages:
 
-All modules can be build with a configure and make command. Start
-make from the main amuse directory (directory this README file lives
-in). The main task of the configure script is to check if the
-prerequisite packages have been installed.
+* Numpy (version >= 1.3.0)
+* h5py (version >= 1.2.0)
+* mpi4py (version >= 1.0)
+* nose (version >= 0.11)
+* docutils (version >= 0.6)
 
-1. Configure the source code
+If you are not using pip these must be installed by hand.
 
-    ```bash
-    ./configure
-    ```
+It is possible to install the minimal framework by:
 
-2. Build the code with make
-    
-    ```bash
-    make
-    ```
+```bash
+pip install [--user] amuse-framework
+```
+
+This does not include any codes. These can be added
+```bash
+pip install [--user] amuse-<code name>
+```
+
+AMUSE Development 
+=================
+
+If you are using Python 2, an AMUSE development install can also 
+be handled through pip, by executing (in the root of a clone of the 
+repository)
+
+```bash
+pip install -e .
+```
+
+after this the codes need to be build:
+
+```bash
+python seteup.py develop_build
+```
 
 Running the tests
 =================
@@ -129,8 +121,14 @@ amuse directory (directory this README file lives in).
 
 To run these tests do:
 
-1. Run the automatic tests
+1. install the tests
 
 ```bash
-nosetests -v
+pip install [--user] amuse-tests
+```
+
+2. Run the automatic tests
+
+```bash
+nosetests -v amuse.tests.suite
 ```

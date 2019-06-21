@@ -2,14 +2,18 @@ from __future__ import print_function
 
 __revision__ = "$Id:$"
 
+import warnings
 import sys, os, re, subprocess
+import os.path
+import datetime
+import stat
 
 from . import supportrc
 
 try:
     import numpy
 except ImportError:
-    print( "numpy etc needed during build; operation may fail" )
+    warnings.warn( "numpy etc needed during build; operation may fail" )
 
 try:
     import ConfigParser as configparser
@@ -17,10 +21,6 @@ try:
 except ImportError:
     import configparser
     from io import StringIO
-
-import os.path
-import datetime
-import stat
 
 from stat import ST_MODE
 from distutils import sysconfig
@@ -38,6 +38,7 @@ if sys.hexversion > 0x03000000:
 from distutils.command.build import build
 from distutils.command.clean import clean
 from distutils.command.install import install
+from setuptools.command.develop import develop
 
 from subprocess import call, Popen, PIPE, STDOUT
 
@@ -160,8 +161,6 @@ class GenerateInstallIni(Command):
             ('root', 'root'),
             ('force', 'force'),
         )
-        #~ print(self.install_data)
-        #~ raise
         
     def run(self):
         outfilename = os.path.join(self.build_dir, supportrc["package_name"], 'amuserc')
@@ -538,7 +537,10 @@ class CodeCommand(Command):
 
     def copy_config_to_build_dir(self):
         configpath=os.path.abspath(os.getcwd())
-        topath=os.path.join(self.build_lib, "amuse")
+        if self.inplace:
+            topath=self.amuse_src_dir
+        else:
+            topath=os.path.join(self.build_lib, "amuse")
         self.copy_file(os.path.join(configpath,"config.mk"), topath) 
      
     def copy_build_prereq_to_build_dir(self):
@@ -575,10 +577,10 @@ class CodeCommand(Command):
 
     def copy_worker_codes_to_build_dir(self):
         if sys.platform == 'win32':
-            worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?(.exe)?')
+            worker_code_re = re.compile(r'(([a-zA-Z0-9]+_)*)?worker(_[a-zA-Z0-9]+)?(.exe)?')
         else:
-            worker_code_re = re.compile(r'([a-zA-Z0-9]+_)?worker(_[a-zA-Z0-9]+)?')
-            worker_so_re = re.compile(r'([a-zA-Z0-9]+_)?cython(_[a-zA-Z0-9]+)?.so')
+            worker_code_re = re.compile(r'(([a-zA-Z0-9]+_)*)?worker(_[a-zA-Z0-9]+)?')
+        worker_so_re = re.compile(r'(([a-zA-Z0-9]+_)*)?cython(_[a-zA-Z0-9]+)?.so')
             
         
         lib_binbuilddir = os.path.join(self.build_lib, supportrc["package_name"], '_workers')
@@ -622,7 +624,48 @@ class CodeCommand(Command):
                 self.copy_file(path, topath)                
             if os.path.isdir(path):
                 self.copy_tree(path, topath)                
+
+    def copy_worker_codes(self):
+        if sys.platform == 'win32':
+            worker_code_re = re.compile(r'(([a-zA-Z0-9]+_)*)?worker(_[a-zA-Z0-9]+)?(.exe)?')
+        else:
+            worker_code_re = re.compile(r'(([a-zA-Z0-9]+_)*)?worker(_[a-zA-Z0-9]+)?')
+        worker_so_re = re.compile(r'(([a-zA-Z0-9]+_)*)?cython(_[a-zA-Z0-9]+)?.so')
             
+        for srcdir in self.makefile_paths(self.codes_src_dir):
+            reldir = os.path.relpath(srcdir, self.codes_src_dir)
+            temp_builddir = os.path.join(self.codes_dir, reldir)
+            
+            self.announce("will copy worker: {0}".format(srcdir), level = log.INFO)
+            lib_builddir = os.path.join(self.build_lib, os.path.relpath(srcdir, os.path.join(self.amuse_src_dir, '..')))
+
+            shortname = reldir.lower()
+            self.announce(shortname, level = log.INFO)
+
+            for name in os.listdir(temp_builddir):
+                path = os.path.join(temp_builddir, name)
+                stat = os.stat(path)
+                
+                if os.path.isfile(path):
+                    if worker_so_re.match(name):
+                        topath = os.path.join(lib_builddir, name)
+                        self.copy_file(path, topath)
+                        continue
+
+                if os.path.isfile(path) and os.access(path, os.X_OK):
+                    if worker_code_re.match(name):
+                        topath = os.path.join(lib_builddir, name)
+                        self.copy_file(path, topath)
+                    elif not name.endswith('.py'):
+                        self.announce("will not copy executable: {0}, it does not match the worker pattern".format(name), level = log.WARN)
+            
+            # also copy file or dir named data
+            path=os.path.join(temp_builddir,'data')
+            topath = os.path.join(lib_builddir, 'data')
+            if os.path.isfile(path):
+                self.copy_file(path, topath)                
+            if os.path.isdir(path):
+                self.copy_tree(path, topath)
                                     
     def subdirs_in_path(self,path):
         if not os.path.exists(path):
@@ -850,7 +893,7 @@ class BuildCodes(CodeCommand):
                 return True
         return False
     
-    def run (self):
+    def run (self):      
         if self.must_clean:
             self.do_clean()
         if self.must_dist_clean:
@@ -966,11 +1009,12 @@ class BuildCodes(CodeCommand):
                     build_to_special_targets.setdefault(shortname, list()).append(target_name)
                     self.announce("[{2:%H:%M:%S}] building {0} - {1}, succeeded".format(shortname, target_name, endtime), level =  log.DEBUG)
                 
+        #~ if supportrc["framework_install"]:
+            #~ self.copy_config_to_build_dir()
         
         if not self.codes_dir == self.codes_src_dir:
-            if supportrc["framework_install"]:
-                self.copy_config_to_build_dir()
-            self.copy_worker_codes_to_build_dir()
+            #~ self.copy_worker_codes_to_build_dir()
+            self.copy_worker_codes()
             
         with open(buildlog, "a") as output:
             output.write('*'*80)
@@ -986,7 +1030,6 @@ class BuildCodes(CodeCommand):
             self.announce("%s\t%s" % (x , self.environment[x] ))
         
         if not self.is_mpi_enabled():
-            print(build_to_special_targets)
             all_build = set(build)
             not_build_copy = []
             for x in not_build:
@@ -1056,7 +1099,16 @@ class BuildCodes(CodeCommand):
                 "Your configuration is out of date, please rerun configure",
                 level = level
             )
-        
+
+        allow_build_failures=environment.get("AMUSE_ALLOW_BUILD_FAILURES", supportrc["allow_build_failures"])
+
+        if allow_build_failures=="none" and len(not_build)>0:
+            raise Exception("Unexpected build failure(s) detected. Aborting.")
+        if allow_build_failures=="some" and len(not_build)>0 and len(build)==0:
+            raise Exception("No succesful builds detected. Aborting.")
+        if allow_build_failures=="all" and len(not_build)>0 and len(build)==0:
+            self.announce("Continuing despite apparent build failure", level=level)
+
  
 class BuildLibraries(BuildCodes):
 
@@ -1078,6 +1130,25 @@ class BuildLibraries(BuildCodes):
             path_ = os.path.join(path, name)
             if os.path.isdir(path_):
                 yield path_
+
+
+# the following two are for convenience, not strictly necessary 
+class BuildLibraries_inplace(BuildLibraries):
+
+    description = "build just the supporting libraries, in place"
+
+    def initialize_options(self):
+        BuildLibraries.initialize_options(self)
+        self.inplace=True
+
+class BuildCodes_inplace(BuildCodes):
+
+    description = "build interfaces to codes, in place"
+
+    def initialize_options(self):
+        BuildCodes.initialize_options(self)
+        self.inplace=True
+
 
 class ConfigureCodes(CodeCommand):
 
@@ -1158,18 +1229,33 @@ class BuildOneCode(BuildCodes):
         BuildCodes.run(self)
 
 class Clean(clean):
+    # make sure sub_commands are independent
+    sub_commands=list(clean.sub_commands)
 
     def run(self):
         for cmd_name in self.get_sub_commands():
             self.run_command(cmd_name)
 
 class Install(install):
-
+    sub_commands=list(install.sub_commands)
+    
     def run(self):
+        # this ensures sub commands are run first (only run once)
         for cmd_name in self.get_sub_commands():
             self.run_command(cmd_name)
 
         install.run(self)
+
+class Develop(develop):
+
+    sub_commands=list(develop.sub_commands)
+
+    def run(self):
+        # this ensures sub commands are run first (only run once)
+        for cmd_name in self.get_sub_commands():
+            self.run_command(cmd_name)
+
+        develop.run(self)
 
 def setup_commands():
     mapping_from_command_name_to_command_class = {
@@ -1179,9 +1265,12 @@ def setup_commands():
         'dist_clean': DistCleanCodes,
         'clean_python': clean,
         'clean': Clean,
-        'install': install,
+        'install': Install,
         'build_libraries': BuildLibraries,
-        'install_libraries': InstallLibraries
+        'build_libraries_in_place': BuildLibraries_inplace,
+        'install_libraries': InstallLibraries,
+        'develop' : Develop,
+        'develop_build' : BuildCodes_inplace
     }
     
     if sys.hexversion > 0x03000000:
@@ -1191,6 +1280,7 @@ def setup_commands():
     Clean.sub_commands.append(('clean_codes', None))
     Clean.sub_commands.append(('clean_python', None))
     Install.sub_commands.append(('install_libraries', None))
+    Develop.sub_commands.append(('build_libraries_in_place', None))
     
     if supportrc["framework_install"]:
         mapping_from_command_name_to_command_class.update(
@@ -1204,7 +1294,7 @@ def setup_commands():
         )
         build.sub_commands.insert(0, ('configure_codes', None))
         Install.sub_commands.insert(0, ('generate_install_ini', None))
-
+        Develop.sub_commands.insert(0, ('configure_codes', None))
 
 
     

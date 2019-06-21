@@ -150,8 +150,8 @@ int internal__accept_on_port(char * port_identifier, int * comm_identifier)
         MPI_Comm_accept(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, &communicator);
         MPI_Intercomm_merge(communicator, 0, &merged);
         MPI_Intercomm_create(MPI_COMM_WORLD,0,merged, 1, 65, &communicators[lastid]);
-        MPI_Comm_disconnect(&merged);
-        MPI_Comm_disconnect(&communicator);
+        MPI_Comm_free(&merged);
+        MPI_Comm_free(&communicator);
     } else {
         MPI_Intercomm_create(MPI_COMM_WORLD,0, MPI_COMM_NULL, 1, 65, &communicators[lastid]);
     }
@@ -179,8 +179,8 @@ int internal__connect_to_port(char * port_identifier, int * comm_identifier)
         MPI_Comm_connect(port_identifier, MPI_INFO_NULL, 0,  MPI_COMM_SELF, &communicator);
         MPI_Intercomm_merge(communicator, 1, &merged);
         MPI_Intercomm_create(MPI_COMM_WORLD, 0, merged, 0, 65, &communicators[lastid]);
-        MPI_Comm_disconnect(&merged);
-        MPI_Comm_disconnect(&communicator);
+        MPI_Comm_free(&merged);
+        MPI_Comm_free(&communicator);
     } else {
         MPI_Intercomm_create(MPI_COMM_WORLD, 0, MPI_COMM_NULL, 1, 65, &communicators[lastid]);
     }

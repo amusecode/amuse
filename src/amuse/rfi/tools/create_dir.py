@@ -33,7 +33,6 @@ class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_cod
 """
 
 test_file_template = """\
-from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
 from {0.name_for_import_of_the_interface_module} import {0.name_of_the_community_interface_class}
@@ -53,7 +52,7 @@ class {0.name_of_the_community_interface_class}Tests(TestWithMPI):
 makefile_template_cxx = """\
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=$(realpath {0.reference_to_amuse_path} )
+AMUSE_DIR?=$(shell amusifier --get-amuse-dir)
 -include $(AMUSE_DIR)/config.mk
 
 MPICXX   ?= mpicxx
@@ -305,7 +304,7 @@ class CreateADirectoryAndPopulateItWithFilesForACCode(CreateADirectoryAndPopulat
 makefile_template_fortran = """\
 # standard amuse configuration include
 # config.mk will be made after ./configure has run
-AMUSE_DIR?=$(realpath {0.reference_to_amuse_path} )
+AMUSE_DIR?=$(shell amusifier --get-amuse-dir)
 -include $(AMUSE_DIR)/config.mk
 
 MPIFC ?= mpif90
