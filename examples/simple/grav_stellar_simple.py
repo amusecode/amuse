@@ -10,7 +10,7 @@ from amuse.units.optparse import OptionParser
 from amuse.units import units, nbody_system
 from amuse.datamodel.particles import Channels
 
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.community.seba.interface import SeBa
 from amuse.couple.bridge import Bridge
 

@@ -7,7 +7,7 @@ from amuse.datamodel import Particle
 
 import os.path
 
-class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn,
+class MMAMSInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn,
         CodeWithDataDirectories):
     """
     MakeMeAMassiveStar is a computationally inexpensive method in which the 
@@ -239,11 +239,9 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         function.addParameter('do_shock_heating_flag', dtype='int32', direction=function.OUT)
         function.result_type = 'i'
         return function
-        
-        
-    
 
-class MakeMeAMassiveStar(CommonCode):
+
+class MMAMS(CommonCode):
     
     stellar_evolution_code_required = True
     gravity_code_required = False
@@ -495,4 +493,6 @@ class MakeMeAMassiveStar(CommonCode):
             composition_profile[4], composition_profile[5], composition_profile[6], 
             composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
         return new
-    
+
+MakeMeAMassiveStarInterface = MMAMSInterface
+MakeMeAMassiveStar = MMAMS

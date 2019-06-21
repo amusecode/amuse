@@ -7,7 +7,7 @@ import numpy
 
 from matplotlib import pyplot
 from amuse.units import nbody_system
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 # import logging
 
 from amuse.ic.plummer import new_plummer_model
