@@ -22,7 +22,7 @@ install_requires = [
     'h5py>=1.1.0',
     'amuse-framework>=12.0.0rc3',
 ]
-description = 'The Astrophysical Multipurpose Software Environment - phigrape'
+description = 'The Astrophysical Multipurpose Software Environment - phiGRAPE'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"

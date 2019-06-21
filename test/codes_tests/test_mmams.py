@@ -7,20 +7,20 @@ from amuse.test.amusetest import get_path_to_results, TestWithMPI
 from amuse.support.exceptions import AmuseException, CodeException
 from amuse.community.mesa.interface import MESA
 from amuse.community.evtwin.interface import EVtwin
-from amuse.community.mmams.interface import MakeMeAMassiveStarInterface, MakeMeAMassiveStar
+from amuse.community.mmams.interface import MMAMSInterface, MMAMS
 from amuse.couple.collision_handler import CollisionHandler
 from amuse.units import units, constants
 from amuse.datamodel import Particles, Particle, ParticlesSubset
 
-# Change the default for some MakeMeAMassiveStar(-Interface) keyword arguments:
+# Change the default for some MMAMS(-Interface) keyword arguments:
 #default_options = dict(redirection="none")
 default_options = dict()
 
-class TestMakeMeAMassiveStarInterface(TestWithMPI):
+class TestMMAMSInterface(TestWithMPI):
     
     def test1(self):
         print "Test 1: initialization of the interface"
-        instance = MakeMeAMassiveStarInterface(**default_options)
+        instance = MMAMSInterface(**default_options)
         error = instance.initialize_code()
         self.assertEqual(error, 0)
         error = instance.commit_parameters()
@@ -29,7 +29,7 @@ class TestMakeMeAMassiveStarInterface(TestWithMPI):
     
     def test2(self):
         print "Test 2: define a new particle"
-        instance = MakeMeAMassiveStarInterface(**default_options)
+        instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.commit_parameters(), 0)
         id, error = instance.new_particle(1.0)
@@ -80,7 +80,7 @@ class TestMakeMeAMassiveStarInterface(TestWithMPI):
     
     def test3(self):
         print "Test 3: read a new particle from a usm file"
-        instance = MakeMeAMassiveStarInterface(**default_options)
+        instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.commit_parameters(), 0)
         usm_file = os.path.join(instance.data_directory, 'primary.usm')
@@ -115,7 +115,7 @@ class TestMakeMeAMassiveStarInterface(TestWithMPI):
     
     def slowtest4(self):
         print "Test 4: merge particles (from usm files)"
-        instance = MakeMeAMassiveStarInterface(**default_options)
+        instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.set_dump_mixed_flag(0), 0)
         self.assertEqual(instance.commit_parameters(), 0)
@@ -154,7 +154,7 @@ class TestMakeMeAMassiveStarInterface(TestWithMPI):
     
     def test5(self):
         print "Test 5: parameters"
-        instance = MakeMeAMassiveStarInterface(**default_options)
+        instance = MMAMSInterface(**default_options)
         self.assertEqual(instance.initialize_code(), 0)
         self.assertEqual(instance.commit_parameters(), 0)
         
@@ -192,11 +192,11 @@ class TestMakeMeAMassiveStarInterface(TestWithMPI):
         instance.stop()
     
 
-class TestMakeMeAMassiveStar(TestWithMPI):
+class TestMMAMS(TestWithMPI):
     
     def test1(self):
         print "Test 1: initialization of the interface"
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
         instance.recommit_parameters()
@@ -208,7 +208,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stars = Particles(4)
         stars.mass = [1.0, 2.0, 3.0, 4.0] | units.MSun
         
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
         instance.particles.add_particle(stars[0])
@@ -251,7 +251,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
     
     def test3(self):
         print "Test 3: read a new particle from a usm file"
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
         
@@ -281,8 +281,8 @@ class TestMakeMeAMassiveStar(TestWithMPI):
     
     def slowtest4(self):
         print "Test 4: merge particles (from usm files)"
-#        instance = MakeMeAMassiveStar(debugger = 'gdb', **default_options)
-        instance = MakeMeAMassiveStar(**default_options)
+#        instance = MMAMS(debugger = 'gdb', **default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.parameters.dump_mixed_flag = False
         instance.commit_parameters()
@@ -308,7 +308,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
     
     def test5(self):
         print "Test 5: parameters"
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         
         for par, value in [('dump_mixed_flag', True), ('do_shock_heating_flag', True),
@@ -327,11 +327,11 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.stop()
     
     def slowtest6(self):
-        print "Test 6: MakeMeAMassiveStar with MESA particles - match composition only"
+        print "Test 6: MMAMS with MESA particles - match composition only"
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.parameters.dump_mixed_flag = False
         instance.commit_parameters()
@@ -430,7 +430,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stellar_evolution.stop()
     
     def slowtest7(self):
-        print "Test 7: MakeMeAMassiveStar with MESA particles - import product into MESA"
+        print "Test 7: MMAMS with MESA particles - import product into MESA"
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
@@ -453,7 +453,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             with open(os.path.join(get_path_to_results(), "test_mmams_7.pkl"), 'r') as in_file:
                 stellar_model = pickle.load(in_file)
         else:
-            instance = MakeMeAMassiveStar(**default_options)
+            instance = MMAMS(**default_options)
             instance.initialize_code()
             instance.parameters.target_n_shells_mixing = 1000
             instance.parameters.dump_mixed_flag = True
@@ -545,7 +545,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stellar_evolution.stop()
     
     def slowtest8(self):
-        print "Test 8: MakeMeAMassiveStar with MESA particles - multiple mergers"
+        print "Test 8: MMAMS with MESA particles - multiple mergers"
         number_of_stars = 4
         stars = Particles(number_of_stars)
         stars.mass = range(20, 20+number_of_stars) | units.MSun
@@ -560,7 +560,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(0.1 | units.Myr)
         
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.commit_parameters()
         
@@ -612,7 +612,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.stop()
     
     def slowtest9(self):
-        print "Test 9: MakeMeAMassiveStar with MESA particles - evolved stars"
+        print "Test 9: MMAMS with MESA particles - evolved stars"
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
@@ -632,7 +632,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             print "Evolved stars to", stellar_evolution.particles.age
             print "Radius:", stellar_evolution.particles.radius
         
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.parameters.dump_mixed_flag = True
         instance.commit_parameters()
@@ -714,11 +714,11 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stellar_evolution.stop()
     
     def xtest10(self):
-        print "Test 10: MakeMeAMassiveStar with EVtwin particles - import product into EVtwin (WIP)"
+        print "Test 10: MMAMS with EVtwin particles - import product into EVtwin (WIP)"
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.parameters.dump_mixed_flag = True
         instance.commit_parameters()
@@ -767,7 +767,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stellar_evolution.stop()
     
     def slowtest11(self):
-        print "Test 11: MakeMeAMassiveStar with MESA particles of various masses/ages"
+        print "Test 11: MMAMS with MESA particles of various masses/ages"
         masses = [1.0, 5.0, 20.0, 42.0, 80.0, 200.0] | units.MSun
         number_of_stars = len(masses)
         stars = Particles(number_of_stars)
@@ -804,7 +804,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         
         stellar_evolution.stop()
         
-        instance = MakeMeAMassiveStar(**default_options)#debugger = "gdb", **default_options)
+        instance = MMAMS(**default_options)#debugger = "gdb", **default_options)
         instance.initialize_code()
         instance.parameters.dump_mixed_flag = True
         instance.commit_parameters()
@@ -898,7 +898,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stars = Particles(2)
         stars.mass = [1.0, 2.0] | units.MSun
         
-        instance = MakeMeAMassiveStar(**default_options)
+        instance = MMAMS(**default_options)
         instance.initialize_code()
         instance.parameters.target_n_shells = 100
         instance.parameters.dump_mixed_flag = False
@@ -1029,14 +1029,14 @@ class StellarEvolutionCodeWithInternalStructureForTesting(object):
         return tmp_star
     
 
-class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
+class TestMMAMSWithCollisionHandler(TestWithMPI):
     
     def test1(self):
-        print "Test 1: MakeMeAMassiveStar in CollisionHandler"
-        self.assertRaises(AmuseException, CollisionHandler, MakeMeAMassiveStar, expected_message=
-            "MakeMeAMassiveStar requires a stellar evolution code: CollisionHandler(..., stellar_evolution_code=x)")
+        print "Test 1: MMAMS in CollisionHandler"
+        self.assertRaises(AmuseException, CollisionHandler, MMAMS, expected_message=
+            "MMAMS requires a stellar evolution code: CollisionHandler(..., stellar_evolution_code=x)")
         handler = CollisionHandler(
-            MakeMeAMassiveStar,
+            MMAMS,
             stellar_evolution_code = StellarEvolutionCodeWithInternalStructureForTesting(),
             verbose = True
         )
@@ -1046,7 +1046,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting()
         self.assertEqual(len(stellar_evolution.particles), 2)
         handler = CollisionHandler(
-            MakeMeAMassiveStar, 
+            MMAMS, 
             collision_code_parameters = dict(
                 target_n_shells = 100, 
                 target_n_shells_mixing = 100, 
@@ -1062,13 +1062,13 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
         self.assertEqual(len(stellar_evolution.particles), 1)
         self.assertAlmostEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 1)
-        self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
+        self.assertEqual(handler.collision_code, MMAMS)
     
     def test3(self):
         print "Test 3: merge particles with CollisionHandler and MMAMS instance, as fast/crude as possible"
         stellar_evolution = StellarEvolutionCodeWithInternalStructureForTesting()
         self.assertEqual(len(stellar_evolution.particles), 2)
-        collision = MakeMeAMassiveStar()
+        collision = MMAMS()
         collision.parameters.target_n_shells = 100
         collision.parameters.dump_mixed_flag = False
         collision.parameters.do_shock_heating_flag = False
@@ -1085,7 +1085,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
         self.assertEqual(len(stellar_evolution.particles), 1)
         self.assertAlmostRelativeEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
-        self.assertEqual(handler.collision_code.__class__, MakeMeAMassiveStar)
+        self.assertEqual(handler.collision_code.__class__, MMAMS)
         self.assertEqual(handler.collision_code.get_name_of_current_state(), 'INITIALIZED')
         collision.stop()
         self.assertEqual(handler.collision_code.get_name_of_current_state(), 'STOPPED')
@@ -1097,7 +1097,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         )
         self.assertEqual(len(stellar_evolution.particles), 2)
         handler = CollisionHandler(
-            MakeMeAMassiveStar, 
+            MMAMS, 
             collision_code_parameters = dict(
                 target_n_shells = 100, 
                 dump_mixed_flag = False, 
@@ -1113,7 +1113,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
         self.assertEqual(len(stellar_evolution.particles), 1)
         self.assertAlmostRelativeEqual(stellar_evolution.particles[0].mass, 2.73 | units.MSun, 2)
-        self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
+        self.assertEqual(handler.collision_code, MMAMS)
     
     def slowtest5(self):
         print "Test 5: merge MESA particles with CollisionHandler and MMAMS class"
@@ -1122,7 +1122,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         stellar_evolution.evolve_model(2 | units.Myr)
         self.assertEqual(len(stellar_evolution.particles), 2)
         handler = CollisionHandler(
-            MakeMeAMassiveStar, 
+            MMAMS, 
             stellar_evolution_code = stellar_evolution,
             verbose = True
         )
@@ -1133,7 +1133,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
         self.assertEqual(len(stellar_evolution.particles), 1)
         self.assertAlmostEqual(stellar_evolution.particles[0].mass, 25.705 | units.MSun, 1)
-        self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
+        self.assertEqual(handler.collision_code, MMAMS)
         print stellar_evolution.particles
         for i in range(10):
             stellar_evolution.evolve_model(keep_synchronous = False)
@@ -1149,7 +1149,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         
         stellar_evolution.new_particle_from_model = stub
         handler = CollisionHandler(
-            MakeMeAMassiveStar, 
+            MMAMS, 
             stellar_evolution_code = stellar_evolution,
             verbose = True
         )
@@ -1160,7 +1160,7 @@ class TestMakeMeAMassiveStarWithCollisionHandler(TestWithMPI):
         self.assertEqual(merged[0].key, stellar_evolution.particles[0].key)
         self.assertEqual(len(stellar_evolution.particles), 1)
         self.assertAlmostEqual(stellar_evolution.particles[0].mass, 25.705 | units.MSun, 1)
-        self.assertEqual(handler.collision_code, MakeMeAMassiveStar)
+        self.assertEqual(handler.collision_code, MMAMS)
         print stellar_evolution.particles
         for i in range(10):
             stellar_evolution.evolve_model(keep_synchronous = False)

@@ -18,7 +18,7 @@ from amuse.units import constants
 from amuse.units.nbody_system import nbody_to_si
 from amuse.community.evtwin.interface import EVtwin
 # from amuse.community.sse.interface import SSE
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 
 from amuse.datamodel import Particles
 
