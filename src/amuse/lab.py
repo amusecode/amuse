@@ -70,7 +70,7 @@ _community_codes=[
     "SeBa",
     "EVtwin",
     "MESA",
-    "MakeMeAMassiveStar",
+    "MMAMS",
     "Hop",
     ]
 
