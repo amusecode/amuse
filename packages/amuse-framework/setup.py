@@ -8,8 +8,8 @@ name = 'amuse-framework'
 major_version = 12
 minor_version = 0
 micro_version = 0
-pre_version = ".rc4"  # e.g. ".rc1"
-post_version = ".post1"  # e.g. ".post1"
+pre_version = ""  # e.g. ".rc1"
+post_version = ""  # e.g. ".post1"
 version = "%i.%i.%i%s%s" % (
     major_version, minor_version, micro_version, pre_version,
     post_version
@@ -42,6 +42,8 @@ classifiers = [
     'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
     'Programming Language :: C',
     'Programming Language :: C++',
     'Programming Language :: Fortran',
