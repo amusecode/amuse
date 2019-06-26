@@ -8,7 +8,16 @@ support.use("system")
 from support.setup_codes import setup_commands
 
 name = 'amuse-brutus'
-version = "12.0.0rc3"
+major_version = 12
+minor_version = 0
+micro_version = 0
+patch_version = ""  # e.g. ".rc1"
+post_version = ""  # e.g. ".post1"
+version = "%i.%i.%i%s%s" % (
+    major_version, minor_version, micro_version, patch_version,
+    post_version
+)
+main_version = "%i.%i.0" % (major_version, minor_version)
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -20,7 +29,7 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
-    'amuse-framework>=12.0.0rc3',
+    'amuse-framework>=%s' % (main_version),
 ]
 description = 'The Astrophysical Multipurpose Software Environment - Brutus'
 with open("README.md", "r") as fh:

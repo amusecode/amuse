@@ -5,13 +5,13 @@ name = 'amuse'
 major_version = 12
 minor_version = 0
 micro_version = 0
-patch_version = ".rc5"  # e.g. ".rc1"
+patch_version = ""  # e.g. ".rc1"
 post_version = ""  # e.g. ".post1"
 version = "%i.%i.%i%s%s" % (
     major_version, minor_version, micro_version, patch_version,
     post_version
 )
-main_version = "%i.%i.0.rc2" % (major_version, minor_version)
+main_version = "%i.%i.0" % (major_version, minor_version)
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
