@@ -25,7 +25,7 @@ Compilers
 
 To build AMUSE from source you need to have a working build
 environment. The AMUSE build system needs C/C++ and fortan 90
-compilers. 
+compilers, we recommend a recent version of GCC. 
 
 In Ubuntu you can setup the environment with (as root):
 
@@ -35,13 +35,8 @@ apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
 
 Other distributions have similar package or package groups available.
 
-In OS X you can install homebrew or macports package managers (both
-need the Apple Developer Tools). If you do not want to use any of
-these package managers you will need to install a fortran compiler
-as the Apple Developer Tools do not include a fortran compiler, you
-can find one at:
-
-* http://hpc.sourceforge.net/
+In OS X you can use the homebrew or macports package manager (both
+require the Apple Developer Tools and Xcode to be installed).
 
 Python
 ======
