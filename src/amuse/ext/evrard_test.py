@@ -2,6 +2,7 @@
 initial conditions for the SPH evrard collapse test
 """
 import numpy
+import logging
 
 from math import *
 
@@ -11,6 +12,8 @@ from amuse.units import units
 from amuse.datamodel import Particles
 from amuse.datamodel import ParticlesWithUnitsConverted
 from amuse.ext.sobol import i4_sobol_generate
+
+logger = logging.getLogger(__name__)
 
 
 class uniform_random_unit_cube(object):
@@ -68,9 +71,9 @@ class glass_unit_cube(object):
         self.targetN=targetN
         self.target_rms=target_rms
         if target_rms < 0.0001:
-            print "warning: target_rms may not succeed"
+            logger.warning("target_rms may not succeed")
         if targetN < 1000:
-            print "warning: not enough particles"  
+            logger.warning("not enough particles")
           
     def make_xyz(self):
         from amuse.community.fi.interface import Fi
@@ -126,10 +129,12 @@ class glass_unit_cube(object):
             rms=rho.std()/rho.mean()
             minrms=min(minrms,rms)
             if rms>2.*minrms or i>300:
-                print " RMS(rho) convergence warning:", i, rms,minrms
+                logger.warning(
+                    " RMS(rho) convergence warning: %i %s %s ", i, rms, minrms
+                )
             if i>100000:
-                print "i> 100k steps - not sure about this..."
-                print " rms:", rms
+                logger.warning("i> 100k steps - not sure about this...")
+                logger.warning(" rms: %s", rms)
                 break
 
 
@@ -271,4 +276,4 @@ def new_evrard_gas_sphere(target_number_of_particles, *list_arguments, **keyword
 
 if __name__=="__main__":
     x,y,z=uniform_unit_sphere(10000).make_xyz()
-    print len(x)
+    print(len(x))

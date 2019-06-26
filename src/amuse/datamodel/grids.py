@@ -1,3 +1,6 @@
+import logging
+import numpy
+
 from amuse.support.core import CompositeDictionary, late
 from amuse.units import constants
 from amuse.units import units
@@ -11,9 +14,11 @@ from amuse.units.quantities import column_stack
 from amuse.support import exceptions
 from amuse.datamodel.base import *
 from amuse.datamodel.memory_storage import *
-import numpy
 
 from amuse.datamodel import indexing
+
+logger = logging.getLogger(__name__)
+
 
 class AbstractGrid(AbstractSet):
     
@@ -249,7 +254,7 @@ class BaseGrid(AbstractGrid):
     
     @classmethod
     def create(cls,*args,**kwargs):
-        print ("Grid.create deprecated, use new_regular_grid instead")
+        logger.warning("Grid.create deprecated, use new_regular_grid instead")
         return new_regular_grid(*args,**kwargs)
 
     def get_axes_names(self):

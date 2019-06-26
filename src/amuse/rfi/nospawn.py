@@ -1,14 +1,17 @@
+import importlib
 
+import logging
 from amuse.rfi import core
 from amuse.rfi.python_code import CythonImplementation
 from mpi4py import MPI
 from amuse.rfi import channel
 from collections import namedtuple
-import sys
-import importlib
+
+logger = logging.getLogger(__name__)
 
 Code = namedtuple("Code", ['cls', 'number_of_workers', 'args', 'kwargs'])
 PythonCode = namedtuple("Code", ['cls', 'number_of_workers', 'args', 'kwargs', 'implementation_factory'])
+
 
 def get_number_of_workers_needed(codes):
     result = 1
@@ -159,7 +162,7 @@ def start_empty():
         instance.must_disconnect = False
         world.Barrier()
         instance.start()
-        print "STOP...", world.rank
+        logger.info(("STOP...", world.rank))
         return None
         
 
@@ -174,7 +177,3 @@ def get_code(rank, codes):
                 return x
             index += x.number_of_workers
     return None
-            
-            
-
-

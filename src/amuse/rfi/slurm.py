@@ -1,4 +1,6 @@
+import logging
 
+logger = logging.getLogger(__name__)
 
 
 def parse_slurm_tasks_per_node(string):
@@ -69,5 +71,5 @@ def parse_ids(string, position):
     return result, end+1
         
 if __name__ == "__main__":
-    print parse_slurm_tasks_per_node("10(x4),3")
-    print parse_slurm_nodelist("tcn[595,597-598,600-606],tcn100")
+    logger.info(parse_slurm_tasks_per_node("10(x4),3"))
+    logger.info(parse_slurm_nodelist("tcn[595,597-598,600-606],tcn100"))
