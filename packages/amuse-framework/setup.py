@@ -1,19 +1,12 @@
 import sys
 import os
+from support.version import version
+from support.classifiers import classifiers
 
 from setuptools import setup, find_packages
 from support.setup_codes import setup_commands
 
 name = 'amuse-framework'
-major_version = 12
-minor_version = 0
-micro_version = 0
-pre_version = ""  # e.g. ".rc1"
-post_version = ""  # e.g. ".post1"
-version = "%i.%i.%i%s%s" % (
-    major_version, minor_version, micro_version, pre_version,
-    post_version
-)
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -30,25 +23,6 @@ description = 'The Astrophysical Multipurpose Software Environment'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
-classifiers = [
-    'Development Status :: 4 - Beta',
-    'Environment :: Console',
-    'Intended Audience :: End Users/Desktop',
-    'Intended Audience :: Developers',
-    'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: Apache Software License',
-    'Operating System :: MacOS :: MacOS X',
-    'Operating System :: POSIX',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: C',
-    'Programming Language :: C++',
-    'Programming Language :: Fortran',
-    'Topic :: Scientific/Engineering :: Astronomy',
-]
 
 extensions = []
 

@@ -1,5 +1,7 @@
 import sys
 import os
+from support.version import version, main_version
+from support.classifiers import classifiers
 
 from setuptools import setup
 
@@ -8,7 +10,6 @@ support.use("system")
 from support.setup_codes import setup_commands
 
 name = 'amuse-hermite'
-version = "12.0.0rc3"
 author = 'The AMUSE team'
 author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
@@ -20,29 +21,12 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
-    'amuse-framework>=12.0.0rc3',
+    'amuse-framework>=%s' % main_version,
 ]
 description = 'The Astrophysical Multipurpose Software Environment - Hermite'
 with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
-classifiers = [
-    'Development Status :: 4 - Beta',
-    'Environment :: Console',
-    'Intended Audience :: End Users/Desktop',
-    'Intended Audience :: Developers',
-    'Intended Audience :: Science/Research',
-    'License :: OSI Approved :: Apache Software License',
-    'Operating System :: MacOS :: MacOS X',
-    'Operating System :: POSIX',
-    'Programming Language :: Python :: 2.6',
-    'Programming Language :: Python :: 2.7',
-    'Programming Language :: Python :: 3',
-    'Programming Language :: C',
-    'Programming Language :: C++',
-    'Programming Language :: Fortran',
-    'Topic :: Scientific/Engineering :: Astronomy',
-]
 
 extensions = []
 
