@@ -5,7 +5,7 @@ name = 'amuse'
 major_version = 12
 minor_version = 0
 micro_version = 0
-patch_version = ".rc4"  # e.g. ".rc1"
+patch_version = ".rc5"  # e.g. ".rc1"
 post_version = ""  # e.g. ".post1"
 version = "%i.%i.%i%s%s" % (
     major_version, minor_version, micro_version, patch_version,
@@ -23,6 +23,7 @@ install_requires = [
     'nose>=0.11.1',
     'mpi4py>=1.1.0',
     'h5py>=1.1.0',
+    'matplotlib>=2.2'
     'amuse-framework>=%s' % main_version,
     'amuse-athena>=%s' % main_version,
     'amuse-bhtree>=%s' % main_version,
@@ -47,6 +48,7 @@ install_requires = [
     'amuse-mercury>=%s' % main_version,
     'amuse-mmams>=%s' % main_version,
     'amuse-ph4>=%s' % main_version,
+    'amuse-phigrape>=%s' % main_version,
     'amuse-seba>=%s' % main_version,
     'amuse-secularmultiple>=%s' % main_version,
     'amuse-simplex>=%s' % main_version,
@@ -60,7 +62,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 long_description_content_type = "text/markdown"
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'Intended Audience :: End Users/Desktop',
     'Intended Audience :: Developers',
@@ -68,9 +70,10 @@ classifiers = [
     'License :: OSI Approved :: Apache Software License',
     'Operating System :: MacOS :: MacOS X',
     'Operating System :: POSIX',
-    'Programming Language :: Python :: 2.6',
     'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
     'Programming Language :: C',
     'Programming Language :: C++',
     'Programming Language :: Fortran',
