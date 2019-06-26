@@ -95,7 +95,7 @@ AMUSE Development
 =================
 
 If you are using Python 2, an AMUSE development install can also 
-be handled through pip, by executing (in the root of a clone of the 
+be handled through pip by executing (in the root of a clone of the 
 repository)
 
 ```bash
@@ -105,7 +105,7 @@ pip install -e .
 after this the codes need to be build:
 
 ```bash
-python seteup.py develop_build
+python setup.py develop_build
 ```
 
 Running the tests
