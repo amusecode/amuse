@@ -2,7 +2,7 @@ import numpy
 
 from amuse.units import units, nbody_system, constants
 from amuse.datamodel import Particles, Particle
-from amuse.community.kepler.interface import Kepler
+
 
 pi_over_180 = numpy.pi/180.
 
@@ -98,6 +98,7 @@ def new_solar_system_for_mercury():
 
 
 def new_kepler():
+  from amuse.community.kepler.interface import Kepler
   converter = nbody_system.nbody_to_si(1|units.MSun,1|units.AU)
   kepler = Kepler(converter)
   kepler.initialize_code()
