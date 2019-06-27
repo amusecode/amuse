@@ -1,4 +1,4 @@
-AC_INIT([amuse], [3.1])
+AC_INIT([amuse],  m4_esyscmd_s([python support/version.py]))
 AC_CONFIG_SRCDIR([src/amuse/__init__.py])
 
 AC_CONFIG_FILES([config.mk])
