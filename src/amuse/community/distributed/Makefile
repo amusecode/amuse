@@ -58,10 +58,10 @@ clean:
 	make -C src clean
 
 CodeInterface.java: interface.py
-	$(CODE_GENERATOR) --type=java --mode=interface amuse.community.distributed.interface DistributedAmuseInterface -o $@
+	$(CODE_GENERATOR) --type=java --mode=interface interface DistributedAmuseInterface -o $@
 
 Worker.java: interface.py
-	$(CODE_GENERATOR) --type=java --mode=class amuse.community.distributed.interface DistributedAmuseInterface -o $@
+	$(CODE_GENERATOR) --type=java --mode=class interface DistributedAmuseInterface -o $@
 
 src/dist/distributed-amuse.jar: $(shell find src -name "*.java")
 	@echo Compiling Distributed Code
@@ -83,7 +83,7 @@ data: src/dist/distributed-amuse.jar
 	$(CP) smartsockets.properties data/
 
 distributed_worker: interface.py java_check data/worker.jar src/dist/distributed-amuse.jar
-	$(CODE_GENERATOR) -x --type=java --mode=script amuse.community.distributed.interface DistributedAmuseInterface -o $@
+	$(CODE_GENERATOR) -x --type=java --mode=script interface DistributedAmuseInterface -o $@
 
 distclean: clean
 	$(RM) -rf data

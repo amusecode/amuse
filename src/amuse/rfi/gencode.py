@@ -14,6 +14,9 @@ from optparse import OptionParser
 
 # setup_sys_path()
 
+# this should not be necessary?
+sys.path.append(os.getcwd())
+
 from amuse import config
 
 from amuse.rfi.tools import create_c
@@ -305,6 +308,7 @@ def make_file(uc):
             if not settings.name_of_implementation_class is None:
                 implementation_class = module[settings.name_of_implementation_class]
         else:
+            
             module = __import__(settings.name_of_module_or_python_file,fromlist=[settings.name_of_class])
             specification_class = getattr(module, settings.name_of_class)
             if not settings.name_of_implementation_class is None:
