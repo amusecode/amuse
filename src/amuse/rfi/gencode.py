@@ -15,6 +15,7 @@ from optparse import OptionParser
 # setup_sys_path()
 
 # this should not be necessary?
+print(os.getcwd())
 sys.path.append(os.getcwd())
 
 from amuse import config
