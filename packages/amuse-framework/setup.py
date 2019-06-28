@@ -12,6 +12,7 @@ author_email = 'info@amusecode.org'
 license_ = "Apache License 2.0"
 url = 'http://www.amusecode.org/'
 install_requires = [
+    'setuptools>=41.0.0',
     'wheel>=0.32',
     'docutils>=0.6',
     'numpy>=1.2.2',
