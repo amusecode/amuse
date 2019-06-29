@@ -120,7 +120,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 	    system(command);
 	}
 
-	jd.mpi_comm.Barrier();
+	MPI_Barrier(jd.mpi_comm);
 
 	s.open(infile1, ifstream::in);
 	if (!s) {
@@ -157,7 +157,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 
 	    system(command);
 	}
-	jd.mpi_comm.Barrier();
+	MPI_Barrier(jd.mpi_comm);
     }
 
     // Set the system center of mass position and velocity to zero.
@@ -280,7 +280,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	    jd.print();
 	}
     }
-    jd.mpi_comm.Barrier();
+    MPI_Barrier(jd.mpi_comm);
 }
 
 
