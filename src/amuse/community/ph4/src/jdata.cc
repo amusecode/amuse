@@ -5,7 +5,7 @@
 //
 // Global functions:
 //
-//	void jdata::setup_mpi(MPI::Intracomm comm)
+//	void jdata::setup_mpi(MPI_Intracomm comm)
 //	void jdata::setup_gpu()
 //	void jdata::set_manage_encounters(int m)
 //	int  jdata::add_particle(real pmass, real pradius,
