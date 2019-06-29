@@ -176,7 +176,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     // Set up the jdata parameters and data structures.
 
     jdata jd;
-    jd.setup_mpi(MPI::COMM_WORLD);
+    jd.setup_mpi(MPI_COMM_WORLD);
     jd.setup_gpu();		// set have_gpu and default use_gpu
     if (use_gpu && !jd.have_gpu) use_gpu = false;
     jd.use_gpu = use_gpu;
@@ -333,11 +333,11 @@ int main(int argc, char *argv[])
 				break;
             }
 
-    MPI::Init(argc, argv);
+    MPI_Init(argc, argv);
 
     // Echo the command-line arguments.
 
-    if (MPI::COMM_WORLD.Get_rank() == 0) {
+    if (MPI_COMM_WORLD.Get_rank() == 0) {
 	cout << "Parameters:" << endl << flush;
 	cout << "    -a "; PRL(eta);
 	cout << "    -c "; PRL(manage_encounters);

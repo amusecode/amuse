@@ -37,7 +37,7 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 {
 #ifdef GPU
 #ifndef NOMPI
-    clusterid = MPI::COMM_WORLD.Get_rank();
+    clusterid = MPI_COMM_WORLD.Get_rank();
 #endif
     const char *in_function = "jdata::initialize_gpu";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);

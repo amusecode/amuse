@@ -4,7 +4,7 @@
 // calling process and the number of sister processes on the same node
 // (as defined by the HOST or HOSTNAME environment variables).
 
-void get_local_rank(MPI::Intracomm comm,
+void get_local_rank(MPI_Intracomm comm,
 		    int& mylocalrank, int& mylocalsize,
 		    bool verbose = false)
 {
@@ -101,15 +101,15 @@ void get_local_rank(MPI::Intracomm comm,
 
 void run_test(bool verbose = false)
 {
-    MPI::Intracomm comm = MPI::COMM_WORLD;
+    MPI_Intracomm comm = MPI_COMM_WORLD;
     int mylocalrank, mylocalsize;
     get_local_rank(comm, mylocalrank, mylocalsize, verbose);
-    PRC(MPI::COMM_WORLD.Get_rank()); PRL(mylocalrank);
+    PRC(MPI_COMM_WORLD.Get_rank()); PRL(mylocalrank);
 }
 
 int main(int argc, char *argv[])
 {
-    MPI::Init(argc, argv);
+    MPI_Init(argc, argv);
     run_test();
     MPI_Finalize();
 }
