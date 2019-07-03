@@ -761,3 +761,4 @@ class DistributedAmuse(CommonCode):
         if not len(ids_to_add) == 0:
             self._workers._add_indices_in_attribute_storage(list(ids_to_add))
     
+Distributed=DistributedAmuse

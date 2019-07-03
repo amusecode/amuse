@@ -3,7 +3,7 @@ from amuse.test.amusetest import TestWithMPI
 import os
 import sys
 
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.community.bhtree.interface import BHTree
 
 import numpy

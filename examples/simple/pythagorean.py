@@ -6,8 +6,8 @@ the smoothing length in the n-body code.
 # import numpy
 # import time
 
-# from amuse.community.phiGRAPE.interface import PhiGRAPE
-from amuse.community.hermite0.interface import Hermite
+# from amuse.community.phigrape.interface import PhiGRAPE
+from amuse.community.hermite.interface import Hermite
 # from amuse.community.huayno.interface import Huayno
 # from amuse.community.bhtree.interface import BHTree
 from amuse.units import nbody_system

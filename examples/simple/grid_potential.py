@@ -3,7 +3,7 @@ from __future__ import print_function
 from amuse.units import units, nbody_system
 from amuse.datamodel import Particle
 from amuse.community.athena.interface import Athena
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 
 from matplotlib import pyplot
 

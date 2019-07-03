@@ -18,7 +18,7 @@ def merge_two_stars(Mprim, Msec, t_coll):
     stellar.evolve_model(t_coll)
 
     stellar.merge_colliding(primary.copy(), secondary.copy(),
-                            MakeMeAMassiveStar, return_merge_products=["se"])
+                            MMAMS, return_merge_products=["se"])
     radius = stellar.particles[0].get_radius_profile()
     rho    = stellar.particles[0].get_density_profile()
     stellar.stop()

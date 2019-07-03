@@ -21,7 +21,7 @@ from amuse.ext.orbital_elements import orbital_elements_from_binary
 
 from amuse.community.huayno.interface import Huayno
 from amuse.community.smalln.interface import SmallN
-from amuse.community.hermite0.interface import Hermite
+from amuse.community.hermite.interface import Hermite
 from amuse.community.seba.interface import SeBa
 from amuse.community.sse.interface import SSE
 

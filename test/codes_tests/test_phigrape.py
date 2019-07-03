@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
+from amuse.community.phigrape.interface import PhiGRAPEInterface, PhiGRAPE
 
 from amuse.test.amusetest import TestWithMPI
 

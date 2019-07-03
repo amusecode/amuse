@@ -1,0 +1,24 @@
+Guide for a quickstart to use phiGRAPE
+======================================
+
+This guide will go through the basic steps to install and run phiGRAPE. See other readme's
+for more detailed explanations.
+
+0.) download phiGRAPE.tgz and gunzip/untar
+1.) cd phiGRAPE
+2.) adjust Makefile for your local settings (eg. GRAPE libs)
+3.) make
+4.) create an N-body data file (or use the Plummer model provided in the example-dir)
+5.) set input parameters in phiGRAPE.inp
+6.) to run with MPI:                mpirun [mpi-options] ./phiGRAPE.exe 
+    or serial run (set Makefile!):  ./phiGRAPE.exe
+
+Testrun:
+
+There are example N-body data files in the directory testdata. To start a testrun 
+using MPI on a single node simply type (after steps 0.-3.):
+
+> start testdata/plummer_00016k.ini 1 machines.list
+
+with machines.list containing a list of available nodes (see you MPI documentation).
+

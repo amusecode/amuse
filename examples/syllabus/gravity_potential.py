@@ -4,7 +4,7 @@ from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
 from amuse.ext.bridge import bridge
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.phigrape.interface import PhiGRAPE
 from amuse.community.fi.interface import Fi
 from amuse.community.gadget2.interface import Gadget2
 from matplotlib import pyplot
