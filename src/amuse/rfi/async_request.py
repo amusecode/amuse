@@ -340,6 +340,8 @@ class ASyncRequest(AbstractASyncRequest):
         return self._result
 
     def is_mpi_request(self):
+        if self._is_finished:
+            return False
         return True
 
 class ASyncSocketRequest(AbstractASyncRequest):
@@ -411,6 +413,8 @@ class ASyncSocketRequest(AbstractASyncRequest):
         return self._result
 
     def is_socket_request(self):
+        if self._is_finished:
+            return False
         return True
 
 class FakeASyncRequest(AbstractASyncRequest):
@@ -638,7 +642,8 @@ class AsyncRequestsPool(object):
             indices = [i for i, x in enumerate(self.requests_and_handlers) if x.async_request.is_other()]
             if len(requests) > 0:
                 for index, x in zip(indices, requests):
-                    x.waits_for().waitone()
+                    if x is not None:
+                        x.waits_for().waitone()
 
                     request_and_handler = self.requests_and_handlers[index]
                     if request_and_handler.async_request.is_result_available():

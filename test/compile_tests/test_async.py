@@ -636,6 +636,29 @@ class TestASync(TestWithMPI):
         instance1.stop()
         instance2.stop()
 
+    def test25(self):
+        """ more test of pool: calls of same code """
+        from amuse.rfi.async_request import AsyncRequestsPool
+        instance1 = ForTesting(self.exefile)
+        
+        r1=instance1.do_sleep(1, return_request=True)
+        r2=instance1.echo_int(2, return_request=True)
+        
+        p1=AsyncRequestsPool()
+        r1.wait()
+        r2.wait()
+        p1.add_request(r1)
+        p1.add_request(r2)
+        
+        #~ p1=r1.join(r2)
+        
+        p1.waitall()
+        
+        self.assertEqual(r2.result(), 2)
+        
+        instance1.stop()
+
+
 
 class TestASyncDistributed(TestASync):
 
