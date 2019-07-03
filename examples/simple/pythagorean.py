@@ -1,8 +1,9 @@
+# -*- coding: ascii -*-
 """
 Calculates the Pythagorean 3-body problem using different values for
 the smoothing length in the n-body code.
 """
-
+from __future__ import print_function
 # import numpy
 # import time
 
@@ -45,8 +46,8 @@ def run_pyth(interface, tend=100, dt=0.125, parameters=[]):
     x = AdaptingVectorQuantity()
     y = AdaptingVectorQuantity()
     t = 0. | nbody_system.time
-    while(t < tend-dt/2):
-        t = t+dt
+    while(t < tend - dt / 2):
+        t = t + dt
         code.evolve_model(t)
         x.append(code.particles.x)
         y.append(code.particles.y)
@@ -60,15 +61,15 @@ if __name__ == "__main__":
                     ('Hermite0, $\eta=0.01$', Hermite, [("dt_param", 0.01)]),
                     ('Hermite0, $\eta=0.003$', Hermite, [("dt_param", 0.003)]),
                     ('Hermite0, $\eta=0.001$', Hermite, [("dt_param", 0.001)])]
-    N = (len(codes_to_run)-1)/2+1
-    f = pyplot.figure(figsize=(8, 4*N))
+    N = (len(codes_to_run) - 1) / 2 + 1
+    f = pyplot.figure(figsize=(8, 4 * N))
 
     for i, (label, interface, parameters) in enumerate(codes_to_run):
         x, y = run_pyth(interface, tend=100 | nbody_system.time,
                         dt=0.0625 | nbody_system.time, parameters=parameters)
         x = x.value_in(nbody_system.length)
         y = y.value_in(nbody_system.length)
-        subplot = f.add_subplot(N, 2, i+1)
+        subplot = f.add_subplot(N, 2, i + 1)
         subplot.plot(x[:, 0], y[:, 0], 'r')
         subplot.plot(x[:, 1], y[:, 1], 'b')
         subplot.plot(x[:, 2], y[:, 2], 'g')

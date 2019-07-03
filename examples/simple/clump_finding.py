@@ -1,9 +1,9 @@
+# -*- coding: ascii -*-
 """
 Generates a random distribution of particles and uses Hop to determine clumps
 in the particle set.
 """
 from __future__ import print_function
-
 # import numpy
 from numpy import random
 from matplotlib import pyplot
@@ -53,7 +53,7 @@ def plot_clumps(groups, total_mass):
 
     for group in groups:
         number_of_particles_in_group.append(len(group))
-        fraction = (group.mass.sum()/total_mass)
+        fraction = (group.mass.sum() / total_mass)
         fraction_of_mass_in_group.append(fraction)
 
     figure = pyplot.figure(figsize=(12, 6))

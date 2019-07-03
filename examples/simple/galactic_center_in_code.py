@@ -1,10 +1,9 @@
+# -*- coding: ascii -*-
 """
 Evolves a cluster orbiting a massive central particle.
 """
 from __future__ import print_function
-
 # import numpy
-
 from amuse.units import units
 from amuse.units import constants
 from amuse.units import nbody_system
@@ -27,14 +26,14 @@ def new_galactic_center(mass):
 
 
 def circular_velocity_for_stable_orbit(radius, central_mass):
-    return (constants.G*central_mass/radius)**0.5
+    return (constants.G * central_mass / radius)**0.5
 
 
 def new_cluster(
         number_of_particles,
         W0,
         converter
-        ):
+):
     particles = new_king_model(N, W0, convert_nbody=converter)
     particles.radius = 0.0 | units.parsec
     return particles
@@ -77,7 +76,7 @@ if __name__ == "__main__":
     shift_particles(
         cluster,
         Rinit, 0 | units.parsec, 0. | units.parsec,
-        0 | units.kms, 0.8*vcirc, 0 | units.kms
+        0 | units.kms, 0.8 * vcirc, 0 | units.kms
     )
 
     code.particles.add_particles(cluster)
@@ -96,7 +95,7 @@ if __name__ == "__main__":
         x = code.particles.x.value_in(units.parsec)
         y = code.particles.y.value_in(units.parsec)
 
-        subplot = f.add_subplot(2, 2, i+1)
+        subplot = f.add_subplot(2, 2, i + 1)
         subplot.plot(x, y, 'r .')
         subplot.plot([0.], [0.], 'b +')
         subplot.set_xlim(-60, 60)

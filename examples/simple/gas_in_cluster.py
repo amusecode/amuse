@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Simultaniously evolves gas and stars in a cluster.
 
@@ -50,7 +51,7 @@ class BridgeStarAndGasPlummerCode(object):
             seed=None,
             interaction_timestep=0.01 | nbody_system.time,
             diagnostic_timestep=0.1 | nbody_system.time
-            ):
+    ):
 
         if seed is not None:
             numpy.random.seed(seed)
@@ -157,14 +158,14 @@ class BridgeStarAndGasPlummerCode(object):
         particles = plummer.new_plummer_model(
             self.nstars, convert_nbody=self.converter)
         particles.radius = self.star_epsilon
-        particles.mass = (1.0/self.nstars) * self.star_mass
+        particles.mass = (1.0 / self.nstars) * self.star_mass
         return particles
 
     def new_gas_cluster(self):
         particles = gasplummer.new_plummer_gas_model(
             self.ngas, convert_nbody=self.converter)
         particles.h_smooth = self.gas_epsilon
-        particles.mass = (1.0/self.ngas) * self.gas_mass
+        particles.mass = (1.0 / self.ngas) * self.gas_mass
         return particles
 
     def evolve_model(self, time_end):
@@ -188,7 +189,7 @@ class BridgeStarAndGasPlummerCode(object):
         energy = self.converter.to_nbody(
             sum_energy).value_in(nbody_system.energy)
         coreradius = self.star_code.particles.virial_radius().value_in(
-                self.rscale.to_unit())
+            self.rscale.to_unit())
 
         print("Time          :", time)
         print("Energy        :", energy)
@@ -227,10 +228,12 @@ if __name__ == "__main__":
     subplot.set_ylabel('radius (parsec)')
     subplot = figure.add_subplot(2, 1, 2)
     subplot.plot(
-        code.times.value_in(nbody_system.time),
-        (code.energy_at_time - code.energy_at_time[0])/code.energy_at_time[0],
-        'g'
-    )
+        code.times.value_in(
+            nbody_system.time),
+        (code.energy_at_time -
+         code.energy_at_time[0]) /
+        code.energy_at_time[0],
+        'g')
     subplot.set_title('energy error')
     subplot.set_xlabel('time (nbody)')
     subplot.set_ylabel('(E-E0)/E')

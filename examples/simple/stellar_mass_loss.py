@@ -1,8 +1,10 @@
+# -*- coding: ascii -*-
 """
     Set an artificial mass loss rate at a specific point
     in the stellar evolution using MESA
     and calculate the effect this has on the stellar radius.
 """
+from __future__ import print_function
 # import numpy
 
 from amuse.units import units
@@ -27,11 +29,11 @@ def print_report(star1, star2, mdot):
             star1=star1,
             star2=star2,
             mdot=mdot,
-            eff_mdot=(star2.mass-star1.mass)/(star2.age-star1.age),
-            rdot=(star2.radius-star1.radius)/(star2.age-star1.age),
-            d_age=star2.age-star1.age,
-            d_radius=star2.radius-star1.radius,
-            d_mass=star2.mass-star1.mass))
+            eff_mdot=(star2.mass - star1.mass) / (star2.age - star1.age),
+            rdot=(star2.radius - star1.radius) / (star2.age - star1.age),
+            d_age=star2.age - star1.age,
+            d_radius=star2.radius - star1.radius,
+            d_mass=star2.mass - star1.mass))
 
 
 def evolve_star_and_apply_mass_loss(radius, mdot):
@@ -62,13 +64,13 @@ def evolve_star_and_apply_mass_loss(radius, mdot):
 
 if __name__ == "__main__":
     set_printing_strategy(
-            "custom",
-            preferred_units=[
-                units.RSun, units.MSun, units.Myr,
-                units.MSun/units.yr,
-                units.RSun/units.yr,
-                ]
-            )
+        "custom",
+        preferred_units=[
+            units.RSun, units.MSun, units.Myr,
+            units.MSun / units.yr,
+            units.RSun / units.yr,
+        ]
+    )
 
     evolve_star_and_apply_mass_loss(
-        39. | units.RSun, -1e-3 | units.MSun/units.yr)
+        39. | units.RSun, -1e-3 | units.MSun / units.yr)
