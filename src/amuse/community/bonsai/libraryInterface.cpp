@@ -743,8 +743,8 @@ int get_gravity_at_point(double eps, double x, double y, double z,
   getCurrentStateToHost();
   for(int i=0; i<n_bodies; i++) {
     dx = (x-bodies_pos[i].x);
-    dy = (x-bodies_pos[i].y);
-    dz = (x-bodies_pos[i].z);
+    dy = (y-bodies_pos[i].y);
+    dz = (z-bodies_pos[i].z);
     dr = sqrt(dx*dx + dy*dy + dz*dz + eps*eps);
     inf_dr_cubed = 1./(dr*dr*dr);
     fx -= bodies_pos[i].w*dx * inf_dr_cubed;
