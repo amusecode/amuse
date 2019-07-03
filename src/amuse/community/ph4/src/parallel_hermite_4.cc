@@ -333,11 +333,13 @@ int main(int argc, char *argv[])
 				break;
             }
 
-    MPI_Init(argc, argv);
+    MPI_Init(&argc, &argv);
 
     // Echo the command-line arguments.
 
-    if (MPI_COMM_WORLD.Get_rank() == 0) {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
 	cout << "Parameters:" << endl << flush;
 	cout << "    -a "; PRL(eta);
 	cout << "    -c "; PRL(manage_encounters);
