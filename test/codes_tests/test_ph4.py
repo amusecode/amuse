@@ -531,6 +531,37 @@ class TestPH4(TestWithMPI):
         delta_e = e1 - e0
         
         self.assertTrue(e1 != e0)
+
+    def test10b(self):
+        instance = ph4(number_of_workers=4)
+        instance.initialize_code()
+    
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.parameters.timestep_parameter = 0.01
+        
+        stars = new_plummer_model(100)
+        
+        instance.particles.add_particles(stars)
+        channel = stars.new_channel_to(instance.particles)
+        
+        instance.evolve_model(0.001 | nbody_system.time)
+    
+        e0 = instance.kinetic_energy + instance.potential_energy
+        
+        stars.mass *= 0.9
+        channel.copy()
+        
+        instance.synchronize_model()
+        
+        e1 = instance.kinetic_energy + instance.potential_energy
+        
+        instance.cleanup_code()
+        instance.stop()
+        
+        delta_e = e1 - e0
+        
+        self.assertTrue(e1 != e0)
+
     
     def test11(self):
         print "Testing PH4 collision_detection"
