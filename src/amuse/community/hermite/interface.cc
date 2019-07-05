@@ -1505,7 +1505,7 @@ int get_gravity_at_point(
         rx = pos[i][0]-x;
         ry = pos[i][1]-y;
         rz = pos[i][2]-z;
-        r2 = (rx*rx+ry*ry+rz*rz + eps2);
+        r2 = (rx*rx+ry*ry+rz*rz + eps*eps);
         r = sqrt(r2);
         r3 = r2*r;
         F = mass[i]/r3;

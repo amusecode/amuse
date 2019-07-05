@@ -746,10 +746,10 @@ int get_gravity_at_point(double eps, double x, double y, double z,
     dy = (y-bodies_pos[i].y);
     dz = (z-bodies_pos[i].z);
     dr = sqrt(dx*dx + dy*dy + dz*dz + eps*eps);
-    inf_dr_cubed = 1./(dr*dr*dr);
-    fx -= bodies_pos[i].w*dx * inf_dr_cubed;
-    fy -= bodies_pos[i].w*dy * inf_dr_cubed;
-    fz -= bodies_pos[i].w*dz * inf_dr_cubed;
+    F = bodies_pos[i].w/(dr*dr*dr);
+    fx -= dx * F;
+    fy -= dy * F;
+    fz -= dz * F;
     pot += bodies_pos[i].w/dr;
   }
   *forcex = fx;

@@ -1,9 +1,17 @@
 import os.path
 from amuse.community import *
-from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
+from amuse.community.interface.gd import GravitationalDynamicsInterface
+from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import SinglePointGravityFieldInterface
+from amuse.community.interface.gd import GravityFieldCode
 
-class BonsaiInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, 
-        StoppingConditionInterface, CodeWithDataDirectories):
+class BonsaiInterface(CodeInterface,
+                      LiteratureReferencesMixIn,
+                      GravitationalDynamicsInterface,
+                      StoppingConditionInterface,
+                      CodeWithDataDirectories,
+                      SinglePointGravityFieldInterface):
+
     """
         .. [#] Bedorf J., Gaburov E., Portegies Zwart S., "A sparse octree
         .. [#] gravitational N-body code that runs entirely on the GPU processor",
