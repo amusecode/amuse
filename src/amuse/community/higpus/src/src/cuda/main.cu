@@ -48,7 +48,7 @@ int main(int argc, char *argv[]){
    }
 
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(&cleanstop, 1, MPI::BOOL, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(&cleanstop, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD));
 
 	if(cleanstop){
 		MPI_Finalize();
@@ -88,7 +88,7 @@ int main(int argc, char *argv[]){
    HostSafeCall(Hermite6th(TTIME, &GTIME, &ATIME, local_time, step, N, M, pos_PH, vel_PH, pos_CH, vel_CH, a_H0, MAXDIM, NGPU, TPB, rank, size, BFMAX, ETA6, ETA4, DTMAX, DTMIN, EPS, DTPRINT, FMAX, warm_start, GTIME_WARM, GPUMINTHREADS, plummer_core, plummer_mass, rscale, mscale, dev, &cleanstop, path));
 
 	MPISafeCall(MPI_Barrier(MPI_COMM_WORLD));
-   MPISafeCall(MPI_Bcast(&cleanstop, 1, MPI::BOOL, 0, MPI_COMM_WORLD));
+   MPISafeCall(MPI_Bcast(&cleanstop, 1, MPI_C_BOOL, 0, MPI_COMM_WORLD));
 
    if(cleanstop){
       MPI_Finalize();
