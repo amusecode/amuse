@@ -32,6 +32,11 @@ int return_error(int * out) {
     return -1;
 }
 
+int get_x(int in, float *x){
+    *x=in;
+    return 0;
+    }
+
 """
 
 class ForTestingInterface(test_c_implementation.ForTestingInterface):
@@ -61,11 +66,29 @@ class ForTestingInterface(test_c_implementation.ForTestingInterface):
         function.must_handle_array = True
         return function
 
+    @legacy_function
+    def get_x():
+        function = LegacyFunctionSpecification()
+        function.addParameter('index', dtype='int32', direction=function.IN)
+        function.addParameter('x', dtype='float32', direction=function.OUT, unit=units.m)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function 
+
+
 
 class ForTesting(InCodeComponentImplementation):
     
     def __init__(self, exefile, **options):
         InCodeComponentImplementation.__init__(self, ForTestingInterface(exefile, **options), **options)
+
+    def get_grid_range(self):
+        return (1,10)
+
+    def define_grids(self, handler):
+        handler.define_grid('grid')
+        handler.set_grid_range('grid', 'get_grid_range')
+        handler.add_getter('grid', 'get_x', names=["x"])
 
 class TestASync(TestWithMPI):
 
@@ -657,6 +680,34 @@ class TestASync(TestWithMPI):
         self.assertEqual(r2.result(), 2)
         
         instance1.stop()
+
+    def test30(self):
+        """ test a grid attribute request """
+        instance1 = ForTesting(self.exefile, redirection="none")
+        self.assertEquals(instance1.grid.x, numpy.arange(1,11) |units.m)
+        instance1.do_sleep(1, return_request=True)
+        t1=time.time()
+        request=instance1.grid.request.x
+        t2=time.time()
+        self.assertLess(t2-t1, 0.5)
+        self.assertEquals(request.result(), numpy.arange(1,11) | units.m)
+        t2=time.time()
+        self.assertGreater(t2-t1, 1.)
+        
+    def test31(self):
+        """ test a grid attribute request, subgrids """
+        instance1 = ForTesting(self.exefile, redirection="none")
+        self.assertEquals(instance1.grid.x, numpy.arange(1,11) |units.m)
+        instance1.do_sleep(1, return_request=True)
+        t1=time.time()
+        request=instance1.grid[:5].request.x
+        request2=instance1.grid[5:].request.x
+        t2=time.time()
+        self.assertLess(t2-t1, 0.5)
+        self.assertEquals(request.result(), numpy.arange(1,6) | units.m)
+        self.assertEquals(request2.result(), numpy.arange(6,11) | units.m)
+        t2=time.time()
+        self.assertGreater(t2-t1, 1.)
 
 
 

@@ -680,6 +680,28 @@ class PrivateProperties(object):
 class UndefinedAttribute(object):
     def __get__(self, obj, type=None):
         raise AttributeError()
+
+class AsynchronuousAccessToSet(object):
+    """
+    Helper object to get asynchronuous acces to sets
+    """
+    def __init__(self, store):
+        object.__setattr__(self, "_store", store)
+    def __getattr__(self, name_of_the_attribute):
+        if name_of_the_attribute == '__setstate__':
+            raise AttributeError('type object {0!r} has no attribute {1!r}'.format(type(self._store), name_of_the_attribute))
+        if name_of_the_attribute in self._store._derived_attributes:
+            raise AttributeError('type object {0!r} cannot asynchronuously access attribute {1!r}'.format(type(self._store), name_of_the_attribute))
+        try:
+            return self._store._convert_to_entities_or_quantities(
+                self._store.get_all_values_of_attribute_in_store_async(name_of_the_attribute)
+            )
+        except Exception as ex:
+            if name_of_the_attribute in self._store.get_attribute_names_defined_in_store():
+                raise
+            else:
+                raise AttributeError("You tried to access attribute '{0}'"
+                    " but this attribute is not defined for this set.".format(name_of_the_attribute))    
         
 class AbstractSet(object):
     """
@@ -723,6 +745,8 @@ class AbstractSet(object):
         return self.get_all_keys_in_store()
         
     def __getattr__(self, name_of_the_attribute):
+        if name_of_the_attribute== 'request':
+            return AsynchronuousAccessToSet(self)
         if name_of_the_attribute == '__setstate__':
             raise AttributeError('type object {0!r} has no attribute {1!r}'.format(type(self), name_of_the_attribute))
         if name_of_the_attribute in self._derived_attributes:
@@ -783,14 +807,19 @@ class AbstractSet(object):
         else:
             return self.set_values_in_store(numpy.asarray([index]), [attribute], [value])
             
-            
-            
     def _convert_to_entities_or_quantities(self, x):
         if hasattr(x, 'unit') and x.unit.iskey():
             return self._subset(x.number)
         else:
             return x
         
+    def _convert_to_entities_or_quantities_async(self, x):
+        def handler(inner):
+            result=inner()
+            return self._convert_to_entities_or_quantities_async(result)
+        x.add_handler(handler)
+        return x
+
     def _convert_from_entities_or_quantities(self, x):
         return x
         
@@ -800,6 +829,9 @@ class AbstractSet(object):
     
     def get_all_values_of_attribute_in_store(self, attribute):
         return self.get_values_in_store(self.get_all_indices_in_store(), [attribute])[0]
+
+    def get_all_values_of_attribute_in_store_async(self, attribute):
+        return self.get_values_in_store_async(self.get_all_indices_in_store(), [attribute])[0]
         
     def get_values_in_store(self, indices, attributes):
         pass
