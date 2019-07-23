@@ -731,6 +731,7 @@ class AbstractSet(object):
             
         object.__setattr__(self, "_derived_attributes", CompositeDictionary(derived_attributes))
         object.__setattr__(self, "_private", PrivateProperties())
+        object.__setattr__(self, "_request", AsynchronuousAccessToSet(self))
         
         self._private.collection_attributes = CollectionAttributes()
         self._private.cached_results = CachedResults()
@@ -746,7 +747,7 @@ class AbstractSet(object):
         
     def __getattr__(self, name_of_the_attribute):
         if name_of_the_attribute== 'request':
-            return AsynchronuousAccessToSet(self)
+            return self._request
         if name_of_the_attribute == '__setstate__':
             raise AttributeError('type object {0!r} has no attribute {1!r}'.format(type(self), name_of_the_attribute))
         if name_of_the_attribute in self._derived_attributes:
