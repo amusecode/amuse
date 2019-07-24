@@ -234,6 +234,10 @@ class CodeMethodWrapperDefinition(object):
     
     def convert_result(self, method, result):
         return result
+
+    def convert_result_index(self, method):
+        return range(len(method.method_output_argument_names))
+        
     
     
         
