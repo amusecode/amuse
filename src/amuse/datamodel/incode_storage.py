@@ -1149,11 +1149,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             def result_handler(inner, mapping):
                 mapping.update(inner())
             request.add_result_handler(result_handler, (mapping_from_attribute_to_result,))
-                        
-            if pool is None:
-                pool=request
-            else:
-                pool=results.join(result)
+            pool=request.join(pool) # requests can join with None!
                 
         def all_handler(inner, mapping):
             inner()
