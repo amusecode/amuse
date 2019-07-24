@@ -661,8 +661,8 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertEquals(error2, 0)
         self.assertEquals(error3, 0)
         self.assertEquals(output2, 500 * 1000)
-        print t1 - t0, t3 - t2
-        self.assertTrue((t3 - t2) > 0.25)
+        # the following is not necessarily true since polling interval is the maximum wait time
+        #~ self.assertTrue((t3 - t2) > 0.25)
 
 
 
