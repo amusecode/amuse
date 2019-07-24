@@ -185,6 +185,10 @@ class BaseGrid(AbstractGrid):
     def get_values_in_store(self, indices, attributes, by_key = True):
         result = self._private.attribute_storage.get_values_in_store(indices, attributes)
         return result
+
+    def get_values_in_store_async(self, indices, attributes, by_key = True):
+        result = self._private.attribute_storage.get_values_in_store_async(indices, attributes)
+        return result
         
     def set_values_in_store(self, indices, attributes, values, by_key = True):
         self._private.attribute_storage.set_values_in_store(indices, attributes, values)
@@ -508,6 +512,12 @@ class SubGrid(AbstractGrid):
         normalized_indices = indexing.normalize_slices(self.shape,indices)
         combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
         result = self._private.grid.get_values_in_store(combined_index, attributes)
+        return result
+
+    def get_values_in_store_async(self, indices, attributes, by_key = True):
+        normalized_indices = indexing.normalize_slices(self.shape,indices)
+        combined_index = indexing.combine_indices(self._private.indices, normalized_indices)
+        result = self._private.grid.get_values_in_store_async(combined_index, attributes)
         return result
     
     def set_values_in_store(self, indices, attributes, values, by_key = True):
