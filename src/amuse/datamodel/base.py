@@ -688,8 +688,8 @@ class AsynchronuousAccessToSet(object):
     def __init__(self, store):
         object.__setattr__(self, "_store", store)
     def __getattr__(self, name_of_the_attribute):
-        if name_of_the_attribute == '__setstate__':
-            raise AttributeError('type object {0!r} has no attribute {1!r}'.format(type(self._store), name_of_the_attribute))
+        #~ if name_of_the_attribute == '__setstate__':
+            #~ raise AttributeError('type object {0!r} has no attribute {1!r}'.format(type(self._store), name_of_the_attribute))
         if name_of_the_attribute in self._store._derived_attributes:
             raise AttributeError('type object {0!r} cannot asynchronuously access attribute {1!r}'.format(type(self._store), name_of_the_attribute))
         try:
@@ -708,6 +708,8 @@ class AsynchronuousAccessToSet(object):
             raise AttributeError('type object {0!r} cannot asynchronuously access attribute {1!r}'.format(type(self._store), name_of_the_attribute))
         else:
             request=self._store.set_values_in_store_async(self._store.get_all_indices_in_store(), [name_of_the_attribute], [self._store._convert_from_entities_or_quantities(value)])
+    def __setstate__(self, arg):
+        self.__dict__.update(arg)
 
         
 class AbstractSet(object):

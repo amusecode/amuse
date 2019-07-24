@@ -762,6 +762,14 @@ class TestASync(TestWithMPI):
         self.assertEquals(instance1.grid.x[::2], (11.+numpy.arange(1,11,2)) | units.m)
         self.assertEquals(instance1.grid.x[1::2], (numpy.arange(2,11,2)) | units.m)
 
+    def test34(self):
+        """ test a grid attribute request, subgrids """
+        instance1 = ForTesting(self.exefile, redirection="none")
+        grid=instance1.grid.copy()
+        request=instance1.grid.request.x
+        self.assertEquals(request.result(), numpy.arange(1,11) | units.m)
+
+
 
 class TestASyncDistributed(TestASync):
 
