@@ -44,6 +44,9 @@ int set_x(int in, float x){
     return 0;
     }
 
+int dummy(){
+    return 0;
+    }
 
 """
 
@@ -92,7 +95,11 @@ class ForTestingInterface(test_c_implementation.ForTestingInterface):
         function.can_handle_array = True
         return function 
 
-
+    @legacy_function
+    def dummy():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        return function 
 
 class ForTesting(InCodeComponentImplementation):
     
@@ -107,6 +114,13 @@ class ForTesting(InCodeComponentImplementation):
         handler.set_grid_range('grid', 'get_grid_range')
         handler.add_getter('grid', 'get_x', names=["x"])
         handler.add_setter('grid', 'set_x', names=["x"])
+
+class ForTestingWithState(ForTesting):
+    def define_state(self, handler):
+        handler.set_initial_state("1")
+        handler.add_transition("1", "2", "dummy")
+        handler.add_method("2", "get_x")
+        handler.add_method("2", "set_x")
 
 class TestASync(TestWithMPI):
 
@@ -769,6 +783,42 @@ class TestASync(TestWithMPI):
         request=instance1.grid.request.x
         self.assertEquals(request.result(), numpy.arange(1,11) | units.m)
 
+    def test35(self):
+        """ test a grid attribute request setter with state"""
+        instance1 = ForTestingWithState(self.exefile, redirection="none")
+        t1=time.time()
+        instance1.do_sleep(1, return_request=True)
+        self.assertEquals(instance1.get_name_of_current_state(), '1')
+        instance1.grid.request.x=(11.+numpy.arange(1,11)) |units.m
+        self.assertEquals(instance1.get_name_of_current_state(), '2')
+        t2=time.time()
+        self.assertGreater(t2-t1, 1.)   # first time, state calls dummy (blocking) -> wait
+
+        t1=time.time()
+        instance1.do_sleep(1, return_request=True)
+        instance1.grid.request.x=(12.+numpy.arange(1,11)) |units.m
+        t2=time.time()
+        self.assertLess(t2-t1, 0.5)  # second time should be less
+                
+        instance1.async_request.wait()
+        t2=time.time()
+        self.assertGreater(t2-t1, 1.)
+        t1=time.time()
+        self.assertEquals(instance1.grid.x, (12. +numpy.arange(1,11)) | units.m)
+        t2=time.time()
+        self.assertLess(t2-t1, 0.5)
+
+    def test36(self):
+        """ more state tests"""
+        instance1 = ForTestingWithState(self.exefile, redirection="none")
+        self.assertEquals(instance1.get_name_of_current_state(), '1')
+        # this documents current behaviour:
+        instance1.dummy(return_request=True)
+        self.assertEquals(instance1.get_name_of_current_state(), '1')
+        instance1.async_request.wait() 
+        self.assertEquals(instance1.get_name_of_current_state(), '2')
+        # ie state changes upon completion of call at wait. This is 
+        # sort of ok, alternatively state could be changed immediately...
 
 
 class TestASyncDistributed(TestASync):
