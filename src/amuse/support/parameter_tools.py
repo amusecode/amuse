@@ -19,7 +19,7 @@ from amuse.units.quantities import new_quantity, to_quantity, is_quantity
 
 class CodeWithNamelistParameters(object):
     def __init__(self, namelist_parameters):
-        self._namelist_parameters=dict([((x["short"],x["group_name"]),x) for x in namelist_parameters])
+        self._namelist_parameters=dict([((x["short"].lower(),x["group_name"]),x) for x in namelist_parameters])
     
     def define_parameters(self,handler):
         for p in self._namelist_parameters.values():
@@ -34,7 +34,7 @@ class CodeWithNamelistParameters(object):
 
         for group, d in self._nml_params.iteritems():
             for short, val in d.iteritems():
-                key=(short,group.upper())
+                key=(short.lower(),group.upper())
                 if key in self._namelist_parameters:
                     group_name=self._namelist_parameters[key]["group_name"]
                     name=self._namelist_parameters[key]["name"]
