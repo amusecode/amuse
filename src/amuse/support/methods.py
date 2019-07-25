@@ -188,7 +188,10 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
             result = function()
 
             result = self.convert_result(result)
-        
+
+            # currently handled after call (on a wait)
+            # alternatively, this (probably) works for current implemted postcalls
+            # this could be done immediately
             self.postcall(object)
                         
             return result
