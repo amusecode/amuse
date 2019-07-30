@@ -507,12 +507,12 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             **options
         )
 
-    def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        GravityFieldCode.define_state(self, object)
+    def define_state(self, handler):
+        GravitationalDynamics.define_state(self, handler)
+        GravityFieldCode.define_state(self, handler)
 
-    def define_parameters(self, object):
-        object.add_method_parameter(
+    def define_parameters(self, handler):
+        handler.add_method_parameter(
             "get_eta",
             "set_eta",
             "timestep_parameter",
@@ -520,7 +520,7 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             default_value=0.01
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_eps2",
             "set_eps2",
             "epsilon_squared",
@@ -528,7 +528,7 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             default_value=0.0 | nbody_system.length * nbody_system.length
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_begin_time",
             "set_begin_time",
             "begin_time",
@@ -536,7 +536,7 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             default_value=0.0 | nbody_system.time
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_integrator_method",
             "set_integrator_method",
             "integrator_method",
@@ -544,7 +544,7 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             default_value="sia21h.dkd"
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_pn_order",
             "set_pn_order",
             "pn_order",
@@ -553,66 +553,66 @@ class Tupan(GravitationalDynamics, GravityFieldCode):
             default_value=0
         )
 
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_clight",
             "set_clight",
             "clight",
             "Speed of light to use in post-Newtonian corrections",
         )
 
-    def define_methods(self, object):
-        GravitationalDynamics.define_methods(self, object)
+    def define_methods(self, handler):
+        GravitationalDynamics.define_methods(self, handler)
 
-        object.add_method(
+        handler.add_method(
             "get_eta",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_eta",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_time",
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_begin_time",
             (nbody_system.time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_begin_time",
             (),
-            (nbody_system.time, object.ERROR_CODE,)
+            (nbody_system.time, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "get_eps2",
             (),
-            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+            (nbody_system.length * nbody_system.length, handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_eps2",
             (nbody_system.length * nbody_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
 
-        object.add_method(
+        handler.add_method(
             "set_clight",
             (nbody_system.speed,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             "get_clight",
             (),
-            (nbody_system.speed, object.ERROR_CODE,)
+            (nbody_system.speed, handler.ERROR_CODE,)
         )
 
 

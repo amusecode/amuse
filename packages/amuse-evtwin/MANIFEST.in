@@ -1,0 +1,9 @@
+include support/__init__.py
+include support/setup_codes.py
+include support/version.py
+include support/classifiers.py
+include pyproject.toml
+
+recursive-include src *
+recursive-exclude src *.pyc *.o *~ .pc ccache *.a
+

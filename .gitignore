@@ -3,9 +3,6 @@ build.py
 config.log
 config.mk
 config.status
-src/amuse/config.py
-support/config.py
-support3/config.py
 
 # general build / compile files
 *.a
@@ -19,6 +16,8 @@ support3/config.py
 *.dSYM
 build/
 
+# generated when packaging
+*.egg-info
 
 # files created running make / setup.py
 amuse.cfg
@@ -467,3 +466,19 @@ src/amuse/community/mosse/src/mosse
 test/core_tests/test.txt
 test_concurrent
 test_python_sockets_implementation
+
+# editors and ides
+*.tmp
+*.bak
+*.swp
+*~.nib
+*~
+
+.metadata
+.settings/
+*.pydevproject
+.cproject
+.autotools
+.buildpath
+
+.idea

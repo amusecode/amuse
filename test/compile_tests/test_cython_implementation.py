@@ -262,7 +262,7 @@ class TestCythonFortranImplementationInterface(test_fortran_implementation.TestI
 
     def test22(self):
         self.skip("this test uses mpi internals, skip here")
-                     
+
     def skip_if_no_cython(self):
 
         if sys.hexversion > 0x03000000:

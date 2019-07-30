@@ -14,7 +14,7 @@ from amuse.units.generic_unit_converter import (
 
 from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.phigrape.interface import PhiGRAPE
 
 try:
     from matplotlib import pyplot

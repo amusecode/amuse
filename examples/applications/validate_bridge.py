@@ -11,8 +11,8 @@ import os
 from amuse.io import store
 from amuse.units import (nbody_system, units)
 # from amuse.units import constants
-# from amuse.community.hermite0.interface import Hermite
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+# from amuse.community.hermite.interface import Hermite
+from amuse.community.phigrape.interface import PhiGRAPE
 from amuse.community.bhtree.interface import BHTree
 from amuse.community.fi.interface import Fi
 from amuse.ext.bridge import bridge

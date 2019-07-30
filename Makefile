@@ -56,12 +56,11 @@ oclean:
 	$(PYTHON) setup.py clean_codes --inplace --codes-dir=src/omuse/community
 
 distclean:
-	-rm -f support/config.py
-	-rm -f src/amuse/config.py
+	-rm -f src/amuse/config.mk
 	-rm -f amuse.sh
 	-rm -f iamuse.sh
 	-rm -f ibis-deploy.sh
-	-rm -f build.py
+	-rm -f build.py amusifier
 	-rm -rf test_results src/amuse.egg-info
 	
 	-rm -f test/*.000 test/fort.* test/perr test/pout test/test.h5 test/*.log

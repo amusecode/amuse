@@ -910,4 +910,4 @@ class TestHeatingWind(TestStellarWind):
         print wind_N
         print wind_E
         self.assertEqual(wind_N[-2:], [606194, 0])
-        self.assertAlmostRelativeEqual(wind_E[-2:], [1e49, 0] | units.erg)
+        self.assertAlmostRelativeEqual(wind_E[-2:], [1.e49, 0] | units.erg,7)

@@ -451,11 +451,11 @@ class VectorQuantity(Quantity):
 
 
     def as_vector_with_length(self, length):
-        #if length != len(self):
-        #    raise exceptions.AmuseException("Can only return a vector with the same length")
-        shape = list(self.shape)
-        shape.insert(0,1)
-        return self.reshape(shape)
+        if len(self)==length:
+            return self.copy()
+        if len(self)==1:
+            return self.new_from_scalar_quantities(*[self[0]]*length)
+        raise exceptions.AmuseException("as_vector_with_length only valid for same length or 1")
 
     def as_vector_quantity(self):
         return self
@@ -586,14 +586,7 @@ class VectorQuantity(Quantity):
         >>> print vector[[0,2,]]
         [0.0, 2.0] kg
         """
-        number =  self._number[index]
-        if number.shape:
-            return VectorQuantity(number, self.unit )
-        else:
-            if self.unit.is_non_numeric():
-                return NonNumericQuantity(number, self.unit )
-            else:
-                return ScalarQuantity(number, self.unit )
+        return new_quantity(self._number[index], self.unit)
 
     def take(self, indices):
         return VectorQuantity(self._number.take(indices), self.unit)
@@ -1280,6 +1273,13 @@ def concatenate(quantities):
     concatenated = numpy.concatenate(numbers)
     return VectorQuantity(concatenated, unit)
 
+def column_stack( args ):
+    args_=[to_quantity(x) for x in args]
+    units=set([x.unit for x in args_])
+    if len(units)==1:
+      return new_quantity(numpy.column_stack([x.number for x in args_]),args_[0].unit)
+    else:
+      return numpy.column_stack(args)
 
 def arange(start, stop, step):
     if not is_quantity(start):

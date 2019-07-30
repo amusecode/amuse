@@ -1,6 +1,9 @@
 ---
 name: Feature request
 about: Suggest a feature or improvement for AMUSE
+title: ''
+labels: feature request
+assignees: ''
 
 ---
 

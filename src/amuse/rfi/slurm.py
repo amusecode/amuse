@@ -63,7 +63,7 @@ def parse_ids(string, position):
         if '-' in count_range:
             from_id, to_id = count_range.split('-')
             for number in range(int(from_id), int(to_id) + 1):
-                result.append(str(number));
+                result.append(str(number))
         else:
             result.append(count_range)
     return result, end+1

@@ -409,19 +409,19 @@ class Capreole(CommonCode):
         CommonCode.__init__(self,  CapreoleInterface(**options), **options)
     
 
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
             
-    def define_properties(self, object):
-        object.add_property('get_time', public_name = "model_time")
+    def define_properties(self, handler):
+        handler.add_property('get_time', public_name = "model_time")
         
-    def define_methods(self, object):
-        object.add_method('evolve_model', (time,), (object.ERROR_CODE,))
-        object.add_method(
+    def define_methods(self, handler):
+        handler.add_method('evolve_model', (time,), (handler.ERROR_CODE,))
+        handler.add_method(
             'get_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX,),
-            (length, length, length, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX,),
+            (length, length, length, handler.ERROR_CODE,)
         )
         
         density = mass / (length**3)
@@ -429,147 +429,147 @@ class Capreole(CommonCode):
         energy_density =  mass / ((time**2) * length)
         acceleration =  length / time ** 2
         
-        object.add_method(
+        handler.add_method(
             'set_grid_state',
-            (object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX,
             density, momentum_density, momentum_density, momentum_density, energy_density,
             ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_grid_state',
-            (object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX),
             (density, momentum_density, momentum_density, momentum_density, energy_density,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_density',
-            (object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX),
             (density,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_momentum_density',
-            (object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX),
             (momentum_density, momentum_density, momentum_density,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_energy_density',
-            (object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX),
             (energy_density,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             'get_gravity_field',
-            (object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX),
             (acceleration, acceleration, acceleration,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_gravity_field',
-            (object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX,
              acceleration, acceleration, acceleration,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_time',
             (),
-            (time, object.ERROR_CODE,)
+            (time, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             'setup_mesh',
-            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, length, length, length,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, length, length, length,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_boundary',
-            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_parallel_decomposition',
-            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_boundary_state',
-            (object.INDEX, object.INDEX, object.INDEX,
+            (handler.INDEX, handler.INDEX, handler.INDEX,
             density, momentum_density, momentum_density, momentum_density, energy_density,
-            object.INDEX),
-            (object.ERROR_CODE,)
+            handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_boundary_state',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (density, momentum_density, momentum_density, momentum_density, energy_density,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_boundary_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (length, length, length, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (length, length, length, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_boundary_index_range_inclusive',
-            (object.INDEX),
-            (object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT,object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX),
+            (handler.NO_UNIT, handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT,handler.NO_UNIT, handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_timestep",
             (),
-            (time, object.ERROR_CODE,)
+            (time, handler.ERROR_CODE,)
         )
     
-        object.add_method(
+        handler.add_method(
             "set_timestep",
             (time, ),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_hydro_state_at_point',
             (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
                 generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
             (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
-                generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
+                generic_unit_system.momentum_density, generic_unit_system.energy_density, handler.ERROR_CODE)
         )
     
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
     
-    def define_particle_sets(self, object):
-        object.define_grid('grid')
-        object.set_grid_range('grid', 'get_index_range_inclusive')
-        object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
+    def define_particle_sets(self, handler):
+        handler.define_grid('grid')
+        handler.set_grid_range('grid', 'get_index_range_inclusive')
+        handler.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
     
-        object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-        object.add_setter('grid', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        handler.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        handler.add_setter('grid', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
         
-        object.add_getter('grid', 'get_grid_density', names=('rho',))
-        object.add_getter('grid', 'get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
-        object.add_getter('grid', 'get_grid_energy_density', names=('energy',))
+        handler.add_getter('grid', 'get_grid_density', names=('rho',))
+        handler.add_getter('grid', 'get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
+        handler.add_getter('grid', 'get_grid_energy_density', names=('energy',))
         
-        object.define_grid('acceleration_grid')
-        object.set_grid_range('acceleration_grid', 'get_index_range_inclusive')
-        object.add_getter('acceleration_grid', 'get_position_of_index', names=('x','y','z'))
-        object.add_setter('acceleration_grid', 'set_gravity_field', names=('ax','ay','az'))
-        object.add_getter('acceleration_grid', 'get_gravity_field', names=('ax','ay','az'))
+        handler.define_grid('acceleration_grid')
+        handler.set_grid_range('acceleration_grid', 'get_index_range_inclusive')
+        handler.add_getter('acceleration_grid', 'get_position_of_index', names=('x','y','z'))
+        handler.add_setter('acceleration_grid', 'set_gravity_field', names=('ax','ay','az'))
+        handler.add_getter('acceleration_grid', 'get_gravity_field', names=('ax','ay','az'))
     
-        #object.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
-        #object.add_setter('grid', 'set_density', names=('rho',))
-        #object.add_setter('grid', 'set_energy_density', names=('energy',))
+        #handler.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
+        #handler.add_setter('grid', 'set_density', names=('rho',))
+        #handler.add_setter('grid', 'set_energy_density', names=('energy',))
         
         
 
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gamma", 
             "set_gamma",
             "gamma", 
@@ -577,14 +577,14 @@ class Capreole(CommonCode):
             default_value = 1.6666666666666667
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
              "set_boundary", 
              "xbound1",
              "xbound1", 
              "boundary conditions on first (inner, left) X boundary", 
              "reflective",
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "xbound2",
             "xbound2", 
@@ -592,7 +592,7 @@ class Capreole(CommonCode):
             "reflective",
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "ybound1",
             "ybound1", 
@@ -601,7 +601,7 @@ class Capreole(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "ybound2",
             "ybound2", 
@@ -609,7 +609,7 @@ class Capreole(CommonCode):
             "reflective",
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "zbound1",
             "zbound1", 
@@ -618,7 +618,7 @@ class Capreole(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "zbound2",
             "zbound2", 
@@ -628,40 +628,40 @@ class Capreole(CommonCode):
         
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "x_boundary_conditions",
             "boundary conditions for the X directorion",
             ("xbound1", "xbound2")
         )
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "y_boundary_conditions",
             "boundary conditions for the Y directorion",
             ("ybound1", "ybound2")
         )
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "z_boundary_conditions",
             "boundary conditions for the Z directorion",
             ("zbound1", "zbound2")
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_parallel_decomposition", 
             "nx",
             "nproc_x", 
             "number of processors for the x direction",
             0,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_parallel_decomposition", 
             "ny",
             "nproc_y", 
             "number of processors for the y direction",
             0,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_parallel_decomposition", 
             "nz",
             "nproc_z", 
@@ -669,14 +669,14 @@ class Capreole(CommonCode):
             0,
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "parallel_decomposition",
             "number of processors for each dimensions",
             ("nproc_x", "nproc_y", "nproc_z")
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshx",
             "nx", 
@@ -685,7 +685,7 @@ class Capreole(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshy",
             "ny", 
@@ -694,7 +694,7 @@ class Capreole(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshz",
             "nz", 
@@ -702,21 +702,21 @@ class Capreole(CommonCode):
             10,
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "xlength",
             "length_x", 
             "length of model in the x direction", 
             10 | length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "ylength",
             "length_y", 
             "length of model in the x direction",
             10 | length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "zlength",
             "length_z", 
@@ -724,13 +724,13 @@ class Capreole(CommonCode):
             10 | length,
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "mesh_size",
             "number of cells in the x, y and z directions",
             ("nx", "ny", "nz")
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "mesh_length",
             "length of the model in the x, y and z directions",
             ("length_x", "length_y", "length_z")
@@ -739,7 +739,7 @@ class Capreole(CommonCode):
         
         
         
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
     
     def get_index_range_inclusive(self):
         """
@@ -762,28 +762,28 @@ class Capreole(CommonCode):
     
     
     
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)       
-        #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+    def define_state(self, handler): 
+        CommonCode.define_state(self, handler)       
+        #handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
-        object.add_method('INITIALIZED', 'set_parallel_decomposition')
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_method('INITIALIZED', 'set_parallel_decomposition')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
         
-        object.add_transition('EDIT', 'RUN', 'initialize_grid')
-        object.add_method('RUN', 'evolve_model')
-        object.add_method('RUN', 'get_hydro_state_at_point')
+        handler.add_transition('EDIT', 'RUN', 'initialize_grid')
+        handler.add_method('RUN', 'evolve_model')
+        handler.add_method('RUN', 'get_hydro_state_at_point')
         
         for state in ['EDIT', 'RUN']:
             for methodname in [
@@ -807,8 +807,8 @@ class Capreole(CommonCode):
                     'get_boundary_position_of_index',
                     'get_boundary_index_range_inclusive'
                 ]:
-                object.add_method(state, methodname)       
-        self.stopping_conditions.define_state(object)    
+                handler.add_method(state, methodname)       
+        self.stopping_conditions.define_state(handler)    
     
 
     def specify_boundary_grid(self, definition, index_of_boundary, index_of_grid = 1):

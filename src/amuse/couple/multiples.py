@@ -757,7 +757,8 @@ class Multiples(object):
             'stars': stars.copy(),
             #'gravity_stars': gravity_stars.copy(),
             'self.root_to_tree': self.root_to_tree.copy(),
-            'particles_in_encounter': Particles(0)
+            'particles_in_encounter': Particles(0),
+            'scattering_stars': Particles(0)
         }
         snapshot['particles_in_encounter'].add_particle(snapshot['star1'])
         snapshot['particles_in_encounter'].add_particle(snapshot['star2'])
@@ -860,6 +861,7 @@ class Multiples(object):
                             print 'unknown star',
                         print 'to scattering list'
                         sys.stdout.flush()
+                    snapshot['scattering_stars'].add_particle(star)
                     #initial_scale = sorted_distances[i]    # don't expand!
                 else:
                     if self.global_debug > 0:
@@ -934,7 +936,7 @@ class Multiples(object):
             #print "rescaling out:", (star1.position - star2.position).length()
 
         # 2c. Remove the interacting stars from the gravity module.
-
+        
         for star in scattering_stars:
             gravity_stars.remove_particle(star)
 
@@ -1141,6 +1143,7 @@ class Multiples(object):
             #gravity_stars = snapshot['gravity_stars']
             gravity_stars.add_particle(star1)
             gravity_stars.add_particle(star2)
+            gravity_stars.add_particles(snapshot['scattering_stars'])
             self.root_to_tree = snapshot['self.root_to_tree']
             zero_en = 0.0 * E0
 
@@ -1647,7 +1650,7 @@ class Multiples(object):
 
             time = 0 * end_time
 
-            resolve_collision_code.set_time(time);
+            resolve_collision_code.set_time(time)
             resolve_collision_code.particles.add_particles(particles)
             resolve_collision_code.commit_particles()
 

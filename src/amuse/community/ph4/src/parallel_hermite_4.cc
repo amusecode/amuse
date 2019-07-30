@@ -120,7 +120,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 	    system(command);
 	}
 
-	jd.mpi_comm.Barrier();
+	MPI_Barrier(jd.mpi_comm);
 
 	s.open(infile1, ifstream::in);
 	if (!s) {
@@ -157,7 +157,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 
 	    system(command);
 	}
-	jd.mpi_comm.Barrier();
+	MPI_Barrier(jd.mpi_comm);
     }
 
     // Set the system center of mass position and velocity to zero.
@@ -176,7 +176,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     // Set up the jdata parameters and data structures.
 
     jdata jd;
-    jd.setup_mpi(MPI::COMM_WORLD);
+    jd.setup_mpi(MPI_COMM_WORLD);
     jd.setup_gpu();		// set have_gpu and default use_gpu
     if (use_gpu && !jd.have_gpu) use_gpu = false;
     jd.use_gpu = use_gpu;
@@ -280,7 +280,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	    jd.print();
 	}
     }
-    jd.mpi_comm.Barrier();
+    MPI_Barrier(jd.mpi_comm);
 }
 
 
@@ -333,11 +333,13 @@ int main(int argc, char *argv[])
 				break;
             }
 
-    MPI::Init(argc, argv);
+    MPI_Init(&argc, &argv);
 
     // Echo the command-line arguments.
 
-    if (MPI::COMM_WORLD.Get_rank() == 0) {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
 	cout << "Parameters:" << endl << flush;
 	cout << "    -a "; PRL(eta);
 	cout << "    -c "; PRL(manage_encounters);

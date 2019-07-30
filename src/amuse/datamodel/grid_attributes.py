@@ -1,12 +1,14 @@
-from amuse.units.quantities import zero, as_vector_quantity
+from amuse.units.quantities import zero, as_vector_quantity, column_stack
 
 import numpy
 
 from amuse.datamodel import base
 from amuse.datamodel import grids
-grids.AbstractGrid.add_global_vector_attribute("position", ["x","y","z"])
-grids.AbstractGrid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
-grids.AbstractGrid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
+
+# maintain for backwards compatibility, these should go..
+grids.Grid.add_global_vector_attribute("position", ["x","y","z"])
+grids.Grid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
+grids.Grid.add_global_vector_attribute("magnetic_field", ["B1i","B2i","B3i"])
 
 @grids.BaseGrid.caching_function_for_set
 def cellsize(grid):
@@ -203,4 +205,22 @@ def get_overlap_with(grid, grid1,eps=None):
 #    coordinates fully inside the grid """
 #    gridminx,gridminy=sys.grid.get_minimum_position()
 #    gridmaxx,gridmaxy=sys.grid.get_maximum_position()
+
+@grids.BaseGrid.function_for_set
+def get_index(grid, pos=None, **kwargs):
+    raise Exception("not implemented for a {0} grid".format(grid.__class__.__name__))
+
+@grids.RegularBaseGrid.function_for_set
+def get_index(grid, pos=None, **kwargs):
+    pos=grid._get_array_of_positions_from_arguments(pos=pos,**kwargs)
+    offset = pos - grid.get_minimum_position()
+    indices = (offset / grid.cellsize())
+    return numpy.floor(indices).astype(numpy.int)
+
+@grids.BaseGrid.function_for_set
+def _get_array_of_positions_from_arguments(grid, **kwargs):
+    return grids._get_array_of_positions_from_arguments(grid.get_axes_names(), **kwargs)
+
+           
+      
 

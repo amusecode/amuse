@@ -1,3 +1,4 @@
+# -*- coding: ascii -*-
 """
 Evolves a stellar binary and reports the mass of each star during the
 evolution.
@@ -5,7 +6,6 @@ evolution.
 Shows the type of each star as they change.
 """
 from __future__ import print_function
-
 from amuse.community.seba.interface import SeBa
 from amuse.datamodel import Particles
 from amuse.units import constants, units
@@ -21,7 +21,8 @@ def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
     stars[1].mass = mass_of_star2
 
     mu = stars.mass.sum() * constants.G
-    semi_major_axis = (((orbital_period / (2.0 * numpy.pi))**2)*mu)**(1.0/3.0)
+    semi_major_axis = (
+        ((orbital_period / (2.0 * numpy.pi))**2) * mu)**(1.0 / 3.0)
 
     binaries = Particles(1)
 
@@ -50,7 +51,7 @@ def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
         code.update_time_steps()
         # The next line appears a bit weird, but saves time for this simple
         # test.
-        deltat = max(1.0*code.binaries[0].time_step, 0.1 | units.Myr)
+        deltat = max(1.0 * code.binaries[0].time_step, 0.1 | units.Myr)
         current_time = current_time + deltat
         code.evolve_model(current_time)
         from_seba_to_model.copy()
@@ -65,8 +66,8 @@ def evolve_binary(mass_of_star1, mass_of_star2, orbital_period, eccentricity):
                   previous_type_child2, ' -> ', binary.child2.stellar_type)
             previous_type_child2 = binary.child2.stellar_type
         results.append(
-                (binary.age, binary.child1.mass, binary.child1.stellar_type,
-                    binary.child2.mass, binary.child2.stellar_type))
+            (binary.age, binary.child1.mass, binary.child1.stellar_type,
+             binary.child2.mass, binary.child2.stellar_type))
 
     code.stop()
     return results

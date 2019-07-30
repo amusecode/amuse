@@ -2224,11 +2224,11 @@ class MpiAmrVac(CommonCode):
         
         self.set_parameters_filename(self.default_parameters_filename)
         
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if self.unit_converter is None:
             return
         
-        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+        handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
 
     
     
@@ -2237,30 +2237,30 @@ class MpiAmrVac(CommonCode):
         
         return (0, nx-1, 0, ny-1, 0, nz-1)
 
-    def define_properties(self, object):
-        object.add_property('get_time', public_name = "model_time")
+    def define_properties(self, handler):
+        handler.add_property('get_time', public_name = "model_time")
         
-    def define_methods(self, object):
-        object.add_method(
+    def define_methods(self, handler):
+        handler.add_method(
             'evolve_model',
             (generic_unit_system.time,),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'commit_parameters',
             (),
-            (object.ERROR_CODE,)
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_acceleration_grid_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX),
-            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX),
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, handler.ERROR_CODE,)
         )
         
         density = generic_unit_system.density
@@ -2268,199 +2268,199 @@ class MpiAmrVac(CommonCode):
         energy =  generic_unit_system.energy_density
         acceleration =  generic_unit_system.length / generic_unit_system.time ** 2
         
-        object.add_method(
+        handler.add_method(
             'get_acceleration_grid_size',
             (),
-            (object.NO_UNIT,object.NO_UNIT,object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT,handler.NO_UNIT,handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_acceleration_grid_acceleration',
-            (object.INDEX, object.INDEX, object.INDEX),
-            (acceleration, acceleration, acceleration, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX),
+            (acceleration, acceleration, acceleration, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_acceleration_grid_acceleration',
-            (object.INDEX, object.INDEX, object.INDEX, acceleration, acceleration, acceleration,),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, acceleration, acceleration, acceleration,),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_grid_energy_density',
-            (object.INDEX, object.INDEX, object.INDEX, energy, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, energy, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_density',
-            (object.INDEX, object.INDEX, object.INDEX, density, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, density, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_momentum_density',
-            (object.INDEX, object.INDEX, object.INDEX, momentum, momentum, momentum, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, momentum, momentum, momentum, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
         
         
-        object.add_method(
+        handler.add_method(
             'get_grid_energy_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             ( energy,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             (density,
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_grid_momentum_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
             ( momentum, momentum, momentum, 
-            object.ERROR_CODE,)
+            handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'refine_grid',
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_level_of_grid',
-            (object.INDEX),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.INDEX),
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_gamma",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_gamma",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_typeentropy",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_typeentropy",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_typefull1",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_typefull1",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_typepred1",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_typepred1",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_typeadvance",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_typeadvance",
-            (object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_courantpar",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_courantpar",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "get_mxnest",
             (),
-            (object.NO_UNIT, object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             "set_mxnest",
-            (object.NO_UNIT, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, ),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'get_time',
             (),
-            (generic_unit_system.time, object.ERROR_CODE,)
+            (generic_unit_system.time, handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'setup_mesh',
-            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,  generic_unit_system.length,  generic_unit_system.length,  generic_unit_system.length, ),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,  generic_unit_system.length,  generic_unit_system.length,  generic_unit_system.length, ),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'set_boundary',
-            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.NO_UNIT,),
-            (object.ERROR_CODE,)
+            (handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT, handler.NO_UNIT,),
+            (handler.ERROR_CODE,)
         )
         
-        object.add_method(
+        handler.add_method(
             'set_grid_acceleration',
-            (object.INDEX, object.INDEX, object.INDEX, acceleration, acceleration, acceleration, object.INDEX),
-            (object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, acceleration, acceleration, acceleration, handler.INDEX),
+            (handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_grid_acceleration',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
-            (acceleration, acceleration, acceleration, object.ERROR_CODE,)
+            (handler.INDEX, handler.INDEX, handler.INDEX, handler.INDEX),
+            (acceleration, acceleration, acceleration, handler.ERROR_CODE,)
         )
-        object.add_method(
+        handler.add_method(
             'get_hydro_state_at_point',
             (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
                 generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
             (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
-                generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
+                generic_unit_system.momentum_density, generic_unit_system.energy_density, handler.ERROR_CODE)
         )
-        self.stopping_conditions.define_methods(object)
+        self.stopping_conditions.define_methods(handler)
         
-    def define_parameters(self, object):
+    def define_parameters(self, handler):
         
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_gamma", 
             "set_gamma",
             "gamma", 
@@ -2468,28 +2468,28 @@ class MpiAmrVac(CommonCode):
             default_value = 1.6666666666666667
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_typeentropy", 
             "set_typeentropy",
             "entropy_type", 
             "type of the entropy", 
             default_value = 'nul'
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_typefull1", 
             "set_typefull1",
             "spatial_discretization_method", 
             "the spatial discretization method used for the time integration per activated grid leve", 
             default_value = 'tvdmu'
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_typepred1", 
             "set_typepred1",
             "predictor_step_discretization_method", 
             "the precitor step discretization method (only used when integration procedure is twostep')", 
             default_value = 'tvdmu'
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_typeadvance", 
             "set_typeadvance",
             "time_integration_procedure", 
@@ -2497,7 +2497,7 @@ class MpiAmrVac(CommonCode):
             default_value = 'twostep'
         )
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_courantpar", 
             "set_courantpar",
             "courant_number", 
@@ -2506,7 +2506,7 @@ class MpiAmrVac(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshx",
             "nx", 
@@ -2515,7 +2515,7 @@ class MpiAmrVac(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshy",
             "ny", 
@@ -2524,7 +2524,7 @@ class MpiAmrVac(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "nmeshz",
             "nz", 
@@ -2532,21 +2532,21 @@ class MpiAmrVac(CommonCode):
             10,
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "xlength",
             "length_x", 
             "length of model in the x direction", 
             10 | generic_unit_system.length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "ylength",
             "length_y", 
             "length of model in the x direction", 
             10 | generic_unit_system.length,
         )
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "setup_mesh", 
             "zlength",
             "length_z", 
@@ -2554,20 +2554,20 @@ class MpiAmrVac(CommonCode):
             10 | generic_unit_system.length,
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "mesh_size",
             "number of cells in the x, y and z directions",
             ("nx", "ny", "nz")
         )
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "mesh_length",
             "length of the model in the x, y and z directions",
             ("length_x", "length_y", "length_z")
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "xbound1",
             "xbound1", 
@@ -2576,7 +2576,7 @@ class MpiAmrVac(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "xbound2",
             "xbound2", 
@@ -2584,7 +2584,7 @@ class MpiAmrVac(CommonCode):
             "reflective",
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "ybound1",
             "ybound1", 
@@ -2593,7 +2593,7 @@ class MpiAmrVac(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "ybound2",
             "ybound2", 
@@ -2601,7 +2601,7 @@ class MpiAmrVac(CommonCode):
             "reflective",
         )
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "zbound1",
             "zbound1", 
@@ -2610,7 +2610,7 @@ class MpiAmrVac(CommonCode):
         )
         
         
-        object.add_caching_parameter(
+        handler.add_caching_parameter(
             "set_boundary", 
             "zbound2",
             "zbound2", 
@@ -2620,42 +2620,42 @@ class MpiAmrVac(CommonCode):
         
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "x_boundary_conditions",
             "boundary conditions for the X directorion",
             ("xbound1", "xbound2")
         )
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "y_boundary_conditions",
             "boundary conditions for the Y directorion",
             ("ybound1", "ybound2")
         )
         
         
-        object.add_vector_parameter(
+        handler.add_vector_parameter(
             "z_boundary_conditions",
             "boundary conditions for the Z directorion",
             ("zbound1", "zbound2")
         )
         
         
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_mxnest", 
             "set_mxnest",
             "maximum_number_of_grid_levels", 
             "the maximum number of grid levels that can be used during the simulation, including the base grid level", 
             default_value = 3
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_time_accurate", 
             "set_time_accurate",
             "time_accurate", 
             "if false will evolve to the given time, if true will take accurate steps using courant timesteps", 
             default_value = 3
         )
-        object.add_method_parameter(
+        handler.add_method_parameter(
             "get_dtpar", 
             "set_dtpar",
             "timestep", 
@@ -2663,7 +2663,7 @@ class MpiAmrVac(CommonCode):
             default_value = 3
         )
         
-        self.stopping_conditions.define_parameters(object)
+        self.stopping_conditions.define_parameters(handler)
         
         
 
@@ -2675,13 +2675,13 @@ class MpiAmrVac(CommonCode):
         nx, ny, nz = self.get_acceleration_grid_size()
         return (1, nx, 1, ny, 1, nz)
         
-    def define_particle_sets(self, object):
+    def define_particle_sets(self, handler):
         
-        object.define_grid('acceleration_grid')
-        object.set_grid_range('acceleration_grid', 'get_acceleration_grid_index_range_inclusive')
-        object.add_getter('acceleration_grid', 'get_acceleration_grid_position_of_index', names=('x','y','z'))
-        object.add_getter('acceleration_grid', 'get_acceleration_grid_acceleration', names=('ax','ay','az'))
-        object.add_setter('acceleration_grid', 'set_acceleration_grid_acceleration', names=('ax','ay','az'))
+        handler.define_grid('acceleration_grid')
+        handler.set_grid_range('acceleration_grid', 'get_acceleration_grid_index_range_inclusive')
+        handler.add_getter('acceleration_grid', 'get_acceleration_grid_position_of_index', names=('x','y','z'))
+        handler.add_getter('acceleration_grid', 'get_acceleration_grid_acceleration', names=('ax','ay','az'))
+        handler.add_setter('acceleration_grid', 'set_acceleration_grid_acceleration', names=('ax','ay','az'))
         
     def itergrids(self):
         n = self.get_number_of_grids()
@@ -2711,27 +2711,27 @@ class MpiAmrVac(CommonCode):
         
     
     
-    def define_state(self, object): 
-        CommonCode.define_state(self, object)       
-        #object.add_transition('END', 'INITIALIZED', 'initialize_code', False)
+    def define_state(self, handler): 
+        CommonCode.define_state(self, handler)       
+        #handler.add_transition('END', 'INITIALIZED', 'initialize_code', False)
         
-        object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
-        object.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
-        object.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
-        object.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
+        handler.add_transition('INITIALIZED','EDIT','commit_parameters')
+        handler.add_transition('RUN','CHANGE_PARAMETERS_RUN','before_set_parameter', False)
+        handler.add_transition('EDIT','CHANGE_PARAMETERS_EDIT','before_set_parameter', False)
+        handler.add_transition('CHANGE_PARAMETERS_RUN','RUN','recommit_parameters')
+        handler.add_transition('CHANGE_PARAMETERS_EDIT','EDIT','recommit_parameters')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_set_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_set_parameter')
         
-        object.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
-        object.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
-        object.add_method('RUN', 'before_get_parameter')
-        object.add_method('EDIT', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_RUN', 'before_get_parameter')
+        handler.add_method('CHANGE_PARAMETERS_EDIT', 'before_get_parameter')
+        handler.add_method('RUN', 'before_get_parameter')
+        handler.add_method('EDIT', 'before_get_parameter')
         
-        object.add_transition('EDIT', 'RUN', 'initialize_grid')
-        object.add_method('RUN', 'evolve_model')
-        object.add_method('RUN', 'get_hydro_state_at_point')
+        handler.add_transition('EDIT', 'RUN', 'initialize_grid')
+        handler.add_method('RUN', 'evolve_model')
+        handler.add_method('RUN', 'get_hydro_state_at_point')
         for state in ['EDIT', 'RUN']:
             for methodname in [
                     'get_grid_density',
@@ -2753,8 +2753,8 @@ class MpiAmrVac(CommonCode):
                     'get_level_of_grid',
                     'refine_grid'
                 ]:
-                object.add_method(state, methodname)     
+                handler.add_method(state, methodname)     
                 
-        self.stopping_conditions.define_state(object)    
+        self.stopping_conditions.define_state(handler)    
     
 

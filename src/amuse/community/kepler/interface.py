@@ -661,12 +661,12 @@ class Kepler(CommonCode):
                                self.__interface__(**options),
                                **options)
 
-    def define_converter(self, object):
+    def define_converter(self, handler):
         if not self.unit_converter is None:
-            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            handler.set_converter(self.unit_converter.as_converter_from_si_to_generic())
     
-    def define_methods(self, object):
-        CommonCode.define_methods(self, object)
+    def define_methods(self, handler):
+        CommonCode.define_methods(self, handler)
 
     def initialize_from_particles(self, particles):
         if not len(particles) == 2:
@@ -685,8 +685,8 @@ class Kepler(CommonCode):
         self.particles = particles.copy()
         
     
-    def define_state(self, object):
-        CommonCode.define_state(self, object)
+    def define_state(self, handler):
+        CommonCode.define_state(self, handler)
         for method_name in [
             'initialize_from_dyn',
             'initialize_from_elements',
@@ -719,7 +719,7 @@ class Kepler(CommonCode):
             'set_random',
             'get_random',
             'make_binary_scattering']:
-            object.add_method('!UNINITIALIZED!END', method_name)
+            handler.add_method('!UNINITIALIZED!END', method_name)
         
 
 

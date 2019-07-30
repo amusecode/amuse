@@ -2,8 +2,8 @@ import numpy
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.fi.interface import Fi
-from amuse.community.hermite0.interface import Hermite
-from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.hermite.interface import Hermite
+from amuse.community.phigrape.interface import PhiGRAPE
 from amuse.community.bhtree.interface import BHTree
 from amuse.ext.bridge import bridge
 from amuse.units import nbody_system

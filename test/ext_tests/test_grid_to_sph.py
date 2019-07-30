@@ -19,10 +19,16 @@ from amuse.datamodel import Particles
 from amuse.datamodel import Particle
 from amuse.datamodel import ParticlesSuperset
 from amuse.datamodel import Grid
+
+def create_grid(*arg):
+  grid=Grid.create(*arg)
+  grid.add_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
+  return grid
+
 class TestGrid2SPH(TestWithMPI):
     
     def setup_simple_grid(self):
-        test_grid = Grid.create((4,3,2), [1.0, 1.0, 1.0] | units.m)
+        test_grid = create_grid((4,3,2), [1.0, 1.0, 1.0] | units.m)
         test_grid.rho = numpy.linspace(1.0, 2.0, num=24).reshape(test_grid.shape) | units.kg/units.m**3
         test_grid.rhovx = test_grid.rho * (3.0 | units.m/units.s)
         test_grid.rhovy = test_grid.rho * (4.0 | units.m/units.s)

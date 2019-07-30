@@ -20,9 +20,9 @@ case $i in
 esac
 done
 
-BASEDIR=`pwd`
-PLATFORM=`uname`
-ARCHITECTURE=`uname -m`
+BASEDIR=$(pwd)
+PLATFORM=$(uname)
+ARCHITECTURE=$(uname -m)
 
 #TMPDIR=/data1/vanelteren/tmp
 SVNURL=http://www.amusecode.org/svn/trunk
@@ -45,12 +45,12 @@ PYTHONVERSION="${PYTHONMAJOR}.${PYTHONMINOR}.${PYTHONRELEASE}"
 
 OPENSSLVERSION="1.0.2l"
 
-PIPVERSION=8.1.2
+PIPVERSION=18.1
 READLINEVERSION=6.2.4.1
 PYZMQVERSION=15.4.0
 TORNADOVERSION=4.4.1
 JUPYTERVERSION=1.0.0
-IPYTHONVERSION=4.0.0
+IPYTHONVERSION=4.1.0
 CYTHONVERSION=0.24.1
 FLASKVERSION=0.11.1
 PILLOWVERSION=3.3.1
@@ -291,9 +291,12 @@ fi
 
 
 if [ ! -e "pipsinstalled"  ]; then
+
     ${PYTHONHOME}/bin/easy_install pip==${PIPVERSION}
 
-    export PIP_CERT=`python -m pip._vendor.requests.certs`    
+    export PIP_CERT=$(python -m pip._vendor.requests.certs)
+    export PIP_NO_CACHE_DIR=false
+
 
     ${PYTHONHOME}/bin/pip install readline==${READLINEVERSION} || exit $?
         
@@ -308,7 +311,7 @@ if [ ! -e "pipsinstalled"  ]; then
         
     #~ ${PYTHONHOME}/bin/pip install ipython[all] || exit $?
     # is this equivalent to..(?)
-    ${PYTHONHOME}/bin/pip install ipython==${IPYTHONVERSION}  || exit $?
+    ${PYTHONHOME}/bin/pip install ipykernel==${IPYTHONVERSION}  || exit $?
 
     ${PYTHONHOME}/bin/pip install jupyter==${JUPYTERVERSION}  || exit $?
     
@@ -386,7 +389,7 @@ if [ ! -e "amuseinstalled" ]; then
     fi
     ./configure --with-fftw=${BASEDIR}/static_libs --with-hdf5=${PYTHONHOME} PYTHON=${PYTHON} || exit $?
 
-    export PYTHONPATH=${PYTHONPATH}:`pwd`/src
+    export PYTHONPATH=${PYTHONPATH}:$(pwd)/src
 
     # first build omuse codes..
     if [ "${BUILD}" == "omuse" ]; then

@@ -896,52 +896,52 @@ class TestGridSampling(amusetest.TestCase):
     def test1(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m,method="interpolation")
         self.assertEquals(sample.index , [1,1,1])
-        sample = grid.samplePoint([2.5,2.5,2.5]| units.m)
+        sample = grid.samplePoint([2.5,2.5,2.5]| units.m,method="interpolation")
         self.assertEquals(sample.index , [1,1,1])
-        sample = grid.samplePoint([3.5,3.5,3.5]| units.m)
+        sample = grid.samplePoint([3.5,3.5,3.5]| units.m,method="interpolation")
         self.assertEquals(sample.index , [1,1,1])
         
         for x in range(0,200):
-            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m,method="interpolation")
             self.assertEquals(sample.index , [0,2,3])
             
         for x in range(200,400):
-            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m,method="interpolation")
             self.assertEquals(sample.index , [1,3,4])
 
     def test2(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m,method="interpolation")
         self.assertEquals(sample.index_for_000_cell , [1,1,1])
-        sample = grid.samplePoint([2.5,2.5,2.5]| units.m)
+        sample = grid.samplePoint([2.5,2.5,2.5]| units.m,method="interpolation")
         self.assertEquals(sample.index_for_000_cell , [0,0,0])
-        sample = grid.samplePoint([3.5,3.5,3.5]| units.m)
+        sample = grid.samplePoint([3.5,3.5,3.5]| units.m,method="interpolation")
         self.assertEquals(sample.index_for_000_cell , [1,1,1])
-        sample = grid.samplePoint([4.5,4.5,4.5]| units.m)
+        sample = grid.samplePoint([4.5,4.5,4.5]| units.m,method="interpolation")
         self.assertEquals(sample.index_for_000_cell , [1,1,1])
         self.assertEquals(sample.index , [2,2,2])
         
         for x in range(0,100):
             
-            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m,method="interpolation")
             self.assertEquals(sample.index_for_000_cell , [-1,1,2])
         for x in range(100,300):
             
-            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m,method="interpolation")
             self.assertEquals(sample.index_for_000_cell , [0,2,3])
             
         for x in range(300,400):
-            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m,method="interpolation")
             self.assertEquals(sample.index_for_000_cell , [1,3,4])
             
     
     def test3(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m,method="interpolation")
         self.assertEquals(sample.index_for_000_cell , [1,1,1])
         self.assertEquals(sample.surrounding_cell_indices , [
             [1,1,1],
@@ -957,7 +957,7 @@ class TestGridSampling(amusetest.TestCase):
     def test4(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m,method="interpolation")
         self.assertEquals(sample.surrounding_cells[0].position , [3.0,3.0,3.0] | units.m )    
         self.assertEquals(sample.surrounding_cells[1].position , [5.0,3.0,3.0] | units.m )   
         self.assertEquals(sample.surrounding_cells[-1].position , [5.0,5.0,5.0] | units.m )        
@@ -966,7 +966,7 @@ class TestGridSampling(amusetest.TestCase):
     def test5(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m,method="interpolation")
         masses = sample.get_values_of_attribute("mass")
         self.assertEquals(masses[0] , 3.0 | units.kg ) 
         self.assertEquals(masses[1] , 5.0 | units.kg ) 
@@ -992,50 +992,50 @@ class TestGridSampling(amusetest.TestCase):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         for xpos in numpy.arange(3.0,5.0,0.1):
-            sample = grid.samplePoint([xpos,3.0,3.0]| units.m)
+            sample = grid.samplePoint([xpos,3.0,3.0]| units.m,method="interpolation")
             self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
           
-            sample = grid.samplePoint([xpos,3.0,3.0]| units.m)
+            sample = grid.samplePoint([xpos,3.0,3.0]| units.m,method="interpolation")
             self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
           
-            sample = grid.samplePoint([xpos,5.0,3.0]| units.m)
+            sample = grid.samplePoint([xpos,5.0,3.0]| units.m,method="interpolation")
             self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
           
-            sample = grid.samplePoint([xpos,3.0,5.0]| units.m)
+            sample = grid.samplePoint([xpos,3.0,5.0]| units.m,method="interpolation")
             self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
         
 
-            sample = grid.samplePoint([4.0,4.0,4.0]| units.m)
+            sample = grid.samplePoint([4.0,4.0,4.0]| units.m,method="interpolation")
             self.assertAlmostRelativeEquals(sample.mass , (4.0 | units.kg)) 
 
     def test7(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m,method="interpolation")
         self.assertTrue(sample.isvalid)
-        sample = grid.samplePoint([11.0,3.0,3.0]| units.m)
+        sample = grid.samplePoint([11.0,3.0,3.0]| units.m,method="interpolation")
         self.assertFalse(sample.isvalid)
-        sample = grid.samplePoint([3.0,-1.0,3.0]| units.m)
+        sample = grid.samplePoint([3.0,-1.0,3.0]| units.m,method="interpolation")
         self.assertFalse(sample.isvalid)
         
     
     def test8(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        sample = grid.samplePoint([3.0,3.0,3.0]| units.m, must_return_values_on_cell_center = True)    
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m, method="nearest")    
         self.assertEquals(sample.position, [3.0,3.0,3.0]| units.m)    
         self.assertEquals(sample.mass, 3.0 | units.kg)
-        sample = grid.samplePoint([3.5,3.0,3.0]| units.m, must_return_values_on_cell_center = True)    
+        sample = grid.samplePoint([3.5,3.0,3.0]| units.m, method="nearest")    
         self.assertEquals(sample.position, [3.0,3.0,3.0]| units.m)  
         self.assertEquals(sample.mass, 3.0 | units.kg)
         
     def test9(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        sample = grid.samplePoint([3.0,3.0,3.0]| units.m, must_return_values_on_cell_center = False)    
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m, method="linear")    
         self.assertEquals(sample.position, [3.0,3.0,3.0]| units.m)    
         self.assertEquals(sample.mass, 3.0 | units.kg)
-        sample = grid.samplePoint([3.5,3.0,3.0]| units.m, must_return_values_on_cell_center = False)    
+        sample = grid.samplePoint([3.5,3.0,3.0]| units.m, method="linear")    
         self.assertEquals(sample.position, [3.5,3.0,3.0]| units.m)  
         self.assertEquals(sample.mass, 3.5 | units.kg)
         
@@ -1045,7 +1045,7 @@ class TestGridSamplingMultiplePoints(amusetest.TestCase):
     def test1(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        samples = grid.samplePoints([[3.0,3.0,3.0], [4.0,3.0,3.0]]| units.m)
+        samples = grid.samplePoints([[3.0,3.0,3.0], [4.0,3.0,3.0]]| units.m, method="linear")
         self.assertEquals(len(samples), 2)
         self.assertEquals(samples.position[0] , [3.0,3.0,3.0]| units.m)
         self.assertEquals(samples.position[0] , samples[0].position)
@@ -1055,7 +1055,7 @@ class TestGridSamplingMultiplePoints(amusetest.TestCase):
     def test2(self):
         grid = datamodel.new_regular_grid((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
-        samples = grid.samplePoints([[3.5,3.0,3.0], [4.5,3.0,3.0]]| units.m)
+        samples = grid.samplePoints([[3.5,3.0,3.0], [4.5,3.0,3.0]]| units.m, method="linear")
         self.assertEquals(len(samples), 2)
         self.assertEquals(samples.mass , [3.5, 4.5] | units.kg)
         

@@ -661,8 +661,8 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertEquals(error2, 0)
         self.assertEquals(error3, 0)
         self.assertEquals(output2, 500 * 1000)
-        print t1 - t0, t3 - t2
-        self.assertTrue((t3 - t2) > 0.25)
+        # the following is not necessarily true since polling interval is the maximum wait time
+        #~ self.assertTrue((t3 - t2) > 0.25)
 
 
 
@@ -727,8 +727,8 @@ class TestCImplementationInterface(TestWithMPI):
         instance2 = ForTestingInterface(self.exefile)
         portname, error = instance1.internal__open_port()
         self.assertTrue(len(portname) > 0)
-        request1 = instance1.internal__accept_on_port.async(portname)
-        request2 = instance2.internal__connect_to_port.async(portname)
+        request1 = instance1.internal__accept_on_port.asynchronous(portname)
+        request2 = instance2.internal__connect_to_port.asynchronous(portname)
         request1.wait()
         request2.wait()
         port_id1, error1 = request1.result()     
@@ -761,7 +761,10 @@ class TestCImplementationInterface(TestWithMPI):
         self.assertTrue(list(sums) == [3.0*i +1 for i in range(N)])
         x.stop()
         
-        
+    def test32(self):
+        for i in range(100):
+          instance = ForTestingInterface(self.exefile)
+          instance.stop()
 
 
 
