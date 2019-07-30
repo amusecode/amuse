@@ -110,7 +110,7 @@ class TestGalacticPotential(amusetest.TestCase):
                   ] | units.kpc
         potentials = static_potential.get_potential_at_point(0, *points.transpose()).transpose()
 
-        self.assertAlmostEqual(potentials[0], 96648.29247|units.kms**2, 6)
-        self.assertAlmostEqual(potentials[1], -8827.40917774|units.kms**2, 6)
-        self.assertAlmostEqual(potentials[2], -266129.25389|units.kms**2, 6)
+        self.assertAlmostEqual(potentials[0], -96648.29247|units.kms**2, 6)
+        self.assertAlmostEqual(potentials[1], 8827.40917774|units.kms**2, 6)
+        self.assertAlmostEqual(potentials[2], 266129.25389|units.kms**2, 6)
 
